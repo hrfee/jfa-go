@@ -1,0 +1,7 @@
+A user was created using code {{ code }}.
+
+Name: {{ username }}
+Address: {{ address }}
+Time: {{ time }}
+
+Note: Notification emails can be toggled on the admin dashboard.

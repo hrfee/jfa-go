@@ -1,0 +1,8 @@
+Hi,
+You've been invited to Jellyfin.
+To join, follow the below link.
+This invite will expire on {{ expiry_date }}, at {{ expiry_time }}, which is in {{ expires_in }}, so act quick.
+
+{{ invite_link }}
+
+{{ message }}

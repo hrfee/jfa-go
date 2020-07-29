@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+        <link rel="manifest" href="/site.webmanifest">
+        <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+        <meta name="msapplication-TileColor" content="#603cba">
+        <meta name="theme-color" content="#ffffff">
+
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" type="text/css" href="{{ css_file }}">
+        {% if not bs5 %}
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+        {% endif %}
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+        {% if bs5 %}
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha1/js/bootstrap.min.js" integrity="sha384-oesi62hOLfzrys4LxRF63OJCXdXDipiYWBnvTl9Y9/TRlw5xlKIEHpNyvvDShgf/" crossorigin="anonymous"></script>
+        {% else %}
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+        {% endif %}
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <style>
+            .pageContainer {
+                margin: 5% 20% 5% 20%;
+            }
+            @media (max-width: 1100px) {
+                .pageContainer {
+                    margin: 2%;
+                }
+            }
+            .contactBox {
+                color: grey;
+            }
+            #container {
+                margin-top: 5%;
+                margin-bottom: 5%;
+            }
+        </style>
+        <title>Create Jellyfin Account</title>
+    </head>
+    <body>
+        <div class="modal fade" id="successBox" tabindex="-1" role="dialog" aria-labelledby="successBox" aria-hidden="true" data-backdrop="static">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="successTitle">Success!</h5>
+                    </div>
+                    <div class="modal-body" id="successBody">
+                        <p>{{ successMessage }}</p>
+                    </div>
+                    <div class="modal-footer">
+                        <a href="{{ jfLink }}" class="btn btn-primary">Continue</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="pageContainer">
+            <h1>
+                Create Account
+            </h1>
+            <p>{{ helpMessage }}</p>
+            <p class="contactBox">{{ contactMessage }}</p>
+            <div class="container" id="container">
+                <div class="row" id="cardContainer">
+                    <div class="col-sm">
+                        <div class="card mb-3">
+                            <div class="card-header">Details</div>
+                            <div class="card-body">
+                                <form action="#" method="POST" id="accountForm">
+                                    <div class="form-group">
+                                        <label for="inputEmail">Email</label>
+                                        <input type="email" class="form-control" id="{% if username %}inputEmail{% else %}inputUsername{% endif %}" name="{% if username %}email{% else %}username{% endif %}" placeholder="Email" value="{{ email }}" required>
+                                    </div>
+                                    {% if username %}
+                                    <div class="form-group">
+                                        <label for="inputUsername">Username</label>
+                                        <input type="username" class="form-control" id="inputUsername" name="username" placeholder="Username" required>
+                                    </div>
+                                    {% endif %}
+                                    <div class="form-group">
+                                        <label for="inputPassword">Password</label>
+                                        <input type="password" class="form-control" id="inputPassword" name="password" placeholder="Password" required>
+                                    </div>
+                                    <div class="btn-group" role="group" aria-label="Button & Error" id="errorBox" style="margin-top: 1rem;">
+                                        <button type="submit" class="btn btn-outline-primary" id="submitButton">
+                                            <span id="createAccount">Create Account</span>
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% if validate %}
+                    <div class="col-sm" id="requirementBox">
+                        <div class="card mb-3 requirementBox">
+                            <div class="card-header">Password Requirements</div>
+                            <div class="card-body">
+                                <ul class="list-group">
+                                    {% for key, value in requirements.items() %}
+                                    <li id="{{ key }}" class="list-group-item list-group-item-danger">
+                                        <div> {{ value }}</div>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <script src="serialize.js"></script>
+        <script>
+            {% if bs5 %}
+            var bsVersion = 5;
+            {% else %}
+            var bsVersion = 4;
+            {% endif %}
+            if (bsVersion == 5) {
+                var successBox = new bootstrap.Modal(document.getElementById('successBox'));
+            } else if (bsVersion == 4) {
+                var successBox = {
+                    show : function() {
+                        return $('#successBox').modal('show');
+                    },
+                    hide : function() {
+                        return $('#successBox').modal('hide');
+                    }
+                };
+            };
+            var code = window.location.href.split('/').pop();
+            function toggleSpinner () {
+                var submitButton = document.getElementById('submitButton');
+                var oldSpan = document.getElementById('createAccount');
+                var newSpan = document.createElement('span');
+                newSpan.id = 'createAccount';
+                if (document.getElementById('createAccountSpinner')) {
+                    newSpan.appendChild(document.createTextNode('Create Account'));
+                    submitButton.disabled = false;
+                } else {
+                    var spinner = document.createElement('span');
+                    spinner.id = 'createAccountSpinner';
+                    spinner.classList.add('spinner-border', 'spinner-border-sm');
+                    spinner.setAttribute('role', 'status');
+                    spinner.setAttribute('aria-hidden', 'true');
+                    var text = document.createTextNode(' Creating...');
+                    newSpan.appendChild(spinner);
+                    newSpan.appendChild(text);
+                    submitButton.disabled = true;
+                }
+                submitButton.replaceChild(newSpan, oldSpan);
+            };
+            document.getElementById('accountForm').onsubmit = function() {
+                if (document.getElementById('errorMessage')) {
+                    document.getElementById('errorMessage').remove();
+                }
+                toggleSpinner();
+                var send = serializeForm('accountForm');
+                send['code'] = code;
+                {% if not username %}
+                send['email'] = send['username'];
+                {% endif %}
+                send = JSON.stringify(send);
+                var req = new XMLHttpRequest();
+                req.open("POST", "/newUser", true);
+                req.responseType = 'json';
+                req.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+                req.onreadystatechange = function() {
+                    if (this.readyState == 4) {
+                        toggleSpinner();
+                        var data = this.response;
+                        if ('error' in data || data['success'] == false) {
+                            if (typeof(data['error']) != 'undefined') {
+                                var errorMessage = data['error'];
+                            } else {
+                                var errorMessage = 'Unknown Error';
+                            }
+                            var text = document.createTextNode(errorMessage);
+                            var error = document.createElement('button');
+                            error.classList.add('btn', 'btn-outline-danger');
+                            error.setAttribute('disabled', '');
+                            error.appendChild(text);
+                            error.id = 'errorMessage';
+                            document.getElementById('errorBox').appendChild(error);
+                        } else {
+                            var valid = true
+                            for (var key in data) {
+                                if (data.hasOwnProperty(key)) {
+                                    var criterion = document.getElementById(key);
+                                    if (criterion) {
+                                        if (data[key] == false) {
+                                            valid = false;
+                                            if (criterion.classList.contains('list-group-item-success')) {
+                                                criterion.classList.remove('list-group-item-success');
+                                                criterion.classList.add('list-group-item-danger');
+                                            };
+                                        } else {
+                                            if (criterion.classList.contains('list-group-item-danger')) {
+                                                criterion.classList.remove('list-group-item-danger');
+                                                criterion.classList.add('list-group-item-success');
+                                            };
+                                        };
+                                    };
+                                };
+                            };
+                            if (valid == true) {
+                                successBox.show();
+                            };
+                        };
+                    };
+                };
+                req.send(send);
+                return false;
+            };
+        </script>
+    </body>
+</html>                            

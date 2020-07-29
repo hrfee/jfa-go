@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+        <link rel="manifest" href="/site.webmanifest">
+        <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+        <meta name="msapplication-TileColor" content="#603cba">
+        <meta name="theme-color" content="#ffffff">
+        <!-- Bootstrap CSS -->
+        
+        <script>
+            // To grab theme preference
+            function getCookie(cname) {
+                let name = cname + "=";
+                let decodedCookie = decodeURIComponent(document.cookie);
+                let ca = decodedCookie.split(';');
+                for (let c of ca) {
+                    while(c.charAt(0) == ' ') {
+                        c = c.substring(1);
+                    }
+                    if (c.indexOf(name) == 0) {
+                        return c.substring(name.length, c.length);
+                    }
+                }
+                return "";
+            }
+            {{ if .bs5 }}
+            const bsVersion = 5;
+            {{ else }}
+            const bsVersion = 4;
+            {{ end }}
+            const cssFile = "{{ .cssFile }}";
+            var css = document.createElement('link');
+            css.setAttribute('rel', 'stylesheet');
+            css.setAttribute('type', 'text/css');
+            var cssCookie = getCookie("css");
+            if (cssCookie.includes('bs' + bsVersion)) {
+                css.setAttribute('href', cssCookie);
+            } else {
+                css.setAttribute('href', cssFile);
+            };
+            document.head.appendChild(css);
+        </script>
+        {{ if not .bs5 }}
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+        {{ end }}
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+        {{ if .bs5 }}
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha1/js/bootstrap.min.js" integrity="sha384-oesi62hOLfzrys4LxRF63OJCXdXDipiYWBnvTl9Y9/TRlw5xlKIEHpNyvvDShgf/" crossorigin="anonymous"></script>
+        {{ else }}
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+        {{ end }}
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <style>
+            .pageContainer {
+                margin: 5% 20% 5% 20%;
+            }
+            @media (max-width: 1100px) {
+                .pageContainer {
+                    margin: 2%;
+                }
+            }
+            h1 {
+                /*margin: 20%;*/
+                margin-bottom: 5%;
+            }
+            .linkGroup {
+                /*margin: 20%;*/
+                margin-bottom: 5%;
+                margin-top: 5%;
+            }
+            .linkForm {
+                /*margin: 20%;*/
+                margin-top: 5%;
+                margin-bottom: 5%;
+            }
+            .contactBox {
+                /*margin: 20%;*/
+                margin-top: 5%;
+                color: grey;
+            }
+            .circle {
+                /*margin-left: 1rem;
+                width: 1rem;
+                height: 1rem;
+                border-radius: 50%;
+                z-index: 5000;*/
+        -webkit-transition: all 300ms cubic-bezier(0.550, 0.055, 0.675, 0.190);
+           -moz-transition: all 300ms cubic-bezier(0.550, 0.055, 0.675, 0.190);
+             -o-transition: all 300ms cubic-bezier(0.550, 0.055, 0.675, 0.190);
+                transition: all 300ms cubic-bezier(0.550, 0.055, 0.675, 0.190); /* easeInCubic */
+            }
+            .smooth-transition {
+        -webkit-transition: all 300ms cubic-bezier(0.550, 0.055, 0.675, 0.190);
+           -moz-transition: all 300ms cubic-bezier(0.550, 0.055, 0.675, 0.190);
+             -o-transition: all 300ms cubic-bezier(0.550, 0.055, 0.675, 0.190);
+                transition: all 300ms cubic-bezier(0.550, 0.055, 0.675, 0.190); /* easeincubic */
+            }
+            .rotated {
+                transform: rotate(180deg);
+        -webkit-transition: all 150ms cubic-bezier(0.770, 0.000, 0.175, 1.000);
+           -moz-transition: all 150ms cubic-bezier(0.770, 0.000, 0.175, 1.000);
+             -o-transition: all 150ms cubic-bezier(0.770, 0.000, 0.175, 1.000);
+                transition: all 150ms cubic-bezier(0.770, 0.000, 0.175, 1.000); /* easeInOutQuart */
+            }
+
+            .not-rotated {
+                transform: rotate(0deg);
+        -webkit-transition: all 150ms cubic-bezier(0.770, 0.000, 0.175, 1.000);
+           -moz-transition: all 150ms cubic-bezier(0.770, 0.000, 0.175, 1.000);
+             -o-transition: all 150ms cubic-bezier(0.770, 0.000, 0.175, 1.000);
+                transition: all 150ms cubic-bezier(0.770, 0.000, 0.175, 1.000); /* easeInOutQuart */
+            }
+        </style>
+        <title>Admin</title>
+    </head>
+    <body class="smooth-transition">
+        <div class="modal fade" id="login" role="dialog" aria-labelledby="login" aria-hidden="true" data-backdrop="static">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="loginTitle">Login</h5>
+                    </div>
+                    <div class="modal-body" id="formBody">
+                        <form action="#" method="POST" id="loginForm">
+                            <div class="form-group">
+                                <label for="username">Username</label>
+                                <input type="text" class="form-control" id="username" name="username" placeholder="Username" required>
+                                <label for="password">Password</label>
+                                <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
+                            </div>
+                        </form>
+                        <div id="loginErrorArea"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" id="loginSubmit" class="btn btn-primary" form="loginForm">Login</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="settingsMenu" role="dialog" aria-labelledby="settings menu" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="settingsTitle">Settings</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <ul class="list-group list-group-flush">
+                            <p>Note: <sup class="text-danger">*</sup> Indicates required field, <sup class="text-danger">R</sup> Indicates changes require a restart.</p>
+                            <button type="button" class="list-group-item list-group-item-action" id="openUsers">
+                            Users <i class="fa fa-user"></i>
+                            </button>
+                            <button type="button" class="list-group-item list-group-item-action" id="openDefaultsWizard">
+                            New account defaults
+                            </button>
+                        </ul>
+                        <div class="list-group list-group-flush" id="settingsList">
+                        </div>
+                    </div>
+                    <div class="modal-footer" id="settingsFooter">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" id="settingsSave">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="users" role="dialog" aria-labelledby="users" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="usersTitle">Users</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <ul class="list-group list-group-flush" id="userList">
+                        </ul>
+                    </div>
+                    <div class="modal-footer" id="userFooter">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="userDefaults" role="dialog" aria-labelledby="users" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="defaultsTitle">New user defaults</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Create an account and configure it to your liking, then choose it from below to store the settings as a template for all new users.</p>
+                        <div id="defaultUserRadios"></div>
+                        <div class="checkbox">
+                            <label><input type="checkbox" value="" style="margin-right: 1rem;" id="storeDefaultHomescreen" checked>Store homescreen layout</label>
+                        </div>
+                    </div>
+                    <div class="modal-footer" id="defaultsFooter">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" id="storeDefaults">Submit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="restartModal" role="dialog" aria-labelledby="Restart Warning" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Warning</h5>
+                    </div>
+                    <div class="modal-body">
+                        <p>A restart is needed to apply some settings. Restart now, later, or cancel?</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-secondary" id="applyRestarts" data-dismiss="modal">Apply, Restart later</button>
+                        <button type="button" class="btn btn-primary" id="applyAndRestart" data-dismiss="modal">Apply &amp; Restart</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="refreshModal" role="dialog" aria-labelledby="Refresh page notice" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Settings applied.</h5>
+                    </div>
+                    <div class="modal-body">
+                        <p>Refresh the page in a few seconds.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="pageContainer">
+            <h1>
+                Accounts admin
+            </h1>
+            <div class="btn-group" role="group" id="headerButtons">
+                <button type="button" class="btn btn-primary" id="openSettings">
+                    Settings <i class="fa fa-cog"></i>
+                </button>
+            </div>
+            <div class="card mb-3 linkGroup">
+                <div class="card-header">Current Invites</div>
+                <ul class="list-group list-group-flush" id="invites">
+                </ul>
+            </div>
+            <div class="linkForm">
+                <div class="card mb-3">
+                    <div class="card-header">Generate Invite</div>
+                    <div class="card-body">
+                        <form action="#" method="POST" id="inviteForm" class="container">
+                            <div class="row align-items-start">
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label for="days">Days</label>
+                                        <select class="form-control form-select" id="days" name="days">
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="hours">Hours</label>
+                                        <select class="form-control form-select" id="hours" name="hours">
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="minutes">Minutes</label>
+                                        <select class="form-control form-select" id="minutes" name="minutes">
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label for="multiUseCount">
+                                            Multiple uses
+                                        </label>
+                                        <div class="input-group">
+                                            <div class="input-group-text">
+                                                <input class="form-check-input" type="checkbox" onchange="document.getElementById('multiUseCount').disabled = !this.checked; document.getElementById('noUseLimit').disabled = !this.checked" aria-label="Checkbox to allow choice of invite usage limit" name="multiple-uses" id="multiUseEnabled">
+                                            </div>
+                                            <input type="number" class="form-control" name="remaining-uses" id="multiUseCount">
+                                        </div>
+                                    </div>
+                                    <div class="form-group form-check" style="margin-top: 1rem; margin-bottom: 1rem;">
+                                        <input class="form-check-input" type="checkbox" value="" name="no-limit" id="noUseLimit" onchange="document.getElementById('multiUseCount').disabled = this.checked; if (this.checked) { document.getElementById('noLimitWarning').style = 'display: block;' } else { document.getElementById('noLimitWarning').style = 'display: none;'; }">
+                                        <label class="form-check-label" for="noUseLimit">
+                                            No use limit
+                                        </label>
+                                        <div id="noLimitWarning" class="form-text" style="display: none;">Warning: Unlimited usage invites pose a risk if published online.</div>
+                                    </div>
+                                    {{ if .email_enabled }}
+                                    <div class="form-group">
+                                        <label for="send_to_address">Send invite to address</label>
+                                        <div class="input-group">
+                                            <div class="input-group-text">
+                                                <input class="form-check-input" type="checkbox" onchange="document.getElementById('send_to_address').disabled = !this.checked;" aria-label="Checkbox to allow input of email address" id="send_to_address_enabled">
+                                            </div>
+                                            <input type="email" class="form-control" placeholder="example@example.com" id="send_to_address" disabled>
+                                        </div>
+                                    </div>
+                                    {{ end }}
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <div class="form-group d-flex float-right">
+                                        <button type="submit" id="generateSubmit" class="btn btn-primary" style="margin-top: 1rem;">
+                                            Generate
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="contactBox">
+                <p>{{ .contactMessage }}</p>
+            </div>
+        </div>
+        <script src="serialize.js"></script>
+        <script>
+            {{ if .bs5 }}
+                function createModal(id, find = false) {
+                    if (find) {
+                        return bootstrap.Modal.getInstance(document.getElementById(id));
+                    }
+                    return new bootstrap.Modal(document.getElementById(id));
+                }
+            {{ else }}
+                let send_to_addess_enabled = document.getElementById('send_to_address_enabled');
+                if (typeof(send_to_address_enabled) != 'undefined') {
+                    send_to_address_enabled.classList.remove('form-check-input');
+                }
+                let multiUseEnabled = document.getElementById('multiUseEnabled');
+                if (typeof(multiUseEnabled) != 'undefined') {
+                    multiUseEnabled.classList.remove('form-check-input');
+                }
+                function createModal(id, find = false) {
+                    return {
+                        show: function() {
+                            return $('#' + id).modal('show');
+                        },
+                        hide: function() {
+                            return $('#' + id).modal('hide');
+                        }
+                    };
+                }
+            {{ end }}
+
+            function triggerTooltips() {
+                {{ if .bs5 }}
+                document.getElementById('settingsMenu').addEventListener('shown.bs.modal', function() {
+                {{ else }}
+                $('#settingsMenu').on('shown.bs.modal', function() {
+                {{ end }}
+                    // Hacky way to ensure anything dependent on checkbox state is disabled if necessary by just clicking them
+                    let checkboxes = document.getElementById('settingsMenu').querySelectorAll('input[type="checkbox"]');
+                    for (checkbox of checkboxes) {
+                        checkbox.click();
+                        checkbox.click();
+                    }
+                    let tooltips = [].slice.call(document.querySelectorAll('a[data-toggle="tooltip"]'));
+                    tooltips.map(function(el) {
+                        {{ if .bs5 }}
+                            return new bootstrap.Tooltip(el);
+                        {{ else }}
+                            return $(el).tooltip();
+                        {{ end }}
+                    });
+                });
+            }
+            {{ if .notifications }}
+            const notifications_enabled = true;
+            {{ else }}
+            const notifications_enabled = false;
+            {{ end }}
+        </script>
+        <script src="admin.js"></script>
+    </body>
+</html>

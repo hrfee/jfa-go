@@ -1,0 +1,8 @@
+[Unit]
+Description=A basic account management system for Jellyfin.
+
+[Service]
+ExecStart={executable}
+
+[Install]
+WantedBy=default.target
