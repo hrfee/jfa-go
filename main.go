@@ -148,6 +148,10 @@ func main() {
 	api.POST("/generateInvite", ctx.GenerateInvite)
 	api.GET("/getInvites", ctx.GetInvites)
 	api.POST("/setNotify", ctx.SetNotify)
+	api.POST("/deleteInvite", ctx.DeleteInvite)
+	api.GET("/getUsers", ctx.GetUsers)
+	api.POST("/modifyUsers", ctx.ModifyEmails)
+	api.POST("/setDefaults", ctx.SetDefaults)
 
 	router.Run(":8080")
 }

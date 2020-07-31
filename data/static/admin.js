@@ -384,7 +384,7 @@ function generateInvites(empty = false) {
         req.onreadystatechange = function() {
             if (this.readyState == 4) {
                 var data = this.response;
-                if (data['invites'].length == 0) {
+                if (data['invites'] == null || data['invites'].length == 0) {
                     document.getElementById('invites').textContent = '';
                     addItem(parseInvite([], true));
                 } else {

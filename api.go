@@ -362,3 +362,102 @@ func (ctx *appContext) SetNotify(gc *gin.Context) {
 		ctx.storage.storeInvites()
 	}
 }
+
+type deleteReq struct {
+	Code string `json:"code"`
+}
+
+func (ctx *appContext) DeleteInvite(gc *gin.Context) {
+	var req deleteReq
+	gc.BindJSON(&req)
+	var ok bool
+	fmt.Println(req.Code)
+	fmt.Println(ctx.storage.invites[req.Code])
+	_, ok = ctx.storage.invites[req.Code]
+	if ok {
+		fmt.Println("deleting invite")
+		delete(ctx.storage.invites, req.Code)
+		ctx.storage.storeInvites()
+		gc.JSON(200, map[string]bool{"success": true})
+		return
+	}
+	respond(401, "Code doesn't exist", gc)
+}
+
+type userResp struct {
+	UserList []respUser `json:"users"`
+}
+
+type respUser struct {
+	Name  string `json:"name"`
+	Email string `json:"email,omitempty"`
+}
+
+func (ctx *appContext) GetUsers(gc *gin.Context) {
+	var resp userResp
+	resp.UserList = []respUser{}
+	users, status, err := ctx.jf.getUsers(false)
+	if !(status == 200 || status == 204) || err != nil {
+		respond(500, "Couldn't get users", gc)
+		return
+	}
+	for _, jfUser := range users {
+		var user respUser
+		user.Name = jfUser["Name"].(string)
+		if email, ok := ctx.storage.emails[jfUser["Id"].(string)]; ok {
+			user.Email = email.(string)
+		}
+		resp.UserList = append(resp.UserList, user)
+	}
+	gc.JSON(200, resp)
+}
+
+func (ctx *appContext) ModifyEmails(gc *gin.Context) {
+	var req map[string]string
+	gc.BindJSON(&req)
+	users, status, err := ctx.jf.getUsers(false)
+	if !(status == 200 || status == 204) || err != nil {
+		respond(500, "Couldn't get users", gc)
+		return
+	}
+	for _, jfUser := range users {
+		if address, ok := req[jfUser["Name"].(string)]; ok {
+			ctx.storage.emails[jfUser["Id"].(string)] = address
+		}
+	}
+	ctx.storage.storeEmails()
+	gc.JSON(200, map[string]bool{"success": true})
+}
+
+type defaultsReq struct {
+	Username   string `json:"username"`
+	Homescreen bool   `json:"homescreen"`
+}
+
+func (ctx *appContext) SetDefaults(gc *gin.Context) {
+	var req defaultsReq
+	gc.BindJSON(&req)
+	user, status, err := ctx.jf.userByName(req.Username, false)
+	if !(status == 200 || status == 204) || err != nil {
+		respond(500, "Couldn't get user", gc)
+		return
+	}
+	userId := user["Id"].(string)
+	policy := user["Policy"].(map[string]interface{})
+	ctx.storage.policy = policy
+	ctx.storage.storePolicy()
+	if req.Homescreen {
+		configuration := user["Configuration"].(map[string]interface{})
+		var displayprefs map[string]interface{}
+		displayprefs, status, err = ctx.jf.getDisplayPreferences(userId)
+		if !(status == 200 || status == 204) || err != nil {
+			respond(500, "Couldn't get displayprefs", gc)
+			return
+		}
+		ctx.storage.configuration = configuration
+		ctx.storage.displayprefs = displayprefs
+		ctx.storage.storeConfiguration()
+		ctx.storage.storeDisplayprefs()
+	}
+	gc.JSON(200, map[string]bool{"success": true})
+}
