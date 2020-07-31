@@ -461,3 +461,36 @@ func (ctx *appContext) SetDefaults(gc *gin.Context) {
 	}
 	gc.JSON(200, map[string]bool{"success": true})
 }
+
+func (ctx *appContext) GetConfig(gc *gin.Context) {
+	resp := map[string]interface{}{}
+	for section, settings := range ctx.configBase {
+		if section == "order" {
+			resp[section] = settings.([]interface{})
+		} else {
+			resp[section] = make(map[string]interface{})
+			for key, values := range settings.(map[string]interface{}) {
+				if key == "order" {
+					resp[section].(map[string]interface{})[key] = values.([]interface{})
+				} else {
+					resp[section].(map[string]interface{})[key] = values.(map[string]interface{})
+					if key != "meta" {
+						fmt.Println(resp[section].(map[string]interface{})[key].(map[string]interface{}))
+						dataType := resp[section].(map[string]interface{})[key].(map[string]interface{})["type"].(string)
+						configKey := ctx.config.Section(section).Key(key)
+						if dataType == "number" {
+							if val, err := configKey.Int(); err == nil {
+								resp[section].(map[string]interface{})[key].(map[string]interface{})["value"] = val
+							}
+						} else if dataType == "bool" {
+							resp[section].(map[string]interface{})[key].(map[string]interface{})["value"] = configKey.MustBool(false)
+						} else {
+							resp[section].(map[string]interface{})[key].(map[string]interface{})["value"] = configKey.String()
+						}
+					}
+				}
+			}
+		}
+	}
+	gc.JSON(200, resp)
+}

@@ -1,27 +1,5 @@
 {
-    "order": [
-        "jellyfin",
-        "ui",
-        "password_validation",
-        "email",
-        "password_resets",
-        "invite_emails",
-        "notifications",
-        "mailgun",
-        "smtp",
-        "files"
-    ],
     "jellyfin": {
-        "order": [
-            "username",
-            "password",
-            "server",
-            "public_server",
-            "client",
-            "version",
-            "device",
-            "device_id"
-        ],
         "meta": {
             "name": "Jellyfin",
             "description": "Settings for connecting to Jellyfin"
@@ -88,21 +66,6 @@
         }
     },
     "ui": {
-        "order": [
-            "theme",
-            "host",
-            "port",
-            "jellyfin_login",
-            "admin_only",
-            "username",
-            "password",
-            "email",
-            "debug",
-            "contact_message",
-            "help_message",
-            "success_message",
-            "bs5"
-        ],
         "meta": {
             "name": "General",
             "description": "Settings related to the UI and program functionality."
@@ -220,14 +183,6 @@
         }
     },
     "password_validation": {
-        "order": [
-            "enabled",
-            "min_length",
-            "upper",
-            "lower",
-            "number",
-            "special"
-        ],
         "meta": {
             "name": "Password Validation",
             "description": "Password validation (minimum length, etc.)"
@@ -276,15 +231,6 @@
         }
     },
     "email": {
-        "order": [
-            "no_username",
-            "use_24h",
-            "date_format",
-            "message",
-            "method",
-            "address",
-            "from"
-        ],
         "meta": {
             "name": "Email",
             "description": "General email settings. Ignore if not using email features."
@@ -356,13 +302,6 @@
         }
     },
     "password_resets": {
-        "order": [
-            "enabled",
-            "watch_directory",
-            "email_html",
-            "email_text",
-            "subject"
-        ],
         "meta": {
             "name": "Password Resets",
             "description": "Settings for the password reset handler."
@@ -413,13 +352,6 @@
         }
     },
     "invite_emails": {
-        "order": [
-            "enabled",
-            "email_html",
-            "email_text",
-            "subject",
-            "url_base"
-        ],
         "meta": {
             "name": "Invite emails",
             "description": "Settings for sending invites directly to users."
@@ -469,13 +401,6 @@
         }
     },
     "notifications": {
-        "order": [
-            "enabled",
-            "expiry_html",
-            "expiry_text",
-            "created_html",
-            "created_text"
-        ],
         "meta": {
             "name": "Notifications",
             "description": "Notification related settings."
@@ -526,10 +451,6 @@
         }
     },
     "mailgun": {
-        "order": [
-            "api_url",
-            "api_key"
-        ],
         "meta": {
             "name": "Mailgun (Email)",
             "description": "Mailgun API connection settings"
@@ -550,12 +471,6 @@
         }
     },
     "smtp": {
-        "order": [
-            "encryption",
-            "server",
-            "port",
-            "password"
-        ],
         "meta": {
             "name": "SMTP (Email)",
             "description": "SMTP Server connection settings."
@@ -596,14 +511,6 @@
         }
     },
     "files": {
-        "order": [
-            "invites",
-            "emails",
-            "user_template",
-            "user_configuration",
-            "user_displayprefs",
-            "custom_css"
-        ],
         "meta": {
             "name": "File Storage",
             "description": "Optional settings for changing storage locations."

@@ -776,7 +776,7 @@ document.getElementById('openSettings').onclick = function () {
             let settingsList = document.getElementById('settingsList');
             settingsList.textContent = '';
             config = this.response;
-            for (let section of Object.keys(config)) {
+            for (let section of config["order"]) {
                 let sectionCollapse = document.createElement('div');
                 sectionCollapse.classList.add('collapse');
                 sectionCollapse.id = section;
@@ -796,7 +796,7 @@ document.getElementById('openSettings').onclick = function () {
 
                 sectionCollapse.innerHTML = innerCollapse;
                 
-                for (var entry of Object.keys(config[section])) {
+                for (var entry of config[section]["order"]) {
                     if (entry != 'meta') {
                         let entryName = config[section][entry]['name'];
                         let required = false;
@@ -923,8 +923,8 @@ document.getElementById('settingsSave').onclick = function() {
     var restart_setting_changed = false;
     var settings_changed = false;
     
-    for (let section of Object.keys(config)) {
-        for (let entry of Object.keys(config[section])) {
+    for (let section of config["order"]) {
+        for (let entry of config[section]["order"]) {
             if (entry != 'meta') {
                 let entryID = section + '_' + entry;
                 let el = document.getElementById(entryID);

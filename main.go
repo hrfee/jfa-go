@@ -3,11 +3,13 @@ package main
 import (
 	"crypto/rand"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"gopkg.in/ini.v1"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 )
@@ -20,21 +22,23 @@ type User struct {
 }
 
 type appContext struct {
-	config        *ini.File
-	config_path   string
-	data_path     string
-	local_path    string
-	cssFile       string
-	bsVersion     int
-	jellyfinLogin bool
-	users         []User
-	jf            Jellyfin
-	authJf        Jellyfin
-	datePattern   string
-	timePattern   string
-	storage       Storage
-	validator     Validator
-	email         Emailer
+	config          *ini.File
+	config_path     string
+	configBase_path string
+	configBase      map[string]interface{}
+	data_path       string
+	local_path      string
+	cssFile         string
+	bsVersion       int
+	jellyfinLogin   bool
+	users           []User
+	jf              Jellyfin
+	authJf          Jellyfin
+	datePattern     string
+	timePattern     string
+	storage         Storage
+	validator       Validator
+	email           Emailer
 }
 
 func GenerateSecret(length int) (string, error) {
@@ -89,6 +93,10 @@ func main() {
 	ctx.storage.displayprefs_path = filepath.Join(ctx.data_path, "user_displayprefs.json")
 	ctx.storage.loadDisplayprefs()
 
+	ctx.configBase_path = filepath.Join(ctx.local_path, "config-base.json")
+	config_base, _ := ioutil.ReadFile(ctx.configBase_path)
+	json.Unmarshal(config_base, &ctx.configBase)
+	//bson.UnmarshalExtJSON(config_base, true, &ctx.configBase)
 	themes := map[string]string{
 		"Jellyfin (Dark)":   fmt.Sprintf("bs%d-jf.css", ctx.bsVersion),
 		"Bootstrap (Light)": fmt.Sprintf("bs%d.css", ctx.bsVersion),
@@ -152,6 +160,7 @@ func main() {
 	api.GET("/getUsers", ctx.GetUsers)
 	api.POST("/modifyUsers", ctx.ModifyEmails)
 	api.POST("/setDefaults", ctx.SetDefaults)
+	api.GET("/getConfig", ctx.GetConfig)
 
 	router.Run(":8080")
 }
