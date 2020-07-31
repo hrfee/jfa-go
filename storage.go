@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"time"
@@ -18,7 +17,7 @@ type Storage struct {
 // timePattern: %Y-%m-%dT%H:%M:%S.%f
 
 type Invite struct {
-	Created       string                     `json:"created"`
+	Created       time.Time                  `json:"created"`
 	NoLimit       bool                       `json:"no-limit"`
 	RemainingUses int                        `json:"remaining-uses"`
 	ValidTill     time.Time                  `json:"valid_till"`
@@ -34,7 +33,6 @@ func (st *Storage) loadInvites() error {
 }
 
 func (st *Storage) storeInvites() error {
-	fmt.Println("INVITES:", st.invites)
 	return storeJSON(st.invite_path, st.invites)
 }
 
@@ -80,12 +78,9 @@ func loadJSON(path string, obj interface{}) error {
 }
 
 func storeJSON(path string, obj interface{}) error {
-	fmt.Println("OBJ:", obj)
 	test := json.NewEncoder(os.Stdout)
 	test.Encode(obj)
 	data, err := json.Marshal(obj)
-	fmt.Println("DATA:", string(data))
-	fmt.Println("ERR:", err)
 	if err != nil {
 		return err
 	}

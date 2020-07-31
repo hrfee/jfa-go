@@ -13,16 +13,16 @@
         <meta name="theme-color" content="#ffffff">
 
         <!-- Bootstrap CSS -->
-        <link rel="stylesheet" type="text/css" href="{{ css_file }}">
-        {% if not bs5 %}
+        <link rel="stylesheet" type="text/css" href="{{ .cssFile }}">
+        {{ if not .bs5 }}
         <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
-        {% endif %}
+        {{ end }}
         <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
-        {% if bs5 %}
+        {{ if .bs5 }}
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha1/js/bootstrap.min.js" integrity="sha384-oesi62hOLfzrys4LxRF63OJCXdXDipiYWBnvTl9Y9/TRlw5xlKIEHpNyvvDShgf/" crossorigin="anonymous"></script>
-        {% else %}
+        {{ else }}
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
-        {% endif %}
+        {{ end }}
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
         <style>
             .pageContainer {
@@ -51,10 +51,10 @@
                         <h5 class="modal-title" id="successTitle">Success!</h5>
                     </div>
                     <div class="modal-body" id="successBody">
-                        <p>{{ successMessage }}</p>
+                        <p>{{ .successMessage }}</p>
                     </div>
                     <div class="modal-footer">
-                        <a href="{{ jfLink }}" class="btn btn-primary">Continue</a>
+                        <a href="{{ .jfLink }}" class="btn btn-primary">Continue</a>
                     </div>
                 </div>
             </div>
@@ -63,8 +63,8 @@
             <h1>
                 Create Account
             </h1>
-            <p>{{ helpMessage }}</p>
-            <p class="contactBox">{{ contactMessage }}</p>
+            <p>{{ .helpMessage }}</p>
+            <p class="contactBox">{{ .contactMessage }}</p>
             <div class="container" id="container">
                 <div class="row" id="cardContainer">
                     <div class="col-sm">
@@ -74,14 +74,14 @@
                                 <form action="#" method="POST" id="accountForm">
                                     <div class="form-group">
                                         <label for="inputEmail">Email</label>
-                                        <input type="email" class="form-control" id="{% if username %}inputEmail{% else %}inputUsername{% endif %}" name="{% if username %}email{% else %}username{% endif %}" placeholder="Email" value="{{ email }}" required>
+                                        <input type="email" class="form-control" id="{{ if .username }}inputEmail{{ else }}inputUsername{{ end }}" name="{{ if .username }}email{{ else }}username{{ end }}" placeholder="Email" value="{{ .email }}" required>
                                     </div>
-                                    {% if username %}
+                                    {{ if .username }}
                                     <div class="form-group">
                                         <label for="inputUsername">Username</label>
                                         <input type="username" class="form-control" id="inputUsername" name="username" placeholder="Username" required>
                                     </div>
-                                    {% endif %}
+                                    {{ end }}
                                     <div class="form-group">
                                         <label for="inputPassword">Password</label>
                                         <input type="password" class="form-control" id="inputPassword" name="password" placeholder="Password" required>
@@ -95,32 +95,32 @@
                             </div>
                         </div>
                     </div>
-                    {% if validate %}
+                    {{ if .validate }}
                     <div class="col-sm" id="requirementBox">
                         <div class="card mb-3 requirementBox">
                             <div class="card-header">Password Requirements</div>
                             <div class="card-body">
                                 <ul class="list-group">
-                                    {% for key, value in requirements.items() %}
-                                    <li id="{{ key }}" class="list-group-item list-group-item-danger">
-                                        <div> {{ value }}</div>
+                                    {{ range $key, $value := .requirements }}
+                                    <li id="{{ $key }}" class="list-group-item list-group-item-danger">
+                                        <div> {{ $value }}</div>
                                     </li>
-                                    {% endfor %}
+                                    {{ end }}
                                 </ul>
                             </div>
                         </div>
                     </div>
-                    {% endif %}
+                    {{ end }}
                 </div>
             </div>
         </div>
         <script src="serialize.js"></script>
         <script>
-            {% if bs5 %}
+            {{ if .bs5 }}
             var bsVersion = 5;
-            {% else %}
+            {{ else }}
             var bsVersion = 4;
-            {% endif %}
+            {{ end }}
             if (bsVersion == 5) {
                 var successBox = new bootstrap.Modal(document.getElementById('successBox'));
             } else if (bsVersion == 4) {
@@ -162,9 +162,9 @@
                 toggleSpinner();
                 var send = serializeForm('accountForm');
                 send['code'] = code;
-                {% if not username %}
+                {{ if not .username }}
                 send['email'] = send['username'];
-                {% endif %}
+                {{ end }}
                 send = JSON.stringify(send);
                 var req = new XMLHttpRequest();
                 req.open("POST", "/newUser", true);

@@ -20,8 +20,8 @@ func (vd *Validator) init(criteria ValidatorConf) {
 }
 
 func (vd *Validator) validate(password string) map[string]bool {
-	count := vd.criteria
-	for key, _ := range count {
+	count := map[string]int{}
+	for key, _ := range vd.criteria {
 		count[key] = 0
 	}
 	for _, c := range password {
@@ -40,21 +40,24 @@ func (vd *Validator) validate(password string) map[string]bool {
 			}
 		}
 	}
-	var results map[string]bool
+	fmt.Println(count)
+	results := map[string]bool{}
 	for criterion, num := range count {
-		results[criterion] = true
 		if num < vd.criteria[criterion] {
 			results[criterion] = false
+		} else {
+			results[criterion] = true
 		}
 	}
+	fmt.Println(results)
 	return results
 }
 
 func (vd *Validator) getCriteria() map[string]string {
-	var lines map[string]string
+	lines := map[string]string{}
 	for criterion, min := range vd.criteria {
 		if min > 0 {
-			text := fmt.Sprintf("Must have at least %d", min)
+			text := fmt.Sprintf("Must have at least %d ", min)
 			if min == 1 {
 				text += strings.TrimSuffix(criterion, "s")
 			} else {

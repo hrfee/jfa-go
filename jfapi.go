@@ -68,7 +68,7 @@ func (jf *Jellyfin) init(server, client, version, device, deviceId string) error
 	return nil
 }
 
-func (jf *Jellyfin) authenticate(username, password string) (int, error) {
+func (jf *Jellyfin) authenticate(username, password string) (map[string]interface{}, int, error) {
 	jf.username = username
 	jf.password = password
 	jf.loginParams = map[string]string{
@@ -83,7 +83,7 @@ func (jf *Jellyfin) authenticate(username, password string) (int, error) {
 	}
 	resp, err := jf.httpClient.Do(req)
 	if err != nil || resp.StatusCode != 200 {
-		return resp.StatusCode, err
+		return nil, resp.StatusCode, err
 	}
 	defer resp.Body.Close()
 	var data io.Reader
@@ -96,11 +96,12 @@ func (jf *Jellyfin) authenticate(username, password string) (int, error) {
 	var respData map[string]interface{}
 	json.NewDecoder(data).Decode(&respData)
 	jf.accessToken = respData["AccessToken"].(string)
+	user := respData["User"].(map[string]interface{})
 	jf.userId = respData["User"].(map[string]interface{})["Id"].(string)
 	jf.auth = fmt.Sprintf("MediaBrowser Client=%s, Device=%s, DeviceId=%s, Version=%s, Token=%s", jf.client, jf.device, jf.deviceId, jf.version, jf.accessToken)
 	jf.header["X-Emby-Authorization"] = jf.auth
 	jf.authenticated = true
-	return resp.StatusCode, nil
+	return user, resp.StatusCode, nil
 }
 
 func (jf *Jellyfin) _getReader(url string, params map[string]string) (io.Reader, int, error) {
@@ -118,7 +119,7 @@ func (jf *Jellyfin) _getReader(url string, params map[string]string) (io.Reader,
 	if err != nil || resp.StatusCode != 200 {
 		if resp.StatusCode == 401 && jf.authenticated {
 			jf.authenticated = false
-			_, authErr := jf.authenticate(jf.username, jf.password)
+			_, _, authErr := jf.authenticate(jf.username, jf.password)
 			if authErr == nil {
 				v1, v2, v3 := jf._getReader(url, params)
 				return v1, v2, v3
@@ -149,7 +150,7 @@ func (jf *Jellyfin) _post(url string, data map[string]interface{}, response bool
 	if err != nil || resp.StatusCode != 200 {
 		if resp.StatusCode == 401 && jf.authenticated {
 			jf.authenticated = false
-			_, authErr := jf.authenticate(jf.username, jf.password)
+			_, _, authErr := jf.authenticate(jf.username, jf.password)
 			if authErr == nil {
 				v1, v2, v3 := jf._post(url, data, response)
 				return v1, v2, v3

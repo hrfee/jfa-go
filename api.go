@@ -17,10 +17,15 @@ func (ctx *appContext) loadStrftime() {
 	return
 }
 
+func (ctx *appContext) prettyTime(dt time.Time) (date, time string) {
+	date, _ = strtime.Strftime(dt, ctx.datePattern)
+	time, _ = strtime.Strftime(dt, ctx.timePattern)
+	return
+}
+
 func (ctx *appContext) formatDatetime(dt time.Time) string {
-	date, _ := strtime.Strftime(dt, ctx.datePattern)
-	time, _ := strtime.Strftime(dt, ctx.timePattern)
-	return date + time
+	d, t := ctx.prettyTime(dt)
+	return d + " " + t
 }
 
 // https://stackoverflow.com/questions/36530251/time-since-with-months-and-years/36531443#36531443 THANKS
@@ -81,8 +86,18 @@ func (ctx *appContext) checkInvite(code string, used bool, username string) bool
 		if current_time.After(expiry) {
 			// NOTIFICATIONS
 			notify := data.Notify
-			if ctx.config.Section("notifications").Key("Enabled").MustBool(false) && len(notify) != 0 {
-				fmt.Println("Notification Check (IMPLEMENT!)", notify)
+			if ctx.config.Section("notifications").Key("enabled").MustBool(false) && len(notify) != 0 {
+				for address, settings := range notify {
+					if settings["notify-expiry"] {
+						if ctx.email.constructExpiry(invCode, data, ctx) != nil {
+							fmt.Println("failed expiry construct")
+						} else {
+							if ctx.email.send(address, ctx) != nil {
+								fmt.Println("failed expiry send")
+							}
+						}
+					}
+				}
 			}
 			changed = true
 			fmt.Println("Deleting:", invCode)
@@ -108,7 +123,6 @@ func (ctx *appContext) checkInvite(code string, used bool, username string) bool
 		}
 	}
 	if changed {
-		fmt.Println("CHECKINVITES")
 		ctx.storage.storeInvites()
 	}
 	return match
@@ -118,20 +132,21 @@ func (ctx *appContext) checkInvite(code string, used bool, username string) bool
 
 // POST
 type newUserReq struct {
-	username string `json:"username"`
-	password string `json:"password"`
-	email    string `json:"email"`
-	code     string `json:"code"`
+	Username string `json:"username"`
+	Password string `json:"password"`
+	Email    string `json:"email"`
+	Code     string `json:"code"`
 }
 
 func (ctx *appContext) NewUser(gc *gin.Context) {
 	var req newUserReq
 	gc.BindJSON(&req)
-	if !ctx.checkInvite(req.code, false, "") {
+	if !ctx.checkInvite(req.Code, false, "") {
 		gc.JSON(401, map[string]bool{"success": false})
 		gc.Abort()
+		return
 	}
-	validation := ctx.validator.validate(req.password)
+	validation := ctx.validator.validate(req.Password)
 	valid := true
 	for _, val := range validation {
 		if !val {
@@ -140,20 +155,38 @@ func (ctx *appContext) NewUser(gc *gin.Context) {
 	}
 	if !valid {
 		// 200 bcs idk what i did in js
+		fmt.Println("invalid")
 		gc.JSON(200, validation)
 		gc.Abort()
+		return
 	}
-	existingUser, _, _ := ctx.jf.userByName(req.username, false)
+	existingUser, _, _ := ctx.jf.userByName(req.Username, false)
 	if existingUser != nil {
-		respond(401, fmt.Sprintf("User already exists named %s", req.username), gc)
+		respond(401, fmt.Sprintf("User already exists named %s", req.Username), gc)
+		return
 	}
-	user, status, err := ctx.jf.newUser(req.username, req.password)
+	user, status, err := ctx.jf.newUser(req.Username, req.Password)
 	if !(status == 200 || status == 204) || err != nil {
 		respond(401, "Unknown error", gc)
+		return
 	}
-	ctx.checkInvite(req.code, true, req.username)
-	// HANDLE NOTIFICATIONS!
-	id := user["Id"].(string)
+	ctx.checkInvite(req.Code, true, req.Username)
+	invite := ctx.storage.invites[req.Code]
+	if ctx.config.Section("notifications").Key("enabled").MustBool(false) {
+		for address, settings := range invite.Notify {
+			if settings["notify-creation"] {
+				if ctx.email.constructCreated(req.Code, req.Username, req.Email, invite, ctx) != nil {
+					fmt.Println("created template failed")
+				} else if ctx.email.send(address, ctx) != nil {
+					fmt.Println("created send failed")
+				}
+			}
+		}
+	}
+	var id string
+	if user["Id"] != nil {
+		id = user["Id"].(string)
+	}
 	if len(ctx.storage.policy) != 0 {
 		status, err = ctx.jf.setPolicy(id, ctx.storage.policy)
 		if !(status == 200 || status == 204) {
@@ -167,7 +200,7 @@ func (ctx *appContext) NewUser(gc *gin.Context) {
 		}
 	}
 	if ctx.config.Section("password_resets").Key("enabled").MustBool(false) {
-		ctx.storage.emails[id] = req.email
+		ctx.storage.emails[id] = req.Email
 		ctx.storage.storeEmails()
 	}
 	gc.JSON(200, validation)
@@ -188,14 +221,12 @@ func (ctx *appContext) GenerateInvite(gc *gin.Context) {
 	ctx.storage.loadInvites()
 	gc.BindJSON(&req)
 	current_time := time.Now()
-	fmt.Println("current time:", current_time)
 	fmt.Println(req.Days, req.Hours, req.Minutes)
 	valid_till := current_time.AddDate(0, 0, req.Days)
 	valid_till = valid_till.Add(time.Hour*time.Duration(req.Hours) + time.Minute*time.Duration(req.Minutes))
-	fmt.Println("valid till:", valid_till)
 	invite_code, _ := uuid.NewRandom()
 	var invite Invite
-	invite.Created = ctx.formatDatetime(current_time)
+	invite.Created = current_time
 	if req.MultipleUses {
 		if req.NoLimit {
 			invite.NoLimit = true
@@ -207,8 +238,14 @@ func (ctx *appContext) GenerateInvite(gc *gin.Context) {
 	}
 	invite.ValidTill = valid_till
 	if req.Email != "" && ctx.config.Section("invite_emails").Key("enabled").MustBool(false) {
-		invite.Email = fmt.Sprintf("Failed to send to %s", req.Email)
-		// EMAIL SEND!
+		invite.Email = req.Email
+		if err := ctx.email.constructInvite(invite_code.String(), invite, ctx); err != nil {
+			fmt.Println("error sending:", err)
+			invite.Email = fmt.Sprintf("Failed to send to %s", req.Email)
+		} else if err := ctx.email.send(req.Email, ctx); err != nil {
+			fmt.Println("error sending:", err)
+			invite.Email = fmt.Sprintf("Failed to send to %s", req.Email)
+		}
 	}
 	ctx.storage.invites[invite_code.String()] = invite
 	fmt.Println("INVITES FROM API:", ctx.storage.invites)
@@ -233,7 +270,7 @@ func (ctx *appContext) GetInvites(gc *gin.Context) {
 		invite["days"] = days
 		invite["hours"] = hours
 		invite["minutes"] = minutes
-		invite["created"] = inv.Created
+		invite["created"] = ctx.formatDatetime(inv.Created)
 		if len(inv.UsedBy) != 0 {
 			invite["used-by"] = inv.UsedBy
 		}
@@ -251,7 +288,7 @@ func (ctx *appContext) GetInvites(gc *gin.Context) {
 			var address string
 			if ctx.config.Section("ui").Key("jellyfin_login").MustBool(false) {
 				ctx.storage.loadEmails()
-				address = ctx.storage.emails[gc.GetString("userId")].(string)
+				address = ctx.storage.emails[gc.GetString("jfId")].(string)
 			} else {
 				address = ctx.config.Section("ui").Key("email").String()
 			}
@@ -269,4 +306,59 @@ func (ctx *appContext) GetInvites(gc *gin.Context) {
 		"invites": invites,
 	}
 	gc.JSON(200, resp)
+}
+
+type notifySetting struct {
+	NotifyExpiry   bool `json:"notify-expiry"`
+	NotifyCreation bool `json:"notify-creation"`
+}
+
+func (ctx *appContext) SetNotify(gc *gin.Context) {
+	var req map[string]notifySetting
+	gc.BindJSON(&req)
+	changed := false
+	for code, settings := range req {
+		ctx.storage.loadInvites()
+		ctx.storage.loadEmails()
+		invite, ok := ctx.storage.invites[code]
+		if !ok {
+			gc.JSON(400, map[string]string{"error": "Invalid invite code"})
+			gc.Abort()
+			return
+		}
+		var address string
+		if ctx.config.Section("ui").Key("jellyfin_login").MustBool(false) {
+			var ok bool
+			address, ok = ctx.storage.emails[gc.GetString("jfId")].(string)
+			if !ok {
+				gc.JSON(500, map[string]string{"error": "Missing user email"})
+				gc.Abort()
+				return
+			}
+		} else {
+			address = ctx.config.Section("ui").Key("email").String()
+		}
+		if invite.Notify == nil {
+			invite.Notify = map[string]map[string]bool{}
+		}
+		if _, ok := invite.Notify[address]; !ok {
+			invite.Notify[address] = map[string]bool{}
+		} /*else {
+		if _, ok := invite.Notify[address]["notify-expiry"]; !ok {
+		*/
+		if invite.Notify[address]["notify-expiry"] != settings.NotifyExpiry {
+			invite.Notify[address]["notify-expiry"] = settings.NotifyExpiry
+			changed = true
+		}
+		if invite.Notify[address]["notify-creation"] != settings.NotifyCreation {
+			invite.Notify[address]["notify-creation"] = settings.NotifyCreation
+			changed = true
+		}
+		if changed {
+			ctx.storage.invites[code] = invite
+		}
+	}
+	if changed {
+		ctx.storage.storeInvites()
+	}
 }

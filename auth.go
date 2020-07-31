@@ -38,8 +38,10 @@ func (ctx *appContext) authenticate(gc *gin.Context) {
 	}
 	claims, ok := token.Claims.(jwt.MapClaims)
 	var userId uuid.UUID
+	var jfId string
 	if ok && token.Valid {
 		userId, _ = uuid.Parse(claims["id"].(string))
+		jfId = claims["jfid"].(string)
 	} else {
 		respond(401, "Unauthorized", gc)
 		return
@@ -56,7 +58,8 @@ func (ctx *appContext) authenticate(gc *gin.Context) {
 		respond(401, "Unauthorized", gc)
 		return
 	}
-	gc.Set("userId", userId)
+	gc.Set("jfId", jfId)
+	gc.Set("userId", userId.String())
 	gc.Next()
 }
 
@@ -76,6 +79,7 @@ func (ctx *appContext) GetToken(gc *gin.Context) {
 			userId = user.UserID
 		}
 	}
+	jfId := ""
 	if !match {
 		if !ctx.jellyfinLogin {
 			respond(401, "Unauthorized", gc)
@@ -84,18 +88,18 @@ func (ctx *appContext) GetToken(gc *gin.Context) {
 		// eventually, make authenticate return a user to avoid two calls.
 		var status int
 		var err error
-		if ctx.config.Section("ui").Key("admin_only").MustBool(true) {
-			var user map[string]interface{}
-			user, status, err = ctx.jf.userByName(creds[0], false)
-			if !user["Policy"].(map[string]interface{})["IsAdministrator"].(bool) || !(status == 200 || status == 204) || err != nil {
-				respond(401, "Unauthorized", gc)
-			}
-		}
-		status, err = ctx.authJf.authenticate(creds[0], creds[1])
+		var user map[string]interface{}
+		user, status, err = ctx.authJf.authenticate(creds[0], creds[1])
+		jfId = user["Id"].(string)
 		if status != 200 || err != nil {
 			respond(401, "Unauthorized", gc)
 			return
 		} else {
+			if ctx.config.Section("ui").Key("admin_only").MustBool(true) {
+				if !user["Policy"].(map[string]interface{})["IsAdministrator"].(bool) {
+					respond(401, "Unauthorized", gc)
+				}
+			}
 			newuser := User{}
 			newuser.UserID, _ = uuid.NewRandom()
 			userId = newuser.UserID
@@ -103,7 +107,7 @@ func (ctx *appContext) GetToken(gc *gin.Context) {
 			ctx.users = append(ctx.users, newuser)
 		}
 	}
-	token, err := CreateToken(userId)
+	token, err := CreateToken(userId, jfId)
 	if err != nil {
 		respond(500, "Error generating token", gc)
 	}
@@ -111,12 +115,14 @@ func (ctx *appContext) GetToken(gc *gin.Context) {
 	gc.JSON(200, resp)
 }
 
-func CreateToken(userId uuid.UUID) (string, error) {
+func CreateToken(userId uuid.UUID, jfId string) (string, error) {
 	claims := jwt.MapClaims{
 		"valid": true,
 		"id":    userId,
 		"exp":   time.Now().Add(time.Minute * 20).Unix(),
+		"jfid":  jfId,
 	}
+
 	tk := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	token, err := tk.SignedString([]byte(os.Getenv("JFA_SECRET")))
 	if err != nil {

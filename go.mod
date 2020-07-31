@@ -6,16 +6,21 @@ require (
 	github.com/astaxie/beego v1.12.2
 	github.com/beego/bee v1.12.0 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/emersion/go-sasl v0.0.0-20200509203442-7bfe0ed36a21
+	github.com/emersion/go-smtp v0.13.0
 	github.com/flosch/pongo2 v0.0.0-20200529170236-5abacdfa4915
 	github.com/gin-contrib/static v0.0.0-20191128031702-f81c604d8ac2
 	github.com/gin-gonic/gin v1.6.3
 	github.com/go-playground/validator/v10 v10.3.0 // indirect
+	github.com/gobuffalo/envy v1.9.0 // indirect
 	github.com/google/uuid v1.1.1
 	github.com/knz/strtime v0.0.0-20200318182718-be999391ffa9
 	github.com/labstack/echo/v4 v4.1.16
 	github.com/lestrrat-go/strftime v1.0.3
 	github.com/lib/pq v1.7.1 // indirect
 	github.com/lithammer/shortuuid/v3 v3.0.4 // indirect
+	github.com/mailgun/mailgun-go v2.0.0+incompatible
+	github.com/mailgun/mailgun-go/v4 v4.1.3
 	github.com/mattn/go-colorable v0.1.7 // indirect
 	github.com/mattn/go-runewidth v0.0.9 // indirect
 	github.com/mitchellh/mapstructure v1.3.3 // indirect

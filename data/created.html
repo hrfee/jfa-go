@@ -152,7 +152,7 @@
                     <td align="left" style="font-size:0px;padding:10px 25px;word-break:break-word;">
                       <div style="font-family:Noto Sans, Helvetica, Arial, sans-serif;font-size:16px;line-height:1;text-align:left;color:rgba(255,255,255,0.8);">
                         <h3>User Created</h3>
-                        <p>A user was created using code {{ code }}.</p>
+                        <p>A user was created using code {{ .code }}.</p>
                       </div>
                     </td>
                   </tr>
@@ -165,9 +165,9 @@
                           <th>Time</th>
                         </tr>
                         <tr style="font-style: italic; text-align: left; color: rgb(153,153,153);">
-                          <th>{{ username }}</th>
-                          <th>{{ address }}</th>
-                          <th>{{ time }}</th>
+                          <th>{{ .username }}</th>
+                          <th>{{ .address }}</th>
+                          <th>{{ .time }}</th>
                       </table>
                     </td>
                   </tr>

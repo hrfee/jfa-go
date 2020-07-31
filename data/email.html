@@ -151,10 +151,10 @@
                   <tr>
                     <td align="left" style="font-size:0px;padding:10px 25px;word-break:break-word;">
                       <div style="font-family:Noto Sans, Helvetica, Arial, sans-serif;font-size:16px;line-height:1;text-align:left;color:rgba(255,255,255,0.8);">
-                        <p>Hi {{ username }},</p>
+                        <p>Hi {{ .username }},</p>
                         <p> Someone has recently requested a password reset on Jellyfin.</p>
                         <p>If this was you, enter the below pin into the prompt.</p>
-                        <p>The code will expire on {{ expiry_date }}, at {{ expiry_time }} UTC, which is in {{ expires_in }}.</p>
+                        <p>The code will expire on {{ .expiry_date }}, at {{ .expiry_time }} UTC, which is in {{ .expires_in }}.</p>
                         <p>If this wasn't you, please ignore this email.</p>
                       </div>
                     </td>
@@ -165,7 +165,7 @@
                         <tr>
                           <td align="center" bgcolor="rgb(0,164,220)" role="presentation" style="border:none;border-radius:3px;cursor:auto;mso-padding-alt:10px 25px;background:rgb(0,164,220);" valign="middle">
                             <p style="display:inline-block;background:rgb(0,164,220);color:rgba(255,255,255,0.87);font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:13px;font-weight:normal;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:10px 25px;mso-padding-alt:0px;border-radius:3px;">
-                              {{ pin }}
+                              {{ .pin }}
                             </p>
                           </td>
                         </tr>
@@ -215,7 +215,7 @@
                 <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
                   <tr>
                     <td align="left" style="font-size:0px;padding:10px 25px;word-break:break-word;">
-                      <div style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:14px;font-style:italic;line-height:1;text-align:left;color:rgb(153,153,153);">{{ message }}</div>
+                      <div style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:14px;font-style:italic;line-height:1;text-align:left;color:rgb(153,153,153);">{{ .message }}</div>
                     </td>
                   </tr>
                 </table>

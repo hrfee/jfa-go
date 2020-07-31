@@ -34,6 +34,7 @@ type appContext struct {
 	timePattern   string
 	storage       Storage
 	validator     Validator
+	email         Emailer
 }
 
 func GenerateSecret(length int) (string, error) {
@@ -126,20 +127,26 @@ func main() {
 	}
 
 	if !ctx.config.Section("password_validation").Key("enabled").MustBool(false) {
-		for key, _ := range validatorConf {
+		for key := range validatorConf {
 			validatorConf[key] = 0
 		}
 	}
 	ctx.validator.init(validatorConf)
 
+	ctx.email.init(ctx)
+
 	router := gin.Default()
 	router.Use(static.Serve("/", static.LocalFile("data/static", false)))
+	router.Use(static.Serve("/invite/", static.LocalFile("data/static", false)))
 	router.LoadHTMLGlob("data/templates/*")
 	router.GET("/", ctx.AdminPage)
 	router.GET("/getToken", ctx.GetToken)
+	router.POST("/newUser", ctx.NewUser)
+	router.GET("/invite/:invCode", ctx.InviteProxy)
 	api := router.Group("/", ctx.webAuth())
 	api.POST("/generateInvite", ctx.GenerateInvite)
 	api.GET("/getInvites", ctx.GetInvites)
+	api.POST("/setNotify", ctx.SetNotify)
 
 	router.Run(":8080")
 }
