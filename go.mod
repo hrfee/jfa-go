@@ -18,7 +18,7 @@ require (
 	github.com/labstack/echo/v4 v4.1.16
 	github.com/lestrrat-go/strftime v1.0.3
 	github.com/lib/pq v1.7.1 // indirect
-	github.com/lithammer/shortuuid/v3 v3.0.4 // indirect
+	github.com/lithammer/shortuuid/v3 v3.0.4
 	github.com/mailgun/mailgun-go v2.0.0+incompatible
 	github.com/mailgun/mailgun-go/v4 v4.1.3
 	github.com/mattn/go-colorable v0.1.7 // indirect

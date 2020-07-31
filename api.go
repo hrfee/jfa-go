@@ -3,8 +3,9 @@ package main
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"github.com/knz/strtime"
+	"github.com/lithammer/shortuuid/v3"
+	"gopkg.in/ini.v1"
 	"time"
 )
 
@@ -82,25 +83,24 @@ func (ctx *appContext) checkInvite(code string, used bool, username string) bool
 	changed := false
 	for invCode, data := range ctx.storage.invites {
 		expiry := data.ValidTill
-		fmt.Println("Expiry:", expiry)
 		if current_time.After(expiry) {
-			// NOTIFICATIONS
+			ctx.debug.Printf("Housekeeping: Deleting old invite %s", code)
 			notify := data.Notify
 			if ctx.config.Section("notifications").Key("enabled").MustBool(false) && len(notify) != 0 {
+				ctx.debug.Printf("%s: Expiry notification", code)
 				for address, settings := range notify {
 					if settings["notify-expiry"] {
 						if ctx.email.constructExpiry(invCode, data, ctx) != nil {
-							fmt.Println("failed expiry construct")
+							ctx.err.Printf("%s: Failed to construct expiry notification", code)
+						} else if ctx.email.send(address, ctx) != nil {
+							ctx.err.Printf("%s: Failed to send expiry notification", code)
 						} else {
-							if ctx.email.send(address, ctx) != nil {
-								fmt.Println("failed expiry send")
-							}
+							ctx.info.Printf("Sent expiry notification to %s", address)
 						}
 					}
 				}
 			}
 			changed = true
-			fmt.Println("Deleting:", invCode)
 			delete(ctx.storage.invites, invCode)
 		} else if invCode == code {
 			match = true
@@ -130,7 +130,6 @@ func (ctx *appContext) checkInvite(code string, used bool, username string) bool
 
 // Routes from now on!
 
-// POST
 type newUserReq struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
@@ -141,7 +140,9 @@ type newUserReq struct {
 func (ctx *appContext) NewUser(gc *gin.Context) {
 	var req newUserReq
 	gc.BindJSON(&req)
+	ctx.debug.Printf("%s: New user attempt", req.Code)
 	if !ctx.checkInvite(req.Code, false, "") {
+		ctx.info.Printf("%s New user failed: invalid code", req.Code)
 		gc.JSON(401, map[string]bool{"success": false})
 		gc.Abort()
 		return
@@ -155,18 +156,21 @@ func (ctx *appContext) NewUser(gc *gin.Context) {
 	}
 	if !valid {
 		// 200 bcs idk what i did in js
-		fmt.Println("invalid")
+		ctx.info.Printf("%s New user failed: Invalid password", req.Code)
 		gc.JSON(200, validation)
 		gc.Abort()
 		return
 	}
 	existingUser, _, _ := ctx.jf.userByName(req.Username, false)
 	if existingUser != nil {
-		respond(401, fmt.Sprintf("User already exists named %s", req.Username), gc)
+		msg := fmt.Sprintf("User already exists named %s", req.Username)
+		ctx.info.Printf("%s New user failed: %s", req.Code, msg)
+		respond(401, msg, gc)
 		return
 	}
 	user, status, err := ctx.jf.newUser(req.Username, req.Password)
 	if !(status == 200 || status == 204) || err != nil {
+		ctx.err.Printf("%s New user failed: Jellyfin responded with %d", req.Code, status)
 		respond(401, "Unknown error", gc)
 		return
 	}
@@ -176,9 +180,13 @@ func (ctx *appContext) NewUser(gc *gin.Context) {
 		for address, settings := range invite.Notify {
 			if settings["notify-creation"] {
 				if ctx.email.constructCreated(req.Code, req.Username, req.Email, invite, ctx) != nil {
-					fmt.Println("created template failed")
+					ctx.err.Printf("%s: Failed to construct user creation notification", req.Code)
+					ctx.debug.Printf("%s: Error: %s", req.Code, err)
 				} else if ctx.email.send(address, ctx) != nil {
-					fmt.Println("created send failed")
+					ctx.err.Printf("%s: Failed to send user creation notification", req.Code)
+					ctx.debug.Printf("%s: Error: %s", req.Code, err)
+				} else {
+					ctx.info.Printf("%s: Sent user creation notification to %s", req.Code, address)
 				}
 			}
 		}
@@ -190,13 +198,15 @@ func (ctx *appContext) NewUser(gc *gin.Context) {
 	if len(ctx.storage.policy) != 0 {
 		status, err = ctx.jf.setPolicy(id, ctx.storage.policy)
 		if !(status == 200 || status == 204) {
-			fmt.Printf("Failed to set user policy")
+			ctx.err.Printf("%s: Failed to set user policy: Code %d", req.Code, status)
 		}
 	}
 	if len(ctx.storage.configuration) != 0 && len(ctx.storage.displayprefs) != 0 {
 		status, err = ctx.jf.setConfiguration(id, ctx.storage.configuration)
-		if (status == 200 || status == 204) && err != nil {
+		if (status == 200 || status == 204) && err == nil {
 			status, err = ctx.jf.setDisplayPreferences(id, ctx.storage.displayprefs)
+		} else {
+			ctx.err.Printf("%s: Failed to set configuration template: Code %d", req.Code, status)
 		}
 	}
 	if ctx.config.Section("password_resets").Key("enabled").MustBool(false) {
@@ -213,18 +223,18 @@ type generateInviteReq struct {
 	Email         string `json:"email"`
 	MultipleUses  bool   `json:"multiple-uses"`
 	NoLimit       bool   `json:"no-limit"`
-	RemainingUses int    `json:remaining-uses"`
+	RemainingUses int    `json:"remaining-uses"`
 }
 
 func (ctx *appContext) GenerateInvite(gc *gin.Context) {
 	var req generateInviteReq
+	ctx.debug.Println("Generating new invite")
 	ctx.storage.loadInvites()
 	gc.BindJSON(&req)
 	current_time := time.Now()
-	fmt.Println(req.Days, req.Hours, req.Minutes)
 	valid_till := current_time.AddDate(0, 0, req.Days)
 	valid_till = valid_till.Add(time.Hour*time.Duration(req.Hours) + time.Minute*time.Duration(req.Minutes))
-	invite_code, _ := uuid.NewRandom()
+	invite_code := shortuuid.New()
 	var invite Invite
 	invite.Created = current_time
 	if req.MultipleUses {
@@ -238,21 +248,26 @@ func (ctx *appContext) GenerateInvite(gc *gin.Context) {
 	}
 	invite.ValidTill = valid_till
 	if req.Email != "" && ctx.config.Section("invite_emails").Key("enabled").MustBool(false) {
+		ctx.debug.Printf("%s: Sending invite email", invite_code)
 		invite.Email = req.Email
-		if err := ctx.email.constructInvite(invite_code.String(), invite, ctx); err != nil {
-			fmt.Println("error sending:", err)
+		if err := ctx.email.constructInvite(invite_code, invite, ctx); err != nil {
 			invite.Email = fmt.Sprintf("Failed to send to %s", req.Email)
+			ctx.err.Printf("%s: Failed to construct invite email", invite_code)
+			ctx.debug.Printf("%s: Error: %s", invite_code, err)
 		} else if err := ctx.email.send(req.Email, ctx); err != nil {
-			fmt.Println("error sending:", err)
 			invite.Email = fmt.Sprintf("Failed to send to %s", req.Email)
+			ctx.err.Printf("%s: %s", invite_code, invite.Email)
+			ctx.debug.Printf("%s: Error: %s", invite_code, err)
+		} else {
+			ctx.info.Printf("%s: Sent invite email to %s", invite_code, req.Email)
 		}
 	}
-	ctx.storage.invites[invite_code.String()] = invite
-	fmt.Println("INVITES FROM API:", ctx.storage.invites)
+	ctx.storage.invites[invite_code] = invite
 	ctx.storage.storeInvites()
-	fmt.Println("New inv")
 	gc.JSON(200, map[string]bool{"success": true})
 }
+
+// logged up to here!
 
 func (ctx *appContext) GetInvites(gc *gin.Context) {
 	current_time := time.Now()
@@ -493,4 +508,21 @@ func (ctx *appContext) GetConfig(gc *gin.Context) {
 		}
 	}
 	gc.JSON(200, resp)
+}
+
+func (ctx *appContext) ModifyConfig(gc *gin.Context) {
+	var req map[string]interface{}
+	gc.BindJSON(&req)
+	tempConfig, _ := ini.Load(ctx.config_path)
+	for section, settings := range req {
+		_, err := tempConfig.GetSection(section)
+		if section != "restart-program" && err == nil {
+			for setting, value := range settings.(map[string]interface{}) {
+				tempConfig.Section(section).Key(setting).SetValue(value.(string))
+			}
+		}
+	}
+	tempConfig.SaveTo(ctx.config_path)
+	gc.JSON(200, map[string]bool{"success": true})
+	ctx.loadConfig()
 }

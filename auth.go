@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
+	"github.com/lithammer/shortuuid/v3"
 	"os"
 	"strings"
 	"time"
@@ -37,10 +37,10 @@ func (ctx *appContext) authenticate(gc *gin.Context) {
 		return
 	}
 	claims, ok := token.Claims.(jwt.MapClaims)
-	var userId uuid.UUID
+	var userId string
 	var jfId string
 	if ok && token.Valid {
-		userId, _ = uuid.Parse(claims["id"].(string))
+		userId = claims["id"].(string)
 		jfId = claims["jfid"].(string)
 	} else {
 		respond(401, "Unauthorized", gc)
@@ -59,7 +59,7 @@ func (ctx *appContext) authenticate(gc *gin.Context) {
 		return
 	}
 	gc.Set("jfId", jfId)
-	gc.Set("userId", userId.String())
+	gc.Set("userId", userId)
 	gc.Next()
 }
 
@@ -72,7 +72,7 @@ func (ctx *appContext) GetToken(gc *gin.Context) {
 	auth, _ := base64.StdEncoding.DecodeString(header[1])
 	creds := strings.SplitN(string(auth), ":", 2)
 	match := false
-	var userId uuid.UUID
+	var userId string
 	for _, user := range ctx.users {
 		if user.Username == creds[0] && user.Password == creds[1] {
 			match = true
@@ -101,7 +101,7 @@ func (ctx *appContext) GetToken(gc *gin.Context) {
 				}
 			}
 			newuser := User{}
-			newuser.UserID, _ = uuid.NewRandom()
+			newuser.UserID = shortuuid.New()
 			userId = newuser.UserID
 			// uuid, nothing else identifiable!
 			ctx.users = append(ctx.users, newuser)
@@ -115,7 +115,7 @@ func (ctx *appContext) GetToken(gc *gin.Context) {
 	gc.JSON(200, resp)
 }
 
-func CreateToken(userId uuid.UUID, jfId string) (string, error) {
+func CreateToken(userId string, jfId string) (string, error) {
 	claims := jwt.MapClaims{
 		"valid": true,
 		"id":    userId,
