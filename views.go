@@ -20,7 +20,9 @@ func (ctx *appContext) AdminPage(gc *gin.Context) {
 
 func (ctx *appContext) InviteProxy(gc *gin.Context) {
 	code := gc.Param("invCode")
-	if ctx.checkInvite(code, false, "") {
+	/* Don't actually check if the invite is valid, just if it exists, just so the page loads quicker. Invite is actually checked on submit anyway. */
+	// if ctx.checkInvite(code, false, "") {
+	if _, ok := ctx.storage.invites[code]; ok {
 		email := ctx.storage.invites[code].Email
 		gc.HTML(http.StatusOK, "form.html", gin.H{
 			"bs5":            ctx.config.Section("ui").Key("bs5").MustBool(false),
@@ -35,6 +37,18 @@ func (ctx *appContext) InviteProxy(gc *gin.Context) {
 			"username":       !ctx.config.Section("email").Key("no_username").MustBool(false),
 		})
 	} else {
-		respond(401, "Invalid code", gc)
+		gc.HTML(404, "invalidCode.html", gin.H{
+			"bs5":            ctx.config.Section("ui").Key("bs5").MustBool(false),
+			"cssFile":        ctx.cssFile,
+			"contactMessage": ctx.config.Section("ui").Key("contac_message").String(),
+		})
 	}
+}
+
+func (ctx *appContext) NoRouteHandler(gc *gin.Context) {
+	gc.HTML(404, "404.html", gin.H{
+		"bs5":            ctx.config.Section("ui").Key("bs5").MustBool(false),
+		"cssFile":        ctx.cssFile,
+		"contactMessage": ctx.config.Section("ui").Key("contact_message").String(),
+	})
 }

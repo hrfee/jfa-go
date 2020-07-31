@@ -40,7 +40,6 @@ func (vd *Validator) validate(password string) map[string]bool {
 			}
 		}
 	}
-	fmt.Println(count)
 	results := map[string]bool{}
 	for criterion, num := range count {
 		if num < vd.criteria[criterion] {
@@ -49,7 +48,6 @@ func (vd *Validator) validate(password string) map[string]bool {
 			results[criterion] = true
 		}
 	}
-	fmt.Println(results)
 	return results
 }
 

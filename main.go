@@ -143,6 +143,7 @@ func main() {
 	router.GET("/getToken", ctx.GetToken)
 	router.POST("/newUser", ctx.NewUser)
 	router.GET("/invite/:invCode", ctx.InviteProxy)
+	router.NoRoute(ctx.NoRouteHandler)
 	api := router.Group("/", ctx.webAuth())
 	api.POST("/generateInvite", ctx.GenerateInvite)
 	api.GET("/getInvites", ctx.GetInvites)
