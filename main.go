@@ -70,6 +70,31 @@ func GenerateSecret(length int) (string, error) {
 // 	// bg.Ctx.WriteString(out)
 // }
 
+func setGinLogger(router *gin.Engine, debugMode bool) {
+	if debugMode {
+		router.Use(gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
+			return fmt.Sprintf("[GIN/DEBUG] %s: %s(%s) => %d in %s; Errors: %s\n",
+				param.TimeStamp.Format("15:04:05"),
+				param.Method,
+				param.Path,
+				param.StatusCode,
+				param.Latency,
+				param.ErrorMessage,
+			)
+		}))
+		gin.SetMode(gin.DebugMode)
+	} else {
+		router.Use(gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
+			return fmt.Sprintf("[GIN] %s(%s) => %d\n",
+				param.Method,
+				param.Path,
+				param.StatusCode,
+			)
+		}))
+		gin.SetMode(gin.ReleaseMode)
+	}
+}
+
 func main() {
 	ctx := new(appContext)
 	ctx.config_path = "/home/hrfee/.jf-accounts/config.ini"
@@ -79,12 +104,13 @@ func main() {
 		ctx.err.Fatalf("Failed to load config file \"%s\"", ctx.config_path)
 	}
 
-	ctx.info = log.New(os.Stdout, "INFO: ", log.Ltime)
-	ctx.err = log.New(os.Stdout, "INFO: ", log.Ltime|log.Lshortfile)
-	if ctx.config.Section("ui").Key("debug").MustBool(true) {
-		ctx.debug = log.New(os.Stdout, "DEBUG: ", log.Ltime|log.Lshortfile)
+	ctx.info = log.New(os.Stdout, "[INFO] ", log.Ltime)
+	ctx.err = log.New(os.Stdout, "[ERROR] ", log.Ltime|log.Lshortfile)
+	debugMode := ctx.config.Section("ui").Key("debug").MustBool(true)
+	if debugMode {
+		ctx.debug = log.New(os.Stdout, "[DEBUG] ", log.Ltime|log.Lshortfile)
 	} else {
-		ctx.debug = log.New(nil, "", 0)
+		ctx.debug = log.New(ioutil.Discard, "", 0)
 	}
 
 	ctx.debug.Printf("Loaded config file \"%s\"", ctx.config_path)
@@ -167,8 +193,12 @@ func main() {
 
 	ctx.email.init(ctx)
 
-	ctx.debug.Println("Loading routes")
-	router := gin.Default()
+	ctx.info.Println("Loading routes")
+	router := gin.New()
+
+	setGinLogger(router, debugMode)
+
+	router.Use(gin.Recovery())
 	router.Use(static.Serve("/", static.LocalFile("data/static", false)))
 	router.Use(static.Serve("/invite/", static.LocalFile("data/static", false)))
 	router.LoadHTMLGlob("data/templates/*")
@@ -188,5 +218,6 @@ func main() {
 	api.GET("/getConfig", ctx.GetConfig)
 	api.POST("/modifyConfig", ctx.ModifyConfig)
 	addr := fmt.Sprintf("%s:%d", ctx.config.Section("ui").Key("host").String(), ctx.config.Section("ui").Key("port").MustInt(8056))
+	ctx.info.Printf("Starting router @ %s", addr)
 	router.Run(addr)
 }
