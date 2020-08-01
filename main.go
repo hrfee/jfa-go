@@ -104,7 +104,6 @@ func main() {
 	port := flag.Int("port", 0, "alternate port to host web ui on.")
 
 	flag.Parse()
-	fmt.Println(*dataPath, *configPath, *host, *port)
 	if ctx.config_path == *configPath && ctx.data_path != *dataPath {
 		ctx.config_path = filepath.Join(*dataPath, "config.ini")
 	} else {

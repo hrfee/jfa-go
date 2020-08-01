@@ -8,3 +8,4 @@ data/config-base.json
 data/config-default.ini
 data/*.html
 data/*.txt
+dist/*
