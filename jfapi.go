@@ -82,10 +82,18 @@ func (jf *Jellyfin) authenticate(username, password string) (map[string]interfac
 	jf.loginParams = map[string]string{
 		"Username": username,
 		"Pw":       password,
+		"Password": password,
 	}
-	loginParams, _ := json.Marshal(jf.loginParams)
-	url := fmt.Sprintf("%s/emby/Users/AuthenticateByName", jf.server)
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(loginParams))
+	buffer := &bytes.Buffer{}
+	encoder := json.NewEncoder(buffer)
+	encoder.SetEscapeHTML(false)
+	err := encoder.Encode(jf.loginParams)
+	if err != nil {
+		return nil, 0, err
+	}
+	// loginParams, _ := json.Marshal(jf.loginParams)
+	url := fmt.Sprintf("%s/Users/authenticatebyname", jf.server)
+	req, err := http.NewRequest("POST", url, buffer)
 	defer jf.timeoutHandler()
 	if err != nil {
 		return nil, 0, err

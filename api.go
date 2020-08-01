@@ -6,6 +6,9 @@ import (
 	"github.com/knz/strtime"
 	"github.com/lithammer/shortuuid/v3"
 	"gopkg.in/ini.v1"
+	"os"
+	//"os/exec"
+	"syscall"
 	"time"
 )
 
@@ -572,5 +575,60 @@ func (ctx *appContext) ModifyConfig(gc *gin.Context) {
 	tempConfig.SaveTo(ctx.config_path)
 	ctx.debug.Println("Config saved")
 	gc.JSON(200, map[string]bool{"success": true})
+	if req["restart-program"].(bool) {
+		ctx.info.Println("Restarting...")
+		err := Restart()
+		if err != nil {
+			ctx.err.Printf("Couldn't restart, try restarting manually. (%s)", err)
+		}
+	}
 	ctx.loadConfig()
+}
+
+// func Restart() error {
+// 	defer func() {
+// 		if r := recover(); r != nil {
+// 			os.Exit(0)
+// 		}
+// 	}()
+// 	cwd, err := os.Getwd()
+// 	if err != nil {
+// 		return err
+// 	}
+// 	args := os.Args
+// 	// for _, key := range args {
+// 	// 	fmt.Println(key)
+// 	// }
+// 	cmd := exec.Command(args[0], args[1:]...)
+// 	cmd.Stdout = os.Stdout
+// 	cmd.Stderr = os.Stderr
+// 	cmd.Dir = cwd
+// 	err = cmd.Start()
+// 	if err != nil {
+// 		return err
+// 	}
+// 	// cmd.Process.Release()
+// 	panic(fmt.Errorf("restarting"))
+// }
+
+func Restart() error {
+	defer func() {
+		if r := recover(); r != nil {
+			os.Exit(0)
+		}
+	}()
+	args := os.Args
+	// After a single restart, args[0] gets messed up and isnt the real executable.
+	// JFA_DEEP tells the new process its a child, and JFA_EXEC is the real executable
+	if os.Getenv("JFA_DEEP") == "" {
+		os.Setenv("JFA_DEEP", "1")
+		os.Setenv("JFA_EXEC", args[0])
+	}
+	env := os.Environ()
+	fmt.Printf("EXECUTABLE: %s\n", os.Getenv("JFA_EXEC"))
+	err := syscall.Exec(os.Getenv("JFA_EXEC"), []string{""}, env)
+	if err != nil {
+		return err
+	}
+	panic(fmt.Errorf("restarting"))
 }

@@ -21,16 +21,19 @@ function checkEmailRadio() {
         document.getElementById('emailCommonArea').style.display = '';
         document.getElementById('emailSMTPArea').style.display = '';
         document.getElementById('emailMailgunArea').style.display = 'none';
+        document.getElementById('notificationsEnabled').checked = true;
     } else if (document.getElementById('emailMailgunRadio').checked) {
         document.getElementById('emailCommonArea').style.display = '';
         document.getElementById('emailSMTPArea').style.display = 'none';
         document.getElementById('emailMailgunArea').style.display = '';
+        document.getElementById('notificationsEnabled').checked = true;
     } else if (document.getElementById('emailDisabledRadio').checked) {
         document.getElementById('emailCommonArea').style.display = 'none';
         document.getElementById('emailSMTPArea').style.display = 'none';
         document.getElementById('emailMailgunArea').style.display = 'none';
         document.getElementById('emailNextButton').href = '#page-8';
         document.getElementById('valBackButton').href = '#page-4';
+        document.getElementById('notificationsEnabled').checked = false;
     };
 };
 var emailRadios = ['emailDisabledRadio', 'emailSMTPRadio', 'emailMailgunRadio'];
@@ -165,6 +168,7 @@ document.getElementById('submitButton').onclick = function() {
     if (document.getElementById('emailDisabledRadio').checked) {
         config['password_resets']['enabled'] = 'false';
         config['invite_emails']['enabled'] = 'false';
+        config['notifications']['enabled'] = 'false';
     } else {
         if (document.getElementById('emailSMTPRadio').checked) {
             if (document.getElementById('emailSSL_TLS').checked) {
@@ -226,6 +230,7 @@ document.getElementById('submitButton').onclick = function() {
     config['ui']['help_message'] = document.getElementById('msgHelp').value;
     config['ui']['success_message'] = document.getElementById('msgSuccess').value;
     // Send it
+    config["restart-program"] = true;
     var req = new XMLHttpRequest();
     req.open("POST", "/modifyConfig", true);
     req.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
