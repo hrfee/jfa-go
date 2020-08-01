@@ -267,9 +267,8 @@ func (ctx *appContext) GenerateInvite(gc *gin.Context) {
 	gc.JSON(200, map[string]bool{"success": true})
 }
 
-// logged up to here!
-
 func (ctx *appContext) GetInvites(gc *gin.Context) {
+	ctx.debug.Println("Invites requested")
 	current_time := time.Now()
 	// checking one checks all of them
 	ctx.storage.loadInvites()
@@ -333,10 +332,12 @@ func (ctx *appContext) SetNotify(gc *gin.Context) {
 	gc.BindJSON(&req)
 	changed := false
 	for code, settings := range req {
+		ctx.debug.Printf("%s: Notification settings change requested", code)
 		ctx.storage.loadInvites()
 		ctx.storage.loadEmails()
 		invite, ok := ctx.storage.invites[code]
 		if !ok {
+			ctx.err.Printf("%s Notification setting change failed: Invalid code", code)
 			gc.JSON(400, map[string]string{"error": "Invalid invite code"})
 			gc.Abort()
 			return
@@ -346,6 +347,8 @@ func (ctx *appContext) SetNotify(gc *gin.Context) {
 			var ok bool
 			address, ok = ctx.storage.emails[gc.GetString("jfId")].(string)
 			if !ok {
+				ctx.err.Printf("%s: Couldn't find email address. Make sure it's set", code)
+				ctx.debug.Printf("%s: User ID \"%s\"", code, gc.GetString("jfId"))
 				gc.JSON(500, map[string]string{"error": "Missing user email"})
 				gc.Abort()
 				return
@@ -363,10 +366,12 @@ func (ctx *appContext) SetNotify(gc *gin.Context) {
 		*/
 		if invite.Notify[address]["notify-expiry"] != settings.NotifyExpiry {
 			invite.Notify[address]["notify-expiry"] = settings.NotifyExpiry
+			ctx.debug.Printf("%s: Set \"notify-expiry\" to %t for %s", code, settings.NotifyExpiry, address)
 			changed = true
 		}
 		if invite.Notify[address]["notify-creation"] != settings.NotifyCreation {
 			invite.Notify[address]["notify-creation"] = settings.NotifyCreation
+			ctx.debug.Printf("%s: Set \"notify-creation\" to %t for %s", code, settings.NotifyExpiry, address)
 			changed = true
 		}
 		if changed {
@@ -385,17 +390,17 @@ type deleteReq struct {
 func (ctx *appContext) DeleteInvite(gc *gin.Context) {
 	var req deleteReq
 	gc.BindJSON(&req)
+	ctx.debug.Printf("%s: Deletion requested", req.Code)
 	var ok bool
-	fmt.Println(req.Code)
-	fmt.Println(ctx.storage.invites[req.Code])
 	_, ok = ctx.storage.invites[req.Code]
 	if ok {
-		fmt.Println("deleting invite")
 		delete(ctx.storage.invites, req.Code)
 		ctx.storage.storeInvites()
+		ctx.info.Printf("%s: Invite deleted", req.Code)
 		gc.JSON(200, map[string]bool{"success": true})
 		return
 	}
+	ctx.err.Printf("%s: Deletion failed: Invalid code", req.Code)
 	respond(401, "Code doesn't exist", gc)
 }
 
@@ -409,10 +414,13 @@ type respUser struct {
 }
 
 func (ctx *appContext) GetUsers(gc *gin.Context) {
+	ctx.debug.Println("Users requested")
 	var resp userResp
 	resp.UserList = []respUser{}
 	users, status, err := ctx.jf.getUsers(false)
 	if !(status == 200 || status == 204) || err != nil {
+		ctx.err.Printf("Failed to get users from Jellyfin: Code %d", status)
+		ctx.debug.Printf("Error: %s", err)
 		respond(500, "Couldn't get users", gc)
 		return
 	}
@@ -430,8 +438,11 @@ func (ctx *appContext) GetUsers(gc *gin.Context) {
 func (ctx *appContext) ModifyEmails(gc *gin.Context) {
 	var req map[string]string
 	gc.BindJSON(&req)
+	ctx.debug.Println("Email modification requested")
 	users, status, err := ctx.jf.getUsers(false)
 	if !(status == 200 || status == 204) || err != nil {
+		ctx.err.Printf("Failed to get users from Jellyfin: Code %d", status)
+		ctx.debug.Printf("Error: %s", err)
 		respond(500, "Couldn't get users", gc)
 		return
 	}
@@ -441,6 +452,7 @@ func (ctx *appContext) ModifyEmails(gc *gin.Context) {
 		}
 	}
 	ctx.storage.storeEmails()
+	ctx.info.Println("Email list modified")
 	gc.JSON(200, map[string]bool{"success": true})
 }
 
@@ -452,8 +464,11 @@ type defaultsReq struct {
 func (ctx *appContext) SetDefaults(gc *gin.Context) {
 	var req defaultsReq
 	gc.BindJSON(&req)
+	ctx.info.Printf("Getting user defaults from \"%s\"", req.Username)
 	user, status, err := ctx.jf.userByName(req.Username, false)
 	if !(status == 200 || status == 204) || err != nil {
+		ctx.err.Printf("Failed to get user from Jellyfin: Code %d", status)
+		ctx.debug.Printf("Error: %s", err)
 		respond(500, "Couldn't get user", gc)
 		return
 	}
@@ -461,23 +476,29 @@ func (ctx *appContext) SetDefaults(gc *gin.Context) {
 	policy := user["Policy"].(map[string]interface{})
 	ctx.storage.policy = policy
 	ctx.storage.storePolicy()
+	ctx.debug.Println("User policy template stored")
 	if req.Homescreen {
 		configuration := user["Configuration"].(map[string]interface{})
 		var displayprefs map[string]interface{}
 		displayprefs, status, err = ctx.jf.getDisplayPreferences(userId)
 		if !(status == 200 || status == 204) || err != nil {
+			ctx.err.Printf("Failed to get DisplayPrefs: Code %d", status)
+			ctx.debug.Printf("Error: %s", err)
 			respond(500, "Couldn't get displayprefs", gc)
 			return
 		}
 		ctx.storage.configuration = configuration
 		ctx.storage.displayprefs = displayprefs
 		ctx.storage.storeConfiguration()
+		ctx.debug.Println("Configuration template stored")
 		ctx.storage.storeDisplayprefs()
+		ctx.debug.Println("DisplayPrefs template stored")
 	}
 	gc.JSON(200, map[string]bool{"success": true})
 }
 
 func (ctx *appContext) GetConfig(gc *gin.Context) {
+	ctx.info.Println("Config requested")
 	resp := map[string]interface{}{}
 	for section, settings := range ctx.configBase {
 		if section == "order" {
@@ -490,7 +511,6 @@ func (ctx *appContext) GetConfig(gc *gin.Context) {
 				} else {
 					resp[section].(map[string]interface{})[key] = values.(map[string]interface{})
 					if key != "meta" {
-						fmt.Println(resp[section].(map[string]interface{})[key].(map[string]interface{}))
 						dataType := resp[section].(map[string]interface{})[key].(map[string]interface{})["type"].(string)
 						configKey := ctx.config.Section(section).Key(key)
 						if dataType == "number" {
@@ -511,6 +531,7 @@ func (ctx *appContext) GetConfig(gc *gin.Context) {
 }
 
 func (ctx *appContext) ModifyConfig(gc *gin.Context) {
+	ctx.info.Println("Config modification requested")
 	var req map[string]interface{}
 	gc.BindJSON(&req)
 	tempConfig, _ := ini.Load(ctx.config_path)
@@ -523,6 +544,7 @@ func (ctx *appContext) ModifyConfig(gc *gin.Context) {
 		}
 	}
 	tempConfig.SaveTo(ctx.config_path)
+	ctx.debug.Println("Config saved")
 	gc.JSON(200, map[string]bool{"success": true})
 	ctx.loadConfig()
 }
