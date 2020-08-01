@@ -76,12 +76,11 @@ func timeDiff(a, b time.Time) (year, month, day, hour, min, sec int) {
 	return
 }
 
-func (ctx *appContext) checkInvite(code string, used bool, username string) bool {
+func (ctx *appContext) checkInvites() {
 	current_time := time.Now()
 	ctx.storage.loadInvites()
-	match := false
 	changed := false
-	for invCode, data := range ctx.storage.invites {
+	for code, data := range ctx.storage.invites {
 		expiry := data.ValidTill
 		if current_time.After(expiry) {
 			ctx.debug.Printf("Housekeeping: Deleting old invite %s", code)
@@ -90,7 +89,7 @@ func (ctx *appContext) checkInvite(code string, used bool, username string) bool
 				ctx.debug.Printf("%s: Expiry notification", code)
 				for address, settings := range notify {
 					if settings["notify-expiry"] {
-						if ctx.email.constructExpiry(invCode, data, ctx) != nil {
+						if ctx.email.constructExpiry(code, data, ctx) != nil {
 							ctx.err.Printf("%s: Failed to construct expiry notification", code)
 						} else if ctx.email.send(address, ctx) != nil {
 							ctx.err.Printf("%s: Failed to send expiry notification", code)
@@ -101,31 +100,62 @@ func (ctx *appContext) checkInvite(code string, used bool, username string) bool
 				}
 			}
 			changed = true
-			delete(ctx.storage.invites, invCode)
-		} else if invCode == code {
-			match = true
-			if used {
-				changed = true
-				del := false
-				newInv := data
-				if newInv.RemainingUses == 1 {
-					del = true
-					delete(ctx.storage.invites, invCode)
-				} else if newInv.RemainingUses != 0 {
-					// 0 means infinite i guess?
-					newInv.RemainingUses -= 1
-				}
-				newInv.UsedBy = append(newInv.UsedBy, []string{username, ctx.formatDatetime(current_time)})
-				if !del {
-					ctx.storage.invites[invCode] = newInv
-				}
-			}
+			delete(ctx.storage.invites, code)
 		}
 	}
 	if changed {
 		ctx.storage.storeInvites()
 	}
-	return match
+}
+
+func (ctx *appContext) checkInvite(code string, used bool, username string) bool {
+	current_time := time.Now()
+	ctx.storage.loadInvites()
+	changed := false
+	if inv, match := ctx.storage.invites[code]; match {
+		expiry := inv.ValidTill
+		if current_time.After(expiry) {
+			ctx.debug.Printf("Housekeeping: Deleting old invite %s", code)
+			notify := inv.Notify
+			if ctx.config.Section("notifications").Key("enabled").MustBool(false) && len(notify) != 0 {
+				ctx.debug.Printf("%s: Expiry notification", code)
+				for address, settings := range notify {
+					if settings["notify-expiry"] {
+						if ctx.email.constructExpiry(code, inv, ctx) != nil {
+							ctx.err.Printf("%s: Failed to construct expiry notification", code)
+						} else if ctx.email.send(address, ctx) != nil {
+							ctx.err.Printf("%s: Failed to send expiry notification", code)
+						} else {
+							ctx.info.Printf("Sent expiry notification to %s", address)
+						}
+					}
+				}
+			}
+			changed = true
+			match = false
+			delete(ctx.storage.invites, code)
+		} else if used {
+			changed = true
+			del := false
+			newInv := inv
+			if newInv.RemainingUses == 1 {
+				del = true
+				delete(ctx.storage.invites, code)
+			} else if newInv.RemainingUses != 0 {
+				// 0 means infinite i guess?
+				newInv.RemainingUses -= 1
+			}
+			newInv.UsedBy = append(newInv.UsedBy, []string{username, ctx.formatDatetime(current_time)})
+			if !del {
+				ctx.storage.invites[code] = newInv
+			}
+		}
+		if changed {
+			ctx.storage.storeInvites()
+		}
+		return match
+	}
+	return false
 }
 
 // Routes from now on!
@@ -270,12 +300,8 @@ func (ctx *appContext) GenerateInvite(gc *gin.Context) {
 func (ctx *appContext) GetInvites(gc *gin.Context) {
 	ctx.debug.Println("Invites requested")
 	current_time := time.Now()
-	// checking one checks all of them
 	ctx.storage.loadInvites()
-	for key := range ctx.storage.invites {
-		ctx.checkInvite(key, false, "")
-		break
-	}
+	ctx.checkInvites()
 	var invites []map[string]interface{}
 	for code, inv := range ctx.storage.invites {
 		_, _, days, hours, minutes, _ := timeDiff(inv.ValidTill, current_time)

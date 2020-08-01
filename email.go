@@ -73,7 +73,6 @@ func (email *Emailer) constructInvite(code string, invite Invite, ctx *appContex
 		fpath := ctx.config.Section("invite_emails").Key("email_" + key).String()
 		tpl, err := template.ParseFiles(fpath)
 		if err != nil {
-			fmt.Println("failed email", err)
 			return err
 		}
 		var tplData bytes.Buffer
@@ -85,7 +84,6 @@ func (email *Emailer) constructInvite(code string, invite Invite, ctx *appContex
 			"message":     message,
 		})
 		if err != nil {
-			fmt.Println("failed email", err)
 			return err
 		}
 		if key == "html" {
@@ -105,7 +103,6 @@ func (email *Emailer) constructExpiry(code string, invite Invite, ctx *appContex
 		fpath := ctx.config.Section("notifications").Key("expiry_" + key).String()
 		tpl, err := template.ParseFiles(fpath)
 		if err != nil {
-			fmt.Println("failed email", err)
 			return err
 		}
 		var tplData bytes.Buffer
@@ -114,7 +111,6 @@ func (email *Emailer) constructExpiry(code string, invite Invite, ctx *appContex
 			"expiry": expiry,
 		})
 		if err != nil {
-			fmt.Println("failed email", err)
 			return err
 		}
 		if key == "html" {
@@ -140,7 +136,6 @@ func (email *Emailer) constructCreated(code, username, address string, invite In
 		fpath := ctx.config.Section("notifications").Key("created_" + key).String()
 		tpl, err := template.ParseFiles(fpath)
 		if err != nil {
-			fmt.Println("failed email", err)
 			return err
 		}
 		var tplData bytes.Buffer
@@ -151,7 +146,6 @@ func (email *Emailer) constructCreated(code, username, address string, invite In
 			"time":     created,
 		})
 		if err != nil {
-			fmt.Println("failed email", err)
 			return err
 		}
 		if key == "html" {
@@ -166,33 +160,6 @@ func (email *Emailer) constructCreated(code, username, address string, invite In
 
 func (email *Emailer) send(address string, ctx *appContext) error {
 	if email.sendMethod == "mailgun" {
-		// reqData := map[string]string{
-		// 	"to":      fmt.Sprintf("%s <%s>", "test", email.to),
-		// 	"from":    email.fromAddr,
-		// 	"subject": email.subject,
-		// }
-		// if email.sendType == "invite" {
-		// 	reqData["text"] = email.invite.text
-		// 	reqData["html"] = email.invite.html
-		// }
-		// data := &bytes.Buffer{}
-		// encoder := json.NewEncoder(data)
-		// encoder.SetEscapeHTML(false)
-		// err := encoder.Encode(reqData)
-		// fmt.Println("marshaled:", data)
-		// if err != nil {
-		// 	fmt.Println("Failed marshal:", err, ">", data)
-		// 	return err
-		// }
-		// var req *http.Request
-		// req, err = http.NewRequest("POST", ctx.config.Section("mailgun").Key("api_url").String(), data)
-		// req.SetBasicAuth("api", ctx.config.Section("mailgun").Key("api_key").String())
-		// var resp *http.Response
-		// resp, err = email.httpClient.Do(req)
-		// if err != nil || !(resp.StatusCode == 200 || resp.StatusCode == 204) {
-		// 	fmt.Println("failed send:", err, resp.StatusCode)
-		// 	fmt.Println("resp:", resp.Header.Get("Content-Encoding"), resp.Body)
-		// }
 		message := email.mg.NewMessage(
 			fmt.Sprintf("%s <%s>", email.fromName, email.fromAddr),
 			email.content.subject,
@@ -201,9 +168,10 @@ func (email *Emailer) send(address string, ctx *appContext) error {
 		message.SetHtml(email.content.html)
 		mgctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
 		defer cancel()
-		_, id, err := email.mg.Send(mgctx, message)
-		fmt.Println("mailgun:", id, err)
-
+		_, _, err := email.mg.Send(mgctx, message)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }

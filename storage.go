@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"io/ioutil"
-	"os"
 	"time"
 )
 
@@ -78,8 +77,6 @@ func loadJSON(path string, obj interface{}) error {
 }
 
 func storeJSON(path string, obj interface{}) error {
-	test := json.NewEncoder(os.Stdout)
-	test.Encode(obj)
 	data, err := json.Marshal(obj)
 	if err != nil {
 		return err

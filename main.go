@@ -13,6 +13,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 // Username is JWT!
@@ -192,6 +193,9 @@ func main() {
 	ctx.validator.init(validatorConf)
 
 	ctx.email.init(ctx)
+
+	inviteDaemon := NewRepeater(time.Duration(60*time.Second), ctx)
+	go inviteDaemon.Run()
 
 	ctx.info.Println("Loading routes")
 	router := gin.New()

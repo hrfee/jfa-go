@@ -16,9 +16,6 @@ func (ctx *appContext) webAuth() gin.HandlerFunc {
 }
 
 func (ctx *appContext) authenticate(gc *gin.Context) {
-	for _, val := range ctx.users {
-		fmt.Println("userid", val.UserID)
-	}
 	header := strings.SplitN(gc.Request.Header.Get("Authorization"), " ", 2)
 	if header[0] != "Basic" {
 		ctx.debug.Println("Invalid authentication header")
