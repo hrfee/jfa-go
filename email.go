@@ -158,6 +158,38 @@ func (email *Emailer) constructCreated(code, username, address string, invite In
 	return nil
 }
 
+func (email *Emailer) constructReset(pwr Pwr, ctx *appContext) error {
+	email.content.subject = ctx.config.Section("password_resets").Key("subject").MustString("Password reset - Jellyfin")
+	d, t, expires_in := email.formatExpiry(pwr.Expiry, true, ctx.datePattern, ctx.timePattern)
+	message := ctx.config.Section("email").Key("message").String()
+	for _, key := range []string{"html", "text"} {
+		fpath := ctx.config.Section("password_resets").Key("email_" + key).String()
+		tpl, err := template.ParseFiles(fpath)
+		if err != nil {
+			return err
+		}
+		var tplData bytes.Buffer
+		err = tpl.Execute(&tplData, map[string]string{
+			"username":    pwr.Username,
+			"expiry_date": d,
+			"expiry_time": t,
+			"expires_in":  expires_in,
+			"pin":         pwr.Pin,
+			"message":     message,
+		})
+		if err != nil {
+			return err
+		}
+		if key == "html" {
+			email.content.html = tplData.String()
+		} else {
+			email.content.text = tplData.String()
+		}
+	}
+	email.sendType = "reset"
+	return nil
+}
+
 func (email *Emailer) send(address string, ctx *appContext) error {
 	if email.sendMethod == "mailgun" {
 		message := email.mg.NewMessage(

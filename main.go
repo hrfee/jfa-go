@@ -197,6 +197,10 @@ func main() {
 	inviteDaemon := NewRepeater(time.Duration(60*time.Second), ctx)
 	go inviteDaemon.Run()
 
+	if ctx.config.Section("password_resets").Key("enabled").MustBool(false) {
+		ctx.StartPWR()
+	}
+
 	ctx.info.Println("Loading routes")
 	router := gin.New()
 
