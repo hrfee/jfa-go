@@ -1,0 +1,140 @@
+$jf-blue: rgb(0, 164, 220);
+$jf-blue-hover: rgba(0, 164, 220, 0.2);
+$jf-blue-focus: rgb(12, 176, 232);
+$jf-blue-light: #4bb3dd;
+
+$jf-red: rgb(204, 0, 0);
+$jf-red-light: #e12026;
+$jf-yellower: #ffc107;
+$jf-yellow: #e1b222;
+$jf-orange: #ff870f;
+$jf-green: #6fbd45;
+$jf-green-dark: #008040;
+
+
+$jf-black: #101010; // 16 16 16 
+$jf-gray-90: #202020; // 32 32 32
+$jf-gray-80: #242424; // jf-card 36 36 36 
+$jf-gray-70: #292929; // jf-input 41 41 41
+$jf-gray-60: #303030; // jf-button 48 48 48
+$jf-gray-50: #383838; // jf-button-focus 56 56 56 
+$jf-text-bold: rgba(255, 255, 255, 0.87);
+$jf-text-primary: rgba(255, 255, 255, 0.8);
+$jf-text-secondary: rgb(153, 153, 153);
+
+$primary:  $jf-blue;
+$secondary: $jf-gray-50;
+$success: $jf-green-dark;
+$danger: $jf-red-light;
+$light: $jf-text-primary;
+$dark: $jf-gray-90;
+$info: $jf-yellow;
+$warning: $jf-yellower;
+
+
+
+$enable-gradients: false;
+$enable-shadows: false;
+
+$enable-rounded: false;
+$body-bg: $jf-black;
+$body-color: $jf-text-primary;
+$border-color: $jf-gray-60;
+$component-active-color: $jf-text-bold;
+$component-active-bg: $jf-blue-focus;
+$text-muted: $jf-text-secondary;
+$link-color: $jf-blue-focus;
+$btn-link-disabled-color: $jf-text-secondary;
+$input-bg: $jf-gray-90;
+$input-color: $jf-text-primary;
+$input-focus-bg: $jf-gray-60;
+$input-focus-border-color: $jf-blue-focus;
+$input-disabled-bg: $jf-gray-70;
+input:disabled {
+    color: $text-muted;
+}
+$input-border-color: $jf-gray-60;
+$input-placeholder-color: $text-muted;
+
+$form-check-input-bg: $jf-gray-60;
+$form-check-input-border: $jf-gray-50;
+$form-check-input-checked-color: $jf-blue-focus;
+$form-check-input-checked-bg-color: $jf-blue-hover;
+
+$input-group-addon-bg: $input-bg;
+
+$form-select-disabled-color: $jf-text-secondary;
+$form-select-disabled-bg: $input-disabled-bg;
+$form-select-indicator-color: $jf-gray-50;
+
+$card-bg: $jf-gray-80;
+$card-border-color: null;
+
+$tooltip-color: $jf-text-bold;
+$tooltip-bg: $jf-gray-50;
+
+$modal-content-bg: $jf-gray-80;
+$modal-content-border-color: $jf-gray-50;
+$modal-header-border-color: null;
+$modal-footer-border-color: null;
+
+$list-group-bg: $card-bg;
+$list-group-border-color: $jf-gray-50;
+$list-group-hover-bg: $jf-blue-hover;
+$list-group-active-bg: $jf-blue-focus;
+$list-group-action-color: $jf-text-primary;
+$list-group-action-hover-color: $jf-text-bold;
+$list-group-action-active-color: $jf-text-bold;
+$list-group-action-active-bg: $jf-blue-focus;
+
+// idk why but i had to put these above and below the import
+.list-group-item-danger {
+    color: $jf-text-bold;
+    background-color: $danger;
+}
+
+.list-group-item-success {
+    color: $jf-text-bold;
+    background-color: $success;
+}
+
+@import "../../node_modules/bootstrap4/scss/bootstrap";
+
+.btn-primary, .btn-outline-primary:hover, .btn-outline-primary:active {
+    color: $jf-text-bold;
+}
+
+.close {
+    color: $jf-text-secondary;
+}
+
+.close:hover, .close:active {
+    color: $jf-text-primary;
+}
+
+.icon-button {
+    color: $text-muted;
+}
+
+.icon-button:hover {
+    color: $jf-text-bold;
+}
+
+.icon-button {
+    color: $text-muted;
+}
+
+.text-bright {
+    color: $jf-text-bold;
+}
+
+.list-group-item-danger {
+    color: $jf-text-bold;
+    background-color: $danger;
+}
+
+.list-group-item-success {
+    color: $jf-text-bold;
+    background-color: $success;
+}
+

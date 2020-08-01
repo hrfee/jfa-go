@@ -1,0 +1,10 @@
+Hi {{ .username }},
+
+Someone has recently requests a password reset on Jellyfin.
+If this was you, enter the below pin into the prompt.
+This code will expire on {{ .expiry_date }}, at {{ .expiry_time }} UTC, which is in {{ .expires_in }}.
+If this wasn't you, please ignore this email.
+
+PIN: {{ .pin }}
+
+{{ .message }}

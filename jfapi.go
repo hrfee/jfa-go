@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"time"
 )
@@ -34,8 +35,14 @@ type Jellyfin struct {
 	authenticated bool
 	accessToken   string
 	userId        string
-	httpClient    http.Client
+	httpClient    *http.Client
 	loginParams   map[string]string
+}
+
+func (jf *Jellyfin) timeoutHandler() {
+	if r := recover(); r != nil {
+		log.Fatalf("Failed to authenticate with Jellyfin @ %s: Timed out", jf.server)
+	}
 }
 
 func (jf *Jellyfin) init(server, client, version, device, deviceId string) error {
@@ -55,12 +62,13 @@ func (jf *Jellyfin) init(server, client, version, device, deviceId string) error
 		"User-Agent":           jf.useragent,
 		"X-Emby-Authorization": jf.auth,
 	}
-	jf.httpClient = http.Client{
+	jf.httpClient = &http.Client{
 		Timeout: 10 * time.Second,
 	}
 	infoUrl := fmt.Sprintf("%s/System/Info/Public", server)
 	req, _ := http.NewRequest("GET", infoUrl, nil)
 	resp, err := jf.httpClient.Do(req)
+	defer jf.timeoutHandler()
 	if err == nil {
 		data, _ := ioutil.ReadAll(resp.Body)
 		json.Unmarshal(data, &jf.serverInfo)
@@ -77,7 +85,11 @@ func (jf *Jellyfin) authenticate(username, password string) (map[string]interfac
 	}
 	loginParams, _ := json.Marshal(jf.loginParams)
 	url := fmt.Sprintf("%s/emby/Users/AuthenticateByName", jf.server)
-	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(loginParams))
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(loginParams))
+	defer jf.timeoutHandler()
+	if err != nil {
+		return nil, 0, err
+	}
 	for name, value := range jf.header {
 		req.Header.Add(name, value)
 	}
@@ -116,6 +128,7 @@ func (jf *Jellyfin) _getReader(url string, params map[string]string) (io.Reader,
 		req.Header.Add(name, value)
 	}
 	resp, err := jf.httpClient.Do(req)
+	defer jf.timeoutHandler()
 	if err != nil || resp.StatusCode != 200 {
 		if resp.StatusCode == 401 && jf.authenticated {
 			jf.authenticated = false
@@ -147,6 +160,7 @@ func (jf *Jellyfin) _post(url string, data map[string]interface{}, response bool
 		req.Header.Add(name, value)
 	}
 	resp, err := jf.httpClient.Do(req)
+	defer jf.timeoutHandler()
 	if err != nil || resp.StatusCode != 200 {
 		if resp.StatusCode == 401 && jf.authenticated {
 			jf.authenticated = false

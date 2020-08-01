@@ -1,0 +1,28 @@
+{
+  "name": "jellyfin-accounts",
+  "version": "1.0.0",
+  "description": "This is only used for grabbing scss build dependencies, and isn't a real package.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hrfee/jellyfin-accounts.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hrfee/jellyfin-accounts/issues"
+  },
+  "homepage": "https://github.com/hrfee/jellyfin-accounts#readme",
+  "dependencies": {
+    "autoprefixer": "^9.8.5",
+    "bootstrap": "^5.0.0-alpha1",
+    "bootstrap4": "npm:bootstrap@^4.5.0",
+    "clean-css-cli": "^4.3.0",
+    "lodash": "^4.17.19",
+    "mjml": "^4.6.3",
+    "postcss-cli": "^7.1.1"
+  }
+}

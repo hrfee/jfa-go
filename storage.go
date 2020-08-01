@@ -68,9 +68,11 @@ func (st *Storage) storeDisplayprefs() error {
 }
 
 func loadJSON(path string, obj interface{}) error {
-	file, err := ioutil.ReadFile(path)
+	var file []byte
+	var err error
+	file, err = ioutil.ReadFile(path)
 	if err != nil {
-		return err
+		file = []byte("{}")
 	}
 	err = json.Unmarshal(file, &obj)
 	return err

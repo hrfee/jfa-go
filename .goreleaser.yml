@@ -1,0 +1,35 @@
+# This is an example goreleaser.yaml file with some sane defaults.
+# Make sure to check the documentation at http://goreleaser.com
+before:
+  hooks:
+    # You may remove this if you don't use go modules.
+    - go mod download
+    - python3 fixconfig/fixconfig.py -i fixconfig/config-base.json -o data/config-base.json
+    - python3 fixconfig/generate_ini.py -i fixconfig/config-base.json -o data/config-default.ini
+    - python3 scss/get_node_deps.py
+    - python3 scss/compile.py
+    - python3 mail/generate.py
+builds:
+- env:
+  - CGO_ENABLED=0
+    goos:
+    - linux
+    - windows
+    - darwin
+archives:
+- replacements:
+    darwin: Darwin
+    linux: Linux
+    windows: Windows
+    386: i386
+    amd64: x86_64
+checksum:
+  name_template: 'checksums.txt'
+snapshot:
+  name_template: "{{ .Tag }}-next"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+    - '^docs:'
+    - '^test:'

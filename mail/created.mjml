@@ -1,0 +1,47 @@
+<mjml>
+  <mj-head>
+    <mj-attributes>
+      <mj-class name="bg" background-color="#101010" />
+      <mj-class name="bg2" background-color="#242424" />
+      <mj-class name="text" color="rgba(255,255,255,0.8)" />
+      <mj-class name="bold" color="rgba(255,255,255,0.87)" />
+      <mj-class name="secondary" color="rgb(153,153,153)" />
+      <mj-class name="blue" background-color="rgb(0,164,220)" />
+    </mj-attributes>
+    <mj-font name="Quicksand" href="https://fonts.googleapis.com/css2?family=Quicksand" />
+    <mj-font name="Noto Sans" href="https://fonts.googleapis.com/css2?family=Noto+Sans" />
+  </mj-head>
+  <mj-body>
+    <mj-section mj-class="bg2">
+      <mj-column>
+        <mj-text mj-class="bold" font-size="25px" font-family="Quicksand, Noto Sans, Helvetica, Arial, sans-serif"> jellyfin-accounts </mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-section mj-class="bg">
+      <mj-column>
+        <mj-text mj-class="text" font-size="16px" font-family="Noto Sans, Helvetica, Arial, sans-serif">
+          <h3>User Created</h3>
+          <p>A user was created using code {{ .code }}.</p>
+        </mj-text>
+        <mj-table mj-class="text" container-background-color="#242424">
+          <tr style="text-align: left;">
+            <th>Name</th>
+            <th>Address</th>
+            <th>Time</th>
+          </tr>
+          <tr style="font-style: italic; text-align: left; color: rgb(153,153,153);">
+            <th>{{ .username }}</th>
+            <th>{{ .address }}</th>
+            <th>{{ .time }}</th>
+        </mj-table>
+      </mj-column>
+    </mj-section>
+    <mj-section mj-class="bg2">
+      <mj-column>
+        <mj-text mj-class="secondary" font-style="italic" font-size="14px">
+          Notification emails can be toggled on the admin dashboard.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+    </body>
+</mjml>

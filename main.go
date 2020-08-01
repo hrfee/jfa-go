@@ -4,11 +4,13 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	"github.com/lithammer/shortuuid/v3"
 	"gopkg.in/ini.v1"
+	"io"
 	"io/ioutil"
 	"log"
 	"os"
@@ -42,6 +44,8 @@ type appContext struct {
 	validator        Validator
 	email            Emailer
 	info, debug, err *log.Logger
+	host             string
+	port             int
 }
 
 func GenerateSecret(length int) (string, error) {
@@ -53,34 +57,21 @@ func GenerateSecret(length int) (string, error) {
 	return base64.URLEncoding.EncodeToString(bytes), err
 }
 
-// func (ctx *Context) AdminJs(gc *gin.Context) {
-// 	template, err := pongo2.FromFile("data/templates/admin.js")
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	notifications, _ := ctx.config.Section("notifications").Key("enabled").Bool()
-// 	out, err := template.Execute(pongo2.Context{
-// 		"bsVersion":     ctx.bsVersion,
-// 		"css_file":      ctx.cssFile,
-// 		"notifications": notifications,
-// 	})
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	// bg.Ctx.Output.Header("Content-Type", "application/javascript")
-// 	// bg.Ctx.WriteString(out)
-// }
-
 func setGinLogger(router *gin.Engine, debugMode bool) {
 	if debugMode {
 		router.Use(gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
-			return fmt.Sprintf("[GIN/DEBUG] %s: %s(%s) => %d in %s; Errors: %s\n",
+			return fmt.Sprintf("[GIN/DEBUG] %s: %s(%s) => %d in %s; %s\n",
 				param.TimeStamp.Format("15:04:05"),
 				param.Method,
 				param.Path,
 				param.StatusCode,
 				param.Latency,
-				param.ErrorMessage,
+				func() string {
+					if param.ErrorMessage != "" {
+						return "Error: " + param.ErrorMessage
+					}
+					return ""
+				}(),
 			)
 		}))
 		gin.SetMode(gin.DebugMode)
@@ -98,15 +89,70 @@ func setGinLogger(router *gin.Engine, debugMode bool) {
 
 func main() {
 	ctx := new(appContext)
-	ctx.config_path = "/home/hrfee/.jf-accounts/config.ini"
-	ctx.data_path = "/home/hrfee/.jf-accounts"
+	userConfigDir, _ := os.UserConfigDir()
+	ctx.data_path = filepath.Join(userConfigDir, "jfa-go")
+	ctx.config_path = filepath.Join(ctx.data_path, "config.ini")
 	ctx.local_path = "data"
+
+	ctx.info = log.New(os.Stdout, "[INFO] ", log.Ltime)
+	ctx.err = log.New(os.Stdout, "[ERROR] ", log.Ltime|log.Lshortfile)
+
+	dataPath := flag.String("data", ctx.data_path, "alternate path to data directory.")
+	configPath := flag.String("config", ctx.config_path, "alternate path to config file.")
+	host := flag.String("host", "", "alternate address to host web ui on.")
+	port := flag.Int("port", 0, "alternate port to host web ui on.")
+
+	flag.Parse()
+
+	if ctx.config_path == *configPath && ctx.data_path != *dataPath {
+		ctx.config_path = filepath.Join(*dataPath, "config.ini")
+	} else {
+		ctx.config_path = *configPath
+		ctx.data_path = *dataPath
+	}
+
+	//var firstRun bool
+	if _, err := os.Stat(ctx.data_path); os.IsNotExist(err) {
+		os.Mkdir(ctx.data_path, 0700)
+	}
+	if _, err := os.Stat(ctx.config_path); os.IsNotExist(err) {
+		//firstRun = true
+		dConfigPath := filepath.Join(ctx.local_path, "config-default.ini")
+		var dConfig *os.File
+		dConfig, err = os.Open(dConfigPath)
+		if err != nil {
+			ctx.err.Fatalf("Couldn't find default config file \"%s\"", dConfigPath)
+		}
+		defer dConfig.Close()
+		var nConfig *os.File
+		nConfig, err := os.Create(ctx.config_path)
+		if err != nil {
+			ctx.err.Fatalf("Couldn't open config file for writing: \"%s\"", dConfigPath)
+		}
+		defer nConfig.Close()
+		_, err = io.Copy(nConfig, dConfig)
+		if err != nil {
+			ctx.err.Fatalf("Couldn't copy default config. To do this manually, copy\n%s\nto\n%s", dConfigPath, ctx.config_path)
+		}
+		ctx.info.Printf("Copied default configuration to \"%s\"", ctx.config_path)
+	}
+
 	if ctx.loadConfig() != nil {
 		ctx.err.Fatalf("Failed to load config file \"%s\"", ctx.config_path)
 	}
 
-	ctx.info = log.New(os.Stdout, "[INFO] ", log.Ltime)
-	ctx.err = log.New(os.Stdout, "[ERROR] ", log.Ltime|log.Lshortfile)
+	ctx.host = ctx.config.Section("ui").Key("host").String()
+	ctx.port = ctx.config.Section("ui").Key("port").MustInt(8056)
+
+	if *host != ctx.host && *host != "" {
+		ctx.host = *host
+	}
+	if *port != ctx.port && *port > 0 {
+		ctx.port = *port
+	}
+
+	address := fmt.Sprintf("%s:%d", ctx.host, ctx.port)
+
 	debugMode := ctx.config.Section("ui").Key("debug").MustBool(true)
 	if debugMode {
 		ctx.debug = log.New(os.Stdout, "[DEBUG] ", log.Ltime|log.Lshortfile)
@@ -116,15 +162,16 @@ func main() {
 
 	ctx.debug.Printf("Loaded config file \"%s\"", ctx.config_path)
 
-	if val, _ := ctx.config.Section("ui").Key("bs5").Bool(); val {
+	if ctx.config.Section("ui").Key("bs5").MustBool(false) {
 		ctx.cssFile = "bs5-jf.css"
 		ctx.bsVersion = 5
 	} else {
 		ctx.cssFile = "bs4-jf.css"
 		ctx.bsVersion = 4
 	}
-	// ctx.storage.formatter, _ = strftime.New("%Y-%m-%dT%H:%M:%S.%f")
+
 	ctx.debug.Println("Loading storage")
+
 	ctx.storage.invite_path = filepath.Join(ctx.data_path, "invites.json")
 	ctx.storage.loadInvites()
 	ctx.storage.emails_path = filepath.Join(ctx.data_path, "emails.json")
@@ -198,7 +245,7 @@ func main() {
 	go inviteDaemon.Run()
 
 	if ctx.config.Section("password_resets").Key("enabled").MustBool(false) {
-		ctx.StartPWR()
+		go ctx.StartPWR()
 	}
 
 	ctx.info.Println("Loading routes")
@@ -225,7 +272,6 @@ func main() {
 	api.POST("/setDefaults", ctx.SetDefaults)
 	api.GET("/getConfig", ctx.GetConfig)
 	api.POST("/modifyConfig", ctx.ModifyConfig)
-	addr := fmt.Sprintf("%s:%d", ctx.config.Section("ui").Key("host").String(), ctx.config.Section("ui").Key("port").MustInt(8056))
-	ctx.info.Printf("Starting router @ %s", addr)
-	router.Run(addr)
+	ctx.info.Printf("Starting router @ %s", address)
+	router.Run(address)
 }
