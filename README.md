@@ -1,8 +1,6 @@
 # ![jfa-go](images/jfa-go-banner-wide.svg)
 
-A rewrite of [jellyfin-accounts](https://github.com/hrfee/jellyfin-accounts) in Go. It has feature parity\* with the Python version, but should be faster.
-
-\* *currently missing SMTP support.*
+A rewrite of [jellyfin-accounts](https://github.com/hrfee/jellyfin-accounts) in Go. It has feature parity with the Python version, but should be faster.
 
 #### Install/usage
 
