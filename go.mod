@@ -10,6 +10,7 @@ require (
 	github.com/go-chi/chi v4.1.2+incompatible // indirect
 	github.com/go-playground/validator/v10 v10.3.0 // indirect
 	github.com/golang/protobuf v1.4.2 // indirect
+	github.com/jordan-wright/email v0.0.0-20200602115436-fd8a7622303e
 	github.com/json-iterator/go v1.1.10 // indirect
 	github.com/knz/strtime v0.0.0-20200318182718-be999391ffa9
 	github.com/lithammer/shortuuid/v3 v3.0.4

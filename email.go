@@ -2,9 +2,10 @@ package main
 
 import (
 	"bytes"
-	// "context"
 	"context"
+	"crypto/tls"
 	"fmt"
+	jEmail "github.com/jordan-wright/email"
 	"github.com/knz/strtime"
 	"github.com/mailgun/mailgun-go/v4"
 	"html/template"
@@ -18,6 +19,8 @@ type Emailer struct {
 	sendType, sendMethod, fromAddr, fromName string
 	content                                  Email
 	mg                                       *mailgun.MailgunImpl
+	mime                                     string
+	host                                     string
 }
 
 type Email struct {
@@ -53,11 +56,15 @@ func (email *Emailer) init(ctx *appContext) {
 	if email.sendMethod == "mailgun" {
 		email.mg = mailgun.NewMailgun(strings.Split(email.fromAddr, "@")[1], ctx.config.Section("mailgun").Key("api_key").String())
 		api_url := ctx.config.Section("mailgun").Key("api_url").String()
+		// Mailgun client takes the base url, so we need to trim off the end (e.g 'v3/messages'
 		if strings.Contains(api_url, "messages") {
 			api_url = api_url[0:strings.LastIndex(api_url, "/")]
 			api_url = api_url[0:strings.LastIndex(api_url, "/")]
 		}
 		email.mg.SetAPIBase(api_url)
+	} else if email.sendMethod == "smtp" {
+		ctx.host = ctx.config.Section("smtp").Key("server").String()
+		email.smtpAuth = smtp.PlainAuth("", email.fromAddr, ctx.config.Section("smtp").Key("password").String(), ctx.host)
 	}
 }
 
@@ -204,6 +211,29 @@ func (email *Emailer) send(address string, ctx *appContext) error {
 		if err != nil {
 			return err
 		}
+	} else if email.sendMethod == "smtp" {
+		e := jEmail.NewEmail()
+		e.Subject = email.content.subject
+		e.From = fmt.Sprintf("%s <%s>", email.fromName, email.fromAddr)
+		e.To = []string{address}
+		e.Text = []byte(email.content.text)
+		e.HTML = []byte(email.content.html)
+		smtpType := ctx.config.Section("smtp").Key("encryption").String()
+		tlsConfig := &tls.Config{
+			InsecureSkipVerify: false,
+			ServerName:         ctx.host,
+		}
+		var err error
+		if smtpType == "ssl_tls" {
+			port := ctx.config.Section("smtp").Key("port").MustInt(465)
+			server := fmt.Sprintf("%s:%d", ctx.host, port)
+			err = e.SendWithTLS(server, email.smtpAuth, tlsConfig)
+		} else if smtpType == "starttls" {
+			port := ctx.config.Section("smtp").Key("port").MustInt(587)
+			server := fmt.Sprintf("%s:%d", ctx.host, port)
+			e.SendWithStartTLS(server, email.smtpAuth, tlsConfig)
+		}
+		return err
 	}
 	return nil
 }
