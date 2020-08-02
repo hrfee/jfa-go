@@ -92,13 +92,15 @@ func (ctx *appContext) checkInvites() {
 				ctx.debug.Printf("%s: Expiry notification", code)
 				for address, settings := range notify {
 					if settings["notify-expiry"] {
-						if ctx.email.constructExpiry(code, data, ctx) != nil {
-							ctx.err.Printf("%s: Failed to construct expiry notification", code)
-						} else if ctx.email.send(address, ctx) != nil {
-							ctx.err.Printf("%s: Failed to send expiry notification", code)
-						} else {
-							ctx.info.Printf("Sent expiry notification to %s", address)
-						}
+						go func() {
+							if ctx.email.constructExpiry(code, data, ctx) != nil {
+								ctx.err.Printf("%s: Failed to construct expiry notification", code)
+							} else if ctx.email.send(address, ctx) != nil {
+								ctx.err.Printf("%s: Failed to send expiry notification", code)
+							} else {
+								ctx.info.Printf("Sent expiry notification to %s", address)
+							}
+						}()
 					}
 				}
 			}
@@ -124,13 +126,15 @@ func (ctx *appContext) checkInvite(code string, used bool, username string) bool
 				ctx.debug.Printf("%s: Expiry notification", code)
 				for address, settings := range notify {
 					if settings["notify-expiry"] {
-						if ctx.email.constructExpiry(code, inv, ctx) != nil {
-							ctx.err.Printf("%s: Failed to construct expiry notification", code)
-						} else if ctx.email.send(address, ctx) != nil {
-							ctx.err.Printf("%s: Failed to send expiry notification", code)
-						} else {
-							ctx.info.Printf("Sent expiry notification to %s", address)
-						}
+						go func() {
+							if ctx.email.constructExpiry(code, inv, ctx) != nil {
+								ctx.err.Printf("%s: Failed to construct expiry notification", code)
+							} else if ctx.email.send(address, ctx) != nil {
+								ctx.err.Printf("%s: Failed to send expiry notification", code)
+							} else {
+								ctx.info.Printf("Sent expiry notification to %s", address)
+							}
+						}()
 					}
 				}
 			}
@@ -212,15 +216,17 @@ func (ctx *appContext) NewUser(gc *gin.Context) {
 	if ctx.config.Section("notifications").Key("enabled").MustBool(false) {
 		for address, settings := range invite.Notify {
 			if settings["notify-creation"] {
-				if ctx.email.constructCreated(req.Code, req.Username, req.Email, invite, ctx) != nil {
-					ctx.err.Printf("%s: Failed to construct user creation notification", req.Code)
-					ctx.debug.Printf("%s: Error: %s", req.Code, err)
-				} else if ctx.email.send(address, ctx) != nil {
-					ctx.err.Printf("%s: Failed to send user creation notification", req.Code)
-					ctx.debug.Printf("%s: Error: %s", req.Code, err)
-				} else {
-					ctx.info.Printf("%s: Sent user creation notification to %s", req.Code, address)
-				}
+				go func() {
+					if ctx.email.constructCreated(req.Code, req.Username, req.Email, invite, ctx) != nil {
+						ctx.err.Printf("%s: Failed to construct user creation notification", req.Code)
+						ctx.debug.Printf("%s: Error: %s", req.Code, err)
+					} else if ctx.email.send(address, ctx) != nil {
+						ctx.err.Printf("%s: Failed to send user creation notification", req.Code)
+						ctx.debug.Printf("%s: Error: %s", req.Code, err)
+					} else {
+						ctx.info.Printf("%s: Sent user creation notification to %s", req.Code, address)
+					}
+				}()
 			}
 		}
 	}
