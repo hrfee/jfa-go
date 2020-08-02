@@ -9,3 +9,4 @@ data/config-default.ini
 data/*.html
 data/*.txt
 dist/*
+jfa-go
