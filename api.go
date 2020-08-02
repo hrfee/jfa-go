@@ -589,6 +589,23 @@ func (ctx *appContext) ModifyConfig(gc *gin.Context) {
 		}
 	}
 	ctx.loadConfig()
+	// Reinitialize password validator on config change, as opposed to every applicable request like in python.
+	if _, ok := req["password_validation"]; ok {
+		ctx.debug.Println("Reinitializing validator")
+		validatorConf := ValidatorConf{
+			"characters":           ctx.config.Section("password_validation").Key("min_length").MustInt(0),
+			"uppercase characters": ctx.config.Section("password_validation").Key("upper").MustInt(0),
+			"lowercase characters": ctx.config.Section("password_validation").Key("lower").MustInt(0),
+			"numbers":              ctx.config.Section("password_validation").Key("number").MustInt(0),
+			"special characters":   ctx.config.Section("password_validation").Key("special").MustInt(0),
+		}
+		if !ctx.config.Section("password_validation").Key("enabled").MustBool(false) {
+			for key := range validatorConf {
+				validatorConf[key] = 0
+			}
+		}
+		ctx.validator.init(validatorConf)
+	}
 }
 
 // func Restart() error {
