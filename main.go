@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"github.com/gin-contrib/pprof"
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	"github.com/lithammer/shortuuid/v3"
@@ -289,6 +290,10 @@ func main() {
 	router.Use(static.Serve("/", static.LocalFile(filepath.Join(ctx.local_path, "static"), false)))
 	router.LoadHTMLGlob(filepath.Join(ctx.local_path, "templates", "*"))
 	router.NoRoute(ctx.NoRouteHandler)
+	if debugMode {
+		ctx.debug.Println("Loading pprof")
+		pprof.Register(router)
+	}
 	if !firstRun {
 		router.GET("/", ctx.AdminPage)
 		router.GET("/getToken", ctx.GetToken)
