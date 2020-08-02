@@ -93,7 +93,8 @@ func main() {
 	userConfigDir, _ := os.UserConfigDir()
 	ctx.data_path = filepath.Join(userConfigDir, "jfa-go")
 	ctx.config_path = filepath.Join(ctx.data_path, "config.ini")
-	ctx.local_path = "data"
+	executable, _ := os.Executable()
+	ctx.local_path = filepath.Join(filepath.Dir(executable), "data")
 
 	ctx.info = log.New(os.Stdout, "[INFO] ", log.Ltime)
 	ctx.err = log.New(os.Stdout, "[ERROR] ", log.Ltime|log.Lshortfile)
@@ -285,15 +286,15 @@ func main() {
 	setGinLogger(router, debugMode)
 
 	router.Use(gin.Recovery())
-	router.Use(static.Serve("/", static.LocalFile("data/static", false)))
-	router.LoadHTMLGlob("data/templates/*")
+	router.Use(static.Serve("/", static.LocalFile(filepath.Join(ctx.local_path, "static"), false)))
+	router.LoadHTMLGlob(filepath.Join(ctx.local_path, "templates", "*"))
 	router.NoRoute(ctx.NoRouteHandler)
 	if !firstRun {
 		router.GET("/", ctx.AdminPage)
 		router.GET("/getToken", ctx.GetToken)
 		router.POST("/newUser", ctx.NewUser)
 		router.GET("/invite/:invCode", ctx.InviteProxy)
-		router.Use(static.Serve("/invite/", static.LocalFile("data/static", false)))
+		router.Use(static.Serve("/invite/", static.LocalFile(filepath.Join(ctx.local_path, "static"), false)))
 		api := router.Group("/", ctx.webAuth())
 		api.POST("/generateInvite", ctx.GenerateInvite)
 		api.GET("/getInvites", ctx.GetInvites)

@@ -5,7 +5,7 @@ release:
     github:
         owner: hrfee
         name: jfa-go
-    name_template: "v{{.Version}} {{.Env.USER}}"
+    name_template: "v{{.Version}}"
 before:
   hooks:
     # You may remove this if you don't use go modules.
@@ -36,7 +36,7 @@ archives:
 checksum:
     name_template: 'checksums.txt'
 snapshot:
-    name_template: "{{ .Tag }}-next"
+    name_template: "{{ .Tag }}-testing"
 changelog:
     sort: asc
     filters:
