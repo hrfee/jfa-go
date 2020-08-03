@@ -10,3 +10,4 @@ data/*.html
 data/*.txt
 dist/*
 jfa-go
+build/
