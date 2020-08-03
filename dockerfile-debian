@@ -1,0 +1,33 @@
+FROM golang:latest
+
+RUN apt update -y
+
+RUN apt install build-essential python3-pip curl software-properties-common sed -y
+
+RUN (curl -sL https://deb.nodesource.com/setup_14.x | bash -)
+
+RUN apt install nodejs
+
+ADD . / /opt/build/
+
+RUN (cd /opt/build; make all)
+
+RUN mv /opt/build/build /opt/jfa-go
+
+RUN rm -rf /opt/build
+
+RUN sed -i 's#id="pwrJfPath" placeholder="Folder"#id="pwrJfPath" value="/jf" disabled#g' /opt/jfa-go/data/templates/setup.html
+
+RUN apt remove python3-pip python3 nodejs -y
+
+RUN apt purge python3-minimal nodejs -y
+
+RUN apt autoremove -y
+
+RUN rm -rf /usr/local/go /go
+
+EXPOSE 8056
+
+CMD [ "/opt/jfa-go/jfa-go", "-data", "/data" ]
+
+
