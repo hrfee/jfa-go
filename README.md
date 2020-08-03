@@ -2,10 +2,21 @@
 
 A rewrite of [jellyfin-accounts](https://github.com/hrfee/jellyfin-accounts) in Go. It has feature parity with the Python version, but should be faster.
 
-#### Install/usage
-
+#### Install
 Grab an archive from the release section for your platform, and extract `jfa-go` and `data` to the same directory.
 Run the executable to start.
+
+For [docker](https://hub.docker.com/repository/docker/hrfee/jfa-go), run: 
+```
+docker create \
+             --name "jfa-go" \ # Whatever you want to name it
+             -p 8056:8056 \
+             -v /path/to/.config/jfa-go:/data \ # Equivalent of ~/.jf-accounts
+             -v /path/to/jellyfin:/jf \ # Path to jellyfin config directory
+             -v /etc/localtime:/etc/localtime:ro \ # Makes sure time is correct
+             hrfee/jfa-go
+```
+#### Usage
 ```
 Usage of ./jfa-go:
   -config string
