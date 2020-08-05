@@ -7,7 +7,7 @@ import (
 	"github.com/lithammer/shortuuid/v3"
 	"gopkg.in/ini.v1"
 	"os"
-	//"os/exec"
+	"os/signal"
 	"syscall"
 	"time"
 )
@@ -583,7 +583,7 @@ func (ctx *appContext) ModifyConfig(gc *gin.Context) {
 	gc.JSON(200, map[string]bool{"success": true})
 	if req["restart-program"].(bool) {
 		ctx.info.Println("Restarting...")
-		err := Restart()
+		err := ctx.Restart()
 		if err != nil {
 			ctx.err.Printf("Couldn't restart, try restarting manually. (%s)", err)
 		}
@@ -634,10 +634,11 @@ func (ctx *appContext) ModifyConfig(gc *gin.Context) {
 // 	panic(fmt.Errorf("restarting"))
 // }
 
-func Restart() error {
+func (ctx *appContext) Restart() error {
 	defer func() {
 		if r := recover(); r != nil {
-			os.Exit(0)
+			signal.Notify(ctx.quit, os.Interrupt)
+			<-ctx.quit
 		}
 	}()
 	args := os.Args
@@ -648,7 +649,6 @@ func Restart() error {
 		os.Setenv("JFA_EXEC", args[0])
 	}
 	env := os.Environ()
-	fmt.Printf("EXECUTABLE: %s\n", os.Getenv("JFA_EXEC"))
 	err := syscall.Exec(os.Getenv("JFA_EXEC"), []string{""}, env)
 	if err != nil {
 		return err

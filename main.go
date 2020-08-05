@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
@@ -14,7 +15,9 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
+	"os/signal"
 	"path/filepath"
 	"time"
 )
@@ -48,6 +51,7 @@ type appContext struct {
 	host             string
 	port             int
 	version          string
+	quit             chan os.Signal
 }
 
 func GenerateSecret(length int) (string, error) {
@@ -319,5 +323,24 @@ func main() {
 		router.POST("/modifyConfig", ctx.ModifyConfig)
 		ctx.info.Printf("Loading setup @ %s", address)
 	}
-	router.Run(address)
+	// router.Run(address)
+	srv := &http.Server{
+		Addr:    address,
+		Handler: router,
+	}
+	go func() {
+		if err := srv.ListenAndServe(); err != nil {
+			ctx.err.Printf("Failure serving: %s", err)
+		}
+	}()
+	ctx.quit = make(chan os.Signal)
+	signal.Notify(ctx.quit, os.Interrupt)
+	<-ctx.quit
+	ctx.info.Println("Shutting down...")
+
+	cntx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+	if err := srv.Shutdown(cntx); err != nil {
+		ctx.err.Fatalf("Server shutdown error: %s", err)
+	}
 }
