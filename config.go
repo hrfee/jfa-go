@@ -6,6 +6,32 @@ import (
 	"strconv"
 )
 
+/*var DeCamel ini.NameMapper = func(raw string) string {
+	out := make([]rune, 0, len(raw))
+	upper := 0
+	for _, c := range raw {
+		if unicode.IsUpper(c) {
+			upper++
+		}
+		if upper == 2 {
+			out = append(out, '_')
+			upper = 0
+		}
+		out = append(out, unicode.ToLower(c))
+	}
+	return string(out)
+}
+
+func (ctx *appContext) loadDefaults() (err error) {
+	var cfb []byte
+	cfb, err = ioutil.ReadFile(ctx.configBase_path)
+	if err != nil {
+		return
+	}
+	json.Unmarshal(cfb, ctx.defaults)
+	return
+}*/
+
 func (ctx *appContext) loadConfig() error {
 	var err error
 	ctx.config, err = ini.Load(ctx.config_path)

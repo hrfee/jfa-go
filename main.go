@@ -30,6 +30,7 @@ type User struct {
 }
 
 type appContext struct {
+	// defaults         *Config
 	config           *ini.File
 	config_path      string
 	configBase_path  string
@@ -323,7 +324,7 @@ func main() {
 		router.POST("/modifyConfig", ctx.ModifyConfig)
 		ctx.info.Printf("Loading setup @ %s", address)
 	}
-	// router.Run(address)
+
 	srv := &http.Server{
 		Addr:    address,
 		Handler: router,
