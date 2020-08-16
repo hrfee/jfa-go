@@ -113,7 +113,9 @@ func main() {
 
 	flag.Parse()
 	if app.config_path == *configPath && app.data_path != *dataPath {
-		app.config_path = filepath.Join(*dataPath, "config.ini")
+		app.data_path = *dataPath
+	} else if app.config_path != *configPath && app.data_path == *dataPath {
+		app.config_path = *configPath
 	} else {
 		app.config_path = *configPath
 		app.data_path = *dataPath
