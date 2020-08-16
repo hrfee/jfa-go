@@ -37,6 +37,9 @@ type Jellyfin struct {
 	userId        string
 	httpClient    *http.Client
 	loginParams   map[string]string
+	userCache     []map[string]interface{}
+	cacheExpiry   time.Time
+	cacheLength   int
 }
 
 func (jf *Jellyfin) timeoutHandler() {
@@ -73,6 +76,8 @@ func (jf *Jellyfin) init(server, client, version, device, deviceId string) error
 		data, _ := ioutil.ReadAll(resp.Body)
 		json.Unmarshal(data, &jf.serverInfo)
 	}
+	jf.cacheLength = 30
+	jf.cacheExpiry = time.Now()
 	return nil
 }
 
@@ -199,20 +204,24 @@ func (jf *Jellyfin) getUsers(public bool) ([]map[string]interface{}, int, error)
 	var data io.Reader
 	var status int
 	var err error
-	if public {
-		url := fmt.Sprintf("%s/emby/Users/Public", jf.server)
-		data, status, err = jf._getReader(url, nil)
+	if time.Now().After(jf.cacheExpiry) {
+		if public {
+			url := fmt.Sprintf("%s/emby/Users/Public", jf.server)
+			data, status, err = jf._getReader(url, nil)
 
-	} else {
-		url := fmt.Sprintf("%s/emby/Users", jf.server)
-		data, status, err = jf._getReader(url, jf.loginParams)
+		} else {
+			url := fmt.Sprintf("%s/emby/Users", jf.server)
+			data, status, err = jf._getReader(url, jf.loginParams)
+		}
+		if err != nil || status != 200 {
+			return nil, status, err
+		}
+		json.NewDecoder(data).Decode(&result)
+		jf.userCache = result
+		jf.cacheExpiry = time.Now().Add(time.Minute * time.Duration(jf.cacheLength))
+		return result, status, nil
 	}
-	if err != nil || status != 200 {
-		return nil, status, err
-	}
-	json.NewDecoder(data).Decode(&result)
-	return result, status, nil
-
+	return jf.userCache, 200, nil
 }
 
 func (jf *Jellyfin) userByName(username string, public bool) (map[string]interface{}, int, error) {
@@ -229,6 +238,13 @@ func (jf *Jellyfin) userByName(username string, public bool) (map[string]interfa
 }
 
 func (jf *Jellyfin) userById(userId string, public bool) (map[string]interface{}, int, error) {
+	if jf.cacheExpiry.After(time.Now()) {
+		for _, user := range jf.userCache {
+			if user["Id"].(string) == userId {
+				return user, 200, nil
+			}
+		}
+	}
 	if public {
 		users, status, err := jf.getUsers(public)
 		if err != nil || status != 200 {
