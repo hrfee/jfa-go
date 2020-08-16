@@ -2,33 +2,34 @@ package main
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/knz/strtime"
-	"github.com/lithammer/shortuuid/v3"
-	"gopkg.in/ini.v1"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/knz/strtime"
+	"github.com/lithammer/shortuuid/v3"
+	"gopkg.in/ini.v1"
 )
 
-func (ctx *appContext) loadStrftime() {
-	ctx.datePattern = ctx.config.Section("email").Key("date_format").String()
-	ctx.timePattern = `%H:%M`
-	if val, _ := ctx.config.Section("email").Key("use_24h").Bool(); !val {
-		ctx.timePattern = `%I:%M %p`
+func (app *appContext) loadStrftime() {
+	app.datePattern = app.config.Section("email").Key("date_format").String()
+	app.timePattern = `%H:%M`
+	if val, _ := app.config.Section("email").Key("use_24h").Bool(); !val {
+		app.timePattern = `%I:%M %p`
 	}
 	return
 }
 
-func (ctx *appContext) prettyTime(dt time.Time) (date, time string) {
-	date, _ = strtime.Strftime(dt, ctx.datePattern)
-	time, _ = strtime.Strftime(dt, ctx.timePattern)
+func (app *appContext) prettyTime(dt time.Time) (date, time string) {
+	date, _ = strtime.Strftime(dt, app.datePattern)
+	time, _ = strtime.Strftime(dt, app.timePattern)
 	return
 }
 
-func (ctx *appContext) formatDatetime(dt time.Time) string {
-	d, t := ctx.prettyTime(dt)
+func (app *appContext) formatDatetime(dt time.Time) string {
+	d, t := app.prettyTime(dt)
 	return d + " " + t
 }
 
@@ -79,60 +80,60 @@ func timeDiff(a, b time.Time) (year, month, day, hour, min, sec int) {
 	return
 }
 
-func (ctx *appContext) checkInvites() {
+func (app *appContext) checkInvites() {
 	current_time := time.Now()
-	ctx.storage.loadInvites()
+	app.storage.loadInvites()
 	changed := false
-	for code, data := range ctx.storage.invites {
+	for code, data := range app.storage.invites {
 		expiry := data.ValidTill
 		if current_time.After(expiry) {
-			ctx.debug.Printf("Housekeeping: Deleting old invite %s", code)
+			app.debug.Printf("Housekeeping: Deleting old invite %s", code)
 			notify := data.Notify
-			if ctx.config.Section("notifications").Key("enabled").MustBool(false) && len(notify) != 0 {
-				ctx.debug.Printf("%s: Expiry notification", code)
+			if app.config.Section("notifications").Key("enabled").MustBool(false) && len(notify) != 0 {
+				app.debug.Printf("%s: Expiry notification", code)
 				for address, settings := range notify {
 					if settings["notify-expiry"] {
 						go func() {
-							if ctx.email.constructExpiry(code, data, ctx) != nil {
-								ctx.err.Printf("%s: Failed to construct expiry notification", code)
-							} else if ctx.email.send(address, ctx) != nil {
-								ctx.err.Printf("%s: Failed to send expiry notification", code)
+							if app.email.constructExpiry(code, data, app) != nil {
+								app.err.Printf("%s: Failed to construct expiry notification", code)
+							} else if app.email.send(address, app) != nil {
+								app.err.Printf("%s: Failed to send expiry notification", code)
 							} else {
-								ctx.info.Printf("Sent expiry notification to %s", address)
+								app.info.Printf("Sent expiry notification to %s", address)
 							}
 						}()
 					}
 				}
 			}
 			changed = true
-			delete(ctx.storage.invites, code)
+			delete(app.storage.invites, code)
 		}
 	}
 	if changed {
-		ctx.storage.storeInvites()
+		app.storage.storeInvites()
 	}
 }
 
-func (ctx *appContext) checkInvite(code string, used bool, username string) bool {
+func (app *appContext) checkInvite(code string, used bool, username string) bool {
 	current_time := time.Now()
-	ctx.storage.loadInvites()
+	app.storage.loadInvites()
 	changed := false
-	if inv, match := ctx.storage.invites[code]; match {
+	if inv, match := app.storage.invites[code]; match {
 		expiry := inv.ValidTill
 		if current_time.After(expiry) {
-			ctx.debug.Printf("Housekeeping: Deleting old invite %s", code)
+			app.debug.Printf("Housekeeping: Deleting old invite %s", code)
 			notify := inv.Notify
-			if ctx.config.Section("notifications").Key("enabled").MustBool(false) && len(notify) != 0 {
-				ctx.debug.Printf("%s: Expiry notification", code)
+			if app.config.Section("notifications").Key("enabled").MustBool(false) && len(notify) != 0 {
+				app.debug.Printf("%s: Expiry notification", code)
 				for address, settings := range notify {
 					if settings["notify-expiry"] {
 						go func() {
-							if ctx.email.constructExpiry(code, inv, ctx) != nil {
-								ctx.err.Printf("%s: Failed to construct expiry notification", code)
-							} else if ctx.email.send(address, ctx) != nil {
-								ctx.err.Printf("%s: Failed to send expiry notification", code)
+							if app.email.constructExpiry(code, inv, app) != nil {
+								app.err.Printf("%s: Failed to construct expiry notification", code)
+							} else if app.email.send(address, app) != nil {
+								app.err.Printf("%s: Failed to send expiry notification", code)
 							} else {
-								ctx.info.Printf("Sent expiry notification to %s", address)
+								app.info.Printf("Sent expiry notification to %s", address)
 							}
 						}()
 					}
@@ -140,25 +141,25 @@ func (ctx *appContext) checkInvite(code string, used bool, username string) bool
 			}
 			changed = true
 			match = false
-			delete(ctx.storage.invites, code)
+			delete(app.storage.invites, code)
 		} else if used {
 			changed = true
 			del := false
 			newInv := inv
 			if newInv.RemainingUses == 1 {
 				del = true
-				delete(ctx.storage.invites, code)
+				delete(app.storage.invites, code)
 			} else if newInv.RemainingUses != 0 {
 				// 0 means infinite i guess?
 				newInv.RemainingUses -= 1
 			}
-			newInv.UsedBy = append(newInv.UsedBy, []string{username, ctx.formatDatetime(current_time)})
+			newInv.UsedBy = append(newInv.UsedBy, []string{username, app.formatDatetime(current_time)})
 			if !del {
-				ctx.storage.invites[code] = newInv
+				app.storage.invites[code] = newInv
 			}
 		}
 		if changed {
-			ctx.storage.storeInvites()
+			app.storage.storeInvites()
 		}
 		return match
 	}
@@ -174,17 +175,17 @@ type newUserReq struct {
 	Code     string `json:"code"`
 }
 
-func (ctx *appContext) NewUser(gc *gin.Context) {
+func (app *appContext) NewUser(gc *gin.Context) {
 	var req newUserReq
 	gc.BindJSON(&req)
-	ctx.debug.Printf("%s: New user attempt", req.Code)
-	if !ctx.checkInvite(req.Code, false, "") {
-		ctx.info.Printf("%s New user failed: invalid code", req.Code)
+	app.debug.Printf("%s: New user attempt", req.Code)
+	if !app.checkInvite(req.Code, false, "") {
+		app.info.Printf("%s New user failed: invalid code", req.Code)
 		gc.JSON(401, map[string]bool{"success": false})
 		gc.Abort()
 		return
 	}
-	validation := ctx.validator.validate(req.Password)
+	validation := app.validator.validate(req.Password)
 	valid := true
 	for _, val := range validation {
 		if !val {
@@ -193,38 +194,38 @@ func (ctx *appContext) NewUser(gc *gin.Context) {
 	}
 	if !valid {
 		// 200 bcs idk what i did in js
-		ctx.info.Printf("%s New user failed: Invalid password", req.Code)
+		app.info.Printf("%s New user failed: Invalid password", req.Code)
 		gc.JSON(200, validation)
 		gc.Abort()
 		return
 	}
-	existingUser, _, _ := ctx.jf.userByName(req.Username, false)
+	existingUser, _, _ := app.jf.userByName(req.Username, false)
 	if existingUser != nil {
 		msg := fmt.Sprintf("User already exists named %s", req.Username)
-		ctx.info.Printf("%s New user failed: %s", req.Code, msg)
+		app.info.Printf("%s New user failed: %s", req.Code, msg)
 		respond(401, msg, gc)
 		return
 	}
-	user, status, err := ctx.jf.newUser(req.Username, req.Password)
+	user, status, err := app.jf.newUser(req.Username, req.Password)
 	if !(status == 200 || status == 204) || err != nil {
-		ctx.err.Printf("%s New user failed: Jellyfin responded with %d", req.Code, status)
+		app.err.Printf("%s New user failed: Jellyfin responded with %d", req.Code, status)
 		respond(401, "Unknown error", gc)
 		return
 	}
-	ctx.checkInvite(req.Code, true, req.Username)
-	invite := ctx.storage.invites[req.Code]
-	if ctx.config.Section("notifications").Key("enabled").MustBool(false) {
+	app.checkInvite(req.Code, true, req.Username)
+	invite := app.storage.invites[req.Code]
+	if app.config.Section("notifications").Key("enabled").MustBool(false) {
 		for address, settings := range invite.Notify {
 			if settings["notify-creation"] {
 				go func() {
-					if ctx.email.constructCreated(req.Code, req.Username, req.Email, invite, ctx) != nil {
-						ctx.err.Printf("%s: Failed to construct user creation notification", req.Code)
-						ctx.debug.Printf("%s: Error: %s", req.Code, err)
-					} else if ctx.email.send(address, ctx) != nil {
-						ctx.err.Printf("%s: Failed to send user creation notification", req.Code)
-						ctx.debug.Printf("%s: Error: %s", req.Code, err)
+					if app.email.constructCreated(req.Code, req.Username, req.Email, invite, app) != nil {
+						app.err.Printf("%s: Failed to construct user creation notification", req.Code)
+						app.debug.Printf("%s: Error: %s", req.Code, err)
+					} else if app.email.send(address, app) != nil {
+						app.err.Printf("%s: Failed to send user creation notification", req.Code)
+						app.debug.Printf("%s: Error: %s", req.Code, err)
 					} else {
-						ctx.info.Printf("%s: Sent user creation notification to %s", req.Code, address)
+						app.info.Printf("%s: Sent user creation notification to %s", req.Code, address)
 					}
 				}()
 			}
@@ -234,23 +235,23 @@ func (ctx *appContext) NewUser(gc *gin.Context) {
 	if user["Id"] != nil {
 		id = user["Id"].(string)
 	}
-	if len(ctx.storage.policy) != 0 {
-		status, err = ctx.jf.setPolicy(id, ctx.storage.policy)
+	if len(app.storage.policy) != 0 {
+		status, err = app.jf.setPolicy(id, app.storage.policy)
 		if !(status == 200 || status == 204) {
-			ctx.err.Printf("%s: Failed to set user policy: Code %d", req.Code, status)
+			app.err.Printf("%s: Failed to set user policy: Code %d", req.Code, status)
 		}
 	}
-	if len(ctx.storage.configuration) != 0 && len(ctx.storage.displayprefs) != 0 {
-		status, err = ctx.jf.setConfiguration(id, ctx.storage.configuration)
+	if len(app.storage.configuration) != 0 && len(app.storage.displayprefs) != 0 {
+		status, err = app.jf.setConfiguration(id, app.storage.configuration)
 		if (status == 200 || status == 204) && err == nil {
-			status, err = ctx.jf.setDisplayPreferences(id, ctx.storage.displayprefs)
+			status, err = app.jf.setDisplayPreferences(id, app.storage.displayprefs)
 		} else {
-			ctx.err.Printf("%s: Failed to set configuration template: Code %d", req.Code, status)
+			app.err.Printf("%s: Failed to set configuration template: Code %d", req.Code, status)
 		}
 	}
-	if ctx.config.Section("password_resets").Key("enabled").MustBool(false) {
-		ctx.storage.emails[id] = req.Email
-		ctx.storage.storeEmails()
+	if app.config.Section("password_resets").Key("enabled").MustBool(false) {
+		app.storage.emails[id] = req.Email
+		app.storage.storeEmails()
 	}
 	gc.JSON(200, validation)
 }
@@ -265,10 +266,10 @@ type generateInviteReq struct {
 	RemainingUses int    `json:"remaining-uses"`
 }
 
-func (ctx *appContext) GenerateInvite(gc *gin.Context) {
+func (app *appContext) GenerateInvite(gc *gin.Context) {
 	var req generateInviteReq
-	ctx.debug.Println("Generating new invite")
-	ctx.storage.loadInvites()
+	app.debug.Println("Generating new invite")
+	app.storage.loadInvites()
 	gc.BindJSON(&req)
 	current_time := time.Now()
 	valid_till := current_time.AddDate(0, 0, req.Days)
@@ -286,40 +287,40 @@ func (ctx *appContext) GenerateInvite(gc *gin.Context) {
 		invite.RemainingUses = 1
 	}
 	invite.ValidTill = valid_till
-	if req.Email != "" && ctx.config.Section("invite_emails").Key("enabled").MustBool(false) {
-		ctx.debug.Printf("%s: Sending invite email", invite_code)
+	if req.Email != "" && app.config.Section("invite_emails").Key("enabled").MustBool(false) {
+		app.debug.Printf("%s: Sending invite email", invite_code)
 		invite.Email = req.Email
-		if err := ctx.email.constructInvite(invite_code, invite, ctx); err != nil {
+		if err := app.email.constructInvite(invite_code, invite, app); err != nil {
 			invite.Email = fmt.Sprintf("Failed to send to %s", req.Email)
-			ctx.err.Printf("%s: Failed to construct invite email", invite_code)
-			ctx.debug.Printf("%s: Error: %s", invite_code, err)
-		} else if err := ctx.email.send(req.Email, ctx); err != nil {
+			app.err.Printf("%s: Failed to construct invite email", invite_code)
+			app.debug.Printf("%s: Error: %s", invite_code, err)
+		} else if err := app.email.send(req.Email, app); err != nil {
 			invite.Email = fmt.Sprintf("Failed to send to %s", req.Email)
-			ctx.err.Printf("%s: %s", invite_code, invite.Email)
-			ctx.debug.Printf("%s: Error: %s", invite_code, err)
+			app.err.Printf("%s: %s", invite_code, invite.Email)
+			app.debug.Printf("%s: Error: %s", invite_code, err)
 		} else {
-			ctx.info.Printf("%s: Sent invite email to %s", invite_code, req.Email)
+			app.info.Printf("%s: Sent invite email to %s", invite_code, req.Email)
 		}
 	}
-	ctx.storage.invites[invite_code] = invite
-	ctx.storage.storeInvites()
+	app.storage.invites[invite_code] = invite
+	app.storage.storeInvites()
 	gc.JSON(200, map[string]bool{"success": true})
 }
 
-func (ctx *appContext) GetInvites(gc *gin.Context) {
-	ctx.debug.Println("Invites requested")
+func (app *appContext) GetInvites(gc *gin.Context) {
+	app.debug.Println("Invites requested")
 	current_time := time.Now()
-	ctx.storage.loadInvites()
-	ctx.checkInvites()
+	app.storage.loadInvites()
+	app.checkInvites()
 	var invites []map[string]interface{}
-	for code, inv := range ctx.storage.invites {
+	for code, inv := range app.storage.invites {
 		_, _, days, hours, minutes, _ := timeDiff(inv.ValidTill, current_time)
 		invite := make(map[string]interface{})
 		invite["code"] = code
 		invite["days"] = days
 		invite["hours"] = hours
 		invite["minutes"] = minutes
-		invite["created"] = ctx.formatDatetime(inv.Created)
+		invite["created"] = app.formatDatetime(inv.Created)
 		if len(inv.UsedBy) != 0 {
 			invite["used-by"] = inv.UsedBy
 		}
@@ -335,11 +336,11 @@ func (ctx *appContext) GetInvites(gc *gin.Context) {
 		}
 		if len(inv.Notify) != 0 {
 			var address string
-			if ctx.config.Section("ui").Key("jellyfin_login").MustBool(false) {
-				ctx.storage.loadEmails()
-				address = ctx.storage.emails[gc.GetString("jfId")].(string)
+			if app.config.Section("ui").Key("jellyfin_login").MustBool(false) {
+				app.storage.loadEmails()
+				address = app.storage.emails[gc.GetString("jfId")].(string)
 			} else {
-				address = ctx.config.Section("ui").Key("email").String()
+				address = app.config.Section("ui").Key("email").String()
 			}
 			if _, ok := inv.Notify[address]; ok {
 				for _, notify_type := range []string{"notify-expiry", "notify-creation"} {
@@ -362,34 +363,34 @@ type notifySetting struct {
 	NotifyCreation bool `json:"notify-creation"`
 }
 
-func (ctx *appContext) SetNotify(gc *gin.Context) {
+func (app *appContext) SetNotify(gc *gin.Context) {
 	var req map[string]notifySetting
 	gc.BindJSON(&req)
 	changed := false
 	for code, settings := range req {
-		ctx.debug.Printf("%s: Notification settings change requested", code)
-		ctx.storage.loadInvites()
-		ctx.storage.loadEmails()
-		invite, ok := ctx.storage.invites[code]
+		app.debug.Printf("%s: Notification settings change requested", code)
+		app.storage.loadInvites()
+		app.storage.loadEmails()
+		invite, ok := app.storage.invites[code]
 		if !ok {
-			ctx.err.Printf("%s Notification setting change failed: Invalid code", code)
+			app.err.Printf("%s Notification setting change failed: Invalid code", code)
 			gc.JSON(400, map[string]string{"error": "Invalid invite code"})
 			gc.Abort()
 			return
 		}
 		var address string
-		if ctx.config.Section("ui").Key("jellyfin_login").MustBool(false) {
+		if app.config.Section("ui").Key("jellyfin_login").MustBool(false) {
 			var ok bool
-			address, ok = ctx.storage.emails[gc.GetString("jfId")].(string)
+			address, ok = app.storage.emails[gc.GetString("jfId")].(string)
 			if !ok {
-				ctx.err.Printf("%s: Couldn't find email address. Make sure it's set", code)
-				ctx.debug.Printf("%s: User ID \"%s\"", code, gc.GetString("jfId"))
+				app.err.Printf("%s: Couldn't find email address. Make sure it's set", code)
+				app.debug.Printf("%s: User ID \"%s\"", code, gc.GetString("jfId"))
 				gc.JSON(500, map[string]string{"error": "Missing user email"})
 				gc.Abort()
 				return
 			}
 		} else {
-			address = ctx.config.Section("ui").Key("email").String()
+			address = app.config.Section("ui").Key("email").String()
 		}
 		if invite.Notify == nil {
 			invite.Notify = map[string]map[string]bool{}
@@ -401,20 +402,20 @@ func (ctx *appContext) SetNotify(gc *gin.Context) {
 		*/
 		if invite.Notify[address]["notify-expiry"] != settings.NotifyExpiry {
 			invite.Notify[address]["notify-expiry"] = settings.NotifyExpiry
-			ctx.debug.Printf("%s: Set \"notify-expiry\" to %t for %s", code, settings.NotifyExpiry, address)
+			app.debug.Printf("%s: Set \"notify-expiry\" to %t for %s", code, settings.NotifyExpiry, address)
 			changed = true
 		}
 		if invite.Notify[address]["notify-creation"] != settings.NotifyCreation {
 			invite.Notify[address]["notify-creation"] = settings.NotifyCreation
-			ctx.debug.Printf("%s: Set \"notify-creation\" to %t for %s", code, settings.NotifyExpiry, address)
+			app.debug.Printf("%s: Set \"notify-creation\" to %t for %s", code, settings.NotifyExpiry, address)
 			changed = true
 		}
 		if changed {
-			ctx.storage.invites[code] = invite
+			app.storage.invites[code] = invite
 		}
 	}
 	if changed {
-		ctx.storage.storeInvites()
+		app.storage.storeInvites()
 	}
 }
 
@@ -422,20 +423,20 @@ type deleteReq struct {
 	Code string `json:"code"`
 }
 
-func (ctx *appContext) DeleteInvite(gc *gin.Context) {
+func (app *appContext) DeleteInvite(gc *gin.Context) {
 	var req deleteReq
 	gc.BindJSON(&req)
-	ctx.debug.Printf("%s: Deletion requested", req.Code)
+	app.debug.Printf("%s: Deletion requested", req.Code)
 	var ok bool
-	_, ok = ctx.storage.invites[req.Code]
+	_, ok = app.storage.invites[req.Code]
 	if ok {
-		delete(ctx.storage.invites, req.Code)
-		ctx.storage.storeInvites()
-		ctx.info.Printf("%s: Invite deleted", req.Code)
+		delete(app.storage.invites, req.Code)
+		app.storage.storeInvites()
+		app.info.Printf("%s: Invite deleted", req.Code)
 		gc.JSON(200, map[string]bool{"success": true})
 		return
 	}
-	ctx.err.Printf("%s: Deletion failed: Invalid code", req.Code)
+	app.err.Printf("%s: Deletion failed: Invalid code", req.Code)
 	respond(401, "Code doesn't exist", gc)
 }
 
@@ -448,21 +449,21 @@ type respUser struct {
 	Email string `json:"email,omitempty"`
 }
 
-func (ctx *appContext) GetUsers(gc *gin.Context) {
-	ctx.debug.Println("Users requested")
+func (app *appContext) GetUsers(gc *gin.Context) {
+	app.debug.Println("Users requested")
 	var resp userResp
 	resp.UserList = []respUser{}
-	users, status, err := ctx.jf.getUsers(false)
+	users, status, err := app.jf.getUsers(false)
 	if !(status == 200 || status == 204) || err != nil {
-		ctx.err.Printf("Failed to get users from Jellyfin: Code %d", status)
-		ctx.debug.Printf("Error: %s", err)
+		app.err.Printf("Failed to get users from Jellyfin: Code %d", status)
+		app.debug.Printf("Error: %s", err)
 		respond(500, "Couldn't get users", gc)
 		return
 	}
 	for _, jfUser := range users {
 		var user respUser
 		user.Name = jfUser["Name"].(string)
-		if email, ok := ctx.storage.emails[jfUser["Id"].(string)]; ok {
+		if email, ok := app.storage.emails[jfUser["Id"].(string)]; ok {
 			user.Email = email.(string)
 		}
 		resp.UserList = append(resp.UserList, user)
@@ -470,24 +471,24 @@ func (ctx *appContext) GetUsers(gc *gin.Context) {
 	gc.JSON(200, resp)
 }
 
-func (ctx *appContext) ModifyEmails(gc *gin.Context) {
+func (app *appContext) ModifyEmails(gc *gin.Context) {
 	var req map[string]string
 	gc.BindJSON(&req)
-	ctx.debug.Println("Email modification requested")
-	users, status, err := ctx.jf.getUsers(false)
+	app.debug.Println("Email modification requested")
+	users, status, err := app.jf.getUsers(false)
 	if !(status == 200 || status == 204) || err != nil {
-		ctx.err.Printf("Failed to get users from Jellyfin: Code %d", status)
-		ctx.debug.Printf("Error: %s", err)
+		app.err.Printf("Failed to get users from Jellyfin: Code %d", status)
+		app.debug.Printf("Error: %s", err)
 		respond(500, "Couldn't get users", gc)
 		return
 	}
 	for _, jfUser := range users {
 		if address, ok := req[jfUser["Name"].(string)]; ok {
-			ctx.storage.emails[jfUser["Id"].(string)] = address
+			app.storage.emails[jfUser["Id"].(string)] = address
 		}
 	}
-	ctx.storage.storeEmails()
-	ctx.info.Println("Email list modified")
+	app.storage.storeEmails()
+	app.info.Println("Email list modified")
 	gc.JSON(200, map[string]bool{"success": true})
 }
 
@@ -496,46 +497,46 @@ type defaultsReq struct {
 	Homescreen bool   `json:"homescreen"`
 }
 
-func (ctx *appContext) SetDefaults(gc *gin.Context) {
+func (app *appContext) SetDefaults(gc *gin.Context) {
 	var req defaultsReq
 	gc.BindJSON(&req)
-	ctx.info.Printf("Getting user defaults from \"%s\"", req.Username)
-	user, status, err := ctx.jf.userByName(req.Username, false)
+	app.info.Printf("Getting user defaults from \"%s\"", req.Username)
+	user, status, err := app.jf.userByName(req.Username, false)
 	if !(status == 200 || status == 204) || err != nil {
-		ctx.err.Printf("Failed to get user from Jellyfin: Code %d", status)
-		ctx.debug.Printf("Error: %s", err)
+		app.err.Printf("Failed to get user from Jellyfin: Code %d", status)
+		app.debug.Printf("Error: %s", err)
 		respond(500, "Couldn't get user", gc)
 		return
 	}
 	userId := user["Id"].(string)
 	policy := user["Policy"].(map[string]interface{})
-	ctx.storage.policy = policy
-	ctx.storage.storePolicy()
-	ctx.debug.Println("User policy template stored")
+	app.storage.policy = policy
+	app.storage.storePolicy()
+	app.debug.Println("User policy template stored")
 	if req.Homescreen {
 		configuration := user["Configuration"].(map[string]interface{})
 		var displayprefs map[string]interface{}
-		displayprefs, status, err = ctx.jf.getDisplayPreferences(userId)
+		displayprefs, status, err = app.jf.getDisplayPreferences(userId)
 		if !(status == 200 || status == 204) || err != nil {
-			ctx.err.Printf("Failed to get DisplayPrefs: Code %d", status)
-			ctx.debug.Printf("Error: %s", err)
+			app.err.Printf("Failed to get DisplayPrefs: Code %d", status)
+			app.debug.Printf("Error: %s", err)
 			respond(500, "Couldn't get displayprefs", gc)
 			return
 		}
-		ctx.storage.configuration = configuration
-		ctx.storage.displayprefs = displayprefs
-		ctx.storage.storeConfiguration()
-		ctx.debug.Println("Configuration template stored")
-		ctx.storage.storeDisplayprefs()
-		ctx.debug.Println("DisplayPrefs template stored")
+		app.storage.configuration = configuration
+		app.storage.displayprefs = displayprefs
+		app.storage.storeConfiguration()
+		app.debug.Println("Configuration template stored")
+		app.storage.storeDisplayprefs()
+		app.debug.Println("DisplayPrefs template stored")
 	}
 	gc.JSON(200, map[string]bool{"success": true})
 }
 
-func (ctx *appContext) GetConfig(gc *gin.Context) {
-	ctx.info.Println("Config requested")
+func (app *appContext) GetConfig(gc *gin.Context) {
+	app.info.Println("Config requested")
 	resp := map[string]interface{}{}
-	for section, settings := range ctx.configBase {
+	for section, settings := range app.configBase {
 		if section == "order" {
 			resp[section] = settings.([]interface{})
 		} else {
@@ -547,7 +548,7 @@ func (ctx *appContext) GetConfig(gc *gin.Context) {
 					resp[section].(map[string]interface{})[key] = values.(map[string]interface{})
 					if key != "meta" {
 						dataType := resp[section].(map[string]interface{})[key].(map[string]interface{})["type"].(string)
-						configKey := ctx.config.Section(section).Key(key)
+						configKey := app.config.Section(section).Key(key)
 						if dataType == "number" {
 							if val, err := configKey.Int(); err == nil {
 								resp[section].(map[string]interface{})[key].(map[string]interface{})["value"] = val
@@ -565,11 +566,11 @@ func (ctx *appContext) GetConfig(gc *gin.Context) {
 	gc.JSON(200, resp)
 }
 
-func (ctx *appContext) ModifyConfig(gc *gin.Context) {
-	ctx.info.Println("Config modification requested")
+func (app *appContext) ModifyConfig(gc *gin.Context) {
+	app.info.Println("Config modification requested")
 	var req map[string]interface{}
 	gc.BindJSON(&req)
-	tempConfig, _ := ini.Load(ctx.config_path)
+	tempConfig, _ := ini.Load(app.config_path)
 	for section, settings := range req {
 		_, err := tempConfig.GetSection(section)
 		if section != "restart-program" && err == nil {
@@ -578,33 +579,33 @@ func (ctx *appContext) ModifyConfig(gc *gin.Context) {
 			}
 		}
 	}
-	tempConfig.SaveTo(ctx.config_path)
-	ctx.debug.Println("Config saved")
+	tempConfig.SaveTo(app.config_path)
+	app.debug.Println("Config saved")
 	gc.JSON(200, map[string]bool{"success": true})
 	if req["restart-program"].(bool) {
-		ctx.info.Println("Restarting...")
-		err := ctx.Restart()
+		app.info.Println("Restarting...")
+		err := app.Restart()
 		if err != nil {
-			ctx.err.Printf("Couldn't restart, try restarting manually. (%s)", err)
+			app.err.Printf("Couldn't restart, try restarting manually. (%s)", err)
 		}
 	}
-	ctx.loadConfig()
+	app.loadConfig()
 	// Reinitialize password validator on config change, as opposed to every applicable request like in python.
 	if _, ok := req["password_validation"]; ok {
-		ctx.debug.Println("Reinitializing validator")
+		app.debug.Println("Reinitializing validator")
 		validatorConf := ValidatorConf{
-			"characters":           ctx.config.Section("password_validation").Key("min_length").MustInt(0),
-			"uppercase characters": ctx.config.Section("password_validation").Key("upper").MustInt(0),
-			"lowercase characters": ctx.config.Section("password_validation").Key("lower").MustInt(0),
-			"numbers":              ctx.config.Section("password_validation").Key("number").MustInt(0),
-			"special characters":   ctx.config.Section("password_validation").Key("special").MustInt(0),
+			"characters":           app.config.Section("password_validation").Key("min_length").MustInt(0),
+			"uppercase characters": app.config.Section("password_validation").Key("upper").MustInt(0),
+			"lowercase characters": app.config.Section("password_validation").Key("lower").MustInt(0),
+			"numbers":              app.config.Section("password_validation").Key("number").MustInt(0),
+			"special characters":   app.config.Section("password_validation").Key("special").MustInt(0),
 		}
-		if !ctx.config.Section("password_validation").Key("enabled").MustBool(false) {
+		if !app.config.Section("password_validation").Key("enabled").MustBool(false) {
 			for key := range validatorConf {
 				validatorConf[key] = 0
 			}
 		}
-		ctx.validator.init(validatorConf)
+		app.validator.init(validatorConf)
 	}
 }
 
@@ -634,11 +635,11 @@ func (ctx *appContext) ModifyConfig(gc *gin.Context) {
 // 	panic(fmt.Errorf("restarting"))
 // }
 
-func (ctx *appContext) Restart() error {
+func (app *appContext) Restart() error {
 	defer func() {
 		if r := recover(); r != nil {
-			signal.Notify(ctx.quit, os.Interrupt)
-			<-ctx.quit
+			signal.Notify(app.quit, os.Interrupt)
+			<-app.quit
 		}
 	}()
 	args := os.Args

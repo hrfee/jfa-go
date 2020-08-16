@@ -9,21 +9,21 @@ type Repeater struct {
 	ShutdownChannel chan string
 	Interval        time.Duration
 	period          time.Duration
-	ctx             *appContext
+	app             *appContext
 }
 
-func NewRepeater(interval time.Duration, ctx *appContext) *Repeater {
+func NewRepeater(interval time.Duration, app *appContext) *Repeater {
 	return &Repeater{
 		Stopped:         false,
 		ShutdownChannel: make(chan string),
 		Interval:        interval,
 		period:          interval,
-		ctx:             ctx,
+		app:             app,
 	}
 }
 
 func (rt *Repeater) Run() {
-	rt.ctx.info.Println("Invite daemon started")
+	rt.app.info.Println("Invite daemon started")
 	for {
 		select {
 		case <-rt.ShutdownChannel:
@@ -33,9 +33,9 @@ func (rt *Repeater) Run() {
 			break
 		}
 		started := time.Now()
-		rt.ctx.storage.loadInvites()
-		rt.ctx.debug.Println("Daemon: Checking invites")
-		rt.ctx.checkInvites()
+		rt.app.storage.loadInvites()
+		rt.app.debug.Println("Daemon: Checking invites")
+		rt.app.checkInvites()
 		finished := time.Now()
 		duration := finished.Sub(started)
 		rt.period = rt.Interval - duration

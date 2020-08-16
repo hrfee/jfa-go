@@ -1,9 +1,10 @@
 package main
 
 import (
-	"gopkg.in/ini.v1"
 	"path/filepath"
 	"strconv"
+
+	"gopkg.in/ini.v1"
 )
 
 /*var DeCamel ini.NameMapper = func(raw string) string {
@@ -22,51 +23,51 @@ import (
 	return string(out)
 }
 
-func (ctx *appContext) loadDefaults() (err error) {
+func (app *appContext) loadDefaults() (err error) {
 	var cfb []byte
-	cfb, err = ioutil.ReadFile(ctx.configBase_path)
+	cfb, err = ioutil.ReadFile(app.configBase_path)
 	if err != nil {
 		return
 	}
-	json.Unmarshal(cfb, ctx.defaults)
+	json.Unmarshal(cfb, app.defaults)
 	return
 }*/
 
-func (ctx *appContext) loadConfig() error {
+func (app *appContext) loadConfig() error {
 	var err error
-	ctx.config, err = ini.Load(ctx.config_path)
+	app.config, err = ini.Load(app.config_path)
 	if err != nil {
 		return err
 	}
 
-	ctx.config.Section("jellyfin").Key("public_server").SetValue(ctx.config.Section("jellyfin").Key("public_server").MustString(ctx.config.Section("jellyfin").Key("server").String()))
+	app.config.Section("jellyfin").Key("public_server").SetValue(app.config.Section("jellyfin").Key("public_server").MustString(app.config.Section("jellyfin").Key("server").String()))
 
-	for _, key := range ctx.config.Section("files").Keys() {
+	for _, key := range app.config.Section("files").Keys() {
 		// if key.MustString("") == "" && key.Name() != "custom_css" {
-		// 	key.SetValue(filepath.Join(ctx.data_path, (key.Name() + ".json")))
+		// 	key.SetValue(filepath.Join(app.data_path, (key.Name() + ".json")))
 		// }
-		key.SetValue(key.MustString(filepath.Join(ctx.data_path, (key.Name() + ".json"))))
+		key.SetValue(key.MustString(filepath.Join(app.data_path, (key.Name() + ".json"))))
 	}
 	for _, key := range []string{"user_configuration", "user_displayprefs"} {
-		// if ctx.config.Section("files").Key(key).MustString("") == "" {
-		// 	key.SetValue(filepath.Join(ctx.data_path, (key.Name() + ".json")))
+		// if app.config.Section("files").Key(key).MustString("") == "" {
+		// 	key.SetValue(filepath.Join(app.data_path, (key.Name() + ".json")))
 		// }
-		ctx.config.Section("files").Key(key).SetValue(ctx.config.Section("files").Key(key).MustString(filepath.Join(ctx.data_path, (key + ".json"))))
+		app.config.Section("files").Key(key).SetValue(app.config.Section("files").Key(key).MustString(filepath.Join(app.data_path, (key + ".json"))))
 	}
 
-	ctx.config.Section("email").Key("no_username").SetValue(strconv.FormatBool(ctx.config.Section("email").Key("no_username").MustBool(false)))
+	app.config.Section("email").Key("no_username").SetValue(strconv.FormatBool(app.config.Section("email").Key("no_username").MustBool(false)))
 
-	ctx.config.Section("password_resets").Key("email_html").SetValue(ctx.config.Section("password_resets").Key("email_html").MustString(filepath.Join(ctx.local_path, "email.html")))
-	ctx.config.Section("password_resets").Key("email_text").SetValue(ctx.config.Section("password_resets").Key("email_text").MustString(filepath.Join(ctx.local_path, "email.txt")))
+	app.config.Section("password_resets").Key("email_html").SetValue(app.config.Section("password_resets").Key("email_html").MustString(filepath.Join(app.local_path, "email.html")))
+	app.config.Section("password_resets").Key("email_text").SetValue(app.config.Section("password_resets").Key("email_text").MustString(filepath.Join(app.local_path, "email.txt")))
 
-	ctx.config.Section("invite_emails").Key("email_html").SetValue(ctx.config.Section("invite_emails").Key("email_html").MustString(filepath.Join(ctx.local_path, "invite-email.html")))
-	ctx.config.Section("invite_emails").Key("email_text").SetValue(ctx.config.Section("invite_emails").Key("email_text").MustString(filepath.Join(ctx.local_path, "invite-email.txt")))
+	app.config.Section("invite_emails").Key("email_html").SetValue(app.config.Section("invite_emails").Key("email_html").MustString(filepath.Join(app.local_path, "invite-email.html")))
+	app.config.Section("invite_emails").Key("email_text").SetValue(app.config.Section("invite_emails").Key("email_text").MustString(filepath.Join(app.local_path, "invite-email.txt")))
 
-	ctx.config.Section("notifications").Key("expiry_html").SetValue(ctx.config.Section("notifications").Key("expiry_html").MustString(filepath.Join(ctx.local_path, "expired.html")))
-	ctx.config.Section("notifications").Key("expiry_text").SetValue(ctx.config.Section("notifications").Key("expiry_text").MustString(filepath.Join(ctx.local_path, "expired.txt")))
+	app.config.Section("notifications").Key("expiry_html").SetValue(app.config.Section("notifications").Key("expiry_html").MustString(filepath.Join(app.local_path, "expired.html")))
+	app.config.Section("notifications").Key("expiry_text").SetValue(app.config.Section("notifications").Key("expiry_text").MustString(filepath.Join(app.local_path, "expired.txt")))
 
-	ctx.config.Section("notifications").Key("created_html").SetValue(ctx.config.Section("notifications").Key("created_html").MustString(filepath.Join(ctx.local_path, "created.html")))
-	ctx.config.Section("notifications").Key("created_text").SetValue(ctx.config.Section("notifications").Key("created_text").MustString(filepath.Join(ctx.local_path, "created.txt")))
+	app.config.Section("notifications").Key("created_html").SetValue(app.config.Section("notifications").Key("created_html").MustString(filepath.Join(app.local_path, "created.html")))
+	app.config.Section("notifications").Key("created_text").SetValue(app.config.Section("notifications").Key("created_text").MustString(filepath.Join(app.local_path, "created.txt")))
 
 	return nil
 }
