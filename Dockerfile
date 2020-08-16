@@ -6,7 +6,7 @@ RUN apk add --update make py3-pip curl sed npm build-base python3-dev
 
 ADD . / /opt/build/
 
-RUN (cd /opt/build; make all)
+RUN (cd /opt/build; make headless)
 
 RUN mv /opt/build/build /opt/jfa-go
 

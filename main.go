@@ -114,6 +114,7 @@ func main() {
 	flag.Parse()
 	if app.config_path == *configPath && app.data_path != *dataPath {
 		app.data_path = *dataPath
+		app.config_path = filepath.Join(app.data_path, "config.ini")
 	} else if app.config_path != *configPath && app.data_path == *dataPath {
 		app.config_path = *configPath
 	} else {
@@ -149,7 +150,7 @@ func main() {
 		var nConfig *os.File
 		nConfig, err := os.Create(app.config_path)
 		if err != nil {
-			app.err.Fatalf("Couldn't open config file for writing: \"%s\"", dConfigPath)
+			app.err.Fatalf("Couldn't open config file for writing: \"%s\"", app.config_path)
 		}
 		defer nConfig.Close()
 		_, err = io.Copy(nConfig, dConfig)

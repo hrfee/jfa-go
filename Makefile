@@ -12,6 +12,18 @@ sass:
 	echo "Compiling sass"
 	python3 scss/compile.py
 
+sass-headless:
+	echo "Getting libsass"
+	python3 -m pip install libsass
+	echo "Getting node dependencies"
+	python3 scss/get_node_deps.py
+	echo "Compiling sass"
+	python3 scss/compile.py -y
+
+mail-headless:
+	echo "Generating email html"
+	python3 mail/generate.py -y
+
 mail:
 	echo "Generating email html"
 	python3 mail/generate.py
@@ -28,6 +40,7 @@ copy:
 	cp -r data build/
 
 all: configuration sass mail compile copy
+headless: configuration sass-headless mail-headless copy
 
 
 

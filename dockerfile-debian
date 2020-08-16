@@ -10,7 +10,7 @@ RUN apt install nodejs
 
 ADD . / /opt/build/
 
-RUN (cd /opt/build; make all)
+RUN (cd /opt/build; make headless)
 
 RUN mv /opt/build/build /opt/jfa-go
 
