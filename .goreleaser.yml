@@ -14,8 +14,8 @@ before:
     - python3 config/generate_ini.py -i config/config-base.json -o data/config-default.ini
     - python3 -m pip install libsass
     - python3 scss/get_node_deps.py
-    - python3 scss/compile.py
-    - python3 mail/generate.py
+    - python3 scss/compile.py -y
+    - python3 mail/generate.py -y
 builds:
     - dir: ./
       env:
