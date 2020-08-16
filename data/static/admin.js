@@ -549,6 +549,7 @@ document.getElementById('loginForm').onsubmit = function() {
                 let minutes = document.getElementById('minutes');
                 addOptions(59, minutes);
                 minutes.selected = "30";
+                checkDuration();
                 loginModal.hide();
             }
         }
@@ -958,3 +959,17 @@ document.getElementById('settingsSave').onclick = function() {
     }
 }
 
+// Diable 'Generate' button if days, hours, minutes are all zero
+function checkDuration() {
+        let boxVals = [document.getElementById("days").value, document.getElementById("hours").value, document.getElementById("minutes").value];
+        let submit = document.getElementById("generateSubmit");
+        if (boxVals[0] != 0 || boxVals[1] != 0 || boxVals[2] != 0) {
+            submit.disabled = false;
+        } else if (boxVals[0] == 0 && boxVals[1] == 0 && boxVals[2] == 0) {
+            submit.disabled = true;
+        }
+}
+
+for (i of ["days", "hours", "minutes"]) {
+    document.getElementById(i).addEventListener("change", checkDuration);
+}
