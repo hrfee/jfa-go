@@ -82,7 +82,6 @@ func setGinLogger(router *gin.Engine, debugMode bool) {
 				}(),
 			)
 		}))
-		gin.SetMode(gin.DebugMode)
 	} else {
 		router.Use(gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
 			return fmt.Sprintf("[GIN] %s(%s) => %d\n",
@@ -91,7 +90,6 @@ func setGinLogger(router *gin.Engine, debugMode bool) {
 				param.StatusCode,
 			)
 		}))
-		gin.SetMode(gin.ReleaseMode)
 	}
 }
 
@@ -286,11 +284,15 @@ func main() {
 		}
 	} else {
 		debugMode = false
-		gin.SetMode(gin.ReleaseMode)
 		address = "0.0.0.0:8056"
 	}
 
 	app.info.Println("Loading routes")
+	if debugMode {
+		gin.SetMode(gin.DebugMode)
+	} else {
+		gin.SetMode(gin.ReleaseMode)
+	}
 	router := gin.New()
 
 	setGinLogger(router, debugMode)
