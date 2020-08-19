@@ -45,9 +45,8 @@ build() {
 package() {
     cd jfa-go
     make copy
+    install -d "$pkgdir"/opt
     make install DESTDIR="$pkgdir"/opt
-    cp -r "$pkgdir"/opt/$pkgname /opt/$pkgname
-    ln -s /opt/$pkgname/$pkgname /usr/bin/$pkgname
 }
 
 # check() {
