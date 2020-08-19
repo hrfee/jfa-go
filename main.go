@@ -42,6 +42,7 @@ type appContext struct {
 	bsVersion        int
 	jellyfinLogin    bool
 	users            []User
+	invalidIds       []string
 	jf               Jellyfin
 	authJf           Jellyfin
 	datePattern      string
@@ -328,6 +329,7 @@ func main() {
 		router.Use(static.Serve("/invite/", static.LocalFile(filepath.Join(app.local_path, "static"), false)))
 		router.GET("/invite/:invCode", app.InviteProxy)
 		api := router.Group("/", app.webAuth())
+		api.POST("/logout", app.Logout)
 		api.POST("/generateInvite", app.GenerateInvite)
 		api.GET("/getInvites", app.GetInvites)
 		api.POST("/setNotify", app.SetNotify)

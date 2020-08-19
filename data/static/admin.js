@@ -531,6 +531,61 @@ document.getElementById('inviteForm').onsubmit = function() {
     return false;
 };
 
+function tryLogin(username, password, modal, button) {
+    let req = new XMLHttpRequest();
+    req.responseType = 'json';
+    req.onreadystatechange = function() {
+        if (this.readyState == 4) {
+            if (this.status != 200) {
+                let errormsg = req.response["error"];
+                if (errormsg == "") {
+                    errormsg = "Unknown error"
+                }
+                if (modal) {
+                    button.disabled = false;
+                    button.textContent = errormsg;
+                    if (!button.classList.contains('btn-danger')) {
+                        button.classList.add('btn-danger');
+                        button.classList.remove('btn-primary');
+                    }
+                    setTimeout(function () {
+                        if (button.classList.contains('btn-danger')) {
+                            button.classList.add('btn-primary');
+                            button.classList.remove('btn-danger');
+                            button.textContent = 'Login';
+                        }
+                    }, 4000)
+                } else {
+                    loginModal.show();
+                }
+            } else {
+                const data = this.response;
+                window.token = data['token'];
+                document.cookie = "refresh=" + data['refresh'];
+                generateInvites();
+                const interval = setInterval(function() { generateInvites(); }, 60 * 1000);
+                let day = document.getElementById('days');
+                addOptions(30, day);
+                day.selected = "0";
+                let hour = document.getElementById('hours');
+                addOptions(24, hour);
+                hour.selected = "0";
+                let minutes = document.getElementById('minutes');
+                addOptions(59, minutes);
+                minutes.selected = "30";
+                checkDuration();
+                if (modal) {
+                    loginModal.hide();
+                }
+                document.getElementById('logoutButton').setAttribute('style', '');
+            }
+        }
+    };
+    req.open("GET", "/getToken", true);
+    req.setRequestHeader("Authorization", "Basic " + btoa(username + ":" + password));
+    req.send();
+}
+
 document.getElementById('loginForm').onsubmit = function() {
     window.token = "";
     let details = serializeForm('loginForm');
@@ -545,50 +600,7 @@ document.getElementById('loginForm').onsubmit = function() {
     button.innerHTML =
         '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="margin-right: 0.5rem;"></span>' +
         'Loading...';
-    let req = new XMLHttpRequest();
-    req.responseType = 'json';
-    req.onreadystatechange = function() {
-        if (this.readyState == 4) {
-            if (this.status != 200) {
-                let errormsg = req.response["error"];
-                if (errormsg == "") {
-                    errormsg = "Unknown error"
-                }
-                button.disabled = false;
-                button.textContent = errormsg;
-                if (!button.classList.contains('btn-danger')) {
-                    button.classList.add('btn-danger');
-                    button.classList.remove('btn-primary');
-                }
-                setTimeout(function () {
-                    if (button.classList.contains('btn-danger')) {
-                        button.classList.add('btn-primary');
-                        button.classList.remove('btn-danger');
-                        button.textContent = 'Login';
-                    }
-                }, 4000)
-            } else {
-                const data = this.response;
-                window.token = data['token'];
-                generateInvites();
-                const interval = setInterval(function() { generateInvites(); }, 60 * 1000);
-                let day = document.getElementById('days');
-                addOptions(30, day);
-                day.selected = "0";
-                let hour = document.getElementById('hours');
-                addOptions(24, hour);
-                hour.selected = "0";
-                let minutes = document.getElementById('minutes');
-                addOptions(59, minutes);
-                minutes.selected = "30";
-                checkDuration();
-                loginModal.hide();
-            }
-        }
-    };
-    req.open("GET", "/getToken", true);
-    req.setRequestHeader("Authorization", "Basic " + btoa(details['username'] + ":" + details['password']));
-    req.send();
+    tryLogin(details['username'], details['password'], true, button)
     return false;
 };
 
@@ -794,7 +806,29 @@ document.getElementById('openUsers').onclick = function () {
 };
 
 generateInvites(empty = true);
-loginModal.show();
+
+let refreshToken = getCookie("refresh")
+if (refreshToken != "") {
+    tryLogin(refreshToken, "", false)
+} else {
+    loginModal.show();
+}
+
+document.getElementById('logoutButton').onclick = function () {
+    let req = new XMLHttpRequest();
+    req.open("POST", "/logout", true);
+    req.responseType = 'json';
+    req.setRequestHeader("Authorization", "Basic " + btoa(window.token + ":"));
+    req.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            window.token = '';
+            document.cookie = 'refresh=;';
+            location.reload();
+            return false;
+        }
+    };
+    req.send();
+}
 
 var config = {};
 var modifiedConfig = {};

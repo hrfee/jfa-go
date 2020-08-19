@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -40,7 +41,14 @@ func (app *appContext) authenticate(gc *gin.Context) {
 	claims, ok := token.Claims.(jwt.MapClaims)
 	var userId string
 	var jfId string
-	if ok && token.Valid {
+	expiryUnix, err := strconv.ParseInt(claims["exp"].(string), 10, 64)
+	if err != nil {
+		app.debug.Printf("Auth denied: %s", err)
+		respond(401, "Unauthorized", gc)
+		return
+	}
+	expiry := time.Unix(expiryUnix, 0)
+	if ok && token.Valid && claims["type"].(string) == "bearer" && expiry.After(time.Now()) {
 		userId = claims["id"].(string)
 		jfId = claims["jfid"].(string)
 	} else {
@@ -76,71 +84,126 @@ func (app *appContext) GetToken(gc *gin.Context) {
 	auth, _ := base64.StdEncoding.DecodeString(header[1])
 	creds := strings.SplitN(string(auth), ":", 2)
 	match := false
-	var userId string
+	var userId, jfId string
 	for _, user := range app.users {
 		if user.Username == creds[0] && user.Password == creds[1] {
 			match = true
 			userId = user.UserID
 		}
 	}
-	jfId := ""
 	if !match {
 		if !app.jellyfinLogin {
 			app.info.Println("Auth failed: Invalid username and/or password")
 			respond(401, "Unauthorized", gc)
 			return
 		}
-		var status int
-		var err error
-		var user map[string]interface{}
-		user, status, err = app.authJf.authenticate(creds[0], creds[1])
-		if status != 200 || err != nil {
-			if status == 401 || status == 400 {
-				app.info.Println("Auth failed: Invalid username and/or password")
-				respond(401, "Invalid username/password", gc)
+		if creds[1] == "" {
+			token, err := jwt.Parse(creds[0], func(token *jwt.Token) (interface{}, error) {
+				if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+					app.debug.Printf("Invalid JWT signing method %s", token.Header["alg"])
+					return nil, fmt.Errorf("Unexpected signing method %v", token.Header["alg"])
+				}
+				return []byte(os.Getenv("JFA_SECRET")), nil
+			})
+			if err != nil {
+				app.debug.Printf("Auth denied: %s", err)
+				respond(401, "Unauthorized", gc)
 				return
 			}
-			app.err.Printf("Auth failed: Couldn't authenticate with Jellyfin: Code %d", status)
-			respond(500, "Jellyfin error", gc)
-			return
-		} else {
-			jfId = user["Id"].(string)
-			if app.config.Section("ui").Key("admin_only").MustBool(true) {
-				if !user["Policy"].(map[string]interface{})["IsAdministrator"].(bool) {
-					app.debug.Printf("Auth failed: User \"%s\" isn't admin", creds[0])
+			claims, ok := token.Claims.(jwt.MapClaims)
+			for _, id := range app.invalidIds {
+				if claims["id"].(string) == id {
+					app.debug.Printf("Auth denied: Refresh token in blocklist")
 					respond(401, "Unauthorized", gc)
+					return
 				}
 			}
-			newuser := User{}
-			newuser.UserID = shortuuid.New()
-			userId = newuser.UserID
-			// uuid, nothing else identifiable!
-			app.debug.Printf("Token generated for user \"%s\"", creds[0])
-			app.users = append(app.users, newuser)
+			expiryUnix, err := strconv.ParseInt(claims["exp"].(string), 10, 64)
+			if err != nil {
+				app.debug.Printf("Auth denied: %s", err)
+				respond(401, "Unauthorized", gc)
+				return
+			}
+			expiry := time.Unix(expiryUnix, 0)
+			if ok && token.Valid && claims["type"].(string) == "refresh" && expiry.After(time.Now()) {
+				userId = claims["id"].(string)
+				jfId = claims["jfid"].(string)
+			} else {
+				app.debug.Printf("Invalid token (invalid or not refresh type)")
+				respond(401, "Unauthorized", gc)
+				return
+			}
+		} else {
+			var status int
+			var err error
+			var user map[string]interface{}
+			user, status, err = app.authJf.authenticate(creds[0], creds[1])
+			if status != 200 || err != nil {
+				if status == 401 || status == 400 {
+					app.info.Println("Auth failed: Invalid username and/or password")
+					respond(401, "Invalid username/password", gc)
+					return
+				}
+				app.err.Printf("Auth failed: Couldn't authenticate with Jellyfin: Code %d", status)
+				respond(500, "Jellyfin error", gc)
+				return
+			} else {
+				jfId = user["Id"].(string)
+				if app.config.Section("ui").Key("admin_only").MustBool(true) {
+					if !user["Policy"].(map[string]interface{})["IsAdministrator"].(bool) {
+						app.debug.Printf("Auth failed: User \"%s\" isn't admin", creds[0])
+						respond(401, "Unauthorized", gc)
+					}
+				}
+				newuser := User{}
+				newuser.UserID = shortuuid.New()
+				userId = newuser.UserID
+				// uuid, nothing else identifiable!
+				app.debug.Printf("Token generated for user \"%s\"", creds[0])
+				app.users = append(app.users, newuser)
+			}
 		}
 	}
-	token, err := CreateToken(userId, jfId)
+	token, refresh, err := CreateToken(userId, jfId)
 	if err != nil {
 		respond(500, "Error generating token", gc)
 	}
-	resp := map[string]string{"token": token}
+	resp := map[string]string{"token": token, "refresh": refresh}
 	gc.JSON(200, resp)
 }
 
-func CreateToken(userId string, jfId string) (string, error) {
+func CreateToken(userId string, jfId string) (string, string, error) {
+	var token, refresh string
+	var err error
 	claims := jwt.MapClaims{
 		"valid": true,
 		"id":    userId,
-		"exp":   time.Now().Add(time.Minute * 20).Unix(),
+		"exp":   strconv.FormatInt(time.Now().Add(time.Minute*20).Unix(), 10),
 		"jfid":  jfId,
+		"type":  "bearer",
 	}
 
 	tk := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	token, err := tk.SignedString([]byte(os.Getenv("JFA_SECRET")))
+	token, err = tk.SignedString([]byte(os.Getenv("JFA_SECRET")))
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
-	return token, nil
+
+	claims = jwt.MapClaims{
+		"valid": true,
+		"id":    userId,
+		"exp":   strconv.FormatInt(time.Now().Add(time.Hour*24).Unix(), 10),
+		"jfid":  jfId,
+		"type":  "refresh",
+	}
+
+	tk = jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	refresh, err = tk.SignedString([]byte(os.Getenv("JFA_SECRET")))
+	if err != nil {
+		return "", "", err
+	}
+
+	return token, refresh, nil
 }
 
 func respond(code int, message string, gc *gin.Context) {

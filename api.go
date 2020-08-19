@@ -609,6 +609,11 @@ func (app *appContext) ModifyConfig(gc *gin.Context) {
 	}
 }
 
+func (app *appContext) Logout(gc *gin.Context) {
+	app.invalidIds = append(app.invalidIds, gc.GetString("userId"))
+	gc.JSON(200, map[string]bool{"success": true})
+}
+
 // func Restart() error {
 // 	defer func() {
 // 		if r := recover(); r != nil {
