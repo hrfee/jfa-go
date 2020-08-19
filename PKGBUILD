@@ -1,6 +1,6 @@
 # Maintainer: Harvey Tindall <hrfee@protonmail.ch>
 pkgname="jfa-go"
-pkgver=0.1.3
+pkgver=0.1.4
 pkgrel=1
 pkgdesc="A web app for managing users on Jellyfin"
 arch=("x86_64")
@@ -16,14 +16,13 @@ backup=()
 options=()
 install=
 changelog=
-source=("jfa-go::git+https://github.com/hrfee/jfa-go.git")
+source=("jfa-go::git+https://github.com/hrfee/jfa-go.git#tag=v$pkgver")
 noextract=()
 md5sums=(SKIP)
 validpgpkeys=()
 
 prepare() {
-	cd jfa-go
-    ls
+    cd jfa-go
     make configuration sass-headless mail-headless
 }
 
