@@ -39,6 +39,9 @@ copy:
 	echo "Copying data"
 	cp -r data build/
 
+install:
+	cp -r build $(DESTDIR)/jfa-go
+
 all: configuration sass mail compile copy
 headless: configuration sass-headless mail-headless copy
 
