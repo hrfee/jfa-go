@@ -147,8 +147,8 @@ function addItem(parsedInvite) {
 
     let code = document.createElement('div');
     code.classList.add('d-flex', 'align-items-center', 'font-monospace');
+    code.setAttribute('style', 'width: 40%;');
     let codeLink = document.createElement('a');
-    codeLink.setAttribute('style', 'margin-right: 0.5rem;');
     codeLink.textContent = parsedInvite[0].replace(/-/g, '-');
 
     code.appendChild(codeLink);
@@ -156,6 +156,7 @@ function addItem(parsedInvite) {
     listItem.appendChild(code);
 
     let listRight = document.createElement('div');
+    listRight.setAttribute('style', 'text-align: right;');
     let listText = document.createElement('span');
     listText.id = parsedInvite[0] + '_expiry';
     listText.setAttribute('style', 'margin-right: 1rem;');
@@ -167,9 +168,11 @@ function addItem(parsedInvite) {
         let inviteCode = window.location.href.split('#')[0] + 'invite/' + parsedInvite[0];
         //
         codeLink.href = inviteCode;
+        codeLink.classList.add('invite-link');
         let copyButton = document.createElement('i');
         copyButton.onclick = function() { toClipboard(inviteCode); };
         copyButton.classList.add('fa', 'fa-clipboard', 'icon-button');
+        copyButton.setAttribute('style', 'margin-right: 0.5rem; margin-left: 0.5rem;');
         
         code.appendChild(copyButton);
 
@@ -190,9 +193,12 @@ function addItem(parsedInvite) {
         deleteButton.classList.add('btn', 'btn-outline-danger');
         deleteButton.textContent = "Delete";
         
-        listRight.appendChild(deleteButton);
+        let block = document.createElement('div');
+        block.setAttribute('styile', 'display: inline-block;');
+        block.appendChild(deleteButton);
         let dropButton = document.createElement('i');
         dropButton.classList.add('fa', 'fa-angle-down', 'collapsed', 'icon-button', 'not-rotated');
+        dropButton.setAttribute('style', 'padding: 1rem; margin: -1rem -1rem -1rem 0;');
         dropButton.setAttribute('data-toggle', 'collapse');
         dropButton.setAttribute('aria-expanded', 'false');
         dropButton.setAttribute('data-target', '#' + CSS.escape(parsedInvite[0]) + '_collapse');
@@ -206,7 +212,8 @@ function addItem(parsedInvite) {
             }
         };
         dropButton.setAttribute('style', 'margin-left: 1rem;');
-        listRight.appendChild(dropButton);
+        block.appendChild(dropButton);
+        listRight.appendChild(block);
     }
     
     listItem.appendChild(listRight);
