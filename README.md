@@ -33,6 +33,10 @@ I chose to rewrite the python [jellyfin-accounts](https://github.com/hrfee/jelly
 
 #### Install
 Grab an archive from the release section for your platform, and extract `jfa-go` and `data` to the same directory.
+
+For linux users, you can place them inside `/opt/jfa-go` and then run 
+`sudo ln -s /opt/jfa-go/jfa-go /usr/bin/jfa-go` to place it in your PATH.
+
 Run the executable to start.
 
 A PKGBUILD is also provided for those using Arch Linux.
