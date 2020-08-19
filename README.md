@@ -35,6 +35,8 @@ I chose to rewrite the python [jellyfin-accounts](https://github.com/hrfee/jelly
 Grab an archive from the release section for your platform, and extract `jfa-go` and `data` to the same directory.
 Run the executable to start.
 
+A PKGBUILD is also provided for those using Arch Linux.
+
 For [docker](https://hub.docker.com/repository/docker/hrfee/jfa-go), run: 
 ```
 docker create \
