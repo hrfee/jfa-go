@@ -184,7 +184,8 @@
             "required": false,
             "requires_restart": true,
             "type": "bool",
-            "value": false
+            "value": false,
+            "description": "Enables debug logging and exposes pprof as a route (Don't use in production!)"
         },
         "contact_message": {
             "name": "Contact message",

@@ -108,6 +108,7 @@ func main() {
 	configPath := flag.String("config", app.config_path, "alternate path to config file.")
 	host := flag.String("host", "", "alternate address to host web ui on.")
 	port := flag.Int("port", 0, "alternate port to host web ui on.")
+	debug := flag.Bool("debug", false, "Enables debug logging and exposes pprof.")
 
 	flag.Parse()
 	if app.config_path == *configPath && app.data_path != *dataPath {
@@ -164,8 +165,12 @@ func main() {
 	}
 	app.version = app.config.Section("jellyfin").Key("version").String()
 
-	debugMode = app.config.Section("ui").Key("debug").MustBool(true)
+	debugMode = app.config.Section("ui").Key("debug").MustBool(false)
+	if *debug {
+		debugMode = true
+	}
 	if debugMode {
+		app.info.Println("WARNING: Don't use debug mode in production, as it exposes pprof on the network.")
 		app.debug = log.New(os.Stdout, "[DEBUG] ", log.Ltime|log.Lshortfile)
 	} else {
 		app.debug = log.New(ioutil.Discard, "", 0)
