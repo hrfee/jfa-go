@@ -194,7 +194,7 @@ function addItem(parsedInvite) {
         deleteButton.textContent = "Delete";
         
         let block = document.createElement('div');
-        block.setAttribute('styile', 'display: inline-block;');
+        block.setAttribute('style', 'display: inline-block;');
         block.appendChild(deleteButton);
         let dropButton = document.createElement('i');
         dropButton.classList.add('fa', 'fa-angle-down', 'collapsed', 'icon-button', 'not-rotated');
