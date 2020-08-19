@@ -94,9 +94,8 @@ func (app *appContext) GetToken(gc *gin.Context) {
 		var err error
 		var user map[string]interface{}
 		user, status, err = app.authJf.authenticate(creds[0], creds[1])
-		jfId = user["Id"].(string)
 		if status != 200 || err != nil {
-			if status == 401 {
+			if status == 401 || status == 400 {
 				app.info.Println("Auth failed: Invalid username and/or password")
 				respond(401, "Unauthorized", gc)
 				return
@@ -105,6 +104,7 @@ func (app *appContext) GetToken(gc *gin.Context) {
 			respond(500, "Jellyfin error", gc)
 			return
 		} else {
+			jfId = user["Id"].(string)
 			if app.config.Section("ui").Key("admin_only").MustBool(true) {
 				if !user["Policy"].(map[string]interface{})["IsAdministrator"].(bool) {
 					app.debug.Printf("Auth failed: User \"%s\" isn't admin", creds[0])
