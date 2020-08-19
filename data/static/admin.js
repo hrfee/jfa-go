@@ -527,9 +527,13 @@ document.getElementById('inviteForm').onsubmit = function() {
 document.getElementById('loginForm').onsubmit = function() {
     window.token = "";
     let details = serializeForm('loginForm');
-    let errorArea = document.getElementById('loginErrorArea');
-    errorArea.textContent = '';
+    // let errorArea = document.getElementById('loginErrorArea');
+    // errorArea.textContent = '';
     let button = document.getElementById('loginSubmit');
+    if (button.classList.contains('btn-danger')) {
+        button.classList.add('btn-primary');
+        button.classList.remove('btn-danger');
+    }
     button.disabled = true;
     button.innerHTML =
         '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="margin-right: 0.5rem;"></span>' +
@@ -538,14 +542,24 @@ document.getElementById('loginForm').onsubmit = function() {
     req.responseType = 'json';
     req.onreadystatechange = function() {
         if (this.readyState == 4) {
-            if (this.status == 401) {
+            if (this.status != 200) {
+                let errormsg = req.response["error"];
+                if (errormsg == "") {
+                    errormsg = "Unknown error"
+                }
                 button.disabled = false;
-                button.textContent = 'Login';
-                let wrongPassword = document.createElement('div');
-                wrongPassword.classList.add('alert', 'alert-danger');
-                wrongPassword.setAttribute('role', 'alert');
-                wrongPassword.textContent = "Incorrect username or password.";
-                errorArea.appendChild(wrongPassword);
+                button.textContent = errormsg;
+                if (!button.classList.contains('btn-danger')) {
+                    button.classList.add('btn-danger');
+                    button.classList.remove('btn-primary');
+                }
+                setTimeout(function () {
+                    if (button.classList.contains('btn-danger')) {
+                        button.classList.add('btn-primary');
+                        button.classList.remove('btn-danger');
+                        button.textContent = 'Login';
+                    }
+                }, 4000)
             } else {
                 const data = this.response;
                 window.token = data['token'];

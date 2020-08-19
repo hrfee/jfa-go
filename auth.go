@@ -97,7 +97,7 @@ func (app *appContext) GetToken(gc *gin.Context) {
 		if status != 200 || err != nil {
 			if status == 401 || status == 400 {
 				app.info.Println("Auth failed: Invalid username and/or password")
-				respond(401, "Unauthorized", gc)
+				respond(401, "Invalid username/password", gc)
 				return
 			}
 			app.err.Printf("Auth failed: Couldn't authenticate with Jellyfin: Code %d", status)
