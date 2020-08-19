@@ -19,14 +19,25 @@ var transitionEndEvent = whichTransitionEvent();
 
 // Toggles between light and dark themes
 function toggleCSS() {
-    let cssEl = document.querySelectorAll('link[rel="stylesheet"][type="text/css"]')[0];
+    let Els = document.querySelectorAll('link[rel="stylesheet"][type="text/css"]');
+    let cssEl = Els[0]
+    let remove = false;
+    if (Els.length != 1) {
+        cssEl = Els[1]
+        remove = true
+    }
     let href = "bs" + bsVersion;
     if (cssEl.href.includes(href + "-jf")) {
         href += ".css";
     } else {
         href += "-jf.css";
     }
-    cssEl.href = href
+    let newEl = cssEl.cloneNode(true);
+    newEl.href = href
+    cssEl.parentNode.insertBefore(newEl, cssEl.nextSibling);
+    if (remove) {
+        Els[0].remove()
+    }
     document.cookie = "css=" + href;
 }
 

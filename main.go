@@ -94,7 +94,14 @@ func setGinLogger(router *gin.Engine, debugMode bool) {
 }
 
 func main() {
+	// app encompasses essentially all useful functions.
 	app := new(appContext)
+
+	/*
+		set default config, data and local paths
+		also, confusing naming here. data_path is not the internal 'data' directory, rather the users .config/jfa-go folder.
+		local_path is the internal 'data' directory.
+	*/
 	userConfigDir, _ := os.UserConfigDir()
 	app.data_path = filepath.Join(userConfigDir, "jfa-go")
 	app.config_path = filepath.Join(app.data_path, "config.ini")
@@ -111,6 +118,8 @@ func main() {
 	debug := flag.Bool("debug", false, "Enables debug logging and exposes pprof.")
 
 	flag.Parse()
+
+	// attempt to apply command line flags correctly
 	if app.config_path == *configPath && app.data_path != *dataPath {
 		app.data_path = *dataPath
 		app.config_path = filepath.Join(app.data_path, "config.ini")
@@ -121,7 +130,7 @@ func main() {
 		app.data_path = *dataPath
 	}
 
-	// Env variables are necessary because syscall.Exec for self-restarts doesn't doesn't work with arguments for some reason.
+	// env variables are necessary because syscall.Exec for self-restarts doesn't doesn't work with arguments for some reason.
 
 	if v := os.Getenv("JFA_CONFIGPATH"); v != "" {
 		app.config_path = v
@@ -158,14 +167,16 @@ func main() {
 		}
 		app.info.Printf("Copied default configuration to \"%s\"", app.config_path)
 	}
+
 	var debugMode bool
 	var address string
 	if app.loadConfig() != nil {
 		app.err.Fatalf("Failed to load config file \"%s\"", app.config_path)
 	}
 	app.version = app.config.Section("jellyfin").Key("version").String()
-
+	// read from config...
 	debugMode = app.config.Section("ui").Key("debug").MustBool(false)
+	// then from flag
 	if *debug {
 		debugMode = true
 	}
