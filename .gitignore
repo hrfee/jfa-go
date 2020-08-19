@@ -11,3 +11,4 @@ data/*.txt
 dist/*
 jfa-go
 build/
+pkg/

@@ -36,4 +36,7 @@ package() {
     make copy
     install -d "$pkgdir"/opt
     make install DESTDIR="$pkgdir"/opt
+    mkdir -p "$pkgdir"/usr/bin
+    ln -s "$pkgdir"/opt/$pkgname/$pkgname "$pkgdir"/usr/bin/$pkgname
+    install -Dm644 LICENSE -t "$pkgdir"/usr/share/licenses/$pkgname
 }
