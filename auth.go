@@ -102,7 +102,6 @@ func (app *appContext) GetToken(gc *gin.Context) {
 		}
 		cookie, err := gc.Cookie("refresh")
 		if err == nil && cookie != "" && creds[0] == "" && creds[1] == "" {
-			fmt.Println("Checking:", cookie)
 			for _, token := range app.invalidTokens {
 				if cookie == token {
 					app.debug.Printf("Auth denied: Refresh token in blocklist")

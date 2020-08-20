@@ -617,7 +617,6 @@ func (app *appContext) Logout(gc *gin.Context) {
 		return
 	}
 	app.invalidTokens = append(app.invalidTokens, cookie)
-	fmt.Println("After appending", cookie, ":", app.invalidTokens)
 	gc.SetCookie("refresh", "invalid", -1, "/", gc.Request.URL.Hostname(), true, true)
 	gc.JSON(200, map[string]bool{"success": true})
 }
