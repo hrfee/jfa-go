@@ -610,7 +610,15 @@ func (app *appContext) ModifyConfig(gc *gin.Context) {
 }
 
 func (app *appContext) Logout(gc *gin.Context) {
-	app.invalidIds = append(app.invalidIds, gc.GetString("userId"))
+	cookie, err := gc.Cookie("refresh")
+	if err != nil {
+		app.debug.Printf("Couldn't get cookies: %s", err)
+		respond(500, "Couldn't fetch cookies", gc)
+		return
+	}
+	app.invalidTokens = append(app.invalidTokens, cookie)
+	fmt.Println("After appending", cookie, ":", app.invalidTokens)
+	gc.SetCookie("refresh", "invalid", -1, "/", gc.Request.URL.Hostname(), true, true)
 	gc.JSON(200, map[string]bool{"success": true})
 }
 

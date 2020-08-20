@@ -531,7 +531,7 @@ document.getElementById('inviteForm').onsubmit = function() {
     return false;
 };
 
-function tryLogin(username, password, modal, button) {
+function tryLogin(username, password, modal, button, callback) {
     let req = new XMLHttpRequest();
     req.responseType = 'json';
     req.onreadystatechange = function() {
@@ -561,7 +561,6 @@ function tryLogin(username, password, modal, button) {
             } else {
                 const data = this.response;
                 window.token = data['token'];
-                document.cookie = "refresh=" + data['refresh'];
                 generateInvites();
                 const interval = setInterval(function() { generateInvites(); }, 60 * 1000);
                 let day = document.getElementById('days');
@@ -578,6 +577,9 @@ function tryLogin(username, password, modal, button) {
                     loginModal.hide();
                 }
                 document.getElementById('logoutButton').setAttribute('style', '');
+            }
+            if (typeof callback === "function") {
+                callback(this.status);
             }
         }
     };
@@ -600,7 +602,7 @@ document.getElementById('loginForm').onsubmit = function() {
     button.innerHTML =
         '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="margin-right: 0.5rem;"></span>' +
         'Loading...';
-    tryLogin(details['username'], details['password'], true, button)
+    tryLogin(username = details['username'], password = details['password'], modal = true, button = button)
     return false;
 };
 
@@ -807,12 +809,12 @@ document.getElementById('openUsers').onclick = function () {
 
 generateInvites(empty = true);
 
-let refreshToken = getCookie("refresh")
-if (refreshToken != "") {
-    tryLogin(refreshToken, "", false)
-} else {
-    loginModal.show();
-}
+tryLogin("", "", false, callback = function(code){
+    console.log(code);
+    if (code != 200) {
+        loginModal.show();
+    }
+});
 
 document.getElementById('logoutButton').onclick = function () {
     let req = new XMLHttpRequest();
@@ -822,7 +824,6 @@ document.getElementById('logoutButton').onclick = function () {
     req.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
             window.token = '';
-            document.cookie = 'refresh=;';
             location.reload();
             return false;
         }

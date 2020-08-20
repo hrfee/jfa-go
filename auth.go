@@ -87,8 +87,11 @@ func (app *appContext) GetToken(gc *gin.Context) {
 	var userId, jfId string
 	for _, user := range app.users {
 		if user.Username == creds[0] && user.Password == creds[1] {
-			match = true
-			userId = user.UserID
+			if creds[0] != "" && creds[1] != "" {
+				match = true
+				app.debug.Println("Found existing user")
+				userId = user.UserID
+			}
 		}
 	}
 	if !match {
@@ -97,8 +100,17 @@ func (app *appContext) GetToken(gc *gin.Context) {
 			respond(401, "Unauthorized", gc)
 			return
 		}
-		if creds[1] == "" {
-			token, err := jwt.Parse(creds[0], func(token *jwt.Token) (interface{}, error) {
+		cookie, err := gc.Cookie("refresh")
+		if err == nil && cookie != "" && creds[0] == "" && creds[1] == "" {
+			fmt.Println("Checking:", cookie)
+			for _, token := range app.invalidTokens {
+				if cookie == token {
+					app.debug.Printf("Auth denied: Refresh token in blocklist")
+					respond(401, "Unauthorized", gc)
+					return
+				}
+			}
+			token, err := jwt.Parse(cookie, func(token *jwt.Token) (interface{}, error) {
 				if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 					app.debug.Printf("Invalid JWT signing method %s", token.Header["alg"])
 					return nil, fmt.Errorf("Unexpected signing method %v", token.Header["alg"])
@@ -111,13 +123,6 @@ func (app *appContext) GetToken(gc *gin.Context) {
 				return
 			}
 			claims, ok := token.Claims.(jwt.MapClaims)
-			for _, id := range app.invalidIds {
-				if claims["id"].(string) == id {
-					app.debug.Printf("Auth denied: Refresh token in blocklist")
-					respond(401, "Unauthorized", gc)
-					return
-				}
-			}
 			expiryUnix, err := strconv.ParseInt(claims["exp"].(string), 10, 64)
 			if err != nil {
 				app.debug.Printf("Auth denied: %s", err)
@@ -168,7 +173,8 @@ func (app *appContext) GetToken(gc *gin.Context) {
 	if err != nil {
 		respond(500, "Error generating token", gc)
 	}
-	resp := map[string]string{"token": token, "refresh": refresh}
+	resp := map[string]string{"token": token}
+	gc.SetCookie("refresh", refresh, (3600 * 24), "/", gc.Request.URL.Hostname(), true, true)
 	gc.JSON(200, resp)
 }
 
