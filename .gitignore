@@ -12,3 +12,4 @@ dist/*
 jfa-go
 build/
 pkg/
+old/

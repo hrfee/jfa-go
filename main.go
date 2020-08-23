@@ -324,7 +324,7 @@ func main() {
 	}
 	if !firstRun {
 		router.GET("/", app.AdminPage)
-		router.GET("/getToken", app.GetToken)
+		router.GET("/getToken", app.getToken)
 		router.POST("/newUser", app.NewUser)
 		router.Use(static.Serve("/invite/", static.LocalFile(filepath.Join(app.local_path, "static"), false)))
 		router.GET("/invite/:invCode", app.InviteProxy)
