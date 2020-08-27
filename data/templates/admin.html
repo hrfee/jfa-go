@@ -35,16 +35,22 @@
             {{ else }}
             const bsVersion = 4;
             {{ end }}
-            const cssFile = "{{ .cssFile }}";
+            var cssFile = "{{ .cssFile }}";
             var css = document.createElement('link');
             css.setAttribute('rel', 'stylesheet');
             css.setAttribute('type', 'text/css');
             var cssCookie = getCookie("css");
             if (cssCookie.includes('bs' + bsVersion)) {
-                css.setAttribute('href', cssCookie);
-            } else {
-                css.setAttribute('href', cssFile);
-            };
+                cssFile = cssCookie;
+            } else if (cssCookie.includes('bs')) {
+                if (cssCookie.includes('jf')) {
+                    cssFile = 'bs' + bsVersion + '-jf.css';
+                } else {
+                    cssFile = 'bs' + bsVersion + '.css';
+                }
+                document.cookie = 'css=' + cssFile;
+            }
+            css.setAttribute('href', cssFile);
             document.head.appendChild(css);
         </script>
         {{ if not .bs5 }}
