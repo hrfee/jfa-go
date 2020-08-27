@@ -740,10 +740,10 @@ document.getElementById('openUsers').onclick = function () {
                     address.setAttribute('type', 'email');
                     address.readOnly = true;
                     address.classList.add('form-control-plaintext', 'text-muted', 'd-inline-block', 'addressText');
-                    address.id = 'address_' + user['email'];
+                    address.id = 'address_' + user['name'];
+                    address.setAttribute('style', 'width: auto; margin-left: 2%;');
                     if (typeof(user['email']) != 'undefined') {
                         address.value = user['email'];
-                        address.setAttribute('style', 'width: auto; margin-left: 2%;');
                     }
                     let editButton = document.createElement('i');
                     editButton.classList.add('fa', 'fa-edit', 'd-inline-block', 'icon-button');
