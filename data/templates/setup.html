@@ -3,12 +3,10 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-serialize-object/2.5.0/jquery.serialize-object.min.js" integrity="sha256-E8KRdFk/LTaaCBoQIV/rFNc0s3ICQQiOHFT4Cioifa8=" crossorigin="anonymous"></script>
+        <link rel="stylesheet" href="bs5-jf.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha1/js/bootstrap.min.js" integrity="sha384-oesi62hOLfzrys4LxRF63OJCXdXDipiYWBnvTl9Y9/TRlw5xlKIEHpNyvvDShgf/" crossorigin="anonymous"></script>
         <style>
             .card-body {
                 width: 100%;
@@ -110,20 +108,22 @@
                                 You should create a separate account for it, checking 'Allow this user to manage the server'. You can disable everything else. Once done, enter the credentials here.
                                 <div class="form-group">
                                     <label for="jfHost">Host</label>
-                                    <input type="url" class="form-control" id="jfHost" placeholder="http://jellyf.in:443">
+                                    <input type="url" class="form-control" id="jfHost" placeholder="http://jellyf.in:443" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="jfUser">Username</label>
-                                    <input type="text" class="form-control" id="jfUser" placeholder="Username">
+                                    <input type="text" class="form-control" id="jfUser" placeholder="Username" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="jfPassword">Password</label>
-                                    <input type="password" class="form-control" id="jfPassword" placeholder="Password">
+                                    <input type="password" class="form-control" id="jfPassword" placeholder="Password" required>
                                 </div>
-                                <button class="btn btn-secondary" id="jfTestButton">Test</button>
-                                <div class="btn-group float-right" role="group" aria-label="Back/Next buttons">
-                                    <a class="btn btn-secondary backButton" href="#page-2">Back</a>
-                                    <a class="btn btn-primary nextButton disabled" id="jfNextButton" aria-disabled="true" href="#page-4">Next</a>
+                                <div style="margin-top: 1rem;">
+                                    <button class="btn btn-secondary" id="jfTestButton">Test</button>
+                                    <div class="btn-group float-right" role="group" aria-label="Back/Next buttons">
+                                        <a class="btn btn-secondary backButton" href="#page-2">Back</a>
+                                        <a class="btn btn-primary nextButton disabled" id="jfNextButton" aria-disabled="true" href="#page-4">Next</a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -152,9 +152,9 @@
                                     </div>
                                 </div>
                                 <div id="emailSMTPArea">
-                                    <div class="form-group form-check">
-                                        <input type="checkbox" class="custom-control-input" id="emailSSL_TLS" checked>
-                                        <label for="emailSSL_TLS" class="custom-control-label" id="emailSSL_TLSLabel">Use SSL/TLS</label>
+                                    <div class="form-group form-check form-switch">
+                                        <input type="checkbox" class="form-check-input" id="emailSSL_TLS" checked>
+                                        <label for="emailSSL_TLS" class="form-check-label" id="emailSSL_TLSLabel">Use SSL/TLS</label>
                                         <small class="form-text text-muted">Note: SSL/TLS usually uses port 465, whereas STARTTLS usually uses 587.</small>
                                     </div>
                                     <div class="form-group form-row">

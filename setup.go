@@ -15,6 +15,7 @@ func (app *appContext) TestJF(gc *gin.Context) {
 	gc.BindJSON(&req)
 	tempjf := Jellyfin{}
 	tempjf.init(req.Host, "jfa-go-setup", app.version, "auth", "auth")
+	tempjf.noFail = true
 	_, status, err := tempjf.authenticate(req.Username, req.Password)
 	if !(status == 200 || status == 204) || err != nil {
 		app.info.Printf("Auth failed with code %d (%s)", status, err)

@@ -104,36 +104,55 @@ var jfValid = false
 document.getElementById('jfTestButton').onclick = function() {
     var testButton = document.getElementById('jfTestButton');
     var nextButton = document.getElementById('jfNextButton');
-    testButton.disabled = true;
-    testButton.innerHTML =
-        '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="margin-right: 0.5rem;"></span>' +
-        'Testing...';
-    nextButton.classList.add('disabled');
-    nextButton.setAttribute('aria-disabled', 'true');
     var jfData = {};
     jfData['jfHost'] = document.getElementById('jfHost').value;
     jfData['jfUser'] = document.getElementById('jfUser').value;
     jfData['jfPassword'] = document.getElementById('jfPassword').value;
-    var req = new XMLHttpRequest();
-    req.open("POST", "/testJF", true);
-    req.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
-    req.responseType = 'json';
-    req.onreadystatechange = function() {
-        if (this.readyState == 4) {
-            testButton.disabled = false;
-            testButton.className = '';
-            if (this.response['success'] == true) {
-                testButton.classList.add('btn', 'btn-success');
-                testButton.textContent = 'Success';
-                nextButton.classList.remove('disabled');
-                nextButton.setAttribute('aria-disabled', 'false');
-            } else {
-                testButton.classList.add('btn', 'btn-danger');
-                testButton.textContent = 'Failed';
+    let valid = true;
+    for (val in jfData) {
+        if (jfData[val] == "") {
+            valid = false;
+        }
+    }
+    if (!valid) {
+        if (!testButton.classList.contains('btn-danger')) {
+            testButton.classList.add('btn-danger');
+            testButton.textContent = 'Fill out fields above.';
+            setTimeout(function() {
+                if (testButton.classList.contains('btn-danger')) {
+                    testButton.classList.remove('btn-danger');
+                    testButton.textContent = 'Test';
+                }
+            }, 2000);
+        }
+    } else {
+        testButton.disabled = true;
+        testButton.innerHTML =
+            '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="margin-right: 0.5rem;"></span>' +
+            'Testing...';
+        nextButton.classList.add('disabled');
+        nextButton.setAttribute('aria-disabled', 'true');
+        var req = new XMLHttpRequest();
+        req.open("POST", "/testJF", true);
+        req.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+        req.responseType = 'json';
+        req.onreadystatechange = function() {
+            if (this.readyState == 4) {
+                testButton.disabled = false;
+                testButton.className = '';
+                if (this.response['success'] == true) {
+                    testButton.classList.add('btn', 'btn-success');
+                    testButton.textContent = 'Success';
+                    nextButton.classList.remove('disabled');
+                    nextButton.setAttribute('aria-disabled', 'false');
+                } else {
+                    testButton.classList.add('btn', 'btn-danger');
+                    testButton.textContent = 'Failed';
+                };
             };
-        };
-    };   
-    req.send(JSON.stringify(jfData));
+        };   
+        req.send(JSON.stringify(jfData));
+    }
 };
 
 document.getElementById('submitButton').onclick = function() {

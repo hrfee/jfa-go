@@ -40,11 +40,17 @@ type Jellyfin struct {
 	userCache     []map[string]interface{}
 	cacheExpiry   time.Time
 	cacheLength   int
+	noFail        bool
 }
 
 func (jf *Jellyfin) timeoutHandler() {
 	if r := recover(); r != nil {
-		log.Fatalf("Failed to authenticate with Jellyfin @ %s: Timed out", jf.server)
+		out := fmt.Sprintf("Failed to authenticate with Jellyfin @ %s: Timed out", jf.server)
+		if jf.noFail {
+			log.Printf(out)
+		} else {
+			log.Fatalf(out)
+		}
 	}
 }
 
