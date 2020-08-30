@@ -1,3 +1,8 @@
+document.getElementById('page-1').scrollIntoView({
+    behavior: 'auto',
+    block: 'center',
+    inline: 'center' });
+
 function checkAuthRadio() {
     if (document.getElementById('manualAuthRadio').checked) {
         document.getElementById('adminOnlyArea').style.display = 'none';
