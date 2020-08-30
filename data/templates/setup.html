@@ -43,7 +43,7 @@
                             <div class="card-body">
                                 <h5 class="card-title">Welcome!</h5>
                                 <p class="card-text">
-                                You'll need to do a few things to start using jellyfin-accounts. Click below to get started, or quit and edit the config file manually.
+                                You'll need to do a few things to start using jfa-go. Click below to get started, or quit and edit the config file manually.
                                 </p>
                                 <a class="btn btn-primary nextButton" href="#page-2">Get Started</a>
                             </div>
@@ -57,7 +57,7 @@
                                 <p class="card-text">
                                 To access the admin page, you'll need to login. Choose how below.
                                 <ul>
-                                    <li><b>Authorize through Jellyfin: </b>Checks credentials with jellyfin, allowing you to share login details and grant multiple users access.</li>
+                                    <li><b>Authorize through Jellyfin: </b>Checks credentials with Jellyfin, allowing you to share login details and grant multiple users access.</li>
                                     <li><b>Username & Password: </b>Set your own username and password manually.</li>
                                 </ul>
                                 <div class="form-check" id="jfAuthFormGroup">
@@ -104,11 +104,15 @@
                             <div class="card-body">
                                 <h5 class="card-title">Jellyfin</h5>
                                 <p class="card-text">
-                                jellyfin-accounts needs admin access so that it can create users. 
+                                jfa-go needs admin access so that it can create users, as this is currently not permitted via API tokens. 
                                 You should create a separate account for it, checking 'Allow this user to manage the server'. You can disable everything else. Once done, enter the credentials here.
                                 <div class="form-group">
-                                    <label for="jfHost">Host</label>
+                                    <label for="jfHost">Host (For internal use)</label>
                                     <input type="url" class="form-control" id="jfHost" placeholder="http://jellyf.in:443" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="jfPublicHost">Public Host (For access by users)</label>
+                                    <input type="url" class="form-control" id="jfPublicHost" placeholder="Leave blank to use the above address.">
                                 </div>
                                 <div class="form-group">
                                     <label for="jfUser">Username</label>
@@ -130,7 +134,7 @@
                         <div class="slide card" id="page-4">
                             <div class="card-body">
                                 <h5 class="card-title">Email</h5>
-                                <p class="card-text">jellyfin-accounts is capable of sending a PIN code when a user tries to reset their password on Jellyfin. One can also choose to send an invite code directly to an email address. This can be done through SMTP or through <a href="https://www.mailgun.com/">Mailgun's</a> API. 
+                                <p class="card-text">jfa-go is capable of sending a PIN code when a user tries to reset their password on Jellyfin. One can also choose to send an invite code directly to an email address. This can be done through SMTP or through <a href="https://www.mailgun.com/">Mailgun's</a> API. 
                                 <div class="form-group">
                                     <div class="form-check" id="emailDisabled">
                                         <input class="form-check-input" type="radio" name="email" id="emailDisabledRadio" value="emailDisabled">
@@ -236,7 +240,7 @@
                             <div class="card-body">
                                 <h5 class="card-title">Password Resets</h5>
                                 <p class="card-text">
-                                When a user tries to reset their password in jellyfin, it informs them that a file has been created, named "passwordreset*.json" where * is a number. jellyfin-accounts will then read this file, and send the PIN to the user's email. Try it now, and put the folder that it informs you it put the file in below. Also, if enter a custom email subject if you don't like the default one.
+                                When a user tries to reset their password in jellyfin, it informs them that a file has been created, named "passwordreset*.json" where * is a number. jfa-go will then read this file, and send the PIN to the user's email. Try it now, and put the folder that it informs you it put the file in below. Also, if enter a custom email subject if you don't like the default one.
                                 </p>
                                 <div class="form-group form-check">
                                     <input type="checkbox" class="form-check-input" id="pwrEnabled" value="enabled">

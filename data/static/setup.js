@@ -186,6 +186,10 @@ document.getElementById('submitButton').onclick = function() {
     };
     // Page 3: Connect to jellyfin
     config['jellyfin']['server'] = document.getElementById('jfHost').value;
+    let publicAddress = document.getElementById('jfPublicHost').value;
+    if (publicAddress != "") {
+        config['jellyfin']['public_server'] = publicAddress;
+    }
     config['jellyfin']['username'] = document.getElementById('jfUser').value;
     config['jellyfin']['password'] = document.getElementById('jfPassword').value;
     // Page 4: Email (Page 5, 6, 7 are only used if this is enabled)
