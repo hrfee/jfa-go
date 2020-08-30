@@ -54,7 +54,8 @@ func (jf *Jellyfin) timeoutHandler() {
 	}
 }
 
-func (jf *Jellyfin) init(server, client, version, device, deviceId string) error {
+func newJellyfin(server, client, version, device, deviceId string) (*Jellyfin, error) {
+	jf := &Jellyfin{}
 	jf.server = server
 	jf.client = client
 	jf.version = version
@@ -84,7 +85,7 @@ func (jf *Jellyfin) init(server, client, version, device, deviceId string) error
 	}
 	jf.cacheLength = 30
 	jf.cacheExpiry = time.Now()
-	return nil
+	return jf, nil
 }
 
 func (jf *Jellyfin) authenticate(username, password string) (map[string]interface{}, int, error) {

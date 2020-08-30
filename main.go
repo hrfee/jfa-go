@@ -43,8 +43,8 @@ type appContext struct {
 	jellyfinLogin    bool
 	users            []User
 	invalidTokens    []string
-	jf               Jellyfin
-	authJf           Jellyfin
+	jf               *Jellyfin
+	authJf           *Jellyfin
 	datePattern      string
 	timePattern      string
 	storage          Storage
@@ -266,14 +266,14 @@ func main() {
 		}
 
 		server := app.config.Section("jellyfin").Key("server").String()
-		app.jf.init(server, "jfa-go", app.version, "hrfee-arch", "hrfee-arch")
+		app.jf, _ = newJellyfin(server, "jfa-go", app.version, "hrfee-arch", "hrfee-arch")
 		var status int
 		_, status, err = app.jf.authenticate(app.config.Section("jellyfin").Key("username").String(), app.config.Section("jellyfin").Key("password").String())
 		if status != 200 || err != nil {
 			app.err.Fatalf("Failed to authenticate with Jellyfin @ %s: Code %d", server, status)
 		}
 		app.info.Printf("Authenticated with %s", server)
-		app.authJf.init(server, "jfa-go", app.version, "auth", "auth")
+		app.authJf, _ = newJellyfin(server, "jfa-go", app.version, "auth", "auth")
 
 		app.loadStrftime()
 
