@@ -100,6 +100,7 @@ var userDefaultsModal = createModal('userDefaults');
 var usersModal = createModal('users');
 var restartModal = createModal('restartModal');
 var refreshModal = createModal('refreshModal');
+var aboutModal = createModal('aboutModal');
 
 // Parsed invite: [<code>, <expires in _>, <1: Empty invite (no delete/link), 0: Actual invite>, <email address>, <remaining uses>, [<used-by>], <date created>, <notify on expiry>, <notify on creation>]
 function parseInvite(invite, empty = false) {
@@ -604,6 +605,11 @@ document.getElementById('loginForm').onsubmit = function() {
         'Loading...';
     tryLogin(username = details['username'], password = details['password'], modal = true, button = button)
     return false;
+};
+
+document.getElementById('openAbout').onclick = function() {
+    settingsModal.hide();
+    aboutModal.show();
 };
 
 document.getElementById('openDefaultsWizard').onclick = function() {

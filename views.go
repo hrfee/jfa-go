@@ -16,6 +16,8 @@ func (app *appContext) AdminPage(gc *gin.Context) {
 		"contactMessage": "",
 		"email_enabled":  emailEnabled,
 		"notifications":  notificationsEnabled,
+		"version":        VERSION,
+		"commit":         COMMIT,
 	})
 }
 

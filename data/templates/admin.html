@@ -168,6 +168,9 @@
                     <div class="modal-body">
                         <ul class="list-group list-group-flush">
                             <p>Note: <sup class="text-danger">*</sup> Indicates required field, <sup class="text-danger">R</sup> Indicates changes require a restart.</p>
+                            <button type="button" class="list-group-item list-group-item-action" id="openAbout">
+                            About <i class="fa fa-info-circle"></i>
+                            </button>
                             <button type="button" class="list-group-item list-group-item-action" id="openUsers">
                             Users <i class="fa fa-user"></i>
                             </button>
@@ -252,6 +255,25 @@
                     </div>
                     <div class="modal-body">
                         <p>Refresh the page in a few seconds.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="aboutModal" role="dialog" aria-labelledby="About jfa-go" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">About</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <img src="banner.svg" alt="jfa-go banner">
+                        <p><a href="https://github.com/hrfee/jfa-go"><i class="fa fa-github"></i> jfa-go</a></p>
+                        <p>Version <i>{{ .version }}</i></p>
+                        <p>Commit <i>{{ .commit }}</i></p>
+                        <p><a href="https://github.com/hrfee/jfa-go/blob/main/LICENSE">Available under the MIT License.</a></p>
                     </div>
                 </div>
             </div>
