@@ -28,6 +28,9 @@ mail:
 	echo "Generating email html"
 	python3 mail/generate.py
 
+version:
+	python3 version.py git version.go
+
 compile:
 	echo "Downloading deps"
 	go mod download
@@ -42,8 +45,8 @@ copy:
 install:
 	cp -r build $(DESTDIR)/jfa-go
 
-all: configuration sass mail compile copy
-headless: configuration sass-headless mail-headless copy
+all: configuration sass mail version compile copy
+headless: configuration sass-headless mail-headless version compile copy
 
 
 

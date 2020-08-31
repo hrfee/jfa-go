@@ -95,6 +95,7 @@ func setGinLogger(router *gin.Engine, debugMode bool) {
 }
 
 func main() {
+	fmt.Printf("jfa-go version: %s (%s)\n", VERSION, COMMIT)
 	// app encompasses essentially all useful functions.
 	app := new(appContext)
 

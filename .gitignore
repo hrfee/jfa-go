@@ -13,3 +13,4 @@ jfa-go
 build/
 pkg/
 old/
+version.go
