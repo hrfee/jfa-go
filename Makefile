@@ -36,7 +36,10 @@ compile:
 	go mod download
 	echo "Building"
 	mkdir -p build
-	go build -o build/jfa-go *.go
+	CGO_ENABLED=0 go build -o build/jfa-go *.go
+
+compress:
+	upx --lzma build/jfa-go
 
 copy:
 	echo "Copying data"
