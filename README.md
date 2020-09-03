@@ -33,7 +33,7 @@ I chose to rewrite the python [jellyfin-accounts](https://github.com/hrfee/jelly
 
 #### Install
 
-Available on the AUR as [jfa-go](https://aur.archlinux.org/packages/jfa-go/).
+Available on the AUR as [jfa-go](https://aur.archlinux.org/packages/jfa-go/) or [jfa-go-git](https://aur.archlinux.org/packages/jfa-go-git/).
 
 For other platforms, grab an archive from the release section for your platform, and extract `jfa-go` and `data` to the same directory.
 * For linux users, you can place them inside `/opt/jfa-go` and then run 
