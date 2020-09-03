@@ -1,0 +1,11 @@
+# Systemd service file for jfa-go. Install to ~/.config/systemd/user.
+
+[Unit]
+Description=A web app for managing users on Jellyfin
+
+[Service]
+# Modify this to the path to your executable, if necessary.
+ExecStart=/opt/jfa-go/jfa-go
+
+[Install]
+WantedBy=default.target
