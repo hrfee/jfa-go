@@ -10,8 +10,8 @@ before:
   hooks:
     # You may remove this if you don't use go modules.
     - go mod download
-    - python3 config/fixconfig.py -i config/config-base.json -o data/config-base.json --version {{.Version}}
-    - python3 config/generate_ini.py -i config/config-base.json -o data/config-default.ini
+    - python3 config/fixconfig.py -i config/config-base.json -o data/config-base.json
+    - python3 config/generate_ini.py -i config/config-base.json -o data/config-default.ini --version {{.Version}}
     - python3 -m pip install libsass
     - python3 scss/get_node_deps.py
     - python3 scss/compile.py -y

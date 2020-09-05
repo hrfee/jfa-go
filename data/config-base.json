@@ -622,7 +622,7 @@
             "type": "text",
             "value": "localhost:5000",
             "depends_true": "enabled",
-            "description": "Ombi server URL."
+            "description": "Ombi server URL, including http(s)://."
         },
         "api_key": {
             "name": "API Key",
