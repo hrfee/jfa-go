@@ -1120,7 +1120,10 @@ document.getElementById('settingsSave').onclick = function() {
     }
     if (restart_setting_changed) {
         document.getElementById('applyRestarts').onclick = function(){ sendConfig('restartModal'); };
-        document.getElementById('applyAndRestart').onclick = function(){ sendConfig('restartModal', restart=true); };
+        let restartButton = document.getElementById('applyAndRestart')
+        if (restartButton) {
+            restartButton.onclick = function(){ sendConfig('restartModal', restart=true); };
+        }
         settingsModal.hide();
         restartModal.show();
     } else if (settings_changed) {

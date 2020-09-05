@@ -269,6 +269,15 @@
                     <div class="modal-header">
                         <h5 class="modal-title">Warning</h5>
                     </div>
+                    {{ if .windows }}
+                    <div class="modal-body">
+                        <p>A restart is needed to apply some settings. Self-restarts aren't possible on Windows, so you must restart manually.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-secondary" id="applyRestarts" data-dismiss="modal">Apply, Restart manually</button>
+                    </div>
+                    {{ else }}
                     <div class="modal-body">
                         <p>A restart is needed to apply some settings. Restart now, later, or cancel?</p>
                     </div>
@@ -277,6 +286,7 @@
                         <button type="button" class="btn btn-secondary" id="applyRestarts" data-dismiss="modal">Apply, Restart later</button>
                         <button type="button" class="btn btn-primary" id="applyAndRestart" data-dismiss="modal">Apply &amp; Restart</button>
                     </div>
+                    {{ end }}
                 </div>
             </div>
         </div>
