@@ -7,6 +7,7 @@ from pathlib import Path
 parser = argparse.ArgumentParser()
 parser.add_argument("-i", "--input", help="input config base from jf-accounts")
 parser.add_argument("-o", "--output", help="output ini")
+parser.add_argument("--version", help="version to include in file")
 
 
 def generate_ini(base_file, ini_file, version):
@@ -43,6 +44,8 @@ def generate_ini(base_file, ini_file, version):
 
 args = parser.parse_args()
 
-print(generate_ini(base_file=args.input,
-                   ini_file=args.output,
-                   version="0.1.0"))
+version = "git"
+if args.version is not None:
+    version = args.version
+
+print(generate_ini(base_file=args.input, ini_file=args.output, version=version))

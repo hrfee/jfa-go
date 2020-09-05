@@ -2,7 +2,7 @@ configuration:
 	echo "Fixing config-base"
 	python3 config/fixconfig.py -i config/config-base.json -o data/config-base.json
 	echo "Generating config-default.ini"
-	python3 config/generate_ini.py -i config/config-base.json -o data/config-default.ini
+	python3 config/generate_ini.py -i config/config-base.json -o data/config-default.ini --version git
 
 sass:
 	echo "Getting libsass"
