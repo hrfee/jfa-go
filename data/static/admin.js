@@ -627,9 +627,6 @@ document.getElementById('openDefaultsWizard').onclick = function() {
                 let users = req.response['users'];
                 let radioList = document.getElementById('defaultUserRadios');
                 radioList.textContent = '';
-                if (document.getElementById('setDefaultUser')) {
-                    document.getElementById('setDefaultUser').remove();
-                }
                 let first = true;
                 for (user of users) {
                     let radio = document.createElement('div');
@@ -639,14 +636,14 @@ document.getElementById('openDefaultsWizard').onclick = function() {
                         first = false;
                     } else {
                         checked = '';
-                    };
+                    }
                     radio.innerHTML =
                         `<label><input type="radio" name="defaultRadios" id="default_${user['name']}" style="margin-right: 1rem;" ${checked}>${user['name']}</label>`;
                     radioList.appendChild(radio);
                 }
                 let button = document.getElementById('openDefaultsWizard');
                 button.disabled = false;
-                button.innerHTML = 'Set new account defaults';
+                button.innerHTML = 'New account defaults';
                 let submitButton = document.getElementById('storeDefaults');
                 submitButton.disabled = false;
                 submitButton.textContent = 'Submit';
@@ -714,6 +711,107 @@ document.getElementById('storeDefaults').onclick = function () {
         }
     }
 };
+
+var ombiDefaultsModal = '';
+if (ombiEnabled) {
+    ombiDefaultsModal = createModal('ombiDefaults');
+    document.getElementById('openOmbiDefaults').onclick = function() {
+        this.disabled = true;
+        this.innerHTML =
+            '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="margin-right: 0.5rem;"></span>' +
+            'Loading...';
+        let req = new XMLHttpRequest();
+        req.responseType = 'json';
+        req.open("GET", "/getOmbiUsers", true);
+        req.setRequestHeader("Authorization", "Basic " + btoa(window.token + ":"));
+        req.onreadystatechange = function() {
+            if (this.readyState == 4) {
+                if (this.status == 200) {
+                    let users = req.response['users'];
+                    let radioList = document.getElementById('ombiUserRadios');
+                    radioList.textContent = '';
+                    let first = true;
+                    // name and id
+                    for (user of users) {
+                        let radio = document.createElement('div');
+                        radio.classList.add('radio');
+                        let checked = 'checked';
+                        if (first) {
+                            first = false;
+                        } else {
+                            checked = '';
+                        }
+                        radio.innerHTML =
+                            `<label><input type="radio" name="ombiRadios" id="default_${user['id']}" style="margin-right: 1rem;" ${checked}>${user['name']}</label>`;
+                        radioList.appendChild(radio);
+                    }
+                    let button = document.getElementById('openOmbiDefaults');
+                    button.disabled = false;
+                    button.innerHTML = 'Ombi user defaults';
+                    let submitButton = document.getElementById('storeOmbiDefaults');
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Submit';
+                    if (submitButton.classList.contains('btn-success')) {
+                        submitButton.classList.remove('btn-success');
+                        submitButton.classList.add('btn-primary');
+                    } else if (submitButton.classList.contains('btn-danger')) {
+                        submitButton.classList.remove('btn-danger');
+                        submitButton.classList.add('btn-primary');
+                    }
+                    settingsModal.hide();
+                    ombiDefaultsModal.show();
+                }
+            }
+        };
+        req.send();
+    };
+    document.getElementById('storeOmbiDefaults').onclick = function() {
+        this.disabled = true;
+        this.innerHTML =
+            '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="margin-right: 0.5rem;"></span>' +
+            'Loading...';
+        let button = document.getElementById('storeOmbiDefaults');
+        let radios = document.getElementsByName('ombiRadios');
+        for (let radio of radios) {
+            if (radio.checked) {
+                let data = {
+                    'id': radio.id.slice(8),
+                };
+                let req = new XMLHttpRequest();
+                req.open("POST", "/setOmbiDefaults", true);
+                req.setRequestHeader("Authorization", "Basic " + btoa(window.token + ":"));
+                req.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+                req.onreadystatechange = function() {
+                    if (this.readyState == 4) {
+                        if (this.status == 200 || this.status == 204) {
+                            button.textContent = "Success";
+                            if (button.classList.contains('btn-danger')) {
+                                button.classList.remove('btn-danger');
+                            } else if (button.classList.contains('btn-primary')) {
+                                button.classList.remove('btn-primary');
+                            }
+                            button.classList.add('btn-success');
+                            button.disabled = false;
+                            setTimeout(function() { ombiDefaultsModal.hide(); }, 1000);
+                        } else {
+                            button.textContent = "Failed";
+                            button.classList.remove('btn-primary');
+                            button.classList.add('btn-danger');
+                            setTimeout(function() {
+                                let button = document.getElementById('storeOmbiDefaults');
+                                button.textContent = "Submit";
+                                button.classList.remove('btn-danger');
+                                button.classList.add('btn-primary');
+                                button.disabled = false;
+                            }, 1000);
+                        }
+                    }
+                };
+                req.send(JSON.stringify(data));
+            }
+        }
+    };
+}
 
 document.getElementById('openUsers').onclick = function () {
     this.disabled = true;

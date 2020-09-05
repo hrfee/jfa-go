@@ -52,6 +52,8 @@
             }
             css.setAttribute('href', cssFile);
             document.head.appendChild(css);
+            // store whether ombi is enabled, 1 or 0.
+            var ombiEnabled = {{ .ombiEnabled }}
         </script>
         {{ if not .bs5 }}
         <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
@@ -177,6 +179,11 @@
                             <button type="button" class="list-group-item list-group-item-action" id="openDefaultsWizard">
                             New account defaults
                             </button>
+                            {{ if .ombiEnabled }}
+                            <button type="button" class="list-group-item list-group-item-action" id="openOmbiDefaults">
+                                Ombi user defaults
+                            </button>
+                            {{ end }}
                         </ul>
                         <div class="list-group list-group-flush" id="settingsList">
                         </div>
@@ -230,6 +237,28 @@
                 </div>
             </div>
         </div>
+        {{ if .ombiEnabled }}
+        <div class="modal fade" id="ombiDefaults" role="dialog" aria-labelledby="Ombi Users" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="ombiTitle">Ombi user defaults</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Create an Ombi user and configure it to your liking, then choose it from below to store the settings and permissions as a template for all new users.</p>
+                        <div id="ombiUserRadios"></div>
+                    </div>
+                    <div class="modal-footer" id="ombiFooter">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" id="storeOmbiDefaults">Submit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {{ end }}
         <div class="modal fade" id="restartModal" role="dialog" aria-labelledby="Restart Warning" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered" role="document">
                 <div class="modal-content">

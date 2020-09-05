@@ -40,7 +40,7 @@
             "required": true,
             "requires_restart": true,
             "type": "text",
-            "value": "jf-accounts",
+            "value": "jfa-go",
             "description": "This and below settings will show on the Jellyfin dashboard when the program connects. You may as well leave them alone."
         },
         "version": {
@@ -55,14 +55,14 @@
             "required": true,
             "requires_restart": true,
             "type": "text",
-            "value": "jf-accounts"
+            "value": "jfa-go"
         },
         "device_id": {
             "name": "Device ID",
             "required": true,
             "requires_restart": true,
             "type": "text",
-            "value": "jf-accounts-{version}"
+            "value": "jfa-go-{version}"
         }
     },
     "ui": {
@@ -398,7 +398,7 @@
             "depends_true": "enabled",
             "type": "text",
             "value": "http://accounts.jellyf.in:8056/invite",
-            "description": "Base URL for jf-accounts. This is necessary because using a reverse proxy means the program has no way of knowing the URL itself."
+            "description": "Base URL for jfa-go. This is necessary because using a reverse proxy means the program has no way of knowing the URL itself."
         }
     },
     "notifications": {
@@ -511,6 +511,38 @@
             "value": "smtp password"
         }
     },
+    "ombi": {
+        "meta": {
+            "name": "Ombi Integration",
+            "description": "Connect to Ombi to automatically create a new user's account. You'll need to create an Ombi user template."
+        },
+        "enabled": {
+            "name": "Enabled",
+            "required": false,
+            "requires_restart": true,
+            "type": "bool",
+            "value": false,
+            "description": "Enable to create an Ombi account for new Jellyfin users"
+        },
+        "server": {
+            "name": "URL",
+            "required": false,
+            "requires_restart": true,
+            "type": "text",
+            "value": "localhost:5000",
+            "depends_true": "enabled",
+            "description": "Ombi server URL, including http(s)://."
+        },
+        "api_key": {
+            "name": "API Key",
+            "required": false,
+            "requires_restart": true,
+            "type": "text",
+            "value": "",
+            "depends_true": "enabled",
+            "description": "API Key. Get this from the first tab in Ombi settings."
+        }
+    },
     "files": {
         "meta": {
             "name": "File Storage",
@@ -531,6 +563,14 @@
             "type": "text",
             "value": "",
             "description": "Location of stored email addresses (json)."
+        },
+        "ombi_template": {
+            "name": "Ombi user template",
+            "required": false,
+            "requires_restart": false,
+            "type": "text",
+            "value": "",
+            "description": "Location of stored Ombi user template."
         },
         "user_template": {
             "name": "User Template",

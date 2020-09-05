@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -253,6 +254,18 @@ func (app *appContext) NewUser(gc *gin.Context) {
 		app.storage.emails[id] = req.Email
 		app.storage.storeEmails()
 	}
+	if app.config.Section("ombi").Key("enabled").MustBool(false) {
+		app.storage.loadOmbiTemplate()
+		if len(app.storage.ombi_template) != 0 {
+			errors, code, err := app.ombi.newUser(req.Username, req.Password, req.Email, app.storage.ombi_template)
+			if err != nil || code != 200 {
+				app.info.Printf("Failed to create Ombi user (%d): %s", code, err)
+				app.debug.Printf("Errors reported by Ombi: %s", strings.Join(errors, ", "))
+			} else {
+				app.info.Println("Created Ombi user")
+			}
+		}
+	}
 	gc.JSON(200, validation)
 }
 
@@ -471,6 +484,30 @@ func (app *appContext) GetUsers(gc *gin.Context) {
 	gc.JSON(200, resp)
 }
 
+type ombiUser struct {
+	Name string `json:"name,omitempty"`
+	ID   string `json:"id"`
+}
+
+func (app *appContext) OmbiUsers(gc *gin.Context) {
+	app.debug.Println("Ombi users requested")
+	users, status, err := app.ombi.getUsers()
+	if err != nil || status != 200 {
+		app.err.Printf("Failed to get users from Ombi: Code %d", status)
+		app.debug.Printf("Error: %s", err)
+		respond(500, "Couldn't get users", gc)
+		return
+	}
+	userlist := make([]ombiUser, len(users))
+	for i, data := range users {
+		userlist[i] = ombiUser{
+			Name: data["userName"].(string),
+			ID:   data["id"].(string),
+		}
+	}
+	gc.JSON(200, map[string][]ombiUser{"users": userlist})
+}
+
 func (app *appContext) ModifyEmails(gc *gin.Context) {
 	var req map[string]string
 	gc.BindJSON(&req)
@@ -489,6 +526,21 @@ func (app *appContext) ModifyEmails(gc *gin.Context) {
 	}
 	app.storage.storeEmails()
 	app.info.Println("Email list modified")
+	gc.JSON(200, map[string]bool{"success": true})
+}
+
+func (app *appContext) SetOmbiDefaults(gc *gin.Context) {
+	var req ombiUser
+	gc.BindJSON(&req)
+	template, code, err := app.ombi.templateByID(req.ID)
+	if err != nil || code != 200 || len(template) == 0 {
+		app.err.Printf("Couldn't get user from Ombi: %d %s", code, err)
+		respond(500, "Couldn't get user", gc)
+		return
+	}
+	app.storage.ombi_template = template
+	fmt.Println(app.storage.ombi_path)
+	app.storage.storeOmbiTemplate()
 	gc.JSON(200, map[string]bool{"success": true})
 }
 

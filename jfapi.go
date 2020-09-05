@@ -43,10 +43,10 @@ type Jellyfin struct {
 	noFail        bool
 }
 
-func (jf *Jellyfin) timeoutHandler() {
+func timeoutHandler(name, addr string, noFail bool) {
 	if r := recover(); r != nil {
-		out := fmt.Sprintf("Failed to authenticate with Jellyfin @ %s: Timed out", jf.server)
-		if jf.noFail {
+		out := fmt.Sprintf("Failed to authenticate with %s @ %s: Timed out", name, addr)
+		if noFail {
 			log.Printf(out)
 		} else {
 			log.Fatalf(out)
@@ -78,7 +78,7 @@ func newJellyfin(server, client, version, device, deviceId string) (*Jellyfin, e
 	infoUrl := fmt.Sprintf("%s/System/Info/Public", server)
 	req, _ := http.NewRequest("GET", infoUrl, nil)
 	resp, err := jf.httpClient.Do(req)
-	defer jf.timeoutHandler()
+	defer timeoutHandler("Jellyfin", jf.server, jf.noFail)
 	if err == nil {
 		data, _ := ioutil.ReadAll(resp.Body)
 		json.Unmarshal(data, &jf.serverInfo)
@@ -106,7 +106,7 @@ func (jf *Jellyfin) authenticate(username, password string) (map[string]interfac
 	// loginParams, _ := json.Marshal(jf.loginParams)
 	url := fmt.Sprintf("%s/Users/authenticatebyname", jf.server)
 	req, err := http.NewRequest("POST", url, buffer)
-	defer jf.timeoutHandler()
+	defer timeoutHandler("Jellyfin", jf.server, jf.noFail)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -148,7 +148,7 @@ func (jf *Jellyfin) _getReader(url string, params map[string]string) (io.Reader,
 		req.Header.Add(name, value)
 	}
 	resp, err := jf.httpClient.Do(req)
-	defer jf.timeoutHandler()
+	defer timeoutHandler("Jellyfin", jf.server, jf.noFail)
 	if err != nil || resp.StatusCode != 200 {
 		if resp.StatusCode == 401 && jf.authenticated {
 			jf.authenticated = false
@@ -180,7 +180,7 @@ func (jf *Jellyfin) _post(url string, data map[string]interface{}, response bool
 		req.Header.Add(name, value)
 	}
 	resp, err := jf.httpClient.Do(req)
-	defer jf.timeoutHandler()
+	defer timeoutHandler("Jellyfin", jf.server, jf.noFail)
 	if err != nil || resp.StatusCode != 200 {
 		if resp.StatusCode == 401 && jf.authenticated {
 			jf.authenticated = false

@@ -7,10 +7,10 @@ import (
 )
 
 type Storage struct {
-	timePattern                                                                  string
-	invite_path, emails_path, policy_path, configuration_path, displayprefs_path string
-	invites                                                                      Invites
-	emails, policy, configuration, displayprefs                                  map[string]interface{}
+	timePattern                                                                             string
+	invite_path, emails_path, policy_path, configuration_path, displayprefs_path, ombi_path string
+	invites                                                                                 Invites
+	emails, policy, configuration, displayprefs, ombi_template                              map[string]interface{}
 }
 
 // timePattern: %Y-%m-%dT%H:%M:%S.%f
@@ -65,6 +65,14 @@ func (st *Storage) loadDisplayprefs() error {
 
 func (st *Storage) storeDisplayprefs() error {
 	return storeJSON(st.displayprefs_path, st.displayprefs)
+}
+
+func (st *Storage) loadOmbiTemplate() error {
+	return loadJSON(st.ombi_path, &st.ombi_template)
+}
+
+func (st *Storage) storeOmbiTemplate() error {
+	return storeJSON(st.ombi_path, st.ombi_template)
 }
 
 func loadJSON(path string, obj interface{}) error {

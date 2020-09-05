@@ -45,6 +45,7 @@ type appContext struct {
 	invalidTokens    []string
 	jf               *Jellyfin
 	authJf           *Jellyfin
+	ombi             *Ombi
 	datePattern      string
 	timePattern      string
 	storage          Storage
@@ -225,16 +226,31 @@ func main() {
 
 		app.debug.Println("Loading storage")
 
-		app.storage.invite_path = filepath.Join(app.data_path, "invites.json")
+		// app.storage.invite_path = filepath.Join(app.data_path, "invites.json")
+		app.storage.invite_path = app.config.Section("files").Key("invites").String()
 		app.storage.loadInvites()
-		app.storage.emails_path = filepath.Join(app.data_path, "emails.json")
+		// app.storage.emails_path = filepath.Join(app.data_path, "emails.json")
+		app.storage.emails_path = app.config.Section("files").Key("emails").String()
 		app.storage.loadEmails()
-		app.storage.policy_path = filepath.Join(app.data_path, "user_template.json")
+		// app.storage.policy_path = filepath.Join(app.data_path, "user_template.json")
+		app.storage.policy_path = app.config.Section("files").Key("user_template").String()
 		app.storage.loadPolicy()
-		app.storage.configuration_path = filepath.Join(app.data_path, "user_configuration.json")
+		// app.storage.configuration_path = filepath.Join(app.data_path, "user_configuration.json")
+		app.storage.policy_path = app.config.Section("files").Key("user_configuration").String()
 		app.storage.loadConfiguration()
-		app.storage.displayprefs_path = filepath.Join(app.data_path, "user_displayprefs.json")
+		// app.storage.displayprefs_path = filepath.Join(app.data_path, "user_displayprefs.json")
+		app.storage.displayprefs_path = app.config.Section("files").Key("user_displayprefs").String()
 		app.storage.loadDisplayprefs()
+
+		if app.config.Section("ombi").Key("enabled").MustBool(false) {
+			app.storage.ombi_path = app.config.Section("files").Key("ombi_template").String()
+			app.storage.loadOmbiTemplate()
+			app.ombi = newOmbi(
+				app.config.Section("ombi").Key("server").String(),
+				app.config.Section("ombi").Key("api_key").String(),
+				true,
+			)
+		}
 
 		app.configBase_path = filepath.Join(app.local_path, "config-base.json")
 		config_base, _ := ioutil.ReadFile(app.configBase_path)
@@ -340,6 +356,10 @@ func main() {
 		api.POST("/setDefaults", app.SetDefaults)
 		api.GET("/getConfig", app.GetConfig)
 		api.POST("/modifyConfig", app.ModifyConfig)
+		if app.config.Section("ombi").Key("enabled").MustBool(false) {
+			api.GET("/getOmbiUsers", app.OmbiUsers)
+			api.POST("/setOmbiDefaults", app.SetOmbiDefaults)
+		}
 		app.info.Printf("Starting router @ %s", address)
 	} else {
 		router.GET("/", func(gc *gin.Context) {
