@@ -132,6 +132,10 @@
                 white-space: nowrap;
                 width: auto;
             }
+
+            .settingIcon {
+                margin-left: 0.2rem;
+            }
         </style>
         <title>Admin</title>
     </head>
@@ -168,20 +172,20 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        <ul class="list-group list-group-flush">
+                        <ul class="list-group list-group-flush" style="margin-bottom: 1rem;">
                             <p>Note: <sup class="text-danger">*</sup> Indicates required field, <sup class="text-danger">R</sup> Indicates changes require a restart.</p>
                             <button type="button" class="list-group-item list-group-item-action" id="openAbout">
-                            About <i class="fa fa-info-circle"></i>
+                            About <i class="fa fa-info-circle settingIcon"></i>
                             </button>
                             <button type="button" class="list-group-item list-group-item-action" id="openUsers">
-                            Users <i class="fa fa-user"></i>
+                                Email Addresses <i class="fa fa-envelope settingIcon"></i>
                             </button>
                             <button type="button" class="list-group-item list-group-item-action" id="openDefaultsWizard">
-                            New account defaults
+                                New User Defaults <i class="fa fa-user settingIcon"></i>
                             </button>
                             {{ if .ombiEnabled }}
                             <button type="button" class="list-group-item list-group-item-action" id="openOmbiDefaults">
-                                Ombi user defaults
+                                Ombi User Defaults <i class="fa fa-chain-broken settingIcon"></i>
                             </button>
                             {{ end }}
                         </ul>

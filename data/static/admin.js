@@ -643,7 +643,7 @@ document.getElementById('openDefaultsWizard').onclick = function() {
                 }
                 let button = document.getElementById('openDefaultsWizard');
                 button.disabled = false;
-                button.innerHTML = 'New account defaults';
+                button.innerHTML = 'New User Defaults <i class="fa fa-user settingIcon"></i>';
                 let submitButton = document.getElementById('storeDefaults');
                 submitButton.disabled = false;
                 submitButton.textContent = 'Submit';
@@ -747,7 +747,7 @@ if (ombiEnabled) {
                     }
                     let button = document.getElementById('openOmbiDefaults');
                     button.disabled = false;
-                    button.innerHTML = 'Ombi user defaults';
+                    button.innerHTML = 'Ombi User Defaults <i class="fa fa-chain-broken settingIcon"></i>';
                     let submitButton = document.getElementById('storeOmbiDefaults');
                     submitButton.disabled = false;
                     submitButton.textContent = 'Submit';
