@@ -37,6 +37,8 @@ archives:
         amd64: x86_64
     files:
         - data/*
+        - data/templates/*
+        - data/static/*
 checksum:
     name_template: 'checksums.txt'
 snapshot:
