@@ -359,11 +359,7 @@
                             <div class="card-body text-center">
                                 <h5 class="card-title">Finished!</h5>
                                 <p class="card-text">
-                                {{ if .windows }}
-                                Press the button below to submit your settings. Unfortunately you're running on Windows, so jfa-go <a href="https://github.com/golang/go/issues/30662">cannot restart itself.</a> You will manually have to restart.
-                                {{ else }}
                                 Press the button below to submit your settings. The program will restart. Once it's done, refresh this page.
-                                {{ end }}
                                 </p>
                                 <button id="submitButton" class="btn btn-primary">Submit</button>
                             </div>

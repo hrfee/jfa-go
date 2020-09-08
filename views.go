@@ -11,10 +11,6 @@ func (app *appContext) AdminPage(gc *gin.Context) {
 	emailEnabled, _ := app.config.Section("invite_emails").Key("enabled").Bool()
 	notificationsEnabled, _ := app.config.Section("notifications").Key("enabled").Bool()
 	ombiEnabled := app.config.Section("ombi").Key("enabled").MustBool(false)
-	windows := false
-	if PLATFORM == "windows" {
-		windows = true
-	}
 	gc.HTML(http.StatusOK, "admin.html", gin.H{
 		"bs5":            bs5,
 		"cssFile":        app.cssFile,
@@ -24,7 +20,6 @@ func (app *appContext) AdminPage(gc *gin.Context) {
 		"version":        VERSION,
 		"commit":         COMMIT,
 		"ombiEnabled":    ombiEnabled,
-		"windows":        windows,
 	})
 }
 

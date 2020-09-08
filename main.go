@@ -415,14 +415,8 @@ func start(asDaemon, firstCall bool) {
 		}
 		app.info.Printf("Starting router @ %s", address)
 	} else {
-		windows := false
-		if PLATFORM == "windows" {
-			windows = true
-		}
 		router.GET("/", func(gc *gin.Context) {
-			gc.HTML(200, "setup.html", gin.H{
-				"windows": windows,
-			})
+			gc.HTML(200, "setup.html", gin.H{})
 		})
 		router.POST("/testJF", app.TestJF)
 		router.POST("/modifyConfig", app.ModifyConfig)
