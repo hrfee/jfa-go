@@ -10,8 +10,10 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"net"
 	"net/http"
 	"os"
+	"os/exec"
 	"os/signal"
 	"path/filepath"
 	"runtime"
@@ -96,10 +98,17 @@ func setGinLogger(router *gin.Engine, debugMode bool) {
 	}
 }
 
-var PLATFORM string = runtime.GOOS
+var (
+	PLATFORM           string = runtime.GOOS
+	SOCK               string = "jfa-go.sock"
+	SRV                *http.Server
+	RESTART            chan bool
+	DATA, CONFIG, HOST *string
+	PORT               *int
+	DEBUG              *bool
+)
 
-func main() {
-	fmt.Printf("jfa-go version: %s (%s)\n", VERSION, COMMIT)
+func start(asDaemon, firstCall bool) {
 	// app encompasses essentially all useful functions.
 	app := new(appContext)
 
@@ -117,23 +126,25 @@ func main() {
 	app.info = log.New(os.Stdout, "[INFO] ", log.Ltime)
 	app.err = log.New(os.Stdout, "[ERROR] ", log.Ltime|log.Lshortfile)
 
-	dataPath := flag.String("data", app.data_path, "alternate path to data directory.")
-	configPath := flag.String("config", app.config_path, "alternate path to config file.")
-	host := flag.String("host", "", "alternate address to host web ui on.")
-	port := flag.Int("port", 0, "alternate port to host web ui on.")
-	debug := flag.Bool("debug", false, "Enables debug logging and exposes pprof.")
+	if firstCall {
+		DATA = flag.String("data", app.data_path, "alternate path to data directory.")
+		CONFIG = flag.String("config", app.config_path, "alternate path to config file.")
+		HOST = flag.String("host", "", "alternate address to host web ui on.")
+		PORT = flag.Int("port", 0, "alternate port to host web ui on.")
+		DEBUG = flag.Bool("debug", false, "Enables debug logging and exposes pprof.")
 
-	flag.Parse()
+		flag.Parse()
+	}
 
 	// attempt to apply command line flags correctly
-	if app.config_path == *configPath && app.data_path != *dataPath {
-		app.data_path = *dataPath
+	if app.config_path == *CONFIG && app.data_path != *DATA {
+		app.data_path = *DATA
 		app.config_path = filepath.Join(app.data_path, "config.ini")
-	} else if app.config_path != *configPath && app.data_path == *dataPath {
-		app.config_path = *configPath
+	} else if app.config_path != *CONFIG && app.data_path == *DATA {
+		app.config_path = *CONFIG
 	} else {
-		app.config_path = *configPath
-		app.data_path = *dataPath
+		app.config_path = *CONFIG
+		app.data_path = *DATA
 	}
 
 	// env variables are necessary because syscall.Exec for self-restarts doesn't doesn't work with arguments for some reason.
@@ -183,7 +194,7 @@ func main() {
 	// read from config...
 	debugMode = app.config.Section("ui").Key("debug").MustBool(false)
 	// then from flag
-	if *debug {
+	if *DEBUG {
 		debugMode = true
 	}
 	if debugMode {
@@ -193,15 +204,54 @@ func main() {
 		app.debug = log.New(ioutil.Discard, "", 0)
 	}
 
+	if asDaemon {
+		go func() {
+			socket := SOCK
+			os.Remove(socket)
+			listener, err := net.Listen("unix", socket)
+			if err != nil {
+				app.err.Fatalf("Couldn't establish socket connection at %s\n", SOCK)
+			}
+			c := make(chan os.Signal, 1)
+			signal.Notify(c, os.Interrupt)
+			go func() {
+				<-c
+				os.Remove(socket)
+				os.Exit(1)
+			}()
+			defer func() {
+				listener.Close()
+				os.Remove(SOCK)
+			}()
+			for {
+				con, err := listener.Accept()
+				if err != nil {
+					app.err.Printf("Couldn't read message on %s: %s", socket, err)
+					continue
+				}
+				buf := make([]byte, 512)
+				nr, err := con.Read(buf)
+				if err != nil {
+					app.err.Printf("Couldn't read message on %s: %s", socket, err)
+					continue
+				}
+				command := string(buf[0:nr])
+				if command == "stop" {
+					app.shutdown()
+				}
+			}
+		}()
+	}
+
 	if !firstRun {
 		app.host = app.config.Section("ui").Key("host").String()
 		app.port = app.config.Section("ui").Key("port").MustInt(8056)
 
-		if *host != app.host && *host != "" {
-			app.host = *host
+		if *HOST != app.host && *HOST != "" {
+			app.host = *HOST
 		}
-		if *port != app.port && *port > 0 {
-			app.port = *port
+		if *PORT != app.port && *PORT > 0 {
+			app.port = *PORT
 		}
 
 		if h := os.Getenv("JFA_HOST"); h != "" {
@@ -379,23 +429,92 @@ func main() {
 		app.info.Printf("Loading setup @ %s", address)
 	}
 
-	srv := &http.Server{
+	SRV = &http.Server{
 		Addr:    address,
 		Handler: router,
 	}
 	go func() {
-		if err := srv.ListenAndServe(); err != nil {
+		if err := SRV.ListenAndServe(); err != nil {
 			app.err.Printf("Failure serving: %s", err)
 		}
 	}()
 	app.quit = make(chan os.Signal)
 	signal.Notify(app.quit, os.Interrupt)
-	<-app.quit
+	go func() {
+		for range app.quit {
+			app.shutdown()
+		}
+	}()
+	for range RESTART {
+		cntx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+		defer cancel()
+		if err := SRV.Shutdown(cntx); err != nil {
+			app.err.Fatalf("Server shutdown error: %s", err)
+		}
+		return
+	}
+}
+
+func (app *appContext) shutdown() {
 	app.info.Println("Shutting down...")
 
 	cntx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
-	if err := srv.Shutdown(cntx); err != nil {
+	if err := SRV.Shutdown(cntx); err != nil {
 		app.err.Fatalf("Server shutdown error: %s", err)
+	}
+	os.Exit(1)
+}
+
+func flagPassed(name string) (found bool) {
+	for _, f := range os.Args {
+		if f == name {
+			found = true
+		}
+	}
+	return
+}
+
+func main() {
+	fmt.Printf("jfa-go version: %s (%s)\n", VERSION, COMMIT)
+	folder := "/tmp"
+	if PLATFORM == "windows" {
+		folder = os.Getenv("TEMP")
+	}
+	SOCK = filepath.Join(folder, SOCK)
+	fmt.Println(SOCK)
+	if flagPassed("start") {
+		args := []string{}
+		for i, f := range os.Args {
+			if f == "start" {
+				args = append(args, "daemon")
+			} else if i != 0 {
+				args = append(args, f)
+			}
+		}
+		cmd := exec.Command(os.Args[0], args...)
+		cmd.Start()
+		os.Exit(1)
+	} else if flagPassed("stop") {
+		con, err := net.Dial("unix", SOCK)
+		if err != nil {
+			fmt.Printf("Couldn't dial socket %s, are you sure jfa-go is running?\n", SOCK)
+			os.Exit(1)
+		}
+		_, err = con.Write([]byte("stop"))
+		if err != nil {
+			fmt.Printf("Couldn't send command to socket %s, are you sure jfa-go is running?\n", SOCK)
+			os.Exit(1)
+		}
+		fmt.Println("Sent.")
+	} else if flagPassed("daemon") {
+		start(true, true)
+	} else {
+		RESTART = make(chan bool, 1)
+		start(false, true)
+		for {
+			fmt.Printf("jfa-go version: %s (%s)\n", VERSION, COMMIT)
+			start(false, false)
+		}
 	}
 }
