@@ -92,10 +92,12 @@ func (app *appContext) checkInvites() {
 				for address, settings := range notify {
 					if settings["notify-expiry"] {
 						go func() {
-							if app.email.constructExpiry(code, data, app) != nil {
+							if err := app.email.constructExpiry(code, data, app); err != nil {
 								app.err.Printf("%s: Failed to construct expiry notification", code)
-							} else if app.email.send(address, app) != nil {
+								app.debug.Printf("Error: %s", err)
+							} else if err := app.email.send(address); err != nil {
 								app.err.Printf("%s: Failed to send expiry notification", code)
+								app.debug.Printf("Error: %s", err)
 							} else {
 								app.info.Printf("Sent expiry notification to %s", address)
 							}
@@ -126,10 +128,12 @@ func (app *appContext) checkInvite(code string, used bool, username string) bool
 				for address, settings := range notify {
 					if settings["notify-expiry"] {
 						go func() {
-							if app.email.constructExpiry(code, inv, app) != nil {
+							if err := app.email.constructExpiry(code, inv, app); err != nil {
 								app.err.Printf("%s: Failed to construct expiry notification", code)
-							} else if app.email.send(address, app) != nil {
+								app.debug.Printf("Error: %s", err)
+							} else if err := app.email.send(address); err != nil {
 								app.err.Printf("%s: Failed to send expiry notification", code)
+								app.debug.Printf("Error: %s", err)
 							} else {
 								app.info.Printf("Sent expiry notification to %s", address)
 							}
@@ -216,10 +220,10 @@ func (app *appContext) NewUser(gc *gin.Context) {
 		for address, settings := range invite.Notify {
 			if settings["notify-creation"] {
 				go func() {
-					if app.email.constructCreated(req.Code, req.Username, req.Email, invite, app) != nil {
+					if err := app.email.constructCreated(req.Code, req.Username, req.Email, invite, app); err != nil {
 						app.err.Printf("%s: Failed to construct user creation notification", req.Code)
 						app.debug.Printf("%s: Error: %s", req.Code, err)
-					} else if app.email.send(address, app) != nil {
+					} else if err := app.email.send(address); err != nil {
 						app.err.Printf("%s: Failed to send user creation notification", req.Code)
 						app.debug.Printf("%s: Error: %s", req.Code, err)
 					} else {
@@ -304,7 +308,7 @@ func (app *appContext) GenerateInvite(gc *gin.Context) {
 			invite.Email = fmt.Sprintf("Failed to send to %s", req.Email)
 			app.err.Printf("%s: Failed to construct invite email", invite_code)
 			app.debug.Printf("%s: Error: %s", invite_code, err)
-		} else if err := app.email.send(req.Email, app); err != nil {
+		} else if err := app.email.send(req.Email); err != nil {
 			invite.Email = fmt.Sprintf("Failed to send to %s", req.Email)
 			app.err.Printf("%s: %s", invite_code, invite.Email)
 			app.debug.Printf("%s: Error: %s", invite_code, err)
@@ -353,9 +357,9 @@ func (app *appContext) GetInvites(gc *gin.Context) {
 				address = app.config.Section("ui").Key("email").String()
 			}
 			if _, ok := inv.Notify[address]; ok {
-				for _, notify_type := range []string{"notify-expiry", "notify-creation"} {
-					if _, ok = inv.Notify[notify_type]; ok {
-						invite[notify_type] = inv.Notify[address][notify_type]
+				for _, notifyType := range []string{"notify-expiry", "notify-creation"} {
+					if _, ok = inv.Notify[notifyType]; ok {
+						invite[notifyType] = inv.Notify[address][notifyType]
 					}
 				}
 			}
@@ -557,7 +561,7 @@ func (app *appContext) SetDefaults(gc *gin.Context) {
 		respond(500, "Couldn't get user", gc)
 		return
 	}
-	userId := user["Id"].(string)
+	userID := user["Id"].(string)
 	policy := user["Policy"].(map[string]interface{})
 	app.storage.policy = policy
 	app.storage.storePolicy()
@@ -565,7 +569,7 @@ func (app *appContext) SetDefaults(gc *gin.Context) {
 	if req.Homescreen {
 		configuration := user["Configuration"].(map[string]interface{})
 		var displayprefs map[string]interface{}
-		displayprefs, status, err = app.jf.getDisplayPreferences(userId)
+		displayprefs, status, err = app.jf.getDisplayPreferences(userID)
 		if !(status == 200 || status == 204) || err != nil {
 			app.err.Printf("Failed to get DisplayPrefs: Code %d", status)
 			app.debug.Printf("Error: %s", err)

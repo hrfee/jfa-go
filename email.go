@@ -15,16 +15,65 @@ import (
 	"github.com/mailgun/mailgun-go/v4"
 )
 
-type Emailer struct {
-	smtpAuth                                 smtp.Auth
-	sendType, sendMethod, fromAddr, fromName string
-	content                                  Email
-	mg                                       *mailgun.MailgunImpl
-	mime                                     string
-	host                                     string
+// implements email sending, right now via smtp or mailgun.
+type emailClient interface {
+	send(address, fromName, fromAddr string, email email) error
 }
 
-type Email struct {
+type Mailgun struct {
+	client *mailgun.MailgunImpl
+}
+
+func (mg *Mailgun) send(address, fromName, fromAddr string, email email) error {
+	message := mg.client.NewMessage(
+		fmt.Sprintf("%s <%s>", fromName, fromAddr),
+		email.subject,
+		email.text,
+		address,
+	)
+	message.SetHtml(email.html)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+	_, _, err := mg.client.Send(ctx, message)
+	return err
+}
+
+type Smtp struct {
+	sslTls       bool
+	host, server string
+	port         int
+	auth         smtp.Auth
+}
+
+func (sm *Smtp) send(address, fromName, fromAddr string, email email) error {
+	e := jEmail.NewEmail()
+	e.Subject = email.subject
+	e.From = fmt.Sprintf("%s <%s>", fromName, fromAddr)
+	e.To = []string{address}
+	e.Text = []byte(email.text)
+	e.HTML = []byte(email.html)
+	tlsConfig := &tls.Config{
+		InsecureSkipVerify: false,
+		ServerName:         sm.host,
+	}
+	server := fmt.Sprintf("%s:%d", sm.server, sm.port)
+	var err error
+	if sm.sslTls {
+		err = e.SendWithTLS(server, sm.auth, tlsConfig)
+	} else {
+		err = e.SendWithStartTLS(server, sm.auth, tlsConfig)
+	}
+	return err
+}
+
+// Emailer contains the email sender, email content, and methods to construct message content.
+type Emailer struct {
+	content            email
+	fromAddr, fromName string
+	sender             emailClient
+}
+
+type email struct {
 	subject    string
 	html, text string
 }
@@ -50,22 +99,44 @@ func (email *Emailer) formatExpiry(expiry time.Time, tzaware bool, datePattern, 
 	return
 }
 
-func (email *Emailer) init(app *appContext) {
-	email.fromAddr = app.config.Section("email").Key("address").String()
-	email.fromName = app.config.Section("email").Key("from").String()
-	email.sendMethod = app.config.Section("email").Key("method").String()
-	if email.sendMethod == "mailgun" {
-		email.mg = mailgun.NewMailgun(strings.Split(email.fromAddr, "@")[1], app.config.Section("mailgun").Key("api_key").String())
-		api_url := app.config.Section("mailgun").Key("api_url").String()
-		// Mailgun client takes the base url, so we need to trim off the end (e.g 'v3/messages'
-		if strings.Contains(api_url, "messages") {
-			api_url = api_url[0:strings.LastIndex(api_url, "/")]
-			api_url = api_url[0:strings.LastIndex(api_url, "/")]
+func NewEmailer(app *appContext) *Emailer {
+	emailer := &Emailer{
+		fromAddr: app.config.Section("email").Key("address").String(),
+		fromName: app.config.Section("email").Key("from").String(),
+	}
+	method := app.config.Section("email").Key("method").String()
+	if method == "smtp" {
+		sslTls := false
+		if app.config.Section("smtp").Key("encryption").String() == "ssl_tls" {
+			sslTls = true
 		}
-		email.mg.SetAPIBase(api_url)
-	} else if email.sendMethod == "smtp" {
-		app.host = app.config.Section("smtp").Key("server").String()
-		email.smtpAuth = smtp.PlainAuth("", email.fromAddr, app.config.Section("smtp").Key("password").String(), app.host)
+		emailer.NewSMTP(app.config.Section("smtp").Key("server").String(), app.config.Section("smtp").Key("port").MustInt(465), app.config.Section("smtp").Key("password").String(), app.host, sslTls)
+	} else if method == "mailgun" {
+		emailer.NewMailgun(app.config.Section("mailgun").Key("api_url").String(), app.config.Section("mailgun").Key("api_key").String())
+	}
+	return emailer
+}
+
+func (emailer *Emailer) NewMailgun(url, key string) {
+	sender := &Mailgun{
+		client: mailgun.NewMailgun(strings.Split(emailer.fromAddr, "@")[1], key),
+	}
+	// Mailgun client takes the base url, so we need to trim off the end (e.g 'v3/messages'
+	if strings.Contains(url, "messages") {
+		url = url[0:strings.LastIndex(url, "/")]
+		url = url[0:strings.LastIndex(url, "/")]
+	}
+	sender.client.SetAPIBase(url)
+	emailer.sender = sender
+}
+
+func (emailer *Emailer) NewSMTP(server string, port int, password, host string, sslTls bool) {
+	emailer.sender = &Smtp{
+		auth:   smtp.PlainAuth("", emailer.fromAddr, password, host),
+		server: server,
+		host:   host,
+		port:   port,
+		sslTls: sslTls,
 	}
 }
 
@@ -100,7 +171,6 @@ func (email *Emailer) constructInvite(code string, invite Invite, app *appContex
 			email.content.text = tplData.String()
 		}
 	}
-	email.sendType = "invite"
 	return nil
 }
 
@@ -127,7 +197,6 @@ func (email *Emailer) constructExpiry(code string, invite Invite, app *appContex
 			email.content.text = tplData.String()
 		}
 	}
-	email.sendType = "expiry"
 	return nil
 }
 
@@ -162,7 +231,6 @@ func (email *Emailer) constructCreated(code, username, address string, invite In
 			email.content.text = tplData.String()
 		}
 	}
-	email.sendType = "created"
 	return nil
 }
 
@@ -194,47 +262,9 @@ func (email *Emailer) constructReset(pwr Pwr, app *appContext) error {
 			email.content.text = tplData.String()
 		}
 	}
-	email.sendType = "reset"
 	return nil
 }
 
-func (email *Emailer) send(address string, app *appContext) error {
-	if email.sendMethod == "mailgun" {
-		message := email.mg.NewMessage(
-			fmt.Sprintf("%s <%s>", email.fromName, email.fromAddr),
-			email.content.subject,
-			email.content.text,
-			address)
-		message.SetHtml(email.content.html)
-		mgapp, cancel := context.WithTimeout(context.Background(), time.Second*30)
-		defer cancel()
-		_, _, err := email.mg.Send(mgapp, message)
-		if err != nil {
-			return err
-		}
-	} else if email.sendMethod == "smtp" {
-		e := jEmail.NewEmail()
-		e.Subject = email.content.subject
-		e.From = fmt.Sprintf("%s <%s>", email.fromName, email.fromAddr)
-		e.To = []string{address}
-		e.Text = []byte(email.content.text)
-		e.HTML = []byte(email.content.html)
-		smtpType := app.config.Section("smtp").Key("encryption").String()
-		tlsConfig := &tls.Config{
-			InsecureSkipVerify: false,
-			ServerName:         app.host,
-		}
-		var err error
-		if smtpType == "ssl_tls" {
-			port := app.config.Section("smtp").Key("port").MustInt(465)
-			server := fmt.Sprintf("%s:%d", app.host, port)
-			err = e.SendWithTLS(server, email.smtpAuth, tlsConfig)
-		} else if smtpType == "starttls" {
-			port := app.config.Section("smtp").Key("port").MustInt(587)
-			server := fmt.Sprintf("%s:%d", app.host, port)
-			e.SendWithStartTLS(server, email.smtpAuth, tlsConfig)
-		}
-		return err
-	}
-	return nil
+func (emailer *Emailer) send(address string) error {
+	return emailer.sender.send(address, emailer.fromName, emailer.fromAddr, emailer.content)
 }

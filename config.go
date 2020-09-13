@@ -69,5 +69,7 @@ func (app *appContext) loadConfig() error {
 	app.config.Section("notifications").Key("created_html").SetValue(app.config.Section("notifications").Key("created_html").MustString(filepath.Join(app.local_path, "created.html")))
 	app.config.Section("notifications").Key("created_text").SetValue(app.config.Section("notifications").Key("created_text").MustString(filepath.Join(app.local_path, "created.txt")))
 
+	app.email = NewEmailer(app)
+
 	return nil
 }

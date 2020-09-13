@@ -53,7 +53,7 @@ type appContext struct {
 	timePattern      string
 	storage          Storage
 	validator        Validator
-	email            Emailer
+	email            *Emailer
 	info, debug, err *log.Logger
 	host             string
 	port             int
@@ -361,8 +361,6 @@ func start(asDaemon, firstCall bool) {
 		}
 		app.validator.init(validatorConf)
 
-		app.email.init(app)
-
 		inviteDaemon := NewRepeater(time.Duration(60*time.Second), app)
 		go inviteDaemon.Run()
 
@@ -476,7 +474,7 @@ func main() {
 		folder = os.Getenv("TEMP")
 	}
 	SOCK = filepath.Join(folder, SOCK)
-	fmt.Println(SOCK)
+	fmt.Println("Socket:", SOCK)
 	if flagPassed("start") {
 		args := []string{}
 		for i, f := range os.Args {

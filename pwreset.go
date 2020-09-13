@@ -71,10 +71,12 @@ func pwrMonitor(app *appContext, watcher *fsnotify.Watcher) {
 						app.err.Printf("Couldn't find email for user \"%s\". Make sure it's set", pwr.Username)
 						return
 					}
-					if app.email.constructReset(pwr, app) != nil {
+					if err := app.email.constructReset(pwr, app); err != nil {
 						app.err.Printf("Failed to construct password reset email for %s", pwr.Username)
-					} else if app.email.send(address, app) != nil {
+						app.debug.Printf("%s: Error: %s", pwr.Username, err)
+					} else if err := app.email.send(address); err != nil {
 						app.err.Printf("Failed to send password reset email to \"%s\"", address)
+						app.debug.Printf("%s: Error: %s", pwr.Username, err)
 					} else {
 						app.info.Printf("Sent password reset email to \"%s\"", address)
 					}
