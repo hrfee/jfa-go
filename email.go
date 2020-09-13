@@ -17,14 +17,14 @@ import (
 
 // implements email sending, right now via smtp or mailgun.
 type emailClient interface {
-	send(address, fromName, fromAddr string, email email) error
+	send(address, fromName, fromAddr string, email *Email) error
 }
 
 type Mailgun struct {
 	client *mailgun.MailgunImpl
 }
 
-func (mg *Mailgun) send(address, fromName, fromAddr string, email email) error {
+func (mg *Mailgun) send(address, fromName, fromAddr string, email *Email) error {
 	message := mg.client.NewMessage(
 		fmt.Sprintf("%s <%s>", fromName, fromAddr),
 		email.subject,
@@ -45,7 +45,7 @@ type Smtp struct {
 	auth         smtp.Auth
 }
 
-func (sm *Smtp) send(address, fromName, fromAddr string, email email) error {
+func (sm *Smtp) send(address, fromName, fromAddr string, email *Email) error {
 	e := jEmail.NewEmail()
 	e.Subject = email.subject
 	e.From = fmt.Sprintf("%s <%s>", fromName, fromAddr)
@@ -68,12 +68,12 @@ func (sm *Smtp) send(address, fromName, fromAddr string, email email) error {
 
 // Emailer contains the email sender, email content, and methods to construct message content.
 type Emailer struct {
-	content            email
 	fromAddr, fromName string
 	sender             emailClient
 }
 
-type email struct {
+// Email stores content.
+type Email struct {
 	subject    string
 	html, text string
 }
@@ -140,10 +140,12 @@ func (emailer *Emailer) NewSMTP(server string, port int, password, host string, 
 	}
 }
 
-func (email *Emailer) constructInvite(code string, invite Invite, app *appContext) error {
-	email.content.subject = app.config.Section("invite_emails").Key("subject").String()
+func (emailer *Emailer) constructInvite(code string, invite Invite, app *appContext) (*Email, error) {
+	email := &Email{
+		subject: app.config.Section("invite_emails").Key("subject").String(),
+	}
 	expiry := invite.ValidTill
-	d, t, expires_in := email.formatExpiry(expiry, false, app.datePattern, app.timePattern)
+	d, t, expires_in := emailer.formatExpiry(expiry, false, app.datePattern, app.timePattern)
 	message := app.config.Section("email").Key("message").String()
 	invite_link := app.config.Section("invite_emails").Key("url_base").String()
 	invite_link = fmt.Sprintf("%s/%s", invite_link, code)
@@ -152,7 +154,7 @@ func (email *Emailer) constructInvite(code string, invite Invite, app *appContex
 		fpath := app.config.Section("invite_emails").Key("email_" + key).String()
 		tpl, err := template.ParseFiles(fpath)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		var tplData bytes.Buffer
 		err = tpl.Execute(&tplData, map[string]string{
@@ -163,25 +165,27 @@ func (email *Emailer) constructInvite(code string, invite Invite, app *appContex
 			"message":     message,
 		})
 		if err != nil {
-			return err
+			return nil, err
 		}
 		if key == "html" {
-			email.content.html = tplData.String()
+			email.html = tplData.String()
 		} else {
-			email.content.text = tplData.String()
+			email.text = tplData.String()
 		}
 	}
-	return nil
+	return email, nil
 }
 
-func (email *Emailer) constructExpiry(code string, invite Invite, app *appContext) error {
-	email.content.subject = "Notice: Invite expired"
+func (emailer *Emailer) constructExpiry(code string, invite Invite, app *appContext) (*Email, error) {
+	email := &Email{
+		subject: "Notice: Invite expired",
+	}
 	expiry := app.formatDatetime(invite.ValidTill)
 	for _, key := range []string{"html", "text"} {
 		fpath := app.config.Section("notifications").Key("expiry_" + key).String()
 		tpl, err := template.ParseFiles(fpath)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		var tplData bytes.Buffer
 		err = tpl.Execute(&tplData, map[string]string{
@@ -189,19 +193,21 @@ func (email *Emailer) constructExpiry(code string, invite Invite, app *appContex
 			"expiry": expiry,
 		})
 		if err != nil {
-			return err
+			return nil, err
 		}
 		if key == "html" {
-			email.content.html = tplData.String()
+			email.html = tplData.String()
 		} else {
-			email.content.text = tplData.String()
+			email.text = tplData.String()
 		}
 	}
-	return nil
+	return email, nil
 }
 
-func (email *Emailer) constructCreated(code, username, address string, invite Invite, app *appContext) error {
-	email.content.subject = "Notice: User created"
+func (emailer *Emailer) constructCreated(code, username, address string, invite Invite, app *appContext) (*Email, error) {
+	email := &Email{
+		subject: "Notice: User created",
+	}
 	created := app.formatDatetime(invite.Created)
 	var tplAddress string
 	if app.config.Section("email").Key("no_username").MustBool(false) {
@@ -213,7 +219,7 @@ func (email *Emailer) constructCreated(code, username, address string, invite In
 		fpath := app.config.Section("notifications").Key("created_" + key).String()
 		tpl, err := template.ParseFiles(fpath)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		var tplData bytes.Buffer
 		err = tpl.Execute(&tplData, map[string]string{
@@ -223,26 +229,28 @@ func (email *Emailer) constructCreated(code, username, address string, invite In
 			"time":     created,
 		})
 		if err != nil {
-			return err
+			return nil, err
 		}
 		if key == "html" {
-			email.content.html = tplData.String()
+			email.html = tplData.String()
 		} else {
-			email.content.text = tplData.String()
+			email.text = tplData.String()
 		}
 	}
-	return nil
+	return email, nil
 }
 
-func (email *Emailer) constructReset(pwr Pwr, app *appContext) error {
-	email.content.subject = app.config.Section("password_resets").Key("subject").MustString("Password reset - Jellyfin")
-	d, t, expires_in := email.formatExpiry(pwr.Expiry, true, app.datePattern, app.timePattern)
+func (emailer *Emailer) constructReset(pwr Pwr, app *appContext) (*Email, error) {
+	email := &Email{
+		subject: app.config.Section("password_resets").Key("subject").MustString("Password reset - Jellyfin"),
+	}
+	d, t, expires_in := emailer.formatExpiry(pwr.Expiry, true, app.datePattern, app.timePattern)
 	message := app.config.Section("email").Key("message").String()
 	for _, key := range []string{"html", "text"} {
 		fpath := app.config.Section("password_resets").Key("email_" + key).String()
 		tpl, err := template.ParseFiles(fpath)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		var tplData bytes.Buffer
 		err = tpl.Execute(&tplData, map[string]string{
@@ -254,17 +262,17 @@ func (email *Emailer) constructReset(pwr Pwr, app *appContext) error {
 			"message":     message,
 		})
 		if err != nil {
-			return err
+			return nil, err
 		}
 		if key == "html" {
-			email.content.html = tplData.String()
+			email.html = tplData.String()
 		} else {
-			email.content.text = tplData.String()
+			email.text = tplData.String()
 		}
 	}
-	return nil
+	return email, nil
 }
 
-func (emailer *Emailer) send(address string) error {
-	return emailer.sender.send(address, emailer.fromName, emailer.fromAddr, emailer.content)
+func (emailer *Emailer) send(address string, email *Email) error {
+	return emailer.sender.send(address, emailer.fromName, emailer.fromAddr, email)
 }

@@ -92,10 +92,11 @@ func (app *appContext) checkInvites() {
 				for address, settings := range notify {
 					if settings["notify-expiry"] {
 						go func() {
-							if err := app.email.constructExpiry(code, data, app); err != nil {
+							msg, err := app.email.constructExpiry(code, data, app)
+							if err != nil {
 								app.err.Printf("%s: Failed to construct expiry notification", code)
 								app.debug.Printf("Error: %s", err)
-							} else if err := app.email.send(address); err != nil {
+							} else if err := app.email.send(address, msg); err != nil {
 								app.err.Printf("%s: Failed to send expiry notification", code)
 								app.debug.Printf("Error: %s", err)
 							} else {
@@ -128,10 +129,11 @@ func (app *appContext) checkInvite(code string, used bool, username string) bool
 				for address, settings := range notify {
 					if settings["notify-expiry"] {
 						go func() {
-							if err := app.email.constructExpiry(code, inv, app); err != nil {
+							msg, err := app.email.constructExpiry(code, inv, app)
+							if err != nil {
 								app.err.Printf("%s: Failed to construct expiry notification", code)
 								app.debug.Printf("Error: %s", err)
-							} else if err := app.email.send(address); err != nil {
+							} else if err := app.email.send(address, msg); err != nil {
 								app.err.Printf("%s: Failed to send expiry notification", code)
 								app.debug.Printf("Error: %s", err)
 							} else {
@@ -220,10 +222,11 @@ func (app *appContext) NewUser(gc *gin.Context) {
 		for address, settings := range invite.Notify {
 			if settings["notify-creation"] {
 				go func() {
-					if err := app.email.constructCreated(req.Code, req.Username, req.Email, invite, app); err != nil {
+					msg, err := app.email.constructCreated(req.Code, req.Username, req.Email, invite, app)
+					if err != nil {
 						app.err.Printf("%s: Failed to construct user creation notification", req.Code)
 						app.debug.Printf("%s: Error: %s", req.Code, err)
-					} else if err := app.email.send(address); err != nil {
+					} else if err := app.email.send(address, msg); err != nil {
 						app.err.Printf("%s: Failed to send user creation notification", req.Code)
 						app.debug.Printf("%s: Error: %s", req.Code, err)
 					} else {
@@ -304,11 +307,12 @@ func (app *appContext) GenerateInvite(gc *gin.Context) {
 	if req.Email != "" && app.config.Section("invite_emails").Key("enabled").MustBool(false) {
 		app.debug.Printf("%s: Sending invite email", invite_code)
 		invite.Email = req.Email
-		if err := app.email.constructInvite(invite_code, invite, app); err != nil {
+		msg, err := app.email.constructInvite(invite_code, invite, app)
+		if err != nil {
 			invite.Email = fmt.Sprintf("Failed to send to %s", req.Email)
 			app.err.Printf("%s: Failed to construct invite email", invite_code)
 			app.debug.Printf("%s: Error: %s", invite_code, err)
-		} else if err := app.email.send(req.Email); err != nil {
+		} else if err := app.email.send(req.Email, msg); err != nil {
 			invite.Email = fmt.Sprintf("Failed to send to %s", req.Email)
 			app.err.Printf("%s: %s", invite_code, invite.Email)
 			app.debug.Printf("%s: Error: %s", invite_code, err)
