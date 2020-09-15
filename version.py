@@ -6,6 +6,13 @@ try:
 except IndexError:
     version = "git"
 
+if version == "auto":
+    try:
+        version = subprocess.check_output("git describe --exact-match HEAD".split()).decode("utf-8").rstrip().replace('v', '')
+    except subprocess.CalledProcessError as e:
+        if e.returncode == 128:
+            version = "git"
+
 commit = subprocess.check_output("git rev-parse --short HEAD".split()).decode("utf-8").rstrip()
 
 file = f'package main; const VERSION = "{version}"; const COMMIT = "{commit}";'

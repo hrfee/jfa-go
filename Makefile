@@ -29,7 +29,7 @@ mail:
 	python3 mail/generate.py
 
 version:
-	python3 version.py git version.go
+	python3 version.py auto version.go
 
 compile:
 	echo "Downloading deps"
