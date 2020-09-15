@@ -50,7 +50,7 @@ docker create \
              -v /path/to/.config/jfa-go:/data \ # Path to wherever you want to store the config file and other data
              -v /path/to/jellyfin:/jf \ # Path to jellyfin config directory
              -v /etc/localtime:/etc/localtime:ro \ # Makes sure time is correct
-             hrfee/jfa-go
+             hrfee/jfa-go # hrfee/jfa-go:unstable for latest build from git
 ```
 
 #### Build from source
