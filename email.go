@@ -20,6 +20,7 @@ type emailClient interface {
 	send(address, fromName, fromAddr string, email *Email) error
 }
 
+// Mailgun client implements emailClient.
 type Mailgun struct {
 	client *mailgun.MailgunImpl
 }
@@ -38,14 +39,15 @@ func (mg *Mailgun) send(address, fromName, fromAddr string, email *Email) error 
 	return err
 }
 
-type Smtp struct {
-	sslTls       bool
+// SMTP supports SSL/TLS and STARTTLS; implements emailClient.
+type SMTP struct {
+	sslTLS       bool
 	host, server string
 	port         int
 	auth         smtp.Auth
 }
 
-func (sm *Smtp) send(address, fromName, fromAddr string, email *Email) error {
+func (sm *SMTP) send(address, fromName, fromAddr string, email *Email) error {
 	e := jEmail.NewEmail()
 	e.Subject = email.subject
 	e.From = fmt.Sprintf("%s <%s>", fromName, fromAddr)
@@ -58,7 +60,7 @@ func (sm *Smtp) send(address, fromName, fromAddr string, email *Email) error {
 	}
 	server := fmt.Sprintf("%s:%d", sm.server, sm.port)
 	var err error
-	if sm.sslTls {
+	if sm.sslTLS {
 		err = e.SendWithTLS(server, sm.auth, tlsConfig)
 	} else {
 		err = e.SendWithStartTLS(server, sm.auth, tlsConfig)
@@ -78,27 +80,28 @@ type Email struct {
 	html, text string
 }
 
-func (email *Emailer) formatExpiry(expiry time.Time, tzaware bool, datePattern, timePattern string) (d, t, expires_in string) {
+func (emailer *Emailer) formatExpiry(expiry time.Time, tzaware bool, datePattern, timePattern string) (d, t, expiresIn string) {
 	d, _ = strtime.Strftime(expiry, datePattern)
 	t, _ = strtime.Strftime(expiry, timePattern)
-	current_time := time.Now()
+	currentTime := time.Now()
 	if tzaware {
-		current_time = current_time.UTC()
+		currentTime = currentTime.UTC()
 	}
-	_, _, days, hours, minutes, _ := timeDiff(expiry, current_time)
+	_, _, days, hours, minutes, _ := timeDiff(expiry, currentTime)
 	if days != 0 {
-		expires_in += fmt.Sprintf("%dd ", days)
+		expiresIn += fmt.Sprintf("%dd ", days)
 	}
 	if hours != 0 {
-		expires_in += fmt.Sprintf("%dh ", hours)
+		expiresIn += fmt.Sprintf("%dh ", hours)
 	}
 	if minutes != 0 {
-		expires_in += fmt.Sprintf("%dm ", minutes)
+		expiresIn += fmt.Sprintf("%dm ", minutes)
 	}
-	expires_in = strings.TrimSuffix(expires_in, " ")
+	expiresIn = strings.TrimSuffix(expiresIn, " ")
 	return
 }
 
+// NewEmailer configures and returns a new emailer.
 func NewEmailer(app *appContext) *Emailer {
 	emailer := &Emailer{
 		fromAddr: app.config.Section("email").Key("address").String(),
@@ -117,6 +120,7 @@ func NewEmailer(app *appContext) *Emailer {
 	return emailer
 }
 
+// NewMailgun returns a Mailgun emailClient.
 func (emailer *Emailer) NewMailgun(url, key string) {
 	sender := &Mailgun{
 		client: mailgun.NewMailgun(strings.Split(emailer.fromAddr, "@")[1], key),
@@ -130,13 +134,14 @@ func (emailer *Emailer) NewMailgun(url, key string) {
 	emailer.sender = sender
 }
 
-func (emailer *Emailer) NewSMTP(server string, port int, password, host string, sslTls bool) {
-	emailer.sender = &Smtp{
+// NewSMTP returns an SMTP emailClient.
+func (emailer *Emailer) NewSMTP(server string, port int, password, host string, sslTLS bool) {
+	emailer.sender = &SMTP{
 		auth:   smtp.PlainAuth("", emailer.fromAddr, password, host),
 		server: server,
 		host:   host,
 		port:   port,
-		sslTls: sslTls,
+		sslTLS: sslTLS,
 	}
 }
 
@@ -145,10 +150,10 @@ func (emailer *Emailer) constructInvite(code string, invite Invite, app *appCont
 		subject: app.config.Section("invite_emails").Key("subject").String(),
 	}
 	expiry := invite.ValidTill
-	d, t, expires_in := emailer.formatExpiry(expiry, false, app.datePattern, app.timePattern)
+	d, t, expiresIn := emailer.formatExpiry(expiry, false, app.datePattern, app.timePattern)
 	message := app.config.Section("email").Key("message").String()
-	invite_link := app.config.Section("invite_emails").Key("url_base").String()
-	invite_link = fmt.Sprintf("%s/%s", invite_link, code)
+	inviteLink := app.config.Section("invite_emails").Key("url_base").String()
+	inviteLink = fmt.Sprintf("%s/%s", inviteLink, code)
 
 	for _, key := range []string{"html", "text"} {
 		fpath := app.config.Section("invite_emails").Key("email_" + key).String()
@@ -160,8 +165,8 @@ func (emailer *Emailer) constructInvite(code string, invite Invite, app *appCont
 		err = tpl.Execute(&tplData, map[string]string{
 			"expiry_date": d,
 			"expiry_time": t,
-			"expires_in":  expires_in,
-			"invite_link": invite_link,
+			"expires_in":  expiresIn,
+			"invite_link": inviteLink,
 			"message":     message,
 		})
 		if err != nil {
@@ -244,7 +249,7 @@ func (emailer *Emailer) constructReset(pwr Pwr, app *appContext) (*Email, error)
 	email := &Email{
 		subject: app.config.Section("password_resets").Key("subject").MustString("Password reset - Jellyfin"),
 	}
-	d, t, expires_in := emailer.formatExpiry(pwr.Expiry, true, app.datePattern, app.timePattern)
+	d, t, expiresIn := emailer.formatExpiry(pwr.Expiry, true, app.datePattern, app.timePattern)
 	message := app.config.Section("email").Key("message").String()
 	for _, key := range []string{"html", "text"} {
 		fpath := app.config.Section("password_resets").Key("email_" + key).String()
@@ -257,7 +262,7 @@ func (emailer *Emailer) constructReset(pwr Pwr, app *appContext) (*Email, error)
 			"username":    pwr.Username,
 			"expiry_date": d,
 			"expiry_time": t,
-			"expires_in":  expires_in,
+			"expires_in":  expiresIn,
 			"pin":         pwr.Pin,
 			"message":     message,
 		})
@@ -273,6 +278,7 @@ func (emailer *Emailer) constructReset(pwr Pwr, app *appContext) (*Email, error)
 	return email, nil
 }
 
+// calls the send method in the underlying emailClient.
 func (emailer *Emailer) send(address string, email *Email) error {
 	return emailer.sender.send(address, emailer.fromName, emailer.fromAddr, email)
 }

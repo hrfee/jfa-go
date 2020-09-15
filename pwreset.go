@@ -58,7 +58,7 @@ func pwrMonitor(app *appContext, watcher *fsnotify.Watcher) {
 					return
 				}
 				app.info.Printf("New password reset for user \"%s\"", pwr.Username)
-				if ct := time.Now(); pwr.Expiry.After(ct) {
+				if currentTime := time.Now(); pwr.Expiry.After(currentTime) {
 					user, status, err := app.jf.userByName(pwr.Username, false)
 					if !(status == 200 || status == 204) || err != nil {
 						app.err.Printf("Failed to get users from Jellyfin: Code %d", status)

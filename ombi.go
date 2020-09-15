@@ -32,6 +32,7 @@ func newOmbi(server, key string, noFail bool) *Ombi {
 	}
 }
 
+// does a GET and returns the response as an io.reader.
 func (ombi *Ombi) _getReader(url string, params map[string]string) (string, int, error) {
 	if ombi.key == "" {
 		return "", 401, fmt.Errorf("No API key provided")
@@ -70,6 +71,7 @@ func (ombi *Ombi) _getReader(url string, params map[string]string) (string, int,
 	return buf.String(), resp.StatusCode, nil
 }
 
+// does a POST and optionally returns response as string. Returns a string instead of an io.reader bcs i couldn't get it working otherwise.
 func (ombi *Ombi) _post(url string, data map[string]interface{}, response bool) (string, int, error) {
 	responseText := ""
 	params, _ := json.Marshal(data)
@@ -105,12 +107,14 @@ func (ombi *Ombi) _post(url string, data map[string]interface{}, response bool) 
 	return responseText, resp.StatusCode, nil
 }
 
+// gets an ombi user by their ID.
 func (ombi *Ombi) userByID(id string) (result map[string]interface{}, code int, err error) {
 	resp, code, err := ombi._getReader(fmt.Sprintf("%s/api/v1/Identity/User/%s", ombi.server, id), nil)
 	json.Unmarshal([]byte(resp), &result)
 	return
 }
 
+// gets a list of all users.
 func (ombi *Ombi) getUsers() (result []map[string]interface{}, code int, err error) {
 	resp, code, err := ombi._getReader(fmt.Sprintf("%s/api/v1/Identity/Users", ombi.server), nil)
 	json.Unmarshal([]byte(resp), &result)
@@ -129,6 +133,7 @@ var stripFromOmbi = []string{
 	"userName",
 }
 
+// returns a template based on the user corresponding to the provided ID's settings.
 func (ombi *Ombi) templateByID(id string) (result map[string]interface{}, code int, err error) {
 	result, code, err = ombi.userByID(id)
 	if err != nil || code != 200 {
@@ -147,6 +152,7 @@ func (ombi *Ombi) templateByID(id string) (result map[string]interface{}, code i
 	return
 }
 
+// creates a new user.
 func (ombi *Ombi) newUser(username, password, email string, template map[string]interface{}) ([]string, int, error) {
 	url := fmt.Sprintf("%s/api/v1/Identity", ombi.server)
 	user := template
