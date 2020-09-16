@@ -66,11 +66,13 @@ func pwrMonitor(app *appContext, watcher *fsnotify.Watcher) {
 						return
 					}
 					app.storage.loadEmails()
-					address, ok := app.storage.emails[user["Id"].(string)].(string)
-					if !ok {
+					var address string
+					addr, ok := app.storage.emails[user["Id"].(string)]
+					if !ok || addr == nil {
 						app.err.Printf("Couldn't find email for user \"%s\". Make sure it's set", pwr.Username)
 						return
 					}
+					address = addr.(string)
 					msg, err := app.email.constructReset(pwr, app)
 					if err != nil {
 						app.err.Printf("Failed to construct password reset email for %s", pwr.Username)

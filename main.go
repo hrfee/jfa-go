@@ -17,6 +17,7 @@ import (
 	"os/signal"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"time"
 
 	"github.com/gin-contrib/pprof"
@@ -106,7 +107,32 @@ var (
 	DATA, CONFIG, HOST *string
 	PORT               *int
 	DEBUG              *bool
+	TEST               bool
 )
+
+func test(app *appContext) {
+	fmt.Printf("\n\n----\n\n")
+	settings := map[string]interface{}{
+		"server":         app.jf.server,
+		"server version": app.jf.serverInfo.Version,
+		"server name":    app.jf.serverInfo.Name,
+		"authenticated?": app.jf.authenticated,
+		"access token":   app.jf.accessToken,
+		"username":       app.jf.username,
+	}
+	for n, v := range settings {
+		fmt.Println(n, ":", v)
+	}
+	users, status, err := app.jf.getUsers(false)
+	fmt.Printf("getUsers: code %d err %s maplength %d\n", status, err, len(users))
+	fmt.Printf("View output? [y/n]: ")
+	var choice string
+	fmt.Scanln(&choice)
+	if strings.Contains(choice, "y") {
+		out, err := json.MarshalIndent(users, "", "  ")
+		fmt.Print(string(out), err)
+	}
+}
 
 func start(asDaemon, firstCall bool) {
 	// app encompasses essentially all useful functions.
@@ -361,6 +387,11 @@ func start(asDaemon, firstCall bool) {
 		}
 		app.validator.init(validatorConf)
 
+		if TEST {
+			test(app)
+			os.Exit(0)
+		}
+
 		inviteDaemon := NewRepeater(time.Duration(60*time.Second), app)
 		go inviteDaemon.Run()
 
@@ -371,7 +402,6 @@ func start(asDaemon, firstCall bool) {
 		debugMode = false
 		address = "0.0.0.0:8056"
 	}
-
 	app.info.Println("Loading routes")
 	if debugMode {
 		gin.SetMode(gin.DebugMode)
@@ -475,6 +505,9 @@ func main() {
 	}
 	SOCK = filepath.Join(folder, SOCK)
 	fmt.Println("Socket:", SOCK)
+	if flagPassed("test") {
+		TEST = true
+	}
 	if flagPassed("start") {
 		args := []string{}
 		for i, f := range os.Args {
