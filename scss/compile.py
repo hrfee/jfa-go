@@ -39,44 +39,45 @@ if not args.yes:
             node_bin = input("input bin directory: ")
 
 for bsv in [d for d in local_path.iterdir() if "bs" in d.name]:
-    scss = bsv / f"{bsv.name}-jf.scss"
-    css = bsv / f"{bsv.name}-jf.css"
-    min_css = bsv.parents[1] / "data" / "static" / f"{bsv.name}-jf.css"
-    with open(css, "w") as f:
-        f.write(
-            sass.compile(
-                filename=str(scss.resolve()), output_style="expanded", precision=6
+    scss = [(bsv / f"{bsv.name}-jf.scss"), (bsv / f"{bsv.name}.scss")]
+    css = [(bsv / f"{bsv.name}-jf.css"), (bsv / f"{bsv.name}.css")]
+    min_css = [(bsv.parents[1] / "data" / "static" / f"{bsv.name}-jf.css"), (bsv.parents[1] / "data" / "static" / f"{bsv.name}.css")]
+    for i in range(2):
+        with open(css[i], "w") as f:
+            f.write(
+                sass.compile(
+                    filename=str(scss[i].resolve()), output_style="expanded", precision=6
+                )
             )
-        )
-    if css.exists():
-        print(f"{bsv.name}: Compiled.")
-        # postcss only excepts forwards slashes? weird.
-        cssPath = str(css.resolve())
-        if os.name == "nt":
-            cssPath = cssPath.replace("\\", "/")
-        runcmd(
-            f'{str((node_bin / "postcss").resolve())} {cssPath} --replace --use autoprefixer'
-        )
-        print(f"{bsv.name}: Prefixed.")
-        runcmd(
-            f'{str((node_bin / "cleancss").resolve())} --level 1 --format breakWith=lf --output {str(min_css.resolve())} {str(css.resolve())}'
-        )
-        if min_css.exists():
-            print(f"{bsv.name}: Minified and copied to {str(min_css.resolve())}.")
+        if css[i].exists():
+            print(f"{scss[i].name}: Compiled.")
+            # postcss only excepts forwards slashes? weird.
+            cssPath = str(css[i].resolve())
+            if os.name == "nt":
+                cssPath = cssPath.replace("\\", "/")
+            runcmd(
+                f'{str((node_bin / "postcss").resolve())} {cssPath} --replace --use autoprefixer'
+            )
+            print(f"{scss[i].name}: Prefixed.")
+            runcmd(
+                f'{str((node_bin / "cleancss").resolve())} --level 1 --format breakWith=lf --output {str(min_css[i].resolve())} {str(css[i].resolve())}'
+            )
+            if min_css[i].exists():
+                print(f"{scss[i].name}: Minified and copied to {str(min_css[i].resolve())}.")
 
-for v in [("bootstrap", "bs5"), ("bootstrap4", "bs4")]:
-    new_path = str((local_path.parent / "data" / "static" / (v[1] + ".css")).resolve())
-    shutil.copy(
-        str(
-            (
-                local_path.parent
-                / "node_modules"
-                / v[0]
-                / "dist"
-                / "css"
-                / "bootstrap.min.css"
-            ).resolve()
-        ),
-        new_path,
-    )
-    print(f"Copied {v[1]} to {new_path}")
+# for v in [("bootstrap", "bs5"), ("bootstrap4", "bs4")]:
+#     new_path = str((local_path.parent / "data" / "static" / (v[1] + ".css")).resolve())
+#     shutil.copy(
+#         str(
+#             (
+#                 local_path.parent
+#                 / "node_modules"
+#                 / v[0]
+#                 / "dist"
+#                 / "css"
+#                 / "bootstrap.min.css"
+#             ).resolve()
+#         ),
+#         new_path,
+#     )
+#     print(f"Copied {v[1]} to {new_path}")

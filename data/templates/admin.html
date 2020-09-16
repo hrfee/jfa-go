@@ -65,82 +65,6 @@
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
         {{ end }}
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-        <style>
-            .pageContainer {
-                margin: 5% 20% 5% 20%;
-            }
-            @media (max-width: 1100px) {
-                .pageContainer {
-                    margin: 2%;
-                }
-            }
-            h1 {
-                /*margin: 20%;*/
-                margin-bottom: 5%;
-            }
-            .linkGroup {
-                /*margin: 20%;*/
-                margin-bottom: 5%;
-                margin-top: 5%;
-            }
-            .linkForm {
-                /*margin: 20%;*/
-                margin-top: 5%;
-                margin-bottom: 5%;
-            }
-            .contactBox {
-                /*margin: 20%;*/
-                margin-top: 5%;
-                color: grey;
-            }
-            .circle {
-                /*margin-left: 1rem;
-                width: 1rem;
-                height: 1rem;
-                border-radius: 50%;
-                z-index: 5000;*/
-        -webkit-transition: all 300ms cubic-bezier(0.550, 0.055, 0.675, 0.190);
-           -moz-transition: all 300ms cubic-bezier(0.550, 0.055, 0.675, 0.190);
-             -o-transition: all 300ms cubic-bezier(0.550, 0.055, 0.675, 0.190);
-                transition: all 300ms cubic-bezier(0.550, 0.055, 0.675, 0.190); /* easeInCubic */
-            }
-            .smooth-transition {
-        -webkit-transition: all 300ms cubic-bezier(0.550, 0.055, 0.675, 0.190);
-           -moz-transition: all 300ms cubic-bezier(0.550, 0.055, 0.675, 0.190);
-             -o-transition: all 300ms cubic-bezier(0.550, 0.055, 0.675, 0.190);
-                transition: all 300ms cubic-bezier(0.550, 0.055, 0.675, 0.190); /* easeincubic */
-            }
-            .rotated {
-                transform: rotate(180deg);
-        -webkit-transition: all 150ms cubic-bezier(0.770, 0.000, 0.175, 1.000);
-           -moz-transition: all 150ms cubic-bezier(0.770, 0.000, 0.175, 1.000);
-             -o-transition: all 150ms cubic-bezier(0.770, 0.000, 0.175, 1.000);
-                transition: all 150ms cubic-bezier(0.770, 0.000, 0.175, 1.000); /* easeInOutQuart */
-            }
-
-            .not-rotated {
-                transform: rotate(0deg);
-        -webkit-transition: all 150ms cubic-bezier(0.770, 0.000, 0.175, 1.000);
-           -moz-transition: all 150ms cubic-bezier(0.770, 0.000, 0.175, 1.000);
-             -o-transition: all 150ms cubic-bezier(0.770, 0.000, 0.175, 1.000);
-                transition: all 150ms cubic-bezier(0.770, 0.000, 0.175, 1.000); /* easeInOutQuart */
-            }
-
-            .invite-link {
-                text-overflow: ellipsis;
-                overflow: hidden;
-                white-space: nowrap;
-                width: auto;
-            }
-
-            .settingIcon {
-                margin-left: 0.2rem;
-            }
-
-            body.modal-open {
-                overflow: hidden;
-            }
-        </style>
         <title>Admin</title>
     </head>
     <body class="smooth-transition">
@@ -316,9 +240,7 @@
             </div>
         </div>
         <div class="pageContainer">
-            <h1>
-                Accounts admin
-            </h1>
+            <h1><a class="text-button">Invites </a></h1>
             <div class="btn-group" role="group" id="headerButtons">
                 <button type="button" class="btn btn-primary" id="openSettings">
                     Settings <i class="fa fa-cog"></i>

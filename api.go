@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -458,13 +459,29 @@ func (app *appContext) DeleteInvite(gc *gin.Context) {
 	respond(401, "Code doesn't exist", gc)
 }
 
-type userResp struct {
-	UserList []respUser `json:"users"`
+type dateToParse struct {
+	Parsed time.Time `json:"parseme"`
+}
+
+// json magically parses datetimes so why not
+func parseDt(date string) time.Time {
+	timeJSON := []byte("{ \"parseme\": \"" + date + "\" }")
+	var parsed dateToParse
+	json.Unmarshal(timeJSON, &parsed)
+	return parsed.Parsed
 }
 
 type respUser struct {
+	ID    string `json:"id"`
 	Name  string `json:"name"`
 	Email string `json:"email,omitempty"`
+	// this magically parses a string to time.time
+	LastActive string `json:"last_active"`
+	Admin      bool   `json:"admin"`
+}
+
+type userResp struct {
+	UserList []respUser `json:"users"`
 }
 
 func (app *appContext) GetUsers(gc *gin.Context) {
@@ -480,10 +497,18 @@ func (app *appContext) GetUsers(gc *gin.Context) {
 	}
 	for _, jfUser := range users {
 		var user respUser
+		user.LastActive = "n/a"
+		if jfUser["LastActivityDate"] != nil {
+			date := parseDt(jfUser["LastActivityDate"].(string))
+			user.LastActive = app.formatDatetime(date)
+		}
+		user.ID = jfUser["Id"].(string)
 		user.Name = jfUser["Name"].(string)
+		user.Admin = jfUser["Policy"].(map[string]interface{})["IsAdministrator"].(bool)
 		if email, ok := app.storage.emails[jfUser["Id"].(string)]; ok {
 			user.Email = email.(string)
 		}
+
 		resp.UserList = append(resp.UserList, user)
 	}
 	gc.JSON(200, resp)
