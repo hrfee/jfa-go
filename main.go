@@ -132,6 +132,13 @@ func test(app *appContext) {
 		out, err := json.MarshalIndent(users, "", "  ")
 		fmt.Print(string(out), err)
 	}
+	fmt.Printf("Enter a user to grab: ")
+	var username string
+	fmt.Scanln(&username)
+	user, status, err := app.jf.userByName(username, false)
+	fmt.Printf("userByName (%s): code %d err %s", username, status, err)
+	out, err := json.MarshalIndent(user, "", "  ")
+	fmt.Print(string(out))
 }
 
 func start(asDaemon, firstCall bool) {

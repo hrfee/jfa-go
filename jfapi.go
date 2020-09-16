@@ -240,16 +240,25 @@ func (jf *Jellyfin) getUsers(public bool) ([]map[string]interface{}, int, error)
 }
 
 func (jf *Jellyfin) userByName(username string, public bool) (map[string]interface{}, int, error) {
-	users, status, err := jf.getUsers(public)
-	if err != nil || status != 200 {
+	var match map[string]interface{}
+	find := func() (map[string]interface{}, int, error) {
+		users, status, err := jf.getUsers(public)
+		if err != nil || status != 200 {
+			return nil, status, err
+		}
+		for _, user := range users {
+			if user["Name"].(string) == username {
+				return user, status, err
+			}
+		}
 		return nil, status, err
 	}
-	for _, user := range users {
-		if user["Name"].(string) == username {
-			return user, status, nil
-		}
+	match, status, err := find()
+	if match == nil {
+		jf.cacheExpiry = time.Now()
+		match, status, err = find()
 	}
-	return nil, status, err
+	return match, status, err
 }
 
 func (jf *Jellyfin) userById(userId string, public bool) (map[string]interface{}, int, error) {

@@ -67,6 +67,12 @@ func pwrMonitor(app *appContext, watcher *fsnotify.Watcher) {
 					}
 					app.storage.loadEmails()
 					var address string
+					uid := user["Id"]
+					if uid == nil {
+						app.err.Printf("Couldn't get user ID for user \"%s\"", pwr.Username)
+						app.debug.Printf("user maplength: %d", len(user))
+						return
+					}
 					addr, ok := app.storage.emails[user["Id"].(string)]
 					if !ok || addr == nil {
 						app.err.Printf("Couldn't find email for user \"%s\". Make sure it's set", pwr.Username)
