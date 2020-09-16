@@ -224,7 +224,6 @@ func (jf *Jellyfin) getUsers(public bool) ([]map[string]interface{}, int, error)
 		if public {
 			url := fmt.Sprintf("%s/users/public", jf.server)
 			data, status, err = jf._get(url, nil)
-
 		} else {
 			url := fmt.Sprintf("%s/users", jf.server)
 			data, status, err = jf._get(url, jf.loginParams)
@@ -237,7 +236,7 @@ func (jf *Jellyfin) getUsers(public bool) ([]map[string]interface{}, int, error)
 		jf.cacheExpiry = time.Now().Add(time.Minute * time.Duration(jf.cacheLength))
 		return result, status, nil
 	}
-	return jf.userCache, status, nil
+	return jf.userCache, 200, nil
 }
 
 func (jf *Jellyfin) userByName(username string, public bool) (map[string]interface{}, int, error) {

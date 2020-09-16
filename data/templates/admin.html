@@ -136,6 +136,10 @@
             .settingIcon {
                 margin-left: 0.2rem;
             }
+
+            body.modal-open {
+                overflow: hidden;
+            }
         </style>
         <title>Admin</title>
     </head>
@@ -404,10 +408,23 @@
         <script>
             {{ if .bs5 }}
                 function createModal(id, find = false) {
+                    let modal;
                     if (find) {
-                        return bootstrap.Modal.getInstance(document.getElementById(id));
+                        modal = bootstrap.Modal.getInstance(document.getElementById(id));
+                    } else {
+                        modal = new bootstrap.Modal(document.getElementById(id));
                     }
-                    return new bootstrap.Modal(document.getElementById(id));
+                    document.getElementById(id).addEventListener('shown.bs.modal', function () {
+                        document.body.classList.add("modal-open");
+                    });
+                    return {
+                        modal: modal,
+                        show: function() {
+                            let temp = this.modal.show();
+                            return temp
+                        },
+                        hide: function() { return this.modal.hide(); }
+                    };
                 }
             {{ else }}
                 let send_to_addess_enabled = document.getElementById('send_to_address_enabled');
@@ -419,9 +436,13 @@
                     multiUseEnabled.classList.remove('form-check-input');
                 }
                 function createModal(id, find = false) {
+                    $('#' + id).on('shown.bs.modal', function () {
+                        document.body.classList.add("modal-open");
+                    });
                     return {
                         show: function() {
-                            return $('#' + id).modal('show');
+                            let temp = $('#' + id).modal('show');
+                            return temp
                         },
                         hide: function() {
                             return $('#' + id).modal('hide');
