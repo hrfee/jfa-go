@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -136,7 +137,7 @@ func (jf *Jellyfin) authenticate(username, password string) (map[string]interfac
 	return user, resp.StatusCode, nil
 }
 
-func (jf *Jellyfin) _getReader(url string, params map[string]string) (io.Reader, int, error) {
+func (jf *Jellyfin) _get(url string, params map[string]string) (string, int, error) {
 	var req *http.Request
 	if params != nil {
 		jsonParams, _ := json.Marshal(params)
@@ -154,26 +155,32 @@ func (jf *Jellyfin) _getReader(url string, params map[string]string) (io.Reader,
 			jf.authenticated = false
 			_, _, authErr := jf.authenticate(jf.username, jf.password)
 			if authErr == nil {
-				v1, v2, v3 := jf._getReader(url, params)
+				v1, v2, v3 := jf._get(url, params)
 				return v1, v2, v3
 			}
 		}
-		return nil, resp.StatusCode, err
+		return "", resp.StatusCode, err
 	}
 	defer resp.Body.Close()
 	var data io.Reader
-	switch resp.Header.Get("Content-Encoding") {
+	encoding := resp.Header.Get("Content-Encoding")
+	if TEST {
+		fmt.Println("response encoding:", encoding)
+	}
+	switch encoding {
 	case "gzip":
 		data, _ = gzip.NewReader(resp.Body)
 	default:
 		data = resp.Body
 	}
+	buf := new(strings.Builder)
+	io.Copy(buf, data)
 	//var respData map[string]interface{}
 	//json.NewDecoder(data).Decode(&respData)
-	return data, resp.StatusCode, nil
+	return buf.String(), resp.StatusCode, nil
 }
 
-func (jf *Jellyfin) _post(url string, data map[string]interface{}, response bool) (io.Reader, int, error) {
+func (jf *Jellyfin) _post(url string, data map[string]interface{}, response bool) (string, int, error) {
 	params, _ := json.Marshal(data)
 	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(params))
 	for name, value := range jf.header {
@@ -190,7 +197,7 @@ func (jf *Jellyfin) _post(url string, data map[string]interface{}, response bool
 				return v1, v2, v3
 			}
 		}
-		return nil, resp.StatusCode, err
+		return "", resp.StatusCode, err
 	}
 	if response {
 		defer resp.Body.Close()
@@ -201,34 +208,36 @@ func (jf *Jellyfin) _post(url string, data map[string]interface{}, response bool
 		default:
 			outData = resp.Body
 		}
-		return outData, resp.StatusCode, nil
+		buf := new(strings.Builder)
+		io.Copy(buf, outData)
+		return buf.String(), resp.StatusCode, nil
 	}
-	return nil, resp.StatusCode, nil
+	return "", resp.StatusCode, nil
 }
 
 func (jf *Jellyfin) getUsers(public bool) ([]map[string]interface{}, int, error) {
 	var result []map[string]interface{}
-	var data io.Reader
+	var data string
 	var status int
 	var err error
 	if time.Now().After(jf.cacheExpiry) {
 		if public {
 			url := fmt.Sprintf("%s/users/public", jf.server)
-			data, status, err = jf._getReader(url, nil)
+			data, status, err = jf._get(url, nil)
 
 		} else {
 			url := fmt.Sprintf("%s/users", jf.server)
-			data, status, err = jf._getReader(url, jf.loginParams)
+			data, status, err = jf._get(url, jf.loginParams)
 		}
 		if err != nil || status != 200 {
 			return nil, status, err
 		}
-		json.NewDecoder(data).Decode(&result)
+		json.Unmarshal([]byte(data), &result)
 		jf.userCache = result
 		jf.cacheExpiry = time.Now().Add(time.Minute * time.Duration(jf.cacheLength))
 		return result, status, nil
 	}
-	return jf.userCache, 200, nil
+	return jf.userCache, status, nil
 }
 
 func (jf *Jellyfin) userByName(username string, public bool) (map[string]interface{}, int, error) {
@@ -265,15 +274,15 @@ func (jf *Jellyfin) userById(userId string, public bool) (map[string]interface{}
 		return nil, status, err
 	} else {
 		var result map[string]interface{}
-		var data io.Reader
+		var data string
 		var status int
 		var err error
 		url := fmt.Sprintf("%s/users/%s", jf.server, userId)
-		data, status, err = jf._getReader(url, jf.loginParams)
+		data, status, err = jf._get(url, jf.loginParams)
 		if err != nil || status != 200 {
 			return nil, status, err
 		}
-		json.NewDecoder(data).Decode(&result)
+		json.Unmarshal([]byte(data), &result)
 		return result, status, nil
 	}
 }
@@ -288,9 +297,9 @@ func (jf *Jellyfin) newUser(username, password string) (map[string]interface{}, 
 	for key, value := range stringData {
 		data[key] = value
 	}
-	reader, status, err := jf._post(url, data, true)
+	response, status, err := jf._post(url, data, true)
 	var recv map[string]interface{}
-	json.NewDecoder(reader).Decode(&recv)
+	json.Unmarshal([]byte(response), &recv)
 	if err != nil || !(status == 200 || status == 204) {
 		return nil, status, err
 	}
@@ -314,12 +323,12 @@ func (jf *Jellyfin) setConfiguration(userId string, configuration map[string]int
 
 func (jf *Jellyfin) getDisplayPreferences(userId string) (map[string]interface{}, int, error) {
 	url := fmt.Sprintf("%s/DisplayPreferences/usersettings?userId=%s&client=emby", jf.server, userId)
-	data, status, err := jf._getReader(url, nil)
+	data, status, err := jf._get(url, nil)
 	if err != nil || !(status == 204 || status == 200) {
 		return nil, status, err
 	}
 	var displayprefs map[string]interface{}
-	err = json.NewDecoder(data).Decode(&displayprefs)
+	err = json.Unmarshal([]byte(data), &displayprefs)
 	if err != nil {
 		return nil, status, err
 	}
