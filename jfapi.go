@@ -130,7 +130,7 @@ func (jf *Jellyfin) authenticate(username, password string) (map[string]interfac
 	jf.accessToken = respData["AccessToken"].(string)
 	user := respData["User"].(map[string]interface{})
 	jf.userId = respData["User"].(map[string]interface{})["Id"].(string)
-	jf.auth = fmt.Sprintf("MediaBrowser Client=%s, Device=%s, DeviceId=%s, Version=%s, Token=%s", jf.client, jf.device, jf.deviceId, jf.version, jf.accessToken)
+	jf.auth = fmt.Sprintf("MediaBrowser Client=\"%s\", Device=\"%s\", DeviceId=\"%s\", Version=\"%s\", Token=\"%s\"", jf.client, jf.device, jf.deviceId, jf.version, jf.accessToken)
 	jf.header["X-Emby-Authorization"] = jf.auth
 	jf.authenticated = true
 	return user, resp.StatusCode, nil
@@ -213,11 +213,11 @@ func (jf *Jellyfin) getUsers(public bool) ([]map[string]interface{}, int, error)
 	var err error
 	if time.Now().After(jf.cacheExpiry) {
 		if public {
-			url := fmt.Sprintf("%s/emby/Users/Public", jf.server)
+			url := fmt.Sprintf("%s/users/public", jf.server)
 			data, status, err = jf._getReader(url, nil)
 
 		} else {
-			url := fmt.Sprintf("%s/emby/Users", jf.server)
+			url := fmt.Sprintf("%s/users", jf.server)
 			data, status, err = jf._getReader(url, jf.loginParams)
 		}
 		if err != nil || status != 200 {
@@ -268,7 +268,7 @@ func (jf *Jellyfin) userById(userId string, public bool) (map[string]interface{}
 		var data io.Reader
 		var status int
 		var err error
-		url := fmt.Sprintf("%s/emby/Users/%s", jf.server, userId)
+		url := fmt.Sprintf("%s/users/%s", jf.server, userId)
 		data, status, err = jf._getReader(url, jf.loginParams)
 		if err != nil || status != 200 {
 			return nil, status, err
@@ -279,7 +279,7 @@ func (jf *Jellyfin) userById(userId string, public bool) (map[string]interface{}
 }
 
 func (jf *Jellyfin) newUser(username, password string) (map[string]interface{}, int, error) {
-	url := fmt.Sprintf("%s/emby/Users/New", jf.server)
+	url := fmt.Sprintf("%s/Users/New", jf.server)
 	stringData := map[string]string{
 		"Name":     username,
 		"Password": password,
