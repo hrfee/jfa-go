@@ -8,22 +8,104 @@ document.getElementById('selectAll').onclick = function() {
 
 function checkCheckboxes() {
     const defaultsButton = document.getElementById('accountsTabSetDefaults');
+    const deleteButton = document.getElementById('accountsTabDelete');
     const checkboxes = document.getElementById('accountsList').querySelectorAll('input[type=checkbox]');
-    let checked = false;
+    let checked = 0;
     for (check of checkboxes) {
         if (check.checked) {
-            checked = true;
-            break;
+            checked++;
         }
     }
-    if (!checked) {
+    if (checked == 0) {
         defaultsButton.classList.add('unfocused');
-    } else if (defaultsButton.classList.contains('unfocused')) {
-        defaultsButton.classList.remove('unfocused');
+        deleteButton.classList.add('unfocused');
+    } else {
+        if (defaultsButton.classList.contains('unfocused')) {
+            defaultsButton.classList.remove('unfocused');
+        }
+        if (deleteButton.classList.contains('unfocused')) {
+            deleteButton.classList.remove('unfocused');
+        }
+        if (checked == 1) {
+            deleteButton.textContent = 'Delete User';
+        } else {
+            deleteButton.textContent = 'Delete Users';
+        }
     }
 }
 
 var jfUsers = [];
+
+function validEmail(email) {
+    const re = /\S+@\S+\.\S+/;
+    return re.test(email);
+}
+
+function changeEmail(icon, id) {
+    const iconContent = icon.outerHTML;
+    icon.setAttribute("class", "");
+    const entry = icon.nextElementSibling;
+    const ogEmail = entry.value;
+    entry.readOnly = false;
+    entry.classList.remove('form-control-plaintext');
+    entry.classList.add('form-control');
+    if (entry.value == "") {
+        entry.placeholder = 'Address';
+    }
+    const tick = document.createElement('i');
+    tick.classList.add("fa", "fa-check", "d-inline-block", "icon-button", "text-success");
+    tick.setAttribute('style', 'margin-left: 0.5rem; margin-right: 0.5rem;');
+    tick.onclick = function() {
+        const newEmail = entry.value;
+        if (!validEmail(newEmail) || newEmail == ogEmail) {
+            return
+        }
+        cross.remove();
+        this.outerHTML = `
+        <div class="spinner-border spinner-border-sm" role="status" style="width: 1rem; height: 1rem; margin-left: 0.5rem;">
+            <span class="sr-only">Saving...</span>
+        </div>`;
+        //this.remove();
+        let send = {};
+        send[id] = newEmail;
+        console.log(send);
+        let req = new XMLHttpRequest();
+        req.open("POST", "/modifyEmails", true);
+        req.setRequestHeader("Authorization", "Basic " + btoa(window.token + ":"));
+        req.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+        req.onreadystatechange = function() {
+            if (this.readyState == 4) {
+                if (this.status == 200 || this.status == 204) {
+                    entry.nextElementSibling.remove();
+                } else {
+                    entry.value = ogEmail;
+                }
+            }
+        };
+        req.send(JSON.stringify(send));
+        icon.outerHTML = iconContent;
+        entry.readOnly = true;
+        entry.classList.remove('form-control');
+        entry.classList.add('form-control-plaintext');
+        entry.placeholder = '';
+    };
+    const cross = document.createElement('i');
+    cross.classList.add("fa", "fa-close", "d-inline-block", "icon-button", "text-danger");
+    cross.onclick = function() {
+        tick.remove();
+        this.remove();
+        icon.outerHTML = iconContent;
+        entry.readOnly = true;
+        entry.classList.remove('form-control');
+        entry.classList.add('form-control-plaintext');
+        entry.placeholder = '';
+        entry.value = ogEmail;
+    };
+    icon.parentNode.appendChild(tick);
+    icon.parentNode.appendChild(cross);
+}
+
+
 
 function populateUsers() {
     const acList = document.getElementById('accountsList');
@@ -35,18 +117,32 @@ function populateUsers() {
     acList.parentNode.querySelector('thead').classList.add('unfocused');
     const accountsList = document.createElement('tbody');
     accountsList.id = 'accountsList';
+    const generateEmail = function(id, name, email) {
+        let entry = document.createElement('div');
+        // entry.classList.add('py-1');
+        entry.id = 'email_' + id;
+        let emailValue = email;
+        if (email === undefined) {
+            emailValue = "";
+        }
+        entry.innerHTML = `
+        <i class="fa fa-edit d-inline-block icon-button" style="margin-right: 2%;" onclick="changeEmail(this, '${id}')"></i>
+        <input type="email" class="form-control-plaintext form-control-sm text-muted d-inline-block addressText" id="address_${id}" style="width: auto;" value="${emailValue}" readonly>
+        `;
+        return entry.outerHTML
+    };
     const template = function(id, username, email, lastActive, admin) {
         let isAdmin = "No";
         if (admin) {
             isAdmin = "Yes";
         }
         return `
-            <td scope="row"><input class="form-check-input" type="checkbox" value="" id="select_${id}" onclick="checkCheckboxes();"></td>
-            <td>${username}</td>
-            <td>${email}</td>
-            <td>${lastActive}</td>
-            <td>${isAdmin}</td>
-            <td><i class="fa fa-eye icon-button" id="viewConfig_${id}"></i></td>`;
+            <td class="align-middle" scope="row"><input class="form-check-input" type="checkbox" value="" id="select_${id}" onclick="checkCheckboxes();"></td>
+            <td class="align-middle">${username}</td>
+            <td class="align-middle">${generateEmail(id, name, email)}</td>
+            <td class="align-middle">${lastActive}</td>
+            <td class="align-middle">${isAdmin}</td>
+            <td class="align-middle"><i class="fa fa-eye icon-button" id="viewConfig_${id}"></i></td>`;
     };
 
     let req = new XMLHttpRequest();

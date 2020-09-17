@@ -541,6 +541,7 @@ func (app *appContext) OmbiUsers(gc *gin.Context) {
 func (app *appContext) ModifyEmails(gc *gin.Context) {
 	var req map[string]string
 	gc.BindJSON(&req)
+	fmt.Println(req)
 	app.debug.Println("Email modification requested")
 	users, status, err := app.jf.getUsers(false)
 	if !(status == 200 || status == 204) || err != nil {
@@ -550,7 +551,7 @@ func (app *appContext) ModifyEmails(gc *gin.Context) {
 		return
 	}
 	for _, jfUser := range users {
-		if address, ok := req[jfUser["Name"].(string)]; ok {
+		if address, ok := req[jfUser["Id"].(string)]; ok {
 			app.storage.emails[jfUser["Id"].(string)] = address
 		}
 	}

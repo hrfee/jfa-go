@@ -105,9 +105,6 @@
                             <button type="button" class="list-group-item list-group-item-action" id="openAbout">
                             About <i class="fa fa-info-circle settingIcon"></i>
                             </button>
-                            <button type="button" class="list-group-item list-group-item-action" id="openUsers">
-                                Email Addresses <i class="fa fa-envelope settingIcon"></i>
-                            </button>
                             <button type="button" class="list-group-item list-group-item-action" id="openDefaultsWizard">
                                 New User Defaults <i class="fa fa-user settingIcon"></i>
                             </button>
@@ -334,11 +331,12 @@
             </div>
             <div id="accountsTab" class="unfocused">
                 <div class="card mb-3 tabGroup">
-                    <div class="card-header">
-                        Accounts
-                        <div class="btn-group d-flex float-right" role="group" aria-label="Account control buttons">
-                            <button type="button" class="btn btn-secondary">Add User</button>
+                    <div class="card-header d-flex" style="align-items: center;">
+                        <div>Accounts</div>
+                        <div class="ml-auto">
+                            <!--<button type="button" class="btn btn-secondary">Add User</button>-->
                             <button type="button" class="btn btn-primary unfocused" id="accountsTabSetDefaults">Set Defaults</button>
+                            <button type="button" class="btn btn-danger unfocused" id="accountsTabDelete"></button>
                         </div>
                     </div>
                     <div class="card-body">
