@@ -543,6 +543,36 @@
             "description": "API Key. Get this from the first tab in Ombi settings."
         }
     },
+    "deletion": {
+        "meta": {
+            "name": "Account Deletion",
+            "description": "Subject/email files for account deletion emails."
+        },
+        "subject": {
+            "name": "Email subject",
+            "required": false,
+            "requires_restart": false,
+            "type": "text",
+            "value": "Your account was deleted - Jellyfin",
+            "description": "Subject of account deletion emails."
+        },
+        "email_html": {
+            "name": "Custom email (HTML)",
+            "required": false,
+            "requires_restart": false,
+            "type": "text",
+            "value": "",
+            "description": "Path to custom email html"
+        },
+        "email_text": {
+            "name": "Custom email (plaintext)",
+            "required": false,
+            "requires_restart": false,
+            "type": "text",
+            "value": "",
+            "description": "Path to custom email in plain text"
+        }
+    },
     "files": {
         "meta": {
             "name": "File Storage",

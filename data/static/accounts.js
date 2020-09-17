@@ -34,6 +34,73 @@ function checkCheckboxes() {
     }
 }
 
+document.getElementById('deleteModalNotify').onclick = function() {
+    const textbox = document.getElementById('deleteModalReasonBox');
+    if (this.checked && textbox.classList.contains('unfocused')) {
+        textbox.classList.remove('unfocused');
+    } else if (!this.checked) {
+        textbox.classList.add('unfocused');
+    }
+};
+
+document.getElementById('accountsTabDelete').onclick = function() {
+    const deleteButton = this;
+    let selected = [];
+    const checkboxes = document.getElementById('accountsList').querySelectorAll('input[type=checkbox]');
+    for (check of checkboxes) {
+        if (check.checked) {
+            selected.push(check.id.replace('select_', ''));
+        }
+    }
+    let title = " user";
+    if (selected.length > 1) {
+        title += "s";
+    }
+    title = "Delete " + selected.length + title;
+    document.getElementById('deleteModalTitle').textContent = title;
+    document.getElementById('deleteModalNotify').checked = false;
+    document.getElementById('deleteModalReason').value = '';
+    document.getElementById('deleteModalReasonBox').classList.add('unfocused');
+    document.getElementById('deleteModalSend').textContent = 'Delete';
+    
+    document.getElementById('deleteModalSend').onclick = function() {
+        const button = this;
+        const send = {
+            'users': selected,
+            'notify': document.getElementById('deleteModalNotify').checked,
+            'reason': document.getElementById('deleteModalReason').value
+        };
+        let req = new XMLHttpRequest();
+        req.open("POST", "/deleteUser", true);
+        req.responseType = 'json';
+        req.setRequestHeader("Authorization", "Basic " + btoa(window.token + ":"));
+        req.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+        req.onreadystatechange = function() {
+            if (this.readyState == 4) {
+                if (this.status == 500) {
+                    if ("error" in req.response) {
+                        button.textContent = 'Failed';
+                    } else {
+                        button.textContent = 'Partial fail (check console)';
+                        console.log(req.response);
+                    }
+                    setTimeout(function() {
+                        deleteModal.hide();
+                        deleteButton.classList.add('unfocused');
+                    }, 4000);
+                } else {
+                    deleteButton.classList.add('unfocused');
+                    deleteModal.hide();
+                }
+                populateUsers();
+                checkCheckboxes();
+            }
+        };
+        req.send(JSON.stringify(send));
+    };
+    deleteModal.show();
+}
+
 var jfUsers = [];
 
 function validEmail(email) {
@@ -68,7 +135,6 @@ function changeEmail(icon, id) {
         //this.remove();
         let send = {};
         send[id] = newEmail;
-        console.log(send);
         let req = new XMLHttpRequest();
         req.open("POST", "/modifyEmails", true);
         req.setRequestHeader("Authorization", "Basic " + btoa(window.token + ":"));
@@ -195,7 +261,7 @@ document.getElementById('accountsTabSetDefaults').onclick = function() {
             checked = '';
         }
         radio.innerHTML = `
-        <label><input type="radio" name="defaultRadios" id="select_${user['id']}" style="margin-right: 1rem;" ${checked}>${user['name']}</label>`;
+        <label><input type="radio" name="defaultRadios" id="default_${user['id']}" style="margin-right: 1rem;" ${checked}>${user['name']}</label>`;
         radioList.appendChild(radio);
     }
     let userstring = 'user';

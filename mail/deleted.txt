@@ -1,0 +1,4 @@
+Your Jellyfin account was deleted.
+Reason: {{ .reason }}
+
+{{ .message }}

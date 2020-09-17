@@ -439,6 +439,7 @@ func start(asDaemon, firstCall bool) {
 		api.GET("/getInvites", app.GetInvites)
 		api.POST("/setNotify", app.SetNotify)
 		api.POST("/deleteInvite", app.DeleteInvite)
+		api.POST("/deleteUser", app.DeleteUser)
 		api.GET("/getUsers", app.GetUsers)
 		api.POST("/modifyEmails", app.ModifyEmails)
 		api.POST("/setDefaults", app.SetDefaults)

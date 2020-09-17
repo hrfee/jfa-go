@@ -134,6 +134,7 @@ var usersModal = createModal('users');
 var restartModal = createModal('restartModal');
 var refreshModal = createModal('refreshModal');
 var aboutModal = createModal('aboutModal');
+var deleteModal = createModal('deleteModal');
 
 // Parsed invite: [<code>, <expires in _>, <1: Empty invite (no delete/link), 0: Actual invite>, <email address>, <remaining uses>, [<used-by>], <date created>, <notify on expiry>, <notify on creation>]
 function parseInvite(invite, empty = false) {
@@ -671,7 +672,7 @@ document.getElementById('openDefaultsWizard').onclick = function() {
                         checked = '';
                     }
                     radio.innerHTML =
-                        `<label><input type="radio" name="defaultRadios" id="select_${user['id']}" style="margin-right: 1rem;" ${checked}>${user['name']}</label>`;
+                        `<label><input type="radio" name="defaultRadios" id="default_${user['id']}" style="margin-right: 1rem;" ${checked}>${user['name']}</label>`;
                     radioList.appendChild(radio);
                 }
                 let button = document.getElementById('openDefaultsWizard');
@@ -718,7 +719,7 @@ function storeDefaults(users) {
     let id = '';
     for (let radio of radios) {
         if (radio.checked) {
-            id = radio.id.replace('select_', '');
+            id = radio.id.replace('default_', '');
             break;
         }
     }

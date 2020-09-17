@@ -274,6 +274,51 @@ func (app *appContext) NewUser(gc *gin.Context) {
 	gc.JSON(200, validation)
 }
 
+type deleteUserReq struct {
+	Users  []string `json:"users"`
+	Notify bool     `json:"notify"`
+	Reason string   `json:"reason"`
+}
+
+func (app *appContext) DeleteUser(gc *gin.Context) {
+	var req deleteUserReq
+	gc.BindJSON(&req)
+	errors := map[string]string{}
+	for _, userID := range req.Users {
+		status, err := app.jf.deleteUser(userID)
+		if !(status == 200 || status == 204) || err != nil {
+			errors[userID] = fmt.Sprintf("%d: %s", status, err)
+		}
+		if req.Notify {
+			addr, ok := app.storage.emails[userID]
+			if addr != nil && ok {
+				go func(userID, reason, address string) {
+					msg, err := app.email.constructDeleted(reason, app)
+					if err != nil {
+						app.err.Printf("%s: Failed to construct account deletion email", userID)
+						app.debug.Printf("%s: Error: %s", userID, err)
+					} else if err := app.email.send(address, msg); err != nil {
+						app.err.Printf("%s: Failed to send to %s", userID, address)
+						app.debug.Printf("%s: Error: %s", userID, err)
+					} else {
+						app.info.Printf("%s: Sent invite email to %s", userID, address)
+					}
+				}(userID, req.Reason, addr.(string))
+			}
+		}
+	}
+	app.jf.cacheExpiry = time.Now()
+	if len(errors) == len(req.Users) {
+		respond(500, "Failed", gc)
+		app.err.Printf("Account deletion failed: %s", errors[req.Users[0]])
+		return
+	} else if len(errors) != 0 {
+		gc.JSON(500, errors)
+		return
+	}
+	gc.JSON(200, map[string]bool{"success": true})
+}
+
 type generateInviteReq struct {
 	Days          int    `json:"days"`
 	Hours         int    `json:"hours"`

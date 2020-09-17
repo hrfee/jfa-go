@@ -278,6 +278,32 @@ func (emailer *Emailer) constructReset(pwr Pwr, app *appContext) (*Email, error)
 	return email, nil
 }
 
+func (emailer *Emailer) constructDeleted(reason string, app *appContext) (*Email, error) {
+	email := &Email{
+		subject: app.config.Section("deletion").Key("subject").MustString("Your account was deleted - Jellyfin"),
+	}
+	for _, key := range []string{"html", "text"} {
+		fpath := app.config.Section("deletion").Key("email_" + key).String()
+		tpl, err := template.ParseFiles(fpath)
+		if err != nil {
+			return nil, err
+		}
+		var tplData bytes.Buffer
+		err = tpl.Execute(&tplData, map[string]string{
+			"reason": reason,
+		})
+		if err != nil {
+			return nil, err
+		}
+		if key == "html" {
+			email.html = tplData.String()
+		} else {
+			email.text = tplData.String()
+		}
+	}
+	return email, nil
+}
+
 // calls the send method in the underlying emailClient.
 func (emailer *Emailer) send(address string, email *Email) error {
 	return emailer.sender.send(address, emailer.fromName, emailer.fromAddr, email)

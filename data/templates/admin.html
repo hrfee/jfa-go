@@ -244,6 +244,32 @@
                 </div>
             </div>
         </div>
+        <div class="modal fade" id="deleteModal" role="dialog" aria-labelledby="Account deletion" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteModalTitle"></h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="deleteModalNotify">
+                            <label class="form-check-label" for="deleteModalNotify">Notify users of account deletion</label>
+                        </div>
+                        <div class="mb-3 unfocused" id="deleteModalReasonBox">
+                            <label for="deleteModalReason" class="form-label">Reason for deletion</label>
+                            <textarea class="form-control" id="deleteModalReason" rows="2"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-danger" id="deleteModalSend">Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="pageContainer">
             <h1><a id="invitesTabButton" class="text-button">invites </a><a id="accountsTabButton" class="text-button text-muted">accounts</a></h1>
             <div class="btn-group" role="group" id="headerButtons">

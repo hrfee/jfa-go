@@ -215,6 +215,17 @@ func (jf *Jellyfin) _post(url string, data map[string]interface{}, response bool
 	return "", resp.StatusCode, nil
 }
 
+func (jf *Jellyfin) deleteUser(id string) (int, error) {
+	url := fmt.Sprintf("%s/Users/%s", jf.server, id)
+	req, _ := http.NewRequest("DELETE", url, nil)
+	for name, value := range jf.header {
+		req.Header.Add(name, value)
+	}
+	resp, err := jf.httpClient.Do(req)
+	defer timeoutHandler("Jellyfin", jf.server, jf.noFail)
+	return resp.StatusCode, err
+}
+
 func (jf *Jellyfin) getUsers(public bool) ([]map[string]interface{}, int, error) {
 	var result []map[string]interface{}
 	var data string
