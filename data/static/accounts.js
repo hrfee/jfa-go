@@ -137,12 +137,12 @@ function populateUsers() {
             isAdmin = "Yes";
         }
         return `
-            <td class="align-middle" scope="row"><input class="form-check-input" type="checkbox" value="" id="select_${id}" onclick="checkCheckboxes();"></td>
-            <td class="align-middle">${username}</td>
-            <td class="align-middle">${generateEmail(id, name, email)}</td>
-            <td class="align-middle">${lastActive}</td>
-            <td class="align-middle">${isAdmin}</td>
-            <td class="align-middle"><i class="fa fa-eye icon-button" id="viewConfig_${id}"></i></td>`;
+            <td nowrap="nowrap" class="align-middle" scope="row"><input class="form-check-input" type="checkbox" value="" id="select_${id}" onclick="checkCheckboxes();"></td>
+            <td nowrap="nowrap" class="align-middle">${username}</td>
+            <td nowrap="nowrap" class="align-middle">${generateEmail(id, name, email)}</td>
+            <td nowrap="nowrap" class="align-middle">${lastActive}</td>
+            <td nowrap="nowrap" class="align-middle">${isAdmin}</td>
+            <td nowrap="nowrap" class="align-middle"><i class="fa fa-eye icon-button" id="viewConfig_${id}"></i></td>`;
     };
 
     let req = new XMLHttpRequest();
