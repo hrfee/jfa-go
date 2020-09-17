@@ -20,6 +20,7 @@ func (app *appContext) AdminPage(gc *gin.Context) {
 		"version":        VERSION,
 		"commit":         COMMIT,
 		"ombiEnabled":    ombiEnabled,
+		"username":       !app.config.Section("email").Key("no_username").MustBool(false),
 	})
 }
 

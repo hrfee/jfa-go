@@ -180,6 +180,58 @@ type newUserReq struct {
 	Code     string `json:"code"`
 }
 
+func (app *appContext) NewUserAdmin(gc *gin.Context) {
+	var req newUserReq
+	gc.BindJSON(&req)
+	existingUser, _, _ := app.jf.userByName(req.Username, false)
+	if existingUser != nil {
+		msg := fmt.Sprintf("User already exists named %s", req.Username)
+		app.info.Printf("%s New user failed: %s", req.Username, msg)
+		respond(401, msg, gc)
+		return
+	}
+	user, status, err := app.jf.newUser(req.Username, req.Password)
+	if !(status == 200 || status == 204) || err != nil {
+		app.err.Printf("%s New user failed: Jellyfin responded with %d", req.Username, status)
+		respond(401, "Unknown error", gc)
+		return
+	}
+	var id string
+	if user["Id"] != nil {
+		id = user["Id"].(string)
+	}
+	if len(app.storage.policy) != 0 {
+		status, err = app.jf.setPolicy(id, app.storage.policy)
+		if !(status == 200 || status == 204) {
+			app.err.Printf("%s: Failed to set user policy: Code %d", req.Username, status)
+		}
+	}
+	if len(app.storage.configuration) != 0 && len(app.storage.displayprefs) != 0 {
+		status, err = app.jf.setConfiguration(id, app.storage.configuration)
+		if (status == 200 || status == 204) && err == nil {
+			status, err = app.jf.setDisplayPreferences(id, app.storage.displayprefs)
+		} else {
+			app.err.Printf("%s: Failed to set configuration template: Code %d", req.Username, status)
+		}
+	}
+	if app.config.Section("password_resets").Key("enabled").MustBool(false) {
+		app.storage.emails[id] = req.Email
+		app.storage.storeEmails()
+	}
+	if app.config.Section("ombi").Key("enabled").MustBool(false) {
+		app.storage.loadOmbiTemplate()
+		if len(app.storage.ombi_template) != 0 {
+			errors, code, err := app.ombi.newUser(req.Username, req.Password, req.Email, app.storage.ombi_template)
+			if err != nil || code != 200 {
+				app.info.Printf("Failed to create Ombi user (%d): %s", code, err)
+				app.debug.Printf("Errors reported by Ombi: %s", strings.Join(errors, ", "))
+			} else {
+				app.info.Println("Created Ombi user")
+			}
+		}
+	}
+}
+
 func (app *appContext) NewUser(gc *gin.Context) {
 	var req newUserReq
 	gc.BindJSON(&req)

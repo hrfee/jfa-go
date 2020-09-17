@@ -135,6 +135,7 @@ var restartModal = createModal('restartModal');
 var refreshModal = createModal('refreshModal');
 var aboutModal = createModal('aboutModal');
 var deleteModal = createModal('deleteModal');
+var newUserModal = createModal('newUserModal');
 
 // Parsed invite: [<code>, <expires in _>, <1: Empty invite (no delete/link), 0: Actual invite>, <email address>, <remaining uses>, [<used-by>], <date created>, <notify on expiry>, <notify on creation>]
 function parseInvite(invite, empty = false) {

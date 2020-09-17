@@ -435,6 +435,7 @@ func start(asDaemon, firstCall bool) {
 		router.GET("/invite/:invCode", app.InviteProxy)
 		api := router.Group("/", app.webAuth())
 		router.POST("/logout", app.Logout)
+		api.POST("/newUserAdmin", app.NewUserAdmin)
 		api.POST("/generateInvite", app.GenerateInvite)
 		api.GET("/getInvites", app.GetInvites)
 		api.POST("/setNotify", app.SetNotify)

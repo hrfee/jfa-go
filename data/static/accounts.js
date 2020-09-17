@@ -171,8 +171,6 @@ function changeEmail(icon, id) {
     icon.parentNode.appendChild(cross);
 }
 
-
-
 function populateUsers() {
     const acList = document.getElementById('accountsList');
     acList.innerHTML = `
@@ -292,6 +290,74 @@ document.getElementById('defaultsSource').addEventListener('change', function() 
     }
 })
 
+document.getElementById('newUserCreate').onclick = function() {
+    const ogText = this.textContent;
+    this.innerHTML = `
+    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Creating...`;
+    const email = document.getElementById('newUserEmail').value;
+    var username = email;
+    if (document.getElementById('newUserName') != null) {
+        username = document.getElementById('newUserName').value;
+    }
+    const password = document.getElementById('newUserPassword').value;
+    if (!validEmail(email) && email != "") {
+        return;
+    }
+    const send = {
+        'username': username,
+        'password': password,
+        'email': email
+    }
+    let req = new XMLHttpRequest()
+    req.open("POST", "/newUserAdmin", true);
+    req.responseType = 'json';
+    req.setRequestHeader("Authorization", "Basic " + btoa(window.token + ":"));
+    const button = this;
+    req.onreadystatechange = function() {
+        if (this.readyState == 4) {
+            button.textContent = ogText;
+            if (this.status == 200) {
+                if (button.classList.contains('btn-primary')) {
+                    button.classList.remove('btn-primary');
+                }
+                button.classList.add('btn-success');
+                button.textContent = 'Success';
+                setTimeout(function() {
+                    if (button.classList.contains('btn-success')) {
+                        button.classList.remove('btn-success');
+                    }
+                    button.classList.add('btn-primary');
+                    button.textContent = ogText;
+                    newUserModal.hide();
+                }, 1000);
+            } else {
+                if (button.classList.contains('btn-primary')) {
+                    button.classList.remove('btn-primary');
+                }
+                button.classList.add('btn-danger');
+                if ("error" in req.response) {
+                    button.textContent = req.response["error"];
+                } else {
+                    button.textContent = 'Failed';
+                }
+                setTimeout(function() {
+                    if (button.classList.contains('btn-danger')) {
+                        button.classList.remove('btn-danger');
+                    }
+                    button.classList.add('btn-primary');
+                    button.textContent = ogText;
+                }, 2000);
+            }
+        }
+    };
+    req.send(JSON.stringify(send));
+}
 
-
-
+document.getElementById('accountsTabAddUser').onclick = function() {
+    document.getElementById('newUserEmail').value = '';
+    document.getElementById('newUserPassword').value = '';
+    if (document.getElementById('newUserName') != null) {
+        document.getElementById('newUserName').value = '';
+    }
+    newUserModal.show();
+};
