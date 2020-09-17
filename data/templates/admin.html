@@ -150,16 +150,24 @@
             <div class="modal-dialog modal-dialog-centered" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="defaultsTitle">New user defaults</h5>
+                        <h5 class="modal-title" id="defaultsTitle"></h5>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
                     <div class="modal-body">
-                        <p>Create an account and configure it to your liking, then choose it from below to store the settings as a template for all new users.</p>
+                        <p id="userDefaultsDescription"></p>
+                        <div class="mb-3" id="defaultsSourceSection">
+                            <label for="defaultsSource">Use settings from:</label>
+                            <select class="form-select" id="defaultsSource" aria-label="User settings source">
+                                <option value="userTemplate" selected>Use existing user template</option>
+                                <option value="fromUser">Source from existing user</option>
+                            </select>
+                        </div>
                         <div id="defaultUserRadios"></div>
                         <div class="checkbox">
-                            <label><input type="checkbox" value="" style="margin-right: 1rem;" id="storeDefaultHomescreen" checked>Store homescreen layout</label>
+                            <input type="checkbox" value="" style="margin-right: 1rem;" id="storeDefaultHomescreen" checked>
+                            <label for="storeDefaultHomescreen" id="storeHomescreenLabel"></label>
                         </div>
                     </div>
                     <div class="modal-footer" id="defaultsFooter">
@@ -240,7 +248,7 @@
             </div>
         </div>
         <div class="pageContainer">
-            <h1><a class="text-button">Invites </a></h1>
+            <h1><a id="invitesTabButton" class="text-button">invites </a><a id="accountsTabButton" class="text-button text-muted">accounts</a></h1>
             <div class="btn-group" role="group" id="headerButtons">
                 <button type="button" class="btn btn-primary" id="openSettings">
                     Settings <i class="fa fa-cog"></i>
@@ -249,76 +257,105 @@
                     Logout <i class="fa fa-sign-out"></i>
                 </button>
             </div>
-            <div class="card mb-3 linkGroup">
-                <div class="card-header">Current Invites</div>
-                <ul class="list-group list-group-flush" id="invites">
-                </ul>
+            <div id="invitesTab">
+                <div class="card mb-3 tabGroup">
+                    <div class="card-header">Current Invites</div>
+                    <ul class="list-group list-group-flush" id="invites">
+                    </ul>
+                </div>
+                <div class="linkForm">
+                    <div class="card mb-3">
+                        <div class="card-header">Generate Invite</div>
+                        <div class="card-body">
+                            <form action="#" method="POST" id="inviteForm" class="container">
+                                <div class="row align-items-start">
+                                    <div class="col-sm">
+                                        <div class="form-group">
+                                            <label for="days">Days</label>
+                                            <select class="form-control form-select" id="days" name="days">
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="hours">Hours</label>
+                                            <select class="form-control form-select" id="hours" name="hours">
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="minutes">Minutes</label>
+                                            <select class="form-control form-select" id="minutes" name="minutes">
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="multiUseCount">
+                                                Multiple uses
+                                            </label>
+                                            <div class="input-group">
+                                                <div class="input-group-text">
+                                                    <input class="form-check-input" type="checkbox" onchange="document.getElementById('multiUseCount').disabled = !this.checked; document.getElementById('noUseLimit').disabled = !this.checked" aria-label="Checkbox to allow choice of invite usage limit" name="multiple-uses" id="multiUseEnabled">
+                                                </div>
+                                                <input type="number" class="form-control" name="remaining-uses" id="multiUseCount">
+                                            </div>
+                                        </div>
+                                        <div class="form-group form-check" style="margin-top: 1rem; margin-bottom: 1rem;">
+                                            <input class="form-check-input" type="checkbox" value="" name="no-limit" id="noUseLimit" onchange="document.getElementById('multiUseCount').disabled = this.checked; if (this.checked) { document.getElementById('noLimitWarning').style = 'display: block;' } else { document.getElementById('noLimitWarning').style = 'display: none;'; }">
+                                            <label class="form-check-label" for="noUseLimit">
+                                                No use limit
+                                            </label>
+                                            <div id="noLimitWarning" class="form-text" style="display: none;">Warning: Unlimited usage invites pose a risk if published online.</div>
+                                        </div>
+                                        {{ if .email_enabled }}
+                                        <div class="form-group">
+                                            <label for="send_to_address">Send invite to address</label>
+                                            <div class="input-group">
+                                                <div class="input-group-text">
+                                                    <input class="form-check-input" type="checkbox" onchange="document.getElementById('send_to_address').disabled = !this.checked;" aria-label="Checkbox to allow input of email address" id="send_to_address_enabled">
+                                                </div>
+                                                <input type="email" class="form-control" placeholder="example@example.com" id="send_to_address" disabled>
+                                            </div>
+                                        </div>
+                                        {{ end }}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col">
+                                        <div class="form-group d-flex float-right">
+                                            <button type="submit" id="generateSubmit" class="btn btn-primary" style="margin-top: 1rem;">
+                                                Generate
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="linkForm">
-                <div class="card mb-3">
-                    <div class="card-header">Generate Invite</div>
+            <div id="accountsTab" class="unfocused">
+                <div class="card mb-3 tabGroup">
+                    <div class="card-header">
+                        Accounts
+                        <div class="btn-group d-flex float-right" role="group" aria-label="Account control buttons">
+                            <button type="button" class="btn btn-secondary">Add User</button>
+                            <button type="button" class="btn btn-primary unfocused" id="accountsTabSetDefaults">Set Defaults</button>
+                        </div>
+                    </div>
                     <div class="card-body">
-                        <form action="#" method="POST" id="inviteForm" class="container">
-                            <div class="row align-items-start">
-                                <div class="col-sm">
-                                    <div class="form-group">
-                                        <label for="days">Days</label>
-                                        <select class="form-control form-select" id="days" name="days">
-                                        </select>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="hours">Hours</label>
-                                        <select class="form-control form-select" id="hours" name="hours">
-                                        </select>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="minutes">Minutes</label>
-                                        <select class="form-control form-select" id="minutes" name="minutes">
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="col">
-                                    <div class="form-group">
-                                        <label for="multiUseCount">
-                                            Multiple uses
-                                        </label>
-                                        <div class="input-group">
-                                            <div class="input-group-text">
-                                                <input class="form-check-input" type="checkbox" onchange="document.getElementById('multiUseCount').disabled = !this.checked; document.getElementById('noUseLimit').disabled = !this.checked" aria-label="Checkbox to allow choice of invite usage limit" name="multiple-uses" id="multiUseEnabled">
-                                            </div>
-                                            <input type="number" class="form-control" name="remaining-uses" id="multiUseCount">
-                                        </div>
-                                    </div>
-                                    <div class="form-group form-check" style="margin-top: 1rem; margin-bottom: 1rem;">
-                                        <input class="form-check-input" type="checkbox" value="" name="no-limit" id="noUseLimit" onchange="document.getElementById('multiUseCount').disabled = this.checked; if (this.checked) { document.getElementById('noLimitWarning').style = 'display: block;' } else { document.getElementById('noLimitWarning').style = 'display: none;'; }">
-                                        <label class="form-check-label" for="noUseLimit">
-                                            No use limit
-                                        </label>
-                                        <div id="noLimitWarning" class="form-text" style="display: none;">Warning: Unlimited usage invites pose a risk if published online.</div>
-                                    </div>
-                                    {{ if .email_enabled }}
-                                    <div class="form-group">
-                                        <label for="send_to_address">Send invite to address</label>
-                                        <div class="input-group">
-                                            <div class="input-group-text">
-                                                <input class="form-check-input" type="checkbox" onchange="document.getElementById('send_to_address').disabled = !this.checked;" aria-label="Checkbox to allow input of email address" id="send_to_address_enabled">
-                                            </div>
-                                            <input type="email" class="form-control" placeholder="example@example.com" id="send_to_address" disabled>
-                                        </div>
-                                    </div>
-                                    {{ end }}
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col">
-                                    <div class="form-group d-flex float-right">
-                                        <button type="submit" id="generateSubmit" class="btn btn-primary" style="margin-top: 1rem;">
-                                            Generate
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </form>
+                        <table class="table table-hover table-striped table-borderless">
+                            <thead>
+                                <tr>
+                                    <th scope="col"><input class="form-check-input" type="checkbox" value="" id="selectAll"></th>
+                                    <th scope="col">Username</th>
+                                    <th scope="col">Email Address</th>
+                                    <th scope="col">Last Active</th>
+                                    <th scope="col">Admin?</th>
+                                    <th scope="col"><i>View settings</i></th>
+                                </tr>
+                            </thead>
+                            <tbody id="accountsList">
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -401,6 +438,7 @@
             const notifications_enabled = false;
             {{ end }}
         </script>
+        <script src="accounts.js"></script>
         <script src="admin.js"></script>
     </body>
 </html>

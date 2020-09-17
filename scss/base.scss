@@ -10,7 +10,7 @@ h1 {
     /*margin: 20%;*/
     margin-bottom: 5%;
 }
-.linkGroup {
+.tabGroup {
     /*margin: 20%;*/
     margin-bottom: 5%;
     margin-top: 5%;
@@ -84,6 +84,7 @@ body.modal-open {
     font-weight: inherit;
     line-height: inherit;
     font-family: inherit;
+    margin-right: 1rem;
   }
 }
 
@@ -93,4 +94,12 @@ body.modal-open {
 
 .text-button {
     @extend %scut-link-unstyled;
+}
+
+.text-button:hover {
+    @extend %scut-link-unstyled;
+}
+
+.unfocused {
+    display: none;
 }

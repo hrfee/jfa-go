@@ -575,22 +575,24 @@ func (app *appContext) SetOmbiDefaults(gc *gin.Context) {
 }
 
 type defaultsReq struct {
-	Username   string `json:"username"`
-	Homescreen bool   `json:"homescreen"`
+	From       string   `json:"from"`
+	ApplyTo    []string `json:"apply_to"`
+	ID         string   `json:"id"`
+	Homescreen bool     `json:"homescreen"`
 }
 
 func (app *appContext) SetDefaults(gc *gin.Context) {
 	var req defaultsReq
 	gc.BindJSON(&req)
-	app.info.Printf("Getting user defaults from \"%s\"", req.Username)
-	user, status, err := app.jf.userByName(req.Username, false)
+	userID := req.ID
+	user, status, err := app.jf.userById(userID, false)
 	if !(status == 200 || status == 204) || err != nil {
 		app.err.Printf("Failed to get user from Jellyfin: Code %d", status)
 		app.debug.Printf("Error: %s", err)
 		respond(500, "Couldn't get user", gc)
 		return
 	}
-	userID := user["Id"].(string)
+	app.info.Printf("Getting user defaults from \"%s\"", user["Name"].(string))
 	policy := user["Policy"].(map[string]interface{})
 	app.storage.policy = policy
 	app.storage.storePolicy()
@@ -613,6 +615,81 @@ func (app *appContext) SetDefaults(gc *gin.Context) {
 		app.debug.Println("DisplayPrefs template stored")
 	}
 	gc.JSON(200, map[string]bool{"success": true})
+}
+
+func (app *appContext) ApplySettings(gc *gin.Context) {
+	var req defaultsReq
+	gc.BindJSON(&req)
+	applyingFrom := "template"
+	var policy, configuration, displayprefs map[string]interface{}
+	if req.From == "template" {
+		if len(app.storage.policy) == 0 {
+			respond(500, "No policy template available", gc)
+			return
+		}
+		app.storage.loadPolicy()
+		policy = app.storage.policy
+		if req.Homescreen {
+			if len(app.storage.configuration) == 0 || len(app.storage.displayprefs) == 0 {
+				respond(500, "No homescreen template available", gc)
+				return
+			}
+			configuration = app.storage.configuration
+			displayprefs = app.storage.displayprefs
+		}
+	} else if req.From == "user" {
+		applyingFrom = "user"
+		user, status, err := app.jf.userById(req.ID, false)
+		if !(status == 200 || status == 204) || err != nil {
+			app.err.Printf("Failed to get user from Jellyfin: Code %d", status)
+			app.debug.Printf("Error: %s", err)
+			respond(500, "Couldn't get user", gc)
+			return
+		}
+		applyingFrom = "\"" + user["Name"].(string) + "\""
+		policy = user["Policy"].(map[string]interface{})
+		if req.Homescreen {
+			displayprefs, status, err = app.jf.getDisplayPreferences(req.ID)
+			if !(status == 200 || status == 204) || err != nil {
+				app.err.Printf("Failed to get DisplayPrefs: Code %d", status)
+				app.debug.Printf("Error: %s", err)
+				respond(500, "Couldn't get displayprefs", gc)
+				return
+			}
+			configuration = user["Configuration"].(map[string]interface{})
+		}
+	}
+	app.info.Printf("Applying settings to %d user(s) from %s", len(req.ApplyTo), applyingFrom)
+	errors := map[string]map[string]string{
+		"policy":     map[string]string{},
+		"homescreen": map[string]string{},
+	}
+	for _, id := range req.ApplyTo {
+		status, err := app.jf.setPolicy(id, policy)
+		if !(status == 200 || status == 204) || err != nil {
+			errors["policy"][id] = fmt.Sprintf("%d: %s", status, err)
+		}
+		if req.Homescreen {
+			status, err = app.jf.setConfiguration(id, configuration)
+			errorString := ""
+			if !(status == 200 || status == 204) || err != nil {
+				errorString += fmt.Sprintf("Configuration %d: %s ", status, err)
+			} else {
+				status, err = app.jf.setDisplayPreferences(id, displayprefs)
+				if !(status == 200 || status == 204) || err != nil {
+					errorString += fmt.Sprintf("Displayprefs %d: %s ", status, err)
+				}
+			}
+			if errorString != "" {
+				errors["homescreen"][id] = errorString
+			}
+		}
+	}
+	code := 200
+	if len(errors["policy"]) == len(req.ApplyTo) || len(errors["homescreen"]) == len(req.ApplyTo) {
+		code = 500
+	}
+	gc.JSON(code, errors)
 }
 
 func (app *appContext) GetConfig(gc *gin.Context) {

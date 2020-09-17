@@ -1,3 +1,36 @@
+const tabs = {
+    invitesEl: document.getElementById('invitesTab'),
+    accountsEl: document.getElementById('accountsTab'),
+    invitesTabButton: document.getElementById('invitesTabButton'),
+    accountsTabButton: document.getElementById('accountsTabButton'),
+    invites: function() {
+        if (tabs.invitesEl.classList.contains('unfocused')) {
+            tabs.accountsEl.classList.add('unfocused');
+            tabs.invitesEl.classList.remove('unfocused');
+        }
+        if (tabs.invitesTabButton.classList.contains("text-muted")) {
+            tabs.invitesTabButton.classList.remove("text-muted");
+            tabs.accountsTabButton.classList.add("text-muted");
+        }
+    },
+    accounts: function() {
+        populateUsers();
+        if (tabs.accountsEl.classList.contains('unfocused')) {
+            tabs.invitesEl.classList.add('unfocused');
+            tabs.accountsEl.classList.remove('unfocused');
+        }
+        if (tabs.accountsTabButton.classList.contains("text-muted")) {
+            tabs.accountsTabButton.classList.remove("text-muted");
+            tabs.invitesTabButton.classList.add("text-muted");
+        }
+    }
+};
+
+tabs.invitesTabButton.onclick = tabs.invites;
+tabs.accountsTabButton.onclick = tabs.accounts;
+
+tabs.invites();
+
 // Used for theme change animation
 function whichTransitionEvent() {
     let t;
@@ -638,7 +671,7 @@ document.getElementById('openDefaultsWizard').onclick = function() {
                         checked = '';
                     }
                     radio.innerHTML =
-                        `<label><input type="radio" name="defaultRadios" id="default_${user['name']}" style="margin-right: 1rem;" ${checked}>${user['name']}</label>`;
+                        `<label><input type="radio" name="defaultRadios" id="select_${user['id']}" style="margin-right: 1rem;" ${checked}>${user['name']}</label>`;
                     radioList.appendChild(radio);
                 }
                 let button = document.getElementById('openDefaultsWizard');
@@ -655,6 +688,19 @@ document.getElementById('openDefaultsWizard').onclick = function() {
                     submitButton.classList.add('btn-primary');
                 }
                 settingsModal.hide();
+                document.getElementById('defaultsTitle').textContent = `New user defaults`;
+                document.getElementById('userDefaultsDescription').textContent = `
+                Create an account and configure it to your liking, then choose it from below to store the settings as a template for all new users.`;
+                document.getElementById('storeHomescreenLabel').textContent = `Store homescreen layout`;
+                document.getElementById('defaultsSource').value = 'fromUser';
+                document.getElementById('defaultsSourceSection').classList.add('unfocused');
+                document.getElementById('storeDefaults').onclick = function() {
+                    storeDefaults('all');
+                };
+                const list = document.getElementById('defaultUserRadios');
+                if (list.classList.contains('unfocused')) {
+                    list.classList.remove('unfocused');
+                }
                 userDefaultsModal.show();
             }
         }
@@ -662,54 +708,81 @@ document.getElementById('openDefaultsWizard').onclick = function() {
     req.send();
 };
 
-document.getElementById('storeDefaults').onclick = function () {
+function storeDefaults(users) {
     this.disabled = true;
     this.innerHTML =
         '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="margin-right: 0.5rem;"></span>' +
         'Loading...';
     let button = document.getElementById('storeDefaults');
     let radios = document.getElementsByName('defaultRadios');
+    let id = '';
     for (let radio of radios) {
         if (radio.checked) {
-            let data = {
-                'username': radio.id.slice(8),
-                'homescreen': false};
-            if (document.getElementById('storeDefaultHomescreen').checked) {
-                data['homescreen'] = true;
-            }
-            let req = new XMLHttpRequest();
-            req.open("POST", "/setDefaults", true);
-            req.setRequestHeader("Authorization", "Basic " + btoa(window.token + ":"));
-            req.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
-            req.onreadystatechange = function() {
-                if (this.readyState == 4) {
-                    if (this.status == 200 || this.status == 204) {
-                        button.textContent = "Success";
-                        if (button.classList.contains('btn-danger')) {
-                            button.classList.remove('btn-danger');
-                        } else if (button.classList.contains('btn-primary')) {
-                            button.classList.remove('btn-primary');
-                        }
-                        button.classList.add('btn-success');
-                        button.disabled = false;
-                        setTimeout(function() { userDefaultsModal.hide(); }, 1000);
-                    } else {
-                        button.textContent = "Failed";
-                        button.classList.remove('btn-primary');
-                        button.classList.add('btn-danger');
-                        setTimeout(function() {
-                            let button = document.getElementById('storeDefaults');
-                            button.textContent = "Submit";
-                            button.classList.remove('btn-danger');
-                            button.classList.add('btn-primary');
-                            button.disabled = false;
-                        }, 1000);
-                    }
-                }
-            };
-            req.send(JSON.stringify(data));
+            id = radio.id.replace('select_', '');
+            break;
         }
     }
+    let route = '/setDefaults';
+    let data = {
+        'from': 'user',
+        'id': id,
+        'homescreen': false
+    };
+    if (document.getElementById('defaultsSource').value == 'userTemplate') {
+        data['from'] = 'template';
+    }
+    if (users != 'all') {
+        data['apply_to'] = users;
+        route = '/applySettings';
+    }
+    if (document.getElementById('storeDefaultHomescreen').checked) {
+        data['homescreen'] = true;
+    }
+    let req = new XMLHttpRequest();
+    req.open("POST", route, true);
+    req.responseType = 'json';
+    req.setRequestHeader("Authorization", "Basic " + btoa(window.token + ":"));
+    req.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+    req.onreadystatechange = function() {
+        if (this.readyState == 4) {
+            if (this.status == 200 || this.status == 204) {
+                button.textContent = "Success";
+                if (button.classList.contains('btn-danger')) {
+                    button.classList.remove('btn-danger');
+                } else if (button.classList.contains('btn-primary')) {
+                    button.classList.remove('btn-primary');
+                }
+                button.classList.add('btn-success');
+                button.disabled = false;
+                setTimeout(function() { 
+                    let button = document.getElementById('storeDefaults');
+                    button.textContent = "Submit";
+                    button.classList.remove('btn-success');
+                    button.classList.add('btn-primary');
+                    button.disabled = false;
+                    userDefaultsModal.hide();
+                }, 1000);
+            } else {
+                if ("error" in req.response) {
+                    button.textContent = req.response["error"];
+                } else if (("policy" in req.response) || ("homescreen" in req.response)) {
+                    button.textContent = "Failed (Check JS Console)";
+                } else {
+                    button.textContent = "Failed";
+                }
+                button.classList.remove('btn-primary');
+                button.classList.add('btn-danger');
+                setTimeout(function() {
+                    let button = document.getElementById('storeDefaults');
+                    button.textContent = "Submit";
+                    button.classList.remove('btn-danger');
+                    button.classList.add('btn-primary');
+                    button.disabled = false;
+                }, 1000);
+            }
+        }
+    };
+    req.send(JSON.stringify(data));
 };
 
 var ombiDefaultsModal = '';

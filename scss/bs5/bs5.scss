@@ -1,2 +1,15 @@
 @import "../../node_modules/bootstrap/scss/bootstrap";
+
+.icon-button {
+    color: $text-muted;
+}
+
+.icon-button:hover {
+    color: inherit;
+}
+
+.icon-button:active {
+    color: $text-muted;
+}
+
 @import "../base.scss";

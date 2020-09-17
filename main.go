@@ -322,7 +322,7 @@ func start(asDaemon, firstCall bool) {
 		app.storage.policy_path = app.config.Section("files").Key("user_template").String()
 		app.storage.loadPolicy()
 		// app.storage.configuration_path = filepath.Join(app.data_path, "user_configuration.json")
-		app.storage.policy_path = app.config.Section("files").Key("user_configuration").String()
+		app.storage.configuration_path = app.config.Section("files").Key("user_configuration").String()
 		app.storage.loadConfiguration()
 		// app.storage.displayprefs_path = filepath.Join(app.data_path, "user_displayprefs.json")
 		app.storage.displayprefs_path = app.config.Section("files").Key("user_displayprefs").String()
@@ -442,6 +442,7 @@ func start(asDaemon, firstCall bool) {
 		api.GET("/getUsers", app.GetUsers)
 		api.POST("/modifyUsers", app.ModifyEmails)
 		api.POST("/setDefaults", app.SetDefaults)
+		api.POST("/applySettings", app.ApplySettings)
 		api.GET("/getConfig", app.GetConfig)
 		api.POST("/modifyConfig", app.ModifyConfig)
 		if app.config.Section("ombi").Key("enabled").MustBool(false) {
