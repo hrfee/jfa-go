@@ -46,7 +46,7 @@ for bsv in [d for d in local_path.iterdir() if "bs" in d.name]:
         with open(css[i], "w") as f:
             f.write(
                 sass.compile(
-                    filename=str(scss[i].resolve()), output_style="expanded", precision=6
+                    filename=str(scss[i].resolve()), output_style="expanded", precision=6, omit_source_map_url=True
                 )
             )
         if css[i].exists():
