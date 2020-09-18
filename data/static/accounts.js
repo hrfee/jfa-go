@@ -206,7 +206,7 @@ function populateUsers() {
             <td nowrap="nowrap" class="align-middle">${generateEmail(id, name, email)}</td>
             <td nowrap="nowrap" class="align-middle">${lastActive}</td>
             <td nowrap="nowrap" class="align-middle">${isAdmin}</td>
-            <td nowrap="nowrap" class="align-middle"><i class="fa fa-eye icon-button" id="viewConfig_${id}"></i></td>`;
+        `;
     };
 
     let req = new XMLHttpRequest();

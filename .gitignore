@@ -4,6 +4,7 @@ mail/*.html
 scss/*.css*
 scss/bs4/*.css*
 scss/bs5/*.css*
+data/static/*.css
 data/config-base.json
 data/config-default.ini
 data/*.html
