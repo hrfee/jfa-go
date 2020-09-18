@@ -8,10 +8,10 @@ const tabs = {
             tabs.accountsEl.classList.add('unfocused');
             tabs.invitesEl.classList.remove('unfocused');
         }
-        if (tabs.invitesTabButton.classList.contains("text-muted")) {
-            tabs.invitesTabButton.classList.remove("text-muted");
-            tabs.accountsTabButton.classList.add("text-muted");
+        if (tabs.accountsTabButton.classList.contains("active")) {
+            tabs.accountsTabButton.classList.remove("active");
         }
+        tabs.invitesTabButton.classList.add("active");
     },
     accounts: function() {
         populateUsers();
@@ -19,9 +19,9 @@ const tabs = {
             tabs.invitesEl.classList.add('unfocused');
             tabs.accountsEl.classList.remove('unfocused');
         }
-        if (tabs.accountsTabButton.classList.contains("text-muted")) {
-            tabs.accountsTabButton.classList.remove("text-muted");
-            tabs.invitesTabButton.classList.add("text-muted");
+        if (tabs.invitesTabButton.classList.contains("active")) {
+            tabs.invitesTabButton.classList.remove("active");
+            tabs.accountsTabButton.classList.add("active");
         }
     }
 };

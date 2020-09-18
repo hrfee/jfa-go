@@ -73,31 +73,43 @@ body.modal-open {
     overflow: hidden;
 }
 
-@mixin scut-link-unstyled {
+@mixin white-text {
   &, &:visited, &:hover, &:active {
     font-style: inherit;
     color: inherit;
-    background-color: transparent;
     font-size: inherit;
     text-decoration: none;
     font-variant: inherit;
     font-weight: inherit;
     line-height: inherit;
     font-family: inherit;
-    margin-right: 1rem;
   }
 }
 
-%scut-link-unstyled {
-    @include scut-link-unstyled;
+%white-text {
+    @include white-text;
+}
+
+%link-unstyled {
+    @include white-text;
+    background-color: transparent;
+    margin-right: 0.5rem;
 }
 
 .text-button {
-    @extend %scut-link-unstyled;
+    @extend %link-unstyled;
 }
 
 .text-button:hover {
-    @extend %scut-link-unstyled;
+    @extend %link-unstyled;
+}
+
+.nl {
+    @extend %link-unstyled;
+}
+
+.nl:hover {
+    @extend %white-text;
 }
 
 .unfocused {

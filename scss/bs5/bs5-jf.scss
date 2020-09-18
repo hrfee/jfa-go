@@ -138,4 +138,8 @@ $list-group-action-active-bg: $jf-blue-focus;
     background-color: $success;
 }
 
+.nav-link:hover {
+    background-color: $jf-blue-hover;
+}
+
 @import "../base.scss";

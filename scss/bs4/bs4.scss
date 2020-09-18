@@ -12,4 +12,8 @@
     color: $text-muted;
 }
 
+.nav-link:hover {
+    background-color: $list-group-hover-bg;
+}
+
 @import "../base.scss";
