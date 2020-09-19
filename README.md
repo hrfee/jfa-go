@@ -11,6 +11,7 @@ I chose to rewrite the python [jellyfin-accounts](https://github.com/hrfee/jelly
     * Account defaults: Configure an example account to your liking, and its permissions, access rights and homescreen layout can be applied to all new users.
     * Password validation: Ensure users choose a strong password.
 * 🔗 Ombi Integration: Automatically creates Ombi accounts for new users using their email address and login details, and your own defined set of permissions.
+* Account management: Apply settings to your users individually or en masse, and delete users, optionally sending them an email notification with a reason.
 * 📨 Email storage: Add your existing user's email addresses through the UI, and jfa-go will ask new users for them on account creation.
     * Email addresses can optionally be used instead of usernames
 * 🔑 Password resets: When user's forget their passwords and request a change in Jellyfin, jfa-go reads the PIN from the created file and sends it straight to the user via email.
@@ -24,12 +25,12 @@ I chose to rewrite the python [jellyfin-accounts](https://github.com/hrfee/jelly
 
 ## Interface
 <p align="center">
-    <img src="https://raw.githubusercontent.com/hrfee/jellyfin-accounts/main/images/jfa.gif" width="100%"></img>
+    <img src="https://raw.githubusercontent.com/hrfee/jellyfin-accounts/main/images/demo.gif" width="100%"></img>
 </p>
 
 <p align="center">
-    <img src="https://raw.githubusercontent.com/hrfee/jellyfin-accounts/main/images/admin.png" width="48%" style="margin-right: 1.5%;" alt="Admin page"></img> 
-    <img src="https://raw.githubusercontent.com/hrfee/jellyfin-accounts/main/images/create.png" width="48%" style="margin-left: 1.5%;" alt="Account creation page"></img>
+    <img src="https://raw.githubusercontent.com/hrfee/jellyfin-accounts/main/images/invites.png" width="48%" style="margin-left: 1.5%;" alt="Invites tab"></img>
+    <img src="https://raw.githubusercontent.com/hrfee/jellyfin-accounts/main/images/accounts.png" width="48%" style="margin-right: 1.5%;" alt="Accounts tab"></img> 
 </p>
 
 #### Install
@@ -69,6 +70,8 @@ Usage of ./jfa-go:
     	alternate path to config file. (default "~/.config/jfa-go/config.ini")
   -data string
     	alternate path to data directory. (default "~/.config/jfa-go")
+  -debug
+    	Enables debug logging and exposes pprof.
   -host string
     	alternate address to host web ui on.
   -port int
