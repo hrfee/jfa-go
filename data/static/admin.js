@@ -647,6 +647,28 @@ document.getElementById('openAbout').onclick = function() {
     aboutModal.show();
 };
 
+function populateRadios() {
+    let radioList = document.getElementById('defaultUserRadios');
+    radioList.textContent = '';
+    let first = true;
+    for (user of jfUsers) {
+        let radio = document.createElement('div');
+        radio.classList.add('form-check');
+        let checked = 'checked';
+        if (first) {
+            first = false;
+        } else {
+            checked = '';
+        }
+        // radio.innerHTML =
+        //     `<label><input type="radio" name="defaultRadios" id="default_${user['id']}" style="margin-right: 1rem;" ${checked}>${user['name']}</label>`;
+        radio.innerHTML = `
+        <input class="form-check-input" type="radio" name="defaultRadios" id="default_${user['id']}" ${checked}>
+        <label class="form-check-label" for="default_${user['id']}">${user['name']}</label>`;
+        radioList.appendChild(radio);
+    }
+}
+
 document.getElementById('openDefaultsWizard').onclick = function() {
     this.disabled = true
     this.innerHTML =
@@ -659,23 +681,8 @@ document.getElementById('openDefaultsWizard').onclick = function() {
     req.onreadystatechange = function() {
         if (this.readyState == 4) {
             if (this.status == 200) {
-                let users = req.response['users'];
-                let radioList = document.getElementById('defaultUserRadios');
-                radioList.textContent = '';
-                let first = true;
-                for (user of users) {
-                    let radio = document.createElement('div');
-                    radio.classList.add('radio');
-                    let checked = 'checked';
-                    if (first) {
-                        first = false;
-                    } else {
-                        checked = '';
-                    }
-                    radio.innerHTML =
-                        `<label><input type="radio" name="defaultRadios" id="default_${user['id']}" style="margin-right: 1rem;" ${checked}>${user['name']}</label>`;
-                    radioList.appendChild(radio);
-                }
+                jfUsers = req.response['users'];
+                populateRadios();
                 let button = document.getElementById('openDefaultsWizard');
                 button.disabled = false;
                 button.innerHTML = 'New User Defaults <i class="fa fa-user settingIcon"></i>';

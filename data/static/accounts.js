@@ -53,12 +53,16 @@ document.getElementById('accountsTabDelete').onclick = function() {
         }
     }
     let title = " user";
+    let msg = "Notify user";
     if (selected.length > 1) {
         title += "s";
+        msg += "s";
     }
     title = "Delete " + selected.length + title;
+    msg += " of account deletion";
     document.getElementById('deleteModalTitle').textContent = title;
     document.getElementById('deleteModalNotify').checked = false;
+    document.getElementById('deleteModalNotifyLabel').textContent = msg;
     document.getElementById('deleteModalReason').value = '';
     document.getElementById('deleteModalReasonBox').classList.add('unfocused');
     document.getElementById('deleteModalSend').textContent = 'Delete';
@@ -200,8 +204,12 @@ function populateUsers() {
         if (admin) {
             isAdmin = "Yes";
         }
+        let fci = "form-check-input";
+        if (bsVersion != 5) {
+            fci = "";
+        }
         return `
-            <td nowrap="nowrap" class="align-middle" scope="row"><input class="form-check-input" type="checkbox" value="" id="select_${id}" onclick="checkCheckboxes();"></td>
+            <td nowrap="nowrap" class="align-middle" scope="row"><input class="${fci}" type="checkbox" value="" id="select_${id}" onclick="checkCheckboxes();"></td>
             <td nowrap="nowrap" class="align-middle">${username}</td>
             <td nowrap="nowrap" class="align-middle">${generateEmail(id, name, email)}</td>
             <td nowrap="nowrap" class="align-middle">${lastActive}</td>
@@ -246,22 +254,7 @@ document.getElementById('accountsTabSetDefaults').onclick = function() {
     if (userIDs.length == 0) {
         return;
     }
-    let radioList = document.getElementById('defaultUserRadios');
-    radioList.textContent = '';
-    let first = true;
-    for (user of jfUsers) {
-        let radio = document.createElement('div');
-        radio.classList.add('radio');
-        let checked = 'checked';
-        if (first) {
-            first = false;
-        } else {
-            checked = '';
-        }
-        radio.innerHTML = `
-        <label><input type="radio" name="defaultRadios" id="default_${user['id']}" style="margin-right: 1rem;" ${checked}>${user['name']}</label>`;
-        radioList.appendChild(radio);
-    }
+    populateRadios();
     let userstring = 'user';
     if (userIDs.length > 1) {
         userstring += 's';

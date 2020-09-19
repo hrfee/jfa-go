@@ -162,9 +162,9 @@
                             </select>
                         </div>
                         <div id="defaultUserRadios"></div>
-                        <div class="checkbox">
-                            <input type="checkbox" value="" style="margin-right: 1rem;" id="storeDefaultHomescreen" checked>
-                            <label for="storeDefaultHomescreen" id="storeHomescreenLabel"></label>
+                        <div class="form-check" style="margin-top: 1rem;">
+                            <input class="form-check-input" type="checkbox" value="" id="storeDefaultHomescreen" checked>
+                            <label class="form-check-label" for="storeDefaultHomescreen" id="storeHomescreenLabel"></label>
                         </div>
                     </div>
                     <div class="modal-footer" id="defaultsFooter">
@@ -256,7 +256,7 @@
                     <div class="modal-body">
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" value="" id="deleteModalNotify">
-                            <label class="form-check-label" for="deleteModalNotify">Notify users of account deletion</label>
+                            <label class="form-check-label" for="deleteModalNotify" id="deleteModalNotifyLabel">Notify users of account deletion</label>
                         </div>
                         <div class="mb-3 unfocused" id="deleteModalReasonBox">
                             <label for="deleteModalReason" class="form-label">Reason for deletion</label>
@@ -408,7 +408,11 @@
                         <table class="table table-hover table-striped table-borderless">
                             <thead>
                                 <tr>
+                                    {{ if .bs5 }}
                                     <th scope="col"><input class="form-check-input" type="checkbox" value="" id="selectAll"></th>
+                                    {{ else }}
+                                    <th scope="col"><input type="checkbox" value="" id="selectAll"></th>
+                                    {{ end }}
                                     <th scope="col">Username</th>
                                     <th scope="col">Email Address</th>
                                     <th scope="col">Last Active</th>
