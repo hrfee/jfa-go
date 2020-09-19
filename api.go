@@ -462,7 +462,7 @@ func (app *appContext) GetInvites(gc *gin.Context) {
 			}
 			if _, ok := inv.Notify[address]; ok {
 				for _, notifyType := range []string{"notify-expiry", "notify-creation"} {
-					if _, ok = inv.Notify[notifyType]; ok {
+					if _, ok = inv.Notify[address][notifyType]; ok {
 						invite[notifyType] = inv.Notify[address][notifyType]
 					}
 				}
@@ -476,13 +476,8 @@ func (app *appContext) GetInvites(gc *gin.Context) {
 	gc.JSON(200, resp)
 }
 
-type notifySetting struct {
-	NotifyExpiry   bool `json:"notify-expiry"`
-	NotifyCreation bool `json:"notify-creation"`
-}
-
 func (app *appContext) SetNotify(gc *gin.Context) {
-	var req map[string]notifySetting
+	var req map[string]map[string]bool
 	gc.BindJSON(&req)
 	changed := false
 	for code, settings := range req {
@@ -518,14 +513,14 @@ func (app *appContext) SetNotify(gc *gin.Context) {
 		} /*else {
 		if _, ok := invite.Notify[address]["notify-expiry"]; !ok {
 		*/
-		if invite.Notify[address]["notify-expiry"] != settings.NotifyExpiry {
-			invite.Notify[address]["notify-expiry"] = settings.NotifyExpiry
-			app.debug.Printf("%s: Set \"notify-expiry\" to %t for %s", code, settings.NotifyExpiry, address)
+		if _, ok := settings["notify-expiry"]; ok && invite.Notify[address]["notify-expiry"] != settings["notify-expiry"] {
+			invite.Notify[address]["notify-expiry"] = settings["notify-expiry"]
+			app.debug.Printf("%s: Set \"notify-expiry\" to %t for %s", code, settings["notify-expiry"], address)
 			changed = true
 		}
-		if invite.Notify[address]["notify-creation"] != settings.NotifyCreation {
-			invite.Notify[address]["notify-creation"] = settings.NotifyCreation
-			app.debug.Printf("%s: Set \"notify-creation\" to %t for %s", code, settings.NotifyExpiry, address)
+		if _, ok := settings["notify-creation"]; ok && invite.Notify[address]["notify-creation"] != settings["notify-creation"] {
+			invite.Notify[address]["notify-creation"] = settings["notify-creation"]
+			app.debug.Printf("%s: Set \"notify-creation\" to %t for %s", code, settings["notify-creation"], address)
 			changed = true
 		}
 		if changed {
