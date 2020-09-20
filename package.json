@@ -23,6 +23,7 @@
     "clean-css-cli": "^4.3.0",
     "lodash": "^4.17.19",
     "mjml": "^4.6.3",
-    "postcss-cli": "^7.1.1"
+    "postcss-cli": "^7.1.1",
+    "typescript": "^4.0.3"
   }
 }
