@@ -328,6 +328,15 @@ func start(asDaemon, firstCall bool) {
 		app.storage.displayprefs_path = app.config.Section("files").Key("user_displayprefs").String()
 		app.storage.loadDisplayprefs()
 
+		app.storage.profiles_path = app.config.Section("files").Key("user_profiles").String()
+		app.storage.loadProfiles()
+
+		if !(len(app.storage.policy) == 0 && len(app.storage.configuration) == 0 && len(app.storage.displayprefs) == 0) {
+			app.info.Println("Migrating user template files to new profile format")
+			app.storage.migrateToProfile()
+			app.storage.storeProfiles()
+		}
+
 		if app.config.Section("ombi").Key("enabled").MustBool(false) {
 			app.storage.ombi_path = app.config.Section("files").Key("ombi_template").String()
 			app.storage.loadOmbiTemplate()
@@ -438,6 +447,7 @@ func start(asDaemon, firstCall bool) {
 		api.POST("/newUserAdmin", app.NewUserAdmin)
 		api.POST("/generateInvite", app.GenerateInvite)
 		api.GET("/getInvites", app.GetInvites)
+		api.POST("/setProfile", app.SetProfile)
 		api.POST("/setNotify", app.SetNotify)
 		api.POST("/deleteInvite", app.DeleteInvite)
 		api.POST("/deleteUser", app.DeleteUser)

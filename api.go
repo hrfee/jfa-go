@@ -293,18 +293,26 @@ func (app *appContext) NewUser(gc *gin.Context) {
 	if user["Id"] != nil {
 		id = user["Id"].(string)
 	}
-	if len(app.storage.policy) != 0 {
-		status, err = app.jf.setPolicy(id, app.storage.policy)
-		if !(status == 200 || status == 204) {
-			app.err.Printf("%s: Failed to set user policy: Code %d", req.Code, status)
+	if invite.Profile != "" {
+		profile, ok := app.storage.profiles[invite.Profile]
+		if !ok {
+			profile = app.storage.profiles["Default"]
 		}
-	}
-	if len(app.storage.configuration) != 0 && len(app.storage.displayprefs) != 0 {
-		status, err = app.jf.setConfiguration(id, app.storage.configuration)
-		if (status == 200 || status == 204) && err == nil {
-			status, err = app.jf.setDisplayPreferences(id, app.storage.displayprefs)
-		} else {
-			app.err.Printf("%s: Failed to set configuration template: Code %d", req.Code, status)
+		if len(profile.Policy) != 0 {
+			app.debug.Printf("Applying policy from profile \"%s\"", invite.Profile)
+			status, err = app.jf.setPolicy(id, profile.Policy)
+			if !(status == 200 || status == 204) {
+				app.err.Printf("%s: Failed to set user policy: Code %d", req.Code, status)
+			}
+		}
+		if len(profile.Configuration) != 0 && len(profile.Displayprefs) != 0 {
+			app.debug.Printf("Applying homescreen from profile \"%s\"", invite.Profile)
+			status, err = app.jf.setConfiguration(id, profile.Configuration)
+			if (status == 200 || status == 204) && err == nil {
+				status, err = app.jf.setDisplayPreferences(id, profile.Displayprefs)
+			} else {
+				app.err.Printf("%s: Failed to set configuration template: Code %d", req.Code, status)
+			}
 		}
 	}
 	if app.config.Section("password_resets").Key("enabled").MustBool(false) {
@@ -379,6 +387,7 @@ type generateInviteReq struct {
 	MultipleUses  bool   `json:"multiple-uses"`
 	NoLimit       bool   `json:"no-limit"`
 	RemainingUses int    `json:"remaining-uses"`
+	Profile       string `json:"profile"`
 }
 
 func (app *appContext) GenerateInvite(gc *gin.Context) {
@@ -418,7 +427,35 @@ func (app *appContext) GenerateInvite(gc *gin.Context) {
 			app.info.Printf("%s: Sent invite email to %s", invite_code, req.Email)
 		}
 	}
+	if req.Profile != "" {
+		if _, ok := app.storage.profiles[req.Profile]; ok {
+			invite.Profile = req.Profile
+		} else {
+			invite.Profile = "Default"
+		}
+	}
 	app.storage.invites[invite_code] = invite
+	app.storage.storeInvites()
+	gc.JSON(200, map[string]bool{"success": true})
+}
+
+type profileReq struct {
+	Invite  string `json:"invite"`
+	Profile string `json:"profile"`
+}
+
+func (app *appContext) SetProfile(gc *gin.Context) {
+	var req profileReq
+	gc.BindJSON(&req)
+	app.debug.Printf("%s: Setting profile to \"%s\"", req.Invite, req.Profile)
+	if _, ok := app.storage.profiles[req.Profile]; !ok {
+		app.err.Printf("%s: Profile \"%s\" not found", req.Invite, req.Profile)
+		respond(500, "Profile not found", gc)
+		return
+	}
+	inv := app.storage.invites[req.Invite]
+	inv.Profile = req.Profile
+	app.storage.invites[req.Invite] = inv
 	app.storage.storeInvites()
 	gc.JSON(200, map[string]bool{"success": true})
 }
@@ -431,12 +468,14 @@ func (app *appContext) GetInvites(gc *gin.Context) {
 	var invites []map[string]interface{}
 	for code, inv := range app.storage.invites {
 		_, _, days, hours, minutes, _ := timeDiff(inv.ValidTill, current_time)
-		invite := make(map[string]interface{})
-		invite["code"] = code
-		invite["days"] = days
-		invite["hours"] = hours
-		invite["minutes"] = minutes
-		invite["created"] = app.formatDatetime(inv.Created)
+		invite := map[string]interface{}{
+			"code":    code,
+			"days":    days,
+			"hours":   hours,
+			"minutes": minutes,
+			"created": app.formatDatetime(inv.Created),
+			"profile": inv.Profile,
+		}
 		if len(inv.UsedBy) != 0 {
 			invite["used-by"] = inv.UsedBy
 		}
@@ -470,8 +509,15 @@ func (app *appContext) GetInvites(gc *gin.Context) {
 		}
 		invites = append(invites, invite)
 	}
-	resp := map[string][]map[string]interface{}{
-		"invites": invites,
+	profiles := make([]string, len(app.storage.profiles))
+	i := 0
+	for p := range app.storage.profiles {
+		profiles[i] = p
+		i++
+	}
+	resp := map[string]interface{}{
+		"profiles": profiles,
+		"invites":  invites,
 	}
 	gc.JSON(200, resp)
 }

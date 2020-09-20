@@ -137,7 +137,9 @@ var aboutModal = createModal('aboutModal');
 var deleteModal = createModal('deleteModal');
 var newUserModal = createModal('newUserModal');
 
-// Parsed invite: [<code>, <expires in _>, <1: Empty invite (no delete/link), 0: Actual invite>, <email address>, <remaining uses>, [<used-by>], <date created>, <notify on expiry>, <notify on creation>]
+var availableProfiles = [];
+// god this is an ugly way to do it
+// Parsed invite: [<code>, <expires in _>, <1: Empty invite (no delete/link), 0: Actual invite>, <email address>, <remaining uses>, [<used-by>], <date created>, <notify on expiry>, <notify on creation>, <selectedProfile>]
 function parseInvite(invite, empty = false) {
     if (empty) {
         return ["None", "", 1];
@@ -169,6 +171,9 @@ function parseInvite(invite, empty = false) {
     }
     if ('notify-creation' in invite) {
         i[8] = invite['notify-creation'];
+    }
+    if ('profile' in invite) {
+        i[9] = invite['profile'];
     }
     return i;
 }
@@ -267,6 +272,29 @@ function addItem(parsedInvite) {
         
         let leftList = document.createElement('ul');
         leftList.classList.add('list-group', 'list-group-flush');
+
+        let profileBox = document.createElement('li');
+        profileBox.classList.add('input-group', 'py-1');
+        let prof = `
+        <label class="input-group-text" for="profile_${parsedInvite[0]}">Profile: </label>
+        <select class="form-select" id="profile_${parsedInvite[0]}" onchange="setProfile(this)">
+        `;
+        let match = false;
+        for (profile of availableProfiles) {
+            let selected = "";
+            if (profile == parsedInvite[9]) {
+                selected = "selected";
+                match = true;
+            }
+            prof += `<option value="${profile}" ${selected}>${profile}</option>`;
+        }
+        if (!match) {
+            prof += `<option value="" selected></option>`;
+        }
+        prof += `</select>`;
+        profileBox.innerHTML = prof;
+        leftList.appendChild(profileBox);
+        // 9 is profileName! availableProfiles
         
         if (typeof(parsedInvite[6]) != 'undefined') {
             let createdDate = document.createElement('li');
@@ -438,6 +466,7 @@ function generateInvites(empty = false) {
         req.onreadystatechange = function() {
             if (this.readyState == 4) {
                 var data = this.response;
+                availableProfiles = data['profiles'];
                 if (data['invites'] == null || data['invites'].length == 0) {
                     document.getElementById('invites').textContent = '';
                     addItem(parseInvite([], true));
@@ -1117,7 +1146,29 @@ document.getElementById('settingsSave').onclick = function() {
     }
 }
 
-// Diable 'Generate' button if days, hours, minutes are all zero
+function setProfile(select) {
+    if (select.value == "") {
+        return;
+    }
+    let invite = select.id.replace("profile_", "");
+    let req = new XMLHttpRequest();
+    let send = {
+        "invite": invite,
+        "profile": select.value
+    };
+    req.open("POST", "/setProfile", true);
+    req.setRequestHeader("Authorization", "Basic " + btoa(window.token + ":"));
+    req.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+    req.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status != 200) {
+            generateInvites(false);
+        }
+    };
+    req.send(JSON.stringify(send));
+}
+
+
+// Disable 'Generate' button if days, hours, minutes are all zero
 function checkDuration() {
         let boxVals = [document.getElementById("days").value, document.getElementById("hours").value, document.getElementById("minutes").value];
         let submit = document.getElementById("generateSubmit");

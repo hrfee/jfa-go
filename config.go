@@ -48,7 +48,7 @@ func (app *appContext) loadConfig() error {
 		// }
 		key.SetValue(key.MustString(filepath.Join(app.data_path, (key.Name() + ".json"))))
 	}
-	for _, key := range []string{"user_configuration", "user_displayprefs", "ombi_template"} {
+	for _, key := range []string{"user_configuration", "user_displayprefs", "user_profiles", "ombi_template"} {
 		// if app.config.Section("files").Key(key).MustString("") == "" {
 		// 	key.SetValue(filepath.Join(app.data_path, (key.Name() + ".json")))
 		// }

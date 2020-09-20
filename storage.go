@@ -7,13 +7,20 @@ import (
 )
 
 type Storage struct {
-	timePattern                                                                             string
-	invite_path, emails_path, policy_path, configuration_path, displayprefs_path, ombi_path string
-	invites                                                                                 Invites
-	emails, policy, configuration, displayprefs, ombi_template                              map[string]interface{}
+	timePattern                                                                                            string
+	invite_path, emails_path, policy_path, configuration_path, displayprefs_path, ombi_path, profiles_path string
+	invites                                                                                                Invites
+	profiles                                                                                               map[string]Profile
+	emails, policy, configuration, displayprefs, ombi_template                                             map[string]interface{}
 }
 
 // timePattern: %Y-%m-%dT%H:%M:%S.%f
+
+type Profile struct {
+	Policy        map[string]interface{} `json:"policy"`
+	Configuration map[string]interface{} `json:"configuration"`
+	Displayprefs  map[string]interface{} `json:"displayprefs"`
+}
 
 type Invite struct {
 	Created       time.Time                  `json:"created"`
@@ -23,6 +30,7 @@ type Invite struct {
 	Email         string                     `json:"email"`
 	UsedBy        [][]string                 `json:"used-by"`
 	Notify        map[string]map[string]bool `json:"notify"`
+	Profile       string                     `json:"profile"`
 }
 
 type Invites map[string]Invite
@@ -73,6 +81,27 @@ func (st *Storage) loadOmbiTemplate() error {
 
 func (st *Storage) storeOmbiTemplate() error {
 	return storeJSON(st.ombi_path, st.ombi_template)
+}
+
+func (st *Storage) loadProfiles() error {
+	return loadJSON(st.profiles_path, &st.profiles)
+}
+
+func (st *Storage) storeProfiles() error {
+	return storeJSON(st.profiles_path, st.profiles)
+}
+
+func (st *Storage) migrateToProfile() error {
+	st.loadPolicy()
+	st.loadConfiguration()
+	st.loadDisplayprefs()
+	st.loadProfiles()
+	st.profiles["Default"] = Profile{
+		Policy:        st.policy,
+		Configuration: st.configuration,
+		Displayprefs:  st.displayprefs,
+	}
+	return st.storeProfiles()
 }
 
 func loadJSON(path string, obj interface{}) error {
