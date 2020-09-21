@@ -230,6 +230,7 @@ func (app *appContext) NewUserAdmin(gc *gin.Context) {
 			}
 		}
 	}
+	app.jf.cacheExpiry = time.Now()
 }
 
 func (app *appContext) NewUser(gc *gin.Context) {

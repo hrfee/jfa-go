@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/hrfee/jellyfin-accounts#readme",
   "dependencies": {
+    "@types/jquery": "^3.5.1",
     "autoprefixer": "^9.8.5",
     "bootstrap": "^5.0.0-alpha1",
     "bootstrap4": "npm:bootstrap@^4.5.0",

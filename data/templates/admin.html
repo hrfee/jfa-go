@@ -31,9 +31,9 @@
                 return "";
             }
             {{ if .bs5 }}
-            const bsVersion = 5;
+            var bsVersion = 5;
             {{ else }}
-            const bsVersion = 4;
+            var bsVersion = 4;
             {{ end }}
             var cssFile = "{{ .cssFile }}";
             var css = document.createElement('link');
@@ -52,8 +52,6 @@
             }
             css.setAttribute('href', cssFile);
             document.head.appendChild(css);
-            // store whether ombi is enabled, 1 or 0.
-            var ombiEnabled = {{ .ombiEnabled }}
         </script>
         {{ if not .bs5 }}
         <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
@@ -315,7 +313,7 @@
                 <button type="button" class="btn btn-primary" id="openSettings">
                     Settings <i class="fa fa-cog"></i>
                 </button>
-                <button type="button" class="btn btn-danger" id="logoutButton" style="display: none;">
+                <button type="button" class="btn btn-danger unfocused" id="logoutButton">
                     Logout <i class="fa fa-sign-out"></i>
                 </button>
             </div>
@@ -431,80 +429,24 @@
         </div>
         <script src="serialize.js"></script>
         <script>
-            {{ if .bs5 }}
-                function createModal(id, find = false) {
-                    let modal;
-                    if (find) {
-                        modal = bootstrap.Modal.getInstance(document.getElementById(id));
-                    } else {
-                        modal = new bootstrap.Modal(document.getElementById(id));
-                    }
-                    document.getElementById(id).addEventListener('shown.bs.modal', function () {
-                        document.body.classList.add("modal-open");
-                    });
-                    return {
-                        modal: modal,
-                        show: function() {
-                            let temp = this.modal.show();
-                            return temp
-                        },
-                        hide: function() { return this.modal.hide(); }
-                    };
-                }
-            {{ else }}
-                let send_to_addess_enabled = document.getElementById('send_to_address_enabled');
-                if (typeof(send_to_address_enabled) != 'undefined') {
-                    send_to_address_enabled.classList.remove('form-check-input');
-                }
-                let multiUseEnabled = document.getElementById('multiUseEnabled');
-                if (typeof(multiUseEnabled) != 'undefined') {
-                    multiUseEnabled.classList.remove('form-check-input');
-                }
-                function createModal(id, find = false) {
-                    $('#' + id).on('shown.bs.modal', function () {
-                        document.body.classList.add("modal-open");
-                    });
-                    return {
-                        show: function() {
-                            let temp = $('#' + id).modal('show');
-                            return temp
-                        },
-                        hide: function() {
-                            return $('#' + id).modal('hide');
-                        }
-                    };
-                }
-            {{ end }}
-
-            function triggerTooltips() {
-                {{ if .bs5 }}
-                document.getElementById('settingsMenu').addEventListener('shown.bs.modal', function() {
-                {{ else }}
-                $('#settingsMenu').on('shown.bs.modal', function() {
-                {{ end }}
-                    // Hacky way to ensure anything dependent on checkbox state is disabled if necessary by just clicking them
-                    let checkboxes = document.getElementById('settingsMenu').querySelectorAll('input[type="checkbox"]');
-                    for (checkbox of checkboxes) {
-                        checkbox.click();
-                        checkbox.click();
-                    }
-                    let tooltips = [].slice.call(document.querySelectorAll('a[data-toggle="tooltip"]'));
-                    tooltips.map(function(el) {
-                        {{ if .bs5 }}
-                            return new bootstrap.Tooltip(el);
-                        {{ else }}
-                            return $(el).tooltip();
-                        {{ end }}
-                    });
-                });
-            }
             {{ if .notifications }}
-            const notifications_enabled = true;
+            var notifications_enabled = true;
             {{ else }}
-            const notifications_enabled = false;
+            var notifications_enabled = false;
             {{ end }}
         </script>
+        {{ if .bs5 }}
+        <script src="bs5.js"></script>
+        {{ else }}
+        <script src="bs4.js"></script>
+        {{ end }}
+        <script src="animation.js"></script>
         <script src="accounts.js"></script>
+        <script src="invites.js"></script>
         <script src="admin.js"></script>
+        <script src="settings.js"></script>
+        {{ if .ombiEnabled }}
+        <script src="ombi.js"></script>
+        {{ end }}
     </body>
 </html>

@@ -1,32 +1,3 @@
-const _post = (url: string, data: Object, onreadystatechange: () => void): void => {
-    let req = new XMLHttpRequest();
-    req.open("POST", url, true);
-    req.setRequestHeader("Authorization", "Basic " + btoa(window.token + ":"));
-    req.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
-    req.onreadystatechange = onreadystatechange;
-    req.send(JSON.stringify(data));
-};
-
-const _get = (url: string, data: Object, onreadystatechange: () => void): void => {
-    let req = new XMLHttpRequest();
-    req.open("GET", url, true);
-    req.responseType = 'json';
-    req.setRequestHeader("Authorization", "Basic " + btoa(window.token + ":"));
-    req.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
-    req.onreadystatechange = onreadystatechange;
-    req.send(JSON.stringify(data));
-};
-
-const rmAttr = (el: HTMLElement, attr: string): void => {
-    if (el.classList.contains(attr)) {
-        el.classList.remove(attr);
-    }
-};
-const addAttr = (el: HTMLElement, attr: string): void => el.classList.add(attr);
-
-const Focus = (el: HTMLElement): void => rmAttr(el, 'unfocused');
-const Unfocus = (el: HTMLElement): void => addAttr(el, 'unfocused');
-
 const checkCheckboxes = (): void => {
     const defaultsButton = document.getElementById('accountsTabSetDefaults');
     const deleteButton = document.getElementById('accountsTabDelete');
@@ -46,15 +17,12 @@ const checkCheckboxes = (): void => {
     }
 }
 
-const validateEmail = (email: string): boolean => {
-    const re = /\S+@\S+\.\S+/;
-    return re.test(email);
-}
+const validateEmail = (email: string): boolean => /\S+@\S+\.\S+/.test(email);
 
-const changeEmail = (icon: HTMLElement, id: string): void => {
+function changeEmail(icon: HTMLElement, id: string): void {
     const iconContent = icon.outerHTML;
     icon.setAttribute('class', '');
-    const entry: HTMLInputElement = icon.nextElementSibling;
+    const entry = icon.nextElementSibling as HTMLInputElement;
     const ogEmail = entry.value;
     entry.readOnly = false;
     entry.classList.remove('form-control-plaintext');
@@ -62,26 +30,26 @@ const changeEmail = (icon: HTMLElement, id: string): void => {
     if (ogEmail == "") {
         entry.placeholder = 'Address';
     }
-    const tick = document.createElement('i');
-    tick.outerHTML = `
+    const tick = createEl(`
     <i class="fa fa-check d-inline-block icon-button text-success" style="margin-left: 0.5rem; margin-right: 0.5rem;"></i>
-    `;
+    `);
     tick.onclick = (): void => {
         const newEmail = entry.value;
         if (!validateEmail(newEmail) || newEmail == ogEmail) {
             return;
         }
         cross.remove();
-        tick.outerHTML = `
+        const spinner = createEl(`
         <div class="spinner-border spinner-border-sm" role="status" style="width: 1rem; height: 1rem; margin-left: 0.5rem;">
             <span class="sr-only">Saving...</span>
         </div>
-        `;
+        `);
+        tick.replaceWith(spinner);
         let send = {};
         send[id] = newEmail;
         _post("/modifyEmails", send, function (): void {
             if (this.readyState == 4) {
-                if (this.status == '200' || this.status == '204') {
+                if (this.status == 200 || this.status == 204) {
                     entry.nextElementSibling.remove();
                 } else {
                     entry.value = ogEmail;
@@ -94,10 +62,9 @@ const changeEmail = (icon: HTMLElement, id: string): void => {
         entry.classList.add('form-control-plaintext');
         entry.placeholder = '';
     };
-    const cross: HTMLElement = document.createElement('i');
-    cross.outerHTML = `
+    const cross = createEl(`
     <i class="fa fa-close d-inline-block icon-button text-danger"></i>
-    `;
+    `);
     cross.onclick = (): void => {
         tick.remove();
         cross.remove();
@@ -114,7 +81,7 @@ const changeEmail = (icon: HTMLElement, id: string): void => {
 
 var jfUsers: Array<Object>;
 
-const populateUsers = (): void => {
+function populateUsers(): void {
     const acList = document.getElementById('accountsList');
     acList.innerHTML = `
     <div class="d-flex align-items-center">
@@ -157,7 +124,7 @@ const populateUsers = (): void => {
     };
 
     _get("/getUsers", null, function (): void {
-        if (this.readyState == 4 && this.status == '200') {
+        if (this.readyState == 4 && this.status == 200) {
             jfUsers = this.response['users'];
             for (const user of jfUsers) {
                 let tr = document.createElement('tr');
@@ -170,11 +137,32 @@ const populateUsers = (): void => {
     });
 }
 
+function populateRadios(): void {
+    const radioList = document.getElementById('defaultUserRadios');
+    radioList.textContent = '';
+    let first = true;
+    for (const i in jfUsers) {
+        const user = jfUsers[i];
+        const radio = document.createElement('div');
+        radio.classList.add('form-check');
+        let checked = '';
+        if (first) {
+            checked = 'checked';
+            first = false;
+        }
+        radio.innerHTML = `
+        <input class="form-check-input" type="radio" name="defaultRadios" id="default_${user['id']}" ${checked}>
+        <label class="form-check-label" for="default_${user['id']}">${user['name']}</label>`;
+        radioList.appendChild(radio);
+    }
+}
+
 (<HTMLInputElement>document.getElementById('selectAll')).onclick = function (): void {
     const checkboxes: NodeListOf<HTMLInputElement> = document.getElementById('accountsList').querySelectorAll('input[type=checkbox]');
-    for (const i in checkboxes) {
+    for (let i = 0; i < checkboxes.length; i++) {
         checkboxes[i].checked = (<HTMLInputElement>this).checked;
     }
+    checkCheckboxes();
 };
 
 (<HTMLInputElement>document.getElementById('deleteModalNotify')).onclick = function (): void {
@@ -186,11 +174,11 @@ const populateUsers = (): void => {
     }
 };
 
-(<HTMLButtonElement>document.getElementById('accountsTabDelete')).onclick =function (): void {
-    const deleteButton: HTMLButtonElement = this;
+(<HTMLButtonElement>document.getElementById('accountsTabDelete')).onclick = function (): void {
+    const deleteButton = this as HTMLButtonElement;
     const checkboxes: NodeListOf<HTMLInputElement> = document.getElementById('accountsList').querySelectorAll('input[type=checkbox]:checked');
     let selected: Array<string> = new Array(checkboxes.length);
-    for (const i in checkboxes){ 
+    for (let i = 0; i < checkboxes.length; i++) {
         selected[i] = checkboxes[i].id.replace("select_", "");
     }
     let title = " user";
@@ -203,16 +191,16 @@ const populateUsers = (): void => {
     msg += " of account deletion";
 
     document.getElementById('deleteModalTitle').textContent = title;
-    const dmNotify: HTMLInputElement = document.getElementById('deleteModalNotify')
+    const dmNotify = document.getElementById('deleteModalNotify') as HTMLInputElement;
     dmNotify.checked = false;
     document.getElementById('deleteModalNotifyLabel').textContent = msg;
-    const dmReason: HTMLTextAreaElement = document.getElementById('deleteModalReason')
+    const dmReason = document.getElementById('deleteModalReason') as HTMLTextAreaElement;
     dmReason.value = '';
     Unfocus(document.getElementById('deleteModalReasonBox'));
-    const dmSend: HTMLButtonElement = document.getElementById('deleteModalSend');
+    const dmSend  = document.getElementById('deleteModalSend') as HTMLButtonElement;
     dmSend.textContent = 'Delete';
     dmSend.onclick = function (): void {
-        const button: HTMLButtonElement = this;
+        const button = this as HTMLButtonElement;
         const send = {
             'users': selected,
             'notify': dmNotify.checked,
@@ -220,12 +208,12 @@ const populateUsers = (): void => {
         };
         _post("/deleteUser", send, function (): void {
             if (this.readyState == 4) {
-                if (this.status == '500') {
-                    if ("error" in req.reponse) {
+                if (this.status == 500) {
+                    if ("error" in this.reponse) {
                         button.textContent = 'Failed';
                     } else {
                         button.textContent = 'Partial fail (check console)';
-                        console.log(req.response);
+                        console.log(this.response);
                     }
                     setTimeout((): void => {
                         Unfocus(deleteButton);
@@ -248,7 +236,7 @@ const populateUsers = (): void => {
 (<HTMLButtonElement>document.getElementById('accountsTabSetDefaults')).onclick = function (): void {
     const checkboxes: NodeListOf<HTMLInputElement> = document.getElementById('accountsList').querySelectorAll('input[type=checkbox]:checked');
     let userIDs: Array<string> = new Array(checkboxes.length);
-    for (const i in checkboxes){ 
+    for (let i = 0; i < checkboxes.length; i++){ 
         userIDs[i] = checkboxes[i].id.replace("select_", "");
     }
     if (userIDs.length == 0) {
@@ -281,8 +269,9 @@ const populateUsers = (): void => {
 });
 
 (<HTMLButtonElement>document.getElementById('newUserCreate')).onclick = function (): void {
-    const ogText = this.textContent;
-    this.innerHTML = `
+    const button = this as HTMLButtonElement;
+    const ogText = button.textContent;
+    button.innerHTML = `
     <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Creating...
     `;
     const email: string = (<HTMLInputElement>document.getElementById('newUserEmail')).value;
@@ -299,23 +288,23 @@ const populateUsers = (): void => {
         'password': password,
         'email': email
     };
-    const button: HTMLButtonElement = this;
     _post("/newUserAdmin", send, function (): void {
         if (this.readyState == 4) {
             rmAttr(button, 'btn-primary');
-            if (this.status == '200') {
+            if (this.status == 200) {
                 addAttr(button, 'btn-success');
                 button.textContent = 'Success';
                 setTimeout((): void => {
                     rmAttr(button, 'btn-success');
-                    addAttr('btn-primary');
+                    addAttr(button, 'btn-primary');
                     button.textContent = ogText;
                     newUserModal.hide();
                 }, 1000);
+                populateUsers();
             } else {
                 addAttr(button, 'btn-danger');
-                if ("error" in req.response) {
-                    button.textContent = req.response["error"];
+                if ("error" in this.response) {
+                    button.textContent = this.response["error"];
                 } else {
                     button.textContent = 'Failed';
                 }
@@ -324,6 +313,7 @@ const populateUsers = (): void => {
                     addAttr(button, 'btn-primary');
                     button.textContent = ogText;
                 }, 2000);
+                populateUsers();
             }
         }
     });
@@ -337,3 +327,9 @@ const populateUsers = (): void => {
     }
     newUserModal.show();
 };
+
+
+
+
+
+
