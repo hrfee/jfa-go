@@ -22,11 +22,12 @@ function serializeForm(id: string): Object {
                 break;
             case "select-one":
             case "select":
-                let val: string | number = (el as HTMLSelectElement).value;
-                if (+val != NaN) {
-                    val = +val;
+                let val: string = (el as HTMLSelectElement).value.toString();
+                if (!isNaN(val as any)) {
+                    formData[name] = +val;
+                } else {
+                    formData[name] = val;
                 }
-                formData[name] = val;
                 break;
         }
     }

@@ -142,18 +142,14 @@ function addItem(invite: Invite): void {
     let profiles = `
     <label class="input-group-text" for="profile_${CSS.escape(invite.code)}">Profile: </label>
     <select class="form-select" id="profile_${CSS.escape(invite.code)}" onchange="setProfile(this)">
+        <option value="NoProfile" selected>No Profile</option>
     `;
-    let match = false;
     for (const i in availableProfiles) {
         let selected = "";
         if (availableProfiles[i] == invite.profile) {
             selected = "selected";
-            match = true;
         }
         profiles += `<option value="${availableProfiles[i]}" ${selected}>${availableProfiles[i]}</option>`;
-    }
-    if (!match) {
-        profiles += `<option value="" selected></option>`;
     }
     profiles += `</select>`;
 
@@ -209,7 +205,7 @@ function addItem(invite: Invite): void {
 }
 
 function updateInvite(invite: Invite): void {
-    document.getElementById(CSS.escape(invite.code) + "_expiry").textContent = invite.expiresIn;
+    document.getElementById(invite.code + "_expiry").textContent = invite.expiresIn;
     const remainingUses: any = document.getElementById(CSS.escape(invite.code) + "_remainingUses");
     if (remainingUses) {
         remainingUses.textContent = `Remaining uses: ${invite.remainingUses}`;
@@ -237,6 +233,18 @@ function generateInvites(empty?: boolean): void {
         if (this.readyState == 4) {
             let data = this.response;
             availableProfiles = data['profiles'];
+            const Profiles = document.getElementById('inviteProfile') as HTMLSelectElement;
+            let innerHTML = "";
+            for (let i = 0; i < availableProfiles.length; i++) {
+                const profile = availableProfiles[i];
+                innerHTML += `
+                <option value="${profile}" ${(i == 0) ? "selected" : ""}>${profile}</option>
+                `;
+            }
+            innerHTML += `
+            <option value="NoProfile" ${(availableProfiles.length == 0) ? "selected" : ""}>No Profile</option>
+            `;
+            Profiles.innerHTML = innerHTML;
             if (data['invites'] == null || data['invites'].length == 0) {
                 document.getElementById('invites').textContent = '';
                 addItem(emptyInvite());
@@ -311,6 +319,9 @@ fixCheckboxes();
     if (!send['multiple-uses'] || send['no-limit']) {
         delete send['remaining-uses'];
     }
+    if (send["profile"] == "NoProfile") {
+        send["profile"] = "";
+    }
     const sendToAddress: any = document.getElementById('send_to_address');
     const sendToAddressEnabled: any = document.getElementById('send_to_address_enabled');
     if (sendToAddress && sendToAddressEnabled) {
@@ -318,6 +329,7 @@ fixCheckboxes();
         delete send['send_to_address'];
         delete send['send_to_address_enabled'];
     }
+    console.log(send);
     _post("/generateInvite", send, function (): void {
         if (this.readyState == 4) {
             button.textContent = 'Generate';
@@ -334,10 +346,14 @@ function setProfile(select: HTMLSelectElement): void {
     if (!select.value) {
         return;
     }
+    let val = select.value;
+    if (select.value == "NoProfile") {
+        val = ""
+    }
     const invite = select.id.replace("profile_", "");
     const send = {
         "invite": invite,
-        "profile": select.value
+        "profile": val
     };
     _post("/setProfile", send, function (): void {
         if (this.readyState == 4 && this.status != 200) {

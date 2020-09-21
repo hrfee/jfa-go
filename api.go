@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -399,7 +400,13 @@ func (app *appContext) GenerateInvite(gc *gin.Context) {
 	current_time := time.Now()
 	valid_till := current_time.AddDate(0, 0, req.Days)
 	valid_till = valid_till.Add(time.Hour*time.Duration(req.Hours) + time.Minute*time.Duration(req.Minutes))
+	// make sure code doesn't begin with number
 	invite_code := shortuuid.New()
+	_, err := strconv.Atoi(string(invite_code[0]))
+	for err == nil {
+		invite_code = shortuuid.New()
+		_, err = strconv.Atoi(string(invite_code[0]))
+	}
 	var invite Invite
 	invite.Created = current_time
 	if req.MultipleUses {
@@ -449,7 +456,8 @@ func (app *appContext) SetProfile(gc *gin.Context) {
 	var req profileReq
 	gc.BindJSON(&req)
 	app.debug.Printf("%s: Setting profile to \"%s\"", req.Invite, req.Profile)
-	if _, ok := app.storage.profiles[req.Profile]; !ok {
+	// "" means "Don't apply profile"
+	if _, ok := app.storage.profiles[req.Profile]; !ok && req.Profile != "" {
 		app.err.Printf("%s: Profile \"%s\" not found", req.Invite, req.Profile)
 		respond(500, "Profile not found", gc)
 		return

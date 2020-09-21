@@ -365,6 +365,11 @@
                                             </label>
                                             <div id="noLimitWarning" class="form-text" style="display: none;">Warning: Unlimited usage invites pose a risk if published online.</div>
                                         </div>
+                                        <div class="form-group" style="margin-bottom: 1rem;">
+                                            <label for="inviteProfile">Account creation profile</label>
+                                            <select class="form-control form-select" id="inviteProfile" name="profile">
+                                            </select>
+                                        </div>
                                         {{ if .email_enabled }}
                                         <div class="form-group">
                                             <label for="send_to_address">Send invite to address</label>

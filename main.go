@@ -334,6 +334,17 @@ func start(asDaemon, firstCall bool) {
 		if !(len(app.storage.policy) == 0 && len(app.storage.configuration) == 0 && len(app.storage.displayprefs) == 0) {
 			app.info.Println("Migrating user template files to new profile format")
 			app.storage.migrateToProfile()
+			for _, path := range [3]string{app.storage.policy_path, app.storage.configuration_path, app.storage.displayprefs_path} {
+				if _, err := os.Stat(path); !os.IsNotExist(err) {
+					dir, fname := filepath.Split(path)
+					newFname := strings.Replace(fname, ".json", ".old.json", 1)
+					err := os.Rename(path, filepath.Join(dir, newFname))
+					if err != nil {
+						app.err.Fatalf("Failed to rename %s: %s", fname, err)
+					}
+				}
+			}
+			app.info.Println("In case of a problem, your original files have been renamed to <file>.old.json")
 			app.storage.storeProfiles()
 		}
 
