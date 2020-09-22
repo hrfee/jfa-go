@@ -206,25 +206,23 @@ function storeDefaults(users: string | Array<string>): void {
         '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="margin-right: 0.5rem;"></span>' +
         'Loading...';
     const button = document.getElementById('storeDefaults') as HTMLButtonElement;
-    const radio = document.querySelector('input[name=defaultRadios]:checked') as HTMLInputElement
-    let id = radio.id.replace("default_", "");
-    let route = "/setDefaults";
-    let data = {
-        "from": "user",
-        "id": id,
-        "homescreen": false
-    };
-    if ((document.getElementById('defaultsSource') as HTMLSelectElement).value == 'userTemplate') {
-        data["from"] = "template";
+    let data = { "homescreen": false };
+    if ((document.getElementById('defaultsSource') as HTMLSelectElement).value == 'profile') {
+        data["from"] = "profile";
+        data["profile"] = (document.getElementById('profileSelect') as HTMLSelectElement).value;
+    } else {
+        const radio = document.querySelector('input[name=defaultRadios]:checked') as HTMLInputElement
+        let id = radio.id.replace("default_", "");
+        data["from"] = "user";
+        data["id"] = id;
     }
     if (users != "all") {
         data["apply_to"] = users;
-        route = "/applySettings";
     }
     if ((document.getElementById('storeDefaultHomescreen') as HTMLInputElement).checked) {
         data["homescreen"] = true;
     }
-    _post(route, data, function (): void {
+    _post("/applySettings", data, function (): void {
         if (this.readyState == 4) {
             if (this.status == 200 || this.status == 204) {
                 button.textContent = "Success";

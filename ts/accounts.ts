@@ -247,23 +247,36 @@ function populateRadios(): void {
     if (userIDs.length > 1) {
         userString += "s";
     }
+    populateProfiles(true);
+    const profileSelect = document.getElementById('profileSelect') as HTMLSelectElement;
+    profileSelect.textContent = '';
+    for (let i = 0; i < availableProfiles.length; i++) {
+        profileSelect.innerHTML += `
+        <option value="${availableProfiles[i]}" ${(i == 0) ? "selected" : ""}>${availableProfiles[i]}</option>
+        `;
+    }
     document.getElementById('defaultsTitle').textContent = `Apply settings to ${userIDs.length} ${userString}`;
     document.getElementById('userDefaultsDescription').textContent = `
-    Create an account and configure it to your liking, then choose it from below to apply to your selected users.
+    Apply settings from an existing profile or source settings from a user.
     `;
     document.getElementById('storeHomescreenLabel').textContent = `Apply homescreen layout`;
     Focus(document.getElementById('defaultsSourceSection'));
-    (<HTMLSelectElement>document.getElementById('defaultsSource')).value = 'userTemplate';
+    (<HTMLSelectElement>document.getElementById('defaultsSource')).value = 'profile';
+    Focus(document.getElementById('profileSelectBox'));
     Unfocus(document.getElementById('defaultUserRadios'));
+    Unfocus(document.getElementById('newProfileBox'));
     document.getElementById('storeDefaults').onclick = (): void => storeDefaults(userIDs);
     userDefaultsModal.show();
 };
 
 (<HTMLSelectElement>document.getElementById('defaultsSource')).addEventListener('change', function (): void {
     const radios = document.getElementById('defaultUserRadios');
-    if (this.value == 'userTemplate') {
+    const profileBox = document.getElementById('profileSelectBox');
+    if (this.value == 'profile') {
         Unfocus(radios);
+        Focus(profileBox);
     } else {
+        Unfocus(profileBox);
         Focus(radios);
     }
 });

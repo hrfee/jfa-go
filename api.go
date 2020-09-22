@@ -469,6 +469,71 @@ func (app *appContext) SetProfile(gc *gin.Context) {
 	gc.JSON(200, map[string]bool{"success": true})
 }
 
+func (app *appContext) GetProfiles(gc *gin.Context) {
+	app.storage.loadProfiles()
+	app.debug.Println("Profiles requested")
+	out := map[string]map[string]interface{}{}
+	for name, p := range app.storage.profiles {
+		out[name] = map[string]interface{}{
+			"admin":     p.Admin,
+			"libraries": p.LibraryAccess,
+			"fromUser":  p.FromUser,
+		}
+	}
+	fmt.Println(out)
+	gc.JSON(200, out)
+}
+
+type newProfileReq struct {
+	Name       string `json:"name"`
+	ID         string `json:"id"`
+	Homescreen bool   `json:"homescreen"`
+}
+
+func (app *appContext) CreateProfile(gc *gin.Context) {
+	fmt.Println("Profile creation requested")
+	var req newProfileReq
+	gc.BindJSON(&req)
+	user, status, err := app.jf.userById(req.ID, false)
+	if !(status == 200 || status == 204) || err != nil {
+		app.err.Printf("Failed to get user from Jellyfin: Code %d", status)
+		app.debug.Printf("Error: %s", err)
+		respond(500, "Couldn't get user", gc)
+		return
+	}
+	profile := Profile{
+		FromUser: user["Name"].(string),
+		Policy:   user["Policy"].(map[string]interface{}),
+	}
+	app.debug.Printf("Creating profile from user \"%s\"", user["Name"].(string))
+	if req.Homescreen {
+		profile.Configuration = user["Configuration"].(map[string]interface{})
+		profile.Displayprefs, status, err = app.jf.getDisplayPreferences(req.ID)
+		if !(status == 200 || status == 204) || err != nil {
+			app.err.Printf("Failed to get DisplayPrefs: Code %d", status)
+			app.debug.Printf("Error: %s", err)
+			respond(500, "Couldn't get displayprefs", gc)
+			return
+		}
+	}
+	app.storage.loadProfiles()
+	app.storage.profiles[req.Name] = profile
+	app.storage.storeProfiles()
+	app.storage.loadProfiles()
+	gc.JSON(200, map[string]bool{"success": true})
+}
+
+func (app *appContext) DeleteProfile(gc *gin.Context) {
+	req := map[string]string{}
+	gc.BindJSON(&req)
+	name := req["name"]
+	if _, ok := app.storage.profiles[name]; ok {
+		delete(app.storage.profiles, name)
+	}
+	app.storage.storeProfiles()
+	gc.JSON(200, map[string]bool{"success": true})
+}
+
 func (app *appContext) GetInvites(gc *gin.Context) {
 	app.debug.Println("Invites requested")
 	current_time := time.Now()
@@ -726,12 +791,13 @@ func (app *appContext) SetOmbiDefaults(gc *gin.Context) {
 
 type defaultsReq struct {
 	From       string   `json:"from"`
+	Profile    string   `json:"profile"`
 	ApplyTo    []string `json:"apply_to"`
 	ID         string   `json:"id"`
 	Homescreen bool     `json:"homescreen"`
 }
 
-func (app *appContext) SetDefaults(gc *gin.Context) {
+/*func (app *appContext) SetDefaults(gc *gin.Context) {
 	var req defaultsReq
 	gc.BindJSON(&req)
 	userID := req.ID
@@ -765,28 +831,31 @@ func (app *appContext) SetDefaults(gc *gin.Context) {
 		app.debug.Println("DisplayPrefs template stored")
 	}
 	gc.JSON(200, map[string]bool{"success": true})
-}
+}*/
 
 func (app *appContext) ApplySettings(gc *gin.Context) {
+	app.info.Println("User settings change requested")
 	var req defaultsReq
 	gc.BindJSON(&req)
-	applyingFrom := "template"
+	applyingFrom := "profile"
 	var policy, configuration, displayprefs map[string]interface{}
-	if req.From == "template" {
-		if len(app.storage.policy) == 0 {
-			respond(500, "No policy template available", gc)
+	if req.From == "profile" {
+		app.storage.loadProfiles()
+		if _, ok := app.storage.profiles[req.Profile]; !ok || len(app.storage.profiles[req.Profile].Policy) == 0 {
+			app.err.Printf("Couldn't find profile \"%s\" or profile was empty", req.Profile)
+			respond(500, "Couldn't find profile", gc)
 			return
 		}
-		app.storage.loadPolicy()
-		policy = app.storage.policy
 		if req.Homescreen {
-			if len(app.storage.configuration) == 0 || len(app.storage.displayprefs) == 0 {
+			if len(app.storage.profiles[req.Profile].Configuration) == 0 || len(app.storage.profiles[req.Profile].Displayprefs) == 0 {
+				app.err.Printf("No homescreen saved in profile \"%s\"", req.Profile)
 				respond(500, "No homescreen template available", gc)
 				return
 			}
-			configuration = app.storage.configuration
-			displayprefs = app.storage.displayprefs
+			configuration = app.storage.profiles[req.Profile].Configuration
+			displayprefs = app.storage.profiles[req.Profile].Displayprefs
 		}
+		policy = app.storage.profiles[req.Profile].Policy
 	} else if req.From == "user" {
 		applyingFrom = "user"
 		user, status, err := app.jf.userById(req.ID, false)

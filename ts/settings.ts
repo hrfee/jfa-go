@@ -25,40 +25,6 @@ function sendConfig(restart?: boolean): void {
     });
 }
 
-(document.getElementById('openDefaultsWizard') as HTMLButtonElement).onclick = function (): void {
-    const button = this as HTMLButtonElement;
-    button.disabled = true;
-    const ogHTML = button.innerHTML;
-    button.innerHTML = `
-    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="margin-right: 0.5rem;"></span>
-    Loading...`;
-    _get("/getUsers", null, function (): void {
-        if (this.readyState == 4) {
-            if (this.status == 200) {
-                jfUsers = this.response['users'];
-                populateRadios();
-                button.disabled = false;
-                button.innerHTML = ogHTML;
-                const submitButton = document.getElementById('storeDefaults') as HTMLButtonElement;
-                submitButton.disabled = false;
-                submitButton.textContent = 'Submit';
-                addAttr(submitButton, "btn-primary");
-                rmAttr(submitButton, "btn-danger");
-                rmAttr(submitButton, "btn-success");
-                document.getElementById('defaultsTitle').textContent = `New user defaults`;
-                document.getElementById('userDefaultsDescription').textContent = `
-                Create an account and configure it to your liking, then choose it from below to store the settings as a template for all new users.`;
-                document.getElementById('storeHomescreenLabel').textContent = `Store homescreen layout`;
-                (document.getElementById('defaultsSource') as HTMLSelectElement).value = 'fromUser';
-                document.getElementById('defaultsSourceSection').classList.add('unfocused');
-                (document.getElementById('storeDefaults') as HTMLButtonElement).onclick = (): void => storeDefaults('all');
-                Focus(document.getElementById('defaultUserRadios'));
-                userDefaultsModal.show();
-            }
-        }
-    });
-};
-
 (document.getElementById('openAbout') as HTMLButtonElement).onclick = (): void => {
     aboutModal.show();
 };
@@ -165,8 +131,126 @@ const openSettings = (settingsList: HTMLElement, settingsContent: HTMLElement, c
     }
 });
 
-function showSetting(id: string): void {
-    const els = document.getElementById('settingsSections').querySelectorAll("button[type=button]") as NodeListOf<HTMLButtonElement>;
+interface Profile {
+    Admin: boolean;
+    LibraryAccess: string;
+    FromUser: string;
+}
+
+(document.getElementById('profiles_button') as HTMLButtonElement).onclick = (): void => showSetting("profiles", populateProfiles);
+
+const populateProfiles = (noTable?: boolean): void => _get("/getProfiles", null, function (): void {
+    if (this.readyState == 4 && this.status == 200) {
+        const profileList = document.getElementById('profileList');
+        profileList.textContent = '';
+        availableProfiles = [];
+        for (let name in this.response) {
+            availableProfiles.push(name);
+            if (!noTable) {
+                const profile: Profile = {
+                    Admin: this.response[name]["admin"],
+                    LibraryAccess: this.response[name]["libraries"],
+                    FromUser: this.response[name]["fromUser"]
+                };
+                profileList.innerHTML += `
+                <td nowrap="nowrap" class="align-middle"><strong>${name}</strong></td>
+                <td nowrap="nowrap" class="align-middle">${profile.FromUser}</td>
+                <td nowrap="nowrap" class="align-middle">${profile.Admin ? "Yes" : "No"}</td>
+                <td nowrap="nowrap" class="align-middle">${profile.LibraryAccess}</td>
+                <td nowrap="nowrap" class="align-middle"><button class="btn btn-outline-danger" onclick="deleteProfile('${name}')">Delete</button></td>
+                `;
+            }
+        }
+    }
+});
+
+const deleteProfile = (name: string): void => _post("/deleteProfile", { "name": name }, function (): void {
+    if (this.readyState == 4 && this.status == 200) {
+        populateProfiles();
+    }
+});
+
+const createProfile = (): void => _get("/getUsers", null, function (): void {
+    if (this.readyState == 4 && this.status == 200) {
+        jfUsers = this.response["users"];
+        populateRadios();
+        const submitButton = document.getElementById('storeDefaults') as HTMLButtonElement;
+        submitButton.disabled = false;
+        submitButton.textContent = 'Create';
+        addAttr(submitButton, "btn-primary");
+        rmAttr(submitButton, "btn-danger");
+        rmAttr(submitButton, "btn-success");
+        document.getElementById('defaultsTitle').textContent = `Create Profile`;
+        document.getElementById('userDefaultsDescription').textContent = `
+        Create an account and configure it to your liking, then choose it from below to store the settings as a profile. Profiles can be specified per invite, so that any new user on that invite will have the settings applied.`;
+        document.getElementById('storeHomescreenLabel').textContent = `Store homescreen layout`;
+        (document.getElementById('defaultsSource') as HTMLSelectElement).value = 'fromUser';
+        document.getElementById('defaultsSourceSection').classList.add('unfocused');
+        (document.getElementById('storeDefaults') as HTMLButtonElement).onclick = storeProfile;
+        Focus(document.getElementById('newProfileBox'));
+        (document.getElementById('newProfileName') as HTMLInputElement).value = '';
+        Focus(document.getElementById('defaultUserRadios'));
+        userDefaultsModal.show();
+    }
+});
+
+function storeProfile(): void {
+    this.disabled = true;
+    this.innerHTML =
+        '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="margin-right: 0.5rem;"></span>' +
+        'Loading...';
+    const button = document.getElementById('storeDefaults') as HTMLButtonElement;
+    const radio = document.querySelector('input[name=defaultRadios]:checked') as HTMLInputElement
+    const name = (document.getElementById('newProfileName') as HTMLInputElement).value;
+    let id = radio.id.replace("default_", "");
+    let data = {
+        "name": name,
+        "id": id,
+        "homescreen": false
+    }
+    if ((document.getElementById('storeDefaultHomescreen') as HTMLInputElement).checked) {
+        data["homescreen"] = true;
+    }
+    _post("/createProfile", data, function (): void {
+        if (this.readyState == 4) {
+            if (this.status == 200 || this.status == 204) {
+                button.textContent = "Success";
+                addAttr(button, "btn-success");
+                rmAttr(button, "btn-danger");
+                rmAttr(button, "btn-primary");
+                button.disabled = false;
+                setTimeout((): void => {
+                    button.textContent = "Create";
+                    addAttr(button, "btn-primary");
+                    rmAttr(button, "btn-success");
+                    button.disabled = false;
+                    populateProfiles();
+                    userDefaultsModal.hide();
+
+                }, 1000);
+            } else {
+                if ("error" in this.response) {
+                    button.textContent = this.response["error"];
+                } else if (("policy" in this.response) || ("homescreen" in this.response)) {
+                    button.textContent = "Failed (check console)";
+                } else {
+                    button.textContent = "Failed";
+                }
+                addAttr(button, "btn-danger");
+                rmAttr(button, "btn-primary");
+                setTimeout((): void => {
+                    button.textContent = "Create";
+                    addAttr(button, "btn-primary");
+                    rmAttr(button, "btn-danger");
+                    button.disabled = false;
+                }, 1000);
+            }
+        }
+    });
+}
+
+function showSetting(id: string, runBefore?: () => void): void {
+    const els = document.getElementById('settingsLeft').querySelectorAll("button[type=button]:not(.static)") as NodeListOf<HTMLButtonElement>;
     for (let i = 0; i < els.length; i++) {
         const el = els[i];
         if (el.id != `${id}_button`) {
@@ -179,6 +263,9 @@ function showSetting(id: string): void {
     }
     addAttr(document.getElementById(`${id}_button`), "active");
     const section = document.getElementById(id);
+    if (runBefore) {
+        runBefore();
+    }
     Focus(section);
     if (screen.width <= 1100) {
         // ugly

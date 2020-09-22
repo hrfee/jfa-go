@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"io/ioutil"
+	"strconv"
 	"time"
 )
 
@@ -17,9 +18,12 @@ type Storage struct {
 // timePattern: %Y-%m-%dT%H:%M:%S.%f
 
 type Profile struct {
-	Policy        map[string]interface{} `json:"policy"`
-	Configuration map[string]interface{} `json:"configuration"`
-	Displayprefs  map[string]interface{} `json:"displayprefs"`
+	Admin         bool                   `json:"admin,omitempty"`
+	LibraryAccess string                 `json:"libraries,omitempty"`
+	FromUser      string                 `json:"fromUser,omitempty"`
+	Policy        map[string]interface{} `json:"policy,omitempty"`
+	Configuration map[string]interface{} `json:"configuration,omitempty"`
+	Displayprefs  map[string]interface{} `json:"displayprefs,omitempty"`
 }
 
 type Invite struct {
@@ -84,7 +88,34 @@ func (st *Storage) storeOmbiTemplate() error {
 }
 
 func (st *Storage) loadProfiles() error {
-	return loadJSON(st.profiles_path, &st.profiles)
+	err := loadJSON(st.profiles_path, &st.profiles)
+	for name, profile := range st.profiles {
+		change := false
+		if profile.Policy["IsAdministrator"] != nil {
+			profile.Admin = profile.Policy["IsAdministrator"].(bool)
+			change = true
+		}
+		if profile.Policy["EnabledFolders"] != nil {
+			length := len(profile.Policy["EnabledFolders"].([]interface{}))
+			if length == 0 {
+				profile.LibraryAccess = "All"
+			} else {
+				profile.LibraryAccess = strconv.Itoa(length)
+			}
+			change = true
+		}
+		if profile.FromUser == "" {
+			profile.FromUser = "Unknown"
+			change = true
+		}
+		if change {
+			st.profiles[name] = profile
+		}
+	}
+	if err != nil {
+		panic(err)
+	}
+	return err
 }
 
 func (st *Storage) storeProfiles() error {
