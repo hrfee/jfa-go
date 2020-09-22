@@ -88,40 +88,6 @@
                 </div>
             </div>
         </div>
-        <div class="modal fade" id="settingsMenu" role="dialog" aria-labelledby="settings menu" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="settingsTitle">Settings</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <ul class="list-group list-group-flush" style="margin-bottom: 1rem;">
-                            <p>Note: <sup class="text-danger">*</sup> Indicates required field, <sup class="text-danger">R</sup> Indicates changes require a restart.</p>
-                            <button type="button" class="list-group-item list-group-item-action" id="openAbout">
-                            About <i class="fa fa-info-circle settingIcon"></i>
-                            </button>
-                            <button type="button" class="list-group-item list-group-item-action" id="openDefaultsWizard">
-                                New User Defaults <i class="fa fa-user settingIcon"></i>
-                            </button>
-                            {{ if .ombiEnabled }}
-                            <button type="button" class="list-group-item list-group-item-action" id="openOmbiDefaults">
-                                Ombi User Defaults <i class="fa fa-chain-broken settingIcon"></i>
-                            </button>
-                            {{ end }}
-                        </ul>
-                        <div class="list-group list-group-flush" id="settingsList">
-                        </div>
-                    </div>
-                    <div class="modal-footer" id="settingsFooter">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-primary" id="settingsSave">Save</button>
-                    </div>
-                </div>
-            </div>
-        </div>
         <div class="modal fade" id="users" role="dialog" aria-labelledby="users" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered" role="document">
                 <div class="modal-content">
@@ -204,7 +170,7 @@
                         <p>A restart is needed to apply some settings. Restart now, later, or cancel?</p>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-light" data-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-light" data-dismiss="modal" id="restartModalCancel">Cancel</button>
                         <button type="button" class="btn btn-secondary" id="applyRestarts" data-dismiss="modal">Apply, Restart later</button>
                         <button type="button" class="btn btn-primary" id="applyAndRestart" data-dismiss="modal">Apply &amp; Restart</button>
                     </div>
@@ -307,6 +273,9 @@
                 </li>
                 <li class="nav-item">
                     <h2><a id="accountsTabButton" class="nl nav-link">Accounts</a></h2>
+                </li>
+                <li class="nav-item">
+                    <h2><a id="settingsTabButton" class="nl nav-link">Settings</a></h2>
                 </li>
             </ul>
             <div class="btn-group" role="group" id="headerButtons">
@@ -425,6 +394,42 @@
                             <tbody id="accountsList">
                             </tbody>
                         </table>
+                    </div>
+                </div>
+            </div>
+            <div id="settingsTab" class="unfocused mb-3 tabGroup card">
+                <div class="card-header d-flex" style="align-items: center;">
+                    <div>Settings</div>
+                    <div class="ml-auto">
+                        <button type="button" class="btn btn-primary" id="settingsSave">Save</button>
+                    </div>
+                </div>
+                <div class="container card-body">
+                    <div class="row">
+                        <div class="col-sm">
+                            <div class="" id="settingsLeft">
+                                <ul class="list-group list-group-flush" style="margin-bottom: 1rem;">
+                                    <p>Note: <sup class="text-danger">*</sup> Indicates required field, <sup class="text-danger">R</sup> Indicates changes require a restart.</p>
+                                    <button type="button" class="list-group-item list-group-item-action" id="openAbout">
+                                    About <i class="fa fa-info-circle settingIcon"></i>
+                                    </button>
+                                    <button type="button" class="list-group-item list-group-item-action" id="openDefaultsWizard">
+                                        New User Defaults <i class="fa fa-user settingIcon"></i>
+                                    </button>
+                                    {{ if .ombiEnabled }}
+                                    <button type="button" class="list-group-item list-group-item-action" id="openOmbiDefaults">
+                                        Ombi User Defaults <i class="fa fa-chain-broken settingIcon"></i>
+                                    </button>
+                                    {{ end }}
+                                </ul>
+                                <div class="list-group list-group-flush" id="settingsSections">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="" id="settingsContent">
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

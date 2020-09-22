@@ -35,38 +35,49 @@ const Focus = (el: HTMLElement): void => rmAttr(el, 'unfocused');
 const Unfocus = (el: HTMLElement): void => addAttr(el, 'unfocused');
 
 interface TabSwitcher {
-    invitesEl: HTMLDivElement;
-    accountsEl: HTMLDivElement;
-    invitesTabButton: HTMLAnchorElement;
-    accountsTabButton: HTMLAnchorElement;
+    els: Array<HTMLDivElement>;
+    tabButtons: Array<HTMLAnchorElement>;
+    focus: (el: number) => void;
     invites: () => void;
     accounts: () => void;
+    settings: () => void;
 }
 
 const tabs: TabSwitcher = {
-    invitesEl: document.getElementById('invitesTab') as HTMLDivElement,
-    accountsEl: document.getElementById('accountsTab') as HTMLDivElement,
-    invitesTabButton: document.getElementById('invitesTabButton') as HTMLAnchorElement,
-    accountsTabButton: document.getElementById('accountsTabButton') as HTMLAnchorElement,
-    invites: (): void => {
-        Unfocus(tabs.accountsEl);
-        Focus(tabs.invitesEl);
-        rmAttr(tabs.accountsTabButton, "active");
-        addAttr(tabs.invitesTabButton, "active");
+    els: [document.getElementById('invitesTab') as HTMLDivElement, document.getElementById('accountsTab') as HTMLDivElement, document.getElementById('settingsTab') as HTMLDivElement],
+    tabButtons: [document.getElementById('invitesTabButton') as HTMLAnchorElement, document.getElementById('accountsTabButton') as HTMLAnchorElement, document.getElementById('settingsTabButton') as HTMLAnchorElement],
+    focus: (el: number): void => {
+        for (let i = 0; i < tabs.els.length; i++) {
+            if (i == el) {
+                Focus(tabs.els[i]);
+                addAttr(tabs.tabButtons[i], "active");
+            } else {
+                Unfocus(tabs.els[i]);
+                rmAttr(tabs.tabButtons[i], "active");
+            }
+        }
     },
+    invites: (): void => tabs.focus(0),
     accounts: (): void => {
         populateUsers();
         (document.getElementById('selectAll') as HTMLInputElement).checked = false;
         checkCheckboxes();
-        Unfocus(tabs.invitesEl);
-        Focus(tabs.accountsEl);
-        rmAttr(tabs.invitesTabButton, "active");
-        addAttr(tabs.accountsTabButton, "active");
-    }
+        tabs.focus(1);
+    },
+    settings: (): void => openSettings(document.getElementById('settingsSections'), document.getElementById('settingsContent'), (): void => {
+        triggerTooltips();
+        showSetting("ui");
+        tabs.focus(2);
+    })
 };
 
-tabs.invitesTabButton.onclick = tabs.invites;
-tabs.accountsTabButton.onclick = tabs.accounts;
+// for (let i = 0; i < tabs.els.length; i++) {
+//     tabs.tabButtons[i].onclick = (): void => tabs.focus(i);
+// }
+tabs.tabButtons[0].onclick = tabs.invites;
+tabs.tabButtons[1].onclick = tabs.accounts;
+tabs.tabButtons[2].onclick = tabs.settings;
+
 
 tabs.invites();
 
@@ -90,7 +101,6 @@ if (buttonColor != "custom") {
 }
 
 var loginModal = createModal('login');
-var settingsModal = createModal('settingsMenu');
 var userDefaultsModal = createModal('userDefaults');
 var usersModal = createModal('users');
 var restartModal = createModal('restartModal');

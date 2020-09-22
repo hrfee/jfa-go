@@ -891,7 +891,7 @@ func (app *appContext) ModifyConfig(gc *gin.Context) {
 	tempConfig.SaveTo(app.config_path)
 	app.debug.Println("Config saved")
 	gc.JSON(200, map[string]bool{"success": true})
-	if req["restart-program"].(bool) {
+	if req["restart-program"] != nil && req["restart-program"].(bool) {
 		app.info.Println("Restarting...")
 		err := app.Restart()
 		if err != nil {

@@ -21,16 +21,14 @@ function createModal(id: string, find?: boolean): any {
 }
 
 function triggerTooltips(): void {
-    (document.getElementById('settingsMenu') as HTMLButtonElement).addEventListener('shown.bs.modal', (): void => {
-        const checkboxes = [].slice.call(document.getElementById('settingsMenu').querySelectorAll('input[type="checkbox"]'));
-        for (const i in checkboxes) {
-            checkboxes[i].click();
-            checkboxes[i].click();
-        }
-        const tooltips = [].slice.call(document.querySelectorAll('a[data-toggle="tooltip"]'));
-        tooltips.map((el: HTMLAnchorElement): any => {
-            return new bootstrap.Tooltip(el);
-        });
+    const checkboxes = [].slice.call(document.getElementById('settingsContent').querySelectorAll('input[type="checkbox"]'));
+    for (const i in checkboxes) {
+        checkboxes[i].click();
+        checkboxes[i].click();
+    }
+    const tooltips = [].slice.call(document.querySelectorAll('a[data-toggle="tooltip"]'));
+    tooltips.map((el: HTMLAnchorElement): any => {
+        return new bootstrap.Tooltip(el);
     });
 }
 

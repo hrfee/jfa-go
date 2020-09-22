@@ -1,15 +1,22 @@
 var config: Object = {};
 var modifiedConfig: Object = {};
 
-function sendConfig(modalID: string, restart?: boolean): void {
+function sendConfig(restart?: boolean): void {
     modifiedConfig["restart-program"] = restart;
     _post("/modifyConfig", modifiedConfig, function (): void {
         if (this.readyState == 4) {
+            const save = document.getElementById("settingsSave") as HTMLButtonElement
             if (this.status == 200 || this.status == 204) {
-                createModal(modalID, true).hide();
-                if (modalID != "settingsMenu") {
-                    settingsModal.hide();
-                }
+                save.textContent = "Success";
+                addAttr(save, "btn-success");
+                rmAttr(save, "btn-primary");
+                setTimeout((): void => {
+                    save.textContent = "Save";
+                    addAttr(save, "btn-primary");
+                    rmAttr(save, "btn-success");
+                }, 1000);
+            } else {
+                save.textContent = "Save";
             }
             if (restart) {
                 refreshModal.show();
@@ -46,7 +53,6 @@ function sendConfig(modalID: string, restart?: boolean): void {
                 document.getElementById('defaultsSourceSection').classList.add('unfocused');
                 (document.getElementById('storeDefaults') as HTMLButtonElement).onclick = (): void => storeDefaults('all');
                 Focus(document.getElementById('defaultUserRadios'));
-                settingsModal.hide();
                 userDefaultsModal.show();
             }
         }
@@ -54,19 +60,17 @@ function sendConfig(modalID: string, restart?: boolean): void {
 };
 
 (document.getElementById('openAbout') as HTMLButtonElement).onclick = (): void => {
-    settingsModal.hide();
     aboutModal.show();
 };
 
-(document.getElementById('openSettings') as HTMLButtonElement).onclick = (): void => _get("/getConfig", null, function (): void {
+const openSettings = (settingsList: HTMLElement, settingsContent: HTMLElement, callback?: () => void): void => _get("/getConfig", null, function (): void {
     if (this.readyState == 4 && this.status == 200) {
-        const settingsList = document.getElementById('settingsList');
         settingsList.textContent = '';
         config = this.response;
         for (const i in config["order"]) {
             const section: string = config["order"][i]
             const sectionCollapse = document.createElement('div') as HTMLDivElement;
-            addAttr(sectionCollapse, "collapse");
+            Unfocus(sectionCollapse);
             sectionCollapse.id = section;
 
             const title: string = config[section]["meta"]["name"];
@@ -151,16 +155,42 @@ function sendConfig(modalID: string, restart?: boolean): void {
             }
         
             settingsList.innerHTML += `
-            <button type="button" class="list-group-item list-group-item-action" id="${section}_button" data-toggle="collapse" data-target="#${section}">${title}</button>
+            <button type="button" class="list-group-item list-group-item-action" id="${section}_button" onclick="showSetting('${section}')">${title}</button>
             `;
-            settingsList.appendChild(sectionCollapse);
+            settingsContent.appendChild(sectionCollapse);
         }
-        settingsModal.show();
+        if (callback) {
+            callback();
+        }
     }
 });
 
+function showSetting(id: string): void {
+    const els = document.getElementById('settingsSections').querySelectorAll("button[type=button]") as NodeListOf<HTMLButtonElement>;
+    for (let i = 0; i < els.length; i++) {
+        const el = els[i];
+        if (el.id != `${id}_button`) {
+            rmAttr(el, "active");
+        }
+        const sectEl = document.getElementById(el.id.replace("_button", ""));
+        if (sectEl.id != id) {
+            Unfocus(sectEl);
+        }
+    }
+    addAttr(document.getElementById(`${id}_button`), "active");
+    const section = document.getElementById(id);
+    Focus(section);
+    if (screen.width <= 1100) {
+        // ugly
+        setTimeout((): void => section.scrollIntoView(<ScrollIntoViewOptions>{ block: "center", behavior: "smooth" }), 200);
+    }
+}
+
+// (document.getElementById('openSettings') as HTMLButtonElement).onclick = (): void => openSettings(document.getElementById('settingsList'), document.getElementById('settingsList'), (): void => settingsModal.show());
+
 (document.getElementById('settingsSave') as HTMLButtonElement).onclick = function (): void {
     modifiedConfig = {};
+    const save = this as HTMLButtonElement;
     let restartSettingsChanged = false;
     let settingsChanged = false;
     for (const i in config["order"]) {
@@ -178,7 +208,7 @@ function sendConfig(modalID: string, restart?: boolean): void {
             } else {
                 val = el.value.toString();
             }
-            if (val != config[section][entry]["value"]) {
+            if (val != config[section][entry]["value"].toString()) {
                 if (!(section in modifiedConfig)) {
                     modifiedConfig[section] = {};
                 }
@@ -190,17 +220,23 @@ function sendConfig(modalID: string, restart?: boolean): void {
             }
         }
     }
+    const spinnerHTML = ` 
+    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="margin-right: 0.5rem;"></span>
+    Loading...`;
     if (restartSettingsChanged) {
-        (document.getElementById('applyRestarts') as HTMLButtonElement).onclick = (): void => sendConfig("restartModal");
+        save.innerHTML = spinnerHTML;
+        (document.getElementById('applyRestarts') as HTMLButtonElement).onclick = (): void => sendConfig();
         const restartButton = document.getElementById('applyAndRestart') as HTMLButtonElement;
         if (restartButton) {
-            restartButton.onclick = (): void => sendConfig("restartModal", true);
+            restartButton.onclick = (): void => sendConfig(true);
         }
-        settingsModal.hide();
         restartModal.show();
     } else if (settingsChanged) {
-        sendConfig("settingsMenu");
-    } else {
-        settingsModal.hide();
+        save.innerHTML = spinnerHTML;
+        sendConfig();
     }
+};
+
+(document.getElementById('restartModalCancel') as HTMLButtonElement).onclick = (): void => {
+    document.getElementById('settingsSave').textContent = "Save";
 };

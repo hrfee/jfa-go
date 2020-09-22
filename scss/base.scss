@@ -1,5 +1,10 @@
 .pageContainer {
-    margin: 5% 20% 5% 20%;
+    margin: 5% 30% 5% 30%;
+}
+@media (max-width: 1900px) {
+    .pageContainer {
+        margin: 5% 20% 5% 20%;
+    }
 }
 @media (max-width: 1100px) {
     .pageContainer {

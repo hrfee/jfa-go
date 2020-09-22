@@ -36,7 +36,6 @@ const ombiDefaultsModal = createModal('ombiDefaults');
                 addAttr(submitButton,  "btn-primary");
                 rmAttr(submitButton, "btn-success");
                 rmAttr(submitButton, "btn-danger");
-                settingsModal.hide();
                 ombiDefaultsModal.show();
             }
         }
@@ -46,7 +45,6 @@ const ombiDefaultsModal = createModal('ombiDefaults');
 (document.getElementById('storeOmbiDefaults') as HTMLButtonElement).onclick = function (): void {
     let button = this as HTMLButtonElement;
     button.disabled = true;
-    const ogHTML = button.innerHTML;
     button.innerHTML =
         '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="margin-right: 0.5rem;"></span>' +
         'Loading...';
