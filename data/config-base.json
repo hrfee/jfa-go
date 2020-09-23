@@ -678,6 +678,7 @@
             "user_template",
             "user_configuration",
             "user_displayprefs",
+            "user_profiles",
             "custom_css"
         ],
         "meta": {
@@ -731,6 +732,14 @@
             "type": "text",
             "value": "",
             "description": "Location of stored displayPreferences template (also used for homescreen layout) (json)"
+        },
+        "user_profiles": {
+            "name": "User Profiles",
+            "required": false,
+            "requires_restart": true,
+            "type": "text",
+            "value": "",
+            "description": "Location of stored user profiles (encompasses template and homescreen) (json)"
         },
         "custom_css": {
             "name": "Custom CSS",

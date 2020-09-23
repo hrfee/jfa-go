@@ -950,8 +950,11 @@ func (app *appContext) ModifyConfig(gc *gin.Context) {
 	gc.BindJSON(&req)
 	tempConfig, _ := ini.Load(app.config_path)
 	for section, settings := range req {
-		_, err := tempConfig.GetSection(section)
-		if section != "restart-program" && err == nil {
+		if section != "restart-program" {
+			_, err := tempConfig.GetSection(section)
+			if err != nil {
+				tempConfig.NewSection(section)
+			}
 			for setting, value := range settings.(map[string]interface{}) {
 				tempConfig.Section(section).Key(setting).SetValue(value.(string))
 			}
