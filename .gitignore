@@ -6,6 +6,7 @@ scss/bs4/*.css*
 scss/bs5/*.css*
 data/static/*.css
 data/static/*.js
+data/static/*.js.map
 !data/static/setup.js
 data/config-base.json
 data/config-default.ini

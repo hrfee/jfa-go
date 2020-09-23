@@ -33,7 +33,7 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 		gc.HTML(http.StatusOK, "form.html", gin.H{
 			"bs5":            app.config.Section("ui").Key("bs5").MustBool(false),
 			"cssFile":        app.cssFile,
-			"contactMessage": app.config.Section("ui").Key("contac_message").String(),
+			"contactMessage": app.config.Section("ui").Key("contact_message").String(),
 			"helpMessage":    app.config.Section("ui").Key("help_message").String(),
 			"successMessage": app.config.Section("ui").Key("success_message").String(),
 			"jfLink":         app.config.Section("jellyfin").Key("public_server").String(),
@@ -46,7 +46,7 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 		gc.HTML(404, "invalidCode.html", gin.H{
 			"bs5":            app.config.Section("ui").Key("bs5").MustBool(false),
 			"cssFile":        app.cssFile,
-			"contactMessage": app.config.Section("ui").Key("contac_message").String(),
+			"contactMessage": app.config.Section("ui").Key("contact_message").String(),
 		})
 	}
 }
