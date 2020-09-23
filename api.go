@@ -472,7 +472,9 @@ func (app *appContext) SetProfile(gc *gin.Context) {
 func (app *appContext) GetProfiles(gc *gin.Context) {
 	app.storage.loadProfiles()
 	app.debug.Println("Profiles requested")
-	out := map[string]map[string]interface{}{}
+	out := map[string]interface{}{
+		"default_profile": app.storage.defaultProfile,
+	}
 	for name, p := range app.storage.profiles {
 		out[name] = map[string]interface{}{
 			"admin":     p.Admin,
@@ -482,6 +484,27 @@ func (app *appContext) GetProfiles(gc *gin.Context) {
 	}
 	fmt.Println(out)
 	gc.JSON(200, out)
+}
+
+func (app *appContext) SetDefaultProfile(gc *gin.Context) {
+	req := map[string]string{}
+	gc.BindJSON(&req)
+	app.info.Printf("Setting default profile to \"%s\"", req["name"])
+	if _, ok := app.storage.profiles[req["name"]]; !ok {
+		app.err.Printf("Profile not found: \"%s\"", req["name"])
+		respond(500, "Profile not found", gc)
+		return
+	}
+	for name, profile := range app.storage.profiles {
+		if name == req["name"] {
+			profile.Admin = true
+			app.storage.profiles[name] = profile
+		} else {
+			profile.Admin = false
+		}
+	}
+	app.storage.defaultProfile = req["name"]
+	gc.JSON(200, map[string]bool{"success": true})
 }
 
 type newProfileReq struct {
@@ -584,10 +607,17 @@ func (app *appContext) GetInvites(gc *gin.Context) {
 		invites = append(invites, invite)
 	}
 	profiles := make([]string, len(app.storage.profiles))
-	i := 0
-	for p := range app.storage.profiles {
-		profiles[i] = p
-		i++
+	if len(app.storage.profiles) != 0 {
+		profiles[0] = app.storage.defaultProfile
+		i := 1
+		if len(app.storage.profiles) > 1 {
+			for p := range app.storage.profiles {
+				if p != app.storage.defaultProfile {
+					profiles[i] = p
+					i++
+				}
+			}
+		}
 	}
 	resp := map[string]interface{}{
 		"profiles": profiles,

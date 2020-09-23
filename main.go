@@ -460,6 +460,7 @@ func start(asDaemon, firstCall bool) {
 		api.GET("/getInvites", app.GetInvites)
 		api.GET("/getProfiles", app.GetProfiles)
 		api.POST("/setProfile", app.SetProfile)
+		api.POST("/setDefaultProfile", app.SetDefaultProfile)
 		api.POST("/createProfile", app.CreateProfile)
 		api.POST("/deleteProfile", app.DeleteProfile)
 		api.POST("/setNotify", app.SetNotify)

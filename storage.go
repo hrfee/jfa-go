@@ -12,6 +12,7 @@ type Storage struct {
 	invite_path, emails_path, policy_path, configuration_path, displayprefs_path, ombi_path, profiles_path string
 	invites                                                                                                Invites
 	profiles                                                                                               map[string]Profile
+	defaultProfile                                                                                         string
 	emails, policy, configuration, displayprefs, ombi_template                                             map[string]interface{}
 }
 
@@ -24,6 +25,7 @@ type Profile struct {
 	Policy        map[string]interface{} `json:"policy,omitempty"`
 	Configuration map[string]interface{} `json:"configuration,omitempty"`
 	Displayprefs  map[string]interface{} `json:"displayprefs,omitempty"`
+	Default       bool                   `json:"default,omitempty"`
 }
 
 type Invite struct {
@@ -90,6 +92,9 @@ func (st *Storage) storeOmbiTemplate() error {
 func (st *Storage) loadProfiles() error {
 	err := loadJSON(st.profiles_path, &st.profiles)
 	for name, profile := range st.profiles {
+		if profile.Default {
+			st.defaultProfile = name
+		}
 		change := false
 		if profile.Policy["IsAdministrator"] != nil {
 			profile.Admin = profile.Policy["IsAdministrator"].(bool)
@@ -112,8 +117,10 @@ func (st *Storage) loadProfiles() error {
 			st.profiles[name] = profile
 		}
 	}
-	if err != nil {
-		panic(err)
+	if st.defaultProfile == "" {
+		for n := range st.profiles {
+			st.defaultProfile = n
+		}
 	}
 	return err
 }

@@ -143,10 +143,12 @@ const populateProfiles = (noTable?: boolean): void => _get("/getProfiles", null,
     if (this.readyState == 4 && this.status == 200) {
         const profileList = document.getElementById('profileList');
         profileList.textContent = '';
-        availableProfiles = [];
+        availableProfiles = [this.response["default_profile"]];
         for (let name in this.response) {
-            availableProfiles.push(name);
-            if (!noTable) {
+            if (name != availableProfiles[0]) {
+                availableProfiles.push(name);
+            }
+            if (!noTable && name != "default_profile") {
                 const profile: Profile = {
                     Admin: this.response[name]["admin"],
                     LibraryAccess: this.response[name]["libraries"],
@@ -154,12 +156,24 @@ const populateProfiles = (noTable?: boolean): void => _get("/getProfiles", null,
                 };
                 profileList.innerHTML += `
                 <td nowrap="nowrap" class="align-middle"><strong>${name}</strong></td>
+                <td nowrap="nowrap" class="align-middle"><input class="form-check-input" type="radio" name="defaultProfile" onclick="setDefaultProfile('${name}')" ${(name == availableProfiles[0]) ? "checked" : ""}></td>
                 <td nowrap="nowrap" class="align-middle">${profile.FromUser}</td>
                 <td nowrap="nowrap" class="align-middle">${profile.Admin ? "Yes" : "No"}</td>
                 <td nowrap="nowrap" class="align-middle">${profile.LibraryAccess}</td>
-                <td nowrap="nowrap" class="align-middle"><button class="btn btn-outline-danger" onclick="deleteProfile('${name}')">Delete</button></td>
+                <td nowrap="nowrap" class="align-middle"><button class="btn btn-outline-danger" id="defaultProfile_${name}" onclick="deleteProfile('${name}')">Delete</button></td>
                 `;
             }
+        }
+    }
+});
+
+const setDefaultProfile = (name: string): void => _post("/setDefaultProfile", { "name": name }, function (): void {
+    if (this.readyState == 4) {
+        if (this.status != 200) {
+            (document.getElementById(`defaultProfile_${availableProfiles[0]}`) as HTMLInputElement).checked = true;
+            (document.getElementById(`defaultProfile_${name}`) as HTMLInputElement).checked = false;
+        } else {
+            generateInvites();
         }
     }
 });
@@ -224,10 +238,11 @@ function storeProfile(): void {
                     addAttr(button, "btn-primary");
                     rmAttr(button, "btn-success");
                     button.disabled = false;
-                    populateProfiles();
                     userDefaultsModal.hide();
 
                 }, 1000);
+                populateProfiles();
+                generateInvites();
             } else {
                 if ("error" in this.response) {
                     button.textContent = this.response["error"];
