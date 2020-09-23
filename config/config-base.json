@@ -177,7 +177,7 @@
         "bs5": {
             "name": "Use Bootstrap 5",
             "required": false,
-            "requires_restart": false,
+            "requires_restart": true,
             "type": "bool",
             "value": false,
             "description": "Use Bootstrap 5 (currently in alpha). This also removes the need for jQuery, so the page should load faster."

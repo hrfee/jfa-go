@@ -216,7 +216,7 @@
         "bs5": {
             "name": "Use Bootstrap 5",
             "required": false,
-            "requires_restart": false,
+            "requires_restart": true,
             "type": "bool",
             "value": false,
             "description": "Use Bootstrap 5 (currently in alpha). This also removes the need for jQuery, so the page should load faster."
@@ -715,7 +715,7 @@
             "requires_restart": true,
             "type": "text",
             "value": "",
-            "description": "Location of stored user policy template (json)."
+            "description": "Deprecated. Location of stored user policy template (json)."
         },
         "user_configuration": {
             "name": "userConfiguration",
@@ -723,7 +723,7 @@
             "requires_restart": true,
             "type": "text",
             "value": "",
-            "description": "Location of stored user configuration template (used for setting homescreen layout) (json)"
+            "description": "Deprecated. Location of stored user configuration template (used for setting homescreen layout) (json)"
         },
         "user_displayprefs": {
             "name": "displayPreferences",
@@ -731,7 +731,7 @@
             "requires_restart": true,
             "type": "text",
             "value": "",
-            "description": "Location of stored displayPreferences template (also used for homescreen layout) (json)"
+            "description": "Deprecated. Location of stored displayPreferences template (also used for homescreen layout) (json)"
         },
         "user_profiles": {
             "name": "User Profiles",
@@ -739,7 +739,7 @@
             "requires_restart": true,
             "type": "text",
             "value": "",
-            "description": "Location of stored user profiles (encompasses template and homescreen) (json)"
+            "description": "Location of stored user profiles (encompasses template and configuration and displayprefs) (json)"
         },
         "custom_css": {
             "name": "Custom CSS",

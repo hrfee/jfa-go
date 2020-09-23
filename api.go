@@ -271,8 +271,9 @@ func (app *appContext) NewUser(gc *gin.Context) {
 		respond(401, "Unknown error", gc)
 		return
 	}
-	app.checkInvite(req.Code, true, req.Username)
+	app.storage.loadProfiles()
 	invite := app.storage.invites[req.Code]
+	app.checkInvite(req.Code, true, req.Username)
 	if app.config.Section("notifications").Key("enabled").MustBool(false) {
 		for address, settings := range invite.Notify {
 			if settings["notify-creation"] {
@@ -296,6 +297,7 @@ func (app *appContext) NewUser(gc *gin.Context) {
 		id = user["Id"].(string)
 	}
 	if invite.Profile != "" {
+		app.debug.Printf("Applying settings from profile \"%s\"", invite.Profile)
 		profile, ok := app.storage.profiles[invite.Profile]
 		if !ok {
 			profile = app.storage.profiles["Default"]

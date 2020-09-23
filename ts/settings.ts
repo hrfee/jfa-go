@@ -156,7 +156,7 @@ const populateProfiles = (noTable?: boolean): void => _get("/getProfiles", null,
                 };
                 profileList.innerHTML += `
                 <td nowrap="nowrap" class="align-middle"><strong>${name}</strong></td>
-                <td nowrap="nowrap" class="align-middle"><input class="form-check-input" type="radio" name="defaultProfile" onclick="setDefaultProfile('${name}')" ${(name == availableProfiles[0]) ? "checked" : ""}></td>
+                <td nowrap="nowrap" class="align-middle"><input class="${(bsVersion == 5) ? "form-check-input" : ""}" type="radio" name="defaultProfile" onclick="setDefaultProfile('${name}')" ${(name == availableProfiles[0]) ? "checked" : ""}></td>
                 <td nowrap="nowrap" class="align-middle">${profile.FromUser}</td>
                 <td nowrap="nowrap" class="align-middle">${profile.Admin ? "Yes" : "No"}</td>
                 <td nowrap="nowrap" class="align-middle">${profile.LibraryAccess}</td>
