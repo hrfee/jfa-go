@@ -13,6 +13,7 @@ data/config-base.json
 data/config-default.ini
 data/*.html
 data/*.txt
+data/docs/
 dist/*
 jfa-go
 build/

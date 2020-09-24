@@ -8,7 +8,6 @@ release:
     name_template: "v{{.Version}}"
 before:
   hooks:
-    # You may remove this if you don't use go modules.
     - go mod download
     - python3 config/fixconfig.py -i config/config-base.json -o data/config-base.json
     - python3 config/generate_ini.py -i config/config-base.json -o data/config-default.ini --version {{.Version}}
@@ -17,6 +16,8 @@ before:
     - python3 scss/compile.py -y
     - python3 mail/generate.py -y
     - python3 version.py {{.Version}} version.go
+    - ./tsc-silent.sh
+    - swag init -g main.go
 builds:
     - dir: ./
       env:

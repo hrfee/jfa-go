@@ -56,7 +56,6 @@ compress:
 copy:
 	$(info Copying data)
 	cp -r data build/
-	cp docs/swagger.json build/data/static/
 
 install:
 	cp -r build $(DESTDIR)/jfa-go
