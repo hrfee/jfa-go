@@ -590,8 +590,12 @@ func flagPassed(name string) (found bool) {
 // @tag.name Other
 // @tag.description Things that dont fit elsewhere.
 
-func main() {
+func printVersion() {
 	fmt.Print(aurora.Sprintf(aurora.Magenta("jfa-go version: %s (%s)\n"), aurora.BrightWhite(VERSION), aurora.White(COMMIT)))
+}
+
+func main() {
+	printVersion()
 	folder := "/tmp"
 	if PLATFORM == "windows" {
 		folder = os.Getenv("TEMP")
@@ -631,7 +635,7 @@ func main() {
 		RESTART = make(chan bool, 1)
 		start(false, true)
 		for {
-			fmt.Printf("jfa-go version: %s (%s)\n", VERSION, COMMIT)
+			printVersion()
 			start(false, false)
 		}
 	}

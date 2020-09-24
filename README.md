@@ -8,11 +8,11 @@ I chose to rewrite the python [jellyfin-accounts](https://github.com/hrfee/jelly
 * 🧑 Invite based account creation: Sends invites to your friends or family, and let them choose their own username and password without relying on you.
     * Send invites via a link and/or email
     * Granular control over invites: Validity period as well as number of uses can be specified.
-    * Account defaults: Configure an example account to your liking, and its permissions, access rights and homescreen layout can be applied to all new users.
+    * Account profiles: Assign settings profiles to invites so new users have your predefined permissions, homescreen layout, etc. applied to their account on creation.
     * Password validation: Ensure users choose a strong password.
 * 🔗 Ombi Integration: Automatically creates Ombi accounts for new users using their email address and login details, and your own defined set of permissions.
 * Account management: Apply settings to your users individually or en masse, and delete users, optionally sending them an email notification with a reason.
-* 📨 Email storage: Add your existing user's email addresses through the UI, and jfa-go will ask new users for them on account creation.
+* 📨 Email storage: Add your existing users email addresses through the UI, and jfa-go will ask new users for them on account creation.
     * Email addresses can optionally be used instead of usernames
 * 🔑 Password resets: When user's forget their passwords and request a change in Jellyfin, jfa-go reads the PIN from the created file and sends it straight to the user via email.
 * Notifications: Get notified when someone creates an account, or an invite expires.
@@ -76,6 +76,8 @@ Usage of ./jfa-go:
     	alternate address to host web ui on.
   -port int
     	alternate port to host web ui on.
+  -swagger
+    	Enable swagger at /swagger/index.html
 ```
 
 If you're switching from jellyfin-accounts, copy your existing `~/.jf-accounts` to:

@@ -204,7 +204,7 @@ const createProfile = (): void => _get("/users", null, function (): void {
         (document.getElementById('storeDefaults') as HTMLButtonElement).onclick = storeProfile;
         Focus(document.getElementById('newProfileBox'));
         (document.getElementById('newProfileName') as HTMLInputElement).value = '';
-        Focus(document.getElementById('defaultUserRadios'));
+        Focus(document.getElementById('defaultUserRadiosBox'));
         userDefaultsModal.show();
     }
 });

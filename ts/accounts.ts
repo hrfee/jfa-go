@@ -263,14 +263,14 @@ function populateRadios(): void {
     Focus(document.getElementById('defaultsSourceSection'));
     (<HTMLSelectElement>document.getElementById('defaultsSource')).value = 'profile';
     Focus(document.getElementById('profileSelectBox'));
-    Unfocus(document.getElementById('defaultUserRadios'));
+    Unfocus(document.getElementById('defaultUserRadiosBox'));
     Unfocus(document.getElementById('newProfileBox'));
     document.getElementById('storeDefaults').onclick = (): void => storeDefaults(userIDs);
     userDefaultsModal.show();
 };
 
 (<HTMLSelectElement>document.getElementById('defaultsSource')).addEventListener('change', function (): void {
-    const radios = document.getElementById('defaultUserRadios');
+    const radios = document.getElementById('defaultUserRadiosBox');
     const profileBox = document.getElementById('profileSelectBox');
     if (this.value == 'profile') {
         Unfocus(radios);
