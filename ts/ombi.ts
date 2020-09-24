@@ -6,7 +6,7 @@ const ombiDefaultsModal = createModal('ombiDefaults');
     button.innerHTML =
         '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="margin-right: 0.5rem;"></span>' +
         'Loading...';
-    _get("/getOmbiUsers", null, function (): void {
+    _get("/ombi/users", null, function (): void {
         if (this.readyState == 4) {
             if (this.status == 200) {
                 const users = this.response['users'];
@@ -52,7 +52,7 @@ const ombiDefaultsModal = createModal('ombiDefaults');
     const data = {
         "id": radio.id.replace("ombiDefault_", "")
     };
-    _post("/setOmbiDefaults", data, function (): void {
+    _post("/ombi/defaults", data, function (): void {
         if (this.readyState == 4) {
             if (this.status == 200 || this.status == 204) {
                 button.textContent = "Success";

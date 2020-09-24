@@ -463,7 +463,8 @@
             </div>
         </div>
         <script src="serialize.js"></script>
-        <script>
+            <script>
+            var availableProfiles = [];
             {{ if .notifications }}
             var notifications_enabled = true;
             {{ else }}

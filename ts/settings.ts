@@ -3,7 +3,7 @@ var modifiedConfig: Object = {};
 
 function sendConfig(restart?: boolean): void {
     modifiedConfig["restart-program"] = restart;
-    _post("/modifyConfig", modifiedConfig, function (): void {
+    _post("/config", modifiedConfig, function (): void {
         if (this.readyState == 4) {
             const save = document.getElementById("settingsSave") as HTMLButtonElement
             if (this.status == 200 || this.status == 204) {
@@ -29,7 +29,7 @@ function sendConfig(restart?: boolean): void {
     aboutModal.show();
 };
 
-const openSettings = (settingsList: HTMLElement, settingsContent: HTMLElement, callback?: () => void): void => _get("/getConfig", null, function (): void {
+const openSettings = (settingsList: HTMLElement, settingsContent: HTMLElement, callback?: () => void): void => _get("/config", null, function (): void {
     if (this.readyState == 4 && this.status == 200) {
         settingsList.textContent = '';
         config = this.response;
@@ -139,7 +139,7 @@ interface Profile {
 
 (document.getElementById('profiles_button') as HTMLButtonElement).onclick = (): void => showSetting("profiles", populateProfiles);
 
-const populateProfiles = (noTable?: boolean): void => _get("/getProfiles", null, function (): void {
+const populateProfiles = (noTable?: boolean): void => _get("/profiles", null, function (): void {
     if (this.readyState == 4 && this.status == 200) {
         const profileList = document.getElementById('profileList');
         profileList.textContent = '';
@@ -167,7 +167,7 @@ const populateProfiles = (noTable?: boolean): void => _get("/getProfiles", null,
     }
 });
 
-const setDefaultProfile = (name: string): void => _post("/setDefaultProfile", { "name": name }, function (): void {
+const setDefaultProfile = (name: string): void => _post("/profiles/default", { "name": name }, function (): void {
     if (this.readyState == 4) {
         if (this.status != 200) {
             (document.getElementById(`defaultProfile_${availableProfiles[0]}`) as HTMLInputElement).checked = true;
@@ -178,13 +178,13 @@ const setDefaultProfile = (name: string): void => _post("/setDefaultProfile", { 
     }
 });
 
-const deleteProfile = (name: string): void => _post("/deleteProfile", { "name": name }, function (): void {
+const deleteProfile = (name: string): void => _delete("/profiles", { "name": name }, function (): void {
     if (this.readyState == 4 && this.status == 200) {
         populateProfiles();
     }
 });
 
-const createProfile = (): void => _get("/getUsers", null, function (): void {
+const createProfile = (): void => _get("/users", null, function (): void {
     if (this.readyState == 4 && this.status == 200) {
         jfUsers = this.response["users"];
         populateRadios();
@@ -225,7 +225,7 @@ function storeProfile(): void {
     if ((document.getElementById('storeDefaultHomescreen') as HTMLInputElement).checked) {
         data["homescreen"] = true;
     }
-    _post("/createProfile", data, function (): void {
+    _post("/profiles", data, function (): void {
         if (this.readyState == 4) {
             if (this.status == 200 || this.status == 204) {
                 button.textContent = "Success";

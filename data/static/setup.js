@@ -133,7 +133,7 @@ document.getElementById('jfTestButton').onclick = function() {
         nextButton.classList.add('disabled');
         nextButton.setAttribute('aria-disabled', 'true');
         var req = new XMLHttpRequest();
-        req.open("POST", "/testJF", true);
+        req.open("POST", "/jellyfin/test", true);
         req.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
         req.responseType = 'json';
         req.onreadystatechange = function() {
@@ -260,7 +260,7 @@ document.getElementById('submitButton').onclick = function() {
     // Send it
     config["restart-program"] = true;
     var req = new XMLHttpRequest();
-    req.open("POST", "/modifyConfig", true);
+    req.open("POST", "/config", true);
     req.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
     req.responseType = 'json';
     req.onreadystatechange = function() {

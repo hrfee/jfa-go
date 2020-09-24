@@ -5,15 +5,6 @@ interface Window {
 // Set in admin.html
 var cssFile: string;
 
-const _post = (url: string, data: Object, onreadystatechange: () => void): void => {
-    let req = new XMLHttpRequest();
-    req.open("POST", url, true);
-    req.setRequestHeader("Authorization", "Basic " + btoa(window.token + ":"));
-    req.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
-    req.onreadystatechange = onreadystatechange;
-    req.send(JSON.stringify(data));
-};
-
 const _get = (url: string, data: Object, onreadystatechange: () => void): void => {
     let req = new XMLHttpRequest();
     req.open("GET", url, true);
@@ -23,6 +14,24 @@ const _get = (url: string, data: Object, onreadystatechange: () => void): void =
     req.onreadystatechange = onreadystatechange;
     req.send(JSON.stringify(data));
 };
+
+const _post = (url: string, data: Object, onreadystatechange: () => void): void => {
+    let req = new XMLHttpRequest();
+    req.open("POST", url, true);
+    req.setRequestHeader("Authorization", "Basic " + btoa(window.token + ":"));
+    req.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+    req.onreadystatechange = onreadystatechange;
+    req.send(JSON.stringify(data));
+};
+
+function _delete(url: string, data: Object, onreadystatechange: () => void): void {
+    let req = new XMLHttpRequest();
+    req.open("DELETE", url, true);
+    req.setRequestHeader("Authorization", "Basic " + btoa(window.token + ":"));
+    req.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+    req.onreadystatechange = onreadystatechange;
+    req.send(JSON.stringify(data));
+}
 
 const rmAttr = (el: HTMLElement, attr: string): void => {
     if (el.classList.contains(attr)) {
@@ -222,7 +231,7 @@ function storeDefaults(users: string | Array<string>): void {
     if ((document.getElementById('storeDefaultHomescreen') as HTMLInputElement).checked) {
         data["homescreen"] = true;
     }
-    _post("/applySettings", data, function (): void {
+    _post("/users/settings", data, function (): void {
         if (this.readyState == 4) {
             if (this.status == 200 || this.status == 204) {
                 button.textContent = "Success";

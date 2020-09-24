@@ -47,7 +47,7 @@ function changeEmail(icon: HTMLElement, id: string): void {
         tick.replaceWith(spinner);
         let send = {};
         send[id] = newEmail;
-        _post("/modifyEmails", send, function (): void {
+        _post("/users/emails", send, function (): void {
             if (this.readyState == 4) {
                 if (this.status == 200 || this.status == 204) {
                     entry.nextElementSibling.remove();
@@ -123,7 +123,7 @@ function populateUsers(): void {
         `;
     };
 
-    _get("/getUsers", null, function (): void {
+    _get("/users", null, function (): void {
         if (this.readyState == 4 && this.status == 200) {
             jfUsers = this.response['users'];
             for (const user of jfUsers) {
@@ -206,7 +206,7 @@ function populateRadios(): void {
             'notify': dmNotify.checked,
             'reason': dmReason.value
         };
-        _post("/deleteUser", send, function (): void {
+        _delete("/users", send, function (): void {
             if (this.readyState == 4) {
                 if (this.status == 500) {
                     if ("error" in this.reponse) {
@@ -301,7 +301,7 @@ function populateRadios(): void {
         'password': password,
         'email': email
     };
-    _post("/newUserAdmin", send, function (): void {
+    _post("/users", send, function (): void {
         if (this.readyState == 4) {
             rmAttr(button, 'btn-primary');
             if (this.status == 200) {

@@ -65,7 +65,7 @@ function setNotify(el: HTMLElement): void {
     }
     send[code] = {};
     send[code][notifyType] = (el as HTMLInputElement).checked;
-    _post("/setNotify", send, function (): void {
+    _post("/invites/notify", send, function (): void {
         if (this.readyState == 4 && this.status != 200) {
             (el as HTMLInputElement).checked = !(el as HTMLInputElement).checked;
         }
@@ -217,7 +217,7 @@ function updateInvite(invite: Invite): void {
 const hideInvite = (code: string): void => document.getElementById(CSS.escape(code)).remove();
 
 // delete invite from jfa-go
-const deleteInvite = (code: string): void => _post("/deleteInvite", { "code": code }, function (): void {
+const deleteInvite = (code: string): void => _delete("/invites", { "code": code }, function (): void {
     if (this.readyState == 4) {
         generateInvites();
     }
@@ -229,7 +229,7 @@ function generateInvites(empty?: boolean): void {
         addItem(emptyInvite());
         return;
     }
-    _get("/getInvites", null, function (): void {
+    _get("/invites", null, function (): void {
         if (this.readyState == 4) {
             let data = this.response;
             availableProfiles = data['profiles'];
@@ -330,7 +330,7 @@ fixCheckboxes();
         delete send['send_to_address_enabled'];
     }
     console.log(send);
-    _post("/generateInvite", send, function (): void {
+    _post("/invites", send, function (): void {
         if (this.readyState == 4) {
             button.textContent = 'Generate';
             button.disabled = false;
@@ -355,7 +355,7 @@ function setProfile(select: HTMLSelectElement): void {
         "invite": invite,
         "profile": val
     };
-    _post("/setProfile", send, function (): void {
+    _post("/invites/profile", send, function (): void {
         if (this.readyState == 4 && this.status != 200) {
             generateInvites();
         }
