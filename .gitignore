@@ -20,4 +20,5 @@ pkg/
 old/
 version.go
 notes
-docs/
+docs/*
+!docs/go.mod
