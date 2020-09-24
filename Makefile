@@ -37,6 +37,7 @@ ts-debug:
 	cp -r ts data/static/
 
 swagger:
+	go get github.com/swaggo/swag/cmd/swag
 	swag init -g main.go
 
 version:
@@ -60,8 +61,8 @@ copy:
 install:
 	cp -r build $(DESTDIR)/jfa-go
 
-all: configuration sass mail version typescript compile copy
-headless: configuration sass-headless mail-headless version typescript compile copy
+all: configuration sass mail version typescript swagger compile copy
+headless: configuration sass-headless mail-headless version typescript swagger compile copy
 
 
 

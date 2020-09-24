@@ -21,6 +21,7 @@ require (
 	github.com/json-iterator/go v1.1.10 // indirect
 	github.com/knz/strtime v0.0.0-20200318182718-be999391ffa9
 	github.com/lithammer/shortuuid/v3 v3.0.4
+	github.com/logrusorgru/aurora/v3 v3.0.0
 	github.com/mailgun/mailgun-go/v4 v4.1.3
 	github.com/mailru/easyjson v0.7.6 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
@@ -33,7 +34,7 @@ require (
 	github.com/urfave/cli/v2 v2.2.0 // indirect
 	golang.org/x/net v0.0.0-20200923182212-328152dc79b1 // indirect
 	golang.org/x/sys v0.0.0-20200814200057-3d37ad5750ed // indirect
-	golang.org/x/tools v0.0.0-20200923182640-463111b69878 // indirect
+	golang.org/x/tools v0.0.0-20200924182824-0f1c53950d78 // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
 	gopkg.in/ini.v1 v1.60.0
 	gopkg.in/yaml.v2 v2.3.0 // indirect

@@ -25,6 +25,7 @@ import (
 	"github.com/gin-gonic/gin"
 	_ "github.com/hrfee/jfa-go/docs"
 	"github.com/lithammer/shortuuid/v3"
+	"github.com/logrusorgru/aurora/v3"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"gopkg.in/ini.v1"
@@ -248,7 +249,7 @@ func start(asDaemon, firstCall bool) {
 		debugMode = true
 	}
 	if debugMode {
-		app.info.Println("WARNING: Don't use debug mode in production, as it exposes pprof on the network.")
+		app.info.Print(aurora.Magenta("\n\nWARNING: Don't use debug mode in production, as it exposes pprof on the network.\n\n"))
 		app.debug = log.New(os.Stdout, "[DEBUG] ", log.Ltime|log.Lshortfile)
 	} else {
 		app.debug = log.New(ioutil.Discard, "", 0)
@@ -471,7 +472,7 @@ func start(asDaemon, firstCall bool) {
 		router.Use(static.Serve("/invite/", static.LocalFile(filepath.Join(app.local_path, "static"), false)))
 		router.GET("/invite/:invCode", app.InviteProxy)
 		if *SWAGGER {
-			app.info.Print("\n\nSwagger should not be used on a public instance.\nTo test the api with it, you need an API token. See the jfa-go wiki for how to get one.\n\n")
+			app.info.Print(aurora.Magenta("\n\nWARNING: Swagger should not be used on a public instance.\n\n"))
 			router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 		}
 		api := router.Group("/", app.webAuth())
@@ -590,7 +591,7 @@ func flagPassed(name string) (found bool) {
 // @tag.description Things that dont fit elsewhere.
 
 func main() {
-	fmt.Printf("jfa-go version: %s (%s)\n", VERSION, COMMIT)
+	fmt.Print(aurora.Sprintf(aurora.Magenta("jfa-go version: %s (%s)\n"), aurora.BrightWhite(VERSION), aurora.White(COMMIT)))
 	folder := "/tmp"
 	if PLATFORM == "windows" {
 		folder = os.Getenv("TEMP")
