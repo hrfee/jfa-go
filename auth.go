@@ -99,7 +99,20 @@ func checkToken(token *jwt.Token) (interface{}, error) {
 	return []byte(os.Getenv("JFA_SECRET")), nil
 }
 
+type getTokenDTO struct {
+	Token string `json:"token" example:"kjsdklsfdkljfsjsdfklsdfkldsfjdfskjsdfjklsdf"` // API token for use with everything else.
+}
+
 // getToken checks the header for a username and password, as well as checking the refresh cookie.
+
+// @Summary Grabs an API token using username & password, or via a refresh cookie.
+// @description Click the lock icon next to this, login with your normal jfa-go credentials. Click 'try it out', then 'execute' and an API Key will be returned, copy it (not including quotes). On any of the other routes, click the lock icon and use the token as your -Username-. The password can be anything.
+// @Produce json
+// @Success 200 {object} getTokenDTO
+// @Failure 401 {object} stringResponse
+// @Router /getToken [get]
+// @tags Auth
+// @Security getTokenAuth
 func (app *appContext) getToken(gc *gin.Context) {
 	app.info.Println("Token requested (login attempt)")
 	header := strings.SplitN(gc.Request.Header.Get("Authorization"), " ", 2)
@@ -228,7 +241,7 @@ func (app *appContext) getToken(gc *gin.Context) {
 			return
 		}
 		gc.SetCookie("refresh", refresh, (3600 * 24), "/", gc.Request.URL.Hostname(), true, true)
-		gc.JSON(200, map[string]string{"token": token})
+		gc.JSON(200, getTokenDTO{token})
 	} else {
 		gc.AbortWithStatus(401)
 	}

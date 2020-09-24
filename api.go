@@ -218,6 +218,8 @@ type newUserDTO struct {
 // @Param newUserDTO body newUserDTO true "New user request object"
 // @Success 200
 // @Router /users [post]
+// @Security ApiKeyBlankPassword
+// @tags Users
 func (app *appContext) NewUserAdmin(gc *gin.Context) {
 	var req newUserDTO
 	gc.BindJSON(&req)
@@ -277,6 +279,7 @@ func (app *appContext) NewUserAdmin(gc *gin.Context) {
 // @Success 200 {object} PasswordValidation
 // @Failure 400 {object} PasswordValidation
 // @Router /newUser [post]
+// @tags Users
 func (app *appContext) NewUser(gc *gin.Context) {
 	var req newUserDTO
 	gc.BindJSON(&req)
@@ -399,6 +402,8 @@ type deleteUserDTO struct {
 // @Failure 400 {object} stringResponse
 // @Failure 500 {object} errorListDTO "List of errors"
 // @Router /users [delete]
+// @Security ApiKeyBlankPassword
+// @tags Users
 func (app *appContext) DeleteUser(gc *gin.Context) {
 	var req deleteUserDTO
 	gc.BindJSON(&req)
@@ -454,6 +459,8 @@ type generateInviteDTO struct {
 // @Param generateInviteDTO body generateInviteDTO true "New invite request object"
 // @Success 200 {object} boolResponse
 // @Router /invites [post]
+// @Security ApiKeyBlankPassword
+// @tags Invites
 func (app *appContext) GenerateInvite(gc *gin.Context) {
 	var req generateInviteDTO
 	app.debug.Println("Generating new invite")
@@ -520,6 +527,8 @@ type inviteProfileDTO struct {
 // @Success 200 {object} boolResponse
 // @Failure 500 {object} stringResponse
 // @Router /invites/profile [post]
+// @Security ApiKeyBlankPassword
+// @tags Profiles & Settings
 func (app *appContext) SetProfile(gc *gin.Context) {
 	var req inviteProfileDTO
 	gc.BindJSON(&req)
@@ -552,6 +561,8 @@ type getProfilesDTO struct {
 // @Produce json
 // @Success 200 {object} getProfilesDTO
 // @Router /profiles [get]
+// @Security ApiKeyBlankPassword
+// @tags Profiles & Settings
 func (app *appContext) GetProfiles(gc *gin.Context) {
 	app.storage.loadProfiles()
 	app.debug.Println("Profiles requested")
@@ -579,6 +590,8 @@ type profileChangeDTO struct {
 // @Success 200 {object} boolResponse
 // @Failure 500 {object} stringResponse
 // @Router /profiles/default [post]
+// @Security ApiKeyBlankPassword
+// @tags Profiles & Settings
 func (app *appContext) SetDefaultProfile(gc *gin.Context) {
 	req := profileChangeDTO{}
 	gc.BindJSON(&req)
@@ -612,6 +625,8 @@ type newProfileDTO struct {
 // @Success 200 {object} boolResponse
 // @Failure 500 {object} stringResponse
 // @Router /profiles [post]
+// @Security ApiKeyBlankPassword
+// @tags Profiles & Settings
 func (app *appContext) CreateProfile(gc *gin.Context) {
 	fmt.Println("Profile creation requested")
 	var req newProfileDTO
@@ -650,6 +665,8 @@ func (app *appContext) CreateProfile(gc *gin.Context) {
 // @Param profileChangeDTO body profileChangeDTO true "Delete profile object"
 // @Success 200 {object} boolResponse
 // @Router /profiles [delete]
+// @Security ApiKeyBlankPassword
+// @tags Profiles & Settings
 func (app *appContext) DeleteProfile(gc *gin.Context) {
 	req := profileChangeDTO{}
 	gc.BindJSON(&req)
@@ -685,6 +702,8 @@ type getInvitesDTO struct {
 // @Produce json
 // @Success 200 {object} getInvitesDTO
 // @Router /invites [get]
+// @Security ApiKeyBlankPassword
+// @tags Invites
 func (app *appContext) GetInvites(gc *gin.Context) {
 	app.debug.Println("Invites requested")
 	current_time := time.Now()
@@ -768,6 +787,8 @@ type setNotifyDTO map[string]setNotifyValues
 // @Failure 400 {object} stringResponse
 // @Failure 500 {object} stringResponse
 // @Router /invites/notify [post]
+// @Security ApiKeyBlankPassword
+// @tags Other
 func (app *appContext) SetNotify(gc *gin.Context) {
 	var req map[string]map[string]bool
 	gc.BindJSON(&req)
@@ -832,6 +853,8 @@ type deleteInviteDTO struct {
 // @Success 200 {object} boolResponse
 // @Failure 400 {object} stringResponse
 // @Router /invites [delete]
+// @Security ApiKeyBlankPassword
+// @tags Invites
 func (app *appContext) DeleteInvite(gc *gin.Context) {
 	var req deleteInviteDTO
 	gc.BindJSON(&req)
@@ -878,6 +901,8 @@ type getUsersDTO struct {
 // @Success 200 {object} getUsersDTO
 // @Failure 500 {object} stringResponse
 // @Router /users [get]
+// @Security ApiKeyBlankPassword
+// @tags Users
 func (app *appContext) GetUsers(gc *gin.Context) {
 	app.debug.Println("Users requested")
 	var resp getUsersDTO
@@ -922,6 +947,8 @@ type ombiUsersDTO struct {
 // @Success 200 {object} ombiUsersDTO
 // @Failure 500 {object} stringResponse
 // @Router /ombi/users [get]
+// @Security ApiKeyBlankPassword
+// @tags Ombi
 func (app *appContext) OmbiUsers(gc *gin.Context) {
 	app.debug.Println("Ombi users requested")
 	users, status, err := app.ombi.getUsers()
@@ -947,6 +974,8 @@ func (app *appContext) OmbiUsers(gc *gin.Context) {
 // @Success 200 {object} boolResponse
 // @Failure 500 {object} stringResponse
 // @Router /ombi/defaults [post]
+// @Security ApiKeyBlankPassword
+// @tags Ombi
 func (app *appContext) SetOmbiDefaults(gc *gin.Context) {
 	var req ombiUser
 	gc.BindJSON(&req)
@@ -970,6 +999,8 @@ type modifyEmailsDTO map[string]string
 // @Success 200 {object} boolResponse
 // @Failure 500 {object} stringResponse
 // @Router /users/emails [post]
+// @Security ApiKeyBlankPassword
+// @tags Users
 func (app *appContext) ModifyEmails(gc *gin.Context) {
 	var req modifyEmailsDTO
 	gc.BindJSON(&req)
@@ -1044,6 +1075,8 @@ type errorListDTO map[string]map[string]string
 // @Success 200 {object} errorListDTO
 // @Failure 500 {object} errorListDTO "Lists of errors that occured while applying settings"
 // @Router /users/settings [post]
+// @Security ApiKeyBlankPassword
+// @tags Profiles & Settings
 func (app *appContext) ApplySettings(gc *gin.Context) {
 	app.info.Println("User settings change requested")
 	var req userSettingsDTO
@@ -1126,6 +1159,8 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 // @Produce json
 // @Success 200 {object} configDTO "Uses the same format as config-base.json"
 // @Router /config [get]
+// @Security ApiKeyBlankPassword
+// @tags Configuration
 func (app *appContext) GetConfig(gc *gin.Context) {
 	app.info.Println("Config requested")
 	resp := map[string]interface{}{}
@@ -1159,14 +1194,15 @@ func (app *appContext) GetConfig(gc *gin.Context) {
 	gc.JSON(200, resp)
 }
 
+type configDTO map[string]interface{}
+
 // @Summary Modify app config.
 // @Produce json
 // @Param appConfig body configDTO true "Config split into sections as in config.ini, all values as strings."
 // @Success 200 {object} boolResponse
 // @Router /config [post]
-
-type configDTO map[string]interface{}
-
+// @Security ApiKeyBlankPassword
+// @tags Configuration
 func (app *appContext) ModifyConfig(gc *gin.Context) {
 	app.info.Println("Config modification requested")
 	var req configDTO
@@ -1218,6 +1254,7 @@ func (app *appContext) ModifyConfig(gc *gin.Context) {
 // @Success 200 {object} boolResponse
 // @Failure 500 {object} stringResponse
 // @Router /logout [post]
+// @tags Other
 func (app *appContext) Logout(gc *gin.Context) {
 	cookie, err := gc.Cookie("refresh")
 	if err != nil {

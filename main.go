@@ -459,7 +459,7 @@ func start(asDaemon, firstCall bool) {
 		router.Use(static.Serve("/invite/", static.LocalFile(filepath.Join(app.local_path, "static"), false)))
 		router.GET("/invite/:invCode", app.InviteProxy)
 		if *SWAGGER {
-			app.info.Println("WARNING: Swagger should not be used on a public instance.")
+			app.info.Print("\n\nSwagger should not be used on a public instance.\nTo test the api with it, you need an API token. See the jfa-go wiki for how to get one.\n\n")
 			router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 		}
 		api := router.Group("/", app.webAuth())
@@ -549,6 +549,33 @@ func flagPassed(name string) (found bool) {
 // @license.name MIT
 // @license.url https://raw.githubusercontent.com/hrfee/jfa-go/main/LICENSE
 // @BasePath /
+
+// @securityDefinitions.basic ApiKeyBlankPassword
+// @name ApiKeyBlankPassword
+
+// @securityDefinitions.basic getTokenAuth
+// @name getTokenAuth
+
+// @tag.name Auth
+// @tag.description --------Get a token here first!--------
+
+// @tag.name Users
+// @tag.description Jellyfin user related operations.
+
+// @tag.name Invites
+// @tag.description Invite related operations.
+
+// @tag.name Profiles & Settings
+// @tag.description Profile and settings related operations.
+
+// @tag.name Configuration
+// @tag.description jfa-go settings.
+
+// @tag.name Ombi
+// @tag.description Ombi related operations.
+
+// @tag.name Other
+// @tag.description Things that dont fit elsewhere.
 
 func main() {
 	fmt.Printf("jfa-go version: %s (%s)\n", VERSION, COMMIT)
