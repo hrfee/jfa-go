@@ -172,8 +172,20 @@ func start(asDaemon, firstCall bool) {
 		SWAGGER = flag.Bool("swagger", false, "Enable swagger at /swagger/index.html")
 
 		flag.Parse()
+		if *SWAGGER {
+			os.Setenv("SWAGGER", "1")
+		}
+		if *DEBUG {
+			os.Setenv("DEBUG", "1")
+		}
 	}
 
+	if os.Getenv("SWAGGER") == "1" {
+		*SWAGGER = true
+	}
+	if os.Getenv("DEBUG") == "1" {
+		*DEBUG = true
+	}
 	// attempt to apply command line flags correctly
 	if app.config_path == *CONFIG && app.data_path != *DATA {
 		app.data_path = *DATA
