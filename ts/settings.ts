@@ -144,15 +144,16 @@ const populateProfiles = (noTable?: boolean): void => _get("/profiles", null, fu
         const profileList = document.getElementById('profileList');
         profileList.textContent = '';
         availableProfiles = [this.response["default_profile"]];
-        for (let name in this.response) {
+        for (let name in this.response["profiles"]) {
             if (name != availableProfiles[0]) {
                 availableProfiles.push(name);
             }
+            const reqProfile = this.response["profiles"][name];
             if (!noTable && name != "default_profile") {
                 const profile: Profile = {
-                    Admin: this.response[name]["admin"],
-                    LibraryAccess: this.response[name]["libraries"],
-                    FromUser: this.response[name]["fromUser"]
+                    Admin: reqProfile["admin"],
+                    LibraryAccess: reqProfile["libraries"],
+                    FromUser: reqProfile["fromUser"]
                 };
                 profileList.innerHTML += `
                 <td nowrap="nowrap" class="align-middle"><strong>${name}</strong></td>

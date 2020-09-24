@@ -36,6 +36,9 @@ ts-debug:
 	-npx tsc -p ts/ --sourceMap
 	cp -r ts data/static/
 
+swagger:
+	swag init -g main.go
+
 version:
 	python3 version.py auto version.go
 
@@ -52,6 +55,7 @@ compress:
 copy:
 	$(info Copying data)
 	cp -r data build/
+	cp docs/swagger.json build/data/static/
 
 install:
 	cp -r build $(DESTDIR)/jfa-go

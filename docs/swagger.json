@@ -1,0 +1,999 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "API for the jfa-go frontend",
+        "title": "jfa-go internal API",
+        "contact": {
+            "name": "Harvey Tindall",
+            "email": "hrfee@protonmail.ch"
+        },
+        "license": {
+            "name": "MIT",
+            "url": "https://raw.githubusercontent.com/hrfee/jfa-go/main/LICENSE"
+        },
+        "version": "0.2.0"
+    },
+    "basePath": "/",
+    "paths": {
+        "/config": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get jfa-go configuration.",
+                "responses": {
+                    "200": {
+                        "description": "Uses the same format as config-base.json",
+                        "schema": {
+                            "$ref": "#/definitions/main.configDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/invites": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get invites.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/main.getInvitesDTO"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Create a new invite.",
+                "parameters": [
+                    {
+                        "description": "New invite request object",
+                        "name": "generateInviteDTO",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.generateInviteDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/main.boolResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Delete an invite.",
+                "parameters": [
+                    {
+                        "description": "Delete invite object",
+                        "name": "deleteInviteDTO",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.deleteInviteDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/main.boolResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/main.stringResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/invites/notify": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Set notification preferences for an invite.",
+                "parameters": [
+                    {
+                        "description": "Map of invite codes to notification settings objects",
+                        "name": "setNotifyDTO",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.setNotifyDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {},
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/main.stringResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/main.stringResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/invites/profile": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Set profile for an invite",
+                "parameters": [
+                    {
+                        "description": "Invite profile object",
+                        "name": "inviteProfileDTO",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.inviteProfileDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/main.boolResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/main.stringResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/logout": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Logout by deleting refresh token from cookies.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/main.boolResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/main.stringResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/newUser": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Creates a new Jellyfin user via invite code",
+                "parameters": [
+                    {
+                        "description": "New user request object",
+                        "name": "newUserDTO",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.newUserDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/main.PasswordValidation"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/main.PasswordValidation"
+                        }
+                    }
+                }
+            }
+        },
+        "/ombi/defaults": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Set new user defaults for Ombi accounts.",
+                "parameters": [
+                    {
+                        "description": "User to source settings from",
+                        "name": "ombiUser",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.ombiUser"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/main.boolResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/main.stringResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/ombi/users": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get a list of Ombi users.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/main.ombiUsersDTO"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/main.stringResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/profiles": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get a list of profiles",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/main.getProfilesDTO"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Create a profile based on a Jellyfin user's settings.",
+                "parameters": [
+                    {
+                        "description": "New profile object",
+                        "name": "newProfileDTO",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.newProfileDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/main.boolResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/main.stringResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Delete an existing profile",
+                "parameters": [
+                    {
+                        "description": "Delete profile object",
+                        "name": "profileChangeDTO",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.profileChangeDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/main.boolResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/profiles/default": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Set the default profile to use.",
+                "parameters": [
+                    {
+                        "description": "Default profile object",
+                        "name": "profileChangeDTO",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.profileChangeDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/main.boolResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/main.stringResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/users": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get a list of Jellyfin users.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/main.getUsersDTO"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/main.stringResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Creates a new Jellyfin user without an invite.",
+                "parameters": [
+                    {
+                        "description": "New user request object",
+                        "name": "newUserDTO",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.newUserDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {}
+                }
+            },
+            "delete": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Delete a list of users, optionally notifying them why.",
+                "parameters": [
+                    {
+                        "description": "User deletion request object",
+                        "name": "deleteUserDTO",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.deleteUserDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/main.boolResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/main.stringResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "List of errors",
+                        "schema": {
+                            "$ref": "#/definitions/main.errorListDTO"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/emails": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Modify user's email addresses.",
+                "parameters": [
+                    {
+                        "description": "Map of userIDs to email addresses",
+                        "name": "modifyEmailsDTO",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.modifyEmailsDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/main.boolResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/main.stringResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/settings": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Apply settings to a list of users, either from a profile or from another user.",
+                "parameters": [
+                    {
+                        "description": "Parameters for applying settings",
+                        "name": "userSettingsDTO",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.userSettingsDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/main.errorListDTO"
+                        }
+                    },
+                    "500": {
+                        "description": "Lists of errors that occured while applying settings",
+                        "schema": {
+                            "$ref": "#/definitions/main.errorListDTO"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "main.PasswordValidation": {
+            "type": "object",
+            "properties": {
+                "characters": {
+                    "description": "Number of characters",
+                    "type": "boolean"
+                },
+                "lowercase characters": {
+                    "description": "Number of lowercase characters",
+                    "type": "boolean"
+                },
+                "numbers": {
+                    "description": "Number of numbers",
+                    "type": "boolean"
+                },
+                "special characters": {
+                    "description": "Number of special characters",
+                    "type": "boolean"
+                },
+                "uppercase characters": {
+                    "description": "Number of uppercase characters",
+                    "type": "boolean"
+                }
+            }
+        },
+        "main.boolResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": false
+                }
+            }
+        },
+        "main.configDTO": {
+            "type": "object",
+            "additionalProperties": true
+        },
+        "main.deleteInviteDTO": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "description": "Code of invite to delete",
+                    "type": "string",
+                    "example": "skjadajd43234s"
+                }
+            }
+        },
+        "main.deleteUserDTO": {
+            "type": "object",
+            "required": [
+                "users"
+            ],
+            "properties": {
+                "notify": {
+                    "description": "Whether to notify users of deletion",
+                    "type": "boolean"
+                },
+                "reason": {
+                    "description": "Account deletion reason (for notification)",
+                    "type": "string"
+                },
+                "users": {
+                    "description": "List of usernames to delete",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "main.errorListDTO": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "object",
+                "additionalProperties": {
+                    "type": "string"
+                }
+            }
+        },
+        "main.generateInviteDTO": {
+            "type": "object",
+            "properties": {
+                "days": {
+                    "description": "Number of days",
+                    "type": "integer",
+                    "example": 1
+                },
+                "email": {
+                    "description": "Send invite to this address",
+                    "type": "string",
+                    "example": "jeff@jellyf.in"
+                },
+                "hours": {
+                    "description": "Number of hours",
+                    "type": "integer",
+                    "example": 2
+                },
+                "minutes": {
+                    "description": "Number of minutes",
+                    "type": "integer",
+                    "example": 3
+                },
+                "multiple-uses": {
+                    "description": "Allow multiple uses",
+                    "type": "boolean",
+                    "example": true
+                },
+                "no-limit": {
+                    "description": "No invite use limit",
+                    "type": "boolean",
+                    "example": false
+                },
+                "profile": {
+                    "description": "Name of profile to apply on this invite",
+                    "type": "string",
+                    "example": "DefaultProfile"
+                },
+                "remaining-uses": {
+                    "description": "Remaining invite uses",
+                    "type": "integer",
+                    "example": 5
+                }
+            }
+        },
+        "main.getInvitesDTO": {
+            "type": "object",
+            "properties": {
+                "invites": {
+                    "description": "List of invites",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/main.inviteDTO"
+                    }
+                },
+                "profiles": {
+                    "description": "List of profiles (name only)",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "main.getProfilesDTO": {
+            "type": "object",
+            "properties": {
+                "default_profile": {
+                    "type": "string"
+                },
+                "profiles": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/main.profileDTO"
+                    }
+                }
+            }
+        },
+        "main.getUsersDTO": {
+            "type": "object",
+            "properties": {
+                "users": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/main.respUser"
+                    }
+                }
+            }
+        },
+        "main.inviteDTO": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "description": "Invite code",
+                    "type": "string",
+                    "example": "sajdlj23423j23"
+                },
+                "created": {
+                    "description": "Date of creation",
+                    "type": "string",
+                    "example": "01/01/20 12:00"
+                },
+                "days": {
+                    "description": "Number of days till expiry",
+                    "type": "integer",
+                    "example": 1
+                },
+                "email": {
+                    "description": "Email the invite was sent to (if applicable)",
+                    "type": "string"
+                },
+                "hours": {
+                    "description": "Number of hours till expiry",
+                    "type": "integer",
+                    "example": 2
+                },
+                "minutes": {
+                    "description": "Number of minutes till expiry",
+                    "type": "integer",
+                    "example": 3
+                },
+                "no-limit": {
+                    "description": "If true, invite can be used any number of times",
+                    "type": "boolean"
+                },
+                "notify-creation": {
+                    "description": "Whether to notify the requesting user of account creation or not",
+                    "type": "boolean"
+                },
+                "notify-expiry": {
+                    "description": "Whether to notify the requesting user of expiry or not",
+                    "type": "boolean"
+                },
+                "profile": {
+                    "description": "Profile used on this invite",
+                    "type": "string",
+                    "example": "DefaultProfile"
+                },
+                "remaining-uses": {
+                    "description": "Remaining number of uses (if applicable)",
+                    "type": "integer"
+                },
+                "used-by": {
+                    "description": "Users who have used this invite",
+                    "type": "array",
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "main.inviteProfileDTO": {
+            "type": "object",
+            "properties": {
+                "invite": {
+                    "description": "Invite to apply to",
+                    "type": "string",
+                    "example": "slakdaslkdl2342"
+                },
+                "profile": {
+                    "description": "Profile to use",
+                    "type": "string",
+                    "example": "DefaultProfile"
+                }
+            }
+        },
+        "main.modifyEmailsDTO": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "string"
+            }
+        },
+        "main.newProfileDTO": {
+            "type": "object",
+            "required": [
+                "id",
+                "name"
+            ],
+            "properties": {
+                "homescreen": {
+                    "description": "Whether to store homescreen layout or not",
+                    "type": "boolean",
+                    "example": true
+                },
+                "id": {
+                    "description": "ID of user to source settings from",
+                    "type": "string",
+                    "example": "kasdjlaskjd342342"
+                },
+                "name": {
+                    "description": "Name of the profile",
+                    "type": "string",
+                    "example": "DefaultProfile"
+                }
+            }
+        },
+        "main.newUserDTO": {
+            "type": "object",
+            "required": [
+                "password",
+                "username"
+            ],
+            "properties": {
+                "code": {
+                    "description": "Invite code (required on /newUser)",
+                    "type": "string",
+                    "example": "abc0933jncjkcjj"
+                },
+                "email": {
+                    "description": "User's email address",
+                    "type": "string",
+                    "example": "jeff@jellyf.in"
+                },
+                "password": {
+                    "description": "User's password",
+                    "type": "string",
+                    "example": "guest"
+                },
+                "username": {
+                    "description": "User's username",
+                    "type": "string",
+                    "example": "jeff"
+                }
+            }
+        },
+        "main.ombiUser": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "description": "userID of Ombi user",
+                    "type": "string",
+                    "example": "djgkjdg7dkjfsj8"
+                },
+                "name": {
+                    "description": "Name of Ombi user",
+                    "type": "string",
+                    "example": "jeff"
+                }
+            }
+        },
+        "main.ombiUsersDTO": {
+            "type": "object",
+            "properties": {
+                "users": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/main.ombiUser"
+                    }
+                }
+            }
+        },
+        "main.profileChangeDTO": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "name": {
+                    "description": "Name of the profile",
+                    "type": "string",
+                    "example": "DefaultProfile"
+                }
+            }
+        },
+        "main.profileDTO": {
+            "type": "object",
+            "properties": {
+                "admin": {
+                    "description": "Whether profile has admin rights or not",
+                    "type": "boolean",
+                    "example": false
+                },
+                "fromUser": {
+                    "description": "The user the profile is based on",
+                    "type": "string",
+                    "example": "jeff"
+                },
+                "libraries": {
+                    "description": "Number of libraries profile has access to",
+                    "type": "string",
+                    "example": "all"
+                }
+            }
+        },
+        "main.respUser": {
+            "type": "object",
+            "properties": {
+                "admin": {
+                    "description": "Whether or not the user is Administrator",
+                    "type": "boolean",
+                    "example": false
+                },
+                "email": {
+                    "description": "Email address of user (if available)",
+                    "type": "string",
+                    "example": "jeff@jellyf.in"
+                },
+                "id": {
+                    "description": "userID of user",
+                    "type": "string",
+                    "example": "fdgsdfg45534fa"
+                },
+                "last_active": {
+                    "description": "Time of last activity on Jellyfin",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "Username of user",
+                    "type": "string",
+                    "example": "jeff"
+                }
+            }
+        },
+        "main.setNotifyDTO": {
+            "type": "object",
+            "additionalProperties": {
+                "$ref": "#/definitions/main.setNotifyValues"
+            }
+        },
+        "main.setNotifyValues": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "object",
+                "properties": {
+                    "notify-creation": {
+                        "description": "Whether to notify the requesting user of account creation or not",
+                        "type": "boolean"
+                    },
+                    "notify-expiry": {
+                        "description": "Whether to notify the requesting user of expiry or not",
+                        "type": "boolean"
+                    }
+                }
+            }
+        },
+        "main.stringResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "example": "errorDescription"
+                },
+                "response": {
+                    "type": "string",
+                    "example": "message"
+                }
+            }
+        },
+        "main.userSettingsDTO": {
+            "type": "object",
+            "properties": {
+                "apply_to": {
+                    "description": "Users to apply settings to",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "from": {
+                    "description": "Whether to apply from \"user\" or \"profile\"",
+                    "type": "string"
+                },
+                "homescreen": {
+                    "description": "Whether to apply homescreen layout or not",
+                    "type": "boolean"
+                },
+                "id": {
+                    "description": "ID of user (if from = \"user\")",
+                    "type": "string"
+                },
+                "profile": {
+                    "description": "Name of profile (if from = \"profile\")",
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

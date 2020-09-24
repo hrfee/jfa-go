@@ -13,6 +13,38 @@ import (
 	"gopkg.in/ini.v1"
 )
 
+func respond(code int, message string, gc *gin.Context) {
+	resp := stringResponse{}
+	if code == 200 || code == 204 {
+		resp.Response = message
+	} else {
+		resp.Error = message
+	}
+	gc.JSON(code, resp)
+	gc.Abort()
+}
+
+type stringResponse struct {
+	Response string `json:"response" example:"message"`
+	Error    string `json:"error" example:"errorDescription"`
+}
+
+type boolResponse struct {
+	Success bool `json:"success" example:"false"`
+	Error   bool `json:"error" example:"true"`
+}
+
+func respondBool(code int, val bool, gc *gin.Context) {
+	resp := boolResponse{}
+	if !val {
+		resp.Error = true
+	} else {
+		resp.Success = true
+	}
+	gc.JSON(code, resp)
+	gc.Abort()
+}
+
 func (app *appContext) loadStrftime() {
 	app.datePattern = app.config.Section("email").Key("date_format").String()
 	app.timePattern = `%H:%M`
@@ -174,15 +206,20 @@ func (app *appContext) checkInvite(code string, used bool, username string) bool
 
 // Routes from now on!
 
-type newUserReq struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-	Email    string `json:"email"`
-	Code     string `json:"code"`
+type newUserDTO struct {
+	Username string `json:"username" example:"jeff" binding:"required"`  // User's username
+	Password string `json:"password" example:"guest" binding:"required"` // User's password
+	Email    string `json:"email" example:"jeff@jellyf.in"`              // User's email address
+	Code     string `json:"code" example:"abc0933jncjkcjj"`              // Invite code (required on /newUser)
 }
 
+// @Summary Creates a new Jellyfin user without an invite.
+// @Produce json
+// @Param newUserDTO body newUserDTO true "New user request object"
+// @Success 200
+// @Router /users [post]
 func (app *appContext) NewUserAdmin(gc *gin.Context) {
-	var req newUserReq
+	var req newUserDTO
 	gc.BindJSON(&req)
 	existingUser, _, _ := app.jf.userByName(req.Username, false)
 	if existingUser != nil {
@@ -234,14 +271,19 @@ func (app *appContext) NewUserAdmin(gc *gin.Context) {
 	app.jf.cacheExpiry = time.Now()
 }
 
+// @Summary Creates a new Jellyfin user via invite code
+// @Produce json
+// @Param newUserDTO body newUserDTO true "New user request object"
+// @Success 200 {object} PasswordValidation
+// @Failure 400 {object} PasswordValidation
+// @Router /newUser [post]
 func (app *appContext) NewUser(gc *gin.Context) {
-	var req newUserReq
+	var req newUserDTO
 	gc.BindJSON(&req)
 	app.debug.Printf("%s: New user attempt", req.Code)
 	if !app.checkInvite(req.Code, false, "") {
 		app.info.Printf("%s New user failed: invalid code", req.Code)
-		gc.JSON(401, map[string]bool{"success": false})
-		gc.Abort()
+		respondBool(401, false, gc)
 		return
 	}
 	validation := app.validator.validate(req.Password)
@@ -335,17 +377,30 @@ func (app *appContext) NewUser(gc *gin.Context) {
 			}
 		}
 	}
-	gc.JSON(200, validation)
+	code := 200
+	for _, val := range validation {
+		if !val {
+			code = 400
+		}
+	}
+	gc.JSON(code, validation)
 }
 
-type deleteUserReq struct {
-	Users  []string `json:"users"`
-	Notify bool     `json:"notify"`
-	Reason string   `json:"reason"`
+type deleteUserDTO struct {
+	Users  []string `json:"users" binding:"required"` // List of usernames to delete
+	Notify bool     `json:"notify"`                   // Whether to notify users of deletion
+	Reason string   `json:"reason"`                   // Account deletion reason (for notification)
 }
 
+// @Summary Delete a list of users, optionally notifying them why.
+// @Produce json
+// @Param deleteUserDTO body deleteUserDTO true "User deletion request object"
+// @Success 200 {object} boolResponse
+// @Failure 400 {object} stringResponse
+// @Failure 500 {object} errorListDTO "List of errors"
+// @Router /users [delete]
 func (app *appContext) DeleteUser(gc *gin.Context) {
-	var req deleteUserReq
+	var req deleteUserDTO
 	gc.BindJSON(&req)
 	errors := map[string]string{}
 	for _, userID := range req.Users {
@@ -373,29 +428,34 @@ func (app *appContext) DeleteUser(gc *gin.Context) {
 	}
 	app.jf.cacheExpiry = time.Now()
 	if len(errors) == len(req.Users) {
-		respond(500, "Failed", gc)
+		respondBool(500, false, gc)
 		app.err.Printf("Account deletion failed: %s", errors[req.Users[0]])
 		return
 	} else if len(errors) != 0 {
 		gc.JSON(500, errors)
 		return
 	}
-	gc.JSON(200, map[string]bool{"success": true})
+	respondBool(200, true, gc)
 }
 
-type generateInviteReq struct {
-	Days          int    `json:"days"`
-	Hours         int    `json:"hours"`
-	Minutes       int    `json:"minutes"`
-	Email         string `json:"email"`
-	MultipleUses  bool   `json:"multiple-uses"`
-	NoLimit       bool   `json:"no-limit"`
-	RemainingUses int    `json:"remaining-uses"`
-	Profile       string `json:"profile"`
+type generateInviteDTO struct {
+	Days          int    `json:"days" example:"1"`                 // Number of days
+	Hours         int    `json:"hours" example:"2"`                // Number of hours
+	Minutes       int    `json:"minutes" example:"3"`              // Number of minutes
+	Email         string `json:"email" example:"jeff@jellyf.in"`   // Send invite to this address
+	MultipleUses  bool   `json:"multiple-uses" example:"true"`     // Allow multiple uses
+	NoLimit       bool   `json:"no-limit" example:"false"`         // No invite use limit
+	RemainingUses int    `json:"remaining-uses" example:"5"`       // Remaining invite uses
+	Profile       string `json:"profile" example:"DefaultProfile"` // Name of profile to apply on this invite
 }
 
+// @Summary Create a new invite.
+// @Produce json
+// @Param generateInviteDTO body generateInviteDTO true "New invite request object"
+// @Success 200 {object} boolResponse
+// @Router /invites [post]
 func (app *appContext) GenerateInvite(gc *gin.Context) {
-	var req generateInviteReq
+	var req generateInviteDTO
 	app.debug.Println("Generating new invite")
 	app.storage.loadInvites()
 	gc.BindJSON(&req)
@@ -446,16 +506,22 @@ func (app *appContext) GenerateInvite(gc *gin.Context) {
 	}
 	app.storage.invites[invite_code] = invite
 	app.storage.storeInvites()
-	gc.JSON(200, map[string]bool{"success": true})
+	respondBool(200, true, gc)
 }
 
-type profileReq struct {
-	Invite  string `json:"invite"`
-	Profile string `json:"profile"`
+type inviteProfileDTO struct {
+	Invite  string `json:"invite" example:"slakdaslkdl2342"` // Invite to apply to
+	Profile string `json:"profile" example:"DefaultProfile"` // Profile to use
 }
 
+// @Summary Set profile for an invite
+// @Produce json
+// @Param inviteProfileDTO body inviteProfileDTO true "Invite profile object"
+// @Success 200 {object} boolResponse
+// @Failure 500 {object} stringResponse
+// @Router /invites/profile [post]
 func (app *appContext) SetProfile(gc *gin.Context) {
-	var req profileReq
+	var req inviteProfileDTO
 	gc.BindJSON(&req)
 	app.debug.Printf("%s: Setting profile to \"%s\"", req.Invite, req.Profile)
 	// "" means "Don't apply profile"
@@ -468,56 +534,87 @@ func (app *appContext) SetProfile(gc *gin.Context) {
 	inv.Profile = req.Profile
 	app.storage.invites[req.Invite] = inv
 	app.storage.storeInvites()
-	gc.JSON(200, map[string]bool{"success": true})
+	respondBool(200, true, gc)
 }
 
+type profileDTO struct {
+	Admin         bool   `json:"admin" example:"false"`   // Whether profile has admin rights or not
+	LibraryAccess string `json:"libraries" example:"all"` // Number of libraries profile has access to
+	FromUser      string `json:"fromUser" example:"jeff"` // The user the profile is based on
+}
+
+type getProfilesDTO struct {
+	Profiles       map[string]profileDTO `json:"profiles"`
+	DefaultProfile string                `json:"default_profile"`
+}
+
+// @Summary Get a list of profiles
+// @Produce json
+// @Success 200 {object} getProfilesDTO
+// @Router /profiles [get]
 func (app *appContext) GetProfiles(gc *gin.Context) {
 	app.storage.loadProfiles()
 	app.debug.Println("Profiles requested")
-	out := map[string]interface{}{
-		"default_profile": app.storage.defaultProfile,
+	out := getProfilesDTO{
+		DefaultProfile: app.storage.defaultProfile,
+		Profiles:       map[string]profileDTO{},
 	}
 	for name, p := range app.storage.profiles {
-		out[name] = map[string]interface{}{
-			"admin":     p.Admin,
-			"libraries": p.LibraryAccess,
-			"fromUser":  p.FromUser,
+		out.Profiles[name] = profileDTO{
+			Admin:         p.Admin,
+			LibraryAccess: p.LibraryAccess,
+			FromUser:      p.FromUser,
 		}
 	}
-	fmt.Println(out)
 	gc.JSON(200, out)
 }
 
+type profileChangeDTO struct {
+	Name string `json:"name" example:"DefaultProfile" binding:"required"` // Name of the profile
+}
+
+// @Summary Set the default profile to use.
+// @Produce json
+// @Param profileChangeDTO body profileChangeDTO true "Default profile object"
+// @Success 200 {object} boolResponse
+// @Failure 500 {object} stringResponse
+// @Router /profiles/default [post]
 func (app *appContext) SetDefaultProfile(gc *gin.Context) {
-	req := map[string]string{}
+	req := profileChangeDTO{}
 	gc.BindJSON(&req)
-	app.info.Printf("Setting default profile to \"%s\"", req["name"])
-	if _, ok := app.storage.profiles[req["name"]]; !ok {
-		app.err.Printf("Profile not found: \"%s\"", req["name"])
+	app.info.Printf("Setting default profile to \"%s\"", req.Name)
+	if _, ok := app.storage.profiles[req.Name]; !ok {
+		app.err.Printf("Profile not found: \"%s\"", req.Name)
 		respond(500, "Profile not found", gc)
 		return
 	}
 	for name, profile := range app.storage.profiles {
-		if name == req["name"] {
+		if name == req.Name {
 			profile.Admin = true
 			app.storage.profiles[name] = profile
 		} else {
 			profile.Admin = false
 		}
 	}
-	app.storage.defaultProfile = req["name"]
-	gc.JSON(200, map[string]bool{"success": true})
+	app.storage.defaultProfile = req.Name
+	respondBool(200, true, gc)
 }
 
-type newProfileReq struct {
-	Name       string `json:"name"`
-	ID         string `json:"id"`
-	Homescreen bool   `json:"homescreen"`
+type newProfileDTO struct {
+	Name       string `json:"name" example:"DefaultProfile" binding:"required"`  // Name of the profile
+	ID         string `json:"id" example:"kasdjlaskjd342342" binding:"required"` // ID of user to source settings from
+	Homescreen bool   `json:"homescreen" example:"true"`                         // Whether to store homescreen layout or not
 }
 
+// @Summary Create a profile based on a Jellyfin user's settings.
+// @Produce json
+// @Param newProfileDTO body newProfileDTO true "New profile object"
+// @Success 200 {object} boolResponse
+// @Failure 500 {object} stringResponse
+// @Router /profiles [post]
 func (app *appContext) CreateProfile(gc *gin.Context) {
 	fmt.Println("Profile creation requested")
-	var req newProfileReq
+	var req newProfileDTO
 	gc.BindJSON(&req)
 	user, status, err := app.jf.userById(req.ID, false)
 	if !(status == 200 || status == 204) || err != nil {
@@ -545,48 +642,75 @@ func (app *appContext) CreateProfile(gc *gin.Context) {
 	app.storage.profiles[req.Name] = profile
 	app.storage.storeProfiles()
 	app.storage.loadProfiles()
-	gc.JSON(200, map[string]bool{"success": true})
+	respondBool(200, true, gc)
 }
 
+// @Summary Delete an existing profile
+// @Produce json
+// @Param profileChangeDTO body profileChangeDTO true "Delete profile object"
+// @Success 200 {object} boolResponse
+// @Router /profiles [delete]
 func (app *appContext) DeleteProfile(gc *gin.Context) {
-	req := map[string]string{}
+	req := profileChangeDTO{}
 	gc.BindJSON(&req)
-	name := req["name"]
+	name := req.Name
 	if _, ok := app.storage.profiles[name]; ok {
 		delete(app.storage.profiles, name)
 	}
 	app.storage.storeProfiles()
-	gc.JSON(200, map[string]bool{"success": true})
+	respondBool(200, true, gc)
 }
 
+type inviteDTO struct {
+	Code           string     `json:"code" example:"sajdlj23423j23"`    // Invite code
+	Days           int        `json:"days" example:"1"`                 // Number of days till expiry
+	Hours          int        `json:"hours" example:"2"`                // Number of hours till expiry
+	Minutes        int        `json:"minutes" example:"3"`              // Number of minutes till expiry
+	Created        string     `json:"created" example:"01/01/20 12:00"` // Date of creation
+	Profile        string     `json:"profile" example:"DefaultProfile"` // Profile used on this invite
+	UsedBy         [][]string `json:"used-by,omitempty"`                // Users who have used this invite
+	NoLimit        bool       `json:"no-limit,omitempty"`               // If true, invite can be used any number of times
+	RemainingUses  int        `json:"remaining-uses,omitempty"`         // Remaining number of uses (if applicable)
+	Email          string     `json:"email,omitempty"`                  // Email the invite was sent to (if applicable)
+	NotifyExpiry   bool       `json:"notify-expiry,omitempty"`          // Whether to notify the requesting user of expiry or not
+	NotifyCreation bool       `json:"notify-creation,omitempty"`        // Whether to notify the requesting user of account creation or not
+}
+
+type getInvitesDTO struct {
+	Profiles []string    `json:"profiles"` // List of profiles (name only)
+	Invites  []inviteDTO `json:"invites"`  // List of invites
+}
+
+// @Summary Get invites.
+// @Produce json
+// @Success 200 {object} getInvitesDTO
+// @Router /invites [get]
 func (app *appContext) GetInvites(gc *gin.Context) {
 	app.debug.Println("Invites requested")
 	current_time := time.Now()
 	app.storage.loadInvites()
 	app.checkInvites()
-	var invites []map[string]interface{}
+	var invites []inviteDTO
 	for code, inv := range app.storage.invites {
 		_, _, days, hours, minutes, _ := timeDiff(inv.ValidTill, current_time)
-		invite := map[string]interface{}{
-			"code":    code,
-			"days":    days,
-			"hours":   hours,
-			"minutes": minutes,
-			"created": app.formatDatetime(inv.Created),
-			"profile": inv.Profile,
+		invite := inviteDTO{
+			Code:    code,
+			Days:    days,
+			Hours:   hours,
+			Minutes: minutes,
+			Created: app.formatDatetime(inv.Created),
+			Profile: inv.Profile,
+			NoLimit: inv.NoLimit,
 		}
 		if len(inv.UsedBy) != 0 {
-			invite["used-by"] = inv.UsedBy
+			invite.UsedBy = inv.UsedBy
 		}
-		if inv.NoLimit {
-			invite["no-limit"] = true
-		}
-		invite["remaining-uses"] = 1
+		invite.RemainingUses = 1
 		if inv.RemainingUses != 0 {
-			invite["remaining-uses"] = inv.RemainingUses
+			invite.RemainingUses = inv.RemainingUses
 		}
 		if inv.Email != "" {
-			invite["email"] = inv.Email
+			invite.Email = inv.Email
 		}
 		if len(inv.Notify) != 0 {
 			var address string
@@ -599,10 +723,11 @@ func (app *appContext) GetInvites(gc *gin.Context) {
 				address = app.config.Section("ui").Key("email").String()
 			}
 			if _, ok := inv.Notify[address]; ok {
-				for _, notifyType := range []string{"notify-expiry", "notify-creation"} {
-					if _, ok = inv.Notify[address][notifyType]; ok {
-						invite[notifyType] = inv.Notify[address][notifyType]
-					}
+				if _, ok = inv.Notify[address]["notify-expiry"]; ok {
+					invite.NotifyExpiry = inv.Notify[address]["notify-expiry"]
+				}
+				if _, ok = inv.Notify[address]["notify-creation"]; ok {
+					invite.NotifyCreation = inv.Notify[address]["notify-creation"]
 				}
 			}
 		}
@@ -621,13 +746,28 @@ func (app *appContext) GetInvites(gc *gin.Context) {
 			}
 		}
 	}
-	resp := map[string]interface{}{
-		"profiles": profiles,
-		"invites":  invites,
+	resp := getInvitesDTO{
+		Profiles: profiles,
+		Invites:  invites,
 	}
 	gc.JSON(200, resp)
 }
 
+// fake DTO, if i actually used this the code would be a lot longer
+type setNotifyValues map[string]struct {
+	NotifyExpiry   bool `json:"notify-expiry,omitempty"`   // Whether to notify the requesting user of expiry or not
+	NotifyCreation bool `json:"notify-creation,omitempty"` // Whether to notify the requesting user of account creation or not
+}
+
+type setNotifyDTO map[string]setNotifyValues
+
+// @Summary Set notification preferences for an invite.
+// @Produce json
+// @Param setNotifyDTO body setNotifyDTO true "Map of invite codes to notification settings objects"
+// @Success 200
+// @Failure 400 {object} stringResponse
+// @Failure 500 {object} stringResponse
+// @Router /invites/notify [post]
 func (app *appContext) SetNotify(gc *gin.Context) {
 	var req map[string]map[string]bool
 	gc.BindJSON(&req)
@@ -639,8 +779,7 @@ func (app *appContext) SetNotify(gc *gin.Context) {
 		invite, ok := app.storage.invites[code]
 		if !ok {
 			app.err.Printf("%s Notification setting change failed: Invalid code", code)
-			gc.JSON(400, map[string]string{"error": "Invalid invite code"})
-			gc.Abort()
+			respond(400, "Invalid invite code", gc)
 			return
 		}
 		var address string
@@ -650,8 +789,7 @@ func (app *appContext) SetNotify(gc *gin.Context) {
 			if !ok {
 				app.err.Printf("%s: Couldn't find email address. Make sure it's set", code)
 				app.debug.Printf("%s: User ID \"%s\"", code, gc.GetString("jfId"))
-				gc.JSON(500, map[string]string{"error": "Missing user email"})
-				gc.Abort()
+				respond(500, "Missing user email", gc)
 				return
 			}
 		} else {
@@ -684,12 +822,18 @@ func (app *appContext) SetNotify(gc *gin.Context) {
 	}
 }
 
-type deleteReq struct {
-	Code string `json:"code"`
+type deleteInviteDTO struct {
+	Code string `json:"code" example:"skjadajd43234s"` // Code of invite to delete
 }
 
+// @Summary Delete an invite.
+// @Produce json
+// @Param deleteInviteDTO body deleteInviteDTO true "Delete invite object"
+// @Success 200 {object} boolResponse
+// @Failure 400 {object} stringResponse
+// @Router /invites [delete]
 func (app *appContext) DeleteInvite(gc *gin.Context) {
-	var req deleteReq
+	var req deleteInviteDTO
 	gc.BindJSON(&req)
 	app.debug.Printf("%s: Deletion requested", req.Code)
 	var ok bool
@@ -698,11 +842,11 @@ func (app *appContext) DeleteInvite(gc *gin.Context) {
 		delete(app.storage.invites, req.Code)
 		app.storage.storeInvites()
 		app.info.Printf("%s: Invite deleted", req.Code)
-		gc.JSON(200, map[string]bool{"success": true})
+		respondBool(200, true, gc)
 		return
 	}
 	app.err.Printf("%s: Deletion failed: Invalid code", req.Code)
-	respond(401, "Code doesn't exist", gc)
+	respond(400, "Code doesn't exist", gc)
 }
 
 type dateToParse struct {
@@ -718,21 +862,25 @@ func parseDt(date string) time.Time {
 }
 
 type respUser struct {
-	ID    string `json:"id"`
-	Name  string `json:"name"`
-	Email string `json:"email,omitempty"`
-	// this magically parses a string to time.time
-	LastActive string `json:"last_active"`
-	Admin      bool   `json:"admin"`
+	ID         string `json:"id" example:"fdgsdfg45534fa"`              // userID of user
+	Name       string `json:"name" example:"jeff"`                      // Username of user
+	Email      string `json:"email,omitempty" example:"jeff@jellyf.in"` // Email address of user (if available)
+	LastActive string `json:"last_active"`                              // Time of last activity on Jellyfin
+	Admin      bool   `json:"admin" example:"false"`                    // Whether or not the user is Administrator
 }
 
-type userResp struct {
+type getUsersDTO struct {
 	UserList []respUser `json:"users"`
 }
 
+// @Summary Get a list of Jellyfin users.
+// @Produce json
+// @Success 200 {object} getUsersDTO
+// @Failure 500 {object} stringResponse
+// @Router /users [get]
 func (app *appContext) GetUsers(gc *gin.Context) {
 	app.debug.Println("Users requested")
-	var resp userResp
+	var resp getUsersDTO
 	resp.UserList = []respUser{}
 	users, status, err := app.jf.getUsers(false)
 	if !(status == 200 || status == 204) || err != nil {
@@ -761,10 +909,19 @@ func (app *appContext) GetUsers(gc *gin.Context) {
 }
 
 type ombiUser struct {
-	Name string `json:"name,omitempty"`
-	ID   string `json:"id"`
+	Name string `json:"name,omitempty" example:"jeff"` // Name of Ombi user
+	ID   string `json:"id" example:"djgkjdg7dkjfsj8"`  // userID of Ombi user
 }
 
+type ombiUsersDTO struct {
+	Users []ombiUser `json:"users"`
+}
+
+// @Summary Get a list of Ombi users.
+// @Produce json
+// @Success 200 {object} ombiUsersDTO
+// @Failure 500 {object} stringResponse
+// @Router /ombi/users [get]
 func (app *appContext) OmbiUsers(gc *gin.Context) {
 	app.debug.Println("Ombi users requested")
 	users, status, err := app.ombi.getUsers()
@@ -781,11 +938,40 @@ func (app *appContext) OmbiUsers(gc *gin.Context) {
 			ID:   data["id"].(string),
 		}
 	}
-	gc.JSON(200, map[string][]ombiUser{"users": userlist})
+	gc.JSON(200, ombiUsersDTO{Users: userlist})
 }
 
+// @Summary Set new user defaults for Ombi accounts.
+// @Produce json
+// @Param ombiUser body ombiUser true "User to source settings from"
+// @Success 200 {object} boolResponse
+// @Failure 500 {object} stringResponse
+// @Router /ombi/defaults [post]
+func (app *appContext) SetOmbiDefaults(gc *gin.Context) {
+	var req ombiUser
+	gc.BindJSON(&req)
+	template, code, err := app.ombi.templateByID(req.ID)
+	if err != nil || code != 200 || len(template) == 0 {
+		app.err.Printf("Couldn't get user from Ombi: %d %s", code, err)
+		respond(500, "Couldn't get user", gc)
+		return
+	}
+	app.storage.ombi_template = template
+	fmt.Println(app.storage.ombi_path)
+	app.storage.storeOmbiTemplate()
+	respondBool(200, true, gc)
+}
+
+type modifyEmailsDTO map[string]string
+
+// @Summary Modify user's email addresses.
+// @Produce json
+// @Param modifyEmailsDTO body modifyEmailsDTO true "Map of userIDs to email addresses"
+// @Success 200 {object} boolResponse
+// @Failure 500 {object} stringResponse
+// @Router /users/emails [post]
 func (app *appContext) ModifyEmails(gc *gin.Context) {
-	var req map[string]string
+	var req modifyEmailsDTO
 	gc.BindJSON(&req)
 	fmt.Println(req)
 	app.debug.Println("Email modification requested")
@@ -803,30 +989,7 @@ func (app *appContext) ModifyEmails(gc *gin.Context) {
 	}
 	app.storage.storeEmails()
 	app.info.Println("Email list modified")
-	gc.JSON(200, map[string]bool{"success": true})
-}
-
-func (app *appContext) SetOmbiDefaults(gc *gin.Context) {
-	var req ombiUser
-	gc.BindJSON(&req)
-	template, code, err := app.ombi.templateByID(req.ID)
-	if err != nil || code != 200 || len(template) == 0 {
-		app.err.Printf("Couldn't get user from Ombi: %d %s", code, err)
-		respond(500, "Couldn't get user", gc)
-		return
-	}
-	app.storage.ombi_template = template
-	fmt.Println(app.storage.ombi_path)
-	app.storage.storeOmbiTemplate()
-	gc.JSON(200, map[string]bool{"success": true})
-}
-
-type defaultsReq struct {
-	From       string   `json:"from"`
-	Profile    string   `json:"profile"`
-	ApplyTo    []string `json:"apply_to"`
-	ID         string   `json:"id"`
-	Homescreen bool     `json:"homescreen"`
+	respondBool(200, true, gc)
 }
 
 /*func (app *appContext) SetDefaults(gc *gin.Context) {
@@ -865,9 +1028,25 @@ type defaultsReq struct {
 	gc.JSON(200, map[string]bool{"success": true})
 }*/
 
+type userSettingsDTO struct {
+	From       string   `json:"from"`       // Whether to apply from "user" or "profile"
+	Profile    string   `json:"profile"`    // Name of profile (if from = "profile")
+	ApplyTo    []string `json:"apply_to"`   // Users to apply settings to
+	ID         string   `json:"id"`         // ID of user (if from = "user")
+	Homescreen bool     `json:"homescreen"` // Whether to apply homescreen layout or not
+}
+
+type errorListDTO map[string]map[string]string
+
+// @Summary Apply settings to a list of users, either from a profile or from another user.
+// @Produce json
+// @Param userSettingsDTO body userSettingsDTO true "Parameters for applying settings"
+// @Success 200 {object} errorListDTO
+// @Failure 500 {object} errorListDTO "Lists of errors that occured while applying settings"
+// @Router /users/settings [post]
 func (app *appContext) ApplySettings(gc *gin.Context) {
 	app.info.Println("User settings change requested")
-	var req defaultsReq
+	var req userSettingsDTO
 	gc.BindJSON(&req)
 	applyingFrom := "profile"
 	var policy, configuration, displayprefs map[string]interface{}
@@ -911,7 +1090,7 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 		}
 	}
 	app.info.Printf("Applying settings to %d user(s) from %s", len(req.ApplyTo), applyingFrom)
-	errors := map[string]map[string]string{
+	errors := errorListDTO{
 		"policy":     map[string]string{},
 		"homescreen": map[string]string{},
 	}
@@ -943,6 +1122,10 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 	gc.JSON(code, errors)
 }
 
+// @Summary Get jfa-go configuration.
+// @Produce json
+// @Success 200 {object} configDTO "Uses the same format as config-base.json"
+// @Router /config [get]
 func (app *appContext) GetConfig(gc *gin.Context) {
 	app.info.Println("Config requested")
 	resp := map[string]interface{}{}
@@ -976,9 +1159,17 @@ func (app *appContext) GetConfig(gc *gin.Context) {
 	gc.JSON(200, resp)
 }
 
+// @Summary Modify app config.
+// @Produce json
+// @Param appConfig body configDTO true "Config split into sections as in config.ini, all values as strings."
+// @Success 200 {object} boolResponse
+// @Router /config [post]
+
+type configDTO map[string]interface{}
+
 func (app *appContext) ModifyConfig(gc *gin.Context) {
 	app.info.Println("Config modification requested")
-	var req map[string]interface{}
+	var req configDTO
 	gc.BindJSON(&req)
 	tempConfig, _ := ini.Load(app.config_path)
 	for section, settings := range req {
@@ -1022,6 +1213,11 @@ func (app *appContext) ModifyConfig(gc *gin.Context) {
 	}
 }
 
+// @Summary Logout by deleting refresh token from cookies.
+// @Produce json
+// @Success 200 {object} boolResponse
+// @Failure 500 {object} stringResponse
+// @Router /logout [post]
 func (app *appContext) Logout(gc *gin.Context) {
 	cookie, err := gc.Cookie("refresh")
 	if err != nil {
@@ -1031,7 +1227,7 @@ func (app *appContext) Logout(gc *gin.Context) {
 	}
 	app.invalidTokens = append(app.invalidTokens, cookie)
 	gc.SetCookie("refresh", "invalid", -1, "/", gc.Request.URL.Hostname(), true, true)
-	gc.JSON(200, map[string]bool{"success": true})
+	respondBool(200, true, gc)
 }
 
 // func Restart() error {

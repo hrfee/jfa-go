@@ -43,17 +43,6 @@ func CreateToken(userId, jfId string) (string, string, error) {
 	return token, refresh, nil
 }
 
-func respond(code int, message string, gc *gin.Context) {
-	resp := map[string]string{}
-	if code == 200 || code == 204 {
-		resp["response"] = message
-	} else {
-		resp["error"] = message
-	}
-	gc.JSON(code, resp)
-	gc.Abort()
-}
-
 // Check header for token
 func (app *appContext) authenticate(gc *gin.Context) {
 	header := strings.SplitN(gc.Request.Header.Get("Authorization"), " ", 2)

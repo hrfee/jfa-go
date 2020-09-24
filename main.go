@@ -23,7 +23,10 @@ import (
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
+	_ "github.com/hrfee/jfa-go/docs"
 	"github.com/lithammer/shortuuid/v3"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"gopkg.in/ini.v1"
 )
 
@@ -108,6 +111,7 @@ var (
 	PORT               *int
 	DEBUG              *bool
 	TEST               bool
+	SWAGGER            *bool
 )
 
 func test(app *appContext) {
@@ -165,6 +169,7 @@ func start(asDaemon, firstCall bool) {
 		HOST = flag.String("host", "", "alternate address to host web ui on.")
 		PORT = flag.Int("port", 0, "alternate port to host web ui on.")
 		DEBUG = flag.Bool("debug", false, "Enables debug logging and exposes pprof.")
+		SWAGGER = flag.Bool("swagger", false, "Enable swagger at /swagger/index.html")
 
 		flag.Parse()
 	}
@@ -453,6 +458,10 @@ func start(asDaemon, firstCall bool) {
 		router.POST("/newUser", app.NewUser)
 		router.Use(static.Serve("/invite/", static.LocalFile(filepath.Join(app.local_path, "static"), false)))
 		router.GET("/invite/:invCode", app.InviteProxy)
+		if *SWAGGER {
+			app.info.Println("WARNING: Swagger should not be used on a public instance.")
+			router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+		}
 		api := router.Group("/", app.webAuth())
 		router.POST("/logout", app.Logout)
 		api.DELETE("/users", app.DeleteUser)
@@ -531,6 +540,15 @@ func flagPassed(name string) (found bool) {
 	}
 	return
 }
+
+// @title jfa-go internal API
+// @version 0.2.0
+// @description API for the jfa-go frontend
+// @contact.name Harvey Tindall
+// @contact.email hrfee@protonmail.ch
+// @license.name MIT
+// @license.url https://raw.githubusercontent.com/hrfee/jfa-go/main/LICENSE
+// @BasePath /
 
 func main() {
 	fmt.Printf("jfa-go version: %s (%s)\n", VERSION, COMMIT)

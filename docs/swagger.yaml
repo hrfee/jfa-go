@@ -1,0 +1,678 @@
+basePath: /
+definitions:
+  main.PasswordValidation:
+    properties:
+      characters:
+        description: Number of characters
+        type: boolean
+      lowercase characters:
+        description: Number of lowercase characters
+        type: boolean
+      numbers:
+        description: Number of numbers
+        type: boolean
+      special characters:
+        description: Number of special characters
+        type: boolean
+      uppercase characters:
+        description: Number of uppercase characters
+        type: boolean
+    type: object
+  main.boolResponse:
+    properties:
+      error:
+        example: true
+        type: boolean
+      success:
+        example: false
+        type: boolean
+    type: object
+  main.configDTO:
+    additionalProperties: true
+    type: object
+  main.deleteInviteDTO:
+    properties:
+      code:
+        description: Code of invite to delete
+        example: skjadajd43234s
+        type: string
+    type: object
+  main.deleteUserDTO:
+    properties:
+      notify:
+        description: Whether to notify users of deletion
+        type: boolean
+      reason:
+        description: Account deletion reason (for notification)
+        type: string
+      users:
+        description: List of usernames to delete
+        items:
+          type: string
+        type: array
+    required:
+    - users
+    type: object
+  main.errorListDTO:
+    additionalProperties:
+      additionalProperties:
+        type: string
+      type: object
+    type: object
+  main.generateInviteDTO:
+    properties:
+      days:
+        description: Number of days
+        example: 1
+        type: integer
+      email:
+        description: Send invite to this address
+        example: jeff@jellyf.in
+        type: string
+      hours:
+        description: Number of hours
+        example: 2
+        type: integer
+      minutes:
+        description: Number of minutes
+        example: 3
+        type: integer
+      multiple-uses:
+        description: Allow multiple uses
+        example: true
+        type: boolean
+      no-limit:
+        description: No invite use limit
+        example: false
+        type: boolean
+      profile:
+        description: Name of profile to apply on this invite
+        example: DefaultProfile
+        type: string
+      remaining-uses:
+        description: Remaining invite uses
+        example: 5
+        type: integer
+    type: object
+  main.getInvitesDTO:
+    properties:
+      invites:
+        description: List of invites
+        items:
+          $ref: '#/definitions/main.inviteDTO'
+        type: array
+      profiles:
+        description: List of profiles (name only)
+        items:
+          type: string
+        type: array
+    type: object
+  main.getProfilesDTO:
+    properties:
+      default_profile:
+        type: string
+      profiles:
+        additionalProperties:
+          $ref: '#/definitions/main.profileDTO'
+        type: object
+    type: object
+  main.getUsersDTO:
+    properties:
+      users:
+        items:
+          $ref: '#/definitions/main.respUser'
+        type: array
+    type: object
+  main.inviteDTO:
+    properties:
+      code:
+        description: Invite code
+        example: sajdlj23423j23
+        type: string
+      created:
+        description: Date of creation
+        example: 01/01/20 12:00
+        type: string
+      days:
+        description: Number of days till expiry
+        example: 1
+        type: integer
+      email:
+        description: Email the invite was sent to (if applicable)
+        type: string
+      hours:
+        description: Number of hours till expiry
+        example: 2
+        type: integer
+      minutes:
+        description: Number of minutes till expiry
+        example: 3
+        type: integer
+      no-limit:
+        description: If true, invite can be used any number of times
+        type: boolean
+      notify-creation:
+        description: Whether to notify the requesting user of account creation or not
+        type: boolean
+      notify-expiry:
+        description: Whether to notify the requesting user of expiry or not
+        type: boolean
+      profile:
+        description: Profile used on this invite
+        example: DefaultProfile
+        type: string
+      remaining-uses:
+        description: Remaining number of uses (if applicable)
+        type: integer
+      used-by:
+        description: Users who have used this invite
+        items:
+          items:
+            type: string
+          type: array
+        type: array
+    type: object
+  main.inviteProfileDTO:
+    properties:
+      invite:
+        description: Invite to apply to
+        example: slakdaslkdl2342
+        type: string
+      profile:
+        description: Profile to use
+        example: DefaultProfile
+        type: string
+    type: object
+  main.modifyEmailsDTO:
+    additionalProperties:
+      type: string
+    type: object
+  main.newProfileDTO:
+    properties:
+      homescreen:
+        description: Whether to store homescreen layout or not
+        example: true
+        type: boolean
+      id:
+        description: ID of user to source settings from
+        example: kasdjlaskjd342342
+        type: string
+      name:
+        description: Name of the profile
+        example: DefaultProfile
+        type: string
+    required:
+    - id
+    - name
+    type: object
+  main.newUserDTO:
+    properties:
+      code:
+        description: Invite code (required on /newUser)
+        example: abc0933jncjkcjj
+        type: string
+      email:
+        description: User's email address
+        example: jeff@jellyf.in
+        type: string
+      password:
+        description: User's password
+        example: guest
+        type: string
+      username:
+        description: User's username
+        example: jeff
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  main.ombiUser:
+    properties:
+      id:
+        description: userID of Ombi user
+        example: djgkjdg7dkjfsj8
+        type: string
+      name:
+        description: Name of Ombi user
+        example: jeff
+        type: string
+    type: object
+  main.ombiUsersDTO:
+    properties:
+      users:
+        items:
+          $ref: '#/definitions/main.ombiUser'
+        type: array
+    type: object
+  main.profileChangeDTO:
+    properties:
+      name:
+        description: Name of the profile
+        example: DefaultProfile
+        type: string
+    required:
+    - name
+    type: object
+  main.profileDTO:
+    properties:
+      admin:
+        description: Whether profile has admin rights or not
+        example: false
+        type: boolean
+      fromUser:
+        description: The user the profile is based on
+        example: jeff
+        type: string
+      libraries:
+        description: Number of libraries profile has access to
+        example: all
+        type: string
+    type: object
+  main.respUser:
+    properties:
+      admin:
+        description: Whether or not the user is Administrator
+        example: false
+        type: boolean
+      email:
+        description: Email address of user (if available)
+        example: jeff@jellyf.in
+        type: string
+      id:
+        description: userID of user
+        example: fdgsdfg45534fa
+        type: string
+      last_active:
+        description: Time of last activity on Jellyfin
+        type: string
+      name:
+        description: Username of user
+        example: jeff
+        type: string
+    type: object
+  main.setNotifyDTO:
+    additionalProperties:
+      $ref: '#/definitions/main.setNotifyValues'
+    type: object
+  main.setNotifyValues:
+    additionalProperties:
+      properties:
+        notify-creation:
+          description: Whether to notify the requesting user of account creation or not
+          type: boolean
+        notify-expiry:
+          description: Whether to notify the requesting user of expiry or not
+          type: boolean
+      type: object
+    type: object
+  main.stringResponse:
+    properties:
+      error:
+        example: errorDescription
+        type: string
+      response:
+        example: message
+        type: string
+    type: object
+  main.userSettingsDTO:
+    properties:
+      apply_to:
+        description: Users to apply settings to
+        items:
+          type: string
+        type: array
+      from:
+        description: Whether to apply from "user" or "profile"
+        type: string
+      homescreen:
+        description: Whether to apply homescreen layout or not
+        type: boolean
+      id:
+        description: ID of user (if from = "user")
+        type: string
+      profile:
+        description: Name of profile (if from = "profile")
+        type: string
+    type: object
+info:
+  contact:
+    email: hrfee@protonmail.ch
+    name: Harvey Tindall
+  description: API for the jfa-go frontend
+  license:
+    name: MIT
+    url: https://raw.githubusercontent.com/hrfee/jfa-go/main/LICENSE
+  title: jfa-go internal API
+  version: 0.2.0
+paths:
+  /config:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Uses the same format as config-base.json
+          schema:
+            $ref: '#/definitions/main.configDTO'
+      summary: Get jfa-go configuration.
+  /invites:
+    delete:
+      parameters:
+      - description: Delete invite object
+        in: body
+        name: deleteInviteDTO
+        required: true
+        schema:
+          $ref: '#/definitions/main.deleteInviteDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.boolResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/main.stringResponse'
+      summary: Delete an invite.
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.getInvitesDTO'
+      summary: Get invites.
+    post:
+      parameters:
+      - description: New invite request object
+        in: body
+        name: generateInviteDTO
+        required: true
+        schema:
+          $ref: '#/definitions/main.generateInviteDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.boolResponse'
+      summary: Create a new invite.
+  /invites/notify:
+    post:
+      parameters:
+      - description: Map of invite codes to notification settings objects
+        in: body
+        name: setNotifyDTO
+        required: true
+        schema:
+          $ref: '#/definitions/main.setNotifyDTO'
+      produces:
+      - application/json
+      responses:
+        "200": {}
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/main.stringResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/main.stringResponse'
+      summary: Set notification preferences for an invite.
+  /invites/profile:
+    post:
+      parameters:
+      - description: Invite profile object
+        in: body
+        name: inviteProfileDTO
+        required: true
+        schema:
+          $ref: '#/definitions/main.inviteProfileDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.boolResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/main.stringResponse'
+      summary: Set profile for an invite
+  /logout:
+    post:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.boolResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/main.stringResponse'
+      summary: Logout by deleting refresh token from cookies.
+  /newUser:
+    post:
+      parameters:
+      - description: New user request object
+        in: body
+        name: newUserDTO
+        required: true
+        schema:
+          $ref: '#/definitions/main.newUserDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.PasswordValidation'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/main.PasswordValidation'
+      summary: Creates a new Jellyfin user via invite code
+  /ombi/defaults:
+    post:
+      parameters:
+      - description: User to source settings from
+        in: body
+        name: ombiUser
+        required: true
+        schema:
+          $ref: '#/definitions/main.ombiUser'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.boolResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/main.stringResponse'
+      summary: Set new user defaults for Ombi accounts.
+  /ombi/users:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.ombiUsersDTO'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/main.stringResponse'
+      summary: Get a list of Ombi users.
+  /profiles:
+    delete:
+      parameters:
+      - description: Delete profile object
+        in: body
+        name: profileChangeDTO
+        required: true
+        schema:
+          $ref: '#/definitions/main.profileChangeDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.boolResponse'
+      summary: Delete an existing profile
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.getProfilesDTO'
+      summary: Get a list of profiles
+    post:
+      parameters:
+      - description: New profile object
+        in: body
+        name: newProfileDTO
+        required: true
+        schema:
+          $ref: '#/definitions/main.newProfileDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.boolResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/main.stringResponse'
+      summary: Create a profile based on a Jellyfin user's settings.
+  /profiles/default:
+    post:
+      parameters:
+      - description: Default profile object
+        in: body
+        name: profileChangeDTO
+        required: true
+        schema:
+          $ref: '#/definitions/main.profileChangeDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.boolResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/main.stringResponse'
+      summary: Set the default profile to use.
+  /users:
+    delete:
+      parameters:
+      - description: User deletion request object
+        in: body
+        name: deleteUserDTO
+        required: true
+        schema:
+          $ref: '#/definitions/main.deleteUserDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.boolResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/main.stringResponse'
+        "500":
+          description: List of errors
+          schema:
+            $ref: '#/definitions/main.errorListDTO'
+      summary: Delete a list of users, optionally notifying them why.
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.getUsersDTO'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/main.stringResponse'
+      summary: Get a list of Jellyfin users.
+    post:
+      parameters:
+      - description: New user request object
+        in: body
+        name: newUserDTO
+        required: true
+        schema:
+          $ref: '#/definitions/main.newUserDTO'
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Creates a new Jellyfin user without an invite.
+  /users/emails:
+    post:
+      parameters:
+      - description: Map of userIDs to email addresses
+        in: body
+        name: modifyEmailsDTO
+        required: true
+        schema:
+          $ref: '#/definitions/main.modifyEmailsDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.boolResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/main.stringResponse'
+      summary: Modify user's email addresses.
+  /users/settings:
+    post:
+      parameters:
+      - description: Parameters for applying settings
+        in: body
+        name: userSettingsDTO
+        required: true
+        schema:
+          $ref: '#/definitions/main.userSettingsDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.errorListDTO'
+        "500":
+          description: Lists of errors that occured while applying settings
+          schema:
+            $ref: '#/definitions/main.errorListDTO'
+      summary: Apply settings to a list of users, either from a profile or from another user.
+swagger: "2.0"

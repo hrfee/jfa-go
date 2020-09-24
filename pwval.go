@@ -19,9 +19,18 @@ func (vd *Validator) init(criteria ValidatorConf) {
 	vd.criteria = criteria
 }
 
+// This isn't used, its for swagger
+type PasswordValidation struct {
+	Characters bool `json:"characters,omitempty"`           // Number of characters
+	Lowercase  bool `json:"lowercase characters,omitempty"` // Number of lowercase characters
+	Uppercase  bool `json:"uppercase characters,omitempty"` // Number of uppercase characters
+	Numbers    bool `json:"numbers,omitempty"`              // Number of numbers
+	Specials   bool `json:"special characters,omitempty"`   // Number of special characters
+}
+
 func (vd *Validator) validate(password string) map[string]bool {
 	count := map[string]int{}
-	for key, _ := range vd.criteria {
+	for key := range vd.criteria {
 		count[key] = 0
 	}
 	for _, c := range password {
