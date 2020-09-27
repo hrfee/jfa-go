@@ -24,16 +24,6 @@ func respond(code int, message string, gc *gin.Context) {
 	gc.Abort()
 }
 
-type stringResponse struct {
-	Response string `json:"response" example:"message"`
-	Error    string `json:"error" example:"errorDescription"`
-}
-
-type boolResponse struct {
-	Success bool `json:"success" example:"false"`
-	Error   bool `json:"error" example:"true"`
-}
-
 func respondBool(code int, val bool, gc *gin.Context) {
 	resp := boolResponse{}
 	if !val {
@@ -205,13 +195,6 @@ func (app *appContext) checkInvite(code string, used bool, username string) bool
 }
 
 // Routes from now on!
-
-type newUserDTO struct {
-	Username string `json:"username" example:"jeff" binding:"required"`  // User's username
-	Password string `json:"password" example:"guest" binding:"required"` // User's password
-	Email    string `json:"email" example:"jeff@jellyf.in"`              // User's email address
-	Code     string `json:"code" example:"abc0933jncjkcjj"`              // Invite code (required on /newUser)
-}
 
 // @Summary Creates a new Jellyfin user without an invite.
 // @Produce json
@@ -389,12 +372,6 @@ func (app *appContext) NewUser(gc *gin.Context) {
 	gc.JSON(code, validation)
 }
 
-type deleteUserDTO struct {
-	Users  []string `json:"users" binding:"required"` // List of usernames to delete
-	Notify bool     `json:"notify"`                   // Whether to notify users of deletion
-	Reason string   `json:"reason"`                   // Account deletion reason (for notification)
-}
-
 // @Summary Delete a list of users, optionally notifying them why.
 // @Produce json
 // @Param deleteUserDTO body deleteUserDTO true "User deletion request object"
@@ -441,17 +418,6 @@ func (app *appContext) DeleteUser(gc *gin.Context) {
 		return
 	}
 	respondBool(200, true, gc)
-}
-
-type generateInviteDTO struct {
-	Days          int    `json:"days" example:"1"`                 // Number of days
-	Hours         int    `json:"hours" example:"2"`                // Number of hours
-	Minutes       int    `json:"minutes" example:"3"`              // Number of minutes
-	Email         string `json:"email" example:"jeff@jellyf.in"`   // Send invite to this address
-	MultipleUses  bool   `json:"multiple-uses" example:"true"`     // Allow multiple uses
-	NoLimit       bool   `json:"no-limit" example:"false"`         // No invite use limit
-	RemainingUses int    `json:"remaining-uses" example:"5"`       // Remaining invite uses
-	Profile       string `json:"profile" example:"DefaultProfile"` // Name of profile to apply on this invite
 }
 
 // @Summary Create a new invite.
@@ -516,11 +482,6 @@ func (app *appContext) GenerateInvite(gc *gin.Context) {
 	respondBool(200, true, gc)
 }
 
-type inviteProfileDTO struct {
-	Invite  string `json:"invite" example:"slakdaslkdl2342"` // Invite to apply to
-	Profile string `json:"profile" example:"DefaultProfile"` // Profile to use
-}
-
 // @Summary Set profile for an invite
 // @Produce json
 // @Param inviteProfileDTO body inviteProfileDTO true "Invite profile object"
@@ -546,17 +507,6 @@ func (app *appContext) SetProfile(gc *gin.Context) {
 	respondBool(200, true, gc)
 }
 
-type profileDTO struct {
-	Admin         bool   `json:"admin" example:"false"`   // Whether profile has admin rights or not
-	LibraryAccess string `json:"libraries" example:"all"` // Number of libraries profile has access to
-	FromUser      string `json:"fromUser" example:"jeff"` // The user the profile is based on
-}
-
-type getProfilesDTO struct {
-	Profiles       map[string]profileDTO `json:"profiles"`
-	DefaultProfile string                `json:"default_profile"`
-}
-
 // @Summary Get a list of profiles
 // @Produce json
 // @Success 200 {object} getProfilesDTO
@@ -578,10 +528,6 @@ func (app *appContext) GetProfiles(gc *gin.Context) {
 		}
 	}
 	gc.JSON(200, out)
-}
-
-type profileChangeDTO struct {
-	Name string `json:"name" example:"DefaultProfile" binding:"required"` // Name of the profile
 }
 
 // @Summary Set the default profile to use.
@@ -611,12 +557,6 @@ func (app *appContext) SetDefaultProfile(gc *gin.Context) {
 	}
 	app.storage.defaultProfile = req.Name
 	respondBool(200, true, gc)
-}
-
-type newProfileDTO struct {
-	Name       string `json:"name" example:"DefaultProfile" binding:"required"`  // Name of the profile
-	ID         string `json:"id" example:"kasdjlaskjd342342" binding:"required"` // ID of user to source settings from
-	Homescreen bool   `json:"homescreen" example:"true"`                         // Whether to store homescreen layout or not
 }
 
 // @Summary Create a profile based on a Jellyfin user's settings.
@@ -676,26 +616,6 @@ func (app *appContext) DeleteProfile(gc *gin.Context) {
 	}
 	app.storage.storeProfiles()
 	respondBool(200, true, gc)
-}
-
-type inviteDTO struct {
-	Code           string     `json:"code" example:"sajdlj23423j23"`    // Invite code
-	Days           int        `json:"days" example:"1"`                 // Number of days till expiry
-	Hours          int        `json:"hours" example:"2"`                // Number of hours till expiry
-	Minutes        int        `json:"minutes" example:"3"`              // Number of minutes till expiry
-	Created        string     `json:"created" example:"01/01/20 12:00"` // Date of creation
-	Profile        string     `json:"profile" example:"DefaultProfile"` // Profile used on this invite
-	UsedBy         [][]string `json:"used-by,omitempty"`                // Users who have used this invite
-	NoLimit        bool       `json:"no-limit,omitempty"`               // If true, invite can be used any number of times
-	RemainingUses  int        `json:"remaining-uses,omitempty"`         // Remaining number of uses (if applicable)
-	Email          string     `json:"email,omitempty"`                  // Email the invite was sent to (if applicable)
-	NotifyExpiry   bool       `json:"notify-expiry,omitempty"`          // Whether to notify the requesting user of expiry or not
-	NotifyCreation bool       `json:"notify-creation,omitempty"`        // Whether to notify the requesting user of account creation or not
-}
-
-type getInvitesDTO struct {
-	Profiles []string    `json:"profiles"` // List of profiles (name only)
-	Invites  []inviteDTO `json:"invites"`  // List of invites
 }
 
 // @Summary Get invites.
@@ -772,14 +692,6 @@ func (app *appContext) GetInvites(gc *gin.Context) {
 	gc.JSON(200, resp)
 }
 
-// fake DTO, if i actually used this the code would be a lot longer
-type setNotifyValues map[string]struct {
-	NotifyExpiry   bool `json:"notify-expiry,omitempty"`   // Whether to notify the requesting user of expiry or not
-	NotifyCreation bool `json:"notify-creation,omitempty"` // Whether to notify the requesting user of account creation or not
-}
-
-type setNotifyDTO map[string]setNotifyValues
-
 // @Summary Set notification preferences for an invite.
 // @Produce json
 // @Param setNotifyDTO body setNotifyDTO true "Map of invite codes to notification settings objects"
@@ -843,10 +755,6 @@ func (app *appContext) SetNotify(gc *gin.Context) {
 	}
 }
 
-type deleteInviteDTO struct {
-	Code string `json:"code" example:"skjadajd43234s"` // Code of invite to delete
-}
-
 // @Summary Delete an invite.
 // @Produce json
 // @Param deleteInviteDTO body deleteInviteDTO true "Delete invite object"
@@ -884,18 +792,6 @@ func parseDt(date string) time.Time {
 	return parsed.Parsed
 }
 
-type respUser struct {
-	ID         string `json:"id" example:"fdgsdfg45534fa"`              // userID of user
-	Name       string `json:"name" example:"jeff"`                      // Username of user
-	Email      string `json:"email,omitempty" example:"jeff@jellyf.in"` // Email address of user (if available)
-	LastActive string `json:"last_active"`                              // Time of last activity on Jellyfin
-	Admin      bool   `json:"admin" example:"false"`                    // Whether or not the user is Administrator
-}
-
-type getUsersDTO struct {
-	UserList []respUser `json:"users"`
-}
-
 // @Summary Get a list of Jellyfin users.
 // @Produce json
 // @Success 200 {object} getUsersDTO
@@ -931,15 +827,6 @@ func (app *appContext) GetUsers(gc *gin.Context) {
 		resp.UserList = append(resp.UserList, user)
 	}
 	gc.JSON(200, resp)
-}
-
-type ombiUser struct {
-	Name string `json:"name,omitempty" example:"jeff"` // Name of Ombi user
-	ID   string `json:"id" example:"djgkjdg7dkjfsj8"`  // userID of Ombi user
-}
-
-type ombiUsersDTO struct {
-	Users []ombiUser `json:"users"`
 }
 
 // @Summary Get a list of Ombi users.
@@ -990,8 +877,6 @@ func (app *appContext) SetOmbiDefaults(gc *gin.Context) {
 	app.storage.storeOmbiTemplate()
 	respondBool(200, true, gc)
 }
-
-type modifyEmailsDTO map[string]string
 
 // @Summary Modify user's email addresses.
 // @Produce json
@@ -1058,16 +943,6 @@ func (app *appContext) ModifyEmails(gc *gin.Context) {
 	}
 	gc.JSON(200, map[string]bool{"success": true})
 }*/
-
-type userSettingsDTO struct {
-	From       string   `json:"from"`       // Whether to apply from "user" or "profile"
-	Profile    string   `json:"profile"`    // Name of profile (if from = "profile")
-	ApplyTo    []string `json:"apply_to"`   // Users to apply settings to
-	ID         string   `json:"id"`         // ID of user (if from = "user")
-	Homescreen bool     `json:"homescreen"` // Whether to apply homescreen layout or not
-}
-
-type errorListDTO map[string]map[string]string
 
 // @Summary Apply settings to a list of users, either from a profile or from another user.
 // @Produce json
@@ -1193,8 +1068,6 @@ func (app *appContext) GetConfig(gc *gin.Context) {
 	}
 	gc.JSON(200, resp)
 }
-
-type configDTO map[string]interface{}
 
 // @Summary Modify app config.
 // @Produce json
