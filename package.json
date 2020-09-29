@@ -22,6 +22,7 @@
     "bootstrap": "^5.0.0-alpha1",
     "bootstrap4": "npm:bootstrap@^4.5.0",
     "clean-css-cli": "^4.3.0",
+    "esbuild": "^0.7.8",
     "lodash": "^4.17.19",
     "mjml": "^4.6.3",
     "postcss-cli": "^7.1.1",

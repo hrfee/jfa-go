@@ -30,7 +30,9 @@ mail:
 
 typescript:
 	$(info Compiling typescript)
-	-npx tsc -p ts/
+	npx esbuild ts/* --outdir=data/static --minify
+	-rm -r data/static/ts
+	-rm data/static/*.map
 
 ts-debug:
 	-npx tsc -p ts/ --sourceMap
