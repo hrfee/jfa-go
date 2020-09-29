@@ -1,15 +1,24 @@
-name: jfa-go-git
+name: testing
 kind: pipeline
 type: docker
 
 steps:
-    - name: build
-      image: golang:latest
-      commands:
-        - apt update -y
-        - apt install build-essential python3-pip curl software-properties-common sed upx -y
-        - (curl -sL https://deb.nodesource.com/setup_14.x | bash -)
-        - apt install nodejs
-        - (cd /opt/build; make headless compress)
-        - sed -i 's#id="pwrJfPath" placeholder="Folder"#id="pwrJfPath" value="/jf" disabled#g' /opt/build/build/data/templates/setup.html
-
+- name: test
+  image: alpine
+  commands:
+      - echo test
+# name: jfa-go-git
+# kind: pipeline
+# type: docker
+# 
+# steps:
+#     - name: build
+#       image: golang:latest
+#       commands:
+#         - apt update -y
+#         - apt install build-essential python3-pip curl software-properties-common sed upx -y
+#         - (curl -sL https://deb.nodesource.com/setup_14.x | bash -)
+#         - apt install nodejs
+#         - (cd /opt/build; make headless compress)
+#         - sed -i 's#id="pwrJfPath" placeholder="Folder"#id="pwrJfPath" value="/jf" disabled#g' /opt/build/build/data/templates/setup.html
+# 
