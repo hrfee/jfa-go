@@ -82,8 +82,8 @@ Usage of ./jfa-go:
 
 If you're switching from jellyfin-accounts, copy your existing `~/.jf-accounts` to:
 
-* `XDG_CONFIG_DIR/jfa-go` (usually ~/.config) on \*nix systems, 
+* `XDG_CONFIG_DIR/jfa-go` (usually ~/.config/jfa-go) on \*nix systems, 
 * `%AppData%/jfa-go` on Windows,
 * `~/Library/Application Support/jfa-go` on macOS.
 
-(*or specify config/data path  with `-config/-data` respectively.*)
+(or specify config/data path  with `-config/-data` respectively.)
