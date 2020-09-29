@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"path/filepath"
 	"strconv"
 
@@ -71,6 +72,10 @@ func (app *appContext) loadConfig() error {
 
 	app.config.Section("deletion").Key("email_html").SetValue(app.config.Section("deletion").Key("email_html").MustString(filepath.Join(app.local_path, "deleted.html")))
 	app.config.Section("deletion").Key("email_text").SetValue(app.config.Section("deletion").Key("email_text").MustString(filepath.Join(app.local_path, "deleted.txt")))
+
+	app.config.Section("jellyfin").Key("version").SetValue(VERSION)
+	app.config.Section("jellyfin").Key("device").SetValue("jfa-go")
+	app.config.Section("jellyfin").Key("device_id").SetValue(fmt.Sprintf("jfa-go-%s-%s", VERSION, COMMIT))
 
 	app.email = NewEmailer(app)
 

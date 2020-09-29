@@ -7,10 +7,9 @@ from pathlib import Path
 parser = argparse.ArgumentParser()
 parser.add_argument("-i", "--input", help="input config base from jf-accounts")
 parser.add_argument("-o", "--output", help="output ini")
-parser.add_argument("--version", help="version to include in file")
 
 
-def generate_ini(base_file, ini_file, version):
+def generate_ini(base_file, ini_file):
     """
     Generates .ini file from config-base file.
     """
@@ -32,11 +31,6 @@ def generate_ini(base_file, ini_file, version):
                     value = str(value)
                 ini.set(section, entry, value)
 
-    ini["jellyfin"]["version"] = version
-    ini["jellyfin"]["device_id"] = ini["jellyfin"]["device_id"].replace(
-        "{version}", version
-    )
-
     with open(Path(ini_file), "w") as config_file:
         ini.write(config_file)
     return True
@@ -44,8 +38,4 @@ def generate_ini(base_file, ini_file, version):
 
 args = parser.parse_args()
 
-version = "git"
-if args.version is not None:
-    version = args.version
-
-print(generate_ini(base_file=args.input, ini_file=args.output, version=version))
+print(generate_ini(base_file=args.input, ini_file=args.output))

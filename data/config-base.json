@@ -19,10 +19,7 @@
             "password",
             "server",
             "public_server",
-            "client",
-            "version",
-            "device",
-            "device_id"
+            "client"
         ],
         "meta": {
             "name": "Jellyfin",
@@ -65,28 +62,7 @@
             "requires_restart": true,
             "type": "text",
             "value": "jfa-go",
-            "description": "This and below settings will show on the Jellyfin dashboard when the program connects. You may as well leave them alone."
-        },
-        "version": {
-            "name": "Version Number",
-            "required": true,
-            "requires_restart": true,
-            "type": "text",
-            "value": "{version}"
-        },
-        "device": {
-            "name": "Device Name",
-            "required": true,
-            "requires_restart": true,
-            "type": "text",
-            "value": "jfa-go"
-        },
-        "device_id": {
-            "name": "Device ID",
-            "required": true,
-            "requires_restart": true,
-            "type": "text",
-            "value": "jfa-go-{version}"
+            "description": "The name of the client that will show up in the Jellyfin dashboard."
         }
     },
     "ui": {

@@ -2,7 +2,7 @@ configuration:
 	$(info Fixing config-base)
 	python3 config/fixconfig.py -i config/config-base.json -o data/config-base.json
 	$(info Generating config-default.ini)
-	python3 config/generate_ini.py -i config/config-base.json -o data/config-default.ini --version git
+	python3 config/generate_ini.py -i config/config-base.json -o data/config-default.ini
 
 sass:
 	$(info Getting libsass)

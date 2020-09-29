@@ -407,7 +407,13 @@ func start(asDaemon, firstCall bool) {
 		}
 
 		server := app.config.Section("jellyfin").Key("server").String()
-		app.jf, _ = newJellyfin(server, "jfa-go", app.version, "hrfee-arch", "hrfee-arch")
+		app.jf, _ = newJellyfin(
+			server,
+			app.config.Section("jellyfin").Key("client").String(),
+			app.config.Section("jellyfin").Key("version").String(),
+			app.config.Section("jellyfin").Key("device").String(),
+			app.config.Section("jellyfin").Key("device_id").String(),
+		)
 		var status int
 		_, status, err = app.jf.authenticate(app.config.Section("jellyfin").Key("username").String(), app.config.Section("jellyfin").Key("password").String())
 		if status != 200 || err != nil {
