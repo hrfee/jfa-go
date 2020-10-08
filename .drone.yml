@@ -40,7 +40,7 @@ steps:
         - ./goreleaser.sh --snapshot --skip-publish --rm-dist
         - wget https://builds.hrfee.pw/upload.py
         - python3 upload.py https://builds.hrfee.pw hrfee jfa-go ./dist/*.zip
-        environment:
-            BUILDRONE_KEY:
-                from_secret: BUILDRONE_KEY
+      environment:
+          BUILDRONE_KEY:
+              from_secret: BUILDRONE_KEY
 
