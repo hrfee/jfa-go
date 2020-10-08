@@ -16,7 +16,7 @@ before:
     - python3 scss/compile.py -y
     - python3 mail/generate.py -y
     - python3 version.py {{.Version}} version.go
-    - ./esbuild.sh
+    - bash -c 'npx esbuild ts/* --outdir=data/static --minify'
     - swag init -g main.go
 builds:
     - dir: ./
