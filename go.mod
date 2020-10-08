@@ -35,9 +35,8 @@ require (
 	github.com/ugorji/go v1.1.9 // indirect
 	github.com/urfave/cli/v2 v2.2.0 // indirect
 	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a // indirect
-	golang.org/x/net v0.0.0-20200927032502-5d4f70055728 // indirect
-	golang.org/x/sys v0.0.0-20200929083018-4d22bbb62b3c // indirect
-	golang.org/x/tools v0.0.0-20200929191002-f1e51e6b9437 // indirect
+	golang.org/x/net v0.0.0-20201006153459-a7d1128ccaa0 // indirect
+	golang.org/x/tools v0.0.0-20201008184944-d01b322e6f06 // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
 	gopkg.in/ini.v1 v1.61.0
 	gopkg.in/yaml.v2 v2.3.0 // indirect

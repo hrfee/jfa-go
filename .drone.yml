@@ -39,7 +39,7 @@ steps:
         - chmod +x goreleaser.sh
         - ./goreleaser.sh --snapshot --skip-publish --rm-dist
         - wget https://builds.hrfee.pw/upload.py
-        - python3 upload.py https://builds.hrfee.pw hrfee jfa-go ./dist/*.zip
+        - bash -c 'python3 upload.py https://builds.hrfee.pw hrfee jfa-go ./dist/*.tar.gz'
       environment:
           BUILDRONE_KEY:
               from_secret: BUILDRONE_KEY
