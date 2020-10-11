@@ -530,6 +530,7 @@
     },
     "smtp": {
         "order": [
+            "username",
             "encryption",
             "server",
             "port",
@@ -538,6 +539,14 @@
         "meta": {
             "name": "SMTP (Email)",
             "description": "SMTP Server connection settings."
+        },
+        "username": {
+            "name": "Username",
+            "required": false,
+            "requires_restart": false,
+            "type": "text",
+            "value": "",
+            "description": "Username for SMTP. Leave blank to user send from address as username."
         },
         "encryption": {
             "name": "Encryption Method",

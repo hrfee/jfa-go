@@ -113,7 +113,13 @@ func NewEmailer(app *appContext) *Emailer {
 		if app.config.Section("smtp").Key("encryption").String() == "ssl_tls" {
 			sslTls = true
 		}
-		emailer.NewSMTP(app.config.Section("smtp").Key("server").String(), app.config.Section("smtp").Key("port").MustInt(465), app.config.Section("smtp").Key("password").String(), app.host, sslTls)
+		username := ""
+		if u := app.config.Section("smtp").Key("username").MustString(""); u != "" {
+			username = u
+		} else {
+			username = emailer.fromAddr
+		}
+		emailer.NewSMTP(app.config.Section("smtp").Key("server").String(), app.config.Section("smtp").Key("port").MustInt(465), username, app.config.Section("smtp").Key("password").String(), app.host, sslTls)
 	} else if method == "mailgun" {
 		emailer.NewMailgun(app.config.Section("mailgun").Key("api_url").String(), app.config.Section("mailgun").Key("api_key").String())
 	}
@@ -135,9 +141,9 @@ func (emailer *Emailer) NewMailgun(url, key string) {
 }
 
 // NewSMTP returns an SMTP emailClient.
-func (emailer *Emailer) NewSMTP(server string, port int, password, host string, sslTLS bool) {
+func (emailer *Emailer) NewSMTP(server string, port int, username, password, host string, sslTLS bool) {
 	emailer.sender = &SMTP{
-		auth:   smtp.PlainAuth("", emailer.fromAddr, password, host),
+		auth:   smtp.PlainAuth("", username, password, host),
 		server: server,
 		host:   host,
 		port:   port,
