@@ -8,23 +8,11 @@ sass:
 	$(info Getting libsass)
 	python3 -m pip install libsass
 	$(info Getting node dependencies)
-	python3 scss/get_node_deps.py
+	npm install
 	$(info Compiling sass)
 	python3 scss/compile.py
 
-sass-headless:
-	$(info Getting libsass)
-	python3 -m pip install libsass
-	$(info Getting node dependencies)
-	python3 scss/get_node_deps.py
-	$(info Compiling sass)
-	python3 scss/compile.py -y
-
-mail-headless:
-	$(info Generating email html)
-	python3 mail/generate.py -y
-
-mail:
+email:
 	$(info Generating email html)
 	python3 mail/generate.py
 
@@ -62,8 +50,4 @@ copy:
 install:
 	cp -r build $(DESTDIR)/jfa-go
 
-all: configuration sass mail version typescript swagger compile copy
-headless: configuration sass-headless mail-headless version typescript swagger compile copy
-
-
-
+all: configuration sass email version typescript swagger compile copy

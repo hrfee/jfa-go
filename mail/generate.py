@@ -1,14 +1,7 @@
 import subprocess
 import shutil
 import os
-import argparse
 from pathlib import Path
-
-parser = argparse.ArgumentParser()
-
-parser.add_argument(
-    "-y", "--yes", help="use assumed node bin directory.", action="store_true"
-)
 
 
 def runcmd(cmd):
@@ -19,27 +12,11 @@ def runcmd(cmd):
 
 
 local_path = Path(__file__).resolve().parent
-out = runcmd("npm bin")
-
-try:
-    node_bin = Path(out[0].decode("utf-8").rstrip())
-except:
-    node_bin = Path(out.decode("utf-8").rstrip())
-
-args = parser.parse_args()
-
-if not args.yes:
-    print(f'assuming npm bin directory "{node_bin}". Is this correct?')
-    if input("[yY/nN]: ").lower() == "n":
-        node_bin = local_path.parent / "node_modules" / ".bin"
-        print(f'this? "{node_bin}"')
-        if input("[yY/nN]: ").lower() == "n":
-            node_bin = input("input bin directory: ")
 
 for mjml in [f for f in local_path.iterdir() if f.is_file() and "mjml" in f.suffix]:
     print(f"Compiling {mjml.name}")
     fname = mjml.with_suffix(".html")
-    runcmd(f'{str(node_bin / "mjml")} {str(mjml)} -o {str(fname)}')
+    runcmd(f"npx mjml {str(mjml)} -o {str(fname)}")
     if fname.is_file():
         print("Done.")
 

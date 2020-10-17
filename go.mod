@@ -31,12 +31,12 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/swaggo/files v0.0.0-20190704085106-630677cd5c14
 	github.com/swaggo/gin-swagger v1.2.0
-	github.com/swaggo/swag v1.6.7 // indirect
+	github.com/swaggo/swag v1.6.8 // indirect
 	github.com/ugorji/go v1.1.9 // indirect
 	github.com/urfave/cli/v2 v2.2.0 // indirect
 	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a // indirect
-	golang.org/x/net v0.0.0-20201006153459-a7d1128ccaa0 // indirect
-	golang.org/x/tools v0.0.0-20201008184944-d01b322e6f06 // indirect
+	golang.org/x/net v0.0.0-20201016165138-7b1cca2348c0 // indirect
+	golang.org/x/tools v0.0.0-20201017001424-6003fad69a88 // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
 	gopkg.in/ini.v1 v1.61.0
 	gopkg.in/yaml.v2 v2.3.0 // indirect

@@ -4,10 +4,6 @@ import json
 import argparse
 from pathlib import Path
 
-parser = argparse.ArgumentParser()
-parser.add_argument("-i", "--input", help="input config base from jf-accounts")
-parser.add_argument("-o", "--output", help="output ini")
-
 
 def generate_ini(base_file, ini_file):
     """
@@ -36,6 +32,11 @@ def generate_ini(base_file, ini_file):
     return True
 
 
-args = parser.parse_args()
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-i", "--input", help="input config base from jf-accounts")
+    parser.add_argument("-o", "--output", help="output ini")
 
-print(generate_ini(base_file=args.input, ini_file=args.output))
+    args = parser.parse_args()
+
+    print(generate_ini(base_file=args.input, ini_file=args.output))
