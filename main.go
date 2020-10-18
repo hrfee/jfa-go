@@ -66,6 +66,32 @@ type appContext struct {
 	quit             chan os.Signal
 }
 
+func (app *appContext) loadHTML(router *gin.Engine) {
+	// router.LoadHTMLGlob(filepath.Join(app.local_path, "templates", "*"))
+	// if customHTML := app.config.Section("files").Key("html_templates").MustString(""); customHTML != "" {
+	// 	app.info.Printf("Loading custom templates from \"%s\"", customHTML)
+	// 	router.LoadHTMLGlob(filepath.Join(customHTML, "*"))
+	// }
+	customPath := app.config.Section("files").Key("html_templates").MustString("")
+	templatePath := filepath.Join(app.local_path, "templates")
+	htmlFiles, err := ioutil.ReadDir(templatePath)
+	if err != nil {
+		app.err.Fatalf("Couldn't access template directory: \"%s\"", filepath.Join(app.local_path, "templates"))
+		return
+	}
+	loadFiles := make([]string, len(htmlFiles))
+	for i, f := range htmlFiles {
+		if _, err := os.Stat(filepath.Join(customPath, f.Name())); os.IsNotExist(err) {
+			app.debug.Printf("Using default \"%s\"", f.Name())
+			loadFiles[i] = filepath.Join(templatePath, f.Name())
+		} else {
+			app.info.Printf("Using custom \"%s\"", f.Name())
+			loadFiles[i] = filepath.Join(filepath.Join(customPath, f.Name()))
+		}
+	}
+	router.LoadHTMLFiles(loadFiles...)
+}
+
 func GenerateSecret(length int) (string, error) {
 	bytes := make([]byte, length)
 	_, err := rand.Read(bytes)
@@ -465,7 +491,7 @@ func start(asDaemon, firstCall bool) {
 
 	router.Use(gin.Recovery())
 	router.Use(static.Serve("/", static.LocalFile(filepath.Join(app.local_path, "static"), false)))
-	router.LoadHTMLGlob(filepath.Join(app.local_path, "templates", "*"))
+	app.loadHTML(router)
 	router.NoRoute(app.NoRouteHandler)
 	if debugMode {
 		app.debug.Println("Loading pprof")

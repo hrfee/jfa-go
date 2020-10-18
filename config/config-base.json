@@ -628,6 +628,14 @@
             "type": "text",
             "value": "",
             "description": "Location of custom bootstrap CSS."
+        },
+        "html_templates": {
+            "name": "Custom HTML Template Directory",
+            "required": false,
+            "requires_restart": true,
+            "type": "text",
+            "value": "",
+            "description": "Path to directory containing custom versions of web ui pages. See wiki for more info."
         }
     }
 }
