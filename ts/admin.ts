@@ -1,44 +1,5 @@
-interface Window {
-    token: string;
-}
-
 // Set in admin.html
 var cssFile: string;
-
-const _get = (url: string, data: Object, onreadystatechange: () => void): void => {
-    let req = new XMLHttpRequest();
-    req.open("GET", url, true);
-    req.responseType = 'json';
-    req.setRequestHeader("Authorization", "Basic " + btoa(window.token + ":"));
-    req.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
-    req.onreadystatechange = onreadystatechange;
-    req.send(JSON.stringify(data));
-};
-
-const _post = (url: string, data: Object, onreadystatechange: () => void): void => {
-    let req = new XMLHttpRequest();
-    req.open("POST", url, true);
-    req.setRequestHeader("Authorization", "Basic " + btoa(window.token + ":"));
-    req.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
-    req.onreadystatechange = onreadystatechange;
-    req.send(JSON.stringify(data));
-};
-
-function _delete(url: string, data: Object, onreadystatechange: () => void): void {
-    let req = new XMLHttpRequest();
-    req.open("DELETE", url, true);
-    req.setRequestHeader("Authorization", "Basic " + btoa(window.token + ":"));
-    req.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
-    req.onreadystatechange = onreadystatechange;
-    req.send(JSON.stringify(data));
-}
-
-const rmAttr = (el: HTMLElement, attr: string): void => {
-    if (el.classList.contains(attr)) {
-        el.classList.remove(attr);
-    }
-};
-const addAttr = (el: HTMLElement, attr: string): void => el.classList.add(attr);
 
 const Focus = (el: HTMLElement): void => rmAttr(el, 'unfocused');
 const Unfocus = (el: HTMLElement): void => addAttr(el, 'unfocused');

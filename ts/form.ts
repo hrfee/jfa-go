@@ -7,35 +7,6 @@ interface pwValStrings {
     length, uppercase, lowercase, number, special: pwValString;
 }
 
-const _post = (url: string, data: Object, onreadystatechange: () => void): void => {
-    let req = new XMLHttpRequest();
-    req.open("POST", url, true);
-    req.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
-    req.responseType = 'json';
-    req.onreadystatechange = onreadystatechange;
-    req.send(JSON.stringify(data));
-};
-
-const toggleSpinner = (): void => {
-    const submitButton = document.getElementById('submitButton') as HTMLButtonElement;
-    if (document.getElementById('createAccountSpinner')) {
-        submitButton.innerHTML = `<span>Create Account</span>`;
-        submitButton.disabled = false;
-    } else {
-        submitButton.innerHTML = ` 
-        <span id="createAccountSpinner" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>Creating...
-        `;
-    }
-};
-
-const rmAttr = (el: HTMLElement, attr: string): void => {
-    if (el.classList.contains(attr)) {
-        el.classList.remove(attr);
-    }
-};
-
-const addAttr = (el: HTMLElement, attr: string): void => el.classList.add(attr);
-
 var validationStrings: pwValStrings;
 var bsVersion: number;
 
@@ -62,8 +33,19 @@ var defaultPwValStrings: pwValStrings = {
     }
 }
 
+const toggleSpinner = (): void => {
+    const submitButton = document.getElementById('submitButton') as HTMLButtonElement;
+    if (document.getElementById('createAccountSpinner')) {
+        submitButton.innerHTML = `<span>Create Account</span>`;
+        submitButton.disabled = false;
+    } else {
+        submitButton.innerHTML = `
+        <span id="createAccountSpinner" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>Creating...
+        `;
+    }
+};
+
 for (let key in validationStrings) {
-    console.log(key);
     if (validationStrings[key].singular == "" || !(validationStrings[key].plural.includes("{n}"))) {
         validationStrings[key].singular = defaultPwValStrings[key].singular;
     }
@@ -154,19 +136,6 @@ var usernameEnabled: boolean;
                 }
             }
         }
-    });
+    }, true);
     return false;
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
