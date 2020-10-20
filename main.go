@@ -67,11 +67,6 @@ type appContext struct {
 }
 
 func (app *appContext) loadHTML(router *gin.Engine) {
-	// router.LoadHTMLGlob(filepath.Join(app.local_path, "templates", "*"))
-	// if customHTML := app.config.Section("files").Key("html_templates").MustString(""); customHTML != "" {
-	// 	app.info.Printf("Loading custom templates from \"%s\"", customHTML)
-	// 	router.LoadHTMLGlob(filepath.Join(customHTML, "*"))
-	// }
 	customPath := app.config.Section("files").Key("html_templates").MustString("")
 	templatePath := filepath.Join(app.local_path, "templates")
 	htmlFiles, err := ioutil.ReadDir(templatePath)
@@ -252,7 +247,8 @@ func start(asDaemon, firstCall bool) {
 		var nConfig *os.File
 		nConfig, err := os.Create(app.config_path)
 		if err != nil {
-			app.err.Fatalf("Couldn't open config file for writing: \"%s\"", app.config_path)
+			app.err.Printf("Couldn't open config file for writing: \"%s\"", app.config_path)
+			app.err.Fatalf("Error: %s", err)
 		}
 		defer nConfig.Close()
 		_, err = io.Copy(nConfig, dConfig)
