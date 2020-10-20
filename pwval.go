@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-	"strings"
 	"unicode"
 )
 
@@ -21,11 +19,11 @@ func (vd *Validator) init(criteria ValidatorConf) {
 
 // This isn't used, its for swagger
 type PasswordValidation struct {
-	Characters bool `json:"characters,omitempty"`           // Number of characters
-	Lowercase  bool `json:"lowercase characters,omitempty"` // Number of lowercase characters
-	Uppercase  bool `json:"uppercase characters,omitempty"` // Number of uppercase characters
-	Numbers    bool `json:"numbers,omitempty"`              // Number of numbers
-	Specials   bool `json:"special characters,omitempty"`   // Number of special characters
+	Characters bool `json:"length,omitempty"`    // Number of characters
+	Lowercase  bool `json:"lowercase,omitempty"` // Number of lowercase characters
+	Uppercase  bool `json:"uppercase,omitempty"` // Number of uppercase characters
+	Numbers    bool `json:"number,omitempty"`    // Number of numbers
+	Specials   bool `json:"special,omitempty"`   // Number of special characters
 }
 
 func (vd *Validator) validate(password string) map[string]bool {
@@ -34,17 +32,17 @@ func (vd *Validator) validate(password string) map[string]bool {
 		count[key] = 0
 	}
 	for _, c := range password {
-		count["characters"] += 1
+		count["length"] += 1
 		if unicode.IsUpper(c) {
-			count["uppercase characters"] += 1
+			count["uppercase"] += 1
 		} else if unicode.IsLower(c) {
-			count["lowercase characters"] += 1
+			count["lowercase"] += 1
 		} else if unicode.IsNumber(c) {
 			count["numbers"] += 1
 		} else {
 			for _, s := range vd.specialChars {
 				if c == s {
-					count["special characters"] += 1
+					count["special"] += 1
 				}
 			}
 		}
@@ -60,18 +58,12 @@ func (vd *Validator) validate(password string) map[string]bool {
 	return results
 }
 
-func (vd *Validator) getCriteria() map[string]string {
-	lines := map[string]string{}
-	for criterion, min := range vd.criteria {
-		if min > 0 {
-			text := fmt.Sprintf("Must have at least %d ", min)
-			if min == 1 {
-				text += strings.TrimSuffix(criterion, "s")
-			} else {
-				text += criterion
-			}
-			lines[criterion] = text
+func (vd *Validator) getCriteria() ValidatorConf {
+	criteria := ValidatorConf{}
+	for key, num := range vd.criteria {
+		if num != 0 {
+			criteria[key] = num
 		}
 	}
-	return lines
+	return criteria
 }

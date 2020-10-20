@@ -447,11 +447,11 @@ func start(asDaemon, firstCall bool) {
 		app.loadStrftime()
 
 		validatorConf := ValidatorConf{
-			"characters":           app.config.Section("password_validation").Key("min_length").MustInt(0),
-			"uppercase characters": app.config.Section("password_validation").Key("upper").MustInt(0),
-			"lowercase characters": app.config.Section("password_validation").Key("lower").MustInt(0),
-			"numbers":              app.config.Section("password_validation").Key("number").MustInt(0),
-			"special characters":   app.config.Section("password_validation").Key("special").MustInt(0),
+			"length":    app.config.Section("password_validation").Key("min_length").MustInt(0),
+			"uppercase": app.config.Section("password_validation").Key("upper").MustInt(0),
+			"lowercase": app.config.Section("password_validation").Key("lower").MustInt(0),
+			"number":    app.config.Section("password_validation").Key("number").MustInt(0),
+			"special":   app.config.Section("password_validation").Key("special").MustInt(0),
 		}
 		if !app.config.Section("password_validation").Key("enabled").MustBool(false) {
 			for key := range validatorConf {
