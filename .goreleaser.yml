@@ -41,6 +41,7 @@ archives:
         - data/*
         - data/templates/*
         - data/static/*
+        - data/static/modules/*
 checksum:
     name_template: 'checksums.txt'
 snapshot:

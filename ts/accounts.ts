@@ -71,8 +71,6 @@ window.changeEmail = (icon: HTMLElement, id: string): void => {
     icon.parentNode.appendChild(cross);
 };
 
-console.log("bruh");
-
 (<HTMLInputElement>document.getElementById('selectAll')).onclick = function (): void {
     const checkboxes: NodeListOf<HTMLInputElement> = document.getElementById('accountsList').querySelectorAll('input[type=checkbox]');
     for (let i = 0; i < checkboxes.length; i++) {
