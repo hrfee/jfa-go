@@ -16,7 +16,7 @@ before:
     - python3 scss/compile.py
     - python3 mail/generate.py
     - python3 version.py {{.Version}} version.go
-    - bash -c 'npx esbuild ts/* --outdir=data/static --minify'
+    - bash -c 'npx esbuild ts/*.ts ts/modules/*.ts --outdir=data/static --minify'
     - go get -u github.com/swaggo/swag/cmd/swag
     - swag init -g main.go
 builds:
@@ -44,7 +44,7 @@ archives:
 checksum:
     name_template: 'checksums.txt'
 snapshot:
-    name_template: "{{ .Tag }}-testing"
+    name_template: "git-{{.ShortCommit}}"
 changelog:
     sort: asc
     filters:
