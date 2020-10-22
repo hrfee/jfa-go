@@ -1,4 +1,7 @@
-const ombiDefaultsModal = createModal('ombiDefaults');
+import { _get, _post, _delete, rmAttr, addAttr } from "modules/common.js";
+
+const ombiDefaultsModal = window.BS.newModal('ombiDefaults');
+
 (document.getElementById('openOmbiDefaults') as HTMLButtonElement).onclick = function (): void {
     let button = this as HTMLButtonElement;
     button.disabled = true;

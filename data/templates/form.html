@@ -14,11 +14,11 @@
 
         <!-- Bootstrap CSS -->
         <link rel="stylesheet" type="text/css" href="{{ .cssFile }}">
-        {{ if not .bs5 }}
+        {{ if not .settings.bs5 }}
         <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
         {{ end }}
         <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
-        {{ if .bs5 }}
+        {{ if .settings.bs5 }}
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha1/js/bootstrap.min.js" integrity="sha384-oesi62hOLfzrys4LxRF63OJCXdXDipiYWBnvTl9Y9/TRlw5xlKIEHpNyvvDShgf/" crossorigin="anonymous"></script>
         {{ else }}
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
@@ -74,9 +74,9 @@
                                 <form action="#" method="POST" id="accountForm">
                                     <div class="form-group">
                                         <label for="inputEmail">Email</label>
-                                        <input type="email" class="form-control" id="{{ if .username }}inputEmail{{ else }}inputUsername{{ end }}" name="{{ if .username }}email{{ else }}username{{ end }}" placeholder="Email" value="{{ .email }}" required>
+                                        <input type="email" class="form-control" id="{{ if .settings.username }}inputEmail{{ else }}inputUsername{{ end }}" name="{{ if .settings.username }}email{{ else }}username{{ end }}" placeholder="Email" value="{{ .email }}" required>
                                     </div>
-                                    {{ if .username }}
+                                    {{ if .settings.username }}
                                     <div class="form-group">
                                         <label for="inputUsername">Username</label>
                                         <input type="username" class="form-control" id="inputUsername" name="username" placeholder="Username" required>
@@ -114,10 +114,8 @@
                 </div>
             </div>
         </div>
-        <script src="common.js"></script>
-        <script>
-            var usernameEnabled = {{ .username }}
-            var validationStrings = {
+    <script>
+            window.validationStrings = {
                 "length": {
                     "singular": "Must have at least {n} character",
                     "plural": "Must have a least {n} characters"
@@ -138,8 +136,9 @@
                     "singular": "Must have at least {n} special character",
                     "plural": "Must have at least {n} special characters"
                 }
-            }
+            };
         </script>
-        <script src="form.js"></script>
+        {{ template "form-base" .settings }}
     </body>
-</html>                            
+</html>
+

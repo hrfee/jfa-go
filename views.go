@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -30,8 +31,10 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 	// if app.checkInvite(code, false, "") {
 	if _, ok := app.storage.invites[code]; ok {
 		email := app.storage.invites[code].Email
-		gc.HTML(http.StatusOK, "form.html", gin.H{
-			"bs5":            app.config.Section("ui").Key("bs5").MustBool(false),
+		if strings.Contains(email, "Failed") {
+			email = ""
+		}
+		gc.HTML(http.StatusOK, "form-loader.html", gin.H{
 			"cssFile":        app.cssFile,
 			"contactMessage": app.config.Section("ui").Key("contact_message").String(),
 			"helpMessage":    app.config.Section("ui").Key("help_message").String(),
@@ -40,7 +43,10 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 			"validate":       app.config.Section("password_validation").Key("enabled").MustBool(false),
 			"requirements":   app.validator.getCriteria(),
 			"email":          email,
-			"username":       !app.config.Section("email").Key("no_username").MustBool(false),
+			"settings": map[string]bool{
+				"bs5":      app.config.Section("ui").Key("bs5").MustBool(false),
+				"username": !app.config.Section("email").Key("no_username").MustBool(false),
+			},
 		})
 	} else {
 		gc.HTML(404, "invalidCode.html", gin.H{

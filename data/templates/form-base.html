@@ -1,0 +1,7 @@
+{{ define "form-base" }}
+<script> 
+    window.bs5 = {{ .bs5 }};
+    window.usernameEnabled = {{ .username }};
+</script>
+<script src="form.js" type="module"></script>
+{{ end }}

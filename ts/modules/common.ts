@@ -1,8 +1,6 @@
-interface Window {
-    token: string;
-}
+declare var window: Window;
 
-function serializeForm(id: string): Object {
+export function serializeForm(id: string): Object {
     const form = document.getElementById(id) as HTMLFormElement;
     let formData = {};
     for (let i = 0; i < form.elements.length; i++) {
@@ -38,15 +36,15 @@ function serializeForm(id: string): Object {
     return formData;
 }
 
-const rmAttr = (el: HTMLElement, attr: string): void => {
+export const rmAttr = (el: HTMLElement, attr: string): void => {
     if (el.classList.contains(attr)) {
         el.classList.remove(attr);
     }
 };
 
-const addAttr = (el: HTMLElement, attr: string): void => el.classList.add(attr);
+export const addAttr = (el: HTMLElement, attr: string): void => el.classList.add(attr);
 
-const _get = (url: string, data: Object, onreadystatechange: () => void): void => {
+export const _get = (url: string, data: Object, onreadystatechange: () => void): void => {
     let req = new XMLHttpRequest();
     req.open("GET", url, true);
     req.responseType = 'json';
@@ -56,7 +54,7 @@ const _get = (url: string, data: Object, onreadystatechange: () => void): void =
     req.send(JSON.stringify(data));
 };
 
-const _post = (url: string, data: Object, onreadystatechange: () => void, response?: boolean): void => {
+export const _post = (url: string, data: Object, onreadystatechange: () => void, response?: boolean): void => {
     let req = new XMLHttpRequest();
     req.open("POST", url, true);
     if (response) {
@@ -68,7 +66,7 @@ const _post = (url: string, data: Object, onreadystatechange: () => void, respon
     req.send(JSON.stringify(data));
 };
 
-function _delete(url: string, data: Object, onreadystatechange: () => void): void {
+export function _delete(url: string, data: Object, onreadystatechange: () => void): void {
     let req = new XMLHttpRequest();
     req.open("DELETE", url, true);
     req.setRequestHeader("Authorization", "Basic " + btoa(window.token + ":"));

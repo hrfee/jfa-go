@@ -18,12 +18,15 @@ email:
 
 typescript:
 	$(info Compiling typescript)
-	npx esbuild ts/* --outdir=data/static --minify
+	npx esbuild ts/*.ts ts/modules/*.ts --outdir=data/static --minify
 	-rm -r data/static/ts
+	-rm -r data/static/typings
 	-rm data/static/*.map
 
 ts-debug:
 	-npx tsc -p ts/ --sourceMap
+	-rm -r data/static/ts
+	-rm -r data/static/typings
 	cp -r ts data/static/
 
 swagger:
@@ -51,3 +54,4 @@ install:
 	cp -r build $(DESTDIR)/jfa-go
 
 all: configuration sass email version typescript swagger compile copy
+debug: configuration sass email version ts-debug swagger compile copy

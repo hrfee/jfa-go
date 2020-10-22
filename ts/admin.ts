@@ -1,8 +1,19 @@
-// Set in admin.html
-var cssFile: string;
+import { serializeForm, rmAttr, addAttr, _get, _post, _delete } from "./modules/common.js";
+import { Focus, Unfocus } from "./modules/admin.js";
+import { toggleCSS } from "./modules/animation.js";
+import { populateUsers, checkCheckboxes } from "./modules/accounts.js";
+import { generateInvites, addOptions, checkDuration } from "./modules/invites.js";
+import { showSetting, openSettings } from "./modules/settings.js";
+import { BS4 } from "./modules/bs4.js";
+import { BS5 } from "./modules/bs5.js";
+import "./accounts.js";
+import "./settings.js";
 
-const Focus = (el: HTMLElement): void => rmAttr(el, 'unfocused');
-const Unfocus = (el: HTMLElement): void => addAttr(el, 'unfocused');
+interface aWindow extends Window {
+    toClipboard(str: string): void;
+}
+
+declare var window: aWindow;
 
 interface TabSwitcher {
     els: Array<HTMLDivElement>;
@@ -35,27 +46,43 @@ const tabs: TabSwitcher = {
         tabs.focus(1);
     },
     settings: (): void => openSettings(document.getElementById('settingsSections'), document.getElementById('settingsContent'), (): void => {
-        triggerTooltips();
+        window.BS.triggerTooltips();
         showSetting("ui");
         tabs.focus(2);
     })
 };
 
-// for (let i = 0; i < tabs.els.length; i++) {
-//     tabs.tabButtons[i].onclick = (): void => tabs.focus(i);
-// }
+window.bsVersion = window.bs5 ? 5 : 4
+
+if (window.bs5) {
+    window.BS = new BS5;
+} else {
+    window.BS = new BS4;
+    window.BS.Compat();
+}
+
+window.Modals = {} as BSModals;
+
+window.Modals.login = window.BS.newModal('login');
+window.Modals.userDefaults = window.BS.newModal('userDefaults');
+window.Modals.users = window.BS.newModal('users');
+window.Modals.restart = window.BS.newModal('restartModal');
+window.Modals.refresh = window.BS.newModal('refreshModal');
+window.Modals.about = window.BS.newModal('aboutModal');
+window.Modals.delete = window.BS.newModal('deleteModal');
+window.Modals.newUser = window.BS.newModal('newUserModal');
+
 tabs.tabButtons[0].onclick = tabs.invites;
 tabs.tabButtons[1].onclick = tabs.accounts;
 tabs.tabButtons[2].onclick = tabs.settings;
-
 
 tabs.invites();
 
 // Predefined colors for the theme button.
 var buttonColor: string = "custom";
-if (cssFile.includes("jf")) {
+if (window.cssFile.includes("jf")) {
     buttonColor = "rgb(255,255,255)";
-} else if (cssFile == ("bs" + bsVersion + ".css")) {
+} else if (window.cssFile == ("bs" + window.bsVersion + ".css")) {
     buttonColor = "rgb(16,16,16)";
 }
 
@@ -70,20 +97,11 @@ if (buttonColor != "custom") {
     document.getElementById('headerButtons').appendChild(switchButton);
 }
 
-var loginModal = createModal('login');
-var userDefaultsModal = createModal('userDefaults');
-var usersModal = createModal('users');
-var restartModal = createModal('restartModal');
-var refreshModal = createModal('refreshModal');
-var aboutModal = createModal('aboutModal');
-var deleteModal = createModal('deleteModal');
-var newUserModal = createModal('newUserModal');
-
 var availableProfiles: Array<string>;
 
 window["token"] = "";
 
-function toClipboard(str: string): void {
+window.toClipboard = (str: string): void => {
     const el = document.createElement('textarea') as HTMLTextAreaElement;
     el.value = str;
     el.readOnly = true;
@@ -123,7 +141,7 @@ function login(username: string, password: string, modal: boolean, button?: HTML
                         button.textContent = "Login";
                     }, 4000);
                 } else {
-                    loginModal.show();
+                    window.Modals.login.show();
                 }
             } else {
                 const data = this.response;
@@ -137,7 +155,7 @@ function login(username: string, password: string, modal: boolean, button?: HTML
                 minutes.value = "30";
                 checkDuration();
                 if (modal) {
-                    loginModal.hide();
+                    window.Modals.login.hide();
                 }
                 Focus(document.getElementById('logoutButton'));
             }
@@ -147,12 +165,6 @@ function login(username: string, password: string, modal: boolean, button?: HTML
         }
     };
     req.send();
-}
-
-function createEl(html: string): HTMLElement {
-    let div = document.createElement('div') as HTMLDivElement;
-    div.innerHTML = html;
-    return div.firstElementChild as HTMLElement;
 }
 
 (document.getElementById('loginForm') as HTMLFormElement).onsubmit = function (): boolean {
@@ -169,70 +181,11 @@ function createEl(html: string): HTMLElement {
     return false;
 };
 
-function storeDefaults(users: string | Array<string>): void {
-    // not sure if this does anything, but w/e
-    this.disabled = true;
-    this.innerHTML =
-        '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="margin-right: 0.5rem;"></span>' +
-        'Loading...';
-    const button = document.getElementById('storeDefaults') as HTMLButtonElement;
-    let data = { "homescreen": false };
-    if ((document.getElementById('defaultsSource') as HTMLSelectElement).value == 'profile') {
-        data["from"] = "profile";
-        data["profile"] = (document.getElementById('profileSelect') as HTMLSelectElement).value;
-    } else {
-        const radio = document.querySelector('input[name=defaultRadios]:checked') as HTMLInputElement
-        let id = radio.id.replace("default_", "");
-        data["from"] = "user";
-        data["id"] = id;
-    }
-    if (users != "all") {
-        data["apply_to"] = users;
-    }
-    if ((document.getElementById('storeDefaultHomescreen') as HTMLInputElement).checked) {
-        data["homescreen"] = true;
-    }
-    _post("/users/settings", data, function (): void {
-        if (this.readyState == 4) {
-            if (this.status == 200 || this.status == 204) {
-                button.textContent = "Success";
-                addAttr(button, "btn-success");
-                rmAttr(button, "btn-danger");
-                rmAttr(button, "btn-primary");
-                button.disabled = false;
-                setTimeout((): void => {
-                    button.textContent = "Submit";
-                    addAttr(button, "btn-primary");
-                    rmAttr(button, "btn-success");
-                    button.disabled = false;
-                    userDefaultsModal.hide();
-                }, 1000);
-            } else {
-                if ("error" in this.response) {
-                    button.textContent = this.response["error"];
-                } else if (("policy" in this.response) || ("homescreen" in this.response)) {
-                    button.textContent = "Failed (check console)";
-                } else {
-                    button.textContent = "Failed";
-                }
-                addAttr(button, "btn-danger");
-                rmAttr(button, "btn-primary");
-                setTimeout((): void => {
-                    button.textContent = "Submit";
-                    addAttr(button, "btn-primary");
-                    rmAttr(button, "btn-danger");
-                    button.disabled = false;
-                }, 1000);
-            }
-        }
-    });
-} 
-
 generateInvites(true);
 
 login("", "", false, null, (status: number): void => {
     if (!(status == 200 || status == 204)) {
-        loginModal.show();
+        window.Modals.login.show();
     }
 });
 

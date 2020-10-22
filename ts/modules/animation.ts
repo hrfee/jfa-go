@@ -1,3 +1,11 @@
+import { rmAttr, addAttr } from "../modules/common.js";
+
+interface aWindow extends Window {
+    rotateButton(el: HTMLElement): void;
+}
+
+declare var window: aWindow;
+
 // Used for animation on theme change
 const whichTransitionEvent = (): string => {
     const el = document.createElement('fakeElement');
@@ -26,7 +34,7 @@ const _toggleCSS = (): void => {
         cssEl = 1;
         remove = true
     }
-    let href: string = "bs" + bsVersion;
+    let href: string = "bs" + window.bsVersion;
     if (!els[cssEl].href.includes(href + "-jf")) {
         href += "-jf";
     }
@@ -41,8 +49,8 @@ const _toggleCSS = (): void => {
 }
 
 // Toggles between light and dark themes, but runs animation if window small enough.
-var buttonWidth = 0;
-const toggleCSS = (el: HTMLElement): void => {
+window.buttonWidth = 0;
+export const toggleCSS = (el: HTMLElement): void => {
     const switchToColor = window.getComputedStyle(document.body, null).backgroundColor;
     // Max page width for animation to take place
     let maxWidth = 1500;
@@ -51,7 +59,7 @@ const toggleCSS = (el: HTMLElement): void => {
         const radius = Math.sqrt(Math.pow(window.innerWidth, 2) + Math.pow(window.innerHeight, 2));
         const currentRadius = el.getBoundingClientRect().width / 2;
         const scale = radius / currentRadius;
-        buttonWidth = +window.getComputedStyle(el, null).width;
+        window.buttonWidth = +window.getComputedStyle(el, null).width;
         document.body.classList.remove('smooth-transition');
         el.style.transform = `scale(${scale})`;
         el.style.color = switchToColor;
@@ -68,7 +76,7 @@ const toggleCSS = (el: HTMLElement): void => {
     }
 };
 
-const rotateButton = (el: HTMLElement): void => {
+window.rotateButton = (el: HTMLElement): void => {
     if (el.classList.contains("rotated")) {
         rmAttr(el, "rotated")
         addAttr(el, "not-rotated");

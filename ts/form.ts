@@ -1,3 +1,14 @@
+import { serializeForm, _post, _get, _delete, addAttr, rmAttr } from "./modules/common.js";
+import { BS5 } from "./modules/bs5.js";
+import { BS4 } from "./modules/bs4.js";
+
+interface formWindow extends Window {
+    usernameEnabled: boolean;
+    validationStrings: pwValStrings;
+}
+
+declare var window: formWindow;
+
 interface pwValString {
     singular: string;
     plural: string;
@@ -6,9 +17,6 @@ interface pwValString {
 interface pwValStrings {
     length, uppercase, lowercase, number, special: pwValString;
 }
-
-var validationStrings: pwValStrings;
-var bsVersion: number;
 
 var defaultPwValStrings: pwValStrings = {
     length: {
@@ -45,49 +53,30 @@ const toggleSpinner = (): void => {
     }
 };
 
-for (let key in validationStrings) {
-    if (validationStrings[key].singular == "" || !(validationStrings[key].plural.includes("{n}"))) {
-        validationStrings[key].singular = defaultPwValStrings[key].singular;
+for (let key in window.validationStrings) {
+    if (window.validationStrings[key].singular == "" || !(window.validationStrings[key].plural.includes("{n}"))) {
+        window.validationStrings[key].singular = defaultPwValStrings[key].singular;
     }
-    if (validationStrings[key].plural == "" || !(validationStrings[key].plural.includes("{n}"))) {
-        validationStrings[key].plural = defaultPwValStrings[key].plural;
+    if (window.validationStrings[key].plural == "" || !(window.validationStrings[key].plural.includes("{n}"))) {
+        window.validationStrings[key].plural = defaultPwValStrings[key].plural;
     }
     let el = document.getElementById(key) as HTMLUListElement;
     if (el) {
         const min: number = +el.getAttribute("min");
         let text = "";
         if (min == 1) {
-            text = validationStrings[key].singular.replace("{n}", "1");
+            text = window.validationStrings[key].singular.replace("{n}", "1");
         } else {
-            text = validationStrings[key].plural.replace("{n}", min.toString());
+            text = window.validationStrings[key].plural.replace("{n}", min.toString());
         }
         (document.getElementById(key).children[0] as HTMLDivElement).textContent = text;
     }
 }
 
-interface Modal {
-    show: () => void;
-    hide: () => void;
-}
-
-var successBox: Modal;
-
-if (bsVersion == 5) {
-    var bootstrap: any;
-    successBox = new bootstrap.Modal(document.getElementById('successBox'));
-} else if (bsVersion == 4) {
-    successBox = {
-        show: (): void => {
-            ($('#successBox') as any).modal('show');
-        },
-        hide: (): void => {
-            ($('#successBox') as any).modal('hide');
-        }
-    };
-}
+window.BS = window.bs5 ? new BS5 : new BS4;
+var successBox: BSModal = window.BS.newModal('successBox');;
 
 var code = window.location.href.split('/').pop();
-var usernameEnabled: boolean;
 
 (document.getElementById('accountForm') as HTMLFormElement).addEventListener('submit', (event: any): boolean => {
     event.preventDefault();
@@ -98,7 +87,7 @@ var usernameEnabled: boolean;
     toggleSpinner();
     let send: Object = serializeForm('accountForm');
     send["code"] = code;
-    if (!usernameEnabled) {
+    if (!window.usernameEnabled) {
         send["email"] = send["username"];
     }
     _post("/newUser", send, function (): void {

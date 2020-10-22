@@ -38,7 +38,7 @@ func (vd *Validator) validate(password string) map[string]bool {
 		} else if unicode.IsLower(c) {
 			count["lowercase"] += 1
 		} else if unicode.IsNumber(c) {
-			count["numbers"] += 1
+			count["number"] += 1
 		} else {
 			for _, s := range vd.specialChars {
 				if c == s {

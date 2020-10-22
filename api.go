@@ -626,12 +626,12 @@ func (app *appContext) DeleteProfile(gc *gin.Context) {
 // @tags Invites
 func (app *appContext) GetInvites(gc *gin.Context) {
 	app.debug.Println("Invites requested")
-	current_time := time.Now()
+	currentTime := time.Now()
 	app.storage.loadInvites()
 	app.checkInvites()
 	var invites []inviteDTO
 	for code, inv := range app.storage.invites {
-		_, _, days, hours, minutes, _ := timeDiff(inv.ValidTill, current_time)
+		_, _, days, hours, minutes, _ := timeDiff(inv.ValidTill, currentTime)
 		invite := inviteDTO{
 			Code:    code,
 			Days:    days,

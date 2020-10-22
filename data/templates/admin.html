@@ -31,11 +31,11 @@
                 return "";
             }
             {{ if .bs5 }}
-            var bsVersion = 5;
+            window.bsVersion = 5;
             {{ else }}
-            var bsVersion = 4;
+            window.bsVersion = 4;
             {{ end }}
-            var cssFile = "{{ .cssFile }}";
+            window.cssFile = "{{ .cssFile }}";
             var css = document.createElement('link');
             css.setAttribute('rel', 'stylesheet');
             css.setAttribute('type', 'text/css');
@@ -465,27 +465,19 @@
                 <p>{{ .contactMessage }}</p>
             </div>
         </div>
-        <script src="common.js"></script>
-            <script>
-            var availableProfiles = [];
+        <script>
+            window.bs5 = {{ .bs5 }};
+            window.availableProfiles = [];
             {{ if .notifications }}
-            var notifications_enabled = true;
+            window.notifications_enabled = true;
             {{ else }}
-            var notifications_enabled = false;
+            window.notifications_enabled = false;
             {{ end }}
         </script>
-        {{ if .bs5 }}
-        <script src="bs5.js"></script>
-        {{ else }}
-        <script src="bs4.js"></script>
-        {{ end }}
-        <script src="animation.js"></script>
-        <script src="accounts.js"></script>
-        <script src="invites.js"></script>
-        <script src="admin.js"></script>
-        <script src="settings.js"></script>
+        <script src="admin.js" type="module"></script>
+        <script src="invites.js" type="module"></script>
         {{ if .ombiEnabled }}
-        <script src="ombi.js"></script>
+        <script src="ombi.js" type="module"></script>
         {{ end }}
     </body>
 </html>

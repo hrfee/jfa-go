@@ -1,25 +1,17 @@
-const checkCheckboxes = (): void => {
-    const defaultsButton = document.getElementById('accountsTabSetDefaults');
-    const deleteButton = document.getElementById('accountsTabDelete');
-    const checkboxes: NodeListOf<HTMLInputElement> = document.getElementById('accountsList').querySelectorAll('input[type=checkbox]:checked');
-    let checked = checkboxes.length;
-    if (checked == 0) {
-        Unfocus(defaultsButton);
-        Unfocus(deleteButton);
-    } else {
-        Focus(defaultsButton);
-        Focus(deleteButton);
-        if (checked == 1) {
-            deleteButton.textContent = 'Delete User';
-        } else {
-            deleteButton.textContent = 'Delete Users';
-        }
-    }
+import { checkCheckboxes, populateUsers, populateRadios } from "./modules/accounts.js";
+import { _post, _get, _delete, rmAttr, addAttr } from "./modules/common.js";
+import { populateProfiles } from "./modules/settings.js";
+import { Focus, Unfocus, createEl, storeDefaults } from "./modules/admin.js";
+
+interface aWindow extends Window {
+    changeEmail(icon: HTMLElement, id: string): void;
 }
+
+declare var window: aWindow;
 
 const validateEmail = (email: string): boolean => /\S+@\S+\.\S+/.test(email);
 
-function changeEmail(icon: HTMLElement, id: string): void {
+window.changeEmail = (icon: HTMLElement, id: string): void => {
     const iconContent = icon.outerHTML;
     icon.setAttribute('class', '');
     const entry = icon.nextElementSibling as HTMLInputElement;
@@ -79,83 +71,7 @@ function changeEmail(icon: HTMLElement, id: string): void {
     icon.parentNode.appendChild(cross);
 };
 
-var jfUsers: Array<Object>;
-
-function populateUsers(): void {
-    const acList = document.getElementById('accountsList');
-    acList.innerHTML = `
-    <div class="d-flex align-items-center">
-        <strong>Getting Users...</strong>
-        <div class="spinner-border ml-auto" role="status" aria-hidden="true"></div>
-    </div>
-    `;
-    Unfocus(acList.parentNode.querySelector('thead'));
-    const accountsList = document.createElement('tbody');
-    accountsList.id = 'accountsList';
-    const generateEmail = (id: string, name: string, email: string): string => {
-        let entry: HTMLDivElement = document.createElement('div');
-        entry.id = 'email_' + id;
-        let emailValue: string = email;
-        if (emailValue == undefined) {
-            emailValue = "";
-        }
-        entry.innerHTML = `
-        <i class="fa fa-edit d-inline-block icon-button" style="margin-right: 2%;" onclick="changeEmail(this, '${id}')"></i>
-        <input type="email" class="form-control-plaintext form-control-sm text-muted d-inline-block addressText" id="address_${id}" style="width: auto;" value="${emailValue}" readonly>
-        `;
-        return entry.outerHTML;
-    };
-    const template = (id: string, username: string, email: string, lastActive: string, admin: boolean): string => {
-        let isAdmin = "No";
-        if (admin) {
-            isAdmin = "Yes";
-        }
-        let fci = "form-check-input";
-        if (bsVersion != 5) {
-            fci = "";
-        }
-        return `
-            <td nowrap="nowrap" class="align-middle" scope="row"><input class="${fci}" type="checkbox" value="" id="select_${id}" onclick="checkCheckboxes();"></td>
-            <td nowrap="nowrap" class="align-middle">${username}</td>
-            <td nowrap="nowrap" class="align-middle">${generateEmail(id, name, email)}</td>
-            <td nowrap="nowrap" class="align-middle">${lastActive}</td>
-            <td nowrap="nowrap" class="align-middle">${isAdmin}</td>
-        `;
-    };
-
-    _get("/users", null, function (): void {
-        if (this.readyState == 4 && this.status == 200) {
-            jfUsers = this.response['users'];
-            for (const user of jfUsers) {
-                let tr = document.createElement('tr');
-                tr.innerHTML = template(user['id'], user['name'], user['email'], user['last_active'], user['admin']);
-                accountsList.appendChild(tr);
-            }
-            Focus(acList.parentNode.querySelector('thead'));
-            acList.replaceWith(accountsList);
-        }
-    });
-}
-
-function populateRadios(): void {
-    const radioList = document.getElementById('defaultUserRadios');
-    radioList.textContent = '';
-    let first = true;
-    for (const i in jfUsers) {
-        const user = jfUsers[i];
-        const radio = document.createElement('div');
-        radio.classList.add('form-check');
-        let checked = '';
-        if (first) {
-            checked = 'checked';
-            first = false;
-        }
-        radio.innerHTML = `
-        <input class="form-check-input" type="radio" name="defaultRadios" id="default_${user['id']}" ${checked}>
-        <label class="form-check-label" for="default_${user['id']}">${user['name']}</label>`;
-        radioList.appendChild(radio);
-    }
-}
+console.log("bruh");
 
 (<HTMLInputElement>document.getElementById('selectAll')).onclick = function (): void {
     const checkboxes: NodeListOf<HTMLInputElement> = document.getElementById('accountsList').querySelectorAll('input[type=checkbox]');
@@ -217,18 +133,18 @@ function populateRadios(): void {
                     }
                     setTimeout((): void => {
                         Unfocus(deleteButton);
-                        deleteModal.hide();
+                        window.Modals.delete.hide();
                     }, 4000);
                 } else {
                     Unfocus(deleteButton);
-                    deleteModal.hide()
+                    window.Modals.delete.hide()
                 }
                 populateUsers();
                 checkCheckboxes();
             }
         });
     };
-    deleteModal.show();
+    window.Modals.delete.show();
 };
 
 (<HTMLInputElement>document.getElementById('selectAll')).checked = false;
@@ -236,7 +152,7 @@ function populateRadios(): void {
 (<HTMLButtonElement>document.getElementById('accountsTabSetDefaults')).onclick = function (): void {
     const checkboxes: NodeListOf<HTMLInputElement> = document.getElementById('accountsList').querySelectorAll('input[type=checkbox]:checked');
     let userIDs: Array<string> = new Array(checkboxes.length);
-    for (let i = 0; i < checkboxes.length; i++){ 
+    for (let i = 0; i < checkboxes.length; i++){
         userIDs[i] = checkboxes[i].id.replace("select_", "");
     }
     if (userIDs.length == 0) {
@@ -250,9 +166,9 @@ function populateRadios(): void {
     populateProfiles(true);
     const profileSelect = document.getElementById('profileSelect') as HTMLSelectElement;
     profileSelect.textContent = '';
-    for (let i = 0; i < availableProfiles.length; i++) {
+    for (let i = 0; i < window.availableProfiles.length; i++) {
         profileSelect.innerHTML += `
-        <option value="${availableProfiles[i]}" ${(i == 0) ? "selected" : ""}>${availableProfiles[i]}</option>
+        <option value="${window.availableProfiles[i]}" ${(i == 0) ? "selected" : ""}>${window.availableProfiles[i]}</option>
         `;
     }
     document.getElementById('defaultsTitle').textContent = `Apply settings to ${userIDs.length} ${userString}`;
@@ -266,7 +182,7 @@ function populateRadios(): void {
     Unfocus(document.getElementById('defaultUserRadiosBox'));
     Unfocus(document.getElementById('newProfileBox'));
     document.getElementById('storeDefaults').onclick = (): void => storeDefaults(userIDs);
-    userDefaultsModal.show();
+    window.Modals.userDefaults.show();
 };
 
 (<HTMLSelectElement>document.getElementById('defaultsSource')).addEventListener('change', function (): void {
@@ -311,7 +227,7 @@ function populateRadios(): void {
                     rmAttr(button, 'btn-success');
                     addAttr(button, 'btn-primary');
                     button.textContent = ogText;
-                    newUserModal.hide();
+                    window.Modals.newUser.hide();
                 }, 1000);
                 populateUsers();
             } else {
@@ -338,11 +254,5 @@ function populateRadios(): void {
     if (document.getElementById('newUserName') != null) {
         (<HTMLInputElement>document.getElementById('newUserName')).value = '';
     }
-    newUserModal.show();
+    window.Modals.newUser.show();
 };
-
-
-
-
-
-
