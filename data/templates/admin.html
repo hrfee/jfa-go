@@ -93,8 +93,10 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="usersTitle">Users</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <button type="button" class="{{ if .bs5 }}btn-{{ end }}close" data-dismiss="modal" aria-label="Close">
+                            {{ if not .bs5 }}
                             <span aria-hidden="true">&times;</span>
+                            {{ end }}
                         </button>
                     </div>
                     <div class="modal-body">
@@ -112,8 +114,10 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="defaultsTitle"></h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <button type="button" class="{{ if .bs5 }}btn-{{ end }}close" data-dismiss="modal" aria-label="Close">
+                            {{ if not .bs5 }}
                             <span aria-hidden="true">&times;</span>
+                            {{ end }}
                         </button>
                     </div>
                     <div class="modal-body">
@@ -156,8 +160,10 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="ombiTitle">Ombi user defaults</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <button type="button" class="{{ if .bs5 }}btn-{{ end }}close" data-dismiss="modal" aria-label="Close">
+                            {{ if not .bs5 }}
                             <span aria-hidden="true">&times;</span>
+                            {{ end }}
                         </button>
                     </div>
                     <div class="modal-body">
@@ -206,15 +212,17 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">About</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <button type="button" class="{{ if .bs5 }}btn-{{ end }}close" data-dismiss="modal" aria-label="Close">
+                            {{ if not .bs5 }}
                             <span aria-hidden="true">&times;</span>
+                            {{ end }}
                         </button>
                     </div>
                     <div class="modal-body">
                         <img src="banner.svg" alt="jfa-go banner">
                         <p><a href="https://github.com/hrfee/jfa-go"><i class="fa fa-github"></i> jfa-go</a></p>
-                        <p>Version <i>{{ .version }}</i></p>
-                        <p>Commit <i>{{ .commit }}</i></p>
+                        <p>Version <i class="text-monospace">{{ .version }}</i></p>
+                        <p>Commit <i class="text-monospace">{{ .commit }}</i></p>
                         <p><a href="https://github.com/hrfee/jfa-go/blob/main/LICENSE">Available under the MIT License.</a></p>
                     </div>
                 </div>
@@ -225,8 +233,10 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="deleteModalTitle"></h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <button type="button" class="{{ if .bs5 }}btn-{{ end }}close" data-dismiss="modal" aria-label="Close">
+                            {{ if not .bs5 }}
                             <span aria-hidden="true">&times;</span>
+                            {{ end }}
                         </button>
                     </div>
                     <div class="modal-body">
@@ -251,8 +261,10 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">Create a user</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <button type="button" class="{{ if .bs5 }}btn-{{ end }}close" data-dismiss="modal" aria-label="Close">
+                            {{ if not .bs5 }}
                             <span aria-hidden="true">&times;</span>
+                            {{ end }}
                         </button>
                     </div>
                     <div class="modal-body">

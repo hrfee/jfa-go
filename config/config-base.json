@@ -159,7 +159,7 @@
             "requires_restart": true,
             "type": "bool",
             "value": false,
-            "description": "Use Bootstrap 5 (currently in alpha). This also removes the need for jQuery, so the page should load faster."
+            "description": "Use the Bootstrap 5 Alpha. Looks better and removes the need for jQuery, so the page should load faster."
         }
     },
     "password_validation": {
@@ -501,7 +501,7 @@
     "ombi": {
         "meta": {
             "name": "Ombi Integration",
-            "description": "Connect to Ombi to automatically create a new user's account. You'll need to create an Ombi user template."
+            "description": "Connect to Ombi to automatically create both Ombi and Jellyfin accounts for new users. You'll need to create a user template for this to work. Once enabled, refresh to see an option in settings for this."
         },
         "enabled": {
             "name": "Enabled",
@@ -590,28 +590,28 @@
             "description": "Location of stored Ombi user template."
         },
         "user_template": {
-            "name": "User Template",
+            "name": "User Template (Deprecated)",
             "required": false,
             "requires_restart": true,
             "type": "text",
             "value": "",
-            "description": "Deprecated. Location of stored user policy template (json)."
+            "description": "Deprecated in favor of User Profiles. Location of stored user policy template (json)."
         },
         "user_configuration": {
-            "name": "userConfiguration",
+            "name": "userConfiguration (Deprecated in favor of User Profiles.",
             "required": false,
             "requires_restart": true,
             "type": "text",
             "value": "",
-            "description": "Deprecated. Location of stored user configuration template (used for setting homescreen layout) (json)"
+            "description": "Deprecated in favor of User Profiles. Location of stored user configuration template (used for setting homescreen layout) (json)"
         },
         "user_displayprefs": {
-            "name": "displayPreferences",
+            "name": "displayPreferences (Deprecated in favor of User Profiles.",
             "required": false,
             "requires_restart": true,
             "type": "text",
             "value": "",
-            "description": "Deprecated. Location of stored displayPreferences template (also used for homescreen layout) (json)"
+            "description": "Deprecated in favor of User Profiles. Location of stored displayPreferences template (also used for homescreen layout) (json)"
         },
         "user_profiles": {
             "name": "User Profiles",

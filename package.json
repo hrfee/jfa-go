@@ -19,7 +19,7 @@
   "dependencies": {
     "@types/jquery": "^3.5.3",
     "autoprefixer": "^9.8.5",
-    "bootstrap": "^5.0.0-alpha1",
+    "bootstrap": "^5.0.0-alpha2",
     "bootstrap4": "npm:bootstrap@^4.5.0",
     "clean-css-cli": "^4.3.0",
     "esbuild": "^0.7.8",

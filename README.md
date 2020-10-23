@@ -55,9 +55,9 @@ docker create \
 ```
 
 #### Build from source
-A Dockerfile is provided that creates an image built from source, but it's only suitable for those who will run jfa-go in docker.
+If you're using docker, a Dockerfile is provided that builds from source.
 
-Full build instructions can be found [here](https://github.com/hrfee/jfa-go/wiki/Build).
+Otherwise, full build instructions can be found [here](https://github.com/hrfee/jfa-go/wiki/Build).
 
 #### Usage
 Simply run `jfa-go` to start the application. A setup wizard will start on `localhost:8056` (or your own specified address). Upon completion, refresh the page.

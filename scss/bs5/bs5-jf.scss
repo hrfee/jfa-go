@@ -142,4 +142,8 @@ $list-group-action-active-bg: $jf-blue-focus;
     background-color: $jf-blue-hover;
 }
 
+.btn-close {
+    filter: invert(80%);
+}
+
 @import "../base.scss";
