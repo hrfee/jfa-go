@@ -33,7 +33,7 @@ func newOmbi(server, key string, noFail bool) *Ombi {
 }
 
 // does a GET and returns the response as an io.reader.
-func (ombi *Ombi) _getReader(url string, params map[string]string) (string, int, error) {
+func (ombi *Ombi) _getJSON(url string, params map[string]string) (string, int, error) {
 	if ombi.key == "" {
 		return "", 401, fmt.Errorf("No API key provided")
 	}
@@ -107,16 +107,28 @@ func (ombi *Ombi) _post(url string, data map[string]interface{}, response bool) 
 	return responseText, resp.StatusCode, nil
 }
 
+func (ombi *Ombi) deleteUser(id string) (code int, err error) {
+	url := fmt.Sprintf("%s/api/v1/Identity/%s", ombi.server, id)
+	req, _ := http.NewRequest("DELETE", url, nil)
+	req.Header.Add("Content-Type", "application/json")
+	for name, value := range ombi.header {
+		req.Header.Add(name, value)
+	}
+	resp, err := ombi.httpClient.Do(req)
+	defer timeoutHandler("Ombi", ombi.server, ombi.noFail)
+	return resp.StatusCode, err
+}
+
 // gets an ombi user by their ID.
 func (ombi *Ombi) userByID(id string) (result map[string]interface{}, code int, err error) {
-	resp, code, err := ombi._getReader(fmt.Sprintf("%s/api/v1/Identity/User/%s", ombi.server, id), nil)
+	resp, code, err := ombi._getJSON(fmt.Sprintf("%s/api/v1/Identity/User/%s", ombi.server, id), nil)
 	json.Unmarshal([]byte(resp), &result)
 	return
 }
 
 // gets a list of all users.
 func (ombi *Ombi) getUsers() (result []map[string]interface{}, code int, err error) {
-	resp, code, err := ombi._getReader(fmt.Sprintf("%s/api/v1/Identity/Users", ombi.server), nil)
+	resp, code, err := ombi._getJSON(fmt.Sprintf("%s/api/v1/Identity/Users", ombi.server), nil)
 	json.Unmarshal([]byte(resp), &result)
 	return
 }

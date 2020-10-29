@@ -1,4 +1,4 @@
-import { _get, _post, _delete, rmAttr, addAttr } from "modules/common.js";
+import { _get, _post, _delete, rmAttr, addAttr } from "./modules/common.js";
 
 const ombiDefaultsModal = window.BS.newModal('ombiDefaults');
 

@@ -385,10 +385,47 @@ func (app *appContext) DeleteUser(gc *gin.Context) {
 	var req deleteUserDTO
 	gc.BindJSON(&req)
 	errors := map[string]string{}
+	ombiEnabled := app.config.Section("ombi").Key("enabled").MustBool(false)
+	ombiUsers := []map[string]interface{}{}
+	var code int
+	var err error
+	if ombiEnabled {
+		ombiUsers, code, err = app.ombi.getUsers()
+		if code != 200 || err != nil {
+			respond(500, fmt.Sprintf("Couldn't get users: %s (%s)", code, err), gc)
+			return
+		}
+	}
 	for _, userID := range req.Users {
+		if ombiEnabled {
+			ombiID := ""
+			user, status, err := app.jf.userById(userID, false)
+			if err == nil && status == 200 {
+				username := user["Name"].(string)
+				email := app.storage.emails[userID].(string)
+				for _, ombiUser := range ombiUsers {
+					if ombiUser["userName"].(string) == username || (ombiUser["emailAddress"].(string) == email && email != "") {
+						ombiID = ombiUser["id"].(string)
+						break
+					}
+				}
+				if ombiID != "" {
+					status, err := app.ombi.deleteUser(ombiID)
+					if err != nil || status != 200 {
+						app.err.Printf("Failed to delete ombi user: %d %s", status, err)
+						errors[userID] = fmt.Sprintf("Ombi: %d %s, ", status, err)
+					}
+				}
+			}
+		}
 		status, err := app.jf.deleteUser(userID)
 		if !(status == 200 || status == 204) || err != nil {
-			errors[userID] = fmt.Sprintf("%d: %s", status, err)
+			msg := fmt.Sprintf("%d: %s", status, err)
+			if _, ok := errors[userID]; !ok {
+				errors[userID] = msg
+			} else {
+				errors[userID] += msg
+			}
 		}
 		if req.Notify {
 			addr, ok := app.storage.emails[userID]
