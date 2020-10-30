@@ -41,15 +41,18 @@ var defaultPwValStrings: pwValStrings = {
     }
 }
 
-const toggleSpinner = (): void => {
+const toggleSpinner = (ogText?: string): string => {
     const submitButton = document.getElementById('submitButton') as HTMLButtonElement;
     if (document.getElementById('createAccountSpinner')) {
-        submitButton.innerHTML = `<span>Create Account</span>`;
+        submitButton.innerHTML = ogText ? ogText : `<span>Create Account</span>`;
         submitButton.disabled = false;
+        return "";
     } else {
+        let ogText = submitButton.innerHTML;
         submitButton.innerHTML = `
         <span id="createAccountSpinner" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>Creating...
         `;
+        return ogText;
     }
 };
 
@@ -84,7 +87,7 @@ var code = window.location.href.split('/').pop();
     if (el) {
         el.remove();
     }
-    toggleSpinner();
+    const ogText = toggleSpinner();
     let send: Object = serializeForm('accountForm');
     send["code"] = code;
     if (!window.usernameEnabled) {
@@ -92,7 +95,7 @@ var code = window.location.href.split('/').pop();
     }
     _post("/newUser", send, function (): void {
         if (this.readyState == 4) {
-            toggleSpinner();
+            toggleSpinner(ogText);
             let data: Object = this.response;
             const errorGiven = ("error" in data)
             if (errorGiven || data["success"] === false) {
