@@ -16,6 +16,9 @@ type Ombi struct {
 	header      map[string]string
 	httpClient  *http.Client
 	noFail      bool
+	userCache   []map[string]interface{}
+	cacheExpiry time.Time
+	cacheLength int
 }
 
 func newOmbi(server, key string, noFail bool) *Ombi {
@@ -29,6 +32,8 @@ func newOmbi(server, key string, noFail bool) *Ombi {
 		header: map[string]string{
 			"ApiKey": key,
 		},
+		cacheLength: 30,
+		cacheExpiry: time.Now(),
 	}
 }
 
@@ -72,10 +77,10 @@ func (ombi *Ombi) _getJSON(url string, params map[string]string) (string, int, e
 }
 
 // does a POST and optionally returns response as string. Returns a string instead of an io.reader bcs i couldn't get it working otherwise.
-func (ombi *Ombi) _post(url string, data map[string]interface{}, response bool) (string, int, error) {
+func (ombi *Ombi) _send(mode string, url string, data map[string]interface{}, response bool) (string, int, error) {
 	responseText := ""
 	params, _ := json.Marshal(data)
-	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(params))
+	req, _ := http.NewRequest(mode, url, bytes.NewBuffer(params))
 	req.Header.Add("Content-Type", "application/json")
 	for name, value := range ombi.header {
 		req.Header.Add(name, value)
@@ -107,6 +112,23 @@ func (ombi *Ombi) _post(url string, data map[string]interface{}, response bool) 
 	return responseText, resp.StatusCode, nil
 }
 
+func (ombi *Ombi) _post(url string, data map[string]interface{}, response bool) (string, int, error) {
+	return ombi._send("POST", url, data, response)
+}
+
+func (ombi *Ombi) _put(url string, data map[string]interface{}, response bool) (string, int, error) {
+	return ombi._send("PUT", url, data, response)
+}
+
+func (ombi *Ombi) modifyUser(user map[string]interface{}) (status int, err error) {
+	if _, ok := user["id"]; !ok {
+		err = fmt.Errorf("No ID provided")
+		return
+	}
+	_, status, err = ombi._put(ombi.server+"/api/v1/Identity", user, false)
+	return
+}
+
 func (ombi *Ombi) deleteUser(id string) (code int, err error) {
 	url := fmt.Sprintf("%s/api/v1/Identity/%s", ombi.server, id)
 	req, _ := http.NewRequest("DELETE", url, nil)
@@ -127,10 +149,18 @@ func (ombi *Ombi) userByID(id string) (result map[string]interface{}, code int, 
 }
 
 // gets a list of all users.
-func (ombi *Ombi) getUsers() (result []map[string]interface{}, code int, err error) {
-	resp, code, err := ombi._getJSON(fmt.Sprintf("%s/api/v1/Identity/Users", ombi.server), nil)
-	json.Unmarshal([]byte(resp), &result)
-	return
+func (ombi *Ombi) getUsers() ([]map[string]interface{}, int, error) {
+	if time.Now().After(ombi.cacheExpiry) {
+		resp, code, err := ombi._getJSON(fmt.Sprintf("%s/api/v1/Identity/Users", ombi.server), nil)
+		var result []map[string]interface{}
+		json.Unmarshal([]byte(resp), &result)
+		ombi.userCache = result
+		if (code == 200 || code == 204) && err == nil {
+			ombi.cacheExpiry = time.Now().Add(time.Minute * time.Duration(ombi.cacheLength))
+		}
+		return result, code, err
+	}
+	return ombi.userCache, 200, nil
 }
 
 // Strip these from a user when saving as a template.

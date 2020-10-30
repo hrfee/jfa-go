@@ -194,6 +194,29 @@ func (app *appContext) checkInvite(code string, used bool, username string) bool
 	return false
 }
 
+func (app *appContext) getOmbiUser(jfID string) (map[string]interface{}, int, error) {
+	ombiUsers, code, err := app.ombi.getUsers()
+	if err != nil || code != 200 {
+		return nil, code, err
+	}
+	jfUser, code, err := app.jf.userById(jfID, false)
+	if err != nil || code != 200 {
+		return nil, code, err
+	}
+	username := jfUser["Name"].(string)
+	email := app.storage.emails[jfID].(string)
+	for _, ombiUser := range ombiUsers {
+		ombiAddr := ""
+		if a, ok := ombiUser["emailAddress"]; ok && a != nil {
+			ombiAddr = a.(string)
+		}
+		if ombiUser["userName"].(string) == username || (ombiAddr == email && email != "") {
+			return ombiUser, code, err
+		}
+	}
+	return nil, 400, fmt.Errorf("Couldn't find user")
+}
+
 // Routes from now on!
 
 // @Summary Creates a new Jellyfin user without an invite.
@@ -386,31 +409,12 @@ func (app *appContext) DeleteUser(gc *gin.Context) {
 	gc.BindJSON(&req)
 	errors := map[string]string{}
 	ombiEnabled := app.config.Section("ombi").Key("enabled").MustBool(false)
-	ombiUsers := []map[string]interface{}{}
-	var code int
-	var err error
-	if ombiEnabled {
-		ombiUsers, code, err = app.ombi.getUsers()
-		if code != 200 || err != nil {
-			respond(500, fmt.Sprintf("Couldn't get users: %s (%s)", code, err), gc)
-			return
-		}
-	}
 	for _, userID := range req.Users {
 		if ombiEnabled {
-			ombiID := ""
-			user, status, err := app.jf.userById(userID, false)
-			if err == nil && status == 200 {
-				username := user["Name"].(string)
-				email := app.storage.emails[userID].(string)
-				for _, ombiUser := range ombiUsers {
-					if ombiUser["userName"].(string) == username || (ombiUser["emailAddress"].(string) == email && email != "") {
-						ombiID = ombiUser["id"].(string)
-						break
-					}
-				}
-				if ombiID != "" {
-					status, err := app.ombi.deleteUser(ombiID)
+			ombiUser, code, err := app.getOmbiUser(userID)
+			if code == 200 && err == nil {
+				if id, ok := ombiUser["id"]; ok {
+					status, err := app.ombi.deleteUser(id.(string))
 					if err != nil || status != 200 {
 						app.err.Printf("Failed to delete ombi user: %d %s", status, err)
 						errors[userID] = fmt.Sprintf("Ombi: %d %s, ", status, err)
@@ -605,7 +609,7 @@ func (app *appContext) SetDefaultProfile(gc *gin.Context) {
 // @Security ApiKeyBlankPassword
 // @tags Profiles & Settings
 func (app *appContext) CreateProfile(gc *gin.Context) {
-	fmt.Println("Profile creation requested")
+	app.info.Println("Profile creation requested")
 	var req newProfileDTO
 	gc.BindJSON(&req)
 	user, status, err := app.jf.userById(req.ID, false)
@@ -910,7 +914,6 @@ func (app *appContext) SetOmbiDefaults(gc *gin.Context) {
 		return
 	}
 	app.storage.ombi_template = template
-	fmt.Println(app.storage.ombi_path)
 	app.storage.storeOmbiTemplate()
 	respondBool(200, true, gc)
 }
@@ -926,7 +929,6 @@ func (app *appContext) SetOmbiDefaults(gc *gin.Context) {
 func (app *appContext) ModifyEmails(gc *gin.Context) {
 	var req modifyEmailsDTO
 	gc.BindJSON(&req)
-	fmt.Println(req)
 	app.debug.Println("Email modification requested")
 	users, status, err := app.jf.getUsers(false)
 	if !(status == 200 || status == 204) || err != nil {
@@ -935,9 +937,21 @@ func (app *appContext) ModifyEmails(gc *gin.Context) {
 		respond(500, "Couldn't get users", gc)
 		return
 	}
+	ombiEnabled := app.config.Section("ombi").Key("enabled").MustBool(false)
 	for _, jfUser := range users {
-		if address, ok := req[jfUser["Id"].(string)]; ok {
+		id := jfUser["Id"].(string)
+		if address, ok := req[id]; ok {
 			app.storage.emails[jfUser["Id"].(string)] = address
+			if ombiEnabled {
+				ombiUser, code, err := app.getOmbiUser(id)
+				if code == 200 && err == nil {
+					ombiUser["emailAddress"] = address
+					code, err = app.ombi.modifyUser(ombiUser)
+					if code != 200 || err != nil {
+						app.err.Printf("%s: Failed to change ombi email address: %d %s", ombiUser["userName"].(string), code, err)
+					}
+				}
+			}
 		}
 	}
 	app.storage.storeEmails()
