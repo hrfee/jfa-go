@@ -263,6 +263,12 @@ func start(asDaemon, firstCall bool) {
 	if app.loadConfig() != nil {
 		app.err.Fatalf("Failed to load config file \"%s\"", app.config_path)
 	}
+	lang := app.config.Section("ui").Key("language").MustString("en-us")
+	app.storage.lang.FormPath = filepath.Join(app.local_path, "lang", "form", lang+".json")
+	if _, err := os.Stat(app.storage.lang.FormPath); os.IsNotExist(err) {
+		app.storage.lang.FormPath = filepath.Join(app.local_path, "lang", "form", "en-us.json")
+	}
+	app.storage.loadLang()
 	app.version = app.config.Section("jellyfin").Key("version").String()
 	// read from config...
 	debugMode = app.config.Section("ui").Key("debug").MustBool(false)

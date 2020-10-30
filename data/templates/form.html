@@ -41,27 +41,27 @@
                 margin-bottom: 5%;
             }
         </style>
-        <title>Create Jellyfin Account</title>
+        <title>{{ .lang.pageTitle }}</title>
     </head>
     <body>
         <div class="modal fade" id="successBox" tabindex="-1" role="dialog" aria-labelledby="successBox" aria-hidden="true" data-backdrop="static">
             <div class="modal-dialog modal-dialog-centered" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="successTitle">Success!</h5>
+                        <h5 class="modal-title" id="successHeader">{{ .lang.successHeader }}</h5>
                     </div>
                     <div class="modal-body" id="successBody">
                         <p>{{ .successMessage }}</p>
                     </div>
                     <div class="modal-footer">
-                        <a href="{{ .jfLink }}" class="btn btn-primary">Continue</a>
+                        <a href="{{ .jfLink }}" class="btn btn-primary">{{ .lang.successContinueButton }}</a>
                     </div>
                 </div>
             </div>
         </div>
         <div class="pageContainer">
             <h1>
-                Create Account
+                {{ .lang.createAccountHeader }}
             </h1>
             <p>{{ .helpMessage }}</p>
             <p class="contactBox">{{ .contactMessage }}</p>
@@ -69,26 +69,26 @@
                 <div class="row" id="cardContainer">
                     <div class="col-sm">
                         <div class="card mb-3">
-                            <div class="card-header">Details</div>
+                            <div class="card-header">{{ .lang.accountDetails }}</div>
                             <div class="card-body">
                                 <form action="#" method="POST" id="accountForm">
                                     <div class="form-group">
-                                        <label for="inputEmail">Email</label>
-                                        <input type="email" class="form-control" id="{{ if .settings.username }}inputEmail{{ else }}inputUsername{{ end }}" name="{{ if .settings.username }}email{{ else }}username{{ end }}" placeholder="Email" value="{{ .email }}" required>
+                                        <label for="inputEmail">{{ .lang.emailAddress }}</label>
+                                        <input type="email" class="form-control" id="{{ if .settings.username }}inputEmail{{ else }}inputUsername{{ end }}" name="{{ if .settings.username }}email{{ else }}username{{ end }}" placeholder="{{ .lang.emailAddress }}" value="{{ .email }}" required>
                                     </div>
                                     {{ if .settings.username }}
                                     <div class="form-group">
-                                        <label for="inputUsername">Username</label>
-                                        <input type="username" class="form-control" id="inputUsername" name="username" placeholder="Username" required>
+                                        <label for="inputUsername">{{ .lang.username }}</label>
+                                        <input type="username" class="form-control" id="inputUsername" name="username" placeholder="{{ .lang.username }}" required>
                                     </div>
                                     {{ end }}
                                     <div class="form-group">
-                                        <label for="inputPassword">Password</label>
-                                        <input type="password" class="form-control" id="inputPassword" name="password" placeholder="Password" required>
+                                        <label for="inputPassword">{{ .lang.password }}</label>
+                                        <input type="password" class="form-control" id="inputPassword" name="password" placeholder="{{ .lang.password }}" required>
                                     </div>
                                     <div class="btn-group" role="group" aria-label="Button & Error" id="errorBox" style="margin-top: 1rem;">
                                         <button type="submit" class="btn btn-outline-primary" id="submitButton">
-                                            <span id="createAccount">Create Account</span>
+                                            <span id="createAccount">{{ .lang.createAccountButton }}</span>
                                         </button>
                                     </div>
                                 </form>
@@ -98,7 +98,7 @@
                     {{ if .validate }}
                     <div class="col-sm" id="requirementBox">
                         <div class="card mb-3 requirementBox">
-                            <div class="card-header">Password Requirements</div>
+                            <div class="card-header">{{ .lang.passwordRequirementsHeader }}</div>
                             <div class="card-body">
                                 <ul class="list-group">
                                     {{ range $key, $value := .requirements }}
@@ -114,31 +114,10 @@
                 </div>
             </div>
         </div>
-    <script>
-            window.validationStrings = {
-                "length": {
-                    "singular": "Must have at least {n} character",
-                    "plural": "Must have a least {n} characters"
-                },
-                "uppercase": {
-                    "singular": "Must have at least {n} uppercase character",
-                    "plural": "Must have at least {n} uppercase characters"
-                },
-                "lowercase": {
-                    "singular": "Must have at least {n} lowercase character",
-                    "plural": "Must have at least {n} lowercase characters"
-                },
-                "number": {
-                    "singular": "Must have at least {n} number",
-                    "plural": "Must have at least {n} numbers"
-                },
-                "special": {
-                    "singular": "Must have at least {n} special character",
-                    "plural": "Must have at least {n} special characters"
-                }
-            };
+        <script>
+            window.validationStrings = {{ .lang.validationStrings }};
         </script>
-        {{ template "form-base" .settings }}
+        {{ template "form-base" . }}
     </body>
 </html>
 

@@ -49,6 +49,17 @@
             "name": "General",
             "description": "Settings related to the UI and program functionality."
         },
+        "language": {
+            "name": "Language",
+            "required": false,
+            "requires_restart": true,
+            "type": "select",
+            "options": [
+                "en-us"
+            ],
+            "value": "en-US",
+            "description": "UI Language. Currently only implemented for account creation form. Submit a PR on github if you'd like to translate."
+        },
         "theme": {
             "name": "Default Look",
             "required": false,

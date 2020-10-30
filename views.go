@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -47,7 +49,11 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 				"bs5":      app.config.Section("ui").Key("bs5").MustBool(false),
 				"username": !app.config.Section("email").Key("no_username").MustBool(false),
 			},
+			"lang": app.storage.lang.Form["strings"],
 		})
+		l, _ := json.MarshalIndent(app.storage.lang.Form, "", "  ")
+		fmt.Println(app.storage.lang.Form["strings"].(map[string]interface{})["validationStrings"].(string))
+		fmt.Printf("%s\n", l)
 	} else {
 		gc.HTML(404, "invalidCode.html", gin.H{
 			"bs5":            app.config.Section("ui").Key("bs5").MustBool(false),

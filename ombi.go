@@ -37,7 +37,7 @@ func newOmbi(server, key string, noFail bool) *Ombi {
 	}
 }
 
-// does a GET and returns the response as an io.reader.
+// does a GET and returns the response as a string.
 func (ombi *Ombi) _getJSON(url string, params map[string]string) (string, int, error) {
 	if ombi.key == "" {
 		return "", 401, fmt.Errorf("No API key provided")

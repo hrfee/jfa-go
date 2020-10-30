@@ -14,6 +14,12 @@ type Storage struct {
 	profiles                                                                                               map[string]Profile
 	defaultProfile                                                                                         string
 	emails, policy, configuration, displayprefs, ombi_template                                             map[string]interface{}
+	lang                                                                                                   Lang
+}
+
+type Lang struct {
+	FormPath string
+	Form     map[string]interface{}
 }
 
 // timePattern: %Y-%m-%dT%H:%M:%S.%f
@@ -47,6 +53,22 @@ func (st *Storage) loadInvites() error {
 
 func (st *Storage) storeInvites() error {
 	return storeJSON(st.invite_path, st.invites)
+}
+
+func (st *Storage) loadLang() error {
+	err := loadJSON(st.lang.FormPath, &st.lang.Form)
+	if err != nil {
+		return err
+	}
+	strings := st.lang.Form["strings"].(map[string]interface{})
+	validationStrings := strings["validationStrings"].(map[string]interface{})
+	vS, err := json.Marshal(validationStrings)
+	if err != nil {
+		return err
+	}
+	strings["validationStrings"] = string(vS)
+	st.lang.Form["strings"] = strings
+	return nil
 }
 
 func (st *Storage) loadEmails() error {
