@@ -48,7 +48,7 @@ type Jellyfin struct {
 }
 
 // NewJellyfin returns a new Jellyfin object.
-func NewJellyfin(server, client, version, device, deviceID string, timeoutHandler common.TimeoutHandler) (*Jellyfin, error) {
+func NewJellyfin(server, client, version, device, deviceID string, timeoutHandler common.TimeoutHandler, cacheTimeout int) (*Jellyfin, error) {
 	jf := &Jellyfin{}
 	jf.Server = server
 	jf.client = client
@@ -78,7 +78,7 @@ func NewJellyfin(server, client, version, device, deviceID string, timeoutHandle
 		data, _ := ioutil.ReadAll(resp.Body)
 		json.Unmarshal(data, &jf.ServerInfo)
 	}
-	jf.cacheLength = 30
+	jf.cacheLength = cacheTimeout
 	jf.CacheExpiry = time.Now()
 	return jf, nil
 }

@@ -435,6 +435,7 @@ func start(asDaemon, firstCall bool) {
 		}
 
 		server := app.config.Section("jellyfin").Key("server").String()
+		cacheTimeout := int(app.config.Section("jellyfin").Key("cache_timeout").MustUint(30))
 		app.jf, _ = jfapi.NewJellyfin(
 			server,
 			app.config.Section("jellyfin").Key("client").String(),
@@ -442,6 +443,7 @@ func start(asDaemon, firstCall bool) {
 			app.config.Section("jellyfin").Key("device").String(),
 			app.config.Section("jellyfin").Key("device_id").String(),
 			common.NewTimeoutHandler("Jellyfin", server, true),
+			cacheTimeout,
 		)
 		var status int
 		_, status, err = app.jf.Authenticate(app.config.Section("jellyfin").Key("username").String(), app.config.Section("jellyfin").Key("password").String())
@@ -449,7 +451,7 @@ func start(asDaemon, firstCall bool) {
 			app.err.Fatalf("Failed to authenticate with Jellyfin @ %s: Code %d", server, status)
 		}
 		app.info.Printf("Authenticated with %s", server)
-		app.authJf, _ = jfapi.NewJellyfin(server, "jfa-go", app.version, "auth", "auth", common.NewTimeoutHandler("Jellyfin", server, true))
+		app.authJf, _ = jfapi.NewJellyfin(server, "jfa-go", app.version, "auth", "auth", common.NewTimeoutHandler("Jellyfin", server, true), cacheTimeout)
 
 		app.loadStrftime()
 

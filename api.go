@@ -209,7 +209,7 @@ func (app *appContext) getOmbiUser(jfID string) (map[string]interface{}, int, er
 	username := jfUser["Name"].(string)
 	email := ""
 	if e, ok := app.storage.emails[jfID]; ok {
-		email := e.(string)
+		email = e.(string)
 	}
 	for _, ombiUser := range ombiUsers {
 		ombiAddr := ""

@@ -42,6 +42,14 @@
             "type": "text",
             "value": "jfa-go",
             "description": "The name of the client that will show up in the Jellyfin dashboard."
+        },
+        "cache_timeout": {
+            "name": "User cache timeout (minutes)",
+            "required": false,
+            "requires_restart": true,
+            "type": "number",
+            "value": 30,
+            "description": "Timeout of user cache in minutes. Set to 0 to disable."
         }
     },
     "ui": {
