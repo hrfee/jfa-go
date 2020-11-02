@@ -23,7 +23,10 @@ import (
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
+	"github.com/hrfee/jfa-go/common"
 	_ "github.com/hrfee/jfa-go/docs"
+	"github.com/hrfee/jfa-go/jfapi"
+	"github.com/hrfee/jfa-go/ombi"
 	"github.com/lithammer/shortuuid/v3"
 	"github.com/logrusorgru/aurora/v3"
 	swaggerFiles "github.com/swaggo/files"
@@ -51,9 +54,9 @@ type appContext struct {
 	jellyfinLogin    bool
 	users            []User
 	invalidTokens    []string
-	jf               *Jellyfin
-	authJf           *Jellyfin
-	ombi             *Ombi
+	jf               *jfapi.Jellyfin
+	authJf           *jfapi.Jellyfin
+	ombi             *ombi.Ombi
 	datePattern      string
 	timePattern      string
 	storage          Storage
@@ -139,18 +142,18 @@ var (
 func test(app *appContext) {
 	fmt.Printf("\n\n----\n\n")
 	settings := map[string]interface{}{
-		"server":         app.jf.server,
-		"server version": app.jf.serverInfo.Version,
-		"server name":    app.jf.serverInfo.Name,
-		"authenticated?": app.jf.authenticated,
-		"access token":   app.jf.accessToken,
-		"username":       app.jf.username,
+		"server":         app.jf.Server,
+		"server version": app.jf.ServerInfo.Version,
+		"server name":    app.jf.ServerInfo.Name,
+		"authenticated?": app.jf.Authenticated,
+		"access token":   app.jf.AccessToken,
+		"username":       app.jf.Username,
 	}
 	for n, v := range settings {
 		fmt.Println(n, ":", v)
 	}
-	users, status, err := app.jf.getUsers(false)
-	fmt.Printf("getUsers: code %d err %s maplength %d\n", status, err, len(users))
+	users, status, err := app.jf.GetUsers(false)
+	fmt.Printf("GetUsers: code %d err %s maplength %d\n", status, err, len(users))
 	fmt.Printf("View output? [y/n]: ")
 	var choice string
 	fmt.Scanln(&choice)
@@ -161,8 +164,8 @@ func test(app *appContext) {
 	fmt.Printf("Enter a user to grab: ")
 	var username string
 	fmt.Scanln(&username)
-	user, status, err := app.jf.userByName(username, false)
-	fmt.Printf("userByName (%s): code %d err %s", username, status, err)
+	user, status, err := app.jf.UserByName(username, false)
+	fmt.Printf("UserByName (%s): code %d err %s", username, status, err)
 	out, err := json.MarshalIndent(user, "", "  ")
 	fmt.Print(string(out))
 }
@@ -358,19 +361,14 @@ func start(asDaemon, firstCall bool) {
 
 		app.debug.Println("Loading storage")
 
-		// app.storage.invite_path = filepath.Join(app.data_path, "invites.json")
 		app.storage.invite_path = app.config.Section("files").Key("invites").String()
 		app.storage.loadInvites()
-		// app.storage.emails_path = filepath.Join(app.data_path, "emails.json")
 		app.storage.emails_path = app.config.Section("files").Key("emails").String()
 		app.storage.loadEmails()
-		// app.storage.policy_path = filepath.Join(app.data_path, "user_template.json")
 		app.storage.policy_path = app.config.Section("files").Key("user_template").String()
 		app.storage.loadPolicy()
-		// app.storage.configuration_path = filepath.Join(app.data_path, "user_configuration.json")
 		app.storage.configuration_path = app.config.Section("files").Key("user_configuration").String()
 		app.storage.loadConfiguration()
-		// app.storage.displayprefs_path = filepath.Join(app.data_path, "user_displayprefs.json")
 		app.storage.displayprefs_path = app.config.Section("files").Key("user_displayprefs").String()
 		app.storage.loadDisplayprefs()
 
@@ -397,16 +395,18 @@ func start(asDaemon, firstCall bool) {
 		if app.config.Section("ombi").Key("enabled").MustBool(false) {
 			app.storage.ombi_path = app.config.Section("files").Key("ombi_template").String()
 			app.storage.loadOmbiTemplate()
-			app.ombi = newOmbi(
-				app.config.Section("ombi").Key("server").String(),
+			ombiServer := app.config.Section("ombi").Key("server").String()
+			app.ombi = ombi.NewOmbi(
+				ombiServer,
 				app.config.Section("ombi").Key("api_key").String(),
-				true,
+				common.NewTimeoutHandler("Ombi", ombiServer, true),
 			)
+
 		}
 
 		app.configBase_path = filepath.Join(app.local_path, "config-base.json")
-		config_base, _ := ioutil.ReadFile(app.configBase_path)
-		json.Unmarshal(config_base, &app.configBase)
+		configBase, _ := ioutil.ReadFile(app.configBase_path)
+		json.Unmarshal(configBase, &app.configBase)
 
 		themes := map[string]string{
 			"Jellyfin (Dark)":   fmt.Sprintf("bs%d-jf.css", app.bsVersion),
@@ -435,20 +435,21 @@ func start(asDaemon, firstCall bool) {
 		}
 
 		server := app.config.Section("jellyfin").Key("server").String()
-		app.jf, _ = newJellyfin(
+		app.jf, _ = jfapi.NewJellyfin(
 			server,
 			app.config.Section("jellyfin").Key("client").String(),
 			app.config.Section("jellyfin").Key("version").String(),
 			app.config.Section("jellyfin").Key("device").String(),
 			app.config.Section("jellyfin").Key("device_id").String(),
+			common.NewTimeoutHandler("Jellyfin", server, true),
 		)
 		var status int
-		_, status, err = app.jf.authenticate(app.config.Section("jellyfin").Key("username").String(), app.config.Section("jellyfin").Key("password").String())
+		_, status, err = app.jf.Authenticate(app.config.Section("jellyfin").Key("username").String(), app.config.Section("jellyfin").Key("password").String())
 		if status != 200 || err != nil {
 			app.err.Fatalf("Failed to authenticate with Jellyfin @ %s: Code %d", server, status)
 		}
 		app.info.Printf("Authenticated with %s", server)
-		app.authJf, _ = newJellyfin(server, "jfa-go", app.version, "auth", "auth")
+		app.authJf, _ = jfapi.NewJellyfin(server, "jfa-go", app.version, "auth", "auth", common.NewTimeoutHandler("Jellyfin", server, true))
 
 		app.loadStrftime()
 

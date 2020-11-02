@@ -4,6 +4,12 @@ go 1.14
 
 replace github.com/hrfee/jfa-go/docs => ./docs
 
+replace github.com/hrfee/jfa-go/jfapi => ./jfapi
+
+replace github.com/hrfee/jfa-go/common => ./common
+
+replace github.com/hrfee/jfa-go/ombi => ./ombi
+
 require (
 	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
@@ -17,7 +23,10 @@ require (
 	github.com/go-playground/validator/v10 v10.4.0 // indirect
 	github.com/golang/protobuf v1.4.2
 	github.com/google/uuid v1.1.2 // indirect
+	github.com/hrfee/jfa-go/common v0.0.0-00010101000000-000000000000
 	github.com/hrfee/jfa-go/docs v0.0.0-20200927200337-7628e5d71da8
+	github.com/hrfee/jfa-go/jfapi v0.0.0-00010101000000-000000000000
+	github.com/hrfee/jfa-go/ombi v0.0.0-00010101000000-000000000000
 	github.com/jordan-wright/email v4.0.1-0.20200917010138-e1c00e156980+incompatible
 	github.com/json-iterator/go v1.1.10 // indirect
 	github.com/knz/strtime v0.0.0-20200924090105-187c67f2bf5e

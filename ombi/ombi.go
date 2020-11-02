@@ -1,4 +1,4 @@
-package main
+package ombi
 
 import (
 	"bytes"
@@ -9,36 +9,40 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/hrfee/jfa-go/common"
 )
 
+// Ombi represents a running Ombi instance.
 type Ombi struct {
-	server, key string
-	header      map[string]string
-	httpClient  *http.Client
-	noFail      bool
-	userCache   []map[string]interface{}
-	cacheExpiry time.Time
-	cacheLength int
+	server, key    string
+	header         map[string]string
+	httpClient     *http.Client
+	userCache      []map[string]interface{}
+	cacheExpiry    time.Time
+	cacheLength    int
+	timeoutHandler common.TimeoutHandler
 }
 
-func newOmbi(server, key string, noFail bool) *Ombi {
+// NewOmbi returns an Ombi object.
+func NewOmbi(server, key string, timeoutHandler common.TimeoutHandler) *Ombi {
 	return &Ombi{
 		server: server,
 		key:    key,
-		noFail: noFail,
 		httpClient: &http.Client{
 			Timeout: 10 * time.Second,
 		},
 		header: map[string]string{
 			"ApiKey": key,
 		},
-		cacheLength: 30,
-		cacheExpiry: time.Now(),
+		cacheLength:    30,
+		cacheExpiry:    time.Now(),
+		timeoutHandler: timeoutHandler,
 	}
 }
 
 // does a GET and returns the response as a string.
-func (ombi *Ombi) _getJSON(url string, params map[string]string) (string, int, error) {
+func (ombi *Ombi) getJSON(url string, params map[string]string) (string, int, error) {
 	if ombi.key == "" {
 		return "", 401, fmt.Errorf("No API key provided")
 	}
@@ -53,7 +57,7 @@ func (ombi *Ombi) _getJSON(url string, params map[string]string) (string, int, e
 		req.Header.Add(name, value)
 	}
 	resp, err := ombi.httpClient.Do(req)
-	defer timeoutHandler("Ombi", ombi.server, ombi.noFail)
+	defer ombi.timeoutHandler()
 	if err != nil || resp.StatusCode != 200 {
 		if resp.StatusCode == 401 {
 			return "", 401, fmt.Errorf("Invalid API Key")
@@ -77,7 +81,7 @@ func (ombi *Ombi) _getJSON(url string, params map[string]string) (string, int, e
 }
 
 // does a POST and optionally returns response as string. Returns a string instead of an io.reader bcs i couldn't get it working otherwise.
-func (ombi *Ombi) _send(mode string, url string, data map[string]interface{}, response bool) (string, int, error) {
+func (ombi *Ombi) send(mode string, url string, data map[string]interface{}, response bool) (string, int, error) {
 	responseText := ""
 	params, _ := json.Marshal(data)
 	req, _ := http.NewRequest(mode, url, bytes.NewBuffer(params))
@@ -86,7 +90,7 @@ func (ombi *Ombi) _send(mode string, url string, data map[string]interface{}, re
 		req.Header.Add(name, value)
 	}
 	resp, err := ombi.httpClient.Do(req)
-	defer timeoutHandler("Ombi", ombi.server, ombi.noFail)
+	defer ombi.timeoutHandler()
 	if err != nil || !(resp.StatusCode == 200 || resp.StatusCode == 201) {
 		if resp.StatusCode == 401 {
 			return "", 401, fmt.Errorf("Invalid API Key")
@@ -112,24 +116,26 @@ func (ombi *Ombi) _send(mode string, url string, data map[string]interface{}, re
 	return responseText, resp.StatusCode, nil
 }
 
-func (ombi *Ombi) _post(url string, data map[string]interface{}, response bool) (string, int, error) {
-	return ombi._send("POST", url, data, response)
+func (ombi *Ombi) post(url string, data map[string]interface{}, response bool) (string, int, error) {
+	return ombi.send("POST", url, data, response)
 }
 
-func (ombi *Ombi) _put(url string, data map[string]interface{}, response bool) (string, int, error) {
-	return ombi._send("PUT", url, data, response)
+func (ombi *Ombi) put(url string, data map[string]interface{}, response bool) (string, int, error) {
+	return ombi.send("PUT", url, data, response)
 }
 
-func (ombi *Ombi) modifyUser(user map[string]interface{}) (status int, err error) {
+// ModifyUser applies the given modified user object to the corresponding user.
+func (ombi *Ombi) ModifyUser(user map[string]interface{}) (status int, err error) {
 	if _, ok := user["id"]; !ok {
 		err = fmt.Errorf("No ID provided")
 		return
 	}
-	_, status, err = ombi._put(ombi.server+"/api/v1/Identity", user, false)
+	_, status, err = ombi.put(ombi.server+"/api/v1/Identity", user, false)
 	return
 }
 
-func (ombi *Ombi) deleteUser(id string) (code int, err error) {
+// DeleteUser deletes the user corresponding to the given ID.
+func (ombi *Ombi) DeleteUser(id string) (code int, err error) {
 	url := fmt.Sprintf("%s/api/v1/Identity/%s", ombi.server, id)
 	req, _ := http.NewRequest("DELETE", url, nil)
 	req.Header.Add("Content-Type", "application/json")
@@ -137,21 +143,21 @@ func (ombi *Ombi) deleteUser(id string) (code int, err error) {
 		req.Header.Add(name, value)
 	}
 	resp, err := ombi.httpClient.Do(req)
-	defer timeoutHandler("Ombi", ombi.server, ombi.noFail)
+	defer ombi.timeoutHandler()
 	return resp.StatusCode, err
 }
 
-// gets an ombi user by their ID.
-func (ombi *Ombi) userByID(id string) (result map[string]interface{}, code int, err error) {
-	resp, code, err := ombi._getJSON(fmt.Sprintf("%s/api/v1/Identity/User/%s", ombi.server, id), nil)
+// UserByID returns the user corresponding to the provided ID.
+func (ombi *Ombi) UserByID(id string) (result map[string]interface{}, code int, err error) {
+	resp, code, err := ombi.getJSON(fmt.Sprintf("%s/api/v1/Identity/User/%s", ombi.server, id), nil)
 	json.Unmarshal([]byte(resp), &result)
 	return
 }
 
-// gets a list of all users.
-func (ombi *Ombi) getUsers() ([]map[string]interface{}, int, error) {
+// GetUsers returns all users on the Ombi instance.
+func (ombi *Ombi) GetUsers() ([]map[string]interface{}, int, error) {
 	if time.Now().After(ombi.cacheExpiry) {
-		resp, code, err := ombi._getJSON(fmt.Sprintf("%s/api/v1/Identity/Users", ombi.server), nil)
+		resp, code, err := ombi.getJSON(fmt.Sprintf("%s/api/v1/Identity/Users", ombi.server), nil)
 		var result []map[string]interface{}
 		json.Unmarshal([]byte(resp), &result)
 		ombi.userCache = result
@@ -175,9 +181,9 @@ var stripFromOmbi = []string{
 	"userName",
 }
 
-// returns a template based on the user corresponding to the provided ID's settings.
-func (ombi *Ombi) templateByID(id string) (result map[string]interface{}, code int, err error) {
-	result, code, err = ombi.userByID(id)
+// TemplateByID returns a template based on the user corresponding to the provided ID's settings.
+func (ombi *Ombi) TemplateByID(id string) (result map[string]interface{}, code int, err error) {
+	result, code, err = ombi.UserByID(id)
 	if err != nil || code != 200 {
 		return
 	}
@@ -194,14 +200,14 @@ func (ombi *Ombi) templateByID(id string) (result map[string]interface{}, code i
 	return
 }
 
-// creates a new user.
-func (ombi *Ombi) newUser(username, password, email string, template map[string]interface{}) ([]string, int, error) {
+// NewUser creates a new user with the given username, password and email address.
+func (ombi *Ombi) NewUser(username, password, email string, template map[string]interface{}) ([]string, int, error) {
 	url := fmt.Sprintf("%s/api/v1/Identity", ombi.server)
 	user := template
 	user["userName"] = username
 	user["password"] = password
 	user["emailAddress"] = email
-	resp, code, err := ombi._post(url, user, true)
+	resp, code, err := ombi.post(url, user, true)
 	var data map[string]interface{}
 	json.Unmarshal([]byte(resp), &data)
 	if err != nil || code != 200 {

@@ -108,31 +108,33 @@ func (app *appContext) checkInvites() {
 	changed := false
 	for code, data := range app.storage.invites {
 		expiry := data.ValidTill
-		if current_time.After(expiry) {
-			app.debug.Printf("Housekeeping: Deleting old invite %s", code)
-			notify := data.Notify
-			if app.config.Section("notifications").Key("enabled").MustBool(false) && len(notify) != 0 {
-				app.debug.Printf("%s: Expiry notification", code)
-				for address, settings := range notify {
-					if settings["notify-expiry"] {
-						go func() {
-							msg, err := app.email.constructExpiry(code, data, app)
-							if err != nil {
-								app.err.Printf("%s: Failed to construct expiry notification", code)
-								app.debug.Printf("Error: %s", err)
-							} else if err := app.email.send(address, msg); err != nil {
-								app.err.Printf("%s: Failed to send expiry notification", code)
-								app.debug.Printf("Error: %s", err)
-							} else {
-								app.info.Printf("Sent expiry notification to %s", address)
-							}
-						}()
-					}
-				}
-			}
-			changed = true
-			delete(app.storage.invites, code)
+		if !current_time.After(expiry) {
+			continue
 		}
+		app.debug.Printf("Housekeeping: Deleting old invite %s", code)
+		notify := data.Notify
+		if app.config.Section("notifications").Key("enabled").MustBool(false) && len(notify) != 0 {
+			app.debug.Printf("%s: Expiry notification", code)
+			for address, settings := range notify {
+				if !settings["notify-expiry"] {
+					continue
+				}
+				go func() {
+					msg, err := app.email.constructExpiry(code, data, app)
+					if err != nil {
+						app.err.Printf("%s: Failed to construct expiry notification", code)
+						app.debug.Printf("Error: %s", err)
+					} else if err := app.email.send(address, msg); err != nil {
+						app.err.Printf("%s: Failed to send expiry notification", code)
+						app.debug.Printf("Error: %s", err)
+					} else {
+						app.info.Printf("Sent expiry notification to %s", address)
+					}
+				}()
+			}
+		}
+		changed = true
+		delete(app.storage.invites, code)
 	}
 	if changed {
 		app.storage.storeInvites()
@@ -143,63 +145,64 @@ func (app *appContext) checkInvite(code string, used bool, username string) bool
 	current_time := time.Now()
 	app.storage.loadInvites()
 	changed := false
-	if inv, match := app.storage.invites[code]; match {
-		expiry := inv.ValidTill
-		if current_time.After(expiry) {
-			app.debug.Printf("Housekeeping: Deleting old invite %s", code)
-			notify := inv.Notify
-			if app.config.Section("notifications").Key("enabled").MustBool(false) && len(notify) != 0 {
-				app.debug.Printf("%s: Expiry notification", code)
-				for address, settings := range notify {
-					if settings["notify-expiry"] {
-						go func() {
-							msg, err := app.email.constructExpiry(code, inv, app)
-							if err != nil {
-								app.err.Printf("%s: Failed to construct expiry notification", code)
-								app.debug.Printf("Error: %s", err)
-							} else if err := app.email.send(address, msg); err != nil {
-								app.err.Printf("%s: Failed to send expiry notification", code)
-								app.debug.Printf("Error: %s", err)
-							} else {
-								app.info.Printf("Sent expiry notification to %s", address)
-							}
-						}()
-					}
+	inv, match := app.storage.invites[code]
+	if !match {
+		return false
+	}
+	expiry := inv.ValidTill
+	if current_time.After(expiry) {
+		app.debug.Printf("Housekeeping: Deleting old invite %s", code)
+		notify := inv.Notify
+		if app.config.Section("notifications").Key("enabled").MustBool(false) && len(notify) != 0 {
+			app.debug.Printf("%s: Expiry notification", code)
+			for address, settings := range notify {
+				if settings["notify-expiry"] {
+					go func() {
+						msg, err := app.email.constructExpiry(code, inv, app)
+						if err != nil {
+							app.err.Printf("%s: Failed to construct expiry notification", code)
+							app.debug.Printf("Error: %s", err)
+						} else if err := app.email.send(address, msg); err != nil {
+							app.err.Printf("%s: Failed to send expiry notification", code)
+							app.debug.Printf("Error: %s", err)
+						} else {
+							app.info.Printf("Sent expiry notification to %s", address)
+						}
+					}()
 				}
 			}
-			changed = true
-			match = false
+		}
+		changed = true
+		match = false
+		delete(app.storage.invites, code)
+	} else if used {
+		changed = true
+		del := false
+		newInv := inv
+		if newInv.RemainingUses == 1 {
+			del = true
 			delete(app.storage.invites, code)
-		} else if used {
-			changed = true
-			del := false
-			newInv := inv
-			if newInv.RemainingUses == 1 {
-				del = true
-				delete(app.storage.invites, code)
-			} else if newInv.RemainingUses != 0 {
-				// 0 means infinite i guess?
-				newInv.RemainingUses -= 1
-			}
-			newInv.UsedBy = append(newInv.UsedBy, []string{username, app.formatDatetime(current_time)})
-			if !del {
-				app.storage.invites[code] = newInv
-			}
+		} else if newInv.RemainingUses != 0 {
+			// 0 means infinite i guess?
+			newInv.RemainingUses -= 1
 		}
-		if changed {
-			app.storage.storeInvites()
+		newInv.UsedBy = append(newInv.UsedBy, []string{username, app.formatDatetime(current_time)})
+		if !del {
+			app.storage.invites[code] = newInv
 		}
-		return match
 	}
-	return false
+	if changed {
+		app.storage.storeInvites()
+	}
+	return match
 }
 
 func (app *appContext) getOmbiUser(jfID string) (map[string]interface{}, int, error) {
-	ombiUsers, code, err := app.ombi.getUsers()
+	ombiUsers, code, err := app.ombi.GetUsers()
 	if err != nil || code != 200 {
 		return nil, code, err
 	}
-	jfUser, code, err := app.jf.userById(jfID, false)
+	jfUser, code, err := app.jf.UserByID(jfID, false)
 	if err != nil || code != 200 {
 		return nil, code, err
 	}
@@ -229,14 +232,14 @@ func (app *appContext) getOmbiUser(jfID string) (map[string]interface{}, int, er
 func (app *appContext) NewUserAdmin(gc *gin.Context) {
 	var req newUserDTO
 	gc.BindJSON(&req)
-	existingUser, _, _ := app.jf.userByName(req.Username, false)
+	existingUser, _, _ := app.jf.UserByName(req.Username, false)
 	if existingUser != nil {
 		msg := fmt.Sprintf("User already exists named %s", req.Username)
 		app.info.Printf("%s New user failed: %s", req.Username, msg)
 		respond(401, msg, gc)
 		return
 	}
-	user, status, err := app.jf.newUser(req.Username, req.Password)
+	user, status, err := app.jf.NewUser(req.Username, req.Password)
 	if !(status == 200 || status == 204) || err != nil {
 		app.err.Printf("%s New user failed: Jellyfin responded with %d", req.Username, status)
 		respond(401, "Unknown error", gc)
@@ -247,15 +250,15 @@ func (app *appContext) NewUserAdmin(gc *gin.Context) {
 		id = user["Id"].(string)
 	}
 	if len(app.storage.policy) != 0 {
-		status, err = app.jf.setPolicy(id, app.storage.policy)
+		status, err = app.jf.SetPolicy(id, app.storage.policy)
 		if !(status == 200 || status == 204) {
 			app.err.Printf("%s: Failed to set user policy: Code %d", req.Username, status)
 		}
 	}
 	if len(app.storage.configuration) != 0 && len(app.storage.displayprefs) != 0 {
-		status, err = app.jf.setConfiguration(id, app.storage.configuration)
+		status, err = app.jf.SetConfiguration(id, app.storage.configuration)
 		if (status == 200 || status == 204) && err == nil {
-			status, err = app.jf.setDisplayPreferences(id, app.storage.displayprefs)
+			status, err = app.jf.SetDisplayPreferences(id, app.storage.displayprefs)
 		} else {
 			app.err.Printf("%s: Failed to set configuration template: Code %d", req.Username, status)
 		}
@@ -267,7 +270,7 @@ func (app *appContext) NewUserAdmin(gc *gin.Context) {
 	if app.config.Section("ombi").Key("enabled").MustBool(false) {
 		app.storage.loadOmbiTemplate()
 		if len(app.storage.ombi_template) != 0 {
-			errors, code, err := app.ombi.newUser(req.Username, req.Password, req.Email, app.storage.ombi_template)
+			errors, code, err := app.ombi.NewUser(req.Username, req.Password, req.Email, app.storage.ombi_template)
 			if err != nil || code != 200 {
 				app.info.Printf("Failed to create Ombi user (%d): %s", code, err)
 				app.debug.Printf("Errors reported by Ombi: %s", strings.Join(errors, ", "))
@@ -276,7 +279,7 @@ func (app *appContext) NewUserAdmin(gc *gin.Context) {
 			}
 		}
 	}
-	app.jf.cacheExpiry = time.Now()
+	app.jf.CacheExpiry = time.Now()
 }
 
 // @Summary Creates a new Jellyfin user via invite code
@@ -309,14 +312,14 @@ func (app *appContext) NewUser(gc *gin.Context) {
 		gc.Abort()
 		return
 	}
-	existingUser, _, _ := app.jf.userByName(req.Username, false)
+	existingUser, _, _ := app.jf.UserByName(req.Username, false)
 	if existingUser != nil {
 		msg := fmt.Sprintf("User already exists named %s", req.Username)
 		app.info.Printf("%s New user failed: %s", req.Code, msg)
 		respond(401, msg, gc)
 		return
 	}
-	user, status, err := app.jf.newUser(req.Username, req.Password)
+	user, status, err := app.jf.NewUser(req.Username, req.Password)
 	if !(status == 200 || status == 204) || err != nil {
 		app.err.Printf("%s New user failed: Jellyfin responded with %d", req.Code, status)
 		respond(401, "Unknown error", gc)
@@ -355,16 +358,16 @@ func (app *appContext) NewUser(gc *gin.Context) {
 		}
 		if len(profile.Policy) != 0 {
 			app.debug.Printf("Applying policy from profile \"%s\"", invite.Profile)
-			status, err = app.jf.setPolicy(id, profile.Policy)
+			status, err = app.jf.SetPolicy(id, profile.Policy)
 			if !(status == 200 || status == 204) {
 				app.err.Printf("%s: Failed to set user policy: Code %d", req.Code, status)
 			}
 		}
 		if len(profile.Configuration) != 0 && len(profile.Displayprefs) != 0 {
 			app.debug.Printf("Applying homescreen from profile \"%s\"", invite.Profile)
-			status, err = app.jf.setConfiguration(id, profile.Configuration)
+			status, err = app.jf.SetConfiguration(id, profile.Configuration)
 			if (status == 200 || status == 204) && err == nil {
-				status, err = app.jf.setDisplayPreferences(id, profile.Displayprefs)
+				status, err = app.jf.SetDisplayPreferences(id, profile.Displayprefs)
 			} else {
 				app.err.Printf("%s: Failed to set configuration template: Code %d", req.Code, status)
 			}
@@ -377,7 +380,7 @@ func (app *appContext) NewUser(gc *gin.Context) {
 	if app.config.Section("ombi").Key("enabled").MustBool(false) {
 		app.storage.loadOmbiTemplate()
 		if len(app.storage.ombi_template) != 0 {
-			errors, code, err := app.ombi.newUser(req.Username, req.Password, req.Email, app.storage.ombi_template)
+			errors, code, err := app.ombi.NewUser(req.Username, req.Password, req.Email, app.storage.ombi_template)
 			if err != nil || code != 200 {
 				app.info.Printf("Failed to create Ombi user (%d): %s", code, err)
 				app.debug.Printf("Errors reported by Ombi: %s", strings.Join(errors, ", "))
@@ -414,7 +417,7 @@ func (app *appContext) DeleteUser(gc *gin.Context) {
 			ombiUser, code, err := app.getOmbiUser(userID)
 			if code == 200 && err == nil {
 				if id, ok := ombiUser["id"]; ok {
-					status, err := app.ombi.deleteUser(id.(string))
+					status, err := app.ombi.DeleteUser(id.(string))
 					if err != nil || status != 200 {
 						app.err.Printf("Failed to delete ombi user: %d %s", status, err)
 						errors[userID] = fmt.Sprintf("Ombi: %d %s, ", status, err)
@@ -422,7 +425,7 @@ func (app *appContext) DeleteUser(gc *gin.Context) {
 				}
 			}
 		}
-		status, err := app.jf.deleteUser(userID)
+		status, err := app.jf.DeleteUser(userID)
 		if !(status == 200 || status == 204) || err != nil {
 			msg := fmt.Sprintf("%d: %s", status, err)
 			if _, ok := errors[userID]; !ok {
@@ -449,7 +452,7 @@ func (app *appContext) DeleteUser(gc *gin.Context) {
 			}
 		}
 	}
-	app.jf.cacheExpiry = time.Now()
+	app.jf.CacheExpiry = time.Now()
 	if len(errors) == len(req.Users) {
 		respondBool(500, false, gc)
 		app.err.Printf("Account deletion failed: %s", errors[req.Users[0]])
@@ -612,7 +615,7 @@ func (app *appContext) CreateProfile(gc *gin.Context) {
 	app.info.Println("Profile creation requested")
 	var req newProfileDTO
 	gc.BindJSON(&req)
-	user, status, err := app.jf.userById(req.ID, false)
+	user, status, err := app.jf.UserByID(req.ID, false)
 	if !(status == 200 || status == 204) || err != nil {
 		app.err.Printf("Failed to get user from Jellyfin: Code %d", status)
 		app.debug.Printf("Error: %s", err)
@@ -626,7 +629,7 @@ func (app *appContext) CreateProfile(gc *gin.Context) {
 	app.debug.Printf("Creating profile from user \"%s\"", user["Name"].(string))
 	if req.Homescreen {
 		profile.Configuration = user["Configuration"].(map[string]interface{})
-		profile.Displayprefs, status, err = app.jf.getDisplayPreferences(req.ID)
+		profile.Displayprefs, status, err = app.jf.GetDisplayPreferences(req.ID)
 		if !(status == 200 || status == 204) || err != nil {
 			app.err.Printf("Failed to get DisplayPrefs: Code %d", status)
 			app.debug.Printf("Error: %s", err)
@@ -844,7 +847,7 @@ func (app *appContext) GetUsers(gc *gin.Context) {
 	app.debug.Println("Users requested")
 	var resp getUsersDTO
 	resp.UserList = []respUser{}
-	users, status, err := app.jf.getUsers(false)
+	users, status, err := app.jf.GetUsers(false)
 	if !(status == 200 || status == 204) || err != nil {
 		app.err.Printf("Failed to get users from Jellyfin: Code %d", status)
 		app.debug.Printf("Error: %s", err)
@@ -879,7 +882,7 @@ func (app *appContext) GetUsers(gc *gin.Context) {
 // @tags Ombi
 func (app *appContext) OmbiUsers(gc *gin.Context) {
 	app.debug.Println("Ombi users requested")
-	users, status, err := app.ombi.getUsers()
+	users, status, err := app.ombi.GetUsers()
 	if err != nil || status != 200 {
 		app.err.Printf("Failed to get users from Ombi: Code %d", status)
 		app.debug.Printf("Error: %s", err)
@@ -907,7 +910,7 @@ func (app *appContext) OmbiUsers(gc *gin.Context) {
 func (app *appContext) SetOmbiDefaults(gc *gin.Context) {
 	var req ombiUser
 	gc.BindJSON(&req)
-	template, code, err := app.ombi.templateByID(req.ID)
+	template, code, err := app.ombi.TemplateByID(req.ID)
 	if err != nil || code != 200 || len(template) == 0 {
 		app.err.Printf("Couldn't get user from Ombi: %d %s", code, err)
 		respond(500, "Couldn't get user", gc)
@@ -930,7 +933,7 @@ func (app *appContext) ModifyEmails(gc *gin.Context) {
 	var req modifyEmailsDTO
 	gc.BindJSON(&req)
 	app.debug.Println("Email modification requested")
-	users, status, err := app.jf.getUsers(false)
+	users, status, err := app.jf.GetUsers(false)
 	if !(status == 200 || status == 204) || err != nil {
 		app.err.Printf("Failed to get users from Jellyfin: Code %d", status)
 		app.debug.Printf("Error: %s", err)
@@ -946,7 +949,7 @@ func (app *appContext) ModifyEmails(gc *gin.Context) {
 				ombiUser, code, err := app.getOmbiUser(id)
 				if code == 200 && err == nil {
 					ombiUser["emailAddress"] = address
-					code, err = app.ombi.modifyUser(ombiUser)
+					code, err = app.ombi.ModifyUser(ombiUser)
 					if code != 200 || err != nil {
 						app.err.Printf("%s: Failed to change ombi email address: %d %s", ombiUser["userName"].(string), code, err)
 					}
@@ -958,42 +961,6 @@ func (app *appContext) ModifyEmails(gc *gin.Context) {
 	app.info.Println("Email list modified")
 	respondBool(200, true, gc)
 }
-
-/*func (app *appContext) SetDefaults(gc *gin.Context) {
-	var req defaultsReq
-	gc.BindJSON(&req)
-	userID := req.ID
-	user, status, err := app.jf.userById(userID, false)
-	if !(status == 200 || status == 204) || err != nil {
-		app.err.Printf("Failed to get user from Jellyfin: Code %d", status)
-		app.debug.Printf("Error: %s", err)
-		respond(500, "Couldn't get user", gc)
-		return
-	}
-	app.info.Printf("Getting user defaults from \"%s\"", user["Name"].(string))
-	policy := user["Policy"].(map[string]interface{})
-	app.storage.policy = policy
-	app.storage.storePolicy()
-	app.debug.Println("User policy template stored")
-	if req.Homescreen {
-		configuration := user["Configuration"].(map[string]interface{})
-		var displayprefs map[string]interface{}
-		displayprefs, status, err = app.jf.getDisplayPreferences(userID)
-		if !(status == 200 || status == 204) || err != nil {
-			app.err.Printf("Failed to get DisplayPrefs: Code %d", status)
-			app.debug.Printf("Error: %s", err)
-			respond(500, "Couldn't get displayprefs", gc)
-			return
-		}
-		app.storage.configuration = configuration
-		app.storage.displayprefs = displayprefs
-		app.storage.storeConfiguration()
-		app.debug.Println("Configuration template stored")
-		app.storage.storeDisplayprefs()
-		app.debug.Println("DisplayPrefs template stored")
-	}
-	gc.JSON(200, map[string]bool{"success": true})
-}*/
 
 // @Summary Apply settings to a list of users, either from a profile or from another user.
 // @Produce json
@@ -1028,7 +995,7 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 		policy = app.storage.profiles[req.Profile].Policy
 	} else if req.From == "user" {
 		applyingFrom = "user"
-		user, status, err := app.jf.userById(req.ID, false)
+		user, status, err := app.jf.UserByID(req.ID, false)
 		if !(status == 200 || status == 204) || err != nil {
 			app.err.Printf("Failed to get user from Jellyfin: Code %d", status)
 			app.debug.Printf("Error: %s", err)
@@ -1038,7 +1005,7 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 		applyingFrom = "\"" + user["Name"].(string) + "\""
 		policy = user["Policy"].(map[string]interface{})
 		if req.Homescreen {
-			displayprefs, status, err = app.jf.getDisplayPreferences(req.ID)
+			displayprefs, status, err = app.jf.GetDisplayPreferences(req.ID)
 			if !(status == 200 || status == 204) || err != nil {
 				app.err.Printf("Failed to get DisplayPrefs: Code %d", status)
 				app.debug.Printf("Error: %s", err)
@@ -1054,17 +1021,17 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 		"homescreen": map[string]string{},
 	}
 	for _, id := range req.ApplyTo {
-		status, err := app.jf.setPolicy(id, policy)
+		status, err := app.jf.SetPolicy(id, policy)
 		if !(status == 200 || status == 204) || err != nil {
 			errors["policy"][id] = fmt.Sprintf("%d: %s", status, err)
 		}
 		if req.Homescreen {
-			status, err = app.jf.setConfiguration(id, configuration)
+			status, err = app.jf.SetConfiguration(id, configuration)
 			errorString := ""
 			if !(status == 200 || status == 204) || err != nil {
 				errorString += fmt.Sprintf("Configuration %d: %s ", status, err)
 			} else {
-				status, err = app.jf.setDisplayPreferences(id, displayprefs)
+				status, err = app.jf.SetDisplayPreferences(id, displayprefs)
 				if !(status == 200 || status == 204) || err != nil {
 					errorString += fmt.Sprintf("Displayprefs %d: %s ", status, err)
 				}

@@ -146,7 +146,7 @@ func (app *appContext) getToken(gc *gin.Context) {
 			var status int
 			var err error
 			var user map[string]interface{}
-			user, status, err = app.authJf.authenticate(creds[0], creds[1])
+			user, status, err = app.authJf.Authenticate(creds[0], creds[1])
 			if status != 200 || err != nil {
 				if status == 401 || status == 400 {
 					app.info.Println("Auth denied: Invalid username/password (Jellyfin)")
