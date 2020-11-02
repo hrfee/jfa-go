@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"io/ioutil"
+	"log"
 	"strconv"
 	"time"
 )
@@ -172,6 +173,9 @@ func loadJSON(path string, obj interface{}) error {
 		file = []byte("{}")
 	}
 	err = json.Unmarshal(file, &obj)
+	if err != nil {
+		log.Printf("ERROR: Failed to read \"%s\": %s", path, err)
+	}
 	return err
 }
 
@@ -181,5 +185,8 @@ func storeJSON(path string, obj interface{}) error {
 		return err
 	}
 	err = ioutil.WriteFile(path, data, 0644)
+	if err != nil {
+		log.Printf("ERROR: Failed to write to \"%s\": %s", path, err)
+	}
 	return err
 }
