@@ -67,6 +67,13 @@ type appContext struct {
 	port             int
 	version          string
 	quit             chan os.Signal
+	lang             Languages
+}
+
+type Languages struct {
+	langFiles   []os.FileInfo // Language filenames
+	langOptions []string      // Language names
+	chosenIndex int
 }
 
 func (app *appContext) loadHTML(router *gin.Engine) {

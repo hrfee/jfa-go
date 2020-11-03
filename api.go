@@ -3,6 +3,8 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -1060,6 +1062,22 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 func (app *appContext) GetConfig(gc *gin.Context) {
 	app.info.Println("Config requested")
 	resp := map[string]interface{}{}
+	langPath := filepath.Join(app.local_path, "lang", "form")
+	app.lang.langFiles, _ = ioutil.ReadDir(langPath)
+	app.lang.langOptions = make([]string, len(app.lang.langFiles))
+	chosenLang := app.config.Section("ui").Key("language").MustString("en-us") + ".json"
+	for i, f := range app.lang.langFiles {
+		if f.Name() == chosenLang {
+			app.lang.chosenIndex = i
+		}
+		var langFile map[string]interface{}
+		file, _ := ioutil.ReadFile(filepath.Join(langPath, f.Name()))
+		json.Unmarshal(file, &langFile)
+
+		if meta, ok := langFile["meta"]; ok {
+			app.lang.langOptions[i] = meta.(map[string]interface{})["name"].(string)
+		}
+	}
 	for section, settings := range app.configBase {
 		if section == "order" {
 			resp[section] = settings.([]interface{})
@@ -1079,6 +1097,9 @@ func (app *appContext) GetConfig(gc *gin.Context) {
 							}
 						} else if dataType == "bool" {
 							resp[section].(map[string]interface{})[key].(map[string]interface{})["value"] = configKey.MustBool(false)
+						} else if dataType == "select" && key == "language" {
+							resp[section].(map[string]interface{})[key].(map[string]interface{})["options"] = app.lang.langOptions
+							resp[section].(map[string]interface{})[key].(map[string]interface{})["value"] = app.lang.langOptions[app.lang.chosenIndex]
 						} else {
 							resp[section].(map[string]interface{})[key].(map[string]interface{})["value"] = configKey.String()
 						}
@@ -1087,6 +1108,7 @@ func (app *appContext) GetConfig(gc *gin.Context) {
 			}
 		}
 	}
+	// resp["jellyfin"].(map[string]interface{})["language"].(map[string]interface{})["options"].([]string)
 	gc.JSON(200, resp)
 }
 
@@ -1109,7 +1131,16 @@ func (app *appContext) ModifyConfig(gc *gin.Context) {
 				tempConfig.NewSection(section)
 			}
 			for setting, value := range settings.(map[string]interface{}) {
-				tempConfig.Section(section).Key(setting).SetValue(value.(string))
+				if section == "ui" && setting == "language" {
+					for i, lang := range app.lang.langOptions {
+						if value.(string) == lang {
+							tempConfig.Section(section).Key(setting).SetValue(strings.Replace(app.lang.langFiles[i].Name(), ".json", "", 1))
+							break
+						}
+					}
+				} else {
+					tempConfig.Section(section).Key(setting).SetValue(value.(string))
+				}
 			}
 		}
 	}
