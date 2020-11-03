@@ -378,7 +378,8 @@ func (app *appContext) NewUser(gc *gin.Context) {
 			}
 		}
 	}
-	if app.config.Section("password_resets").Key("enabled").MustBool(false) {
+	// if app.config.Section("password_resets").Key("enabled").MustBool(false) {
+	if req.Email != "" {
 		app.storage.emails[id] = req.Email
 		app.storage.storeEmails()
 	}
