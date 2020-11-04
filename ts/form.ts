@@ -5,6 +5,8 @@ import { BS4 } from "./modules/bs4.js";
 interface formWindow extends Window {
     usernameEnabled: boolean;
     validationStrings: pwValStrings;
+    checkPassword(): void;
+    invalidPassword: string;
 }
 
 declare var window: formWindow;
@@ -131,3 +133,21 @@ var code = window.location.href.split('/').pop();
     }, true);
     return false;
 });
+
+window.checkPassword = (): void => {
+    const entry = document.getElementById('inputPassword') as HTMLInputElement;
+    if (entry.value != "") {
+        const reentry = document.getElementById('reInputPassword') as HTMLInputElement;
+        const identical = (entry.value == reentry.value);
+        const submitButton = document.getElementById('submitButton') as HTMLButtonElement;
+        if (identical) {
+            reentry.setCustomValidity('');
+            rmAttr(submitButton, "btn-outline-danger");
+            addAttr(submitButton, "btn-outline-primary");
+        } else {
+            reentry.setCustomValidity(window.invalidPassword);
+            addAttr(submitButton, "btn-outline-danger");
+            rmAttr(submitButton, "btn-outline-primary");
+        }
+    }
+}

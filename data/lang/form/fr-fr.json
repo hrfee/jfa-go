@@ -10,6 +10,8 @@
         "emailAddress": "Email",
         "username": "Pseudo",
         "password": "Mot de passe",
+        "reEnterPassword": "Confirmez mot de passe",
+        "reEnterPasswordInvalid": "Les mots de passe ne correspondent pas.",
         "createAccountButton": "Créer le compte",
         "passwordRequirementsHeader": "Mot de passe requis",
         "successHeader": "Succes!",

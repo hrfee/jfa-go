@@ -9,6 +9,8 @@
         "emailAddress": "Email",
         "username": "Username",
         "password": "Password",
+        "reEnterPassword": "Re-enter Password",
+        "reEnterPasswordInvalid": "Passwords are not the same.",
         "createAccountButton": "Create Account",
         "passwordRequirementsHeader": "Password Requirements",
         "successHeader": "Success!",

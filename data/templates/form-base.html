@@ -3,6 +3,7 @@
     window.bs5 = {{ .settings.bs5 }};
     window.usernameEnabled = {{ .settings.username }};
     window.validationStrings = JSON.parse({{ .lang.validationStrings }});
+    window.invalidPassword = "{{ .lang.reEnterPasswordInvalid }}";
 </script>
 <script src="form.js" type="module"></script>
 {{ end }}

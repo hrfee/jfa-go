@@ -86,6 +86,10 @@
                                         <label for="inputPassword">{{ .lang.password }}</label>
                                         <input type="password" class="form-control" id="inputPassword" name="password" placeholder="{{ .lang.password }}" required>
                                     </div>
+                                    <div class="form-group">
+                                        <label for="inputPassword">{{ .lang.reEnterPassword }}</label>
+                                        <input type="password" class="form-control" id="reInputPassword" onkeyup="window.checkPassword()" placeholder="{{ .lang.password }}" required>
+                                    </div>
                                     <div class="btn-group" role="group" aria-label="Button & Error" id="errorBox" style="margin-top: 1rem;">
                                         <button type="submit" class="btn btn-outline-primary" id="submitButton">
                                             <span id="createAccount">{{ .lang.createAccountButton }}</span>
