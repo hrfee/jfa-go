@@ -1,6 +1,7 @@
 {
     "meta": {
-        "name": "Francais (FR)"
+        "name": "Francais (FR)",
+        "author": "https://github.com/Killianbe"
     },
     "strings": {
         "pageTitle": "Créer un compte Jellyfin",
