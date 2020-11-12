@@ -51,8 +51,7 @@ func (app *appContext) authenticate(gc *gin.Context) {
 		respond(401, "Unauthorized", gc)
 		return
 	}
-	creds, _ := base64.StdEncoding.DecodeString(header[1])
-	token, err := jwt.Parse(string(creds), checkToken)
+	token, err := jwt.Parse(string(header[1]), checkToken)
 	if err != nil {
 		app.debug.Printf("Auth denied: %s", err)
 		respond(401, "Unauthorized", gc)
@@ -103,7 +102,7 @@ type getTokenDTO struct {
 }
 
 // @Summary Grabs an API token using username & password.
-// @description Click the lock icon next to this, login with your normal jfa-go credentials. Click 'try it out', then 'execute' and an API Key will be returned, copy it (not including quotes). On any of the other routes, click the lock icon and set the API key as "Bearer <your api key>".
+// @description Click the lock icon next to this, login with your normal jfa-go credentials. Click 'try it out', then 'execute' and an API Key will be returned, copy it (not including quotes). On any of the other routes, click the lock icon and set the API key as "Bearer `your api key`".
 // @Produce json
 // @Success 200 {object} getTokenDTO
 // @Failure 401 {object} stringResponse

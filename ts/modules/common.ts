@@ -48,7 +48,7 @@ export const _get = (url: string, data: Object, onreadystatechange: () => void):
     let req = new XMLHttpRequest();
     req.open("GET", url, true);
     req.responseType = 'json';
-    req.setRequestHeader("Authorization", "Bearer " + btoa(window.token));
+    req.setRequestHeader("Authorization", "Bearer " + window.token);
     req.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
     req.onreadystatechange = onreadystatechange;
     req.send(JSON.stringify(data));
@@ -60,7 +60,7 @@ export const _post = (url: string, data: Object, onreadystatechange: () => void,
     if (response) {
         req.responseType = 'json';
     }
-    req.setRequestHeader("Authorization", "Bearer " + btoa(window.token));
+    req.setRequestHeader("Authorization", "Bearer " + window.token);
     req.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
     req.onreadystatechange = onreadystatechange;
     req.send(JSON.stringify(data));
@@ -69,7 +69,7 @@ export const _post = (url: string, data: Object, onreadystatechange: () => void,
 export function _delete(url: string, data: Object, onreadystatechange: () => void): void {
     let req = new XMLHttpRequest();
     req.open("DELETE", url, true);
-    req.setRequestHeader("Authorization", "Bearer " + btoa(window.token));
+    req.setRequestHeader("Authorization", "Bearer " + window.token);
     req.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
     req.onreadystatechange = onreadystatechange;
     req.send(JSON.stringify(data));
