@@ -511,7 +511,8 @@ func start(asDaemon, firstCall bool) {
 	}
 	if !firstRun {
 		router.GET("/", app.AdminPage)
-		router.GET("/getToken", app.getToken)
+		router.GET("/token/login", app.getTokenLogin)
+		router.GET("/token/refresh", app.getTokenRefresh)
 		router.POST("/newUser", app.NewUser)
 		router.Use(static.Serve("/invite/", static.LocalFile(filepath.Join(app.local_path, "static"), false)))
 		router.GET("/invite/:invCode", app.InviteProxy)
@@ -607,8 +608,9 @@ func flagPassed(name string) (found bool) {
 // @license.url https://raw.githubusercontent.com/hrfee/jfa-go/main/LICENSE
 // @BasePath /
 
-// @securityDefinitions.basic ApiKeyBlankPassword
-// @name ApiKeyBlankPassword
+// @securityDefinitions.apikey Bearer
+// @in header
+// @name Authorization
 
 // @securityDefinitions.basic getTokenAuth
 // @name getTokenAuth

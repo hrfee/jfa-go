@@ -46,14 +46,13 @@ func CreateToken(userId, jfId string) (string, string, error) {
 // Check header for token
 func (app *appContext) authenticate(gc *gin.Context) {
 	header := strings.SplitN(gc.Request.Header.Get("Authorization"), " ", 2)
-	if header[0] != "Basic" {
-		app.debug.Println("Invalid authentication header")
+	if header[0] != "Bearer" {
+		app.debug.Println("Invalid authorization header")
 		respond(401, "Unauthorized", gc)
 		return
 	}
-	auth, _ := base64.StdEncoding.DecodeString(header[1])
-	creds := strings.SplitN(string(auth), ":", 2)
-	token, err := jwt.Parse(creds[0], checkToken)
+	creds, _ := base64.StdEncoding.DecodeString(header[1])
+	token, err := jwt.Parse(string(creds), checkToken)
 	if err != nil {
 		app.debug.Printf("Auth denied: %s", err)
 		respond(401, "Unauthorized", gc)
@@ -103,146 +102,128 @@ type getTokenDTO struct {
 	Token string `json:"token" example:"kjsdklsfdkljfsjsdfklsdfkldsfjdfskjsdfjklsdf"` // API token for use with everything else.
 }
 
-// getToken checks the header for a username and password, as well as checking the refresh cookie.
-
-// @Summary Grabs an API token using username & password, or via a refresh cookie.
-// @description Click the lock icon next to this, login with your normal jfa-go credentials. Click 'try it out', then 'execute' and an API Key will be returned, copy it (not including quotes). On any of the other routes, click the lock icon and use the token as your -Username-. The password can be anything.
+// @Summary Grabs an API token using username & password.
+// @description Click the lock icon next to this, login with your normal jfa-go credentials. Click 'try it out', then 'execute' and an API Key will be returned, copy it (not including quotes). On any of the other routes, click the lock icon and set the API key as "Bearer <your api key>".
 // @Produce json
 // @Success 200 {object} getTokenDTO
 // @Failure 401 {object} stringResponse
-// @Router /getToken [get]
+// @Router /token/login [get]
 // @tags Auth
 // @Security getTokenAuth
-func (app *appContext) getToken(gc *gin.Context) {
+func (app *appContext) getTokenLogin(gc *gin.Context) {
 	app.info.Println("Token requested (login attempt)")
 	header := strings.SplitN(gc.Request.Header.Get("Authorization"), " ", 2)
 	auth, _ := base64.StdEncoding.DecodeString(header[1])
 	creds := strings.SplitN(string(auth), ":", 2)
-	// check cookie first
 	var userID, jfID string
-	valid := false
-	noLogin := false
-	checkLogin := func() {
-		if creds[0] == "" || creds[1] == "" {
-			app.debug.Println("Auth denied: blank username/password")
-			respond(401, "Unauthorized", gc)
+	if creds[0] == "" || creds[1] == "" {
+		app.debug.Println("Auth denied: blank username/password")
+		respond(401, "Unauthorized", gc)
+		return
+	}
+	match := false
+	for _, user := range app.users {
+		if user.Username == creds[0] && user.Password == creds[1] {
+			match = true
+			app.debug.Println("Found existing user")
+			userID = user.UserID
+			break
+		}
+	}
+	if !app.jellyfinLogin && !match {
+		app.info.Println("Auth denied: Invalid username/password")
+		respond(401, "Unauthorized", gc)
+		return
+	}
+	if !match {
+		var status int
+		var err error
+		var user map[string]interface{}
+		user, status, err = app.authJf.Authenticate(creds[0], creds[1])
+		if status != 200 || err != nil {
+			if status == 401 || status == 400 {
+				app.info.Println("Auth denied: Invalid username/password (Jellyfin)")
+				respond(401, "Unauthorized", gc)
+				return
+			}
+			app.err.Printf("Auth failed: Couldn't authenticate with Jellyfin (%d/%s)", status, err)
+			respond(500, "Jellyfin error", gc)
 			return
 		}
-		match := false
-		for _, user := range app.users {
-			if user.Username == creds[0] && user.Password == creds[1] {
-				match = true
-				app.debug.Println("Found existing user")
-				userID = user.UserID
-				break
+		jfID = user["Id"].(string)
+		if app.config.Section("ui").Key("admin_only").MustBool(true) {
+			if !user["Policy"].(map[string]interface{})["IsAdministrator"].(bool) {
+				app.debug.Printf("Auth denied: Users \"%s\" isn't admin", creds[0])
+				respond(401, "Unauthorized", gc)
+				return
 			}
 		}
-		if !app.jellyfinLogin && !match {
-			app.info.Println("Auth denied: Invalid username/password")
-			respond(401, "Unauthorized", gc)
+		// New users are only added when using jellyfinLogin.
+		userID = shortuuid.New()
+		newUser := User{
+			UserID: userID,
+		}
+		app.debug.Printf("Token generated for user \"%s\"", creds[0])
+		app.users = append(app.users, newUser)
+	}
+	token, refresh, err := CreateToken(userID, jfID)
+	if err != nil {
+		app.err.Printf("getToken failed: Couldn't generate token (%s)", err)
+		respond(500, "Couldn't generate token", gc)
+		return
+	}
+	gc.SetCookie("refresh", refresh, (3600 * 24), "/", gc.Request.URL.Hostname(), true, true)
+	gc.JSON(200, getTokenDTO{token})
+}
+
+// @Summary Grabs an API token using a refresh token from cookies.
+// @Produce json
+// @Success 200 {object} getTokenDTO
+// @Failure 401 {object} stringResponse
+// @Router /token/refresh [get]
+// @tags Auth
+func (app *appContext) getTokenRefresh(gc *gin.Context) {
+	app.debug.Println("Token requested (refresh token)")
+	cookie, err := gc.Cookie("refresh")
+	if err != nil || cookie == "" {
+		app.debug.Printf("getTokenRefresh denied: Couldn't get token: %s", err)
+		respond(400, "Couldn't get token", gc)
+		return
+	}
+	for _, token := range app.invalidTokens {
+		if cookie == token {
+			app.debug.Println("getTokenRefresh: Invalid token")
+			respond(401, "Invalid token", gc)
 			return
 		}
-		if !match {
-			var status int
-			var err error
-			var user map[string]interface{}
-			user, status, err = app.authJf.Authenticate(creds[0], creds[1])
-			if status != 200 || err != nil {
-				if status == 401 || status == 400 {
-					app.info.Println("Auth denied: Invalid username/password (Jellyfin)")
-					respond(401, "Unauthorized", gc)
-					return
-				}
-				app.err.Printf("Auth failed: Couldn't authenticate with Jellyfin (%d/%s)", status, err)
-				respond(500, "Jellyfin error", gc)
-				return
-			}
-			jfID = user["Id"].(string)
-			if app.config.Section("ui").Key("admin_only").MustBool(true) {
-				if !user["Policy"].(map[string]interface{})["IsAdministrator"].(bool) {
-					app.debug.Printf("Auth denied: Users \"%s\" isn't admin", creds[0])
-					respond(401, "Unauthorized", gc)
-					return
-				}
-			}
-			// New users are only added when using jellyfinLogin.
-			userID = shortuuid.New()
-			newUser := User{
-				UserID: userID,
-			}
-			app.debug.Printf("Token generated for user \"%s\"", creds[0])
-			app.users = append(app.users, newUser)
-		}
-		valid = true
 	}
-	checkCookie := func() {
-		cookie, err := gc.Cookie("refresh")
-		if err == nil && cookie != "" {
-			for _, token := range app.invalidTokens {
-				if cookie == token {
-					if creds[0] == "" || creds[1] == "" {
-						app.debug.Println("getToken denied: Invalid refresh token and no username/password provided")
-						respond(401, "Unauthorized", gc)
-						noLogin = true
-						return
-					}
-					app.debug.Println("getToken: Invalid token but username/password provided")
-					return
-				}
-			}
-			token, err := jwt.Parse(cookie, checkToken)
-			if err != nil {
-				if creds[0] == "" || creds[1] == "" {
-					app.debug.Println("getToken denied: Invalid refresh token and no username/password provided")
-					respond(401, "Unauthorized", gc)
-					noLogin = true
-					return
-				}
-				app.debug.Println("getToken: Invalid token but username/password provided")
-				return
-			}
-			claims, ok := token.Claims.(jwt.MapClaims)
-			expiryUnix, err := strconv.ParseInt(claims["exp"].(string), 10, 64)
-			if err != nil {
-				if creds[0] == "" || creds[1] == "" {
-					app.debug.Printf("getToken denied: Invalid token (%s) and no username/password provided", err)
-					respond(401, "Unauthorized", gc)
-					noLogin = true
-					return
-				}
-				app.debug.Printf("getToken: Invalid token (%s) but username/password provided", err)
-				return
-			}
-			expiry := time.Unix(expiryUnix, 0)
-			if !(ok && token.Valid && claims["type"].(string) == "refresh" && expiry.After(time.Now())) {
-				if creds[0] == "" || creds[1] == "" {
-					app.debug.Printf("getToken denied: Invalid token (%s) and no username/password provided", err)
-					respond(401, "Unauthorized", gc)
-					noLogin = true
-					return
-				}
-				app.debug.Printf("getToken: Invalid token (%s) but username/password provided", err)
-				return
-			}
-			userID = claims["id"].(string)
-			jfID = claims["jfid"].(string)
-			valid = true
-		}
+	token, err := jwt.Parse(cookie, checkToken)
+	if err != nil {
+		app.debug.Println("getTokenRefresh: Invalid token")
+		respond(400, "Invalid token", gc)
+		return
 	}
-	checkCookie()
-	if !valid && !noLogin {
-		checkLogin()
+	claims, ok := token.Claims.(jwt.MapClaims)
+	expiryUnix, err := strconv.ParseInt(claims["exp"].(string), 10, 64)
+	if err != nil {
+		app.debug.Printf("getTokenRefresh: Invalid token expiry: %s", err)
+		respond(401, "Invalid token", gc)
+		return
 	}
-	if valid {
-		token, refresh, err := CreateToken(userID, jfID)
-		if err != nil {
-			app.err.Printf("getToken failed: Couldn't generate token (%s)", err)
-			respond(500, "Couldn't generate token", gc)
-			return
-		}
-		gc.SetCookie("refresh", refresh, (3600 * 24), "/", gc.Request.URL.Hostname(), true, true)
-		gc.JSON(200, getTokenDTO{token})
-	} else {
-		gc.AbortWithStatus(401)
+	expiry := time.Unix(expiryUnix, 0)
+	if !(ok && token.Valid && claims["type"].(string) == "refresh" && expiry.After(time.Now())) {
+		app.debug.Printf("getTokenRefresh: Invalid token: %s", err)
+		respond(401, "Invalid token", gc)
+		return
 	}
+	userID := claims["id"].(string)
+	jfID := claims["jfid"].(string)
+	jwt, refresh, err := CreateToken(userID, jfID)
+	if err != nil {
+		app.err.Printf("getTokenRefresh failed: Couldn't generate token (%s)", err)
+		respond(500, "Couldn't generate token", gc)
+		return
+	}
+	gc.SetCookie("refresh", refresh, (3600 * 24), "/", gc.Request.URL.Hostname(), true, true)
+	gc.JSON(200, getTokenDTO{jwt})
 }

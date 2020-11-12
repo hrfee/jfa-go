@@ -121,8 +121,15 @@ window.toClipboard = (str: string): void => {
 function login(username: string, password: string, modal: boolean, button?: HTMLButtonElement, run?: (arg0: number) => void): void {
     const req = new XMLHttpRequest();
     req.responseType = 'json';
-    req.open("GET", "/getToken", true);
-    req.setRequestHeader("Authorization", "Basic " + btoa(username + ":" + password));
+    let url = "/token/login";
+    const refresh = (username == "" && password == "");
+    if (refresh) {
+        url = "/token/refresh";
+    }
+    req.open("GET", url, true);
+    if (!refresh) {
+        req.setRequestHeader("Authorization", "Basic " + btoa(username + ":" + password));
+    }
     req.onreadystatechange = function (): void {
         if (this.readyState == 4) {
             if (this.status != 200) {

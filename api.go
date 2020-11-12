@@ -232,7 +232,7 @@ func (app *appContext) getOmbiUser(jfID string) (map[string]interface{}, int, er
 // @Param newUserDTO body newUserDTO true "New user request object"
 // @Success 200
 // @Router /users [post]
-// @Security ApiKeyBlankPassword
+// @Security Bearer
 // @tags Users
 func (app *appContext) NewUserAdmin(gc *gin.Context) {
 	var req newUserDTO
@@ -411,7 +411,7 @@ func (app *appContext) NewUser(gc *gin.Context) {
 // @Failure 400 {object} stringResponse
 // @Failure 500 {object} errorListDTO "List of errors"
 // @Router /users [delete]
-// @Security ApiKeyBlankPassword
+// @Security Bearer
 // @tags Users
 func (app *appContext) DeleteUser(gc *gin.Context) {
 	var req deleteUserDTO
@@ -475,7 +475,7 @@ func (app *appContext) DeleteUser(gc *gin.Context) {
 // @Param generateInviteDTO body generateInviteDTO true "New invite request object"
 // @Success 200 {object} boolResponse
 // @Router /invites [post]
-// @Security ApiKeyBlankPassword
+// @Security Bearer
 // @tags Invites
 func (app *appContext) GenerateInvite(gc *gin.Context) {
 	var req generateInviteDTO
@@ -538,7 +538,7 @@ func (app *appContext) GenerateInvite(gc *gin.Context) {
 // @Success 200 {object} boolResponse
 // @Failure 500 {object} stringResponse
 // @Router /invites/profile [post]
-// @Security ApiKeyBlankPassword
+// @Security Bearer
 // @tags Profiles & Settings
 func (app *appContext) SetProfile(gc *gin.Context) {
 	var req inviteProfileDTO
@@ -561,7 +561,7 @@ func (app *appContext) SetProfile(gc *gin.Context) {
 // @Produce json
 // @Success 200 {object} getProfilesDTO
 // @Router /profiles [get]
-// @Security ApiKeyBlankPassword
+// @Security Bearer
 // @tags Profiles & Settings
 func (app *appContext) GetProfiles(gc *gin.Context) {
 	app.storage.loadProfiles()
@@ -586,7 +586,7 @@ func (app *appContext) GetProfiles(gc *gin.Context) {
 // @Success 200 {object} boolResponse
 // @Failure 500 {object} stringResponse
 // @Router /profiles/default [post]
-// @Security ApiKeyBlankPassword
+// @Security Bearer
 // @tags Profiles & Settings
 func (app *appContext) SetDefaultProfile(gc *gin.Context) {
 	req := profileChangeDTO{}
@@ -615,7 +615,7 @@ func (app *appContext) SetDefaultProfile(gc *gin.Context) {
 // @Success 200 {object} boolResponse
 // @Failure 500 {object} stringResponse
 // @Router /profiles [post]
-// @Security ApiKeyBlankPassword
+// @Security Bearer
 // @tags Profiles & Settings
 func (app *appContext) CreateProfile(gc *gin.Context) {
 	app.info.Println("Profile creation requested")
@@ -655,7 +655,7 @@ func (app *appContext) CreateProfile(gc *gin.Context) {
 // @Param profileChangeDTO body profileChangeDTO true "Delete profile object"
 // @Success 200 {object} boolResponse
 // @Router /profiles [delete]
-// @Security ApiKeyBlankPassword
+// @Security Bearer
 // @tags Profiles & Settings
 func (app *appContext) DeleteProfile(gc *gin.Context) {
 	req := profileChangeDTO{}
@@ -672,7 +672,7 @@ func (app *appContext) DeleteProfile(gc *gin.Context) {
 // @Produce json
 // @Success 200 {object} getInvitesDTO
 // @Router /invites [get]
-// @Security ApiKeyBlankPassword
+// @Security Bearer
 // @tags Invites
 func (app *appContext) GetInvites(gc *gin.Context) {
 	app.debug.Println("Invites requested")
@@ -749,7 +749,7 @@ func (app *appContext) GetInvites(gc *gin.Context) {
 // @Failure 400 {object} stringResponse
 // @Failure 500 {object} stringResponse
 // @Router /invites/notify [post]
-// @Security ApiKeyBlankPassword
+// @Security Bearer
 // @tags Other
 func (app *appContext) SetNotify(gc *gin.Context) {
 	var req map[string]map[string]bool
@@ -811,7 +811,7 @@ func (app *appContext) SetNotify(gc *gin.Context) {
 // @Success 200 {object} boolResponse
 // @Failure 400 {object} stringResponse
 // @Router /invites [delete]
-// @Security ApiKeyBlankPassword
+// @Security Bearer
 // @tags Invites
 func (app *appContext) DeleteInvite(gc *gin.Context) {
 	var req deleteInviteDTO
@@ -847,7 +847,7 @@ func parseDt(date string) time.Time {
 // @Success 200 {object} getUsersDTO
 // @Failure 500 {object} stringResponse
 // @Router /users [get]
-// @Security ApiKeyBlankPassword
+// @Security Bearer
 // @tags Users
 func (app *appContext) GetUsers(gc *gin.Context) {
 	app.debug.Println("Users requested")
@@ -884,7 +884,7 @@ func (app *appContext) GetUsers(gc *gin.Context) {
 // @Success 200 {object} ombiUsersDTO
 // @Failure 500 {object} stringResponse
 // @Router /ombi/users [get]
-// @Security ApiKeyBlankPassword
+// @Security Bearer
 // @tags Ombi
 func (app *appContext) OmbiUsers(gc *gin.Context) {
 	app.debug.Println("Ombi users requested")
@@ -911,7 +911,7 @@ func (app *appContext) OmbiUsers(gc *gin.Context) {
 // @Success 200 {object} boolResponse
 // @Failure 500 {object} stringResponse
 // @Router /ombi/defaults [post]
-// @Security ApiKeyBlankPassword
+// @Security Bearer
 // @tags Ombi
 func (app *appContext) SetOmbiDefaults(gc *gin.Context) {
 	var req ombiUser
@@ -933,7 +933,7 @@ func (app *appContext) SetOmbiDefaults(gc *gin.Context) {
 // @Success 200 {object} boolResponse
 // @Failure 500 {object} stringResponse
 // @Router /users/emails [post]
-// @Security ApiKeyBlankPassword
+// @Security Bearer
 // @tags Users
 func (app *appContext) ModifyEmails(gc *gin.Context) {
 	var req modifyEmailsDTO
@@ -974,7 +974,7 @@ func (app *appContext) ModifyEmails(gc *gin.Context) {
 // @Success 200 {object} errorListDTO
 // @Failure 500 {object} errorListDTO "Lists of errors that occured while applying settings"
 // @Router /users/settings [post]
-// @Security ApiKeyBlankPassword
+// @Security Bearer
 // @tags Profiles & Settings
 func (app *appContext) ApplySettings(gc *gin.Context) {
 	app.info.Println("User settings change requested")
@@ -1058,7 +1058,7 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 // @Produce json
 // @Success 200 {object} configDTO "Uses the same format as config-base.json"
 // @Router /config [get]
-// @Security ApiKeyBlankPassword
+// @Security Bearer
 // @tags Configuration
 func (app *appContext) GetConfig(gc *gin.Context) {
 	app.info.Println("Config requested")
@@ -1118,7 +1118,7 @@ func (app *appContext) GetConfig(gc *gin.Context) {
 // @Param appConfig body configDTO true "Config split into sections as in config.ini, all values as strings."
 // @Success 200 {object} boolResponse
 // @Router /config [post]
-// @Security ApiKeyBlankPassword
+// @Security Bearer
 // @tags Configuration
 func (app *appContext) ModifyConfig(gc *gin.Context) {
 	app.info.Println("Config modification requested")

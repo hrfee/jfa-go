@@ -617,7 +617,7 @@
             "description": "Deprecated in favor of User Profiles. Location of stored user policy template (json)."
         },
         "user_configuration": {
-            "name": "userConfiguration (Deprecated in favor of User Profiles.",
+            "name": "userConfiguration (Deprecated)",
             "required": false,
             "requires_restart": true,
             "type": "text",
@@ -625,7 +625,7 @@
             "description": "Deprecated in favor of User Profiles. Location of stored user configuration template (used for setting homescreen layout) (json)"
         },
         "user_displayprefs": {
-            "name": "displayPreferences (Deprecated in favor of User Profiles.",
+            "name": "displayPreferences (Deprecated)",
             "required": false,
             "requires_restart": true,
             "type": "text",
