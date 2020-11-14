@@ -41,10 +41,10 @@ func (mg *Mailgun) send(address, fromName, fromAddr string, email *Email) error 
 
 // SMTP supports SSL/TLS and STARTTLS; implements emailClient.
 type SMTP struct {
-	sslTLS       bool
-	host, server string
-	port         int
-	auth         smtp.Auth
+	sslTLS bool
+	server string
+	port   int
+	auth   smtp.Auth
 }
 
 func (sm *SMTP) send(address, fromName, fromAddr string, email *Email) error {
@@ -54,12 +54,14 @@ func (sm *SMTP) send(address, fromName, fromAddr string, email *Email) error {
 	e.To = []string{address}
 	e.Text = []byte(email.text)
 	e.HTML = []byte(email.html)
+	server := fmt.Sprintf("%s:%d", sm.server, sm.port)
 	tlsConfig := &tls.Config{
 		InsecureSkipVerify: false,
-		ServerName:         sm.host,
+		ServerName:         sm.server,
 	}
-	server := fmt.Sprintf("%s:%d", sm.server, sm.port)
 	var err error
+	fmt.Println(server)
+	// err = e.Send(server, sm.auth)
 	if sm.sslTLS {
 		err = e.SendWithTLS(server, sm.auth, tlsConfig)
 	} else {
@@ -119,7 +121,7 @@ func NewEmailer(app *appContext) *Emailer {
 		} else {
 			username = emailer.fromAddr
 		}
-		emailer.NewSMTP(app.config.Section("smtp").Key("server").String(), app.config.Section("smtp").Key("port").MustInt(465), username, app.config.Section("smtp").Key("password").String(), app.host, sslTls)
+		emailer.NewSMTP(app.config.Section("smtp").Key("server").String(), app.config.Section("smtp").Key("port").MustInt(465), username, app.config.Section("smtp").Key("password").String(), sslTls)
 	} else if method == "mailgun" {
 		emailer.NewMailgun(app.config.Section("mailgun").Key("api_url").String(), app.config.Section("mailgun").Key("api_key").String())
 	}
@@ -141,11 +143,10 @@ func (emailer *Emailer) NewMailgun(url, key string) {
 }
 
 // NewSMTP returns an SMTP emailClient.
-func (emailer *Emailer) NewSMTP(server string, port int, username, password, host string, sslTLS bool) {
+func (emailer *Emailer) NewSMTP(server string, port int, username, password string, sslTLS bool) {
 	emailer.sender = &SMTP{
-		auth:   smtp.PlainAuth("", username, password, host),
+		auth:   smtp.PlainAuth("", username, password, server),
 		server: server,
-		host:   host,
 		port:   port,
 		sslTLS: sslTLS,
 	}
