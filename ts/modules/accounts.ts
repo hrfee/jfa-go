@@ -63,10 +63,9 @@ export function populateUsers(): void {
         }
         return `
             <td nowrap="nowrap" class="align-middle" scope="row"><input class="${fci}" type="checkbox" value="" id="select_${id}" onclick="checkCheckboxes();"></td>
-            <td nowrap="nowrap" class="align-middle">${username}</td>
+            <td nowrap="nowrap" class="align-middle">${username}${admin ? '<span style="margin-left: 1rem;" class="badge rounded-pill bg-info text-dark">Admin</span>' : ''}</td>
             <td nowrap="nowrap" class="align-middle">${generateEmail(id, name, email)}</td>
             <td nowrap="nowrap" class="align-middle">${lastActive}</td>
-            <td nowrap="nowrap" class="align-middle">${isAdmin}</td>
         `;
     };
 
