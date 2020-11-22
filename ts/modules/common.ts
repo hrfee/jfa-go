@@ -46,7 +46,7 @@ export const addAttr = (el: HTMLElement, attr: string): void => el.classList.add
 
 export const _get = (url: string, data: Object, onreadystatechange: () => void): void => {
     let req = new XMLHttpRequest();
-    req.open("GET", url, true);
+    req.open("GET", window.URLBase + url, true);
     req.responseType = 'json';
     req.setRequestHeader("Authorization", "Bearer " + window.token);
     req.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
@@ -56,7 +56,7 @@ export const _get = (url: string, data: Object, onreadystatechange: () => void):
 
 export const _post = (url: string, data: Object, onreadystatechange: () => void, response?: boolean): void => {
     let req = new XMLHttpRequest();
-    req.open("POST", url, true);
+    req.open("POST", window.URLBase + url, true);
     if (response) {
         req.responseType = 'json';
     }
@@ -68,7 +68,7 @@ export const _post = (url: string, data: Object, onreadystatechange: () => void,
 
 export function _delete(url: string, data: Object, onreadystatechange: () => void): void {
     let req = new XMLHttpRequest();
-    req.open("DELETE", url, true);
+    req.open("DELETE", window.URLBase + url, true);
     req.setRequestHeader("Authorization", "Bearer " + window.token);
     req.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
     req.onreadystatechange = onreadystatechange;

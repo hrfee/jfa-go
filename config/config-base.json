@@ -179,6 +179,14 @@
             "type": "bool",
             "value": false,
             "description": "Use the Bootstrap 5 Alpha. Looks better and removes the need for jQuery, so the page should load faster."
+        },
+        "url_base": {
+            "name": "URL Base",
+            "required": false,
+            "requires_restart": true,
+            "type": "text",
+            "value": "",
+            "description": "URL base for when running jfa-go with a reverse proxy in a subfolder."
         }
     },
     "password_validation": {

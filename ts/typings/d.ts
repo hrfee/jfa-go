@@ -14,6 +14,7 @@ declare interface Window {
     bsVersion: number;
     bs5: boolean;
     BS: Bootstrap;
+    URLBase: string;
     Modals: BSModals;
     cssFile: string;
     availableProfiles: Array<any>;

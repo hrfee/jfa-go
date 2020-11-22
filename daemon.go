@@ -4,7 +4,7 @@ import "time"
 
 // https://bbengfort.github.io/snippets/2016/06/26/background-work-goroutines-timer.html THANKS
 
-type Repeater struct {
+type repeater struct {
 	Stopped         bool
 	ShutdownChannel chan string
 	Interval        time.Duration
@@ -12,8 +12,8 @@ type Repeater struct {
 	app             *appContext
 }
 
-func NewRepeater(interval time.Duration, app *appContext) *Repeater {
-	return &Repeater{
+func newRepeater(interval time.Duration, app *appContext) *repeater {
+	return &repeater{
 		Stopped:         false,
 		ShutdownChannel: make(chan string),
 		Interval:        interval,
@@ -22,7 +22,7 @@ func NewRepeater(interval time.Duration, app *appContext) *Repeater {
 	}
 }
 
-func (rt *Repeater) Run() {
+func (rt *repeater) run() {
 	rt.app.info.Println("Invite daemon started")
 	for {
 		select {
@@ -42,7 +42,7 @@ func (rt *Repeater) Run() {
 	}
 }
 
-func (rt *Repeater) Shutdown() {
+func (rt *repeater) shutdown() {
 	rt.Stopped = true
 	rt.ShutdownChannel <- "Down"
 	<-rt.ShutdownChannel

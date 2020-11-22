@@ -34,7 +34,7 @@ import (
 	"gopkg.in/ini.v1"
 )
 
-// Username is JWT!
+// User is used for auth purposes.
 type User struct {
 	UserID   string `json:"id"`
 	Username string `json:"username"`
@@ -44,11 +44,11 @@ type User struct {
 type appContext struct {
 	// defaults         *Config
 	config           *ini.File
-	config_path      string
-	configBase_path  string
+	configPath       string
+	configBasePath   string
 	configBase       map[string]interface{}
-	data_path        string
-	local_path       string
+	dataPath         string
+	localPath        string
 	cssFile          string
 	bsVersion        int
 	jellyfinLogin    bool
@@ -68,8 +68,10 @@ type appContext struct {
 	version          string
 	quit             chan os.Signal
 	lang             Languages
+	URLBase          string
 }
 
+// Languages stores the names and filenames of language files, and the index of that which is currently selected.
 type Languages struct {
 	langFiles   []os.FileInfo // Language filenames
 	langOptions []string      // Language names
@@ -78,10 +80,10 @@ type Languages struct {
 
 func (app *appContext) loadHTML(router *gin.Engine) {
 	customPath := app.config.Section("files").Key("html_templates").MustString("")
-	templatePath := filepath.Join(app.local_path, "templates")
+	templatePath := filepath.Join(app.localPath, "templates")
 	htmlFiles, err := ioutil.ReadDir(templatePath)
 	if err != nil {
-		app.err.Fatalf("Couldn't access template directory: \"%s\"", filepath.Join(app.local_path, "templates"))
+		app.err.Fatalf("Couldn't access template directory: \"%s\"", filepath.Join(app.localPath, "templates"))
 		return
 	}
 	loadFiles := make([]string, len(htmlFiles))
@@ -97,7 +99,7 @@ func (app *appContext) loadHTML(router *gin.Engine) {
 	router.LoadHTMLFiles(loadFiles...)
 }
 
-func GenerateSecret(length int) (string, error) {
+func generateSecret(length int) (string, error) {
 	bytes := make([]byte, length)
 	_, err := rand.Read(bytes)
 	if err != nil {
@@ -173,7 +175,7 @@ func test(app *appContext) {
 	fmt.Scanln(&username)
 	user, status, err := app.jf.UserByName(username, false)
 	fmt.Printf("UserByName (%s): code %d err %s", username, status, err)
-	out, err := json.MarshalIndent(user, "", "  ")
+	out, _ := json.MarshalIndent(user, "", "  ")
 	fmt.Print(string(out))
 }
 
@@ -187,17 +189,17 @@ func start(asDaemon, firstCall bool) {
 		local_path is the internal 'data' directory.
 	*/
 	userConfigDir, _ := os.UserConfigDir()
-	app.data_path = filepath.Join(userConfigDir, "jfa-go")
-	app.config_path = filepath.Join(app.data_path, "config.ini")
+	app.dataPath = filepath.Join(userConfigDir, "jfa-go")
+	app.configPath = filepath.Join(app.dataPath, "config.ini")
 	executable, _ := os.Executable()
-	app.local_path = filepath.Join(filepath.Dir(executable), "data")
+	app.localPath = filepath.Join(filepath.Dir(executable), "data")
 
 	app.info = log.New(os.Stdout, "[INFO] ", log.Ltime)
 	app.err = log.New(os.Stdout, "[ERROR] ", log.Ltime|log.Lshortfile)
 
 	if firstCall {
-		DATA = flag.String("data", app.data_path, "alternate path to data directory.")
-		CONFIG = flag.String("config", app.config_path, "alternate path to config file.")
+		DATA = flag.String("data", app.dataPath, "alternate path to data directory.")
+		CONFIG = flag.String("config", app.configPath, "alternate path to config file.")
 		HOST = flag.String("host", "", "alternate address to host web ui on.")
 		PORT = flag.Int("port", 0, "alternate port to host web ui on.")
 		DEBUG = flag.Bool("debug", false, "Enables debug logging and exposes pprof.")
@@ -219,35 +221,35 @@ func start(asDaemon, firstCall bool) {
 		*DEBUG = true
 	}
 	// attempt to apply command line flags correctly
-	if app.config_path == *CONFIG && app.data_path != *DATA {
-		app.data_path = *DATA
-		app.config_path = filepath.Join(app.data_path, "config.ini")
-	} else if app.config_path != *CONFIG && app.data_path == *DATA {
-		app.config_path = *CONFIG
+	if app.configPath == *CONFIG && app.dataPath != *DATA {
+		app.dataPath = *DATA
+		app.configPath = filepath.Join(app.dataPath, "config.ini")
+	} else if app.configPath != *CONFIG && app.dataPath == *DATA {
+		app.configPath = *CONFIG
 	} else {
-		app.config_path = *CONFIG
-		app.data_path = *DATA
+		app.configPath = *CONFIG
+		app.dataPath = *DATA
 	}
 
 	// env variables are necessary because syscall.Exec for self-restarts doesn't doesn't work with arguments for some reason.
 
 	if v := os.Getenv("JFA_CONFIGPATH"); v != "" {
-		app.config_path = v
+		app.configPath = v
 	}
 	if v := os.Getenv("JFA_DATAPATH"); v != "" {
-		app.data_path = v
+		app.dataPath = v
 	}
 
-	os.Setenv("JFA_CONFIGPATH", app.config_path)
-	os.Setenv("JFA_DATAPATH", app.data_path)
+	os.Setenv("JFA_CONFIGPATH", app.configPath)
+	os.Setenv("JFA_DATAPATH", app.dataPath)
 
 	var firstRun bool
-	if _, err := os.Stat(app.data_path); os.IsNotExist(err) {
-		os.Mkdir(app.data_path, 0700)
+	if _, err := os.Stat(app.dataPath); os.IsNotExist(err) {
+		os.Mkdir(app.dataPath, 0700)
 	}
-	if _, err := os.Stat(app.config_path); os.IsNotExist(err) {
+	if _, err := os.Stat(app.configPath); os.IsNotExist(err) {
 		firstRun = true
-		dConfigPath := filepath.Join(app.local_path, "config-default.ini")
+		dConfigPath := filepath.Join(app.localPath, "config-default.ini")
 		var dConfig *os.File
 		dConfig, err = os.Open(dConfigPath)
 		if err != nil {
@@ -255,28 +257,28 @@ func start(asDaemon, firstCall bool) {
 		}
 		defer dConfig.Close()
 		var nConfig *os.File
-		nConfig, err := os.Create(app.config_path)
+		nConfig, err := os.Create(app.configPath)
 		if err != nil {
-			app.err.Printf("Couldn't open config file for writing: \"%s\"", app.config_path)
+			app.err.Printf("Couldn't open config file for writing: \"%s\"", app.configPath)
 			app.err.Fatalf("Error: %s", err)
 		}
 		defer nConfig.Close()
 		_, err = io.Copy(nConfig, dConfig)
 		if err != nil {
-			app.err.Fatalf("Couldn't copy default config. To do this manually, copy\n%s\nto\n%s", dConfigPath, app.config_path)
+			app.err.Fatalf("Couldn't copy default config. To do this manually, copy\n%s\nto\n%s", dConfigPath, app.configPath)
 		}
-		app.info.Printf("Copied default configuration to \"%s\"", app.config_path)
+		app.info.Printf("Copied default configuration to \"%s\"", app.configPath)
 	}
 
 	var debugMode bool
 	var address string
 	if app.loadConfig() != nil {
-		app.err.Fatalf("Failed to load config file \"%s\"", app.config_path)
+		app.err.Fatalf("Failed to load config file \"%s\"", app.configPath)
 	}
 	lang := app.config.Section("ui").Key("language").MustString("en-us")
-	app.storage.lang.FormPath = filepath.Join(app.local_path, "lang", "form", lang+".json")
+	app.storage.lang.FormPath = filepath.Join(app.localPath, "lang", "form", lang+".json")
 	if _, err := os.Stat(app.storage.lang.FormPath); os.IsNotExist(err) {
-		app.storage.lang.FormPath = filepath.Join(app.local_path, "lang", "form", "en-us.json")
+		app.storage.lang.FormPath = filepath.Join(app.localPath, "lang", "form", "en-us.json")
 	}
 	app.storage.loadLang()
 	app.version = app.config.Section("jellyfin").Key("version").String()
@@ -356,7 +358,7 @@ func start(asDaemon, firstCall bool) {
 
 		address = fmt.Sprintf("%s:%d", app.host, app.port)
 
-		app.debug.Printf("Loaded config file \"%s\"", app.config_path)
+		app.debug.Printf("Loaded config file \"%s\"", app.configPath)
 
 		if app.config.Section("ui").Key("bs5").MustBool(false) {
 			app.cssFile = "bs5-jf.css"
@@ -411,8 +413,8 @@ func start(asDaemon, firstCall bool) {
 
 		}
 
-		app.configBase_path = filepath.Join(app.local_path, "config-base.json")
-		configBase, _ := ioutil.ReadFile(app.configBase_path)
+		app.configBasePath = filepath.Join(app.localPath, "config-base.json")
+		configBase, _ := ioutil.ReadFile(app.configBasePath)
 		json.Unmarshal(configBase, &app.configBase)
 
 		themes := map[string]string{
@@ -424,7 +426,7 @@ func start(asDaemon, firstCall bool) {
 			app.cssFile = val
 		}
 		app.debug.Printf("Using css file \"%s\"", app.cssFile)
-		secret, err := GenerateSecret(16)
+		secret, err := generateSecret(16)
 		if err != nil {
 			app.err.Fatal(err)
 		}
@@ -481,8 +483,8 @@ func start(asDaemon, firstCall bool) {
 			os.Exit(0)
 		}
 
-		inviteDaemon := NewRepeater(time.Duration(60*time.Second), app)
-		go inviteDaemon.Run()
+		inviteDaemon := newRepeater(time.Duration(60*time.Second), app)
+		go inviteDaemon.run()
 
 		if app.config.Section("password_resets").Key("enabled").MustBool(false) {
 			go app.StartPWR()
@@ -502,7 +504,7 @@ func start(asDaemon, firstCall bool) {
 	setGinLogger(router, debugMode)
 
 	router.Use(gin.Recovery())
-	router.Use(static.Serve("/", static.LocalFile(filepath.Join(app.local_path, "static"), false)))
+	router.Use(static.Serve("/", static.LocalFile(filepath.Join(app.localPath, "static"), false)))
 	app.loadHTML(router)
 	router.NoRoute(app.NoRouteHandler)
 	if debugMode {
@@ -514,7 +516,7 @@ func start(asDaemon, firstCall bool) {
 		router.GET("/token/login", app.getTokenLogin)
 		router.GET("/token/refresh", app.getTokenRefresh)
 		router.POST("/newUser", app.NewUser)
-		router.Use(static.Serve("/invite/", static.LocalFile(filepath.Join(app.local_path, "static"), false)))
+		router.Use(static.Serve("/invite/", static.LocalFile(filepath.Join(app.localPath, "static"), false)))
 		router.GET("/invite/:invCode", app.InviteProxy)
 		if *SWAGGER {
 			app.info.Print(aurora.Magenta("\n\nWARNING: Swagger should not be used on a public instance.\n\n"))

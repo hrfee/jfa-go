@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"gopkg.in/ini.v1"
 )
@@ -36,7 +37,7 @@ func (app *appContext) loadDefaults() (err error) {
 
 func (app *appContext) loadConfig() error {
 	var err error
-	app.config, err = ini.Load(app.config_path)
+	app.config, err = ini.Load(app.configPath)
 	if err != nil {
 		return err
 	}
@@ -48,32 +49,32 @@ func (app *appContext) loadConfig() error {
 		// 	key.SetValue(filepath.Join(app.data_path, (key.Name() + ".json")))
 		// }
 		if key.Name() != "html_templates" {
-			key.SetValue(key.MustString(filepath.Join(app.data_path, (key.Name() + ".json"))))
+			key.SetValue(key.MustString(filepath.Join(app.dataPath, (key.Name() + ".json"))))
 		}
 	}
 	for _, key := range []string{"user_configuration", "user_displayprefs", "user_profiles", "ombi_template"} {
 		// if app.config.Section("files").Key(key).MustString("") == "" {
 		// 	key.SetValue(filepath.Join(app.data_path, (key.Name() + ".json")))
 		// }
-		app.config.Section("files").Key(key).SetValue(app.config.Section("files").Key(key).MustString(filepath.Join(app.data_path, (key + ".json"))))
+		app.config.Section("files").Key(key).SetValue(app.config.Section("files").Key(key).MustString(filepath.Join(app.dataPath, (key + ".json"))))
 	}
-
+	app.URLBase = strings.TrimSuffix(app.config.Section("ui").Key("url_base").MustString(""), "/")
 	app.config.Section("email").Key("no_username").SetValue(strconv.FormatBool(app.config.Section("email").Key("no_username").MustBool(false)))
 
-	app.config.Section("password_resets").Key("email_html").SetValue(app.config.Section("password_resets").Key("email_html").MustString(filepath.Join(app.local_path, "email.html")))
-	app.config.Section("password_resets").Key("email_text").SetValue(app.config.Section("password_resets").Key("email_text").MustString(filepath.Join(app.local_path, "email.txt")))
+	app.config.Section("password_resets").Key("email_html").SetValue(app.config.Section("password_resets").Key("email_html").MustString(filepath.Join(app.localPath, "email.html")))
+	app.config.Section("password_resets").Key("email_text").SetValue(app.config.Section("password_resets").Key("email_text").MustString(filepath.Join(app.localPath, "email.txt")))
 
-	app.config.Section("invite_emails").Key("email_html").SetValue(app.config.Section("invite_emails").Key("email_html").MustString(filepath.Join(app.local_path, "invite-email.html")))
-	app.config.Section("invite_emails").Key("email_text").SetValue(app.config.Section("invite_emails").Key("email_text").MustString(filepath.Join(app.local_path, "invite-email.txt")))
+	app.config.Section("invite_emails").Key("email_html").SetValue(app.config.Section("invite_emails").Key("email_html").MustString(filepath.Join(app.localPath, "invite-email.html")))
+	app.config.Section("invite_emails").Key("email_text").SetValue(app.config.Section("invite_emails").Key("email_text").MustString(filepath.Join(app.localPath, "invite-email.txt")))
 
-	app.config.Section("notifications").Key("expiry_html").SetValue(app.config.Section("notifications").Key("expiry_html").MustString(filepath.Join(app.local_path, "expired.html")))
-	app.config.Section("notifications").Key("expiry_text").SetValue(app.config.Section("notifications").Key("expiry_text").MustString(filepath.Join(app.local_path, "expired.txt")))
+	app.config.Section("notifications").Key("expiry_html").SetValue(app.config.Section("notifications").Key("expiry_html").MustString(filepath.Join(app.localPath, "expired.html")))
+	app.config.Section("notifications").Key("expiry_text").SetValue(app.config.Section("notifications").Key("expiry_text").MustString(filepath.Join(app.localPath, "expired.txt")))
 
-	app.config.Section("notifications").Key("created_html").SetValue(app.config.Section("notifications").Key("created_html").MustString(filepath.Join(app.local_path, "created.html")))
-	app.config.Section("notifications").Key("created_text").SetValue(app.config.Section("notifications").Key("created_text").MustString(filepath.Join(app.local_path, "created.txt")))
+	app.config.Section("notifications").Key("created_html").SetValue(app.config.Section("notifications").Key("created_html").MustString(filepath.Join(app.localPath, "created.html")))
+	app.config.Section("notifications").Key("created_text").SetValue(app.config.Section("notifications").Key("created_text").MustString(filepath.Join(app.localPath, "created.txt")))
 
-	app.config.Section("deletion").Key("email_html").SetValue(app.config.Section("deletion").Key("email_html").MustString(filepath.Join(app.local_path, "deleted.html")))
-	app.config.Section("deletion").Key("email_text").SetValue(app.config.Section("deletion").Key("email_text").MustString(filepath.Join(app.local_path, "deleted.txt")))
+	app.config.Section("deletion").Key("email_html").SetValue(app.config.Section("deletion").Key("email_html").MustString(filepath.Join(app.localPath, "deleted.html")))
+	app.config.Section("deletion").Key("email_text").SetValue(app.config.Section("deletion").Key("email_text").MustString(filepath.Join(app.localPath, "deleted.txt")))
 
 	app.config.Section("jellyfin").Key("version").SetValue(VERSION)
 	app.config.Section("jellyfin").Key("device").SetValue("jfa-go")

@@ -252,7 +252,7 @@ func (emailer *Emailer) constructCreated(code, username, address string, invite 
 	return email, nil
 }
 
-func (emailer *Emailer) constructReset(pwr Pwr, app *appContext) (*Email, error) {
+func (emailer *Emailer) constructReset(pwr PasswordReset, app *appContext) (*Email, error) {
 	email := &Email{
 		subject: app.config.Section("password_resets").Key("subject").MustString("Password reset - Jellyfin"),
 	}

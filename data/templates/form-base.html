@@ -4,6 +4,7 @@
     window.usernameEnabled = {{ .settings.username }};
     window.validationStrings = JSON.parse({{ .lang.validationStrings }});
     window.invalidPassword = "{{ .lang.reEnterPasswordInvalid }}";
+    window.URLBase = "{{ .urlBase }}";
 </script>
 <script src="form.js" type="module"></script>
 {{ end }}

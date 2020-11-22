@@ -105,12 +105,12 @@ func timeDiff(a, b time.Time) (year, month, day, hour, min, sec int) {
 }
 
 func (app *appContext) checkInvites() {
-	current_time := time.Now()
+	currentTime := time.Now()
 	app.storage.loadInvites()
 	changed := false
 	for code, data := range app.storage.invites {
 		expiry := data.ValidTill
-		if !current_time.After(expiry) {
+		if !currentTime.After(expiry) {
 			continue
 		}
 		app.debug.Printf("Housekeeping: Deleting old invite %s", code)
@@ -144,7 +144,7 @@ func (app *appContext) checkInvites() {
 }
 
 func (app *appContext) checkInvite(code string, used bool, username string) bool {
-	current_time := time.Now()
+	currentTime := time.Now()
 	app.storage.loadInvites()
 	changed := false
 	inv, match := app.storage.invites[code]
@@ -152,7 +152,7 @@ func (app *appContext) checkInvite(code string, used bool, username string) bool
 		return false
 	}
 	expiry := inv.ValidTill
-	if current_time.After(expiry) {
+	if currentTime.After(expiry) {
 		app.debug.Printf("Housekeeping: Deleting old invite %s", code)
 		notify := inv.Notify
 		if app.config.Section("notifications").Key("enabled").MustBool(false) && len(notify) != 0 {
@@ -188,7 +188,7 @@ func (app *appContext) checkInvite(code string, used bool, username string) bool
 			// 0 means infinite i guess?
 			newInv.RemainingUses -= 1
 		}
-		newInv.UsedBy = append(newInv.UsedBy, []string{username, app.formatDatetime(current_time)})
+		newInv.UsedBy = append(newInv.UsedBy, []string{username, app.formatDatetime(currentTime)})
 		if !del {
 			app.storage.invites[code] = newInv
 		}
@@ -256,15 +256,17 @@ func (app *appContext) NewUserAdmin(gc *gin.Context) {
 	}
 	if len(app.storage.policy) != 0 {
 		status, err = app.jf.SetPolicy(id, app.storage.policy)
-		if !(status == 200 || status == 204) {
+		if !(status == 200 || status == 204 || err == nil) {
 			app.err.Printf("%s: Failed to set user policy: Code %d", req.Username, status)
+			app.debug.Printf("%s: Error: %s", req.Username, err)
 		}
 	}
 	if len(app.storage.configuration) != 0 && len(app.storage.displayprefs) != 0 {
 		status, err = app.jf.SetConfiguration(id, app.storage.configuration)
 		if (status == 200 || status == 204) && err == nil {
 			status, err = app.jf.SetDisplayPreferences(id, app.storage.displayprefs)
-		} else {
+		}
+		if !((status == 200 || status == 204) && err == nil) {
 			app.err.Printf("%s: Failed to set configuration template: Code %d", req.Username, status)
 		}
 	}
@@ -364,8 +366,9 @@ func (app *appContext) NewUser(gc *gin.Context) {
 		if len(profile.Policy) != 0 {
 			app.debug.Printf("Applying policy from profile \"%s\"", invite.Profile)
 			status, err = app.jf.SetPolicy(id, profile.Policy)
-			if !(status == 200 || status == 204) {
+			if !((status == 200 || status == 204) && err == nil) {
 				app.err.Printf("%s: Failed to set user policy: Code %d", req.Code, status)
+				app.debug.Printf("%s: Error: %s", req.Code, err)
 			}
 		}
 		if len(profile.Configuration) != 0 && len(profile.Displayprefs) != 0 {
@@ -373,8 +376,10 @@ func (app *appContext) NewUser(gc *gin.Context) {
 			status, err = app.jf.SetConfiguration(id, profile.Configuration)
 			if (status == 200 || status == 204) && err == nil {
 				status, err = app.jf.SetDisplayPreferences(id, profile.Displayprefs)
-			} else {
+			}
+			if !((status == 200 || status == 204) && err == nil) {
 				app.err.Printf("%s: Failed to set configuration template: Code %d", req.Code, status)
+				app.debug.Printf("%s: Error: %s", req.Code, err)
 			}
 		}
 	}
@@ -482,18 +487,18 @@ func (app *appContext) GenerateInvite(gc *gin.Context) {
 	app.debug.Println("Generating new invite")
 	app.storage.loadInvites()
 	gc.BindJSON(&req)
-	current_time := time.Now()
-	valid_till := current_time.AddDate(0, 0, req.Days)
-	valid_till = valid_till.Add(time.Hour*time.Duration(req.Hours) + time.Minute*time.Duration(req.Minutes))
+	currentTime := time.Now()
+	validTill := currentTime.AddDate(0, 0, req.Days)
+	validTill = validTill.Add(time.Hour*time.Duration(req.Hours) + time.Minute*time.Duration(req.Minutes))
 	// make sure code doesn't begin with number
-	invite_code := shortuuid.New()
-	_, err := strconv.Atoi(string(invite_code[0]))
+	inviteCode := shortuuid.New()
+	_, err := strconv.Atoi(string(inviteCode[0]))
 	for err == nil {
-		invite_code = shortuuid.New()
-		_, err = strconv.Atoi(string(invite_code[0]))
+		inviteCode = shortuuid.New()
+		_, err = strconv.Atoi(string(inviteCode[0]))
 	}
 	var invite Invite
-	invite.Created = current_time
+	invite.Created = currentTime
 	if req.MultipleUses {
 		if req.NoLimit {
 			invite.NoLimit = true
@@ -503,21 +508,21 @@ func (app *appContext) GenerateInvite(gc *gin.Context) {
 	} else {
 		invite.RemainingUses = 1
 	}
-	invite.ValidTill = valid_till
+	invite.ValidTill = validTill
 	if req.Email != "" && app.config.Section("invite_emails").Key("enabled").MustBool(false) {
-		app.debug.Printf("%s: Sending invite email", invite_code)
+		app.debug.Printf("%s: Sending invite email", inviteCode)
 		invite.Email = req.Email
-		msg, err := app.email.constructInvite(invite_code, invite, app)
+		msg, err := app.email.constructInvite(inviteCode, invite, app)
 		if err != nil {
 			invite.Email = fmt.Sprintf("Failed to send to %s", req.Email)
-			app.err.Printf("%s: Failed to construct invite email", invite_code)
-			app.debug.Printf("%s: Error: %s", invite_code, err)
+			app.err.Printf("%s: Failed to construct invite email", inviteCode)
+			app.debug.Printf("%s: Error: %s", inviteCode, err)
 		} else if err := app.email.send(req.Email, msg); err != nil {
 			invite.Email = fmt.Sprintf("Failed to send to %s", req.Email)
-			app.err.Printf("%s: %s", invite_code, invite.Email)
-			app.debug.Printf("%s: Error: %s", invite_code, err)
+			app.err.Printf("%s: %s", inviteCode, invite.Email)
+			app.debug.Printf("%s: Error: %s", inviteCode, err)
 		} else {
-			app.info.Printf("%s: Sent invite email to %s", invite_code, req.Email)
+			app.info.Printf("%s: Sent invite email to %s", inviteCode, req.Email)
 		}
 	}
 	if req.Profile != "" {
@@ -527,7 +532,7 @@ func (app *appContext) GenerateInvite(gc *gin.Context) {
 			invite.Profile = "Default"
 		}
 	}
-	app.storage.invites[invite_code] = invite
+	app.storage.invites[inviteCode] = invite
 	app.storage.storeInvites()
 	respondBool(200, true, gc)
 }
@@ -972,7 +977,7 @@ func (app *appContext) ModifyEmails(gc *gin.Context) {
 // @Produce json
 // @Param userSettingsDTO body userSettingsDTO true "Parameters for applying settings"
 // @Success 200 {object} errorListDTO
-// @Failure 500 {object} errorListDTO "Lists of errors that occured while applying settings"
+// @Failure 500 {object} errorListDTO "Lists of errors that occurred while applying settings"
 // @Router /users/settings [post]
 // @Security Bearer
 // @tags Profiles & Settings
@@ -1063,7 +1068,7 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 func (app *appContext) GetConfig(gc *gin.Context) {
 	app.info.Println("Config requested")
 	resp := map[string]interface{}{}
-	langPath := filepath.Join(app.local_path, "lang", "form")
+	langPath := filepath.Join(app.localPath, "lang", "form")
 	app.lang.langFiles, _ = ioutil.ReadDir(langPath)
 	app.lang.langOptions = make([]string, len(app.lang.langFiles))
 	chosenLang := app.config.Section("ui").Key("language").MustString("en-us") + ".json"
@@ -1124,7 +1129,7 @@ func (app *appContext) ModifyConfig(gc *gin.Context) {
 	app.info.Println("Config modification requested")
 	var req configDTO
 	gc.BindJSON(&req)
-	tempConfig, _ := ini.Load(app.config_path)
+	tempConfig, _ := ini.Load(app.configPath)
 	for section, settings := range req {
 		if section != "restart-program" {
 			_, err := tempConfig.GetSection(section)
@@ -1145,7 +1150,7 @@ func (app *appContext) ModifyConfig(gc *gin.Context) {
 			}
 		}
 	}
-	tempConfig.SaveTo(app.config_path)
+	tempConfig.SaveTo(app.configPath)
 	app.debug.Println("Config saved")
 	gc.JSON(200, map[string]bool{"success": true})
 	if req["restart-program"] != nil && req["restart-program"].(bool) {

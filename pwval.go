@@ -4,6 +4,7 @@ import (
 	"unicode"
 )
 
+// Validator allows for validation of passwords.
 type Validator struct {
 	minLength, upper, lower, number, special int
 	criteria                                 ValidatorConf

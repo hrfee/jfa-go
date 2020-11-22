@@ -121,10 +121,12 @@ window.toClipboard = (str: string): void => {
 function login(username: string, password: string, modal: boolean, button?: HTMLButtonElement, run?: (arg0: number) => void): void {
     const req = new XMLHttpRequest();
     req.responseType = 'json';
-    let url = "/token/login";
+    let url = window.URLBase;
     const refresh = (username == "" && password == "");
     if (refresh) {
-        url = "/token/refresh";
+        url += "/token/refresh";
+    } else {
+        url += "/token/login";
     }
     req.open("GET", url, true);
     if (!refresh) {

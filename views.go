@@ -7,12 +7,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func gcHTML(gc *gin.Context, code int, file string, templ gin.H) {
+	gc.Header("Cache-Control", "no-cache")
+	gc.HTML(code, file, templ)
+}
+
 func (app *appContext) AdminPage(gc *gin.Context) {
 	bs5 := app.config.Section("ui").Key("bs5").MustBool(false)
 	emailEnabled, _ := app.config.Section("invite_emails").Key("enabled").Bool()
 	notificationsEnabled, _ := app.config.Section("notifications").Key("enabled").Bool()
 	ombiEnabled := app.config.Section("ombi").Key("enabled").MustBool(false)
-	gc.HTML(http.StatusOK, "admin.html", gin.H{
+	gcHTML(gc, http.StatusOK, "admin.html", gin.H{
+		"urlBase":        app.URLBase,
 		"bs5":            bs5,
 		"cssFile":        app.cssFile,
 		"contactMessage": "",
@@ -34,7 +40,8 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 		if strings.Contains(email, "Failed") {
 			email = ""
 		}
-		gc.HTML(http.StatusOK, "form-loader.html", gin.H{
+		gcHTML(gc, http.StatusOK, "form-loader.html", gin.H{
+			"urlBase":        app.URLBase,
 			"cssFile":        app.cssFile,
 			"contactMessage": app.config.Section("ui").Key("contact_message").String(),
 			"helpMessage":    app.config.Section("ui").Key("help_message").String(),
@@ -50,7 +57,7 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 			"lang": app.storage.lang.Form["strings"],
 		})
 	} else {
-		gc.HTML(404, "invalidCode.html", gin.H{
+		gcHTML(gc, 404, "invalidCode.html", gin.H{
 			"bs5":            app.config.Section("ui").Key("bs5").MustBool(false),
 			"cssFile":        app.cssFile,
 			"contactMessage": app.config.Section("ui").Key("contact_message").String(),
@@ -59,7 +66,7 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 }
 
 func (app *appContext) NoRouteHandler(gc *gin.Context) {
-	gc.HTML(404, "404.html", gin.H{
+	gcHTML(gc, 404, "404.html", gin.H{
 		"bs5":            app.config.Section("ui").Key("bs5").MustBool(false),
 		"cssFile":        app.cssFile,
 		"contactMessage": app.config.Section("ui").Key("contact_message").String(),
