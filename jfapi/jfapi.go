@@ -57,7 +57,7 @@ func NewJellyfin(server, client, version, device, deviceID string, timeoutHandle
 	jf.deviceID = deviceID
 	jf.useragent = fmt.Sprintf("%s/%s", client, version)
 	jf.timeoutHandler = timeoutHandler
-	jf.auth = fmt.Sprintf("MediaBrowser Client=%s, Device=%s, DeviceId=%s, Version=%s", client, device, deviceID, version)
+	jf.auth = fmt.Sprintf("MediaBrowser Client=\"%s\", Device=\"%s\", DeviceId=\"%s\", Version=\"%s\"", client, device, deviceID, version)
 	jf.header = map[string]string{
 		"Accept":               "application/json",
 		"Content-type":         "application/json; charset=UTF-8",

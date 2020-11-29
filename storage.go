@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -189,4 +190,24 @@ func storeJSON(path string, obj interface{}) error {
 		log.Printf("ERROR: Failed to write to \"%s\": %s", path, err)
 	}
 	return err
+}
+
+// JF 10.7.0 added hyphens to user IDs like this and we need to upgrade email storage to match it:
+// [8 chars]-[4]-[4]-[4]-[12]
+// This seems consistent, but we'll grab IDs from jellyfin just in case theres some variation.
+func (app *appContext) upgradeEmailStorage(old map[string]interface{}) (map[string]interface{}, int, error) {
+	jfUsers, status, err := app.jf.GetUsers(false)
+	if status != 200 || err != nil {
+		return nil, status, err
+	}
+	newEmails := map[string]interface{}{}
+	for _, user := range jfUsers {
+		unstripped := user["Id"].(string)
+		stripped := strings.ReplaceAll(unstripped, "-", "")
+		email, ok := old[stripped]
+		if ok {
+			newEmails[unstripped] = email
+		}
+	}
+	return newEmails, status, err
 }

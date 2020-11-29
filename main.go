@@ -17,6 +17,7 @@ import (
 	"os/signal"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 	"time"
 
@@ -460,6 +461,47 @@ func start(asDaemon, firstCall bool) {
 			app.err.Fatalf("Failed to authenticate with Jellyfin @ %s: Code %d", server, status)
 		}
 		app.info.Printf("Authenticated with %s", server)
+		// from 10.7.0, jellyfin hyphenates user IDs. This checks if the version is equal or higher.
+		checkVersion := func(version string) int {
+			numberStrings := strings.Split(version, ".")
+			n := 0
+			for _, s := range numberStrings {
+				num, err := strconv.Atoi(s)
+				if err == nil {
+					n += num
+				}
+			}
+			return n
+		}
+		if checkVersion(app.jf.ServerInfo.Version) >= checkVersion("10.7.0") {
+			noHyphens := true
+			for id := range app.storage.emails {
+				if strings.Contains(id, "-") {
+					noHyphens = false
+					break
+				}
+			}
+			if noHyphens {
+				app.info.Println(aurora.Yellow("From Jellyfin 10.7.0 onwards, user IDs are hyphenated.\nYour emails.json file will be modified to match this new format.\nA backup will be placed next to the file.\n"))
+				time.Sleep(time.Second * time.Duration(3))
+				newEmails, status, err := app.upgradeEmailStorage(app.storage.emails)
+				if status != 200 || err != nil {
+					app.err.Printf("Failed to get users from Jellyfin: Code %d", status)
+					app.debug.Printf("Error: %s", err)
+					app.err.Fatalf("Couldn't upgrade emails.json")
+				}
+				bakFile := app.storage.emails_path + ".bak"
+				err = storeJSON(bakFile, app.storage.emails)
+				if err != nil {
+					app.err.Fatalf("couldn't store emails.json backup: %s", err)
+				}
+				app.storage.emails = newEmails
+				err = app.storage.storeEmails()
+				if err != nil {
+					app.err.Fatalf("couldn't store emails.json: %s", err)
+				}
+			}
+		}
 		app.authJf, _ = jfapi.NewJellyfin(server, "jfa-go", app.version, "auth", "auth", common.NewTimeoutHandler("Jellyfin", server, true), cacheTimeout)
 
 		app.loadStrftime()
