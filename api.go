@@ -839,10 +839,20 @@ type dateToParse struct {
 	Parsed time.Time `json:"parseme"`
 }
 
-// json magically parses datetimes so why not
-func parseDt(date string) time.Time {
+func parseDT(date string) time.Time {
+	// decent method
+	dt, err := time.Parse("2006-01-02T15:04:05.000000", date)
+	if err == nil {
+		return dt
+	}
+	// magic method
+	// some stored dates from jellyfin have no timezone at the end, if not we assume UTC
+	if date[len(date)-1] != 'Z' {
+		date += "Z"
+	}
 	timeJSON := []byte("{ \"parseme\": \"" + date + "\" }")
 	var parsed dateToParse
+	// Magically turn it into a time.Time
 	json.Unmarshal(timeJSON, &parsed)
 	return parsed.Parsed
 }
@@ -869,8 +879,9 @@ func (app *appContext) GetUsers(gc *gin.Context) {
 		var user respUser
 		user.LastActive = "n/a"
 		if jfUser["LastActivityDate"] != nil {
-			date := parseDt(jfUser["LastActivityDate"].(string))
+			date := parseDT(jfUser["LastActivityDate"].(string))
 			user.LastActive = app.formatDatetime(date)
+			// fmt.Printf("%s: %s, %s, %+v\n", jfUser["Name"].(string), jfUser["LastActivityDate"].(string), user.LastActive, date)
 		}
 		user.ID = jfUser["Id"].(string)
 		user.Name = jfUser["Name"].(string)

@@ -1,4 +1,4 @@
-import { _get, _post, _delete } from "../modules/common.js";
+import { _get, _post, _delete, createEl } from "../modules/common.js";
 import { Focus, Unfocus } from "../modules/admin.js";
 
 interface aWindow extends Window {
@@ -6,6 +6,8 @@ interface aWindow extends Window {
 }
 
 declare var window: aWindow;
+
+export const validateEmail = (email: string): boolean => /\S+@\S+\.\S+/.test(email);
 
 export const checkCheckboxes = (): void => {
     const defaultsButton = document.getElementById('accountsTabSetDefaults');
@@ -27,6 +29,66 @@ export const checkCheckboxes = (): void => {
 }
 
 window.checkCheckboxes = checkCheckboxes;
+
+export function changeEmail(icon: HTMLElement, id: string): void {
+    const iconContent = icon.outerHTML;
+    icon.setAttribute('class', '');
+    const entry = icon.nextElementSibling as HTMLInputElement;
+    const ogEmail = entry.value;
+    entry.readOnly = false;
+    entry.classList.remove('form-control-plaintext');
+    entry.classList.add('form-control');
+    if (ogEmail == "") {
+        entry.placeholder = 'Address';
+    }
+    const tick = createEl(`
+    <i class="fa fa-check d-inline-block icon-button text-success" style="margin-left: 0.5rem; margin-right: 0.5rem;"></i>
+    `);
+    tick.onclick = (): void => {
+        const newEmail = entry.value;
+        if (!validateEmail(newEmail) || newEmail == ogEmail) {
+            return;
+        }
+        cross.remove();
+        const spinner = createEl(`
+        <div class="spinner-border spinner-border-sm" role="status" style="width: 1rem; height: 1rem; margin-left: 0.5rem;">
+            <span class="sr-only">Saving...</span>
+        </div>
+        `);
+        tick.replaceWith(spinner);
+        let send = {};
+        send[id] = newEmail;
+        _post("/users/emails", send, function (): void {
+            if (this.readyState == 4) {
+                if (this.status == 200 || this.status == 204) {
+                    entry.nextElementSibling.remove();
+                } else {
+                    entry.value = ogEmail;
+                }
+            }
+        });
+        icon.outerHTML = iconContent;
+        entry.readOnly = true;
+        entry.classList.remove('form-control');
+        entry.classList.add('form-control-plaintext');
+        entry.placeholder = '';
+    };
+    const cross = createEl(`
+    <i class="fa fa-close d-inline-block icon-button text-danger"></i>
+    `);
+    cross.onclick = (): void => {
+        tick.remove();
+        cross.remove();
+        icon.outerHTML = iconContent;
+        entry.readOnly = true;
+        entry.classList.remove('form-control');
+        entry.classList.add('form-control-plaintext');
+        entry.placeholder = '';
+        entry.value = ogEmail;
+    };
+    icon.parentNode.appendChild(tick);
+    icon.parentNode.appendChild(cross);
+};
 
 export function populateUsers(): void {
     const acList = document.getElementById('accountsList');
@@ -53,10 +115,6 @@ export function populateUsers(): void {
         return entry.outerHTML;
     };
     const template = (id: string, username: string, email: string, lastActive: string, admin: boolean): string => {
-        let isAdmin = "No";
-        if (admin) {
-            isAdmin = "Yes";
-        }
         let fci = "form-check-input";
         if (window.bsVersion != 5) {
             fci = "";

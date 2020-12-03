@@ -1,5 +1,11 @@
 declare var window: Window;
 
+export function createEl(html: string): HTMLElement {
+    let div = document.createElement('div') as HTMLDivElement;
+    div.innerHTML = html;
+    return div.firstElementChild as HTMLElement;
+}
+
 export function serializeForm(id: string): Object {
     const form = document.getElementById(id) as HTMLFormElement;
     let formData = {};

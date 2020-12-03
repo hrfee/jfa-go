@@ -1,13 +1,7 @@
-import { rmAttr, addAttr, _post, _get, _delete } from "../modules/common.js";
+import { rmAttr, addAttr, _post, _get, _delete, createEl } from "../modules/common.js";
 
 export const Focus = (el: HTMLElement): void => rmAttr(el, 'unfocused');
 export const Unfocus = (el: HTMLElement): void => addAttr(el, 'unfocused');
-
-export function createEl(html: string): HTMLElement {
-    let div = document.createElement('div') as HTMLDivElement;
-    div.innerHTML = html;
-    return div.firstElementChild as HTMLElement;
-}
 
 export function storeDefaults(users: string | Array<string>): void {
     const button = document.getElementById('storeDefaults') as HTMLButtonElement;
