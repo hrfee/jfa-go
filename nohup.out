@@ -1,8 +1,0 @@
-Nov 29 23:37 : exception: Failed to bind to '[::]:6600'; Failed to bind socket: Address already in use
-/usr/bin/mpDris2:1367: DeprecationWarning: The SafeConfigParser class has been renamed to ConfigParser in Python 3.2. This alias will be removed in future versions. Use ConfigParser directly instead.
-  config = configparser.SafeConfigParser()
-2020-11-29 23:37:53,454 mpDris2 INFO: Using file:///home/hrfee/Music as music library path.
-2020-11-29 23:37:53,454 mpDris2 INFO: Using Mutagen to read covers from music files.
-2020-11-29 23:37:53,456 base INFO: Calling MPD connect('localhost', '6600', timeout=None)
-2020-11-29 23:37:57,776 mpDris2 INFO: Replaced by :1.24 (PID 1128)
-2020-11-29 23:37:57,777 base INFO: Calling MPD disconnect()
