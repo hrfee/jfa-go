@@ -1,7 +1,7 @@
 {{ define "form-base" }}
 <script> 
-    window.bs5 = {{ .settings.bs5 }};
-    window.usernameEnabled = {{ .settings.username }};
+    window.bs5 = {{ .bs5 }};
+    window.usernameEnabled = {{ .username }};
     window.validationStrings = JSON.parse({{ .lang.validationStrings }});
     window.invalidPassword = "{{ .lang.reEnterPasswordInvalid }}";
     window.URLBase = "{{ .urlBase }}";

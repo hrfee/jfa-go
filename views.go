@@ -50,11 +50,9 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 			"validate":       app.config.Section("password_validation").Key("enabled").MustBool(false),
 			"requirements":   app.validator.getCriteria(),
 			"email":          email,
-			"settings": map[string]bool{
-				"bs5":      app.config.Section("ui").Key("bs5").MustBool(false),
-				"username": !app.config.Section("email").Key("no_username").MustBool(false),
-			},
-			"lang": app.storage.lang.Form["strings"],
+			"bs5":            app.config.Section("ui").Key("bs5").MustBool(false),
+			"username":       !app.config.Section("email").Key("no_username").MustBool(false),
+			"lang":           app.storage.lang.Form["strings"],
 		})
 	} else {
 		gcHTML(gc, 404, "invalidCode.html", gin.H{

@@ -19,8 +19,8 @@ require (
 	github.com/gin-gonic/gin v1.6.3
 	github.com/go-chi/chi v4.1.2+incompatible // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
-	github.com/go-openapi/spec v0.19.13 // indirect
 	github.com/go-playground/validator/v10 v10.4.1 // indirect
+	github.com/gofrs/uuid v3.3.0+incompatible // indirect
 	github.com/golang/protobuf v1.4.3
 	github.com/google/uuid v1.1.2 // indirect
 	github.com/hrfee/jfa-go/common v0.0.0-20201112212552-b6f3cd7c1f71
@@ -41,14 +41,13 @@ require (
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/swaggo/files v0.0.0-20190704085106-630677cd5c14
 	github.com/swaggo/gin-swagger v1.3.0
-	github.com/swaggo/swag v1.6.9 // indirect
+	github.com/swaggo/swag v1.7.0 // indirect
 	github.com/ugorji/go v1.2.0 // indirect
 	github.com/urfave/cli/v2 v2.3.0 // indirect
 	golang.org/x/crypto v0.0.0-20201112155050-0c6587e931a9 // indirect
 	golang.org/x/net v0.0.0-20201110031124-69a78807bb2b // indirect
 	golang.org/x/sys v0.0.0-20201113233024-12cec1faf1ba // indirect
 	golang.org/x/text v0.3.4 // indirect
-	golang.org/x/tools v0.0.0-20201114224030-61ea331ec02b // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
 	gopkg.in/ini.v1 v1.62.0
 	gopkg.in/yaml.v2 v2.3.0 // indirect
