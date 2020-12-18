@@ -42,6 +42,7 @@ type User struct {
 	Password string `json:"password"`
 }
 
+// contains everything the application needs, essentially. Wouldn't do this in the future.
 type appContext struct {
 	// defaults         *Config
 	config           *ini.File
@@ -461,7 +462,7 @@ func start(asDaemon, firstCall bool) {
 			app.err.Fatalf("Failed to authenticate with Jellyfin @ %s: Code %d", server, status)
 		}
 		app.info.Printf("Authenticated with %s", server)
-		// from 10.7.0, jellyfin hyphenates user IDs. This checks if the version is equal or higher.
+		// from 10.7.0, jellyfin may hyphenate user IDs. This checks if the version is equal or higher.
 		checkVersion := func(version string) int {
 			numberStrings := strings.Split(version, ".")
 			n := 0
@@ -474,6 +475,9 @@ func start(asDaemon, firstCall bool) {
 			return n
 		}
 		if checkVersion(app.jf.ServerInfo.Version) >= checkVersion("10.7.0") {
+			// Get users to check if server uses hyphenated userIDs
+			app.jf.GetUsers(false)
+
 			noHyphens := true
 			for id := range app.storage.emails {
 				if strings.Contains(id, "-") {
@@ -481,10 +485,19 @@ func start(asDaemon, firstCall bool) {
 					break
 				}
 			}
-			if noHyphens {
-				app.info.Println(aurora.Yellow("From Jellyfin 10.7.0 onwards, user IDs are hyphenated.\nYour emails.json file will be modified to match this new format.\nA backup will be placed next to the file.\n"))
-				time.Sleep(time.Second * time.Duration(3))
-				newEmails, status, err := app.upgradeEmailStorage(app.storage.emails)
+			if noHyphens == app.jf.Hyphens {
+				var newEmails map[string]interface{}
+				var status int
+				var err error
+				if app.jf.Hyphens {
+					app.info.Println(aurora.Yellow("Your build of Jellyfin appears to hypenate user IDs. Your emails.json file will be modified to match."))
+					time.Sleep(time.Second * time.Duration(3))
+					newEmails, status, err = app.hyphenateEmailStorage(app.storage.emails)
+				} else {
+					app.info.Println(aurora.Yellow("Your emails.json file uses hyphens, but the Jellyfin server no longer does. It will be modified."))
+					time.Sleep(time.Second * time.Duration(3))
+					newEmails, status, err = app.deHyphenateEmailStorage(app.storage.emails)
+				}
 				if status != 200 || err != nil {
 					app.err.Printf("Failed to get users from Jellyfin: Code %d", status)
 					app.debug.Printf("Error: %s", err)

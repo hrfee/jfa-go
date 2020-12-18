@@ -44,6 +44,7 @@ type Jellyfin struct {
 	CacheExpiry    time.Time
 	cacheLength    int
 	noFail         bool
+	Hyphens        bool
 	timeoutHandler common.TimeoutHandler
 }
 
@@ -208,8 +209,8 @@ func (jf *Jellyfin) post(url string, data map[string]interface{}, response bool)
 }
 
 // DeleteUser deletes the user corresponding to the provided ID.
-func (jf *Jellyfin) DeleteUser(id string) (int, error) {
-	url := fmt.Sprintf("%s/Users/%s", jf.Server, id)
+func (jf *Jellyfin) DeleteUser(userID string) (int, error) {
+	url := fmt.Sprintf("%s/Users/%s", jf.Server, userID)
 	req, _ := http.NewRequest("DELETE", url, nil)
 	for name, value := range jf.header {
 		req.Header.Add(name, value)
@@ -239,6 +240,11 @@ func (jf *Jellyfin) GetUsers(public bool) ([]map[string]interface{}, int, error)
 		json.Unmarshal([]byte(data), &result)
 		jf.userCache = result
 		jf.CacheExpiry = time.Now().Add(time.Minute * time.Duration(jf.cacheLength))
+		if id, ok := result[0]["Id"]; ok {
+			if id.(string)[8] == '-' {
+				jf.Hyphens = true
+			}
+		}
 		return result, status, nil
 	}
 	return jf.userCache, 200, nil
