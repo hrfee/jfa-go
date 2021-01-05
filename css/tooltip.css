@@ -1,0 +1,36 @@
+.tooltip {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip .content {
+    visibility: hidden;
+    max-width: 10rem;
+    min-width: 6rem;
+    background-color: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    padding: 0.5rem;
+    border-radius: 6px;
+    overflow-wrap: break-word;
+    text-align: center;
+
+    position: absolute;
+    z-index: 1;
+    top: -1rem;
+}
+
+.tooltip.right .content {
+    left: 120%;
+}
+
+.tooltip.left .content {
+    right: 120%;
+}
+
+.tooltip .content.sm {
+    font-size: 0.8rem;
+}
+
+.tooltip:hover .content {
+    visibility: visible;
+}

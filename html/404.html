@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en" class="{{ .cssClass }}">
+    <head>
+        <link rel="stylesheet" type="text/css" href="css/base.css">
+        {{ template "header.html" . }}
+        <title>404 - jfa-go</title>
+    </head>
+    <body class="section">
+        <div class="page-container">
+            <h1 class="heading">Page not found.</h1>
+            <p class="content">
+            {{ .contactMessage }}
+            </p>
+        </div>
+    </body>
+</html>                            

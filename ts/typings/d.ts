@@ -1,61 +1,90 @@
-declare interface ModalConstructor {
-    (id: string, find?: boolean): BSModal;
+declare interface Modal {
+    modal: HTMLElement;
+    closeButton: HTMLSpanElement
+    show: () => void;
+    close: (event?: Event) => void;
+    toggle: () => void;
 }
 
-declare interface BSModal {
-    el: HTMLDivElement;
-    modal: any;
-    show: () => void;
-    hide: () => void;
+interface ArrayConstructor {
+    from(arrayLike: any, mapFn?, thisArg?): Array<any>;
 }
 
 declare interface Window {
-    getComputedStyle(element: HTMLElement, pseudoElt: HTMLElement): any;
-    bsVersion: number;
-    bs5: boolean;
-    BS: Bootstrap;
     URLBase: string;
-    Modals: BSModals;
+    modals: Modals;
     cssFile: string;
-    availableProfiles: Array<any>;
+    availableProfiles: string[];
     jfUsers: Array<Object>;
-    notifications_enabled: boolean;
+    notificationsEnabled: boolean;
+    emailEnabled: boolean;
+    ombiEnabled: boolean;
+    usernameEnabled: boolean;
     token: string;
     buttonWidth: number;
+    transitionEvent: string;
+    animationEvent: string;
+    tabs: Tabs;
+    invites: inviteList;
+    notifications: NotificationBox;
 }
 
-declare interface tooltipTrigger {
-    (): void;
+declare interface NotificationBox {
+    connectionError: () => void;
+    customError: (type: string, message: string) => void;
+    customPositive: (type: string, bold: string,  message: string) => void;
 }
 
-declare interface Bootstrap {
-    newModal: ModalConstructor;
-    triggerTooltips: tooltipTrigger;
-    Compat?(): void;
+declare interface Tabs {
+    current: string;
+    tabs: Array<Tab>;
+    addTab: (tabID: string, preFunc?: () => void, postFunc?: () => void) => void;
+    switch: (tabID: string, noRun?: boolean) => void;
 }
 
-declare interface BSModals {
-    login: BSModal;
-    userDefaults: BSModal;
-    users: BSModal;
-    restart: BSModal;
-    refresh: BSModal;
-    about: BSModal;
-    delete: BSModal;
-    newUser: BSModal;
+declare interface Tab {
+    tabID: string;
+    tabEl: HTMLDivElement;
+    buttonEl: HTMLSpanElement;
+    preFunc?: () => void;
+    postFunc?: () => void;
+}
+
+
+declare interface Modals {
+    about: Modal;
+    login: Modal;
+    addUser: Modal;
+    modifyUser: Modal;
+    deleteUser: Modal;
+    settingsRestart: Modal;
+    settingsRefresh: Modal;
+    ombiDefaults?: Modal;
+    profiles: Modal;
+    addProfile: Modal;
 }
 
 interface Invite {
     code?: string;
     expiresIn?: string;
-    empty: boolean;
     remainingUses?: string;
     email?: string;
-    usedBy?: Array<Array<string>>;
+    usedBy?: string[][];
     created?: string;
     notifyExpiry?: boolean;
     notifyCreation?: boolean;
     profile?: string;
+}
+
+interface inviteList {
+    empty: boolean;
+    invites: { [code: string]: Invite }
+    add: (invite: Invite) => void;
+    reload: () => void;
+}
+
+declare interface SubmitEvent extends Event {
+    submitter: HTMLInputElement;
 }
 
 declare var config: Object;

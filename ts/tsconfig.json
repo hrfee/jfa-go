@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "outDir": "../data/static",
+        "outDir": "../js",
         "target": "es6",
         "lib": ["dom", "es2017"],
         "typeRoots": ["./node_modules/@types", "./typings"]

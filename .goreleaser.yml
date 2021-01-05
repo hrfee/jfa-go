@@ -7,14 +7,20 @@ release:
 before:
   hooks:
     - go mod download
+    - rm -rf data/web
+    - mkdir -p data
+    - cp -r static data/web
+    - cp -r css data/web/
+    - npm install
+    - cp node_modules/a17t/dist/a17t.css data/web/css/
+    - cp node_modules/remixicon/fonts/remixicon.css node_modules/remixicon/fonts/remixicon.woff2 data/web/css/
+    - cp -r html data/
+    - cp -r lang data/
     - python3 config/fixconfig.py -i config/config-base.json -o data/config-base.json
     - python3 config/generate_ini.py -i config/config-base.json -o data/config-default.ini
-    - python3 -m pip install libsass
-    - npm install
-    - python3 scss/compile.py
-    - python3 mail/generate.py
+    - python3 mail/generate.py -o data/
     - python3 version.py {{.Version}} version.go
-    - bash -c 'npx esbuild ts/*.ts ts/modules/*.ts --outdir=data/static --minify'
+    - bash -c 'npx esbuild ts/*.ts ts/modules/*.ts --outdir=./data/web/js/ --minify'
     - go get -u github.com/swaggo/swag/cmd/swag
     - swag init -g main.go
 builds:
@@ -37,9 +43,8 @@ archives:
         amd64: x86_64
     files:
         - data/*
-        - data/templates/*
-        - data/static/*
-        - data/static/modules/*
+        - data/**/*
+        - data/**/**/*
 checksum:
     name_template: 'checksums.txt'
 snapshot:

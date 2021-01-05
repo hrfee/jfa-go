@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en" class="{{ .cssClass }}">
+    <head>
+        <link rel="stylesheet" type="text/css" href="css/base.css">
+
+        <script>
+            window.URLBase = "{{ .urlBase }}";
+            window.notificationsEnabled = {{ .notifications }};
+            window.emailEnabled = {{ .email_enabled }};
+            window.ombiEnabled = {{ .ombiEnabled }};
+            window.usernamesEnabled = {{ .username }};
+        </script>
+        {{ template "header.html" . }}
+        <title>Admin - jfa-go</title>
+    </head>
+    <body class="max-w-full overflow-x-hidden section">
+        <div id="modal-login" class="modal">
+            <form class="modal-content card" id="form-login" href="">
+                <span class="heading">Login</span>
+                <input type="text" class="field input ~neutral !high mt-half mb-1" placeholder="username" id="login-user">
+                <input type="password" class="field input ~neutral !high mb-1" placeholder="password" id="login-password">
+                <label>
+                    <input type="submit" class="unfocused">
+                    <span class="button ~urge !normal full-width center supra submit">Login</span>
+                </label>
+            </form>
+        </div>
+        <div id="modal-add-user" class="modal">
+            <form class="modal-content card" id="form-add-user" href="">
+                <span class="heading">New User <span class="modal-close">&times;</span></span>
+                <input type="text" class="field input ~neutral !high mt-half mb-1" placeholder="username" id="add-user-user">
+                <input type="email" class="field input ~neutral !high mt-half mb-1" placeholder="email address">
+                <input type="password" class="field input ~neutral !high mb-1" placeholder="password" id="add-user-password">
+                <label>
+                    <input type="submit" class="unfocused">
+                    <span class="button ~urge !normal full-width center supra submit">Create</span>
+                </label>
+            </form>
+        </div>
+        <div id="modal-about" class="modal">
+            <div class="modal-content content card">
+                <span class="heading">About <span class="modal-close">&times;</span></span>
+                <img src="/banner.svg" class="mt-1" alt="jfa-go banner">
+                <p><i class="icon ri-github-fill"></i><a href="https://github.com/hrfee/jfa-go">jfa-go</a></p>
+                <p>Version <span class="code monospace">{{ .version }}</span></p>
+                <p>Commit <span class="code monospace">{{ .commit }}</span></p>
+                <p><a href="https://github.com/hrfee/jfa-go/blob/main/LICENSE">Available under the MIT License.</a></p>
+            </div>
+        </div>
+        <div id="modal-modify-user" class="modal">
+            <form class="modal-content card" id="form-modify-user" href="">
+                <span class="heading">Modify Settings for <span id="header-modify-user"></span> <span class="modal-close">&times;</span></span>
+                <p class="content">Apply settings from an existing profile, or source them directly from a user.</p>
+                <div class="flex-row mb-1">
+                    <label class="flex-row-group mr-1">
+                        <input type="radio" name="modify-user-source" class="unfocused" id="radio-use-profile" checked>
+                        <span class="button ~neutral !high supra full-width center">Profile</span>
+                    </label>
+                    <label class="flex-row-group ml-1">
+                        <input type="radio" name="modify-user-source" class="unfocused" id="radio-use-user">
+                        <span class="button ~neutral !normal supra full-width center">User</span>
+                    </label>
+                </div>
+                <div class="select ~neutral !normal mb-1">
+                    <select id="modify-user-profiles">
+                        <option>Friends</option>
+                        <option>Family</option>
+                        <option>Default</option>
+                    </select>
+                </div>
+                <div class="select ~neutral !normal mb-1 unfocused">
+                    <select id="modify-user-users">
+                        <option>Person</option>
+                        <option>Other person</option>
+                    </select>
+                </div>
+                <label class="switch mb-1">
+                    <input type="checkbox" id="modify-user-homescreen" checked>
+                    <span>Apply homescreen layout</span>
+                </label>
+                <label>
+                    <input type="submit" class="unfocused">
+                    <span class="button ~urge !normal full-width center supra submit">Apply</span>
+                </label>
+            </form>
+        </div>
+        <div id="modal-delete-user" class="modal">
+            <form class="modal-content card" id="form-delete-user" href="">
+                <span class="heading">Delete <span id="header-delete-user"></span> <span class="modal-close">&times;</span></span>
+                <div class="content mt-half">
+                    <label class="switch mb-1">
+                        <input type="checkbox" id="delete-user-notify" checked>
+                        <span>Send notification email</span>
+                    </label>
+                    <textarea id="textarea-delete-user" class="textarea full-width ~neutral !normal mb-1" placeholder="Your account has been deleted."></textarea>
+                    <label>
+                        <input type="submit" class="unfocused">
+                        <span class="button ~critical !normal full-width center supra submit">Delete</span>
+                    </label>
+                </div>
+            </form>
+        </div>
+        <div id="modal-restart" class="modal">
+            <div class="modal-content card ~critical !low">
+                <span class="heading">Restart needed <span class="modal-close">&times;</span></span>
+                <p class="content pb-1">A restart is needed to apply some settings you changed. Do it now or later?</p>
+                <div class="fr">
+                    <span class="button ~info !normal" id="settings-apply-no-restart">Apply, restart later</span>
+                    <span class="button ~critical !normal" id="settings-apply-restart">Apply &amp; restart</span>
+                </div>
+            </div>
+        </div>
+        <div id="modal-refresh" class="modal">
+            <div class="modal-content card ~neutral !normal">
+                <span class="heading">Settings applied.</span>
+                <p class="content">Refresh the page in a few seconds.</p>
+            </div>
+        </div>
+        <div id="modal-ombi-defaults" class="modal">
+            <form class="modal-content card" id="form-ombi-defaults" href="">
+                <span class="heading">Ombi user defaults <span class="modal-close">&times;</span></span>
+                <p class="content">Create an Ombi user and configure it, then select it here. It's settings/permissions will be stored and applied to new ombi users created by jfa-go.</p>
+                <div class="select ~neutral !normal mb-1">
+                    <select>
+                        <option>Person</option>
+                        <option>Other person</option>
+                    </select>
+                </div>
+                <label>
+                    <input type="submit" class="unfocused">
+                    <span class="button ~urge !normal full-width center supra submit">Submit</span>
+                </label>
+            </form>
+        </div>
+        <div id="modal-user-profiles" class="modal">
+            <div class="modal-content wide card">
+                <span class="heading">User profiles <span class="modal-close">&times;</span></span>
+                <p class="support lg">Profiles are applied to users when they create an account. A profile includes library access rights and homescreen layout.</p>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Default</th>
+                                <th>From</th>
+                                <th>Libraries</th>
+                                <th><span class="button ~neutral !high" id="button-profile-create">Create</span></th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-profiles">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div id="modal-add-profile" class="modal">
+            <form class="modal-content card" id="form-add-profile" href="">
+                <span class="heading">Add profile <span class="modal-close">&times;</span></span>
+                <p class="content">Create a Jellyfin user and configure it. Select it here, and when this profile is applied to an invite, new users will be created with its settings.</p>
+                <label>
+                    <span class="supra">Profile Name </span>
+                    <input type="text" class="field input ~neutral !high mt-half mb-1" placeholder="Name" id="add-profile-name">
+                <label>
+                    <span class="supra">User</span>
+                    <div class="select ~neutral !normal mt-half mb-1">
+                        <select id="add-profile-user">
+                        </select>
+                    </div>
+                </label>
+                <label class="switch mb-1">
+                    <input type="checkbox" id="add-profile-homescreen" checked>
+                    <span>Store homescreen layout</span>
+                </label>
+                <label>
+                    <input type="submit" class="unfocused">
+                    <span class="button ~urge !normal full-width center supra submit">Create</span>
+                </label>
+            </form>
+        </div>
+        <div id="notification-box"></div>
+        <div class="page-container">
+            <div class="mb-1">
+                <header class="flex flex-wrap items-center justify-between">
+                    <div class="text-neutral-700">
+                        <span id="button-tab-invites" class="tab-button portal">Invites</span>
+                        <span id="button-tab-accounts" class="tab-button portal">Accounts</span>
+                        <span id="button-tab-settings" class="tab-button portal">Settings</span>
+                    </div>
+                </header>
+            </div>
+            <div class="mb-1">
+                <div class="text-neutral-700">
+                    <span class="button ~critical !normal mb-1 unfocused" id="logout-button">Logout</span>
+                    <span id="button-theme" class="button ~neutral !normal mb-1">Theme</span>
+                </div>
+            </div>
+            <div id="tab-invites">
+                <div class="card ~neutral !low invites mb-1">
+                    <span class="heading">Invites</span>
+                    <div id="invites"></div>
+                </div>
+                <div class="card ~neutral !low">
+                    <span class="heading">Create</span>
+                    <div class="row" id="create-inv">
+                        <div class="card ~neutral !normal col">
+                            <label class="label supra" for="create-days">Days</label>
+                            <div class="select ~neutral !normal mb-1 mt-half">
+                                <select id="create-days">
+                                    <option>0</option>
+                                </select>
+                            </div>
+                            <label class="label supra" for="create-hours">Hours</label>
+                            <div class="select ~neutral !normal mb-1 mt-half">
+                                <select id="create-hours">
+                                    <option>0</option>
+                                </select>
+                            </div>
+                            <label class="label supra" for="create-minutes">Minutes</label>
+                            <div class="select ~neutral !normal mb-1 mt-half">
+                                <select id="create-minutes">
+                                    <option>0</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="card ~neutral !normal col">
+                            <label class="label supra" for="create-uses">Number of uses</label>
+                            <div class="flex-expand mb-1 mt-half">
+                                <input type="number" min="0" id="create-uses" class="input ~neutral !normal mr-1" value=1>
+                                <label for="create-inf-uses" class="button ~neutral !normal">
+                                    <span>∞</span>
+                                    <input type="checkbox" class="unfocused" id="create-inf-uses" aria-label="Set uses to infinite">
+                                </label>
+                            </div>
+                            <p class="support unfocused" id="create-inf-uses-warning"><span class="badge ~critical">Warning</span> invites with infinite uses can be used abusively.</p>
+                            <label class="label supra">Profile</label>
+                            <div class="select ~neutral !normal mb-1 mt-half">
+                                <select id="create-profile">
+                                </select>
+                            </div>
+                            <div id="create-send-to-container">
+                                <label class="label supra">Send to</label>
+                                <div class="flex-expand mb-1 mt-half">
+                                    <input type="email" id="create-send-to" class="input ~neutral !normal mr-1" placeholder="example@example.com">
+                                    <label for="create-send-to-enabled" class="button ~neutral !normal">
+                                        <input type="checkbox" id="create-send-to-enabled" aria-label="Send to address enabled">
+                                    </label>
+                                </div>
+                            </div>
+                            <span class="button ~urge !normal supra full-width center lg" id="create-submit">Create</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="tab-accounts" class="unfocused">
+                <div class="card ~neutral !low accounts mb-1">
+                    <span class="heading">Accounts</span>
+                    <div class="fr">
+                        <span class="button ~neutral !normal" id="accounts-add-user">Add User</span>
+                        <span class="button ~urge !normal" id="accounts-modify-user">Modify Settings</span>
+                        <span class="button ~critical !normal" id="accounts-delete-user">Delete User</span>
+                    </div>
+                    <div class="card ~neutral !normal accounts-header table-responsive mt-half">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th><input type="checkbox" value="" id="accounts-select-all"></th>
+                                    <th>Username</th>
+                                    <th>Email Address</th>
+                                    <th>Last Active</th>
+                                </tr>
+                            </thead>
+                            <tbody id="accounts-list"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div id="tab-settings" class="unfocused">
+                <div class="card ~neutral !low settings overflow">
+                    <span class="heading">Settings</span>
+                    <div class="fr">
+                        <span class="button ~neutral !normal unfocused" id="settings-save">Save</span>
+                    </div>
+                    <div class="row">
+                        <div class="card ~neutral !normal col" id="settings-sidebar">
+                            <aside class="aside sm ~info mb-half">Note: <span class="badge ~critical">*</span> indicates a required field, <span class="badge ~info">R</span> indicates changes require a restart.</aside> 
+                            <span class="button ~neutral !low settings-section-button mb-half" id="setting-about"><span class="flex">About <i class="ri-information-line ml-half"></i></span></span>
+                            <span class="button ~neutral !low settings-section-button mb-half" id="setting-profiles"><span class="flex">User profiles <i class="ri-user-line ml-half"></i></span></span>
+                        </div>
+                        <div class="card ~neutral !normal col overflow" id="settings-panel"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script src="js/admin.js" type="module"></script>
+    </body>
+</html>

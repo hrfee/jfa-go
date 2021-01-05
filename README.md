@@ -1,4 +1,4 @@
-# ![jfa-go](data/static/banner.svg)
+# ![jfa-go](images/banner.svg)
 
 jfa-go is a user management app for [Jellyfin](https://github.com/jellyfin/jellyfin) that provides invite-based account creation as well as other features that make one's instance much easier to manage.
 
@@ -21,16 +21,15 @@ I chose to rewrite the python [jellyfin-accounts](https://github.com/hrfee/jelly
 * 🌓 Customizable look
     * Specify contact and help messages to appear in emails and pages
     * Light and dark themes available
-    * Optionally provide custom CSS
 
 ## Interface
 <p align="center">
-    <img src="https://github.com/hrfee/jfa-go/blob/main/images/demo.gif" width="100%"></img>
+    <img src="images/demo.gif" width="100%"></img>
 </p>
 
 <p align="center">
-    <img src="https://github.com/hrfee/jfa-go/blob/main/images/invites.png" width="48%" style="margin-left: 1.5%;" alt="Invites tab"></img>
-    <img src="https://github.com/hrfee/jfa-go/blob/main/images/accounts.png" width="48%" style="margin-right: 1.5%;" alt="Accounts tab"></img> 
+    <img src="images/invites.png" width="48%" style="margin-left: 1.5%;" alt="Invites tab"></img>
+    <img src="images/accounts.png" width="48%" style="margin-right: 1.5%;" alt="Accounts tab"></img> 
 </p>
 
 #### Install

@@ -1,5 +1,5 @@
 {
-  "name": "jellyfin-accounts",
+  "name": "jfa-go",
   "version": "1.0.0",
   "description": "This is only used for grabbing scss build dependencies, and isn't a real package.",
   "main": "index.js",
@@ -8,24 +8,21 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hrfee/jellyfin-accounts.git"
+    "url": "git+https://github.com/hrfee/jfa-go.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/hrfee/jellyfin-accounts/issues"
+    "url": "https://github.com/hrfee/jfa-go/issues"
   },
-  "homepage": "https://github.com/hrfee/jellyfin-accounts#readme",
+  "homepage": "https://github.com/hrfee/jfa-go#readme",
   "dependencies": {
-    "@types/jquery": "^3.5.3",
-    "autoprefixer": "^9.8.5",
-    "bootstrap": "^5.0.0-alpha3",
-    "bootstrap4": "npm:bootstrap@^4.5.0",
-    "clean-css-cli": "^4.3.0",
+    "a17t": "^0.4.0",
     "esbuild": "^0.7.8",
     "lodash": "^4.17.19",
-    "mjml": "^4.6.3",
-    "postcss-cli": "^7.1.1",
+    "mjml": "^4.8.0",
+    "remixicon": "^2.5.0",
     "typescript": "^4.0.3"
-  }
+  },
+  "devDependencies": {}
 }

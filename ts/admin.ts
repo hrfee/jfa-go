@@ -1,124 +1,99 @@
-import { serializeForm, rmAttr, addAttr, _get, _post, _delete } from "./modules/common.js";
-import { Focus, Unfocus } from "./modules/admin.js";
-import { toggleCSS } from "./modules/animation.js";
-import { populateUsers, checkCheckboxes } from "./modules/accounts.js";
-import { generateInvites, addOptions, checkDuration } from "./modules/invites.js";
-import { showSetting, openSettings } from "./modules/settings.js";
-import { BS4 } from "./modules/bs4.js";
-import { BS5 } from "./modules/bs5.js";
-import "./accounts.js";
-import "./settings.js";
+import { toggleTheme, loadTheme } from "./modules/theme.js";
+import { Modal } from "./modules/modal.js";
+import { Tabs } from "./modules/tabs.js";
+import { inviteList, createInvite } from "./modules/invites.js";
+import { accountsList } from "./modules/accounts.js";
+import { settingsList } from "./modules/settings.js";
+import { ProfileEditor } from "./modules/profiles.js";
+import { _post, notificationBox, whichAnimationEvent, toggleLoader } from "./modules/common.js";
 
-interface aWindow extends Window {
-    toClipboard(str: string): void;
-}
+loadTheme();
+(document.getElementById('button-theme') as HTMLSpanElement).onclick = toggleTheme;
 
-declare var window: aWindow;
+window.animationEvent = whichAnimationEvent();
 
-interface TabSwitcher {
-    els: Array<HTMLDivElement>;
-    tabButtons: Array<HTMLAnchorElement>;
-    focus: (el: number) => void;
-    invites: () => void;
-    accounts: () => void;
-    settings: () => void;
-}
+window.token = "";
 
-const tabs: TabSwitcher = {
-    els: [document.getElementById('invitesTab') as HTMLDivElement, document.getElementById('accountsTab') as HTMLDivElement, document.getElementById('settingsTab') as HTMLDivElement],
-    tabButtons: [document.getElementById('invitesTabButton') as HTMLAnchorElement, document.getElementById('accountsTabButton') as HTMLAnchorElement, document.getElementById('settingsTabButton') as HTMLAnchorElement],
-    focus: (el: number): void => {
-        for (let i = 0; i < tabs.els.length; i++) {
-            if (i == el) {
-                Focus(tabs.els[i]);
-                addAttr(tabs.tabButtons[i], "active");
-            } else {
-                Unfocus(tabs.els[i]);
-                rmAttr(tabs.tabButtons[i], "active");
-            }
-        }
-    },
-    invites: (): void => tabs.focus(0),
-    accounts: (): void => {
-        populateUsers();
-        (document.getElementById('selectAll') as HTMLInputElement).checked = false;
-        checkCheckboxes();
-        tabs.focus(1);
-    },
-    settings: (): void => openSettings(document.getElementById('settingsSections'), document.getElementById('settingsContent'), (): void => {
-        window.BS.triggerTooltips();
-        showSetting("ui");
-        tabs.focus(2);
-    })
-};
+window.availableProfiles = window.availableProfiles || [];
 
-window.bsVersion = window.bs5 ? 5 : 4
+// load modals
+(() => {
+    window.modals = {} as Modals;
 
-if (window.bs5) {
-    window.BS = new BS5;
-} else {
-    window.BS = new BS4;
-    window.BS.Compat();
-}
+    window.modals.login = new Modal(document.getElementById('modal-login'), true);
 
-window.Modals = {} as BSModals;
+    window.modals.addUser = new Modal(document.getElementById('modal-add-user'));
 
-window.Modals.login = window.BS.newModal('login');
-window.Modals.userDefaults = window.BS.newModal('userDefaults');
-window.Modals.users = window.BS.newModal('users');
-window.Modals.restart = window.BS.newModal('restartModal');
-window.Modals.refresh = window.BS.newModal('refreshModal');
-window.Modals.about = window.BS.newModal('aboutModal');
-window.Modals.delete = window.BS.newModal('deleteModal');
-window.Modals.newUser = window.BS.newModal('newUserModal');
+    window.modals.about = new Modal(document.getElementById('modal-about'));
+    (document.getElementById('setting-about') as HTMLSpanElement).onclick = window.modals.about.toggle;
 
-tabs.tabButtons[0].onclick = tabs.invites;
-tabs.tabButtons[1].onclick = tabs.accounts;
-tabs.tabButtons[2].onclick = tabs.settings;
+    window.modals.modifyUser = new Modal(document.getElementById('modal-modify-user'));
 
-tabs.invites();
+    window.modals.deleteUser = new Modal(document.getElementById('modal-delete-user'));
 
-// Predefined colors for the theme button.
-var buttonColor: string = "custom";
-if (window.cssFile.includes("jf")) {
-    buttonColor = "rgb(255,255,255)";
-} else if (window.cssFile == ("bs" + window.bsVersion + ".css")) {
-    buttonColor = "rgb(16,16,16)";
-}
+    window.modals.settingsRestart = new Modal(document.getElementById('modal-restart'));
 
-if (buttonColor != "custom") {
-    const switchButton = document.createElement('button') as HTMLButtonElement;
-    switchButton.classList.add('btn', 'btn-secondary');
-    switchButton.innerHTML = `
-    Theme
-    <i class="fa fa-circle circle" style="color: ${buttonColor}; margin-left: 0.4rem;" id="fakeButton"></i>
-    `;
-    switchButton.onclick = (): void => toggleCSS(document.getElementById('fakeButton'));
-    document.getElementById('headerButtons').appendChild(switchButton);
-}
+    window.modals.settingsRefresh = new Modal(document.getElementById('modal-refresh'));
 
-var availableProfiles: Array<string>;
+    window.modals.ombiDefaults = new Modal(document.getElementById('modal-ombi-defaults'));
+    document.getElementById('form-ombi-defaults').addEventListener('submit', window.modals.ombiDefaults.close);
 
-window["token"] = "";
+    window.modals.profiles = new Modal(document.getElementById("modal-user-profiles"));
 
-window.toClipboard = (str: string): void => {
-    const el = document.createElement('textarea') as HTMLTextAreaElement;
-    el.value = str;
-    el.readOnly = true;
-    el.style.position = "absolute";
-    el.style.left = "-9999px";
-    document.body.appendChild(el);
-    const selected = document.getSelection().rangeCount > 0 ? document.getSelection().getRangeAt(0) : false;
-    el.select();
-    document.execCommand("copy");
-    document.body.removeChild(el);
-    if (selected) {
-        document.getSelection().removeAllRanges();
-        document.getSelection().addRange(selected);
+    window.modals.addProfile = new Modal(document.getElementById("modal-add-profile"));
+})();
+
+var inviteCreator = new createInvite();
+var accounts = new accountsList();
+
+window.invites = new inviteList();
+
+var settings = new settingsList();
+
+var profiles = new ProfileEditor();
+
+window.notifications = new notificationBox(document.getElementById('notification-box') as HTMLDivElement, 5);
+
+/*const modifySettingsSource = function () {
+    const profile = document.getElementById('radio-use-profile') as HTMLInputElement;
+    const user = document.getElementById('radio-use-user') as HTMLInputElement;
+    const profileSelect = document.getElementById('modify-user-profiles') as HTMLDivElement;
+    const userSelect = document.getElementById('modify-user-users') as HTMLDivElement;
+    (user.nextElementSibling as HTMLSpanElement).classList.toggle('!normal');
+    (user.nextElementSibling as HTMLSpanElement).classList.toggle('!high');
+    (profile.nextElementSibling as HTMLSpanElement).classList.toggle('!normal');
+    (profile.nextElementSibling as HTMLSpanElement).classList.toggle('!high');
+    profileSelect.classList.toggle('unfocused');
+    userSelect.classList.toggle('unfocused');
+}*/
+
+// load tabs
+window.tabs = new Tabs();
+window.tabs.addTab("invites", null, window.invites.reload);
+window.tabs.addTab("accounts", null, accounts.reload);
+window.tabs.addTab("settings", null, settings.reload);
+
+for (let tab of ["invites", "accounts", "settings"]) {
+    if (window.location.pathname == "/" + tab) {
+        window.tabs.switch(tab, true);
     }
 }
 
-function login(username: string, password: string, modal: boolean, button?: HTMLButtonElement, run?: (arg0: number) => void): void {
+if (window.location.pathname == "/") {
+    window.tabs.switch("invites", true);
+}
+
+document.addEventListener("tab-change", (event: CustomEvent) => {
+    let tab = "/" + event.detail;
+    if (tab == "/invites") {
+        if (window.location.pathname == "/") {
+            tab = "/";
+        } else { tab = "../"; }
+    }
+    window.history.replaceState("", "Admin - jfa-go", tab);
+});
+
+function login(username: string, password: string, run?: (state?: number) => void) {
     const req = new XMLHttpRequest();
     req.responseType = 'json';
     let url = window.URLBase;
@@ -135,77 +110,63 @@ function login(username: string, password: string, modal: boolean, button?: HTML
     req.onreadystatechange = function (): void {
         if (this.readyState == 4) {
             if (this.status != 200) {
-                let errorMsg = this.response["error"];
+                let errorMsg = "Connection error.";
+                if (this.response) {
+                    errorMsg = this.response["error"];
+                }
                 if (!errorMsg) {
                     errorMsg = "Unknown error";
                 }
-                if (modal) {
-                    button.disabled = false;
-                    button.textContent = errorMsg;
-                    addAttr(button, "btn-danger");
-                    rmAttr(button, "btn-primary");
-                    setTimeout((): void => {
-                        addAttr(button, "btn-primary");
-                        rmAttr(button, "btn-danger");
-                        button.textContent = "Login";
-                    }, 4000);
+                if (!refresh) {
+                    window.notifications.customError("loginError", errorMsg);
                 } else {
-                    window.Modals.login.show();
+                    window.modals.login.show();
                 }
             } else {
                 const data = this.response;
                 window.token = data["token"];
-                generateInvites();
-                setInterval((): void => generateInvites(), 60 * 1000);
-                addOptions(30, document.getElementById('days') as HTMLSelectElement);
-                addOptions(24, document.getElementById('hours') as HTMLSelectElement);
-                const minutes = document.getElementById('minutes') as HTMLSelectElement;
-                addOptions(59, minutes);
-                minutes.value = "30";
-                checkDuration();
-                if (modal) {
-                    window.Modals.login.hide();
+                window.modals.login.close();
+                setInterval(() => { window.invites.reload(); accounts.reload(); }, 30*1000);
+                const currentTab = window.tabs.current;
+                switch (currentTab) {
+                    case "invites":
+                        window.invites.reload();
+                        break;
+                    case "accounts":
+                        accounts.reload();
+                        break;
+                    case "settings":
+                        settings.reload();
+                        break;
                 }
-                Focus(document.getElementById('logoutButton'));
+                document.getElementById("logout-button").classList.remove("unfocused");
             }
-            if (run) {
-                run(+this.status);
-            }
+            if (run) { run(+this.status); }
         }
     };
     req.send();
 }
 
-(document.getElementById('loginForm') as HTMLFormElement).onsubmit = function (): boolean {
-    window.token = "";
-    const details = serializeForm('loginForm');
-    const button = document.getElementById('loginSubmit') as HTMLButtonElement;
-    addAttr(button, "btn-primary");
-    rmAttr(button, "btn-danger");
-    button.disabled = true;
-    button.innerHTML = `
-    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="margin-right: 0.5rem;"></span>
-    Loading...`;
-    login(details["username"], details["password"], true, button);
-    return false;
+(document.getElementById('form-login') as HTMLFormElement).onsubmit = (event: SubmitEvent) => {
+    event.preventDefault();
+    const button = (event.target as HTMLElement).querySelector(".submit") as HTMLSpanElement;
+    const username = (document.getElementById("login-user") as HTMLInputElement).value;
+    const password = (document.getElementById("login-password") as HTMLInputElement).value;
+    if (!username || !password) {
+        window.notifications.customError("loginError", "The username and/or password were left blank.");
+        return;
+    }
+    toggleLoader(button);
+    login(username, password, () => toggleLoader(button));
 };
 
-generateInvites(true);
+login("", "");
 
-login("", "", false, null, (status: number): void => {
-    if (!(status == 200 || status == 204)) {
-        window.Modals.login.show();
+(document.getElementById('logout-button') as HTMLButtonElement).onclick = () => _post("/logout", null, (req: XMLHttpRequest): boolean => {
+    if (req.readyState == 4 && req.status == 200) {
+        window.token = "";
+        location.reload();
+        return false;
     }
 });
-
-(document.getElementById('logoutButton') as HTMLButtonElement).onclick = function (): void {
-    _post("/logout", null, function (): boolean {
-        if (this.readyState == 4 && this.status == 200) {
-            window.token = "";
-            location.reload();
-            return false;
-        }
-    });
-};
-
 

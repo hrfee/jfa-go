@@ -1,0 +1,372 @@
+@import "a17t.css";
+@import "remixicon.css";
+@import "modal.css";
+@import "dark.css";
+@import "tooltip.css";
+@import "loader.css";
+
+:root {
+    --border-width-default: 2px;
+    --border-width-2: 3px;
+    --border-width-4: 5px;
+    --border-width-8: 8px;
+}
+
+.light-theme {
+    --settings-section-button-filter: 90%;
+}
+
+.body {
+    background-color: #101010;
+}
+
+.page-container {
+    margin: 5% 20% 5% 20%;
+}
+
+@media (max-width: 1100px) {
+    .page-container {
+        margin: 2%;
+    }
+}
+
+@media screen and (max-width: 750px) {
+    :root {
+        font-size: 0.9rem;
+    }
+    .table-responsive table {
+        min-width: 660px;
+    }
+}
+
+
+.tab-button {
+    font-size: 2rem;
+}
+
+.mb-half {
+    margin-bottom: 0.5rem;
+}
+
+.mb-1 {
+    margin-bottom: 1rem;
+}
+
+.mb-2 {
+    margin-bottom: 2rem;
+}
+
+.mt-half {
+    margin-top: 0.5rem;
+}
+
+.mt-1 {
+    margin-top: 1rem;
+}
+
+.ml-1 {
+    margin-left: 1rem;
+}
+
+.ml-half {
+    margin-left: 0.5rem;
+}
+
+.mr-1 {
+    margin-right: 1rem;
+}
+
+.pb-1 {
+    padding-bottom: 1rem;
+}
+
+.pl-1 {
+    padding-left: 1rem;
+}
+
+.al {
+    text-align: left;
+}
+
+.ar {
+    text-align: right;
+}
+
+.inline-block {
+    display: inline-block;
+}
+
+.align-top {
+    align-items: top;
+}
+
+.flex {
+    display: flex;
+}
+
+.flex-expand {
+    display: flex;
+    justify-content: space-between;
+}
+
+.flex-row {
+    display: flex;
+    flex-direction: row;
+}
+
+.flex-row-group {
+    display: block;
+    flex-grow: 1;
+}
+
+.row {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.row.baseline {
+    align-items: baseline;
+}
+
+.col {
+    flex: 1;
+    margin: 0.5rem;
+}
+
+@media screen and (max-width: 400px) {
+    .row {
+        flex-direction: column;
+    }
+    .col {
+        flex: 45%;
+    }
+}
+
+.fr {
+    float: right;
+}
+
+.monospace {
+    background-color: inherit; /* so we can use a17t code blocks */
+}
+
+sup.\~critical, .text-critical {
+    color: var(--color-critical-normal-content);
+}
+
+.grey {
+    color: var(--color-neutral-500);
+}
+
+.aside.sm {
+    font-size: 0.8rem;
+    padding: 0.8rem;
+}
+
+.support.lg {
+    font-size: 1rem;
+}
+
+.badge.lg {
+    font-size: 1rem;
+}
+
+.inv-created-users strong,p {
+    padding-left: 0.5rem;
+    padding-bottom: 0.2rem;
+}
+
+.inv-created-users.empty strong,p {
+    padding: 0;
+}
+
+.inv {
+    overflow: visible;
+}
+
+.inv-table {
+    font-size: 0.8rem;
+}
+
+.inv-profilearea {
+    min-width: 20%;
+}
+
+.inv-profileselect {
+    min-width: 100%;
+}
+
+.inv-codearea {
+    max-width: 40%;
+    min-width: 10rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.inv-empty .inv-codearea {
+    justify-content: start;
+}
+
+
+.invite-link {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    width: auto;
+}
+
+.ellipsis {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.no-pad {
+    padding: 0px 0px 0px 0px;
+}
+
+.elem-pad > * {
+    margin: var(--spacing-4, 1rem);
+}
+
+.icon.clickable {
+    padding: 0.5rem 0.6rem;
+}
+
+.input {
+    box-sizing: border-box; /* fixes weird length issue with inputs */
+}
+
+.button.lg {
+    height: 2.5rem;
+}
+
+.submit {
+    border: none;
+    outline: none; /* remove browser styling on submit buttons */
+}
+
+.full-width { /* full width inputs */
+    box-sizing: border-box; /* TODO: maybe remove if we figure out input thing? */
+    width: 100%;
+}
+
+.center {
+    justify-content: center;
+}
+
+.no-lp {
+    padding-left: 0px;
+}
+
+.block { 
+    display: block;
+}
+
+.focused {
+    display: block;
+}
+
+.unfocused {
+    display: none;
+}
+
+.rotated {
+    transform: rotate(180deg);
+    -webkit-transition: all 0.3s cubic-bezier(0,.89,.27,.92);
+    -moz-transition: all 0.3s cubic-bezier(0,.89,.27,.92);
+    -o-transition: all 0.3s cubic-bezier(0,.89,.27,.92);
+    transition: all 0.3s cubic-bezier(0,.89,.27,.92);
+}
+
+.not-rotated {
+    transform: rotate(0deg);
+    -webkit-transition: all 0.3s cubic-bezier(0,.89,.27,.92);
+    -moz-transition: all 0.3s cubic-bezier(0,.89,.27,.92);
+    -o-transition: all 0.3s cubic-bezier(0,.89,.27,.92);
+    transition: all 0.3s cubic-bezier(0,.89,.27,.92);
+}
+
+.stealth-input {
+    font-size: 1rem;
+    padding-top: 0.1rem;
+    padding-bottom: 0.1rem;
+    margin-left: 0.5rem;
+    margin-right: 1rem;
+    max-width: 75%;
+}
+
+.stealth-input-hidden {
+    border-style: none;
+    --fallback-box-shadow: none;
+    --field-hover-box-shadow: none;
+    --field-focus-box-shadow: none;
+    padding-top: 0.1rem;
+    padding-bottom: 0.1rem;
+}
+
+.settings-section-button {
+    box-sizing: border-box;
+    width: 100%;
+    height: 2.5rem;
+    background-color: rgba(0,0,0,0);
+}
+
+.settings-section-button:hover, .settings-section-button:focus {
+    box-sizing: border-box;
+    width: 100%;
+    height: 2.5rem;
+    background-color: var(--color-neutral-normal-fill);
+    filter: brightness(var(--settings-section-button-filter)) !important;
+}
+
+.settings-section-button.selected {
+    background-color: var(--color-neutral-normal-fill);
+    --buton-filter-brightness: var(--settings-section-button-filter);
+    filter: brightness(var(--settings-section-button-filter)) !important;
+}
+
+.setting {
+    margin-bottom: 0.25rem;
+}
+
+.textarea {
+    resize: vertical;
+}
+
+.overflow {
+    overflow: visible;
+}
+
+.overflow-y {
+    overflow-y: visible;
+}
+
+select, textarea {
+    color: inherit;
+    border: 0 solid var(--color-neutral-300);
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+input {
+    color: inherit;
+    border: 0 solid var(--color-neutral-300);
+}
+
+p.top {
+    margin-top: 0px;
+}
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+#notification-box {
+    position: fixed;
+    right: 1rem;
+    bottom: 1rem;
+    z-index: 16;
+}

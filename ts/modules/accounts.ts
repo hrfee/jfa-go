@@ -1,163 +1,409 @@
-import { _get, _post, _delete, createEl } from "../modules/common.js";
-import { Focus, Unfocus } from "../modules/admin.js";
+import { _get, _post, _delete, toggleLoader } from "../modules/common.js";
 
-interface aWindow extends Window {
-    checkCheckboxes: () => void;
+interface User {
+    id: string;
+    name: string;
+    email: string | undefined;
+    last_active: string;
+    admin: boolean;
 }
 
-declare var window: aWindow;
+class user implements User {
+    private _row: HTMLTableRowElement;
+    private _check: HTMLInputElement;
+    private _username: HTMLSpanElement;
+    private _admin: HTMLSpanElement;
+    private _email: HTMLInputElement;
+    private _emailAddress: string;
+    private _emailEditButton: HTMLElement;
+    private _lastActive: HTMLTableDataCellElement;
+    id: string;
+    private _selected: boolean;
 
-export const validateEmail = (email: string): boolean => /\S+@\S+\.\S+/.test(email);
+    get selected(): boolean { return this._selected; }
+    set selected(state: boolean) {
+        this._selected = state;
+        this._check.checked = state;
+        state ? document.dispatchEvent(this._checkEvent) : document.dispatchEvent(this._uncheckEvent);
+    }
 
-export const checkCheckboxes = (): void => {
-    const defaultsButton = document.getElementById('accountsTabSetDefaults');
-    const deleteButton = document.getElementById('accountsTabDelete');
-    const checkboxes: NodeListOf<HTMLInputElement> = document.getElementById('accountsList').querySelectorAll('input[type=checkbox]:checked');
-    let checked = checkboxes.length;
-    if (checked == 0) {
-        Unfocus(defaultsButton);
-        Unfocus(deleteButton);
-    } else {
-        Focus(defaultsButton);
-        Focus(deleteButton);
-        if (checked == 1) {
-            deleteButton.textContent = 'Delete User';
+    get name(): string { return this._username.textContent; }
+    set name(value: string) { this._username.textContent = value; }
+
+    get admin(): boolean { return this._admin.classList.contains("chip"); }
+    set admin(state: boolean) {
+        if (state) {
+            this._admin.classList.add("chip", "~info", "ml-1");
+            this._admin.textContent = "Admin";
         } else {
-            deleteButton.textContent = 'Delete Users';
+            this._admin.classList.remove("chip", "~info", "ml-1");
+            this._admin.textContent = ""
         }
     }
-}
 
-window.checkCheckboxes = checkCheckboxes;
+    get email(): string { return this._emailAddress; }
+    set email(value: string) { this._email.value = value; this._emailAddress = value; }
+    
+    get last_active(): string { return this._lastActive.textContent; }
+    set last_active(value: string) { this._lastActive.textContent = value; }
 
-export function changeEmail(icon: HTMLElement, id: string): void {
-    const iconContent = icon.outerHTML;
-    icon.setAttribute('class', '');
-    const entry = icon.nextElementSibling as HTMLInputElement;
-    const ogEmail = entry.value;
-    entry.readOnly = false;
-    entry.classList.remove('form-control-plaintext');
-    entry.classList.add('form-control');
-    if (ogEmail == "") {
-        entry.placeholder = 'Address';
+    private _checkEvent = new CustomEvent("accountCheckEvent");
+    private _uncheckEvent = new CustomEvent("accountUncheckEvent");
+
+    constructor(user: User) {
+        this._row = document.createElement("tr") as HTMLTableRowElement;
+        this._row.innerHTML = `
+            <td><input type="checkbox" value=""></td>
+            <td><span class="accounts-username"></span> <span class="accounts-admin"></span></td>
+            <td><i class="icon ri-edit-line accounts-email-edit"></i><input type="email" class="input ~neutral !normal stealth-input stealth-input-hidden accounts-email" readonly></td>
+            <td class="accounts-last-active"></td>
+        `;
+        this._check = this._row.querySelector("input[type=checkbox]") as HTMLInputElement;
+        this._username = this._row.querySelector(".accounts-username") as HTMLSpanElement;
+        this._admin = this._row.querySelector(".accounts-admin") as HTMLSpanElement;
+        this._email = this._row.querySelector(".accounts-email") as HTMLInputElement;
+        this._emailEditButton = this._row.querySelector(".accounts-email-edit") as HTMLElement;
+        this._lastActive = this._row.querySelector(".accounts-last-active") as HTMLTableDataCellElement;
+        this._check.onchange = () => { this.selected = this._check.checked; }
+
+        const toggleStealthInput = () => {
+            this._email.classList.toggle("stealth-input-hidden");
+            this._email.readOnly = !this._email.readOnly;
+            this._emailEditButton.classList.toggle("ri-check-line");
+            this._emailEditButton.classList.toggle("ri-edit-line");
+        };
+        const outerClickListener = (event: Event) => {
+            if (!(event.target instanceof HTMLElement && (this._email.contains(event.target) || this._emailEditButton.contains(event.target)))) {
+                toggleStealthInput();
+                this.email = this.email;
+                document.removeEventListener("click", outerClickListener);
+            }
+        };
+        this._emailEditButton.onclick = () => {
+            if (this._email.classList.contains("stealth-input-hidden")) {
+                document.addEventListener('click', outerClickListener);
+            } else {
+                this._updateEmail();
+                document.removeEventListener('click', outerClickListener);
+            }
+            toggleStealthInput();
+        };
+
+        this.update(user);
     }
-    const tick = createEl(`
-    <i class="fa fa-check d-inline-block icon-button text-success" style="margin-left: 0.5rem; margin-right: 0.5rem;"></i>
-    `);
-    tick.onclick = (): void => {
-        const newEmail = entry.value;
-        if (!validateEmail(newEmail) || newEmail == ogEmail) {
-            return;
-        }
-        cross.remove();
-        const spinner = createEl(`
-        <div class="spinner-border spinner-border-sm" role="status" style="width: 1rem; height: 1rem; margin-left: 0.5rem;">
-            <span class="sr-only">Saving...</span>
-        </div>
-        `);
-        tick.replaceWith(spinner);
+
+    private _updateEmail = () => {
+        let oldEmail = this.email;
+        this.email = this._email.value;
         let send = {};
-        send[id] = newEmail;
-        _post("/users/emails", send, function (): void {
-            if (this.readyState == 4) {
-                if (this.status == 200 || this.status == 204) {
-                    entry.nextElementSibling.remove();
+        send[this.id] = this.email;
+        _post("/users/emails", send, (req: XMLHttpRequest) => {
+            if (req.readyState == 4) {
+                if (req.status == 200) {
+                    window.notifications.customPositive("emailChanged", "Success:", `Changed email address of "${this.name}".`);
                 } else {
-                    entry.value = ogEmail;
+                    this.email = oldEmail;
+                    window.notifications.customError("emailChanged", `Couldn't change email address of "${this.name}".`); 
                 }
             }
         });
-        icon.outerHTML = iconContent;
-        entry.readOnly = true;
-        entry.classList.remove('form-control');
-        entry.classList.add('form-control-plaintext');
-        entry.placeholder = '';
-    };
-    const cross = createEl(`
-    <i class="fa fa-close d-inline-block icon-button text-danger"></i>
-    `);
-    cross.onclick = (): void => {
-        tick.remove();
-        cross.remove();
-        icon.outerHTML = iconContent;
-        entry.readOnly = true;
-        entry.classList.remove('form-control');
-        entry.classList.add('form-control-plaintext');
-        entry.placeholder = '';
-        entry.value = ogEmail;
-    };
-    icon.parentNode.appendChild(tick);
-    icon.parentNode.appendChild(cross);
-};
-
-export function populateUsers(): void {
-    const acList = document.getElementById('accountsList');
-    acList.innerHTML = `
-    <div class="d-flex align-items-center">
-        <strong>Getting Users...</strong>
-        <div class="spinner-border ml-auto" role="status" aria-hidden="true"></div>
-    </div>
-    `;
-    Unfocus(acList.parentNode.querySelector('thead'));
-    const accountsList = document.createElement('tbody');
-    accountsList.id = 'accountsList';
-    const generateEmail = (id: string, name: string, email: string): string => {
-        let entry: HTMLDivElement = document.createElement('div');
-        entry.id = 'email_' + id;
-        let emailValue: string = email;
-        if (emailValue == undefined) {
-            emailValue = "";
-        }
-        entry.innerHTML = `
-        <i class="fa fa-edit d-inline-block icon-button" style="margin-right: 2%;" onclick="changeEmail(this, '${id}')"></i>
-        <input type="email" class="form-control-plaintext form-control-sm text-muted d-inline-block addressText" id="address_${id}" style="width: auto;" value="${emailValue}" readonly>
-        `;
-        return entry.outerHTML;
-    };
-    const template = (id: string, username: string, email: string, lastActive: string, admin: boolean): string => {
-        let fci = "form-check-input";
-        if (window.bsVersion != 5) {
-            fci = "";
-        }
-        return `
-            <td nowrap="nowrap" class="align-middle" scope="row"><input class="${fci}" type="checkbox" value="" id="select_${id}" onclick="checkCheckboxes();"></td>
-            <td nowrap="nowrap" class="align-middle">${username}${admin ? '<span style="margin-left: 1rem;" class="badge rounded-pill bg-info text-dark">Admin</span>' : ''}</td>
-            <td nowrap="nowrap" class="align-middle">${generateEmail(id, name, email)}</td>
-            <td nowrap="nowrap" class="align-middle">${lastActive}</td>
-        `;
-    };
-
-    _get("/users", null, function (): void {
-        if (this.readyState == 4 && this.status == 200) {
-            window.jfUsers = this.response['users'];
-            for (const user of window.jfUsers) {
-                let tr = document.createElement('tr');
-                tr.innerHTML = template(user['id'], user['name'], user['email'], user['last_active'], user['admin']);
-                accountsList.appendChild(tr);
-            }
-            Focus(acList.parentNode.querySelector('thead'));
-            acList.replaceWith(accountsList);
-        }
-    });
-}
-
-export function populateRadios(): void {
-    const radioList = document.getElementById('defaultUserRadios');
-    radioList.textContent = '';
-    let first = true;
-    for (const i in window.jfUsers) {
-        const user = window.jfUsers[i];
-        const radio = document.createElement('div');
-        radio.classList.add('form-check');
-        let checked = '';
-        if (first) {
-            checked = 'checked';
-            first = false;
-        }
-        radio.innerHTML = `
-        <input class="form-check-input" type="radio" name="defaultRadios" id="default_${user['id']}" ${checked}>
-        <label class="form-check-label" for="default_${user['id']}">${user['name']}</label>`;
-        radioList.appendChild(radio);
     }
-}
 
+    update = (user: User) => {
+        this.id = user.id;
+        this.name = user.name;
+        this.email = user.email || "";
+        this.last_active = user.last_active;
+        this.admin = user.admin;
+    }
+
+    asElement = (): HTMLTableRowElement => { return this._row; }
+    remove = () => {
+        if (this.selected) {
+            document.dispatchEvent(this._uncheckEvent);
+        }
+        this._row.remove(); 
+    }
+}    
+
+
+
+
+export class accountsList {
+    private _table = document.getElementById("accounts-list") as HTMLTableSectionElement;
+    
+    private _addUserButton = document.getElementById("accounts-add-user") as HTMLSpanElement;
+    private _deleteUser = document.getElementById("accounts-delete-user") as HTMLSpanElement;
+    private _deleteNotify = document.getElementById("delete-user-notify") as HTMLInputElement;
+    private _deleteReason = document.getElementById("textarea-delete-user") as HTMLTextAreaElement;
+    private _modifySettings = document.getElementById("accounts-modify-user") as HTMLSpanElement;
+    private _modifySettingsProfile = document.getElementById("radio-use-profile") as HTMLInputElement;
+    private _modifySettingsUser = document.getElementById("radio-use-user") as HTMLInputElement;
+    private _profileSelect = document.getElementById("modify-user-profiles") as HTMLSelectElement;
+    private _userSelect = document.getElementById("modify-user-users") as HTMLSelectElement;
+
+    private _selectAll = document.getElementById("accounts-select-all") as HTMLInputElement;
+    private _users: { [id: string]: user };
+    private _checkCount: number = 0;
+
+    private _addUserForm = document.getElementById("form-add-user") as HTMLFormElement;
+    private _addUserName = this._addUserForm.querySelector("input[type=text]") as HTMLInputElement;
+    private _addUserEmail = this._addUserForm.querySelector("input[type=email]") as HTMLInputElement;
+    private _addUserPassword = this._addUserForm.querySelector("input[type=password]") as HTMLInputElement;
+    
+    get selectAll(): boolean { return this._selectAll.checked; }
+    set selectAll(state: boolean) { 
+        for (let id in this._users) {
+            this._users[id].selected = state;
+        }
+        this._selectAll.checked = state;
+        this._selectAll.indeterminate = false;
+        state ? this._checkCount = Object.keys(this._users).length : 0;
+
+    }
+    
+    add = (u: User) => {
+        let domAccount = new user(u);
+        this._users[u.id] = domAccount;
+        this._table.appendChild(domAccount.asElement());
+    }
+
+    private _checkCheckCount = () => {
+        if (this._checkCount == 0) {
+            this._selectAll.indeterminate = false;
+            this._selectAll.checked = false;
+            this._modifySettings.classList.add("unfocused");
+            this._deleteUser.classList.add("unfocused");
+        } else {
+            if (this._checkCount == Object.keys(this._users).length) {
+                this._selectAll.checked = true;
+                this._selectAll.indeterminate = false;
+            } else {
+                this._selectAll.checked = false;
+                this._selectAll.indeterminate = true;
+            }
+            this._modifySettings.classList.remove("unfocused");
+            this._deleteUser.classList.remove("unfocused");
+            (this._checkCount == 1) ? this._deleteUser.textContent = "Delete User" : this._deleteUser.textContent = "Delete Users";
+        }
+    }
+
+    private _genCountString = (): string => { return `${this._checkCount} user${(this._checkCount > 1) ? "s" : ""}`; }
+    
+    private _collectUsers = (): string[] => {
+        let list: string[] = [];
+        for (let id in this._users) {
+            if (this._users[id].selected) { list.push(id); }
+        }
+        return list;
+    }
+
+    private _addUser = (event: Event) => {
+        event.preventDefault();
+        const button = this._addUserForm.querySelector("span.submit") as HTMLSpanElement;
+        const send = {
+            "username": this._addUserName.value,
+            "email": this._addUserEmail.value,
+            "password": this._addUserPassword.value
+        };
+        for (let field in send) {
+            if (!send[field]) {
+                window.notifications.customError("addUserBlankField", "Fields were left blank.");
+                return;
+            }
+        }
+        toggleLoader(button);
+        _post("/users", send, (req: XMLHttpRequest) => {
+            if (req.readyState == 4) {
+                toggleLoader(button);
+                if (req.status == 200) {
+                    window.notifications.customPositive("addUser", "Success:", `user "${send['username']}" created.`);
+                }
+                this.reload();
+                window.modals.addUser.close();
+            }
+        });
+    }
+
+    deleteUsers = () => {
+        const modalHeader = document.getElementById("header-delete-user");
+        modalHeader.textContent = this._genCountString();
+        let list = this._collectUsers();
+        const form = document.getElementById("form-delete-user") as HTMLFormElement;
+        const button = form.querySelector("span.submit") as HTMLSpanElement;
+        this._deleteNotify.checked = false;
+        this._deleteReason.value = "";
+        this._deleteReason.classList.add("unfocused");
+        form.onsubmit = (event: Event) => {
+            event.preventDefault();
+            toggleLoader(button);
+            let send = {
+                "users": list,
+                "notify": this._deleteNotify.checked,
+                "reason": this._deleteNotify ? this._deleteReason.value : ""
+            };
+            _delete("/users", send, (req: XMLHttpRequest) => {
+                if (req.readyState == 4) {
+                    toggleLoader(button);
+                    window.modals.deleteUser.close();
+                    if (req.status != 200 && req.status != 204) {
+                        let errorMsg = "Failed (check console/logs).";
+                        if (!("error" in req.response)) {
+                            errorMsg = "Partial failure (check console/logs).";
+                        }
+                        window.notifications.customError("deleteUserError", errorMsg);
+                    } else {
+                        window.notifications.customPositive("deleteUserSuccess", "Success:", `deleted ${this._genCountString()}.`);
+                    }
+                    this.reload();
+                }
+            });
+        };
+        window.modals.deleteUser.show();
+    }
+
+    modifyUsers = () => {
+        const modalHeader = document.getElementById("header-modify-user");
+        modalHeader.textContent = this._genCountString();
+        let list = this._collectUsers();
+        (() => {
+            let innerHTML = "";
+            for (const profile of window.availableProfiles) {
+                innerHTML += `<option value="${profile}">${profile}</option>`;
+            }
+            this._profileSelect.innerHTML = innerHTML;
+        })();
+
+        (() => {
+            let innerHTML = "";
+            for (let id in this._users) {
+                innerHTML += `<option value="${id}">${this._users[id].name}</option>`;
+            }
+            this._userSelect.innerHTML = innerHTML;
+        })();
+
+        const form = document.getElementById("form-modify-user") as HTMLFormElement;
+        const button = form.querySelector("span.submit") as HTMLSpanElement;
+        this._modifySettingsProfile.checked = true;
+        this._modifySettingsUser.checked = false;
+        form.onsubmit = (event: Event) => {
+            event.preventDefault();
+            toggleLoader(button);
+            let send = {
+                "apply_to": list,
+                "homescreen": (document.getElementById("modify-user-homescreen") as HTMLInputElement).checked
+            };
+            if (this._modifySettingsProfile.checked && !this._modifySettingsUser.checked) { 
+                send["from"] = "profile";
+                send["profile"] = this._profileSelect.value;
+            } else if (this._modifySettingsUser.checked && !this._modifySettingsProfile.checked) {
+                send["from"] = "user";
+                send["id"] = this._userSelect.value;
+            }
+            _post("/users/settings", send, (req: XMLHttpRequest) => {
+                if (req.readyState == 4) {
+                    toggleLoader(button);
+                    if (req.status == 500) {
+                        let response = JSON.parse(req.response);
+                        let errorMsg = "";
+                        if ("homescreen" in response && "policy" in response) {
+                            const homescreen = Object.keys(response["homescreen"]).length;
+                            const policy = Object.keys(response["policy"]).length;
+                            if (homescreen != 0 && policy == 0) {
+                                errorMsg = "Settings were applied, but applying homescreen layout may have failed.";
+                            } else if (policy != 0 && homescreen == 0) {
+                                errorMsg = "Homescreen layout was applied, but applying settings may have failed.";
+                            } else if (policy != 0 && homescreen != 0) {
+                                errorMsg = "Application failed.";
+                            }
+                        } else if ("error" in response) {
+                            errorMsg = response["error"];
+                        }
+                        window.notifications.customError("modifySettingsError", errorMsg);
+                    } else if (req.status == 200 || req.status == 204) {
+                        window.notifications.customPositive("modifySettingsSuccess", "Success:", `applied settings to ${this._genCountString()}.`);
+                    }
+                    this.reload();
+                    window.modals.modifyUser.close();
+                }
+            });
+        };
+        window.modals.modifyUser.show();
+    }
+
+
+
+    constructor() {
+        this._users = {};
+        this._selectAll.checked = false;
+        this._selectAll.onchange = () => { this.selectAll = this._selectAll.checked };
+        document.addEventListener("accountCheckEvent", () => { this._checkCount++; this._checkCheckCount(); });
+        document.addEventListener("accountUncheckEvent", () => { this._checkCount--; this._checkCheckCount(); });
+        this._addUserButton.onclick = window.modals.addUser.toggle;
+        this._addUserForm.addEventListener("submit", this._addUser);
+
+        this._deleteNotify.onchange = () => {
+            if (this._deleteNotify.checked) {
+                this._deleteReason.classList.remove("unfocused");
+            } else {
+                this._deleteReason.classList.add("unfocused");
+            }
+        };
+        this._modifySettings.onclick = this.modifyUsers;
+        this._modifySettings.classList.add("unfocused");
+        const checkSource = () => {
+            const profileSpan = this._modifySettingsProfile.nextElementSibling as HTMLSpanElement;
+            const userSpan = this._modifySettingsUser.nextElementSibling as HTMLSpanElement;
+            if (this._modifySettingsProfile.checked) {
+                this._userSelect.parentElement.classList.add("unfocused");
+                this._profileSelect.parentElement.classList.remove("unfocused")
+                profileSpan.classList.add("!high");
+                profileSpan.classList.remove("!normal");
+                userSpan.classList.remove("!high");
+                userSpan.classList.add("!normal");
+            } else {
+                this._userSelect.parentElement.classList.remove("unfocused");
+                this._profileSelect.parentElement.classList.add("unfocused");
+                userSpan.classList.add("!high");
+                userSpan.classList.remove("!normal");
+                profileSpan.classList.remove("!high");
+                profileSpan.classList.add("!normal");
+            }
+        };
+        this._modifySettingsProfile.onchange = checkSource;
+        this._modifySettingsUser.onchange = checkSource;
+
+        this._deleteUser.onclick = this.deleteUsers;
+        this._deleteUser.classList.add("unfocused");
+
+        if (!window.usernameEnabled) {
+            this._addUserName.classList.add("unfocused");
+            this._addUserName = this._addUserEmail;
+        }
+        /*if (!window.emailEnabled) {
+            this._deleteNotify.parentElement.classList.add("unfocused");
+            this._deleteNotify.checked = false;
+        }*/
+    }
+
+    reload = () => _get("/users", null, (req: XMLHttpRequest) => {
+        if (req.readyState == 4 && req.status == 200) {
+            // same method as inviteList.reload()
+            let accountsOnDOM: { [id: string]: boolean } = {};
+            for (let id in this._users) { accountsOnDOM[id] = true; }
+            for (let u of (req.response["users"] as User[])) {
+                if (u.id in this._users) {
+                    this._users[u.id].update(u);
+                    delete accountsOnDOM[u.id];
+                } else {
+                    this.add(u);
+                }
+            }
+            for (let id in accountsOnDOM) {
+                this._users[id].remove();
+                delete this._users[id];
+            }
+            this._checkCheckCount;
+        }
+    })
+}

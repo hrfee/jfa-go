@@ -127,3 +127,32 @@ type errorListDTO map[string]map[string]string
 
 type configDTO map[string]interface{}
 
+// Below are for sending config
+
+type meta struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
+
+type setting struct {
+	Name            string      `json:"name"`
+	Description     string      `json:"description"`
+	Required        bool        `json:"required"`
+	RequiresRestart bool        `json:"requires_restart"`
+	Type            string      `json:"type"` // Type (string, number, bool, etc.)
+	Value           interface{} `json:"value"`
+	Options         []string    `json:"options,omitempty"`
+	DependsTrue     string      `json:"depends_true,omitempty"`  // If specified, this field is enabled when the specified bool setting is enabled.
+	DependsFalse    string      `json:"depends_false,omitempty"` // If specified, opposite behaviour of DependsTrue.
+}
+
+type section struct {
+	Meta     meta               `json:"meta"`
+	Order    []string           `json:"order"`
+	Settings map[string]setting `json:"settings"`
+}
+
+type settings struct {
+	Order    []string           `json:"order"`
+	Sections map[string]section `json:"sections"`
+}

@@ -9,17 +9,17 @@ args = parser.parse_args()
 with open(args.input, 'r') as f:
     config = json.load(f)
 
-newconfig = {"order": []}
+newconfig = {"sections": {}, "order": []}
 
-for sect in config:
+for sect in config["sections"]:
     newconfig["order"].append(sect)
-    newconfig[sect] = {}
-    newconfig[sect]["order"] = []
-    newconfig[sect]["meta"] = config[sect]["meta"]
-    for setting in config[sect]:
-        if setting != "meta":
-            newconfig[sect]["order"].append(setting)
-            newconfig[sect][setting] = config[sect][setting]
+    newconfig["sections"][sect] = {}
+    newconfig["sections"][sect]["order"] = []
+    newconfig["sections"][sect]["meta"] = config["sections"][sect]["meta"]
+    newconfig["sections"][sect]["settings"] = {}
+    for setting in config["sections"][sect]["settings"]:
+        newconfig["sections"][sect]["order"].append(setting)
+        newconfig["sections"][sect]["settings"][setting] = config["sections"][sect]["settings"][setting]
 
 with open(args.output, 'w') as f:
     f.write(json.dumps(newconfig, indent=4))

@@ -1,0 +1,40 @@
+.loader {
+    height: auto;
+    color: rgba(0, 0, 0, 0);
+}
+
+.loader .dot {
+    --diameter: 0.5rem;
+    --radius: calc(var(--diameter) / 2);
+    --deviation: 20%;
+    height: var(--diameter);
+    width: var(--diameter);
+    background-color: var(--color-content);
+    border-radius: 50%;
+    position: absolute;
+    left: calc(50% - var(--radius));
+    animation: osc 1s cubic-bezier(.72,.16,.31,.97) infinite;
+}
+.loader.loader-sm .dot {
+    --deviation: 10%;
+}
+
+@keyframes osc {
+    25% {
+        left: calc(50% + var(--deviation) - var(--radius));
+    }
+    75% {
+        left: calc(50% - var(--deviation));
+    }
+    0%, 50%, 100% {
+        left: calc(50% - var(--radius));
+    }
+/*
+    0%, 100% {
+        left: calc(50% - var(--deviation))
+    }
+    50% {
+        left: calc(50% + var(--deviation) - var(--radius));
+    }
+    */
+}

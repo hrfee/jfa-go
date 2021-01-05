@@ -667,6 +667,9 @@ func (app *appContext) DeleteProfile(gc *gin.Context) {
 	gc.BindJSON(&req)
 	name := req.Name
 	if _, ok := app.storage.profiles[name]; ok {
+		if app.storage.defaultProfile == name {
+			app.storage.defaultProfile = ""
+		}
 		delete(app.storage.profiles, name)
 	}
 	app.storage.storeProfiles()
@@ -1072,13 +1075,14 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 
 // @Summary Get jfa-go configuration.
 // @Produce json
-// @Success 200 {object} configDTO "Uses the same format as config-base.json"
+// @Success 200 {object} settings "Uses the same format as config-base.json"
 // @Router /config [get]
 // @Security Bearer
 // @tags Configuration
 func (app *appContext) GetConfig(gc *gin.Context) {
 	app.info.Println("Config requested")
-	resp := map[string]interface{}{}
+	resp := app.configBase
+	// Load language options
 	langPath := filepath.Join(app.localPath, "lang", "form")
 	app.lang.langFiles, _ = ioutil.ReadDir(langPath)
 	app.lang.langOptions = make([]string, len(app.lang.langFiles))
@@ -1095,37 +1099,25 @@ func (app *appContext) GetConfig(gc *gin.Context) {
 			app.lang.langOptions[i] = meta.(map[string]interface{})["name"].(string)
 		}
 	}
-	for section, settings := range app.configBase {
-		if section == "order" {
-			resp[section] = settings.([]interface{})
-		} else {
-			resp[section] = make(map[string]interface{})
-			for key, values := range settings.(map[string]interface{}) {
-				if key == "order" {
-					resp[section].(map[string]interface{})[key] = values.([]interface{})
-				} else {
-					resp[section].(map[string]interface{})[key] = values.(map[string]interface{})
-					if key != "meta" {
-						dataType := resp[section].(map[string]interface{})[key].(map[string]interface{})["type"].(string)
-						configKey := app.config.Section(section).Key(key)
-						if dataType == "number" {
-							if val, err := configKey.Int(); err == nil {
-								resp[section].(map[string]interface{})[key].(map[string]interface{})["value"] = val
-							}
-						} else if dataType == "bool" {
-							resp[section].(map[string]interface{})[key].(map[string]interface{})["value"] = configKey.MustBool(false)
-						} else if dataType == "select" && key == "language" {
-							resp[section].(map[string]interface{})[key].(map[string]interface{})["options"] = app.lang.langOptions
-							resp[section].(map[string]interface{})[key].(map[string]interface{})["value"] = app.lang.langOptions[app.lang.chosenIndex]
-						} else {
-							resp[section].(map[string]interface{})[key].(map[string]interface{})["value"] = configKey.String()
-						}
-					}
-				}
+	s := resp.Sections["ui"].Settings["language"]
+	for sectName, section := range resp.Sections {
+		for settingName, setting := range section.Settings {
+			val := app.config.Section(sectName).Key(settingName)
+			s := resp.Sections[sectName].Settings[settingName]
+			switch setting.Type {
+			case "text", "email", "select", "password":
+				s.Value = val.MustString("")
+			case "number":
+				s.Value = val.MustInt(0)
+			case "bool":
+				s.Value = val.MustBool(false)
 			}
+			resp.Sections[sectName].Settings[settingName] = s
 		}
 	}
-	// resp["jellyfin"].(map[string]interface{})["language"].(map[string]interface{})["options"].([]string)
+	s.Options = app.lang.langOptions
+	s.Value = app.lang.langOptions[app.lang.chosenIndex]
+	resp.Sections["ui"].Settings["language"] = s
 	gc.JSON(200, resp)
 }
 
@@ -1176,11 +1168,11 @@ func (app *appContext) ModifyConfig(gc *gin.Context) {
 	if _, ok := req["password_validation"]; ok {
 		app.debug.Println("Reinitializing validator")
 		validatorConf := ValidatorConf{
-			"characters":           app.config.Section("password_validation").Key("min_length").MustInt(0),
-			"uppercase characters": app.config.Section("password_validation").Key("upper").MustInt(0),
-			"lowercase characters": app.config.Section("password_validation").Key("lower").MustInt(0),
-			"numbers":              app.config.Section("password_validation").Key("number").MustInt(0),
-			"special characters":   app.config.Section("password_validation").Key("special").MustInt(0),
+			"length":    app.config.Section("password_validation").Key("min_length").MustInt(0),
+			"uppercase": app.config.Section("password_validation").Key("upper").MustInt(0),
+			"lowercase": app.config.Section("password_validation").Key("lower").MustInt(0),
+			"number":    app.config.Section("password_validation").Key("number").MustInt(0),
+			"special":   app.config.Section("password_validation").Key("special").MustInt(0),
 		}
 		if !app.config.Section("password_validation").Key("enabled").MustBool(false) {
 			for key := range validatorConf {

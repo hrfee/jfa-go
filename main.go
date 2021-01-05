@@ -48,11 +48,10 @@ type appContext struct {
 	config           *ini.File
 	configPath       string
 	configBasePath   string
-	configBase       map[string]interface{}
+	configBase       settings
 	dataPath         string
 	localPath        string
-	cssFile          string
-	bsVersion        int
+	cssClass         string
 	jellyfinLogin    bool
 	users            []User
 	invalidTokens    []string
@@ -82,10 +81,10 @@ type Languages struct {
 
 func (app *appContext) loadHTML(router *gin.Engine) {
 	customPath := app.config.Section("files").Key("html_templates").MustString("")
-	templatePath := filepath.Join(app.localPath, "templates")
+	templatePath := filepath.Join(app.localPath, "html")
 	htmlFiles, err := ioutil.ReadDir(templatePath)
 	if err != nil {
-		app.err.Fatalf("Couldn't access template directory: \"%s\"", filepath.Join(app.localPath, "templates"))
+		app.err.Fatalf("Couldn't access template directory: \"%s\"", templatePath)
 		return
 	}
 	loadFiles := make([]string, len(htmlFiles))
@@ -362,14 +361,6 @@ func start(asDaemon, firstCall bool) {
 
 		app.debug.Printf("Loaded config file \"%s\"", app.configPath)
 
-		if app.config.Section("ui").Key("bs5").MustBool(false) {
-			app.cssFile = "bs5-jf.css"
-			app.bsVersion = 5
-		} else {
-			app.cssFile = "bs4-jf.css"
-			app.bsVersion = 4
-		}
-
 		app.debug.Println("Loading storage")
 
 		app.storage.invite_path = app.config.Section("files").Key("invites").String()
@@ -420,14 +411,15 @@ func start(asDaemon, firstCall bool) {
 		json.Unmarshal(configBase, &app.configBase)
 
 		themes := map[string]string{
-			"Jellyfin (Dark)":   fmt.Sprintf("bs%d-jf.css", app.bsVersion),
-			"Bootstrap (Light)": fmt.Sprintf("bs%d.css", app.bsVersion),
-			"Custom CSS":        "",
+			"Jellyfin (Dark)": "dark-theme",
+			"Default (Light)": "light-theme",
+		}
+		if app.config.Section("ui").Key("theme").String() == "Bootstrap (Light)" {
+			app.config.Section("ui").Key("theme").SetValue("Default (Light)")
 		}
 		if val, ok := themes[app.config.Section("ui").Key("theme").String()]; ok {
-			app.cssFile = val
+			app.cssClass = val
 		}
-		app.debug.Printf("Using css file \"%s\"", app.cssFile)
 		secret, err := generateSecret(16)
 		if err != nil {
 			app.err.Fatal(err)
@@ -559,7 +551,7 @@ func start(asDaemon, firstCall bool) {
 	setGinLogger(router, debugMode)
 
 	router.Use(gin.Recovery())
-	router.Use(static.Serve("/", static.LocalFile(filepath.Join(app.localPath, "static"), false)))
+	router.Use(static.Serve("/", static.LocalFile(filepath.Join(app.localPath, "web"), false)))
 	app.loadHTML(router)
 	router.NoRoute(app.NoRouteHandler)
 	if debugMode {
@@ -568,10 +560,13 @@ func start(asDaemon, firstCall bool) {
 	}
 	if !firstRun {
 		router.GET("/", app.AdminPage)
+		router.GET("/accounts", app.AdminPage)
+		router.GET("/settings", app.AdminPage)
+
 		router.GET("/token/login", app.getTokenLogin)
 		router.GET("/token/refresh", app.getTokenRefresh)
 		router.POST("/newUser", app.NewUser)
-		router.Use(static.Serve("/invite/", static.LocalFile(filepath.Join(app.localPath, "static"), false)))
+		router.Use(static.Serve("/invite/", static.LocalFile(filepath.Join(app.localPath, "web"), false)))
 		router.GET("/invite/:invCode", app.InviteProxy)
 		if *SWAGGER {
 			app.info.Print(aurora.Magenta("\n\nWARNING: Swagger should not be used on a public instance.\n\n"))

@@ -13,14 +13,12 @@ func gcHTML(gc *gin.Context, code int, file string, templ gin.H) {
 }
 
 func (app *appContext) AdminPage(gc *gin.Context) {
-	bs5 := app.config.Section("ui").Key("bs5").MustBool(false)
 	emailEnabled, _ := app.config.Section("invite_emails").Key("enabled").Bool()
 	notificationsEnabled, _ := app.config.Section("notifications").Key("enabled").Bool()
 	ombiEnabled := app.config.Section("ombi").Key("enabled").MustBool(false)
 	gcHTML(gc, http.StatusOK, "admin.html", gin.H{
 		"urlBase":        app.URLBase,
-		"bs5":            bs5,
-		"cssFile":        app.cssFile,
+		"cssClass":       app.cssClass,
 		"contactMessage": "",
 		"email_enabled":  emailEnabled,
 		"notifications":  notificationsEnabled,
@@ -42,7 +40,7 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 		}
 		gcHTML(gc, http.StatusOK, "form-loader.html", gin.H{
 			"urlBase":        app.URLBase,
-			"cssFile":        app.cssFile,
+			"cssClass":       app.cssClass,
 			"contactMessage": app.config.Section("ui").Key("contact_message").String(),
 			"helpMessage":    app.config.Section("ui").Key("help_message").String(),
 			"successMessage": app.config.Section("ui").Key("success_message").String(),
@@ -50,14 +48,12 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 			"validate":       app.config.Section("password_validation").Key("enabled").MustBool(false),
 			"requirements":   app.validator.getCriteria(),
 			"email":          email,
-			"bs5":            app.config.Section("ui").Key("bs5").MustBool(false),
 			"username":       !app.config.Section("email").Key("no_username").MustBool(false),
 			"lang":           app.storage.lang.Form["strings"],
 		})
 	} else {
 		gcHTML(gc, 404, "invalidCode.html", gin.H{
-			"bs5":            app.config.Section("ui").Key("bs5").MustBool(false),
-			"cssFile":        app.cssFile,
+			"cssClass":       app.cssClass,
 			"contactMessage": app.config.Section("ui").Key("contact_message").String(),
 		})
 	}
@@ -65,8 +61,7 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 
 func (app *appContext) NoRouteHandler(gc *gin.Context) {
 	gcHTML(gc, 404, "404.html", gin.H{
-		"bs5":            app.config.Section("ui").Key("bs5").MustBool(false),
-		"cssFile":        app.cssFile,
+		"cssClass":       app.cssClass,
 		"contactMessage": app.config.Section("ui").Key("contact_message").String(),
 	})
 }

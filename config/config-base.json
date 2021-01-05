@@ -1,668 +1,690 @@
 {
-    "jellyfin": {
-        "meta": {
-            "name": "Jellyfin",
-            "description": "Settings for connecting to Jellyfin"
+    "order": [],
+    "sections": {
+        "jellyfin": {
+            "order": [],
+            "meta": {
+                "name": "Jellyfin",
+                "description": "Settings for connecting to Jellyfin"
+            },
+            "settings": {
+                "username": {
+                    "name": "Jellyfin Username",
+                    "required": true,
+                    "requires_restart": true,
+                    "type": "text",
+                    "value": "username",
+                    "description": "It is recommended to create a limited admin account for this program."
+                },
+                "password": {
+                    "name": "Jellyfin Password",
+                    "required": true,
+                    "requires_restart": true,
+                    "type": "password",
+                    "value": "password"
+                },
+                "server": {
+                    "name": "Server address",
+                    "required": true,
+                    "requires_restart": true,
+                    "type": "text",
+                    "value": "http://jellyfin.local:8096",
+                    "description": "Jellyfin server address. Can be public, or local for security purposes."
+                },
+                "public_server": {
+                    "name": "Public address",
+                    "required": false,
+                    "requires_restart": false,
+                    "type": "text",
+                    "value": "https://jellyf.in:443",
+                    "description": "Publicly accessible Jellyfin address for invite form. Leave blank to reuse the above address."
+                },
+                "client": {
+                    "name": "Client Name",
+                    "required": true,
+                    "requires_restart": true,
+                    "type": "text",
+                    "value": "jfa-go",
+                    "description": "The name of the client that will show up in the Jellyfin dashboard."
+                },
+                "cache_timeout": {
+                    "name": "User cache timeout (minutes)",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "number",
+                    "value": 30,
+                    "description": "Timeout of user cache in minutes. Set to 0 to disable."
+                }
+            }
         },
-        "username": {
-            "name": "Jellyfin Username",
-            "required": true,
-            "requires_restart": true,
-            "type": "text",
-            "value": "username",
-            "description": "It is recommended to create a limited admin account for this program."
+        "ui": {
+            "order": [],
+            "meta": {
+                "name": "General",
+                "description": "Settings related to the UI and program functionality."
+            },
+            "settings": {
+                "language": {
+                    "name": "Language",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "select",
+                    "options": [
+                        "en-us"
+                    ],
+                    "value": "en-US",
+                    "description": "UI Language. Currently only implemented for account creation form. Submit a PR on github if you'd like to translate."
+                },
+                "theme": {
+                    "name": "Default Look",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "select",
+                    "options": [
+                        "Jellyfin (Dark)",
+                        "Default (Light)"
+                    ],
+                    "value": "Jellyfin (Dark)",
+                    "description": "Default appearance for all users."
+                },
+                "host": {
+                    "name": "Address",
+                    "required": true,
+                    "requires_restart": true,
+                    "type": "text",
+                    "value": "0.0.0.0",
+                    "description": "Set 0.0.0.0 to run on localhost"
+                },
+                "port": {
+                    "name": "Port",
+                    "required": true,
+                    "requires_restart": true,
+                    "type": "number",
+                    "value": 8056
+                },
+                "jellyfin_login": {
+                    "name": "Use Jellyfin for authentication",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "bool",
+                    "value": true,
+                    "description": "Enable this to use Jellyfin users instead of the below username and pw."
+                },
+                "admin_only": {
+                    "name": "Allow admin users only",
+                    "required": false,
+                    "requires_restart": true,
+                    "depends_true": "jellyfin_login",
+                    "type": "bool",
+                    "value": true,
+                    "description": "Allows only admin users on Jellyfin to access the admin page."
+                },
+                "username": {
+                    "name": "Web Username",
+                    "required": true,
+                    "requires_restart": true,
+                    "depends_false": "jellyfin_login",
+                    "type": "text",
+                    "value": "your username",
+                    "description": "Username for admin page (Leave blank if using jellyfin_login)"
+                },
+                "password": {
+                    "name": "Web Password",
+                    "required": true,
+                    "requires_restart": true,
+                    "depends_false": "jellyfin_login",
+                    "type": "password",
+                    "value": "your password",
+                    "description": "Password for admin page (Leave blank if using jellyfin_login)"
+                },
+                "email": {
+                    "name": "Admin email address",
+                    "required": false,
+                    "requires_restart": false,
+                    "depends_false": "jellyfin_login",
+                    "type": "text",
+                    "value": "example@example.com",
+                    "description": "Address to send notifications to (Leave blank if using jellyfin_login)"
+                },
+                "debug": {
+                    "name": "Debug logging",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "bool",
+                    "value": false,
+                    "description": "Enables debug logging and exposes pprof as a route (Don't use in production!)"
+                },
+                "contact_message": {
+                    "name": "Contact message",
+                    "required": false,
+                    "requires_restart": false,
+                    "type": "text",
+                    "value": "Need help? contact me.",
+                    "description": "Displayed at bottom of all pages except admin"
+                },
+                "help_message": {
+                    "name": "Help message",
+                    "required": false,
+                    "requires_restart": false,
+                    "type": "text",
+                    "value": "Enter your details to create an account.",
+                    "description": "Displayed at top of invite form."
+                },
+                "success_message": {
+                    "name": "Success message",
+                    "required": false,
+                    "requires_restart": false,
+                    "type": "text",
+                    "value": "Your account has been created. Click below to continue to Jellyfin.",
+                    "description": "Displayed when a user creates an account"
+                },
+                "url_base": {
+                    "name": "URL Base",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "text",
+                    "value": "",
+                    "description": "URL base for when running jfa-go with a reverse proxy in a subfolder."
+                }
+            }
         },
-        "password": {
-            "name": "Jellyfin Password",
-            "required": true,
-            "requires_restart": true,
-            "type": "password",
-            "value": "password"
-        },
-        "server": {
-            "name": "Server address",
-            "required": true,
-            "requires_restart": true,
-            "type": "text",
-            "value": "http://jellyfin.local:8096",
-            "description": "Jellyfin server address. Can be public, or local for security purposes."
-        },
-        "public_server": {
-            "name": "Public address",
-            "required": false,
-            "requires_restart": false,
-            "type": "text",
-            "value": "https://jellyf.in:443",
-            "description": "Publicly accessible Jellyfin address for invite form. Leave blank to reuse the above address."
-        },
-        "client": {
-            "name": "Client Name",
-            "required": true,
-            "requires_restart": true,
-            "type": "text",
-            "value": "jfa-go",
-            "description": "The name of the client that will show up in the Jellyfin dashboard."
-        },
-        "cache_timeout": {
-            "name": "User cache timeout (minutes)",
-            "required": false,
-            "requires_restart": true,
-            "type": "number",
-            "value": 30,
-            "description": "Timeout of user cache in minutes. Set to 0 to disable."
-        }
-    },
-    "ui": {
-        "meta": {
-            "name": "General",
-            "description": "Settings related to the UI and program functionality."
-        },
-        "language": {
-            "name": "Language",
-            "required": false,
-            "requires_restart": true,
-            "type": "select",
-            "options": [
-                "en-us"
-            ],
-            "value": "en-US",
-            "description": "UI Language. Currently only implemented for account creation form. Submit a PR on github if you'd like to translate."
-        },
-        "theme": {
-            "name": "Default Look",
-            "required": false,
-            "requires_restart": true,
-            "type": "select",
-            "options": [
-                "Bootstrap (Light)",
-                "Jellyfin (Dark)",
-                "Custom CSS"
-            ],
-            "value": "Jellyfin (Dark)",
-            "description": "Default appearance for all users."
-        },
-        "host": {
-            "name": "Address",
-            "required": true,
-            "requires_restart": true,
-            "type": "text",
-            "value": "0.0.0.0",
-            "description": "Set 0.0.0.0 to run on localhost"
-        },
-        "port": {
-            "name": "Port",
-            "required": true,
-            "requires_restart": true,
-            "type": "number",
-            "value": 8056
-        },
-        "jellyfin_login": {
-            "name": "Use Jellyfin for authentication",
-            "required": false,
-            "requires_restart": true,
-            "type": "bool",
-            "value": true,
-            "description": "Enable this to use Jellyfin users instead of the below username and pw."
-        },
-        "admin_only": {
-            "name": "Allow admin users only",
-            "required": false,
-            "requires_restart": true,
-            "depends_true": "jellyfin_login",
-            "type": "bool",
-            "value": true,
-            "description": "Allows only admin users on Jellyfin to access the admin page."
-        },
-        "username": {
-            "name": "Web Username",
-            "required": true,
-            "requires_restart": true,
-            "depends_false": "jellyfin_login",
-            "type": "text",
-            "value": "your username",
-            "description": "Username for admin page (Leave blank if using jellyfin_login)"
-        },
-        "password": {
-            "name": "Web Password",
-            "required": true,
-            "requires_restart": true,
-            "depends_false": "jellyfin_login",
-            "type": "password",
-            "value": "your password",
-            "description": "Password for admin page (Leave blank if using jellyfin_login)"
+        "password_validation": {
+            "order": [],
+            "meta": {
+                "name": "Password Validation",
+                "description": "Password validation (minimum length, etc.)"
+            },
+            "settings": {
+                "enabled": {
+                    "name": "Enabled",
+                    "required": false,
+                    "requires_restart": false,
+                    "type": "bool",
+                    "value": true
+                },
+                "min_length": {
+                    "name": "Minimum Length",
+                    "requires_restart": false,
+                    "depends_true": "enabled",
+                    "type": "text",
+                    "value": "8"
+                },
+                "upper": {
+                    "name": "Minimum uppercase characters",
+                    "requires_restart": false,
+                    "depends_true": "enabled",
+                    "type": "text",
+                    "value": "1"
+                },
+                "lower": {
+                    "name": "Minimum lowercase characters",
+                    "requires_restart": false,
+                    "depends_true": "enabled",
+                    "type": "text",
+                    "value": "0"
+                },
+                "number": {
+                    "name": "Minimum number count",
+                    "requires_restart": false,
+                    "depends_true": "enabled",
+                    "type": "text",
+                    "value": "1"
+                },
+                "special": {
+                    "name": "Minimum number of special characters",
+                    "requires_restart": false,
+                    "depends_true": "enabled",
+                    "type": "text",
+                    "value": "0"
+                }
+            }
         },
         "email": {
-            "name": "Admin email address",
-            "required": false,
-            "requires_restart": false,
-            "depends_false": "jellyfin_login",
-            "type": "text",
-            "value": "example@example.com",
-            "description": "Address to send notifications to (Leave blank if using jellyfin_login)"
+            "order": [],
+            "meta": {
+                "name": "Email",
+                "description": "General email settings. Ignore if not using email features."
+            },
+            "settings": {
+                "no_username": {
+                    "name": "Use email addresses as username",
+                    "required": false,
+                    "requires_restart": false,
+                    "depends_true": "method",
+                    "type": "bool",
+                    "value": false,
+                    "description": "Use email address from invite form as username on Jellyfin."
+                },
+                "use_24h": {
+                    "name": "Use 24h time",
+                    "required": false,
+                    "requires_restart": false,
+                    "depends_true": "method",
+                    "type": "bool",
+                    "value": true
+                },
+                "date_format": {
+                    "name": "Date format",
+                    "required": false,
+                    "requires_restart": false,
+                    "depends_true": "method",
+                    "type": "text",
+                    "value": "%d/%m/%y",
+                    "description": "Date format used in emails. Follows datetime.strftime format."
+                },
+                "message": {
+                    "name": "Help message",
+                    "required": false,
+                    "requires_restart": false,
+                    "depends_true": "method",
+                    "type": "text",
+                    "value": "Need help? contact me.",
+                    "description": "Message displayed at bottom of emails."
+                },
+                "method": {
+                    "name": "Email method",
+                    "required": false,
+                    "requires_restart": false,
+                    "type": "select",
+                    "options": [
+                        "smtp",
+                        "mailgun"
+                    ],
+                    "value": "smtp",
+                    "description": "Method of sending email to use."
+                },
+                "address": {
+                    "name": "Sent from (address)",
+                    "required": false,
+                    "requires_restart": false,
+                    "depends_true": "method",
+                    "type": "email",
+                    "value": "jellyfin@jellyf.in",
+                    "description": "Address to send emails from"
+                },
+                "from": {
+                    "name": "Sent from (name)",
+                    "required": false,
+                    "requires_restart": false,
+                    "depends_true": "method",
+                    "type": "text",
+                    "value": "Jellyfin",
+                    "description": "The name of the sender"
+                }
+            }
         },
-        "debug": {
-            "name": "Debug logging",
-            "required": false,
-            "requires_restart": true,
-            "type": "bool",
-            "value": false,
-            "description": "Enables debug logging and exposes pprof as a route (Don't use in production!)"
+        "password_resets": {
+            "order": [],
+            "meta": {
+                "name": "Password Resets",
+                "description": "Settings for the password reset handler."
+            },
+            "settings": {
+                "enabled": {
+                    "name": "Enabled",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "bool",
+                    "value": true,
+                    "description": "Enable to store provided email addresses, monitor Jellyfin directory for pw-resets, and send reset pins"
+                },
+                "watch_directory": {
+                    "name": "Jellyfin directory",
+                    "required": false,
+                    "requires_restart": true,
+                    "depends_true": "enabled",
+                    "type": "text",
+                    "value": "/path/to/jellyfin",
+                    "description": "Path to the folder Jellyfin puts password-reset files."
+                },
+                "email_html": {
+                    "name": "Custom email (HTML)",
+                    "required": false,
+                    "requires_restart": false,
+                    "depends_true": "enabled",
+                    "type": "text",
+                    "value": "",
+                    "description": "Path to custom email html"
+                },
+                "email_text": {
+                    "name": "Custom email (plaintext)",
+                    "required": false,
+                    "requires_restart": false,
+                    "depends_true": "enabled",
+                    "type": "text",
+                    "value": "",
+                    "description": "Path to custom email in plain text"
+                },
+                "subject": {
+                    "name": "Email subject",
+                    "required": false,
+                    "requires_restart": false,
+                    "depends_true": "enabled",
+                    "type": "text",
+                    "value": "Password Reset - Jellyfin",
+                    "description": "Subject of password reset emails."
+                }
+            }
         },
-        "contact_message": {
-            "name": "Contact message",
-            "required": false,
-            "requires_restart": false,
-            "type": "text",
-            "value": "Need help? contact me.",
-            "description": "Displayed at bottom of all pages except admin"
+        "invite_emails": {
+            "order": [],
+            "meta": {
+                "name": "Invite emails",
+                "description": "Settings for sending invites directly to users."
+            },
+            "settings": {
+                "enabled": {
+                    "name": "Enabled",
+                    "required": false,
+                    "requires_restart": false,
+                    "type": "bool",
+                    "value": true
+                },
+                "email_html": {
+                    "name": "Custom email (HTML)",
+                    "required": false,
+                    "requires_restart": false,
+                    "depends_true": "enabled",
+                    "type": "text",
+                    "value": "",
+                    "description": "Path to custom email HTML"
+                },
+                "email_text": {
+                    "name": "Custom email (plaintext)",
+                    "required": false,
+                    "requires_restart": false,
+                    "depends_true": "enabled",
+                    "type": "text",
+                    "value": "",
+                    "description": "Path to custom email in plain text"
+                },
+                "subject": {
+                    "name": "Email subject",
+                    "required": true,
+                    "requires_restart": false,
+                    "depends_true": "enabled",
+                    "type": "text",
+                    "value": "Invite - Jellyfin",
+                    "description": "Subject of invite emails."
+                },
+                "url_base": {
+                    "name": "URL Base",
+                    "required": true,
+                    "requires_restart": false,
+                    "depends_true": "enabled",
+                    "type": "text",
+                    "value": "http://accounts.jellyf.in:8056/invite",
+                    "description": "Base URL for jfa-go. This is necessary because using a reverse proxy means the program has no way of knowing the URL itself."
+                }
+            }
         },
-        "help_message": {
-            "name": "Help message",
-            "required": false,
-            "requires_restart": false,
-            "type": "text",
-            "value": "Enter your details to create an account.",
-            "description": "Displayed at top of invite form."
+        "notifications": {
+            "order": [],
+            "meta": {
+                "name": "Notifications",
+                "description": "Notification related settings."
+            },
+            "settings": {
+                "enabled": {
+                    "name": "Enabled",
+                    "required": "false",
+                    "requires_restart": true,
+                    "type": "bool",
+                    "value": true,
+                    "description": "Enabling adds optional toggles to invites to notify on expiry and user creation."
+                },
+                "expiry_html": {
+                    "name": "Expiry email (HTML)",
+                    "required": false,
+                    "requires_restart": false,
+                    "depends_true": "enabled",
+                    "type": "text",
+                    "value": "",
+                    "description": "Path to expiry notification email HTML."
+                },
+                "expiry_text": {
+                    "name": "Expiry email (Plaintext)",
+                    "required": false,
+                    "requires_restart": "false",
+                    "depends_true": "enabled",
+                    "type": "text",
+                    "value": "",
+                    "description": "Path to expiry notification email in plaintext."
+                },
+                "created_html": {
+                    "name": "User created email (HTML)",
+                    "required": false,
+                    "requires_restart": false,
+                    "depends_true": "enabled",
+                    "type": "text",
+                    "value": "",
+                    "description": "Path to user creation notification email HTML."
+                },
+                "created_text": {
+                    "name": "User created email (Plaintext)",
+                    "required": false,
+                    "requires_restart": false,
+                    "depends_true": "enabled",
+                    "type": "text",
+                    "value": "",
+                    "description": "Path to user creation notification email in plaintext."
+                }
+            }
         },
-        "success_message": {
-            "name": "Success message",
-            "required": false,
-            "requires_restart": false,
-            "type": "text",
-            "value": "Your account has been created. Click below to continue to Jellyfin.",
-            "description": "Displayed when a user creates an account"
+        "mailgun": {
+            "order": [],
+            "meta": {
+                "name": "Mailgun (Email)",
+                "description": "Mailgun API connection settings"
+            },
+            "settings": {
+                "api_url": {
+                    "name": "API URL",
+                    "required": false,
+                    "requires_restart": false,
+                    "type": "text",
+                    "value": "https://api.mailgun.net..."
+                },
+                "api_key": {
+                    "name": "API Key",
+                    "required": false,
+                    "requires_restart": false,
+                    "type": "text",
+                    "value": "your api key"
+                }
+            }
         },
-        "bs5": {
-            "name": "Use Bootstrap 5",
-            "required": false,
-            "requires_restart": true,
-            "type": "bool",
-            "value": false,
-            "description": "Use the Bootstrap 5 Alpha. Looks better and removes the need for jQuery, so the page should load faster."
+        "smtp": {
+            "order": [],
+            "meta": {
+                "name": "SMTP (Email)",
+                "description": "SMTP Server connection settings."
+            },
+            "settings": {
+                "username": {
+                    "name": "Username",
+                    "required": false,
+                    "requires_restart": false,
+                    "type": "text",
+                    "value": "",
+                    "description": "Username for SMTP. Leave blank to user send from address as username."
+                },
+                "encryption": {
+                    "name": "Encryption Method",
+                    "required": false,
+                    "requires_restart": false,
+                    "type": "select",
+                    "options": [
+                        "ssl_tls",
+                        "starttls"
+                    ],
+                    "value": "starttls",
+                    "description": "Your email provider should provide different ports for each encryption method. Generally 465 for ssl_tls, 587 for starttls."
+                },
+                "server": {
+                    "name": "Server address",
+                    "required": false,
+                    "requires_restart": false,
+                    "type": "text",
+                    "value": "smtp.jellyf.in",
+                    "description": "SMTP Server address."
+                },
+                "port": {
+                    "name": "Port",
+                    "required": false,
+                    "requires_restart": false,
+                    "type": "number",
+                    "value": 465
+                },
+                "password": {
+                    "name": "Password",
+                    "required": false,
+                    "requires_restart": false,
+                    "type": "password",
+                    "value": "smtp password"
+                }
+            }
         },
-        "url_base": {
-            "name": "URL Base",
-            "required": false,
-            "requires_restart": true,
-            "type": "text",
-            "value": "",
-            "description": "URL base for when running jfa-go with a reverse proxy in a subfolder."
-        }
-    },
-    "password_validation": {
-        "meta": {
-            "name": "Password Validation",
-            "description": "Password validation (minimum length, etc.)"
+        "ombi": {
+            "order": [],
+            "meta": {
+                "name": "Ombi Integration",
+                "description": "Connect to Ombi to automatically create both Ombi and Jellyfin accounts for new users. You'll need to create a user template for this to work. Once enabled, refresh to see an option in settings for this."
+            },
+            "settings": {
+                "enabled": {
+                    "name": "Enabled",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "bool",
+                    "value": false,
+                    "description": "Enable to create an Ombi account for new Jellyfin users"
+                },
+                "server": {
+                    "name": "URL",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "text",
+                    "value": "localhost:5000",
+                    "depends_true": "enabled",
+                    "description": "Ombi server URL, including http(s)://."
+                },
+                "api_key": {
+                    "name": "API Key",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "text",
+                    "value": "",
+                    "depends_true": "enabled",
+                    "description": "API Key. Get this from the first tab in Ombi settings."
+                }
+            }
         },
-        "enabled": {
-            "name": "Enabled",
-            "required": false,
-            "requires_restart": false,
-            "type": "bool",
-            "value": true
+        "deletion": {
+            "order": [],
+            "meta": {
+                "name": "Account Deletion",
+                "description": "Subject/email files for account deletion emails."
+            },
+            "settings": {
+                "subject": {
+                    "name": "Email subject",
+                    "required": false,
+                    "requires_restart": false,
+                    "type": "text",
+                    "value": "Your account was deleted - Jellyfin",
+                    "description": "Subject of account deletion emails."
+                },
+                "email_html": {
+                    "name": "Custom email (HTML)",
+                    "required": false,
+                    "requires_restart": false,
+                    "type": "text",
+                    "value": "",
+                    "description": "Path to custom email html"
+                },
+                "email_text": {
+                    "name": "Custom email (plaintext)",
+                    "required": false,
+                    "requires_restart": false,
+                    "type": "text",
+                    "value": "",
+                    "description": "Path to custom email in plain text"
+                }
+            }
         },
-        "min_length": {
-            "name": "Minimum Length",
-            "requires_restart": false,
-            "depends_true": "enabled",
-            "type": "text",
-            "value": "8"
-        },
-        "upper": {
-            "name": "Minimum uppercase characters",
-            "requires_restart": false,
-            "depends_true": "enabled",
-            "type": "text",
-            "value": "1"
-        },
-        "lower": {
-            "name": "Minimum lowercase characters",
-            "requires_restart": false,
-            "depends_true": "enabled",
-            "type": "text",
-            "value": "0"
-        },
-        "number": {
-            "name": "Minimum number count",
-            "requires_restart": false,
-            "depends_true": "enabled",
-            "type": "text",
-            "value": "1"
-        },
-        "special": {
-            "name": "Minimum number of special characters",
-            "requires_restart": false,
-            "depends_true": "enabled",
-            "type": "text",
-            "value": "0"
-        }
-    },
-    "email": {
-        "meta": {
-            "name": "Email",
-            "description": "General email settings. Ignore if not using email features."
-        },
-        "no_username": {
-            "name": "Use email addresses as username",
-            "required": false,
-            "requires_restart": false,
-            "depends_true": "method",
-            "type": "bool",
-            "value": false,
-            "description": "Use email address from invite form as username on Jellyfin."
-        },
-        "use_24h": {
-            "name": "Use 24h time",
-            "required": false,
-            "requires_restart": false,
-            "depends_true": "method",
-            "type": "bool",
-            "value": true
-        },
-        "date_format": {
-            "name": "Date format",
-            "required": false,
-            "requires_restart": false,
-            "depends_true": "method",
-            "type": "text",
-            "value": "%d/%m/%y",
-            "description": "Date format used in emails. Follows datetime.strftime format."
-        },
-        "message": {
-            "name": "Help message",
-            "required": false,
-            "requires_restart": false,
-            "depends_true": "method",
-            "type": "text",
-            "value": "Need help? contact me.",
-            "description": "Message displayed at bottom of emails."
-        },
-        "method": {
-            "name": "Email method",
-            "required": false,
-            "requires_restart": false,
-            "type": "select",
-            "options": [
-                "smtp",
-                "mailgun"
-            ],
-            "value": "smtp",
-            "description": "Method of sending email to use."
-        },
-        "address": {
-            "name": "Sent from (address)",
-            "required": false,
-            "requires_restart": false,
-            "depends_true": "method",
-            "type": "email",
-            "value": "jellyfin@jellyf.in",
-            "description": "Address to send emails from"
-        },
-        "from": {
-            "name": "Sent from (name)",
-            "required": false,
-            "requires_restart": false,
-            "depends_true": "method",
-            "type": "text",
-            "value": "Jellyfin",
-            "description": "The name of the sender"
-        }
-    },
-    "password_resets": {
-        "meta": {
-            "name": "Password Resets",
-            "description": "Settings for the password reset handler."
-        },
-        "enabled": {
-            "name": "Enabled",
-            "required": false,
-            "requires_restart": true,
-            "type": "bool",
-            "value": true,
-            "description": "Enable to store provided email addresses, monitor Jellyfin directory for pw-resets, and send reset pins"
-        },
-        "watch_directory": {
-            "name": "Jellyfin directory",
-            "required": false,
-            "requires_restart": true,
-            "depends_true": "enabled",
-            "type": "text",
-            "value": "/path/to/jellyfin",
-            "description": "Path to the folder Jellyfin puts password-reset files."
-        },
-        "email_html": {
-            "name": "Custom email (HTML)",
-            "required": false,
-            "requires_restart": false,
-            "depends_true": "enabled",
-            "type": "text",
-            "value": "",
-            "description": "Path to custom email html"
-        },
-        "email_text": {
-            "name": "Custom email (plaintext)",
-            "required": false,
-            "requires_restart": false,
-            "depends_true": "enabled",
-            "type": "text",
-            "value": "",
-            "description": "Path to custom email in plain text"
-        },
-        "subject": {
-            "name": "Email subject",
-            "required": false,
-            "requires_restart": false,
-            "depends_true": "enabled",
-            "type": "text",
-            "value": "Password Reset - Jellyfin",
-            "description": "Subject of password reset emails."
-        }
-    },
-    "invite_emails": {
-        "meta": {
-            "name": "Invite emails",
-            "description": "Settings for sending invites directly to users."
-        },
-        "enabled": {
-            "name": "Enabled",
-            "required": false,
-            "requires_restart": false,
-            "type": "bool",
-            "value": true
-        },
-        "email_html": {
-            "name": "Custom email (HTML)",
-            "required": false,
-            "requires_restart": false,
-            "depends_true": "enabled",
-            "type": "text",
-            "value": "",
-            "description": "Path to custom email HTML"
-        },
-        "email_text": {
-            "name": "Custom email (plaintext)",
-            "required": false,
-            "requires_restart": false,
-            "depends_true": "enabled",
-            "type": "text",
-            "value": "",
-            "description": "Path to custom email in plain text"
-        },
-        "subject": {
-            "name": "Email subject",
-            "required": true,
-            "requires_restart": false,
-            "depends_true": "enabled",
-            "type": "text",
-            "value": "Invite - Jellyfin",
-            "description": "Subject of invite emails."
-        },
-        "url_base": {
-            "name": "URL Base",
-            "required": true,
-            "requires_restart": false,
-            "depends_true": "enabled",
-            "type": "text",
-            "value": "http://accounts.jellyf.in:8056/invite",
-            "description": "Base URL for jfa-go. This is necessary because using a reverse proxy means the program has no way of knowing the URL itself."
-        }
-    },
-    "notifications": {
-        "meta": {
-            "name": "Notifications",
-            "description": "Notification related settings."
-        },
-        "enabled": {
-            "name": "Enabled",
-            "required": "false",
-            "requires_restart": true,
-            "type": "bool",
-            "value": true,
-            "description": "Enabling adds optional toggles to invites to notify on expiry and user creation."
-        },
-        "expiry_html": {
-            "name": "Expiry email (HTML)",
-            "required": false,
-            "requires_restart": false,
-            "depends_true": "enabled",
-            "type": "text",
-            "value": "",
-            "description": "Path to expiry notification email HTML."
-        },
-        "expiry_text": {
-            "name": "Expiry email (Plaintext)",
-            "required": false,
-            "requires_restart": "false",
-            "depends_true": "enabled",
-            "type": "text",
-            "value": "",
-            "description": "Path to expiry notification email in plaintext."
-        },
-        "created_html": {
-            "name": "User created email (HTML)",
-            "required": false,
-            "requires_restart": false,
-            "depends_true": "enabled",
-            "type": "text",
-            "value": "",
-            "description": "Path to user creation notification email HTML."
-        },
-        "created_text": {
-            "name": "User created email (Plaintext)",
-            "required": false,
-            "requires_restart": false,
-            "depends_true": "enabled",
-            "type": "text",
-            "value": "",
-            "description": "Path to user creation notification email in plaintext."
-        }
-    },
-    "mailgun": {
-        "meta": {
-            "name": "Mailgun (Email)",
-            "description": "Mailgun API connection settings"
-        },
-        "api_url": {
-            "name": "API URL",
-            "required": false,
-            "requires_restart": false,
-            "type": "text",
-            "value": "https://api.mailgun.net..."
-        },
-        "api_key": {
-            "name": "API Key",
-            "required": false,
-            "requires_restart": false,
-            "type": "text",
-            "value": "your api key"
-        }
-    },
-    "smtp": {
-        "meta": {
-            "name": "SMTP (Email)",
-            "description": "SMTP Server connection settings."
-        },
-        "username": {
-            "name": "Username",
-            "required": false,
-            "requires_restart": false,
-            "type": "text",
-            "value": "",
-            "description": "Username for SMTP. Leave blank to user send from address as username."
-        },
-        "encryption": {
-            "name": "Encryption Method",
-            "required": false,
-            "requires_restart": false,
-            "type": "select",
-            "options": [
-                "ssl_tls",
-                "starttls"
-            ],
-            "value": "starttls",
-            "description": "Your email provider should provide different ports for each encryption method. Generally 465 for ssl_tls, 587 for starttls."
-        },
-        "server": {
-            "name": "Server address",
-            "required": false,
-            "requires_restart": false,
-            "type": "text",
-            "value": "smtp.jellyf.in",
-            "description": "SMTP Server address."
-        },
-        "port": {
-            "name": "Port",
-            "required": false,
-            "requires_restart": false,
-            "type": "number",
-            "value": 465
-        },
-        "password": {
-            "name": "Password",
-            "required": false,
-            "requires_restart": false,
-            "type": "password",
-            "value": "smtp password"
-        }
-    },
-    "ombi": {
-        "meta": {
-            "name": "Ombi Integration",
-            "description": "Connect to Ombi to automatically create both Ombi and Jellyfin accounts for new users. You'll need to create a user template for this to work. Once enabled, refresh to see an option in settings for this."
-        },
-        "enabled": {
-            "name": "Enabled",
-            "required": false,
-            "requires_restart": true,
-            "type": "bool",
-            "value": false,
-            "description": "Enable to create an Ombi account for new Jellyfin users"
-        },
-        "server": {
-            "name": "URL",
-            "required": false,
-            "requires_restart": true,
-            "type": "text",
-            "value": "localhost:5000",
-            "depends_true": "enabled",
-            "description": "Ombi server URL, including http(s)://."
-        },
-        "api_key": {
-            "name": "API Key",
-            "required": false,
-            "requires_restart": true,
-            "type": "text",
-            "value": "",
-            "depends_true": "enabled",
-            "description": "API Key. Get this from the first tab in Ombi settings."
-        }
-    },
-    "deletion": {
-        "meta": {
-            "name": "Account Deletion",
-            "description": "Subject/email files for account deletion emails."
-        },
-        "subject": {
-            "name": "Email subject",
-            "required": false,
-            "requires_restart": false,
-            "type": "text",
-            "value": "Your account was deleted - Jellyfin",
-            "description": "Subject of account deletion emails."
-        },
-        "email_html": {
-            "name": "Custom email (HTML)",
-            "required": false,
-            "requires_restart": false,
-            "type": "text",
-            "value": "",
-            "description": "Path to custom email html"
-        },
-        "email_text": {
-            "name": "Custom email (plaintext)",
-            "required": false,
-            "requires_restart": false,
-            "type": "text",
-            "value": "",
-            "description": "Path to custom email in plain text"
-        }
-    },
-    "files": {
-        "meta": {
-            "name": "File Storage",
-            "description": "Optional settings for changing storage locations."
-        },
-        "invites": {
-            "name": "Invite Storage",
-            "required": false,
-            "requires_restart": true,
-            "type": "text",
-            "value": "",
-            "description": "Location of stored invites (json)."
-        },
-        "emails": {
-            "name": "Email Addresses",
-            "required": false,
-            "requires_restart": true,
-            "type": "text",
-            "value": "",
-            "description": "Location of stored email addresses (json)."
-        },
-        "ombi_template": {
-            "name": "Ombi user template",
-            "required": false,
-            "requires_restart": false,
-            "type": "text",
-            "value": "",
-            "description": "Location of stored Ombi user template."
-        },
-        "user_template": {
-            "name": "User Template (Deprecated)",
-            "required": false,
-            "requires_restart": true,
-            "type": "text",
-            "value": "",
-            "description": "Deprecated in favor of User Profiles. Location of stored user policy template (json)."
-        },
-        "user_configuration": {
-            "name": "userConfiguration (Deprecated)",
-            "required": false,
-            "requires_restart": true,
-            "type": "text",
-            "value": "",
-            "description": "Deprecated in favor of User Profiles. Location of stored user configuration template (used for setting homescreen layout) (json)"
-        },
-        "user_displayprefs": {
-            "name": "displayPreferences (Deprecated)",
-            "required": false,
-            "requires_restart": true,
-            "type": "text",
-            "value": "",
-            "description": "Deprecated in favor of User Profiles. Location of stored displayPreferences template (also used for homescreen layout) (json)"
-        },
-        "user_profiles": {
-            "name": "User Profiles",
-            "required": false,
-            "requires_restart": true,
-            "type": "text",
-            "value": "",
-            "description": "Location of stored user profiles (encompasses template and configuration and displayprefs) (json)"
-        },
-        "custom_css": {
-            "name": "Custom CSS",
-            "required": false,
-            "requires_restart": true,
-            "type": "text",
-            "value": "",
-            "description": "Location of custom bootstrap CSS."
-        },
-        "html_templates": {
-            "name": "Custom HTML Template Directory",
-            "required": false,
-            "requires_restart": true,
-            "type": "text",
-            "value": "",
-            "description": "Path to directory containing custom versions of web ui pages. See wiki for more info."
+        "files": {
+            "order": [],
+            "meta": {
+                "name": "File Storage",
+                "description": "Optional settings for changing storage locations."
+            },
+            "settings": {
+                "invites": {
+                    "name": "Invite Storage",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "text",
+                    "value": "",
+                    "description": "Location of stored invites (json)."
+                },
+                "emails": {
+                    "name": "Email Addresses",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "text",
+                    "value": "",
+                    "description": "Location of stored email addresses (json)."
+                },
+                "ombi_template": {
+                    "name": "Ombi user template",
+                    "required": false,
+                    "requires_restart": false,
+                    "type": "text",
+                    "value": "",
+                    "description": "Location of stored Ombi user template."
+                },
+                "user_template": {
+                    "name": "User Template (Deprecated)",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "text",
+                    "value": "",
+                    "description": "Deprecated in favor of User Profiles. Location of stored user policy template (json)."
+                },
+                "user_configuration": {
+                    "name": "userConfiguration (Deprecated)",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "text",
+                    "value": "",
+                    "description": "Deprecated in favor of User Profiles. Location of stored user configuration template (used for setting homescreen layout) (json)"
+                },
+                "user_displayprefs": {
+                    "name": "displayPreferences (Deprecated)",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "text",
+                    "value": "",
+                    "description": "Deprecated in favor of User Profiles. Location of stored displayPreferences template (also used for homescreen layout) (json)"
+                },
+                "user_profiles": {
+                    "name": "User Profiles",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "text",
+                    "value": "",
+                    "description": "Location of stored user profiles (encompasses template and configuration and displayprefs) (json)"
+                },
+                "html_templates": {
+                    "name": "Custom HTML Template Directory",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "text",
+                    "value": "",
+                    "description": "Path to directory containing custom versions of web ui pages. See wiki for more info."
+                }
+            }
         }
     }
 }

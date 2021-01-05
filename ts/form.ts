@@ -1,15 +1,11 @@
-import { serializeForm, _post, _get, _delete, addAttr, rmAttr } from "./modules/common.js";
-import { BS5 } from "./modules/bs5.js";
-import { BS4 } from "./modules/bs4.js";
+import { Modal } from "./modules/modal.js";
+import { _post, toggleLoader } from "./modules/common.js";
 
 interface formWindow extends Window {
-    usernameEnabled: boolean;
     validationStrings: pwValStrings;
-    checkPassword(): void;
     invalidPassword: string;
+    modal: Modal;
 }
-
-declare var window: formWindow;
 
 interface pwValString {
     singular: string;
@@ -17,8 +13,16 @@ interface pwValString {
 }
 
 interface pwValStrings {
-    length, uppercase, lowercase, number, special: pwValString;
+    length: pwValString;
+    uppercase: pwValString;
+    lowercase: pwValString;
+    number: pwValString;
+    special: pwValString;
+    [ type: string ]: pwValString;
 }
+
+window.modal = new Modal(document.getElementById("modal-success"));
+declare var window: formWindow;
 
 var defaultPwValStrings: pwValStrings = {
     length: {
@@ -43,111 +47,132 @@ var defaultPwValStrings: pwValStrings = {
     }
 }
 
-const toggleSpinner = (ogText?: string): string => {
-    const submitButton = document.getElementById('submitButton') as HTMLButtonElement;
-    if (document.getElementById('createAccountSpinner')) {
-        submitButton.innerHTML = ogText ? ogText : `<span>Create Account</span>`;
-        submitButton.disabled = false;
-        return "";
+const form = document.getElementById("form-create") as HTMLFormElement;
+const submitButton = form.querySelector("input[type=submit]") as HTMLInputElement;
+const submitSpan = form.querySelector("span.submit") as HTMLSpanElement;
+let usernameField = document.getElementById("create-username") as HTMLInputElement;
+const emailField = document.getElementById("create-email") as HTMLInputElement;
+if (!window.usernameEnabled) { usernameField.parentElement.remove(); usernameField = emailField; }
+const passwordField = document.getElementById("create-password") as HTMLInputElement;
+const rePasswordField = document.getElementById("create-reenter-password") as HTMLInputElement;
+
+const checkPasswords = () => {
+    if (passwordField.value != rePasswordField.value) {
+        rePasswordField.setCustomValidity(window.invalidPassword);
+        submitButton.disabled = true;
+        submitSpan.setAttribute("disabled", "");
     } else {
-        let ogText = submitButton.innerHTML;
-        submitButton.innerHTML = `
-        <span id="createAccountSpinner" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>Creating...
-        `;
-        return ogText;
+        rePasswordField.setCustomValidity("");
+        submitButton.disabled = false;
+        submitSpan.removeAttribute("disabled");
     }
 };
+rePasswordField.addEventListener("keyup", checkPasswords);
+passwordField.addEventListener("keyup", checkPasswords);
 
-for (let key in window.validationStrings) {
-    if (window.validationStrings[key].singular == "" || !(window.validationStrings[key].plural.includes("{n}"))) {
-        window.validationStrings[key].singular = defaultPwValStrings[key].singular;
-    }
-    if (window.validationStrings[key].plural == "" || !(window.validationStrings[key].plural.includes("{n}"))) {
-        window.validationStrings[key].plural = defaultPwValStrings[key].plural;
-    }
-    let el = document.getElementById(key) as HTMLUListElement;
-    if (el) {
-        const min: number = +el.getAttribute("min");
-        let text = "";
-        if (min == 1) {
-            text = window.validationStrings[key].singular.replace("{n}", "1");
-        } else {
-            text = window.validationStrings[key].plural.replace("{n}", min.toString());
+interface respDTO {
+    [ type: string ]: boolean;
+}
+
+interface sendDTO {
+    code: string;
+    email: string;
+    username: string;
+    password: string;
+}
+
+const create = (event: SubmitEvent) => {
+    event.preventDefault();
+    toggleLoader(submitSpan);
+    let send: sendDTO = {
+        code: window.location.href.split('/').pop(),
+        username: usernameField.value,
+        email: emailField.value,
+        password: passwordField.value
+    };
+    _post("/newUser", send, (req: XMLHttpRequest) => {
+        if (req.readyState == 4) {
+            let vals = JSON.parse(req.response) as respDTO;
+            let valid = true;
+            for (let type in vals) {
+                if (requirements[type]) { requirements[type].valid = vals[type]; }
+                if (!vals[type]) { valid = false; }
+            }
+            toggleLoader(submitSpan);
+            if (req.status == 200 && valid) {
+                window.modal.show();
+            } else {
+                submitSpan.classList.add("~critical");
+                submitSpan.classList.remove("~urge");
+                setTimeout(() => {
+                    submitSpan.classList.add("~urge");
+                    submitSpan.classList.remove("~critical");
+                }, 1000);
+            }
         }
-        (document.getElementById(key).children[0] as HTMLDivElement).textContent = text;
+    });
+};
+
+form.onsubmit = create;
+
+class Requirement {
+    private _name: string;
+    private _minCount: number;
+    private _content: HTMLSpanElement;
+    private _valid: HTMLSpanElement;
+    private _li: HTMLLIElement;
+
+    get valid(): boolean { return this._valid.classList.contains("~positive"); }
+    set valid(state: boolean) {
+        if (state) {
+            this._valid.classList.add("~positive");
+            this._valid.classList.remove("~critical");
+            this._valid.innerHTML = `<i class="icon ri-check-line" title="valid"></i>`;
+        } else {
+            this._valid.classList.add("~critical");
+            this._valid.classList.remove("~positive");
+            this._valid.innerHTML = `<i class="icon ri-close-line" title="invalid"></i>`;
+        }
+    }
+
+    constructor(name: string, el: HTMLLIElement) {
+        this._name = name;
+        this._li = el;
+        this._content = this._li.querySelector("span.requirement-content") as HTMLSpanElement;
+        this._valid = this._li.querySelector("span.requirement-valid") as HTMLSpanElement;
+        this.valid = false;
+        this._minCount = +this._li.getAttribute("min");
+
+        let text = "";
+        if (this._minCount == 1) {
+            text = window.validationStrings[this._name].singular.replace("{n}", "1");
+        } else {
+            text = window.validationStrings[this._name].plural.replace("{n}", ""+this._minCount);
+        }
+        this._content.textContent = text;
     }
 }
 
-window.BS = window.bs5 ? new BS5 : new BS4;
-var successBox: BSModal = window.BS.newModal('successBox');;
-
-var code = window.location.href.split('/').pop();
-
-(document.getElementById('accountForm') as HTMLFormElement).addEventListener('submit', (event: any): boolean => {
-    event.preventDefault();
-    const el = document.getElementById('errorMessage');
-    if (el) {
-        el.remove();
+const testStrings = (f: pwValString): boolean => {
+    const testString = (s: string): boolean => {
+        if (s == "" || !s.includes("{n}")) { return false; }
+        return true;
     }
-    const ogText = toggleSpinner();
-    let send: Object = serializeForm('accountForm');
-    send["code"] = code;
-    if (!window.usernameEnabled) {
-        send["email"] = send["username"];
-    }
-    _post("/newUser", send, function (): void {
-        if (this.readyState == 4) {
-            toggleSpinner(ogText);
-            let data: Object = this.response;
-            const errorGiven = ("error" in data)
-            if (errorGiven || data["success"] === false) {
-                let errorMessage = "Unknown Error";
-                if (errorGiven && errorGiven != true) {
-                    errorMessage = data["error"];
-                }
-                document.getElementById('errorBox').innerHTML += `
-                <button id="errorMessage" class="btn btn-outline-danger" disabled>${errorMessage}</button>
-                `;
-            } else {
-                let valid = true;
-                for (let key in data) {
-                    if (data.hasOwnProperty(key)) {
-                        const criterion = document.getElementById(key);
-                        if (criterion) {
-                            if (data[key] === false) {
-                                valid = false;
-                                addAttr(criterion, "list-group-item-danger");
-                                rmAttr(criterion, "list-group-item-success");
-                            } else {
-                                addAttr(criterion, "list-group-item-success");
-                                rmAttr(criterion, "list-group-item-danger");
-                            }
-                        }
-                    }
-                }
-                if (valid) {
-                    successBox.show();
-                }
-            }
+    return testString(f.singular) && testString(f.plural);
+}
+
+var requirements: { [category: string]: Requirement} = {};
+
+if (!window.validationStrings) {
+    window.validationStrings = defaultPwValStrings;
+} else {
+    for (let category in window.validationStrings) {
+        if (!testStrings(window.validationStrings[category])) {
+            window.validationStrings[category] = defaultPwValStrings[category];
         }
-    }, true);
-    return false;
-});
-
-window.checkPassword = (): void => {
-    const entry = document.getElementById('inputPassword') as HTMLInputElement;
-    if (entry.value != "") {
-        const reentry = document.getElementById('reInputPassword') as HTMLInputElement;
-        const identical = (entry.value == reentry.value);
-        const submitButton = document.getElementById('submitButton') as HTMLButtonElement;
-        if (identical) {
-            reentry.setCustomValidity('');
-            rmAttr(submitButton, "btn-outline-danger");
-            addAttr(submitButton, "btn-outline-primary");
-        } else {
-            reentry.setCustomValidity(window.invalidPassword);
-            addAttr(submitButton, "btn-outline-danger");
-            rmAttr(submitButton, "btn-outline-primary");
+        const el = document.getElementById("requirement-" + category);
+        if (el) {
+            requirements[category] = new Requirement(category, el as HTMLLIElement);
         }
     }
 }
