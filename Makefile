@@ -13,7 +13,7 @@ email:
 	$(info Generating email html)
 	python3 mail/generate.py -o build/data/
 
-ts:
+typescript:
 	$(info compiling typescript)
 	-mkdir -p build/data/web/js
 	-npx esbuild ts/*.ts ts/modules/*.ts --outdir=./build/data/web/js/
@@ -61,5 +61,5 @@ copy:
 install:
 	cp -r build $(DESTDIR)/jfa-go
 
-all: configuration npm email version ts swagger compile copy
+all: configuration npm email version typescript swagger compile copy
 debug: configuration npm email version ts-debug swagger compile copy
