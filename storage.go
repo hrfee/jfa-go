@@ -192,7 +192,6 @@ func storeJSON(path string, obj interface{}) error {
 	return err
 }
 
-// One build of JF 10.7.0 hyphenated to user IDs like this and we need to upgrade email storage to match it:
 // One build of JF 10.7.0 hyphenated user IDs while another one later didn't. These functions will hyphenate/de-hyphenate email storage.
 
 func hyphenate(userID string) string {
