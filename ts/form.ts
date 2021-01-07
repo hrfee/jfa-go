@@ -27,7 +27,7 @@ declare var window: formWindow;
 var defaultPwValStrings: pwValStrings = {
     length: {
         singular: "Must have at least {n} character",
-        plural: "Must have a least {n} characters"
+        plural: "Must have at least {n} characters"
     },
     uppercase: {
         singular: "Must have at least {n} uppercase character",
