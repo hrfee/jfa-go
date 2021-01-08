@@ -1,0 +1,41 @@
+{
+    "meta": {
+        "name": "Nederlands (NL)"
+    },
+    "strings": {
+        "pageTitle": "Maak Jellyfin account aan",
+        "createAccountHeader": "Account aanmaken",
+        "accountDetails": "Details",
+        "emailAddress": "Email",
+        "username": "Gebruikersnaam",
+        "password": "Wachtwoord",
+        "reEnterPassword": "Bevestig wachtwoord",
+        "reEnterPasswordInvalid": "Wachtwoorden komen niet overeen.",
+        "createAccountButton": "Maak account aan",
+        "passwordRequirementsHeader": "Wachtwoordvereisten",
+        "successHeader": "Succes!",
+        "successContinueButton": "Doorgaan",
+        "validationStrings": {
+            "length": {
+                "singular": "Moet ten minste {n} teken bevatten",
+                "plural": "Moet ten minste {n} tekens bevatten"
+            },
+            "uppercase": {
+                "singular": "Moet ten minste {n} hoofdletter bevatten",
+                "plural": "Moet ten minste {n} hoofdletters bevatten"
+            },
+            "lowercase": {
+                "singular": "Moet ten minste {n} kleine letter bevatten",
+                "plural": "Moet ten minste {n} kleine letters bevatten"
+            },
+            "number": {
+                "singular": "Moet ten minste {n} cijfer bevatten",
+                "plural": "Moet ten minste {n} cijfers bevatten"
+            },
+            "special": {
+                "singular": "Moet ten minste {n} bijzonder teken bevatten",
+                "plural": "Moet ten minste {n} bijzondere tekens bevatten"
+            }
+        }
+    }
+}
