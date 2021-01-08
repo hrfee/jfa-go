@@ -4,7 +4,7 @@ go 1.14
 
 replace github.com/hrfee/jfa-go/docs => ./docs
 
-replace github.com/hrfee/jfa-go/jfapi => ./jfapi
+replace github.com/hrfee/jfa-go/mediabrowser => ./mediabrowser
 
 replace github.com/hrfee/jfa-go/common => ./common
 
@@ -24,9 +24,9 @@ require (
 	github.com/gofrs/uuid v3.3.0+incompatible // indirect
 	github.com/golang/protobuf v1.4.3
 	github.com/google/uuid v1.1.2 // indirect
-	github.com/hrfee/jfa-go/common v0.0.0-20201112212552-b6f3cd7c1f71
+	github.com/hrfee/jfa-go/common v0.0.0-20210105184019-fdc97b4e86cc
 	github.com/hrfee/jfa-go/docs v0.0.0-20201112212552-b6f3cd7c1f71
-	github.com/hrfee/jfa-go/jfapi v0.0.0-20201112212552-b6f3cd7c1f71
+	github.com/hrfee/jfa-go/mediabrowser v0.0.0-20201112212552-b6f3cd7c1f71
 	github.com/hrfee/jfa-go/ombi v0.0.0-20201112212552-b6f3cd7c1f71
 	github.com/jordan-wright/email v4.0.1-0.20200917010138-e1c00e156980+incompatible
 	github.com/json-iterator/go v1.1.10 // indirect
