@@ -1,4 +1,4 @@
-package jfapi
+package mediabrowser
 
 import (
 	"bytes"
@@ -14,43 +14,9 @@ import (
 	"github.com/hrfee/jfa-go/common"
 )
 
-type serverInfo struct {
-	LocalAddress string `json:"LocalAddress"`
-	Name         string `json:"ServerName"`
-	Version      string `json:"Version"`
-	OS           string `json:"OperatingSystem"`
-	ID           string `json:"Id"`
-}
-
-// Jellyfin represents a running Jellyfin instance.
-type Jellyfin struct {
-	Server         string
-	client         string
-	version        string
-	device         string
-	deviceID       string
-	useragent      string
-	auth           string
-	header         map[string]string
-	ServerInfo     serverInfo
-	Username       string
-	password       string
-	Authenticated  bool
-	AccessToken    string
-	userID         string
-	httpClient     *http.Client
-	loginParams    map[string]string
-	userCache      []map[string]interface{}
-	CacheExpiry    time.Time
-	cacheLength    int
-	noFail         bool
-	Hyphens        bool
-	timeoutHandler common.TimeoutHandler
-}
-
 // NewJellyfin returns a new Jellyfin object.
-func NewJellyfin(server, client, version, device, deviceID string, timeoutHandler common.TimeoutHandler, cacheTimeout int) (*Jellyfin, error) {
-	jf := &Jellyfin{}
+func NewJellyfin(server, client, version, device, deviceID string, timeoutHandler common.TimeoutHandler, cacheTimeout int) (*MediaBrowserStruct, error) {
+	jf := &MediaBrowserStruct{}
 	jf.Server = server
 	jf.client = client
 	jf.version = version
@@ -85,7 +51,7 @@ func NewJellyfin(server, client, version, device, deviceID string, timeoutHandle
 }
 
 // Authenticate attempts to authenticate using a username & password
-func (jf *Jellyfin) Authenticate(username, password string) (map[string]interface{}, int, error) {
+func (jf *MediaBrowserStruct) Authenticate(username, password string) (map[string]interface{}, int, error) {
 	jf.Username = username
 	jf.password = password
 	jf.loginParams = map[string]string{
@@ -133,7 +99,7 @@ func (jf *Jellyfin) Authenticate(username, password string) (map[string]interfac
 	return user, resp.StatusCode, nil
 }
 
-func (jf *Jellyfin) get(url string, params map[string]string) (string, int, error) {
+func (jf *MediaBrowserStruct) get(url string, params map[string]string) (string, int, error) {
 	var req *http.Request
 	if params != nil {
 		jsonParams, _ := json.Marshal(params)
@@ -173,7 +139,7 @@ func (jf *Jellyfin) get(url string, params map[string]string) (string, int, erro
 	return buf.String(), resp.StatusCode, nil
 }
 
-func (jf *Jellyfin) post(url string, data map[string]interface{}, response bool) (string, int, error) {
+func (jf *MediaBrowserStruct) post(url string, data map[string]interface{}, response bool) (string, int, error) {
 	params, _ := json.Marshal(data)
 	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(params))
 	for name, value := range jf.header {
@@ -209,7 +175,7 @@ func (jf *Jellyfin) post(url string, data map[string]interface{}, response bool)
 }
 
 // DeleteUser deletes the user corresponding to the provided ID.
-func (jf *Jellyfin) DeleteUser(userID string) (int, error) {
+func (jf *MediaBrowserStruct) DeleteUser(userID string) (int, error) {
 	url := fmt.Sprintf("%s/Users/%s", jf.Server, userID)
 	req, _ := http.NewRequest("DELETE", url, nil)
 	for name, value := range jf.header {
@@ -221,7 +187,7 @@ func (jf *Jellyfin) DeleteUser(userID string) (int, error) {
 }
 
 // GetUsers returns all (visible) users on the Jellyfin instance.
-func (jf *Jellyfin) GetUsers(public bool) ([]map[string]interface{}, int, error) {
+func (jf *MediaBrowserStruct) GetUsers(public bool) ([]map[string]interface{}, int, error) {
 	var result []map[string]interface{}
 	var data string
 	var status int
@@ -251,7 +217,7 @@ func (jf *Jellyfin) GetUsers(public bool) ([]map[string]interface{}, int, error)
 }
 
 // UserByName returns the user corresponding to the provided username.
-func (jf *Jellyfin) UserByName(username string, public bool) (map[string]interface{}, int, error) {
+func (jf *MediaBrowserStruct) UserByName(username string, public bool) (map[string]interface{}, int, error) {
 	var match map[string]interface{}
 	find := func() (map[string]interface{}, int, error) {
 		users, status, err := jf.GetUsers(public)
@@ -274,7 +240,7 @@ func (jf *Jellyfin) UserByName(username string, public bool) (map[string]interfa
 }
 
 // UserByID returns the user corresponding to the provided ID.
-func (jf *Jellyfin) UserByID(userID string, public bool) (map[string]interface{}, int, error) {
+func (jf *MediaBrowserStruct) UserByID(userID string, public bool) (map[string]interface{}, int, error) {
 	if jf.CacheExpiry.After(time.Now()) {
 		for _, user := range jf.userCache {
 			if user["Id"].(string) == userID {
@@ -308,7 +274,7 @@ func (jf *Jellyfin) UserByID(userID string, public bool) (map[string]interface{}
 }
 
 // NewUser creates a new user with the provided username and password.
-func (jf *Jellyfin) NewUser(username, password string) (map[string]interface{}, int, error) {
+func (jf *MediaBrowserStruct) NewUser(username, password string) (map[string]interface{}, int, error) {
 	url := fmt.Sprintf("%s/Users/New", jf.Server)
 	stringData := map[string]string{
 		"Name":     username,
@@ -328,7 +294,7 @@ func (jf *Jellyfin) NewUser(username, password string) (map[string]interface{}, 
 }
 
 // SetPolicy sets the access policy for the user corresponding to the provided ID.
-func (jf *Jellyfin) SetPolicy(userID string, policy map[string]interface{}) (int, error) {
+func (jf *MediaBrowserStruct) SetPolicy(userID string, policy map[string]interface{}) (int, error) {
 	url := fmt.Sprintf("%s/Users/%s/Policy", jf.Server, userID)
 	_, status, err := jf.post(url, policy, false)
 	if err != nil || status != 200 {
@@ -338,14 +304,14 @@ func (jf *Jellyfin) SetPolicy(userID string, policy map[string]interface{}) (int
 }
 
 // SetConfiguration sets the configuration (part of homescreen layout) for the user corresponding to the provided ID.
-func (jf *Jellyfin) SetConfiguration(userID string, configuration map[string]interface{}) (int, error) {
+func (jf *MediaBrowserStruct) SetConfiguration(userID string, configuration map[string]interface{}) (int, error) {
 	url := fmt.Sprintf("%s/Users/%s/Configuration", jf.Server, userID)
 	_, status, err := jf.post(url, configuration, false)
 	return status, err
 }
 
 // GetDisplayPreferences gets the displayPreferences (part of homescreen layout) for the user corresponding to the provided ID.
-func (jf *Jellyfin) GetDisplayPreferences(userID string) (map[string]interface{}, int, error) {
+func (jf *MediaBrowserStruct) GetDisplayPreferences(userID string) (map[string]interface{}, int, error) {
 	url := fmt.Sprintf("%s/DisplayPreferences/usersettings?userId=%s&client=emby", jf.Server, userID)
 	data, status, err := jf.get(url, nil)
 	if err != nil || !(status == 204 || status == 200) {
@@ -360,7 +326,7 @@ func (jf *Jellyfin) GetDisplayPreferences(userID string) (map[string]interface{}
 }
 
 // SetDisplayPreferences sets the displayPreferences (part of homescreen layout) for the user corresponding to the provided ID.
-func (jf *Jellyfin) SetDisplayPreferences(userID string, displayprefs map[string]interface{}) (int, error) {
+func (jf *MediaBrowserStruct) SetDisplayPreferences(userID string, displayprefs map[string]interface{}) (int, error) {
 	url := fmt.Sprintf("%s/DisplayPreferences/usersettings?userId=%s&client=emby", jf.Server, userID)
 	_, status, err := jf.post(url, displayprefs, false)
 	if err != nil || !(status == 204 || status == 200) {

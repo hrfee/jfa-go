@@ -26,6 +26,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/hrfee/jfa-go/common"
 	_ "github.com/hrfee/jfa-go/docs"
+	"github.com/hrfee/jfa-go/emby"
 	"github.com/hrfee/jfa-go/jfapi"
 	"github.com/hrfee/jfa-go/ombi"
 	"github.com/lithammer/shortuuid/v3"
@@ -45,18 +46,19 @@ type User struct {
 // contains everything the application needs, essentially. Wouldn't do this in the future.
 type appContext struct {
 	// defaults         *Config
-	config           *ini.File
-	configPath       string
-	configBasePath   string
-	configBase       settings
-	dataPath         string
-	localPath        string
-	cssClass         string
-	jellyfinLogin    bool
-	users            []User
-	invalidTokens    []string
-	jf               *jfapi.Jellyfin
-	authJf           *jfapi.Jellyfin
+	config         *ini.File
+	configPath     string
+	configBasePath string
+	configBase     settings
+	dataPath       string
+	localPath      string
+	cssClass       string
+	jellyfinLogin  bool
+	users          []User
+	invalidTokens  []string
+	// Keeping jf name because I can't think of a better one
+	jf               common.MediaBrowserStruct
+	authJf           common.MediaBrowserStruct
 	ombi             *ombi.Ombi
 	datePattern      string
 	timePattern      string
@@ -439,15 +441,30 @@ func start(asDaemon, firstCall bool) {
 
 		server := app.config.Section("jellyfin").Key("server").String()
 		cacheTimeout := int(app.config.Section("jellyfin").Key("cache_timeout").MustUint(30))
-		app.jf, _ = jfapi.NewJellyfin(
-			server,
-			app.config.Section("jellyfin").Key("client").String(),
-			app.config.Section("jellyfin").Key("version").String(),
-			app.config.Section("jellyfin").Key("device").String(),
-			app.config.Section("jellyfin").Key("device_id").String(),
-			common.NewTimeoutHandler("Jellyfin", server, true),
-			cacheTimeout,
-		)
+		mediaBrowser := app.config.Section("jellyfin").Key("type").String()
+		if mediaBrowser == "emby" {
+			app.info.Println("Using Emby server type")
+			app.jf, _ = emby.NewEmby(
+				server,
+				app.config.Section("jellyfin").Key("client").String(),
+				app.config.Section("jellyfin").Key("version").String(),
+				app.config.Section("jellyfin").Key("device").String(),
+				app.config.Section("jellyfin").Key("device_id").String(),
+				common.NewTimeoutHandler("Emby", server, true),
+				cacheTimeout,
+			)
+		} else {
+			app.info.Println("Using Jellyfin server type")
+			app.jf, _ = jfapi.NewJellyfin(
+				server,
+				app.config.Section("jellyfin").Key("client").String(),
+				app.config.Section("jellyfin").Key("version").String(),
+				app.config.Section("jellyfin").Key("device").String(),
+				app.config.Section("jellyfin").Key("device_id").String(),
+				common.NewTimeoutHandler("Jellyfin", server, true),
+				cacheTimeout,
+			)
+		}
 		var status int
 		_, status, err = app.jf.Authenticate(app.config.Section("jellyfin").Key("username").String(), app.config.Section("jellyfin").Key("password").String())
 		if status != 200 || err != nil {
