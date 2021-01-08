@@ -45,3 +45,31 @@ steps:
           BUILDRONE_KEY:
               from_secret: BUILDRONE_KEY
 
+trigger:
+    branch:
+        - main
+    event:
+        exclude:
+            - pull_request
+
+---
+name: jfa-go-pr
+kind: pipeline
+type: docker
+
+steps:
+    - name: build
+      image: golang:latest
+      commands:
+        - apt update -y
+        - apt install build-essential python3-pip curl software-properties-common sed upx -y
+        - (curl -sL https://deb.nodesource.com/setup_14.x | bash -)
+        - apt install nodejs
+        - curl -sL https://git.io/goreleaser > goreleaser.sh
+        - chmod +x goreleaser.sh
+        - ./goreleaser.sh --snapshot --skip-publish --rm-dist
+
+trigger:
+    event:
+        include:
+            - pull_request
