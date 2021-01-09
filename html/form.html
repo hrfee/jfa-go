@@ -10,7 +10,7 @@
             <div class="modal-content card">
                 <span class="heading mb-1">{{ .lang.successHeader }}</span>
                 <p class="content mb-1">{{ .successMessage }}</p>
-                <span class="button ~urge !normal full-width center supra submit" id="create-success-button">{{ .lang.successContinueButton }}</span>
+                <a class="button ~urge !normal full-width center supra submit" href="{{ .jfLink }}" id="create-success-button">{{ .lang.successContinueButton }}</a>
             </div>
         </div>
         <div id="notification-box"></div>
@@ -53,7 +53,9 @@
                                 {{ end }}
                             </ul>
                         </div>
+                        {{ if .contactMessage }}
                         <aside class="col aside sm ~info">{{ .contactMessage }}</aside>
+                        {{ end }}
                     </div>
                 </div>
             </div>
