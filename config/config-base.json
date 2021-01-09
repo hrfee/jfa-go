@@ -65,7 +65,7 @@
                         "emby"
                     ],
                     "value": "jellyfin",
-                    "description": "Media server type."
+                    "description": "Note: Emby integration works, but is not much of a priority. Jellyfin branding will still appear accross jfa-go."
                 }
             }
         },

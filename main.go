@@ -452,7 +452,7 @@ func start(asDaemon, firstCall bool) {
 			serverType = mediabrowser.EmbyServer
 			timeoutHandler = common.NewTimeoutHandler("Emby", server, true)
 			app.info.Println("Using Emby server type")
-			fmt.Println(aurora.Yellow("WARNING: Emby compatibility is experimental, things may not work."))
+			fmt.Println(aurora.Yellow("WARNING: Emby compatibility is experimental, and support is limited.\nSee the jfa-go wiki for more info."))
 		} else {
 			app.info.Println("Using Jellyfin server type")
 		}
