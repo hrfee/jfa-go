@@ -8,13 +8,11 @@ import (
 type Validator struct {
 	minLength, upper, lower, number, special int
 	criteria                                 ValidatorConf
-	specialChars                             []rune
 }
 
 type ValidatorConf map[string]int
 
 func (vd *Validator) init(criteria ValidatorConf) {
-	vd.specialChars = []rune{'[', '@', '_', '!', '#', '$', '%', '^', '&', '*', '(', ')', '<', '>', '?', '/', '\\', '|', '}', '{', '~', ':', ']'}
 	vd.criteria = criteria
 }
 
@@ -40,12 +38,8 @@ func (vd *Validator) validate(password string) map[string]bool {
 			count["lowercase"] += 1
 		} else if unicode.IsNumber(c) {
 			count["number"] += 1
-		} else {
-			for _, s := range vd.specialChars {
-				if c == s {
-					count["special"] += 1
-				}
-			}
+		} else if unicode.ToUpper(c) == unicode.ToLower(c) {
+			count["special"] += 1
 		}
 	}
 	results := map[string]bool{}

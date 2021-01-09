@@ -117,7 +117,7 @@ form.onsubmit = create;
 
 class Requirement {
     private _name: string;
-    private _minCount: number;
+    protected _minCount: number;
     private _content: HTMLSpanElement;
     private _valid: HTMLSpanElement;
     private _li: HTMLLIElement;
@@ -151,7 +151,12 @@ class Requirement {
         }
         this._content.textContent = text;
     }
+
+    validate = (count: number) => { this.valid = (count >= this._minCount); }
 }
+
+// Incredible code right here
+const isInt = (s: string): boolean => { return (s in ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]); }
 
 const testStrings = (f: pwValString): boolean => {
     const testString = (s: string): boolean => {
@@ -160,6 +165,32 @@ const testStrings = (f: pwValString): boolean => {
     }
     return testString(f.singular) && testString(f.plural);
 }
+
+interface Validation { [name: string]: number }
+
+const validate = (s: string): Validation => {
+    let v: Validation = {};
+    for (let criteria of ["length", "lowercase", "uppercase", "number", "special"]) { v[criteria] = 0; }
+    v["length"] = s.length;
+    for (let c of s) {
+        if (isInt(c)) { v["number"]++; }
+        else {
+            const upper = c.toUpperCase();
+            if (upper == c.toLowerCase()) { v["special"]++; }
+            else {
+                if (upper == c) { v["uppercase"]++; }
+                else if (upper != c) { v["lowercase"]++; }
+            }
+        }
+    }
+    return v
+}
+passwordField.addEventListener("keyup", () => {
+    const v = validate(passwordField.value);
+    for (let criteria in requirements) {
+        requirements[criteria].validate(v[criteria]);
+    }
+});
 
 var requirements: { [category: string]: Requirement} = {};
 
