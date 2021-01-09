@@ -887,10 +887,8 @@ func (app *appContext) GetUsers(gc *gin.Context) {
 		var user respUser
 		user.LastActive = "n/a"
 		if jfUser["LastActivityDate"] != nil {
-			fmt.Println(jfUser["LastActivityDate"].(string))
 			date := parseDT(jfUser["LastActivityDate"].(string))
 			user.LastActive = app.formatDatetime(date)
-			// fmt.Printf("%s: %s, %s, %+v\n", jfUser["Name"].(string), jfUser["LastActivityDate"].(string), user.LastActive, date)
 		}
 		user.ID = jfUser["Id"].(string)
 		user.Name = jfUser["Name"].(string)
@@ -1124,6 +1122,18 @@ func (app *appContext) GetConfig(gc *gin.Context) {
 	s.Options = app.lang.langOptions
 	s.Value = app.lang.langOptions[app.lang.chosenIndex]
 	resp.Sections["ui"].Settings["language"] = s
+
+	t := resp.Sections["jellyfin"].Settings["type"]
+	opts := make([]string, len(serverTypes))
+	i := 0
+	for _, v := range serverTypes {
+		opts[i] = v
+		i++
+	}
+	t.Options = opts
+	t.Value = serverTypes[app.config.Section("jellyfin").Key("type").MustString("jellyfin")]
+	resp.Sections["jellyfin"].Settings["type"] = t
+
 	gc.JSON(200, resp)
 }
 
@@ -1150,6 +1160,13 @@ func (app *appContext) ModifyConfig(gc *gin.Context) {
 					for i, lang := range app.lang.langOptions {
 						if value.(string) == lang {
 							tempConfig.Section(section).Key(setting).SetValue(strings.Replace(app.lang.langFiles[i].Name(), ".json", "", 1))
+							break
+						}
+					}
+				} else if section == "jellyfin" && setting == "type" {
+					for k, v := range serverTypes {
+						if v == value.(string) {
+							tempConfig.Section("jellyfin").Key("type").SetValue(k)
 							break
 						}
 					}

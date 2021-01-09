@@ -54,6 +54,18 @@
                     "type": "number",
                     "value": 30,
                     "description": "Timeout of user cache in minutes. Set to 0 to disable."
+                },
+                "type": {
+                    "name": "Server type",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "select",
+                    "options": [
+                        "jellyfin",
+                        "emby"
+                    ],
+                    "value": "jellyfin",
+                    "description": "Media server type."
                 }
             }
         },

@@ -26,8 +26,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/hrfee/jfa-go/common"
 	_ "github.com/hrfee/jfa-go/docs"
-	"github.com/hrfee/jfa-go/emby"
-	"github.com/hrfee/jfa-go/jfapi"
+	"github.com/hrfee/jfa-go/mediabrowser"
 	"github.com/hrfee/jfa-go/ombi"
 	"github.com/lithammer/shortuuid/v3"
 	"github.com/logrusorgru/aurora/v3"
@@ -35,6 +34,11 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"gopkg.in/ini.v1"
 )
+
+var serverTypes = map[string]string{
+	"jellyfin": "Jellyfin",
+	"emby":     "Emby (experimental)",
+}
 
 // User is used for auth purposes.
 type User struct {
@@ -57,8 +61,8 @@ type appContext struct {
 	users          []User
 	invalidTokens  []string
 	// Keeping jf name because I can't think of a better one
-	jf               common.MediaBrowserStruct
-	authJf           common.MediaBrowserStruct
+	jf               *mediabrowser.MediaBrowser
+	authJf           *mediabrowser.MediaBrowser
 	ombi             *ombi.Ombi
 	datePattern      string
 	timePattern      string
@@ -441,30 +445,28 @@ func start(asDaemon, firstCall bool) {
 
 		server := app.config.Section("jellyfin").Key("server").String()
 		cacheTimeout := int(app.config.Section("jellyfin").Key("cache_timeout").MustUint(30))
-		mediaBrowser := app.config.Section("jellyfin").Key("type").String()
-		if mediaBrowser == "emby" {
+		stringServerType := app.config.Section("jellyfin").Key("type").String()
+		serverType := mediabrowser.JellyfinServer
+		timeoutHandler := common.NewTimeoutHandler("Jellyfin", server, true)
+		if stringServerType == "emby" {
+			serverType = mediabrowser.EmbyServer
+			timeoutHandler = common.NewTimeoutHandler("Emby", server, true)
 			app.info.Println("Using Emby server type")
-			app.jf, _ = emby.NewEmby(
-				server,
-				app.config.Section("jellyfin").Key("client").String(),
-				app.config.Section("jellyfin").Key("version").String(),
-				app.config.Section("jellyfin").Key("device").String(),
-				app.config.Section("jellyfin").Key("device_id").String(),
-				common.NewTimeoutHandler("Emby", server, true),
-				cacheTimeout,
-			)
+			fmt.Println(aurora.Yellow("WARNING: Emby compatibility is experimental, things may not work."))
 		} else {
 			app.info.Println("Using Jellyfin server type")
-			app.jf, _ = jfapi.NewJellyfin(
-				server,
-				app.config.Section("jellyfin").Key("client").String(),
-				app.config.Section("jellyfin").Key("version").String(),
-				app.config.Section("jellyfin").Key("device").String(),
-				app.config.Section("jellyfin").Key("device_id").String(),
-				common.NewTimeoutHandler("Jellyfin", server, true),
-				cacheTimeout,
-			)
 		}
+
+		app.jf, _ = mediabrowser.NewServer(
+			serverType,
+			server,
+			app.config.Section("jellyfin").Key("client").String(),
+			app.config.Section("jellyfin").Key("version").String(),
+			app.config.Section("jellyfin").Key("device").String(),
+			app.config.Section("jellyfin").Key("device_id").String(),
+			timeoutHandler,
+			cacheTimeout,
+		)
 		var status int
 		_, status, err = app.jf.Authenticate(app.config.Section("jellyfin").Key("username").String(), app.config.Section("jellyfin").Key("password").String())
 		if status != 200 || err != nil {
@@ -483,7 +485,7 @@ func start(asDaemon, firstCall bool) {
 			}
 			return n
 		}
-		if checkVersion(app.jf.ServerInfo.Version) >= checkVersion("10.7.0") {
+		if serverType == mediabrowser.JellyfinServer && checkVersion(app.jf.ServerInfo.Version) >= checkVersion("10.7.0") {
 			// Get users to check if server uses hyphenated userIDs
 			app.jf.GetUsers(false)
 
@@ -524,7 +526,7 @@ func start(asDaemon, firstCall bool) {
 				}
 			}
 		}
-		app.authJf, _ = jfapi.NewJellyfin(server, "jfa-go", app.version, "auth", "auth", common.NewTimeoutHandler("Jellyfin", server, true), cacheTimeout)
+		app.authJf, _ = mediabrowser.NewServer(serverType, server, "jfa-go", app.version, "auth", "auth", timeoutHandler, cacheTimeout)
 
 		app.loadStrftime()
 
