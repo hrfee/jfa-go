@@ -58,6 +58,21 @@ func (st *Storage) storeInvites() error {
 }
 
 func (st *Storage) loadLang() error {
+	if substituteStrings != "" {
+		var file []byte
+		var err error
+		file, err = ioutil.ReadFile(st.lang.FormPath)
+		if err != nil {
+			file = []byte("{}")
+		}
+		// Replace Jellyfin with emby on form
+		file = []byte(strings.ReplaceAll(string(file), "Jellyfin", substituteStrings))
+		err = json.Unmarshal(file, &st.lang.Form)
+		if err != nil {
+			log.Printf("ERROR: Failed to read \"%s\": %s", st.lang.FormPath, err)
+		}
+		return err
+	}
 	err := loadJSON(st.lang.FormPath, &st.lang.Form)
 	if err != nil {
 		return err

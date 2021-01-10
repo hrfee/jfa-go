@@ -1050,6 +1050,7 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 		"homescreen": map[string]string{},
 	}
 	for _, id := range req.ApplyTo {
+		fmt.Printf("%+v\n", policy)
 		status, err := app.jf.SetPolicy(id, policy)
 		if !(status == 200 || status == 204) || err != nil {
 			errors["policy"][id] = fmt.Sprintf("%d: %s", status, err)

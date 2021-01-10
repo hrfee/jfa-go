@@ -82,5 +82,7 @@ func (app *appContext) loadConfig() error {
 
 	app.email = NewEmailer(app)
 
+	substituteStrings = app.config.Section("jellyfin").Key("substitute_jellyfin_strings").MustString("")
+
 	return nil
 }
