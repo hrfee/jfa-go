@@ -1,6 +1,6 @@
 # ![jfa-go](images/banner.svg)
 
-jfa-go is a user management app for [Jellyfin](https://github.com/jellyfin/jellyfin) that provides invite-based account creation as well as other features that make one's instance much easier to manage.
+jfa-go is a user management app for [Jellyfin](https://github.com/jellyfin/jellyfin) (and now [Emby](https://emby.media/)) that provides invite-based account creation as well as other features that make one's instance much easier to manage.
 
 I chose to rewrite the python [jellyfin-accounts](https://github.com/hrfee/jellyfin-accounts) in Go mainly as a learning experience, but also to slightly improve speeds and efficiency.
 

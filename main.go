@@ -447,7 +447,7 @@ func start(asDaemon, firstCall bool) {
 			serverType = mediabrowser.EmbyServer
 			timeoutHandler = common.NewTimeoutHandler("Emby", server, true)
 			app.info.Println("Using Emby server type")
-			fmt.Println(aurora.Yellow("WARNING: Emby compatibility is experimental, and support is limited.\nSee the jfa-go wiki for more info."))
+			fmt.Println(aurora.Yellow("WARNING: Emby compatibility is experimental, and support is limited.\nPassword resets are not available."))
 		} else {
 			app.info.Println("Using Jellyfin server type")
 		}
@@ -555,7 +555,7 @@ func start(asDaemon, firstCall bool) {
 		inviteDaemon := newRepeater(time.Duration(60*time.Second), app)
 		go inviteDaemon.run()
 
-		if app.config.Section("password_resets").Key("enabled").MustBool(false) {
+		if app.config.Section("password_resets").Key("enabled").MustBool(false) && serverType == mediabrowser.JellyfinServer {
 			go app.StartPWR()
 		}
 	} else {

@@ -65,7 +65,7 @@
                         "emby"
                     ],
                     "value": "jellyfin",
-                    "description": "Note: Emby integration works, but is not much of a priority. Jellyfin branding will still appear accross jfa-go."
+                    "description": "Note: Emby integration works is missing some features, such as Password Resets."
                 },
                 "substitute_jellyfin_strings": {
                     "name": "Substitute occurrences of \"Jellyfin\"",
