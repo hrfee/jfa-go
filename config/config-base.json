@@ -66,6 +66,14 @@
                     ],
                     "value": "jellyfin",
                     "description": "Note: Emby integration works, but is not much of a priority. Jellyfin branding will still appear accross jfa-go."
+                },
+                "substitute_jellyfin_strings": {
+                    "name": "Substitute occurrences of \"Jellyfin\"",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "text",
+                    "value": "",
+                    "description": "Optionally substitute occurrences of \"Jellyfin\" in the account creation form with this. May result in bad grammar."
                 }
             }
         },

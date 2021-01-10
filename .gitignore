@@ -6,5 +6,6 @@ data/
 version.go
 notes
 docs/*
+lang/langtostruct.py
 config-payload.json
 !docs/go.mod

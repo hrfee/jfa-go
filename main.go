@@ -39,6 +39,8 @@ var serverTypes = map[string]string{
 	"jellyfin": "Jellyfin",
 	"emby":     "Emby (experimental)",
 }
+var serverType = mediabrowser.JellyfinServer
+var substituteStrings = ""
 
 // User is used for auth purposes.
 type User struct {
@@ -282,12 +284,6 @@ func start(asDaemon, firstCall bool) {
 	if app.loadConfig() != nil {
 		app.err.Fatalf("Failed to load config file \"%s\"", app.configPath)
 	}
-	lang := app.config.Section("ui").Key("language").MustString("en-us")
-	app.storage.lang.FormPath = filepath.Join(app.localPath, "lang", "form", lang+".json")
-	if _, err := os.Stat(app.storage.lang.FormPath); os.IsNotExist(err) {
-		app.storage.lang.FormPath = filepath.Join(app.localPath, "lang", "form", "en-us.json")
-	}
-	app.storage.loadLang()
 	app.version = app.config.Section("jellyfin").Key("version").String()
 	// read from config...
 	debugMode = app.config.Section("ui").Key("debug").MustBool(false)
@@ -446,7 +442,6 @@ func start(asDaemon, firstCall bool) {
 		server := app.config.Section("jellyfin").Key("server").String()
 		cacheTimeout := int(app.config.Section("jellyfin").Key("cache_timeout").MustUint(30))
 		stringServerType := app.config.Section("jellyfin").Key("type").String()
-		serverType := mediabrowser.JellyfinServer
 		timeoutHandler := common.NewTimeoutHandler("Jellyfin", server, true)
 		if stringServerType == "emby" {
 			serverType = mediabrowser.EmbyServer
@@ -526,6 +521,14 @@ func start(asDaemon, firstCall bool) {
 				}
 			}
 		}
+
+		lang := app.config.Section("ui").Key("language").MustString("en-us")
+		app.storage.lang.FormPath = filepath.Join(app.localPath, "lang", "form", lang+".json")
+		if _, err := os.Stat(app.storage.lang.FormPath); os.IsNotExist(err) {
+			app.storage.lang.FormPath = filepath.Join(app.localPath, "lang", "form", "en-us.json")
+		}
+		app.storage.loadLang()
+
 		app.authJf, _ = mediabrowser.NewServer(serverType, server, "jfa-go", app.version, "auth", "auth", timeoutHandler, cacheTimeout)
 
 		app.loadStrftime()
