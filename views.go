@@ -31,6 +31,12 @@ func (app *appContext) AdminPage(gc *gin.Context) {
 
 func (app *appContext) InviteProxy(gc *gin.Context) {
 	code := gc.Param("invCode")
+	lang := gc.Query("lang")
+	if lang == "" {
+		lang = app.storage.lang.chosenFormLang
+	} else if _, ok := app.storage.lang.Form[lang]; !ok {
+		lang = app.storage.lang.chosenFormLang
+	}
 	/* Don't actually check if the invite is valid, just if it exists, just so the page loads quicker. Invite is actually checked on submit anyway. */
 	// if app.checkInvite(code, false, "") {
 	if _, ok := app.storage.invites[code]; ok {
@@ -49,7 +55,7 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 			"requirements":   app.validator.getCriteria(),
 			"email":          email,
 			"username":       !app.config.Section("email").Key("no_username").MustBool(false),
-			"lang":           app.storage.lang.Form["strings"],
+			"lang":           app.storage.lang.Form[lang]["strings"],
 		})
 	} else {
 		gcHTML(gc, 404, "invalidCode.html", gin.H{

@@ -76,15 +76,7 @@ type appContext struct {
 	port             int
 	version          string
 	quit             chan os.Signal
-	lang             Languages
 	URLBase          string
-}
-
-// Languages stores the names and filenames of language files, and the index of that which is currently selected.
-type Languages struct {
-	langFiles   []os.FileInfo // Language filenames
-	langOptions []string      // Language names
-	chosenIndex int
 }
 
 func (app *appContext) loadHTML(router *gin.Engine) {
@@ -521,13 +513,11 @@ func start(asDaemon, firstCall bool) {
 				}
 			}
 		}
-
-		lang := app.config.Section("ui").Key("language").MustString("en-us")
-		app.storage.lang.FormPath = filepath.Join(app.localPath, "lang", "form", lang+".json")
-		if _, err := os.Stat(app.storage.lang.FormPath); os.IsNotExist(err) {
-			app.storage.lang.FormPath = filepath.Join(app.localPath, "lang", "form", "en-us.json")
+		app.storage.lang.FormPath = filepath.Join(app.localPath, "lang", "form")
+		err = app.storage.loadLang()
+		if err != nil {
+			app.info.Fatalf("Failed to load language files: %+v\n", err)
 		}
-		app.storage.loadLang()
 
 		app.authJf, _ = mediabrowser.NewServer(serverType, server, "jfa-go", app.version, "auth", "auth", timeoutHandler, cacheTimeout)
 
@@ -574,6 +564,7 @@ func start(asDaemon, firstCall bool) {
 
 	router.Use(gin.Recovery())
 	router.Use(static.Serve("/", static.LocalFile(filepath.Join(app.localPath, "web"), false)))
+	router.Use(static.Serve("/lang/", static.LocalFile(filepath.Join(app.localPath, "lang"), false)))
 	app.loadHTML(router)
 	router.NoRoute(app.NoRouteHandler)
 	if debugMode {
@@ -585,6 +576,7 @@ func start(asDaemon, firstCall bool) {
 		router.GET("/accounts", app.AdminPage)
 		router.GET("/settings", app.AdminPage)
 
+		router.GET("/lang", app.GetLanguages)
 		router.GET("/token/login", app.getTokenLogin)
 		router.GET("/token/refresh", app.getTokenRefresh)
 		router.POST("/newUser", app.NewUser)

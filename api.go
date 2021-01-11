@@ -3,8 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -1088,23 +1086,17 @@ func (app *appContext) GetConfig(gc *gin.Context) {
 	app.info.Println("Config requested")
 	resp := app.configBase
 	// Load language options
-	langPath := filepath.Join(app.localPath, "lang", "form")
-	app.lang.langFiles, _ = ioutil.ReadDir(langPath)
-	app.lang.langOptions = make([]string, len(app.lang.langFiles))
-	chosenLang := app.config.Section("ui").Key("language").MustString("en-us") + ".json"
-	for i, f := range app.lang.langFiles {
-		if f.Name() == chosenLang {
-			app.lang.chosenIndex = i
-		}
-		var langFile map[string]interface{}
-		file, _ := ioutil.ReadFile(filepath.Join(langPath, f.Name()))
-		json.Unmarshal(file, &langFile)
-
-		if meta, ok := langFile["meta"]; ok {
-			app.lang.langOptions[i] = meta.(map[string]interface{})["name"].(string)
-		}
+	langOptions := make([]string, len(app.storage.lang.Form))
+	chosenLang := app.config.Section("ui").Key("language").MustString("en-us")
+	chosenLangName := app.storage.lang.Form[chosenLang]["meta"].(map[string]interface{})["name"].(string)
+	i := 0
+	for _, lang := range app.storage.lang.Form {
+		langOptions[i] = lang["meta"].(map[string]interface{})["name"].(string)
+		i++
 	}
-	s := resp.Sections["ui"].Settings["language"]
+	l := resp.Sections["ui"].Settings["language"]
+	l.Options = langOptions
+	l.Value = chosenLangName
 	for sectName, section := range resp.Sections {
 		for settingName, setting := range section.Settings {
 			val := app.config.Section(sectName).Key(settingName)
@@ -1120,13 +1112,11 @@ func (app *appContext) GetConfig(gc *gin.Context) {
 			resp.Sections[sectName].Settings[settingName] = s
 		}
 	}
-	s.Options = app.lang.langOptions
-	s.Value = app.lang.langOptions[app.lang.chosenIndex]
-	resp.Sections["ui"].Settings["language"] = s
+	resp.Sections["ui"].Settings["language"] = l
 
 	t := resp.Sections["jellyfin"].Settings["type"]
 	opts := make([]string, len(serverTypes))
-	i := 0
+	i = 0
 	for _, v := range serverTypes {
 		opts[i] = v
 		i++
@@ -1158,9 +1148,9 @@ func (app *appContext) ModifyConfig(gc *gin.Context) {
 			}
 			for setting, value := range settings.(map[string]interface{}) {
 				if section == "ui" && setting == "language" {
-					for i, lang := range app.lang.langOptions {
-						if value.(string) == lang {
-							tempConfig.Section(section).Key(setting).SetValue(strings.Replace(app.lang.langFiles[i].Name(), ".json", "", 1))
+					for key, lang := range app.storage.lang.Form {
+						if lang["meta"].(map[string]interface{})["name"].(string) == value.(string) {
+							tempConfig.Section("ui").Key("language").SetValue(key)
 							break
 						}
 					}
@@ -1223,6 +1213,25 @@ func (app *appContext) Logout(gc *gin.Context) {
 	app.invalidTokens = append(app.invalidTokens, cookie)
 	gc.SetCookie("refresh", "invalid", -1, "/", gc.Request.URL.Hostname(), true, true)
 	respondBool(200, true, gc)
+}
+
+// @Summary Returns a map of available language codes to their full names, usable in the lang query parameter.
+// @Produce json
+// @Success 200 {object} langDTO
+// @Failure 500 {object} stringResponse
+// @Router /lang [get]
+// @tags Other
+func (app *appContext) GetLanguages(gc *gin.Context) {
+	resp := langDTO{}
+	for key, lang := range app.storage.lang.Form {
+		fmt.Printf("%+v\n", lang["meta"])
+		resp[key] = lang["meta"].(map[string]interface{})["name"].(string)
+	}
+	if len(resp) == 0 {
+		respond(500, "Couldn't get languages", gc)
+		return
+	}
+	gc.JSON(200, resp)
 }
 
 // func Restart() error {

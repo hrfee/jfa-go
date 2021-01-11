@@ -156,3 +156,5 @@ type settings struct {
 	Order    []string           `json:"order"`
 	Sections map[string]section `json:"sections"`
 }
+
+type langDTO map[string]string

@@ -370,3 +370,8 @@ p.top {
     bottom: 1rem;
     z-index: 16;
 }
+
+.dropdown {
+    padding-bottom: 0.5rem;
+    margin-bottom: -0.5rem;
+}

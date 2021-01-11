@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"log"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -20,8 +21,9 @@ type Storage struct {
 }
 
 type Lang struct {
-	FormPath string
-	Form     map[string]interface{}
+	chosenFormLang string
+	FormPath       string
+	Form           map[string]map[string]interface{}
 }
 
 // timePattern: %Y-%m-%dT%H:%M:%S.%f
@@ -58,33 +60,45 @@ func (st *Storage) storeInvites() error {
 }
 
 func (st *Storage) loadLang() error {
-	if substituteStrings != "" {
-		var file []byte
-		var err error
-		file, err = ioutil.ReadFile(st.lang.FormPath)
-		if err != nil {
-			file = []byte("{}")
-		}
-		// Replace Jellyfin with emby on form
-		file = []byte(strings.ReplaceAll(string(file), "Jellyfin", substituteStrings))
-		err = json.Unmarshal(file, &st.lang.Form)
-		if err != nil {
-			log.Printf("ERROR: Failed to read \"%s\": %s", st.lang.FormPath, err)
-		}
-		return err
-	}
-	err := loadJSON(st.lang.FormPath, &st.lang.Form)
+	formFiles, err := ioutil.ReadDir(st.lang.FormPath)
+	st.lang.Form = map[string]map[string]interface{}{}
 	if err != nil {
 		return err
 	}
-	strings := st.lang.Form["strings"].(map[string]interface{})
-	validationStrings := strings["validationStrings"].(map[string]interface{})
-	vS, err := json.Marshal(validationStrings)
-	if err != nil {
-		return err
+	for _, f := range formFiles {
+		index := strings.TrimSuffix(f.Name(), filepath.Ext(f.Name()))
+		var data map[string]interface{}
+		if substituteStrings != "" {
+			var file []byte
+			var err error
+			file, err = ioutil.ReadFile(filepath.Join(st.lang.FormPath, f.Name()))
+			if err != nil {
+				file = []byte("{}")
+			}
+			// Replace Jellyfin with emby on form
+			file = []byte(strings.ReplaceAll(string(file), "Jellyfin", substituteStrings))
+			err = json.Unmarshal(file, &data)
+			if err != nil {
+				log.Printf("ERROR: Failed to read \"%s\": %s", st.lang.FormPath, err)
+				return err
+			}
+		} else {
+			err := loadJSON(filepath.Join(st.lang.FormPath, f.Name()), &data)
+			if err != nil {
+				return err
+			}
+		}
+
+		strings := data["strings"].(map[string]interface{})
+		validationStrings := strings["validationStrings"].(map[string]interface{})
+		vS, err := json.Marshal(validationStrings)
+		if err != nil {
+			return err
+		}
+		strings["validationStrings"] = string(vS)
+		data["strings"] = strings
+		st.lang.Form[index] = data
 	}
-	strings["validationStrings"] = string(vS)
-	st.lang.Form["strings"] = strings
 	return nil
 }
 
