@@ -1,5 +1,7 @@
-# ![jfa-go](images/banner.svg)
-
+![jfa-go](images/banner.svg)
+[![Build Status](https://drone.hrfee.pw/api/badges/hrfee/jfa-go/status.svg?ref=refs/heads/main)](https://drone.hrfee.pw/hrfee/jfa-go)
+[![Docker Hub](https://img.shields.io/docker/pulls/hrfee/jfa-go?label=docker)](https://hub.docker.com/r/hrfee/jfa-go)
+---
 jfa-go is a user management app for [Jellyfin](https://github.com/jellyfin/jellyfin) (and now [Emby](https://emby.media/)) that provides invite-based account creation as well as other features that make one's instance much easier to manage.
 
 I chose to rewrite the python [jellyfin-accounts](https://github.com/hrfee/jellyfin-accounts) in Go mainly as a learning experience, but also to slightly improve speeds and efficiency.
@@ -22,7 +24,7 @@ I chose to rewrite the python [jellyfin-accounts](https://github.com/hrfee/jelly
     * Specify contact and help messages to appear in emails and pages
     * Light and dark themes available
 
-## Interface
+#### Interface
 <p align="center">
     <img src="images/demo.gif" width="100%"></img>
 </p>
@@ -86,3 +88,6 @@ If you're switching from jellyfin-accounts, copy your existing `~/.jf-accounts` 
 * `~/Library/Application Support/jfa-go` on macOS.
 
 (or specify config/data path  with `-config/-data` respectively.)
+
+#### Contributing
+See [CONTRIBUTING.md](https://github.com/hrfee/jfa-go/blob/main/CONTRIBUTING.md).
