@@ -1,5 +1,6 @@
 import { Modal } from "./modules/modal.js";
 import { _get, _post, toggleLoader } from "./modules/common.js";
+import { loadLangSelector } from "./modules/lang.js";
 
 interface formWindow extends Window {
     validationStrings: pwValStrings;
@@ -22,23 +23,7 @@ interface pwValStrings {
     [ type: string ]: pwValString;
 }
 
-_get("/lang", null, (req: XMLHttpRequest) => {
-    if (req.readyState == 4) {
-        if (req.status != 200) {
-            document.getElementById("lang-dropdown").remove();
-            return;
-        }
-        const list = document.getElementById("lang-list") as HTMLDivElement;
-        let innerHTML = '';
-        for (let code in req.response) {
-            innerHTML += `<a href="?lang=${code}" class="button input ~neutral field mb-half">${req.response[code]}</a>`;
-        }
-        list.innerHTML = innerHTML;
-    }
-});
-
-
-
+loadLangSelector("form");
 
 window.modal = new Modal(document.getElementById("modal-success"));
 declare var window: formWindow;
