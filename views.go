@@ -13,19 +13,27 @@ func gcHTML(gc *gin.Context, code int, file string, templ gin.H) {
 }
 
 func (app *appContext) AdminPage(gc *gin.Context) {
+	lang := gc.Query("lang")
+	if lang == "" {
+		lang = app.storage.lang.chosenFormLang
+	} else if _, ok := app.storage.lang.Form[lang]; !ok {
+		lang = app.storage.lang.chosenFormLang
+	}
 	emailEnabled, _ := app.config.Section("invite_emails").Key("enabled").Bool()
 	notificationsEnabled, _ := app.config.Section("notifications").Key("enabled").Bool()
 	ombiEnabled := app.config.Section("ombi").Key("enabled").MustBool(false)
 	gcHTML(gc, http.StatusOK, "admin.html", gin.H{
-		"urlBase":        app.URLBase,
-		"cssClass":       app.cssClass,
-		"contactMessage": "",
-		"email_enabled":  emailEnabled,
-		"notifications":  notificationsEnabled,
-		"version":        VERSION,
-		"commit":         COMMIT,
-		"ombiEnabled":    ombiEnabled,
-		"username":       !app.config.Section("email").Key("no_username").MustBool(false),
+		"urlBase":         app.URLBase,
+		"cssClass":        app.cssClass,
+		"contactMessage":  "",
+		"email_enabled":   emailEnabled,
+		"notifications":   notificationsEnabled,
+		"version":         VERSION,
+		"commit":          COMMIT,
+		"ombiEnabled":     ombiEnabled,
+		"username":        !app.config.Section("email").Key("no_username").MustBool(false),
+		"strings":         app.storage.lang.Admin[lang]["strings"],
+		"quantityStrings": app.storage.lang.Admin[lang]["quantityStrings"],
 	})
 }
 
