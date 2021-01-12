@@ -9,6 +9,7 @@
             window.emailEnabled = {{ .email_enabled }};
             window.ombiEnabled = {{ .ombiEnabled }};
             window.usernamesEnabled = {{ .username }};
+            window.langFile = JSON.parse({{ .language }});
         </script>
         {{ template "header.html" . }}
         <title>Admin - jfa-go</title>
@@ -264,7 +265,7 @@
             </div>
             <div id="tab-settings" class="unfocused">
                 <div class="card ~neutral !low settings overflow">
-                    <span class="heading">{{ .string.settings }}</span>
+                    <span class="heading">{{ .strings.settings }}</span>
                     <div class="fr">
                         <span class="button ~neutral !normal unfocused" id="settings-save">{{ .strings.settingsSave }}</span>
                     </div>

@@ -100,10 +100,10 @@ class user implements User {
         _post("/users/emails", send, (req: XMLHttpRequest) => {
             if (req.readyState == 4) {
                 if (req.status == 200) {
-                    window.notifications.customPositive("emailChanged", "Success:", `Changed email address of "${this.name}".`);
+                    window.notifications.customSuccess("emailChanged", window.lang.var("notifications", "changedEmailAddress", `"${this.name}"`));
                 } else {
                     this.email = oldEmail;
-                    window.notifications.customError("emailChanged", `Couldn't change email address of "${this.name}".`); 
+                    window.notifications.customError("emailChanged", window.lang.var("notifications", "errorChangedEmailAddress", `"${this.name}"`)); 
                 }
             }
         });
@@ -184,11 +184,9 @@ export class accountsList {
             }
             this._modifySettings.classList.remove("unfocused");
             this._deleteUser.classList.remove("unfocused");
-            (this._checkCount == 1) ? this._deleteUser.textContent = "Delete User" : this._deleteUser.textContent = "Delete Users";
+            this._deleteUser.textContent = window.lang.quantity("deleteUser", this._checkCount);
         }
     }
-
-    private _genCountString = (): string => { return `${this._checkCount} user${(this._checkCount > 1) ? "s" : ""}`; }
     
     private _collectUsers = (): string[] => {
         let list: string[] = [];
@@ -208,7 +206,7 @@ export class accountsList {
         };
         for (let field in send) {
             if (!send[field]) {
-                window.notifications.customError("addUserBlankField", "Fields were left blank.");
+                window.notifications.customError("addUserBlankField", window.lang.notif("errorBlankFields"));
                 return;
             }
         }
@@ -217,7 +215,7 @@ export class accountsList {
             if (req.readyState == 4) {
                 toggleLoader(button);
                 if (req.status == 200) {
-                    window.notifications.customPositive("addUser", "Success:", `user "${send['username']}" created.`);
+                    window.notifications.customSuccess("addUser", window.lang.var("notifications", "userCreated", `"${send['username']}"`));
                 }
                 this.reload();
                 window.modals.addUser.close();
@@ -227,7 +225,7 @@ export class accountsList {
 
     deleteUsers = () => {
         const modalHeader = document.getElementById("header-delete-user");
-        modalHeader.textContent = this._genCountString();
+        modalHeader.textContent = window.lang.quantity("deleteNUsers", this._checkCount);
         let list = this._collectUsers();
         const form = document.getElementById("form-delete-user") as HTMLFormElement;
         const button = form.querySelector("span.submit") as HTMLSpanElement;
@@ -247,13 +245,13 @@ export class accountsList {
                     toggleLoader(button);
                     window.modals.deleteUser.close();
                     if (req.status != 200 && req.status != 204) {
-                        let errorMsg = "Failed (check console/logs).";
+                        let errorMsg = window.lang.notif("errorFailureCheckLogs");
                         if (!("error" in req.response)) {
-                            errorMsg = "Partial failure (check console/logs).";
+                            errorMsg = window.lang.notif("errorPartialFailureCheckLogs");
                         }
                         window.notifications.customError("deleteUserError", errorMsg);
                     } else {
-                        window.notifications.customPositive("deleteUserSuccess", "Success:", `deleted ${this._genCountString()}.`);
+                        window.notifications.customSuccess("deleteUserSuccess", window.lang.quantity("deletedUser", this._checkCount));
                     }
                     this.reload();
                 }
@@ -264,7 +262,7 @@ export class accountsList {
 
     modifyUsers = () => {
         const modalHeader = document.getElementById("header-modify-user");
-        modalHeader.textContent = this._genCountString();
+        modalHeader.textContent = window.lang.quantity("modifySettingsFor", this._checkCount)
         let list = this._collectUsers();
         (() => {
             let innerHTML = "";
@@ -310,18 +308,18 @@ export class accountsList {
                             const homescreen = Object.keys(response["homescreen"]).length;
                             const policy = Object.keys(response["policy"]).length;
                             if (homescreen != 0 && policy == 0) {
-                                errorMsg = "Settings were applied, but applying homescreen layout may have failed.";
+                                errorMsg = window.lang.notif("errorSettingsAppliedNoHomescreenLayout");
                             } else if (policy != 0 && homescreen == 0) {
-                                errorMsg = "Homescreen layout was applied, but applying settings may have failed.";
+                                errorMsg = window.lang.notif("errorHomescreenAppliedNoSettings");
                             } else if (policy != 0 && homescreen != 0) {
-                                errorMsg = "Application failed.";
+                                errorMsg = window.lang.notif("errorSettingsFailed");
                             }
                         } else if ("error" in response) {
                             errorMsg = response["error"];
                         }
                         window.notifications.customError("modifySettingsError", errorMsg);
                     } else if (req.status == 200 || req.status == 204) {
-                        window.notifications.customPositive("modifySettingsSuccess", "Success:", `applied settings to ${this._genCountString()}.`);
+                        window.notifications.customSuccess("modifySettingsSuccess", window.lang.quantity("appliedSettings", this._checkCount));
                     }
                     this.reload();
                     window.modals.modifyUser.close();
@@ -330,8 +328,6 @@ export class accountsList {
         };
         window.modals.modifyUser.show();
     }
-
-
 
     constructor() {
         this._users = {};

@@ -34,6 +34,7 @@ func (app *appContext) AdminPage(gc *gin.Context) {
 		"username":        !app.config.Section("email").Key("no_username").MustBool(false),
 		"strings":         app.storage.lang.Admin[lang]["strings"],
 		"quantityStrings": app.storage.lang.Admin[lang]["quantityStrings"],
+		"language":        app.storage.lang.AdminJSON[lang],
 	})
 }
 

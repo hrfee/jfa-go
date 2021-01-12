@@ -21,6 +21,7 @@
         "delete": "Delete",
         "submit": "Submit",
         "name": "Name",
+        "date": "Date",
         "username": "Username",
         "password": "Password",
         "emailAddress": "Email Address",
@@ -32,6 +33,9 @@
         "commitNoun": "Commit",
         "newUser": "New User",
         "profile": "Profile",
+        "success": "Success",
+        "error": "Error",
+        "unknown": "Unknown",
         "modifySettings": "Modify Settings",
         "modifySettingsDescription": "Apply settings from an existing profile, or source them directly from a user.",
         "applyHomescreenLayout": "Apply homescreen layout",
@@ -43,7 +47,7 @@
         "settingsApplyRestartNow": "Apply & restart",
         "settingsApplied": "Settings applied.",
         "settingsRefreshPage": "Refresh the page in a few seconds",
-        "settingsRequiredOrRestartMessage": "Note: {*} indicates a required field, {R} indicates changes require a restart.",
+        "settingsRequiredOrRestartMessage": "Note: {n} indicates a required field, {n} indicates changes require a restart.",
         "settingsSave": "Save",
         "ombiUserDefaults": "Ombi user defaults",
         "ombiUserDefaultsDescription": "Create an Ombi user and configure it, then select it below. It's settings/permissions will be stored and applied to new Ombi users created by jfa-go",
@@ -54,11 +58,49 @@
         "addProfile": "Add Profile",
         "addProfileDescription": "Create a Jellyfin user and configure it, then select it below. When this profile is applied to an invite, new users will be created with the settings.",
         "addProfileNameOf": "Profile Name",
-        "addProfileStoreHomescreenLayout": "Store homescreen layout"
+        "addProfileStoreHomescreenLayout": "Store homescreen layout",
+        
+        "inviteNoUsersCreated": "None yet!",
+        "inviteUsersCreated": "Created users",
+        "inviteNoProfile": "No Profile",
+        "copy": "Copy",
+        "inviteDateCreated": "Created",
+        "inviteRemainingUses": "Remaining uses",
+        "inviteNoInvites": "None",
+        "inviteExpiresInTime": "Expires in {n}",
+
+        "notifyEvent": "Notify on:",
+        "notifyInviteExpiry": "On expiry",
+        "notifyUserCreation": "On user creation"
     },
-    "variableStrings": {
-        "settingsRequiredOrRestartMessage": "Note: {*} indicates a required field, {R} indicates changes require a restart."
+    "notifications": {
+        "changedEmailAddress": "Changed email address of {n}.",
+        "userCreated": "User {n} created.",
+        "createProfile": "Created profile {n}.",
+        "saveSettings": "Settings were saved",
+        "setOmbiDefaults": "Stored ombi defaults.",
+        "errorConnection": "Couldn't connect to jfa-go.",
+        "error401Unauthorized": "Unauthorized. Try refreshing the page.",
+        "errorSettingsAppliedNoHomescreenLayout": "Settings were applied, but applying homescreen layout may have failed.",
+        "errorHomescreenAppliedNoSettings": "Homescreen layout was applied, but applying settings may have failed.",
+        "errorSettingsFailed": "Application failed.",
+        "errorLoginBlank": "The username and/or password were left blank.",
+        "errorUnknown": "Unknown error.",
+        "errorBlankFields": "Fields were left blank",
+        "errorDeleteProfile": "Failed to delete profile {n}",
+        "errorLoadProfiles": "Failed to load profiles.",
+        "errorCreateProfile": "Failed to create profile {n}",
+        "errorSetDefaultProfile": "Failed to set default profile.",
+        "errorLoadUsers": "Failed to load users.",
+        "errorSaveSettings": "Couldn't save settings.",
+        "errorLoadSettings": "Failed to load settings.",
+        "errorSetOmbiDefaults": "Failed to store ombi defaults.",
+        "errorLoadOmbiUsers": "Failed to load ombi users.",
+        "errorChangedEmailAddress": "Couldn't change email address of {n}.",
+        "errorFailureCheckLogs": "Failed (check console/logs)",
+        "errorPartialFailureCheckLogs": "Partial failure (check console/logs)"
     },
+
     "quantityStrings": {
         "modifySettingsFor": {
             "singular": "Modify Settings for {n} user",
@@ -75,6 +117,14 @@
         "deleteUser": {
             "singular": "Delete User",
             "plural": "Delete Users"
+        },
+        "deletedUser": {
+            "singular": "Deleted {n} user.",
+            "plural": "Deleted {n} users."
+        },
+        "appliedSettings": {
+            "singular": "Applied settings to {n} user.",
+            "plural": "Applied settings to {n} users."
         }
     }
 }

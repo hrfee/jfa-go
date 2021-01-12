@@ -27,12 +27,24 @@ declare interface Window {
     tabs: Tabs;
     invites: inviteList;
     notifications: NotificationBox;
+    language: string;
+    lang: Lang;
+    langFile: {};
+}
+
+declare interface Lang {
+    get: (sect: string, key: string) => string;
+    strings: (key: string) => string;
+    notif: (key: string) => string;
+    var: (sect: string, key: string, ...subs: string[]) => string;
+    quantity: (key: string, number: number) => string;
 }
 
 declare interface NotificationBox {
     connectionError: () => void;
     customError: (type: string, message: string) => void;
     customPositive: (type: string, bold: string,  message: string) => void;
+    customSuccess: (type: string, message: string) => void;
 }
 
 declare interface Tabs {
