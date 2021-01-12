@@ -92,7 +92,7 @@ export class DOMInvite implements Invite {
         this._usedBy = uB;
         if (uB.length == 0) {
             this._right.classList.add("empty");
-            this._userTable.innerHTML = `<p class="content">None yet!</p>`;
+            this._userTable.innerHTML = `<p class="content">${window.lang.strings("inviteNoUsersCreated")}</p>`;
             return;
         }
         this._right.classList.remove("empty");
@@ -100,8 +100,8 @@ export class DOMInvite implements Invite {
         <table class="table inv-table">
             <thead>
                 <tr>
-                    <th>Name</th>
-                    <th>Date</th>
+                    <th>${window.lang.strings("name")}</th>
+                    <th>${window.lang.strings("date")}</th>
                 </tr>
             </thead>
             <tbody>
@@ -153,7 +153,7 @@ export class DOMInvite implements Invite {
         } else {
             selected = selected || select.value;
         }
-        let innerHTML = `<option value="noProfile" ${noProfile ? "selected" : ""}>No Profile</option>`;
+        let innerHTML = `<option value="noProfile" ${noProfile ? "selected" : ""}>${window.lang.strings("inviteNoProfile")}</option>`;
         for (let profile of window.availableProfiles) {
             innerHTML += `<option value="${profile}" ${((profile == selected) && !noProfile) ? "selected" : ""}>${profile}</option>`;
         }
@@ -221,7 +221,7 @@ export class DOMInvite implements Invite {
         this._codeArea.classList.add("inv-codearea");
         this._codeArea.innerHTML = `
         <a class="invite-link code monospace mr-1" href=""></a>
-        <span class="button ~info !normal" title="Copy invite link"><i class="ri-file-copy-line"></i></span>
+        <span class="button ~info !normal" title="${window.lang.strings("copy")}"><i class="ri-file-copy-line"></i></span>
         `;
         const copyButton = this._codeArea.querySelector("span.button") as HTMLSpanElement;
         copyButton.onclick = () => { 
@@ -248,7 +248,7 @@ export class DOMInvite implements Invite {
             <span class="content sm"></span>
         </div>
         <span class="inv-expiry mr-1"></span>
-        <span class="button ~critical !normal inv-delete">Delete</span>
+        <span class="button ~critical !normal inv-delete">${window.lang.strings("delete")}</span>
         <label>
             <i class="icon clickable ri-arrow-down-s-line not-rotated"></i>
             <input class="inv-toggle-details unfocused" type="checkbox">
@@ -271,23 +271,23 @@ export class DOMInvite implements Invite {
         detailsInner.appendChild(this._left);
         this._left.classList.add("inv-profilearea");
         let innerHTML = `
-        <p class="supra mb-1 top">Profile</p>
+        <p class="supra mb-1 top">${window.lang.strings("profile")}</p>
         <div class="select ~neutral !normal inv-profileselect inline-block">
             <select>
-                <option value="noProfile" selected>No Profile</option>
+                <option value="noProfile" selected>${window.lang.strings("inviteNoProfile")}</option>
             </select>
         </div>
         `;
         if (window.notificationsEnabled) {
             innerHTML += `
-            <p class="label supra">Notify on:</p>
+            <p class="label supra">${window.lang.strings("notifyEvent")}</p>
             <label class="switch block">
                 <input class="inv-notify-expiry" type="checkbox">
-                <span>On expiry</span>
+                <span>${window.lang.strings("notifyInviteExpiry")}</span>
             </label>
             <label class="switch block">
                 <input class="inv-notify-creation" type="checkbox">
-                <span>On user creation</span>
+                <span>${window.lang.strings("notifyUserCreation")}</span>
             </label>
             `;
         }
@@ -306,14 +306,14 @@ export class DOMInvite implements Invite {
         detailsInner.appendChild(this._middle);
         this._middle.classList.add("block");
         this._middle.innerHTML = `
-        <p class="supra mb-1 top">Created <strong class="inv-created"></strong></p>
-        <p class="supra mb-1">Remaining uses <strong class="inv-remaining"></strong></p>
+        <p class="supra mb-1 top">${window.lang.strings("inviteDateCreated")} <strong class="inv-created"></strong></p>
+        <p class="supra mb-1">${window.lang.strings("inviteRemainingUses")} <strong class="inv-remaining"></strong></p>
         `;
 
         this._right = document.createElement('div') as HTMLDivElement;
         detailsInner.appendChild(this._right);
         this._right.classList.add("card", "~neutral", "!low", "inv-created-users");
-        this._right.innerHTML = `<strong class="supra table-header">Created users</strong>`;
+        this._right.innerHTML = `<strong class="supra table-header">${window.lang.strings("inviteUsersCreated")}</strong>`;
         this._userTable = document.createElement('div') as HTMLDivElement;
         this._right.appendChild(this._userTable);
 
@@ -376,7 +376,7 @@ export class inviteList implements inviteList {
             <div class="inv inv-empty">
                 <div class="card ~neutral !normal inv-header flex-expand mt-half">
                     <div class="inv-codearea">
-                        <span class="code monospace">None</span>
+                        <span class="code monospace">${window.lang.strings("inviteNoInvites")}</span>
                     </div>
                 </div>
             </div>
@@ -441,10 +441,10 @@ function parseInvite(invite: { [f: string]: string | number | string[][] | boole
             time += `${invite[fields[i]]}${fields[i][0]} `;
         }
     }
-    parsed.expiresIn = `Expires in ${time.slice(0, -1)}`;
+    parsed.expiresIn = window.lang.var("strings", "inviteExpiresInTime", time.slice(0, -1));
     parsed.remainingUses = invite["no-limit"] ? "∞" : String(invite["remaining-uses"])
     parsed.usedBy = invite["used-by"] as string[][] || [];
-    parsed.created = invite["created"] as string || "Unknown";
+    parsed.created = invite["created"] as string || window.lang.strings("unknown");
     parsed.profile = invite["profile"] as string || "";
     parsed.notifyExpiry = invite["notify-expiry"] as boolean || false;
     parsed.notifyCreation = invite["notify-creation"] as boolean || false;
@@ -566,7 +566,7 @@ export class createInvite {
     }
 
     loadProfiles = () => {
-        let innerHTML = `<option value="noProfile">No Profile</option>`;
+        let innerHTML = `<option value="noProfile">${window.lang.strings("inviteNoProfile")}</option>`;
         for (let profile of window.availableProfiles) {
             innerHTML += `<option value="${profile}">${profile}</option>`;
         }

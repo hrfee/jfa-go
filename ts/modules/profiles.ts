@@ -44,7 +44,7 @@ class profile implements Profile {
             <td><input type="radio" name="profile-default"></td>
             <td class="profile-from ellipsis"></td>
             <td class="profile-libraries"></td>
-            <td><span class="button ~critical !normal">Delete</span></td>
+            <td><span class="button ~critical !normal">${window.lang.strings("delete")}</span></td>
         `;
         this._name = this._row.querySelector("b.profile-name");
         this._adminChip = this._row.querySelector("span.profile-admin") as HTMLSpanElement;
@@ -71,7 +71,7 @@ class profile implements Profile {
             if (req.status == 200 || req.status == 204) {
                 this.remove();
             } else {
-                window.notifications.customError("profileDelete", `Failed to delete profile "${this.name}"`);
+                window.notifications.customError("profileDelete", window.lang.var("notifications", "errorDeleteProfile", `"${this.name}"`));
             }
         }
     })
@@ -98,7 +98,7 @@ export class ProfileEditor {
     get empty(): boolean { return (Object.keys(this._table.children).length == 0) }
     set empty(state: boolean) {
         if (state) {
-            this._table.innerHTML = `<tr><td class="empty">None</td></tr>`
+            this._table.innerHTML = `<tr><td class="empty">${window.lang.strings("inviteNoInvites")}</td></tr>`
         } else if (this._table.querySelector("td.empty")) {
             this._table.textContent = ``;
         }
@@ -133,7 +133,7 @@ export class ProfileEditor {
                 this.default = resp.default_profile;
                 window.modals.profiles.show();
             } else {
-                window.notifications.customError("profileEditor", "Failed to load profiles.");
+                window.notifications.customError("profileEditor", window.lang.notif("errorLoadProfiles"));
             }
         }
     })
@@ -149,7 +149,7 @@ export class ProfileEditor {
                         this.default = newDefault;
                     } else {
                         this.default = prevDefault;
-                        window.notifications.customError("profileDefault", "Failed to set default profile.");
+                        window.notifications.customError("profileDefault", window.lang.notif("errorSetDefaultProfile"));
                     }
                 }
             });
@@ -171,7 +171,7 @@ export class ProfileEditor {
                     window.modals.profiles.close();
                     window.modals.addProfile.show();
                 } else {
-                    window.notifications.customError("loadUsers", "Failed to load users.");
+                    window.notifications.customError("loadUsers", window.lang.notif("errorLoadUsers"));
                 }
             }
         });
@@ -191,9 +191,9 @@ export class ProfileEditor {
                     window.modals.addProfile.close();
                     if (req.status == 200 || req.status == 204) {
                         this.load();
-                        window.notifications.customPositive("createProfile", "Success:", `created profile "${send['name']}"`);
+                        window.notifications.customSuccess("createProfile", window.lang.var("notifications", "createProfile", `"${send['name']}"`));
                     } else {
-                        window.notifications.customError("createProfile", `Failed to create profile "${send['name']}"`);
+                        window.notifications.customError("createProfile", window.lang.var("notifications", "errorCreateProfile", `"${send['name']}"`));
                     }
                     window.modals.profiles.show();
                 }

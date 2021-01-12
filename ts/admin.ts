@@ -1,14 +1,25 @@
 import { toggleTheme, loadTheme } from "./modules/theme.js";
+import { lang, LangFile } from "./modules/lang.js";
 import { Modal } from "./modules/modal.js";
 import { Tabs } from "./modules/tabs.js";
 import { inviteList, createInvite } from "./modules/invites.js";
 import { accountsList } from "./modules/accounts.js";
 import { settingsList } from "./modules/settings.js";
 import { ProfileEditor } from "./modules/profiles.js";
-import { _post, notificationBox, whichAnimationEvent, toggleLoader } from "./modules/common.js";
+import { _get, _post, notificationBox, whichAnimationEvent, toggleLoader } from "./modules/common.js";
 
 loadTheme();
 (document.getElementById('button-theme') as HTMLSpanElement).onclick = toggleTheme;
+
+var langLoaded = false;
+
+window.lang = new lang(window.langFile as LangFile);
+// _get(`/lang/admin/${window.language}.json`, null, (req: XMLHttpRequest) => {
+//     if (req.readyState == 4 && req.status == 200) {
+//         langLoaded = true;
+//         window.lang = new lang(req.response as LangFile); 
+//     }
+// });
 
 window.animationEvent = whichAnimationEvent();
 
@@ -110,12 +121,12 @@ function login(username: string, password: string, run?: (state?: number) => voi
     req.onreadystatechange = function (): void {
         if (this.readyState == 4) {
             if (this.status != 200) {
-                let errorMsg = "Connection error.";
+                let errorMsg = window.lang.notif("errorConnection");
                 if (this.response) {
                     errorMsg = this.response["error"];
                 }
                 if (!errorMsg) {
-                    errorMsg = "Unknown error";
+                    errorMsg = window.lang.notif("errorUnknown");
                 }
                 if (!refresh) {
                     window.notifications.customError("loginError", errorMsg);
@@ -153,7 +164,7 @@ function login(username: string, password: string, run?: (state?: number) => voi
     const username = (document.getElementById("login-user") as HTMLInputElement).value;
     const password = (document.getElementById("login-password") as HTMLInputElement).value;
     if (!username || !password) {
-        window.notifications.customError("loginError", "The username and/or password were left blank.");
+        window.notifications.customError("loginError", window.lang.notif("errorLoginBlank"));
         return;
     }
     toggleLoader(button);

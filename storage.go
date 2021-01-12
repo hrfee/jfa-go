@@ -25,6 +25,7 @@ type Lang struct {
 	chosenAdminLang string
 	AdminPath       string
 	Admin           map[string]map[string]interface{}
+	AdminJSON       map[string]string
 	FormPath        string
 	Form            map[string]map[string]interface{}
 }
@@ -63,40 +64,45 @@ func (st *Storage) storeInvites() error {
 }
 
 func (st *Storage) loadLang() error {
-	loadData := func(path string) (map[string]map[string]interface{}, error) {
+	loadData := func(path string, stringJson bool) (map[string]string, map[string]map[string]interface{}, error) {
 		files, err := ioutil.ReadDir(path)
+		outString := map[string]string{}
 		out := map[string]map[string]interface{}{}
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		for _, f := range files {
 			index := strings.TrimSuffix(f.Name(), filepath.Ext(f.Name()))
 			var data map[string]interface{}
+			var file []byte
+			var err error
+			file, err = ioutil.ReadFile(filepath.Join(path, f.Name()))
+			if err != nil {
+				file = []byte("{}")
+			}
+			// Replace Jellyfin with emby on form
 			if substituteStrings != "" {
-				var file []byte
-				var err error
-				file, err = ioutil.ReadFile(filepath.Join(path, f.Name()))
+				fileString := strings.ReplaceAll(string(file), "Jellyfin", substituteStrings)
+				file = []byte(fileString)
+			}
+			err = json.Unmarshal(file, &data)
+			if err != nil {
+				log.Printf("ERROR: Failed to read \"%s\": %s", path, err)
+				return nil, nil, err
+			}
+			if stringJson {
+				stringJSON, err := json.Marshal(data)
 				if err != nil {
-					file = []byte("{}")
+					return nil, nil, err
 				}
-				// Replace Jellyfin with emby on form
-				file = []byte(strings.ReplaceAll(string(file), "Jellyfin", substituteStrings))
-				err = json.Unmarshal(file, &data)
-				if err != nil {
-					log.Printf("ERROR: Failed to read \"%s\": %s", path, err)
-					return nil, err
-				}
-			} else {
-				err := loadJSON(filepath.Join(path, f.Name()), &data)
-				if err != nil {
-					return nil, err
-				}
+				outString[index] = string(stringJSON)
 			}
 			out[index] = data
+
 		}
-		return out, nil
+		return outString, out, nil
 	}
-	form, err := loadData(st.lang.FormPath)
+	_, form, err := loadData(st.lang.FormPath, false)
 	if err != nil {
 		return err
 	}
@@ -112,8 +118,9 @@ func (st *Storage) loadLang() error {
 		form[index] = lang
 	}
 	st.lang.Form = form
-	admin, err := loadData(st.lang.AdminPath)
+	adminJSON, admin, err := loadData(st.lang.AdminPath, true)
 	st.lang.Admin = admin
+	st.lang.AdminJSON = adminJSON
 	return err
 }
 
