@@ -84,8 +84,15 @@ func (app *appContext) loadConfig() error {
 
 	substituteStrings = app.config.Section("jellyfin").Key("substitute_jellyfin_strings").MustString("")
 
-	app.storage.lang.chosenFormLang = app.config.Section("ui").Key("language").MustString("en-us")
-	app.storage.lang.chosenFormLang = app.config.Section("ui").Key("language").MustString("en-us")
+	oldFormLang := app.config.Section("ui").Key("language").MustString("")
+	if oldFormLang != "" {
+		app.storage.lang.chosenFormLang = oldFormLang
+	}
+	newFormLang := app.config.Section("ui").Key("language-form").MustString("")
+	if newFormLang != "" {
+		app.storage.lang.chosenFormLang = newFormLang
+	}
+	app.storage.lang.chosenAdminLang = app.config.Section("ui").Key("language-admin").MustString("en-us")
 
 	return nil
 }

@@ -1085,17 +1085,25 @@ func (app *appContext) GetConfig(gc *gin.Context) {
 	app.info.Println("Config requested")
 	resp := app.configBase
 	// Load language options
-	langOptions := make([]string, len(app.storage.lang.Form))
-	chosenLang := app.config.Section("ui").Key("language").MustString("en-us")
-	chosenLangName := app.storage.lang.Form[chosenLang]["meta"].(map[string]interface{})["name"].(string)
-	i := 0
-	for _, lang := range app.storage.lang.Form {
-		langOptions[i] = lang["meta"].(map[string]interface{})["name"].(string)
-		i++
+	loadLangs := func(langs *map[string]map[string]interface{}, settingsKey string) (string, []string) {
+		langOptions := make([]string, len(*langs))
+		chosenLang := app.config.Section("ui").Key("language-" + settingsKey).MustString("en-us")
+		chosenLangName := (*langs)[chosenLang]["meta"].(map[string]interface{})["name"].(string)
+		i := 0
+		for _, lang := range *langs {
+			langOptions[i] = lang["meta"].(map[string]interface{})["name"].(string)
+			i++
+		}
+		return chosenLangName, langOptions
 	}
-	l := resp.Sections["ui"].Settings["language"]
-	l.Options = langOptions
-	l.Value = chosenLangName
+	formChosen, formOptions := loadLangs(&app.storage.lang.Form, "form")
+	fl := resp.Sections["ui"].Settings["language-form"]
+	fl.Options = formOptions
+	fl.Value = formChosen
+	adminChosen, adminOptions := loadLangs(&app.storage.lang.Admin, "admin")
+	al := resp.Sections["ui"].Settings["language-admin"]
+	al.Options = adminOptions
+	al.Value = adminChosen
 	for sectName, section := range resp.Sections {
 		for settingName, setting := range section.Settings {
 			val := app.config.Section(sectName).Key(settingName)
@@ -1111,11 +1119,12 @@ func (app *appContext) GetConfig(gc *gin.Context) {
 			resp.Sections[sectName].Settings[settingName] = s
 		}
 	}
-	resp.Sections["ui"].Settings["language"] = l
+	resp.Sections["ui"].Settings["language-form"] = fl
+	resp.Sections["ui"].Settings["language-admin"] = al
 
 	t := resp.Sections["jellyfin"].Settings["type"]
 	opts := make([]string, len(serverTypes))
-	i = 0
+	i := 0
 	for _, v := range serverTypes {
 		opts[i] = v
 		i++
@@ -1146,10 +1155,17 @@ func (app *appContext) ModifyConfig(gc *gin.Context) {
 				tempConfig.NewSection(section)
 			}
 			for setting, value := range settings.(map[string]interface{}) {
-				if section == "ui" && setting == "language" {
+				if section == "ui" && setting == "language-form" {
 					for key, lang := range app.storage.lang.Form {
 						if lang["meta"].(map[string]interface{})["name"].(string) == value.(string) {
-							tempConfig.Section("ui").Key("language").SetValue(key)
+							tempConfig.Section("ui").Key("language-form").SetValue(key)
+							break
+						}
+					}
+				} else if section == "ui" && setting == "language-admin" {
+					for key, lang := range app.storage.lang.Admin {
+						if lang["meta"].(map[string]interface{})["name"].(string) == value.(string) {
+							tempConfig.Section("ui").Key("language-admin").SetValue(key)
 							break
 						}
 					}

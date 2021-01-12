@@ -15,9 +15,9 @@ func gcHTML(gc *gin.Context, code int, file string, templ gin.H) {
 func (app *appContext) AdminPage(gc *gin.Context) {
 	lang := gc.Query("lang")
 	if lang == "" {
-		lang = app.storage.lang.chosenFormLang
+		lang = app.storage.lang.chosenAdminLang
 	} else if _, ok := app.storage.lang.Form[lang]; !ok {
-		lang = app.storage.lang.chosenFormLang
+		lang = app.storage.lang.chosenAdminLang
 	}
 	emailEnabled, _ := app.config.Section("invite_emails").Key("enabled").Bool()
 	notificationsEnabled, _ := app.config.Section("notifications").Key("enabled").Bool()
