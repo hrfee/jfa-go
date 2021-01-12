@@ -1,3 +1,5 @@
+import { _get } from "../modules/common.js";
+
 interface Meta {
     name: string;
 }
@@ -45,7 +47,20 @@ export class lang implements Lang {
     }
 }
 
-
+export const loadLangSelector = (page: string) => _get("/lang/" + page, null, (req: XMLHttpRequest) => {
+    if (req.readyState == 4) {
+        if (req.status != 200) {
+            document.getElementById("lang-dropdown").remove();
+            return;
+        }
+        const list = document.getElementById("lang-list") as HTMLDivElement;
+        let innerHTML = '';
+        for (let code in req.response) {
+            innerHTML += `<a href="?lang=${code}" class="button input ~neutral field mb-half">${req.response[code]}</a>`;
+        }
+        list.innerHTML = innerHTML;
+    }
+});
 
 
 
