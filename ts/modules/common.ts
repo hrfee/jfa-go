@@ -60,7 +60,7 @@ export const _get = (url: string, data: Object, onreadystatechange: (req: XMLHtt
             window.notifications.connectionError();
             return;
         } else if (req.status == 401) {
-            window.notifications.customError("401Error", "Unauthorized. Try logging back in.");
+            window.notifications.customError("401Error", window.lang.notif("error401Unauthorized"));
         }
         onreadystatechange(req);
     };
@@ -80,7 +80,7 @@ export const _post = (url: string, data: Object, onreadystatechange: (req: XMLHt
             window.notifications.connectionError();
             return;
         } else if (req.status == 401) {
-            window.notifications.customError("401Error", "Unauthorized. Try logging back in.");
+            window.notifications.customError("401Error", window.lang.notif("error401Unauthorized"));
         }
         onreadystatechange(req);
     };
@@ -97,7 +97,7 @@ export function _delete(url: string, data: Object, onreadystatechange: (req: XML
             window.notifications.connectionError();
             return;
         } else if (req.status == 401) {
-            window.notifications.customError("401Error", "Unauthorized. Try logging back in.");
+            window.notifications.customError("401Error", window.lang.notif("error401Unauthorized"));
         }
         onreadystatechange(req);
     };
@@ -131,7 +131,7 @@ export class notificationBox implements NotificationBox {
     private _error = (message: string): HTMLElement => {
         const noti = document.createElement('aside');
         noti.classList.add("aside", "~critical", "!normal", "mt-half", "notification-error");
-        noti.innerHTML = `<strong>Error:</strong> ${message}`;
+        noti.innerHTML = `<strong>${window.lang.strings("error")}:</strong> ${message}`;
         const closeButton = document.createElement('span') as HTMLSpanElement;
         closeButton.classList.add("button", "~critical", "!low", "ml-1");
         closeButton.innerHTML = `<i class="icon ri-close-line"></i>`;
@@ -152,7 +152,7 @@ export class notificationBox implements NotificationBox {
         return noti;
     }
     
-    connectionError = () => { this.customError("connectionError", "Couldn't connect to jfa-go."); }
+    connectionError = () => { this.customError("connectionError", window.lang.notif("errorConnection")); }
 
     customError = (type: string, message: string) => {
         this._errorTypes[type] = this._errorTypes[type] || false;
@@ -179,6 +179,8 @@ export class notificationBox implements NotificationBox {
         this._positiveTypes[type] = true;
         setTimeout(() => { if (this._box.contains(noti)) { this._box.removeChild(noti); this._positiveTypes[type] = false; } }, this.timeout*1000);
     }
+
+    customSuccess = (type: string, message: string) => this.customPositive(type, window.lang.strings("success") + ":", message)
 }
 
 export const whichAnimationEvent = () => {

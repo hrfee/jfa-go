@@ -345,6 +345,17 @@ class DOMSelect implements SSelect {
             if (this.requires_restart) { document.dispatchEvent(new CustomEvent("settings-requires-restart")); }
         };
         this._select.onchange = onValueChange;
+
+        const message = document.getElementById("settings-message") as HTMLElement;
+        message.innerHTML = window.lang.var("strings",
+                                            "settingsRequiredOrRestartMessage",
+                                            `<span class="badge ~critical">*</span>`,
+                                            `<span class="badge ~info">R</span>`
+        );
+
+
+                                            
+
         this.update(setting);
     }
     update = (s: SSelect) => {
@@ -501,9 +512,9 @@ export class settingsList {
     private _send = (config: Object, run?: () => void) => _post("/config", config, (req: XMLHttpRequest) => {
         if (req.readyState == 4) {
             if (req.status == 200 || req.status == 204) {
-                window.notifications.customPositive("settingsSaved", "Success:", "settings were saved.");
+                window.notifications.customSuccess("settingsSaved", window.lang.notif("saveSettings"));
             } else {
-                window.notifications.customError("settingsSaved", "Couldn't save settings.");
+                window.notifications.customError("settingsSaved", window.lang.notif("errorSaveSettings"));
             }
             this.reload();
             if (run) { run(); }
@@ -526,7 +537,7 @@ export class settingsList {
     reload = () => _get("/config", null, (req: XMLHttpRequest) => {
         if (req.readyState == 4) {
             if (req.status != 200) {
-                window.notifications.customError("settingsLoadError", "Failed to load settings.");
+                window.notifications.customError("settingsLoadError", window.lang.notif("errorLoadSettings"));
                 return;
             }
             let settings = req.response as Settings;
@@ -558,7 +569,7 @@ class ombiDefaults {
     constructor() {
         this._button = document.createElement("span") as HTMLSpanElement;
         this._button.classList.add("button", "~neutral", "!low", "settings-section-button", "mb-half");
-        this._button.innerHTML = `<span class="flex">Ombi user defaults <i class="ri-link-unlink-m ml-half"></i></span>`;
+        this._button.innerHTML = `<span class="flex">${window.lang.strings("ombiUserDefaults")} <i class="ri-link-unlink-m ml-half"></i></span>`;
         this._button.onclick = this.load;
         this._form = document.getElementById("form-ombi-defaults") as HTMLFormElement;
         this._form.onsubmit = this.send;
@@ -575,9 +586,9 @@ class ombiDefaults {
             if (req.readyState == 4) {
                 toggleLoader(button);
                 if (req.status == 200 || req.status == 204) {
-                    window.notifications.customPositive("ombiDefaults", "Success:", "stored ombi defaults.");
+                    window.notifications.customSuccess("ombiDefaults", window.lang.notif("setOmbiDefaults"));
                 } else {
-                    window.notifications.customError("ombiDefaults", "Failed to store ombi defaults.");
+                    window.notifications.customError("ombiDefaults", window.lang.notif("errorSetOmbiDefaults"));
                 }
                 window.modals.ombiDefaults.close();
             }
@@ -600,15 +611,9 @@ class ombiDefaults {
                     window.modals.ombiDefaults.show();
                 } else {
                     toggleLoader(this._button);
-                    window.notifications.customError("ombiLoadError", "Failed to load ombi users.")
+                    window.notifications.customError("ombiLoadError", window.lang.notif("errorLoadOmbiUsers"))
                 }
             }
         });
     }
 }
-
-
-
-
-
-
