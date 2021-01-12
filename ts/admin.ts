@@ -1,5 +1,5 @@
 import { toggleTheme, loadTheme } from "./modules/theme.js";
-import { lang, LangFile } from "./modules/lang.js";
+import { lang, LangFile, loadLangSelector } from "./modules/lang.js";
 import { Modal } from "./modules/modal.js";
 import { Tabs } from "./modules/tabs.js";
 import { inviteList, createInvite } from "./modules/invites.js";
@@ -11,9 +11,8 @@ import { _get, _post, notificationBox, whichAnimationEvent, toggleLoader } from 
 loadTheme();
 (document.getElementById('button-theme') as HTMLSpanElement).onclick = toggleTheme;
 
-var langLoaded = false;
-
 window.lang = new lang(window.langFile as LangFile);
+loadLangSelector("admin");
 // _get(`/lang/admin/${window.language}.json`, null, (req: XMLHttpRequest) => {
 //     if (req.readyState == 4 && req.status == 200) {
 //         langLoaded = true;

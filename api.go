@@ -1237,9 +1237,16 @@ func (app *appContext) Logout(gc *gin.Context) {
 // @Router /lang [get]
 // @tags Other
 func (app *appContext) GetLanguages(gc *gin.Context) {
+	page := gc.Param("page")
 	resp := langDTO{}
-	for key, lang := range app.storage.lang.Form {
-		resp[key] = lang["meta"].(map[string]interface{})["name"].(string)
+	if page == "form" {
+		for key, lang := range app.storage.lang.Form {
+			resp[key] = lang["meta"].(map[string]interface{})["name"].(string)
+		}
+	} else if page == "admin" {
+		for key, lang := range app.storage.lang.Admin {
+			resp[key] = lang["meta"].(map[string]interface{})["name"].(string)
+		}
 	}
 	if len(resp) == 0 {
 		respond(500, "Couldn't get languages", gc)

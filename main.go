@@ -577,7 +577,7 @@ func start(asDaemon, firstCall bool) {
 		router.GET("/accounts", app.AdminPage)
 		router.GET("/settings", app.AdminPage)
 
-		router.GET("/lang", app.GetLanguages)
+		router.GET("/lang/:page", app.GetLanguages)
 		router.GET("/token/login", app.getTokenLogin)
 		router.GET("/token/refresh", app.getTokenRefresh)
 		router.POST("/newUser", app.NewUser)
