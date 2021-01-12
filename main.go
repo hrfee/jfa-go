@@ -514,6 +514,7 @@ func start(asDaemon, firstCall bool) {
 			}
 		}
 		app.storage.lang.FormPath = filepath.Join(app.localPath, "lang", "form")
+		app.storage.lang.AdminPath = filepath.Join(app.localPath, "lang", "admin")
 		err = app.storage.loadLang()
 		if err != nil {
 			app.info.Fatalf("Failed to load language files: %+v\n", err)

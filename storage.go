@@ -21,9 +21,12 @@ type Storage struct {
 }
 
 type Lang struct {
-	chosenFormLang string
-	FormPath       string
-	Form           map[string]map[string]interface{}
+	chosenFormLang  string
+	chosenAdminLang string
+	AdminPath       string
+	Admin           map[string]map[string]interface{}
+	FormPath        string
+	Form            map[string]map[string]interface{}
 }
 
 // timePattern: %Y-%m-%dT%H:%M:%S.%f
@@ -60,46 +63,58 @@ func (st *Storage) storeInvites() error {
 }
 
 func (st *Storage) loadLang() error {
-	formFiles, err := ioutil.ReadDir(st.lang.FormPath)
-	st.lang.Form = map[string]map[string]interface{}{}
+	loadData := func(path string) (map[string]map[string]interface{}, error) {
+		files, err := ioutil.ReadDir(path)
+		out := map[string]map[string]interface{}{}
+		if err != nil {
+			return nil, err
+		}
+		for _, f := range files {
+			index := strings.TrimSuffix(f.Name(), filepath.Ext(f.Name()))
+			var data map[string]interface{}
+			if substituteStrings != "" {
+				var file []byte
+				var err error
+				file, err = ioutil.ReadFile(filepath.Join(path, f.Name()))
+				if err != nil {
+					file = []byte("{}")
+				}
+				// Replace Jellyfin with emby on form
+				file = []byte(strings.ReplaceAll(string(file), "Jellyfin", substituteStrings))
+				err = json.Unmarshal(file, &data)
+				if err != nil {
+					log.Printf("ERROR: Failed to read \"%s\": %s", path, err)
+					return nil, err
+				}
+			} else {
+				err := loadJSON(filepath.Join(path, f.Name()), &data)
+				if err != nil {
+					return nil, err
+				}
+			}
+			out[index] = data
+		}
+		return out, nil
+	}
+	form, err := loadData(st.lang.FormPath)
 	if err != nil {
 		return err
 	}
-	for _, f := range formFiles {
-		index := strings.TrimSuffix(f.Name(), filepath.Ext(f.Name()))
-		var data map[string]interface{}
-		if substituteStrings != "" {
-			var file []byte
-			var err error
-			file, err = ioutil.ReadFile(filepath.Join(st.lang.FormPath, f.Name()))
-			if err != nil {
-				file = []byte("{}")
-			}
-			// Replace Jellyfin with emby on form
-			file = []byte(strings.ReplaceAll(string(file), "Jellyfin", substituteStrings))
-			err = json.Unmarshal(file, &data)
-			if err != nil {
-				log.Printf("ERROR: Failed to read \"%s\": %s", st.lang.FormPath, err)
-				return err
-			}
-		} else {
-			err := loadJSON(filepath.Join(st.lang.FormPath, f.Name()), &data)
-			if err != nil {
-				return err
-			}
-		}
-
-		strings := data["strings"].(map[string]interface{})
+	for index, lang := range form {
+		strings := lang["strings"].(map[string]interface{})
 		validationStrings := strings["validationStrings"].(map[string]interface{})
 		vS, err := json.Marshal(validationStrings)
 		if err != nil {
 			return err
 		}
 		strings["validationStrings"] = string(vS)
-		data["strings"] = strings
-		st.lang.Form[index] = data
+		lang["strings"] = strings
+		form[index] = lang
 	}
-	return nil
+	st.lang.Form = form
+	admin, err := loadData(st.lang.AdminPath)
+	st.lang.Admin = admin
+	return err
 }
 
 func (st *Storage) loadEmails() error {

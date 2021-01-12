@@ -1,0 +1,80 @@
+{
+    "meta": {
+        "name": "English (US)"
+    },
+    "strings": {
+        "invites": "Invites",
+        "accounts": "Accounts",
+        "settings": "Settings",
+        "theme": "Theme",
+        "inviteDays": "Days",
+        "inviteHours": "Hours",
+        "inviteMinutes": "Minutes",
+        "inviteNumberOfUses": "Number of uses",
+        "warning": "Warning",
+        "inviteInfiniteUsesWarning": "invites with infinite uses can be used abusively",
+        "inviteSendToEmail": "Send to",
+        "login": "Login",
+        "logout": "Logout",
+        "create": "Create",
+        "apply": "Apply",
+        "delete": "Delete",
+        "submit": "Submit",
+        "name": "Name",
+        "username": "Username",
+        "password": "Password",
+        "emailAddress": "Email Address",
+        "lastActiveTime": "Last Active",
+        "from": "From",
+        "user": "User",
+        "aboutProgram": "About",
+        "version": "Version",
+        "commitNoun": "Commit",
+        "newUser": "New User",
+        "profile": "Profile",
+        "modifySettings": "Modify Settings",
+        "modifySettingsDescription": "Apply settings from an existing profile, or source them directly from a user.",
+        "applyHomescreenLayout": "Apply homescreen layout",
+        "sendDeleteNotificationEmail": "Send notification email",
+        "sendDeleteNotifiationExample": "Your account has been deleted.",
+        "settingsRestartRequired": "Restart needed",
+        "settingsRestartRequiredDescription": "A restart is necessary to apply some settings you changed. Restart now or later?",
+        "settingsApplyRestartLater": "Apply, restart later",
+        "settingsApplyRestartNow": "Apply & restart",
+        "settingsApplied": "Settings applied.",
+        "settingsRefreshPage": "Refresh the page in a few seconds",
+        "settingsRequiredOrRestartMessage": "Note: {*} indicates a required field, {R} indicates changes require a restart.",
+        "settingsSave": "Save",
+        "ombiUserDefaults": "Ombi user defaults",
+        "ombiUserDefaultsDescription": "Create an Ombi user and configure it, then select it below. It's settings/permissions will be stored and applied to new Ombi users created by jfa-go",
+        "userProfiles": "User Profiles",
+        "userProfilesDescription": "Profiles are applied to users when they create an account. A profile include library access rights and homescreen layout.",
+        "userProfilesIsDefault": "Default",
+        "userProfilesLibraries": "Libraries",
+        "addProfile": "Add Profile",
+        "addProfileDescription": "Create a Jellyfin user and configure it, then select it below. When this profile is applied to an invite, new users will be created with the settings.",
+        "addProfileNameOf": "Profile Name",
+        "addProfileStoreHomescreenLayout": "Store homescreen layout"
+    },
+    "variableStrings": {
+        "settingsRequiredOrRestartMessage": "Note: {*} indicates a required field, {R} indicates changes require a restart."
+    },
+    "quantityStrings": {
+        "modifySettingsFor": {
+            "singular": "Modify Settings for {n} user",
+            "plural": "Modify Settings for {n} users"
+        },
+        "deleteNUsers": {
+            "singular": "Delete {n} user",
+            "plural": "Delete {n} users"
+        },
+        "addUser": {
+            "singular": "Add user",
+            "plural": "Add users"
+        },
+        "deleteUser": {
+            "singular": "Delete User",
+            "plural": "Delete Users"
+        }
+    }
+}
