@@ -20,13 +20,13 @@
     <mj-section mj-class="bg">
       <mj-column>
         <mj-text mj-class="text" font-size="16px" font-family="Noto Sans, Helvetica, Arial, sans-serif">
-          <p>Hi {{ .username }},</p>
-          <p> Someone has recently requested a password reset on Jellyfin.</p>
-          <p>If this was you, enter the below pin into the prompt.</p>
-          <p>The code will expire on {{ .expiry_date }}, at {{ .expiry_time }} UTC, which is in {{ .expires_in }}.</p>
-          <p>If this wasn't you, please ignore this email.</p>
+            <p>{{ .helloUser }}</p>
+            <p>{{ .someoneHasRequestedReset }}</p>
+            <p>{{ .ifItWasYou }}</p>
+            <p>{{ .codeExpiry }}</p>
+            <p>{{ .ifItWasNotYou }}</p>
         </mj-text>
-        <mj-button mj-class="blue bold">{{ .pin }}</mj-button>
+        <mj-button mj-class="blue bold">{{ .pinVal }}</mj-button>
       </mj-column>
     </mj-section>
     <mj-section mj-class="bg2">

@@ -1,4 +1,4 @@
-Your Jellyfin account was deleted.
-Reason: {{ .reason }}
+{{ .yourAccountWasDeleted }}
+{{ .reason }}: {{ .reasonVal }}
 
 {{ .message }}

@@ -1,0 +1,41 @@
+{
+    "meta": {
+        "name": "English (US)"
+    },
+    "userCreated": {
+        "title": "Notice: User created",
+        "aUserWasCreated": "A user was created using code {n}.",
+        "name": "Name",
+        "emailAddress": "Address",
+        "time": "Time",
+        "notificationNotice": "Note: Notification emails can be toggled on the admin dashboard."
+    },
+    "inviteExpiry": {
+        "title": "Notice: Invite expired",
+        "inviteExpired": "Invite expired.",
+        "expiredAt": "Code {n} expired at {n}.",
+        "notificationNotice": "Note: Notification emails can be toggled on the admin dashboard."
+    },
+    "passwordReset": {
+        "title": "Password reset requested - Jellyfin",
+        "helloUser": "Hi {n},",
+        "someoneHasRequestedReset": "Someone has recently requested a password reset on Jellyfin.",
+        "ifItWasYou": "If this was you, enter the pin below into the prompt.",
+        "codeExpiry": "The code will expire on {n}, at {n} UTC, which is in {n}.",
+        "ifItWasNotYou": "If this wasn't you, please ignore this email.",
+        "pin": "PIN"
+    },
+    "userDeleted": {
+        "title": "Your account was deleted - Jellyfin",
+        "yourAccountWasDeleted": "Your Jellyfin account was deleted.",
+        "reason": "Reason"
+    },
+    "inviteEmail": {
+        "title": "Invite - Jellyfin",
+        "hello": "Hi",
+        "youHaveBeenInvited": "You've been invited to Jellyfin.",
+        "toJoin": "To join, follow the below link.",
+        "inviteExpiry": "This invite will expire on {n}, at {n}, which is in {n}, so act quick.",
+        "linkButton": "Setup your account"
+    }
+}

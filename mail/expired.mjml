@@ -20,15 +20,15 @@
     <mj-section mj-class="bg">
       <mj-column>
         <mj-text mj-class="text" font-size="16px" font-family="Noto Sans, Helvetica, Arial, sans-serif">
-          <h3>Invite Expired.</h3>
-          <p>Code {{ .code }} expired at {{ .expiry }}.</p>
+            <h3>{{ .inviteExpired }}</h3>
+            <p>{{ .expiredAt }}</p>
         </mj-text>
       </mj-column>
     </mj-section>
     <mj-section mj-class="bg2">
       <mj-column>
         <mj-text mj-class="secondary" font-style="italic" font-size="14px">
-          Notification emails can be toggled on the admin dashboard.
+            {{ .notificationNotice }}
         </mj-text>
       </mj-column>
     </mj-section>

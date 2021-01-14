@@ -370,7 +370,6 @@ func start(asDaemon, firstCall bool) {
 
 		app.storage.profiles_path = app.config.Section("files").Key("user_profiles").String()
 		app.storage.loadProfiles()
-
 		if !(len(app.storage.policy) == 0 && len(app.storage.configuration) == 0 && len(app.storage.displayprefs) == 0) {
 			app.info.Println("Migrating user template files to new profile format")
 			app.storage.migrateToProfile()
@@ -515,6 +514,7 @@ func start(asDaemon, firstCall bool) {
 		}
 		app.storage.lang.FormPath = filepath.Join(app.localPath, "lang", "form")
 		app.storage.lang.AdminPath = filepath.Join(app.localPath, "lang", "admin")
+		app.storage.lang.EmailPath = filepath.Join(app.localPath, "lang", "email")
 		err = app.storage.loadLang()
 		if err != nil {
 			app.info.Fatalf("Failed to load language files: %+v\n", err)

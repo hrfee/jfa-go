@@ -52,7 +52,7 @@ func (app *appContext) loadConfig() error {
 			key.SetValue(key.MustString(filepath.Join(app.dataPath, (key.Name() + ".json"))))
 		}
 	}
-	for _, key := range []string{"user_configuration", "user_displayprefs", "user_profiles", "ombi_template"} {
+	for _, key := range []string{"user_configuration", "user_displayprefs", "user_profiles", "ombi_template", "invites", "emails", "user_template"} {
 		// if app.config.Section("files").Key(key).MustString("") == "" {
 		// 	key.SetValue(filepath.Join(app.data_path, (key.Name() + ".json")))
 		// }
@@ -80,8 +80,6 @@ func (app *appContext) loadConfig() error {
 	app.config.Section("jellyfin").Key("device").SetValue("jfa-go")
 	app.config.Section("jellyfin").Key("device_id").SetValue(fmt.Sprintf("jfa-go-%s-%s", VERSION, COMMIT))
 
-	app.email = NewEmailer(app)
-
 	substituteStrings = app.config.Section("jellyfin").Key("substitute_jellyfin_strings").MustString("")
 
 	oldFormLang := app.config.Section("ui").Key("language").MustString("")
@@ -93,6 +91,9 @@ func (app *appContext) loadConfig() error {
 		app.storage.lang.chosenFormLang = newFormLang
 	}
 	app.storage.lang.chosenAdminLang = app.config.Section("ui").Key("language-admin").MustString("en-us")
+	app.storage.lang.chosenEmailLang = app.config.Section("email").Key("language").MustString("en-us")
+
+	app.email = NewEmailer(app)
 
 	return nil
 }

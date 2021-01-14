@@ -20,14 +20,28 @@ type Storage struct {
 	lang                                                                                                   Lang
 }
 
+type EmailLang map[string]map[string]map[string]interface{} // Map of lang codes to email name to fields
+
+func (el *EmailLang) format(lang, email, field string, vals ...string) string {
+	text := (*el)[lang][email][field].(string)
+	for _, val := range vals {
+		text = strings.Replace(text, "{n}", val, 1)
+	}
+	return text
+}
+func (el *EmailLang) get(lang, email, field string) string { return (*el)[lang][email][field].(string) }
+
 type Lang struct {
 	chosenFormLang  string
 	chosenAdminLang string
+	chosenEmailLang string
 	AdminPath       string
 	Admin           map[string]map[string]interface{}
 	AdminJSON       map[string]string
 	FormPath        string
 	Form            map[string]map[string]interface{}
+	EmailPath       string
+	Email           EmailLang
 }
 
 // timePattern: %Y-%m-%dT%H:%M:%S.%f
@@ -80,7 +94,7 @@ func (st *Storage) loadLang() error {
 			if err != nil {
 				file = []byte("{}")
 			}
-			// Replace Jellyfin with emby on form
+			// Replace Jellyfin with something if necessary
 			if substituteStrings != "" {
 				fileString := strings.ReplaceAll(string(file), "Jellyfin", substituteStrings)
 				file = []byte(fileString)
@@ -121,6 +135,17 @@ func (st *Storage) loadLang() error {
 	adminJSON, admin, err := loadData(st.lang.AdminPath, true)
 	st.lang.Admin = admin
 	st.lang.AdminJSON = adminJSON
+
+	_, emails, err := loadData(st.lang.EmailPath, false)
+	fixedEmails := map[string]map[string]map[string]interface{}{}
+	for lang, e := range emails {
+		f := map[string]map[string]interface{}{}
+		for field, vals := range e {
+			f[field] = vals.(map[string]interface{})
+		}
+		fixedEmails[lang] = f
+	}
+	st.lang.Email = fixedEmails
 	return err
 }
 

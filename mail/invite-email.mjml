@@ -20,12 +20,12 @@
     <mj-section mj-class="bg">
       <mj-column>
         <mj-text mj-class="text" font-size="16px" font-family="Noto Sans, Helvetica, Arial, sans-serif">
-          <p>Hi,</p>
-          <h3>You've been invited to Jellyfin.</h3>
-          <p>To join, click the button below.</p>
-          <p>This invite will expire on {{ .expiry_date }}, at {{ .expiry_time }}, which is in {{ .expires_in }}, so act quick.</p>
+            <p>{{ .hello }},</p>
+            <h3>{{ .youHaveBeenInvited }}</h3>
+            <p>{{ .toJoin }}</p>
+            <p>{{ .inviteExpiry }}</p>
         </mj-text>
-        <mj-button mj-class="blue bold" href="{{ .invite_link }}">Setup your account</mj-button>
+        <mj-button mj-class="blue bold" href="{{ .invite_link }}">{{ .linkButton }}</mj-button>
       </mj-column>
     </mj-section>
     <mj-section mj-class="bg2">

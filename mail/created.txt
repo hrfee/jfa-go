@@ -1,7 +1,7 @@
-A user was created using code {{ .code }}.
+{{ .aUserWasCreated }}
 
-Name: {{ .username }}
-Address: {{ .address }}
-Time: {{ .time }}
+{{ .name }}: {{ .nameVal }}
+{{ .address }}: {{ .addressVal }}
+{{ .time }}: {{ .timeVal }}
 
-Note: Notification emails can be toggled on the admin dashboard.
+{{ .notificationNotice }}

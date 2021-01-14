@@ -1,0 +1,78 @@
+{
+    "meta": {
+        "name": "Francais (FR)",
+        "author": "https://github.com/Killianbe"
+    },
+    "strings": {
+        "invites": "Invite",
+        "accounts": "Comptes",
+        "settings": "Reglages",
+        "theme": "Thème",
+        "inviteDays": "Jours",
+        "inviteHours": "Heures",
+        "inviteMinutes": "Minutes",
+        "inviteNumberOfUses": "Nombre d'utilisateur",
+        "warning": "Attention",
+        "inviteInfiniteUsesWarning": "les invitations infinies peuvent être utilisées abusivement",
+        "inviteSendToEmail": "Envoyer à",
+        "login": "S'identifier",
+        "logout": "Se déconecter",
+        "create": "Créer",
+        "apply": "Appliquer",
+        "delete": "Effacer",
+        "submit": "Soumettre",
+        "name": "Nom",
+        "username": "Nom d'utilisateur",
+        "password": "Mot de passe",
+        "emailAddress": "Addresse Email",
+        "lastActiveTime": "Dernière activité",
+        "from": "De",
+        "user": "Utilisateur",
+        "aboutProgram": "A propros",
+        "version": "Version",
+        "commitNoun": "Commettre",
+        "newUser": "Nouvel utilisateur",
+        "profile": "Profil",
+        "modifySettings": "Modifier les paramètres",
+        "modifySettingsDescription": "Appliquez les paramètres à partir d'un profil existant ou obtenez-les directement auprès d'un utilisateur.",
+        "applyHomescreenLayout": "Appliquer la disposition de l'écran d'accueil",
+        "sendDeleteNotificationEmail": "Envoyer un e-mail de notification ",
+        "sendDeleteNotifiationExample": "Votre compte a été supprimé. ",
+        "settingsRestartRequired": "Redémarrage nécessaire ",
+        "settingsRestartRequiredDescription": "Un redémarrage est nécessaire pour appliquer certains paramètres que vous avez modifiés. Redémarrer maintenant ou plus tard?",
+        "settingsApplyRestartLater": "Appliquer, redémarrer plus tard ",
+        "settingsApplyRestartNow": "Appliquer et redémarrer ",
+        "settingsApplied": "Paramètres appliqués.",
+        "settingsRefreshPage": "Actualisez la page dans quelques secondes ",
+        "settingsRequiredOrRestartMessage": "Remarque: {n} indique un champ obligatoire, {n} indique que les modifications nécessitent un redémarrage. ",
+        "settingsSave": "Sauver",
+        "ombiUserDefaults": "Paramètres par défaut de l'utilisateur Ombi",
+        "ombiUserDefaultsDescription": "Créez un utilisateur Ombi et configurez-le, puis sélectionnez-le ci-dessous. Ses paramètres / autorisations seront stockés et appliqués aux nouveaux utilisateurs Ombi créés par jfa-go ",
+        "userProfiles": "Profils d'utilisateurs",
+        "userProfilesDescription": "Les profils sont appliqués aux utilisateurs lorsqu'ils créent un compte. Un profil inclut les droits d'accès à la bibliothèque et la disposition de l'écran d'accueil. ",
+        "userProfilesIsDefault": "Défaut",
+        "userProfilesLibraries": "Bibliothèques",
+        "addProfile": "Ajouter un profil",
+        "addProfileDescription": "Créez un utilisateur Jellyfin et configurez-le, puis sélectionnez-le ci-dessous. Lorsque ce profil est appliqué à une invitation, de nouveaux utilisateurs seront créés avec les paramètres. ",
+        "addProfileNameOf": "Nom de profil",
+        "addProfileStoreHomescreenLayout": "Enregistrer la disposition de l'écran d'accueil"
+    },
+    "quantityStrings": {
+        "modifySettingsFor": {
+            "singular": "Modifier les paramètres pour {n} utilisateur",
+            "plural": "Modifier les paramètres pour {n} utilisateurs"
+        },
+        "deleteNUsers": {
+            "singular": "Supprimer {n} utilisateur",
+            "plural": "Supprimer {n} utilisateurs"
+        },
+        "addUser": {
+            "singular": "Ajouter un utilisateur",
+            "plural": "Ajouter des utilisateurs"
+        },
+        "deleteUser": {
+            "singular": "Supprimer l'utilisateur",
+            "plural": "Supprimer les utilisateurs"
+        }
+    }
+}

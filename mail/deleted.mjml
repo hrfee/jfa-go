@@ -20,8 +20,8 @@
     <mj-section mj-class="bg">
       <mj-column>
         <mj-text mj-class="text" font-size="16px" font-family="Noto Sans, Helvetica, Arial, sans-serif">
-          <h3>Your account was deleted.</h3>
-          <p>Reason: <i>{{ .reason }}</i></p>
+            <h3>{{ .yourAccountWasDeleted }}</h3>
+            <p>{{ .reason }}: <i>{{ .reasonVal }}</i></p>
         </mj-text>
       </mj-column>
     </mj-section>

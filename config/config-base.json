@@ -277,6 +277,18 @@
                 "description": "General email settings. Ignore if not using email features."
             },
             "settings": {
+                "language": {
+                    "name": "Email Language",
+                    "required": false,
+                    "requires_restart": false,
+                    "depends_true": "method",
+                    "type": "select",
+                    "options": [
+                        "en-us"
+                    ],
+                    "value": "en-us",
+                    "description": "Default email language. Submit a PR on github if you'd like to translate."
+                },
                 "no_username": {
                     "name": "Use email addresses as username",
                     "required": false,
