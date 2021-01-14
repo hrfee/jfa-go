@@ -1,0 +1,32 @@
+{
+    "meta": {
+        "name": "Francais (FR)",
+        "author": "https://github.com/Cornichon420"
+    },
+    "userCreated": {
+        "aUserWasCreated": "Un utilisateur a été créé avec ce code {n}",
+        "name": "Nom",
+        "emailAddress": "Adresse",
+        "time": "Date",
+        "notificationNotice": ""
+    },
+    "passwordReset": {
+        "helloUser": "Salut {n},",
+        "someoneHasRequestedReset": "Quelqu'un vient de demander une réinitialisation du mot de passe via Jellyfin.",
+        "ifItWasYou": "Si c'était bien toi, renseigne le code PIN en dessous.",
+        "codeExpiry": "Ce code expirera le {n}, à {n} UTC, soit dans {n}.",
+        "ifItWasNotYou": "Si ce n'était pas toi, tu peux ignorer ce mail.",
+        "pin": "PIN"
+    },
+    "userDeleted": {
+        "yourAccountWasDeleted": "Ton compte Jellyfin a été supprimé.",
+        "reason": "Motif"
+    },
+    "inviteEmail": {
+        "hello": "Salut",
+        "youHaveBeenInvited": "Tu a été invité à rejoindre Jellyfin.",
+        "toJoin": "Pour continuer, suis le lien en dessous.",
+        "inviteExpiry": "L'invitation expirera le {n}, à {n}, sout dans {n}, alors fais vite !",
+        "linkButton": "Lien"
+    }
+}

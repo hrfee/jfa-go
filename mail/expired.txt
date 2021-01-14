@@ -1,5 +1,5 @@
-Invite expired.
+{{ .inviteExpired }}
 
-Code {{ .code }} expired at {{ .expiry }}.
+{{ .expiredAt }}
 
-Note: Notification emails can be toggled on the admin dashboard.
+{{ .notificationNotice }}

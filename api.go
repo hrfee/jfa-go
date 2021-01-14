@@ -455,7 +455,7 @@ func (app *appContext) DeleteUser(gc *gin.Context) {
 						app.err.Printf("%s: Failed to send to %s", userID, address)
 						app.debug.Printf("%s: Error: %s", userID, err)
 					} else {
-						app.info.Printf("%s: Sent invite email to %s", userID, address)
+						app.info.Printf("%s: Sent deletion email to %s", userID, address)
 					}
 				}(userID, req.Reason, addr.(string))
 			}
@@ -1176,7 +1176,7 @@ func (app *appContext) ModifyConfig(gc *gin.Context) {
 							break
 						}
 					}
-				} else {
+				} else if value.(string) != app.config.Section(section).Key(setting).MustString("") {
 					tempConfig.Section(section).Key(setting).SetValue(value.(string))
 				}
 			}
