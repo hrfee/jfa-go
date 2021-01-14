@@ -56,6 +56,7 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 			"email":          email,
 			"username":       !app.config.Section("email").Key("no_username").MustBool(false),
 			"lang":           app.storage.lang.Form[lang]["strings"],
+			"code":           code,
 		})
 	} else {
 		gcHTML(gc, 404, "invalidCode.html", gin.H{

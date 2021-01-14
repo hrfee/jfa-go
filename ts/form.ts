@@ -5,6 +5,7 @@ interface formWindow extends Window {
     validationStrings: pwValStrings;
     invalidPassword: string;
     modal: Modal;
+    code: string;
 }
 
 interface pwValString {
@@ -103,7 +104,7 @@ const create = (event: SubmitEvent) => {
     event.preventDefault();
     toggleLoader(submitSpan);
     let send: sendDTO = {
-        code: window.location.href.split('/').pop(),
+        code: window.code,
         username: usernameField.value,
         email: emailField.value,
         password: passwordField.value
