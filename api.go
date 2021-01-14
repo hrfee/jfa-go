@@ -1087,7 +1087,7 @@ func (app *appContext) GetConfig(gc *gin.Context) {
 	// Load language options
 	loadLangs := func(langs *map[string]map[string]interface{}, settingsKey string) (string, []string) {
 		langOptions := make([]string, len(*langs))
-		chosenLang := app.config.Section("ui").Key("language-" + settingsKey).MustString("en-us")
+		chosenLang := app.config.Section("ui").Key("language" + settingsKey).MustString("en-us")
 		chosenLangName := (*langs)[chosenLang]["meta"].(map[string]interface{})["name"].(string)
 		i := 0
 		for _, lang := range *langs {
@@ -1096,14 +1096,25 @@ func (app *appContext) GetConfig(gc *gin.Context) {
 		}
 		return chosenLangName, langOptions
 	}
-	formChosen, formOptions := loadLangs(&app.storage.lang.Form, "form")
+	formChosen, formOptions := loadLangs(&app.storage.lang.Form, "-form")
 	fl := resp.Sections["ui"].Settings["language-form"]
 	fl.Options = formOptions
 	fl.Value = formChosen
-	adminChosen, adminOptions := loadLangs(&app.storage.lang.Admin, "admin")
+	adminChosen, adminOptions := loadLangs(&app.storage.lang.Admin, "-admin")
 	al := resp.Sections["ui"].Settings["language-admin"]
 	al.Options = adminOptions
 	al.Value = adminChosen
+	emailOptions := make([]string, len(app.storage.lang.Email))
+	chosenLang := app.config.Section("email").Key("language").MustString("en-us")
+	emailChosen := app.storage.lang.Email.get(chosenLang, "meta", "name")
+	i := 0
+	for langName := range app.storage.lang.Email {
+		emailOptions[i] = app.storage.lang.Email.get(langName, "meta", "name")
+		i++
+	}
+	el := resp.Sections["email"].Settings["language"]
+	el.Options = emailOptions
+	el.Value = emailChosen
 	for sectName, section := range resp.Sections {
 		for settingName, setting := range section.Settings {
 			val := app.config.Section(sectName).Key(settingName)
@@ -1121,10 +1132,11 @@ func (app *appContext) GetConfig(gc *gin.Context) {
 	}
 	resp.Sections["ui"].Settings["language-form"] = fl
 	resp.Sections["ui"].Settings["language-admin"] = al
+	resp.Sections["email"].Settings["language"] = el
 
 	t := resp.Sections["jellyfin"].Settings["type"]
 	opts := make([]string, len(serverTypes))
-	i := 0
+	i = 0
 	for _, v := range serverTypes {
 		opts[i] = v
 		i++
@@ -1166,6 +1178,13 @@ func (app *appContext) ModifyConfig(gc *gin.Context) {
 					for key, lang := range app.storage.lang.Admin {
 						if lang["meta"].(map[string]interface{})["name"].(string) == value.(string) {
 							tempConfig.Section("ui").Key("language-admin").SetValue(key)
+							break
+						}
+					}
+				} else if section == "email" && setting == "language" {
+					for key := range app.storage.lang.Email {
+						if app.storage.lang.Email.get(key, "meta", "name") == value.(string) {
+							tempConfig.Section("email").Key("language").SetValue(key)
 							break
 						}
 					}

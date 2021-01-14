@@ -4,13 +4,21 @@
         "author": "https://github.com/Cornichon420"
     },
     "userCreated": {
+        "title": "Notification : Utilisateur créé",
         "aUserWasCreated": "Un utilisateur a été créé avec ce code {n}",
         "name": "Nom",
         "emailAddress": "Adresse",
         "time": "Date",
         "notificationNotice": ""
     },
+    "inviteExpiry": {
+        "title": "Notification : Invitation expirée",
+        "inviteExpired": "Invitation expirée.",
+        "expiredAt": "Le code {n} a expiré à {n}.",
+        "notificationNotice": ""
+    },
     "passwordReset": {
+        "title": "Réinitialisation de mot de passe demandée - Jellyfin",
         "helloUser": "Salut {n},",
         "someoneHasRequestedReset": "Quelqu'un vient de demander une réinitialisation du mot de passe via Jellyfin.",
         "ifItWasYou": "Si c'était bien toi, renseigne le code PIN en dessous.",
@@ -19,10 +27,12 @@
         "pin": "PIN"
     },
     "userDeleted": {
+        "title": "Ton compte a été désactivé - Jellyfin",
         "yourAccountWasDeleted": "Ton compte Jellyfin a été supprimé.",
         "reason": "Motif"
     },
     "inviteEmail": {
+        "title": "Invitation - Jellyfin",
         "hello": "Salut",
         "youHaveBeenInvited": "Tu a été invité à rejoindre Jellyfin.",
         "toJoin": "Pour continuer, suis le lien en dessous.",
