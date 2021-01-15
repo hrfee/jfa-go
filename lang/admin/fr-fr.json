@@ -22,17 +22,21 @@
         "delete": "Effacer",
         "submit": "Soumettre",
         "name": "Nom",
+        "date": "Date",
         "username": "Nom d'utilisateur",
         "password": "Mot de passe",
         "emailAddress": "Addresse Email",
         "lastActiveTime": "Dernière activité",
         "from": "De",
         "user": "Utilisateur",
-        "aboutProgram": "A propros",
+        "aboutProgram": "A propos",
         "version": "Version",
         "commitNoun": "Commettre",
         "newUser": "Nouvel utilisateur",
         "profile": "Profil",
+        "success": "Succès",
+        "error": "Erreur",
+        "unknown": "Inconnu",
         "modifySettings": "Modifier les paramètres",
         "modifySettingsDescription": "Appliquez les paramètres à partir d'un profil existant ou obtenez-les directement auprès d'un utilisateur.",
         "applyHomescreenLayout": "Appliquer la disposition de l'écran d'accueil",
@@ -55,7 +59,47 @@
         "addProfile": "Ajouter un profil",
         "addProfileDescription": "Créez un utilisateur Jellyfin et configurez-le, puis sélectionnez-le ci-dessous. Lorsque ce profil est appliqué à une invitation, de nouveaux utilisateurs seront créés avec les paramètres. ",
         "addProfileNameOf": "Nom de profil",
-        "addProfileStoreHomescreenLayout": "Enregistrer la disposition de l'écran d'accueil"
+        "addProfileStoreHomescreenLayout": "Enregistrer la disposition de l'écran d'accueil",
+    
+        "inviteNoUsersCreated": "Aucun pour l'instant!",
+        "inviteUsersCreated": "Utilisateurs créer",
+        "inviteNoProfile": "Aucun profil",
+        "copy": "Copier",
+        "inviteDateCreated": "Créer",
+        "inviteRemainingUses": "Utilisations restantes",
+        "inviteNoInvites": "Aucune",
+        "inviteExpiresInTime": "Expires dans {n}",
+
+        "notifyEvent": "Notifier sur:",
+        "notifyInviteExpiry": "À l'expiration",
+        "notifyUserCreation": "à la création de l'utilisateur"
+    },
+    "notifications": {
+        "changedEmailAddress": "Adresse e-mail modifiée de {n}.",
+        "userCreated": "L'utilisateur {n} a été créé.",
+        "createProfile": "Profil créé {n}.",
+        "saveSettings": "Les paramètres ont été enregistrés",
+        "setOmbiDefaults": "Valeurs par défaut de Ombi.",
+        "errorConnection": "Impossible de se connecter à jfa-go.",
+        "error401Unauthorized": "Non autorisé. Essayez d'actualiser la page.",
+        "errorSettingsAppliedNoHomescreenLayout": "Les paramètres ont été appliqués, mais l'application de la disposition de l'écran d'accueil a peut-être échoué.",
+        "errorHomescreenAppliedNoSettings": "La disposition de l'écran d'accueil a été appliquée, mais l'application des paramètres a peut-être échoué.",
+        "errorSettingsFailed": "L'application a échoué.",
+        "errorLoginBlank": "Le nom d'utilisateur et / ou le mot de passe sont vides",
+        "errorUnknown": "Erreur inconnue.",
+        "errorBlankFields": "Les champs sont vides",
+        "errorDeleteProfile": "Échec de la suppression du profil {n}",
+        "errorLoadProfiles": "Échec du chargement des profils.",
+        "errorCreateProfile": "Échec de la création du profil {n}",
+        "errorSetDefaultProfile": "Échec de la définition du profil par défaut",
+        "errorLoadUsers": "Échec du chargement des utilisateurs.",
+        "errorSaveSettings": "Impossible d'enregistrer les paramètres.",
+        "errorLoadSettings": "Échec du chargement des paramètres.",
+        "errorSetOmbiDefaults": "Impossible de stocker les valeurs par défaut d'Ombi.",
+        "errorLoadOmbiUsers": "Échec du chargement des utilisateurs Ombi.",
+        "errorChangedEmailAddress": "Impossible de modifier l'adresse e-mail de {n}.",
+        "errorFailureCheckLogs": "Échec (vérifier la console / les journaux)",
+        "errorPartialFailureCheckLogs": "Panne partielle (vérifier la console / les journaux)"
     },
     "quantityStrings": {
         "modifySettingsFor": {
@@ -73,6 +117,14 @@
         "deleteUser": {
             "singular": "Supprimer l'utilisateur",
             "plural": "Supprimer les utilisateurs"
+        },
+        "deletedUser": {
+          "singular": "Supprimer {n} utilisateur.",
+          "plural": "Supprimer {n} utilisateurs."
+        },
+        "appliedSettings": {
+          "singular": "Appliquer le paramètre {n} utilisteur.",
+          "plural": "Appliquer les paramètres {n} utilisteurs."
         }
     }
 }
