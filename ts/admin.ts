@@ -94,11 +94,16 @@ if (window.location.pathname == "/") {
 }
 
 document.addEventListener("tab-change", (event: CustomEvent) => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const lang = urlParams.get('lang');
     let tab = "/" + event.detail;
     if (tab == "/invites") {
         if (window.location.pathname == "/") {
             tab = "/";
         } else { tab = "../"; }
+    }
+    if (lang) {
+        tab += "?lang=" + lang
     }
     window.history.replaceState("", "Admin - jfa-go", tab);
 });
