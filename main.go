@@ -331,7 +331,12 @@ func start(asDaemon, firstCall bool) {
 
 	if !firstRun {
 		app.host = app.config.Section("ui").Key("host").String()
-		app.port = app.config.Section("ui").Key("port").MustInt(8056)
+		if app.config.Section("advanced").Key("tls").MustBool(false) {
+			app.info.Println("Using TLS/HTTP2")
+			app.port = app.config.Section("advanced").Key("tls_port").MustInt(8057)
+		} else {
+			app.port = app.config.Section("ui").Key("port").MustInt(8056)
+		}
 
 		if *HOST != app.host && *HOST != "" {
 			app.host = *HOST
@@ -350,7 +355,6 @@ func start(asDaemon, firstCall bool) {
 				}
 			}
 		}
-
 		address = fmt.Sprintf("%s:%d", app.host, app.port)
 
 		app.debug.Printf("Loaded config file \"%s\"", app.configPath)
@@ -625,8 +629,16 @@ func start(asDaemon, firstCall bool) {
 		Handler: router,
 	}
 	go func() {
-		if err := SRV.ListenAndServe(); err != nil {
-			app.err.Printf("Failure serving: %s", err)
+		if app.config.Section("advanced").Key("tls").MustBool(false) {
+			cert := app.config.Section("advanced").Key("tls_cert").MustString("")
+			key := app.config.Section("advanced").Key("tls_key").MustString("")
+			if err := SRV.ListenAndServeTLS(cert, key); err != nil {
+				app.err.Printf("Failure serving: %s", err)
+			}
+		} else {
+			if err := SRV.ListenAndServe(); err != nil {
+				app.err.Printf("Failure serving: %s", err)
+			}
 		}
 	}()
 	app.quit = make(chan os.Signal)

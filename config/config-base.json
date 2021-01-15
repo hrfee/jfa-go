@@ -219,6 +219,50 @@
                 }
             }
         },
+        "advanced": {
+            "order": [],
+            "meta": {
+                "name": "Advanced",
+                "description": "Advanced settings."
+            },
+            "settings": {
+                "tls": {
+                    "name": "TLS/HTTP2",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "bool",
+                    "value": false,
+                    "description": "Enable TLS, and by extension HTTP2. This enables server push, where required files are pushed to the web browser before they request them, allowing quicker page loads."
+                },
+                "tls_port": {
+                    "name": "TLS Port",
+                    "depends_true": "tls",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "number",
+                    "value": 8057,
+                    "description": "Port to run TLS server on"
+                },
+                "tls_cert": {
+                    "name": "Path to TLS Certificate",
+                    "depends_true": "tls",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "text",
+                    "value": "",
+                    "description": "Path to .crt file. See jfa-go wiki for more info."
+                },
+                "tls_key": {
+                    "name": "Path to TLS Key file",
+                    "depends_true": "tls",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "text",
+                    "value": "",
+                    "description": "Path to .key file. See jfa-go wiki for more info."
+                }
+            }
+        },
         "password_validation": {
             "order": [],
             "meta": {
