@@ -1,5 +1,5 @@
 #### Translation
-Currently only the account creation form can be translated. Strings are defined in `lang/form/<country-code>.json` (country code as in `en-us`, `fr-fr`, e.g). You can see the existing ones [here](https://github.com/hrfee/jfa-go/tree/main/lang/form).
+Currently the admin page, account creation form and emails can be translated. Strings are defined in `lang/<admin/form/email>/<country-code>.json` (country code as in `en-us`, `fr-fr`, e.g). You can see the existing ones [here](https://github.com/hrfee/jfa-go/tree/main/lang).
 Make sure to define `name` in the `meta` section, and you can optionally add an `author` value there as well. If you can, make a pull request with your new file. If not, email me or create an issue.
 
 #### Code
