@@ -1,9 +1,9 @@
 {
     "meta": {
-        "name": ""
+        "name": "English (UK)"
     },
     "strings": {
-        "invites": "",
+        "invites": "Invites",
         "accounts": "",
         "settings": "",
         "theme": "",
