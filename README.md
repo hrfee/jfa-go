@@ -1,6 +1,7 @@
 ![jfa-go](images/banner.svg)
 [![Build Status](https://drone.hrfee.pw/api/badges/hrfee/jfa-go/status.svg?ref=refs/heads/main)](https://drone.hrfee.pw/hrfee/jfa-go)
 [![Docker Hub](https://img.shields.io/docker/pulls/hrfee/jfa-go?label=docker)](https://hub.docker.com/r/hrfee/jfa-go)
+[![Translation status](https://weblate.hrfee.pw/widgets/jfa-go/-/svg-badge.svg)](https://weblate.hrfee.pw/engage/jfa-go/)
 ---
 jfa-go is a user management app for [Jellyfin](https://github.com/jellyfin/jellyfin) (and now [Emby](https://emby.media/)) that provides invite-based account creation as well as other features that make one's instance much easier to manage.
 
@@ -92,3 +93,7 @@ If you're switching from jellyfin-accounts, copy your existing `~/.jf-accounts` 
 
 #### Contributing
 See [CONTRIBUTING.md](https://github.com/hrfee/jfa-go/blob/main/CONTRIBUTING.md).
+##### Translation
+[![Translation status](https://weblate.hrfee.pw/widgets/jfa-go/-/multi-auto.svg)](https://weblate.hrfee.pw/engage/jfa-go/)
+
+For translations, use the weblate instance [here](https://weblate.hrfee.pw/engage/jfa-go/). You can login with github.
