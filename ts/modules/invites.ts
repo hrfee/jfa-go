@@ -30,7 +30,11 @@ export class DOMInvite implements Invite {
     get code(): string { return this._code; }
     set code(code: string) {
         this._code = code;
-        this._codeLink = window.location.href.split("#")[0] + "invite/" + code;
+        let codeLink = window.location.href;
+        for (let split of ["#", "?"]) {
+            codeLink = codeLink.split(split)[0];
+        }
+        this._codeLink = codeLink + "invite/" + code;
         const linkEl = this._codeArea.querySelector("a") as HTMLAnchorElement;
         linkEl.textContent = code.replace(/-/g, '-');
         linkEl.href = this._codeLink;
