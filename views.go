@@ -84,18 +84,19 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 			email = ""
 		}
 		gcHTML(gc, http.StatusOK, "form-loader.html", gin.H{
-			"urlBase":        app.URLBase,
-			"cssClass":       app.cssClass,
-			"contactMessage": app.config.Section("ui").Key("contact_message").String(),
-			"helpMessage":    app.config.Section("ui").Key("help_message").String(),
-			"successMessage": app.config.Section("ui").Key("success_message").String(),
-			"jfLink":         app.config.Section("jellyfin").Key("public_server").String(),
-			"validate":       app.config.Section("password_validation").Key("enabled").MustBool(false),
-			"requirements":   app.validator.getCriteria(),
-			"email":          email,
-			"username":       !app.config.Section("email").Key("no_username").MustBool(false),
-			"lang":           app.storage.lang.Form[lang]["strings"],
-			"code":           code,
+			"urlBase":           app.URLBase,
+			"cssClass":          app.cssClass,
+			"contactMessage":    app.config.Section("ui").Key("contact_message").String(),
+			"helpMessage":       app.config.Section("ui").Key("help_message").String(),
+			"successMessage":    app.config.Section("ui").Key("success_message").String(),
+			"jfLink":            app.config.Section("jellyfin").Key("public_server").String(),
+			"validate":          app.config.Section("password_validation").Key("enabled").MustBool(false),
+			"requirements":      app.validator.getCriteria(),
+			"email":             email,
+			"username":          !app.config.Section("email").Key("no_username").MustBool(false),
+			"strings":           app.storage.lang.Form[lang]["strings"],
+			"validationStrings": app.storage.lang.Form[lang]["validationStrings"],
+			"code":              code,
 		})
 	} else {
 		gcHTML(gc, 404, "invalidCode.html", gin.H{

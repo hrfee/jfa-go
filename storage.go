@@ -23,13 +23,19 @@ type Storage struct {
 type EmailLang map[string]map[string]map[string]interface{} // Map of lang codes to email name to fields
 
 func (el *EmailLang) format(lang, email, field string, vals ...string) string {
-	text := (*el)[lang][email][field].(string)
+	text := el.get(lang, email, field)
 	for _, val := range vals {
 		text = strings.Replace(text, "{n}", val, 1)
 	}
 	return text
 }
-func (el *EmailLang) get(lang, email, field string) string { return (*el)[lang][email][field].(string) }
+func (el *EmailLang) get(lang, email, field string) string {
+	t, ok := (*el)[lang][email][field]
+	if !ok {
+		t = (*el)["en-us"][email][field]
+	}
+	return t.(string)
+}
 
 type Lang struct {
 	chosenFormLang  string
@@ -121,14 +127,12 @@ func (st *Storage) loadLang() error {
 		return err
 	}
 	for index, lang := range form {
-		strings := lang["strings"].(map[string]interface{})
-		validationStrings := strings["validationStrings"].(map[string]interface{})
+		validationStrings := lang["validationStrings"].(map[string]interface{})
 		vS, err := json.Marshal(validationStrings)
 		if err != nil {
 			return err
 		}
-		strings["validationStrings"] = string(vS)
-		lang["strings"] = strings
+		lang["validationStrings"] = string(vS)
 		form[index] = lang
 	}
 	st.lang.Form = form

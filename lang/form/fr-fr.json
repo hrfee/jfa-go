@@ -15,28 +15,28 @@
         "createAccountButton": "Créer le compte",
         "passwordRequirementsHeader": "Mot de passe requis",
         "successHeader": "Succes!",
-        "successContinueButton": "Continuer",
-        "validationStrings": {
-            "length": {
-                "singular": "Doit avoir au moins {n} caractère",
-                "plural": "Doit avoir au moins {n} caractères"
-            },
-            "uppercase": {
-                "singular": "Doit avoir au moins {n} caractère majuscule",
-                "plural": "Must have at least {n} caractères majuscules"
-            },
-            "lowercase": {
-                "singular": "Doit avoir au moins {n} caractère minuscule",
-                "plural": "Doit avoir au moins {n} caractères minuscules"
-            },
-            "number": {
-                "singular": "Doit avoir au moins {n} nombre",
-                "plural": "Doit avoir au moins {n} nombres"
-            },
-            "special": {
-                "singular": "Doit avoir au moins {n} caractère spécial",
-                "plural": "Doit avoir au moins {n} caractères spéciaux"
-            }
+        "successContinueButton": "Continuer"
+    },
+    "validationStrings": {
+        "length": {
+            "singular": "Doit avoir au moins {n} caractère",
+            "plural": "Doit avoir au moins {n} caractères"
+        },
+        "uppercase": {
+            "singular": "Doit avoir au moins {n} caractère majuscule",
+            "plural": "Must have at least {n} caractères majuscules"
+        },
+        "lowercase": {
+            "singular": "Doit avoir au moins {n} caractère minuscule",
+            "plural": "Doit avoir au moins {n} caractères minuscules"
+        },
+        "number": {
+            "singular": "Doit avoir au moins {n} nombre",
+            "plural": "Doit avoir au moins {n} nombres"
+        },
+        "special": {
+            "singular": "Doit avoir au moins {n} caractère spécial",
+            "plural": "Doit avoir au moins {n} caractères spéciaux"
         }
     }
 }
