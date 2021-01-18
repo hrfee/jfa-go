@@ -92,7 +92,7 @@
                     "options": [
                         "en-us"
                     ],
-                    "value": "en-US",
+                    "value": "en-us",
                     "description": "Default Account Form Language. Submit a PR on github if you'd like to translate."
                 },
                 "language-admin": {
@@ -103,7 +103,7 @@
                     "options": [
                         "en-us"
                     ],
-                    "value": "en-US",
+                    "value": "en-us",
                     "description": "Default Admin page Language. Settings has not been translated. Submit a PR on github if you'd like to translate."
                 },
                 "theme": {
