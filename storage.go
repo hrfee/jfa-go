@@ -20,36 +20,6 @@ type Storage struct {
 	lang                                                                                                   Lang
 }
 
-type EmailLang map[string]map[string]map[string]interface{} // Map of lang codes to email name to fields
-
-func (el *EmailLang) format(lang, email, field string, vals ...string) string {
-	text := el.get(lang, email, field)
-	for _, val := range vals {
-		text = strings.Replace(text, "{n}", val, 1)
-	}
-	return text
-}
-func (el *EmailLang) get(lang, email, field string) string {
-	t, ok := (*el)[lang][email][field]
-	if !ok {
-		t = (*el)["en-us"][email][field]
-	}
-	return t.(string)
-}
-
-type Lang struct {
-	chosenFormLang  string
-	chosenAdminLang string
-	chosenEmailLang string
-	AdminPath       string
-	Admin           map[string]map[string]interface{}
-	AdminJSON       map[string]string
-	FormPath        string
-	Form            map[string]map[string]interface{}
-	EmailPath       string
-	Email           EmailLang
-}
-
 // timePattern: %Y-%m-%dT%H:%M:%S.%f
 
 type Profile struct {
@@ -73,6 +43,202 @@ type Invite struct {
 	Profile       string                     `json:"profile"`
 }
 
+type Lang struct {
+	chosenFormLang  string
+	chosenAdminLang string
+	chosenEmailLang string
+	AdminPath       string
+	Admin           adminLangs
+	AdminJSON       map[string]string
+	FormPath        string
+	Form            formLangs
+	EmailPath       string
+	Email           emailLangs
+}
+
+func (st *Storage) loadLang() (err error) {
+	err = st.loadLangAdmin()
+	if err != nil {
+		return
+	}
+	err = st.loadLangForm()
+	if err != nil {
+		return
+	}
+	err = st.loadLangEmail()
+	return
+}
+
+// If a given language has missing values, fill it in with the english value.
+func patchLang(english, other *langSection) {
+	for n, ev := range *english {
+		if v, ok := (*other)[n]; !ok || v == "" {
+			(*other)[n] = ev
+		}
+	}
+}
+
+func patchQuantityStrings(english, other *map[string]quantityString) {
+	for n, ev := range *english {
+		qs, ok := (*other)[n]
+		if !ok {
+			(*other)[n] = ev
+			return
+		} else if qs.Singular == "" {
+			qs.Singular = ev.Singular
+		} else if (*other)[n].Plural == "" {
+			qs.Plural = ev.Plural
+		}
+		(*other)[n] = qs
+	}
+}
+
+func (st *Storage) loadLangAdmin() error {
+	st.lang.Admin = map[string]adminLang{}
+	var english adminLang
+	load := func(fname string) error {
+		index := strings.TrimSuffix(fname, filepath.Ext(fname))
+		lang := adminLang{}
+		f, err := ioutil.ReadFile(filepath.Join(st.lang.AdminPath, fname))
+		if err != nil {
+			return err
+		}
+		if substituteStrings != "" {
+			f = []byte(strings.ReplaceAll(string(f), "Jellyfin", substituteStrings))
+		}
+		err = json.Unmarshal(f, &lang)
+		if err != nil {
+			return err
+		}
+		if fname != "en-us.json" {
+			patchLang(&english.Strings, &lang.Strings)
+			patchLang(&english.Notifications, &lang.Notifications)
+			patchQuantityStrings(&english.QuantityStrings, &lang.QuantityStrings)
+		}
+		stringAdmin, err := json.Marshal(lang)
+		if err != nil {
+			return err
+		}
+		lang.JSON = string(stringAdmin)
+		st.lang.Admin[index] = lang
+		return nil
+	}
+	err := load("en-us.json")
+	if err != nil {
+		return err
+	}
+	english = st.lang.Admin["en-us"]
+	files, err := ioutil.ReadDir(st.lang.AdminPath)
+	if err != nil {
+		return err
+	}
+	for _, f := range files {
+		if f.Name() != "en-us.json" {
+			err = load(f.Name())
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func (st *Storage) loadLangForm() error {
+	st.lang.Form = map[string]formLang{}
+	var english formLang
+	load := func(fname string) error {
+		index := strings.TrimSuffix(fname, filepath.Ext(fname))
+		lang := formLang{}
+		f, err := ioutil.ReadFile(filepath.Join(st.lang.FormPath, fname))
+		if err != nil {
+			return err
+		}
+		if substituteStrings != "" {
+			f = []byte(strings.ReplaceAll(string(f), "Jellyfin", substituteStrings))
+		}
+		err = json.Unmarshal(f, &lang)
+		if err != nil {
+			return err
+		}
+		if fname != "en-us.json" {
+			patchLang(&english.Strings, &lang.Strings)
+			patchQuantityStrings(&english.ValidationStrings, &lang.ValidationStrings)
+		}
+		validationStrings, err := json.Marshal(lang.ValidationStrings)
+		if err != nil {
+			return err
+		}
+		lang.validationStringsJSON = string(validationStrings)
+		st.lang.Form[index] = lang
+		return nil
+	}
+	err := load("en-us.json")
+	if err != nil {
+		return err
+	}
+	english = st.lang.Form["en-us"]
+	files, err := ioutil.ReadDir(st.lang.FormPath)
+	if err != nil {
+		return err
+	}
+	for _, f := range files {
+		if f.Name() != "en-us.json" {
+			err = load(f.Name())
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func (st *Storage) loadLangEmail() error {
+	st.lang.Email = map[string]emailLang{}
+	var english emailLang
+	load := func(fname string) error {
+		index := strings.TrimSuffix(fname, filepath.Ext(fname))
+		lang := emailLang{}
+		f, err := ioutil.ReadFile(filepath.Join(st.lang.EmailPath, fname))
+		if err != nil {
+			return err
+		}
+		if substituteStrings != "" {
+			f = []byte(strings.ReplaceAll(string(f), "Jellyfin", substituteStrings))
+		}
+		err = json.Unmarshal(f, &lang)
+		if err != nil {
+			return err
+		}
+		if fname != "en-us.json" {
+			patchLang(&english.UserCreated, &lang.UserCreated)
+			patchLang(&english.InviteExpiry, &lang.InviteExpiry)
+			patchLang(&english.PasswordReset, &lang.PasswordReset)
+			patchLang(&english.UserDeleted, &lang.UserDeleted)
+			patchLang(&english.InviteEmail, &lang.InviteEmail)
+		}
+		st.lang.Email[index] = lang
+		return nil
+	}
+	err := load("en-us.json")
+	if err != nil {
+		return err
+	}
+	english = st.lang.Email["en-us"]
+	files, err := ioutil.ReadDir(st.lang.EmailPath)
+	if err != nil {
+		return err
+	}
+	for _, f := range files {
+		if f.Name() != "en-us.json" {
+			err = load(f.Name())
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
 type Invites map[string]Invite
 
 func (st *Storage) loadInvites() error {
@@ -83,75 +249,75 @@ func (st *Storage) storeInvites() error {
 	return storeJSON(st.invite_path, st.invites)
 }
 
-func (st *Storage) loadLang() error {
-	loadData := func(path string, stringJson bool) (map[string]string, map[string]map[string]interface{}, error) {
-		files, err := ioutil.ReadDir(path)
-		outString := map[string]string{}
-		out := map[string]map[string]interface{}{}
-		if err != nil {
-			return nil, nil, err
-		}
-		for _, f := range files {
-			index := strings.TrimSuffix(f.Name(), filepath.Ext(f.Name()))
-			var data map[string]interface{}
-			var file []byte
-			var err error
-			file, err = ioutil.ReadFile(filepath.Join(path, f.Name()))
-			if err != nil {
-				file = []byte("{}")
-			}
-			// Replace Jellyfin with something if necessary
-			if substituteStrings != "" {
-				fileString := strings.ReplaceAll(string(file), "Jellyfin", substituteStrings)
-				file = []byte(fileString)
-			}
-			err = json.Unmarshal(file, &data)
-			if err != nil {
-				log.Printf("ERROR: Failed to read \"%s\": %s", path, err)
-				return nil, nil, err
-			}
-			if stringJson {
-				stringJSON, err := json.Marshal(data)
-				if err != nil {
-					return nil, nil, err
-				}
-				outString[index] = string(stringJSON)
-			}
-			out[index] = data
-
-		}
-		return outString, out, nil
-	}
-	_, form, err := loadData(st.lang.FormPath, false)
-	if err != nil {
-		return err
-	}
-	for index, lang := range form {
-		validationStrings := lang["validationStrings"].(map[string]interface{})
-		vS, err := json.Marshal(validationStrings)
-		if err != nil {
-			return err
-		}
-		lang["validationStrings"] = string(vS)
-		form[index] = lang
-	}
-	st.lang.Form = form
-	adminJSON, admin, err := loadData(st.lang.AdminPath, true)
-	st.lang.Admin = admin
-	st.lang.AdminJSON = adminJSON
-
-	_, emails, err := loadData(st.lang.EmailPath, false)
-	fixedEmails := map[string]map[string]map[string]interface{}{}
-	for lang, e := range emails {
-		f := map[string]map[string]interface{}{}
-		for field, vals := range e {
-			f[field] = vals.(map[string]interface{})
-		}
-		fixedEmails[lang] = f
-	}
-	st.lang.Email = fixedEmails
-	return err
-}
+// func (st *Storage) loadLang() error {
+// 	loadData := func(path string, stringJson bool) (map[string]string, map[string]map[string]interface{}, error) {
+// 		files, err := ioutil.ReadDir(path)
+// 		outString := map[string]string{}
+// 		out := map[string]map[string]interface{}{}
+// 		if err != nil {
+// 			return nil, nil, err
+// 		}
+// 		for _, f := range files {
+// 			index := strings.TrimSuffix(f.Name(), filepath.Ext(f.Name()))
+// 			var data map[string]interface{}
+// 			var file []byte
+// 			var err error
+// 			file, err = ioutil.ReadFile(filepath.Join(path, f.Name()))
+// 			if err != nil {
+// 				file = []byte("{}")
+// 			}
+// 			// Replace Jellyfin with something if necessary
+// 			if substituteStrings != "" {
+// 				fileString := strings.ReplaceAll(string(file), "Jellyfin", substituteStrings)
+// 				file = []byte(fileString)
+// 			}
+// 			err = json.Unmarshal(file, &data)
+// 			if err != nil {
+// 				log.Printf("ERROR: Failed to read \"%s\": %s", path, err)
+// 				return nil, nil, err
+// 			}
+// 			if stringJson {
+// 				stringJSON, err := json.Marshal(data)
+// 				if err != nil {
+// 					return nil, nil, err
+// 				}
+// 				outString[index] = string(stringJSON)
+// 			}
+// 			out[index] = data
+//
+// 		}
+// 		return outString, out, nil
+// 	}
+// 	_, form, err := loadData(st.lang.FormPath, false)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	for index, lang := range form {
+// 		validationStrings := lang["validationStrings"].(map[string]interface{})
+// 		vS, err := json.Marshal(validationStrings)
+// 		if err != nil {
+// 			return err
+// 		}
+// 		lang["validationStrings"] = string(vS)
+// 		form[index] = lang
+// 	}
+// 	st.lang.Form = form
+// 	adminJSON, admin, err := loadData(st.lang.AdminPath, true)
+// 	st.lang.Admin = admin
+// 	st.lang.AdminJSON = adminJSON
+//
+// 	_, emails, err := loadData(st.lang.EmailPath, false)
+// 	fixedEmails := map[string]map[string]map[string]interface{}{}
+// 	for lang, e := range emails {
+// 		f := map[string]map[string]interface{}{}
+// 		for field, vals := range e {
+// 			f[field] = vals.(map[string]interface{})
+// 		}
+// 		fixedEmails[lang] = f
+// 	}
+// 	st.lang.Email = fixedEmails
+// 	return err
+// }
 
 func (st *Storage) loadEmails() error {
 	return loadJSON(st.emails_path, &st.emails)

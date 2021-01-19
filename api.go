@@ -1085,33 +1085,15 @@ func (app *appContext) GetConfig(gc *gin.Context) {
 	app.info.Println("Config requested")
 	resp := app.configBase
 	// Load language options
-	loadLangs := func(langs *map[string]map[string]interface{}, settingsKey string) (string, []string) {
-		langOptions := make([]string, len(*langs))
-		chosenLang := app.config.Section("ui").Key("language" + settingsKey).MustString("en-us")
-		chosenLangName := (*langs)[chosenLang]["meta"].(map[string]interface{})["name"].(string)
-		i := 0
-		for _, lang := range *langs {
-			langOptions[i] = lang["meta"].(map[string]interface{})["name"].(string)
-			i++
-		}
-		return chosenLangName, langOptions
-	}
-	formChosen, formOptions := loadLangs(&app.storage.lang.Form, "-form")
+	formChosen, formOptions := app.storage.lang.Form.getOptions(app.config.Section("ui").Key("language-form").MustString("en-us"))
 	fl := resp.Sections["ui"].Settings["language-form"]
 	fl.Options = formOptions
 	fl.Value = formChosen
-	adminChosen, adminOptions := loadLangs(&app.storage.lang.Admin, "-admin")
+	adminChosen, adminOptions := app.storage.lang.Admin.getOptions(app.config.Section("ui").Key("language-admin").MustString("en-us"))
 	al := resp.Sections["ui"].Settings["language-admin"]
 	al.Options = adminOptions
 	al.Value = adminChosen
-	emailOptions := make([]string, len(app.storage.lang.Email))
-	chosenLang := app.config.Section("email").Key("language").MustString("en-us")
-	emailChosen := app.storage.lang.Email.get(chosenLang, "meta", "name")
-	i := 0
-	for langName := range app.storage.lang.Email {
-		emailOptions[i] = app.storage.lang.Email.get(langName, "meta", "name")
-		i++
-	}
+	emailChosen, emailOptions := app.storage.lang.Email.getOptions(app.config.Section("email").Key("language").MustString("en-us"))
 	el := resp.Sections["email"].Settings["language"]
 	el.Options = emailOptions
 	el.Value = emailChosen
@@ -1136,7 +1118,7 @@ func (app *appContext) GetConfig(gc *gin.Context) {
 
 	t := resp.Sections["jellyfin"].Settings["type"]
 	opts := make([]string, len(serverTypes))
-	i = 0
+	i := 0
 	for _, v := range serverTypes {
 		opts[i] = v
 		i++
@@ -1169,21 +1151,21 @@ func (app *appContext) ModifyConfig(gc *gin.Context) {
 			for setting, value := range settings.(map[string]interface{}) {
 				if section == "ui" && setting == "language-form" {
 					for key, lang := range app.storage.lang.Form {
-						if lang["meta"].(map[string]interface{})["name"].(string) == value.(string) {
+						if lang.Meta.Name == value.(string) {
 							tempConfig.Section("ui").Key("language-form").SetValue(key)
 							break
 						}
 					}
 				} else if section == "ui" && setting == "language-admin" {
 					for key, lang := range app.storage.lang.Admin {
-						if lang["meta"].(map[string]interface{})["name"].(string) == value.(string) {
+						if lang.Meta.Name == value.(string) {
 							tempConfig.Section("ui").Key("language-admin").SetValue(key)
 							break
 						}
 					}
 				} else if section == "email" && setting == "language" {
-					for key := range app.storage.lang.Email {
-						if app.storage.lang.Email.get(key, "meta", "name") == value.(string) {
+					for key, lang := range app.storage.lang.Email {
+						if lang.Meta.Name == value.(string) {
 							tempConfig.Section("email").Key("language").SetValue(key)
 							break
 						}
@@ -1260,11 +1242,11 @@ func (app *appContext) GetLanguages(gc *gin.Context) {
 	resp := langDTO{}
 	if page == "form" {
 		for key, lang := range app.storage.lang.Form {
-			resp[key] = lang["meta"].(map[string]interface{})["name"].(string)
+			resp[key] = lang.Meta.Name
 		}
 	} else if page == "admin" {
 		for key, lang := range app.storage.lang.Admin {
-			resp[key] = lang["meta"].(map[string]interface{})["name"].(string)
+			resp[key] = lang.Meta.Name
 		}
 	}
 	if len(resp) == 0 {
@@ -1272,6 +1254,19 @@ func (app *appContext) GetLanguages(gc *gin.Context) {
 		return
 	}
 	gc.JSON(200, resp)
+}
+
+func (app *appContext) ServeLang(gc *gin.Context) {
+	page := gc.Param("page")
+	lang := strings.Replace(gc.Param("file"), ".json", "", 1)
+	if page == "admin" {
+		gc.JSON(200, app.storage.lang.Admin[lang])
+		return
+	} else if page == "form" {
+		gc.JSON(200, app.storage.lang.Form[lang])
+		return
+	}
+	respondBool(400, false, gc)
 }
 
 // func Restart() error {

@@ -45,7 +45,7 @@ func (app *appContext) AdminPage(gc *gin.Context) {
 	lang := gc.Query("lang")
 	if lang == "" {
 		lang = app.storage.lang.chosenAdminLang
-	} else if _, ok := app.storage.lang.Form[lang]; !ok {
+	} else if _, ok := app.storage.lang.Admin[lang]; !ok {
 		lang = app.storage.lang.chosenAdminLang
 	}
 	emailEnabled, _ := app.config.Section("invite_emails").Key("enabled").Bool()
@@ -61,9 +61,9 @@ func (app *appContext) AdminPage(gc *gin.Context) {
 		"commit":          COMMIT,
 		"ombiEnabled":     ombiEnabled,
 		"username":        !app.config.Section("email").Key("no_username").MustBool(false),
-		"strings":         app.storage.lang.Admin[lang]["strings"],
-		"quantityStrings": app.storage.lang.Admin[lang]["quantityStrings"],
-		"language":        app.storage.lang.AdminJSON[lang],
+		"strings":         app.storage.lang.Admin[lang].Strings,
+		"quantityStrings": app.storage.lang.Admin[lang].QuantityStrings,
+		"language":        app.storage.lang.Admin[lang].JSON,
 	})
 }
 
@@ -94,8 +94,8 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 			"requirements":      app.validator.getCriteria(),
 			"email":             email,
 			"username":          !app.config.Section("email").Key("no_username").MustBool(false),
-			"strings":           app.storage.lang.Form[lang]["strings"],
-			"validationStrings": app.storage.lang.Form[lang]["validationStrings"],
+			"strings":           app.storage.lang.Form[lang].Strings,
+			"validationStrings": app.storage.lang.Form[lang].validationStringsJSON,
 			"code":              code,
 		})
 	} else {

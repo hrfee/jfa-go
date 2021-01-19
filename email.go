@@ -73,8 +73,7 @@ func (sm *SMTP) send(address, fromName, fromAddr string, email *Email) error {
 // Emailer contains the email sender, email content, and methods to construct message content.
 type Emailer struct {
 	fromAddr, fromName string
-	lang               *EmailLang
-	cLang              string
+	lang               emailLang
 	sender             emailClient
 }
 
@@ -110,8 +109,7 @@ func NewEmailer(app *appContext) *Emailer {
 	emailer := &Emailer{
 		fromAddr: app.config.Section("email").Key("address").String(),
 		fromName: app.config.Section("email").Key("from").String(),
-		lang:     &(app.storage.lang.Email),
-		cLang:    app.storage.lang.chosenEmailLang,
+		lang:     app.storage.lang.Email[app.storage.lang.chosenEmailLang],
 	}
 	method := app.config.Section("email").Key("method").String()
 	if method == "smtp" {
@@ -137,7 +135,7 @@ func (emailer *Emailer) NewMailgun(url, key string) {
 	sender := &Mailgun{
 		client: mailgun.NewMailgun(strings.Split(emailer.fromAddr, "@")[1], key),
 	}
-	// Mailgun client takes the base url, so we need to trim off the end (e.g 'v3/messages'
+	// Mailgun client takes the base url, so we need to trim off the end (e.g 'v3/messages')
 	if strings.Contains(url, "messages") {
 		url = url[0:strings.LastIndex(url, "/")]
 		url = url[0:strings.LastIndex(url, "/")]
@@ -157,9 +155,8 @@ func (emailer *Emailer) NewSMTP(server string, port int, username, password stri
 }
 
 func (emailer *Emailer) constructInvite(code string, invite Invite, app *appContext) (*Email, error) {
-	lang := emailer.cLang
 	email := &Email{
-		subject: app.config.Section("invite_emails").Key("subject").MustString(emailer.lang.get(lang, "inviteEmail", "title")),
+		subject: app.config.Section("invite_emails").Key("subject").MustString(emailer.lang.InviteEmail.get("title")),
 	}
 	expiry := invite.ValidTill
 	d, t, expiresIn := emailer.formatExpiry(expiry, false, app.datePattern, app.timePattern)
@@ -175,11 +172,11 @@ func (emailer *Emailer) constructInvite(code string, invite Invite, app *appCont
 		}
 		var tplData bytes.Buffer
 		err = tpl.Execute(&tplData, map[string]string{
-			"hello":              emailer.lang.get(lang, "inviteEmail", "hello"),
-			"youHaveBeenInvited": emailer.lang.get(lang, "inviteEmail", "youHaveBeenInvited"),
-			"toJoin":             emailer.lang.get(lang, "inviteEmail", "toJoin"),
-			"inviteExpiry":       emailer.lang.format(lang, "inviteEmail", "inviteExpiry", d, t, expiresIn),
-			"linkButton":         emailer.lang.get(lang, "inviteEmail", "linkButton"),
+			"hello":              emailer.lang.InviteEmail.get("hello"),
+			"youHaveBeenInvited": emailer.lang.InviteEmail.get("youHaveBeenInvited"),
+			"toJoin":             emailer.lang.InviteEmail.get("toJoin"),
+			"inviteExpiry":       emailer.lang.InviteEmail.format("inviteExpiry", d, t, expiresIn),
+			"linkButton":         emailer.lang.InviteEmail.get("linkButton"),
 			"invite_link":        inviteLink,
 			"message":            message,
 		})
@@ -196,9 +193,8 @@ func (emailer *Emailer) constructInvite(code string, invite Invite, app *appCont
 }
 
 func (emailer *Emailer) constructExpiry(code string, invite Invite, app *appContext) (*Email, error) {
-	lang := emailer.cLang
 	email := &Email{
-		subject: emailer.lang.get(lang, "inviteExpiry", "title"),
+		subject: emailer.lang.InviteExpiry.get("title"),
 	}
 	expiry := app.formatDatetime(invite.ValidTill)
 	for _, key := range []string{"html", "text"} {
@@ -209,9 +205,9 @@ func (emailer *Emailer) constructExpiry(code string, invite Invite, app *appCont
 		}
 		var tplData bytes.Buffer
 		err = tpl.Execute(&tplData, map[string]string{
-			"inviteExpired":      emailer.lang.get(lang, "inviteExpiry", "inviteExpired"),
-			"expiredAt":          emailer.lang.format(lang, "inviteExpiry", "expiredAt", "\""+code+"\"", expiry),
-			"notificationNotice": emailer.lang.get(lang, "inviteExpiry", "notificationNotice"),
+			"inviteExpired":      emailer.lang.InviteExpiry.get("inviteExpired"),
+			"expiredAt":          emailer.lang.InviteExpiry.format("expiredAt", "\""+code+"\"", expiry),
+			"notificationNotice": emailer.lang.InviteExpiry.get("notificationNotice"),
 		})
 		if err != nil {
 			return nil, err
@@ -226,9 +222,8 @@ func (emailer *Emailer) constructExpiry(code string, invite Invite, app *appCont
 }
 
 func (emailer *Emailer) constructCreated(code, username, address string, invite Invite, app *appContext) (*Email, error) {
-	lang := emailer.cLang
 	email := &Email{
-		subject: emailer.lang.get(lang, "userCreated", "title"),
+		subject: emailer.lang.UserCreated.get("title"),
 	}
 	created := app.formatDatetime(invite.Created)
 	var tplAddress string
@@ -245,14 +240,14 @@ func (emailer *Emailer) constructCreated(code, username, address string, invite 
 		}
 		var tplData bytes.Buffer
 		err = tpl.Execute(&tplData, map[string]string{
-			"aUserWasCreated":    emailer.lang.format(lang, "userCreated", "aUserWasCreated", "\""+code+"\""),
-			"name":               emailer.lang.get(lang, "userCreated", "name"),
-			"address":            emailer.lang.get(lang, "userCreated", "emailAddress"),
-			"time":               emailer.lang.get(lang, "userCreated", "time"),
+			"aUserWasCreated":    emailer.lang.UserCreated.format("aUserWasCreated", "\""+code+"\""),
+			"name":               emailer.lang.UserCreated.get("name"),
+			"address":            emailer.lang.UserCreated.get("emailAddress"),
+			"time":               emailer.lang.UserCreated.get("time"),
 			"nameVal":            username,
 			"addressVal":         tplAddress,
 			"timeVal":            created,
-			"notificationNotice": emailer.lang.get(lang, "userCreated", "notificationNotice"),
+			"notificationNotice": emailer.lang.UserCreated.get("notificationNotice"),
 		})
 		if err != nil {
 			return nil, err
@@ -267,9 +262,8 @@ func (emailer *Emailer) constructCreated(code, username, address string, invite 
 }
 
 func (emailer *Emailer) constructReset(pwr PasswordReset, app *appContext) (*Email, error) {
-	lang := emailer.cLang
 	email := &Email{
-		subject: emailer.lang.get(lang, "passwordReset", "title"),
+		subject: emailer.lang.PasswordReset.get("title"),
 	}
 	d, t, expiresIn := emailer.formatExpiry(pwr.Expiry, true, app.datePattern, app.timePattern)
 	message := app.config.Section("email").Key("message").String()
@@ -281,12 +275,12 @@ func (emailer *Emailer) constructReset(pwr PasswordReset, app *appContext) (*Ema
 		}
 		var tplData bytes.Buffer
 		err = tpl.Execute(&tplData, map[string]string{
-			"helloUser":                emailer.lang.format(lang, "passwordReset", "helloUser", pwr.Username),
-			"someoneHasRequestedReset": emailer.lang.get(lang, "passwordReset", "someoneHasRequestedReset"),
-			"ifItWasYou":               emailer.lang.get(lang, "passwordReset", "ifItWasYou"),
-			"codeExpiry":               emailer.lang.format(lang, "passwordReset", "codeExpiry", d, t, expiresIn),
-			"ifItWasNotYou":            emailer.lang.get(lang, "passwordReset", "ifItWasNotYou"),
-			"pin":                      emailer.lang.get(lang, "passwordReset", "pin"),
+			"helloUser":                emailer.lang.PasswordReset.format("helloUser", pwr.Username),
+			"someoneHasRequestedReset": emailer.lang.PasswordReset.get("someoneHasRequestedReset"),
+			"ifItWasYou":               emailer.lang.PasswordReset.get("ifItWasYou"),
+			"codeExpiry":               emailer.lang.PasswordReset.format("codeExpiry", d, t, expiresIn),
+			"ifItWasNotYou":            emailer.lang.PasswordReset.get("ifItWasNotYou"),
+			"pin":                      emailer.lang.PasswordReset.get("pin"),
 			"pinVal":                   pwr.Pin,
 			"message":                  message,
 		})
@@ -303,9 +297,8 @@ func (emailer *Emailer) constructReset(pwr PasswordReset, app *appContext) (*Ema
 }
 
 func (emailer *Emailer) constructDeleted(reason string, app *appContext) (*Email, error) {
-	lang := emailer.cLang
 	email := &Email{
-		subject: emailer.lang.get(lang, "userDeleted", "title"),
+		subject: emailer.lang.UserDeleted.get("title"),
 	}
 	for _, key := range []string{"html", "text"} {
 		fpath := app.config.Section("deletion").Key("email_" + key).String()
@@ -315,8 +308,8 @@ func (emailer *Emailer) constructDeleted(reason string, app *appContext) (*Email
 		}
 		var tplData bytes.Buffer
 		err = tpl.Execute(&tplData, map[string]string{
-			"yourAccountWasDeleted": emailer.lang.get(lang, "userDeleted", "yourAccountWasDeleted"),
-			"reason":                emailer.lang.get(lang, "userDeleted", "reason"),
+			"yourAccountWasDeleted": emailer.lang.UserDeleted.get("yourAccountWasDeleted"),
+			"reason":                emailer.lang.UserDeleted.get("reason"),
 			"reasonVal":             reason,
 		})
 		if err != nil {

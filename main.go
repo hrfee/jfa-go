@@ -569,7 +569,6 @@ func start(asDaemon, firstCall bool) {
 
 	router.Use(gin.Recovery())
 	router.Use(static.Serve("/", static.LocalFile(filepath.Join(app.localPath, "web"), false)))
-	router.Use(static.Serve("/lang/", static.LocalFile(filepath.Join(app.localPath, "lang"), false)))
 	app.loadHTML(router)
 	router.NoRoute(app.NoRouteHandler)
 	if debugMode {
@@ -580,7 +579,7 @@ func start(asDaemon, firstCall bool) {
 		router.GET("/", app.AdminPage)
 		router.GET("/accounts", app.AdminPage)
 		router.GET("/settings", app.AdminPage)
-
+		router.GET("/lang/:page/:file", app.ServeLang)
 		router.GET("/lang/:page", app.GetLanguages)
 		router.GET("/token/login", app.getTokenLogin)
 		router.GET("/token/refresh", app.getTokenRefresh)
