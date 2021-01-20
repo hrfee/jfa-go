@@ -1,41 +1,41 @@
 {
     "meta": {
-        "name": ""
+        "name": "Deutsch (DE)"
     },
     "strings": {
-        "pageTitle": "",
-        "createAccountHeader": "",
-        "accountDetails": "",
-        "emailAddress": "",
-        "username": "",
-        "password": "",
-        "reEnterPassword": "",
-        "reEnterPasswordInvalid": "",
-        "createAccountButton": "",
-        "passwordRequirementsHeader": "",
-        "successHeader": "",
-        "successContinueButton": ""
+        "pageTitle": "Jellyfin-Konto erstellen",
+        "createAccountHeader": "Konto erstellen",
+        "accountDetails": "Details",
+        "emailAddress": "E-Mail",
+        "username": "Benutzername",
+        "password": "Passwort",
+        "reEnterPassword": "Passwort wiederholen",
+        "reEnterPasswordInvalid": "Passwörter stimmen nicht überein.",
+        "createAccountButton": "Konto erstellen",
+        "passwordRequirementsHeader": "Passwortanforderungen",
+        "successHeader": "Erfolg!",
+        "successContinueButton": "Weiter"
     },
     "validationStrings": {
         "length": {
-            "singular": "",
-            "plural": ""
+            "singular": "Muss mindestens {n} Zeichen haben",
+            "plural": "Muss mindestens {n} Zeichen haben"
         },
         "uppercase": {
-            "singular": "",
-            "plural": ""
+            "singular": "Muss mindestens {n} Großbuchstaben haben",
+            "plural": "Muss mindestens {n} Großbuchstaben haben"
         },
         "lowercase": {
-            "singular": "",
-            "plural": ""
+            "singular": "Muss mindestens {n} Kleinbuchstaben haben",
+            "plural": "Muss mindestens {n} Kleinbuchstaben haben"
         },
         "number": {
-            "singular": "",
-            "plural": ""
+            "singular": "Muss mindestens {n} Zahl haben",
+            "plural": "Muss mindestens {n} Zahlen haben"
         },
         "special": {
-            "singular": "",
-            "plural": ""
+            "singular": "Muss mindestens {n} Sonderzeichen haben",
+            "plural": "Muss mindestens {n} Sonderzeichen haben"
         }
     }
 }
