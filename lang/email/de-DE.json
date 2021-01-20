@@ -1,41 +1,41 @@
 {
     "meta": {
-        "name": ""
+        "name": "Deutsch (DE)"
     },
     "userCreated": {
-        "title": "",
-        "aUserWasCreated": "",
-        "name": "",
-        "emailAddress": "",
-        "time": "",
-        "notificationNotice": ""
+        "title": "Mitteilung: Benutzer erstellt",
+        "aUserWasCreated": "Ein Benutzer wurde unter Verwendung des Codes {n] erstellt.",
+        "name": "Name",
+        "emailAddress": "Adresse",
+        "time": "Zeit",
+        "notificationNotice": "Hinweis: Benachrichtigungs-E-Mails können auf dem Administrator-Dashboard umgeschalten werden."
     },
     "inviteExpiry": {
-        "title": "",
-        "inviteExpired": "",
-        "expiredAt": "",
-        "notificationNotice": ""
+        "title": "Mitteilung: Invite abgelaufen",
+        "inviteExpired": "Invite abgelaufen.",
+        "expiredAt": "Code {n} lief um {n} ab.",
+        "notificationNotice": "Hinweis: Benachrichtigungs-E-Mails können auf dem Administrator-Dashboard umgeschalten werden."
     },
     "passwordReset": {
-        "title": "",
-        "helloUser": "",
-        "someoneHasRequestedReset": "",
-        "ifItWasYou": "",
-        "codeExpiry": "",
-        "ifItWasNotYou": "",
-        "pin": ""
+        "title": "Passwortzurücksetzung angefordert - Jellyfin",
+        "helloUser": "Hallo {n},",
+        "someoneHasRequestedReset": "Jemand hat vor kurzem eine Passwortzurücksetzung auf Jellyfin angefordert.",
+        "ifItWasYou": "Wenn du das warst, gib den PIN unten in die Eingabeaufforderung ein.",
+        "codeExpiry": "Der Code wird am {n}, um [n} UTC ablaufen, was in {n} ist.",
+        "ifItWasNotYou": "Wenn du das nicht warst, ignoriere bitte diese E-Mail.",
+        "pin": "PIN"
     },
     "userDeleted": {
-        "title": "",
-        "yourAccountWasDeleted": "",
-        "reason": ""
+        "title": "Dein Konto wurde gelöscht - Jellyfin",
+        "yourAccountWasDeleted": "Dein Jellyfin-Konto wurde gelöscht.",
+        "reason": "Grund"
     },
     "inviteEmail": {
-        "title": "",
-        "hello": "",
-        "youHaveBeenInvited": "",
-        "toJoin": "",
-        "inviteExpiry": "",
-        "linkButton": ""
+        "title": "Invite - Jellyfin",
+        "hello": "Hallo",
+        "youHaveBeenInvited": "Du wurdest zu Jellyfin eingeladen.",
+        "toJoin": "Um beizutreten, folge dem untenstehenden Link.",
+        "inviteExpiry": "Dieser Invite wird am {n}, um {n} ablaufen, was in {n} ist, also handle schnell.",
+        "linkButton": "Richte dein Konto ein"
     }
 }
