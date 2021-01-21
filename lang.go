@@ -1,6 +1,8 @@
 package main
 
-import "strings"
+import (
+	"strings"
+)
 
 type langMeta struct {
 	Name string `json:"name"`
@@ -76,7 +78,7 @@ type emailLang struct {
 
 type langSection map[string]string
 
-func (el *langSection) format(field string, vals ...string) string {
+func (el langSection) format(field string, vals ...string) string {
 	text := el.get(field)
 	for _, val := range vals {
 		text = strings.Replace(text, "{n}", val, 1)
@@ -84,8 +86,8 @@ func (el *langSection) format(field string, vals ...string) string {
 	return text
 }
 
-func (el *langSection) get(field string) string {
-	t, ok := (*el)[field]
+func (el langSection) get(field string) string {
+	t, ok := el[field]
 	if !ok {
 		return ""
 	}

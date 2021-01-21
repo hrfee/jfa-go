@@ -60,7 +60,6 @@ func (sm *SMTP) send(address, fromName, fromAddr string, email *Email) error {
 		ServerName:         sm.server,
 	}
 	var err error
-	fmt.Println(server)
 	// err = e.Send(server, sm.auth)
 	if sm.sslTLS {
 		err = e.SendWithTLS(server, sm.auth, tlsConfig)

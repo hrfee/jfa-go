@@ -524,6 +524,9 @@ func start(asDaemon, firstCall bool) {
 			app.info.Fatalf("Failed to load language files: %+v\n", err)
 		}
 
+		// Since email depends on language, the email reload in loadConfig won't work first time.
+		app.email = NewEmailer(app)
+
 		app.authJf, _ = mediabrowser.NewServer(serverType, server, "jfa-go", app.version, "auth", "auth", timeoutHandler, cacheTimeout)
 
 		app.loadStrftime()
