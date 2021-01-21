@@ -9,32 +9,6 @@ import (
 	"gopkg.in/ini.v1"
 )
 
-/*var DeCamel ini.NameMapper = func(raw string) string {
-	out := make([]rune, 0, len(raw))
-	upper := 0
-	for _, c := range raw {
-		if unicode.IsUpper(c) {
-			upper++
-		}
-		if upper == 2 {
-			out = append(out, '_')
-			upper = 0
-		}
-		out = append(out, unicode.ToLower(c))
-	}
-	return string(out)
-}
-
-func (app *appContext) loadDefaults() (err error) {
-	var cfb []byte
-	cfb, err = ioutil.ReadFile(app.configBase_path)
-	if err != nil {
-		return
-	}
-	json.Unmarshal(cfb, app.defaults)
-	return
-}*/
-
 func (app *appContext) loadConfig() error {
 	var err error
 	app.config, err = ini.Load(app.configPath)
@@ -45,17 +19,11 @@ func (app *appContext) loadConfig() error {
 	app.config.Section("jellyfin").Key("public_server").SetValue(app.config.Section("jellyfin").Key("public_server").MustString(app.config.Section("jellyfin").Key("server").String()))
 
 	for _, key := range app.config.Section("files").Keys() {
-		// if key.MustString("") == "" && key.Name() != "custom_css" {
-		// 	key.SetValue(filepath.Join(app.data_path, (key.Name() + ".json")))
-		// }
 		if key.Name() != "html_templates" {
 			key.SetValue(key.MustString(filepath.Join(app.dataPath, (key.Name() + ".json"))))
 		}
 	}
 	for _, key := range []string{"user_configuration", "user_displayprefs", "user_profiles", "ombi_template", "invites", "emails", "user_template"} {
-		// if app.config.Section("files").Key(key).MustString("") == "" {
-		// 	key.SetValue(filepath.Join(app.data_path, (key.Name() + ".json")))
-		// }
 		app.config.Section("files").Key(key).SetValue(app.config.Section("files").Key(key).MustString(filepath.Join(app.dataPath, (key + ".json"))))
 	}
 	app.URLBase = strings.TrimSuffix(app.config.Section("ui").Key("url_base").MustString(""), "/")
