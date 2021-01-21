@@ -10,7 +10,7 @@
         "inviteDays": "Dagen",
         "inviteHours": "Uren",
         "inviteMinutes": "Minuten",
-        "inviteNumberOfUses": "Aantal keer gebruikt",
+        "inviteNumberOfUses": "Aantal keer te gebruiken",
         "warning": "Waarschuwing",
         "inviteInfiniteUsesWarning": "ongelimiteerde uitnodigingen kunnen misbruikt worden",
         "inviteSendToEmail": "Stuur naar",
@@ -24,7 +24,7 @@
         "date": "Datum",
         "username": "Gebruikersnaam",
         "password": "Wachtwoord",
-        "emailAddress": "Email adres",
+        "emailAddress": "E-mailadres",
         "lastActiveTime": "Laatst actief",
         "from": "Van",
         "user": "Gebruiker",
@@ -39,7 +39,7 @@
         "modifySettings": "Instellingen aanpassen",
         "modifySettingsDescription": "Pas instellingen van een bestaand profiel toe, of neem ze direct over van een gebruiker.",
         "applyHomescreenLayout": "Sla startpagina indeling op",
-        "sendDeleteNotificationEmail": "Stuur meldingsemail",
+        "sendDeleteNotificationEmail": "Stuur meldingse-mail",
         "sendDeleteNotifiationExample": "Je account is verwijderd.",
         "settingsRestartRequired": "Herstart nodig",
         "settingsRestartRequiredDescription": "Er is een herstart nodig om de wijzigingen door te voeren. Herstart nu of later?",
@@ -59,22 +59,20 @@
         "addProfileDescription": "Maak een Jellyfin gebruiker aan met de gewenste instellingen en selecteer deze hieronder. Wanneer dit profiel wordt toegepast op een uitnodiging, worden nieuwe gebruikers aangemaakt met deze instellingen.",
         "addProfileNameOf": "Profielnaam",
         "addProfileStoreHomescreenLayout": "Sla startpaginaindeling op",
-
         "inviteNoUsersCreated": "Nog geen!",
         "inviteUsersCreated": "Aangemaakte gebruikers",
         "inviteNoProfile": "Geen profiel",
         "copy": "Kopiëer",
         "inviteDateCreated": "Aangemaakt",
-        "inviteRemainingUses": "Resterend aantal gebruiken",
+        "inviteRemainingUses": "Resterend aantal keer te gebruiken",
         "inviteNoInvites": "Geen",
         "inviteExpiresInTime": "Verloopt over {n}",
-
         "notifyEvent": "Meldingen:",
         "notifyInviteExpiry": "Bij verloop",
         "notifyUserCreation": "Bij aanmaken gebruiker"
     },
     "notifications": {
-        "changedEmailAddress": "Email adres van {n} gewijzigd.",
+        "changedEmailAddress": "E-mailadres van {n} gewijzigd.",
         "userCreated": "Gebruiker {n} aangemaakt.",
         "createProfile": "Profiel {n} aangemaakt.",
         "saveSettings": "De instellingen zijn opgeslagen",
@@ -96,11 +94,10 @@
         "errorLoadSettings": "Laden van instellingen mislukt.",
         "errorSetOmbiDefaults": "Opslaan van ombi standaardinstellingen mislukt.",
         "errorLoadOmbiUsers": "Laden van ombi gebruikers mislukt.",
-        "errorChangedEmailAddress": "Wijzigen van emailadres van {n} mislukt.",
+        "errorChangedEmailAddress": "Wijzigen van e-mailadres van {n} mislukt.",
         "errorFailureCheckLogs": "Mislukt (controleer console/logbestanden)",
         "errorPartialFailureCheckLogs": "Gedeeltelijke fout (controleer console/logbestanden)"
     },
-
     "quantityStrings": {
         "modifySettingsFor": {
             "singular": "Wijzig instellingen voor {n} gebruiker",
