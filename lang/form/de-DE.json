@@ -1,0 +1,41 @@
+{
+    "meta": {
+        "name": "Deutsch (DE)"
+    },
+    "strings": {
+        "pageTitle": "Jellyfin-Konto erstellen",
+        "createAccountHeader": "Konto erstellen",
+        "accountDetails": "Details",
+        "emailAddress": "E-Mail",
+        "username": "Benutzername",
+        "password": "Passwort",
+        "reEnterPassword": "Passwort wiederholen",
+        "reEnterPasswordInvalid": "Passwörter stimmen nicht überein.",
+        "createAccountButton": "Konto erstellen",
+        "passwordRequirementsHeader": "Passwortanforderungen",
+        "successHeader": "Erfolg!",
+        "successContinueButton": "Weiter"
+    },
+    "validationStrings": {
+        "length": {
+            "singular": "Muss mindestens {n} Zeichen haben",
+            "plural": "Muss mindestens {n} Zeichen haben"
+        },
+        "uppercase": {
+            "singular": "Muss mindestens {n} Großbuchstaben haben",
+            "plural": "Muss mindestens {n} Großbuchstaben haben"
+        },
+        "lowercase": {
+            "singular": "Muss mindestens {n} Kleinbuchstaben haben",
+            "plural": "Muss mindestens {n} Kleinbuchstaben haben"
+        },
+        "number": {
+            "singular": "Muss mindestens {n} Zahl haben",
+            "plural": "Muss mindestens {n} Zahlen haben"
+        },
+        "special": {
+            "singular": "Muss mindestens {n} Sonderzeichen haben",
+            "plural": "Muss mindestens {n} Sonderzeichen haben"
+        }
+    }
+}
