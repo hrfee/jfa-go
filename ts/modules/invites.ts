@@ -263,6 +263,11 @@ export class DOMInvite implements Invite {
 
         const toggle = (this._infoArea.querySelector("input.inv-toggle-details") as HTMLInputElement);
         toggle.onchange = () => { this.expanded = !this.expanded; };
+        this._header.onclick = (event: Event) => { 
+            if (event.target == this._header) {
+                this.expanded = !this.expanded; 
+            }
+        };
 
         this._details = document.createElement('div') as HTMLDivElement;
         this._container.appendChild(this._details);
