@@ -147,7 +147,7 @@ type setting struct {
 }
 
 type section struct {
-	Meta     langMeta               `json:"meta"`
+	Meta     meta               `json:"meta"`
 	Order    []string           `json:"order"`
 	Settings map[string]setting `json:"settings"`
 }

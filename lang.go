@@ -19,6 +19,7 @@ func (ls *adminLangs) getOptions(chosen string) (string, []string) {
 	i := 0
 	for _, lang := range *ls {
 		opts[i] = lang.Meta.Name
+		i++
 	}
 	return chosenLang, opts
 }
@@ -39,6 +40,7 @@ func (ls *formLangs) getOptions(chosen string) (string, []string) {
 	i := 0
 	for _, lang := range *ls {
 		opts[i] = lang.Meta.Name
+		i++
 	}
 	return chosenLang, opts
 }
@@ -58,6 +60,7 @@ func (ls *emailLangs) getOptions(chosen string) (string, []string) {
 	i := 0
 	for _, lang := range *ls {
 		opts[i] = lang.Meta.Name
+		i++
 	}
 	return chosenLang, opts
 }
