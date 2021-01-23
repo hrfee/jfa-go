@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var css = []string{"base.css", "a17t.css", "remixicon.css", "modal.css", "dark.css", "tooltip.css", "loader.css"}
+var css = []string{"bundle.css", "remixicon.css"}
 var cssHeader = func() string {
 	l := len(css)
 	h := ""

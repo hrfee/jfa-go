@@ -1,9 +1,9 @@
-@import "a17t.css";
+@import "../node_modules/a17t/dist/a17t.css";
 @import "remixicon.css";
-@import "modal.css";
-@import "dark.css";
-@import "tooltip.css";
-@import "loader.css";
+@import "./modal.css";
+@import "./dark.css";
+@import "./tooltip.css";
+@import "./loader.css";
 
 :root {
     --border-width-default: 2px;

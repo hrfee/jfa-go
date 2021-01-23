@@ -43,11 +43,13 @@ compile:
 compress:
 	upx --lzma build/jfa-go
 
-copy:
-	$(info copying css)
+bundle-css:
 	-mkdir -p build/data/web/css
-	cp -r css build/data/web/
-	cp node_modules/a17t/dist/a17t.css build/data/web/css/
+	$(info bundling css)
+	npx esbuild --bundle css/base.css --outfile=build/data/web/css/bundle.css --external:remixicon.css --minify
+
+copy:
+	$(info copying fonts)
 	cp -r node_modules/remixicon/fonts/remixicon.css node_modules/remixicon/fonts/remixicon.woff2 build/data/web/css/
 	$(info copying html)
 	cp -r html build/data/
@@ -61,5 +63,5 @@ copy:
 install:
 	cp -r build $(DESTDIR)/jfa-go
 
-all: configuration npm email version typescript swagger compile copy
-debug: configuration npm email version ts-debug swagger compile copy
+all: configuration npm email version typescript bundle-css swagger compile copy
+debug: configuration npm email version ts-debug bundle-css swagger compile copy
