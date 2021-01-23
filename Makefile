@@ -16,12 +16,14 @@ email:
 typescript:
 	$(info compiling typescript)
 	-mkdir -p build/data/web/js
-	-npx esbuild ts/*.ts ts/modules/*.ts --outdir=./build/data/web/js/
+	-npx esbuild --bundle ts/admin.ts --outfile=./build/data/web/js/admin.js --minify
+	-npx esbuild --bundle ts/form.ts --outfile=./build/data/web/js/form.js --minify
 
 ts-debug:
 	$(info compiling typescript w/ sourcemaps)
 	-mkdir -p build/data/web/js
-	-npx esbuild ts/*.ts ts/modules/*.ts --sourcemap --outdir=./build/data/web/js/
+	-npx esbuild --bundle ts/admin.ts --sourcemap --outfile=./build/data/web/js/admin.js
+	-npx esbuild --bundle ts/form.ts --sourcemap --outfile=./build/data/web/js/form.js
 	-rm -r build/data/web/js/ts
 	$(info copying typescript)
 	cp -r ts build/data/web/js
