@@ -17,6 +17,12 @@ type newUserDTO struct {
 	Code     string `json:"code" example:"abc0933jncjkcjj"`              // Invite code (required on /newUser)
 }
 
+type newUserResponse struct {
+	User  bool   `json:"user" binding:"required"` // Whether user was created successfully
+	Email bool   `json:"email"`                   // Whether welcome email was successfully sent (always true if feature is disabled
+	Error string `json:"error"`                   // Optional error message.
+}
+
 type deleteUserDTO struct {
 	Users  []string `json:"users" binding:"required"` // List of usernames to delete
 	Notify bool     `json:"notify"`                   // Whether to notify users of deletion

@@ -71,6 +71,9 @@ func (st *Storage) loadLang() (err error) {
 
 // If a given language has missing values, fill it in with the english value.
 func patchLang(english, other *langSection) {
+	if *other == nil {
+		*other = langSection{}
+	}
 	for n, ev := range *english {
 		if v, ok := (*other)[n]; !ok || v == "" {
 			(*other)[n] = ev
@@ -215,6 +218,7 @@ func (st *Storage) loadLangEmail() error {
 			patchLang(&english.PasswordReset, &lang.PasswordReset)
 			patchLang(&english.UserDeleted, &lang.UserDeleted)
 			patchLang(&english.InviteEmail, &lang.InviteEmail)
+			patchLang(&english.WelcomeEmail, &lang.WelcomeEmail)
 		}
 		st.lang.Email[index] = lang
 		return nil

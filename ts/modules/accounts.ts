@@ -214,13 +214,23 @@ export class accountsList {
         _post("/users", send, (req: XMLHttpRequest) => {
             if (req.readyState == 4) {
                 toggleLoader(button);
-                if (req.status == 200) {
+                if (req.status == 200 || (req.response["user"] as boolean)) {
                     window.notifications.customSuccess("addUser", window.lang.var("notifications", "userCreated", `"${send['username']}"`));
+                    if (!req.response["email"]) {
+                        window.notifications.customError("sendWelcome", window.lang.notif("errorSendWelcomeEmail"));
+                        console.log("User created, but welcome email failed");
+                    }
+                } else {
+                    window.notifications.customError("addUser", window.lang.var("notifications", "errorUserCreated", `"${send['username']}"`));
                 }
+                if (req.response["error"] as String) {
+                    console.log(req.response["error"]);
+                }
+
                 this.reload();
                 window.modals.addUser.close();
             }
-        });
+        }, true);
     }
 
     deleteUsers = () => {

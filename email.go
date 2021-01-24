@@ -262,7 +262,7 @@ func (emailer *Emailer) constructCreated(code, username, address string, invite 
 
 func (emailer *Emailer) constructReset(pwr PasswordReset, app *appContext) (*Email, error) {
 	email := &Email{
-		subject: emailer.lang.PasswordReset.get("title"),
+		subject: app.config.Section("password_resets").Key("subject").MustString(emailer.lang.PasswordReset.get("title")),
 	}
 	d, t, expiresIn := emailer.formatExpiry(pwr.Expiry, true, app.datePattern, app.timePattern)
 	message := app.config.Section("email").Key("message").String()
@@ -297,7 +297,7 @@ func (emailer *Emailer) constructReset(pwr PasswordReset, app *appContext) (*Ema
 
 func (emailer *Emailer) constructDeleted(reason string, app *appContext) (*Email, error) {
 	email := &Email{
-		subject: emailer.lang.UserDeleted.get("title"),
+		subject: app.config.Section("deletion").Key("subject").MustString(emailer.lang.UserDeleted.get("title")),
 	}
 	for _, key := range []string{"html", "text"} {
 		fpath := app.config.Section("deletion").Key("email_" + key).String()
@@ -310,6 +310,38 @@ func (emailer *Emailer) constructDeleted(reason string, app *appContext) (*Email
 			"yourAccountWasDeleted": emailer.lang.UserDeleted.get("yourAccountWasDeleted"),
 			"reason":                emailer.lang.UserDeleted.get("reason"),
 			"reasonVal":             reason,
+		})
+		if err != nil {
+			return nil, err
+		}
+		if key == "html" {
+			email.html = tplData.String()
+		} else {
+			email.text = tplData.String()
+		}
+	}
+	return email, nil
+}
+
+func (emailer *Emailer) constructWelcome(username string, app *appContext) (*Email, error) {
+	email := &Email{
+		subject: app.config.Section("welcome_email").Key("subject").MustString(emailer.lang.WelcomeEmail.get("title")),
+	}
+	for _, key := range []string{"html", "text"} {
+		fpath := app.config.Section("welcome_email").Key("email_" + key).String()
+		tpl, err := template.ParseFiles(fpath)
+		if err != nil {
+			return nil, err
+		}
+		var tplData bytes.Buffer
+		err = tpl.Execute(&tplData, map[string]string{
+			"welcome":         emailer.lang.WelcomeEmail.get("welcome"),
+			"youCanLoginWith": emailer.lang.WelcomeEmail.get("youCanLoginWith"),
+			"jellyfinURL":     emailer.lang.WelcomeEmail.get("jellyfinURL"),
+			"jellyfinURLVal":  app.config.Section("jellyfin").Key("public_server").String(),
+			"username":        emailer.lang.WelcomeEmail.get("username"),
+			"usernameVal":     username,
+			"message":         app.config.Section("email").Key("message").String(),
 		})
 		if err != nil {
 			return nil, err

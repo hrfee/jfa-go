@@ -1,0 +1,9 @@
+{{ .welcome }}
+
+{{ .youCanLoginWith }}:
+
+{{ .jellyfinURL }}: {{ .jellyfinURLVal }}
+{{ .username }}: {{ .usernameVal }}
+
+
+{{ .message }}

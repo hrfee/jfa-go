@@ -98,7 +98,9 @@
         "errorLoadOmbiUsers": "Failed to load ombi users.",
         "errorChangedEmailAddress": "Couldn't change email address of {n}.",
         "errorFailureCheckLogs": "Failed (check console/logs)",
-        "errorPartialFailureCheckLogs": "Partial failure (check console/logs)"
+        "errorPartialFailureCheckLogs": "Partial failure (check console/logs)",
+        "errorUserCreated": "Failed to create user {n}.",
+        "errorSendWelcomeEmail": "Failed to send welcome email (check console/logs)"
     },
 
     "quantityStrings": {

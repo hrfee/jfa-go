@@ -233,19 +233,28 @@ func (app *appContext) getOmbiUser(jfID string) (map[string]interface{}, int, er
 // @Security Bearer
 // @tags Users
 func (app *appContext) NewUserAdmin(gc *gin.Context) {
+	respondUser := func(code int, user, email bool, msg string, gc *gin.Context) {
+		resp := newUserResponse{
+			User:  user,
+			Email: email,
+			Error: msg,
+		}
+		gc.JSON(code, resp)
+		gc.Abort()
+	}
 	var req newUserDTO
 	gc.BindJSON(&req)
 	existingUser, _, _ := app.jf.UserByName(req.Username, false)
 	if existingUser != nil {
 		msg := fmt.Sprintf("User already exists named %s", req.Username)
 		app.info.Printf("%s New user failed: %s", req.Username, msg)
-		respond(401, msg, gc)
+		respondUser(401, false, false, msg, gc)
 		return
 	}
 	user, status, err := app.jf.NewUser(req.Username, req.Password)
 	if !(status == 200 || status == 204) || err != nil {
 		app.err.Printf("%s New user failed: Jellyfin responded with %d", req.Username, status)
-		respond(401, "Unknown error", gc)
+		respondUser(401, false, false, "Unknown error", gc)
 		return
 	}
 	var id string
@@ -268,6 +277,7 @@ func (app *appContext) NewUserAdmin(gc *gin.Context) {
 			app.err.Printf("%s: Failed to set configuration template: Code %d", req.Username, status)
 		}
 	}
+	app.jf.CacheExpiry = time.Now()
 	if app.config.Section("password_resets").Key("enabled").MustBool(false) {
 		app.storage.emails[id] = req.Email
 		app.storage.storeEmails()
@@ -284,7 +294,22 @@ func (app *appContext) NewUserAdmin(gc *gin.Context) {
 			}
 		}
 	}
-	app.jf.CacheExpiry = time.Now()
+	if app.config.Section("welcome_email").Key("enabled").MustBool(false) && req.Email != "" {
+		app.debug.Printf("%s: Sending welcome email to %s", req.Username, req.Email)
+		msg, err := app.email.constructWelcome(req.Username, app)
+		if err != nil {
+			app.err.Printf("%s: Failed to construct welcome email: %s", req.Username, err)
+			respondUser(500, true, false, err.Error(), gc)
+			return
+		} else if err := app.email.send(req.Email, msg); err != nil {
+			app.err.Printf("%s: Failed to send welcome email: %s", req.Username, err)
+			respondUser(500, true, false, err.Error(), gc)
+			return
+		} else {
+			app.info.Printf("%s: Sent welcome email to %s", req.Username, req.Email)
+		}
+	}
+	respondUser(200, true, true, "", gc)
 }
 
 // @Summary Creates a new Jellyfin user via invite code
@@ -396,6 +421,17 @@ func (app *appContext) NewUser(gc *gin.Context) {
 			} else {
 				app.info.Println("Created Ombi user")
 			}
+		}
+	}
+	if app.config.Section("welcome_email").Key("enabled").MustBool(false) && req.Email != "" {
+		app.debug.Printf("%s: Sending welcome email to %s", req.Username, req.Email)
+		msg, err := app.email.constructWelcome(req.Username, app)
+		if err != nil {
+			app.err.Printf("%s: Failed to construct welcome email: %s", req.Username, err)
+		} else if err := app.email.send(req.Email, msg); err != nil {
+			app.err.Printf("%s: Failed to send welcome email: %s", req.Username, err)
+		} else {
+			app.info.Printf("%s: Sent welcome email to %s", req.Username, req.Email)
 		}
 	}
 	code := 200

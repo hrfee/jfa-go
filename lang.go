@@ -74,6 +74,7 @@ type emailLang struct {
 	PasswordReset langSection `json:"passwordReset"`
 	UserDeleted   langSection `json:"userDeleted"`
 	InviteEmail   langSection `json:"inviteEmail"`
+	WelcomeEmail  langSection `json:"welcomeEmail"`
 }
 
 type langSection map[string]string
