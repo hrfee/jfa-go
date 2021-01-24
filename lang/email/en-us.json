@@ -35,7 +35,7 @@
         "hello": "Hi",
         "youHaveBeenInvited": "You've been invited to Jellyfin.",
         "toJoin": "To join, follow the below link.",
-        "inviteExpiry": "This invite will expire on {n}, at {n}, which is in {n}, so act quick.",
+        "inviteExpiry": "This invite will expire on {n} at {n}, which is in {n}, so act quick.",
         "linkButton": "Setup your account"
     },
     "welcomeEmail": {
