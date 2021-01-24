@@ -5,17 +5,17 @@
     },
     "userCreated": {
         "title": "Notification : Utilisateur créé",
-        "aUserWasCreated": "Un utilisateur a été créé avec ce code {n}",
+        "aUserWasCreated": "Un utilisateur a été créé avec ce code {n}.",
         "name": "Nom",
         "emailAddress": "Adresse",
         "time": "Date",
-        "notificationNotice": ""
+        "notificationNotice": "Note : Les emails de notification peuvent être activés sur le tableau de bord administrateur."
     },
     "inviteExpiry": {
         "title": "Notification : Invitation expirée",
         "inviteExpired": "Invitation expirée.",
         "expiredAt": "Le code {n} a expiré à {n}.",
-        "notificationNotice": ""
+        "notificationNotice": "Note : Les emails de notification peuvent être activés sur le tableau de bord administrateur."
     },
     "passwordReset": {
         "title": "Réinitialisation de mot du passe demandée - Jellyfin",
@@ -38,5 +38,12 @@
         "toJoin": "Pour continuer, suis le lien en dessous.",
         "inviteExpiry": "L'invitation expirera le {n}, à {n}, soit dans {n}, alors fais vite !",
         "linkButton": "Lien"
+    },
+    "welcomeEmail": {
+        "youCanLoginWith": "Tu peux te connecter avec les informations ci-dessous",
+        "title": "Bienvenue sur Jellyfin",
+        "welcome": "Bienvenue sur Jellyfin !",
+        "jellyfinURL": "URL",
+        "username": "Nom d'utilisateur"
     }
 }
