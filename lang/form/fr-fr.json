@@ -8,7 +8,7 @@
         "createAccountHeader": "Création du compte",
         "accountDetails": "Détails",
         "emailAddress": "Email",
-        "username": "Pseudo",
+        "username": "Nom d'utilisateur",
         "password": "Mot de passe",
         "reEnterPassword": "Confirmez mot de passe",
         "reEnterPasswordInvalid": "Les mots de passe ne correspondent pas.",
