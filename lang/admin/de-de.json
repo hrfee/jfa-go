@@ -62,7 +62,8 @@
         "inviteExpiresInTime": "Läuft in {n} ab",
         "notifyEvent": "Benachrichtigen bei:",
         "notifyInviteExpiry": "Bei Ablauf",
-        "notifyUserCreation": "Bei Benutzererstellung"
+        "notifyUserCreation": "Bei Benutzererstellung",
+        "label": "Label"
     },
     "notifications": {
         "changedEmailAddress": "E-Mail-Adresse von {n} geändert.",
@@ -89,7 +90,9 @@
         "errorLoadOmbiUsers": "Fehler beim Laden der Ombi-Benutzer.",
         "errorChangedEmailAddress": "E-Mail-Adresse von {n} konnte nicht geändert werden.",
         "errorFailureCheckLogs": "Fehlgeschlagen (überprüfe die Konsole/Logs)",
-        "errorPartialFailureCheckLogs": "Teilweiser Fehlschlag (überprüfe die Konsole/Logs)"
+        "errorPartialFailureCheckLogs": "Teilweiser Fehlschlag (überprüfe die Konsole/Logs)",
+        "errorUserCreated": "Fehler beim Erstellen des Benutzers {n}.",
+        "errorSendWelcomeEmail": "Fehler beim Senden der Willkommens-E-Mail (überprüfe die Konsole/Logs)"
     },
     "quantityStrings": {
         "modifySettingsFor": {
