@@ -219,12 +219,14 @@
                                     <option>0</option>
                                 </select>
                             </div>
+                            <label class="label supra" for="create-label"> {{ .strings.label }}</label>
+                            <input type="text" id="create-label" class="input ~neutral !normal mb-1 mt-half">
                         </div>
                         <div class="card ~neutral !normal col">
                             <label class="label supra" for="create-uses">{{ .strings.inviteNumberOfUses }}</label>
                             <div class="flex-expand mb-1 mt-half">
                                 <input type="number" min="0" id="create-uses" class="input ~neutral !normal mr-1" value=1>
-                                <label for="create-inf-uses" class="button ~neutral !normal">
+                                <label for="create-inf-uses" class="button ~neutral !normal" title="Set uses to infinite">
                                     <span>∞</span>
                                     <input type="checkbox" class="unfocused" id="create-inf-uses" aria-label="Set uses to infinite">
                                 </label>

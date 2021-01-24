@@ -532,6 +532,9 @@ func (app *appContext) GenerateInvite(gc *gin.Context) {
 		_, err = strconv.Atoi(string(inviteCode[0]))
 	}
 	var invite Invite
+	if req.Label != "" {
+		invite.Label = req.Label
+	}
 	invite.Created = currentTime
 	if req.MultipleUses {
 		if req.NoLimit {
@@ -732,6 +735,7 @@ func (app *appContext) GetInvites(gc *gin.Context) {
 			Created: app.formatDatetime(inv.Created),
 			Profile: inv.Profile,
 			NoLimit: inv.NoLimit,
+			Label:   inv.Label,
 		}
 		if len(inv.UsedBy) != 0 {
 			invite.UsedBy = inv.UsedBy

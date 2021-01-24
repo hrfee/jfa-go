@@ -200,7 +200,7 @@ sup.\~critical, .text-critical {
     max-width: 40%;
     min-width: 10rem;
     display: flex;
-    justify-content: center;
+    justify-content: start;
     align-items: center;
 }
 

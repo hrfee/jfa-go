@@ -41,6 +41,7 @@ type Invite struct {
 	UsedBy        [][]string                 `json:"used-by"`
 	Notify        map[string]map[string]bool `json:"notify"`
 	Profile       string                     `json:"profile"`
+	Label         string                     `json:"label,omitempty"`
 }
 
 type Lang struct {

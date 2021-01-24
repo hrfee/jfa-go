@@ -36,6 +36,7 @@
         "success": "Success",
         "error": "Error",
         "unknown": "Unknown",
+        "label": "Label",
         "modifySettings": "Modify Settings",
         "modifySettingsDescription": "Apply settings from an existing profile, or source them directly from a user.",
         "applyHomescreenLayout": "Apply homescreen layout",

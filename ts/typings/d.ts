@@ -86,6 +86,7 @@ interface Invite {
     notifyExpiry?: boolean;
     notifyCreation?: boolean;
     profile?: string;
+    label?: string;
 }
 
 interface inviteList {

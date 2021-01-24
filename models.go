@@ -38,6 +38,7 @@ type generateInviteDTO struct {
 	NoLimit       bool   `json:"no-limit" example:"false"`         // No invite use limit
 	RemainingUses int    `json:"remaining-uses" example:"5"`       // Remaining invite uses
 	Profile       string `json:"profile" example:"DefaultProfile"` // Name of profile to apply on this invite
+	Label         string `json:"label" example:"For Friends"`      // Optional label for the invite
 }
 
 type inviteProfileDTO struct {
@@ -67,18 +68,19 @@ type newProfileDTO struct {
 }
 
 type inviteDTO struct {
-	Code           string     `json:"code" example:"sajdlj23423j23"`    // Invite code
-	Days           int        `json:"days" example:"1"`                 // Number of days till expiry
-	Hours          int        `json:"hours" example:"2"`                // Number of hours till expiry
-	Minutes        int        `json:"minutes" example:"3"`              // Number of minutes till expiry
-	Created        string     `json:"created" example:"01/01/20 12:00"` // Date of creation
-	Profile        string     `json:"profile" example:"DefaultProfile"` // Profile used on this invite
-	UsedBy         [][]string `json:"used-by,omitempty"`                // Users who have used this invite
-	NoLimit        bool       `json:"no-limit,omitempty"`               // If true, invite can be used any number of times
-	RemainingUses  int        `json:"remaining-uses,omitempty"`         // Remaining number of uses (if applicable)
-	Email          string     `json:"email,omitempty"`                  // Email the invite was sent to (if applicable)
-	NotifyExpiry   bool       `json:"notify-expiry,omitempty"`          // Whether to notify the requesting user of expiry or not
-	NotifyCreation bool       `json:"notify-creation,omitempty"`        // Whether to notify the requesting user of account creation or not
+	Code           string     `json:"code" example:"sajdlj23423j23"`         // Invite code
+	Days           int        `json:"days" example:"1"`                      // Number of days till expiry
+	Hours          int        `json:"hours" example:"2"`                     // Number of hours till expiry
+	Minutes        int        `json:"minutes" example:"3"`                   // Number of minutes till expiry
+	Created        string     `json:"created" example:"01/01/20 12:00"`      // Date of creation
+	Profile        string     `json:"profile" example:"DefaultProfile"`      // Profile used on this invite
+	UsedBy         [][]string `json:"used-by,omitempty"`                     // Users who have used this invite
+	NoLimit        bool       `json:"no-limit,omitempty"`                    // If true, invite can be used any number of times
+	RemainingUses  int        `json:"remaining-uses,omitempty"`              // Remaining number of uses (if applicable)
+	Email          string     `json:"email,omitempty"`                       // Email the invite was sent to (if applicable)
+	NotifyExpiry   bool       `json:"notify-expiry,omitempty"`               // Whether to notify the requesting user of expiry or not
+	NotifyCreation bool       `json:"notify-creation,omitempty"`             // Whether to notify the requesting user of account creation or not
+	Label          string     `json:"label,omitempty" example:"For Friends"` // Optional label for the invite
 }
 
 type getInvitesDTO struct {

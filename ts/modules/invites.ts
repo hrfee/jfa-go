@@ -25,7 +25,18 @@ export class DOMInvite implements Invite {
             document.dispatchEvent(inviteDeletedEvent);
         }
     })
-    
+    private _label: string = "";
+    get label(): string { return this._label; }
+    set label(label: string) {
+        this._label = label;
+        const linkEl = this._codeArea.querySelector("a") as HTMLAnchorElement;
+        if (label == "") {
+            linkEl.textContent = this.code.replace(/-/g, '-');
+        } else {
+            linkEl.textContent = label;
+        }
+    }
+
     private _code: string = "None";
     get code(): string { return this._code; }
     set code(code: string) {
@@ -36,7 +47,9 @@ export class DOMInvite implements Invite {
         }
         this._codeLink = codeLink + "invite/" + code;
         const linkEl = this._codeArea.querySelector("a") as HTMLAnchorElement;
-        linkEl.textContent = code.replace(/-/g, '-');
+        if (this.label == "") {
+            linkEl.textContent = code.replace(/-/g, '-');
+        }
         linkEl.href = this._codeLink;
     }
     private _codeLink: string;
@@ -345,6 +358,9 @@ export class DOMInvite implements Invite {
         this.profile = invite.profile;
         this.remainingUses = invite.remainingUses;
         this.usedBy = invite.usedBy;
+        if (invite.label) {
+            this.label = invite.label;
+        }
     }
 
     asElement = (): HTMLDivElement => { return this._container; }
@@ -443,6 +459,7 @@ function parseInvite(invite: { [f: string]: string | number | string[][] | boole
     let parsed: Invite = {};
     parsed.code = invite["code"] as string;
     parsed.email = invite["email"] as string || "";
+    parsed.label = invite["label"] as string || "";
     let time = "";
     const fields = ["days", "hours", "minutes"];
     for (let i = 0; i < fields.length; i++) {
@@ -468,6 +485,7 @@ export class createInvite {
     private _infUsesWarning = document.getElementById('create-inf-uses-warning') as HTMLParagraphElement;
     private _createButton = document.getElementById("create-submit") as HTMLSpanElement;
     private _profile = document.getElementById("create-profile") as HTMLSelectElement;
+    private _label = document.getElementById("create-label") as HTMLInputElement;
 
     private _days = document.getElementById("create-days") as HTMLSelectElement;
     private _hours = document.getElementById("create-hours") as HTMLSelectElement;
@@ -491,6 +509,9 @@ export class createInvite {
             }
         }
     }
+
+    get label(): string { return this._label.value; }
+    set label(label: string) { this._label.value = label; }
 
     get sendToEnabled(): boolean {
         return this._sendToEnabled.checked;
@@ -599,7 +620,8 @@ export class createInvite {
             "no-limit": this.infiniteUses,
             "remaining-uses": this.uses,
             "email": this.sendToEnabled ? this.sendTo : "",
-            "profile": this.profile
+            "profile": this.profile,
+            "label": this.label
         };
         _post("/invites", send, (req: XMLHttpRequest) => {
             if (req.readyState == 4) {
@@ -623,6 +645,7 @@ export class createInvite {
         this._createButton.onclick = this.create;
         this.sendTo = "";
         this.uses = 1;
+        this.label = "";
 
         this._days.onchange = this._checkDurationValidity;
         this._hours.onchange = this._checkDurationValidity;
