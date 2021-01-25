@@ -41,7 +41,7 @@
         "settingsApplyRestartNow": "Appliquer et redémarrer",
         "settingsApplied": "Paramètres appliqués.",
         "settingsRefreshPage": "Actualisez la page dans quelques secondes",
-        "settingsRequiredOrRestartMessage": "Remarque: {n} indique un champ obligatoire, {n} indique que les modifications nécessitent un redémarrage.",
+        "settingsRequiredOrRestartMessage": "Remarque : {n} indique un champ obligatoire, {n} indique que les modifications nécessitent un redémarrage.",
         "settingsSave": "Sauver",
         "ombiUserDefaults": "Paramètres par défaut de l'utilisateur Ombi",
         "ombiUserDefaultsDescription": "Créez un utilisateur Ombi et configurez-le, puis sélectionnez-le ci-dessous. Ses paramètres/autorisations seront stockés et appliqués aux nouveaux utilisateurs Ombi créés par jfa-go",
