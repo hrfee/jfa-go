@@ -1,0 +1,11 @@
+{
+    "meta": {
+        "name": "Nederlands (NL)"
+    },
+    "strings": {
+        "username": "Gebruikersnaam",
+        "password": "Wachtwoord",
+        "emailAddress": "E-mailadres",
+        "submit": "Verstuur"
+    }
+}

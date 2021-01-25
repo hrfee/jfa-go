@@ -1,0 +1,12 @@
+{
+    "meta": {
+        "name": "Francais (FR)",
+        "author": "https://github.com/Killianbe"
+    },
+    "strings": {
+        "username": "Nom d'utilisateur",
+        "password": "Mot de passe",
+        "emailAddress": "Addresse Email",
+        "submit": "Soumettre"
+    }
+}

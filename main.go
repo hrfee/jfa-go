@@ -516,6 +516,7 @@ func start(asDaemon, firstCall bool) {
 				}
 			}
 		}
+		app.storage.lang.CommonPath = filepath.Join(app.localPath, "lang", "common")
 		app.storage.lang.FormPath = filepath.Join(app.localPath, "lang", "form")
 		app.storage.lang.AdminPath = filepath.Join(app.localPath, "lang", "admin")
 		app.storage.lang.EmailPath = filepath.Join(app.localPath, "lang", "email")
@@ -559,6 +560,22 @@ func start(asDaemon, firstCall bool) {
 	} else {
 		debugMode = false
 		address = "0.0.0.0:8056"
+
+		app.storage.lang.CommonPath = filepath.Join(app.localPath, "lang", "common")
+		app.storage.lang.EmailPath = filepath.Join(app.localPath, "lang", "email")
+		app.storage.lang.SetupPath = filepath.Join(app.localPath, "lang", "setup")
+		err := app.storage.loadLangCommon()
+		if err != nil {
+			app.info.Fatalf("Failed to load language files: %+v\n", err)
+		}
+		err = app.storage.loadLangEmail()
+		if err != nil {
+			app.info.Fatalf("Failed to load language files: %+v\n", err)
+		}
+		err = app.storage.loadLangSetup()
+		if err != nil {
+			app.info.Fatalf("Failed to load language files: %+v\n", err)
+		}
 	}
 	app.info.Println("Loading routes")
 	if debugMode {
@@ -618,9 +635,7 @@ func start(asDaemon, firstCall bool) {
 		}
 		app.info.Printf("Starting router @ %s", address)
 	} else {
-		router.GET("/", func(gc *gin.Context) {
-			gc.HTML(200, "setup.html", gin.H{})
-		})
+		router.GET("/", app.ServeSetup)
 		router.POST("/jellyfin/test", app.TestJF)
 		router.POST("/config", app.ModifyConfig)
 		app.info.Printf("Loading setup @ %s", address)
