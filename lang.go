@@ -48,8 +48,10 @@ func (ls *formLangs) getOptions(chosen string) (string, []string) {
 }
 
 type formLang struct {
-	Meta                  langMeta                  `json:"meta"`
-	Strings               langSection               `json:"strings"`
+	Meta                  langMeta    `json:"meta"`
+	Strings               langSection `json:"strings"`
+	Notifications         langSection `json:"notifications"`
+	notificationsJSON     string
 	ValidationStrings     map[string]quantityString `json:"validationStrings"`
 	validationStringsJSON string
 }

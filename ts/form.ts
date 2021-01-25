@@ -7,6 +7,7 @@ interface formWindow extends Window {
     invalidPassword: string;
     modal: Modal;
     code: string;
+    messages: { [key: string]: string };
 }
 
 interface pwValString {
@@ -75,7 +76,8 @@ rePasswordField.addEventListener("keyup", checkPasswords);
 passwordField.addEventListener("keyup", checkPasswords);
 
 interface respDTO {
-    [ type: string ]: boolean;
+    response: boolean;
+    error: string;
 }
 
 interface sendDTO {
@@ -96,13 +98,12 @@ const create = (event: SubmitEvent) => {
     };
     _post("/newUser", send, (req: XMLHttpRequest) => {
         if (req.readyState == 4) {
-            let vals = JSON.parse(req.response) as respDTO;
+            let vals = req.response as respDTO;
             let valid = true;
             for (let type in vals) {
                 if (requirements[type]) { requirements[type].valid = vals[type]; }
                 if (!vals[type]) { valid = false; }
             }
-            toggleLoader(submitSpan);
             if (req.status == 200 && valid) {
                 window.modal.show();
             } else {
@@ -112,6 +113,21 @@ const create = (event: SubmitEvent) => {
                     submitSpan.classList.add("~urge");
                     submitSpan.classList.remove("~critical");
                 }, 1000);
+            }
+        }
+    }, true, (req: XMLHttpRequest) => {
+        if (req.readyState == 4) {
+            toggleLoader(submitSpan);
+            if (req.status == 401) {
+                if (req.response["error"] as string) {
+                    const old = submitSpan.textContent;
+                    if (req.response["error"] in window.messages) {
+                        submitSpan.textContent = window.messages[req.response["error"]];
+                    } else {
+                        submitSpan.textContent = req.response["error"];
+                    }
+                    setTimeout(() => { submitSpan.textContent = old; }, 1000);
+                }
             }
         }
     });

@@ -96,6 +96,7 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 			"username":          !app.config.Section("email").Key("no_username").MustBool(false),
 			"strings":           app.storage.lang.Form[lang].Strings,
 			"validationStrings": app.storage.lang.Form[lang].validationStringsJSON,
+			"notifications":     app.storage.lang.Form[lang].notificationsJSON,
 			"code":              code,
 		})
 	} else {

@@ -166,12 +166,18 @@ func (st *Storage) loadLangForm() error {
 		}
 		if fname != "en-us.json" {
 			patchLang(&english.Strings, &lang.Strings)
+			patchLang(&english.Notifications, &lang.Notifications)
 			patchQuantityStrings(&english.ValidationStrings, &lang.ValidationStrings)
+		}
+		notifications, err := json.Marshal(lang.Notifications)
+		if err != nil {
+			return err
 		}
 		validationStrings, err := json.Marshal(lang.ValidationStrings)
 		if err != nil {
 			return err
 		}
+		lang.notificationsJSON = string(notifications)
 		lang.validationStringsJSON = string(validationStrings)
 		st.lang.Form[index] = lang
 		return nil

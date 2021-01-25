@@ -325,7 +325,7 @@ func (app *appContext) NewUser(gc *gin.Context) {
 	app.debug.Printf("%s: New user attempt", req.Code)
 	if !app.checkInvite(req.Code, false, "") {
 		app.info.Printf("%s New user failed: invalid code", req.Code)
-		respondBool(401, false, gc)
+		respond(401, "errorInvalidCode", gc)
 		return
 	}
 	validation := app.validator.validate(req.Password)
@@ -344,15 +344,15 @@ func (app *appContext) NewUser(gc *gin.Context) {
 	}
 	existingUser, _, _ := app.jf.UserByName(req.Username, false)
 	if existingUser != nil {
-		msg := fmt.Sprintf("User already exists named %s", req.Username)
+		msg := fmt.Sprintf("User %s", req.Username)
 		app.info.Printf("%s New user failed: %s", req.Code, msg)
-		respond(401, msg, gc)
+		respond(401, "errorUserExists", gc)
 		return
 	}
 	user, status, err := app.jf.NewUser(req.Username, req.Password)
 	if !(status == 200 || status == 204) || err != nil {
 		app.err.Printf("%s New user failed: Jellyfin responded with %d", req.Code, status)
-		respond(401, "Unknown error", gc)
+		respond(401, app.storage.lang.Admin[app.storage.lang.chosenAdminLang].Notifications.get("errorUnknown"), gc)
 		return
 	}
 	app.storage.loadProfiles()

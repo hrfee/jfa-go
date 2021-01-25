@@ -5,6 +5,7 @@
     window.invalidPassword = "{{ .strings.reEnterPasswordInvalid }}";
     window.URLBase = "{{ .urlBase }}";
     window.code = "{{ .code }}";
+    window.messages = JSON.parse({{ .notifications }});
 </script>
 <script src="js/form.js" type="module"></script>
 {{ end }}
