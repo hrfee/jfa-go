@@ -1288,6 +1288,14 @@ func (app *appContext) GetLanguages(gc *gin.Context) {
 		for key, lang := range app.storage.lang.Admin {
 			resp[key] = lang.Meta.Name
 		}
+	} else if page == "setup" {
+		for key, lang := range app.storage.lang.Setup {
+			resp[key] = lang.Meta.Name
+		}
+	} else if page == "email" {
+		for key, lang := range app.storage.lang.Email {
+			resp[key] = lang.Meta.Name
+		}
 	}
 	if len(resp) == 0 {
 		respond(500, "Couldn't get languages", gc)

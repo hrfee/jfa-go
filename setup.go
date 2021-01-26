@@ -22,9 +22,27 @@ func (app *appContext) ServeSetup(gc *gin.Context) {
 	if _, ok := app.storage.lang.Email[lang]; !ok {
 		emailLang = "en-us"
 	}
+
+	messages := map[string]map[string]string{
+		"ui": {
+			"contact_message": app.config.Section("ui").Key("contact_message").String(),
+			"help_message":    app.config.Section("ui").Key("help_message").String(),
+			"success_message": app.config.Section("ui").Key("success_message").String(),
+		},
+		"email": {
+			"message": app.config.Section("email").Key("message").String(),
+		},
+	}
+	msg, err := json.Marshal(messages)
+	if err != nil {
+		respond(500, "Failed to fetch default values", gc)
+		return
+	}
 	gc.HTML(200, "setup2.html", gin.H{
 		"lang":      app.storage.lang.Setup[lang],
 		"emailLang": app.storage.lang.Email[emailLang],
+		"language":  app.storage.lang.Setup[lang].JSON,
+		"messages":  string(msg),
 	})
 }
 
@@ -76,6 +94,11 @@ func (st *Storage) loadLangSetup() error {
 			patchLang(&english.PasswordValidation, &lang.PasswordValidation)
 			patchLang(&english.HelpMessages, &lang.HelpMessages)
 		}
+		stringSettings, err := json.Marshal(lang)
+		if err != nil {
+			return err
+		}
+		lang.JSON = string(stringSettings)
 		st.lang.Setup[index] = lang
 		return nil
 	}

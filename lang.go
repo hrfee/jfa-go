@@ -96,10 +96,12 @@ type setupLang struct {
 	JellyfinEmby       langSection `json:"jellyfinEmby"`
 	Email              langSection `json:"email"`
 	Notifications      langSection `json:"notifications"`
+	WelcomeEmails      langSection `json:"welcomeEmails"`
 	PasswordResets     langSection `json:"passwordResets"`
 	InviteEmails       langSection `json:"inviteEmails"`
 	PasswordValidation langSection `json:"passwordValidation"`
 	HelpMessages       langSection `json:"helpMessages"`
+	JSON               string
 }
 
 func (ls *setupLangs) getOptions(chosen string) (string, []string) {

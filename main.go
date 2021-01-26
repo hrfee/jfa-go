@@ -329,6 +329,15 @@ func start(asDaemon, firstCall bool) {
 		}()
 	}
 
+	app.storage.lang.CommonPath = filepath.Join(app.localPath, "lang", "common")
+	app.storage.lang.FormPath = filepath.Join(app.localPath, "lang", "form")
+	app.storage.lang.AdminPath = filepath.Join(app.localPath, "lang", "admin")
+	app.storage.lang.EmailPath = filepath.Join(app.localPath, "lang", "email")
+	err := app.storage.loadLang()
+	if err != nil {
+		app.info.Fatalf("Failed to load language files: %+v\n", err)
+	}
+
 	if !firstRun {
 		app.host = app.config.Section("ui").Key("host").String()
 		if app.config.Section("advanced").Key("tls").MustBool(false) {
@@ -516,14 +525,6 @@ func start(asDaemon, firstCall bool) {
 				}
 			}
 		}
-		app.storage.lang.CommonPath = filepath.Join(app.localPath, "lang", "common")
-		app.storage.lang.FormPath = filepath.Join(app.localPath, "lang", "form")
-		app.storage.lang.AdminPath = filepath.Join(app.localPath, "lang", "admin")
-		app.storage.lang.EmailPath = filepath.Join(app.localPath, "lang", "email")
-		err = app.storage.loadLang()
-		if err != nil {
-			app.info.Fatalf("Failed to load language files: %+v\n", err)
-		}
 
 		// Since email depends on language, the email reload in loadConfig won't work first time.
 		app.email = NewEmailer(app)
@@ -560,19 +561,8 @@ func start(asDaemon, firstCall bool) {
 	} else {
 		debugMode = false
 		address = "0.0.0.0:8056"
-
-		app.storage.lang.CommonPath = filepath.Join(app.localPath, "lang", "common")
-		app.storage.lang.EmailPath = filepath.Join(app.localPath, "lang", "email")
 		app.storage.lang.SetupPath = filepath.Join(app.localPath, "lang", "setup")
-		err := app.storage.loadLangCommon()
-		if err != nil {
-			app.info.Fatalf("Failed to load language files: %+v\n", err)
-		}
-		err = app.storage.loadLangEmail()
-		if err != nil {
-			app.info.Fatalf("Failed to load language files: %+v\n", err)
-		}
-		err = app.storage.loadLangSetup()
+		err := app.storage.loadLangSetup()
 		if err != nil {
 			app.info.Fatalf("Failed to load language files: %+v\n", err)
 		}
@@ -595,12 +585,12 @@ func start(asDaemon, firstCall bool) {
 		app.debug.Println("Loading pprof")
 		pprof.Register(router)
 	}
+	router.GET("/lang/:page", app.GetLanguages)
 	if !firstRun {
 		router.GET("/", app.AdminPage)
 		router.GET("/accounts", app.AdminPage)
 		router.GET("/settings", app.AdminPage)
 		router.GET("/lang/:page/:file", app.ServeLang)
-		router.GET("/lang/:page", app.GetLanguages)
 		router.GET("/token/login", app.getTokenLogin)
 		router.GET("/token/refresh", app.getTokenRefresh)
 		router.POST("/newUser", app.NewUser)

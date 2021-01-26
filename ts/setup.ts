@@ -1,260 +1,274 @@
-// Lord forgive me for this mess, i'll fix it one day i swear
+import { _get, _post } from "./modules/common.js";
+import { lang, LangFile, loadLangSelector } from "./modules/lang.js";
 
-document.getElementById("page-1").scrollIntoView({
-    behavior: "auto",
-    block: "center",
-    inline: "center"
-});
-
-const checkAuthRadio = () => {
-    if ((document.getElementById('manualAuthRadio') as HTMLInputElement).checked) {
-        document.getElementById('adminOnlyArea').style.display = 'none';
-        document.getElementById('manualAuthArea').style.display = '';
-    } else {
-        document.getElementById('manualAuthArea').style.display = 'none';
-        document.getElementById('adminOnlyArea').style.display = '';
-    }
-};
-
-for (let radio of ['manualAuthRadio', 'jfAuthRadio']) {
-    document.getElementById(radio).addEventListener('change', checkAuthRadio);
-};
-
-const checkEmailRadio = () => {
-    (document.getElementById('emailNextButton') as HTMLAnchorElement).href = '#page-5';
-    (document.getElementById('valBackButton') as HTMLAnchorElement).href = '#page-7';
-    if ((document.getElementById('emailSMTPRadio') as HTMLInputElement).checked) {
-        document.getElementById('emailCommonArea').style.display = '';
-        document.getElementById('emailSMTPArea').style.display = '';
-        document.getElementById('emailMailgunArea').style.display = 'none';
-        (document.getElementById('notificationsEnabled') as HTMLInputElement).checked = true;
-    } else if ((document.getElementById('emailMailgunRadio') as HTMLInputElement).checked) {
-        document.getElementById('emailCommonArea').style.display = '';
-        document.getElementById('emailSMTPArea').style.display = 'none';
-        document.getElementById('emailMailgunArea').style.display = '';
-        (document.getElementById('notificationsEnabled') as HTMLInputElement).checked = true;
-    } else if ((document.getElementById('emailDisabledRadio') as HTMLInputElement).checked) {
-        document.getElementById('emailCommonArea').style.display = 'none';
-        document.getElementById('emailSMTPArea').style.display = 'none';
-        document.getElementById('emailMailgunArea').style.display = 'none';
-        (document.getElementById('emailNextButton') as HTMLAnchorElement).href = '#page-8';
-        (document.getElementById('valBackButton') as HTMLAnchorElement).href = '#page-4';
-        (document.getElementById('notificationsEnabled') as HTMLInputElement).checked = false;
-    }
-};
-
-for (let radio of ['emailDisabledRadio', 'emailSMTPRadio', 'emailMailgunRadio']) {
-    document.getElementById(radio).addEventListener('change', checkEmailRadio);
+interface sWindow extends Window {
+    messages: {};
 }
 
-const checkSSL = () => {
-    var label = document.getElementById('emailSSL_TLSLabel');
-    if ((document.getElementById('emailSSL_TLS') as HTMLInputElement).checked) {
-        label.textContent = 'Use SSL/TLS';
-    } else {
-        label.textContent = 'Use STARTTLS';
-    }
-};
-document.getElementById('emailSSL_TLS').addEventListener('change', checkSSL);
+declare var window: sWindow;
 
-var pwrEnabled = document.getElementById('pwrEnabled') as HTMLInputElement;
-const checkPwrEnabled = () => {
-    if (pwrEnabled.checked) {
-        document.getElementById('pwrArea').style.display = '';
-    } else {
-        document.getElementById('pwrArea').style.display = 'none';
-    }
-};
-pwrEnabled.addEventListener('change', checkPwrEnabled);
+const get = (id: string): HTMLElement => document.getElementById(id);
+const text = (id: string, val: string) => { document.getElementById(id).textContent = val; };
+const html = (id: string, val: string) => { document.getElementById(id).innerHTML = val; };
 
-var invEnabled = document.getElementById("invEnabled") as HTMLInputElement;
-const checkInvEnabled = () => {
-    if (invEnabled.checked) {
-        document.getElementById('invArea').style.display = '';
-    } else {
-        document.getElementById('invArea').style.display = 'none';
-    }
-};
-invEnabled.addEventListener('change', checkInvEnabled);
+interface boolEvent extends Event {
+    detail: boolean;
+}
 
-var valEnabled = document.getElementById("valEnabled") as HTMLInputElement;
-const checkValEnabled = () => {
-    const valArea = document.getElementById("valArea");
-    if (valEnabled.checked) {
-        valArea.style.display = '';
-    } else {
-        valArea.style.display = 'none';
-    }
-};
-valEnabled.addEventListener('change', checkValEnabled);
-
-checkValEnabled();
-checkInvEnabled();
-checkSSL();
-checkAuthRadio();
-checkEmailRadio();
-checkPwrEnabled();
-
-var jfValid = false
-document.getElementById('jfTestButton').onclick = () => {
-    let testButton = document.getElementById('jfTestButton') as HTMLInputElement;
-    let nextButton = document.getElementById('jfNextButton') as HTMLAnchorElement;
-    let jfData = {};
-    jfData['jfHost'] = (document.getElementById('jfHost') as HTMLInputElement).value;
-    jfData['jfUser'] = (document.getElementById('jfUser') as HTMLInputElement).value;
-    jfData['jfPassword'] = (document.getElementById('jfPassword') as HTMLInputElement).value;
-    let valid = true;
-    for (let val in jfData) {
-        if (jfData[val] == "") {
-            valid = false;
-        }
-    }
-    if (!valid) {
-        if (!testButton.classList.contains('btn-danger')) {
-            testButton.classList.add('btn-danger');
-            testButton.textContent = 'Fill out fields above.';
-            setTimeout(function() {
-                if (testButton.classList.contains('btn-danger')) {
-                    testButton.classList.remove('btn-danger');
-                    testButton.textContent = 'Test';
-                }
-            }, 2000);
-        }
-    } else {
-        testButton.disabled = true;
-        testButton.innerHTML =
-            '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="margin-right: 0.5rem;"></span>' +
-            'Testing...';
-        nextButton.classList.add('disabled');
-        nextButton.setAttribute('aria-disabled', 'true');
-        var req = new XMLHttpRequest();
-        req.open("POST", "/jellyfin/test", true);
-        req.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
-        req.responseType = 'json';
-        req.onreadystatechange = function() {
-            if (this.readyState == 4) {
-                testButton.disabled = false;
-                testButton.className = '';
-                if (this.response['success'] == true) {
-                    testButton.classList.add('btn', 'btn-success');
-                    testButton.textContent = 'Success';
-                    nextButton.classList.remove('disabled');
-                    nextButton.setAttribute('aria-disabled', 'false');
+class Input {
+    private _el: HTMLInputElement;
+    get value(): string { return ""+this._el.value; }
+    set value(v: string) { this._el.value = v; }
+    constructor(el: HTMLElement, placeholder?: any, value?: any, depends?: string, dependsTrue?: boolean, section?: string) {
+        this._el = el as HTMLInputElement;
+        if (placeholder) { this._el.placeholder = placeholder; }
+        if (value) { this.value = value; }
+        if (depends) {
+            document.addEventListener(`settings-${section}-${depends}`, (event: boolEvent) => {
+                let el = this._el as HTMLElement;
+                if (el.parentElement.tagName == "LABEL") { el = el.parentElement; }
+                if (event.detail !== dependsTrue) {
+                    el.classList.add("unfocused");
                 } else {
-                    testButton.classList.add('btn', 'btn-danger');
-                    testButton.textContent = 'Failed';
-                };
+                    el.classList.remove("unfocused");
+                }
+            });
+        }
+    }
+}
+
+class Checkbox {
+    private _el: HTMLInputElement;
+    get value(): string { return this._el.checked ? "true" : "false"; }
+    set value(v: string) { this._el.checked = (v == "true") ? true : false; }
+    constructor(el: HTMLElement, depends?: string, dependsTrue?: boolean, section?: string, setting?: string) {
+        this._el = el as HTMLInputElement;
+        if (section && setting) {
+            this._el.onchange = () => {
+                const ev = new CustomEvent(`settings-${section}-${setting}`, { "detail": this._el.checked })
+                document.dispatchEvent(ev);
             };
-        };   
-        req.send(JSON.stringify(jfData));
+        }
+        if (depends) {
+            document.addEventListener(`settings-${section}-${depends}`, (event: boolEvent) => {
+                let el = this._el as HTMLElement;
+                if (el.parentElement.tagName == "LABEL") { el = el.parentElement; }
+                if (event.detail !== dependsTrue) {
+                    el.classList.add("unfocused");
+                } else {
+                    el.classList.remove("unfocused");
+                }
+            });
+        }
+    }
+}
+
+class BoolRadios {
+    private _els: NodeListOf<HTMLInputElement>;
+    get value(): string { return this._els[0].checked ? "true" : "false" }
+    set value(v: string) { 
+        const bool = (v == "true") ? true : false;
+        this._els[0].checked = bool;
+        this._els[1].checked = !bool;
+    }
+    constructor(name: string, depends?: string, dependsTrue?: boolean, section?: string, setting?: string) {
+        this._els = document.getElementsByName(name) as NodeListOf<HTMLInputElement>;
+        if (section && setting) {
+            const onchange = () => {
+                const ev = new CustomEvent(`settings-${section}-${setting}`, { "detail": this._els[0].checked })
+                document.dispatchEvent(ev);
+            };
+            this._els[0].onchange = onchange;
+            this._els[1].onchange = onchange;
+        }
+        if (depends) {
+            document.addEventListener(`settings-${section}-${depends}`, (event: boolEvent) => {
+                if (event.detail !== dependsTrue) {
+                    if (this._els[0].parentElement.tagName == "LABEL") {
+                        this._els[0].parentElement.classList.add("unfocused");
+                    }
+                    if (this._els[1].parentElement.tagName == "LABEL") {
+                        this._els[1].parentElement.classList.add("unfocused");
+                    }
+                } else {
+                    if (this._els[0].parentElement.tagName == "LABEL") {
+                        this._els[0].parentElement.classList.remove("unfocused");
+                    }
+                    if (this._els[1].parentElement.tagName == "LABEL") {
+                        this._els[1].parentElement.classList.remove("unfocused");
+                    }
+                }
+            });
+        }
+    }
+}
+
+class Radios {
+    private _el: HTMLInputElement;
+    get value(): string { return this._el.value; }
+    set value(v: string) { this._el.value = v; }
+    constructor(name: string, depends?: string, dependsTrue?: boolean, section?: string) {
+        this._el = document.getElementsByName(name)[0] as HTMLInputElement;
+        if (depends) {
+            document.addEventListener(`settings-${section}-${depends}`, (event: boolEvent) => {
+                let el = this._el as HTMLElement;
+                if (el.parentElement.tagName == "LABEL") { el = el.parentElement; }
+                if (event.detail !== dependsTrue) {
+                    el.classList.add("unfocused");
+                } else {
+                    el.classList.remove("unfocused");
+                }
+            });
+        }
+    }
+}
+
+class Select {
+    private _el: HTMLSelectElement;
+    get value(): string { return this._el.value; }
+    set value(v: string) { this._el.value = v; }
+    add = (val: string, label: string) => {
+        const item = document.createElement("option") as HTMLOptionElement;
+        item.value = val;
+        item.textContent = label;
+        this._el.appendChild(item);
+    }
+    set onchange(f: () => void) {
+        this._el.addEventListener("change", f);
+    }
+    constructor(el: HTMLElement, depends?: string, dependsTrue?: boolean, section?: string, setting?: string) {
+        this._el = el as HTMLSelectElement;
+        if (section && setting) {
+            this._el.addEventListener("change", () => {
+                const ev = new CustomEvent(`settings-${section}-${setting}`, { "detail": this.value ? true : false })
+                document.dispatchEvent(ev);
+            });
+        }
+        if (depends) {
+            document.addEventListener(`settings-${section}-${depends}`, (event: boolEvent) => {
+                let el = this._el as HTMLElement;
+                if (el.parentElement.tagName == "LABEL") { el = el.parentElement; }
+                if (event.detail !== dependsTrue) {
+                    el.classList.add("unfocused");
+                } else {
+                    el.classList.remove("unfocused");
+                }
+            });
+        }
+    }
+}
+
+class LangSelect extends Select {
+    constructor(page: string, el: HTMLElement) {
+        super(el);
+        _get("/lang/" + page, null, (req: XMLHttpRequest) => {
+            if (req.readyState == 4 && req.status == 200) {
+                for (let code in req.response) {
+                    this.add(code, req.response[code]);
+                }
+                this.value = "en-us";
+            }
+        });
+    }
+}
+
+window.lang = new lang(window.langFile as LangFile);
+html("language-description", window.lang.var("language", "description", `<a href="https://weblate.hrfee.pw">Weblate</a>`));
+html("email-description", window.lang.var("email", "description", `<a href="https://mailgun.com">Mailgun</a>`));
+
+const settings = {
+    "jellyfin": {
+        "type": new Select(get("jellyfin-type")),
+        "server": new Input(get("jellyfin-server")),
+        "public_server": new Input(get("jellyfin-public_server")),
+        "username": new Input(get("jellyfin-username")),
+        "password": new Input(get("jellyfin-password")),
+        "substitute_jellyfin_strings": new Input(get("jellyfin-substitute_jellyfin_strings"))
+    },
+    "ui": {
+        "language-form": new LangSelect("form", get("ui-language-form")),
+        "language-admin": new LangSelect("admin", get("ui-language-admin")),
+        "jellyfin_login": new BoolRadios("ui-jellyfin_login", "", false, "ui", "jellyfin_login"),
+        "admin_only": new Checkbox(get("ui-admin_only"), "jellyfin_login", true, "ui"),
+        "username": new Input(get("ui-username"), "", "", "jellyfin_login", false, "ui"),
+        "password": new Input(get("ui-password"), "", "", "jellyfin_login", false, "ui"),
+        "email": new Input(get("ui-email"), "", "", "jellyfin_login", false, "ui"),
+        "contact_message": new Input(get("ui-contact_message"), window.messages["ui"]["contact_message"]),
+        "help_message": new Input(get("ui-help_message"), window.messages["ui"]["help_message"]),
+        "success_message": new Input(get("ui-success_message"), window.messages["ui"]["success_message"])
+    },
+    "password_validation": {
+        "enabled": new Checkbox(get("password_validation-enabled"), "", false, "password_validation", "enabled"),
+        "min_length": new Input(get("password_validation-min_length"), "", 8, "enabled", true, "password_validation"),
+        "upper": new Input(get("password_validation-upper"), "", 1, "enabled", true, "password_validation"),
+        "lower": new Input(get("password_validation-lower"), "", 0, "enabled", true, "password_validation"),
+        "number": new Input(get("password_validation-number"), "", 1, "enabled", true, "password_validation"),
+        "special": new Input(get("password_validation-special"), "", 0, "enabled", true, "password_validation")
+    },
+    "email": {
+        "language": new LangSelect("email", get("email-language")),
+        "no_username": new Checkbox(get("email-no_username"), "method", true, "email"),
+        "use_24h": new BoolRadios("email-24h", "method", true, "email"),
+        "date_format": new Input(get("email-date_format"), "", "%d/%m/%y", "method", true, "email"),
+        "message": new Input(get("email-message"), window.messages["email"]["message"], "", "method", true, "email"),
+        "method": new Select(get("email-method"), "", false, "email", "method"),
+        "address": new Input(get("email-address"), "jellyfin@jellyf.in", "", "method", true, "email"),
+        "from": new Input(get("email-from"), "", "Jellyfin", "method", true, "email")
+    },
+    "password_resets": {
+        "enabled": new Checkbox(get("password_resets-enabled"), "", false, "password_resets", "enabled"),
+        "watch_directory": new Input(get("password_resets-watch_directory"), "", "", "enabled", true, "password_resets"),
+        "subject": new Input(get("password_resets-subject"), "", "", "enabled", true, "password_resets")
+    },
+    "notifications": {
+        "enabled": new Checkbox(get("notifications-enabled"))
+    },
+    "welcome_email": {
+        "enabled": new Checkbox(get("welcome_email-enabled"), "", false, "welcome_email", "enabled"),
+        "subject": new Input(get("welcome_email-subject"), "", "", "enabled", true, "welcome_email")
+    },
+    "invite_emails": {
+        "enabled": new Checkbox(get("invite_emails-enabled"), "", false, "invite_emails", "enabled"),
+        "subject": new Input(get("invite_emails-subject"), "", "", "enabled", true, "invite_emails"),
+        "url_base": new Input(get("invite_emails-url_base"), "", "", "enabled", true, "invite_emails")
+    },
+    "mailgun": {
+        "api_url": new Input(get("mailgun-api_url")),
+        "api_key": new Input(get("mailgun-api_key"))
+    },
+    "smtp": {
+        "username": new Input(get("smtp-username")),
+        "encryption": new Select(get("smtp-encryption")),
+        "server": new Input(get("smtp-server")),
+        "port": new Input(get("smtp-port")),
+        "password": new Input(get("smtp-password"))
+    },
+};
+
+const relatedToEmail = Array.from(document.getElementsByClassName("related-to-email"));
+settings["email"]["method"].onchange = () => {
+    const val = settings["email"]["method"].value;
+    const smtp = document.getElementById("email-smtp");
+    const mailgun = document.getElementById("email-mailgun");
+    if (val == "smtp") {
+        smtp.classList.remove("unfocused");
+        mailgun.classList.add("unfocused");
+        for (let el of relatedToEmail) {
+            el.classList.remove("unfocused");
+        }
+    } else if (val == "mailgun") {
+        mailgun.classList.remove("unfocused");
+        smtp.classList.add("unfocused");
+        for (let el of relatedToEmail) {
+            el.classList.remove("unfocused");
+        }
+    } else {
+        mailgun.classList.add("unfocused");
+        smtp.classList.add("unfocused");
+        for (let el of relatedToEmail) {
+            el.classList.add("unfocused");
+        }
     }
 };
 
-document.getElementById('submitButton').onclick = () => {
-    const submitButton = document.getElementById('submitButton') as HTMLInputElement;
-    submitButton.disabled = true;
-    submitButton.innerHTML =`
-        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="margin-right: 0.5rem;"></span>
-        Submitting...
-    `;
-    let config = {};
-    config['jellyfin'] = {};
-    config['ui'] = {};
-    config['password_validation'] = {};
-    config['email'] = {};
-    config['password_resets'] = {};
-    config['invite_emails'] = {};
-    config['mailgun'] = {};
-    config['smtp'] = {};
-    config['notifications'] = {};
-    // Page 2: Auth
-    if ((document.getElementById('jfAuthRadio') as HTMLInputElement).checked) {
-        config['ui']['jellyfin_login'] = 'true';
-        config['ui']['admin_only'] = ""+(document.getElementById("jfAuthAdminOnly") as HTMLInputElement).checked;
-    } else {
-        config['ui']['username'] = (document.getElementById('manualAuthUsername') as HTMLInputElement).value;
-        config['ui']['password'] = (document.getElementById('manualAuthPassword') as HTMLInputElement).value;
-        config['ui']['email'] = (document.getElementById('manualAuthEmail') as HTMLInputElement).value;
-    };
-    // Page 3: Connect to jellyfin
-    config['jellyfin']['server'] = (document.getElementById('jfHost') as HTMLInputElement).value;
-    let publicAddress = (document.getElementById('jfPublicHost') as HTMLInputElement).value;
-    if (publicAddress != "") {
-        config['jellyfin']['public_server'] = publicAddress;
-    }
-    config['jellyfin']['username'] = (document.getElementById('jfUser') as HTMLInputElement).value;
-    config['jellyfin']['password'] = (document.getElementById('jfPassword') as HTMLInputElement).value;
-    // Page 4: Email (Page 5, 6, 7 are only used if this is enabled)
-    if ((document.getElementById('emailDisabledRadio') as HTMLInputElement).checked) {
-        config['password_resets']['enabled'] = 'false';
-        config['invite_emails']['enabled'] = 'false';
-        config['notifications']['enabled'] = 'false';
-    } else {
-        if ((document.getElementById('emailSMTPRadio') as HTMLInputElement).checked) {
-            config['smtp']['encryption'] = (document.getElementById('emailSSL_TLS') as HTMLInputElement).checked ? "ssl_tls" : "starttls";
-            config['email']['method'] = 'smtp';
-            config['smtp']['server'] = (document.getElementById('emailSMTPServer') as HTMLInputElement).value;
-            config['smtp']['port'] = (document.getElementById('emailSMTPPort') as HTMLInputElement).value;
-            config['smtp']['password'] = (document.getElementById('emailSMTPPassword') as HTMLInputElement).value;
-            config['email']['address'] = (document.getElementById('emailSMTPAddress') as HTMLInputElement).value;
-        } else {
-            config['email']['method'] = 'mailgun';
-            config['mailgun']['api_url'] = (document.getElementById('emailMailgunURL') as HTMLInputElement).value;
-            config['mailgun']['api_key'] = (document.getElementById('emailMailgunKey') as HTMLInputElement).value;
-            config['email']['address'] = (document.getElementById('emailMailgunAddress') as HTMLInputElement).value;
-        };
-        config['notifications']['enabled'] = ""+(document.getElementById('notificationsEnabled') as HTMLInputElement).checked;
-        // Page 5: Email formatting
-        config['email']['from'] = (document.getElementById('emailSender') as HTMLInputElement).value;
-        config['email']['date_format'] = (document.getElementById('emailDateFormat') as HTMLInputElement).value;
-        config['email']['use_24h'] = ""+(document.getElementById('email24hTimeRadio') as HTMLInputElement).checked;
-        config['email']['message'] = (document.getElementById('emailMessage') as HTMLInputElement).value;
-        // Page 6: Password Resets
-        if (pwrEnabled.checked) {
-            config['password_resets']['enabled'] = 'true';
-            config['password_resets']['watch_directory'] = (document.getElementById('pwrJfPath') as HTMLInputElement).value;
-            config['password_resets']['subject'] = (document.getElementById('pwrSubject') as HTMLInputElement).value;
-        } else {
-            config['password_resets']['enabled'] = 'false';
-        };
-        // Page 7: Invite Emails
-        if ((document.getElementById('invEnabled') as HTMLInputElement).checked) {
-            config['invite_emails']['enabled'] = 'true';
-            config['invite_emails']['url_base'] = (document.getElementById('invURLBase') as HTMLInputElement).value;
-            config['invite_emails']['subject'] = (document.getElementById('invSubject') as HTMLInputElement).value;
-        } else {
-            config['invite_emails']['enabled'] = 'false';
-        };
-    };
-    // Page 8: Password Validation
-    if ((document.getElementById('valEnabled') as HTMLInputElement).checked) {
-        config['password_validation']['enabled'] = 'true';
-        config['password_validation']['min_length'] = (document.getElementById('valLength') as HTMLInputElement).value;
-        config['password_validation']['upper'] = (document.getElementById('valUpper') as HTMLInputElement).value;
-        config['password_validation']['lower'] = (document.getElementById('valLower') as HTMLInputElement).value;
-        config['password_validation']['number'] = (document.getElementById('valNumber') as HTMLInputElement).value;
-        config['password_validation']['special'] = (document.getElementById('valSpecial') as HTMLInputElement).value;
-    } else {
-        config['password_validation']['enabled'] = 'false';
-    };
-    // Page 9: Messages
-    config['ui']['contact_message'] = (document.getElementById('msgContact') as HTMLInputElement).value;
-    config['ui']['help_message'] = (document.getElementById('msgHelp') as HTMLInputElement).value;
-    config['ui']['success_message'] = (document.getElementById('msgSuccess') as HTMLInputElement).value;
-    // Send it
-    config["restart-program"] = true;
-    let req = new XMLHttpRequest();
-    req.open("POST", "/config", true);
-    req.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
-    req.responseType = 'json';
-    req.onreadystatechange = function() {
-        if (this.readyState == 4) {
-            submitButton.disabled = false;
-            submitButton.className = '';
-            submitButton.classList.add('btn', 'btn-success');
-            submitButton.textContent = 'Success';
-        };
-    };
-    req.send(JSON.stringify(config));
-};
-
+loadLangSelector("setup");

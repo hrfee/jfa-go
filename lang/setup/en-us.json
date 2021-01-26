@@ -47,12 +47,17 @@
         "embyNotice": "Emby support is limited and does not support password resets.",
         "internal": "Internal",
         "external": "External",
+        "replaceJellyfin": "Server name",
+        "replaceJellyfinNotice": "If given, this will replace any occurrence of 'Jellyfin' in the app.",
         "addressExternalNotice": "Leave blank to use the same address.",
         "testConnection": "Test Connection"
     },
     "email": {
         "title": "Email",
         "description": "jfa-go can send password reset PINs and various notifications through email. You can connect to an SMTP server, or use the {n} API.",
+        "method": "Sending method",
+        "useEmailAsUsername": "Use email addresses as username",
+        "useEmailAsUsernameNotice": "If enabled, new users will login to Jellyfin/Emby with their email address instead of a username.",
         "fromAddress": "From Address",
         "senderName": "Sender Name",
         "dateFormat": "Date Format",
@@ -67,15 +72,19 @@
         "title": "Notifications",
         "description": "If enabled, you can choose (per invite) to receive an email when an invite expires, or a user is created. If you didn't choose the Jellyfin login method, make sure you provided your email address."
     },
+    "welcomeEmails": {
+        "title": "Welcome emails",
+        "description": "If enabled, an email will be sent to new users with the Jellyfin/Emby URL and their username."
+    },
+    "inviteEmails": {
+        "title": "Invite Emails",
+        "description": "If enabled, you can send invites directly to a user's email address. Because you might be using a reverse proxy, you need to provide the URL invites are accessed from. Write your URL Base, and append '/invite'."
+    },
     "passwordResets": {
         "title": "Password Resets",
         "description": "When a user tries to reset their password, Jellyfin creates a file named 'passwordreset-*.json' which contains a PIN. jfa-go reads the file and sends the PIN to the user.",
         "pathToJellyfin": "Path to Jellyfin configuration directory",
         "pathToJellyfinNotice": "If you don't know where this is, try resetting your password in Jellyfin. A popup with '<path to jellyfin>/passwordreset-*.json' will appear."
-    },
-    "inviteEmails": {
-        "title": "Invite Emails",
-        "description": "If enabled, you can send invites directly to a user's email address. Because you might be using a reverse proxy, you need to provide the URL invites are accessed from. Write your URL Base, and append '/invite'."
     },
     "passwordValidation": {
         "title": "Password Validation",
