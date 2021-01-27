@@ -16,23 +16,23 @@
                 </div>
             </div>
         </span>
-        <div class="page-container">
+        <div class="page-container" id="page-container">
             <div class="card ~neutral !low mb-1">
                 <div class="row">
                     <img class="banner header" src="banner.svg" alt="jfa-go" />
                 </div>
                 <div class="row col flex center">
-                    <span class="heading">{{ .lang.StartPage.welcome }}</span>
+                    <span class="heading welcome">{{ .lang.StartPage.welcome }}</span>
                 </div>
                 <div class="row col flex center">
                     <p class="content">{{ .lang.StartPage.pressStart }}</p>
                 </div>
                 <section class="section ~neutral banner footer flex-expand middle">
                     <span class="support">{{ .lang.StartPage.httpsNotice }}</span>
-                    <span class="button ~urge !normal">{{ .lang.StartPage.start }}</span>
+                    <span class="button ~urge !normal next">{{ .lang.StartPage.start }}</span>
                 </section>
             </div>
-            <div class="card ~neutral !low mb-1">
+            <div class="card ~neutral !low mb-1 unfocused">
                 <span class="heading">{{ .lang.Language.title }}</span>
                 <p class="content" id="language-description"></p>
                 <label class="label">
@@ -61,7 +61,7 @@
                     <span class="button ~urge !normal next">{{ .lang.Strings.next }}</span>
                 </section>
             </div>
-            <div class="card ~neutral !low mb-1">
+            <div class="card ~neutral !low mb-1 unfocused">
                 <span class="heading">{{ .lang.Login.title }}</span>
                 <p class="content">{{ .lang.Login.description }}</p>
                 <div class="pl-1">
@@ -95,7 +95,7 @@
                     <span class="button ~urge !normal next">{{ .lang.Strings.next }}</span>
                 </section>
             </div>
-            <div class="card ~neutral !low mb-1">
+            <div class="card ~neutral !low mb-1 unfocused">
                 <span class="heading">{{ .lang.JellyfinEmby.title }}</span>
                 <p class="content">{{ .lang.JellyfinEmby.description }}</p>
                 <label class="label">
@@ -138,7 +138,7 @@
                     </div>
                 </section>
             </div>
-            <div class="card ~neutral !low mb-1">
+            <div class="card ~neutral !low mb-1 unfocused">
                 <span class="heading">{{ .lang.Email.title }}</span>
                 <p class="content" id="email-description"></p>
                 <div class="row">
@@ -181,6 +181,7 @@
                     </div>
                     <div class="col">
                         <div id="email-smtp">
+                            <p class="subheading">SMTP</p>
                             <label class="label">
                                 <span>{{ .lang.Email.encryption }}</span>
                                 <div class="select ~neutral !normal mt-half mb-1">
@@ -208,6 +209,7 @@
                             </label>
                         </div>
                         <div id="email-mailgun">
+                            <p class="subheading">Mailgun</p>
                             <label class="label">
                                 <span class="mt-half">{{ .lang.Email.mailgunApiURL }}</span>
                                 <input type="url" class="input ~neutral !normal mt-half mb-1" id="mailgun-api_url" placeholder="https://api.eu.mailgun.net/v3/mail.jellyf.in/messages">
@@ -226,7 +228,7 @@
                     </div>
                 </section>
             </div>
-            <div class="card ~neutral !low mb-1 related-to-email">
+            <div class="card ~neutral !low mb-1 unfocused related-to-email">
                 <span class="heading">{{ .lang.Notifications.title }}</span>
                 <p class="content">{{ .lang.Notifications.description }}</p>
                 <label class="row switch pb-1">
@@ -241,8 +243,14 @@
                     <span class="mt-half">{{ .lang.Strings.emailSubject }}</span>
                     <input type="text" class="input ~neutral !normal mt-half mb-1" id="welcome_email-subject" placeholder="{{ .emailLang.WelcomeEmail.title }}">
                 </label>
+                <section class="section ~neutral banner footer flex-expand middle">
+                    <span class="button ~neutral !normal back">{{ .lang.Strings.back }}</span>
+                    <div>
+                        <span class="button ~urge !normal next">{{ .lang.Strings.next }}</span>
+                    </div>
+                </section>
             </div>
-            <div class="card ~neutral !low mb-1 related-to-email">
+            <div class="card ~neutral !low mb-1 unfocused related-to-email">
                 <span class="heading">{{ .lang.InviteEmails.title }}</span>
                 <p class="content">{{ .lang.InviteEmails.description }}</p>
                 <label class="row switch pb-1">
@@ -263,7 +271,7 @@
                     </div>
                 </section>
             </div>
-            <div class="card ~neutral !low mb-1 related-to-email">
+            <div class="card ~neutral !low mb-1 unfocused related-to-email">
                 <span class="heading">{{ .lang.PasswordResets.title }}</span>
                 <p class="content">{{ .lang.PasswordResets.description }}</p>
                 <label class="row switch pb-1">
@@ -285,7 +293,7 @@
                     </div>
                 </section>
             </div>
-            <div class="card ~neutral !low mb-1">
+            <div class="card ~neutral !low mb-1 unfocused">
                 <span class="heading">{{ .lang.PasswordValidation.title }}</span>
                 <p class="content">{{ .lang.PasswordValidation.description }}</p>
                 <label class="row switch pb-1">
@@ -318,7 +326,7 @@
                     </div>
                 </section>
             </div>
-            <div class="card ~neutral !low mb-1">
+            <div class="card ~neutral !low mb-1 unfocused">
                 <span class="heading">{{ .lang.HelpMessages.title }}</span>
                 <p class="content">{{ .lang.HelpMessages.description }}</p>
                 <label class="label">
@@ -348,7 +356,7 @@
                     </div>
                 </section>
             </div>
-            <div class="card ~neutral !low mb-1">
+            <div class="card ~neutral !low mb-1 unfocused">
                 <div class="row col flex center">
                     <span class="heading">{{ .lang.EndPage.finished }}</span>
                 </div>
@@ -356,6 +364,7 @@
                     <p class="content">{{ .lang.EndPage.restartMessage }}</p>
                 </div>
                 <div class="row col flex center">
+                    <span class="button ~neutral !normal back mr-1">{{ .lang.Strings.back }}</span>
                     <span class="button ~urge !normal" id="restart">{{ .lang.Strings.submit }}</span>
                 </div>
             </div>
