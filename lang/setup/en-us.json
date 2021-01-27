@@ -14,7 +14,8 @@
         "message": "Message",
         "serverAddress": "Server Address",
         "emailSubject": "Email Subject",
-        "URL": "URL"
+        "URL": "URL",
+        "apiKey": "API Key"
     },
     "startPage": {
         "welcome": "Welcome!",
@@ -32,6 +33,19 @@
         "defaultAdminLang": "Default admin language",
         "defaultFormLang": "Default account creation language",
         "defaultEmailLang": "Default email language"
+    },
+    "general": {
+        "title": "General",
+        "listenAddress": "Listen Address",
+        "urlBase": "URL Base",
+        "urlBaseNotice": "Only needed if using a reverse proxy on a subdomain (e.g 'jellyf.in/accounts').",
+        "lightTheme": "Light",
+        "darkTheme": "Dark",
+        "useHTTPS": "Use HTTPS",
+        "httpsPort": "HTTPS Port",
+        "useHTTPSNotice": "Only recommended if you aren't using a reverse proxy.",
+        "pathToCertificate": "Path to certificate",
+        "pathToKeyFile": "Path to key file"
     },
     "login": {
         "title": "Login",
@@ -52,6 +66,11 @@
         "addressExternalNotice": "Leave blank to use the same address.",
         "testConnection": "Test Connection"
     },
+    "ombi": {
+        "title": "Ombi",
+        "description": "By connecting to Ombi, both a Jellyfin and Ombi account will be created when a user joins through jfa-go. After setup if finished, go to Settings to set a default profile for new ombi users.",
+        "apiKeyNotice": "Find this in the first tab of Ombi settings."
+    },
     "email": {
         "title": "Email",
         "description": "jfa-go can send password reset PINs and various notifications through email. You can connect to an SMTP server, or use the {n} API.",
@@ -65,8 +84,7 @@
         "time24h": "24h Time",
         "time12h": "12h Time",
         "encryption": "Encryption",
-        "mailgunApiURL": "API URL",
-        "mailgunApiKey": "API Key"
+        "mailgunApiURL": "API URL"
     },
     "notifications": {
         "title": "Notifications",

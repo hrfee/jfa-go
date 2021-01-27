@@ -8,6 +8,7 @@
         "emailAddress": "E-Mail-Adresse",
         "submit": "Absenden",
         "success": "Erfolg",
-        "error": "Fehler"
+        "error": "Fehler",
+        "theme": "Thema"
     }
 }

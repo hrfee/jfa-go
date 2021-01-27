@@ -91,9 +91,11 @@ type setupLang struct {
 	Strings            langSection `json:"strings"`
 	StartPage          langSection `json:"startPage"`
 	EndPage            langSection `json:"endPage"`
+	General            langSection `json:"general"`
 	Language           langSection `json:"language"`
 	Login              langSection `json:"login"`
 	JellyfinEmby       langSection `json:"jellyfinEmby"`
+	Ombi               langSection `json:"ombi"`
 	Email              langSection `json:"email"`
 	Notifications      langSection `json:"notifications"`
 	WelcomeEmails      langSection `json:"welcomeEmails"`

@@ -8,6 +8,7 @@
         "emailAddress": "E-mailadres",
         "submit": "Verstuur",
         "success": "Success",
-        "error": "Fout"
+        "error": "Fout",
+        "theme": "Thema"
     }
 }

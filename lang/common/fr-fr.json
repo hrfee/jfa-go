@@ -9,6 +9,7 @@
         "emailAddress": "Addresse Email",
         "submit": "Soumettre",
         "success": "Succès",
-        "error": "Erreur"
+        "error": "Erreur",
+        "theme": "Thème"
     }
 }

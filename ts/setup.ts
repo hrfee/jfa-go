@@ -212,6 +212,10 @@ const settings = {
         "substitute_jellyfin_strings": new Input(get("jellyfin-substitute_jellyfin_strings"))
     },
     "ui": {
+        "host": new Input(get("ui-host")),
+        "port": new Input(get("ui-port")),
+        "url_base": new Input(get("ui-url_base")),
+        "theme": new Select(get("ui-theme")),
         "language-form": new LangSelect("form", get("ui-language-form")),
         "language-admin": new LangSelect("admin", get("ui-language-admin")),
         "jellyfin_login": new BoolRadios("ui-jellyfin_login", "", false, "ui", "jellyfin_login"),
@@ -269,7 +273,33 @@ const settings = {
         "port": new Input(get("smtp-port")),
         "password": new Input(get("smtp-password"))
     },
+    "ombi": {
+        "enabled": new Checkbox(get("ombi-enabled"), "", false, "ombi", "enabled"),
+        "server": new Input(get("ombi-server"), "", "", "enabled", true, "ombi"),
+        "api_key": new Input(get("ombi-api_key"), "", "", "enabled", true, "ombi")
+    },
+    "advanced": {
+        "tls": new Checkbox(get("advanced-tls"), "", false, "advanced", "tls"),
+        "tls_port": new Input(get("advanced-tls_port"), "", "", "tls", true, "advanced"),
+        "tls_cert": new Input(get("advanced-tls_cert"), "", "", "tls", true, "advanced"),
+        "tls_key": new Input(get("advanced-tls_key"), "", "", "tls", true, "advanced")
+    }
 };
+
+(() => {
+    const checkTheme = () => {
+        if (settings["ui"]["theme"].value.includes("Dark")) {
+            document.documentElement.classList.add("dark-theme");
+            document.documentElement.classList.remove("light-theme");
+        } else {
+            document.documentElement.classList.add("light-theme");
+            document.documentElement.classList.remove("dark-theme");
+        }
+    };
+    settings["ui"]["theme"].onchange = checkTheme;
+    checkTheme();
+})();
+
 
 const restartButton = document.getElementById("restart") as HTMLSpanElement;
 const serialize = () => {
