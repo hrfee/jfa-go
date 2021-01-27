@@ -39,6 +39,22 @@
     }
 }
 
+.banner {
+    margin: calc(-1 * var(--spacing-4,1rem));
+}
+
+.banner.header {
+    margin-bottom: var(--spacing-4,1rem);
+}
+
+.banner.footer {
+    margin-top: var(--spacing-4,1rem);
+    padding: var(--spacing-4,1rem);
+}
+
+div.card:contains(section.banner.footer) {
+    padding-bottom: 0px;
+}
 
 .tab-button {
     font-size: 2rem;
@@ -254,6 +270,10 @@ sup.\~critical, .text-critical {
 
 .center {
     justify-content: center;
+}
+
+.middle {
+    align-items: center;
 }
 
 .no-lp {

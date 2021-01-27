@@ -1,0 +1,14 @@
+{
+    "meta": {
+        "name": "Deutsch (DE)"
+    },
+    "strings": {
+        "username": "Benutzername",
+        "password": "Passwort",
+        "emailAddress": "E-Mail-Adresse",
+        "submit": "Absenden",
+        "success": "Erfolg",
+        "error": "Fehler",
+        "theme": "Thema"
+    }
+}

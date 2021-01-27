@@ -329,6 +329,15 @@ func start(asDaemon, firstCall bool) {
 		}()
 	}
 
+	app.storage.lang.CommonPath = filepath.Join(app.localPath, "lang", "common")
+	app.storage.lang.FormPath = filepath.Join(app.localPath, "lang", "form")
+	app.storage.lang.AdminPath = filepath.Join(app.localPath, "lang", "admin")
+	app.storage.lang.EmailPath = filepath.Join(app.localPath, "lang", "email")
+	err := app.storage.loadLang()
+	if err != nil {
+		app.info.Fatalf("Failed to load language files: %+v\n", err)
+	}
+
 	if !firstRun {
 		app.host = app.config.Section("ui").Key("host").String()
 		if app.config.Section("advanced").Key("tls").MustBool(false) {
@@ -516,13 +525,6 @@ func start(asDaemon, firstCall bool) {
 				}
 			}
 		}
-		app.storage.lang.FormPath = filepath.Join(app.localPath, "lang", "form")
-		app.storage.lang.AdminPath = filepath.Join(app.localPath, "lang", "admin")
-		app.storage.lang.EmailPath = filepath.Join(app.localPath, "lang", "email")
-		err = app.storage.loadLang()
-		if err != nil {
-			app.info.Fatalf("Failed to load language files: %+v\n", err)
-		}
 
 		// Since email depends on language, the email reload in loadConfig won't work first time.
 		app.email = NewEmailer(app)
@@ -559,6 +561,11 @@ func start(asDaemon, firstCall bool) {
 	} else {
 		debugMode = false
 		address = "0.0.0.0:8056"
+		app.storage.lang.SetupPath = filepath.Join(app.localPath, "lang", "setup")
+		err := app.storage.loadLangSetup()
+		if err != nil {
+			app.info.Fatalf("Failed to load language files: %+v\n", err)
+		}
 	}
 	app.info.Println("Loading routes")
 	if debugMode {
@@ -578,12 +585,12 @@ func start(asDaemon, firstCall bool) {
 		app.debug.Println("Loading pprof")
 		pprof.Register(router)
 	}
+	router.GET("/lang/:page", app.GetLanguages)
 	if !firstRun {
 		router.GET("/", app.AdminPage)
 		router.GET("/accounts", app.AdminPage)
 		router.GET("/settings", app.AdminPage)
 		router.GET("/lang/:page/:file", app.ServeLang)
-		router.GET("/lang/:page", app.GetLanguages)
 		router.GET("/token/login", app.getTokenLogin)
 		router.GET("/token/refresh", app.getTokenRefresh)
 		router.POST("/newUser", app.NewUser)
@@ -618,9 +625,7 @@ func start(asDaemon, firstCall bool) {
 		}
 		app.info.Printf("Starting router @ %s", address)
 	} else {
-		router.GET("/", func(gc *gin.Context) {
-			gc.HTML(200, "setup.html", gin.H{})
-		})
+		router.GET("/", app.ServeSetup)
 		router.POST("/jellyfin/test", app.TestJF)
 		router.POST("/config", app.ModifyConfig)
 		app.info.Printf("Loading setup @ %s", address)

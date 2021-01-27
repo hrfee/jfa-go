@@ -1,0 +1,129 @@
+{
+    "meta": {
+        "name": "English (US)"
+    },
+    "strings": {
+        "pageTitle": "Setup - jfa-go",
+        "next": "Next",
+        "back": "Back",
+        "optional": "Optional",
+        "serverType": "Server Type",
+        "disabled": "Disabled",
+        "enabled": "Enabled",
+        "port": "Port",
+        "message": "Message",
+        "serverAddress": "Server Address",
+        "emailSubject": "Email Subject",
+        "URL": "URL",
+        "apiKey": "API Key"
+    },
+    "startPage": {
+        "welcome": "Welcome!",
+        "pressStart": "You'll need to do a few things to set up jfa-go. Press start to get continue.",
+        "httpsNotice": "Make sure you're accessing this page via HTTPS or on a private network.",
+        "start": "Start"
+    },
+    "endPage": {
+        "finished": "Finished!",
+        "restartMessage": "There are more settings you can configure on the admin page. Click below to restart, then refresh the page.",
+        "refreshPage": "Refresh"
+    },
+    "language": {
+        "title": "Language",
+        "description": "Community translations are available for most parts of jfa-go. You can choose the default languages below, but users can still change it if they wish. If you want to help translate, sign up to {n} to start contributing!",
+        "defaultAdminLang": "Default admin language",
+        "defaultFormLang": "Default account creation language",
+        "defaultEmailLang": "Default email language"
+    },
+    "general": {
+        "title": "General",
+        "listenAddress": "Listen Address",
+        "urlBase": "URL Base",
+        "urlBaseNotice": "Only needed if using a reverse proxy on a subdomain (e.g 'jellyf.in/accounts').",
+        "lightTheme": "Light",
+        "darkTheme": "Dark",
+        "useHTTPS": "Use HTTPS",
+        "httpsPort": "HTTPS Port",
+        "useHTTPSNotice": "Only recommended if you aren't using a reverse proxy.",
+        "pathToCertificate": "Path to certificate",
+        "pathToKeyFile": "Path to key file"
+    },
+    "login": {
+        "title": "Login",
+        "description": "To access the admin page, you need to login with a method below:",
+        "authorizeWithJellyfin": "Authorize with Jellyfin/Emby: Login details are shared with Jellyfin, which allows for multiple users.",
+        "authorizeManual": "Username and Password: Manually set the username and password.",
+        "adminOnly": "Admin users only (recommended)",
+        "emailNotice": "Your email address can be used to receive notifications."
+    },
+    "jellyfinEmby": {
+        "title": "Jellyfin/Emby",
+        "description": "An admin account is needed because the API does not allow user creation using an API key. You should create a separate account and check 'Allow this user to manage the server'. You can disable everything else. Once done, enter the login details here.",
+        "embyNotice": "Emby support is limited and does not support password resets.",
+        "internal": "Internal",
+        "external": "External",
+        "replaceJellyfin": "Server name",
+        "replaceJellyfinNotice": "If given, this will replace any occurrence of 'Jellyfin' in the app.",
+        "addressExternalNotice": "Leave blank to use the same address.",
+        "testConnection": "Test Connection"
+    },
+    "ombi": {
+        "title": "Ombi",
+        "description": "By connecting to Ombi, both a Jellyfin and Ombi account will be created when a user joins through jfa-go. After setup if finished, go to Settings to set a default profile for new ombi users.",
+        "apiKeyNotice": "Find this in the first tab of Ombi settings."
+    },
+    "email": {
+        "title": "Email",
+        "description": "jfa-go can send password reset PINs and various notifications through email. You can connect to an SMTP server, or use the {n} API.",
+        "method": "Sending method",
+        "useEmailAsUsername": "Use email addresses as username",
+        "useEmailAsUsernameNotice": "If enabled, new users will login to Jellyfin/Emby with their email address instead of a username.",
+        "fromAddress": "From Address",
+        "senderName": "Sender Name",
+        "dateFormat": "Date Format",
+        "dateFormatNotice": "Date follows the strftime format. For more info, visit {n}.",
+        "time24h": "24h Time",
+        "time12h": "12h Time",
+        "encryption": "Encryption",
+        "mailgunApiURL": "API URL"
+    },
+    "notifications": {
+        "title": "Notifications",
+        "description": "If enabled, you can choose (per invite) to receive an email when an invite expires, or a user is created. If you didn't choose the Jellyfin login method, make sure you provided your email address."
+    },
+    "welcomeEmails": {
+        "title": "Welcome emails",
+        "description": "If enabled, an email will be sent to new users with the Jellyfin/Emby URL and their username."
+    },
+    "inviteEmails": {
+        "title": "Invite Emails",
+        "description": "If enabled, you can send invites directly to a user's email address. Because you might be using a reverse proxy, you need to provide the URL invites are accessed from. Write your URL Base, and append '/invite'."
+    },
+    "passwordResets": {
+        "title": "Password Resets",
+        "description": "When a user tries to reset their password, Jellyfin creates a file named 'passwordreset-*.json' which contains a PIN. jfa-go reads the file and sends the PIN to the user.",
+        "pathToJellyfin": "Path to Jellyfin configuration directory",
+        "pathToJellyfinNotice": "If you don't know where this is, try resetting your password in Jellyfin. A popup with '<path to jellyfin>/passwordreset-*.json' will appear."
+    },
+    "passwordValidation": {
+        "title": "Password Validation",
+        "description": "If enabled, a set of password requirements will show on the account creation page, such as minimum length, uppercase/lowercase characters, etc.",
+        "length": "Length",
+        "uppercase": "Uppercase characters",
+        "lowercase": "Lowercase characters",
+        "numbers": "Numbers",
+        "special": "Special characters (%, *, etc.)"
+    },
+    "helpMessages": {
+        "title": "Help Messages",
+        "description": "These messages will display in the account creation page and in some emails.",
+        "contactMessage": "Contact Message",
+        "contactMessageNotice": "Displays at the bottom of all pages except admin.",
+        "helpMessage": "Help Message",
+        "helpMessageNotice": "Displays on the account creation page.",
+        "successMessage": "Success Message",
+        "successMessageNotice": "Displays when a user creates their account.",
+        "emailMessage": "Email Message",
+        "emailMessageNotice": "Displays at the bottom of emails."
+    }
+}

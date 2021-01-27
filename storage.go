@@ -55,9 +55,17 @@ type Lang struct {
 	Form            formLangs
 	EmailPath       string
 	Email           emailLangs
+	CommonPath      string
+	Common          commonLangs
+	SetupPath       string
+	Setup           setupLangs
 }
 
 func (st *Storage) loadLang() (err error) {
+	err = st.loadLangCommon()
+	if err != nil {
+		return
+	}
 	err = st.loadLangAdmin()
 	if err != nil {
 		return
@@ -68,6 +76,20 @@ func (st *Storage) loadLang() (err error) {
 	}
 	err = st.loadLangEmail()
 	return
+}
+
+func (common *commonLangs) patchCommon(lang string, other *langSection) {
+	if *other == nil {
+		*other = langSection{}
+	}
+	if _, ok := (*common)[lang]; !ok {
+		lang = "en-us"
+	}
+	for n, ev := range (*common)[lang].Strings {
+		if v, ok := (*other)[n]; !ok || v == "" {
+			(*other)[n] = ev
+		}
+	}
 }
 
 // If a given language has missing values, fill it in with the english value.
@@ -97,6 +119,49 @@ func patchQuantityStrings(english, other *map[string]quantityString) {
 	}
 }
 
+func (st *Storage) loadLangCommon() error {
+	st.lang.Common = map[string]commonLang{}
+	var english commonLang
+	load := func(fname string) error {
+		index := strings.TrimSuffix(fname, filepath.Ext(fname))
+		lang := commonLang{}
+		f, err := ioutil.ReadFile(filepath.Join(st.lang.CommonPath, fname))
+		if err != nil {
+			return err
+		}
+		if substituteStrings != "" {
+			f = []byte(strings.ReplaceAll(string(f), "Jellyfin", substituteStrings))
+		}
+		err = json.Unmarshal(f, &lang)
+		if err != nil {
+			return err
+		}
+		if fname != "en-us.json" {
+			patchLang(&english.Strings, &lang.Strings)
+		}
+		st.lang.Common[index] = lang
+		return nil
+	}
+	err := load("en-us.json")
+	if err != nil {
+		return err
+	}
+	english = st.lang.Common["en-us"]
+	files, err := ioutil.ReadDir(st.lang.CommonPath)
+	if err != nil {
+		return err
+	}
+	for _, f := range files {
+		if f.Name() != "en-us.json" {
+			err = load(f.Name())
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
 func (st *Storage) loadLangAdmin() error {
 	st.lang.Admin = map[string]adminLang{}
 	var english adminLang
@@ -114,6 +179,7 @@ func (st *Storage) loadLangAdmin() error {
 		if err != nil {
 			return err
 		}
+		st.lang.Common.patchCommon(index, &lang.Strings)
 		if fname != "en-us.json" {
 			patchLang(&english.Strings, &lang.Strings)
 			patchLang(&english.Notifications, &lang.Notifications)
@@ -164,6 +230,7 @@ func (st *Storage) loadLangForm() error {
 		if err != nil {
 			return err
 		}
+		st.lang.Common.patchCommon(index, &lang.Strings)
 		if fname != "en-us.json" {
 			patchLang(&english.Strings, &lang.Strings)
 			patchLang(&english.Notifications, &lang.Notifications)

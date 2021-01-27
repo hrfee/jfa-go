@@ -51,7 +51,8 @@ export const rmAttr = (el: HTMLElement, attr: string): void => {
 export const addAttr = (el: HTMLElement, attr: string): void => el.classList.add(attr);
 export const _get = (url: string, data: Object, onreadystatechange: (req: XMLHttpRequest) => void): void => {
     let req = new XMLHttpRequest();
-    req.open("GET", window.URLBase + url, true);
+    if (window.URLBase) { url = window.URLBase + url; }
+    req.open("GET", url, true);
     req.responseType = 'json';
     req.setRequestHeader("Authorization", "Bearer " + window.token);
     req.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');

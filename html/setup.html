@@ -1,374 +1,460 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="light-theme">
     <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-alpha3/dist/js/bootstrap.min.js" integrity="sha384-t6I8D5dJmMXjCsRLhSzCltuhNZg6P10kE0m0nAncLUjH6GeYLhRU1zfLoW3QNQDF" crossorigin="anonymous"></script>
-        <style>
-            .card-body {
-                width: 100%;
-                height: 100%;
-                padding: 10%;
-            }
-            .slider {
-                width: 100%;
-                height: 100%;
-                display: flex;
-                overflow-x: hidden;
-                -webkit-overflow-scrolling: none;
-                scroll-snap-type: x mandatory;
-            }
-            .slider > div {
-                scroll-snap-align: start;
-            }
-            .slide {
-                width: 100%;
-                flex-shrink: 0;
-                height: 100%;
-                margin: 10%;
-            }
-        </style>
-        <title>Setup - jfa-go</title>
+        <link rel="stylesheet" type="text/css" href="css/bundle.css">
+        {{ template "header.html" . }}
+        <title>{{ .lang.Strings.pageTitle }}</title>
     </head>
-    <body>
-        <div class="pageContainer">
-            <div class="container">
+    <body class="max-w-full overflow-x-hidden section">
+        <div id="notification-box"></div>
+        <span class="dropdown" tabindex="0" id="lang-dropdown">
+            <span class="button ~urge dropdown-button">
+                <i class="ri-global-line"></i>
+                <span class="ml-1 chev"></span>
+            </span>
+            <div class="dropdown-display">
+                <div class="card ~neutral !low" id="lang-list">
+                </div>
+            </div>
+        </span>
+        <div class="page-container" id="page-container">
+            <div class="card ~neutral !low mb-1">
                 <div class="row">
-                    <div class="col-sm"></div>
-                    <div id="setupCarousel" class="col-md-auto slider">
-                        <div class="slide card text-center" id="page-1">
-                            <div class="card-body">
-                                <h5 class="card-title">Welcome!</h5>
-                                <p class="card-text">
-                                You'll need to do a few things to start using jfa-go. Click below to get started, or quit and edit the config file manually.
-                                </p>
-                                <a class="btn btn-primary nextButton" href="#page-2">Get Started</a>
+                    <img class="banner header" src="banner.svg" alt="jfa-go" />
+                </div>
+                <div class="row col flex center">
+                    <span class="heading welcome">{{ .lang.StartPage.welcome }}</span>
+                </div>
+                <div class="row col flex center">
+                    <p class="content">{{ .lang.StartPage.pressStart }}</p>
+                </div>
+                <section class="section ~neutral banner footer flex-expand middle">
+                    <span class="support">{{ .lang.StartPage.httpsNotice }}</span>
+                    <span class="button ~urge !normal next">{{ .lang.StartPage.start }}</span>
+                </section>
+            </div>
+            <div class="card ~neutral !low mb-1 unfocused">
+                <span class="heading">{{ .lang.Language.title }}</span>
+                <p class="content" id="language-description"></p>
+                <label class="label">
+                    <span class="mt-half">{{ .lang.Language.defaultAdminLang }}</span>
+                    <div class="select ~neutral !normal mt-half mb-1">
+                        <select id="ui-language-admin">
+                        </select>
+                    </div>
+                </label>
+                <label class="label">
+                    <span class="mt-half">{{ .lang.Language.defaultFormLang }}</span>
+                    <div class="select ~neutral !normal mt-half mb-1">
+                        <select id="ui-language-form">
+                        </select>
+                    </div>
+                </label>
+                <label class="label">
+                    <span class="mt-half">{{ .lang.Language.defaultEmailLang }}</span>
+                    <div class="select ~neutral !normal mt-half mb-1">
+                        <select id="email-language">
+                        </select>
+                    </div>
+                </label>
+                <section class="section ~neutral banner footer flex-expand middle">
+                    <span class="button ~neutral !normal back">{{ .lang.Strings.back }}</span>
+                    <span class="button ~urge !normal next">{{ .lang.Strings.next }}</span>
+                </section>
+            </div>
+            <div class="card ~neutral !low mb-1 unfocused">
+                <span class="heading">{{ .lang.General.title }}</span>
+                <div class="row">
+                    <div class="col">
+                        <label class="label">
+                            <span class="mt-half">{{ .lang.General.listenAddress }}</span>
+                            <input type="url" class="input ~neutral !normal mt-half mb-1" id="ui-host" value="0.0.0.0">
+                        </label>
+                        <label class="row switch">
+                            <input type="checkbox" id="advanced-tls"><span>{{ .lang.General.useHTTPS }}</span>
+                        </label>
+                        <p class="support mb-1">{{ .lang.General.useHTTPSNotice }}</p>
+                        <label class="label">
+                            <span class="mt-half">{{ .lang.General.pathToCertificate }}</span>
+                            <input type="text" class="input ~neutral !normal mt-half mb-1" id="advanced-tls_cert">
+                        </label>
+                        <label class="label">
+                            <span class="mt-half">{{ .lang.General.pathToKeyFile }}</span>
+                            <input type="text" class="input ~neutral !normal mt-half mb-1" id="advanced-tls_key">
+                        </label>
+                    </div>
+                    <div class="col">
+                        <label class="label">
+                            <span class="mt-half">{{ .lang.Strings.port }}</span>
+                            <input type="number" class="input ~neutral !normal mt-half mb-1" id="ui-port" value="8056">
+                        </label>
+                        <label class="label">
+                            <span class="mt-half">{{ .lang.General.httpsPort }}</span>
+                            <input type="number" class="input ~neutral !normal mt-half mb-1" id="advanced-tls_port" value="8057">
+                        </label>
+                        <label class="label">
+                            <span class="mt-half">{{ .lang.General.urlBase }} ({{ .lang.Strings.optional }})</span>
+                            <input type="url" class="input ~neutral !normal mt-half" id="ui-url_base">
+                            <p class="support mb-1">{{ .lang.General.urlBaseNotice }}</p>
+                        </label>
+                        <label class="label">
+                            <span>{{ .lang.Strings.theme }}</span>
+                            <div class="select ~neutral !normal mt-half mb-1">
+                                <select id="ui-theme">
+                                    <option value="Jellyfin (Dark)">{{ .lang.General.darkTheme }}</option>
+                                    <option value="Default (Light)">{{ .lang.General.lightTheme }}</option>
+                                </select>
                             </div>
-                            <div class="card-footer">
-                                <small>Note: Make sure you are accessing this page through HTTPS, or on a private network.</small>
+                        </label>
+                    </div>
+                </div>
+                <section class="section ~neutral banner footer flex-expand middle">
+                    <span class="button ~neutral !normal back">{{ .lang.Strings.back }}</span>
+                    <span class="button ~urge !normal next">{{ .lang.Strings.next }}</span>
+                </section>
+            </div>
+            <div class="card ~neutral !low mb-1 unfocused">
+                <span class="heading">{{ .lang.Login.title }}</span>
+                <p class="content">{{ .lang.Login.description }}</p>
+                <div class="pl-1">
+                    <label class="row switch pb-1">
+                        <input type="radio" name="ui-jellyfin_login" value="true" checked><span>{{ .lang.Login.authorizeWithJellyfin }}</span>
+                    </label>
+                    <label class="row switch pl-1 pb-1">
+                        <input type="checkbox" id="ui-admin_only"><span>{{ .lang.Login.adminOnly }}</span>
+                    </label>
+                    <label class="row switch pb-1">
+                        <input type="radio" name="ui-jellyfin_login" value="false"><span>{{ .lang.Login.authorizeManual }}</span>
+                    </label>
+                </div>
+                <div id="login-manual">
+                    <label class="label">
+                        <span class="mt-half">{{ .lang.Strings.username }}</span>
+                        <input type="text" id="ui-username" class="input ~neutral !normal mt-half mb-1" placeholder="{{ .lang.Strings.username }}">
+                    </label>
+                    <label class="label">
+                        <span>{{ .lang.Strings.password }}</span>
+                        <input type="password" id="ui-password" class="input ~neutral !normal mt-half mb-1" placeholder="{{ .lang.Strings.password }}">
+                    </label>
+                    <label class="label">
+                        <span>{{ .lang.Strings.emailAddress }} ({{ .lang.Strings.optional }})</span>
+                        <input type="email" id="ui-email" class="input ~neutral !normal mt-half" placeholder="email@address">
+                        <span class="support mb-1">{{ .lang.Login.emailNotice }}</span>
+                    </label>
+                </div>
+                <section class="section ~neutral banner footer flex-expand middle">
+                    <span class="button ~neutral !normal back">{{ .lang.Strings.back }}</span>
+                    <span class="button ~urge !normal next">{{ .lang.Strings.next }}</span>
+                </section>
+            </div>
+            <div class="card ~neutral !low mb-1 unfocused">
+                <span class="heading">{{ .lang.JellyfinEmby.title }}</span>
+                <p class="content">{{ .lang.JellyfinEmby.description }}</p>
+                <div class="row">
+                    <div class="col">
+                        <label class="label">
+                            <span>{{ .lang.Strings.serverType }}</span>
+                            <div class="select ~neutral !normal mt-half">
+                                <select id="jellyfin-type">
+                                    <option value="jellyfin">Jellyfin</option>
+                                    <option value="emby">Emby</option>
+                                </select>
                             </div>
-                        </div>
-                        <div class="slide card" id="page-2">
-                            <div class="card-body">
-                                <h5 class="card-title">Login</h5>
-                                <p class="card-text">
-                                To access the admin page, you'll need to login. Choose how below.
-                                <ul>
-                                    <li><b>Authorize through Jellyfin: </b>Checks credentials with Jellyfin, allowing you to share login details and grant multiple users access.</li>
-                                    <li><b>Username & Password: </b>Set your own username and password manually.</li>
-                                </ul>
-                                <div class="form-check" id="jfAuthFormGroup">
-                                    <input class="form-check-input" type="radio" name="auth" id="jfAuthRadio" value="jfAuth" checked>
-                                    <label class="form-check-label" for="jfAuthRadio">
-                                        Authorize through Jellyfin
-                                    </label>
-                                </div>
-                                <div id="adminOnlyArea">
-                                    <div class="form-check" style="margin-left: 1rem;">
-                                        <input type="checkbox" class="form-check-input" id="jfAuthAdminOnly" checked>
-                                        <label for="jfAuthAdminOnly" class="form-check-label">Allow admin users only</label>
-                                    </div>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="auth" id="manualAuthRadio" value="manualAuth">
-                                    <label class="form-check-label" for="manualAuthRadio">
-                                        Manual username &amp; password
-                                    </label>
-                                </div>
-                                <div id="manualAuthArea">
-                                    <div class="form-group">
-                                        <label for="manualAuthUsername">Username</label>
-                                        <input type="text" class="form-control" id="manualAuthUsername" placeholder="Username">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="manualAuthPassword">Password</label>
-                                        <input type="password" class="form-control" id="manualAuthPassword" placeholder="Password">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="manualAuthEmail">Email (Optional)</label>
-                                        <input type="email" class="form-control" id="manualAuthEmail" placeholder="example@example.com">
-                                        <small class="form-text text-muted">Your email address is only required if you want to recieve activity notifications.</small>
-                                    </div>
-                                </div>
-                                </p>
-                                <div class="btn-group float-right" role="group" aria-label="Back/Next buttons">
-                                    <a class="btn btn-secondary backButton" href="#page-1">Back</a>
-                                    <a class="btn btn-primary nextButton" href="#page-3">Next</a>
-                                </div>
+                            <p class="support mb-1">{{ .lang.JellyfinEmby.embyNotice }}</p>
+                        </label>
+                        <label class="label">
+                            <span class="mt-half">{{ .lang.JellyfinEmby.replaceJellyfin }} ({{ .lang.Strings.optional }})</span>
+                            <input type="text" class="input ~neutral !normal mt-half" id="jellyfin-substitute_jellyfin_strings">
+                            <p class="support mb-1">{{ .lang.JellyfinEmby.replaceJellyfinNotice }}</p>
+                        </label>
+                        <label class="label">
+                            <span class="mt-half">{{ .lang.Strings.username }}</span>
+                            <input type="text" id="jellyfin-username" class="input ~neutral !normal mt-half mb-1" placeholder="{{ .lang.Strings.username }}">
+                        </label>
+                        <label class="label">
+                            <span>{{ .lang.Strings.password }}</span>
+                            <input type="password" id="jellyfin-password" class="input ~neutral !normal mt-half mb-1" placeholder="{{ .lang.Strings.password }}">
+                        </label>
+                    </div>
+                    <div class="col">
+                        <label class="label">
+                            <span class="mt-half">{{ .lang.Strings.serverAddress }} ({{ .lang.JellyfinEmby.internal }})</span>
+                            <input type="url" class="input ~neutral !normal mt-half mb-1" id="jellyfin-server" placeholder="http://jellyf.in:80">
+                        </label>
+                        <label class="label">
+                            <span class="mt-half">{{ .lang.Strings.serverAddress }} ({{ .lang.JellyfinEmby.external }})</span>
+                            <input type="url" class="input ~neutral !normal mt-half" id="jellyfin-public_server" placeholder="https://jellyf.in">
+                            <p class="support mb-1">{{ .lang.JellyfinEmby.addressExternalNotice }}</p>
+                        </label>
+                    </div>
+                </div>
+                <section class="section ~neutral banner footer flex-expand middle">
+                    <span class="button ~neutral !normal back">{{ .lang.Strings.back }}</span>
+                    <div>
+                        <span class="button ~urge !normal" id="jellyfin-test-connection">{{ .lang.JellyfinEmby.testConnection }}</span>
+                        <span class="button ~urge !normal next" disabled>{{ .lang.Strings.next }}</span>
+                    </div>
+                </section>
+            </div>
+            <div class="card ~neutral !low mb-1 unfocused">
+                <span class="heading">{{ .lang.Ombi.title }}</span>
+                <p class="content">{{ .lang.Ombi.description }}</p>
+                <label class="row switch pb-1">
+                    <input type="checkbox" id="ombi-enabled"><span>{{ .lang.Strings.enabled }}</span>
+                </label>
+                <label class="label">
+                    <span class="mt-half">{{ .lang.Strings.serverAddress }}</span>
+                    <input type="url" class="input ~neutral !normal mt-half mb-1" id="ombi-server" placeholder="ombi.jellyf.in">
+                </label>
+                <label class="label">
+                    <span class="mt-half">{{ .lang.Strings.apiKey }}</span>
+                    <input type="text" class="input ~neutral !normal mt-half" id="ombi-api_key">
+                    <p class="support mb-1">{{ .lang.Ombi.apiKeyNotice }}</p>
+                </label>
+                <section class="section ~neutral banner footer flex-expand middle">
+                    <span class="button ~neutral !normal back">{{ .lang.Strings.back }}</span>
+                    <div>
+                        <span class="button ~urge !normal next">{{ .lang.Strings.next }}</span>
+                    </div>
+                </section>
+            </div>
+            <div class="card ~neutral !low mb-1 unfocused">
+                <span class="heading">{{ .lang.Email.title }}</span>
+                <p class="content" id="email-description"></p>
+                <div class="row">
+                    <div class="col">
+                        <label class="label">
+                            <span>{{ .lang.Email.method }}</span>
+                            <div class="select ~neutral !normal mt-half mb-1">
+                                <select id="email-method">
+                                    <option value="">{{ .lang.Strings.disabled }}</option>
+                                    <option value="smtp">SMTP</option>
+                                    <option value="mailgun">Mailgun</option>
+                                </select>
                             </div>
-                        </div>
-                        <div class="slide card" id="page-3">
-                            <div class="card-body">
-                                <h5 class="card-title">Jellyfin</h5>
-                                <p class="card-text">
-                                jfa-go needs admin access so that it can create users, as this is currently not permitted via API tokens. 
-                                You should create a separate account for it, checking 'Allow this user to manage the server'. You can disable everything else. Once done, enter the credentials here.
-                                <div class="form-group">
-                                    <label for="jfHost">Host (For internal use)</label>
-                                    <input type="url" class="form-control" id="jfHost" placeholder="http://jellyf.in:443" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="jfPublicHost">Public Host (For access by users)</label>
-                                    <input type="url" class="form-control" id="jfPublicHost" placeholder="Leave blank to use the above address.">
-                                </div>
-                                <div class="form-group">
-                                    <label for="jfUser">Username</label>
-                                    <input type="text" class="form-control" id="jfUser" placeholder="Username" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="jfPassword">Password</label>
-                                    <input type="password" class="form-control" id="jfPassword" placeholder="Password" required>
-                                </div>
-                                <div style="margin-top: 1rem;">
-                                    <button class="btn btn-secondary" id="jfTestButton">Test</button>
-                                    <div class="btn-group float-right" role="group" aria-label="Back/Next buttons">
-                                        <a class="btn btn-secondary backButton" href="#page-2">Back</a>
-                                        <a class="btn btn-primary nextButton disabled" id="jfNextButton" aria-disabled="true" href="#page-4">Next</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="slide card" id="page-4">
-                            <div class="card-body">
-                                <h5 class="card-title">Email</h5>
-                                <p class="card-text">jfa-go is capable of sending a PIN code when a user tries to reset their password on Jellyfin. One can also choose to send an invite code directly to an email address. This can be done through SMTP or through <a href="https://www.mailgun.com/">Mailgun's</a> API. 
-                                <div class="form-group">
-                                    <div class="form-check" id="emailDisabled">
-                                        <input class="form-check-input" type="radio" name="email" id="emailDisabledRadio" value="emailDisabled">
-                                        <label class="form-check-label" for="emailDisabledRadio">
-                                            Disabled
-                                        </label>
-                                    </div>
-                                    <div class="form-check" id="emailSMTP">
-                                        <input class="form-check-input" type="radio" name="email" id="emailSMTPRadio" value="emailSMTP" checked>
-                                        <label class="form-check-label" for="emailSMTPRadio">
-                                            SMTP
-                                        </label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="email" id="emailMailgunRadio" value="emailMailgun">
-                                        <label class="form-check-label" for="emailMailgunRadio">
-                                            Mailgun API
-                                        </label>
-                                    </div>
-                                </div>
-                                <div id="emailSMTPArea">
-                                    <div class="form-group form-check form-switch">
-                                        <input type="checkbox" class="form-check-input" id="emailSSL_TLS" checked>
-                                        <label for="emailSSL_TLS" class="form-check-label" id="emailSSL_TLSLabel">Use SSL/TLS</label>
-                                        <small class="form-text text-muted">Note: SSL/TLS usually uses port 465, whereas STARTTLS usually uses 587.</small>
-                                    </div>
-                                    <div class="form-group form-row">
-                                        <div class="col">
-                                           <input type="text" class="form-control" id="emailSMTPServer" placeholder="SMTP Server Address">
-                                        </div>
-                                        <div class="col">
-                                           <input type="number" class="form-control" id="emailSMTPPort" placeholder="Port">
-                                        </div>
-                                    </div>
-                                    <div class="form-group form-row">
-                                        <div class="col">
-                                           <input type="email" class="form-control" id="emailSMTPAddress" placeholder="jellyfin@jellyf.in">
-                                        </div>
-                                        <div class="col">
-                                           <input type="password" class="form-control" id="emailSMTPPassword" placeholder="Password">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div id="emailMailgunArea">
-                                    <div class="form-group">
-                                       <input type="url" class="form-control" id="emailMailgunURL" placeholder="API URL">
-                                    </div>
-                                    <div class="form-group">
-                                       <input type="password" class="form-control" id="emailMailgunKey" placeholder="API Key">
-                                    </div>
-                                    <div class="form-group">
-                                       <input type="email" class="form-control" id="emailMailgunAddress" placeholder="jellyfin@jellyf.in">
-                                    </div>
-                                </div>
-                                <div id="emailCommonArea">
-                                    <h5 class="card-title">Notifications</h5>
-                                    <p class="card-text">Enabling notifications will allow you to choose (per-invite) to recieve emails when an invite expires, or when a new user is created. If you chose to use Manual auth instead of Jellyfin auth previously, make sure you provided an email address.</p>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" id="notificationsEnabled">
-                                        <label for="notificationsEnabled" class="form-check-label">Enabled</label>
-    
-                                    </div>
-                                </div>
-                                </p>
-                                <div class="btn-group float-right" role="group" aria-label="Back/Next buttons">
-                                    <a class="btn btn-secondary backButton" href="#page-3">Back</a>
-                                    <a class="btn btn-primary nextButton" id="emailNextButton" href="#page-5">Next</a>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="slide card" id="page-5">
-                            <div class="card-body">
-                                <h5 class="card-title">Email</h5>
-                                <p class="card-text">Just a few more things to get your emails looking great.
-                                <div class="form-group">
-                                    <label for="emailSender">Sender: The name shown when a user receives an email.</label>
-                                    <input type="text" class="form-control" id="emailSender" value="Jellyfin">
-                                </div>
-                                <div class="form-group">
-                                    <label for="emailDateFormat">Date Format: Follows <a target="_blank" href="https://strftime.org/">strftime</a> format.</label>
-                                    <input type="text" class="form-control" id="emailDateFormat" value="%d/%m/%y">
-                                </div>
-                                <div class="form-group form-check">
-                                    <input class="form-check-input" type="radio" name="time" id="email24hTimeRadio" value="email24hTime" checked>
-                                    <label class="form-check-label" for="email24hTimeRadio">24h time</label>
-                                </div>
-                                <div class="form-group form-check">
-                                    <input class="form-check-input" type="radio" name="time" id="email12hTimeRadio" value="email12hTime">
-                                    <label class="form-check-label" for="email12hTimeRadio">12h time</label>
-                                </div>
-                                <div class="form-group">
-                                    <label for="emailMessage">Message: Short message displayed at the bottom of emails.</label>
-                                    <input type="text" class="form-control" id="emailMessage" value="Need help? Contact me.">
-                                </div>
-                                </p>
-                                <div class="btn-group float-right" role="group" aria-label="Back/Next buttons">
-                                    <a class="btn btn-secondary backButton" href="#page-4">Back</a>
-                                    <a class="btn btn-primary nextButton" href="#page-6">Next</a>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="slide card" id="page-6">
-                            <div class="card-body">
-                                <h5 class="card-title">Password Resets</h5>
-                                <p class="card-text">
-                                When a user tries to reset their password in jellyfin, it informs them that a file has been created, named "passwordreset*.json" where * is a number. jfa-go will then read this file, and send the PIN to the user's email. Try it now, and put the folder that it informs you it put the file in below. Also, if enter a custom email subject if you don't like the default one.
-                                </p>
-                                <div class="form-group form-check">
-                                    <input type="checkbox" class="form-check-input" id="pwrEnabled" value="enabled">
-                                    <label class="form-check-label" for="pwrEnabled">Enabled</label>
-                                </div>
-                                <div id="pwrArea">
-                                    <div class="form-group">
-                                        <label for="pwrJfPath">Path to Jellyfin</label>
-                                        <input type="text" class="form-control" id="pwrJfPath" placeholder="Folder">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="pwrSubject">Email Subject</label>
-                                        <input type="text" class="form-control" id="pwrSubject" value="Password Reset - Jellyfin">
-                                    </div>
-                                </div>
-                                <div class="btn-group float-right" role="group" aria-label="Back/Next buttons">
-                                    <a class="btn btn-secondary backButton" href="#page-5">Back</a>
-                                    <a class="btn btn-primary nextButton" href="#page-7">Next</a>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="slide card" id="page-7">
-                            <div class="card-body">
-                                <h5 class="card-title">Invite Emails</h5>
-                                <p class="card-text">
-                                Allows you to send an invite code directly to a specified email address.
-                                Since you'll most likely being running this behind a reverse proxy, the program has no way of knowing the address it will be accessed from. This is needed for sending emails with links. Write your URL Base with the protocol and append '/invite', e.g: 
-                                <ul>
-                                    <li>On the local network, you might use <a href="#">http://localhost:8056/invite</a></li>
-                                    <li>Exposed to the internet, you might use <a href="#">https://accounts.jellyf.in/invite</a></li>
-                                </ul>
-                                </p>
-                                <div class="form-group form-check">
-                                    <input type="checkbox" class="form-check-input" id="invEnabled" value="enabled" checked>
-                                    <label class="form-check-label" for="invEnabled">Enabled</label>
-                                </div>
-                                <div id="invArea">
-                                    <div class="form-group">
-                                        <label for="invURLBase">URL Base</label>
-                                        <input type="url" class="form-control" id="invURLBase" placeholder="https://accounts.jellyf.in/invite">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="invSubject">Subject</label>
-                                        <input type="text" class="form-control" id="invSubject" value="Invite - Jellyfin">
-                                    </div>
-                                </div>
-                                <div class="btn-group float-right" role="group" aria-label="Back/Next buttons">
-                                    <a class="btn btn-secondary backButton" href="#page-6">Back</a>
-                                    <a class="btn btn-primary nextButton" href="#page-8">Next</a>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="slide card" id="page-8">
-                            <div class="card-body">
-                                <h5 class="card-title">Password Validation</h5>
-                                <p class="card-text">
-                                Enabling this will display a set of password requirements on the create account page, such as minimum length, uppercase characters, special characters, etc.
-                                </p>
-                                <div class="form-group form-check">
-                                    <input type="checkbox" class="form-check-input" id="valEnabled" value="enabled">
-                                    <label class="form-check-label" for="valEnabled">Enabled</label>
-                                </div>
-                                <div id="valArea">
-                                    <div class="form-group">
-                                        <label for="valLength">Minimum Length</label>
-                                        <input type="number" class="form-control" id="valLength" value="8">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="valUpper">Minimum number of uppercase characters</label>
-                                        <input type="number" class="form-control" id="valUpper" value="1">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="valLower">Minimum number of lowercase characters</label>
-                                        <input type="number" class="form-control" id="valLower" value="0">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="valNumber">Minimum number of numbers</label>
-                                        <input type="number" class="form-control" id="valNumber" value="0">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="valSpecial">Minimum number of special characters</label>
-                                        <input type="number" class="form-control" id="valSpecial" value="0">
-                                    </div>
-                                </div>
-                                <div class="btn-group float-right" role="group" aria-label="Back/Next buttons">
-                                    <a class="btn btn-secondary backButton" id="valBackButton" href="#page-7">Back</a>
-                                    <a class="btn btn-primary nextButton" href="#page-9">Next</a>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="slide card" id="page-9">
-                            <div class="card-body">
-                                <h5 class="card-title">Help Messages</h5>
-                                <p class="card-text">
-                                Just a few little messages that will display in various places. Leave these alone if you want.
-                                </p>
-                                <div class="form-group">
-                                    <label for="msgContact">Contact message: Displays at bottom of all pages (except admin).</label>
-                                    <input id="msgContact" type="text" class="form-control" value="Need help? Contact me.">
-                                </div>
-                                <div class="form-group">
-                                    <label for="msgHelp">Help message: Displays when a user is creating an account.</label>
-                                    <input id="msgHelp" type="text" class="form-control" value="Enter your details to create an account.">
-                                </div>
-                                <div class="form-group">
-                                    <label for="msgSuccess">Success message: Displays when a user successfully creates an account, just above a button taking the user to Jellyfin.</label>
-                                    <input id="msgSuccess" type="text" class="form-control" value="Your account has been created. Click below to continue to Jellyfin.">
-                                </div>
-                                <div class="btn-group float-right" role="group" aria-label="Back/Next buttons">
-                                    <a class="btn btn-secondary backButton" href="#page-8">Back</a>
-                                    <a class="btn btn-primary nextButton" href="#page-10">Next</a>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="slide card" id="page-10">
-                            <div class="card-body text-center">
-                                <h5 class="card-title">Finished!</h5>
-                                <p class="card-text">
-                                Press the button below to submit your settings. The program will restart. Once it's done, refresh this page.
-                                </p>
-                                <button id="submitButton" class="btn btn-primary">Submit</button>
-                            </div>
+                        </label>
+                        <label class="row switch">
+                            <input type="checkbox" id="email-no_username"><span>{{ .lang.Email.useEmailAsUsername }}</span>
+                        </label>
+                        <p class="support mb-1">{{ .lang.Email.useEmailAsUsernameNotice }}</p>
+                        <label class="label">
+                            <span class="mt-half">{{ .lang.Email.fromAddress }}</span>
+                            <input type="email" class="input ~neutral !normal mt-half mb-1" id="email-address" placeholder="mail@jellyf.in">
+                        </label>
+                        <label class="label">
+                            <span class="mt-half">{{ .lang.Email.senderName }}</span>
+                            <input type="text" class="input ~neutral !normal mt-half mb-1" id="email-from" value="Jellyfin">
+                        </label>
+                        <label class="label">
+                            <span class="mt-half">{{ .lang.Email.dateFormat }}</span>
+                            <input type="text" class="input ~neutral !normal mt-half" id="email-date_format" value="%d/%m/%y">
+                            <p class="support mb-1" id="email-dateformat-notice"></p>
+                        </label>
+                        <div>
+                            <label class="row switch pb-1">
+                                <input type="radio" name="email-24h" value="true" checked><span>{{ .lang.Email.time24h }}</span>
+                            </label>
+                            <label class="row switch pb-1">
+                                <input type="radio" name="email-24h" value="false"><span>{{ .lang.Email.time12h }}</span>
+                            </label>
                         </div>
                     </div>
-                    <div class="col-sm"></div>
+                    <div class="col">
+                        <div id="email-smtp">
+                            <p class="subheading">SMTP</p>
+                            <label class="label">
+                                <span>{{ .lang.Email.encryption }}</span>
+                                <div class="select ~neutral !normal mt-half mb-1">
+                                    <select id="smtp-encryption">
+                                        <option value="starttls">STARTTLS ({{ .lang.Strings.port }} 587)</option>
+                                        <option value="ssl_tls">SSL/TLS ({{ .lang.Strings.port }} 465)</option>
+                                    </select>
+                                </div>
+                            </label>
+                            <label class="label">
+                                <span class="mt-half">{{ .lang.Strings.serverAddress }}</span>
+                                <input type="url" class="input ~neutral !normal mt-half mb-1" id="smtp-server" placeholder="smtp.jellyf.in">
+                            </label>
+                            <label class="label">
+                                <span class="mt-half">{{ .lang.Strings.port }}</span>
+                                <input type="number" class="input ~neutral !normal mt-half mb-1" id="smtp-port" placeholder="587">
+                            </label>
+                            <label class="label">
+                                <span class="mt-half">{{ .lang.Strings.username }}</span>
+                                <input type="text" class="input ~neutral !normal mt-half mb-1" id="smtp-username">
+                            </label>
+                            <label class="label">
+                                <span class="mt-half">{{ .lang.Strings.password }}</span>
+                                <input type="password" class="input ~neutral !normal mt-half mb-1" id="smtp-password">
+                            </label>
+                        </div>
+                        <div id="email-mailgun">
+                            <p class="subheading">Mailgun</p>
+                            <label class="label">
+                                <span class="mt-half">{{ .lang.Email.mailgunApiURL }}</span>
+                                <input type="url" class="input ~neutral !normal mt-half mb-1" id="mailgun-api_url" placeholder="https://api.eu.mailgun.net/v3/mail.jellyf.in/messages">
+                            </label>
+                            <label class="label">
+                                <span class="mt-half">{{ .lang.Strings.apiKey }}</span>
+                                <input type="text" class="input ~neutral !normal mt-half mb-1" id="mailgun-api_key">
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <section class="section ~neutral banner footer flex-expand middle">
+                    <span class="button ~neutral !normal back">{{ .lang.Strings.back }}</span>
+                    <div>
+                        <span class="button ~urge !normal next">{{ .lang.Strings.next }}</span>
+                    </div>
+                </section>
+            </div>
+            <div class="card ~neutral !low mb-1 unfocused related-to-email">
+                <span class="heading">{{ .lang.Notifications.title }}</span>
+                <p class="content">{{ .lang.Notifications.description }}</p>
+                <label class="row switch pb-1">
+                    <input type="checkbox" id="notifications-enabled"><span>{{ .lang.Strings.enabled }}</span>
+                </label>
+                <span class="heading">{{ .lang.WelcomeEmails.title }}</span>
+                <p class="content">{{ .lang.WelcomeEmails.description }}</p>
+                <label class="row switch pb-1">
+                    <input type="checkbox" id="welcome_email-enabled"><span>{{ .lang.Strings.enabled }}</span>
+                </label>
+                <label class="label">
+                    <span class="mt-half">{{ .lang.Strings.emailSubject }}</span>
+                    <input type="text" class="input ~neutral !normal mt-half mb-1" id="welcome_email-subject" placeholder="{{ .emailLang.WelcomeEmail.title }}">
+                </label>
+                <section class="section ~neutral banner footer flex-expand middle">
+                    <span class="button ~neutral !normal back">{{ .lang.Strings.back }}</span>
+                    <div>
+                        <span class="button ~urge !normal next">{{ .lang.Strings.next }}</span>
+                    </div>
+                </section>
+            </div>
+            <div class="card ~neutral !low mb-1 unfocused related-to-email">
+                <span class="heading">{{ .lang.InviteEmails.title }}</span>
+                <p class="content">{{ .lang.InviteEmails.description }}</p>
+                <label class="row switch pb-1">
+                    <input type="checkbox" id="invite_emails-enabled"><span>{{ .lang.Strings.enabled }}</span>
+                </label>
+                <label class="label">
+                    <span class="mt-half">{{ .lang.Strings.URL }}</span>
+                    <input type="url" class="input ~neutral !normal mt-half mb-1" id="invite_emails-url_base" placeholder="https://accounts.jellyf.in/invite">
+                </label>
+                <label class="label">
+                    <span class="mt-half">{{ .lang.Strings.emailSubject }}</span>
+                    <input type="text" class="input ~neutral !normal mt-half mb-1" id="invite_emails-subject" placeholder="{{ .emailLang.InviteEmail.title }}">
+                </label>
+                <section class="section ~neutral banner footer flex-expand middle">
+                    <span class="button ~neutral !normal back">{{ .lang.Strings.back }}</span>
+                    <div>
+                        <span class="button ~urge !normal next">{{ .lang.Strings.next }}</span>
+                    </div>
+                </section>
+            </div>
+            <div class="card ~neutral !low mb-1 unfocused related-to-email">
+                <span class="heading">{{ .lang.PasswordResets.title }}</span>
+                <p class="content">{{ .lang.PasswordResets.description }}</p>
+                <label class="row switch pb-1">
+                    <input type="checkbox" id="password_resets-enabled"><span>{{ .lang.Strings.enabled }}</span>
+                </label>
+                <label class="label">
+                    <span class="mt-half">{{ .lang.PasswordResets.pathToJellyfin }}</span>
+                    <input type="text" class="input ~neutral !normal mt-half" id="password_resets-watch_directory" placeholder="/config/jellyfin">
+                    <p class="support mb-1">{{ .lang.PasswordResets.pathToJellyfinNotice }}</p>
+                </label>
+                <label class="label">
+                    <span class="mt-half">{{ .lang.Strings.emailSubject }}</span>
+                    <input type="text" class="input ~neutral !normal mt-half mb-1" id="password_resets-subject" placeholder="{{ .emailLang.PasswordReset.title }}">
+                </label>
+                <section class="section ~neutral banner footer flex-expand middle">
+                    <span class="button ~neutral !normal back">{{ .lang.Strings.back }}</span>
+                    <div>
+                        <span class="button ~urge !normal next">{{ .lang.Strings.next }}</span>
+                    </div>
+                </section>
+            </div>
+            <div class="card ~neutral !low mb-1 unfocused">
+                <span class="heading">{{ .lang.PasswordValidation.title }}</span>
+                <p class="content">{{ .lang.PasswordValidation.description }}</p>
+                <label class="row switch pb-1">
+                    <input type="checkbox" id="password_validation-enabled" checked><span>{{ .lang.Strings.enabled }}</span>
+                </label>
+                <label class="label">
+                    <span class="mt-half">{{ .lang.PasswordValidation.length }}</span>
+                    <input type="number" class="input ~neutral !normal mt-half mb-1" id="password_validation-min_length" value="8">
+                </label>
+                <label class="label">
+                    <span class="mt-half">{{ .lang.PasswordValidation.uppercase }}</span>
+                    <input type="number" class="input ~neutral !normal mt-half mb-1" id="password_validation-upper" value="1">
+                </label>
+                <label class="label">
+                    <span class="mt-half">{{ .lang.PasswordValidation.lowercase }}</span>
+                    <input type="number" class="input ~neutral !normal mt-half mb-1" id="password_validation-lower" value="0">
+                </label>
+                <label class="label">
+                    <span class="mt-half">{{ .lang.PasswordValidation.numbers }}</span>
+                    <input type="number" class="input ~neutral !normal mt-half mb-1" id="password_validation-number" value="0">
+                </label>
+                <label class="label">
+                    <span class="mt-half">{{ .lang.PasswordValidation.special }}</span>
+                    <input type="number" class="input ~neutral !normal mt-half mb-1" id="password_validation-special" value="0">
+                </label>
+                <section class="section ~neutral banner footer flex-expand middle">
+                    <span class="button ~neutral !normal back">{{ .lang.Strings.back }}</span>
+                    <div>
+                        <span class="button ~urge !normal next">{{ .lang.Strings.next }}</span>
+                    </div>
+                </section>
+            </div>
+            <div class="card ~neutral !low mb-1 unfocused">
+                <span class="heading">{{ .lang.HelpMessages.title }}</span>
+                <p class="content">{{ .lang.HelpMessages.description }}</p>
+                <label class="label">
+                    <span class="mt-half">{{ .lang.HelpMessages.contactMessage }}</span>
+                    <input type="text" class="input ~neutral !normal mt-half" id="ui-contact_message">
+                    <p class="support mb-1">{{ .lang.HelpMessages.contactMessageNotice }}</p>
+                </label>
+                <label class="label">
+                    <span class="mt-half">{{ .lang.HelpMessages.helpMessage }}</span>
+                    <input type="text" class="input ~neutral !normal mt-half" id="ui-help_message">
+                    <p class="support mb-1">{{ .lang.HelpMessages.helpMessageNotice }}</p>
+                </label>
+                <label class="label">
+                    <span class="mt-half">{{ .lang.HelpMessages.successMessage }}</span>
+                    <input type="text" class="input ~neutral !normal mt-half" id="ui-success_message">
+                    <p class="support mb-1">{{ .lang.HelpMessages.successMessageNotice }}</p>
+                </label>
+                <label class="label related-to-email">
+                    <span class="mt-half">{{ .lang.HelpMessages.emailMessage }}</span>
+                    <input type="text" class="input ~neutral !normal mt-half" id="email-message">
+                    <p class="support mb-1">{{ .lang.HelpMessages.emailMessageNotice }}</p>
+                </label>
+                <section class="section ~neutral banner footer flex-expand middle">
+                    <span class="button ~neutral !normal back">{{ .lang.Strings.back }}</span>
+                    <div>
+                        <span class="button ~urge !normal next">{{ .lang.Strings.next }}</span>
+                    </div>
+                </section>
+            </div>
+            <div class="card ~neutral !low mb-1 unfocused">
+                <div class="row col flex center">
+                    <span class="heading">{{ .lang.EndPage.finished }}</span>
+                </div>
+                <div class="row col flex center">
+                    <p class="content">{{ .lang.EndPage.restartMessage }}</p>
+                </div>
+                <div class="row col flex center">
+                    <span class="button ~neutral !normal back mr-1">{{ .lang.Strings.back }}</span>
+                    <span class="button ~urge !normal" id="restart">{{ .lang.Strings.submit }}</span>
+                    <span class="button ~urge !normal unfocused" id="refresh">{{ .lang.EndPage.refreshPage }}</span>
                 </div>
             </div>
         </div>
-        <script src="js/setup.js"></script>
+        <script>
+            window.langFile = JSON.parse({{ .language }});
+            window.messages = JSON.parse({{ .messages }});
+        </script>
+        <script src="js/setup.js" type="module"></script>
     </body>
-</html>                            
+</html>
+

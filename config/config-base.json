@@ -720,7 +720,7 @@
                     "required": false,
                     "requires_restart": false,
                     "type": "text",
-                    "value": "Your account was deleted - Jellyfin",
+                    "value": "",
                     "description": "Subject of account deletion emails."
                 },
                 "email_html": {

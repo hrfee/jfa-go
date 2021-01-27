@@ -1191,21 +1191,21 @@ func (app *appContext) ModifyConfig(gc *gin.Context) {
 			for setting, value := range settings.(map[string]interface{}) {
 				if section == "ui" && setting == "language-form" {
 					for key, lang := range app.storage.lang.Form {
-						if lang.Meta.Name == value.(string) {
+						if lang.Meta.Name == value.(string) || value.(string) == key {
 							tempConfig.Section("ui").Key("language-form").SetValue(key)
 							break
 						}
 					}
 				} else if section == "ui" && setting == "language-admin" {
 					for key, lang := range app.storage.lang.Admin {
-						if lang.Meta.Name == value.(string) {
+						if lang.Meta.Name == value.(string) || value.(string) == key {
 							tempConfig.Section("ui").Key("language-admin").SetValue(key)
 							break
 						}
 					}
 				} else if section == "email" && setting == "language" {
 					for key, lang := range app.storage.lang.Email {
-						if lang.Meta.Name == value.(string) {
+						if lang.Meta.Name == value.(string) || value.(string) == key {
 							tempConfig.Section("email").Key("language").SetValue(key)
 							break
 						}
@@ -1286,6 +1286,14 @@ func (app *appContext) GetLanguages(gc *gin.Context) {
 		}
 	} else if page == "admin" {
 		for key, lang := range app.storage.lang.Admin {
+			resp[key] = lang.Meta.Name
+		}
+	} else if page == "setup" {
+		for key, lang := range app.storage.lang.Setup {
+			resp[key] = lang.Meta.Name
+		}
+	} else if page == "email" {
+		for key, lang := range app.storage.lang.Email {
 			resp[key] = lang.Meta.Name
 		}
 	}
