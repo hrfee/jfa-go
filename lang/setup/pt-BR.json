@@ -1,129 +1,129 @@
 {
     "meta": {
-        "name": ""
+        "name": "Português (BR)"
     },
     "strings": {
-        "pageTitle": "",
-        "next": "",
-        "back": "",
-        "optional": "",
-        "serverType": "",
-        "disabled": "",
-        "enabled": "",
-        "port": "",
-        "message": "",
-        "serverAddress": "",
-        "emailSubject": "",
-        "URL": "",
-        "apiKey": ""
+        "pageTitle": "Configuração - jfa-go",
+        "next": "Próximo",
+        "back": "Voltar",
+        "optional": "Opcional",
+        "serverType": "Tipo de Servidor",
+        "disabled": "Desativar",
+        "enabled": "Ativado",
+        "port": "Porta",
+        "message": "Mensagem",
+        "serverAddress": "Endereço do Servidor",
+        "emailSubject": "Assunto do Email",
+        "URL": "URL",
+        "apiKey": "Chave API"
     },
     "startPage": {
-        "welcome": "",
-        "pressStart": "",
-        "httpsNotice": "",
-        "start": ""
+        "welcome": "Bem Vindo!",
+        "pressStart": "Você precisará fazer algumas coisas para configurar o jfa-go. Clique em iniciar para progredir.",
+        "httpsNotice": "Certifique-se de que está acessando esta página via HTTPS ou em uma rede privada.",
+        "start": "Iniciar"
     },
     "endPage": {
-        "finished": "",
-        "restartMessage": "",
-        "refreshPage": ""
+        "finished": "Finalizado!",
+        "restartMessage": "Existem mais opções que você pode definir na página do administrador. Clique abaixo para reiniciar e atualize a página.",
+        "refreshPage": "Atualizar"
     },
     "language": {
-        "title": "",
-        "description": "",
-        "defaultAdminLang": "",
-        "defaultFormLang": "",
-        "defaultEmailLang": ""
+        "title": "Idioma",
+        "description": "As traduções da comunidade estão disponíveis para a maior parte do jfa-go. Você pode escolher os idiomas padrão abaixo, mas os usuários ainda podem alterá-los caso desejem. Se você quiser ajudar na tradução, inscreva-se no {n} para contribuir!",
+        "defaultAdminLang": "Idioma padrão do administrador",
+        "defaultFormLang": "Idioma padrão para criação de conta",
+        "defaultEmailLang": "Idioma padrão para o email"
     },
     "general": {
-        "title": "",
+        "title": "Geral",
         "listenAddress": "",
-        "urlBase": "",
-        "urlBaseNotice": "",
-        "lightTheme": "",
-        "darkTheme": "",
-        "useHTTPS": "",
-        "httpsPort": "",
-        "useHTTPSNotice": "",
-        "pathToCertificate": "",
-        "pathToKeyFile": ""
+        "urlBase": "URL Base",
+        "urlBaseNotice": "Necessário apenas se estiver usando um proxy reverso em um subdomínio (por exemplo, 'jellyf.in/accounts').",
+        "lightTheme": "Claro",
+        "darkTheme": "Escuro",
+        "useHTTPS": "Usar HTTPS",
+        "httpsPort": "Porta HTTPS",
+        "useHTTPSNotice": "Recomendado apenas se você não estiver usando um proxy reverso.",
+        "pathToCertificate": "Local do certificado",
+        "pathToKeyFile": "Local da chave do arquivo"
     },
     "login": {
-        "title": "",
-        "description": "",
-        "authorizeWithJellyfin": "",
-        "authorizeManual": "",
-        "adminOnly": "",
-        "emailNotice": ""
+        "title": "Login",
+        "description": "Para acessar a página do administrador, você precisa fazer o login com o método abaixo:",
+        "authorizeWithJellyfin": "Autorizar com Jellyfin/Emby: Os detalhes de login são compartilhados com Jellyfin, o que permite vários usuários.",
+        "authorizeManual": "Nome de usuário e senha: Defina manualmente o nome de usuário e a senha.",
+        "adminOnly": "Apenas usuários administradores (recomendado)",
+        "emailNotice": "Seu endereço de email pode ser usado para receber notificações."
     },
     "jellyfinEmby": {
-        "title": "",
-        "description": "",
-        "embyNotice": "",
-        "internal": "",
-        "external": "",
-        "replaceJellyfin": "",
-        "replaceJellyfinNotice": "",
-        "addressExternalNotice": "",
-        "testConnection": ""
+        "title": "Jellyfin/Emby",
+        "description": "Uma conta de administrador é necessária porque a API não permite a criação de usuários usando uma chave de API. Você deve criar uma outra conta marcando a opção 'Permitir este usuário administrar o servidor'. Você pode desativar todas outras opções. Uma vez feito isso, insira os detalhes de login aqui.",
+        "embyNotice": "O suporte ao Emby é limitado e não tem suporte em redefinir senha.",
+        "internal": "Interno",
+        "external": "Externo",
+        "replaceJellyfin": "Nome do servidor",
+        "replaceJellyfinNotice": "Se fornecido, ele substituirá qualquer ocorrência de 'Jellyfin' no aplicativo.",
+        "addressExternalNotice": "Deixe em branco para usar o mesmo endereço.",
+        "testConnection": "Teste de Conexão"
     },
     "ombi": {
-        "title": "",
-        "description": "",
-        "apiKeyNotice": ""
+        "title": "Ombi",
+        "description": "Ao se conectar ao Ombi, as contas no Jellyfin e Ombi serão criadas quando um usuário se cadastrar através do jfa-go. Depois de concluída a configuração, vá para Configurações para definir um perfil padrão para novos usuários de ombi.",
+        "apiKeyNotice": "Encontre isso na primeira guia nas configurações do Ombi."
     },
     "email": {
-        "title": "",
-        "description": "",
-        "method": "",
-        "useEmailAsUsername": "",
-        "useEmailAsUsernameNotice": "",
-        "fromAddress": "",
-        "senderName": "",
-        "dateFormat": "",
-        "dateFormatNotice": "",
-        "time24h": "",
-        "time12h": "",
-        "encryption": "",
-        "mailgunApiURL": ""
+        "title": "Email",
+        "description": "jfa-go pode enviar PINs de redefinição de senha e várias notificações por email. Você pode se conectar a um servidor SMTP ou usar a {n} API.",
+        "method": "Método de envio",
+        "useEmailAsUsername": "Usar endereços de email como nome de usuário",
+        "useEmailAsUsernameNotice": "Se habilitado, novos usuários farão login no Jellyfin/Emby com seu endereço de email em vez de um nome de usuário.",
+        "fromAddress": "A partir do endereço",
+        "senderName": "Nome do remetente",
+        "dateFormat": "Formato da Data",
+        "dateFormatNotice": "A data segue o formato strftime. Para obter mais informações, visite {n}.",
+        "time24h": "Horário 24h",
+        "time12h": "Horário 12h",
+        "encryption": "Encriptação",
+        "mailgunApiURL": "API URL"
     },
     "notifications": {
-        "title": "",
-        "description": ""
+        "title": "Notificações",
+        "description": "Se ativado, você pode escolher (por convite) receber um email quando um convite expirar ou um usuário for criado. Se você não escolheu o método de login Jellyfin, certifique-se de fornecer seu endereço de e-mail."
     },
     "welcomeEmails": {
-        "title": "",
-        "description": ""
+        "title": "Email de boas-vindas",
+        "description": "Se habilitado, um email será enviado para os novos usuários Jellyfin/Emby."
     },
     "inviteEmails": {
-        "title": "",
-        "description": ""
+        "title": "Convidar por Emails",
+        "description": "Se ativado, você pode enviar convites diretamente para o endereço de email do usuário. Como você pode estar usando um proxy reverso, é necessário fornecer a URL de onde os convites são acessados. Escreva a sua URL Base e acrescente '/invite'."
     },
     "passwordResets": {
-        "title": "",
-        "description": "",
-        "pathToJellyfin": "",
-        "pathToJellyfinNotice": ""
+        "title": "Redefinir Senha",
+        "description": "Quando um usuário tenta redefinir sua senha, o Jellyfin cria um arquivo chamado 'passwordreset-*.json' que contém um PIN. jfa-go lê o arquivo e envia o PIN ao usuário.",
+        "pathToJellyfin": "Local do diretório de configuração do Jellyfin",
+        "pathToJellyfinNotice": "Se você não sabe o local onde fica, tente redefinir sua senha no Jellyfin. Um pop-up com '<path to jellyfin>/passwordreset-*.json' aparecerá."
     },
     "passwordValidation": {
-        "title": "",
-        "description": "",
-        "length": "",
-        "uppercase": "",
-        "lowercase": "",
-        "numbers": "",
-        "special": ""
+        "title": "Validar Senha",
+        "description": "Se ativado, o requisitos de senha será mostrado na página de criação da conta, como tamanho mínimo, caracteres maiúsculos/minúsculos, etc.",
+        "length": "Tamanho",
+        "uppercase": "Caracteres maiúsculos",
+        "lowercase": "Caracteres minúsculos",
+        "numbers": "Números",
+        "special": "Caracteres Especial (%, *, etc.)"
     },
     "helpMessages": {
-        "title": "",
-        "description": "",
-        "contactMessage": "",
-        "contactMessageNotice": "",
-        "helpMessage": "",
-        "helpMessageNotice": "",
-        "successMessage": "",
-        "successMessageNotice": "",
-        "emailMessage": "",
-        "emailMessageNotice": ""
+        "title": "Mensagem de Ajuda",
+        "description": "Essas mensagens serão exibidas na página de criação de conta e em alguns emails.",
+        "contactMessage": "Mensagem de Contato",
+        "contactMessageNotice": "Exibido na parte inferior de todas as páginas, exceto na administradora.",
+        "helpMessage": "Mensagem de Ajuda",
+        "helpMessageNotice": "Exibido na página de criação de conta.",
+        "successMessage": "Mensagem de Sucesso",
+        "successMessageNotice": "Exibido quando um usuário cria sua conta.",
+        "emailMessage": "Mensagem de Email",
+        "emailMessageNotice": "Exibido na parte inferior dos emails."
     }
 }
