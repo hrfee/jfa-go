@@ -38,7 +38,7 @@ func (app *appContext) ServeSetup(gc *gin.Context) {
 		respond(500, "Failed to fetch default values", gc)
 		return
 	}
-	gc.HTML(200, "setup2.html", gin.H{
+	gc.HTML(200, "setup.html", gin.H{
 		"lang":      app.storage.lang.Setup[lang],
 		"emailLang": app.storage.lang.Email[emailLang],
 		"language":  app.storage.lang.Setup[lang].JSON,
