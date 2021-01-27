@@ -7,6 +7,8 @@
         "username": "Nom d'utilisateur",
         "password": "Mot de passe",
         "emailAddress": "Addresse Email",
-        "submit": "Soumettre"
+        "submit": "Soumettre",
+        "success": "Succès",
+        "error": "Erreur"
     }
 }

@@ -30,8 +30,6 @@
         "commitNoun": "Commettre",
         "newUser": "Nouvel utilisateur",
         "profile": "Profil",
-        "success": "Succès",
-        "error": "Erreur",
         "unknown": "Inconnu",
         "modifySettings": "Modifier les paramètres",
         "modifySettingsDescription": "Appliquez les paramètres à partir d'un profil existant ou obtenez-les directement auprès d'un utilisateur.",

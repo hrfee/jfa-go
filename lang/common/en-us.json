@@ -6,6 +6,8 @@
         "username": "Username",
         "password": "Password",
         "emailAddress": "Email Address",
-        "submit": "Submit"
+        "submit": "Submit",
+        "success": "Success",
+        "error": "Error"
     }
 }

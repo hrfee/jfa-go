@@ -68,7 +68,7 @@ export const _get = (url: string, data: Object, onreadystatechange: (req: XMLHtt
     req.send(JSON.stringify(data));
 };
 
-export const _post = (url: string, data: Object, onreadystatechange: (req: XMLHttpRequest) => void, response?: boolean): void => {
+export const _post = (url: string, data: Object, onreadystatechange: (req: XMLHttpRequest) => void, response?: boolean, noErrorHandler?: boolean): void => {
     let req = new XMLHttpRequest();
     req.open("POST", window.URLBase + url, true);
     if (response) {
@@ -77,10 +77,10 @@ export const _post = (url: string, data: Object, onreadystatechange: (req: XMLHt
     req.setRequestHeader("Authorization", "Bearer " + window.token);
     req.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
     req.onreadystatechange = () => {
-        if (req.status == 0) {
+        if (req.status == 0 && !noErrorHandler) {
             window.notifications.connectionError();
             return;
-        } else if (req.status == 401) {
+        } else if (req.status == 401 && !noErrorHandler) {
             window.notifications.customError("401Error", window.lang.notif("error401Unauthorized"));
         }
         onreadystatechange(req);

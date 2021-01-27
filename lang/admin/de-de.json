@@ -29,8 +29,6 @@
         "commitNoun": "Commit",
         "newUser": "Neuer Benutzer",
         "profile": "Profil",
-        "success": "Erfolg",
-        "error": "Fehler",
         "unknown": "Unbekannt",
         "modifySettings": "Einstellungen ändern",
         "modifySettingsDescription": "Wende Einstellungen von einem bestehenden Profil an, oder beziehe sie direkt von einem Benutzer.",

@@ -6,6 +6,8 @@
         "username": "Gebruikersnaam",
         "password": "Wachtwoord",
         "emailAddress": "E-mailadres",
-        "submit": "Verstuur"
+        "submit": "Verstuur",
+        "success": "Success",
+        "error": "Fout"
     }
 }

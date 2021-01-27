@@ -1,4 +1,4 @@
-import { _get, _post } from "./modules/common.js";
+import { _get, _post, toggleLoader } from "./modules/common.js";
 import { lang, LangFile, loadLangSelector } from "./modules/lang.js";
 
 interface sWindow extends Window {
@@ -6,6 +6,7 @@ interface sWindow extends Window {
 }
 
 declare var window: sWindow;
+window.URLBase = "";
 
 const get = (id: string): HTMLElement => document.getElementById(id);
 const text = (id: string, val: string) => { document.getElementById(id).textContent = val; };
@@ -270,6 +271,30 @@ const settings = {
     },
 };
 
+const restartButton = document.getElementById("restart") as HTMLSpanElement;
+const serialize = () => {
+    toggleLoader(restartButton);
+    let config = {};
+    for (let section in settings) {
+        config[section] = {};
+        for (let setting in settings[section]) {
+            if (settings[section][setting].value) {
+                config[section][setting] = settings[section][setting].value;
+            }
+        }
+    }
+    config["restart-program"] = true;
+    _post("/config", config, (req: XMLHttpRequest) => {
+        if (req.readyState == 4) {
+            toggleLoader(restartButton);
+            restartButton.classList.add("~positive");
+            restartButton.classList.remove("~urge");
+            restartButton.textContent = window.lang.strings("success");
+        }
+    }, true, true);
+}
+restartButton.onclick = serialize;
+
 const relatedToEmail = Array.from(document.getElementsByClassName("related-to-email"));
 const emailMethodChange = () => {
     const val = settings["email"]["method"].value;
@@ -372,6 +397,48 @@ window.onpopstate = (event: PopStateEvent) => {
             window.scrollTo(0, 0);
         }); }
     }
-})()
+})();
+
+(() => {
+    const button = document.getElementById("jellyfin-test-connection") as HTMLSpanElement;
+    const ogText = button.textContent;
+    const nextButton = button.parentElement.querySelector("span.next") as HTMLSpanElement;
+    button.onclick = () => {
+        toggleLoader(button);
+        let send = {
+            "type": settings["jellyfin"]["type"].value,
+            "server": settings["jellyfin"]["server"].value,
+            "username": settings["jellyfin"]["username"].value,
+            "password": settings["jellyfin"]["password"].value
+        };
+        _post("/jellyfin/test", send, (req: XMLHttpRequest) => {
+            if (req.readyState == 4) {
+                toggleLoader(button);
+                const success = req.response["success"] as boolean;
+                if (success) {
+                    nextButton.removeAttribute("disabled");
+                    button.textContent = window.lang.strings("success");
+                    button.classList.add("~positive");
+                    button.classList.remove("~urge");
+                    setTimeout(() => {
+                        button.textContent = ogText;
+                        button.classList.add("~urge");
+                        button.classList.remove("~positive");
+                    }, 5000);
+                } else {
+                    nextButton.setAttribute("disabled", "");
+                    button.textContent = window.lang.strings("error");
+                    button.classList.add("~critical");
+                    button.classList.remove("~urge");
+                    setTimeout(() => {
+                        button.textContent = ogText;
+                        button.classList.add("~urge");
+                        button.classList.remove("~critical");
+                    }, 5000);
+                }
+            }
+        }, true, true);
+    };
+})();
 
 loadLangSelector("setup");

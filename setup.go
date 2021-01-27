@@ -47,15 +47,20 @@ func (app *appContext) ServeSetup(gc *gin.Context) {
 }
 
 type testReq struct {
-	Host     string `json:"jfHost"`
-	Username string `json:"jfUser"`
-	Password string `json:"jfPassword"`
+	ServerType string `json:"type"`
+	Server     string `json:"server"`
+	Username   string `json:"username"`
+	Password   string `json:"password"`
 }
 
 func (app *appContext) TestJF(gc *gin.Context) {
 	var req testReq
 	gc.BindJSON(&req)
-	tempjf, _ := mediabrowser.NewServer(mediabrowser.JellyfinServer, req.Host, "jfa-go-setup", app.version, "auth", "auth", common.NewTimeoutHandler("authJF", req.Host, true), 30)
+	serverType := mediabrowser.JellyfinServer
+	if req.ServerType == "emby" {
+		serverType = mediabrowser.EmbyServer
+	}
+	tempjf, _ := mediabrowser.NewServer(serverType, req.Server, "jfa-go-setup", app.version, "auth", "auth", common.NewTimeoutHandler("authJF", req.Server, true), 30)
 	_, status, err := tempjf.Authenticate(req.Username, req.Password)
 	if !(status == 200 || status == 204) || err != nil {
 		app.info.Printf("Auth failed with code %d (%s)", status, err)
