@@ -1,45 +1,45 @@
 {
     "meta": {
-        "name": ""
+        "name": "Português (BR)"
     },
     "strings": {
-        "pageTitle": "",
-        "createAccountHeader": "",
-        "accountDetails": "",
-        "emailAddress": "",
-        "username": "",
-        "password": "",
-        "reEnterPassword": "",
-        "reEnterPasswordInvalid": "",
-        "createAccountButton": "",
-        "passwordRequirementsHeader": "",
-        "successHeader": "",
-        "successContinueButton": ""
+        "pageTitle": "Criar Conta Jellyfin",
+        "createAccountHeader": "Criar Conta",
+        "accountDetails": "Detalhes",
+        "emailAddress": "Email",
+        "username": "Nome do Usuário",
+        "password": "Senha",
+        "reEnterPassword": "Digite a Senha Novamente",
+        "reEnterPasswordInvalid": "Senha não Coincidem. Tentar novamente.",
+        "createAccountButton": "Criar Conta",
+        "passwordRequirementsHeader": "Requisitos da Senha",
+        "successHeader": "Sucesso!",
+        "successContinueButton": "Continuar"
     },
     "notifications": {
-        "errorUserExists": "",
-        "errorInvalidCode": ""
+        "errorUserExists": "Esse usuário já existe.",
+        "errorInvalidCode": "Código do convite invalido."
     },
     "validationStrings": {
         "length": {
-            "singular": "",
-            "plural": ""
+            "singular": "Deve ter pelo menos {n} caractere",
+            "plural": "Deve ter pelo menos {n} caracteres"
         },
         "uppercase": {
-            "singular": "",
-            "plural": ""
+            "singular": "Deve ter pelo menos {n} caractere maiúsculo",
+            "plural": "Deve ter pelo menos {n} caracteres maiúsculos"
         },
         "lowercase": {
-            "singular": "",
-            "plural": ""
+            "singular": "Deve ter pelo menos {n} caractere minúsculo",
+            "plural": "Deve ter pelo menos {n} caracteres minúsculos"
         },
         "number": {
-            "singular": "",
-            "plural": ""
+            "singular": "Deve ter pelo menos {n} número",
+            "plural": "Deve ter pelo menos {n} números"
         },
         "special": {
-            "singular": "",
-            "plural": ""
+            "singular": "Deve ter pelo menos {n} caractere especial",
+            "plural": "Deve ter pelo menos {n} caracteres especiais"
         }
     }
 }
