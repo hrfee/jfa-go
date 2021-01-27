@@ -317,9 +317,14 @@ const serialize = () => {
     _post("/config", config, (req: XMLHttpRequest) => {
         if (req.readyState == 4) {
             toggleLoader(restartButton);
-            restartButton.classList.add("~positive");
-            restartButton.classList.remove("~urge");
-            restartButton.textContent = window.lang.strings("success");
+            restartButton.parentElement.querySelector("span.back").classList.add("unfocused");
+            restartButton.classList.add("unfocused");
+            const refresh = document.getElementById("refresh") as HTMLSpanElement;
+            refresh.classList.remove("unfocused");
+            refresh.onclick = () => {
+                let host = window.location.href.split("#")[0].split("?")[0] + settings["ui"]["url_base"].value;
+                window.location.href = host;
+            };
         }
     }, true, true);
 }

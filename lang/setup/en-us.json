@@ -25,7 +25,8 @@
     },
     "endPage": {
         "finished": "Finished!",
-        "restartMessage": "There are more settings you can configure on the admin page. Click below to restart, then refresh the page."
+        "restartMessage": "There are more settings you can configure on the admin page. Click below to restart, then refresh the page.",
+        "refreshPage": "Refresh"
     },
     "language": {
         "title": "Language",
