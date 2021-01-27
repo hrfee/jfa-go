@@ -1,0 +1,45 @@
+{
+    "meta": {
+        "name": ""
+    },
+    "strings": {
+        "pageTitle": "",
+        "createAccountHeader": "",
+        "accountDetails": "",
+        "emailAddress": "",
+        "username": "",
+        "password": "",
+        "reEnterPassword": "",
+        "reEnterPasswordInvalid": "",
+        "createAccountButton": "",
+        "passwordRequirementsHeader": "",
+        "successHeader": "",
+        "successContinueButton": ""
+    },
+    "notifications": {
+        "errorUserExists": "",
+        "errorInvalidCode": ""
+    },
+    "validationStrings": {
+        "length": {
+            "singular": "",
+            "plural": ""
+        },
+        "uppercase": {
+            "singular": "",
+            "plural": ""
+        },
+        "lowercase": {
+            "singular": "",
+            "plural": ""
+        },
+        "number": {
+            "singular": "",
+            "plural": ""
+        },
+        "special": {
+            "singular": "",
+            "plural": ""
+        }
+    }
+}
