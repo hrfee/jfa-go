@@ -37,5 +37,9 @@
             "singular": "Muss mindestens {n} Sonderzeichen haben",
             "plural": "Muss mindestens {n} Sonderzeichen haben"
         }
+    },
+    "notifications": {
+        "errorUserExists": "Dieser Nutzername ist bereits vergeben.",
+        "errorInvalidCode": "Ungültiger Einladungscode."
     }
 }
