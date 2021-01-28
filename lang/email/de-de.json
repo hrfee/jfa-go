@@ -31,7 +31,7 @@
         "reason": "Grund"
     },
     "inviteEmail": {
-        "title": "Invite - Jellyfin",
+        "title": "Einladung - Jellyfin",
         "hello": "Hallo",
         "youHaveBeenInvited": "Du wurdest zu Jellyfin eingeladen.",
         "toJoin": "Um beizutreten, folge dem untenstehenden Link.",
