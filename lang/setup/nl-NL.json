@@ -74,7 +74,7 @@
     },
     "email": {
         "title": "E-mail",
-        "description": "jfa0go kan wachtwoord reset PINs en meldingen via e-mail versturen. Je kunt verbinding maken met een SMTP server, of de {n} API gebruiken.",
+        "description": "jfa-go kan wachtwoord reset PINs en meldingen via e-mail versturen. Je kunt verbinding maken met een SMTP server, of de {n} API gebruiken.",
         "method": "Verstuurmethode",
         "useEmailAsUsername": "Gebruik e-mailadres als gebruikersnaam",
         "useEmailAsUsernameNotice": "Indien ingeschakeld wordt voor nieuwe Jellyfin/Emby-gebruikers hun e-mailadres in plaats van gebruikersnaam gebruikt.",
