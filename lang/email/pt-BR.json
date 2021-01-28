@@ -1,0 +1,48 @@
+{
+    "meta": {
+        "name": ""
+    },
+    "userCreated": {
+        "title": "",
+        "aUserWasCreated": "",
+        "name": "",
+        "emailAddress": "",
+        "time": "",
+        "notificationNotice": ""
+    },
+    "inviteExpiry": {
+        "title": "",
+        "inviteExpired": "",
+        "expiredAt": "",
+        "notificationNotice": ""
+    },
+    "passwordReset": {
+        "title": "",
+        "helloUser": "",
+        "someoneHasRequestedReset": "",
+        "ifItWasYou": "",
+        "codeExpiry": "",
+        "ifItWasNotYou": "",
+        "pin": ""
+    },
+    "userDeleted": {
+        "title": "",
+        "yourAccountWasDeleted": "",
+        "reason": ""
+    },
+    "inviteEmail": {
+        "title": "",
+        "hello": "",
+        "youHaveBeenInvited": "",
+        "toJoin": "",
+        "inviteExpiry": "",
+        "linkButton": ""
+    },
+    "welcomeEmail": {
+        "title": "",
+        "welcome": "",
+        "youCanLoginWith": "",
+        "jellyfinURL": "",
+        "username": ""
+    }
+}
