@@ -1,94 +1,94 @@
 {
     "meta": {
-        "name": ""
+        "name": "Nederlands (NL)"
     },
     "strings": {
-        "pageTitle": "",
-        "next": "",
-        "back": "",
-        "optional": "",
-        "serverType": "",
-        "disabled": "",
-        "enabled": "",
-        "port": "",
-        "message": "",
-        "serverAddress": "",
-        "emailSubject": "",
-        "URL": "",
-        "apiKey": ""
+        "pageTitle": "Insstallatie - jfa-go",
+        "next": "Volgende",
+        "back": "Terug",
+        "optional": "Optioneel",
+        "serverType": "Servertype",
+        "disabled": "Uitgeschakeld",
+        "enabled": "Ingeschakeld",
+        "port": "Poort",
+        "message": "Bericht",
+        "serverAddress": "Serveradres",
+        "emailSubject": "Onderwerp e-mail",
+        "URL": "URL",
+        "apiKey": "API-sleutel"
     },
     "startPage": {
-        "welcome": "",
-        "pressStart": "",
-        "httpsNotice": "",
-        "start": ""
+        "welcome": "Welkom!",
+        "pressStart": "Je moet een paar dingen doen om jfa-go te installeren. Druk op start om verder te gaan.",
+        "httpsNotice": "Zorg ervoor dat je deze pagina bezoekt via HTTPS of een privénetwerk.",
+        "start": "Start"
     },
     "endPage": {
-        "finished": "",
-        "restartMessage": "",
-        "refreshPage": ""
+        "finished": "Klaar!",
+        "restartMessage": "Er staan meer instellingen op de adminpagina. Druk op de knop hieronder om opnieuw op te starten, en ververs daarna de pagina.",
+        "refreshPage": "Verversen"
     },
     "language": {
-        "title": "",
-        "description": "",
-        "defaultAdminLang": "",
-        "defaultFormLang": "",
-        "defaultEmailLang": ""
+        "title": "Taal",
+        "description": "Er zijn gemeenschapsvertalingen beschikbaar voor de meeste onderdelen van jfa-go. Je kunt hieronder de standaardtaal instellen, maar gebruikers kunnen die aanpassen indien gewenst. Als je wilt helpen met vertalen, meld je dan aan bij {n} en begin met vertalen!",
+        "defaultAdminLang": "Standaardtaal (admin)",
+        "defaultFormLang": "Standaardtaal aanmaken nieuwe account",
+        "defaultEmailLang": "Standaardtaal (e-mails)"
     },
     "general": {
-        "title": "",
-        "listenAddress": "",
-        "urlBase": "",
-        "urlBaseNotice": "",
-        "lightTheme": "",
-        "darkTheme": "",
-        "useHTTPS": "",
-        "httpsPort": "",
-        "useHTTPSNotice": "",
-        "pathToCertificate": "",
-        "pathToKeyFile": ""
+        "title": "Algemeen",
+        "listenAddress": "Adres",
+        "urlBase": "URL-basis",
+        "urlBaseNotice": "Alleen nodig bij gebruik van reverse proxy op een subdomein (bijv. 'jellyf.in/accounts').",
+        "lightTheme": "Licht",
+        "darkTheme": "Donker",
+        "useHTTPS": "Gebruik HTTPS",
+        "httpsPort": "HTTPS poort",
+        "useHTTPSNotice": "Alleen aanbevolen als je geen reverse proxy gebruikt.",
+        "pathToCertificate": "Pad naar certificaat",
+        "pathToKeyFile": "Pad naar sleutelbestand"
     },
     "login": {
-        "title": "",
-        "description": "",
-        "authorizeWithJellyfin": "",
-        "authorizeManual": "",
-        "adminOnly": "",
-        "emailNotice": ""
+        "title": "Inloggen",
+        "description": "Om de admin-pagina te openen moet je inloggen met één van onderstaande methodes:",
+        "authorizeWithJellyfin": "Jellyfin/Emby authorisatie: Inloggegevens worden gedeeld met Jellyfin, meerdere gebruikers mogelijk.",
+        "authorizeManual": "Gebruikersnaam en wachtwoord: Stel handmatig een gebruikersnaam en wachtwoord in.",
+        "adminOnly": "Alleen admin-gebruikers (aanbevolen)",
+        "emailNotice": "Je e-mailadres kan gebruikt worden om meldingen te ontvangen."
     },
     "jellyfinEmby": {
-        "title": "",
-        "description": "",
-        "embyNotice": "",
-        "internal": "",
-        "external": "",
-        "replaceJellyfin": "",
-        "replaceJellyfinNotice": "",
-        "addressExternalNotice": "",
-        "testConnection": ""
+        "title": "Jellyfin/Emby",
+        "description": "Er is een admin-account nodig, omdat via de API geen gebruikers aangemaakt kunnen worden. Maak een aparte account aan en vink 'Deze gebruiker kan de server beheren' aan. Alle andere rechten kunnen uitgeschakeld worden. Vul daarna hier de inloggegevens in.",
+        "embyNotice": "Ondersteuning voor Emby is beperkt en ondersteunt geen wachtwoordresets.",
+        "internal": "Intern",
+        "external": "Extern",
+        "replaceJellyfin": "Servernaam",
+        "replaceJellyfinNotice": "Indien ingevuld wordt overal in de app het woord 'Jellyfin' hierdoor vervangen.",
+        "addressExternalNotice": "Laat leeg om hetzelfde adres te gebruiken.",
+        "testConnection": "Test verbinding"
     },
     "ombi": {
-        "title": "",
-        "description": "",
-        "apiKeyNotice": ""
+        "title": "Ombi",
+        "description": "Bij verbinding met Ombi, worden voor nieuwe gebruikers via jfa-go zowel een Jellyfin als een Ombi account aangemaakt. Ga nadat de setup voltooid is naar instellingen om een standaardprofiel voor nieuwe Ombi-gebruikers te kiezen.",
+        "apiKeyNotice": "Te vinden op het eerste tabblad van de Ombi-instellingen."
     },
     "email": {
-        "title": "",
-        "description": "",
-        "method": "",
-        "useEmailAsUsername": "",
-        "useEmailAsUsernameNotice": "",
-        "fromAddress": "",
-        "senderName": "",
-        "dateFormat": "",
-        "dateFormatNotice": "",
-        "time24h": "",
-        "time12h": "",
-        "encryption": "",
-        "mailgunApiURL": ""
+        "title": "E-mail",
+        "description": "jfa0go kan wachtwoord reset PINs en meldingen via e-mail versturen. Je kunt verbinding maken met een SMTP server, of de {n} API gebruiken.",
+        "method": "Verstuurmethode",
+        "useEmailAsUsername": "Gebruik e-mailadres als gebruikersnaam",
+        "useEmailAsUsernameNotice": "Indien ingeschakeld wordt voor nieuwe Jellyfin/Emby-gebruikers hun e-mailadres in plaats van gebruikersnaam gebruikt.",
+        "fromAddress": "Afzenderadres",
+        "senderName": "Naam afzender",
+        "dateFormat": "Datumformaat",
+        "dateFormatNotice": "Datum volgend het strftime formaat. Meer info op {n}.",
+        "time24h": "24u-formaat",
+        "time12h": "12u-formaat",
+        "encryption": "Versleuteling",
+        "mailgunApiURL": "API-URL"
     },
     "notifications": {
-        "title": "",
+        "title": "Meldingen",
         "description": ""
     },
     "welcomeEmails": {
