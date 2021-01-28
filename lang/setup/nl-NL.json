@@ -89,41 +89,41 @@
     },
     "notifications": {
         "title": "Meldingen",
-        "description": ""
+        "description": "Indien ingeschakeld kun je er (per uitnodiging) voor kiezen om een e-mail te ontvangen wanneer een uitnodiging verloopt of er een gebruiker wordt aangemaakt. Als je niet inlogt via Jellyfin, controleer dan dat je je e-mailadres hebt ingevuld."
     },
     "welcomeEmails": {
-        "title": "",
-        "description": ""
+        "title": "Welkomste-mails",
+        "description": "Indien ingeschakeld wordt er een e-mail gestuurd aan nieuwe gebruikers met de Jellyfin/Emby-URL en hun gebruikersnaam."
     },
     "inviteEmails": {
-        "title": "",
-        "description": ""
+        "title": "Uitnodigingse-mails",
+        "description": "Indien ingeschakeld kun je uitnodigingen direct naar het e-mailadres van gebruikers sturen. Omdat je misschien een reverse proxy gebruikt moet je het URL opgeven waarlangs uitnodigingen geopend worden. Geef de URL-basis op, gevolgd door '/invite'."
     },
     "passwordResets": {
-        "title": "",
-        "description": "",
-        "pathToJellyfin": "",
-        "pathToJellyfinNotice": ""
+        "title": "Wachtwoordresets",
+        "description": "Wanneer een gebruiker een wachtwoordreset aanvraagt, maakt Jellyfin een bestand aan dat 'passwordreset-*.json' heet en een PIN bevat. jfa-go leest dit bestand uit en stuurt de PIN naar de gebruiker.",
+        "pathToJellyfin": "Pad naar Jellyfin configuratiemap",
+        "pathToJellyfinNotice": "Als je niet weet waar dit is, probeer de je wachtwoord te resetten in Jellyfin. Er verschijnt dan een popup met '<path to jellyfin>/passwordreset-*.json'."
     },
     "passwordValidation": {
-        "title": "",
-        "description": "",
-        "length": "",
-        "uppercase": "",
-        "lowercase": "",
-        "numbers": "",
-        "special": ""
+        "title": "Wachtwoordvalidatie",
+        "description": "Indien ingeschakeld worden er op de account-aanmaakpagina een aantal wachtwoordvereisten getoond, zoals minimumlengte, hoofd-/kleine letters, enz.",
+        "length": "Lengte",
+        "uppercase": "Hoofdletters",
+        "lowercase": "Kleine letters",
+        "numbers": "Cijfers",
+        "special": "Bijzondere tekens (%, *, etc.)"
     },
     "helpMessages": {
-        "title": "",
-        "description": "",
-        "contactMessage": "",
-        "contactMessageNotice": "",
-        "helpMessage": "",
-        "helpMessageNotice": "",
-        "successMessage": "",
-        "successMessageNotice": "",
-        "emailMessage": "",
-        "emailMessageNotice": ""
+        "title": "Uitleg",
+        "description": "Deze teksten worden getoond bij de account-aanmaakpagina en in sommige e-mails.",
+        "contactMessage": "Contacttekst",
+        "contactMessageNotice": "Getoond onderaan elke pagina behalve admin.",
+        "helpMessage": "Helpbericht",
+        "helpMessageNotice": "Getoond op de account-aanmaakpagina.",
+        "successMessage": "Succesbericht",
+        "successMessageNotice": "Getoond wanneer een gebruiker een account aanmaakt.",
+        "emailMessage": "E-mailtext",
+        "emailMessageNotice": "Getoond onderaan e-mails."
     }
 }
