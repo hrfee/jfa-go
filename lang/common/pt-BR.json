@@ -1,14 +1,14 @@
 {
     "meta": {
-        "name": ""
+        "name": "Português (BR)"
     },
     "strings": {
-        "username": "",
-        "password": "",
-        "emailAddress": "",
-        "submit": "",
-        "success": "",
-        "error": "",
-        "theme": ""
+        "username": "Nome do Usuário",
+        "password": "Senha",
+        "emailAddress": "Endereço de Email",
+        "submit": "Enviar",
+        "success": "Sucesso",
+        "error": "Erro",
+        "theme": "Tema"
     }
 }
