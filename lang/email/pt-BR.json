@@ -1,48 +1,48 @@
 {
     "meta": {
-        "name": ""
+        "name": "Português (BR)"
     },
     "userCreated": {
-        "title": "",
-        "aUserWasCreated": "",
-        "name": "",
-        "emailAddress": "",
-        "time": "",
-        "notificationNotice": ""
+        "title": "Aviso: Usuário criado",
+        "aUserWasCreated": "Um usuário foi criado usando o código {n}.",
+        "name": "Nome",
+        "emailAddress": "Endereço",
+        "time": "Tempo",
+        "notificationNotice": "Nota: Os emails de notificação podem ser alternados no painel do administrador."
     },
     "inviteExpiry": {
-        "title": "",
-        "inviteExpired": "",
-        "expiredAt": "",
-        "notificationNotice": ""
+        "title": "Aviso: Convite expirado",
+        "inviteExpired": "Convite expirado.",
+        "expiredAt": "O código {n} expirou em {n}.",
+        "notificationNotice": "Nota: Os emails de notificação podem ser alternados no painel do administrador."
     },
     "passwordReset": {
-        "title": "",
-        "helloUser": "",
-        "someoneHasRequestedReset": "",
-        "ifItWasYou": "",
-        "codeExpiry": "",
-        "ifItWasNotYou": "",
-        "pin": ""
+        "title": "Redefinir senha foi solicitada - Jellyfin",
+        "helloUser": "Ola {n},",
+        "someoneHasRequestedReset": "Alguém recentemente solicitou uma redefinição de senha no Jellyfin.",
+        "ifItWasYou": "Se foi você, insira o PIN abaixo.",
+        "codeExpiry": "O código irá expirar em {n}, ás {n}, que está em {n}.",
+        "ifItWasNotYou": "Se não foi você, ignore este e-mail.",
+        "pin": "PIN"
     },
     "userDeleted": {
-        "title": "",
-        "yourAccountWasDeleted": "",
-        "reason": ""
+        "title": "Sua conta foi excluída - Jellyfin",
+        "yourAccountWasDeleted": "Sua conta Jellyfin foi excluída.",
+        "reason": "Razão"
     },
     "inviteEmail": {
-        "title": "",
-        "hello": "",
-        "youHaveBeenInvited": "",
-        "toJoin": "",
-        "inviteExpiry": "",
-        "linkButton": ""
+        "title": "Convite - Jellyfin",
+        "hello": "Ola",
+        "youHaveBeenInvited": "Você um convite para o Jellyfin.",
+        "toJoin": "Para participar, clique no link abaixo.",
+        "inviteExpiry": "Este convite expira em {n} às {n}, que é em {n}, então seja rápido.",
+        "linkButton": "Crie sua conta"
     },
     "welcomeEmail": {
-        "title": "",
-        "welcome": "",
-        "youCanLoginWith": "",
-        "jellyfinURL": "",
-        "username": ""
+        "title": "Bem vindo ao Jellyfin",
+        "welcome": "Bem vindo ao Jellyfin!",
+        "youCanLoginWith": "Você pode fazer o login com os detalhes abaixo",
+        "jellyfinURL": "URL",
+        "username": "Nome do Usuário"
     }
 }
