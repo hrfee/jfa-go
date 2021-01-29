@@ -7,7 +7,7 @@ RUN apt update -y \
     && (curl -sL https://deb.nodesource.com/setup_14.x | bash -) \
     && apt install nodejs \
     && (cd /opt/build; make all; make compress) \
-    && sed -i 's#id="pwrJfPath" placeholder="Folder"#id="pwrJfPath" value="/jf" disabled#g' /opt/build/build/data/html/setup.html
+    && sed -i 's#id="password_resets-watch_directory" placeholder="/config/jellyfin"#id="password_resets-watch_directory" value="/jf" disabled#g' /opt/build/build/data/html/setup.html
 
 FROM golang:latest
 
