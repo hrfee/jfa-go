@@ -20,7 +20,7 @@
         "title": "Passwortzurücksetzung angefordert - Jellyfin",
         "helloUser": "Hallo {n},",
         "someoneHasRequestedReset": "Jemand hat vor kurzem eine Passwortzurücksetzung auf Jellyfin angefordert.",
-        "ifItWasYou": "Wenn du das warst, gib den PIN unten in die Eingabeaufforderung ein.",
+        "ifItWasYou": "Wenn du das warst, gib die PIN unten in die Eingabeaufforderung ein.",
         "codeExpiry": "Der Code wird am {n}, um [n} UTC ablaufen, was in {n} ist.",
         "ifItWasNotYou": "Wenn du das nicht warst, ignoriere bitte diese E-Mail.",
         "pin": "PIN"
@@ -31,7 +31,7 @@
         "reason": "Grund"
     },
     "inviteEmail": {
-        "title": "Einladung - Jellyfin",
+        "title": "Invite - Jellyfin",
         "hello": "Hallo",
         "youHaveBeenInvited": "Du wurdest zu Jellyfin eingeladen.",
         "toJoin": "Um beizutreten, folge dem untenstehenden Link.",
