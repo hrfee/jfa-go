@@ -5,7 +5,7 @@
     "strings": {
         "pageTitle": "Jellyfin-Konto erstellen",
         "createAccountHeader": "Konto erstellen",
-        "accountDetails": "Details",
+        "accountDetails": "Kontodaten",
         "emailAddress": "E-Mail",
         "username": "Benutzername",
         "password": "Passwort",
@@ -39,7 +39,7 @@
         }
     },
     "notifications": {
-        "errorUserExists": "Dieser Nutzername ist bereits vergeben.",
-        "errorInvalidCode": "Ungültiger Einladungscode."
+        "errorUserExists": "Benutzer existiert bereits.",
+        "errorInvalidCode": "Ungültiger Invite-Code."
     }
 }
