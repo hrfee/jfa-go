@@ -37,5 +37,9 @@
             "singular": "Moet ten minste {n} bijzonder teken bevatten",
             "plural": "Moet ten minste {n} bijzondere tekens bevatten"
         }
+    },
+    "notifications": {
+        "errorUserExists": "Gebruiker bestaat al.",
+        "errorInvalidCode": "Ongeldige uitnodigingscode."
     }
 }
