@@ -37,5 +37,12 @@
         "toJoin": "Volg onderstaande link om door te gaan.",
         "inviteExpiry": "Deze uitnodiging verloopt op {n}, om {n}, dat is over {n}, dus wees er snel bij.",
         "linkButton": "Maak account aan"
+    },
+    "welcomeEmail": {
+        "title": "Welkom bij Jellyfin",
+        "welcome": "Welkom bij Jellyfin!",
+        "youCanLoginWith": "Je kunt inloggen met onderstaande gegevens",
+        "jellyfinURL": "URL",
+        "username": "Gebruikersnaam"
     }
 }
