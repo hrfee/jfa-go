@@ -1,6 +1,6 @@
 {
     "meta": {
-        "name": "Francais (FR)",
+        "name": "Français (FR)",
         "author": "https://github.com/Killianbe"
     },
     "strings": {
@@ -38,5 +38,9 @@
             "singular": "Doit avoir au moins {n} caractère spécial",
             "plural": "Doit avoir au moins {n} caractères spéciaux"
         }
+    },
+    "notifications": {
+        "errorUserExists": "Utilisateur déjà existant.",
+        "errorInvalidCode": "Code d’invitation non valide."
     }
 }
