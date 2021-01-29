@@ -201,7 +201,7 @@ class LangSelect extends Select {
 window.lang = new lang(window.langFile as LangFile);
 html("language-description", window.lang.var("language", "description", `<a href="https://weblate.hrfee.pw">Weblate</a>`));
 html("email-description", window.lang.var("email", "description", `<a href="https://mailgun.com">Mailgun</a>`));
-html("dateformat-description", window.lang.var("email", "dateFormatNotice", `<a href="https://strftime.ninja/">strftime.ninja</a>`));
+html("email-dateformat-notice", window.lang.var("email", "dateFormatNotice", `<a href="https://strftime.ninja/">strftime.ninja</a>`));
 
 const settings = {
     "jellyfin": {
