@@ -2,11 +2,13 @@
     "meta": {
         "name": "English (US)"
     },
+    "strings": {
+        "ifItWasNotYou": "If this wasn't you, please ignore this email.",
+        "helloUser": "Hi {n},"
+    },
     "userCreated": {
         "title": "Notice: User created",
         "aUserWasCreated": "A user was created using code {n}.",
-        "name": "Name",
-        "emailAddress": "Address",
         "time": "Time",
         "notificationNotice": "Note: Notification emails can be toggled on the admin dashboard."
     },
@@ -18,11 +20,9 @@
     },
     "passwordReset": {
         "title": "Password reset requested - Jellyfin",
-        "helloUser": "Hi {n},",
         "someoneHasRequestedReset": "Someone has recently requested a password reset on Jellyfin.",
         "ifItWasYou": "If this was you, enter the pin below into the prompt.",
         "codeExpiry": "The code will expire on {n}, at {n} UTC, which is in {n}.",
-        "ifItWasNotYou": "If this wasn't you, please ignore this email.",
         "pin": "PIN"
     },
     "userDeleted": {
@@ -42,7 +42,11 @@
         "title": "Welcome to Jellyfin",
         "welcome": "Welcome to Jellyfin!",
         "youCanLoginWith": "You can login with the details below",
-        "jellyfinURL": "URL",
-        "username": "Username"
+        "jellyfinURL": "URL"
+    },
+    "emailConfirmation": {
+        "title": "Confirm your email - Jellyfin",
+        "clickBelow": "Click the link below to confirm your email address and start using Jellyfin.",
+        "confirmEmail": "Confirm Email"
     }
 }

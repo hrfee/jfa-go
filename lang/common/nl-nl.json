@@ -4,6 +4,7 @@
     },
     "strings": {
         "username": "Gebruikersnaam",
+        "name": "Naam",
         "password": "Wachtwoord",
         "emailAddress": "E-mailadres",
         "submit": "Verstuur",

@@ -13,6 +13,12 @@
                 <a class="button ~urge !normal full-width center supra submit" href="{{ .jfLink }}" id="create-success-button">{{ .strings.successContinueButton }}</a>
             </div>
         </div>
+        <div id="modal-confirmation" class="modal">
+            <div class="modal-content card">
+                <span class="heading mb-1">{{ .strings.confirmationRequired }}</span>
+                <p class="content mb-1">{{ .strings.confirmationRequiredMessage }}</p>
+            </div>
+        </div>
         <span class="dropdown" tabindex="0" id="lang-dropdown">
             <span class="button ~urge dropdown-button">
                 <i class="ri-global-line"></i>

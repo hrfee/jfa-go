@@ -2,11 +2,13 @@
     "meta": {
         "name": "Deutsch (DE)"
     },
+    "strings": {
+        "ifItWasNotYou": "Wenn du das nicht warst, ignoriere bitte diese E-Mail.",
+        "helloUser": "Hallo {n},"
+    },
     "userCreated": {
         "title": "Mitteilung: Benutzer erstellt",
         "aUserWasCreated": "Ein Benutzer wurde unter Verwendung des Codes {n] erstellt.",
-        "name": "Name",
-        "emailAddress": "Adresse",
         "time": "Zeit",
         "notificationNotice": "Hinweis: Benachrichtigungs-E-Mails können auf dem Administrator-Dashboard umgeschalten werden."
     },
@@ -18,11 +20,9 @@
     },
     "passwordReset": {
         "title": "Passwortzurücksetzung angefordert - Jellyfin",
-        "helloUser": "Hallo {n},",
         "someoneHasRequestedReset": "Jemand hat vor kurzem eine Passwortzurücksetzung auf Jellyfin angefordert.",
         "ifItWasYou": "Wenn du das warst, gib die PIN unten in die Eingabeaufforderung ein.",
         "codeExpiry": "Der Code wird am {n}, um [n} UTC ablaufen, was in {n} ist.",
-        "ifItWasNotYou": "Wenn du das nicht warst, ignoriere bitte diese E-Mail.",
         "pin": "PIN"
     },
     "userDeleted": {
@@ -42,7 +42,6 @@
         "title": "Wilkommen bei Jellyfin",
         "welcome": "Willkommen bei Jellyfin!",
         "youCanLoginWith": "Du kannst dich mit den mit den untenstehenden Zugangsdaten anmelden",
-        "jellyfinURL": "URL",
-        "username": "Benutzername"
+        "jellyfinURL": "URL"
     }
 }

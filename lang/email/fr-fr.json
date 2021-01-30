@@ -3,11 +3,13 @@
         "name": "Français (FR)",
         "author": "https://github.com/Cornichon420"
     },
+    "strings": {
+        "ifItWasNotYou": "Si ce n'était pas toi, tu peux ignorer ce mail.",
+        "helloUser": "Salut {n},"
+    },
     "userCreated": {
         "title": "Notification : Utilisateur créé",
         "aUserWasCreated": "Un utilisateur a été créé avec ce code {n}.",
-        "name": "Nom",
-        "emailAddress": "Adresse",
         "time": "Date",
         "notificationNotice": "Note : Les emails de notification peuvent être activés sur le tableau de bord administrateur."
     },
@@ -19,11 +21,9 @@
     },
     "passwordReset": {
         "title": "Réinitialisation de mot du passe demandée - Jellyfin",
-        "helloUser": "Salut {n},",
         "someoneHasRequestedReset": "Quelqu'un vient de demander une réinitialisation du mot de passe via Jellyfin.",
         "ifItWasYou": "Si c'était bien toi, renseigne le code PIN en dessous.",
         "codeExpiry": "Ce code expirera le {n}, à {n} UTC, soit dans {n}.",
-        "ifItWasNotYou": "Si ce n'était pas toi, tu peux ignorer ce mail.",
         "pin": "PIN"
     },
     "userDeleted": {
@@ -43,7 +43,6 @@
         "youCanLoginWith": "Tu peux te connecter avec les informations ci-dessous",
         "title": "Bienvenue sur Jellyfin",
         "welcome": "Bienvenue sur Jellyfin !",
-        "jellyfinURL": "URL",
-        "username": "Nom d'utilisateur"
+        "jellyfinURL": "URL"
     }
 }

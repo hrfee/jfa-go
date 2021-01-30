@@ -1,0 +1,38 @@
+<mjml>
+  <mj-head>
+    <mj-attributes>
+      <mj-class name="bg" background-color="#101010" />
+      <mj-class name="bg2" background-color="#242424" />
+      <mj-class name="text" color="rgba(255,255,255,0.8)" />
+      <mj-class name="bold" color="rgba(255,255,255,0.87)" />
+      <mj-class name="secondary" color="rgb(153,153,153)" />
+      <mj-class name="blue" background-color="rgb(0,164,220)" />
+    </mj-attributes>
+    <mj-font name="Quicksand" href="https://fonts.googleapis.com/css2?family=Quicksand" />
+    <mj-font name="Noto Sans" href="https://fonts.googleapis.com/css2?family=Noto+Sans" />
+  </mj-head>
+  <mj-body>
+    <mj-section mj-class="bg2">
+      <mj-column>
+        <mj-text mj-class="bold" font-size="25px" font-family="Quicksand, Noto Sans, Helvetica, Arial, sans-serif"> Jellyfin </mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-section mj-class="bg">
+      <mj-column>
+        <mj-text mj-class="text" font-size="16px" font-family="Noto Sans, Helvetica, Arial, sans-serif">
+            <p>{{ .helloUser }}</p>
+            <p>{{ .clickBelow }}</p>
+            <p>{{ .ifItWasNotYou }}</p>
+        </mj-text>
+        <mj-button mj-class="blue bold" href="{{ .urlVal }}">{{ .confirmEmail }}</mj-button>
+      </mj-column>
+    </mj-section>
+    <mj-section mj-class="bg2">
+      <mj-column>
+        <mj-text mj-class="secondary" font-style="italic" font-size="14px">
+          {{ .message }}
+        </mj-text>
+      </mj-column>
+    </mj-section>
+    </body>
+</mjml>

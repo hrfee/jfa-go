@@ -2,11 +2,13 @@
     "meta": {
         "name": "Nederlands (NL)"
     },
+    "strings": {
+        "ifItWasNotYou": "Als jij dit niet was, negeer dan alsjeblieft deze email.",
+        "helloUser": "Hoi {n},"
+    },
     "userCreated": {
         "title": "Melding: Gebruiker aangemaakt",
         "aUserWasCreated": "Er is een gebruiker aangemaakt door gebruik te maken van code {n}.",
-        "name": "Naam",
-        "emailAddress": "Adres",
         "time": "Tijdstip",
         "notificationNotice": "Opmerking: Meldingsemails kunnen worden aan- of uitgezet via het admin dashboard."
     },
@@ -18,11 +20,9 @@
     },
     "passwordReset": {
         "title": "Wachtwoordreset aangevraagd - Jellyfin",
-        "helloUser": "Hoi {n},",
         "someoneHasRequestedReset": "Iemand heeft recentelijk een wachtwoordreset aangevraagd in Jellyfin.",
         "ifItWasYou": "Als jij dit was, voor dan onderstaande PIN in.",
         "codeExpiry": "De code verloopt op {n}, op {n} UTC, dat is over {n}.",
-        "ifItWasNotYou": "Als jij dit niet was, negeer dan alsjeblieft deze email.",
         "pin": "PIN"
     },
     "userDeleted": {
@@ -42,7 +42,6 @@
         "title": "Welkom bij Jellyfin",
         "welcome": "Welkom bij Jellyfin!",
         "youCanLoginWith": "Je kunt inloggen met onderstaande gegevens",
-        "jellyfinURL": "URL",
-        "username": "Gebruikersnaam"
+        "jellyfinURL": "URL"
     }
 }

@@ -153,9 +153,44 @@ func (emailer *Emailer) NewSMTP(server string, port int, username, password stri
 	}
 }
 
+func (emailer *Emailer) constructConfirmation(code, username, key string, app *appContext) (*Email, error) {
+	email := &Email{
+		subject: app.config.Section("email_confirmation").Key("subject").MustString(emailer.lang.EmailConfirmation.get("title")),
+	}
+	message := app.config.Section("email").Key("message").String()
+	inviteLink := app.config.Section("invite_emails").Key("url_base").String()
+	inviteLink = fmt.Sprintf("%s/%s?key=%s", inviteLink, code, key)
+
+	for _, key := range []string{"html", "text"} {
+		fpath := app.config.Section("email_confirmation").Key("email_" + key).String()
+		tpl, err := template.ParseFiles(fpath)
+		if err != nil {
+			return nil, err
+		}
+		var tplData bytes.Buffer
+		err = tpl.Execute(&tplData, map[string]string{
+			"helloUser":     emailer.lang.Strings.format("helloUser", username),
+			"clickBelow":    emailer.lang.EmailConfirmation.get("clickBelow"),
+			"ifItWasNotYou": emailer.lang.Strings.get("ifItWasNotYou"),
+			"urlVal":        inviteLink,
+			"confirmEmail":  emailer.lang.EmailConfirmation.get("confirmEmail"),
+			"message":       message,
+		})
+		if err != nil {
+			return nil, err
+		}
+		if key == "html" {
+			email.html = tplData.String()
+		} else {
+			email.text = tplData.String()
+		}
+	}
+	return email, nil
+}
+
 func (emailer *Emailer) constructInvite(code string, invite Invite, app *appContext) (*Email, error) {
 	email := &Email{
-		subject: app.config.Section("invite_emails").Key("subject").MustString(emailer.lang.InviteEmail.get("title")),
+		subject: app.config.Section("email_confirmation").Key("subject").MustString(emailer.lang.InviteEmail.get("title")),
 	}
 	expiry := invite.ValidTill
 	d, t, expiresIn := emailer.formatExpiry(expiry, false, app.datePattern, app.timePattern)
@@ -240,8 +275,8 @@ func (emailer *Emailer) constructCreated(code, username, address string, invite 
 		var tplData bytes.Buffer
 		err = tpl.Execute(&tplData, map[string]string{
 			"aUserWasCreated":    emailer.lang.UserCreated.format("aUserWasCreated", "\""+code+"\""),
-			"name":               emailer.lang.UserCreated.get("name"),
-			"address":            emailer.lang.UserCreated.get("emailAddress"),
+			"name":               emailer.lang.Strings.get("name"),
+			"address":            emailer.lang.Strings.get("emailAddress"),
 			"time":               emailer.lang.UserCreated.get("time"),
 			"nameVal":            username,
 			"addressVal":         tplAddress,
@@ -274,11 +309,11 @@ func (emailer *Emailer) constructReset(pwr PasswordReset, app *appContext) (*Ema
 		}
 		var tplData bytes.Buffer
 		err = tpl.Execute(&tplData, map[string]string{
-			"helloUser":                emailer.lang.PasswordReset.format("helloUser", pwr.Username),
+			"helloUser":                emailer.lang.Strings.format("helloUser", pwr.Username),
 			"someoneHasRequestedReset": emailer.lang.PasswordReset.get("someoneHasRequestedReset"),
 			"ifItWasYou":               emailer.lang.PasswordReset.get("ifItWasYou"),
 			"codeExpiry":               emailer.lang.PasswordReset.format("codeExpiry", d, t, expiresIn),
-			"ifItWasNotYou":            emailer.lang.PasswordReset.get("ifItWasNotYou"),
+			"ifItWasNotYou":            emailer.lang.Strings.get("ifItWasNotYou"),
 			"pin":                      emailer.lang.PasswordReset.get("pin"),
 			"pinVal":                   pwr.Pin,
 			"message":                  message,
@@ -339,7 +374,7 @@ func (emailer *Emailer) constructWelcome(username string, app *appContext) (*Ema
 			"youCanLoginWith": emailer.lang.WelcomeEmail.get("youCanLoginWith"),
 			"jellyfinURL":     emailer.lang.WelcomeEmail.get("jellyfinURL"),
 			"jellyfinURLVal":  app.config.Section("jellyfin").Key("public_server").String(),
-			"username":        emailer.lang.WelcomeEmail.get("username"),
+			"username":        emailer.lang.Strings.get("username"),
 			"usernameVal":     username,
 			"message":         app.config.Section("email").Key("message").String(),
 		})

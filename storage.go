@@ -42,6 +42,7 @@ type Invite struct {
 	Notify        map[string]map[string]bool `json:"notify"`
 	Profile       string                     `json:"profile"`
 	Label         string                     `json:"label,omitempty"`
+    Keys          []string                   `json"keys,omitempty"`
 }
 
 type Lang struct {
@@ -286,6 +287,7 @@ func (st *Storage) loadLangEmail() error {
 		if err != nil {
 			return err
 		}
+		st.lang.Common.patchCommon(index, &lang.Strings)
 		if fname != "en-us.json" {
 			patchLang(&english.UserCreated, &lang.UserCreated)
 			patchLang(&english.InviteExpiry, &lang.InviteExpiry)

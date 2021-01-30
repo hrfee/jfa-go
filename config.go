@@ -35,6 +35,10 @@ func (app *appContext) loadConfig() error {
 	app.config.Section("invite_emails").Key("email_html").SetValue(app.config.Section("invite_emails").Key("email_html").MustString(filepath.Join(app.localPath, "invite-email.html")))
 	app.config.Section("invite_emails").Key("email_text").SetValue(app.config.Section("invite_emails").Key("email_text").MustString(filepath.Join(app.localPath, "invite-email.txt")))
 
+	app.config.Section("email_confirmation").Key("email_html").SetValue(app.config.Section("email_confirmation").Key("email_html").MustString(filepath.Join(app.localPath, "confirmation.html")))
+	fmt.Println(app.config.Section("email_confirmation").Key("email_html").String())
+	app.config.Section("email_confirmation").Key("email_text").SetValue(app.config.Section("email_confirmation").Key("email_text").MustString(filepath.Join(app.localPath, "confirmation.txt")))
+
 	app.config.Section("notifications").Key("expiry_html").SetValue(app.config.Section("notifications").Key("expiry_html").MustString(filepath.Join(app.localPath, "expired.html")))
 	app.config.Section("notifications").Key("expiry_text").SetValue(app.config.Section("notifications").Key("expiry_text").MustString(filepath.Join(app.localPath, "expired.txt")))
 

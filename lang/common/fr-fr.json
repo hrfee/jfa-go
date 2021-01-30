@@ -5,6 +5,7 @@
     },
     "strings": {
         "username": "Nom d'utilisateur",
+        "name": "Nom",
         "password": "Mot de passe",
         "emailAddress": "Addresse Email",
         "submit": "Soumettre",

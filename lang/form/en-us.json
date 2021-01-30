@@ -14,7 +14,9 @@
         "createAccountButton": "Create Account",
         "passwordRequirementsHeader": "Password Requirements",
         "successHeader": "Success!",
-        "successContinueButton": "Continue"
+        "successContinueButton": "Continue",
+        "confirmationRequired": "Email confirmation required",
+        "confirmationRequiredMessage": "Please check your email inbox to verify your address."
     },
     "notifications": {
         "errorUserExists": "User already exists.",

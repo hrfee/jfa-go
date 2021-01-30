@@ -8,6 +8,8 @@ interface formWindow extends Window {
     modal: Modal;
     code: string;
     messages: { [key: string]: string };
+    confirmation: boolean;
+    confirmationModal: Modal
 }
 
 interface pwValString {
@@ -26,7 +28,10 @@ interface pwValStrings {
 
 loadLangSelector("form");
 
-window.modal = new Modal(document.getElementById("modal-success"));
+window.modal = new Modal(document.getElementById("modal-success"), true);
+if (window.confirmation) {
+    window.confirmationModal = new Modal(document.getElementById("modal-confirmation"), true);
+}
 declare var window: formWindow;
 
 var defaultPwValStrings: pwValStrings = {
@@ -120,6 +125,10 @@ const create = (event: SubmitEvent) => {
             toggleLoader(submitSpan);
             if (req.status == 401) {
                 if (req.response["error"] as string) {
+                    if (req.response["error"] == "confirmEmail") {
+                        window.confirmationModal.show();
+                        return;
+                    }
                     const old = submitSpan.textContent;
                     if (req.response["error"] in window.messages) {
                         submitSpan.textContent = window.messages[req.response["error"]];

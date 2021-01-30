@@ -77,13 +77,15 @@ func (ls *emailLangs) getOptions(chosen string) (string, []string) {
 }
 
 type emailLang struct {
-	Meta          langMeta    `json:"meta"`
-	UserCreated   langSection `json:"userCreated"`
-	InviteExpiry  langSection `json:"inviteExpiry"`
-	PasswordReset langSection `json:"passwordReset"`
-	UserDeleted   langSection `json:"userDeleted"`
-	InviteEmail   langSection `json:"inviteEmail"`
-	WelcomeEmail  langSection `json:"welcomeEmail"`
+	Meta              langMeta    `json:"meta"`
+	Strings           langSection `json:"strings"`
+	UserCreated       langSection `json:"userCreated"`
+	InviteExpiry      langSection `json:"inviteExpiry"`
+	PasswordReset     langSection `json:"passwordReset"`
+	UserDeleted       langSection `json:"userDeleted"`
+	InviteEmail       langSection `json:"inviteEmail"`
+	WelcomeEmail      langSection `json:"welcomeEmail"`
+	EmailConfirmation langSection `json:"emailConfirmation"`
 }
 
 type setupLangs map[string]setupLang

@@ -708,6 +708,46 @@
                 }
             }
         },
+        "email_confirmation": {
+            "order": [],
+            "meta": {
+                "name": "Email confirmation",
+                "description": "If enabled, a user will be sent an email confirmation link to ensure their password is right before they can make an account."
+            },
+            "settings": {
+                "enabled": {
+                    "name": "Enabled",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "bool",
+                    "value": false
+                },
+                "subject": {
+                    "name": "Email subject",
+                    "required": false,
+                    "requires_restart": false,
+                    "type": "text",
+                    "value": "",
+                    "description": "Subject of email confirmation emails."
+                },
+                "email_html": {
+                    "name": "Custom email (HTML)",
+                    "required": false,
+                    "requires_restart": false,
+                    "type": "text",
+                    "value": "",
+                    "description": "Path to custom email html"
+                },
+                "email_text": {
+                    "name": "Custom email (plaintext)",
+                    "required": false,
+                    "requires_restart": false,
+                    "type": "text",
+                    "value": "",
+                    "description": "Path to custom email in plain text"
+                }
+            }
+        },
         "deletion": {
             "order": [],
             "meta": {

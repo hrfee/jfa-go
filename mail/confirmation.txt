@@ -1,0 +1,8 @@
+{{ .helloUser }}
+
+{{ .clickBelow }}
+{{ .ifItWasNotYou }}
+
+{{ .urlVal }}
+
+{{ .message }}

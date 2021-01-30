@@ -3,10 +3,13 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"github.com/knz/strtime"
 	"github.com/lithammer/shortuuid/v3"
@@ -115,23 +118,27 @@ func (app *appContext) checkInvites() {
 		notify := data.Notify
 		if app.config.Section("notifications").Key("enabled").MustBool(false) && len(notify) != 0 {
 			app.debug.Printf("%s: Expiry notification", code)
+			var wait sync.WaitGroup
 			for address, settings := range notify {
 				if !settings["notify-expiry"] {
 					continue
 				}
-				go func() {
+				wait.Add(1)
+				go func(addr string) {
+					defer wait.Done()
 					msg, err := app.email.constructExpiry(code, data, app)
 					if err != nil {
 						app.err.Printf("%s: Failed to construct expiry notification", code)
 						app.debug.Printf("Error: %s", err)
-					} else if err := app.email.send(address, msg); err != nil {
+					} else if err := app.email.send(addr, msg); err != nil {
 						app.err.Printf("%s: Failed to send expiry notification", code)
 						app.debug.Printf("Error: %s", err)
 					} else {
-						app.info.Printf("Sent expiry notification to %s", address)
+						app.info.Printf("Sent expiry notification to %s", addr)
 					}
-				}()
+				}(address)
 			}
+			wait.Wait()
 		}
 		changed = true
 		delete(app.storage.invites, code)
@@ -184,7 +191,7 @@ func (app *appContext) checkInvite(code string, used bool, username string) bool
 			delete(app.storage.invites, code)
 		} else if newInv.RemainingUses != 0 {
 			// 0 means infinite i guess?
-			newInv.RemainingUses -= 1
+			newInv.RemainingUses--
 		}
 		newInv.UsedBy = append(newInv.UsedBy, []string{username, app.formatDatetime(currentTime)})
 		if !del {
@@ -312,47 +319,67 @@ func (app *appContext) NewUserAdmin(gc *gin.Context) {
 	respondUser(200, true, true, "", gc)
 }
 
-// @Summary Creates a new Jellyfin user via invite code
-// @Produce json
-// @Param newUserDTO body newUserDTO true "New user request object"
-// @Success 200 {object} PasswordValidation
-// @Failure 400 {object} PasswordValidation
-// @Router /newUser [post]
-// @tags Users
-func (app *appContext) NewUser(gc *gin.Context) {
-	var req newUserDTO
-	gc.BindJSON(&req)
-	app.debug.Printf("%s: New user attempt", req.Code)
-	if !app.checkInvite(req.Code, false, "") {
-		app.info.Printf("%s New user failed: invalid code", req.Code)
-		respond(401, "errorInvalidCode", gc)
-		return
-	}
-	validation := app.validator.validate(req.Password)
-	valid := true
-	for _, val := range validation {
-		if !val {
-			valid = false
-		}
-	}
-	if !valid {
-		// 200 bcs idk what i did in js
-		app.info.Printf("%s New user failed: Invalid password", req.Code)
-		gc.JSON(200, validation)
-		gc.Abort()
-		return
-	}
+type errorFunc func(gc *gin.Context)
+
+func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, success bool) {
 	existingUser, _, _ := app.jf.UserByName(req.Username, false)
 	if existingUser != nil {
-		msg := fmt.Sprintf("User %s", req.Username)
-		app.info.Printf("%s New user failed: %s", req.Code, msg)
-		respond(401, "errorUserExists", gc)
+		f = func(gc *gin.Context) {
+			msg := fmt.Sprintf("User %s already exists", req.Username)
+			app.info.Printf("%s: New user failed: %s", req.Code, msg)
+			respond(401, "errorUserExists", gc)
+		}
+		success = false
 		return
 	}
+	if app.config.Section("email_confirmation").Key("enabled").MustBool(false) && !confirmed {
+		claims := jwt.MapClaims{
+			"valid":    true,
+			"invite":   req.Code,
+			"email":    req.Email,
+			"username": req.Username,
+			"password": req.Password,
+			"exp":      strconv.FormatInt(time.Now().Add(time.Hour*12).Unix(), 10),
+			"type":     "confirmation",
+		}
+		tk := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+		key, err := tk.SignedString([]byte(os.Getenv("JFA_SECRET")))
+		if err != nil {
+			f = func(gc *gin.Context) {
+				app.info.Printf("Failed to generate confirmation token: %v", err)
+				respond(500, "errorUnknown", gc)
+			}
+			success = false
+			return
+		}
+		inv := app.storage.invites[req.Code]
+		inv.Keys = append(inv.Keys, key)
+		app.storage.invites[req.Code] = inv
+		app.storage.storeInvites()
+		f = func(gc *gin.Context) {
+			app.debug.Printf("%s: Email confirmation required", req.Code)
+			respond(401, "confirmEmail", gc)
+			msg, err := app.email.constructConfirmation(req.Code, req.Username, key, app)
+			if err != nil {
+				app.err.Printf("%s: Failed to construct confirmation email", req.Code)
+				app.debug.Printf("%s: Error: %s", req.Code, err)
+			} else if err := app.email.send(req.Email, msg); err != nil {
+				app.err.Printf("%s: Failed to send user confirmation email: %s", req.Code, err)
+			} else {
+				app.info.Printf("%s: Sent user confirmation email to %s", req.Code, req.Email)
+			}
+		}
+		success = false
+		return
+	}
+
 	user, status, err := app.jf.NewUser(req.Username, req.Password)
 	if !(status == 200 || status == 204) || err != nil {
-		app.err.Printf("%s New user failed: Jellyfin responded with %d", req.Code, status)
-		respond(401, app.storage.lang.Admin[app.storage.lang.chosenAdminLang].Notifications.get("errorUnknown"), gc)
+		f = func(gc *gin.Context) {
+			app.err.Printf("%s New user failed: Jellyfin responded with %d", req.Code, status)
+			respond(401, app.storage.lang.Admin[app.storage.lang.chosenAdminLang].Notifications.get("errorUnknown"), gc)
+		}
+		success = false
 		return
 	}
 	app.storage.loadProfiles()
@@ -433,6 +460,44 @@ func (app *appContext) NewUser(gc *gin.Context) {
 		} else {
 			app.info.Printf("%s: Sent welcome email to %s", req.Username, req.Email)
 		}
+	}
+	success = true
+	return
+}
+
+// @Summary Creates a new Jellyfin user via invite code
+// @Produce json
+// @Param newUserDTO body newUserDTO true "New user request object"
+// @Success 200 {object} PasswordValidation
+// @Failure 400 {object} PasswordValidation
+// @Router /newUser [post]
+// @tags Users
+func (app *appContext) NewUser(gc *gin.Context) {
+	var req newUserDTO
+	gc.BindJSON(&req)
+	app.debug.Printf("%s: New user attempt", req.Code)
+	if !app.checkInvite(req.Code, false, "") {
+		app.info.Printf("%s New user failed: invalid code", req.Code)
+		respond(401, "errorInvalidCode", gc)
+		return
+	}
+	validation := app.validator.validate(req.Password)
+	valid := true
+	for _, val := range validation {
+		if !val {
+			valid = false
+		}
+	}
+	if !valid {
+		// 200 bcs idk what i did in js
+		app.info.Printf("%s New user failed: Invalid password", req.Code)
+		gc.JSON(200, validation)
+		return
+	}
+	f, success := app.newUser(req, false)
+	if !success {
+		f(gc)
+		return
 	}
 	code := 200
 	for _, val := range validation {
@@ -1316,54 +1381,6 @@ func (app *appContext) ServeLang(gc *gin.Context) {
 	}
 	respondBool(400, false, gc)
 }
-
-// func Restart() error {
-// 	defer func() {
-// 		if r := recover(); r != nil {
-// 			os.Exit(0)
-// 		}
-// 	}()
-// 	cwd, err := os.Getwd()
-// 	if err != nil {
-// 		return err
-// 	}
-// 	args := os.Args
-// 	// for _, key := range args {
-// 	// 	fmt.Println(key)
-// 	// }
-// 	cmd := exec.Command(args[0], args[1:]...)
-// 	cmd.Stdout = os.Stdout
-// 	cmd.Stderr = os.Stderr
-// 	cmd.Dir = cwd
-// 	err = cmd.Start()
-// 	if err != nil {
-// 		return err
-// 	}
-// 	// cmd.Process.Release()
-// 	panic(fmt.Errorf("restarting"))
-// }
-
-// func (app *appContext) Restart() error {
-// 	defer func() {
-// 		if r := recover(); r != nil {
-// 			signal.Notify(app.quit, os.Interrupt)
-// 			<-app.quit
-// 		}
-// 	}()
-// 	args := os.Args
-// 	// After a single restart, args[0] gets messed up and isnt the real executable.
-// 	// JFA_DEEP tells the new process its a child, and JFA_EXEC is the real executable
-// 	if os.Getenv("JFA_DEEP") == "" {
-// 		os.Setenv("JFA_DEEP", "1")
-// 		os.Setenv("JFA_EXEC", args[0])
-// 	}
-// 	env := os.Environ()
-// 	err := syscall.Exec(os.Getenv("JFA_EXEC"), []string{""}, env)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	panic(fmt.Errorf("restarting"))
-// }
 
 // no need to syscall.exec anymore!
 func (app *appContext) Restart() error {

@@ -2,8 +2,11 @@ package main
 
 import (
 	"net/http"
+	"strconv"
 	"strings"
+	"time"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 )
 
@@ -78,33 +81,99 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 	}
 	/* Don't actually check if the invite is valid, just if it exists, just so the page loads quicker. Invite is actually checked on submit anyway. */
 	// if app.checkInvite(code, false, "") {
-	if _, ok := app.storage.invites[code]; ok {
-		email := app.storage.invites[code].Email
-		if strings.Contains(email, "Failed") {
-			email = ""
-		}
-		gcHTML(gc, http.StatusOK, "form-loader.html", gin.H{
-			"urlBase":           app.URLBase,
-			"cssClass":          app.cssClass,
-			"contactMessage":    app.config.Section("ui").Key("contact_message").String(),
-			"helpMessage":       app.config.Section("ui").Key("help_message").String(),
-			"successMessage":    app.config.Section("ui").Key("success_message").String(),
-			"jfLink":            app.config.Section("jellyfin").Key("public_server").String(),
-			"validate":          app.config.Section("password_validation").Key("enabled").MustBool(false),
-			"requirements":      app.validator.getCriteria(),
-			"email":             email,
-			"username":          !app.config.Section("email").Key("no_username").MustBool(false),
-			"strings":           app.storage.lang.Form[lang].Strings,
-			"validationStrings": app.storage.lang.Form[lang].validationStringsJSON,
-			"notifications":     app.storage.lang.Form[lang].notificationsJSON,
-			"code":              code,
-		})
-	} else {
+	inv, ok := app.storage.invites[code]
+	if !ok {
 		gcHTML(gc, 404, "invalidCode.html", gin.H{
 			"cssClass":       app.cssClass,
 			"contactMessage": app.config.Section("ui").Key("contact_message").String(),
 		})
+		return
 	}
+	if key := gc.Query("key"); key != "" {
+		validKey := false
+		keyIndex := -1
+		for i, k := range inv.Keys {
+			if k == key {
+				validKey = true
+				keyIndex = i
+				break
+			}
+		}
+		fail := func() {
+			gcHTML(gc, 404, "404.html", gin.H{
+				"cssClass":       app.cssClass,
+				"contactMessage": app.config.Section("ui").Key("contact_message").String(),
+			})
+		}
+		if !validKey {
+			fail()
+			return
+		}
+		token, err := jwt.Parse(key, checkToken)
+		if err != nil {
+			fail()
+			app.err.Printf("Failed to parse key: %s", err)
+			return
+		}
+		claims, ok := token.Claims.(jwt.MapClaims)
+		expiryUnix, err := strconv.ParseInt(claims["exp"].(string), 10, 64)
+		if err != nil {
+			fail()
+			app.err.Printf("Failed to parse key expiry: %s", err)
+			return
+		}
+		expiry := time.Unix(expiryUnix, 0)
+		if !(ok && token.Valid && claims["invite"].(string) == code && claims["type"].(string) == "confirmation" && expiry.After(time.Now())) {
+			fail()
+			app.debug.Printf("Invalid key")
+			return
+		}
+		req := newUserDTO{
+			Email:    claims["email"].(string),
+			Username: claims["username"].(string),
+			Password: claims["password"].(string),
+			Code:     claims["invite"].(string),
+		}
+		f, success := app.newUser(req, true)
+		if !success {
+			f(gc)
+			fail()
+			return
+		}
+		gcHTML(gc, http.StatusOK, "create-success.html", gin.H{
+			"strings":        app.storage.lang.Form[lang].Strings,
+			"successMessage": app.config.Section("ui").Key("success_message").String(),
+			"contactMessage": app.config.Section("ui").Key("contact_message").String(),
+		})
+		inv, ok := app.storage.invites[code]
+		if ok {
+			l := len(inv.Keys)
+			inv.Keys[l-1], inv.Keys[keyIndex] = inv.Keys[keyIndex], inv.Keys[l-1]
+			app.storage.invites[code] = inv
+		}
+		return
+	}
+	email := app.storage.invites[code].Email
+	if strings.Contains(email, "Failed") {
+		email = ""
+	}
+	gcHTML(gc, http.StatusOK, "form-loader.html", gin.H{
+		"urlBase":           app.URLBase,
+		"cssClass":          app.cssClass,
+		"contactMessage":    app.config.Section("ui").Key("contact_message").String(),
+		"helpMessage":       app.config.Section("ui").Key("help_message").String(),
+		"successMessage":    app.config.Section("ui").Key("success_message").String(),
+		"jfLink":            app.config.Section("jellyfin").Key("public_server").String(),
+		"validate":          app.config.Section("password_validation").Key("enabled").MustBool(false),
+		"requirements":      app.validator.getCriteria(),
+		"email":             email,
+		"username":          !app.config.Section("email").Key("no_username").MustBool(false),
+		"strings":           app.storage.lang.Form[lang].Strings,
+		"validationStrings": app.storage.lang.Form[lang].validationStringsJSON,
+		"notifications":     app.storage.lang.Form[lang].notificationsJSON,
+		"code":              code,
+		"confirmation":      app.config.Section("email_confirmation").Key("enabled").MustBool(false),
+	})
 }
 
 func (app *appContext) NoRouteHandler(gc *gin.Context) {

@@ -6,6 +6,7 @@
     window.URLBase = "{{ .urlBase }}";
     window.code = "{{ .code }}";
     window.messages = JSON.parse({{ .notifications }});
+    window.confirmation = {{ .confirmation }};
 </script>
 <script src="js/form.js" type="module"></script>
 {{ end }}
