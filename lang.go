@@ -15,15 +15,14 @@ type quantityString struct {
 
 type adminLangs map[string]adminLang
 
-func (ls *adminLangs) getOptions(chosen string) (string, []string) {
-	opts := make([]string, len(*ls))
-	chosenLang := (*ls)[chosen].Meta.Name
+func (ls *adminLangs) getOptions() [][2]string {
+	opts := make([][2]string, len(*ls))
 	i := 0
-	for _, lang := range *ls {
-		opts[i] = lang.Meta.Name
+	for key, lang := range *ls {
+		opts[i] = [2]string{key, lang.Meta.Name}
 		i++
 	}
-	return chosenLang, opts
+	return opts
 }
 
 type commonLangs map[string]commonLang
@@ -43,15 +42,14 @@ type adminLang struct {
 
 type formLangs map[string]formLang
 
-func (ls *formLangs) getOptions(chosen string) (string, []string) {
-	opts := make([]string, len(*ls))
-	chosenLang := (*ls)[chosen].Meta.Name
+func (ls *formLangs) getOptions() [][2]string {
+	opts := make([][2]string, len(*ls))
 	i := 0
-	for _, lang := range *ls {
-		opts[i] = lang.Meta.Name
+	for key, lang := range *ls {
+		opts[i] = [2]string{key, lang.Meta.Name}
 		i++
 	}
-	return chosenLang, opts
+	return opts
 }
 
 type formLang struct {
@@ -65,15 +63,14 @@ type formLang struct {
 
 type emailLangs map[string]emailLang
 
-func (ls *emailLangs) getOptions(chosen string) (string, []string) {
-	opts := make([]string, len(*ls))
-	chosenLang := (*ls)[chosen].Meta.Name
+func (ls *emailLangs) getOptions() [][2]string {
+	opts := make([][2]string, len(*ls))
 	i := 0
-	for _, lang := range *ls {
-		opts[i] = lang.Meta.Name
+	for key, lang := range *ls {
+		opts[i] = [2]string{key, lang.Meta.Name}
 		i++
 	}
-	return chosenLang, opts
+	return opts
 }
 
 type emailLang struct {
@@ -110,15 +107,14 @@ type setupLang struct {
 	JSON               string
 }
 
-func (ls *setupLangs) getOptions(chosen string) (string, []string) {
-	opts := make([]string, len(*ls))
-	chosenLang := (*ls)[chosen].Meta.Name
+func (ls *setupLangs) getOptions() [][2]string {
+	opts := make([][2]string, len(*ls))
 	i := 0
-	for _, lang := range *ls {
-		opts[i] = lang.Meta.Name
+	for key, lang := range *ls {
+		opts[i] = [2]string{key, lang.Meta.Name}
 		i++
 	}
-	return chosenLang, opts
+	return opts
 }
 
 type langSection map[string]string

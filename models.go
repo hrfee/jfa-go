@@ -138,8 +138,10 @@ type configDTO map[string]interface{}
 // Below are for sending config
 
 type meta struct {
-	Name        string `json:"name"`
-	Description string `json:"description"`
+	Name         string `json:"name"`
+	Description  string `json:"description"`
+	DependsTrue  string `json:"depends_true,omitempty"`
+	DependsFalse string `json:"depends_false,omitempty"`
 }
 
 type setting struct {
@@ -149,7 +151,7 @@ type setting struct {
 	RequiresRestart bool        `json:"requires_restart"`
 	Type            string      `json:"type"` // Type (string, number, bool, etc.)
 	Value           interface{} `json:"value"`
-	Options         []string    `json:"options,omitempty"`
+	Options         [][2]string `json:"options,omitempty"`
 	DependsTrue     string      `json:"depends_true,omitempty"`  // If specified, this field is enabled when the specified bool setting is enabled.
 	DependsFalse    string      `json:"depends_false,omitempty"` // If specified, opposite behaviour of DependsTrue.
 }

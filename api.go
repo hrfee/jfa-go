@@ -116,7 +116,7 @@ func (app *appContext) checkInvites() {
 		}
 		app.debug.Printf("Housekeeping: Deleting old invite %s", code)
 		notify := data.Notify
-		if app.config.Section("notifications").Key("enabled").MustBool(false) && len(notify) != 0 {
+		if emailEnabled && app.config.Section("notifications").Key("enabled").MustBool(false) && len(notify) != 0 {
 			app.debug.Printf("%s: Expiry notification", code)
 			var wait sync.WaitGroup
 			for address, settings := range notify {
@@ -160,7 +160,7 @@ func (app *appContext) checkInvite(code string, used bool, username string) bool
 	if currentTime.After(expiry) {
 		app.debug.Printf("Housekeeping: Deleting old invite %s", code)
 		notify := inv.Notify
-		if app.config.Section("notifications").Key("enabled").MustBool(false) && len(notify) != 0 {
+		if emailEnabled && app.config.Section("notifications").Key("enabled").MustBool(false) && len(notify) != 0 {
 			app.debug.Printf("%s: Expiry notification", code)
 			for address, settings := range notify {
 				if settings["notify-expiry"] {
@@ -301,7 +301,7 @@ func (app *appContext) NewUserAdmin(gc *gin.Context) {
 			}
 		}
 	}
-	if app.config.Section("welcome_email").Key("enabled").MustBool(false) && req.Email != "" {
+	if emailEnabled && app.config.Section("welcome_email").Key("enabled").MustBool(false) && req.Email != "" {
 		app.debug.Printf("%s: Sending welcome email to %s", req.Username, req.Email)
 		msg, err := app.email.constructWelcome(req.Username, app)
 		if err != nil {
@@ -332,7 +332,7 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 		success = false
 		return
 	}
-	if app.config.Section("email_confirmation").Key("enabled").MustBool(false) && !confirmed {
+	if emailEnabled && app.config.Section("email_confirmation").Key("enabled").MustBool(false) && !confirmed {
 		claims := jwt.MapClaims{
 			"valid":    true,
 			"invite":   req.Code,
@@ -385,7 +385,7 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 	app.storage.loadProfiles()
 	invite := app.storage.invites[req.Code]
 	app.checkInvite(req.Code, true, req.Username)
-	if app.config.Section("notifications").Key("enabled").MustBool(false) {
+	if emailEnabled && app.config.Section("notifications").Key("enabled").MustBool(false) {
 		for address, settings := range invite.Notify {
 			if settings["notify-creation"] {
 				go func() {
@@ -450,7 +450,7 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 			}
 		}
 	}
-	if app.config.Section("welcome_email").Key("enabled").MustBool(false) && req.Email != "" {
+	if emailEnabled && app.config.Section("welcome_email").Key("enabled").MustBool(false) && req.Email != "" {
 		app.debug.Printf("%s: Sending welcome email to %s", req.Username, req.Email)
 		msg, err := app.email.constructWelcome(req.Username, app)
 		if err != nil {
@@ -544,7 +544,7 @@ func (app *appContext) DeleteUser(gc *gin.Context) {
 				errors[userID] += msg
 			}
 		}
-		if req.Notify {
+		if emailEnabled && req.Notify {
 			addr, ok := app.storage.emails[userID]
 			if addr != nil && ok {
 				go func(userID, reason, address string) {
@@ -611,7 +611,7 @@ func (app *appContext) GenerateInvite(gc *gin.Context) {
 		invite.RemainingUses = 1
 	}
 	invite.ValidTill = validTill
-	if req.Email != "" && app.config.Section("invite_emails").Key("enabled").MustBool(false) {
+	if emailEnabled && req.Email != "" && app.config.Section("invite_emails").Key("enabled").MustBool(false) {
 		app.debug.Printf("%s: Sending invite email", inviteCode)
 		invite.Email = req.Email
 		msg, err := app.email.constructInvite(inviteCode, invite, app)
@@ -1190,18 +1190,18 @@ func (app *appContext) GetConfig(gc *gin.Context) {
 	app.info.Println("Config requested")
 	resp := app.configBase
 	// Load language options
-	formChosen, formOptions := app.storage.lang.Form.getOptions(app.config.Section("ui").Key("language-form").MustString("en-us"))
+	formOptions := app.storage.lang.Form.getOptions()
 	fl := resp.Sections["ui"].Settings["language-form"]
 	fl.Options = formOptions
-	fl.Value = formChosen
-	adminChosen, adminOptions := app.storage.lang.Admin.getOptions(app.config.Section("ui").Key("language-admin").MustString("en-us"))
+	fl.Value = app.config.Section("ui").Key("language-form").MustString("en-us")
+	adminOptions := app.storage.lang.Admin.getOptions()
 	al := resp.Sections["ui"].Settings["language-admin"]
 	al.Options = adminOptions
-	al.Value = adminChosen
-	emailChosen, emailOptions := app.storage.lang.Email.getOptions(app.config.Section("email").Key("language").MustString("en-us"))
+	al.Value = app.config.Section("ui").Key("language-admin").MustString("en-us")
+	emailOptions := app.storage.lang.Email.getOptions()
 	el := resp.Sections["email"].Settings["language"]
 	el.Options = emailOptions
-	el.Value = emailChosen
+	el.Value = app.config.Section("email").Key("language").MustString("en-us")
 	for sectName, section := range resp.Sections {
 		for settingName, setting := range section.Settings {
 			val := app.config.Section(sectName).Key(settingName)
@@ -1220,17 +1220,6 @@ func (app *appContext) GetConfig(gc *gin.Context) {
 	resp.Sections["ui"].Settings["language-form"] = fl
 	resp.Sections["ui"].Settings["language-admin"] = al
 	resp.Sections["email"].Settings["language"] = el
-
-	t := resp.Sections["jellyfin"].Settings["type"]
-	opts := make([]string, len(serverTypes))
-	i := 0
-	for _, v := range serverTypes {
-		opts[i] = v
-		i++
-	}
-	t.Options = opts
-	t.Value = serverTypes[app.config.Section("jellyfin").Key("type").MustString("jellyfin")]
-	resp.Sections["jellyfin"].Settings["type"] = t
 
 	gc.JSON(200, resp)
 }
@@ -1254,35 +1243,7 @@ func (app *appContext) ModifyConfig(gc *gin.Context) {
 				tempConfig.NewSection(section)
 			}
 			for setting, value := range settings.(map[string]interface{}) {
-				if section == "ui" && setting == "language-form" {
-					for key, lang := range app.storage.lang.Form {
-						if lang.Meta.Name == value.(string) || value.(string) == key {
-							tempConfig.Section("ui").Key("language-form").SetValue(key)
-							break
-						}
-					}
-				} else if section == "ui" && setting == "language-admin" {
-					for key, lang := range app.storage.lang.Admin {
-						if lang.Meta.Name == value.(string) || value.(string) == key {
-							tempConfig.Section("ui").Key("language-admin").SetValue(key)
-							break
-						}
-					}
-				} else if section == "email" && setting == "language" {
-					for key, lang := range app.storage.lang.Email {
-						if lang.Meta.Name == value.(string) || value.(string) == key {
-							tempConfig.Section("email").Key("language").SetValue(key)
-							break
-						}
-					}
-				} else if section == "jellyfin" && setting == "type" {
-					for k, v := range serverTypes {
-						if v == value.(string) {
-							tempConfig.Section("jellyfin").Key("type").SetValue(k)
-							break
-						}
-					}
-				} else if value.(string) != app.config.Section(section).Key(setting).MustString("") {
+				if value.(string) != app.config.Section(section).Key(setting).MustString("") {
 					tempConfig.Section(section).Key(setting).SetValue(value.(string))
 				}
 			}

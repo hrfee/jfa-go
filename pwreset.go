@@ -42,6 +42,9 @@ type PasswordReset struct {
 }
 
 func pwrMonitor(app *appContext, watcher *fsnotify.Watcher) {
+	if !emailEnabled {
+		return
+	}
 	for {
 		select {
 		case event, ok := <-watcher.Events:

@@ -61,8 +61,8 @@
                     "requires_restart": true,
                     "type": "select",
                     "options": [
-                        "jellyfin",
-                        "emby"
+                        ["jellyfin", "Jellyfin"],
+                        ["emby", "Emby"]
                     ],
                     "value": "jellyfin",
                     "description": "Note: Emby integration works is missing some features, such as Password Resets."
@@ -90,7 +90,7 @@
                     "requires_restart": true,
                     "type": "select",
                     "options": [
-                        "en-us"
+                        ["en-us", "English (US)"]
                     ],
                     "value": "en-us",
                     "description": "Default Account Form Language. Submit a PR on github if you'd like to translate."
@@ -101,7 +101,7 @@
                     "requires_restart": true,
                     "type": "select",
                     "options": [
-                        "en-us"
+                        ["en-us", "English (US)"]
                     ],
                     "value": "en-us",
                     "description": "Default Admin page Language. Settings has not been translated. Submit a PR on github if you'd like to translate."
@@ -112,8 +112,8 @@
                     "requires_restart": true,
                     "type": "select",
                     "options": [
-                        "Jellyfin (Dark)",
-                        "Default (Light)"
+                        ["Jellyfin (Dark)", "Jellyfin (Dark)"],
+                        ["Default (Light)", "Default (Light)"]
                     ],
                     "value": "Jellyfin (Dark)",
                     "description": "Default appearance for all users."
@@ -318,7 +318,7 @@
             "order": [],
             "meta": {
                 "name": "Email",
-                "description": "General email settings. Ignore if not using email features."
+                "description": "General email settings."
             },
             "settings": {
                 "language": {
@@ -328,7 +328,7 @@
                     "depends_true": "method",
                     "type": "select",
                     "options": [
-                        "en-us"
+                        ["en-us", "English (US)"]
                     ],
                     "value": "en-us",
                     "description": "Default email language. Submit a PR on github if you'd like to translate."
@@ -374,8 +374,9 @@
                     "requires_restart": false,
                     "type": "select",
                     "options": [
-                        "smtp",
-                        "mailgun"
+                        ["", "Disabled"],
+                        ["smtp", "SMTP"],
+                        ["mailgun", "Mailgun"]
                     ],
                     "value": "smtp",
                     "description": "Method of sending email to use."
@@ -404,7 +405,8 @@
             "order": [],
             "meta": {
                 "name": "Password Resets",
-                "description": "Settings for the password reset handler."
+                "description": "Settings for the password reset handler.",
+                "depends_true": "email|method"
             },
             "settings": {
                 "enabled": {
@@ -457,7 +459,8 @@
             "order": [],
             "meta": {
                 "name": "Invite emails",
-                "description": "Settings for sending invites directly to users."
+                "description": "Settings for sending invites directly to users.",
+                "depends_true": "email|method"
             },
             "settings": {
                 "enabled": {
@@ -509,7 +512,8 @@
             "order": [],
             "meta": {
                 "name": "Notifications",
-                "description": "Notification related settings."
+                "description": "Notification related settings.",
+                "depends_true": "email|method"
             },
             "settings": {
                 "enabled": {
@@ -562,7 +566,8 @@
             "order": [],
             "meta": {
                 "name": "Mailgun (Email)",
-                "description": "Mailgun API connection settings"
+                "description": "Mailgun API connection settings",
+                "depends_true": "email|method"
             },
             "settings": {
                 "api_url": {
@@ -585,7 +590,8 @@
             "order": [],
             "meta": {
                 "name": "SMTP (Email)",
-                "description": "SMTP Server connection settings."
+                "description": "SMTP Server connection settings.",
+                "depends_true": "email|method"
             },
             "settings": {
                 "username": {
@@ -602,8 +608,8 @@
                     "requires_restart": false,
                     "type": "select",
                     "options": [
-                        "ssl_tls",
-                        "starttls"
+                        ["ssl_tls", "SSL/TLS"],
+                        ["starttls", "STARTTLS"]
                     ],
                     "value": "starttls",
                     "description": "Your email provider should provide different ports for each encryption method. Generally 465 for ssl_tls, 587 for starttls."
@@ -671,7 +677,8 @@
             "order": [],
             "meta": {
                 "name": "Welcome Emails",
-                "description": "Optionally send a welcome email to new users with the Jellyfin URL and their username."
+                "description": "Optionally send a welcome email to new users with the Jellyfin URL and their username.",
+                "depends_true": "email|method"
             },
             "settings": {
                 "enabled": {
@@ -712,7 +719,8 @@
             "order": [],
             "meta": {
                 "name": "Email confirmation",
-                "description": "If enabled, a user will be sent an email confirmation link to ensure their password is right before they can make an account."
+                "description": "If enabled, a user will be sent an email confirmation link to ensure their password is right before they can make an account.",
+                "depends_true": "email|method"
             },
             "settings": {
                 "enabled": {
@@ -752,7 +760,8 @@
             "order": [],
             "meta": {
                 "name": "Account Deletion",
-                "description": "Subject/email files for account deletion emails."
+                "description": "Subject/email files for account deletion emails.",
+                "depends_true": "email|method"
             },
             "settings": {
                 "subject": {

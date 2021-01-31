@@ -7,6 +7,8 @@ interface settingsBoolEvent extends Event {
 interface Meta {
     name: string;
     description: string;
+    depends_true?: string;
+    depends_false?: string;
 }
 
 interface Setting {
@@ -16,12 +18,20 @@ interface Setting {
     requires_restart: boolean;
     type: string;
     value: string | boolean | number;
-    depends_true?: Setting;
-    depends_false?: Setting;
+    depends_true?: string;
+    depends_false?: string;
 
     asElement: () => HTMLElement;
     update: (s: Setting) => void;
 }
+
+const splitDependant = (section: string, dep: string): string[] => {
+    let parts = dep.split("|");
+    if (parts.length == 1) {
+        parts = [section, parts[0]];
+    }
+    return parts
+};
 
 class DOMInput {
     protected _input: HTMLInputElement;
@@ -76,7 +86,7 @@ class DOMInput {
                 <i class="icon ri-information-line"></i>
                 <span class="content sm"></span>
             </div>
-            <input type="${inputType}" class="input ~neutral !normal mt-half">
+            <input type="${inputType}" class="input ~neutral !normal mt-half mb-half">
         </label>
         `;
         this._tooltip = this._container.querySelector("div.setting-tooltip") as HTMLDivElement;
@@ -84,11 +94,15 @@ class DOMInput {
         this._restart = this._container.querySelector("span.setting-restart") as HTMLSpanElement;
         this._input = this._container.querySelector("input[type=" + inputType + "]") as HTMLInputElement;
         if (setting.depends_false || setting.depends_true) {
-            let dependant = setting.depends_true || setting.depends_false;
+            let dependant = splitDependant(section, setting.depends_true || setting.depends_false);
             let state = true;
             if (setting.depends_false) { state = false; }
-            document.addEventListener(`settings-${section}-${dependant}`, (event: settingsBoolEvent) => {
-                this._input.disabled = (event.detail !== state);
+            document.addEventListener(`settings-${dependant[0]}-${dependant[1]}`, (event: settingsBoolEvent) => {
+                if (Boolean(event.detail) !== state) {
+                    this._input.parentElement.classList.add("unfocused");
+                } else {
+                    this._input.parentElement.classList.remove("unfocused");
+                }
             });
         }
         const onValueChange = () => {
@@ -206,7 +220,7 @@ class DOMBool implements SBool {
         this._container = document.createElement("div");
         this._container.classList.add("setting");
         this._container.innerHTML = `
-        <label class="switch">
+        <label class="switch mb-half">
             <input type="checkbox">
             <span class="setting-label"></span> <span class="setting-required"></span> <span class="setting-restart"></span>
             <div class="setting-tooltip tooltip right unfocused">
@@ -230,11 +244,15 @@ class DOMBool implements SBool {
         document.addEventListener(`settings-loaded`, onValueChange);
 
         if (setting.depends_false || setting.depends_true) {
-            let dependant = setting.depends_true || setting.depends_false;
+            let dependant = splitDependant(section, setting.depends_true || setting.depends_false);
             let state = true;
             if (setting.depends_false) { state = false; }
-            document.addEventListener(`settings-${section}-${dependant}`, (event: settingsBoolEvent) => {
-                this._input.disabled = (event.detail !== state);
+            document.addEventListener(`settings-${dependant[0]}-${dependant[1]}`, (event: settingsBoolEvent) => {
+                if (Boolean(event.detail) !== state) {
+                    this._input.parentElement.classList.add("unfocused");
+                } else {
+                    this._input.parentElement.classList.remove("unfocused");
+                }
             });
         }
         this.update(setting);
@@ -251,7 +269,7 @@ class DOMBool implements SBool {
 }
 
 interface SSelect extends Setting {
-    options: string[];
+    options: string[][];
     value: string;
 }
 class DOMSelect implements SSelect {
@@ -260,7 +278,7 @@ class DOMSelect implements SSelect {
     private _tooltip: HTMLDivElement;
     private _required: HTMLSpanElement;
     private _restart: HTMLSpanElement;
-    private _options: string[];
+    private _options: string[][];
     type: string = "bool";
 
     get name(): string { return this._container.querySelector("span.setting-label").textContent; }
@@ -301,12 +319,12 @@ class DOMSelect implements SSelect {
     get value(): string { return this._select.value; }
     set value(v: string) { this._select.value = v; }
 
-    get options(): string[] { return this._options; }
-    set options(opt: string[]) {
+    get options(): string[][] { return this._options; }
+    set options(opt: string[][]) {
         this._options = opt;
         let innerHTML = "";
         for (let option of this._options) {
-            innerHTML += `<option value="${option}">${option}</option>`;
+            innerHTML += `<option value="${option[0]}">${option[1]}</option>`;
         }
         this._select.innerHTML = innerHTML;
     }
@@ -322,7 +340,7 @@ class DOMSelect implements SSelect {
                 <i class="icon ri-information-line"></i>
                 <span class="content sm"></span>
             </div>
-            <div class="select ~neutral !normal mt-half">
+            <div class="select ~neutral !normal mt-half mb-half">
                 <select class="settings-select"></select>
             </div>
         </label>
@@ -332,11 +350,15 @@ class DOMSelect implements SSelect {
         this._restart = this._container.querySelector("span.setting-restart") as HTMLSpanElement;
         this._select = this._container.querySelector("select.settings-select") as HTMLSelectElement;
         if (setting.depends_false || setting.depends_true) {
-            let dependant = setting.depends_true || setting.depends_false;
+            let dependant = splitDependant(section, setting.depends_true || setting.depends_false);
             let state = true;
             if (setting.depends_false) { state = false; }
-            document.addEventListener(`settings-${section}-${dependant}`, (event: settingsBoolEvent) => {
-                this._input.disabled = (event.detail !== state);
+            document.addEventListener(`settings-${dependant[0]}-${dependant[1]}`, (event: settingsBoolEvent) => {
+                if (Boolean(event.detail) !== state) {
+                    this._container.classList.add("unfocused");
+                } else {
+                    this._container.classList.remove("unfocused");
+                }
             });
         }
         const onValueChange = () => {
@@ -345,6 +367,7 @@ class DOMSelect implements SSelect {
             if (this.requires_restart) { document.dispatchEvent(new CustomEvent("settings-requires-restart")); }
         };
         this._select.onchange = onValueChange;
+        document.addEventListener(`settings-loaded`, onValueChange);
 
         const message = document.getElementById("settings-message") as HTMLElement;
         message.innerHTML = window.lang.var("strings",
@@ -352,9 +375,6 @@ class DOMSelect implements SSelect {
                                             `<span class="badge ~critical">*</span>`,
                                             `<span class="badge ~info">R</span>`
         );
-
-
-                                            
 
         this.update(setting);
     }
@@ -391,6 +411,7 @@ class sectionPanel {
         <span class="heading">${s.meta.name}</span>
         <p class="support lg">${s.meta.description}</p>
         `;
+
         this.update(s);
     }
     update = (s: Section) => {
@@ -443,8 +464,6 @@ class sectionPanel {
     asElement = (): HTMLDivElement => { return this._section; }
 }
 
-        
-
 interface Settings {
     order: string[];
     sections: { [sectionName: string]: Section };
@@ -469,6 +488,18 @@ export class settingsList {
         button.classList.add("button", "~neutral", "!low", "settings-section-button", "mb-half");
         button.textContent = s.meta.name;
         button.onclick = () => { this._showPanel(name); };
+        if (s.meta.depends_true || s.meta.depends_false) {
+            let dependant = splitDependant(name, s.meta.depends_true || s.meta.depends_false);
+            let state = true;
+            if (s.meta.depends_false) { state = false; }
+            document.addEventListener(`settings-${dependant[0]}-${dependant[1]}`, (event: settingsBoolEvent) => {
+                if (Boolean(event.detail) !== state) {
+                    button.classList.add("unfocused");
+                } else {
+                    button.classList.remove("unfocused");
+                }
+            });
+        }
         this._buttons[name] = button;
         this._sidebar.appendChild(this._buttons[name]);
     }
@@ -549,9 +580,9 @@ export class settingsList {
                 }
             }
             this._showPanel(settings.order[0]);
-            this._needsRestart = false;
             document.dispatchEvent(new CustomEvent("settings-loaded"));
             this._saveButton.classList.add("unfocused");
+            this._needsRestart = false;
         }
     })
 }

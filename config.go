@@ -9,6 +9,8 @@ import (
 	"gopkg.in/ini.v1"
 )
 
+var emailEnabled = false
+
 func (app *appContext) loadConfig() error {
 	var err error
 	app.config, err = ini.Load(app.configPath)
@@ -54,6 +56,12 @@ func (app *appContext) loadConfig() error {
 	app.config.Section("jellyfin").Key("version").SetValue(VERSION)
 	app.config.Section("jellyfin").Key("device").SetValue("jfa-go")
 	app.config.Section("jellyfin").Key("device_id").SetValue(fmt.Sprintf("jfa-go-%s-%s", VERSION, COMMIT))
+
+	if app.config.Section("email").Key("method").MustString("") == "" {
+		emailEnabled = false
+	} else {
+		emailEnabled = true
+	}
 
 	substituteStrings = app.config.Section("jellyfin").Key("substitute_jellyfin_strings").MustString("")
 
