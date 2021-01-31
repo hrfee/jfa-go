@@ -15,7 +15,9 @@
         "createAccountButton": "Créer le compte",
         "passwordRequirementsHeader": "Mot de passe requis",
         "successHeader": "Succes!",
-        "successContinueButton": "Continuer"
+        "successContinueButton": "Continuer",
+        "confirmationRequired": "Confirmation de l'adresse e-mail requise",
+        "confirmationRequiredMessage": "Veuillez vérifier votre boite de réception pour confirmer votre adresse e-mail."
     },
     "validationStrings": {
         "length": {
