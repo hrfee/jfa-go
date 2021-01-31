@@ -43,7 +43,7 @@ ts-debug:
 	cp -r ts build/data/web/js
 
 swagger:
-	go get github.com/swaggo/swag/cmd/swag
+	go1.16rc1 get github.com/swaggo/swag/cmd/swag
 	swag init -g main.go
 
 version:
@@ -51,10 +51,10 @@ version:
 
 compile:
 	$(info Downloading deps)
-	go mod download
+	go1.16rc1 mod download
 	$(info Building)
 	mkdir -p build
-	CGO_ENABLED=0 go build -o build/jfa-go *.go
+	CGO_ENABLED=0 go1.16rc1 build -o build/jfa-go *.go
 
 compress:
 	upx --lzma build/jfa-go

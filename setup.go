@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -76,7 +76,7 @@ func (st *Storage) loadLangSetup() error {
 	load := func(fname string) error {
 		index := strings.TrimSuffix(fname, filepath.Ext(fname))
 		lang := setupLang{}
-		f, err := ioutil.ReadFile(filepath.Join(st.lang.SetupPath, fname))
+		f, err := os.ReadFile(filepath.Join(st.lang.SetupPath, fname))
 		if err != nil {
 			return err
 		}
@@ -112,7 +112,7 @@ func (st *Storage) loadLangSetup() error {
 		return err
 	}
 	english = st.lang.Setup["en-us"]
-	files, err := ioutil.ReadDir(st.lang.SetupPath)
+	files, err := os.ReadDir(st.lang.SetupPath)
 	if err != nil {
 		return err
 	}

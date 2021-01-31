@@ -2,8 +2,8 @@ package main
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"log"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -42,7 +42,7 @@ type Invite struct {
 	Notify        map[string]map[string]bool `json:"notify"`
 	Profile       string                     `json:"profile"`
 	Label         string                     `json:"label,omitempty"`
-    Keys          []string                   `json"keys,omitempty"`
+	Keys          []string                   `json"keys,omitempty"`
 }
 
 type Lang struct {
@@ -126,7 +126,7 @@ func (st *Storage) loadLangCommon() error {
 	load := func(fname string) error {
 		index := strings.TrimSuffix(fname, filepath.Ext(fname))
 		lang := commonLang{}
-		f, err := ioutil.ReadFile(filepath.Join(st.lang.CommonPath, fname))
+		f, err := os.ReadFile(filepath.Join(st.lang.CommonPath, fname))
 		if err != nil {
 			return err
 		}
@@ -148,7 +148,7 @@ func (st *Storage) loadLangCommon() error {
 		return err
 	}
 	english = st.lang.Common["en-us"]
-	files, err := ioutil.ReadDir(st.lang.CommonPath)
+	files, err := os.ReadDir(st.lang.CommonPath)
 	if err != nil {
 		return err
 	}
@@ -169,7 +169,7 @@ func (st *Storage) loadLangAdmin() error {
 	load := func(fname string) error {
 		index := strings.TrimSuffix(fname, filepath.Ext(fname))
 		lang := adminLang{}
-		f, err := ioutil.ReadFile(filepath.Join(st.lang.AdminPath, fname))
+		f, err := os.ReadFile(filepath.Join(st.lang.AdminPath, fname))
 		if err != nil {
 			return err
 		}
@@ -199,7 +199,7 @@ func (st *Storage) loadLangAdmin() error {
 		return err
 	}
 	english = st.lang.Admin["en-us"]
-	files, err := ioutil.ReadDir(st.lang.AdminPath)
+	files, err := os.ReadDir(st.lang.AdminPath)
 	if err != nil {
 		return err
 	}
@@ -220,7 +220,7 @@ func (st *Storage) loadLangForm() error {
 	load := func(fname string) error {
 		index := strings.TrimSuffix(fname, filepath.Ext(fname))
 		lang := formLang{}
-		f, err := ioutil.ReadFile(filepath.Join(st.lang.FormPath, fname))
+		f, err := os.ReadFile(filepath.Join(st.lang.FormPath, fname))
 		if err != nil {
 			return err
 		}
@@ -255,7 +255,7 @@ func (st *Storage) loadLangForm() error {
 		return err
 	}
 	english = st.lang.Form["en-us"]
-	files, err := ioutil.ReadDir(st.lang.FormPath)
+	files, err := os.ReadDir(st.lang.FormPath)
 	if err != nil {
 		return err
 	}
@@ -276,7 +276,7 @@ func (st *Storage) loadLangEmail() error {
 	load := func(fname string) error {
 		index := strings.TrimSuffix(fname, filepath.Ext(fname))
 		lang := emailLang{}
-		f, err := ioutil.ReadFile(filepath.Join(st.lang.EmailPath, fname))
+		f, err := os.ReadFile(filepath.Join(st.lang.EmailPath, fname))
 		if err != nil {
 			return err
 		}
@@ -304,7 +304,7 @@ func (st *Storage) loadLangEmail() error {
 		return err
 	}
 	english = st.lang.Email["en-us"]
-	files, err := ioutil.ReadDir(st.lang.EmailPath)
+	files, err := os.ReadDir(st.lang.EmailPath)
 	if err != nil {
 		return err
 	}
@@ -328,76 +328,6 @@ func (st *Storage) loadInvites() error {
 func (st *Storage) storeInvites() error {
 	return storeJSON(st.invite_path, st.invites)
 }
-
-// func (st *Storage) loadLang() error {
-// 	loadData := func(path string, stringJson bool) (map[string]string, map[string]map[string]interface{}, error) {
-// 		files, err := ioutil.ReadDir(path)
-// 		outString := map[string]string{}
-// 		out := map[string]map[string]interface{}{}
-// 		if err != nil {
-// 			return nil, nil, err
-// 		}
-// 		for _, f := range files {
-// 			index := strings.TrimSuffix(f.Name(), filepath.Ext(f.Name()))
-// 			var data map[string]interface{}
-// 			var file []byte
-// 			var err error
-// 			file, err = ioutil.ReadFile(filepath.Join(path, f.Name()))
-// 			if err != nil {
-// 				file = []byte("{}")
-// 			}
-// 			// Replace Jellyfin with something if necessary
-// 			if substituteStrings != "" {
-// 				fileString := strings.ReplaceAll(string(file), "Jellyfin", substituteStrings)
-// 				file = []byte(fileString)
-// 			}
-// 			err = json.Unmarshal(file, &data)
-// 			if err != nil {
-// 				log.Printf("ERROR: Failed to read \"%s\": %s", path, err)
-// 				return nil, nil, err
-// 			}
-// 			if stringJson {
-// 				stringJSON, err := json.Marshal(data)
-// 				if err != nil {
-// 					return nil, nil, err
-// 				}
-// 				outString[index] = string(stringJSON)
-// 			}
-// 			out[index] = data
-//
-// 		}
-// 		return outString, out, nil
-// 	}
-// 	_, form, err := loadData(st.lang.FormPath, false)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	for index, lang := range form {
-// 		validationStrings := lang["validationStrings"].(map[string]interface{})
-// 		vS, err := json.Marshal(validationStrings)
-// 		if err != nil {
-// 			return err
-// 		}
-// 		lang["validationStrings"] = string(vS)
-// 		form[index] = lang
-// 	}
-// 	st.lang.Form = form
-// 	adminJSON, admin, err := loadData(st.lang.AdminPath, true)
-// 	st.lang.Admin = admin
-// 	st.lang.AdminJSON = adminJSON
-//
-// 	_, emails, err := loadData(st.lang.EmailPath, false)
-// 	fixedEmails := map[string]map[string]map[string]interface{}{}
-// 	for lang, e := range emails {
-// 		f := map[string]map[string]interface{}{}
-// 		for field, vals := range e {
-// 			f[field] = vals.(map[string]interface{})
-// 		}
-// 		fixedEmails[lang] = f
-// 	}
-// 	st.lang.Email = fixedEmails
-// 	return err
-// }
 
 func (st *Storage) loadEmails() error {
 	return loadJSON(st.emails_path, &st.emails)
@@ -495,7 +425,7 @@ func (st *Storage) migrateToProfile() error {
 func loadJSON(path string, obj interface{}) error {
 	var file []byte
 	var err error
-	file, err = ioutil.ReadFile(path)
+	file, err = os.ReadFile(path)
 	if err != nil {
 		file = []byte("{}")
 	}
@@ -511,7 +441,7 @@ func storeJSON(path string, obj interface{}) error {
 	if err != nil {
 		return err
 	}
-	err = ioutil.WriteFile(path, data, 0644)
+	err = os.WriteFile(path, data, 0644)
 	if err != nil {
 		log.Printf("ERROR: Failed to write to \"%s\": %s", path, err)
 	}

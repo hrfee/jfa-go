@@ -7,8 +7,9 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"html/template"
 	"io"
-	"io/ioutil"
+	"io/fs"
 	"log"
 	"mime"
 	"net"
@@ -58,7 +59,9 @@ type appContext struct {
 	configBasePath string
 	configBase     settings
 	dataPath       string
-	localPath      string
+	systemFS       fs.FS
+	localFS        fs.FS
+	webFS          httpFS
 	cssClass       string
 	jellyfinLogin  bool
 	users          []User
@@ -82,8 +85,8 @@ type appContext struct {
 
 func (app *appContext) loadHTML(router *gin.Engine) {
 	customPath := app.config.Section("files").Key("html_templates").MustString("")
-	templatePath := filepath.Join(app.localPath, "html")
-	htmlFiles, err := ioutil.ReadDir(templatePath)
+	templatePath := "html"
+	htmlFiles, err := fs.ReadDir(app.localFS, templatePath)
 	if err != nil {
 		app.err.Fatalf("Couldn't access template directory: \"%s\"", templatePath)
 		return
@@ -98,7 +101,11 @@ func (app *appContext) loadHTML(router *gin.Engine) {
 			loadFiles[i] = filepath.Join(filepath.Join(customPath, f.Name()))
 		}
 	}
-	router.LoadHTMLFiles(loadFiles...)
+	tmpl, err := template.ParseFS(app.localFS, loadFiles...)
+	if err != nil {
+		app.err.Fatalf("Failed to load templates: %v", err)
+	}
+	router.SetHTMLTemplate(tmpl)
 }
 
 func generateSecret(length int) (string, error) {
@@ -194,7 +201,14 @@ func start(asDaemon, firstCall bool) {
 	app.dataPath = filepath.Join(userConfigDir, "jfa-go")
 	app.configPath = filepath.Join(app.dataPath, "config.ini")
 	executable, _ := os.Executable()
-	app.localPath = filepath.Join(filepath.Dir(executable), "data")
+	app.localFS = os.DirFS(filepath.Join(filepath.Dir(executable), "data"))
+	app.systemFS = os.DirFS("/")
+	wfs := os.DirFS(filepath.Join(filepath.Dir(executable), "data", "web"))
+	app.webFS = httpFS{
+		hfs: http.FS(wfs),
+		fs:  wfs,
+	}
+	app.webFS.fs = wfs
 
 	app.info = log.New(os.Stdout, "[INFO] ", log.Ltime)
 	app.err = log.New(os.Stdout, "[ERROR] ", log.Ltime|log.Lshortfile)
@@ -251,23 +265,19 @@ func start(asDaemon, firstCall bool) {
 	}
 	if _, err := os.Stat(app.configPath); os.IsNotExist(err) {
 		firstRun = true
-		dConfigPath := filepath.Join(app.localPath, "config-default.ini")
-		var dConfig *os.File
-		dConfig, err = os.Open(dConfigPath)
+		dConfig, err := fs.ReadFile(app.localFS, "config-default.ini")
 		if err != nil {
-			app.err.Fatalf("Couldn't find default config file \"%s\"", dConfigPath)
+			app.err.Fatalf("Couldn't find default config file")
 		}
-		defer dConfig.Close()
-		var nConfig *os.File
 		nConfig, err := os.Create(app.configPath)
 		if err != nil {
 			app.err.Printf("Couldn't open config file for writing: \"%s\"", app.configPath)
 			app.err.Fatalf("Error: %s", err)
 		}
 		defer nConfig.Close()
-		_, err = io.Copy(nConfig, dConfig)
+		_, err = nConfig.Write(dConfig)
 		if err != nil {
-			app.err.Fatalf("Couldn't copy default config. To do this manually, copy\n%s\nto\n%s", dConfigPath, app.configPath)
+			app.err.Fatalf("Couldn't copy default config.")
 		}
 		app.info.Printf("Copied default configuration to \"%s\"", app.configPath)
 	}
@@ -288,7 +298,7 @@ func start(asDaemon, firstCall bool) {
 		app.info.Print(aurora.Magenta("\n\nWARNING: Don't use debug mode in production, as it exposes pprof on the network.\n\n"))
 		app.debug = log.New(os.Stdout, "[DEBUG] ", log.Ltime|log.Lshortfile)
 	} else {
-		app.debug = log.New(ioutil.Discard, "", 0)
+		app.debug = log.New(io.Discard, "", 0)
 	}
 
 	if asDaemon {
@@ -330,10 +340,10 @@ func start(asDaemon, firstCall bool) {
 		}()
 	}
 
-	app.storage.lang.CommonPath = filepath.Join(app.localPath, "lang", "common")
-	app.storage.lang.FormPath = filepath.Join(app.localPath, "lang", "form")
-	app.storage.lang.AdminPath = filepath.Join(app.localPath, "lang", "admin")
-	app.storage.lang.EmailPath = filepath.Join(app.localPath, "lang", "email")
+	app.storage.lang.CommonPath = filepath.Join("lang", "common")
+	app.storage.lang.FormPath = filepath.Join("lang", "form")
+	app.storage.lang.AdminPath = filepath.Join("lang", "admin")
+	app.storage.lang.EmailPath = filepath.Join("lang", "email")
 	err := app.storage.loadLang()
 	if err != nil {
 		app.info.Fatalf("Failed to load language files: %+v\n", err)
@@ -413,8 +423,8 @@ func start(asDaemon, firstCall bool) {
 
 		}
 
-		app.configBasePath = filepath.Join(app.localPath, "config-base.json")
-		configBase, _ := ioutil.ReadFile(app.configBasePath)
+		app.configBasePath = "config-base.json"
+		configBase, _ := fs.ReadFile(app.localFS, app.configBasePath)
 		json.Unmarshal(configBase, &app.configBase)
 
 		themes := map[string]string{
@@ -562,7 +572,7 @@ func start(asDaemon, firstCall bool) {
 	} else {
 		debugMode = false
 		address = "0.0.0.0:8056"
-		app.storage.lang.SetupPath = filepath.Join(app.localPath, "lang", "setup")
+		app.storage.lang.SetupPath = filepath.Join("lang", "setup")
 		err := app.storage.loadLangSetup()
 		if err != nil {
 			app.info.Fatalf("Failed to load language files: %+v\n", err)
@@ -583,14 +593,17 @@ func start(asDaemon, firstCall bool) {
 	setGinLogger(router, debugMode)
 
 	router.Use(gin.Recovery())
+	// Move to router.go
 	routePrefixes := []string{app.URLBase}
 	if app.URLBase != "" {
 		routePrefixes = append(routePrefixes, "")
 	}
 	for _, p := range routePrefixes {
-		router.Use(static.Serve(p+"/", static.LocalFile(filepath.Join(app.localPath, "web"), false)))
+		router.Use(static.Serve(p+"/", app.webFS))
 	}
+	//
 	app.loadHTML(router)
+	router.Use(static.Serve("/", app.webFS))
 	router.NoRoute(app.NoRouteHandler)
 	if debugMode {
 		app.debug.Println("Loading pprof")
@@ -600,6 +613,7 @@ func start(asDaemon, firstCall bool) {
 		router.GET(p+"/lang/:page", app.GetLanguages)
 	}
 	if !firstRun {
+		// Move to router
 		for _, p := range routePrefixes {
 			router.GET(p+"/", app.AdminPage)
 			router.GET(p+"/accounts", app.AdminPage)
@@ -608,7 +622,7 @@ func start(asDaemon, firstCall bool) {
 			router.GET(p+"/token/login", app.getTokenLogin)
 			router.GET(p+"/token/refresh", app.getTokenRefresh)
 			router.POST(p+"/newUser", app.NewUser)
-			router.Use(static.Serve(p+"/invite/", static.LocalFile(filepath.Join(app.localPath, "web"), false)))
+			router.Use(static.Serve(p+"/invite/", app.webFS))
 			router.GET(p+"/invite/:invCode", app.InviteProxy)
 		}
 		if *SWAGGER {
@@ -650,7 +664,6 @@ func start(asDaemon, firstCall bool) {
 		router.POST("/config", app.ModifyConfig)
 		app.info.Printf("Loading setup @ %s", address)
 	}
-
 	SRV = &http.Server{
 		Addr:    address,
 		Handler: router,

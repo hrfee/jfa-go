@@ -65,7 +65,7 @@
                         ["emby", "Emby"]
                     ],
                     "value": "jellyfin",
-                    "description": "Note: Emby integration works is missing some features, such as Password Resets."
+                    "description": "Note: Emby integration works but is missing some features, such as Password Resets."
                 },
                 "substitute_jellyfin_strings": {
                     "name": "Substitute occurrences of \"Jellyfin\"",

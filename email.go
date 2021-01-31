@@ -162,8 +162,8 @@ func (emailer *Emailer) constructConfirmation(code, username, key string, app *a
 	inviteLink = fmt.Sprintf("%s/%s?key=%s", inviteLink, code, key)
 
 	for _, key := range []string{"html", "text"} {
-		fpath := app.config.Section("email_confirmation").Key("email_" + key).String()
-		tpl, err := template.ParseFiles(fpath)
+		filesystem, fpath := app.GetPath("email_confirmation", "email_"+key)
+		tpl, err := template.ParseFS(filesystem, fpath)
 		if err != nil {
 			return nil, err
 		}
@@ -199,8 +199,8 @@ func (emailer *Emailer) constructInvite(code string, invite Invite, app *appCont
 	inviteLink = fmt.Sprintf("%s/%s", inviteLink, code)
 
 	for _, key := range []string{"html", "text"} {
-		fpath := app.config.Section("invite_emails").Key("email_" + key).String()
-		tpl, err := template.ParseFiles(fpath)
+		filesystem, fpath := app.GetPath("invite_emails", "email_"+key)
+		tpl, err := template.ParseFS(filesystem, fpath)
 		if err != nil {
 			return nil, err
 		}
@@ -232,8 +232,8 @@ func (emailer *Emailer) constructExpiry(code string, invite Invite, app *appCont
 	}
 	expiry := app.formatDatetime(invite.ValidTill)
 	for _, key := range []string{"html", "text"} {
-		fpath := app.config.Section("notifications").Key("expiry_" + key).String()
-		tpl, err := template.ParseFiles(fpath)
+		filesystem, fpath := app.GetPath("notifications", "expiry_"+key)
+		tpl, err := template.ParseFS(filesystem, fpath)
 		if err != nil {
 			return nil, err
 		}
@@ -267,8 +267,8 @@ func (emailer *Emailer) constructCreated(code, username, address string, invite 
 		tplAddress = address
 	}
 	for _, key := range []string{"html", "text"} {
-		fpath := app.config.Section("notifications").Key("created_" + key).String()
-		tpl, err := template.ParseFiles(fpath)
+		filesystem, fpath := app.GetPath("notifications", "created_"+key)
+		tpl, err := template.ParseFS(filesystem, fpath)
 		if err != nil {
 			return nil, err
 		}
@@ -302,8 +302,8 @@ func (emailer *Emailer) constructReset(pwr PasswordReset, app *appContext) (*Ema
 	d, t, expiresIn := emailer.formatExpiry(pwr.Expiry, true, app.datePattern, app.timePattern)
 	message := app.config.Section("email").Key("message").String()
 	for _, key := range []string{"html", "text"} {
-		fpath := app.config.Section("password_resets").Key("email_" + key).String()
-		tpl, err := template.ParseFiles(fpath)
+		filesystem, fpath := app.GetPath("password_resets", "email_"+key)
+		tpl, err := template.ParseFS(filesystem, fpath)
 		if err != nil {
 			return nil, err
 		}
@@ -335,8 +335,8 @@ func (emailer *Emailer) constructDeleted(reason string, app *appContext) (*Email
 		subject: app.config.Section("deletion").Key("subject").MustString(emailer.lang.UserDeleted.get("title")),
 	}
 	for _, key := range []string{"html", "text"} {
-		fpath := app.config.Section("deletion").Key("email_" + key).String()
-		tpl, err := template.ParseFiles(fpath)
+		filesystem, fpath := app.GetPath("deletion", "email_"+key)
+		tpl, err := template.ParseFS(filesystem, fpath)
 		if err != nil {
 			return nil, err
 		}
@@ -363,8 +363,8 @@ func (emailer *Emailer) constructWelcome(username string, app *appContext) (*Ema
 		subject: app.config.Section("welcome_email").Key("subject").MustString(emailer.lang.WelcomeEmail.get("title")),
 	}
 	for _, key := range []string{"html", "text"} {
-		fpath := app.config.Section("welcome_email").Key("email_" + key).String()
-		tpl, err := template.ParseFiles(fpath)
+		filesystem, fpath := app.GetPath("welcome_email", "email_"+key)
+		tpl, err := template.ParseFS(filesystem, fpath)
 		if err != nil {
 			return nil, err
 		}
