@@ -1330,6 +1330,14 @@ func (app *appContext) GetLanguages(gc *gin.Context) {
 	gc.JSON(200, resp)
 }
 
+func (app *appContext) restart(gc *gin.Context) {
+	app.info.Println("Restarting...")
+	err := app.Restart()
+	if err != nil {
+		app.err.Printf("Couldn't restart, try restarting manually. (%s)", err)
+	}
+}
+
 func (app *appContext) ServeLang(gc *gin.Context) {
 	page := gc.Param("page")
 	lang := strings.Replace(gc.Param("file"), ".json", "", 1)

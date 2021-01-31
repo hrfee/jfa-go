@@ -619,6 +619,7 @@ func start(asDaemon, firstCall bool) {
 		api.POST("/users/settings", app.ApplySettings)
 		api.GET("/config", app.GetConfig)
 		api.POST("/config", app.ModifyConfig)
+		api.POST("/restart", app.restart)
 		if app.config.Section("ombi").Key("enabled").MustBool(false) {
 			api.GET("/ombi/users", app.OmbiUsers)
 			api.POST("/ombi/defaults", app.SetOmbiDefaults)

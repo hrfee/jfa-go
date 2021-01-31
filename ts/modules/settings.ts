@@ -556,6 +556,11 @@ export class settingsList {
         this._sections = {};
         this._buttons = {};
         document.addEventListener("settings-section-changed", () => this._saveButton.classList.remove("unfocused"));
+        document.getElementById("settings-restart").onclick = () => {
+            _post("/restart", null, () => {});
+            window.modals.settingsRefresh.modal.querySelector("span.heading").textContent = window.lang.strings("settingsRestarting");
+            window.modals.settingsRefresh.show();
+        };
         this._saveButton.onclick = this._save;
         document.addEventListener("settings-requires-restart", () => { this._needsRestart = true; });
 
