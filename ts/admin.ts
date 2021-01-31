@@ -105,8 +105,13 @@ document.addEventListener("tab-change", (event: CustomEvent) => {
     if (lang) {
         tab += "?lang=" + lang
     }
-    window.history.replaceState("", "Admin - jfa-go", tab);
+    window.history.pushState(event.detail, "Admin - jfa-go", tab);
 });
+
+window.onpopstate = (event: PopStateEvent) => {
+    console.log(event.state);
+    window.tabs.switch(event.state);
+}
 
 function login(username: string, password: string, run?: (state?: number) => void) {
     const req = new XMLHttpRequest();
