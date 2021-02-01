@@ -45,10 +45,6 @@ archives:
         linux: Linux
         windows: Windows
         amd64: x86_64
-    files:
-        - data/*
-        - data/**/*
-        - data/**/**/*
 checksum:
     name_template: 'checksums.txt'
 snapshot:

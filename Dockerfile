@@ -1,4 +1,4 @@
-FROM golang:latest AS build
+FROM golang:1.16rc1-buster AS build
 
 COPY . /opt/build
 
@@ -6,10 +6,10 @@ RUN apt update -y \
     && apt install build-essential python3-pip curl software-properties-common sed upx -y \
     && (curl -sL https://deb.nodesource.com/setup_14.x | bash -) \
     && apt install nodejs \
-    && (cd /opt/build; make all GOESBUILD=on; make compress) \
+    && (cd /opt/build; make all-external GOESBUILD=on; make compress) \
     && sed -i 's#id="password_resets-watch_directory" placeholder="/config/jellyfin"#id="password_resets-watch_directory" value="/jf" disabled#g' /opt/build/build/data/html/setup.html
 
-FROM golang:latest
+FROM golang:1.16rc1-buster
 
 COPY --from=build /opt/build/build /opt/jfa-go
 

@@ -4,6 +4,7 @@ ifeq ($(GOESBUILD), on)
 else
 	ESBUILD := npx esbuild
 endif
+GOBINARY ?= go
 
 npm:
 	$(info installing npm dependencies)
@@ -43,7 +44,7 @@ ts-debug:
 	cp -r ts data/web/js
 
 swagger:
-	go1.16rc1 get github.com/swaggo/swag/cmd/swag
+	$(GOBINARY) get github.com/swaggo/swag/cmd/swag
 	swag init -g main.go
 
 version:
@@ -51,10 +52,10 @@ version:
 
 compile:
 	$(info Downloading deps)
-	go1.16rc1 mod download
+	$(GOBINARY) mod download
 	$(info Building)
 	mkdir -p build
-	cd build && CGO_ENABLED=0 go1.16rc1 build -o ./jfa-go ../*.go
+	cd build && CGO_ENABLED=0 $(GOBINARY) build -o ./jfa-go ../*.go
 
 compress:
 	upx --lzma build/jfa-go
