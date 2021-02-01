@@ -867,7 +867,7 @@
                     "requires_restart": true,
                     "type": "text",
                     "value": "",
-                    "description": "Useful if you want to customize the text in jfa-go. Should follow the same structure as the 'lang' directory, which you can see on GitHub."
+                    "description": "The path to a directory CONTAINING a 'lang/' directory, which follow the same form as the internal one. See GitHub for more info."
                 }
             }
         }

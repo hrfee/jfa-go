@@ -120,6 +120,7 @@ func (st *Storage) loadLangSetup(filesystems ...fs.FS) error {
 		return err
 	}
 	english = st.lang.Setup["en-us"]
+	setupLoaded := false
 	for _, filesystem := range filesystems {
 		files, err := fs.ReadDir(filesystem, st.lang.SetupPath)
 		if err != nil {
@@ -128,11 +129,14 @@ func (st *Storage) loadLangSetup(filesystems ...fs.FS) error {
 		for _, f := range files {
 			if f.Name() != "en-us.json" {
 				err = load(filesystem, f.Name())
-				if err != nil {
-					return err
+				if err == nil {
+					setupLoaded = true
 				}
 			}
 		}
+	}
+	if !setupLoaded {
+		return err
 	}
 	return nil
 }

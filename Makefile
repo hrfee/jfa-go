@@ -54,7 +54,7 @@ compile:
 	go1.16rc1 mod download
 	$(info Building)
 	mkdir -p build
-	CGO_ENABLED=0 go1.16rc1 build -o build/jfa-go *.go
+	cd build && CGO_ENABLED=0 go1.16rc1 build -o ./jfa-go ../*.go
 
 compress:
 	upx --lzma build/jfa-go
@@ -79,5 +79,5 @@ copy:
 install:
 	cp -r build $(DESTDIR)/jfa-go
 
-all: configuration npm email version typescript bundle-css swagger compile copy
-debug: configuration npm email version ts-debug bundle-css swagger compile copy
+all: configuration npm email version typescript bundle-css swagger copy compile
+debug: configuration npm email version ts-debug bundle-css swagger copy compile

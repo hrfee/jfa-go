@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io/fs"
 	"net/http"
 	"strings"
@@ -14,12 +15,13 @@ type httpFS struct {
 }
 
 func (f httpFS) Open(name string) (http.File, error) {
-	return f.hfs.Open(name)
+	fmt.Println("build/data/web" + name)
+	return f.hfs.Open("build/data/web" + name)
 }
 
 func (f httpFS) Exists(prefix string, filepath string) bool {
 	if p := strings.TrimPrefix(filepath, prefix); len(p) < len(filepath) {
-		stats, err := fs.Stat(f.fs, p)
+		stats, err := fs.Stat(f.fs, "build/data/web/"+p)
 		if err != nil {
 			return false
 		}

@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"crypto/rand"
+	"embed"
 	"encoding/base64"
 	"encoding/json"
 	"flag"
@@ -51,6 +52,12 @@ type User struct {
 	Password string `json:"password"`
 }
 
+//go:embed build/data build/data/html build/data/web build/data/web/css build/data/web/js build/data/web/js/ts
+var localFS embed.FS
+
+//go:embed lang/common lang/admin lang/email lang/form lang/setup
+var langFS embed.FS
+
 // contains everything the application needs, essentially. Wouldn't do this in the future.
 type appContext struct {
 	// defaults         *Config
@@ -60,8 +67,6 @@ type appContext struct {
 	configBase     settings
 	dataPath       string
 	systemFS       fs.FS
-	localFS        fs.FS
-	langFS         fs.FS
 	webFS          httpFS
 	cssClass       string
 	jellyfinLogin  bool
@@ -86,8 +91,8 @@ type appContext struct {
 
 func (app *appContext) loadHTML(router *gin.Engine) {
 	customPath := app.config.Section("files").Key("html_templates").MustString("")
-	templatePath := "html"
-	htmlFiles, err := fs.ReadDir(app.localFS, templatePath)
+	templatePath := "build/data/html"
+	htmlFiles, err := fs.ReadDir(localFS, templatePath)
 	if err != nil {
 		app.err.Fatalf("Couldn't access template directory: \"%s\"", templatePath)
 		return
@@ -102,7 +107,7 @@ func (app *appContext) loadHTML(router *gin.Engine) {
 			loadFiles[i] = filepath.Join(filepath.Join(customPath, f.Name()))
 		}
 	}
-	tmpl, err := template.ParseFS(app.localFS, loadFiles...)
+	tmpl, err := template.ParseFS(localFS, loadFiles...)
 	if err != nil {
 		app.err.Fatalf("Failed to load templates: %v", err)
 	}
@@ -201,16 +206,15 @@ func start(asDaemon, firstCall bool) {
 	userConfigDir, _ := os.UserConfigDir()
 	app.dataPath = filepath.Join(userConfigDir, "jfa-go")
 	app.configPath = filepath.Join(app.dataPath, "config.ini")
-	executable, _ := os.Executable()
-	app.localFS = os.DirFS(filepath.Join(filepath.Dir(executable), "data"))
-	app.langFS = os.DirFS(filepath.Join(filepath.Dir(executable), "data", "lang"))
+	// executable, _ := os.Executable()
+	// localFS = os.DirFS(filepath.Join(filepath.Dir(executable), "data"))
+	// langFS = os.DirFS(filepath.Join(filepath.Dir(executable), "data", "lang"))
 	app.systemFS = os.DirFS("/")
-	wfs := os.DirFS(filepath.Join(filepath.Dir(executable), "data", "web"))
+	// wfs := os.DirFS(filepath.Join(filepath.Dir(executable), "data", "web"))
 	app.webFS = httpFS{
-		hfs: http.FS(wfs),
-		fs:  wfs,
+		hfs: http.FS(localFS),
+		fs:  localFS,
 	}
-	app.webFS.fs = wfs
 
 	app.info = log.New(os.Stdout, "[INFO] ", log.Ltime)
 	app.err = log.New(os.Stdout, "[ERROR] ", log.Ltime|log.Lshortfile)
@@ -267,7 +271,7 @@ func start(asDaemon, firstCall bool) {
 	}
 	if _, err := os.Stat(app.configPath); os.IsNotExist(err) {
 		firstRun = true
-		dConfig, err := fs.ReadFile(app.localFS, "config-default.ini")
+		dConfig, err := fs.ReadFile(localFS, "build/data/config-default.ini")
 		if err != nil {
 			app.err.Fatalf("Couldn't find default config file")
 		}
@@ -342,16 +346,16 @@ func start(asDaemon, firstCall bool) {
 		}()
 	}
 
-	app.storage.lang.CommonPath = "common"
-	app.storage.lang.FormPath = "form"
-	app.storage.lang.AdminPath = "admin"
-	app.storage.lang.EmailPath = "email"
+	app.storage.lang.CommonPath = "lang/common"
+	app.storage.lang.FormPath = "lang/form"
+	app.storage.lang.AdminPath = "lang/admin"
+	app.storage.lang.EmailPath = "lang/email"
 	externalLang := app.config.Section("files").Key("lang_files").MustString("")
 	var err error
 	if externalLang == "" {
-		err = app.storage.loadLang(app.langFS)
+		err = app.storage.loadLang(langFS)
 	} else {
-		err = app.storage.loadLang(app.langFS, os.DirFS(externalLang))
+		err = app.storage.loadLang(langFS, os.DirFS(externalLang))
 	}
 	if err != nil {
 		app.info.Fatalf("Failed to load language files: %+v\n", err)
@@ -431,8 +435,8 @@ func start(asDaemon, firstCall bool) {
 
 		}
 
-		app.configBasePath = "config-base.json"
-		configBase, _ := fs.ReadFile(app.localFS, app.configBasePath)
+		app.configBasePath = "build/data/config-base.json"
+		configBase, _ := fs.ReadFile(localFS, app.configBasePath)
 		json.Unmarshal(configBase, &app.configBase)
 
 		themes := map[string]string{
@@ -580,8 +584,8 @@ func start(asDaemon, firstCall bool) {
 	} else {
 		debugMode = false
 		address = "0.0.0.0:8056"
-		app.storage.lang.SetupPath = filepath.Join("lang", "setup")
-		err := app.storage.loadLangSetup()
+		app.storage.lang.SetupPath = "lang/setup"
+		err := app.storage.loadLangSetup(langFS)
 		if err != nil {
 			app.info.Fatalf("Failed to load language files: %+v\n", err)
 		}
