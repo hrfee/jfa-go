@@ -6,8 +6,10 @@ import (
 	"strings"
 )
 
+// Since the gin-static middleware uses a version of http.Filesystem with an extra Exists() func, we extend it here.
+
 type httpFS struct {
-	hfs http.FileSystem
+	hfs http.FileSystem // Created by converting fs.FS using http.FS()
 	fs  fs.FS
 }
 

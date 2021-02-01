@@ -860,6 +860,14 @@
                     "type": "text",
                     "value": "",
                     "description": "Path to directory containing custom versions of web ui pages. See wiki for more info."
+                },
+                "lang_files": {
+                    "name": "Custom language files directory",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "text",
+                    "value": "",
+                    "description": "Useful if you want to customize the text in jfa-go. Should follow the same structure as the 'lang' directory, which you can see on GitHub."
                 }
             }
         }

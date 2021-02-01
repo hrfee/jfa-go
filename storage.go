@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"io/fs"
 	"log"
 	"os"
 	"path/filepath"
@@ -62,20 +63,20 @@ type Lang struct {
 	Setup           setupLangs
 }
 
-func (st *Storage) loadLang() (err error) {
-	err = st.loadLangCommon()
+func (st *Storage) loadLang(filesystems ...fs.FS) (err error) {
+	err = st.loadLangCommon(filesystems...)
 	if err != nil {
 		return
 	}
-	err = st.loadLangAdmin()
+	err = st.loadLangAdmin(filesystems...)
 	if err != nil {
 		return
 	}
-	err = st.loadLangForm()
+	err = st.loadLangForm(filesystems...)
 	if err != nil {
 		return
 	}
-	err = st.loadLangEmail()
+	err = st.loadLangEmail(filesystems...)
 	return
 }
 
@@ -120,13 +121,13 @@ func patchQuantityStrings(english, other *map[string]quantityString) {
 	}
 }
 
-func (st *Storage) loadLangCommon() error {
+func (st *Storage) loadLangCommon(filesystems ...fs.FS) error {
 	st.lang.Common = map[string]commonLang{}
 	var english commonLang
-	load := func(fname string) error {
+	load := func(filesystem fs.FS, fname string) error {
 		index := strings.TrimSuffix(fname, filepath.Ext(fname))
 		lang := commonLang{}
-		f, err := os.ReadFile(filepath.Join(st.lang.CommonPath, fname))
+		f, err := fs.ReadFile(filesystem, filepath.Join(st.lang.CommonPath, fname))
 		if err != nil {
 			return err
 		}
@@ -143,33 +144,46 @@ func (st *Storage) loadLangCommon() error {
 		st.lang.Common[index] = lang
 		return nil
 	}
-	err := load("en-us.json")
-	if err != nil {
+	engFound := false
+	var err error
+	for _, filesystem := range filesystems {
+		err = load(filesystem, "en-us.json")
+		if err == nil {
+			engFound = true
+		}
+	}
+	if !engFound {
 		return err
 	}
 	english = st.lang.Common["en-us"]
-	files, err := os.ReadDir(st.lang.CommonPath)
-	if err != nil {
-		return err
-	}
-	for _, f := range files {
-		if f.Name() != "en-us.json" {
-			err = load(f.Name())
-			if err != nil {
-				return err
+	commonLoaded := false
+	for _, filesystem := range filesystems {
+		files, err := fs.ReadDir(filesystem, st.lang.CommonPath)
+		if err != nil {
+			continue
+		}
+		for _, f := range files {
+			if f.Name() != "en-us.json" {
+				err = load(filesystem, f.Name())
+				if err == nil {
+					commonLoaded = true
+				}
 			}
 		}
+	}
+	if !commonLoaded {
+		return err
 	}
 	return nil
 }
 
-func (st *Storage) loadLangAdmin() error {
+func (st *Storage) loadLangAdmin(filesystems ...fs.FS) error {
 	st.lang.Admin = map[string]adminLang{}
 	var english adminLang
-	load := func(fname string) error {
+	load := func(filesystem fs.FS, fname string) error {
 		index := strings.TrimSuffix(fname, filepath.Ext(fname))
 		lang := adminLang{}
-		f, err := os.ReadFile(filepath.Join(st.lang.AdminPath, fname))
+		f, err := fs.ReadFile(filesystem, filepath.Join(st.lang.AdminPath, fname))
 		if err != nil {
 			return err
 		}
@@ -194,33 +208,46 @@ func (st *Storage) loadLangAdmin() error {
 		st.lang.Admin[index] = lang
 		return nil
 	}
-	err := load("en-us.json")
-	if err != nil {
+	engFound := false
+	var err error
+	for _, filesystem := range filesystems {
+		err = load(filesystem, "en-us.json")
+		if err == nil {
+			engFound = true
+		}
+	}
+	if !engFound {
 		return err
 	}
 	english = st.lang.Admin["en-us"]
-	files, err := os.ReadDir(st.lang.AdminPath)
-	if err != nil {
-		return err
-	}
-	for _, f := range files {
-		if f.Name() != "en-us.json" {
-			err = load(f.Name())
-			if err != nil {
-				return err
+	adminLoaded := false
+	for _, filesystem := range filesystems {
+		files, err := fs.ReadDir(filesystem, st.lang.AdminPath)
+		if err != nil {
+			continue
+		}
+		for _, f := range files {
+			if f.Name() != "en-us.json" {
+				err = load(filesystem, f.Name())
+				if err == nil {
+					adminLoaded = true
+				}
 			}
 		}
+	}
+	if !adminLoaded {
+		return err
 	}
 	return nil
 }
 
-func (st *Storage) loadLangForm() error {
+func (st *Storage) loadLangForm(filesystems ...fs.FS) error {
 	st.lang.Form = map[string]formLang{}
 	var english formLang
-	load := func(fname string) error {
+	load := func(filesystem fs.FS, fname string) error {
 		index := strings.TrimSuffix(fname, filepath.Ext(fname))
 		lang := formLang{}
-		f, err := os.ReadFile(filepath.Join(st.lang.FormPath, fname))
+		f, err := fs.ReadFile(filesystem, filepath.Join(st.lang.FormPath, fname))
 		if err != nil {
 			return err
 		}
@@ -250,33 +277,46 @@ func (st *Storage) loadLangForm() error {
 		st.lang.Form[index] = lang
 		return nil
 	}
-	err := load("en-us.json")
-	if err != nil {
+	engFound := false
+	var err error
+	for _, filesystem := range filesystems {
+		err = load(filesystem, "en-us.json")
+		if err == nil {
+			engFound = true
+		}
+	}
+	if !engFound {
 		return err
 	}
 	english = st.lang.Form["en-us"]
-	files, err := os.ReadDir(st.lang.FormPath)
-	if err != nil {
-		return err
-	}
-	for _, f := range files {
-		if f.Name() != "en-us.json" {
-			err = load(f.Name())
-			if err != nil {
-				return err
+	formLoaded := false
+	for _, filesystem := range filesystems {
+		files, err := fs.ReadDir(filesystem, st.lang.FormPath)
+		if err != nil {
+			continue
+		}
+		for _, f := range files {
+			if f.Name() != "en-us.json" {
+				err = load(filesystem, f.Name())
+				if err == nil {
+					formLoaded = true
+				}
 			}
 		}
+	}
+	if !formLoaded {
+		return err
 	}
 	return nil
 }
 
-func (st *Storage) loadLangEmail() error {
+func (st *Storage) loadLangEmail(filesystems ...fs.FS) error {
 	st.lang.Email = map[string]emailLang{}
 	var english emailLang
-	load := func(fname string) error {
+	load := func(filesystem fs.FS, fname string) error {
 		index := strings.TrimSuffix(fname, filepath.Ext(fname))
 		lang := emailLang{}
-		f, err := os.ReadFile(filepath.Join(st.lang.EmailPath, fname))
+		f, err := fs.ReadFile(filesystem, filepath.Join(st.lang.EmailPath, fname))
 		if err != nil {
 			return err
 		}
@@ -299,22 +339,35 @@ func (st *Storage) loadLangEmail() error {
 		st.lang.Email[index] = lang
 		return nil
 	}
-	err := load("en-us.json")
-	if err != nil {
+	engFound := false
+	var err error
+	for _, filesystem := range filesystems {
+		err = load(filesystem, "en-us.json")
+		if err == nil {
+			engFound = true
+		}
+	}
+	if !engFound {
 		return err
 	}
 	english = st.lang.Email["en-us"]
-	files, err := os.ReadDir(st.lang.EmailPath)
-	if err != nil {
-		return err
-	}
-	for _, f := range files {
-		if f.Name() != "en-us.json" {
-			err = load(f.Name())
-			if err != nil {
-				return err
+	emailLoaded := false
+	for _, filesystem := range filesystems {
+		files, err := fs.ReadDir(filesystem, st.lang.EmailPath)
+		if err != nil {
+			continue
+		}
+		for _, f := range files {
+			if f.Name() != "en-us.json" {
+				err = load(filesystem, f.Name())
+				if err == nil {
+					emailLoaded = true
+				}
 			}
 		}
+	}
+	if !emailLoaded {
+		return err
 	}
 	return nil
 }

@@ -61,6 +61,7 @@ type appContext struct {
 	dataPath       string
 	systemFS       fs.FS
 	localFS        fs.FS
+	langFS         fs.FS
 	webFS          httpFS
 	cssClass       string
 	jellyfinLogin  bool
@@ -202,6 +203,7 @@ func start(asDaemon, firstCall bool) {
 	app.configPath = filepath.Join(app.dataPath, "config.ini")
 	executable, _ := os.Executable()
 	app.localFS = os.DirFS(filepath.Join(filepath.Dir(executable), "data"))
+	app.langFS = os.DirFS(filepath.Join(filepath.Dir(executable), "data", "lang"))
 	app.systemFS = os.DirFS("/")
 	wfs := os.DirFS(filepath.Join(filepath.Dir(executable), "data", "web"))
 	app.webFS = httpFS{
@@ -340,11 +342,17 @@ func start(asDaemon, firstCall bool) {
 		}()
 	}
 
-	app.storage.lang.CommonPath = filepath.Join("lang", "common")
-	app.storage.lang.FormPath = filepath.Join("lang", "form")
-	app.storage.lang.AdminPath = filepath.Join("lang", "admin")
-	app.storage.lang.EmailPath = filepath.Join("lang", "email")
-	err := app.storage.loadLang()
+	app.storage.lang.CommonPath = "common"
+	app.storage.lang.FormPath = "form"
+	app.storage.lang.AdminPath = "admin"
+	app.storage.lang.EmailPath = "email"
+	externalLang := app.config.Section("files").Key("lang_files").MustString("")
+	var err error
+	if externalLang == "" {
+		err = app.storage.loadLang(app.langFS)
+	} else {
+		err = app.storage.loadLang(app.langFS, os.DirFS(externalLang))
+	}
 	if err != nil {
 		app.info.Fatalf("Failed to load language files: %+v\n", err)
 	}
