@@ -14,7 +14,9 @@
         "createAccountButton": "Konto erstellen",
         "passwordRequirementsHeader": "Passwortanforderungen",
         "successHeader": "Erfolg!",
-        "successContinueButton": "Weiter"
+        "successContinueButton": "Weiter",
+        "confirmationRequired": "E-Mail-Bestätigung erforderlich",
+        "confirmationRequiredMessage": "Bitte überprüfe dein Posteingang und bestätige deine E-Mail-Adresse."
     },
     "validationStrings": {
         "length": {
