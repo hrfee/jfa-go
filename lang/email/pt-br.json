@@ -43,5 +43,10 @@
         "welcome": "Bem vindo ao Jellyfin!",
         "youCanLoginWith": "Você pode fazer o login com os detalhes abaixo",
         "jellyfinURL": "URL"
+    },
+    "emailConfirmation": {
+        "title": "Confirme seu email - Jellyfin",
+        "clickBelow": "Clique no link abaixo para confirmar seu endereço de e-mail e começar a usar o Jellyfin.",
+        "confirmEmail": "Confirmar Email"
     }
 }
