@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"crypto/rand"
-	"embed"
 	"encoding/base64"
 	"encoding/json"
 	"flag"
@@ -52,13 +51,7 @@ type User struct {
 	Password string `json:"password"`
 }
 
-//go:embed build/data build/data/html build/data/web build/data/web/css build/data/web/js build/data/web/js/ts
-var localFS embed.FS
-
-//go:embed lang/common lang/admin lang/email lang/form lang/setup
-var langFS embed.FS
-
-// contains everything the application needs, essentially. Wouldn't do this in the future.
+// contains (almost) everything the application needs, essentially. This was a dumb design decision imo.
 type appContext struct {
 	// defaults         *Config
 	config         *ini.File
@@ -91,7 +84,7 @@ type appContext struct {
 
 func (app *appContext) loadHTML(router *gin.Engine) {
 	customPath := app.config.Section("files").Key("html_templates").MustString("")
-	templatePath := "build/data/html"
+	templatePath := "data/html"
 	htmlFiles, err := fs.ReadDir(localFS, templatePath)
 	if err != nil {
 		app.err.Fatalf("Couldn't access template directory: \"%s\"", templatePath)
@@ -201,7 +194,7 @@ func start(asDaemon, firstCall bool) {
 	/*
 		set default config, data and local paths
 		also, confusing naming here. data_path is not the internal 'data' directory, rather the users .config/jfa-go folder.
-		local_path is the internal 'data' directory.
+		localFS/data is the internal 'data' directory.
 	*/
 	userConfigDir, _ := os.UserConfigDir()
 	app.dataPath = filepath.Join(userConfigDir, "jfa-go")
@@ -271,7 +264,7 @@ func start(asDaemon, firstCall bool) {
 	}
 	if _, err := os.Stat(app.configPath); os.IsNotExist(err) {
 		firstRun = true
-		dConfig, err := fs.ReadFile(localFS, "build/data/config-default.ini")
+		dConfig, err := fs.ReadFile(localFS, "data/config-default.ini")
 		if err != nil {
 			app.err.Fatalf("Couldn't find default config file")
 		}
@@ -435,7 +428,7 @@ func start(asDaemon, firstCall bool) {
 
 		}
 
-		app.configBasePath = "build/data/config-base.json"
+		app.configBasePath = "data/config-base.json"
 		configBase, _ := fs.ReadFile(localFS, app.configBasePath)
 		json.Unmarshal(configBase, &app.configBase)
 
@@ -782,6 +775,7 @@ func main() {
 	if flagPassed("test") {
 		TEST = true
 	}
+	loadLocalFS()
 	if flagPassed("start") {
 		args := []string{}
 		for i, f := range os.Args {

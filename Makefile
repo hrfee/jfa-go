@@ -16,31 +16,31 @@ npm:
 
 configuration:
 	$(info Fixing config-base)
-	-mkdir -p build/data
-	python3 config/fixconfig.py -i config/config-base.json -o build/data/config-base.json
+	-mkdir -p data
+	python3 config/fixconfig.py -i config/config-base.json -o data/config-base.json
 	$(info Generating config-default.ini)
-	python3 config/generate_ini.py -i config/config-base.json -o build/data/config-default.ini
+	python3 config/generate_ini.py -i config/config-base.json -o data/config-default.ini
 
 email:
 	$(info Generating email html)
-	python3 mail/generate.py -o build/data/
+	python3 mail/generate.py -o data/
 
 typescript:
 	$(info compiling typescript)
-	-mkdir -p build/data/web/js
-	-$(ESBUILD) --bundle ts/admin.ts --outfile=./build/data/web/js/admin.js --minify
-	-$(ESBUILD) --bundle ts/form.ts --outfile=./build/data/web/js/form.js --minify
-	-$(ESBUILD) --bundle ts/setup.ts --outfile=./build/data/web/js/setup.js --minify
+	-mkdir -p data/web/js
+	-$(ESBUILD) --bundle ts/admin.ts --outfile=./data/web/js/admin.js --minify
+	-$(ESBUILD) --bundle ts/form.ts --outfile=./data/web/js/form.js --minify
+	-$(ESBUILD) --bundle ts/setup.ts --outfile=./data/web/js/setup.js --minify
 
 ts-debug:
 	$(info compiling typescript w/ sourcemaps)
-	-mkdir -p build/data/web/js
-	-$(ESBUILD) --bundle ts/admin.ts --sourcemap --outfile=./build/data/web/js/admin.js
-	-$(ESBUILD) --bundle ts/form.ts --sourcemap --outfile=./build/data/web/js/form.js
-	-$(ESBUILD) --bundle ts/setup.ts --sourcemap --outfile=./build/data/web/js/setup.js
-	-rm -r build/data/web/js/ts
+	-mkdir -p data/web/js
+	-$(ESBUILD) --bundle ts/admin.ts --sourcemap --outfile=./data/web/js/admin.js
+	-$(ESBUILD) --bundle ts/form.ts --sourcemap --outfile=./data/web/js/form.js
+	-$(ESBUILD) --bundle ts/setup.ts --sourcemap --outfile=./data/web/js/setup.js
+	-rm -r data/web/js/ts
 	$(info copying typescript)
-	cp -r ts build/data/web/js
+	cp -r ts data/web/js
 
 swagger:
 	go1.16rc1 get github.com/swaggo/swag/cmd/swag
@@ -60,24 +60,33 @@ compress:
 	upx --lzma build/jfa-go
 
 bundle-css:
-	-mkdir -p build/data/web/css
+	-mkdir -p data/web/css
 	$(info bundling css)
-	$(ESBUILD) --bundle css/base.css --outfile=build/data/web/css/bundle.css --external:remixicon.css --minify
+	$(ESBUILD) --bundle css/base.css --outfile=data/web/css/bundle.css --external:remixicon.css --minify
 
 copy:
 	$(info copying fonts)
-	cp -r node_modules/remixicon/fonts/remixicon.css node_modules/remixicon/fonts/remixicon.woff2 build/data/web/css/
+	cp -r node_modules/remixicon/fonts/remixicon.css node_modules/remixicon/fonts/remixicon.woff2 data/web/css/
 	$(info copying html)
-	cp -r html build/data/
+	cp -r html data/
 	$(info copying static data)
-	-mkdir -p build/data/web
-	cp -r static/* build/data/web/
+	-mkdir -p data/web
+	cp -r static/* data/web/
 	$(info copying language files)
-	cp -r lang build/data/
+	cp -r lang data/
 
+embed:
+	python embed.py internal
+
+noembed:
+	python embed.py external
+	-mkdir -p build
+	$(info copying internal data into build/)
+	cp -r data build/
 
 install:
 	cp -r build $(DESTDIR)/jfa-go
 
-all: configuration npm email version typescript bundle-css swagger copy compile
-debug: configuration npm email version ts-debug bundle-css swagger copy compile
+all: configuration npm email version typescript bundle-css swagger copy embed compile
+all-external: configuration npm email version ts-debug bundle-css swagger copy noembed compile
+debug: configuration npm email version ts-debug bundle-css swagger copy noembed compile

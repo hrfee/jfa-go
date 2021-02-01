@@ -141,13 +141,13 @@ depends_on:
     - arm64-docker
     - armhf-docker
 ---
-name: jfa-go-git
+name: jfa-go-1.16-git
 kind: pipeline
 type: docker
 
 steps:
     - name: build
-      image: golang:latest
+      image: golang:1.16rc
       commands:
         - apt update -y
         - apt install build-essential python3-pip curl software-properties-common sed upx -y
