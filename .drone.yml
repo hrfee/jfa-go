@@ -147,7 +147,7 @@ type: docker
 
 steps:
     - name: build
-      image: golang:1.16rc
+      image: golang:1.16rc1-buster
       commands:
         - apt update -y
         - apt install build-essential python3-pip curl software-properties-common sed upx -y
