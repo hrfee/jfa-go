@@ -48,6 +48,7 @@ steps:
 trigger:
     branch:
         - main
+        - go1.16
     event:
         exclude:
             - pull_request
