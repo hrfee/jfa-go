@@ -52,14 +52,19 @@ func (app *appContext) pushResources(gc *gin.Context, admin bool) {
 	gc.Header("Link", cssHeader)
 }
 
-func (app *appContext) AdminPage(gc *gin.Context) {
-	app.pushResources(gc, true)
+func (app *appContext) getLang(gc *gin.Context, chosen string) string {
 	lang := gc.Query("lang")
 	if lang == "" {
-		lang = app.storage.lang.chosenAdminLang
+		lang = chosen
 	} else if _, ok := app.storage.lang.Admin[lang]; !ok {
-		lang = app.storage.lang.chosenAdminLang
+		lang = chosen
 	}
+	return lang
+}
+
+func (app *appContext) AdminPage(gc *gin.Context) {
+	app.pushResources(gc, true)
+	lang := app.getLang(gc, app.storage.lang.chosenAdminLang)
 	emailEnabled, _ := app.config.Section("invite_emails").Key("enabled").Bool()
 	notificationsEnabled, _ := app.config.Section("notifications").Key("enabled").Bool()
 	ombiEnabled := app.config.Section("ombi").Key("enabled").MustBool(false)
@@ -82,12 +87,7 @@ func (app *appContext) AdminPage(gc *gin.Context) {
 func (app *appContext) InviteProxy(gc *gin.Context) {
 	app.pushResources(gc, false)
 	code := gc.Param("invCode")
-	lang := gc.Query("lang")
-	if lang == "" {
-		lang = app.storage.lang.chosenFormLang
-	} else if _, ok := app.storage.lang.Form[lang]; !ok {
-		lang = app.storage.lang.chosenFormLang
-	}
+	lang := app.getLang(gc, app.storage.lang.chosenFormLang)
 	/* Don't actually check if the invite is valid, just if it exists, just so the page loads quicker. Invite is actually checked on submit anyway. */
 	// if app.checkInvite(code, false, "") {
 	inv, ok := app.storage.invites[code]
@@ -98,7 +98,7 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 		})
 		return
 	}
-	if key := gc.Query("key"); key != "" {
+	if key := gc.Query("key"); key != "" && app.config.Section("email_confirmation").Key("enabled").MustBool(false) {
 		validKey := false
 		keyIndex := -1
 		for i, k := range inv.Keys {

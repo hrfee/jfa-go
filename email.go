@@ -153,6 +153,28 @@ func (emailer *Emailer) NewSMTP(server string, port int, username, password stri
 	}
 }
 
+func (emailer *Emailer) construct(app *appContext, section, keyFragment string, data map[string]interface{}) (html, text string, err error) {
+	var tpl *template.Template
+	for _, key := range []string{"html", "text"} {
+		filesystem, fpath := app.GetPath(section, keyFragment+key)
+		tpl, err = template.ParseFS(filesystem, fpath)
+		if err != nil {
+			return
+		}
+		var tplData bytes.Buffer
+		err = tpl.Execute(&tplData, data)
+		if err != nil {
+			return
+		}
+		if key == "html" {
+			html = tplData.String()
+		} else {
+			text = tplData.String()
+		}
+	}
+	return
+}
+
 func (emailer *Emailer) constructConfirmation(code, username, key string, app *appContext) (*Email, error) {
 	email := &Email{
 		subject: app.config.Section("email_confirmation").Key("subject").MustString(emailer.lang.EmailConfirmation.get("title")),
@@ -160,30 +182,17 @@ func (emailer *Emailer) constructConfirmation(code, username, key string, app *a
 	message := app.config.Section("email").Key("message").String()
 	inviteLink := app.config.Section("invite_emails").Key("url_base").String()
 	inviteLink = fmt.Sprintf("%s/%s?key=%s", inviteLink, code, key)
-
-	for _, key := range []string{"html", "text"} {
-		filesystem, fpath := app.GetPath("email_confirmation", "email_"+key)
-		tpl, err := template.ParseFS(filesystem, fpath)
-		if err != nil {
-			return nil, err
-		}
-		var tplData bytes.Buffer
-		err = tpl.Execute(&tplData, map[string]string{
-			"helloUser":     emailer.lang.Strings.format("helloUser", username),
-			"clickBelow":    emailer.lang.EmailConfirmation.get("clickBelow"),
-			"ifItWasNotYou": emailer.lang.Strings.get("ifItWasNotYou"),
-			"urlVal":        inviteLink,
-			"confirmEmail":  emailer.lang.EmailConfirmation.get("confirmEmail"),
-			"message":       message,
-		})
-		if err != nil {
-			return nil, err
-		}
-		if key == "html" {
-			email.html = tplData.String()
-		} else {
-			email.text = tplData.String()
-		}
+	var err error
+	email.html, email.text, err = emailer.construct(app, "email_confirmation", "email_", map[string]interface{}{
+		"helloUser":     emailer.lang.Strings.format("helloUser", username),
+		"clickBelow":    emailer.lang.EmailConfirmation.get("clickBelow"),
+		"ifItWasNotYou": emailer.lang.Strings.get("ifItWasNotYou"),
+		"urlVal":        inviteLink,
+		"confirmEmail":  emailer.lang.EmailConfirmation.get("confirmEmail"),
+		"message":       message,
+	})
+	if err != nil {
+		return nil, err
 	}
 	return email, nil
 }
@@ -197,31 +206,18 @@ func (emailer *Emailer) constructInvite(code string, invite Invite, app *appCont
 	message := app.config.Section("email").Key("message").String()
 	inviteLink := app.config.Section("invite_emails").Key("url_base").String()
 	inviteLink = fmt.Sprintf("%s/%s", inviteLink, code)
-
-	for _, key := range []string{"html", "text"} {
-		filesystem, fpath := app.GetPath("invite_emails", "email_"+key)
-		tpl, err := template.ParseFS(filesystem, fpath)
-		if err != nil {
-			return nil, err
-		}
-		var tplData bytes.Buffer
-		err = tpl.Execute(&tplData, map[string]string{
-			"hello":              emailer.lang.InviteEmail.get("hello"),
-			"youHaveBeenInvited": emailer.lang.InviteEmail.get("youHaveBeenInvited"),
-			"toJoin":             emailer.lang.InviteEmail.get("toJoin"),
-			"inviteExpiry":       emailer.lang.InviteEmail.format("inviteExpiry", d, t, expiresIn),
-			"linkButton":         emailer.lang.InviteEmail.get("linkButton"),
-			"invite_link":        inviteLink,
-			"message":            message,
-		})
-		if err != nil {
-			return nil, err
-		}
-		if key == "html" {
-			email.html = tplData.String()
-		} else {
-			email.text = tplData.String()
-		}
+	var err error
+	email.html, email.text, err = emailer.construct(app, "invite_emails", "email_", map[string]interface{}{
+		"hello":              emailer.lang.InviteEmail.get("hello"),
+		"youHaveBeenInvited": emailer.lang.InviteEmail.get("youHaveBeenInvited"),
+		"toJoin":             emailer.lang.InviteEmail.get("toJoin"),
+		"inviteExpiry":       emailer.lang.InviteEmail.format("inviteExpiry", d, t, expiresIn),
+		"linkButton":         emailer.lang.InviteEmail.get("linkButton"),
+		"invite_link":        inviteLink,
+		"message":            message,
+	})
+	if err != nil {
+		return nil, err
 	}
 	return email, nil
 }
@@ -231,26 +227,14 @@ func (emailer *Emailer) constructExpiry(code string, invite Invite, app *appCont
 		subject: emailer.lang.InviteExpiry.get("title"),
 	}
 	expiry := app.formatDatetime(invite.ValidTill)
-	for _, key := range []string{"html", "text"} {
-		filesystem, fpath := app.GetPath("notifications", "expiry_"+key)
-		tpl, err := template.ParseFS(filesystem, fpath)
-		if err != nil {
-			return nil, err
-		}
-		var tplData bytes.Buffer
-		err = tpl.Execute(&tplData, map[string]string{
-			"inviteExpired":      emailer.lang.InviteExpiry.get("inviteExpired"),
-			"expiredAt":          emailer.lang.InviteExpiry.format("expiredAt", "\""+code+"\"", expiry),
-			"notificationNotice": emailer.lang.InviteExpiry.get("notificationNotice"),
-		})
-		if err != nil {
-			return nil, err
-		}
-		if key == "html" {
-			email.html = tplData.String()
-		} else {
-			email.text = tplData.String()
-		}
+	var err error
+	email.html, email.text, err = emailer.construct(app, "notifications", "expiry_", map[string]interface{}{
+		"inviteExpired":      emailer.lang.InviteExpiry.get("inviteExpired"),
+		"expiredAt":          emailer.lang.InviteExpiry.format("expiredAt", "\""+code+"\"", expiry),
+		"notificationNotice": emailer.lang.InviteExpiry.get("notificationNotice"),
+	})
+	if err != nil {
+		return nil, err
 	}
 	return email, nil
 }
@@ -266,31 +250,19 @@ func (emailer *Emailer) constructCreated(code, username, address string, invite 
 	} else {
 		tplAddress = address
 	}
-	for _, key := range []string{"html", "text"} {
-		filesystem, fpath := app.GetPath("notifications", "created_"+key)
-		tpl, err := template.ParseFS(filesystem, fpath)
-		if err != nil {
-			return nil, err
-		}
-		var tplData bytes.Buffer
-		err = tpl.Execute(&tplData, map[string]string{
-			"aUserWasCreated":    emailer.lang.UserCreated.format("aUserWasCreated", "\""+code+"\""),
-			"name":               emailer.lang.Strings.get("name"),
-			"address":            emailer.lang.Strings.get("emailAddress"),
-			"time":               emailer.lang.UserCreated.get("time"),
-			"nameVal":            username,
-			"addressVal":         tplAddress,
-			"timeVal":            created,
-			"notificationNotice": emailer.lang.UserCreated.get("notificationNotice"),
-		})
-		if err != nil {
-			return nil, err
-		}
-		if key == "html" {
-			email.html = tplData.String()
-		} else {
-			email.text = tplData.String()
-		}
+	var err error
+	email.html, email.text, err = emailer.construct(app, "notifications", "created_", map[string]interface{}{
+		"aUserWasCreated":    emailer.lang.UserCreated.format("aUserWasCreated", "\""+code+"\""),
+		"name":               emailer.lang.Strings.get("name"),
+		"address":            emailer.lang.Strings.get("emailAddress"),
+		"time":               emailer.lang.UserCreated.get("time"),
+		"nameVal":            username,
+		"addressVal":         tplAddress,
+		"timeVal":            created,
+		"notificationNotice": emailer.lang.UserCreated.get("notificationNotice"),
+	})
+	if err != nil {
+		return nil, err
 	}
 	return email, nil
 }
@@ -301,31 +273,19 @@ func (emailer *Emailer) constructReset(pwr PasswordReset, app *appContext) (*Ema
 	}
 	d, t, expiresIn := emailer.formatExpiry(pwr.Expiry, true, app.datePattern, app.timePattern)
 	message := app.config.Section("email").Key("message").String()
-	for _, key := range []string{"html", "text"} {
-		filesystem, fpath := app.GetPath("password_resets", "email_"+key)
-		tpl, err := template.ParseFS(filesystem, fpath)
-		if err != nil {
-			return nil, err
-		}
-		var tplData bytes.Buffer
-		err = tpl.Execute(&tplData, map[string]string{
-			"helloUser":                emailer.lang.Strings.format("helloUser", pwr.Username),
-			"someoneHasRequestedReset": emailer.lang.PasswordReset.get("someoneHasRequestedReset"),
-			"ifItWasYou":               emailer.lang.PasswordReset.get("ifItWasYou"),
-			"codeExpiry":               emailer.lang.PasswordReset.format("codeExpiry", d, t, expiresIn),
-			"ifItWasNotYou":            emailer.lang.Strings.get("ifItWasNotYou"),
-			"pin":                      emailer.lang.PasswordReset.get("pin"),
-			"pinVal":                   pwr.Pin,
-			"message":                  message,
-		})
-		if err != nil {
-			return nil, err
-		}
-		if key == "html" {
-			email.html = tplData.String()
-		} else {
-			email.text = tplData.String()
-		}
+	var err error
+	email.html, email.text, err = emailer.construct(app, "password_resets", "email_", map[string]interface{}{
+		"helloUser":                emailer.lang.Strings.format("helloUser", pwr.Username),
+		"someoneHasRequestedReset": emailer.lang.PasswordReset.get("someoneHasRequestedReset"),
+		"ifItWasYou":               emailer.lang.PasswordReset.get("ifItWasYou"),
+		"codeExpiry":               emailer.lang.PasswordReset.format("codeExpiry", d, t, expiresIn),
+		"ifItWasNotYou":            emailer.lang.Strings.get("ifItWasNotYou"),
+		"pin":                      emailer.lang.PasswordReset.get("pin"),
+		"pinVal":                   pwr.Pin,
+		"message":                  message,
+	})
+	if err != nil {
+		return nil, err
 	}
 	return email, nil
 }
@@ -334,26 +294,14 @@ func (emailer *Emailer) constructDeleted(reason string, app *appContext) (*Email
 	email := &Email{
 		subject: app.config.Section("deletion").Key("subject").MustString(emailer.lang.UserDeleted.get("title")),
 	}
-	for _, key := range []string{"html", "text"} {
-		filesystem, fpath := app.GetPath("deletion", "email_"+key)
-		tpl, err := template.ParseFS(filesystem, fpath)
-		if err != nil {
-			return nil, err
-		}
-		var tplData bytes.Buffer
-		err = tpl.Execute(&tplData, map[string]string{
-			"yourAccountWasDeleted": emailer.lang.UserDeleted.get("yourAccountWasDeleted"),
-			"reason":                emailer.lang.UserDeleted.get("reason"),
-			"reasonVal":             reason,
-		})
-		if err != nil {
-			return nil, err
-		}
-		if key == "html" {
-			email.html = tplData.String()
-		} else {
-			email.text = tplData.String()
-		}
+	var err error
+	email.html, email.text, err = emailer.construct(app, "deletion", "email_", map[string]interface{}{
+		"yourAccountWasDeleted": emailer.lang.UserDeleted.get("yourAccountWasDeleted"),
+		"reason":                emailer.lang.UserDeleted.get("reason"),
+		"reasonVal":             reason,
+	})
+	if err != nil {
+		return nil, err
 	}
 	return email, nil
 }
@@ -362,30 +310,18 @@ func (emailer *Emailer) constructWelcome(username string, app *appContext) (*Ema
 	email := &Email{
 		subject: app.config.Section("welcome_email").Key("subject").MustString(emailer.lang.WelcomeEmail.get("title")),
 	}
-	for _, key := range []string{"html", "text"} {
-		filesystem, fpath := app.GetPath("welcome_email", "email_"+key)
-		tpl, err := template.ParseFS(filesystem, fpath)
-		if err != nil {
-			return nil, err
-		}
-		var tplData bytes.Buffer
-		err = tpl.Execute(&tplData, map[string]string{
-			"welcome":         emailer.lang.WelcomeEmail.get("welcome"),
-			"youCanLoginWith": emailer.lang.WelcomeEmail.get("youCanLoginWith"),
-			"jellyfinURL":     emailer.lang.WelcomeEmail.get("jellyfinURL"),
-			"jellyfinURLVal":  app.config.Section("jellyfin").Key("public_server").String(),
-			"username":        emailer.lang.Strings.get("username"),
-			"usernameVal":     username,
-			"message":         app.config.Section("email").Key("message").String(),
-		})
-		if err != nil {
-			return nil, err
-		}
-		if key == "html" {
-			email.html = tplData.String()
-		} else {
-			email.text = tplData.String()
-		}
+	var err error
+	email.html, email.text, err = emailer.construct(app, "welcome_email", "email_", map[string]interface{}{
+		"welcome":         emailer.lang.WelcomeEmail.get("welcome"),
+		"youCanLoginWith": emailer.lang.WelcomeEmail.get("youCanLoginWith"),
+		"jellyfinURL":     emailer.lang.WelcomeEmail.get("jellyfinURL"),
+		"jellyfinURLVal":  app.config.Section("jellyfin").Key("public_server").String(),
+		"username":        emailer.lang.Strings.get("username"),
+		"usernameVal":     username,
+		"message":         app.config.Section("email").Key("message").String(),
+	})
+	if err != nil {
+		return nil, err
 	}
 	return email, nil
 }

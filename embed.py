@@ -36,7 +36,7 @@ func (l rewriteFS) Open(name string) (fs.File, error)          { return l.fs.Ope
 func (l rewriteFS) ReadDir(name string) ([]fs.DirEntry, error) { return l.fs.ReadDir(l.prefix + name) }
 func (l rewriteFS) ReadFile(name string) ([]byte, error)       { return l.fs.ReadFile(l.prefix + name) }
 
-func loadLocalFS() {
+func loadFilesystems() {
 	langFS = rewriteFS{laFS, "lang/"}
 	localFS = rewriteFS{loFS, "data/"}
 	log.Println("Using internal storage")
@@ -53,7 +53,7 @@ import (
 var localFS fs.FS
 var langFS fs.FS
 
-func loadLocalFS() {
+func loadFilesystems() {
     log.Println("Using external storage")
     executable, _ := os.Executable()
     localFS = os.DirFS(filepath.Join(filepath.Dir(executable), "data"))
