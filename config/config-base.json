@@ -867,7 +867,7 @@
                     "requires_restart": true,
                     "type": "text",
                     "value": "",
-                    "description": "The path to a directory CONTAINING a 'lang/' directory, which follow the same form as the internal one. See GitHub for more info."
+                    "description": "The path to a directory which following the same form as the internal 'lang/' directory. See GitHub for more info."
                 }
             }
         }

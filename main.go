@@ -339,10 +339,10 @@ func start(asDaemon, firstCall bool) {
 		}()
 	}
 
-	app.storage.lang.CommonPath = "lang/common"
-	app.storage.lang.FormPath = "lang/form"
-	app.storage.lang.AdminPath = "lang/admin"
-	app.storage.lang.EmailPath = "lang/email"
+	app.storage.lang.CommonPath = "common"
+	app.storage.lang.FormPath = "form"
+	app.storage.lang.AdminPath = "admin"
+	app.storage.lang.EmailPath = "email"
 	externalLang := app.config.Section("files").Key("lang_files").MustString("")
 	var err error
 	if externalLang == "" {
@@ -577,7 +577,7 @@ func start(asDaemon, firstCall bool) {
 	} else {
 		debugMode = false
 		address = "0.0.0.0:8056"
-		app.storage.lang.SetupPath = "lang/setup"
+		app.storage.lang.SetupPath = "setup"
 		err := app.storage.loadLangSetup(langFS)
 		if err != nil {
 			app.info.Fatalf("Failed to load language files: %+v\n", err)
