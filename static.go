@@ -14,12 +14,12 @@ type httpFS struct {
 }
 
 func (f httpFS) Open(name string) (http.File, error) {
-	return f.hfs.Open("data/web" + name)
+	return f.hfs.Open("web" + name)
 }
 
 func (f httpFS) Exists(prefix string, filepath string) bool {
 	if p := strings.TrimPrefix(filepath, prefix); len(p) < len(filepath) {
-		stats, err := fs.Stat(f.fs, "data/web/"+p)
+		stats, err := fs.Stat(f.fs, "web/"+p)
 		if err != nil {
 			return false
 		}

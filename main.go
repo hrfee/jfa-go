@@ -84,7 +84,7 @@ type appContext struct {
 
 func (app *appContext) loadHTML(router *gin.Engine) {
 	customPath := app.config.Section("files").Key("html_templates").MustString("")
-	templatePath := "data/html"
+	templatePath := "html"
 	htmlFiles, err := fs.ReadDir(localFS, templatePath)
 	if err != nil {
 		app.err.Fatalf("Couldn't access template directory: \"%s\"", templatePath)
@@ -264,7 +264,7 @@ func start(asDaemon, firstCall bool) {
 	}
 	if _, err := os.Stat(app.configPath); os.IsNotExist(err) {
 		firstRun = true
-		dConfig, err := fs.ReadFile(localFS, "data/config-default.ini")
+		dConfig, err := fs.ReadFile(localFS, "config-default.ini")
 		if err != nil {
 			app.err.Fatalf("Couldn't find default config file")
 		}
@@ -428,7 +428,7 @@ func start(asDaemon, firstCall bool) {
 
 		}
 
-		app.configBasePath = "data/config-base.json"
+		app.configBasePath = "config-base.json"
 		configBase, _ := fs.ReadFile(localFS, app.configBasePath)
 		json.Unmarshal(configBase, &app.configBase)
 

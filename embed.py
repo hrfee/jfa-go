@@ -19,23 +19,26 @@ import (
 )
 
 //go:embed data data/html data/web data/web/css data/web/js
-var localFS embed.FS
+var loFS embed.FS
 
 //go:embed lang/common lang/admin lang/email lang/form lang/setup
-var lFS embed.FS
+var laFS embed.FS
 
-var langFS LangFS
+var langFS rewriteFS
+var localFS rewriteFS
 
-type LangFS struct {
-	fs embed.FS
+type rewriteFS struct {
+	fs     embed.FS
+	prefix string
 }
 
-func (l LangFS) Open(name string) (fs.File, error)          { return l.fs.Open("lang/" + name) }
-func (l LangFS) ReadDir(name string) ([]fs.DirEntry, error) { return l.fs.ReadDir("lang/" + name) }
-func (l LangFS) ReadFile(name string) ([]byte, error)       { return l.fs.ReadFile("lang/" + name) }
+func (l rewriteFS) Open(name string) (fs.File, error)          { return l.fs.Open(l.prefix + name) }
+func (l rewriteFS) ReadDir(name string) ([]fs.DirEntry, error) { return l.fs.ReadDir(l.prefix + name) }
+func (l rewriteFS) ReadFile(name string) ([]byte, error)       { return l.fs.ReadFile(l.prefix + name) }
 
 func loadLocalFS() {
-	langFS = LangFS{lFS}
+	langFS = rewriteFS{laFS, "lang/"}
+	localFS = rewriteFS{loFS, "data/"}
 	log.Println("Using internal storage")
 }""")
     elif EMBED in falses:
@@ -53,6 +56,6 @@ var langFS fs.FS
 func loadLocalFS() {
     log.Println("Using external storage")
     executable, _ := os.Executable()
-    localFS = os.DirFS(filepath.Dir(executable))
+    localFS = os.DirFS(filepath.Join(filepath.Dir(executable), "data"))
     langFS = os.DirFS(filepath.Join(filepath.Dir(executable), "data", "lang"))
 }""")

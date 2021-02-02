@@ -15,7 +15,7 @@ var emailEnabled = false
 func (app *appContext) GetPath(sect, key string) (fs.FS, string) {
 	val := app.config.Section(sect).Key(key).MustString("")
 	if strings.HasPrefix(val, "jfa-go:") {
-		return localFS, "data/" + strings.TrimPrefix(val, "jfa-go:")
+		return localFS, strings.TrimPrefix(val, "jfa-go:")
 	}
 	return app.systemFS, val
 }
