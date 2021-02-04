@@ -39,7 +39,7 @@
         "settingsApplyRestartLater": "Sla op, herstart later",
         "settingsApplyRestartNow": "Sla op & herstart",
         "settingsApplied": "Wijzigingen doorgevoerd.",
-        "settingsRefreshPage": "Ververs de pagina over enkele seconden",
+        "settingsRefreshPage": "Ververs de pagina over enkele seconden.",
         "settingsRequiredOrRestartMessage": "Opmerking: {n} is een verplicht veld, {n} geeft aan dat na wijzigen een herstart nodig is.",
         "settingsSave": "Opslaan",
         "ombiUserDefaults": "Ombi gebruiker standaardinstellingen",
@@ -63,7 +63,9 @@
         "notifyEvent": "Meldingen:",
         "notifyInviteExpiry": "Bij verloop",
         "notifyUserCreation": "Bij aanmaken gebruiker",
-        "label": "Label"
+        "label": "Label",
+        "settingsRestart": "Herstart",
+        "settingsRestarting": "Aan het herstarten…"
     },
     "notifications": {
         "changedEmailAddress": "E-mailadres van {n} gewijzigd.",
