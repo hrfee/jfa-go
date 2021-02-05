@@ -42,7 +42,15 @@ class user implements User {
     }
 
     get email(): string { return this._emailAddress; }
-    set email(value: string) { this._email.value = value; this._emailAddress = value; }
+    set email(value: string) {
+        this._emailAddress = value;
+        const input = this._email.querySelector("input");
+        if (input) {
+            input.value = value;
+        } else {
+            this._email.textContent = value;
+        }
+    }
     
     get last_active(): string { return this._lastActive.textContent; }
     set last_active(value: string) { this._lastActive.textContent = value; }
@@ -55,20 +63,27 @@ class user implements User {
         this._row.innerHTML = `
             <td><input type="checkbox" value=""></td>
             <td><span class="accounts-username"></span> <span class="accounts-admin"></span></td>
-            <td><i class="icon ri-edit-line accounts-email-edit"></i><input type="email" class="input ~neutral !normal stealth-input stealth-input-hidden accounts-email" readonly></td>
+            <td><i class="icon ri-edit-line accounts-email-edit"></i><span class="accounts-email-container ml-half"></span></td>
             <td class="accounts-last-active"></td>
         `;
+        const emailEditor = `<input type="email" class="input ~neutral !normal stealth-input">`;
         this._check = this._row.querySelector("input[type=checkbox]") as HTMLInputElement;
         this._username = this._row.querySelector(".accounts-username") as HTMLSpanElement;
         this._admin = this._row.querySelector(".accounts-admin") as HTMLSpanElement;
-        this._email = this._row.querySelector(".accounts-email") as HTMLInputElement;
+        this._email = this._row.querySelector(".accounts-email-container") as HTMLInputElement;
         this._emailEditButton = this._row.querySelector(".accounts-email-edit") as HTMLElement;
         this._lastActive = this._row.querySelector(".accounts-last-active") as HTMLTableDataCellElement;
         this._check.onchange = () => { this.selected = this._check.checked; }
 
         const toggleStealthInput = () => {
-            this._email.classList.toggle("stealth-input-hidden");
-            this._email.readOnly = !this._email.readOnly;
+            if (this._emailEditButton.classList.contains("ri-edit-line")) {
+                this._email.innerHTML = emailEditor;
+                this._email.querySelector("input").value = this._emailAddress;
+                this._email.classList.remove("ml-half");
+            } else {
+                this._email.textContent = this._emailAddress;
+                this._email.classList.add("ml-half");
+            }
             this._emailEditButton.classList.toggle("ri-check-line");
             this._emailEditButton.classList.toggle("ri-edit-line");
         };
@@ -80,7 +95,7 @@ class user implements User {
             }
         };
         this._emailEditButton.onclick = () => {
-            if (this._email.classList.contains("stealth-input-hidden")) {
+            if (this._emailEditButton.classList.contains("ri-edit-line")) {
                 document.addEventListener('click', outerClickListener);
             } else {
                 this._updateEmail();
@@ -94,7 +109,7 @@ class user implements User {
 
     private _updateEmail = () => {
         let oldEmail = this.email;
-        this.email = this._email.value;
+        this.email = this._email.querySelector("input").value;
         let send = {};
         send[this.id] = this.email;
         _post("/users/emails", send, (req: XMLHttpRequest) => {
