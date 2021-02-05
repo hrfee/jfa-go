@@ -567,6 +567,8 @@ func start(asDaemon, firstCall bool) {
 			app.info.Fatalf("Failed to load language files: %+v\n", err)
 		}
 	}
+	cssHeader = app.loadCSSHeader()
+
 	app.info.Println("Loading routes")
 	if debugMode {
 		gin.SetMode(gin.DebugMode)

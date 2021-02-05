@@ -11,17 +11,19 @@ import (
 )
 
 var css = []string{"bundle.css", "remixicon.css"}
-var cssHeader = func() string {
+var cssHeader string
+
+func (app *appContext) loadCSSHeader() string {
 	l := len(css)
 	h := ""
 	for i, f := range css {
-		h += "</css/" + f + ">; rel=preload; as=style"
+		h += "<" + app.URLBase + "/css/" + f + ">; rel=preload; as=style"
 		if l > 1 && i != (l-1) {
 			h += ", "
 		}
 	}
 	return h
-}()
+}
 
 func gcHTML(gc *gin.Context, code int, file string, templ gin.H) {
 	gc.Header("Cache-Control", "no-cache")

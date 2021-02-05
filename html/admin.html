@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" class="{{ .cssClass }}">
     <head>
-        <link rel="stylesheet" type="text/css" href="css/bundle.css">
+        <link rel="stylesheet" type="text/css" href="{{ .urlBase }}/css/bundle.css">
         <script>
             window.URLBase = "{{ .urlBase }}";
             window.notificationsEnabled = {{ .notifications }};
@@ -40,7 +40,7 @@
         <div id="modal-about" class="modal">
             <div class="modal-content content card">
                 <span class="heading">{{ .strings.aboutProgram }} <span class="modal-close">&times;</span></span>
-                <img src="/banner.svg" class="mt-1" alt="jfa-go banner">
+                <img src="{{ .urlBase }}/banner.svg" class="mt-1" alt="jfa-go banner">
                 <p><i class="icon ri-github-fill"></i><a href="https://github.com/hrfee/jfa-go">jfa-go</a></p>
                 <p>{{ .strings.version }} <span class="code monospace">{{ .version }}</span></p>
                 <p>{{ .strings.commitNoun }} <span class="code monospace">{{ .commit }}</span></p>
