@@ -55,6 +55,13 @@ compile:
 	$(GOBINARY) mod download
 	$(info Building)
 	mkdir -p build
+	cd build && CGO_ENABLED=0 $(GOBINARY) build -ldflags="-s -w" -o ./jfa-go ../*.go
+
+compile-debug:
+	$(info Downloading deps)
+	$(GOBINARY) mod download
+	$(info Building)
+	mkdir -p build
 	cd build && CGO_ENABLED=0 $(GOBINARY) build -o ./jfa-go ../*.go
 
 compress:
@@ -90,4 +97,4 @@ install:
 
 all: configuration npm email version typescript bundle-css swagger copy embed compile
 all-external: configuration npm email version ts-debug bundle-css swagger copy noembed compile
-debug: configuration npm email version ts-debug bundle-css swagger copy noembed compile
+debug: configuration npm email version ts-debug bundle-css swagger copy noembed compile-debug
