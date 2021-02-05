@@ -36,7 +36,7 @@
         "sendDeleteNotificationEmail": "Send notification email",
         "sendDeleteNotifiationExample": "Your account has been deleted.",
         "settingsRestart": "Restart",
-        "settingsRestarting": "Restarting...",
+        "settingsRestarting": "Restarting…",
         "settingsRestartRequired": "Restart needed",
         "settingsRestartRequiredDescription": "A restart is necessary to apply some settings you changed. Restart now or later?",
         "settingsApplyRestartLater": "Apply, restart later",
@@ -55,7 +55,6 @@
         "addProfileDescription": "Create a Jellyfin user and configure it, then select it below. When this profile is applied to an invite, new users will be created with the settings.",
         "addProfileNameOf": "Profile Name",
         "addProfileStoreHomescreenLayout": "Store homescreen layout",
-        
         "inviteNoUsersCreated": "None yet!",
         "inviteUsersCreated": "Created users",
         "inviteNoProfile": "No Profile",
@@ -64,7 +63,6 @@
         "inviteRemainingUses": "Remaining uses",
         "inviteNoInvites": "None",
         "inviteExpiresInTime": "Expires in {n}",
-
         "notifyEvent": "Notify on:",
         "notifyInviteExpiry": "On expiry",
         "notifyUserCreation": "On user creation"
@@ -98,7 +96,6 @@
         "errorUserCreated": "Failed to create user {n}.",
         "errorSendWelcomeEmail": "Failed to send welcome email (check console/logs)"
     },
-
     "quantityStrings": {
         "modifySettingsFor": {
             "singular": "Modify Settings for {n} user",
