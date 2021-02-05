@@ -45,7 +45,7 @@ export class DOMInvite implements Invite {
         for (let split of ["#", "?"]) {
             codeLink = codeLink.split(split)[0];
         }
-        this._codeLink = codeLink + "invite/" + code;
+        this._codeLink = codeLink + window.URLBase + "invite/" + code;
         const linkEl = this._codeArea.querySelector("a") as HTMLAnchorElement;
         if (this.label == "") {
             linkEl.textContent = code.replace(/-/g, '-');

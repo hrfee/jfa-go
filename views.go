@@ -36,7 +36,7 @@ func (app *appContext) pushResources(gc *gin.Context, admin bool) {
 		if admin {
 			toPush := []string{"/js/admin.js", "/js/theme.js", "/js/lang.js", "/js/modal.js", "/js/tabs.js", "/js/invites.js", "/js/accounts.js", "/js/settings.js", "/js/profiles.js", "/js/common.js"}
 			for _, f := range toPush {
-				if err := pusher.Push(f, nil); err != nil {
+				if err := pusher.Push(app.URLBase+f, nil); err != nil {
 					app.debug.Printf("Failed HTTP2 ServerPush of \"%s\": %+v", f, err)
 				}
 			}

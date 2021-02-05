@@ -84,23 +84,24 @@ window.tabs.addTab("accounts", null, accounts.reload);
 window.tabs.addTab("settings", null, settings.reload);
 
 for (let tab of ["invites", "accounts", "settings"]) {
-    if (window.location.pathname == "/" + tab) {
+    if (window.location.pathname == window.URLBase + "/" + tab) {
         window.tabs.switch(tab, true);
     }
 }
 
-if (window.location.pathname == "/") {
+if (window.location.pathname == window.URLBase + "/") {
     window.tabs.switch("invites", true);
 }
 
 document.addEventListener("tab-change", (event: CustomEvent) => {
     const urlParams = new URLSearchParams(window.location.search);
     const lang = urlParams.get('lang');
-    let tab = "/" + event.detail;
-    if (tab == "/invites") {
-        if (window.location.pathname == "/") {
-            tab = "/";
-        } else { tab = "../"; }
+    let tab = window.URLBase + "/" + event.detail;
+    if (tab == window.URLBase + "/invites") {
+        if (window.location.pathname == window.URLBase + "/") {
+            tab = window.URLBase + "/";
+        } else if (window.URLBase) { tab = window.URLBase; }
+        else { tab = "../"; }
     }
     if (lang) {
         tab += "?lang=" + lang
