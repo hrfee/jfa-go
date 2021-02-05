@@ -37,7 +37,7 @@
     },
     "general": {
         "title": "Geral",
-        "listenAddress": "",
+        "listenAddress": "Endereço de Escuta",
         "urlBase": "URL Base",
         "urlBaseNotice": "Necessário apenas se estiver usando um proxy reverso em um subdomínio (por exemplo, 'jellyf.in/accounts').",
         "lightTheme": "Claro",

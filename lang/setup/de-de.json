@@ -25,7 +25,7 @@
     },
     "endPage": {
         "finished": "Fertig!",
-        "restartMessage": "Es gibt weitere Einstellungen, die du auf der Admin-Seite konfigurieren kannst. Drücke unten, um neu zu starten, dann aktualisiere die Seite.",
+        "restartMessage": "Es gibt weitere Einstellungen, die du auf der Admin-Seite konfigurieren kannst. Klicke unten, um neu zu starten, dann aktualisiere die Seite.",
         "refreshPage": "Aktualisieren"
     },
     "language": {
@@ -42,7 +42,7 @@
         "urlBaseNotice": "Nur erforderlich, wenn ein Reverse-Proxy auf einer Subdomain verwendet wird (z. B. 'jellyf.in/accounts').",
         "lightTheme": "Hell",
         "darkTheme": "Dunkel",
-        "useHTTPS": "Verwende HTTPS",
+        "useHTTPS": "HTTPS verwenden",
         "httpsPort": "HTTPS Port",
         "useHTTPSNotice": "Nur empfohlen, wenn du keinen Reverse-Proxy verwendest.",
         "pathToCertificate": "Pfad zum Zertifikat",
@@ -51,10 +51,10 @@
     "login": {
         "title": "Anmelden",
         "description": "Um auf die Admin-Seite zuzugreifen, musst du dich mit einer untenstehenden Methode anmelden:",
-        "authorizeWithJellyfin": "Autorisiere mit Jellyfin/Emby: Anmeldedaten werden mit Jellyfin geteilt, was mehrere Benutzer ermöglicht.",
+        "authorizeWithJellyfin": "Mit Jellyfin/Emby autorisieren: Anmeldedaten werden mit Jellyfin geteilt, was mehrere Benutzer ermöglicht.",
         "authorizeManual": "Benutzername und Passwort: Lege Benutzername und Passwort manuell fest.",
         "adminOnly": "Nur Admin-Benutzer (empfohlen)",
-        "emailNotice": "Eine E-Mail-Adresse kann verwendet werden, um Benachrichtigungen zu erhalten."
+        "emailNotice": "Deine E-Mail-Adresse kann verwendet werden, um Benachrichtigungen zu erhalten."
     },
     "jellyfinEmby": {
         "title": "Jellyfin/Emby",
@@ -69,8 +69,8 @@
     },
     "ombi": {
         "title": "Ombi",
-        "description": "Durch den Anschluss an Ombi wird sowohl ein Jellyfin-Konto als auch ein Ombi-Konto erstellt, wenn ein Benutzer durch jfa-go beitritt. Nachdem das Setup abgeschlossen ist, gehe zu den Einstellungen um ein Standardprofil für neue Ombi-Benutzer festzulegen.",
-        "apiKeyNotice": "Finde das in der ersten Registerkarte der Ombi-Einstellungen."
+        "description": "Durch den Anschluss an Ombi wird sowohl ein Jellyfin-Konto als auch ein Ombi-Konto erstellt, wenn ein Benutzer durch jfa-go beitritt. Nachdem das Setup abgeschlossen ist, gehe zu den Einstellungen, um ein Standardprofil für neue Ombi-Benutzer festzulegen.",
+        "apiKeyNotice": "Finde dies in der ersten Registerkarte der Ombi-Einstellungen."
     },
     "email": {
         "title": "E-Mail",
@@ -89,7 +89,7 @@
     },
     "notifications": {
         "title": "Benachrichtigungen",
-        "description": "Wenn aktiviert, kannst du (per Invite) wählen, eine E-Mail zu erhalten, wenn ein Invite abläuft oder ein Benutzer erstellt wird. Wenn du nicht die Jellyfin-Login-Methode gewählt hast, stelle sicher, dass du deine E-Mail-Adresse angegeben hast."
+        "description": "Wenn aktiviert, kannst du (pro Invite) wählen, eine E-Mail zu erhalten, wenn ein Invite abläuft oder ein Benutzer erstellt wird. Wenn du nicht die Jellyfin-Login-Methode gewählt hast, stelle sicher, dass du deine E-Mail-Adresse angegeben hast."
     },
     "welcomeEmails": {
         "title": "Willkommens-E-Mails",

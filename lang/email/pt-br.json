@@ -33,7 +33,7 @@
     "inviteEmail": {
         "title": "Convite - Jellyfin",
         "hello": "Ola",
-        "youHaveBeenInvited": "Você um convite para o Jellyfin.",
+        "youHaveBeenInvited": "Você recebeu um convite para o Jellyfin.",
         "toJoin": "Para participar, clique no link abaixo.",
         "inviteExpiry": "Este convite expira em {n} às {n}, que é em {n}, então seja rápido.",
         "linkButton": "Crie sua conta"
@@ -43,5 +43,10 @@
         "welcome": "Bem vindo ao Jellyfin!",
         "youCanLoginWith": "Você pode fazer o login com os detalhes abaixo",
         "jellyfinURL": "URL"
+    },
+    "emailConfirmation": {
+        "title": "Confirme seu email - Jellyfin",
+        "clickBelow": "Clique no link abaixo para confirmar seu endereço de e-mail e começar a usar o Jellyfin.",
+        "confirmEmail": "Confirmar Email"
     }
 }
