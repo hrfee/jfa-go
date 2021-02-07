@@ -19,7 +19,7 @@
     },
     "startPage": {
         "welcome": "Welcome!",
-        "pressStart": "You'll need to do a few things to set up jfa-go. Press start to get continue.",
+        "pressStart": "You'll need to do a few things to set up jfa-go. Press start to continue.",
         "httpsNotice": "Make sure you're accessing this page via HTTPS or on a private network.",
         "start": "Start"
     },
