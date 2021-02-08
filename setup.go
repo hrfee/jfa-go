@@ -77,7 +77,7 @@ func (st *Storage) loadLangSetup(filesystems ...fs.FS) error {
 	load := func(filesystem fs.FS, fname string) error {
 		index := strings.TrimSuffix(fname, filepath.Ext(fname))
 		lang := setupLang{}
-		f, err := fs.ReadFile(filesystem, filepath.Join(st.lang.SetupPath, fname))
+		f, err := fs.ReadFile(filesystem, FSJoin(st.lang.SetupPath, fname))
 		if err != nil {
 			return err
 		}

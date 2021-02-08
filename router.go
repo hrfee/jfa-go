@@ -29,7 +29,7 @@ func (app *appContext) loadHTML(router *gin.Engine) {
 	for i, f := range htmlFiles {
 		if _, err := os.Stat(filepath.Join(customPath, f.Name())); os.IsNotExist(err) {
 			app.debug.Printf("Using default \"%s\"", f.Name())
-			loadFiles[i] = filepath.Join(templatePath, f.Name())
+			loadFiles[i] = FSJoin(templatePath, f.Name())
 		} else {
 			app.info.Printf("Using custom \"%s\"", f.Name())
 			loadFiles[i] = filepath.Join(filepath.Join(customPath, f.Name()))

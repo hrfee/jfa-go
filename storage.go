@@ -127,7 +127,7 @@ func (st *Storage) loadLangCommon(filesystems ...fs.FS) error {
 	load := func(filesystem fs.FS, fname string) error {
 		index := strings.TrimSuffix(fname, filepath.Ext(fname))
 		lang := commonLang{}
-		f, err := fs.ReadFile(filesystem, filepath.Join(st.lang.CommonPath, fname))
+		f, err := fs.ReadFile(filesystem, FSJoin(st.lang.CommonPath, fname))
 		if err != nil {
 			return err
 		}
@@ -183,7 +183,7 @@ func (st *Storage) loadLangAdmin(filesystems ...fs.FS) error {
 	load := func(filesystem fs.FS, fname string) error {
 		index := strings.TrimSuffix(fname, filepath.Ext(fname))
 		lang := adminLang{}
-		f, err := fs.ReadFile(filesystem, filepath.Join(st.lang.AdminPath, fname))
+		f, err := fs.ReadFile(filesystem, FSJoin(st.lang.AdminPath, fname))
 		if err != nil {
 			return err
 		}
@@ -247,7 +247,7 @@ func (st *Storage) loadLangForm(filesystems ...fs.FS) error {
 	load := func(filesystem fs.FS, fname string) error {
 		index := strings.TrimSuffix(fname, filepath.Ext(fname))
 		lang := formLang{}
-		f, err := fs.ReadFile(filesystem, filepath.Join(st.lang.FormPath, fname))
+		f, err := fs.ReadFile(filesystem, FSJoin(st.lang.FormPath, fname))
 		if err != nil {
 			return err
 		}
@@ -316,7 +316,7 @@ func (st *Storage) loadLangEmail(filesystems ...fs.FS) error {
 	load := func(filesystem fs.FS, fname string) error {
 		index := strings.TrimSuffix(fname, filepath.Ext(fname))
 		lang := emailLang{}
-		f, err := fs.ReadFile(filesystem, filepath.Join(st.lang.EmailPath, fname))
+		f, err := fs.ReadFile(filesystem, FSJoin(st.lang.EmailPath, fname))
 		if err != nil {
 			return err
 		}
