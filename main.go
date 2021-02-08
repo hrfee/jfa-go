@@ -10,6 +10,7 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"mime"
 	"net"
 	"net/http"
 	"os"
@@ -568,6 +569,8 @@ func start(asDaemon, firstCall bool) {
 		}
 	}
 	cssHeader = app.loadCSSHeader()
+
+	mime.AddExtensionType(".js", "application/javascript")
 
 	app.info.Println("Loading routes")
 	if debugMode {
