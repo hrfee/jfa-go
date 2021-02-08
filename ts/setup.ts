@@ -400,7 +400,6 @@ window.onpopstate = (event: PopStateEvent) => {
         const card = cards[i];
         const back = card.getElementsByClassName("back")[0] as HTMLSpanElement;
         const next = card.getElementsByClassName("next")[0] as HTMLSpanElement;
-        console.log(cards[i]);
         const titleEl = cards[i].querySelector("span.heading") as HTMLElement;
         let title = titleEl.textContent.replace("/", "_").replace(" ", "-");
         if (titleEl.classList.contains("welcome")) {
