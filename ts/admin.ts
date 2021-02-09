@@ -89,7 +89,7 @@ for (let tab of ["invites", "accounts", "settings"]) {
     }
 }
 
-if (window.location.pathname == window.URLBase + "/") {
+if ((window.URLBase + "/").includes(window.location.pathname)) {
     window.tabs.switch("invites", true);
 }
 
