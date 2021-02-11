@@ -111,21 +111,31 @@ type: docker
 
 steps:
     - name: manifest
-      image: plugins/manifest
+      image: appleboy/drone-ssh
+      volumes:
+          - name: ssh_key
+            path: /root/drone_rsa
       settings:
-          username: hrfee
-          password:
-              from_secret: docker_key
-          repo: hrfee/jfa-go
-          target: hrfee/jfa-go:latest
-          template: hrfee/jfa-go:manifest-latest-ARCH
-          platforms:
-              - linux/amd64
-              - linux/arm64
-              - linux/armhf
+          host:
+              from_secret: ssh_host
+          username:
+              from_secret: ssh_username
+          port:
+              from_secret: ssh_port
+          volumes:
+              - /root/.ssh/docker-build:/root/drone_rsa
+          key_path: /root/drone_rsa
+          command_timeout: 30m
+          script:
+              - env DOCKER_CLI_EXPERIMENTAL=enabled docker manifest create hrfee/jfa-go:latest --amend hrfee/jfa-go:manifest-latest-amd64 --amend hrfee/jfa-go:manifest-latest-arm64 --amend hrfee/jfa-go:manifest-latest-armhf
+              - env DOCKER_CLI_EXPERIMENTAL=enabled docker manifest push hrfee/jfa-go:latest
 trigger:
     event:
       - tag
+volumes:
+    - name: ssh_key
+      host:
+          path: /root/.ssh/docker-build
 depends_on:
     - amd64-docker
     - arm64-docker
@@ -256,18 +266,24 @@ type: docker
 
 steps:
     - name: manifest
-      image: plugins/manifest
+      image: appleboy/drone-ssh
+      volumes:
+          - name: ssh_key
+            path: /root/drone_rsa
       settings:
-          username: hrfee
-          password:
-              from_secret: docker_key
-          repo: hrfee/jfa-go
-          target: hrfee/jfa-go:latest
-          template: hrfee/jfa-go:manifest-unstable-ARCH
-          platforms:
-              - linux/amd64
-              - linux/arm64
-              - linux/armhf
+          host:
+              from_secret: ssh_host
+          username:
+              from_secret: ssh_username
+          port:
+              from_secret: ssh_port
+          volumes:
+              - /root/.ssh/docker-build:/root/drone_rsa
+          key_path: /root/drone_rsa
+          command_timeout: 30m
+          script:
+              - env DOCKER_CLI_EXPERIMENTAL=enabled docker manifest create hrfee/jfa-go:unstable --amend hrfee/jfa-go:manifest-unstable-amd64 --amend hrfee/jfa-go:manifest-unstable-arm64 --amend hrfee/jfa-go:manifest-unstable-armhf
+              - env DOCKER_CLI_EXPERIMENTAL=enabled docker manifest push hrfee/jfa-go:unstable
 depends_on:
     - amd64-docker-git
     - arm64-docker-git
