@@ -1,15 +1,15 @@
 {
     "meta": {
-        "name": ""
+        "name": "Ελληνικά (GR)"
     },
     "strings": {
-        "username": "",
-        "password": "",
-        "emailAddress": "",
-        "name": "",
-        "submit": "",
-        "success": "",
-        "error": "",
-        "theme": ""
+        "username": "Όνομα Χρήστη",
+        "password": "Κωδικός",
+        "emailAddress": "Διεύθυνση Email",
+        "name": "Όνομα",
+        "submit": "Καταχώρηση",
+        "success": "Επιτυχία",
+        "error": "Σφάλμα",
+        "theme": "Θέμα"
     }
 }
