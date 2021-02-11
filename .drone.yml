@@ -266,8 +266,6 @@ steps:
               - linux/amd64
               - linux/aarch64
               - linux/armhf
-      when:
-          event: tag
 depends_on:
     - amd64-docker-git
     - aarch64-docker-git
