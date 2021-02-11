@@ -1,47 +1,47 @@
 {
     "meta": {
-        "name": ""
+        "name": "Ελληνικά (GR)"
     },
     "strings": {
-        "pageTitle": "",
-        "createAccountHeader": "",
-        "accountDetails": "",
-        "emailAddress": "",
-        "username": "",
-        "password": "",
-        "reEnterPassword": "",
-        "reEnterPasswordInvalid": "",
-        "createAccountButton": "",
-        "passwordRequirementsHeader": "",
-        "successHeader": "",
-        "successContinueButton": "",
-        "confirmationRequired": "",
-        "confirmationRequiredMessage": ""
+        "pageTitle": "Δημιουργία λογαριασμού Jellyfin",
+        "createAccountHeader": "Δημιουργία Λογαρισμού",
+        "accountDetails": "Λεπτομέρειες",
+        "emailAddress": "Email",
+        "username": "Όνομα Χρήστη",
+        "password": "Κωδικός",
+        "reEnterPassword": "Επιβεβαίωση Κωδικού",
+        "reEnterPasswordInvalid": "Οι κωδικοί δεν είναι ίδιοι.",
+        "createAccountButton": "Δημιουργία Λογαρισμού",
+        "passwordRequirementsHeader": "Απαιτήσεις Κωδικού",
+        "successHeader": "Επιτυχία!",
+        "successContinueButton": "Συνέχεια",
+        "confirmationRequired": "Απαιτείται επιβεβαίωση Email",
+        "confirmationRequiredMessage": "Παρακαλώ ελέγξτε το email σας για να επιβεβαιώσετε την διεύθυνση σας ."
     },
     "notifications": {
-        "errorUserExists": "",
-        "errorInvalidCode": ""
+        "errorUserExists": "Ο χρήστης υπάρχει ήδη.",
+        "errorInvalidCode": "Άκυρος κωδικός πρόσκλησης."
     },
     "validationStrings": {
         "length": {
-            "singular": "",
-            "plural": ""
+            "singular": "Πρέπει να περιέχει τουλάχιστον {n} χαρακτήρες",
+            "plural": "Πρέπει να περιέχει τουλάχιστον {n} χαρακτήρα"
         },
         "uppercase": {
-            "singular": "",
-            "plural": ""
+            "singular": "Πρέπει να περιέχει τουλάχιστον {n} κεφαλαίο χαρακτήρα",
+            "plural": "Πρέπει να περιέχει τουλάχιστον {n} κεφαλαίους χαρακτήρες"
         },
         "lowercase": {
-            "singular": "",
-            "plural": ""
+            "singular": "Πρέπει να περιέχει τουλάχιστον {n} πεζό χαρακτήρα",
+            "plural": "Πρέπει να περιέχει τουλάχιστον {n} πεζούς χαρακτήρες"
         },
         "number": {
-            "singular": "",
-            "plural": ""
+            "singular": "Πρέπει να περιέχει τουλάχιστον {n} αριθμό",
+            "plural": "Πρέπει να περιέχει τουλάχιστον {n} αριθμούς"
         },
         "special": {
-            "singular": "",
-            "plural": ""
+            "singular": "Πρέπει να περιέχει τουλάχιστον {n} ειδικό χαρακτήρα",
+            "plural": "Πρέπει να περιέχει τουλάχιστον {n} ειδικούς χαρακτήρες"
         }
     }
 }
