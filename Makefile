@@ -1,6 +1,18 @@
+GOESBUILD ?= off
+ifeq ($(GOESBUILD), on)
+	ESBUILD := esbuild
+else
+	ESBUILD := npx esbuild
+endif
+
 npm:
 	$(info installing npm dependencies)
 	npm install
+	@if [ "$(GOESBUILD)" = "off" ]; then\
+		npm install esbuild;\
+	else\
+		go get -u github.com/evanw/esbuild/cmd/esbuild;\
+	fi
 
 configuration:
 	$(info Fixing config-base)
@@ -16,16 +28,16 @@ email:
 typescript:
 	$(info compiling typescript)
 	-mkdir -p build/data/web/js
-	-npx esbuild --bundle ts/admin.ts --outfile=./build/data/web/js/admin.js --minify
-	-npx esbuild --bundle ts/form.ts --outfile=./build/data/web/js/form.js --minify
-	-npx esbuild --bundle ts/setup.ts --outfile=./build/data/web/js/setup.js --minify
+	-$(ESBUILD) --bundle ts/admin.ts --outfile=./build/data/web/js/admin.js --minify
+	-$(ESBUILD) --bundle ts/form.ts --outfile=./build/data/web/js/form.js --minify
+	-$(ESBUILD) --bundle ts/setup.ts --outfile=./build/data/web/js/setup.js --minify
 
 ts-debug:
 	$(info compiling typescript w/ sourcemaps)
 	-mkdir -p build/data/web/js
-	-npx esbuild --bundle ts/admin.ts --sourcemap --outfile=./build/data/web/js/admin.js
-	-npx esbuild --bundle ts/form.ts --sourcemap --outfile=./build/data/web/js/form.js
-	-npx esbuild --bundle ts/setup.ts --sourcemap --outfile=./build/data/web/js/setup.js
+	-$(ESBUILD) --bundle ts/admin.ts --sourcemap --outfile=./build/data/web/js/admin.js
+	-$(ESBUILD) --bundle ts/form.ts --sourcemap --outfile=./build/data/web/js/form.js
+	-$(ESBUILD) --bundle ts/setup.ts --sourcemap --outfile=./build/data/web/js/setup.js
 	-rm -r build/data/web/js/ts
 	$(info copying typescript)
 	cp -r ts build/data/web/js
@@ -50,7 +62,7 @@ compress:
 bundle-css:
 	-mkdir -p build/data/web/css
 	$(info bundling css)
-	npx esbuild --bundle css/base.css --outfile=build/data/web/css/bundle.css --external:remixicon.css --minify
+	$(ESBUILD) esbuild --bundle css/base.css --outfile=build/data/web/css/bundle.css --external:remixicon.css --minify
 
 copy:
 	$(info copying fonts)

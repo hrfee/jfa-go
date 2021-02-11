@@ -11,6 +11,7 @@ before:
     - mkdir -p data
     - cp -r static data/web
     - npm install
+    - npm install esbuild
     - mkdir -p data/web/css
     - npx esbuild --bundle css/base.css --outfile=./data/web/css/bundle.css --external:remixicon.css --minify
     - cp node_modules/remixicon/fonts/remixicon.css node_modules/remixicon/fonts/remixicon.woff2 data/web/css/
