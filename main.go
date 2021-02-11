@@ -569,7 +569,7 @@ func start(asDaemon, firstCall bool) {
 		}
 	}
 	cssHeader = app.loadCSSHeader()
-
+	// workaround for potentially broken windows mime types
 	mime.AddExtensionType(".js", "application/javascript")
 
 	app.info.Println("Loading routes")
@@ -583,7 +583,13 @@ func start(asDaemon, firstCall bool) {
 	setGinLogger(router, debugMode)
 
 	router.Use(gin.Recovery())
-	router.Use(static.Serve("/", static.LocalFile(filepath.Join(app.localPath, "web"), false)))
+	routePrefixes := []string{app.URLBase}
+	if app.URLBase != "" {
+		routePrefixes = append(routePrefixes, "")
+	}
+	for _, p := range routePrefixes {
+		router.Use(static.Serve(p+"/", static.LocalFile(filepath.Join(app.localPath, "web"), false)))
+	}
 	app.loadHTML(router)
 	router.NoRoute(app.NoRouteHandler)
 	if debugMode {
@@ -592,42 +598,48 @@ func start(asDaemon, firstCall bool) {
 	}
 	router.GET("/lang/:page", app.GetLanguages)
 	if !firstRun {
-		router.GET("/", app.AdminPage)
-		router.GET("/accounts", app.AdminPage)
-		router.GET("/settings", app.AdminPage)
-		router.GET("/lang/:page/:file", app.ServeLang)
-		router.GET("/token/login", app.getTokenLogin)
-		router.GET("/token/refresh", app.getTokenRefresh)
-		router.POST("/newUser", app.NewUser)
-		router.Use(static.Serve("/invite/", static.LocalFile(filepath.Join(app.localPath, "web"), false)))
-		router.GET("/invite/:invCode", app.InviteProxy)
+		for _, p := range routePrefixes {
+			router.GET(p+"/", app.AdminPage)
+			router.GET(p+"/accounts", app.AdminPage)
+			router.GET(p+"/settings", app.AdminPage)
+			router.GET(p+"/lang/:page/:file", app.ServeLang)
+			router.GET(p+"/token/login", app.getTokenLogin)
+			router.GET(p+"/token/refresh", app.getTokenRefresh)
+			router.POST(p+"/newUser", app.NewUser)
+			router.Use(static.Serve(p+"/invite/", static.LocalFile(filepath.Join(app.localPath, "web"), false)))
+			router.GET(p+"/invite/:invCode", app.InviteProxy)
+		}
 		if *SWAGGER {
 			app.info.Print(aurora.Magenta("\n\nWARNING: Swagger should not be used on a public instance.\n\n"))
-			router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+			for _, p := range routePrefixes {
+				router.GET(p+"/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+			}
 		}
 		api := router.Group("/", app.webAuth())
-		router.POST("/logout", app.Logout)
-		api.DELETE("/users", app.DeleteUser)
-		api.GET("/users", app.GetUsers)
-		api.POST("/users", app.NewUserAdmin)
-		api.POST("/invites", app.GenerateInvite)
-		api.GET("/invites", app.GetInvites)
-		api.DELETE("/invites", app.DeleteInvite)
-		api.POST("/invites/profile", app.SetProfile)
-		api.GET("/profiles", app.GetProfiles)
-		api.POST("/profiles/default", app.SetDefaultProfile)
-		api.POST("/profiles", app.CreateProfile)
-		api.DELETE("/profiles", app.DeleteProfile)
-		api.POST("/invites/notify", app.SetNotify)
-		api.POST("/users/emails", app.ModifyEmails)
-		// api.POST("/setDefaults", app.SetDefaults)
-		api.POST("/users/settings", app.ApplySettings)
-		api.GET("/config", app.GetConfig)
-		api.POST("/config", app.ModifyConfig)
-		api.POST("/restart", app.restart)
-		if app.config.Section("ombi").Key("enabled").MustBool(false) {
-			api.GET("/ombi/users", app.OmbiUsers)
-			api.POST("/ombi/defaults", app.SetOmbiDefaults)
+		for _, p := range routePrefixes {
+			router.POST(p+"/logout", app.Logout)
+			api.DELETE(p+"/users", app.DeleteUser)
+			api.GET(p+"/users", app.GetUsers)
+			api.POST(p+"/users", app.NewUserAdmin)
+			api.POST(p+"/invites", app.GenerateInvite)
+			api.GET(p+"/invites", app.GetInvites)
+			api.DELETE(p+"/invites", app.DeleteInvite)
+			api.POST(p+"/invites/profile", app.SetProfile)
+			api.GET(p+"/profiles", app.GetProfiles)
+			api.POST(p+"/profiles/default", app.SetDefaultProfile)
+			api.POST(p+"/profiles", app.CreateProfile)
+			api.DELETE(p+"/profiles", app.DeleteProfile)
+			api.POST(p+"/invites/notify", app.SetNotify)
+			api.POST(p+"/users/emails", app.ModifyEmails)
+			// api.POST(p + "/setDefaults", app.SetDefaults)
+			api.POST(p+"/users/settings", app.ApplySettings)
+			api.GET(p+"/config", app.GetConfig)
+			api.POST(p+"/config", app.ModifyConfig)
+			api.POST(p+"/restart", app.restart)
+			if app.config.Section("ombi").Key("enabled").MustBool(false) {
+				api.GET(p+"/ombi/users", app.OmbiUsers)
+				api.POST(p+"/ombi/defaults", app.SetOmbiDefaults)
+			}
 		}
 		app.info.Printf("Starting router @ %s", address)
 	} else {

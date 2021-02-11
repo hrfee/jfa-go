@@ -25,6 +25,13 @@ func (app *appContext) loadCSSHeader() string {
 	return h
 }
 
+func (app *appContext) getURLBase(gc *gin.Context) string {
+	if strings.HasPrefix(gc.Request.URL.String(), app.URLBase) {
+		return app.URLBase
+	}
+	return ""
+}
+
 func gcHTML(gc *gin.Context, code int, file string, templ gin.H) {
 	gc.Header("Cache-Control", "no-cache")
 	gc.HTML(code, file, templ)
@@ -57,7 +64,7 @@ func (app *appContext) AdminPage(gc *gin.Context) {
 	notificationsEnabled, _ := app.config.Section("notifications").Key("enabled").Bool()
 	ombiEnabled := app.config.Section("ombi").Key("enabled").MustBool(false)
 	gcHTML(gc, http.StatusOK, "admin.html", gin.H{
-		"urlBase":         app.URLBase,
+		"urlBase":         app.getURLBase(gc),
 		"cssClass":        app.cssClass,
 		"contactMessage":  "",
 		"email_enabled":   emailEnabled,
@@ -159,7 +166,7 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 		email = ""
 	}
 	gcHTML(gc, http.StatusOK, "form-loader.html", gin.H{
-		"urlBase":           app.URLBase,
+		"urlBase":           app.getURLBase,
 		"cssClass":          app.cssClass,
 		"contactMessage":    app.config.Section("ui").Key("contact_message").String(),
 		"helpMessage":       app.config.Section("ui").Key("help_message").String(),
