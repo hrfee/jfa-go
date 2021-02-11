@@ -42,6 +42,7 @@ steps:
           volumes:
               - /root/.ssh/docker-build:/root/drone_rsa
           key_path: /root/drone_rsa
+          command_timeout: 30m
           script:
               - /home/rock64/jfa-go-build/build-stable.sh
       when:
@@ -72,6 +73,7 @@ steps:
           volumes:
               - /root/.ssh/docker-build:/root/drone_rsa
           key_path: /root/drone_rsa
+          command_timeout: 30m
           script:
               - ssh pi /home/pi/jfa-go-build/build-stable.sh
       when:
@@ -133,6 +135,7 @@ steps:
           volumes:
               - /root/.ssh/docker-build:/root/drone_rsa
           key_path: /root/drone_rsa
+          command_timeout: 30m
           script:
               - /home/rock64/jfa-go-build/build.sh
 
@@ -169,6 +172,7 @@ steps:
           volumes:
               - /root/.ssh/docker-build:/root/drone_rsa
           key_path: /root/drone_rsa
+          command_timeout: 30m
           script:
               - ssh pi /home/pi/jfa-go-build/build.sh
 
