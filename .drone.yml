@@ -102,11 +102,11 @@ trigger:
         exclude:
             - pull_request
 
----
 volumes:
     - name: ssh_key
       host:
           path: /root/.ssh/docker-build
+---
 name: jfa-go-pr
 kind: pipeline
 type: docker
