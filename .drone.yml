@@ -19,8 +19,9 @@ steps:
         - (curl -sL https://deb.nodesource.com/setup_14.x | bash -)
         - apt install nodejs
         - curl -sL https://git.io/goreleaser | bash
-      when:
-          event: tag
+trigger:
+    event:
+      - tag
 ---
 name: amd64-docker
 kind: pipeline
@@ -38,16 +39,16 @@ steps:
               from_secret: docker_key
           repo: hrfee/jfa-go
           tags: manifest-latest-amd64
-      when:
-          event: tag
-
+trigger:
+    event:
+      - tag
 ---
-name: aarch64-docker
+name: arm64-docker
 kind: pipeline
 type: docker
 
 steps:
-    - name: aarch64-ssh
+    - name: arm64-ssh
       image: appleboy/drone-ssh
       volumes:
           - name: ssh_key
@@ -65,9 +66,9 @@ steps:
           command_timeout: 30m
           script:
               - /home/rock64/jfa-go-build/build-stable.sh
-      when:
-          event: tag
-
+trigger:
+    event:
+      - tag
 volumes:
     - name: ssh_key
       host:
@@ -96,9 +97,9 @@ steps:
           command_timeout: 30m
           script:
               - ssh pi /home/pi/jfa-go-build/build-stable.sh
-      when:
-          event: tag
-
+trigger:
+    event:
+      - tag
 volumes:
     - name: ssh_key
       host:
@@ -120,13 +121,14 @@ steps:
           template: hrfee/jfa-go:manifest-latest-ARCH
           platforms:
               - linux/amd64
-              - linux/aarch64
+              - linux/arm64
               - linux/armhf
-      when:
-          event: tag
+trigger:
+    event:
+      - tag
 depends_on:
     - amd64-docker
-    - aarch64-docker
+    - arm64-docker
     - armhf-docker
 ---
 name: jfa-go-git
@@ -174,12 +176,12 @@ steps:
           tags: manifest-unstable-amd64
 
 ---
-name: aarch64-docker-git
+name: arm64-docker-git
 kind: pipeline
 type: docker
 
 steps:
-    - name: aarch64-ssh
+    - name: arm64-ssh
       image: appleboy/drone-ssh
       volumes:
           - name: ssh_key
@@ -264,11 +266,11 @@ steps:
           template: hrfee/jfa-go:manifest-unstable-ARCH
           platforms:
               - linux/amd64
-              - linux/aarch64
+              - linux/arm64
               - linux/armhf
 depends_on:
     - amd64-docker-git
-    - aarch64-docker-git
+    - arm64-docker-git
     - armhf-docker-git
 ---
 name: jfa-go-pr
