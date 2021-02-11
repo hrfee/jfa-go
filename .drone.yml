@@ -44,6 +44,19 @@ steps:
       environment:
           BUILDRONE_KEY:
               from_secret: BUILDRONE_KEY
+    - name: arm-ssh
+      image: appleboy/drone-ssh
+      settings:
+          host:
+              from_secret: ssh_host
+          username:
+              from_secret: ssh_username
+          port:
+              from_secret: ssh_port
+          key:
+              from_secret: ssh_key
+          script:
+              - /home/rock64/jfa-go-build/build.sh
 
 trigger:
     branch:
@@ -74,3 +87,4 @@ trigger:
     event:
         include:
             - pull_request
+
