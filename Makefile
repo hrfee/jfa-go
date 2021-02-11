@@ -62,7 +62,7 @@ compress:
 bundle-css:
 	-mkdir -p build/data/web/css
 	$(info bundling css)
-	$(ESBUILD) esbuild --bundle css/base.css --outfile=build/data/web/css/bundle.css --external:remixicon.css --minify
+	$(ESBUILD) --bundle css/base.css --outfile=build/data/web/css/bundle.css --external:remixicon.css --minify
 
 copy:
 	$(info copying fonts)
