@@ -136,9 +136,8 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 			Password: claims["password"].(string),
 			Code:     claims["invite"].(string),
 		}
-		f, success := app.newUser(req, true)
+		_, success := app.newUser(req, true)
 		if !success {
-			f(gc)
 			fail()
 			return
 		}
