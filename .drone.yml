@@ -53,8 +53,9 @@ steps:
               from_secret: ssh_username
           port:
               from_secret: ssh_port
-          key:
-              from_secret: ssh_key
+          volumes:
+              - /root/.ssh/docker-build:/root/ssh/drone_rsa
+          key_path: /root/ssh/drone_rsa
           script:
               - /home/rock64/jfa-go-build/build.sh
 
