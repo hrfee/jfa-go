@@ -21,7 +21,66 @@ steps:
         - curl -sL https://git.io/goreleaser | bash
       when:
           event: tag
+---
+name: arm64-docker
+kind: pipeline
+type: docker
 
+steps:
+    - name: arm64-ssh
+      image: appleboy/drone-ssh
+      volumes:
+          - name: ssh_key
+            path: /root/drone_rsa
+      settings:
+          host:
+              from_secret: ssh_host
+          username:
+              from_secret: ssh_username
+          port:
+              from_secret: ssh_port
+          volumes:
+              - /root/.ssh/docker-build:/root/drone_rsa
+          key_path: /root/drone_rsa
+          script:
+              - /home/rock64/jfa-go-build/build-stable.sh
+      when:
+          event: tag
+
+volumes:
+    - name: ssh_key
+      host:
+          path: /root/.ssh/docker-build
+---
+name: armhf-docker
+kind: pipeline
+type: docker
+
+steps:
+    - name: armhf-ssh
+      image: appleboy/drone-ssh
+      volumes:
+          - name: ssh_key
+            path: /root/drone_rsa
+      settings:
+          host:
+              from_secret: ssh_host
+          username:
+              from_secret: ssh_username
+          port:
+              from_secret: ssh_port
+          volumes:
+              - /root/.ssh/docker-build:/root/drone_rsa
+          key_path: /root/drone_rsa
+          script:
+              - ssh pi /home/pi/jfa-go-build/build-stable.sh
+      when:
+          event: tag
+
+volumes:
+    - name: ssh_key
+      host:
+          path: /root/.ssh/docker-build
 ---
 name: jfa-go-git
 kind: pipeline
@@ -54,7 +113,7 @@ trigger:
             - pull_request
 
 ---
-name: arm-docker-git
+name: arm64-docker-git
 kind: pipeline
 type: docker
 
@@ -76,6 +135,25 @@ steps:
           key_path: /root/drone_rsa
           script:
               - /home/rock64/jfa-go-build/build.sh
+
+trigger:
+    branch:
+        - main
+        - go1.16
+    event:
+        exclude:
+            - pull_request
+
+volumes:
+    - name: ssh_key
+      host:
+          path: /root/.ssh/docker-build
+---
+name: armhf-docker-git
+kind: pipeline
+type: docker
+
+steps:
     - name: armhf-ssh
       image: appleboy/drone-ssh
       volumes:
