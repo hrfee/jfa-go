@@ -9,7 +9,7 @@ steps:
       commands:
           - git fetch --tags
     - name: release
-      image: golang:latest
+      image: golang:1.16rc1-buster
       environment:
           GITHUB_TOKEN:
               from_secret: github_token
@@ -157,7 +157,7 @@ type: docker
 
 steps:
     - name: build
-      image: golang:latest
+      image: golang:1.16rc1-buster
       commands:
         - apt update -y
         - apt install build-essential python3-pip curl software-properties-common sed upx -y
@@ -321,7 +321,7 @@ type: docker
 
 steps:
     - name: build
-      image: golang:latest
+      image: golang:1.16rc1-buster
       commands:
         - apt update -y
         - apt install build-essential python3-pip curl software-properties-common sed upx -y
