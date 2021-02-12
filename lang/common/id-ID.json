@@ -1,15 +1,15 @@
 {
     "meta": {
-        "name": ""
+        "name": "Inggris (Amerika Serikat)"
     },
     "strings": {
-        "username": "",
-        "password": "",
-        "emailAddress": "",
-        "name": "",
-        "submit": "",
-        "success": "",
-        "error": "",
-        "theme": ""
+        "username": "Nama pengguna",
+        "password": "Sandi",
+        "emailAddress": "Alamat Email",
+        "name": "Nama",
+        "submit": "Submit",
+        "success": "Sukses",
+        "error": "Error",
+        "theme": "Tema"
     }
 }
