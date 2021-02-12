@@ -288,6 +288,18 @@ depends_on:
     - amd64-docker-git
     - arm64-docker-git
     - armhf-docker-git
+trigger:
+    branch:
+        - main
+        - go1.16
+    event:
+        exclude:
+            - pull_request
+
+volumes:
+    - name: ssh_key
+      host:
+          path: /root/.ssh/docker-build
 ---
 name: jfa-go-pr
 kind: pipeline
