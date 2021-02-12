@@ -166,7 +166,7 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 		email = ""
 	}
 	gcHTML(gc, http.StatusOK, "form-loader.html", gin.H{
-		"urlBase":           app.getURLBase,
+		"urlBase":           app.getURLBase(gc),
 		"cssClass":          app.cssClass,
 		"contactMessage":    app.config.Section("ui").Key("contact_message").String(),
 		"helpMessage":       app.config.Section("ui").Key("help_message").String(),

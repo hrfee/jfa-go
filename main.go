@@ -596,7 +596,9 @@ func start(asDaemon, firstCall bool) {
 		app.debug.Println("Loading pprof")
 		pprof.Register(router)
 	}
-	router.GET("/lang/:page", app.GetLanguages)
+	for _, p := range routePrefixes {
+		router.GET(p+"/lang/:page", app.GetLanguages)
+	}
 	if !firstRun {
 		for _, p := range routePrefixes {
 			router.GET(p+"/", app.AdminPage)
