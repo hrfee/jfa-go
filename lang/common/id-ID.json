@@ -1,0 +1,15 @@
+{
+    "meta": {
+        "name": ""
+    },
+    "strings": {
+        "username": "",
+        "password": "",
+        "emailAddress": "",
+        "name": "",
+        "submit": "",
+        "success": "",
+        "error": "",
+        "theme": ""
+    }
+}
