@@ -1,47 +1,47 @@
 {
     "meta": {
-        "name": ""
+        "name": "Inggris (Amerika Serikat)"
     },
     "strings": {
-        "pageTitle": "",
-        "createAccountHeader": "",
-        "accountDetails": "",
-        "emailAddress": "",
-        "username": "",
-        "password": "",
-        "reEnterPassword": "",
-        "reEnterPasswordInvalid": "",
-        "createAccountButton": "",
-        "passwordRequirementsHeader": "",
-        "successHeader": "",
-        "successContinueButton": "",
-        "confirmationRequired": "",
-        "confirmationRequiredMessage": ""
+        "pageTitle": "Buat Akun Jellyfin",
+        "createAccountHeader": "Buat Akun",
+        "accountDetails": "Detail",
+        "emailAddress": "Email",
+        "username": "Nama pengguna",
+        "password": "Sandi",
+        "reEnterPassword": "Masukkan kembali sandi",
+        "reEnterPasswordInvalid": "Kata sandi tidak sama.",
+        "createAccountButton": "Buat Akun",
+        "passwordRequirementsHeader": "Persyaratan Kata Sandi",
+        "successHeader": "Sukses!",
+        "successContinueButton": "Lanjut",
+        "confirmationRequired": "Konfirmasi email diperlukan",
+        "confirmationRequiredMessage": "Silakan periksa kotak masuk email Anda untuk memverifikasi alamat Anda."
     },
     "notifications": {
-        "errorUserExists": "",
-        "errorInvalidCode": ""
+        "errorUserExists": "Pengguna sudah ada.",
+        "errorInvalidCode": "Kode undangan tidak valid."
     },
     "validationStrings": {
         "length": {
-            "singular": "",
-            "plural": ""
+            "singular": "Harus memiliki setidaknya {n} karakter",
+            "plural": "Harus memiliki setidaknya {n} karakter"
         },
         "uppercase": {
-            "singular": "",
-            "plural": ""
+            "singular": "Harus memiliki setidaknya {n} karakter huruf besar",
+            "plural": "Harus memiliki setidaknya {n} karakter huruf besar"
         },
         "lowercase": {
-            "singular": "",
-            "plural": ""
+            "singular": "Harus memiliki setidaknya {n} karakter huruf kecil",
+            "plural": "Harus memiliki setidaknya {n} karakter huruf kecil"
         },
         "number": {
-            "singular": "",
-            "plural": ""
+            "singular": "Harus memiliki setidaknya {n} nomor",
+            "plural": "Harus memiliki setidaknya {n} nomor"
         },
         "special": {
-            "singular": "",
-            "plural": ""
+            "singular": "Harus memiliki setidaknya {n} karakter khusus",
+            "plural": "Harus memiliki setidaknya {n} karakter khusus"
         }
     }
 }
