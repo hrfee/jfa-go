@@ -22,6 +22,8 @@ steps:
 trigger:
     event:
       - tag
+    branch:
+      - main
 ---
 name: amd64-docker
 kind: pipeline
@@ -42,6 +44,8 @@ steps:
 trigger:
     event:
       - tag
+    branch:
+      - main
 ---
 name: arm64-docker
 kind: pipeline
@@ -69,6 +73,8 @@ steps:
 trigger:
     event:
       - tag
+    branch:
+      - main
 volumes:
     - name: ssh_key
       host:
@@ -100,6 +106,8 @@ steps:
 trigger:
     event:
       - tag
+    branch:
+      - main
 volumes:
     - name: ssh_key
       host:
@@ -132,6 +140,8 @@ steps:
 trigger:
     event:
       - tag
+    branch:
+      - main
 volumes:
     - name: ssh_key
       host:
@@ -185,6 +195,13 @@ steps:
           repo: hrfee/jfa-go
           tags: manifest-unstable-amd64
 
+trigger:
+    branch:
+        - main
+    event:
+        exclude:
+            - pull_request
+
 ---
 name: arm64-docker-git
 kind: pipeline
@@ -213,7 +230,6 @@ steps:
 trigger:
     branch:
         - main
-        - go1.16
     event:
         exclude:
             - pull_request
@@ -250,7 +266,6 @@ steps:
 trigger:
     branch:
         - main
-        - go1.16
     event:
         exclude:
             - pull_request
@@ -291,7 +306,6 @@ depends_on:
 trigger:
     branch:
         - main
-        - go1.16
     event:
         exclude:
             - pull_request
