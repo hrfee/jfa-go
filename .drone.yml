@@ -63,7 +63,7 @@ steps:
           volumes:
               - /root/.ssh/docker-build:/root/drone_rsa
           key_path: /root/drone_rsa
-          command_timeout: 30m
+          command_timeout: 50m
           script:
               - /home/rock64/jfa-go-build/build-stable.sh
 trigger:
@@ -94,7 +94,7 @@ steps:
           volumes:
               - /root/.ssh/docker-build:/root/drone_rsa
           key_path: /root/drone_rsa
-          command_timeout: 30m
+          command_timeout: 50m
           script:
               - ssh pi /home/pi/jfa-go-build/build-stable.sh
 trigger:
@@ -125,7 +125,7 @@ steps:
           volumes:
               - /root/.ssh/docker-build:/root/drone_rsa
           key_path: /root/drone_rsa
-          command_timeout: 30m
+          command_timeout: 50m
           script:
               - env DOCKER_CLI_EXPERIMENTAL=enabled docker manifest create hrfee/jfa-go:latest --amend hrfee/jfa-go:manifest-latest-amd64 --amend hrfee/jfa-go:manifest-latest-arm64 --amend hrfee/jfa-go:manifest-latest-armhf
               - env DOCKER_CLI_EXPERIMENTAL=enabled docker manifest push hrfee/jfa-go:latest
@@ -206,7 +206,7 @@ steps:
           volumes:
               - /root/.ssh/docker-build:/root/drone_rsa
           key_path: /root/drone_rsa
-          command_timeout: 30m
+          command_timeout: 50m
           script:
               - /home/rock64/jfa-go-build/build.sh
 
@@ -243,7 +243,7 @@ steps:
           volumes:
               - /root/.ssh/docker-build:/root/drone_rsa
           key_path: /root/drone_rsa
-          command_timeout: 30m
+          command_timeout: 50m
           script:
               - ssh pi /home/pi/jfa-go-build/build.sh
 
@@ -280,7 +280,7 @@ steps:
           volumes:
               - /root/.ssh/docker-build:/root/drone_rsa
           key_path: /root/drone_rsa
-          command_timeout: 30m
+          command_timeout: 50m
           script:
               - env DOCKER_CLI_EXPERIMENTAL=enabled docker manifest create hrfee/jfa-go:unstable --amend hrfee/jfa-go:manifest-unstable-amd64 --amend hrfee/jfa-go:manifest-unstable-arm64 --amend hrfee/jfa-go:manifest-unstable-armhf
               - env DOCKER_CLI_EXPERIMENTAL=enabled docker manifest push hrfee/jfa-go:unstable

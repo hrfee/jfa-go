@@ -152,6 +152,7 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 			"strings":        app.storage.lang.Form[lang].Strings,
 			"successMessage": app.config.Section("ui").Key("success_message").String(),
 			"contactMessage": app.config.Section("ui").Key("contact_message").String(),
+			"jfLink":         app.config.Section("jellyfin").Key("public_server").String(),
 		})
 		inv, ok := app.storage.invites[code]
 		if ok {
