@@ -138,8 +138,8 @@ steps:
               - docker pull hrfee/jfa-go:manifest-latest-amd64
               - docker pull hrfee/jfa-go:manifest-latest-arm64
               - docker pull hrfee/jfa-go:manifest-latest-armhf
-              - env DOCKER_CLI_EXPERIMENTAL=enabled docker manifest create hrfee/jfa-go:latest --amend hrfee/jfa-go:manifest-latest-amd64 --amend hrfee/jfa-go:manifest-latest-arm64 --amend hrfee/jfa-go:manifest-latest-armhf
-              - env DOCKER_CLI_EXPERIMENTAL=enabled docker manifest push hrfee/jfa-go:latest
+              - env DOCKER_CLI_EXPERIMENTAL=enabled docker manifest create hrfee/jfa-go:latest hrfee/jfa-go:manifest-latest-amd64 hrfee/jfa-go:manifest-latest-arm64 hrfee/jfa-go:manifest-latest-armhf
+              - env DOCKER_CLI_EXPERIMENTAL=enabled docker manifest push hrfee/jfa-go:latest -p
 trigger:
     event:
       - tag
@@ -303,8 +303,8 @@ steps:
               - docker pull hrfee/jfa-go:manifest-unstable-amd64
               - docker pull hrfee/jfa-go:manifest-unstable-arm64
               - docker pull hrfee/jfa-go:manifest-unstable-armhf
-              - env DOCKER_CLI_EXPERIMENTAL=enabled docker manifest create hrfee/jfa-go:unstable --amend hrfee/jfa-go:manifest-unstable-amd64 --amend hrfee/jfa-go:manifest-unstable-arm64 --amend hrfee/jfa-go:manifest-unstable-armhf
-              - env DOCKER_CLI_EXPERIMENTAL=enabled docker manifest push hrfee/jfa-go:unstable
+              - env DOCKER_CLI_EXPERIMENTAL=enabled docker manifest create hrfee/jfa-go:unstable hrfee/jfa-go:manifest-unstable-amd64 hrfee/jfa-go:manifest-unstable-arm64 hrfee/jfa-go:manifest-unstable-armhf
+              - env DOCKER_CLI_EXPERIMENTAL=enabled docker manifest push hrfee/jfa-go:unstable -p
 depends_on:
     - amd64-docker-git
     - arm64-docker-git
