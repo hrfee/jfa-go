@@ -1,0 +1,47 @@
+{
+    "meta": {
+        "name": "Inggris (Amerika Serikat)"
+    },
+    "strings": {
+        "pageTitle": "Buat Akun Jellyfin",
+        "createAccountHeader": "Buat Akun",
+        "accountDetails": "Detail",
+        "emailAddress": "Email",
+        "username": "Nama pengguna",
+        "password": "Sandi",
+        "reEnterPassword": "Masukkan kembali sandi",
+        "reEnterPasswordInvalid": "Kata sandi tidak sama.",
+        "createAccountButton": "Buat Akun",
+        "passwordRequirementsHeader": "Persyaratan Kata Sandi",
+        "successHeader": "Sukses!",
+        "successContinueButton": "Lanjut",
+        "confirmationRequired": "Konfirmasi email diperlukan",
+        "confirmationRequiredMessage": "Silakan periksa kotak masuk email Anda untuk memverifikasi alamat Anda."
+    },
+    "notifications": {
+        "errorUserExists": "Pengguna sudah ada.",
+        "errorInvalidCode": "Kode undangan tidak valid."
+    },
+    "validationStrings": {
+        "length": {
+            "singular": "Harus memiliki setidaknya {n} karakter",
+            "plural": "Harus memiliki setidaknya {n} karakter"
+        },
+        "uppercase": {
+            "singular": "Harus memiliki setidaknya {n} karakter huruf besar",
+            "plural": "Harus memiliki setidaknya {n} karakter huruf besar"
+        },
+        "lowercase": {
+            "singular": "Harus memiliki setidaknya {n} karakter huruf kecil",
+            "plural": "Harus memiliki setidaknya {n} karakter huruf kecil"
+        },
+        "number": {
+            "singular": "Harus memiliki setidaknya {n} nomor",
+            "plural": "Harus memiliki setidaknya {n} nomor"
+        },
+        "special": {
+            "singular": "Harus memiliki setidaknya {n} karakter khusus",
+            "plural": "Harus memiliki setidaknya {n} karakter khusus"
+        }
+    }
+}

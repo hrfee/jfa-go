@@ -1,0 +1,52 @@
+{
+    "meta": {
+        "name": "Ελληνικά (GR)"
+    },
+    "strings": {
+        "ifItWasNotYou": "Αν δεν ήσασταν εσείς, παρακαλώ αγνοήστε αυτό το email.",
+        "helloUser": "Γεία σου {n},"
+    },
+    "userCreated": {
+        "title": "Σημείωση: Δημιουργήθηκε χρήστης",
+        "aUserWasCreated": "Δημιουργήθηκε ένας χρήστης χρησιμοποιώντας τον κωδικό {n}.",
+        "time": "Ώρα",
+        "notificationNotice": "Σημείωση: Τα email ειδοποιήσεων μπορούν να ενεργοποιηθούν στον πίνακα ελέγχου διαχειριστή."
+    },
+    "inviteExpiry": {
+        "title": "Σημείωση: Η πρόσκληση έληξε",
+        "inviteExpired": "Η πρόσκληση έληξε.",
+        "expiredAt": "Ο κωδικός {n} έληξε στις {n}.",
+        "notificationNotice": "Σημείωση: Τα email ειδοποιήσεων μπορούν να ενεργοποιηθούν στον πίνακα ελέγχου διαχειριστή."
+    },
+    "passwordReset": {
+        "title": "Ζητήθηκε επαναφορά κωδικού πρόσβασης - Jellyfin",
+        "someoneHasRequestedReset": "Κάποιος ζήτησε πρόσφατα επαναφορά κωδικού πρόσβασης στο Jellyfin.",
+        "ifItWasYou": "Εάν ήσασταν εσείς, εισαγάγετε το πιν στο πεδίο.",
+        "codeExpiry": "Ο κωδικός θα λήξει στις {n}, στις {n} UTC, το οποίο είναι σε {n}.",
+        "pin": "PIN"
+    },
+    "userDeleted": {
+        "title": "Ο λογαριασμός σας διαγράφηκε - Jellyfin",
+        "yourAccountWasDeleted": "Ο λογαριασμός σας Jellyfin διαγράφηκε.",
+        "reason": "Λόγος"
+    },
+    "inviteEmail": {
+        "title": "Πρόσκληση - Jellyfin",
+        "hello": "Γειά",
+        "youHaveBeenInvited": "Έχετε προσκληθεί στο Jellyfin.",
+        "toJoin": "Για να συμμετέχετε, ακολουθήστε τον παρακάτω σύνδεσμο.",
+        "inviteExpiry": "Αυτή η πρόσκληση θα λήξει στις {n} στις {n}, που είναι σε {n}, οπότε ενεργήστε γρήγορα.",
+        "linkButton": "Ρυθμίστε τον λογαριασμό σας"
+    },
+    "welcomeEmail": {
+        "title": "Καλώς ήλθατε στο Jellyfin",
+        "welcome": "Καλώς ήλθατε στο Jellyfin!",
+        "youCanLoginWith": "Μπορείτε να συνδεθείτε με τα παρακάτω στοιχεία",
+        "jellyfinURL": "URL"
+    },
+    "emailConfirmation": {
+        "title": "Επιβεβαιώστε το email σας - Jellyfin",
+        "clickBelow": "Κάντε κλικ στον παρακάτω σύνδεσμο για να επιβεβαιώσετε τη διεύθυνση email σας και ξεκινήστε να χρησιμοποιείτε το Jellyfin.",
+        "confirmEmail": "Επιβεβαίωση Email"
+    }
+}

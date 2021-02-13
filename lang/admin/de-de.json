@@ -39,7 +39,7 @@
         "settingsApplyRestartLater": "Anwenden, später neu starten",
         "settingsApplyRestartNow": "Anwenden & neu starten",
         "settingsApplied": "Einstellungen angewendet.",
-        "settingsRefreshPage": "Aktualisiere die Seite in ein paar Sekunden",
+        "settingsRefreshPage": "Aktualisiere die Seite in ein paar Sekunden.",
         "settingsRequiredOrRestartMessage": "Hinweis: {n} zeigt ein erforderliches Feld an, {n} zeigt an, dass Änderungen einen Neustart erfordern.",
         "settingsSave": "Speichern",
         "ombiUserDefaults": "Ombi-Benutzerstandardeinstellungen",
@@ -63,7 +63,9 @@
         "notifyEvent": "Benachrichtigen bei:",
         "notifyInviteExpiry": "Bei Ablauf",
         "notifyUserCreation": "Bei Benutzererstellung",
-        "label": "Label"
+        "label": "Label",
+        "settingsRestarting": "Neustart…",
+        "settingsRestart": "Neustart"
     },
     "notifications": {
         "changedEmailAddress": "E-Mail-Adresse von {n} geändert.",
