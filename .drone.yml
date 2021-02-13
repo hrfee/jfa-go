@@ -47,7 +47,7 @@ steps:
           key_path: /root/drone_rsa
           command_timeout: 50m
           script:
-              - /mnt/buildx/jfa-go/build.sh
+              - /mnt/buildx/jfa-go/build.sh stable
 trigger:
     event:
       - tag
