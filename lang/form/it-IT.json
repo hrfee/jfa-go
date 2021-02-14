@@ -1,47 +1,47 @@
 {
     "meta": {
-        "name": ""
+        "name": "Italiano (IT)"
     },
     "strings": {
-        "pageTitle": "",
-        "createAccountHeader": "",
-        "accountDetails": "",
-        "emailAddress": "",
-        "username": "",
-        "password": "",
-        "reEnterPassword": "",
-        "reEnterPasswordInvalid": "",
-        "createAccountButton": "",
-        "passwordRequirementsHeader": "",
-        "successHeader": "",
-        "successContinueButton": "",
-        "confirmationRequired": "",
-        "confirmationRequiredMessage": ""
+        "pageTitle": "Crea Un Account Jellyfin",
+        "createAccountHeader": "Crea Un Account",
+        "accountDetails": "Dettagli",
+        "emailAddress": "Email",
+        "username": "Nome utente",
+        "password": "Password",
+        "reEnterPassword": "Riscrivi La Password",
+        "reEnterPasswordInvalid": "Le password non sono uguali.",
+        "createAccountButton": "Crea Un Account",
+        "passwordRequirementsHeader": "Requisiti Password",
+        "successHeader": "Successo!",
+        "successContinueButton": "Continua",
+        "confirmationRequired": "Richiesta la conferma Email",
+        "confirmationRequiredMessage": "Controlla la tua casella email per verificare il tuo indirizzo."
     },
     "notifications": {
-        "errorUserExists": "",
-        "errorInvalidCode": ""
+        "errorUserExists": "L'utente è già esistente.",
+        "errorInvalidCode": "Codice di invito non valido."
     },
     "validationStrings": {
         "length": {
-            "singular": "",
-            "plural": ""
+            "singular": "Deve avere almeno {n} caratteri",
+            "plural": "Deve aveere almeno {n} caratteri"
         },
         "uppercase": {
-            "singular": "",
-            "plural": ""
+            "singular": "Deve avere almeno {n} carattere maiuscolo",
+            "plural": "Deve avere almeno {n} caratteri maiuscoli"
         },
         "lowercase": {
-            "singular": "",
-            "plural": ""
+            "singular": "Deve avere almeno {n} carattere minuscolo",
+            "plural": "Deve avere almeno {n} caratteri minuscoli"
         },
         "number": {
-            "singular": "",
-            "plural": ""
+            "singular": "Deve avere almeno {n} numero",
+            "plural": "Deve avere almeno {n} numeri"
         },
         "special": {
-            "singular": "",
-            "plural": ""
+            "singular": "Deve avere almeno {n} carattere speciale",
+            "plural": "Deve avere almeno {n} caratteri speciali"
         }
     }
 }
