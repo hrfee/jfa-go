@@ -3,127 +3,127 @@
         "name": "Inggris (Amerika Serikat)"
     },
     "strings": {
-        "pageTitle": "",
-        "next": "",
-        "back": "",
-        "optional": "",
-        "serverType": "",
-        "disabled": "",
-        "enabled": "",
-        "port": "",
-        "message": "",
-        "serverAddress": "",
-        "emailSubject": "",
-        "URL": "",
-        "apiKey": ""
+        "pageTitle": "Persiapan - jfa-go",
+        "next": "Lanjut",
+        "back": "Kembali",
+        "optional": "Pilihan",
+        "serverType": "Tipe Server",
+        "disabled": "Dinonaktifkan",
+        "enabled": "Diaktifkan",
+        "port": "Port",
+        "message": "Pesan",
+        "serverAddress": "Alamat Server",
+        "emailSubject": "Subjek Email",
+        "URL": "URL",
+        "apiKey": "Kunci API"
     },
     "startPage": {
-        "welcome": "",
-        "pressStart": "",
-        "httpsNotice": "",
-        "start": ""
+        "welcome": "Selamat Datang!",
+        "pressStart": "Anda perlu melakukan beberapa hal untuk menyiapkan jfa-go. Tekan mulai untuk melanjutkan.",
+        "httpsNotice": "Pastikan Anda mengakses halaman ini melalui HTTPS atau di jaringan pribadi.",
+        "start": "Mulai"
     },
     "endPage": {
-        "finished": "",
-        "restartMessage": "",
-        "refreshPage": ""
+        "finished": "Selesai!",
+        "restartMessage": "Ada lebih banyak pengaturan yang dapat Anda konfigurasi di halaman admin. Klik di bawah untuk restart, lalu segarkan halaman.",
+        "refreshPage": "Segarkan"
     },
     "language": {
-        "title": "",
-        "description": "",
-        "defaultAdminLang": "",
-        "defaultFormLang": "",
-        "defaultEmailLang": ""
+        "title": "Bahasa",
+        "description": "Terjemahan komunitas tersedia untuk sebagian besar bagian dari jfa-go. Anda dapat memilih bahasa default di bawah ini, tetapi pengguna masih dapat mengubahnya jika mereka mau. Jika Anda ingin membantu menerjemahkan, daftar ke {n} untuk mulai berkontribusi!",
+        "defaultAdminLang": "Bahasa admin default",
+        "defaultFormLang": "Bahasa default pembuatan akun",
+        "defaultEmailLang": "Bahasa default email"
     },
     "general": {
-        "title": "",
-        "listenAddress": "",
-        "urlBase": "",
-        "urlBaseNotice": "",
-        "lightTheme": "",
-        "darkTheme": "",
-        "useHTTPS": "",
-        "httpsPort": "",
-        "useHTTPSNotice": "",
-        "pathToCertificate": "",
-        "pathToKeyFile": ""
+        "title": "Umum",
+        "listenAddress": "Listen Address",
+        "urlBase": "Basis URL",
+        "urlBaseNotice": "Hanya diperlukan jika menggunakan reverse proxy pada subdomain (misalnya 'jellyf.in/accounts').",
+        "lightTheme": "Terang",
+        "darkTheme": "Gelap",
+        "useHTTPS": "Gunakan HTTPS",
+        "httpsPort": "Port HTTPS",
+        "useHTTPSNotice": "Hanya disarankan jika Anda tidak menggunakan reverse proxy.",
+        "pathToCertificate": "Jalur ke sertifikat",
+        "pathToKeyFile": "Jalur ke file kunci"
     },
     "login": {
-        "title": "",
-        "description": "",
-        "authorizeWithJellyfin": "",
-        "authorizeManual": "",
-        "adminOnly": "",
-        "emailNotice": ""
+        "title": "Masuk",
+        "description": "Untuk mengakses halaman admin, Anda perlu masuk dengan metode di bawah ini:",
+        "authorizeWithJellyfin": "Otorisasi dengan Jellyfin / Emby: Detail login dibagikan dengan Jellyfin, yang memungkinkan banyak pengguna.",
+        "authorizeManual": "Username dan Password: Atur username dan password secara manual.",
+        "adminOnly": "Hanya pengguna admin (disarankan)",
+        "emailNotice": "Alamat email Anda dapat digunakan untuk menerima pemberitahuan."
     },
     "jellyfinEmby": {
-        "title": "",
-        "description": "",
-        "embyNotice": "",
-        "internal": "",
-        "external": "",
-        "replaceJellyfin": "",
-        "replaceJellyfinNotice": "",
-        "addressExternalNotice": "",
-        "testConnection": ""
+        "title": "Jellyfin/Emby",
+        "description": "Akun admin diperlukan karena API tidak mengizinkan pembuatan pengguna menggunakan kunci API. Anda harus membuat akun terpisah dan mencentang 'Izinkan pengguna ini untuk mengelola server'. Anda dapat menonaktifkan yang lainnya. Setelah selesai, masukkan detail login di sini.",
+        "embyNotice": "Dukungan Emby terbatas dan tidak mendukung penyetelan ulang kata sandi.",
+        "internal": "Internal",
+        "external": "Eksternal",
+        "replaceJellyfin": "Nama Server",
+        "replaceJellyfinNotice": "Jika diberikan, ini akan menggantikan kemunculan kata 'Jellyfin' di aplikasi.",
+        "addressExternalNotice": "Biarkan kosong untuk menggunakan alamat yang sama.",
+        "testConnection": "Tes Koneksi"
     },
     "ombi": {
-        "title": "",
-        "description": "",
-        "apiKeyNotice": ""
+        "title": "Ombi",
+        "description": "Dengan terhubung ke Ombi, akun Jellyfin dan Ombi akan dibuat saat pengguna bergabung melalui jfa-go. Setelah pengaturan selesai, buka Pengaturan untuk mengatur profil default untuk pengguna ombi baru.",
+        "apiKeyNotice": "Temukan ini di tab pertama pengaturan Ombi."
     },
     "email": {
-        "title": "",
-        "description": "",
-        "method": "",
-        "useEmailAsUsername": "",
-        "useEmailAsUsernameNotice": "",
-        "fromAddress": "",
-        "senderName": "",
-        "dateFormat": "",
-        "dateFormatNotice": "",
-        "time24h": "",
-        "time12h": "",
-        "encryption": "",
-        "mailgunApiURL": ""
+        "title": "Email",
+        "description": "jfa-go dapat mengirimkan PIN pengaturan ulang kata sandi dan berbagai notifikasi melalui email. Anda bisa terhubung ke server SMTP, atau menggunakan {n} API.",
+        "method": "Metode pengiriman",
+        "useEmailAsUsername": "Gunakan alamat email sebagai nama pengguna",
+        "useEmailAsUsernameNotice": "Jika diaktifkan, pengguna baru akan masuk ke Jellyfin / Emby dengan alamat email mereka, bukan nama pengguna.",
+        "fromAddress": "Dari Alamat",
+        "senderName": "Nama Pengirim",
+        "dateFormat": "Format Tanggal",
+        "dateFormatNotice": "Tanggal mengikuti format strftime. Untuk info lebih lanjut, kunjungi {n}.",
+        "time24h": "Waktu 24 jam",
+        "time12h": "Waktu 12 jam",
+        "encryption": "Enkripsi",
+        "mailgunApiURL": "URL API"
     },
     "notifications": {
-        "title": "",
-        "description": ""
+        "title": "Pemberitahuan",
+        "description": "Jika diaktifkan, Anda dapat memilih (per undangan) untuk menerima email saat undangan kedaluwarsa, atau pengguna dibuat. Jika Anda tidak memilih metode login Jellyfin, pastikan Anda memberikan alamat email Anda."
     },
     "welcomeEmails": {
-        "title": "",
-        "description": ""
+        "title": "Email selamat datang",
+        "description": "Jika diaktifkan, email akan dikirim ke pengguna baru dengan URL Jellyfin / Emby dan nama pengguna mereka."
     },
     "inviteEmails": {
-        "title": "",
-        "description": ""
+        "title": "Email Undangan",
+        "description": "Jika diaktifkan, Anda dapat mengirim undangan langsung ke alamat email pengguna. Karena Anda mungkin menggunakan reverse proxy, Anda perlu memberikan dari mana URL undangan diakses. Tulis Basis URL Anda, dan tambahkan '/ invite'."
     },
     "passwordResets": {
-        "title": "",
-        "description": "",
-        "pathToJellyfin": "",
-        "pathToJellyfinNotice": ""
+        "title": "Reset Kata Sandi",
+        "description": "Ketika pengguna mencoba mengatur ulang kata sandinya, Jellyfin membuat file bernama 'passwordreset - *. Json' yang berisi PIN. jfa-go membaca file dan mengirimkan PIN ke pengguna.",
+        "pathToJellyfin": "Jalur ke direktori konfigurasi Jellyfin",
+        "pathToJellyfinNotice": "Jika Anda tidak tahu di mana ini, coba setel ulang kata sandi Anda di Jellyfin. Sebuah popup dengan '<path to jellyfin> / passwordreset - *. Json' akan muncul."
     },
     "passwordValidation": {
-        "title": "",
-        "description": "",
-        "length": "",
-        "uppercase": "",
-        "lowercase": "",
-        "numbers": "",
-        "special": ""
+        "title": "Validasi Kata Sandi",
+        "description": "Jika diaktifkan, sekumpulan persyaratan kata sandi akan ditampilkan di halaman pembuatan akun, seperti panjang minimum, karakter huruf besar / kecil, dll.",
+        "length": "Panjang",
+        "uppercase": "Karakter huruf besar",
+        "lowercase": "Karakter huruf kecil",
+        "numbers": "Angka",
+        "special": "Karakter khusus (%, *, dll.)"
     },
     "helpMessages": {
-        "title": "",
-        "description": "",
-        "contactMessage": "",
-        "contactMessageNotice": "",
-        "helpMessage": "",
-        "helpMessageNotice": "",
-        "successMessage": "",
-        "successMessageNotice": "",
-        "emailMessage": "",
-        "emailMessageNotice": ""
+        "title": "Pesan Bantuan",
+        "description": "Pesan ini akan ditampilkan di halaman pembuatan akun dan di beberapa email.",
+        "contactMessage": "Pesan Kontak",
+        "contactMessageNotice": "Ditampilkan di bagian bawah semua halaman kecuali admin.",
+        "helpMessage": "Pesan Bantuan",
+        "helpMessageNotice": "Ditampilkan di halaman pembuatan akun.",
+        "successMessage": "Pesan Sukses",
+        "successMessageNotice": "Ditampilkan saat pengguna membuat akunnya.",
+        "emailMessage": "Pesan Email",
+        "emailMessageNotice": "Ditampilkan di bagian bawah email."
     }
 }
