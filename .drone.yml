@@ -19,9 +19,9 @@ steps:
         - (curl -sL https://deb.nodesource.com/setup_14.x | bash -)
         - apt install nodejs
         - curl -sL https://git.io/goreleaser | bash
+      when:
+          event: tag
 trigger:
-    event:
-      - tag
     branch:
       - main
 ---
@@ -48,9 +48,9 @@ steps:
           command_timeout: 50m
           script:
               - /mnt/buildx/jfa-go/build.sh stable
+      when:
+          event: tag
 trigger:
-    event:
-      - tag
     branch:
       - main
 volumes:
