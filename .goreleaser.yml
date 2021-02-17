@@ -26,6 +26,7 @@ before:
     - npx esbuild --bundle ts/setup.ts --outfile=./data/web/js/setup.js --minify
     - go get -u github.com/swaggo/swag/cmd/swag
     - swag init -g main.go
+    - python3 embed.py internal
 builds:
     - dir: ./
       env:
@@ -44,10 +45,6 @@ archives:
         linux: Linux
         windows: Windows
         amd64: x86_64
-    files:
-        - data/*
-        - data/**/*
-        - data/**/**/*
 checksum:
     name_template: 'checksums.txt'
 snapshot:

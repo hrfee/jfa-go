@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"os"
 	"strings"
 	"time"
@@ -53,7 +52,7 @@ func pwrMonitor(app *appContext, watcher *fsnotify.Watcher) {
 			}
 			if event.Op&fsnotify.Write == fsnotify.Write && strings.Contains(event.Name, "passwordreset") {
 				var pwr PasswordReset
-				data, err := ioutil.ReadFile(event.Name)
+				data, err := os.ReadFile(event.Name)
 				if err != nil {
 					return
 				}

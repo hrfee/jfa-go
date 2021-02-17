@@ -1,6 +1,6 @@
 import subprocess
 import sys
-import os
+
 try:
     version = sys.argv[1].replace('v', '')
 except IndexError:

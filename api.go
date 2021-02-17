@@ -1330,6 +1330,9 @@ func (app *appContext) GetLanguages(gc *gin.Context) {
 	gc.JSON(200, resp)
 }
 
+// @Summary Restarts the program. No response means success.
+// @Router /restart [post]
+// @tags Other
 func (app *appContext) restart(gc *gin.Context) {
 	app.info.Println("Restarting...")
 	err := app.Restart()

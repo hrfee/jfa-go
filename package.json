@@ -18,7 +18,6 @@
   "homepage": "https://github.com/hrfee/jfa-go#readme",
   "dependencies": {
     "a17t": "^0.4.0",
-    "esbuild": "^0.8.46",
     "lodash": "^4.17.19",
     "mjml": "^4.8.0",
     "remixicon": "^2.5.0",

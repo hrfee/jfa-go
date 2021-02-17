@@ -8,7 +8,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
+	"io/fs"
 	"log"
 	"mime"
 	"net"
@@ -22,18 +22,25 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gin-contrib/pprof"
-	"github.com/gin-contrib/static"
-	"github.com/gin-gonic/gin"
 	"github.com/hrfee/jfa-go/common"
 	_ "github.com/hrfee/jfa-go/docs"
 	"github.com/hrfee/jfa-go/mediabrowser"
 	"github.com/hrfee/jfa-go/ombi"
 	"github.com/lithammer/shortuuid/v3"
 	"github.com/logrusorgru/aurora/v3"
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
 	"gopkg.in/ini.v1"
+)
+
+var (
+	PLATFORM           string = runtime.GOOS
+	SOCK               string = "jfa-go.sock"
+	SRV                *http.Server
+	RESTART            chan bool
+	DATA, CONFIG, HOST *string
+	PORT               *int
+	DEBUG              *bool
+	TEST               bool
+	SWAGGER            *bool
 )
 
 var serverTypes = map[string]string{
@@ -50,7 +57,7 @@ type User struct {
 	Password string `json:"password"`
 }
 
-// contains everything the application needs, essentially. Wouldn't do this in the future.
+// contains (almost) everything the application needs, essentially. This was a dumb design decision imo.
 type appContext struct {
 	// defaults         *Config
 	config         *ini.File
@@ -58,7 +65,8 @@ type appContext struct {
 	configBasePath string
 	configBase     settings
 	dataPath       string
-	localPath      string
+	systemFS       fs.FS
+	webFS          httpFS
 	cssClass       string
 	jellyfinLogin  bool
 	users          []User
@@ -80,27 +88,6 @@ type appContext struct {
 	URLBase          string
 }
 
-func (app *appContext) loadHTML(router *gin.Engine) {
-	customPath := app.config.Section("files").Key("html_templates").MustString("")
-	templatePath := filepath.Join(app.localPath, "html")
-	htmlFiles, err := ioutil.ReadDir(templatePath)
-	if err != nil {
-		app.err.Fatalf("Couldn't access template directory: \"%s\"", templatePath)
-		return
-	}
-	loadFiles := make([]string, len(htmlFiles))
-	for i, f := range htmlFiles {
-		if _, err := os.Stat(filepath.Join(customPath, f.Name())); os.IsNotExist(err) {
-			app.debug.Printf("Using default \"%s\"", f.Name())
-			loadFiles[i] = filepath.Join(templatePath, f.Name())
-		} else {
-			app.info.Printf("Using custom \"%s\"", f.Name())
-			loadFiles[i] = filepath.Join(filepath.Join(customPath, f.Name()))
-		}
-	}
-	router.LoadHTMLFiles(loadFiles...)
-}
-
 func generateSecret(length int) (string, error) {
 	bytes := make([]byte, length)
 	_, err := rand.Read(bytes)
@@ -109,46 +96,6 @@ func generateSecret(length int) (string, error) {
 	}
 	return base64.URLEncoding.EncodeToString(bytes), err
 }
-
-func setGinLogger(router *gin.Engine, debugMode bool) {
-	if debugMode {
-		router.Use(gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
-			return fmt.Sprintf("[GIN/DEBUG] %s: %s(%s) => %d in %s; %s\n",
-				param.TimeStamp.Format("15:04:05"),
-				param.Method,
-				param.Path,
-				param.StatusCode,
-				param.Latency,
-				func() string {
-					if param.ErrorMessage != "" {
-						return "Error: " + param.ErrorMessage
-					}
-					return ""
-				}(),
-			)
-		}))
-	} else {
-		router.Use(gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
-			return fmt.Sprintf("[GIN] %s(%s) => %d\n",
-				param.Method,
-				param.Path,
-				param.StatusCode,
-			)
-		}))
-	}
-}
-
-var (
-	PLATFORM           string = runtime.GOOS
-	SOCK               string = "jfa-go.sock"
-	SRV                *http.Server
-	RESTART            chan bool
-	DATA, CONFIG, HOST *string
-	PORT               *int
-	DEBUG              *bool
-	TEST               bool
-	SWAGGER            *bool
-)
 
 func test(app *appContext) {
 	fmt.Printf("\n\n----\n\n")
@@ -186,15 +133,20 @@ func start(asDaemon, firstCall bool) {
 	app := new(appContext)
 
 	/*
-		set default config, data and local paths
-		also, confusing naming here. data_path is not the internal 'data' directory, rather the users .config/jfa-go folder.
-		local_path is the internal 'data' directory.
+		set default config and data paths
+		data: Contains invites.json, emails.json, user_profile.json, etc.
+		config: config.ini. Usually in data, but can be changed via -config.
+		localFS is jfa-go's internal data. On external builds, the directory is named "data" and placed next to the executable.
 	*/
 	userConfigDir, _ := os.UserConfigDir()
 	app.dataPath = filepath.Join(userConfigDir, "jfa-go")
 	app.configPath = filepath.Join(app.dataPath, "config.ini")
-	executable, _ := os.Executable()
-	app.localPath = filepath.Join(filepath.Dir(executable), "data")
+	app.systemFS = os.DirFS("/")
+	// gin-static doesn't just take a plain http.FileSystem, so we implement it's ServeFileSystem. See static.go.
+	app.webFS = httpFS{
+		hfs: http.FS(localFS),
+		fs:  localFS,
+	}
 
 	app.info = log.New(os.Stdout, "[INFO] ", log.Ltime)
 	app.err = log.New(os.Stdout, "[ERROR] ", log.Ltime|log.Lshortfile)
@@ -251,23 +203,19 @@ func start(asDaemon, firstCall bool) {
 	}
 	if _, err := os.Stat(app.configPath); os.IsNotExist(err) {
 		firstRun = true
-		dConfigPath := filepath.Join(app.localPath, "config-default.ini")
-		var dConfig *os.File
-		dConfig, err = os.Open(dConfigPath)
+		dConfig, err := fs.ReadFile(localFS, "config-default.ini")
 		if err != nil {
-			app.err.Fatalf("Couldn't find default config file \"%s\"", dConfigPath)
+			app.err.Fatalf("Couldn't find default config file")
 		}
-		defer dConfig.Close()
-		var nConfig *os.File
 		nConfig, err := os.Create(app.configPath)
 		if err != nil {
 			app.err.Printf("Couldn't open config file for writing: \"%s\"", app.configPath)
 			app.err.Fatalf("Error: %s", err)
 		}
 		defer nConfig.Close()
-		_, err = io.Copy(nConfig, dConfig)
+		_, err = nConfig.Write(dConfig)
 		if err != nil {
-			app.err.Fatalf("Couldn't copy default config. To do this manually, copy\n%s\nto\n%s", dConfigPath, app.configPath)
+			app.err.Fatalf("Couldn't copy default config.")
 		}
 		app.info.Printf("Copied default configuration to \"%s\"", app.configPath)
 	}
@@ -288,7 +236,7 @@ func start(asDaemon, firstCall bool) {
 		app.info.Print(aurora.Magenta("\n\nWARNING: Don't use debug mode in production, as it exposes pprof on the network.\n\n"))
 		app.debug = log.New(os.Stdout, "[DEBUG] ", log.Ltime|log.Lshortfile)
 	} else {
-		app.debug = log.New(ioutil.Discard, "", 0)
+		app.debug = log.New(io.Discard, "", 0)
 	}
 
 	if asDaemon {
@@ -330,11 +278,17 @@ func start(asDaemon, firstCall bool) {
 		}()
 	}
 
-	app.storage.lang.CommonPath = filepath.Join(app.localPath, "lang", "common")
-	app.storage.lang.FormPath = filepath.Join(app.localPath, "lang", "form")
-	app.storage.lang.AdminPath = filepath.Join(app.localPath, "lang", "admin")
-	app.storage.lang.EmailPath = filepath.Join(app.localPath, "lang", "email")
-	err := app.storage.loadLang()
+	app.storage.lang.CommonPath = "common"
+	app.storage.lang.FormPath = "form"
+	app.storage.lang.AdminPath = "admin"
+	app.storage.lang.EmailPath = "email"
+	externalLang := app.config.Section("files").Key("lang_files").MustString("")
+	var err error
+	if externalLang == "" {
+		err = app.storage.loadLang(langFS)
+	} else {
+		err = app.storage.loadLang(langFS, os.DirFS(externalLang))
+	}
 	if err != nil {
 		app.info.Fatalf("Failed to load language files: %+v\n", err)
 	}
@@ -413,8 +367,8 @@ func start(asDaemon, firstCall bool) {
 
 		}
 
-		app.configBasePath = filepath.Join(app.localPath, "config-base.json")
-		configBase, _ := ioutil.ReadFile(app.configBasePath)
+		app.configBasePath = "config-base.json"
+		configBase, _ := fs.ReadFile(localFS, app.configBasePath)
 		json.Unmarshal(configBase, &app.configBase)
 
 		themes := map[string]string{
@@ -562,8 +516,8 @@ func start(asDaemon, firstCall bool) {
 	} else {
 		debugMode = false
 		address = "0.0.0.0:8056"
-		app.storage.lang.SetupPath = filepath.Join(app.localPath, "lang", "setup")
-		err := app.storage.loadLangSetup()
+		app.storage.lang.SetupPath = "setup"
+		err := app.storage.loadLangSetup(langFS)
 		if err != nil {
 			app.info.Fatalf("Failed to load language files: %+v\n", err)
 		}
@@ -572,88 +526,14 @@ func start(asDaemon, firstCall bool) {
 	// workaround for potentially broken windows mime types
 	mime.AddExtensionType(".js", "application/javascript")
 
+	app.info.Println("Initializing router")
+	router := app.loadRouter(address, debugMode)
 	app.info.Println("Loading routes")
-	if debugMode {
-		gin.SetMode(gin.DebugMode)
-	} else {
-		gin.SetMode(gin.ReleaseMode)
-	}
-	router := gin.New()
-
-	setGinLogger(router, debugMode)
-
-	router.Use(gin.Recovery())
-	routePrefixes := []string{app.URLBase}
-	if app.URLBase != "" {
-		routePrefixes = append(routePrefixes, "")
-	}
-	for _, p := range routePrefixes {
-		router.Use(static.Serve(p+"/", static.LocalFile(filepath.Join(app.localPath, "web"), false)))
-	}
-	app.loadHTML(router)
-	router.NoRoute(app.NoRouteHandler)
-	if debugMode {
-		app.debug.Println("Loading pprof")
-		pprof.Register(router)
-	}
-	for _, p := range routePrefixes {
-		router.GET(p+"/lang/:page", app.GetLanguages)
-	}
 	if !firstRun {
-		for _, p := range routePrefixes {
-			router.GET(p+"/", app.AdminPage)
-			router.GET(p+"/accounts", app.AdminPage)
-			router.GET(p+"/settings", app.AdminPage)
-			router.GET(p+"/lang/:page/:file", app.ServeLang)
-			router.GET(p+"/token/login", app.getTokenLogin)
-			router.GET(p+"/token/refresh", app.getTokenRefresh)
-			router.POST(p+"/newUser", app.NewUser)
-			router.Use(static.Serve(p+"/invite/", static.LocalFile(filepath.Join(app.localPath, "web"), false)))
-			router.GET(p+"/invite/:invCode", app.InviteProxy)
-		}
-		if *SWAGGER {
-			app.info.Print(aurora.Magenta("\n\nWARNING: Swagger should not be used on a public instance.\n\n"))
-			for _, p := range routePrefixes {
-				router.GET(p+"/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-			}
-		}
-		api := router.Group("/", app.webAuth())
-		for _, p := range routePrefixes {
-			router.POST(p+"/logout", app.Logout)
-			api.DELETE(p+"/users", app.DeleteUser)
-			api.GET(p+"/users", app.GetUsers)
-			api.POST(p+"/users", app.NewUserAdmin)
-			api.POST(p+"/invites", app.GenerateInvite)
-			api.GET(p+"/invites", app.GetInvites)
-			api.DELETE(p+"/invites", app.DeleteInvite)
-			api.POST(p+"/invites/profile", app.SetProfile)
-			api.GET(p+"/profiles", app.GetProfiles)
-			api.POST(p+"/profiles/default", app.SetDefaultProfile)
-			api.POST(p+"/profiles", app.CreateProfile)
-			api.DELETE(p+"/profiles", app.DeleteProfile)
-			api.POST(p+"/invites/notify", app.SetNotify)
-			api.POST(p+"/users/emails", app.ModifyEmails)
-			// api.POST(p + "/setDefaults", app.SetDefaults)
-			api.POST(p+"/users/settings", app.ApplySettings)
-			api.GET(p+"/config", app.GetConfig)
-			api.POST(p+"/config", app.ModifyConfig)
-			api.POST(p+"/restart", app.restart)
-			if app.config.Section("ombi").Key("enabled").MustBool(false) {
-				api.GET(p+"/ombi/users", app.OmbiUsers)
-				api.POST(p+"/ombi/defaults", app.SetOmbiDefaults)
-			}
-		}
-		app.info.Printf("Starting router @ %s", address)
+		app.loadRoutes(router)
 	} else {
-		router.GET("/", app.ServeSetup)
-		router.POST("/jellyfin/test", app.TestJF)
-		router.POST("/config", app.ModifyConfig)
+		app.loadSetup(router)
 		app.info.Printf("Loading setup @ %s", address)
-	}
-
-	SRV = &http.Server{
-		Addr:    address,
-		Handler: router,
 	}
 	go func() {
 		if app.config.Section("advanced").Key("tls").MustBool(false) {
@@ -676,9 +556,9 @@ func start(asDaemon, firstCall bool) {
 		}
 	}()
 	for range RESTART {
-		cntx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
-		if err := SRV.Shutdown(cntx); err != nil {
+		if err := SRV.Shutdown(ctx); err != nil {
 			app.err.Fatalf("Server shutdown error: %s", err)
 		}
 		return
@@ -757,6 +637,7 @@ func main() {
 	if flagPassed("test") {
 		TEST = true
 	}
+	loadFilesystems()
 	if flagPassed("start") {
 		args := []string{}
 		for i, f := range os.Args {

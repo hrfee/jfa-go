@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"io/fs"
 	"path/filepath"
 	"strings"
 
@@ -70,13 +70,14 @@ func (app *appContext) TestJF(gc *gin.Context) {
 	gc.JSON(200, map[string]bool{"success": true})
 }
 
-func (st *Storage) loadLangSetup() error {
+// The first filesystem passed should be the localFS, to ensure the local lang files are loaded first.
+func (st *Storage) loadLangSetup(filesystems ...fs.FS) error {
 	st.lang.Setup = map[string]setupLang{}
 	var english setupLang
-	load := func(fname string) error {
+	load := func(filesystem fs.FS, fname string) error {
 		index := strings.TrimSuffix(fname, filepath.Ext(fname))
 		lang := setupLang{}
-		f, err := ioutil.ReadFile(filepath.Join(st.lang.SetupPath, fname))
+		f, err := fs.ReadFile(filesystem, FSJoin(st.lang.SetupPath, fname))
 		if err != nil {
 			return err
 		}
@@ -107,22 +108,35 @@ func (st *Storage) loadLangSetup() error {
 		st.lang.Setup[index] = lang
 		return nil
 	}
-	err := load("en-us.json")
-	if err != nil {
+	engFound := false
+	var err error
+	for _, filesystem := range filesystems {
+		err = load(filesystem, "en-us.json")
+		if err == nil {
+			engFound = true
+		}
+	}
+	if !engFound {
 		return err
 	}
 	english = st.lang.Setup["en-us"]
-	files, err := ioutil.ReadDir(st.lang.SetupPath)
-	if err != nil {
-		return err
-	}
-	for _, f := range files {
-		if f.Name() != "en-us.json" {
-			err = load(f.Name())
-			if err != nil {
-				return err
+	setupLoaded := false
+	for _, filesystem := range filesystems {
+		files, err := fs.ReadDir(filesystem, st.lang.SetupPath)
+		if err != nil {
+			return err
+		}
+		for _, f := range files {
+			if f.Name() != "en-us.json" {
+				err = load(filesystem, f.Name())
+				if err == nil {
+					setupLoaded = true
+				}
 			}
 		}
+	}
+	if !setupLoaded {
+		return err
 	}
 	return nil
 }

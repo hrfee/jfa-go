@@ -4,6 +4,7 @@ dist/
 build/
 data/
 version.go
+embed.go
 notes
 docs/*
 lang/langtostruct.py
