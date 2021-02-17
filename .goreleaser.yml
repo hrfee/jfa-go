@@ -17,16 +17,16 @@ before:
     - cp node_modules/remixicon/fonts/remixicon.css node_modules/remixicon/fonts/remixicon.woff2 data/web/css/
     - cp -r html data/
     - cp -r lang data/
-    - python3 config/fixconfig.py -i config/config-base.json -o data/config-base.json
-    - python3 config/generate_ini.py -i config/config-base.json -o data/config-default.ini
-    - python3 mail/generate.py -o data/
-    - python3 version.py {{.Version}} version.go
+    - python3 scripts/enumerate_config.py -i config/config-base.json -o data/config-base.json
+    - python3 scripts/generate_ini.py -i config/config-base.json -o data/config-default.ini
+    - python3 scripts/compile_mjml.py -o data/
+    - python3 scripts/version.py {{.Version}}
     - npx esbuild --bundle ts/admin.ts --outfile=./data/web/js/admin.js --minify
     - npx esbuild --bundle ts/form.ts --outfile=./data/web/js/form.js --minify
     - npx esbuild --bundle ts/setup.ts --outfile=./data/web/js/setup.js --minify
     - go get -u github.com/swaggo/swag/cmd/swag
     - swag init -g main.go
-    - python3 embed.py internal
+    - python3 scripts/embed.py internal
 builds:
     - dir: ./
       env:

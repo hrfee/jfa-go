@@ -18,13 +18,13 @@ npm:
 configuration:
 	$(info Fixing config-base)
 	-mkdir -p data
-	python3 config/fixconfig.py -i config/config-base.json -o data/config-base.json
+	python3 scripts/enumerate_config.py -i config/config-base.json -o data/config-base.json
 	$(info Generating config-default.ini)
-	python3 config/generate_ini.py -i config/config-base.json -o data/config-default.ini
+	python3 scripts/generate_ini.py -i config/config-base.json -o data/config-default.ini
 
 email:
 	$(info Generating email html)
-	python3 mail/generate.py -o data/
+	python3 scripts/compile_mjml.py -o data/
 
 typescript:
 	$(info compiling typescript)
@@ -48,7 +48,7 @@ swagger:
 	swag init -g main.go
 
 version:
-	python3 version.py auto version.go
+	python3 scripts/version.py auto
 
 compile:
 	$(info Downloading deps)
@@ -84,10 +84,10 @@ copy:
 	cp -r lang data/
 
 embed:
-	python embed.py internal
+	python scripts/embed.py internal
 
 noembed:
-	python embed.py external
+	python scripts/embed.py external
 	-mkdir -p build
 	$(info copying internal data into build/)
 	cp -r data build/

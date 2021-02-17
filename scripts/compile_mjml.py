@@ -16,7 +16,7 @@ def runcmd(cmd):
     return proc.communicate()
 
 
-local_path = Path(__file__).resolve().parent
+local_path = Path("mail")
 
 for mjml in [f for f in local_path.iterdir() if f.is_file() and "mjml" in f.suffix]:
     print(f"Compiling {mjml.name}")

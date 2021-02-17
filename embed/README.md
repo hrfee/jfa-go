@@ -1,0 +1,1 @@
+`scripts/embed.py [internal/external]` will copy the respective file into the main directory. If internal, `//go:embed` is used to embed the `data/` directory in the binary. If external, `os.DirFS` is used to access the `data/` directory, which should be placed next to the executable.

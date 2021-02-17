@@ -821,30 +821,6 @@
                     "value": "",
                     "description": "Location of stored Ombi user template."
                 },
-                "user_template": {
-                    "name": "User Template (Deprecated)",
-                    "required": false,
-                    "requires_restart": true,
-                    "type": "text",
-                    "value": "",
-                    "description": "Deprecated in favor of User Profiles. Location of stored user policy template (json)."
-                },
-                "user_configuration": {
-                    "name": "userConfiguration (Deprecated)",
-                    "required": false,
-                    "requires_restart": true,
-                    "type": "text",
-                    "value": "",
-                    "description": "Deprecated in favor of User Profiles. Location of stored user configuration template (used for setting homescreen layout) (json)"
-                },
-                "user_displayprefs": {
-                    "name": "displayPreferences (Deprecated)",
-                    "required": false,
-                    "requires_restart": true,
-                    "type": "text",
-                    "value": "",
-                    "description": "Deprecated in favor of User Profiles. Location of stored displayPreferences template (also used for homescreen layout) (json)"
-                },
                 "user_profiles": {
                     "name": "User Profiles",
                     "required": false,
