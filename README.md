@@ -1,5 +1,5 @@
 ![jfa-go](images/banner.svg)
-[![Build Status](https://drone.hrfee.pw/api/badges/hrfee/jfa-go/status.svg?ref=refs/heads/main)](https://drone.hrfee.pw/hrfee/jfa-go)
+[![Build Status](https://drone.hrfee.dev/api/badges/hrfee/jfa-go/status.svg?ref=refs/heads/main)](https://drone.hrfee.dev/hrfee/jfa-go)
 [![Docker Hub](https://img.shields.io/docker/pulls/hrfee/jfa-go?label=docker)](https://hub.docker.com/r/hrfee/jfa-go)
 [![Translation status](https://weblate.hrfee.pw/widgets/jfa-go/-/svg-badge.svg)](https://weblate.hrfee.pw/engage/jfa-go/)
 ---
@@ -39,7 +39,7 @@ I chose to rewrite the python [jellyfin-accounts](https://github.com/hrfee/jelly
 
 Available on the AUR as [jfa-go](https://aur.archlinux.org/packages/jfa-go/) or [jfa-go-git](https://aur.archlinux.org/packages/jfa-go-git/).
 
-For other platforms, grab an archive from the release section for your platform (or nightly builds [here](https://builds.hrfee.pw/view/hrfee/jfa-go)), and extract the `jfa-go` executable to somewhere useful.
+For other platforms, grab an archive from the release section for your platform (or nightly builds [here](https://builds.hrfee.dev/view/hrfee/jfa-go)), and extract the `jfa-go` executable to somewhere useful.
 * For \*nix/macOS users, `chmod +x jfa-go` then place it somewhere in your PATH like `/usr/bin`.
 
 Run the executable to start.
