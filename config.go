@@ -17,7 +17,7 @@ func (app *appContext) GetPath(sect, key string) (fs.FS, string) {
 	if strings.HasPrefix(val, "jfa-go:") {
 		return localFS, strings.TrimPrefix(val, "jfa-go:")
 	}
-	return app.systemFS, val
+	return app.systemFS, strings.TrimPrefix(val, "/")
 }
 
 func (app *appContext) loadConfig() error {
