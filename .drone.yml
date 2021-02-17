@@ -19,11 +19,9 @@ steps:
         - (curl -sL https://deb.nodesource.com/setup_14.x | bash -)
         - apt install nodejs
         - curl -sL https://git.io/goreleaser | bash
-      when:
-          event: tag
 trigger:
-    branch:
-      - main
+    event:
+        - tag
 ---
 name: docker-buildx
 kind: pipeline
@@ -48,11 +46,9 @@ steps:
           command_timeout: 50m
           script:
               - /mnt/buildx/jfa-go/build.sh stable
-      when:
-          event: tag
 trigger:
-    branch:
-      - main
+    event:
+        - tag
 volumes:
     - name: ssh_key
       host:
