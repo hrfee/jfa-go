@@ -41,7 +41,7 @@ builds:
         - arm64
 archives:
   - replacements:
-        darwin: Darwin
+        darwin: macOS
         linux: Linux
         windows: Windows
         amd64: x86_64

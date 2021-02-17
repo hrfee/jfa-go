@@ -6,7 +6,7 @@ RUN apt update -y \
     && apt install build-essential python3-pip curl software-properties-common sed -y \
     && (curl -sL https://deb.nodesource.com/setup_14.x | bash -) \
     && apt install nodejs \
-    && (cd /opt/build; make configuration npm email version typescript bundle-css swagger external-files copy GOESBUILD=on) \
+    && (cd /opt/build; make configuration npm email version typescript bundle-css swagger copy external-files GOESBUILD=on) \
     && sed -i 's#id="password_resets-watch_directory" placeholder="/config/jellyfin"#id="password_resets-watch_directory" value="/jf" disabled#g' /opt/build/data/html/setup.html
 
 
