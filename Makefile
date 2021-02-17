@@ -84,10 +84,10 @@ copy:
 	cp -r lang data/
 
 internal-files:
-	python scripts/embed.py internal
+	python3 scripts/embed.py internal
 
 external-files:
-	python scripts/embed.py external
+	python3 scripts/embed.py external
 	-mkdir -p build
 	$(info copying internal data into build/)
 	cp -r data build/
