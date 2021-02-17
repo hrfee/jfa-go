@@ -83,10 +83,10 @@ copy:
 	$(info copying language files)
 	cp -r lang data/
 
-embed:
+internal-files:
 	python scripts/embed.py internal
 
-noembed:
+external-files:
 	python scripts/embed.py external
 	-mkdir -p build
 	$(info copying internal data into build/)
@@ -95,6 +95,6 @@ noembed:
 install:
 	cp -r build $(DESTDIR)/jfa-go
 
-all: configuration npm email version typescript bundle-css swagger copy embed compile
-all-external: configuration npm email version ts-debug bundle-css swagger copy noembed compile
-debug: configuration npm email version ts-debug bundle-css swagger copy noembed compile-debug
+all: configuration npm email version typescript bundle-css swagger copy internal-files compile
+all-external: configuration npm email version typescript bundle-css swagger copy external-files compile
+debug: configuration npm email version ts-debug bundle-css swagger copy external-files compile-debug
