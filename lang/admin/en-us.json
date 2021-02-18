@@ -30,6 +30,10 @@
         "profile": "Profile",
         "unknown": "Unknown",
         "label": "Label",
+        "announce": "Announce",
+        "subject": "Email Subject",
+        "message": "Message",
+        "markdownSupported": "Markdown is supported.",
         "modifySettings": "Modify Settings",
         "modifySettingsDescription": "Apply settings from an existing profile, or source them directly from a user.",
         "applyHomescreenLayout": "Apply homescreen layout",
@@ -72,6 +76,7 @@
         "userCreated": "User {n} created.",
         "createProfile": "Created profile {n}.",
         "saveSettings": "Settings were saved",
+        "sentAnnouncement": "Announcement sent.",
         "setOmbiDefaults": "Stored ombi defaults.",
         "errorConnection": "Couldn't connect to jfa-go.",
         "error401Unauthorized": "Unauthorized. Try refreshing the page.",
@@ -116,6 +121,10 @@
         "deletedUser": {
             "singular": "Deleted {n} user.",
             "plural": "Deleted {n} users."
+        },
+        "announceTo": {
+            "singular": "Announce to {n} user",
+            "plural": "Announce to {n} users"
         },
         "appliedSettings": {
             "singular": "Applied settings to {n} user.",

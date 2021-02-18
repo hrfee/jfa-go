@@ -74,6 +74,7 @@ declare interface Modals {
     ombiDefaults?: Modal;
     profiles: Modal;
     addProfile: Modal;
+    announce: Modal;
 }
 
 interface Invite {

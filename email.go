@@ -8,8 +8,11 @@ import (
 	"html/template"
 	"net/smtp"
 	"strings"
+	"sync"
 	"time"
 
+	"github.com/gomarkdown/markdown"
+	"github.com/gomarkdown/markdown/html"
 	jEmail "github.com/jordan-wright/email"
 	"github.com/knz/strtime"
 	"github.com/mailgun/mailgun-go/v4"
@@ -17,7 +20,7 @@ import (
 
 // implements email sending, right now via smtp or mailgun.
 type emailClient interface {
-	send(address, fromName, fromAddr string, email *Email) error
+	send(fromName, fromAddr string, email *Email, address ...string) error
 }
 
 // Mailgun client implements emailClient.
@@ -25,13 +28,16 @@ type Mailgun struct {
 	client *mailgun.MailgunImpl
 }
 
-func (mg *Mailgun) send(address, fromName, fromAddr string, email *Email) error {
+func (mg *Mailgun) send(fromName, fromAddr string, email *Email, address ...string) error {
 	message := mg.client.NewMessage(
 		fmt.Sprintf("%s <%s>", fromName, fromAddr),
 		email.subject,
 		email.text,
-		address,
 	)
+	for _, a := range address {
+		// Adding variable tells mailgun to do a batch send, so users don't see other recipients.
+		message.AddRecipientAndVariables(a, map[string]interface{}{"unique_id": a})
+	}
 	message.SetHtml(email.html)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
@@ -47,25 +53,33 @@ type SMTP struct {
 	auth   smtp.Auth
 }
 
-func (sm *SMTP) send(address, fromName, fromAddr string, email *Email) error {
-	e := jEmail.NewEmail()
-	e.Subject = email.subject
-	e.From = fmt.Sprintf("%s <%s>", fromName, fromAddr)
-	e.To = []string{address}
-	e.Text = []byte(email.text)
-	e.HTML = []byte(email.html)
+func (sm *SMTP) send(fromName, fromAddr string, email *Email, address ...string) error {
 	server := fmt.Sprintf("%s:%d", sm.server, sm.port)
 	tlsConfig := &tls.Config{
 		InsecureSkipVerify: false,
 		ServerName:         sm.server,
 	}
+	from := fmt.Sprintf("%s <%s>", fromName, fromAddr)
+	var wg sync.WaitGroup
 	var err error
-	// err = e.Send(server, sm.auth)
-	if sm.sslTLS {
-		err = e.SendWithTLS(server, sm.auth, tlsConfig)
-	} else {
-		err = e.SendWithStartTLS(server, sm.auth, tlsConfig)
+	for _, addr := range address {
+		wg.Add(1)
+		go func(addr string) {
+			defer wg.Done()
+			e := jEmail.NewEmail()
+			e.Subject = email.subject
+			e.From = from
+			e.Text = []byte(email.text)
+			e.HTML = []byte(email.html)
+			e.To = []string{addr}
+			if sm.sslTLS {
+				err = e.SendWithTLS(server, sm.auth, tlsConfig)
+			} else {
+				err = e.SendWithStartTLS(server, sm.auth, tlsConfig)
+			}
+		}(addr)
 	}
+	wg.Wait()
 	return err
 }
 
@@ -190,6 +204,22 @@ func (emailer *Emailer) constructConfirmation(code, username, key string, app *a
 		"urlVal":        inviteLink,
 		"confirmEmail":  emailer.lang.EmailConfirmation.get("confirmEmail"),
 		"message":       message,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return email, nil
+}
+
+func (emailer *Emailer) constructAnnouncement(subject, md string, app *appContext) (*Email, error) {
+	email := &Email{subject: subject}
+	renderer := html.NewRenderer(html.RendererOptions{Flags: html.Smartypants})
+	html := markdown.ToHTML([]byte(md), nil, renderer)
+	message := app.config.Section("email").Key("message").String()
+	var err error
+	email.html, email.text, err = emailer.construct(app, "announcement_email", "email_", map[string]interface{}{
+		"text":    template.HTML(html),
+		"message": message,
 	})
 	if err != nil {
 		return nil, err
@@ -327,6 +357,6 @@ func (emailer *Emailer) constructWelcome(username string, app *appContext) (*Ema
 }
 
 // calls the send method in the underlying emailClient.
-func (emailer *Emailer) send(address string, email *Email) error {
-	return emailer.sender.send(address, emailer.fromName, emailer.fromAddr, email)
+func (emailer *Emailer) send(email *Email, address ...string) error {
+	return emailer.sender.send(emailer.fromName, emailer.fromAddr, email, address...)
 }

@@ -131,6 +131,12 @@ type userSettingsDTO struct {
 	Homescreen bool     `json:"homescreen"` // Whether to apply homescreen layout or not
 }
 
+type announcementDTO struct {
+	Users   []string `json:"users"`   // List of User IDs to send announcement to
+	Subject string   `json:"subject"` // Email subject
+	Message string   `json:"message"` // Email content (markdown supported)
+}
+
 type errorListDTO map[string]map[string]string
 
 type configDTO map[string]interface{}

@@ -138,6 +138,7 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 		api.POST(p+"/users/emails", app.ModifyEmails)
 		// api.POST(p + "/setDefaults", app.SetDefaults)
 		api.POST(p+"/users/settings", app.ApplySettings)
+		api.POST(p+"/users/announce", app.Announce)
 		api.GET(p+"/config", app.GetConfig)
 		api.POST(p+"/config", app.ModifyConfig)
 		api.POST(p+"/restart", app.restart)

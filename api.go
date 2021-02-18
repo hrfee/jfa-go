@@ -130,7 +130,7 @@ func (app *appContext) checkInvites() {
 					if err != nil {
 						app.err.Printf("%s: Failed to construct expiry notification", code)
 						app.debug.Printf("Error: %s", err)
-					} else if err := app.email.send(addr, msg); err != nil {
+					} else if err := app.email.send(msg, addr); err != nil {
 						app.err.Printf("%s: Failed to send expiry notification", code)
 						app.debug.Printf("Error: %s", err)
 					} else {
@@ -169,7 +169,7 @@ func (app *appContext) checkInvite(code string, used bool, username string) bool
 						if err != nil {
 							app.err.Printf("%s: Failed to construct expiry notification", code)
 							app.debug.Printf("Error: %s", err)
-						} else if err := app.email.send(address, msg); err != nil {
+						} else if err := app.email.send(msg, address); err != nil {
 							app.err.Printf("%s: Failed to send expiry notification", code)
 							app.debug.Printf("Error: %s", err)
 						} else {
@@ -308,7 +308,7 @@ func (app *appContext) NewUserAdmin(gc *gin.Context) {
 			app.err.Printf("%s: Failed to construct welcome email: %s", req.Username, err)
 			respondUser(500, true, false, err.Error(), gc)
 			return
-		} else if err := app.email.send(req.Email, msg); err != nil {
+		} else if err := app.email.send(msg, req.Email); err != nil {
 			app.err.Printf("%s: Failed to send welcome email: %s", req.Username, err)
 			respondUser(500, true, false, err.Error(), gc)
 			return
@@ -363,7 +363,7 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 			if err != nil {
 				app.err.Printf("%s: Failed to construct confirmation email", req.Code)
 				app.debug.Printf("%s: Error: %s", req.Code, err)
-			} else if err := app.email.send(req.Email, msg); err != nil {
+			} else if err := app.email.send(msg, req.Email); err != nil {
 				app.err.Printf("%s: Failed to send user confirmation email: %s", req.Code, err)
 			} else {
 				app.info.Printf("%s: Sent user confirmation email to %s", req.Code, req.Email)
@@ -393,7 +393,7 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 					if err != nil {
 						app.err.Printf("%s: Failed to construct user creation notification", req.Code)
 						app.debug.Printf("%s: Error: %s", req.Code, err)
-					} else if err := app.email.send(address, msg); err != nil {
+					} else if err := app.email.send(msg, address); err != nil {
 						app.err.Printf("%s: Failed to send user creation notification", req.Code)
 						app.debug.Printf("%s: Error: %s", req.Code, err)
 					} else {
@@ -455,7 +455,7 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 		msg, err := app.email.constructWelcome(req.Username, app)
 		if err != nil {
 			app.err.Printf("%s: Failed to construct welcome email: %s", req.Username, err)
-		} else if err := app.email.send(req.Email, msg); err != nil {
+		} else if err := app.email.send(msg, req.Email); err != nil {
 			app.err.Printf("%s: Failed to send welcome email: %s", req.Username, err)
 		} else {
 			app.info.Printf("%s: Sent welcome email to %s", req.Username, req.Email)
@@ -508,6 +508,46 @@ func (app *appContext) NewUser(gc *gin.Context) {
 	gc.JSON(code, validation)
 }
 
+// @Summary Send an announcement via email to a given list of users.
+// @Produce json
+// @Param announcementDTO body announcementDTO true "Announcement request object"
+// @Success 200 {object} boolResponse
+// @Failure 400 {object} boolResponse
+// @Failure 500 {object} boolResponse
+// @Router /users/announce [post]
+// @Security Bearer
+// @tags Users
+func (app *appContext) Announce(gc *gin.Context) {
+	var req announcementDTO
+	gc.BindJSON(&req)
+	if !emailEnabled {
+		respondBool(400, false, gc)
+		return
+	}
+	addresses := []string{}
+	for _, userID := range req.Users {
+		addr, ok := app.storage.emails[userID]
+		if !ok || addr == "" {
+			continue
+		}
+		addresses = append(addresses, addr.(string))
+	}
+	msg, err := app.email.constructAnnouncement(req.Subject, req.Message, app)
+	if err != nil {
+		app.err.Println("Failed to construct announcement email")
+		app.debug.Printf("Error: %s", err)
+		respondBool(500, false, gc)
+		return
+	} else if err := app.email.send(msg, addresses...); err != nil {
+		app.err.Println("Failed to send announcement email")
+		app.debug.Printf("Error: %s", err)
+		respondBool(500, false, gc)
+		return
+	}
+	app.info.Println("Sent announcement email")
+	respondBool(200, true, gc)
+}
+
 // @Summary Delete a list of users, optionally notifying them why.
 // @Produce json
 // @Param deleteUserDTO body deleteUserDTO true "User deletion request object"
@@ -552,7 +592,7 @@ func (app *appContext) DeleteUser(gc *gin.Context) {
 					if err != nil {
 						app.err.Printf("%s: Failed to construct account deletion email", userID)
 						app.debug.Printf("%s: Error: %s", userID, err)
-					} else if err := app.email.send(address, msg); err != nil {
+					} else if err := app.email.send(msg, address); err != nil {
 						app.err.Printf("%s: Failed to send to %s", userID, address)
 						app.debug.Printf("%s: Error: %s", userID, err)
 					} else {
@@ -619,7 +659,7 @@ func (app *appContext) GenerateInvite(gc *gin.Context) {
 			invite.Email = fmt.Sprintf("Failed to send to %s", req.Email)
 			app.err.Printf("%s: Failed to construct invite email", inviteCode)
 			app.debug.Printf("%s: Error: %s", inviteCode, err)
-		} else if err := app.email.send(req.Email, msg); err != nil {
+		} else if err := app.email.send(msg, req.Email); err != nil {
 			invite.Email = fmt.Sprintf("Failed to send to %s", req.Email)
 			app.err.Printf("%s: %s", inviteCode, invite.Email)
 			app.debug.Printf("%s: Error: %s", inviteCode, err)

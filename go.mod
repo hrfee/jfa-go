@@ -20,6 +20,7 @@ require (
 	github.com/go-openapi/spec v0.20.3 // indirect
 	github.com/go-playground/validator/v10 v10.4.1 // indirect
 	github.com/golang/protobuf v1.4.3 // indirect
+	github.com/gomarkdown/markdown v0.0.0-20210208175418-bda154fe17d8 // indirect
 	github.com/google/uuid v1.1.2 // indirect
 	github.com/hrfee/jfa-go/common v0.0.0-20210105184019-fdc97b4e86cc
 	github.com/hrfee/jfa-go/docs v0.0.0-20201112212552-b6f3cd7c1f71

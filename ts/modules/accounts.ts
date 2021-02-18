@@ -148,6 +148,7 @@ export class accountsList {
     private _table = document.getElementById("accounts-list") as HTMLTableSectionElement;
     
     private _addUserButton = document.getElementById("accounts-add-user") as HTMLSpanElement;
+    private _announceButton = document.getElementById("accounts-announce") as HTMLSpanElement;
     private _deleteUser = document.getElementById("accounts-delete-user") as HTMLSpanElement;
     private _deleteNotify = document.getElementById("delete-user-notify") as HTMLInputElement;
     private _deleteReason = document.getElementById("textarea-delete-user") as HTMLTextAreaElement;
@@ -189,6 +190,9 @@ export class accountsList {
             this._selectAll.checked = false;
             this._modifySettings.classList.add("unfocused");
             this._deleteUser.classList.add("unfocused");
+            if (window.emailEnabled) {
+                this._announceButton.classList.add("unfocused");
+            }
         } else {
             if (this._checkCount == Object.keys(this._users).length) {
                 this._selectAll.checked = true;
@@ -200,6 +204,9 @@ export class accountsList {
             this._modifySettings.classList.remove("unfocused");
             this._deleteUser.classList.remove("unfocused");
             this._deleteUser.textContent = window.lang.quantity("deleteUser", this._checkCount);
+            if (window.emailEnabled) {
+                this._announceButton.classList.remove("unfocused");
+            }
         }
     }
     
@@ -246,6 +253,39 @@ export class accountsList {
                 window.modals.addUser.close();
             }
         }, true);
+    }
+    
+    announce = () => {
+        const modalHeader = document.getElementById("header-announce");
+        modalHeader.textContent = window.lang.quantity("announceTo", this._checkCount);
+        const form = document.getElementById("form-announce") as HTMLFormElement;
+        let list = this._collectUsers();
+        const button = form.querySelector("span.submit") as HTMLSpanElement;
+        const subject = document.getElementById("announce-subject") as HTMLInputElement;
+        const message = document.getElementById("textarea-announce") as HTMLTextAreaElement;
+        subject.value = "";
+        message.value = "";
+        form.onsubmit = (event: Event) => {
+            event.preventDefault();
+            toggleLoader(button);
+            let send = {
+                "users": list,
+                "subject": subject.value,
+                "message": message.value
+            }
+            _post("/users/announce", send, (req: XMLHttpRequest) => {
+                if (req.readyState == 4) {
+                    toggleLoader(button);
+                    window.modals.announce.close();
+                    if (req.status != 200 && req.status != 204) {
+                        window.notifications.customError("announcementError", window.lang.notif("errorFailureCheckLogs"));
+                    } else {
+                        window.notifications.customSuccess("announcementSuccess", window.lang.notif("sentAnnouncement"));
+                    }
+                }
+            });
+        };
+        window.modals.announce.show();
     }
 
     deleteUsers = () => {
@@ -396,6 +436,9 @@ export class accountsList {
 
         this._deleteUser.onclick = this.deleteUsers;
         this._deleteUser.classList.add("unfocused");
+
+        this._announceButton.onclick = this.announce;
+        this._announceButton.classList.add("unfocused");
 
         if (!window.usernameEnabled) {
             this._addUserName.classList.add("unfocused");
