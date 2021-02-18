@@ -6,9 +6,11 @@ import (
 	"crypto/tls"
 	"fmt"
 	"html/template"
+	"io"
 	"net/smtp"
 	"strings"
 	"sync"
+	textTemplate "text/template"
 	"time"
 
 	"github.com/gomarkdown/markdown"
@@ -16,6 +18,7 @@ import (
 	jEmail "github.com/jordan-wright/email"
 	"github.com/knz/strtime"
 	"github.com/mailgun/mailgun-go/v4"
+	stripmd "github.com/writeas/go-strip-markdown"
 )
 
 // implements email sending, right now via smtp or mailgun.
@@ -167,16 +170,31 @@ func (emailer *Emailer) NewSMTP(server string, port int, username, password stri
 	}
 }
 
+type templ interface {
+	Execute(wr io.Writer, data interface{}) error
+}
+
 func (emailer *Emailer) construct(app *appContext, section, keyFragment string, data map[string]interface{}) (html, text string, err error) {
-	var tpl *template.Template
+	var tpl templ
 	if substituteStrings == "" {
 		data["jellyfin"] = "Jellyfin"
 	} else {
 		data["jellyfin"] = substituteStrings
 	}
-	for _, key := range []string{"html", "text"} {
+	var keys []string
+	if app.config.Section("email").Key("plaintext").MustBool(false) {
+		keys = []string{"text"}
+		text = ""
+	} else {
+		keys = []string{"html", "text"}
+	}
+	for _, key := range keys {
 		filesystem, fpath := app.GetPath(section, keyFragment+key)
-		tpl, err = template.ParseFS(filesystem, fpath)
+		if key == "html" {
+			tpl, err = template.ParseFS(filesystem, fpath)
+		} else {
+			tpl, err = textTemplate.ParseFS(filesystem, fpath)
+		}
 		if err != nil {
 			return
 		}
@@ -220,11 +238,13 @@ func (emailer *Emailer) constructAnnouncement(subject, md string, app *appContex
 	email := &Email{subject: subject}
 	renderer := html.NewRenderer(html.RendererOptions{Flags: html.Smartypants})
 	html := markdown.ToHTML([]byte(md), nil, renderer)
+	text := strings.TrimPrefix(strings.TrimSuffix(stripmd.Strip(md), "</p>"), "<p>")
 	message := app.config.Section("email").Key("message").String()
 	var err error
 	email.html, email.text, err = emailer.construct(app, "announcement_email", "email_", map[string]interface{}{
-		"text":    template.HTML(html),
-		"message": message,
+		"text":      template.HTML(html),
+		"plaintext": text,
+		"message":   message,
 	})
 	if err != nil {
 		return nil, err

@@ -73,7 +73,7 @@
                     "requires_restart": true,
                     "type": "text",
                     "value": "",
-                    "description": "Optionally substitute occurrences of \"Jellyfin\" in the account creation form with this. May result in bad grammar."
+                    "description": "Optionally substitute occurrences of \"Jellyfin\" in the account creation form and emails with this. May result in bad grammar."
                 }
             }
         },
@@ -398,6 +398,15 @@
                     "type": "text",
                     "value": "Jellyfin",
                     "description": "The name of the sender"
+                },
+                "plaintext": {
+                    "name": "Send emails as plain text",
+                    "required": false,
+                    "requires_restart": false,
+                    "depends_true": "method",
+                    "type": "bool",
+                    "value": false,
+                    "description": "Send emails as plain text instead of HTML."
                 }
             }
         },

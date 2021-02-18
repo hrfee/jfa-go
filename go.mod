@@ -38,6 +38,7 @@ require (
 	github.com/swaggo/gin-swagger v1.3.0
 	github.com/swaggo/swag v1.7.0 // indirect
 	github.com/ugorji/go v1.2.0 // indirect
+	github.com/writeas/go-strip-markdown v2.0.1+incompatible // indirect
 	golang.org/x/crypto v0.0.0-20201112155050-0c6587e931a9 // indirect
 	golang.org/x/sys v0.0.0-20210124154548-22da62e12c0c // indirect
 	golang.org/x/tools v0.1.0 // indirect
