@@ -66,7 +66,11 @@
         "notifyUserCreation": "à la création de l'utilisateur",
         "label": "Etiquette",
         "settingsRestarting": "Redémarrage…",
-        "settingsRestart": "Redémarrer"
+        "settingsRestart": "Redémarrer",
+        "announce": "Annoncer",
+        "subject": "Sujet du courriel",
+        "message": "Message",
+        "markdownSupported": "Markdown est pris en charge."
     },
     "notifications": {
         "changedEmailAddress": "Adresse e-mail modifiée de {n}.",
@@ -95,7 +99,8 @@
         "errorFailureCheckLogs": "Échec (vérifier la console / les journaux)",
         "errorPartialFailureCheckLogs": "Panne partielle (vérifier la console / les journaux)",
         "errorUserCreated": "Echec lors de la création de l'utilisateur {n}.",
-        "errorSendWelcomeEmail": "Echec lors de l'envoi du mail de bienvenue (vérifier la console/les journaux)"
+        "errorSendWelcomeEmail": "Echec lors de l'envoi du mail de bienvenue (vérifier la console/les journaux)",
+        "sentAnnouncement": "Annonce envoyée."
     },
     "quantityStrings": {
         "modifySettingsFor": {
@@ -121,6 +126,10 @@
         "appliedSettings": {
             "singular": "Appliquer le paramètre {n} utilisteur.",
             "plural": "Appliquer les paramètres {n} utilisteurs."
+        },
+        "announceTo": {
+            "singular": "Annonce à {n} utilisateur",
+            "plural": "Annonce à {n} utilisateurs"
         }
     }
 }
