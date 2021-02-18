@@ -1,5 +1,29 @@
 <mjml>
   <mj-head>
+    <mj-raw>
+      <meta name="color-scheme" content="light dark">
+      <meta name="supported-color-schemes" content="light dark">
+    </mj-raw>
+    <mj-style>
+        :root {
+            Color-scheme: light dark;
+            supported-color-schemes: light dark;
+        }
+        @media (prefers-color-scheme: light) {
+            Color-scheme: dark;
+            .body {
+                background: #242424 !important;
+                background-color: #242424 !important;
+            }
+        }
+        @media (prefers-color-scheme: dark) {
+            Color-scheme: dark;
+            .body {
+                background: #242424 !important;
+                background-color: #242424 !important;
+            }
+        }
+    </mj-style>
     <mj-attributes>
       <mj-class name="bg" background-color="#101010" />
       <mj-class name="bg2" background-color="#242424" />
