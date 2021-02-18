@@ -15,10 +15,26 @@
                 background: #242424 !important;
                 background-color: #242424 !important;
             }
+            [data-ogsc] .body {
+                background: #242424 !important;
+                background-color: #242424 !important;
+            }
+            [data-ogsb] .body {
+                background: #242424 !important;
+                background-color: #242424 !important;
+            }
         }
         @media (prefers-color-scheme: dark) {
             Color-scheme: dark;
             .body {
+                background: #242424 !important;
+                background-color: #242424 !important;
+            }
+            [data-ogsc] .body {
+                background: #242424 !important;
+                background-color: #242424 !important;
+            }
+            [data-ogsb] .body {
                 background: #242424 !important;
                 background-color: #242424 !important;
             }
@@ -27,7 +43,7 @@
     <mj-attributes>
       <mj-class name="bg" background-color="#101010" />
       <mj-class name="bg2" background-color="#242424" />
-      <mj-class name="text" color="rgba(255,255,255,0.8)" />
+      <mj-class name="text" color="#cacaca" />
       <mj-class name="bold" color="rgba(255,255,255,0.87)" />
       <mj-class name="secondary" color="rgb(153,153,153)" />
       <mj-class name="blue" background-color="rgb(0,164,220)" />

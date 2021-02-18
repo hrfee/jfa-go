@@ -169,6 +169,11 @@ func (emailer *Emailer) NewSMTP(server string, port int, username, password stri
 
 func (emailer *Emailer) construct(app *appContext, section, keyFragment string, data map[string]interface{}) (html, text string, err error) {
 	var tpl *template.Template
+	if substituteStrings == "" {
+		data["jellyfin"] = "Jellyfin"
+	} else {
+		data["jellyfin"] = substituteStrings
+	}
 	for _, key := range []string{"html", "text"} {
 		filesystem, fpath := app.GetPath(section, keyFragment+key)
 		tpl, err = template.ParseFS(filesystem, fpath)
