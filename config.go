@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io/fs"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -17,7 +18,8 @@ func (app *appContext) GetPath(sect, key string) (fs.FS, string) {
 	if strings.HasPrefix(val, "jfa-go:") {
 		return localFS, strings.TrimPrefix(val, "jfa-go:")
 	}
-	return app.systemFS, strings.TrimPrefix(val, "/")
+	dir, file := filepath.Split(val)
+	return os.DirFS(dir), file
 }
 
 func (app *appContext) loadConfig() error {

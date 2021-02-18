@@ -65,7 +65,6 @@ type appContext struct {
 	configBasePath string
 	configBase     settings
 	dataPath       string
-	systemFS       fs.FS
 	webFS          httpFS
 	cssClass       string
 	jellyfinLogin  bool
@@ -141,7 +140,6 @@ func start(asDaemon, firstCall bool) {
 	userConfigDir, _ := os.UserConfigDir()
 	app.dataPath = filepath.Join(userConfigDir, "jfa-go")
 	app.configPath = filepath.Join(app.dataPath, "config.ini")
-	app.systemFS = os.DirFS("/")
 	// gin-static doesn't just take a plain http.FileSystem, so we implement it's ServeFileSystem. See static.go.
 	app.webFS = httpFS{
 		hfs: http.FS(localFS),

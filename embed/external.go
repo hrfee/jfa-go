@@ -5,12 +5,25 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 var localFS fs.FS
 var langFS fs.FS
 
-func FSJoin(elem ...string) string { return filepath.Join(elem...) }
+// When using os.DirFS, even on Windows the separator seems to be '/'.
+// func FSJoin(elem ...string) string { return filepath.Join(elem...) }
+func FSJoin(elem ...string) string {
+	sep := "/"
+	if strings.Contains(elem[0], "\\") {
+		sep = "\\"
+	}
+	path := ""
+	for _, el := range elem {
+		path += el + sep
+	}
+	return strings.TrimSuffix(path, sep)
+}
 
 func loadFilesystems() {
 	log.Println("Using external storage")
