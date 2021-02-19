@@ -25,13 +25,13 @@
     },
     "endPage": {
         "finished": "Klaar!",
-        "restartMessage": "Er staan meer instellingen op de adminpagina. Druk op de knop hieronder om opnieuw op te starten, en ververs daarna de pagina.",
+        "restartMessage": "Er staan meer instellingen op de beheerderspagina. Druk op de knop hieronder om opnieuw op te starten, en ververs daarna de pagina.",
         "refreshPage": "Verversen"
     },
     "language": {
         "title": "Taal",
         "description": "Er zijn gemeenschapsvertalingen beschikbaar voor de meeste onderdelen van jfa-go. Je kunt hieronder de standaardtaal instellen, maar gebruikers kunnen die aanpassen indien gewenst. Als je wilt helpen met vertalen, meld je dan aan bij {n} en begin met vertalen!",
-        "defaultAdminLang": "Standaardtaal (admin)",
+        "defaultAdminLang": "Standaardtaal (beheer)",
         "defaultFormLang": "Standaardtaal aanmaken nieuwe account",
         "defaultEmailLang": "Standaardtaal (e-mails)"
     },
@@ -50,15 +50,15 @@
     },
     "login": {
         "title": "Inloggen",
-        "description": "Om de admin-pagina te openen moet je inloggen met één van onderstaande methodes:",
+        "description": "Om de beheerderspagina te openen moet je inloggen met één van onderstaande methodes:",
         "authorizeWithJellyfin": "Jellyfin/Emby authorisatie: Inloggegevens worden gedeeld met Jellyfin, meerdere gebruikers mogelijk.",
         "authorizeManual": "Gebruikersnaam en wachtwoord: Stel handmatig een gebruikersnaam en wachtwoord in.",
-        "adminOnly": "Alleen admin-gebruikers (aanbevolen)",
+        "adminOnly": "Alleen beheerders (aanbevolen)",
         "emailNotice": "Je e-mailadres kan gebruikt worden om meldingen te ontvangen."
     },
     "jellyfinEmby": {
         "title": "Jellyfin/Emby",
-        "description": "Er is een admin-account nodig, omdat via de API geen gebruikers aangemaakt kunnen worden. Maak een aparte account aan en vink 'Deze gebruiker kan de server beheren' aan. Alle andere rechten kunnen uitgeschakeld worden. Vul daarna hier de inloggegevens in.",
+        "description": "Er is een beheerdersaccount nodig, omdat via de API geen gebruikers aangemaakt kunnen worden. Maak een aparte account aan en vink 'Deze gebruiker kan de server beheren' aan. Alle andere rechten kunnen uitgeschakeld worden. Vul daarna hier de inloggegevens in.",
         "embyNotice": "Ondersteuning voor Emby is beperkt en ondersteunt geen wachtwoordresets.",
         "internal": "Intern",
         "external": "Extern",
@@ -118,7 +118,7 @@
         "title": "Uitleg",
         "description": "Deze teksten worden getoond bij de account-aanmaakpagina en in sommige e-mails.",
         "contactMessage": "Contacttekst",
-        "contactMessageNotice": "Getoond onderaan elke pagina behalve admin.",
+        "contactMessageNotice": "Getoond onderaan elke pagina behalve beheer.",
         "helpMessage": "Helpbericht",
         "helpMessageNotice": "Getoond op de account-aanmaakpagina.",
         "successMessage": "Succesbericht",
