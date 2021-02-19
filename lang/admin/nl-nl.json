@@ -65,7 +65,11 @@
         "notifyUserCreation": "Bij aanmaken gebruiker",
         "label": "Label",
         "settingsRestart": "Herstart",
-        "settingsRestarting": "Aan het herstarten…"
+        "settingsRestarting": "Aan het herstarten…",
+        "announce": "Aankondiging",
+        "markdownSupported": "Markdown wordt ondersteund.",
+        "subject": "E-mailonderwerp",
+        "message": "Bericht"
     },
     "notifications": {
         "changedEmailAddress": "E-mailadres van {n} gewijzigd.",
@@ -94,7 +98,8 @@
         "errorFailureCheckLogs": "Mislukt (controleer console/logbestanden)",
         "errorPartialFailureCheckLogs": "Gedeeltelijke fout (controleer console/logbestanden)",
         "errorSendWelcomeEmail": "Versturen van welkomste-mail is mislukt (zie console/logs)",
-        "errorUserCreated": "Aanmaken van gebruiker {n} is mislukt."
+        "errorUserCreated": "Aanmaken van gebruiker {n} is mislukt.",
+        "sentAnnouncement": "Aankondiging verzonden."
     },
     "quantityStrings": {
         "modifySettingsFor": {
@@ -120,6 +125,10 @@
         "appliedSettings": {
             "singular": "Instellingen toegepast op {n} gebruiker.",
             "plural": "Instellingen toegepast op {n} gebruikers."
+        },
+        "announceTo": {
+            "singular": "Aankondigen aan {n} gebruikers",
+            "plural": "aankondigen aan {n} gebruikerss"
         }
     }
 }
