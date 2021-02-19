@@ -14,10 +14,12 @@ import (
 	"github.com/hrfee/jfa-go/common"
 )
 
-type serverType bool
+type serverType int
 
-var JellyfinServer serverType = false
-var EmbyServer serverType = true
+const (
+	JellyfinServer serverType = iota
+	EmbyServer
+)
 
 type serverInfo struct {
 	LocalAddress string `json:"LocalAddress"`
@@ -45,7 +47,7 @@ type MediaBrowser struct {
 	userID         string
 	httpClient     *http.Client
 	loginParams    map[string]string
-	userCache      []map[string]interface{}
+	userCache      []User
 	CacheExpiry    time.Time
 	cacheLength    int
 	noFail         bool
@@ -131,7 +133,7 @@ func (mb *MediaBrowser) get(url string, params map[string]string) (string, int, 
 	return buf.String(), resp.StatusCode, nil
 }
 
-func (mb *MediaBrowser) post(url string, data map[string]interface{}, response bool) (string, int, error) {
+func (mb *MediaBrowser) post(url string, data interface{}, response bool) (string, int, error) {
 	params, _ := json.Marshal(data)
 	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(params))
 	for name, value := range mb.header {
@@ -167,7 +169,7 @@ func (mb *MediaBrowser) post(url string, data map[string]interface{}, response b
 }
 
 // Authenticate attempts to authenticate using a username & password
-func (mb *MediaBrowser) Authenticate(username, password string) (map[string]interface{}, int, error) {
+func (mb *MediaBrowser) Authenticate(username, password string) (User, int, error) {
 	mb.Username = username
 	mb.password = password
 	mb.loginParams = map[string]string{
@@ -180,35 +182,44 @@ func (mb *MediaBrowser) Authenticate(username, password string) (map[string]inte
 	encoder.SetEscapeHTML(false)
 	err := encoder.Encode(mb.loginParams)
 	if err != nil {
-		return nil, 0, err
+		return User{}, 0, err
 	}
 	// loginParams, _ := json.Marshal(jf.loginParams)
 	url := fmt.Sprintf("%s/Users/authenticatebyname", mb.Server)
 	req, err := http.NewRequest("POST", url, buffer)
 	defer mb.timeoutHandler()
 	if err != nil {
-		return nil, 0, err
+		return User{}, 0, err
 	}
 	for name, value := range mb.header {
 		req.Header.Add(name, value)
 	}
 	resp, err := mb.httpClient.Do(req)
 	if err != nil || resp.StatusCode != 200 {
-		return nil, resp.StatusCode, err
+		return User{}, resp.StatusCode, err
 	}
 	defer resp.Body.Close()
-	var data io.Reader
+	var d io.Reader
 	switch resp.Header.Get("Content-Encoding") {
 	case "gzip":
-		data, _ = gzip.NewReader(resp.Body)
+		d, _ = gzip.NewReader(resp.Body)
 	default:
-		data = resp.Body
+		d = resp.Body
+	}
+	data, err := io.ReadAll(d)
+	if err != nil {
+		return User{}, 0, err
 	}
 	var respData map[string]interface{}
-	json.NewDecoder(data).Decode(&respData)
+	json.Unmarshal(data, &respData)
 	mb.AccessToken = respData["AccessToken"].(string)
-	user := respData["User"].(map[string]interface{})
-	mb.userID = respData["User"].(map[string]interface{})["Id"].(string)
+	var user User
+	ju, err := json.Marshal(respData["User"])
+	if err != nil {
+		return User{}, 0, err
+	}
+	json.Unmarshal(ju, &user)
+	mb.userID = user.ID
 	mb.auth = fmt.Sprintf("MediaBrowser Client=\"%s\", Device=\"%s\", DeviceId=\"%s\", Version=\"%s\", Token=\"%s\"", mb.client, mb.device, mb.deviceID, mb.version, mb.AccessToken)
 	mb.header["X-Emby-Authorization"] = mb.auth
 	mb.Authenticated = true
@@ -224,7 +235,7 @@ func (mb *MediaBrowser) DeleteUser(userID string) (int, error) {
 }
 
 // GetUsers returns all (visible) users on the Emby instance.
-func (mb *MediaBrowser) GetUsers(public bool) ([]map[string]interface{}, int, error) {
+func (mb *MediaBrowser) GetUsers(public bool) ([]User, int, error) {
 	if mb.serverType == JellyfinServer {
 		return jfGetUsers(mb, public)
 	}
@@ -232,7 +243,7 @@ func (mb *MediaBrowser) GetUsers(public bool) ([]map[string]interface{}, int, er
 }
 
 // UserByName returns the user corresponding to the provided username.
-func (mb *MediaBrowser) UserByName(username string, public bool) (map[string]interface{}, int, error) {
+func (mb *MediaBrowser) UserByName(username string, public bool) (User, int, error) {
 	if mb.serverType == JellyfinServer {
 		return jfUserByName(mb, username, public)
 	}
@@ -240,7 +251,7 @@ func (mb *MediaBrowser) UserByName(username string, public bool) (map[string]int
 }
 
 // UserByID returns the user corresponding to the provided ID.
-func (mb *MediaBrowser) UserByID(userID string, public bool) (map[string]interface{}, int, error) {
+func (mb *MediaBrowser) UserByID(userID string, public bool) (User, int, error) {
 	if mb.serverType == JellyfinServer {
 		return jfUserByID(mb, userID, public)
 	}
@@ -248,7 +259,7 @@ func (mb *MediaBrowser) UserByID(userID string, public bool) (map[string]interfa
 }
 
 // NewUser creates a new user with the provided username and password.
-func (mb *MediaBrowser) NewUser(username, password string) (map[string]interface{}, int, error) {
+func (mb *MediaBrowser) NewUser(username, password string) (User, int, error) {
 	if mb.serverType == JellyfinServer {
 		return jfNewUser(mb, username, password)
 	}
@@ -256,7 +267,7 @@ func (mb *MediaBrowser) NewUser(username, password string) (map[string]interface
 }
 
 // SetPolicy sets the access policy for the user corresponding to the provided ID.
-func (mb *MediaBrowser) SetPolicy(userID string, policy map[string]interface{}) (int, error) {
+func (mb *MediaBrowser) SetPolicy(userID string, policy Policy) (int, error) {
 	if mb.serverType == JellyfinServer {
 		return jfSetPolicy(mb, userID, policy)
 	}
@@ -264,7 +275,7 @@ func (mb *MediaBrowser) SetPolicy(userID string, policy map[string]interface{}) 
 }
 
 // SetConfiguration sets the configuration (part of homescreen layout) for the user corresponding to the provided ID.
-func (mb *MediaBrowser) SetConfiguration(userID string, configuration map[string]interface{}) (int, error) {
+func (mb *MediaBrowser) SetConfiguration(userID string, configuration Configuration) (int, error) {
 	if mb.serverType == JellyfinServer {
 		return jfSetConfiguration(mb, userID, configuration)
 	}

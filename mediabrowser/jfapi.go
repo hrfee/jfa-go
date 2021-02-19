@@ -18,8 +18,8 @@ func jfDeleteUser(jf *MediaBrowser, userID string) (int, error) {
 	return resp.StatusCode, err
 }
 
-func jfGetUsers(jf *MediaBrowser, public bool) ([]map[string]interface{}, int, error) {
-	var result []map[string]interface{}
+func jfGetUsers(jf *MediaBrowser, public bool) ([]User, int, error) {
+	var result []User
 	var data string
 	var status int
 	var err error
@@ -34,45 +34,47 @@ func jfGetUsers(jf *MediaBrowser, public bool) ([]map[string]interface{}, int, e
 		if err != nil || status != 200 {
 			return nil, status, err
 		}
-		json.Unmarshal([]byte(data), &result)
+		err := json.Unmarshal([]byte(data), &result)
+		if err != nil {
+			fmt.Println(err)
+			return nil, status, err
+		}
 		jf.userCache = result
 		jf.CacheExpiry = time.Now().Add(time.Minute * time.Duration(jf.cacheLength))
-		if id, ok := result[0]["Id"]; ok {
-			if id.(string)[8] == '-' {
-				jf.Hyphens = true
-			}
+		if result[0].ID[8] == '-' {
+			jf.Hyphens = true
 		}
 		return result, status, nil
 	}
 	return jf.userCache, 200, nil
 }
 
-func jfUserByName(jf *MediaBrowser, username string, public bool) (map[string]interface{}, int, error) {
-	var match map[string]interface{}
-	find := func() (map[string]interface{}, int, error) {
+func jfUserByName(jf *MediaBrowser, username string, public bool) (User, int, error) {
+	var match User
+	find := func() (User, int, error) {
 		users, status, err := jf.GetUsers(public)
 		if err != nil || status != 200 {
-			return nil, status, err
+			return User{}, status, err
 		}
 		for _, user := range users {
-			if user["Name"].(string) == username {
+			if user.Name == username {
 				return user, status, err
 			}
 		}
-		return nil, status, err
+		return User{}, status, err
 	}
 	match, status, err := find()
-	if match == nil {
+	if match.Name == "" {
 		jf.CacheExpiry = time.Now()
 		match, status, err = find()
 	}
 	return match, status, err
 }
 
-func jfUserByID(jf *MediaBrowser, userID string, public bool) (map[string]interface{}, int, error) {
+func jfUserByID(jf *MediaBrowser, userID string, public bool) (User, int, error) {
 	if jf.CacheExpiry.After(time.Now()) {
 		for _, user := range jf.userCache {
-			if user["Id"].(string) == userID {
+			if user.ID == userID {
 				return user, 200, nil
 			}
 		}
@@ -80,29 +82,29 @@ func jfUserByID(jf *MediaBrowser, userID string, public bool) (map[string]interf
 	if public {
 		users, status, err := jf.GetUsers(public)
 		if err != nil || status != 200 {
-			return nil, status, err
+			return User{}, status, err
 		}
 		for _, user := range users {
-			if user["Id"].(string) == userID {
+			if user.ID == userID {
 				return user, status, nil
 			}
 		}
-		return nil, status, err
+		return User{}, status, err
 	}
-	var result map[string]interface{}
+	var result User
 	var data string
 	var status int
 	var err error
 	url := fmt.Sprintf("%s/users/%s", jf.Server, userID)
 	data, status, err = jf.get(url, jf.loginParams)
 	if err != nil || status != 200 {
-		return nil, status, err
+		return User{}, status, err
 	}
 	json.Unmarshal([]byte(data), &result)
 	return result, status, nil
 }
 
-func jfNewUser(jf *MediaBrowser, username, password string) (map[string]interface{}, int, error) {
+func jfNewUser(jf *MediaBrowser, username, password string) (User, int, error) {
 	url := fmt.Sprintf("%s/Users/New", jf.Server)
 	stringData := map[string]string{
 		"Name":     username,
@@ -113,15 +115,15 @@ func jfNewUser(jf *MediaBrowser, username, password string) (map[string]interfac
 		data[key] = value
 	}
 	response, status, err := jf.post(url, data, true)
-	var recv map[string]interface{}
+	var recv User
 	json.Unmarshal([]byte(response), &recv)
 	if err != nil || !(status == 200 || status == 204) {
-		return nil, status, err
+		return User{}, status, err
 	}
 	return recv, status, nil
 }
 
-func jfSetPolicy(jf *MediaBrowser, userID string, policy map[string]interface{}) (int, error) {
+func jfSetPolicy(jf *MediaBrowser, userID string, policy Policy) (int, error) {
 	url := fmt.Sprintf("%s/Users/%s/Policy", jf.Server, userID)
 	_, status, err := jf.post(url, policy, false)
 	if err != nil || status != 200 {
@@ -130,7 +132,7 @@ func jfSetPolicy(jf *MediaBrowser, userID string, policy map[string]interface{})
 	return status, nil
 }
 
-func jfSetConfiguration(jf *MediaBrowser, userID string, configuration map[string]interface{}) (int, error) {
+func jfSetConfiguration(jf *MediaBrowser, userID string, configuration Configuration) (int, error) {
 	url := fmt.Sprintf("%s/Users/%s/Configuration", jf.Server, userID)
 	_, status, err := jf.post(url, configuration, false)
 	return status, err

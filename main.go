@@ -336,7 +336,7 @@ func start(asDaemon, firstCall bool) {
 
 		app.storage.profiles_path = app.config.Section("files").Key("user_profiles").String()
 		app.storage.loadProfiles()
-		if !(len(app.storage.policy) == 0 && len(app.storage.configuration) == 0 && len(app.storage.displayprefs) == 0) {
+		if !(app.storage.policy.BlockedTags == nil && app.storage.configuration.GroupedFolders == nil && len(app.storage.displayprefs) == 0) {
 			app.info.Println("Migrating user template files to new profile format")
 			app.storage.migrateToProfile()
 			for _, path := range [3]string{app.storage.policy_path, app.storage.configuration_path, app.storage.displayprefs_path} {

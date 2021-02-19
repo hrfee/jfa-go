@@ -135,10 +135,7 @@ func (app *appContext) getTokenLogin(gc *gin.Context) {
 		return
 	}
 	if !match {
-		var status int
-		var err error
-		var user map[string]interface{}
-		user, status, err = app.authJf.Authenticate(creds[0], creds[1])
+		user, status, err := app.authJf.Authenticate(creds[0], creds[1])
 		if status != 200 || err != nil {
 			if status == 401 || status == 400 {
 				app.info.Println("Auth denied: Invalid username/password (Jellyfin)")
@@ -149,9 +146,10 @@ func (app *appContext) getTokenLogin(gc *gin.Context) {
 			respond(500, "Jellyfin error", gc)
 			return
 		}
-		jfID = user["Id"].(string)
+		jfID = user.ID
 		if app.config.Section("ui").Key("admin_only").MustBool(true) {
-			if !user["Policy"].(map[string]interface{})["IsAdministrator"].(bool) {
+			fmt.Printf("%+v\n", user.Policy)
+			if !user.Policy.IsAdministrator {
 				app.debug.Printf("Auth denied: Users \"%s\" isn't admin", creds[0])
 				respond(401, "Unauthorized", gc)
 				return

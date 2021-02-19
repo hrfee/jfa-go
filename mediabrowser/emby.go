@@ -20,8 +20,8 @@ func embyDeleteUser(emby *MediaBrowser, userID string) (int, error) {
 	return resp.StatusCode, err
 }
 
-func embyGetUsers(emby *MediaBrowser, public bool) ([]map[string]interface{}, int, error) {
-	var result []map[string]interface{}
+func embyGetUsers(emby *MediaBrowser, public bool) ([]User, int, error) {
+	var result []User
 	var data string
 	var status int
 	var err error
@@ -39,42 +39,40 @@ func embyGetUsers(emby *MediaBrowser, public bool) ([]map[string]interface{}, in
 		json.Unmarshal([]byte(data), &result)
 		emby.userCache = result
 		emby.CacheExpiry = time.Now().Add(time.Minute * time.Duration(emby.cacheLength))
-		if id, ok := result[0]["Id"]; ok {
-			if id.(string)[8] == '-' {
-				emby.Hyphens = true
-			}
+		if result[0].ID[8] == '-' {
+			emby.Hyphens = true
 		}
 		return result, status, nil
 	}
 	return emby.userCache, 200, nil
 }
 
-func embyUserByName(emby *MediaBrowser, username string, public bool) (map[string]interface{}, int, error) {
-	var match map[string]interface{}
-	find := func() (map[string]interface{}, int, error) {
+func embyUserByName(emby *MediaBrowser, username string, public bool) (User, int, error) {
+	var match User
+	find := func() (User, int, error) {
 		users, status, err := emby.GetUsers(public)
 		if err != nil || status != 200 {
-			return nil, status, err
+			return User{}, status, err
 		}
 		for _, user := range users {
-			if user["Name"].(string) == username {
+			if user.Name == username {
 				return user, status, err
 			}
 		}
-		return nil, status, err
+		return User{}, status, err
 	}
 	match, status, err := find()
-	if match == nil {
+	if match.Name == "" {
 		emby.CacheExpiry = time.Now()
 		match, status, err = find()
 	}
 	return match, status, err
 }
 
-func embyUserByID(emby *MediaBrowser, userID string, public bool) (map[string]interface{}, int, error) {
+func embyUserByID(emby *MediaBrowser, userID string, public bool) (User, int, error) {
 	if emby.CacheExpiry.After(time.Now()) {
 		for _, user := range emby.userCache {
-			if user["Id"].(string) == userID {
+			if user.ID == userID {
 				return user, 200, nil
 			}
 		}
@@ -82,23 +80,23 @@ func embyUserByID(emby *MediaBrowser, userID string, public bool) (map[string]in
 	if public {
 		users, status, err := emby.GetUsers(public)
 		if err != nil || status != 200 {
-			return nil, status, err
+			return User{}, status, err
 		}
 		for _, user := range users {
-			if user["Id"].(string) == userID {
+			if user.ID == userID {
 				return user, status, nil
 			}
 		}
-		return nil, status, err
+		return User{}, status, err
 	}
-	var result map[string]interface{}
+	var result User
 	var data string
 	var status int
 	var err error
 	url := fmt.Sprintf("%s/users/%s", emby.Server, userID)
 	data, status, err = emby.get(url, emby.loginParams)
 	if err != nil || status != 200 {
-		return nil, status, err
+		return User{}, status, err
 	}
 	json.Unmarshal([]byte(data), &result)
 	return result, status, nil
@@ -109,19 +107,19 @@ func embyUserByID(emby *MediaBrowser, userID string, public bool) (map[string]in
 // Immediately disable it
 // Set password
 // Reeenable it
-func embyNewUser(emby *MediaBrowser, username, password string) (map[string]interface{}, int, error) {
+func embyNewUser(emby *MediaBrowser, username, password string) (User, int, error) {
 	url := fmt.Sprintf("%s/Users/New", emby.Server)
 	data := map[string]interface{}{
 		"Name": username,
 	}
 	response, status, err := emby.post(url, data, true)
-	var recv map[string]interface{}
+	var recv User
 	json.Unmarshal([]byte(response), &recv)
 	if err != nil || !(status == 200 || status == 204) {
-		return nil, status, err
+		return User{}, status, err
 	}
 	// Step 2: Set password
-	id := recv["Id"].(string)
+	id := recv.ID
 	url = fmt.Sprintf("%s/Users/%s/Password", emby.Server, id)
 	data = map[string]interface{}{
 		"Id":        id,
@@ -136,7 +134,7 @@ func embyNewUser(emby *MediaBrowser, username, password string) (map[string]inte
 	return recv, status, nil
 }
 
-func embySetPolicy(emby *MediaBrowser, userID string, policy map[string]interface{}) (int, error) {
+func embySetPolicy(emby *MediaBrowser, userID string, policy Policy) (int, error) {
 	url := fmt.Sprintf("%s/Users/%s/Policy", emby.Server, userID)
 	_, status, err := emby.post(url, policy, false)
 	if err != nil || status != 200 {
@@ -145,7 +143,7 @@ func embySetPolicy(emby *MediaBrowser, userID string, policy map[string]interfac
 	return status, nil
 }
 
-func embySetConfiguration(emby *MediaBrowser, userID string, configuration map[string]interface{}) (int, error) {
+func embySetConfiguration(emby *MediaBrowser, userID string, configuration Configuration) (int, error) {
 	url := fmt.Sprintf("%s/Users/%s/Configuration", emby.Server, userID)
 	_, status, err := emby.post(url, configuration, false)
 	return status, err

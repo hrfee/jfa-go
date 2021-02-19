@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"strconv"
@@ -11,6 +10,7 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"github.com/hrfee/jfa-go/mediabrowser"
 	"github.com/knz/strtime"
 	"github.com/lithammer/shortuuid/v3"
 	"gopkg.in/ini.v1"
@@ -128,11 +128,9 @@ func (app *appContext) checkInvites() {
 					defer wait.Done()
 					msg, err := app.email.constructExpiry(code, data, app)
 					if err != nil {
-						app.err.Printf("%s: Failed to construct expiry notification", code)
-						app.debug.Printf("Error: %s", err)
+						app.err.Printf("%s: Failed to construct expiry notification: %s", code, err)
 					} else if err := app.email.send(msg, addr); err != nil {
-						app.err.Printf("%s: Failed to send expiry notification", code)
-						app.debug.Printf("Error: %s", err)
+						app.err.Printf("%s: Failed to send expiry notification: %s", code, err)
 					} else {
 						app.info.Printf("Sent expiry notification to %s", addr)
 					}
@@ -167,11 +165,9 @@ func (app *appContext) checkInvite(code string, used bool, username string) bool
 					go func() {
 						msg, err := app.email.constructExpiry(code, inv, app)
 						if err != nil {
-							app.err.Printf("%s: Failed to construct expiry notification", code)
-							app.debug.Printf("Error: %s", err)
+							app.err.Printf("%s: Failed to construct expiry notification: %s", code, err)
 						} else if err := app.email.send(msg, address); err != nil {
-							app.err.Printf("%s: Failed to send expiry notification", code)
-							app.debug.Printf("Error: %s", err)
+							app.err.Printf("%s: Failed to send expiry notification: %s", code, err)
 						} else {
 							app.info.Printf("Sent expiry notification to %s", address)
 						}
@@ -213,7 +209,7 @@ func (app *appContext) getOmbiUser(jfID string) (map[string]interface{}, int, er
 	if err != nil || code != 200 {
 		return nil, code, err
 	}
-	username := jfUser["Name"].(string)
+	username := jfUser.Name
 	email := ""
 	if e, ok := app.storage.emails[jfID]; ok {
 		email = e.(string)
@@ -252,7 +248,7 @@ func (app *appContext) NewUserAdmin(gc *gin.Context) {
 	var req newUserDTO
 	gc.BindJSON(&req)
 	existingUser, _, _ := app.jf.UserByName(req.Username, false)
-	if existingUser != nil {
+	if existingUser.Name != "" {
 		msg := fmt.Sprintf("User already exists named %s", req.Username)
 		app.info.Printf("%s New user failed: %s", req.Username, msg)
 		respondUser(401, false, false, msg, gc)
@@ -264,18 +260,14 @@ func (app *appContext) NewUserAdmin(gc *gin.Context) {
 		respondUser(401, false, false, "Unknown error", gc)
 		return
 	}
-	var id string
-	if user["Id"] != nil {
-		id = user["Id"].(string)
-	}
-	if len(app.storage.policy) != 0 {
+	id := user.ID
+	if app.storage.policy.BlockedTags != nil {
 		status, err = app.jf.SetPolicy(id, app.storage.policy)
 		if !(status == 200 || status == 204 || err == nil) {
-			app.err.Printf("%s: Failed to set user policy: Code %d", req.Username, status)
-			app.debug.Printf("%s: Error: %s", req.Username, err)
+			app.err.Printf("%s: Failed to set user policy (%d): %s", req.Username, status, err)
 		}
 	}
-	if len(app.storage.configuration) != 0 && len(app.storage.displayprefs) != 0 {
+	if app.storage.configuration.GroupedFolders != nil && len(app.storage.displayprefs) != 0 {
 		status, err = app.jf.SetConfiguration(id, app.storage.configuration)
 		if (status == 200 || status == 204) && err == nil {
 			status, err = app.jf.SetDisplayPreferences(id, app.storage.displayprefs)
@@ -323,7 +315,7 @@ type errorFunc func(gc *gin.Context)
 
 func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, success bool) {
 	existingUser, _, _ := app.jf.UserByName(req.Username, false)
-	if existingUser != nil {
+	if existingUser.Name != "" {
 		f = func(gc *gin.Context) {
 			msg := fmt.Sprintf("User %s already exists", req.Username)
 			app.info.Printf("%s: New user failed: %s", req.Code, msg)
@@ -361,8 +353,7 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 			respond(401, "confirmEmail", gc)
 			msg, err := app.email.constructConfirmation(req.Code, req.Username, key, app)
 			if err != nil {
-				app.err.Printf("%s: Failed to construct confirmation email", req.Code)
-				app.debug.Printf("%s: Error: %s", req.Code, err)
+				app.err.Printf("%s: Failed to construct confirmation email: %s", req.Code, err)
 			} else if err := app.email.send(msg, req.Email); err != nil {
 				app.err.Printf("%s: Failed to send user confirmation email: %s", req.Code, err)
 			} else {
@@ -391,11 +382,9 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 				go func() {
 					msg, err := app.email.constructCreated(req.Code, req.Username, req.Email, invite, app)
 					if err != nil {
-						app.err.Printf("%s: Failed to construct user creation notification", req.Code)
-						app.debug.Printf("%s: Error: %s", req.Code, err)
+						app.err.Printf("%s: Failed to construct user creation notification: %s", req.Code, err)
 					} else if err := app.email.send(msg, address); err != nil {
-						app.err.Printf("%s: Failed to send user creation notification", req.Code)
-						app.debug.Printf("%s: Error: %s", req.Code, err)
+						app.err.Printf("%s: Failed to send user creation notification: %s", req.Code, err)
 					} else {
 						app.info.Printf("%s: Sent user creation notification to %s", req.Code, address)
 					}
@@ -403,33 +392,28 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 			}
 		}
 	}
-	var id string
-	if user["Id"] != nil {
-		id = user["Id"].(string)
-	}
+	id := user.ID
 	if invite.Profile != "" {
 		app.debug.Printf("Applying settings from profile \"%s\"", invite.Profile)
 		profile, ok := app.storage.profiles[invite.Profile]
 		if !ok {
 			profile = app.storage.profiles["Default"]
 		}
-		if len(profile.Policy) != 0 {
+		if profile.Policy.BlockedTags != nil {
 			app.debug.Printf("Applying policy from profile \"%s\"", invite.Profile)
 			status, err = app.jf.SetPolicy(id, profile.Policy)
 			if !((status == 200 || status == 204) && err == nil) {
-				app.err.Printf("%s: Failed to set user policy: Code %d", req.Code, status)
-				app.debug.Printf("%s: Error: %s", req.Code, err)
+				app.err.Printf("%s: Failed to set user policy (%d): %s", req.Code, status, err)
 			}
 		}
-		if len(profile.Configuration) != 0 && len(profile.Displayprefs) != 0 {
+		if profile.Configuration.GroupedFolders != nil && len(profile.Displayprefs) != 0 {
 			app.debug.Printf("Applying homescreen from profile \"%s\"", invite.Profile)
 			status, err = app.jf.SetConfiguration(id, profile.Configuration)
 			if (status == 200 || status == 204) && err == nil {
 				status, err = app.jf.SetDisplayPreferences(id, profile.Displayprefs)
 			}
 			if !((status == 200 || status == 204) && err == nil) {
-				app.err.Printf("%s: Failed to set configuration template: Code %d", req.Code, status)
-				app.debug.Printf("%s: Error: %s", req.Code, err)
+				app.err.Printf("%s: Failed to set configuration template (%d): %s", req.Code, status, err)
 			}
 		}
 	}
@@ -534,17 +518,15 @@ func (app *appContext) Announce(gc *gin.Context) {
 	}
 	msg, err := app.email.constructAnnouncement(req.Subject, req.Message, app)
 	if err != nil {
-		app.err.Println("Failed to construct announcement email")
-		app.debug.Printf("Error: %s", err)
+		app.err.Printf("Failed to construct announcement emails: %s", err)
 		respondBool(500, false, gc)
 		return
 	} else if err := app.email.send(msg, addresses...); err != nil {
-		app.err.Println("Failed to send announcement email")
-		app.debug.Printf("Error: %s", err)
+		app.err.Printf("Failed to send announcement emails: %s", err)
 		respondBool(500, false, gc)
 		return
 	}
-	app.info.Println("Sent announcement email")
+	app.info.Printf("Sent announcement email to %d users", len(addresses))
 	respondBool(200, true, gc)
 }
 
@@ -569,7 +551,7 @@ func (app *appContext) DeleteUser(gc *gin.Context) {
 				if id, ok := ombiUser["id"]; ok {
 					status, err := app.ombi.DeleteUser(id.(string))
 					if err != nil || status != 200 {
-						app.err.Printf("Failed to delete ombi user: %d %s", status, err)
+						app.err.Printf("Failed to delete ombi user (%d): %s", status, err)
 						errors[userID] = fmt.Sprintf("Ombi: %d %s, ", status, err)
 					}
 				}
@@ -590,11 +572,9 @@ func (app *appContext) DeleteUser(gc *gin.Context) {
 				go func(userID, reason, address string) {
 					msg, err := app.email.constructDeleted(reason, app)
 					if err != nil {
-						app.err.Printf("%s: Failed to construct account deletion email", userID)
-						app.debug.Printf("%s: Error: %s", userID, err)
+						app.err.Printf("%s: Failed to construct account deletion email: %s", userID, err)
 					} else if err := app.email.send(msg, address); err != nil {
-						app.err.Printf("%s: Failed to send to %s", userID, address)
-						app.debug.Printf("%s: Error: %s", userID, err)
+						app.err.Printf("%s: Failed to send to %s: %s", userID, address, err)
 					} else {
 						app.info.Printf("%s: Sent deletion email to %s", userID, address)
 					}
@@ -657,12 +637,10 @@ func (app *appContext) GenerateInvite(gc *gin.Context) {
 		msg, err := app.email.constructInvite(inviteCode, invite, app)
 		if err != nil {
 			invite.Email = fmt.Sprintf("Failed to send to %s", req.Email)
-			app.err.Printf("%s: Failed to construct invite email", inviteCode)
-			app.debug.Printf("%s: Error: %s", inviteCode, err)
+			app.err.Printf("%s: Failed to construct invite email: %s", inviteCode, err)
 		} else if err := app.email.send(msg, req.Email); err != nil {
 			invite.Email = fmt.Sprintf("Failed to send to %s", req.Email)
-			app.err.Printf("%s: %s", inviteCode, invite.Email)
-			app.debug.Printf("%s: Error: %s", inviteCode, err)
+			app.err.Printf("%s: %s: %s", inviteCode, invite.Email, err)
 		} else {
 			app.info.Printf("%s: Sent invite email to %s", inviteCode, req.Email)
 		}
@@ -770,22 +748,20 @@ func (app *appContext) CreateProfile(gc *gin.Context) {
 	gc.BindJSON(&req)
 	user, status, err := app.jf.UserByID(req.ID, false)
 	if !(status == 200 || status == 204) || err != nil {
-		app.err.Printf("Failed to get user from Jellyfin: Code %d", status)
-		app.debug.Printf("Error: %s", err)
+		app.err.Printf("Failed to get user from Jellyfin (%d): %s", status, err)
 		respond(500, "Couldn't get user", gc)
 		return
 	}
 	profile := Profile{
-		FromUser: user["Name"].(string),
-		Policy:   user["Policy"].(map[string]interface{}),
+		FromUser: user.Name,
+		Policy:   user.Policy,
 	}
-	app.debug.Printf("Creating profile from user \"%s\"", user["Name"].(string))
+	app.debug.Printf("Creating profile from user \"%s\"", user.Name)
 	if req.Homescreen {
-		profile.Configuration = user["Configuration"].(map[string]interface{})
+		profile.Configuration = user.Configuration
 		profile.Displayprefs, status, err = app.jf.GetDisplayPreferences(req.ID)
 		if !(status == 200 || status == 204) || err != nil {
-			app.err.Printf("Failed to get DisplayPrefs: Code %d", status)
-			app.debug.Printf("Error: %s", err)
+			app.err.Printf("Failed to get DisplayPrefs (%d): %s", status, err)
 			respond(500, "Couldn't get displayprefs", gc)
 			return
 		}
@@ -981,33 +957,6 @@ func (app *appContext) DeleteInvite(gc *gin.Context) {
 	respond(400, "Code doesn't exist", gc)
 }
 
-type dateToParse struct {
-	Parsed time.Time `json:"parseme"`
-}
-
-func parseDT(date string) time.Time {
-	// decent method
-	dt, err := time.Parse("2006-01-02T15:04:05.000000", date)
-	if err == nil {
-		return dt
-	}
-	// emby method
-	dt, err = time.Parse("2006-01-02T15:04:05.0000000+00:00", date)
-	if err == nil {
-		return dt
-	}
-	// magic method
-	// some stored dates from jellyfin have no timezone at the end, if not we assume UTC
-	if date[len(date)-1] != 'Z' {
-		date += "Z"
-	}
-	timeJSON := []byte("{ \"parseme\": \"" + date + "\" }")
-	var parsed dateToParse
-	// Magically turn it into a time.Time
-	json.Unmarshal(timeJSON, &parsed)
-	return parsed.Parsed
-}
-
 // @Summary Get a list of Jellyfin users.
 // @Produce json
 // @Success 200 {object} getUsersDTO
@@ -1021,22 +970,21 @@ func (app *appContext) GetUsers(gc *gin.Context) {
 	resp.UserList = []respUser{}
 	users, status, err := app.jf.GetUsers(false)
 	if !(status == 200 || status == 204) || err != nil {
-		app.err.Printf("Failed to get users from Jellyfin: Code %d", status)
-		app.debug.Printf("Error: %s", err)
+		app.err.Printf("Failed to get users from Jellyfin (%d): %s", status, err)
 		respond(500, "Couldn't get users", gc)
 		return
 	}
 	for _, jfUser := range users {
-		var user respUser
-		user.LastActive = "n/a"
-		if jfUser["LastActivityDate"] != nil {
-			date := parseDT(jfUser["LastActivityDate"].(string))
-			user.LastActive = app.formatDatetime(date)
+		user := respUser{
+			ID:    jfUser.ID,
+			Name:  jfUser.Name,
+			Admin: jfUser.Policy.IsAdministrator,
 		}
-		user.ID = jfUser["Id"].(string)
-		user.Name = jfUser["Name"].(string)
-		user.Admin = jfUser["Policy"].(map[string]interface{})["IsAdministrator"].(bool)
-		if email, ok := app.storage.emails[jfUser["Id"].(string)]; ok {
+		user.LastActive = "n/a"
+		if !jfUser.LastActivityDate.IsZero() {
+			user.LastActive = app.formatDatetime(jfUser.LastActivityDate.Time)
+		}
+		if email, ok := app.storage.emails[jfUser.ID]; ok {
 			user.Email = email.(string)
 		}
 
@@ -1056,8 +1004,7 @@ func (app *appContext) OmbiUsers(gc *gin.Context) {
 	app.debug.Println("Ombi users requested")
 	users, status, err := app.ombi.GetUsers()
 	if err != nil || status != 200 {
-		app.err.Printf("Failed to get users from Ombi: Code %d", status)
-		app.debug.Printf("Error: %s", err)
+		app.err.Printf("Failed to get users from Ombi (%d): %s", status, err)
 		respond(500, "Couldn't get users", gc)
 		return
 	}
@@ -1107,16 +1054,15 @@ func (app *appContext) ModifyEmails(gc *gin.Context) {
 	app.debug.Println("Email modification requested")
 	users, status, err := app.jf.GetUsers(false)
 	if !(status == 200 || status == 204) || err != nil {
-		app.err.Printf("Failed to get users from Jellyfin: Code %d", status)
-		app.debug.Printf("Error: %s", err)
+		app.err.Printf("Failed to get users from Jellyfin (%d): %s", status, err)
 		respond(500, "Couldn't get users", gc)
 		return
 	}
 	ombiEnabled := app.config.Section("ombi").Key("enabled").MustBool(false)
 	for _, jfUser := range users {
-		id := jfUser["Id"].(string)
+		id := jfUser.ID
 		if address, ok := req[id]; ok {
-			app.storage.emails[jfUser["Id"].(string)] = address
+			app.storage.emails[id] = address
 			if ombiEnabled {
 				ombiUser, code, err := app.getOmbiUser(id)
 				if code == 200 && err == nil {
@@ -1147,16 +1093,18 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 	var req userSettingsDTO
 	gc.BindJSON(&req)
 	applyingFrom := "profile"
-	var policy, configuration, displayprefs map[string]interface{}
+	var policy mediabrowser.Policy
+	var configuration mediabrowser.Configuration
+	var displayprefs map[string]interface{}
 	if req.From == "profile" {
 		app.storage.loadProfiles()
-		if _, ok := app.storage.profiles[req.Profile]; !ok || len(app.storage.profiles[req.Profile].Policy) == 0 {
+		if _, ok := app.storage.profiles[req.Profile]; !ok || app.storage.profiles[req.Profile].Policy.BlockedTags == nil {
 			app.err.Printf("Couldn't find profile \"%s\" or profile was empty", req.Profile)
 			respond(500, "Couldn't find profile", gc)
 			return
 		}
 		if req.Homescreen {
-			if len(app.storage.profiles[req.Profile].Configuration) == 0 || len(app.storage.profiles[req.Profile].Displayprefs) == 0 {
+			if app.storage.profiles[req.Profile].Configuration.GroupedFolders == nil || len(app.storage.profiles[req.Profile].Displayprefs) == 0 {
 				app.err.Printf("No homescreen saved in profile \"%s\"", req.Profile)
 				respond(500, "No homescreen template available", gc)
 				return
@@ -1169,22 +1117,20 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 		applyingFrom = "user"
 		user, status, err := app.jf.UserByID(req.ID, false)
 		if !(status == 200 || status == 204) || err != nil {
-			app.err.Printf("Failed to get user from Jellyfin: Code %d", status)
-			app.debug.Printf("Error: %s", err)
+			app.err.Printf("Failed to get user from Jellyfin (%d): %s", status, err)
 			respond(500, "Couldn't get user", gc)
 			return
 		}
-		applyingFrom = "\"" + user["Name"].(string) + "\""
-		policy = user["Policy"].(map[string]interface{})
+		applyingFrom = "\"" + user.Name + "\""
+		policy = user.Policy
 		if req.Homescreen {
 			displayprefs, status, err = app.jf.GetDisplayPreferences(req.ID)
 			if !(status == 200 || status == 204) || err != nil {
-				app.err.Printf("Failed to get DisplayPrefs: Code %d", status)
-				app.debug.Printf("Error: %s", err)
+				app.err.Printf("Failed to get DisplayPrefs (%d): %s", status, err)
 				respond(500, "Couldn't get displayprefs", gc)
 				return
 			}
-			configuration = user["Configuration"].(map[string]interface{})
+			configuration = user.Configuration
 		}
 	}
 	app.info.Printf("Applying settings to %d user(s) from %s", len(req.ApplyTo), applyingFrom)

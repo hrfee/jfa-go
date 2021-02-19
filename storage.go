@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/hrfee/jfa-go/mediabrowser"
 )
 
 type Storage struct {
@@ -17,20 +19,22 @@ type Storage struct {
 	invites                                                                                                Invites
 	profiles                                                                                               map[string]Profile
 	defaultProfile                                                                                         string
-	emails, policy, configuration, displayprefs, ombi_template                                             map[string]interface{}
+	emails, displayprefs, ombi_template                                                                    map[string]interface{}
+	policy                                                                                                 mediabrowser.Policy
+	configuration                                                                                          mediabrowser.Configuration
 	lang                                                                                                   Lang
 }
 
 // timePattern: %Y-%m-%dT%H:%M:%S.%f
 
 type Profile struct {
-	Admin         bool                   `json:"admin,omitempty"`
-	LibraryAccess string                 `json:"libraries,omitempty"`
-	FromUser      string                 `json:"fromUser,omitempty"`
-	Policy        map[string]interface{} `json:"policy,omitempty"`
-	Configuration map[string]interface{} `json:"configuration,omitempty"`
-	Displayprefs  map[string]interface{} `json:"displayprefs,omitempty"`
-	Default       bool                   `json:"default,omitempty"`
+	Admin         bool                       `json:"admin,omitempty"`
+	LibraryAccess string                     `json:"libraries,omitempty"`
+	FromUser      string                     `json:"fromUser,omitempty"`
+	Policy        mediabrowser.Policy        `json:"policy,omitempty"`
+	Configuration mediabrowser.Configuration `json:"configuration,omitempty"`
+	Displayprefs  map[string]interface{}     `json:"displayprefs,omitempty"`
+	Default       bool                       `json:"default,omitempty"`
 }
 
 type Invite struct {
@@ -429,12 +433,12 @@ func (st *Storage) loadProfiles() error {
 			st.defaultProfile = name
 		}
 		change := false
-		if profile.Policy["IsAdministrator"] != nil {
-			profile.Admin = profile.Policy["IsAdministrator"].(bool)
+		if profile.Policy.IsAdministrator != profile.Admin {
 			change = true
 		}
-		if profile.Policy["EnabledFolders"] != nil {
-			length := len(profile.Policy["EnabledFolders"].([]interface{}))
+		profile.Admin = profile.Policy.IsAdministrator
+		if profile.Policy.EnabledFolders != nil {
+			length := len(profile.Policy.EnabledFolders)
 			if length == 0 {
 				profile.LibraryAccess = "All"
 			} else {
@@ -517,7 +521,7 @@ func (app *appContext) deHyphenateEmailStorage(old map[string]interface{}) (map[
 	}
 	newEmails := map[string]interface{}{}
 	for _, user := range jfUsers {
-		unHyphenated := user["Id"].(string)
+		unHyphenated := user.ID
 		hyphenated := hyphenate(unHyphenated)
 		email, ok := old[hyphenated]
 		if ok {
@@ -534,7 +538,7 @@ func (app *appContext) hyphenateEmailStorage(old map[string]interface{}) (map[st
 	}
 	newEmails := map[string]interface{}{}
 	for _, user := range jfUsers {
-		unstripped := user["Id"].(string)
+		unstripped := user.ID
 		stripped := strings.ReplaceAll(unstripped, "-", "")
 		email, ok := old[stripped]
 		if ok {
