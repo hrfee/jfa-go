@@ -4,25 +4,25 @@
     },
     "strings": {
         "ifItWasNotYou": "Als jij dit niet was, negeer dan alsjeblieft deze email.",
-        "helloUser": "Hoi {n},"
+        "helloUser": "Hoi {username},"
     },
     "userCreated": {
         "title": "Melding: Gebruiker aangemaakt",
-        "aUserWasCreated": "Er is een gebruiker aangemaakt door gebruik te maken van code {n}.",
+        "aUserWasCreated": "Er is een gebruiker aangemaakt door gebruik te maken van code {code}.",
         "time": "Tijdstip",
         "notificationNotice": "Opmerking: Meldingse-mails kunnen worden aan- of uitgezet via het beheerdersdashboard."
     },
     "inviteExpiry": {
         "title": "Melding: Uitnodiging verlopen",
         "inviteExpired": "Uitnodiging verlopen.",
-        "expiredAt": "Code {n} is verlopen op {n}.",
+        "expiredAt": "Code {code} is verlopen op {time}.",
         "notificationNotice": "Opmerking: Meldingse-mails kunnen worden aan- of uitgezet via het beheerdersdashboard."
     },
     "passwordReset": {
         "title": "Wachtwoordreset aangevraagd - Jellyfin",
         "someoneHasRequestedReset": "Iemand heeft recentelijk een wachtwoordreset aangevraagd in Jellyfin.",
         "ifItWasYou": "Als jij dit was, voor dan onderstaande PIN in.",
-        "codeExpiry": "De code verloopt op {n}, op {n} UTC, dat is over {n}.",
+        "codeExpiry": "De code verloopt op {date}, op {time} UTC, dat is over {expiresInMinutes}.",
         "pin": "PIN"
     },
     "userDeleted": {
@@ -35,7 +35,7 @@
         "hello": "Hoi",
         "youHaveBeenInvited": "Je bent uitgenodigd voor Jellyfin.",
         "toJoin": "Volg onderstaande link om door te gaan.",
-        "inviteExpiry": "Deze uitnodiging verloopt op {n}, om {n}, dat is over {n}, dus wees er snel bij.",
+        "inviteExpiry": "Deze uitnodiging verloopt op {date}, om {time}, dat is over {expiresInMinutes}, dus wees er snel bij.",
         "linkButton": "Maak account aan"
     },
     "welcomeEmail": {

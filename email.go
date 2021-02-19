@@ -221,7 +221,7 @@ func (emailer *Emailer) constructConfirmation(code, username, key string, app *a
 	inviteLink = fmt.Sprintf("%s/%s?key=%s", inviteLink, code, key)
 	var err error
 	email.html, email.text, err = emailer.construct(app, "email_confirmation", "email_", map[string]interface{}{
-		"helloUser":     emailer.lang.Strings.format("helloUser", username),
+		"helloUser":     emailer.lang.Strings.template("helloUser", tmpl{"username": username}),
 		"clickBelow":    emailer.lang.EmailConfirmation.get("clickBelow"),
 		"ifItWasNotYou": emailer.lang.Strings.get("ifItWasNotYou"),
 		"urlVal":        inviteLink,
@@ -266,7 +266,7 @@ func (emailer *Emailer) constructInvite(code string, invite Invite, app *appCont
 		"hello":              emailer.lang.InviteEmail.get("hello"),
 		"youHaveBeenInvited": emailer.lang.InviteEmail.get("youHaveBeenInvited"),
 		"toJoin":             emailer.lang.InviteEmail.get("toJoin"),
-		"inviteExpiry":       emailer.lang.InviteEmail.format("inviteExpiry", d, t, expiresIn),
+		"inviteExpiry":       emailer.lang.InviteEmail.template("inviteExpiry", tmpl{"date": d, "time": t, "expiresInMinutes": expiresIn}),
 		"linkButton":         emailer.lang.InviteEmail.get("linkButton"),
 		"invite_link":        inviteLink,
 		"message":            message,
@@ -285,7 +285,7 @@ func (emailer *Emailer) constructExpiry(code string, invite Invite, app *appCont
 	var err error
 	email.html, email.text, err = emailer.construct(app, "notifications", "expiry_", map[string]interface{}{
 		"inviteExpired":      emailer.lang.InviteExpiry.get("inviteExpired"),
-		"expiredAt":          emailer.lang.InviteExpiry.format("expiredAt", "\""+code+"\"", expiry),
+		"expiredAt":          emailer.lang.InviteExpiry.template("expiredAt", tmpl{"code": "\"" + code + "\"", "time": expiry}),
 		"notificationNotice": emailer.lang.InviteExpiry.get("notificationNotice"),
 	})
 	if err != nil {
@@ -307,7 +307,7 @@ func (emailer *Emailer) constructCreated(code, username, address string, invite 
 	}
 	var err error
 	email.html, email.text, err = emailer.construct(app, "notifications", "created_", map[string]interface{}{
-		"aUserWasCreated":    emailer.lang.UserCreated.format("aUserWasCreated", "\""+code+"\""),
+		"aUserWasCreated":    emailer.lang.UserCreated.template("aUserWasCreated", tmpl{"code": "\"" + code + "\""}),
 		"name":               emailer.lang.Strings.get("name"),
 		"address":            emailer.lang.Strings.get("emailAddress"),
 		"time":               emailer.lang.UserCreated.get("time"),
@@ -330,10 +330,10 @@ func (emailer *Emailer) constructReset(pwr PasswordReset, app *appContext) (*Ema
 	message := app.config.Section("email").Key("message").String()
 	var err error
 	email.html, email.text, err = emailer.construct(app, "password_resets", "email_", map[string]interface{}{
-		"helloUser":                emailer.lang.Strings.format("helloUser", pwr.Username),
+		"helloUser":                emailer.lang.Strings.template("helloUser", tmpl{"username": pwr.Username}),
 		"someoneHasRequestedReset": emailer.lang.PasswordReset.get("someoneHasRequestedReset"),
 		"ifItWasYou":               emailer.lang.PasswordReset.get("ifItWasYou"),
-		"codeExpiry":               emailer.lang.PasswordReset.format("codeExpiry", d, t, expiresIn),
+		"codeExpiry":               emailer.lang.PasswordReset.template("codeExpiry", tmpl{"date": d, "time": t, "expiresInMinutes": expiresIn}),
 		"ifItWasNotYou":            emailer.lang.Strings.get("ifItWasNotYou"),
 		"pin":                      emailer.lang.PasswordReset.get("pin"),
 		"pinVal":                   pwr.Pin,

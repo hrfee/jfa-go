@@ -4,25 +4,25 @@
     },
     "strings": {
         "ifItWasNotYou": "Se não foi você, ignore este e-mail.",
-        "helloUser": "Ola {n},"
+        "helloUser": "Ola {username},"
     },
     "userCreated": {
         "title": "Aviso: Usuário criado",
-        "aUserWasCreated": "Um usuário foi criado usando o código {n}.",
+        "aUserWasCreated": "Um usuário foi criado usando o código {code}.",
         "time": "Tempo",
         "notificationNotice": "Nota: Os emails de notificação podem ser alternados no painel do administrador."
     },
     "inviteExpiry": {
         "title": "Aviso: Convite expirado",
         "inviteExpired": "Convite expirado.",
-        "expiredAt": "O código {n} expirou em {n}.",
+        "expiredAt": "O código {code} expirou em {time}.",
         "notificationNotice": "Nota: Os emails de notificação podem ser alternados no painel do administrador."
     },
     "passwordReset": {
         "title": "Redefinir senha foi solicitada - Jellyfin",
         "someoneHasRequestedReset": "Alguém recentemente solicitou uma redefinição de senha no Jellyfin.",
         "ifItWasYou": "Se foi você, insira o PIN abaixo.",
-        "codeExpiry": "O código irá expirar em {n}, ás {n}, que está em {n}.",
+        "codeExpiry": "O código irá expirar em {date}, ás {time}, que está em {expiresInMinutes}.",
         "pin": "PIN"
     },
     "userDeleted": {
@@ -35,7 +35,7 @@
         "hello": "Ola",
         "youHaveBeenInvited": "Você recebeu um convite para o Jellyfin.",
         "toJoin": "Para participar, clique no link abaixo.",
-        "inviteExpiry": "Este convite expira em {n} às {n}, que é em {n}, então seja rápido.",
+        "inviteExpiry": "Este convite expira em {date} às {time}, que é em {expiresInMinutes}, então seja rápido.",
         "linkButton": "Crie sua conta"
     },
     "welcomeEmail": {

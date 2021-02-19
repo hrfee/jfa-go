@@ -4,25 +4,25 @@
     },
     "strings": {
         "ifItWasNotYou": "If this wasn't you, please ignore this email.",
-        "helloUser": "Hi {n},"
+        "helloUser": "Hi {username},"
     },
     "userCreated": {
         "title": "Notice: User created",
-        "aUserWasCreated": "A user was created using code {n}.",
+        "aUserWasCreated": "A user was created using code {code}.",
         "time": "Time",
         "notificationNotice": "Note: Notification emails can be toggled on the admin dashboard."
     },
     "inviteExpiry": {
         "title": "Notice: Invite expired",
         "inviteExpired": "Invite expired.",
-        "expiredAt": "Code {n} expired at {n}.",
+        "expiredAt": "Code {code} expired at {time}.",
         "notificationNotice": "Note: Notification emails can be toggled on the admin dashboard."
     },
     "passwordReset": {
         "title": "Password reset requested - Jellyfin",
         "someoneHasRequestedReset": "Someone has recently requested a password reset on Jellyfin.",
         "ifItWasYou": "If this was you, enter the pin below into the prompt.",
-        "codeExpiry": "The code will expire on {n}, at {n} UTC, which is in {n}.",
+        "codeExpiry": "The code will expire on {date}, at {time} UTC, which is in {expiresInMinutes}.",
         "pin": "PIN"
     },
     "userDeleted": {
@@ -35,7 +35,7 @@
         "hello": "Hi",
         "youHaveBeenInvited": "You've been invited to Jellyfin.",
         "toJoin": "To join, follow the below link.",
-        "inviteExpiry": "This invite will expire on {n} at {n}, which is in {n}, so act quick.",
+        "inviteExpiry": "This invite will expire on {date} at {time}, which is in {expiresInMinutes}, so act quick.",
         "linkButton": "Setup your account"
     },
     "welcomeEmail": {

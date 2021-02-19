@@ -4,25 +4,25 @@
     },
     "strings": {
         "ifItWasNotYou": "Jika ini bukan kamu, silahkan mengabaikan email ini.",
-        "helloUser": "Halo {n},"
+        "helloUser": "Halo {username},"
     },
     "userCreated": {
         "title": "Perhatian: User telah dibuat",
-        "aUserWasCreated": "User telah dibuat menggunakan kode {n}.",
+        "aUserWasCreated": "User telah dibuat menggunakan kode {code}.",
         "time": "Waktu",
         "notificationNotice": "Catatan: Email notifikasi dapat diganti pada dasbor admin."
     },
     "inviteExpiry": {
         "title": "Perhatian: Undangan telah kadaluarsa",
         "inviteExpired": "Undangan telah kadaluarsa.",
-        "expiredAt": "Kode {n} kadaluarsa pada {n}.",
+        "expiredAt": "Kode {code} kadaluarsa pada {time}.",
         "notificationNotice": "Catatan: Email notifikasi dapat diganti pada dasbor admin."
     },
     "passwordReset": {
         "title": "Reset password telah di-request - Jellyfin",
         "someoneHasRequestedReset": "Seseorang baru saja me-request reset password pada Jellyfin.",
         "ifItWasYou": "Jika ini adalah benar anda, masukkan pin dibawah ke dalam tempat yang sudah disediakan.",
-        "codeExpiry": "Kode akan kadaluarsa pada {n}, pada waktu {n} UTC, yaitu dalam {n}.",
+        "codeExpiry": "Kode akan kadaluarsa pada {date}, pada waktu {time} UTC, yaitu dalam {expiresInMinutes}.",
         "pin": "PIN"
     },
     "userDeleted": {
@@ -35,7 +35,7 @@
         "hello": "Halo",
         "youHaveBeenInvited": "Anda telah diundang ke Jellyfin.",
         "toJoin": "Untuk masuk, silahkan ikuti link dibawah ini.",
-        "inviteExpiry": "Undangan ini akan berakhir dalam {n} pada {n}, yaitu dalam {n}, jadi bergegaslah.",
+        "inviteExpiry": "Undangan ini akan berakhir dalam {date} pada {time}, yaitu dalam {expiresInMinutes}, jadi bergegaslah.",
         "linkButton": "Persiapkan akunmu"
     },
     "welcomeEmail": {
