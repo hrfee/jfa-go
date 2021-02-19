@@ -539,8 +539,9 @@ func (app *appContext) Announce(gc *gin.Context) {
 // @Router /users [delete]
 // @Security Bearer
 // @tags Users
-func (app *appContext) DeleteUser(gc *gin.Context) {
+func (app *appContext) DeleteUsers(gc *gin.Context) {
 	var req deleteUserDTO
+	var addresses []string
 	gc.BindJSON(&req)
 	errors := map[string]string{}
 	ombiEnabled := app.config.Section("ombi").Key("enabled").MustBool(false)
@@ -569,18 +570,21 @@ func (app *appContext) DeleteUser(gc *gin.Context) {
 		if emailEnabled && req.Notify {
 			addr, ok := app.storage.emails[userID]
 			if addr != nil && ok {
-				go func(userID, reason, address string) {
-					msg, err := app.email.constructDeleted(reason, app)
-					if err != nil {
-						app.err.Printf("%s: Failed to construct account deletion email: %s", userID, err)
-					} else if err := app.email.send(msg, address); err != nil {
-						app.err.Printf("%s: Failed to send to %s: %s", userID, address, err)
-					} else {
-						app.info.Printf("%s: Sent deletion email to %s", userID, address)
-					}
-				}(userID, req.Reason, addr.(string))
+				addresses = append(addresses, addr.(string))
 			}
 		}
+	}
+	if len(addresses) != 0 {
+		go func(reason string, addresses []string) {
+			msg, err := app.email.constructDeleted(reason, app)
+			if err != nil {
+				app.err.Printf("Failed to construct account deletion emails: %s", err)
+			} else if err := app.email.send(msg, addresses...); err != nil {
+				app.err.Printf("Failed to send account deletion emails: %s", err)
+			} else {
+				app.info.Println("Sent account deletion emails")
+			}
+		}(req.Reason, addresses)
 	}
 	app.jf.CacheExpiry = time.Now()
 	if len(errors) == len(req.Users) {
