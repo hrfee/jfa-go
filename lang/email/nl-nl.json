@@ -10,13 +10,13 @@
         "title": "Melding: Gebruiker aangemaakt",
         "aUserWasCreated": "Er is een gebruiker aangemaakt door gebruik te maken van code {n}.",
         "time": "Tijdstip",
-        "notificationNotice": "Opmerking: Meldingsemails kunnen worden aan- of uitgezet via het admin dashboard."
+        "notificationNotice": "Opmerking: Meldingse-mails kunnen worden aan- of uitgezet via het beheerdersdashboard."
     },
     "inviteExpiry": {
         "title": "Melding: Uitnodiging verlopen",
         "inviteExpired": "Uitnodiging verlopen.",
         "expiredAt": "Code {n} is verlopen op {n}.",
-        "notificationNotice": "Opmerking: Meldingsemails kunnen worden aan- of uitgezet via het admin dashboard."
+        "notificationNotice": "Opmerking: Meldingse-mails kunnen worden aan- of uitgezet via het beheerdersdashboard."
     },
     "passwordReset": {
         "title": "Wachtwoordreset aangevraagd - Jellyfin",
