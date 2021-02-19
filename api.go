@@ -126,7 +126,7 @@ func (app *appContext) checkInvites() {
 				wait.Add(1)
 				go func(addr string) {
 					defer wait.Done()
-					msg, err := app.email.constructExpiry(code, data, app)
+					msg, err := app.email.constructExpiry(code, data, app, false)
 					if err != nil {
 						app.err.Printf("%s: Failed to construct expiry notification: %s", code, err)
 					} else if err := app.email.send(msg, addr); err != nil {
@@ -163,7 +163,7 @@ func (app *appContext) checkInvite(code string, used bool, username string) bool
 			for address, settings := range notify {
 				if settings["notify-expiry"] {
 					go func() {
-						msg, err := app.email.constructExpiry(code, inv, app)
+						msg, err := app.email.constructExpiry(code, inv, app, false)
 						if err != nil {
 							app.err.Printf("%s: Failed to construct expiry notification: %s", code, err)
 						} else if err := app.email.send(msg, address); err != nil {
@@ -295,7 +295,7 @@ func (app *appContext) NewUserAdmin(gc *gin.Context) {
 	}
 	if emailEnabled && app.config.Section("welcome_email").Key("enabled").MustBool(false) && req.Email != "" {
 		app.debug.Printf("%s: Sending welcome email to %s", req.Username, req.Email)
-		msg, err := app.email.constructWelcome(req.Username, app)
+		msg, err := app.email.constructWelcome(req.Username, app, false)
 		if err != nil {
 			app.err.Printf("%s: Failed to construct welcome email: %s", req.Username, err)
 			respondUser(500, true, false, err.Error(), gc)
@@ -351,7 +351,7 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 		f = func(gc *gin.Context) {
 			app.debug.Printf("%s: Email confirmation required", req.Code)
 			respond(401, "confirmEmail", gc)
-			msg, err := app.email.constructConfirmation(req.Code, req.Username, key, app)
+			msg, err := app.email.constructConfirmation(req.Code, req.Username, key, app, false)
 			if err != nil {
 				app.err.Printf("%s: Failed to construct confirmation email: %s", req.Code, err)
 			} else if err := app.email.send(msg, req.Email); err != nil {
@@ -380,7 +380,7 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 		for address, settings := range invite.Notify {
 			if settings["notify-creation"] {
 				go func() {
-					msg, err := app.email.constructCreated(req.Code, req.Username, req.Email, invite, app)
+					msg, err := app.email.constructCreated(req.Code, req.Username, req.Email, invite, app, false)
 					if err != nil {
 						app.err.Printf("%s: Failed to construct user creation notification: %s", req.Code, err)
 					} else if err := app.email.send(msg, address); err != nil {
@@ -436,7 +436,7 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 	}
 	if emailEnabled && app.config.Section("welcome_email").Key("enabled").MustBool(false) && req.Email != "" {
 		app.debug.Printf("%s: Sending welcome email to %s", req.Username, req.Email)
-		msg, err := app.email.constructWelcome(req.Username, app)
+		msg, err := app.email.constructWelcome(req.Username, app, false)
 		if err != nil {
 			app.err.Printf("%s: Failed to construct welcome email: %s", req.Username, err)
 		} else if err := app.email.send(msg, req.Email); err != nil {
@@ -576,7 +576,7 @@ func (app *appContext) DeleteUsers(gc *gin.Context) {
 	}
 	if len(addresses) != 0 {
 		go func(reason string, addresses []string) {
-			msg, err := app.email.constructDeleted(reason, app)
+			msg, err := app.email.constructDeleted(reason, app, false)
 			if err != nil {
 				app.err.Printf("Failed to construct account deletion emails: %s", err)
 			} else if err := app.email.send(msg, addresses...); err != nil {
@@ -638,7 +638,7 @@ func (app *appContext) GenerateInvite(gc *gin.Context) {
 	if emailEnabled && req.Email != "" && app.config.Section("invite_emails").Key("enabled").MustBool(false) {
 		app.debug.Printf("%s: Sending invite email", inviteCode)
 		invite.Email = req.Email
-		msg, err := app.email.constructInvite(inviteCode, invite, app)
+		msg, err := app.email.constructInvite(inviteCode, invite, app, false)
 		if err != nil {
 			invite.Email = fmt.Sprintf("Failed to send to %s", req.Email)
 			app.err.Printf("%s: Failed to construct invite email: %s", inviteCode, err)
@@ -1269,6 +1269,108 @@ func (app *appContext) ModifyConfig(gc *gin.Context) {
 	}
 }
 
+// @Summary Get a list of email names and IDs.
+// @Produce json
+// @Success 200 {object} emailListDTO
+// @Router /config/emails [get]
+// @tags Configuration
+func (app *appContext) GetEmails(gc *gin.Context) {
+	gc.JSON(200, emailListDTO{
+		"UserCreated":       app.storage.lang.Email["en-us"].UserCreated["name"],
+		"InviteExpiry":      app.storage.lang.Email["en-us"].InviteExpiry["name"],
+		"PasswordReset":     app.storage.lang.Email["en-us"].PasswordReset["name"],
+		"UserDeleted":       app.storage.lang.Email["en-us"].UserDeleted["name"],
+		"InviteEmail":       app.storage.lang.Email["en-us"].InviteEmail["name"],
+		"WelcomeEmail":      app.storage.lang.Email["en-us"].WelcomeEmail["name"],
+		"EmailConfirmation": app.storage.lang.Email["en-us"].EmailConfirmation["name"],
+	})
+}
+
+// @Summary Returns the boilerplate email and list of used variables in it.
+// @Produce json
+// @Success 200 {object} emailDTO
+// @Failure 500 {object} boolResponse
+// @Router /config/emails/{id} [get]
+// @tags Configuration
+func (app *appContext) GetEmail(gc *gin.Context) {
+	id := gc.Param("id")
+	var content string
+	var err error
+	var msg *Email
+	if id == "UserCreated" {
+		content = app.storage.customEmails.UserCreated
+		if content == "" {
+			msg, err = app.email.constructCreated("", "", "", Invite{}, app, true)
+			content = msg.text
+		}
+		// app.storage.customEmails.UserCreated = content
+	} else if id == "InviteExpiry" {
+		content = app.storage.customEmails.InviteExpiry
+		if content == "" {
+			msg, err = app.email.constructExpiry("", Invite{}, app, true)
+			content = msg.text
+		}
+		// app.storage.customEmails.InviteExpiry = content
+	} else if id == "PasswordReset" {
+		content = app.storage.customEmails.PasswordReset
+		if content == "" {
+			msg, err = app.email.constructReset(PasswordReset{}, app, true)
+			content = msg.text
+		}
+		// app.storage.customEmails.PasswordReset = content
+	} else if id == "UserDeleted" {
+		content = app.storage.customEmails.UserDeleted
+		if content == "" {
+			msg, err = app.email.constructDeleted("", app, true)
+			content = msg.text
+		}
+		// app.storage.customEmails.UserDeleted = content
+	} else if id == "InviteEmail" {
+		content = app.storage.customEmails.InviteEmail
+		if content == "" {
+			msg, err = app.email.constructInvite("", Invite{}, app, true)
+			content = msg.text
+		}
+		// app.storage.customEmails.InviteEmail = content
+	} else if id == "WelcomeEmail" {
+		content = app.storage.customEmails.WelcomeEmail
+		if content == "" {
+			msg, err = app.email.constructWelcome("", app, true)
+			content = msg.text
+		}
+		// app.storage.customEmails.WelcomeEmail = content
+	} else if id == "EmailConfirmation" {
+		content = app.storage.customEmails.EmailConfirmation
+		if content == "" {
+			msg, err = app.email.constructConfirmation("", "", "", app, true)
+			content = msg.text
+		}
+		// app.storage.customEmails.EmailConfirmation = content
+	}
+	if err != nil {
+		respondBool(500, false, gc)
+		return
+	}
+	variables := make([]string, strings.Count(content, "{"))
+	i := 0
+	found := false
+	buf := ""
+	for _, c := range content {
+		if !found && c != '{' && c != '}' {
+			continue
+		}
+		found = true
+		buf += string(c)
+		if c == '}' {
+			found = false
+			variables[i] = buf
+			buf = ""
+			i++
+		}
+	}
+	gc.JSON(200, emailDTO{Content: content, Variables: variables})
+}
+
 // @Summary Logout by deleting refresh token from cookies.
 // @Produce json
 // @Success 200 {object} boolResponse
@@ -1291,7 +1393,7 @@ func (app *appContext) Logout(gc *gin.Context) {
 // @Produce json
 // @Success 200 {object} langDTO
 // @Failure 500 {object} stringResponse
-// @Router /lang [get]
+// @Router /lang/{page} [get]
 // @tags Other
 func (app *appContext) GetLanguages(gc *gin.Context) {
 	page := gc.Param("page")

@@ -3,6 +3,6 @@
 {{ .clickBelow }}
 {{ .ifItWasNotYou }}
 
-{{ .urlVal }}
+{{ .confirmationURL }}
 
 {{ .message }}

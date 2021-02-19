@@ -3,6 +3,6 @@
 {{ .toJoin }}
 {{ .inviteExpiry }}
 
-{{ .invite_link }}
+{{ .inviteURL }}
 
 {{ .message }}

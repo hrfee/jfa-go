@@ -5,6 +5,6 @@
 {{ .codeExpiry }}
 {{ .ifItWasNotYou }}
 
-{{ .pin }}: {{ .pinVal }}
+{{ .pinString }}: {{ .pin }}
 
 {{ .message }}

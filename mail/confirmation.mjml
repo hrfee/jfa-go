@@ -64,7 +64,7 @@
             <p>{{ .clickBelow }}</p>
             <p>{{ .ifItWasNotYou }}</p>
         </mj-text>
-        <mj-button mj-class="blue bold" href="{{ .urlVal }}">{{ .confirmEmail }}</mj-button>
+        <mj-button mj-class="blue bold" href="{{ .confirmationURL }}">{{ .confirmEmail }}</mj-button>
       </mj-column>
     </mj-section>
     <mj-section mj-class="bg2">

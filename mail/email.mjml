@@ -66,7 +66,7 @@
             <p>{{ .codeExpiry }}</p>
             <p>{{ .ifItWasNotYou }}</p>
         </mj-text>
-        <mj-button mj-class="blue bold"><mj-raw>{{ .pinVal }}</mj-raw></mj-button>
+        <mj-button mj-class="blue bold"><mj-raw>{{ .pin }}</mj-raw></mj-button>
       </mj-column>
     </mj-section>
     <mj-section mj-class="bg2">

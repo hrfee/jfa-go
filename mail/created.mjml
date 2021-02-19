@@ -64,14 +64,14 @@
         </mj-text>
         <mj-table mj-class="text" container-background-color="#242424">
           <tr style="text-align: left;">
-              <th>{{ .name }}</th>
-              <th>{{ .address }}</th>
-              <th>{{ .time }}</th>
+              <th>{{ .nameString }}</th>
+              <th>{{ .addressString }}</th>
+              <th>{{ .timeString }}</th>
           </tr>
           <tr style="font-style: italic; text-align: left; color: rgb(153,153,153);">
-            <th>{{ .nameVal }}</th>
-            <th>{{ .addressVal }}</th>
-            <th>{{ .timeVal }}</th>
+            <th>{{ .name }}</th>
+            <th>{{ .address }}</th>
+            <th>{{ .time }}</th>
         </mj-table>
       </mj-column>
     </mj-section>

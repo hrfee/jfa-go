@@ -174,3 +174,13 @@ type settings struct {
 }
 
 type langDTO map[string]string
+
+type emailListDTO map[string]string
+type emailDTO struct {
+	Content   string   `json:"content"`
+	Variables []string `json:"Variables"`
+}
+
+type emailSetDTO struct {
+	Content string `json:"content"`
+}

@@ -62,8 +62,8 @@
         <mj-text mj-class="text" font-size="16px" font-family="Noto Sans, Helvetica, Arial, sans-serif">
             <h3>{{ .welcome }}</h3>
             <p>{{ .youCanLoginWith }}:</p>
-            {{ .jellyfinURL }}: <a href="{{ .jellyfinURLVal }}">{{ .jellyfinURLVal }}</a>
-            <p>{{ .username }}: <i>{{ .usernameVal }}</i></p>
+            {{ .jellyfinURLString }}: <a href="{{ .jellyfinURLVal }}">{{ .jellyfinURL }}</a>
+            <p>{{ .usernameString }}: <i>{{ .username }}</i></p>
         </mj-text>
       </mj-column>
     </mj-section>

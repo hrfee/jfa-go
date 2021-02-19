@@ -7,18 +7,21 @@
         "helloUser": "Hi {username},"
     },
     "userCreated": {
+        "name": "User creation",
         "title": "Notice: User created",
         "aUserWasCreated": "A user was created using code {code}.",
         "time": "Time",
         "notificationNotice": "Note: Notification emails can be toggled on the admin dashboard."
     },
     "inviteExpiry": {
+        "name": "Invite expiry",
         "title": "Notice: Invite expired",
         "inviteExpired": "Invite expired.",
         "expiredAt": "Code {code} expired at {time}.",
         "notificationNotice": "Note: Notification emails can be toggled on the admin dashboard."
     },
     "passwordReset": {
+        "name": "Password reset",
         "title": "Password reset requested - Jellyfin",
         "someoneHasRequestedReset": "Someone has recently requested a password reset on Jellyfin.",
         "ifItWasYou": "If this was you, enter the pin below into the prompt.",
@@ -26,11 +29,13 @@
         "pin": "PIN"
     },
     "userDeleted": {
+        "name": "User deletion",
         "title": "Your account was deleted - Jellyfin",
         "yourAccountWasDeleted": "Your Jellyfin account was deleted.",
         "reason": "Reason"
     },
     "inviteEmail": {
+        "name": "Invite email",
         "title": "Invite - Jellyfin",
         "hello": "Hi",
         "youHaveBeenInvited": "You've been invited to Jellyfin.",
@@ -39,12 +44,14 @@
         "linkButton": "Setup your account"
     },
     "welcomeEmail": {
+        "name": "Welcome email",
         "title": "Welcome to Jellyfin",
         "welcome": "Welcome to Jellyfin!",
         "youCanLoginWith": "You can login with the details below",
         "jellyfinURL": "URL"
     },
     "emailConfirmation": {
+        "name": "Confirmation email",
         "title": "Confirm your email - Jellyfin",
         "clickBelow": "Click the link below to confirm your email address and start using Jellyfin.",
         "confirmEmail": "Confirm Email"

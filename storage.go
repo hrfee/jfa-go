@@ -14,15 +14,26 @@ import (
 )
 
 type Storage struct {
-	timePattern                                                                                            string
-	invite_path, emails_path, policy_path, configuration_path, displayprefs_path, ombi_path, profiles_path string
-	invites                                                                                                Invites
-	profiles                                                                                               map[string]Profile
-	defaultProfile                                                                                         string
-	emails, displayprefs, ombi_template                                                                    map[string]interface{}
-	policy                                                                                                 mediabrowser.Policy
-	configuration                                                                                          mediabrowser.Configuration
-	lang                                                                                                   Lang
+	timePattern                                                                                                               string
+	invite_path, emails_path, policy_path, configuration_path, displayprefs_path, ombi_path, profiles_path, customEmails_path string
+	invites                                                                                                                   Invites
+	profiles                                                                                                                  map[string]Profile
+	defaultProfile                                                                                                            string
+	emails, displayprefs, ombi_template                                                                                       map[string]interface{}
+	customEmails                                                                                                              customEmails
+	policy                                                                                                                    mediabrowser.Policy
+	configuration                                                                                                             mediabrowser.Configuration
+	lang                                                                                                                      Lang
+}
+
+type customEmails struct {
+	UserCreated       string `json:"userCreated"`
+	InviteExpiry      string `json:"inviteExpiry"`
+	PasswordReset     string `json:"passwordReset"`
+	UserDeleted       string `json:"userDeleted"`
+	InviteEmail       string `json:"inviteEmail"`
+	WelcomeEmail      string `json:"welcomeEmail"`
+	EmailConfirmation string `json:"emailConfirmation"`
 }
 
 // timePattern: %Y-%m-%dT%H:%M:%S.%f
@@ -392,6 +403,14 @@ func (st *Storage) loadEmails() error {
 
 func (st *Storage) storeEmails() error {
 	return storeJSON(st.emails_path, st.emails)
+}
+
+func (st *Storage) loadCustomEmails() error {
+	return loadJSON(st.customEmails_path, &st.customEmails)
+}
+
+func (st *Storage) storeCustomEmails() error {
+	return storeJSON(st.customEmails_path, st.customEmails)
 }
 
 func (st *Storage) loadPolicy() error {

@@ -32,7 +32,7 @@ func (app *appContext) loadConfig() error {
 	app.config.Section("jellyfin").Key("public_server").SetValue(app.config.Section("jellyfin").Key("public_server").MustString(app.config.Section("jellyfin").Key("server").String()))
 
 	for _, key := range app.config.Section("files").Keys() {
-		if key.Name() != "html_templates" {
+		if name := key.Name(); name != "html_templates" && name != "lang_files" {
 			key.SetValue(key.MustString(filepath.Join(app.dataPath, (key.Name() + ".json"))))
 		}
 	}
@@ -63,8 +63,8 @@ func (app *appContext) loadConfig() error {
 	app.config.Section("welcome_email").Key("email_html").SetValue(app.config.Section("welcome_email").Key("email_html").MustString("jfa-go:" + "welcome.html"))
 	app.config.Section("welcome_email").Key("email_text").SetValue(app.config.Section("welcome_email").Key("email_text").MustString("jfa-go:" + "welcome.txt"))
 
-	app.config.Section("announcement_email").Key("email_html").SetValue(app.config.Section("announcement_email").Key("email_html").MustString("jfa-go:" + "announcement.html"))
-	app.config.Section("announcement_email").Key("email_text").SetValue(app.config.Section("announcement_email").Key("email_text").MustString("jfa-go:" + "announcement.txt"))
+	app.config.Section("template_email").Key("email_html").SetValue(app.config.Section("template_email").Key("email_html").MustString("jfa-go:" + "template.html"))
+	app.config.Section("template_email").Key("email_text").SetValue(app.config.Section("template_email").Key("email_text").MustString("jfa-go:" + "template.txt"))
 
 	app.config.Section("jellyfin").Key("version").SetValue(VERSION)
 	app.config.Section("jellyfin").Key("device").SetValue("jfa-go")
@@ -75,6 +75,9 @@ func (app *appContext) loadConfig() error {
 	} else {
 		emailEnabled = true
 	}
+
+	app.storage.customEmails_path = app.config.Section("files").Key("custom_emails").String()
+	app.storage.loadCustomEmails()
 
 	substituteStrings = app.config.Section("jellyfin").Key("substitute_jellyfin_strings").MustString("")
 

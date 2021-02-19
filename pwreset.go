@@ -81,7 +81,7 @@ func pwrMonitor(app *appContext, watcher *fsnotify.Watcher) {
 						return
 					}
 					address = addr.(string)
-					msg, err := app.email.constructReset(pwr, app)
+					msg, err := app.email.constructReset(pwr, app, false)
 					if err != nil {
 						app.err.Printf("Failed to construct password reset email for %s", pwr.Username)
 						app.debug.Printf("%s: Error: %s", pwr.Username, err)

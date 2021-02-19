@@ -65,7 +65,7 @@
             <p>{{ .toJoin }}</p>
             <p>{{ .inviteExpiry }}</p>
         </mj-text>
-        <mj-button mj-class="blue bold" href="{{ .invite_link }}">{{ .linkButton }}</mj-button>
+        <mj-button mj-class="blue bold" href="{{ .inviteURL }}">{{ .linkButton }}</mj-button>
       </mj-column>
     </mj-section>
     <mj-section mj-class="bg2">

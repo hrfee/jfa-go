@@ -2,8 +2,8 @@
 
 {{ .youCanLoginWith }}:
 
-{{ .jellyfinURL }}: {{ .jellyfinURLVal }}
-{{ .username }}: {{ .usernameVal }}
+{{ .jellyfinURLString }}: {{ .jellyfinURL }}
+{{ .usernameString }}: {{ .username }}
 
 
 {{ .message }}
