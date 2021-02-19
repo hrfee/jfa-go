@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io"
 	"io/fs"
 	"log"
 	"mime"
@@ -22,12 +21,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/fatih/color"
 	"github.com/hrfee/jfa-go/common"
 	_ "github.com/hrfee/jfa-go/docs"
 	"github.com/hrfee/jfa-go/mediabrowser"
 	"github.com/hrfee/jfa-go/ombi"
 	"github.com/lithammer/shortuuid/v3"
-	"github.com/logrusorgru/aurora/v3"
 	"gopkg.in/ini.v1"
 )
 
@@ -41,6 +40,10 @@ var (
 	DEBUG              *bool
 	TEST               bool
 	SWAGGER            *bool
+	warning            = color.New(color.FgYellow).SprintfFunc()
+	info               = color.New(color.FgMagenta).SprintfFunc()
+	hiwhite            = color.New(color.FgHiWhite).SprintfFunc()
+	white              = color.New(color.FgWhite).SprintfFunc()
 )
 
 var serverTypes = map[string]string{
@@ -79,7 +82,7 @@ type appContext struct {
 	storage          Storage
 	validator        Validator
 	email            *Emailer
-	info, debug, err *log.Logger
+	info, debug, err Logger
 	host             string
 	port             int
 	version          string
@@ -146,8 +149,8 @@ func start(asDaemon, firstCall bool) {
 		fs:  localFS,
 	}
 
-	app.info = log.New(os.Stdout, "[INFO] ", log.Ltime)
-	app.err = log.New(os.Stdout, "[ERROR] ", log.Ltime|log.Lshortfile)
+	app.info = NewLogger(os.Stdout, "[INFO] ", log.Ltime, color.FgHiWhite)
+	app.err = NewLogger(os.Stdout, "[ERROR] ", log.Ltime|log.Lshortfile, color.FgRed)
 
 	if firstCall {
 		DATA = flag.String("data", app.dataPath, "alternate path to data directory.")
@@ -231,10 +234,10 @@ func start(asDaemon, firstCall bool) {
 		debugMode = true
 	}
 	if debugMode {
-		app.info.Print(aurora.Magenta("\n\nWARNING: Don't use debug mode in production, as it exposes pprof on the network.\n\n"))
-		app.debug = log.New(os.Stdout, "[DEBUG] ", log.Ltime|log.Lshortfile)
+		app.info.Print(warning("\n\nWARNING: Don't use debug mode in production, as it exposes pprof on the network.\n\n"))
+		app.debug = NewLogger(os.Stdout, "[DEBUG] ", log.Ltime|log.Lshortfile, color.FgYellow)
 	} else {
-		app.debug = log.New(io.Discard, "", 0)
+		app.debug = emptyLogger(false)
 	}
 
 	if asDaemon {
@@ -404,7 +407,7 @@ func start(asDaemon, firstCall bool) {
 			serverType = mediabrowser.EmbyServer
 			timeoutHandler = common.NewTimeoutHandler("Emby", server, true)
 			app.info.Println("Using Emby server type")
-			fmt.Println(aurora.Yellow("WARNING: Emby compatibility is experimental, and support is limited.\nPassword resets are not available."))
+			fmt.Println(warning("WARNING: Emby compatibility is experimental, and support is limited.\nPassword resets are not available."))
 		} else {
 			app.info.Println("Using Jellyfin server type")
 		}
@@ -453,11 +456,11 @@ func start(asDaemon, firstCall bool) {
 				var status int
 				var err error
 				if app.jf.Hyphens {
-					app.info.Println(aurora.Yellow("Your build of Jellyfin appears to hypenate user IDs. Your emails.json file will be modified to match."))
+					app.info.Println(info("Your build of Jellyfin appears to hypenate user IDs. Your emails.json file will be modified to match."))
 					time.Sleep(time.Second * time.Duration(3))
 					newEmails, status, err = app.hyphenateEmailStorage(app.storage.emails)
 				} else {
-					app.info.Println(aurora.Yellow("Your emails.json file uses hyphens, but the Jellyfin server no longer does. It will be modified."))
+					app.info.Println(info("Your emails.json file uses hyphens, but the Jellyfin server no longer does. It will be modified."))
 					time.Sleep(time.Second * time.Duration(3))
 					newEmails, status, err = app.deHyphenateEmailStorage(app.storage.emails)
 				}
@@ -621,7 +624,7 @@ func flagPassed(name string) (found bool) {
 // @tag.description Things that dont fit elsewhere.
 
 func printVersion() {
-	fmt.Print(aurora.Sprintf(aurora.Magenta("jfa-go version: %s (%s)\n"), aurora.BrightWhite(VERSION), aurora.White(COMMIT)))
+	fmt.Println(info("jfa-go version: %s (%s)\n", hiwhite(VERSION), white(COMMIT)))
 }
 
 func main() {

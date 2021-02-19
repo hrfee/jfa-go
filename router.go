@@ -1,17 +1,16 @@
 package main
 
 import (
-	"fmt"
 	"html/template"
 	"io/fs"
 	"net/http"
 	"os"
 	"path/filepath"
 
+	"github.com/fatih/color"
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
-	"github.com/logrusorgru/aurora/v3"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
@@ -44,9 +43,10 @@ func (app *appContext) loadHTML(router *gin.Engine) {
 
 // sets gin logger.
 func setGinLogger(router *gin.Engine, debugMode bool) {
+	sprintf := color.New(color.Faint).SprintfFunc()
 	if debugMode {
 		router.Use(gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
-			return fmt.Sprintf("[GIN/DEBUG] %s: %s(%s) => %d in %s; %s\n",
+			return sprintf("[GIN/DEBUG] %s: %s(%s) => %d in %s; %s\n",
 				param.TimeStamp.Format("15:04:05"),
 				param.Method,
 				param.Path,
@@ -62,7 +62,7 @@ func setGinLogger(router *gin.Engine, debugMode bool) {
 		}))
 	} else {
 		router.Use(gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
-			return fmt.Sprintf("[GIN] %s(%s) => %d\n",
+			return sprintf("[GIN] %s(%s) => %d\n",
 				param.Method,
 				param.Path,
 				param.StatusCode,
@@ -115,7 +115,7 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 		router.GET(p+"/invite/:invCode", app.InviteProxy)
 	}
 	if *SWAGGER {
-		app.info.Print(aurora.Magenta("\n\nWARNING: Swagger should not be used on a public instance.\n\n"))
+		app.info.Print(warning("\n\nWARNING: Swagger should not be used on a public instance.\n\n"))
 		for _, p := range routePrefixes {
 			router.GET(p+"/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 		}

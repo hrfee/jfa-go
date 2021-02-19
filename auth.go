@@ -148,7 +148,6 @@ func (app *appContext) getTokenLogin(gc *gin.Context) {
 		}
 		jfID = user.ID
 		if app.config.Section("ui").Key("admin_only").MustBool(true) {
-			fmt.Printf("%+v\n", user.Policy)
 			if !user.Policy.IsAdministrator {
 				app.debug.Printf("Auth denied: Users \"%s\" isn't admin", creds[0])
 				respond(401, "Unauthorized", gc)

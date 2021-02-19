@@ -19,6 +19,7 @@ I chose to rewrite the python [jellyfin-accounts](https://github.com/hrfee/jelly
     * Email addresses can optionally be used instead of usernames
 * 🔑 Password resets: When user's forget their passwords and request a change in Jellyfin, jfa-go reads the PIN from the created file and sends it straight to the user via email.
 * Notifications: Get notified when someone creates an account, or an invite expires.
+* 📣 Announcements: Bulk email you users with announcements about your server.
 * Authentication via Jellyfin: Instead of using separate credentials for jfa-go and Jellyfin, jfa-go can use it as the authentication provider.
     * Enables the usage of jfa-go by multiple people
 * 🌓 Customizable look
@@ -37,15 +38,8 @@ I chose to rewrite the python [jellyfin-accounts](https://github.com/hrfee/jelly
 
 #### Install
 
-Available on the AUR as [jfa-go](https://aur.archlinux.org/packages/jfa-go/) or [jfa-go-git](https://aur.archlinux.org/packages/jfa-go-git/).
-
-For other platforms, grab an archive from the release section for your platform (or nightly builds [here](https://builds.hrfee.dev/view/hrfee/jfa-go)), and extract the `jfa-go` executable to somewhere useful.
-* For \*nix/macOS users, `chmod +x jfa-go` then place it somewhere in your PATH like `/usr/bin`.
-
-Run the executable to start.
-
-For [docker](https://hub.docker.com/repository/docker/hrfee/jfa-go), run: 
-```
+The [Docker](https://hub.docker.com/repository/docker/hrfee/jfa-go) image is your best bet.
+```sh
 docker create \
              --name "jfa-go" \ # Whatever you want to name it
              -p 8056:8056 \
@@ -55,6 +49,13 @@ docker create \
              -v /etc/localtime:/etc/localtime:ro \ # Makes sure time is correct
              hrfee/jfa-go # hrfee/jfa-go:unstable for latest build from git
 ```
+Available on the AUR as [jfa-go](https://aur.archlinux.org/packages/jfa-go/) or [jfa-go-git](https://aur.archlinux.org/packages/jfa-go-git/).
+
+For other platforms, grab an archive from the release section for your platform (or nightly builds [here](https://builds.hrfee.dev/view/hrfee/jfa-go)), and extract the `jfa-go` executable to somewhere useful.
+* For \*nix/macOS users, `chmod +x jfa-go` then place it somewhere in your PATH like `/usr/bin`.
+
+Run the executable to start.
+
 
 #### Build from source
 If you're using docker, a Dockerfile is provided that builds from source.
