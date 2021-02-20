@@ -20,7 +20,7 @@ func stripMarkdown(md string) string {
 		if !foundOpenSquare && !foundOpen && c != '[' && c != ']' {
 			continue
 		}
-		if c == '[' {
+		if c == '[' && md[i-1] != '!' {
 			foundOpenSquare = true
 			openSquare = i
 		} else if c == ']' {
