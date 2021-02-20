@@ -120,12 +120,16 @@ func (ls *setupLangs) getOptions() [][2]string {
 type langSection map[string]string
 type tmpl map[string]string
 
-func (el langSection) template(field string, vals tmpl) string {
-	text := el.get(field)
+func templateString(text string, vals tmpl) string {
 	for key, val := range vals {
 		text = strings.ReplaceAll(text, "{"+key+"}", val)
 	}
 	return text
+}
+
+func (el langSection) template(field string, vals tmpl) string {
+	text := el.get(field)
+	return templateString(text, vals)
 }
 
 func (el langSection) format(field string, vals ...string) string {

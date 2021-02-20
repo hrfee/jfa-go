@@ -27,13 +27,19 @@ type Storage struct {
 }
 
 type customEmails struct {
-	UserCreated       string `json:"userCreated"`
-	InviteExpiry      string `json:"inviteExpiry"`
-	PasswordReset     string `json:"passwordReset"`
-	UserDeleted       string `json:"userDeleted"`
-	InviteEmail       string `json:"inviteEmail"`
-	WelcomeEmail      string `json:"welcomeEmail"`
-	EmailConfirmation string `json:"emailConfirmation"`
+	UserCreated       customEmail `json:"userCreated"`
+	InviteExpiry      customEmail `json:"inviteExpiry"`
+	PasswordReset     customEmail `json:"passwordReset"`
+	UserDeleted       customEmail `json:"userDeleted"`
+	InviteEmail       customEmail `json:"inviteEmail"`
+	WelcomeEmail      customEmail `json:"welcomeEmail"`
+	EmailConfirmation customEmail `json:"emailConfirmation"`
+}
+
+type customEmail struct {
+	Enabled   bool     `json:"enabled,omitempty"`
+	Content   string   `json:"content"`
+	Variables []string `json:"variables,omitempty"`
 }
 
 // timePattern: %Y-%m-%dT%H:%M:%S.%f
