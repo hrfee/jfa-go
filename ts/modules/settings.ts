@@ -653,3 +653,127 @@ class ombiDefaults {
         });
     }
 }
+
+interface Email {
+    subject: string;
+    html: string;
+    text: string;
+}
+
+interface templateEmail {
+    content: string;
+    variables: string[];
+}
+
+class EmailEditor {
+    private _currentID: string;
+    private _names: { [id: string]: string };
+    private _content: string;
+    private _form = document.getElementById("form-editor") as HTMLFormElement;
+    private _header = document.getElementById("header-editor") as HTMLSpanElement;
+    private _variables = document.getElementById("editor-variables") as HTMLDivElement;
+    private _textArea = document.getElementById("textarea-editor") as HTMLTextAreaElement;
+    private _preview = document.getElementById("editor-preview") as HTMLDivElement;
+
+    insert = (textarea: HTMLTextAreaElement, text: string) => { // https://kubyshkin.name/posts/insert-text-into-textarea-at-cursor-position <3
+        const isSuccess = document.execCommand("insertText", false, text);
+
+        // Firefox (non-standard method)
+        if (!isSuccess && typeof textarea.setRangeText === "function") {
+            const start = textarea.selectionStart;
+            textarea.setRangeText(text);
+            // update cursor to be at the end of insertion
+            textarea.selectionStart = textarea.selectionEnd = start + text.length;
+
+            // Notify any possible listeners of the change
+            const e = document.createEvent("UIEvent");
+            e.initEvent("input", true, false);
+            textarea.dispatchEvent(e);
+            textarea.focus();
+        }
+    }
+
+    load = (id: string) => {
+        this._currentID = id;
+        this.loadPreview();
+        _get("/config/emails/" + id, null, (req: XMLHttpRequest) => {
+            if (req.readyState == 4) {
+                if (req.status != 200) {
+                    window.notifications.customError("loadTemplateError", window.lang.notif("errorFailureCheckLogs"));
+                    return;
+                }
+                if (this._names[id] !== undefined) {
+                    this._header.textContent = this._names[id];
+                } 
+                const templ = req.response as templateEmail;
+                this._textArea.value = templ.content;
+                this._content = templ.content;
+                const colors = ["info", "urge", "positive", "neutral"];
+                let innerHTML = '';
+                for (let i = 0; i < templ.variables.length; i++) {
+                    let ci = i % colors.length;
+                    innerHTML += '<span class="button ~' + colors[ci] +' !normal mb-1" style="margin-left: 0.25rem; margin-right: 0.25rem;"></span>'
+                }
+                this._variables.innerHTML = innerHTML
+                const buttons = this._variables.querySelectorAll("span.button") as NodeListOf<HTMLSpanElement>;
+                for (let i = 0; i < templ.variables.length; i++) {
+                    buttons[i].innerHTML = `<span class="monospace">` + templ.variables[i] + `</span>`;
+                    buttons[i].onclick = () => this.insert(this._textArea, templ.variables[i]);
+                }
+                window.modals.editor.show();
+            }
+        })
+    }
+    loadPreview = () => {
+        _post("/config/emails/" + this._currentID + "/test", { "content": this._textArea.value }, (req: XMLHttpRequest) => {
+            if (req.readyState == 4) {
+                if (req.status != 200) {
+                    window.notifications.customError("loadTemplateError", window.lang.notif("errorFailureCheckLogs"));
+                    return;
+                }
+                this._preview.innerHTML = req.response.html;
+            }
+        }, true);
+    }
+    constructor() {
+        _get("/config/emails", null, (req: XMLHttpRequest) => {
+            if (req.readyState == 4) {
+                if (req.status != 200) {
+                    window.notifications.customError("loadTemplateError", window.lang.notif("errorFailureCheckLogs"));
+                    return;
+                }
+                this._names = req.response;
+            }
+        });
+    
+        let timeout: number;
+        const finishInterval = 1000;
+        this._textArea.onkeyup = () => {
+            clearTimeout(timeout);
+            timeout = setTimeout(this.loadPreview, finishInterval);
+        };
+        this._textArea.onkeydown = () => {
+            clearTimeout(timeout);
+        };
+
+        this._form.onsubmit = (event: Event) => {
+            if (this._textArea.value == this._content) {
+                window.modals.editor.close();
+                return;
+            }
+            event.preventDefault()
+            _post("/config/emails/" + this._currentID, { "content": this._textArea.value }, (req: XMLHttpRequest) => {
+                if (req.readyState == 4) {
+                    window.modals.editor.close();
+                    if (req.status != 200) {
+                        window.notifications.customError("saveEmailError", window.lang.notif("errorSaveEmail"));
+                        return;
+                    }
+                    window.notifications.customSuccess("saveEmail", window.lang.notif("saveEmail"));
+                }
+            });
+        };
+    }
+}
+
+(window as any).ee = () => { (window as any).ee = new EmailEditor(); };

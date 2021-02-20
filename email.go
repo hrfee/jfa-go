@@ -33,14 +33,14 @@ type Mailgun struct {
 func (mg *Mailgun) send(fromName, fromAddr string, email *Email, address ...string) error {
 	message := mg.client.NewMessage(
 		fmt.Sprintf("%s <%s>", fromName, fromAddr),
-		email.subject,
-		email.text,
+		email.Subject,
+		email.Text,
 	)
 	for _, a := range address {
 		// Adding variable tells mailgun to do a batch send, so users don't see other recipients.
 		message.AddRecipientAndVariables(a, map[string]interface{}{"unique_id": a})
 	}
-	message.SetHtml(email.html)
+	message.SetHtml(email.HTML)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 	_, _, err := mg.client.Send(ctx, message)
@@ -69,10 +69,10 @@ func (sm *SMTP) send(fromName, fromAddr string, email *Email, address ...string)
 		go func(addr string) {
 			defer wg.Done()
 			e := jEmail.NewEmail()
-			e.Subject = email.subject
+			e.Subject = email.Subject
 			e.From = from
-			e.Text = []byte(email.text)
-			e.HTML = []byte(email.html)
+			e.Text = []byte(email.Text)
+			e.HTML = []byte(email.HTML)
 			e.To = []string{addr}
 			if sm.sslTLS {
 				err = e.SendWithTLS(server, sm.auth, tlsConfig)
@@ -94,8 +94,9 @@ type Emailer struct {
 
 // Email stores content.
 type Email struct {
-	subject    string
-	html, text string
+	Subject string `json:"subject"`
+	HTML    string `json:"html"`
+	Text    string `json:"text"`
 }
 
 func (emailer *Emailer) formatExpiry(expiry time.Time, tzaware bool, datePattern, timePattern string) (d, t, expiresIn string) {
@@ -213,7 +214,7 @@ func (emailer *Emailer) construct(app *appContext, section, keyFragment string, 
 
 func (emailer *Emailer) constructConfirmation(code, username, key string, app *appContext, noSub bool) (*Email, error) {
 	email := &Email{
-		subject: app.config.Section("email_confirmation").Key("subject").MustString(emailer.lang.EmailConfirmation.get("title")),
+		Subject: app.config.Section("email_confirmation").Key("subject").MustString(emailer.lang.EmailConfirmation.get("title")),
 	}
 	var err error
 	template := map[string]interface{}{
@@ -245,9 +246,9 @@ func (emailer *Emailer) constructConfirmation(code, username, key string, app *a
 				content = strings.ReplaceAll(content, v, replaceWith.(string))
 			}
 		}
-		email, err = emailer.constructTemplate(email.subject, content, app)
+		email, err = emailer.constructTemplate(email.Subject, content, app)
 	} else {
-		email.html, email.text, err = emailer.construct(app, "email_confirmation", "email_", template)
+		email.HTML, email.Text, err = emailer.construct(app, "email_confirmation", "email_", template)
 	}
 	if err != nil {
 		return nil, err
@@ -256,13 +257,13 @@ func (emailer *Emailer) constructConfirmation(code, username, key string, app *a
 }
 
 func (emailer *Emailer) constructTemplate(subject, md string, app *appContext) (*Email, error) {
-	email := &Email{subject: subject}
+	email := &Email{Subject: subject}
 	renderer := html.NewRenderer(html.RendererOptions{Flags: html.Smartypants})
 	html := markdown.ToHTML([]byte(md), nil, renderer)
 	text := stripMarkdown(md)
 	message := app.config.Section("email").Key("message").String()
 	var err error
-	email.html, email.text, err = emailer.construct(app, "template_email", "email_", map[string]interface{}{
+	email.HTML, email.Text, err = emailer.construct(app, "template_email", "email_", map[string]interface{}{
 		"text":      template.HTML(html),
 		"plaintext": text,
 		"message":   message,
@@ -275,7 +276,7 @@ func (emailer *Emailer) constructTemplate(subject, md string, app *appContext) (
 
 func (emailer *Emailer) constructInvite(code string, invite Invite, app *appContext, noSub bool) (*Email, error) {
 	email := &Email{
-		subject: app.config.Section("email_confirmation").Key("subject").MustString(emailer.lang.InviteEmail.get("title")),
+		Subject: app.config.Section("email_confirmation").Key("subject").MustString(emailer.lang.InviteEmail.get("title")),
 	}
 	expiry := invite.ValidTill
 	d, t, expiresIn := emailer.formatExpiry(expiry, false, app.datePattern, app.timePattern)
@@ -312,9 +313,9 @@ func (emailer *Emailer) constructInvite(code string, invite Invite, app *appCont
 				content = strings.ReplaceAll(content, v, replaceWith.(string))
 			}
 		}
-		email, err = emailer.constructTemplate(email.subject, content, app)
+		email, err = emailer.constructTemplate(email.Subject, content, app)
 	} else {
-		email.html, email.text, err = emailer.construct(app, "invite_emails", "email_", template)
+		email.HTML, email.Text, err = emailer.construct(app, "invite_emails", "email_", template)
 	}
 	if err != nil {
 		return nil, err
@@ -324,7 +325,7 @@ func (emailer *Emailer) constructInvite(code string, invite Invite, app *appCont
 
 func (emailer *Emailer) constructExpiry(code string, invite Invite, app *appContext, noSub bool) (*Email, error) {
 	email := &Email{
-		subject: emailer.lang.InviteExpiry.get("title"),
+		Subject: emailer.lang.InviteExpiry.get("title"),
 	}
 	expiry := app.formatDatetime(invite.ValidTill)
 	template := map[string]interface{}{
@@ -347,9 +348,9 @@ func (emailer *Emailer) constructExpiry(code string, invite Invite, app *appCont
 				content = strings.ReplaceAll(content, v, replaceWith.(string))
 			}
 		}
-		email, err = emailer.constructTemplate(email.subject, content, app)
+		email, err = emailer.constructTemplate(email.Subject, content, app)
 	} else {
-		email.html, email.text, err = emailer.construct(app, "notifications", "expiry_", template)
+		email.HTML, email.Text, err = emailer.construct(app, "notifications", "expiry_", template)
 	}
 	if err != nil {
 		return nil, err
@@ -359,7 +360,7 @@ func (emailer *Emailer) constructExpiry(code string, invite Invite, app *appCont
 
 func (emailer *Emailer) constructCreated(code, username, address string, invite Invite, app *appContext, noSub bool) (*Email, error) {
 	email := &Email{
-		subject: emailer.lang.UserCreated.get("title"),
+		Subject: emailer.lang.UserCreated.get("title"),
 	}
 	template := map[string]interface{}{
 		"nameString":         emailer.lang.Strings.get("name"),
@@ -397,9 +398,9 @@ func (emailer *Emailer) constructCreated(code, username, address string, invite 
 				content = strings.ReplaceAll(content, v, replaceWith.(string))
 			}
 		}
-		email, err = emailer.constructTemplate(email.subject, content, app)
+		email, err = emailer.constructTemplate(email.Subject, content, app)
 	} else {
-		email.html, email.text, err = emailer.construct(app, "notifications", "created_", template)
+		email.HTML, email.Text, err = emailer.construct(app, "notifications", "created_", template)
 	}
 	if err != nil {
 		return nil, err
@@ -409,7 +410,7 @@ func (emailer *Emailer) constructCreated(code, username, address string, invite 
 
 func (emailer *Emailer) constructReset(pwr PasswordReset, app *appContext, noSub bool) (*Email, error) {
 	email := &Email{
-		subject: app.config.Section("password_resets").Key("subject").MustString(emailer.lang.PasswordReset.get("title")),
+		Subject: app.config.Section("password_resets").Key("subject").MustString(emailer.lang.PasswordReset.get("title")),
 	}
 	d, t, expiresIn := emailer.formatExpiry(pwr.Expiry, true, app.datePattern, app.timePattern)
 	message := app.config.Section("email").Key("message").String()
@@ -446,9 +447,9 @@ func (emailer *Emailer) constructReset(pwr PasswordReset, app *appContext, noSub
 				content = strings.ReplaceAll(content, v, replaceWith.(string))
 			}
 		}
-		email, err = emailer.constructTemplate(email.subject, content, app)
+		email, err = emailer.constructTemplate(email.Subject, content, app)
 	} else {
-		email.html, email.text, err = emailer.construct(app, "password_resets", "email_", template)
+		email.HTML, email.Text, err = emailer.construct(app, "password_resets", "email_", template)
 	}
 	if err != nil {
 		return nil, err
@@ -458,7 +459,7 @@ func (emailer *Emailer) constructReset(pwr PasswordReset, app *appContext, noSub
 
 func (emailer *Emailer) constructDeleted(reason string, app *appContext, noSub bool) (*Email, error) {
 	email := &Email{
-		subject: app.config.Section("deletion").Key("subject").MustString(emailer.lang.UserDeleted.get("title")),
+		Subject: app.config.Section("deletion").Key("subject").MustString(emailer.lang.UserDeleted.get("title")),
 	}
 	template := map[string]interface{}{
 		"yourAccountWasDeleted": emailer.lang.UserDeleted.get("yourAccountWasDeleted"),
@@ -483,9 +484,9 @@ func (emailer *Emailer) constructDeleted(reason string, app *appContext, noSub b
 				content = strings.ReplaceAll(content, v, replaceWith.(string))
 			}
 		}
-		email, err = emailer.constructTemplate(email.subject, content, app)
+		email, err = emailer.constructTemplate(email.Subject, content, app)
 	} else {
-		email.html, email.text, err = emailer.construct(app, "deletion", "email_", template)
+		email.HTML, email.Text, err = emailer.construct(app, "deletion", "email_", template)
 	}
 	if err != nil {
 		return nil, err
@@ -495,7 +496,7 @@ func (emailer *Emailer) constructDeleted(reason string, app *appContext, noSub b
 
 func (emailer *Emailer) constructWelcome(username string, app *appContext, noSub bool) (*Email, error) {
 	email := &Email{
-		subject: app.config.Section("welcome_email").Key("subject").MustString(emailer.lang.WelcomeEmail.get("title")),
+		Subject: app.config.Section("welcome_email").Key("subject").MustString(emailer.lang.WelcomeEmail.get("title")),
 	}
 	template := map[string]interface{}{
 		"welcome":           emailer.lang.WelcomeEmail.get("welcome"),
@@ -523,9 +524,9 @@ func (emailer *Emailer) constructWelcome(username string, app *appContext, noSub
 				content = strings.ReplaceAll(content, v, replaceWith.(string))
 			}
 		}
-		email, err = emailer.constructTemplate(email.subject, content, app)
+		email, err = emailer.constructTemplate(email.Subject, content, app)
 	} else {
-		email.html, email.text, err = emailer.construct(app, "welcome_email", "email_", template)
+		email.HTML, email.Text, err = emailer.construct(app, "welcome_email", "email_", template)
 	}
 	if err != nil {
 		return nil, err

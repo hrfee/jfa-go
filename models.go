@@ -180,3 +180,7 @@ type emailListDTO map[string]string
 type emailSetDTO struct {
 	Content string `json:"content"`
 }
+
+type emailTestDTO struct {
+	Address string `json:"address"`
+}

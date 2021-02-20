@@ -53,6 +53,8 @@ window.availableProfiles = window.availableProfiles || [];
     window.modals.addProfile = new Modal(document.getElementById("modal-add-profile"));
 
     window.modals.announce = new Modal(document.getElementById("modal-announce"));
+    
+    window.modals.editor = new Modal(document.getElementById("modal-editor"));
 })();
 
 var inviteCreator = new createInvite();

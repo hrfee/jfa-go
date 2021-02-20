@@ -44,7 +44,9 @@ func stripMarkdown(md string) string {
 	}
 	fullLinks := make([]string, len(openSquares))
 	for i := range openSquares {
-		fullLinks[i] = md[openSquares[i] : closeBrackets[i]+1]
+		if openSquares[i] != -1 && closeBrackets[i] != -1 {
+			fullLinks[i] = md[openSquares[i] : closeBrackets[i]+1]
+		}
 	}
 	for i, _ := range openSquares {
 		md = strings.Replace(md, fullLinks[i], links[i], 1)

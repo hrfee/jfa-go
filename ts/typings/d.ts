@@ -75,6 +75,7 @@ declare interface Modals {
     profiles: Modal;
     addProfile: Modal;
     announce: Modal;
+    editor: Modal;
 }
 
 interface Invite {

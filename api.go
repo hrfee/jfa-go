@@ -1375,6 +1375,84 @@ func (app *appContext) SetEmailState(gc *gin.Context) {
 	respondBool(200, true, gc)
 }
 
+// @Summary Render and return an email for testing purposes.
+// @Produce json
+// @Param customEmail body customEmail true "Content = email (in markdown)."
+// @Success 200 {object} Email
+// @Failure 400 {object} boolResponse
+// @Failure 500 {object} boolResponse
+// @Router /config/emails/{id}/test [post]
+// @tags Configuration
+func (app *appContext) GetTestEmail(gc *gin.Context) {
+	var req customEmail
+	gc.BindJSON(&req)
+	if req.Content == "" {
+		app.debug.Println("Test failed: Content was empty")
+		respondBool(400, false, gc)
+		return
+	}
+	id := gc.Param("id")
+	var msg *Email
+	var err error
+	var cache customEmail
+	var restore func(cache customEmail)
+	username := app.storage.lang.Email[app.storage.lang.chosenEmailLang].Strings.get("username")
+	emailAddress := app.storage.lang.Email[app.storage.lang.chosenEmailLang].Strings.get("emailAddress")
+	if id == "UserCreated" {
+		cache = app.storage.customEmails.UserCreated
+		restore = func(cache customEmail) { app.storage.customEmails.UserCreated = cache }
+		app.storage.customEmails.UserCreated.Content = req.Content
+		app.storage.customEmails.UserCreated.Enabled = true
+		msg, err = app.email.constructCreated("xxxxxx", username, emailAddress, Invite{}, app, false)
+	} else if id == "InviteExpiry" {
+		cache = app.storage.customEmails.InviteExpiry
+		restore = func(cache customEmail) { app.storage.customEmails.InviteExpiry = cache }
+		app.storage.customEmails.InviteExpiry.Content = req.Content
+		app.storage.customEmails.InviteExpiry.Enabled = true
+		msg, err = app.email.constructExpiry("xxxxxx", Invite{}, app, false)
+	} else if id == "PasswordReset" {
+		cache = app.storage.customEmails.PasswordReset
+		restore = func(cache customEmail) { app.storage.customEmails.PasswordReset = cache }
+		app.storage.customEmails.PasswordReset.Content = req.Content
+		app.storage.customEmails.PasswordReset.Enabled = true
+		msg, err = app.email.constructReset(PasswordReset{Pin: "12-34-56", Username: username}, app, false)
+	} else if id == "UserDeleted" {
+		cache = app.storage.customEmails.UserDeleted
+		restore = func(cache customEmail) { app.storage.customEmails.UserDeleted = cache }
+		app.storage.customEmails.UserDeleted.Content = req.Content
+		app.storage.customEmails.UserDeleted.Enabled = true
+		msg, err = app.email.constructDeleted(app.storage.lang.Email[app.storage.lang.chosenEmailLang].UserDeleted.get("reason"), app, false)
+	} else if id == "InviteEmail" {
+		cache = app.storage.customEmails.InviteEmail
+		restore = func(cache customEmail) { app.storage.customEmails.InviteEmail = cache }
+		app.storage.customEmails.InviteEmail.Content = req.Content
+		app.storage.customEmails.InviteEmail.Enabled = true
+		msg, err = app.email.constructInvite("xxxxxx", Invite{}, app, false)
+	} else if id == "WelcomeEmail" {
+		cache = app.storage.customEmails.WelcomeEmail
+		restore = func(cache customEmail) { app.storage.customEmails.WelcomeEmail = cache }
+		app.storage.customEmails.WelcomeEmail.Content = req.Content
+		app.storage.customEmails.WelcomeEmail.Enabled = true
+		msg, err = app.email.constructWelcome(username, app, false)
+	} else if id == "EmailConfirmation" {
+		cache = app.storage.customEmails.EmailConfirmation
+		restore = func(cache customEmail) { app.storage.customEmails.EmailConfirmation = cache }
+		app.storage.customEmails.EmailConfirmation.Content = req.Content
+		app.storage.customEmails.EmailConfirmation.Enabled = true
+		msg, err = app.email.constructConfirmation("xxxxxx", username, "xxxxxx", app, false)
+	} else {
+		respondBool(400, false, gc)
+		return
+	}
+	restore(cache)
+	if err != nil {
+		respondBool(500, false, gc)
+		app.err.Printf("Failed to construct test email: %s", err)
+		return
+	}
+	gc.JSON(200, msg)
+}
+
 // @Summary Returns the boilerplate email and list of used variables in it.
 // @Produce json
 // @Success 200 {object} customEmail
@@ -1395,7 +1473,7 @@ func (app *appContext) GetEmail(gc *gin.Context) {
 		if content == "" {
 			newEmail = true
 			msg, err = app.email.constructCreated("", "", "", Invite{}, app, true)
-			content = msg.text
+			content = msg.Text
 		} else {
 			variables = app.storage.customEmails.UserCreated.Variables
 		}
@@ -1406,7 +1484,7 @@ func (app *appContext) GetEmail(gc *gin.Context) {
 		if content == "" {
 			newEmail = true
 			msg, err = app.email.constructExpiry("", Invite{}, app, true)
-			content = msg.text
+			content = msg.Text
 		} else {
 			variables = app.storage.customEmails.InviteExpiry.Variables
 		}
@@ -1417,7 +1495,7 @@ func (app *appContext) GetEmail(gc *gin.Context) {
 		if content == "" {
 			newEmail = true
 			msg, err = app.email.constructReset(PasswordReset{}, app, true)
-			content = msg.text
+			content = msg.Text
 		} else {
 			variables = app.storage.customEmails.PasswordReset.Variables
 		}
@@ -1428,7 +1506,7 @@ func (app *appContext) GetEmail(gc *gin.Context) {
 		if content == "" {
 			newEmail = true
 			msg, err = app.email.constructDeleted("", app, true)
-			content = msg.text
+			content = msg.Text
 		} else {
 			variables = app.storage.customEmails.UserDeleted.Variables
 		}
@@ -1439,7 +1517,7 @@ func (app *appContext) GetEmail(gc *gin.Context) {
 		if content == "" {
 			newEmail = true
 			msg, err = app.email.constructInvite("", Invite{}, app, true)
-			content = msg.text
+			content = msg.Text
 		} else {
 			variables = app.storage.customEmails.InviteEmail.Variables
 		}
@@ -1450,7 +1528,7 @@ func (app *appContext) GetEmail(gc *gin.Context) {
 		if content == "" {
 			newEmail = true
 			msg, err = app.email.constructWelcome("", app, true)
-			content = msg.text
+			content = msg.Text
 		} else {
 			variables = app.storage.customEmails.WelcomeEmail.Variables
 		}
@@ -1461,7 +1539,7 @@ func (app *appContext) GetEmail(gc *gin.Context) {
 		if content == "" {
 			newEmail = true
 			msg, err = app.email.constructConfirmation("", "", "", app, true)
-			content = msg.text
+			content = msg.Text
 		} else {
 			variables = app.storage.customEmails.EmailConfirmation.Variables
 		}

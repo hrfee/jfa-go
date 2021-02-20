@@ -88,6 +88,10 @@ div.card:contains(section.banner.footer) {
     margin-left: 0.5rem;
 }
 
+.mr-half {
+    margin-right: 0.5rem;
+}
+
 .mr-1 {
     margin-right: 1rem;
 }
