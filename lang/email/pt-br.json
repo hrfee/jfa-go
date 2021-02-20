@@ -10,25 +10,29 @@
         "title": "Aviso: Usuário criado",
         "aUserWasCreated": "Um usuário foi criado usando o código {code}.",
         "time": "Tempo",
-        "notificationNotice": "Nota: Os emails de notificação podem ser alternados no painel do administrador."
+        "notificationNotice": "Nota: Os emails de notificação podem ser alternados no painel do administrador.",
+        "name": "Criação de usuário"
     },
     "inviteExpiry": {
         "title": "Aviso: Convite expirado",
         "inviteExpired": "Convite expirado.",
         "expiredAt": "O código {code} expirou em {time}.",
-        "notificationNotice": "Nota: Os emails de notificação podem ser alternados no painel do administrador."
+        "notificationNotice": "Nota: Os emails de notificação podem ser alternados no painel do administrador.",
+        "name": "Convite Expirado"
     },
     "passwordReset": {
         "title": "Redefinir senha foi solicitada - Jellyfin",
         "someoneHasRequestedReset": "Alguém recentemente solicitou uma redefinição de senha no Jellyfin.",
         "ifItWasYou": "Se foi você, insira o PIN abaixo.",
         "codeExpiry": "O código irá expirar em {date}, ás {time}, que está em {expiresInMinutes}.",
-        "pin": "PIN"
+        "pin": "PIN",
+        "name": "Redefinir senha"
     },
     "userDeleted": {
         "title": "Sua conta foi excluída - Jellyfin",
         "yourAccountWasDeleted": "Sua conta Jellyfin foi excluída.",
-        "reason": "Razão"
+        "reason": "Razão",
+        "name": "Exclusão do usuário"
     },
     "inviteEmail": {
         "title": "Convite - Jellyfin",
@@ -36,17 +40,20 @@
         "youHaveBeenInvited": "Você recebeu um convite para o Jellyfin.",
         "toJoin": "Para participar, clique no link abaixo.",
         "inviteExpiry": "Este convite expira em {date} às {time}, que é em {expiresInMinutes}, então seja rápido.",
-        "linkButton": "Crie sua conta"
+        "linkButton": "Crie sua conta",
+        "name": "Convide por email"
     },
     "welcomeEmail": {
         "title": "Bem vindo ao Jellyfin",
         "welcome": "Bem vindo ao Jellyfin!",
-        "youCanLoginWith": "Você pode fazer o login com os detalhes abaixo",
-        "jellyfinURL": "URL"
+        "youCanLoginWith": "Abaixo está os detalhes para fazer o login",
+        "jellyfinURL": "URL",
+        "name": "Email de Boas vindas"
     },
     "emailConfirmation": {
         "title": "Confirme seu email - Jellyfin",
         "clickBelow": "Clique no link abaixo para confirmar seu endereço de e-mail e começar a usar o Jellyfin.",
-        "confirmEmail": "Confirmar Email"
+        "confirmEmail": "Confirmar Email",
+        "name": "Email de Confirmação"
     }
 }
