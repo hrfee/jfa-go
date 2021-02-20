@@ -18,7 +18,6 @@ import (
 	jEmail "github.com/jordan-wright/email"
 	"github.com/knz/strtime"
 	"github.com/mailgun/mailgun-go/v4"
-	stripmd "github.com/writeas/go-strip-markdown"
 )
 
 // implements email sending, right now via smtp or mailgun.
@@ -260,7 +259,7 @@ func (emailer *Emailer) constructTemplate(subject, md string, app *appContext) (
 	email := &Email{subject: subject}
 	renderer := html.NewRenderer(html.RendererOptions{Flags: html.Smartypants})
 	html := markdown.ToHTML([]byte(md), nil, renderer)
-	text := strings.TrimPrefix(strings.TrimSuffix(stripmd.Strip(md), "</p>"), "<p>")
+	text := stripMarkdown(md)
 	message := app.config.Section("email").Key("message").String()
 	var err error
 	email.html, email.text, err = emailer.construct(app, "template_email", "email_", map[string]interface{}{
