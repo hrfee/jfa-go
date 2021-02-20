@@ -8,21 +8,21 @@
     },
     "userCreated": {
         "title": "Mitteilung: Benutzer erstellt",
-        "aUserWasCreated": "Ein Benutzer wurde unter Verwendung des Codes {n] erstellt.",
+        "aUserWasCreated": "Ein Benutzer wurde unter Verwendung des Codes {code} erstellt.",
         "time": "Zeit",
         "notificationNotice": "Hinweis: Benachrichtigungs-E-Mails können auf dem Administrator-Dashboard umgeschalten werden."
     },
     "inviteExpiry": {
         "title": "Mitteilung: Invite abgelaufen",
         "inviteExpired": "Invite abgelaufen.",
-        "expiredAt": "Code {code} lief um {code} ab.",
+        "expiredAt": "Code {code} lief um {time} ab.",
         "notificationNotice": "Hinweis: Benachrichtigungs-E-Mails können auf dem Administrator-Dashboard umgeschalten werden."
     },
     "passwordReset": {
         "title": "Passwortzurücksetzung angefordert - Jellyfin",
         "someoneHasRequestedReset": "Jemand hat vor kurzem eine Passwortzurücksetzung auf Jellyfin angefordert.",
         "ifItWasYou": "Wenn du das warst, gib die PIN unten in die Eingabeaufforderung ein.",
-        "codeExpiry": "Der Code wird am {time}, um [n} UTC ablaufen, was in {date} ist.",
+        "codeExpiry": "Der Code wird am {date}, um {time} UTC ablaufen, was in {expiresInMinutes} ist.",
         "pin": "PIN"
     },
     "userDeleted": {
@@ -35,7 +35,7 @@
         "hello": "Hallo",
         "youHaveBeenInvited": "Du wurdest zu Jellyfin eingeladen.",
         "toJoin": "Um beizutreten, folge dem untenstehenden Link.",
-        "inviteExpiry": "Dieser Invite wird am {time}; um {expiresInMinutes} ablaufen, was in {date} ist, also handle schnell.",
+        "inviteExpiry": "Dieser Invite wird am {date}; um {time} ablaufen, was in {expiresInMinutes} ist, also handle schnell.",
         "linkButton": "Richte dein Konto ein"
     },
     "welcomeEmail": {
