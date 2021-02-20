@@ -10,25 +10,29 @@
         "title": "Melding: Gebruiker aangemaakt",
         "aUserWasCreated": "Er is een gebruiker aangemaakt door gebruik te maken van code {code}.",
         "time": "Tijdstip",
-        "notificationNotice": "Opmerking: Meldingse-mails kunnen worden aan- of uitgezet via het beheerdersdashboard."
+        "notificationNotice": "Opmerking: Meldingse-mails kunnen worden aan- of uitgezet via het beheerdersdashboard.",
+        "name": "Gebruiker aangemaakt"
     },
     "inviteExpiry": {
         "title": "Melding: Uitnodiging verlopen",
         "inviteExpired": "Uitnodiging verlopen.",
         "expiredAt": "Code {code} is verlopen op {time}.",
-        "notificationNotice": "Opmerking: Meldingse-mails kunnen worden aan- of uitgezet via het beheerdersdashboard."
+        "notificationNotice": "Opmerking: Meldingse-mails kunnen worden aan- of uitgezet via het beheerdersdashboard.",
+        "name": "Uitnodiging verlopen"
     },
     "passwordReset": {
         "title": "Wachtwoordreset aangevraagd - Jellyfin",
         "someoneHasRequestedReset": "Iemand heeft recentelijk een wachtwoordreset aangevraagd in Jellyfin.",
         "ifItWasYou": "Als jij dit was, voor dan onderstaande PIN in.",
         "codeExpiry": "De code verloopt op {date}, op {time} UTC, dat is over {expiresInMinutes}.",
-        "pin": "PIN"
+        "pin": "PIN",
+        "name": "Wachtwoordreset"
     },
     "userDeleted": {
         "title": "Je account is verwijderd - Jellyfin",
         "yourAccountWasDeleted": "Je Jellyfin account is verwijderd.",
-        "reason": "Reden"
+        "reason": "Reden",
+        "name": "Gebruiker verwijderd"
     },
     "inviteEmail": {
         "title": "Uitnodiging - Jellyfin",
@@ -36,17 +40,20 @@
         "youHaveBeenInvited": "Je bent uitgenodigd voor Jellyfin.",
         "toJoin": "Volg onderstaande link om door te gaan.",
         "inviteExpiry": "Deze uitnodiging verloopt op {date}, om {time}, dat is over {expiresInMinutes}, dus wees er snel bij.",
-        "linkButton": "Maak account aan"
+        "linkButton": "Maak account aan",
+        "name": "Uitnodigingse-mail"
     },
     "welcomeEmail": {
         "title": "Welkom bij Jellyfin",
         "welcome": "Welkom bij Jellyfin!",
         "youCanLoginWith": "Je kunt inloggen met onderstaande gegevens",
-        "jellyfinURL": "URL"
+        "jellyfinURL": "URL",
+        "name": "Welkomste-mail"
     },
     "emailConfirmation": {
         "title": "Bevestig je e-mailadres - Jellyfin",
         "clickBelow": "Klik op onderstaande link om je e-mailadres te bevestigen en te beginnen met Jellyfin.",
-        "confirmEmail": "Bevestig e-mailadres"
+        "confirmEmail": "Bevestig e-mailadres",
+        "name": "Bevestingingse-mail"
     }
 }
