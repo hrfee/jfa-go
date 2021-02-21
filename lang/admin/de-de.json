@@ -65,7 +65,17 @@
         "notifyUserCreation": "Bei Benutzererstellung",
         "label": "Label",
         "settingsRestarting": "Neustart…",
-        "settingsRestart": "Neustart"
+        "settingsRestart": "Neustart",
+        "variables": "Variablen",
+        "preview": "Vorschau",
+        "reset": "Zurücksetzen",
+        "edit": "Bearbeiten",
+        "customizeEmails": "E-Mails anpassen",
+        "customizeEmailsDescription": "Wenn du jfa-go's E-Mail-Vorlagen nicht benutzen willst, kannst du deinen eigenen unter Verwendung von Markdown erstellen.",
+        "announce": "Ankündigen",
+        "subject": "E-Mail-Betreff",
+        "message": "Nachricht",
+        "markdownSupported": "Markdown wird unterstützt."
     },
     "notifications": {
         "changedEmailAddress": "E-Mail-Adresse von {n} geändert.",
@@ -94,7 +104,10 @@
         "errorFailureCheckLogs": "Fehlgeschlagen (überprüfe die Konsole/Logs)",
         "errorPartialFailureCheckLogs": "Teilweiser Fehlschlag (überprüfe die Konsole/Logs)",
         "errorUserCreated": "Fehler beim Erstellen des Benutzers {n}.",
-        "errorSendWelcomeEmail": "Fehler beim Senden der Willkommens-E-Mail (überprüfe die Konsole/Logs)"
+        "errorSendWelcomeEmail": "Fehler beim Senden der Willkommens-E-Mail (überprüfe die Konsole/Logs)",
+        "saveEmail": "E-Mail gespeichert.",
+        "errorSaveEmail": "Fehler beim Speichern der E-Mail.",
+        "sentAnnouncement": "Ankündigung gesendet."
     },
     "quantityStrings": {
         "modifySettingsFor": {
@@ -120,6 +133,10 @@
         "appliedSettings": {
             "singular": "Einstellungen auf {n} Benutzer angewendet.",
             "plural": "Einstellungen auf {n} Benutzer angewendet."
+        },
+        "announceTo": {
+            "singular": "{n} Benutzer mitteilen",
+            "plural": "{n} Benutzern mitteilen"
         }
     }
 }
