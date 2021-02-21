@@ -10,25 +10,29 @@
         "title": "Mitteilung: Benutzer erstellt",
         "aUserWasCreated": "Ein Benutzer wurde unter Verwendung des Codes {code} erstellt.",
         "time": "Zeit",
-        "notificationNotice": "Hinweis: Benachrichtigungs-E-Mails können auf dem Administrator-Dashboard umgeschalten werden."
+        "notificationNotice": "Hinweis: Benachrichtigungs-E-Mails können auf dem Administrator-Dashboard umgeschalten werden.",
+        "name": "Benutzererstellung"
     },
     "inviteExpiry": {
         "title": "Mitteilung: Invite abgelaufen",
         "inviteExpired": "Invite abgelaufen.",
         "expiredAt": "Code {code} lief um {time} ab.",
-        "notificationNotice": "Hinweis: Benachrichtigungs-E-Mails können auf dem Administrator-Dashboard umgeschalten werden."
+        "notificationNotice": "Hinweis: Benachrichtigungs-E-Mails können auf dem Administrator-Dashboard umgeschalten werden.",
+        "name": "Invite Ablaufdatum"
     },
     "passwordReset": {
         "title": "Passwortzurücksetzung angefordert - Jellyfin",
         "someoneHasRequestedReset": "Jemand hat vor kurzem eine Passwortzurücksetzung auf Jellyfin angefordert.",
         "ifItWasYou": "Wenn du das warst, gib die PIN unten in die Eingabeaufforderung ein.",
         "codeExpiry": "Der Code wird am {date}, um {time} UTC ablaufen, was in {expiresInMinutes} ist.",
-        "pin": "PIN"
+        "pin": "PIN",
+        "name": "Passwortzurücksetzung"
     },
     "userDeleted": {
         "title": "Dein Konto wurde gelöscht - Jellyfin",
         "yourAccountWasDeleted": "Dein Jellyfin-Konto wurde gelöscht.",
-        "reason": "Grund"
+        "reason": "Grund",
+        "name": "Benutzerlöschung"
     },
     "inviteEmail": {
         "title": "Invite - Jellyfin",
@@ -36,17 +40,20 @@
         "youHaveBeenInvited": "Du wurdest zu Jellyfin eingeladen.",
         "toJoin": "Um beizutreten, folge dem untenstehenden Link.",
         "inviteExpiry": "Dieser Invite wird am {date}; um {time} ablaufen, was in {expiresInMinutes} ist, also handle schnell.",
-        "linkButton": "Richte dein Konto ein"
+        "linkButton": "Richte dein Konto ein",
+        "name": "Einladungs-E-Mail"
     },
     "welcomeEmail": {
         "title": "Wilkommen bei Jellyfin",
         "welcome": "Willkommen bei Jellyfin!",
         "youCanLoginWith": "Du kannst dich mit den mit den untenstehenden Zugangsdaten anmelden",
-        "jellyfinURL": "URL"
+        "jellyfinURL": "URL",
+        "name": "Willkommens-E-Mail"
     },
     "emailConfirmation": {
         "title": "Bestätige deine E-Mail - Jellyfin",
         "clickBelow": "Klicke den untenstehenden Link, um deine E-Mail-Adresse zu bestätigen, und fange an, Jellyfin zu benutzen.",
-        "confirmEmail": "E-Mail bestätigen"
+        "confirmEmail": "E-Mail bestätigen",
+        "name": "Bestätigungs-E-Mail"
     }
 }
