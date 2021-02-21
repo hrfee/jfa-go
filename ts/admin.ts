@@ -55,6 +55,8 @@ window.availableProfiles = window.availableProfiles || [];
     window.modals.announce = new Modal(document.getElementById("modal-announce"));
     
     window.modals.editor = new Modal(document.getElementById("modal-editor"));
+
+    window.modals.customizeEmails = new Modal(document.getElementById("modal-customize"));
 })();
 
 var inviteCreator = new createInvite();

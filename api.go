@@ -1276,13 +1276,13 @@ func (app *appContext) ModifyConfig(gc *gin.Context) {
 // @tags Configuration
 func (app *appContext) GetEmails(gc *gin.Context) {
 	gc.JSON(200, emailListDTO{
-		"UserCreated":       app.storage.lang.Email["en-us"].UserCreated["name"],
-		"InviteExpiry":      app.storage.lang.Email["en-us"].InviteExpiry["name"],
-		"PasswordReset":     app.storage.lang.Email["en-us"].PasswordReset["name"],
-		"UserDeleted":       app.storage.lang.Email["en-us"].UserDeleted["name"],
-		"InviteEmail":       app.storage.lang.Email["en-us"].InviteEmail["name"],
-		"WelcomeEmail":      app.storage.lang.Email["en-us"].WelcomeEmail["name"],
-		"EmailConfirmation": app.storage.lang.Email["en-us"].EmailConfirmation["name"],
+		"UserCreated":       {Name: app.storage.lang.Email["en-us"].UserCreated["name"], Enabled: app.storage.customEmails.UserCreated.Enabled},
+		"InviteExpiry":      {Name: app.storage.lang.Email["en-us"].InviteExpiry["name"], Enabled: app.storage.customEmails.InviteExpiry.Enabled},
+		"PasswordReset":     {Name: app.storage.lang.Email["en-us"].PasswordReset["name"], Enabled: app.storage.customEmails.PasswordReset.Enabled},
+		"UserDeleted":       {Name: app.storage.lang.Email["en-us"].UserDeleted["name"], Enabled: app.storage.customEmails.UserDeleted.Enabled},
+		"InviteEmail":       {Name: app.storage.lang.Email["en-us"].InviteEmail["name"], Enabled: app.storage.customEmails.InviteEmail.Enabled},
+		"WelcomeEmail":      {Name: app.storage.lang.Email["en-us"].WelcomeEmail["name"], Enabled: app.storage.customEmails.WelcomeEmail.Enabled},
+		"EmailConfirmation": {Name: app.storage.lang.Email["en-us"].EmailConfirmation["name"], Enabled: app.storage.customEmails.EmailConfirmation.Enabled},
 	})
 }
 
@@ -1339,7 +1339,7 @@ func (app *appContext) SetEmail(gc *gin.Context) {
 // @Success 200 {object} boolResponse
 // @Failure 400 {object} boolResponse
 // @Failure 500 {object} boolResponse
-// @Router /config/emails/{id}/{enable/disable} [post]
+// @Router /config/emails/{id}/state/{enable/disable} [post]
 // @tags Configuration
 func (app *appContext) SetEmailState(gc *gin.Context) {
 	id := gc.Param("id")

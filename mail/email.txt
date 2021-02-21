@@ -1,8 +1,11 @@
 {{ .helloUser }}
 
 {{ .someoneHasRequestedReset }}
+
 {{ .ifItWasYou }}
+
 {{ .codeExpiry }}
+
 {{ .ifItWasNotYou }}
 
 {{ .pinString }}: {{ .pin }}

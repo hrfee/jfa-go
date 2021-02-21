@@ -479,14 +479,16 @@ export class settingsList {
     private _sections: { [name: string]: sectionPanel }
     private _buttons: { [name: string]: HTMLSpanElement }
     private _needsRestart: boolean = false;
+    private _emailEditor = new EmailEditor();
 
-    addSection = (name: string, s: Section) => {
+    addSection = (name: string, s: Section, subButton?: HTMLElement) => {
         const section = new sectionPanel(s, name);
         this._sections[name] = section;
         this._panel.appendChild(this._sections[name].asElement());
         const button = document.createElement("span") as HTMLSpanElement;
         button.classList.add("button", "~neutral", "!low", "settings-section-button", "mb-half");
         button.textContent = s.meta.name;
+        if (subButton) { button.appendChild(subButton); }
         button.onclick = () => { this._showPanel(name); };
         if (s.meta.depends_true || s.meta.depends_false) {
             let dependant = splitDependant(name, s.meta.depends_true || s.meta.depends_false);
@@ -581,7 +583,22 @@ export class settingsList {
                 if (name in this._sections) {
                     this._sections[name].update(settings.sections[name]);
                 } else {
-                    this.addSection(name, settings.sections[name]);
+                    if (name == "email") {
+                        const editButton = document.createElement("div");
+                        editButton.classList.add("tooltip", "left");
+                        editButton.innerHTML = `
+                        <span class="button ~neutral !normal">
+                            <i class="icon ri-edit-line"></i>
+                        </span>
+                        <span class="content sm">
+                        ${window.lang.get("strings", "customizeEmails")}
+                        </span>
+                        `;
+                        (editButton.querySelector("span.button") as HTMLSpanElement).onclick = this._emailEditor.showList;
+                        this.addSection(name, settings.sections[name], editButton);
+                    } else {
+                        this.addSection(name, settings.sections[name]);
+                    }
                 }
             }
             this._showPanel(settings.order[0]);
@@ -665,15 +682,22 @@ interface templateEmail {
     variables: string[];
 }
 
+interface emailListEl {
+    name: string;
+    enabled: boolean;
+}
+
 class EmailEditor {
     private _currentID: string;
-    private _names: { [id: string]: string };
+    private _names: { [id: string]: emailListEl };
     private _content: string;
     private _form = document.getElementById("form-editor") as HTMLFormElement;
     private _header = document.getElementById("header-editor") as HTMLSpanElement;
     private _variables = document.getElementById("editor-variables") as HTMLDivElement;
     private _textArea = document.getElementById("textarea-editor") as HTMLTextAreaElement;
     private _preview = document.getElementById("editor-preview") as HTMLDivElement;
+    private _timeout: number;
+    private _finishInterval = 1000;
 
     insert = (textarea: HTMLTextAreaElement, text: string) => { // https://kubyshkin.name/posts/insert-text-into-textarea-at-cursor-position <3
         const isSuccess = document.execCommand("insertText", false, text);
@@ -693,9 +717,8 @@ class EmailEditor {
         }
     }
 
-    load = (id: string) => {
+    loadEditor = (id: string) => {
         this._currentID = id;
-        this.loadPreview();
         _get("/config/emails/" + id, null, (req: XMLHttpRequest) => {
             if (req.readyState == 4) {
                 if (req.status != 200) {
@@ -703,10 +726,11 @@ class EmailEditor {
                     return;
                 }
                 if (this._names[id] !== undefined) {
-                    this._header.textContent = this._names[id];
+                    this._header.textContent = this._names[id].name;
                 } 
                 const templ = req.response as templateEmail;
                 this._textArea.value = templ.content;
+                this.loadPreview();
                 this._content = templ.content;
                 const colors = ["info", "urge", "positive", "neutral"];
                 let innerHTML = '';
@@ -718,7 +742,10 @@ class EmailEditor {
                 const buttons = this._variables.querySelectorAll("span.button") as NodeListOf<HTMLSpanElement>;
                 for (let i = 0; i < templ.variables.length; i++) {
                     buttons[i].innerHTML = `<span class="monospace">` + templ.variables[i] + `</span>`;
-                    buttons[i].onclick = () => this.insert(this._textArea, templ.variables[i]);
+                    buttons[i].onclick = () => {
+                        this.insert(this._textArea, templ.variables[i]);
+                        this._timeout = setTimeout(this.loadPreview, this._finishInterval);
+                    }
                 }
                 window.modals.editor.show();
             }
@@ -731,11 +758,12 @@ class EmailEditor {
                     window.notifications.customError("loadTemplateError", window.lang.notif("errorFailureCheckLogs"));
                     return;
                 }
-                this._preview.innerHTML = req.response.html;
+                this._preview.innerHTML = (req.response as Email).html;
             }
         }, true);
     }
-    constructor() {
+
+    showList = () => {
         _get("/config/emails", null, (req: XMLHttpRequest) => {
             if (req.readyState == 4) {
                 if (req.status != 200) {
@@ -743,17 +771,49 @@ class EmailEditor {
                     return;
                 }
                 this._names = req.response;
+                const list = document.getElementById("customize-list") as HTMLDivElement;
+                list.textContent = '';
+                for (let id in this._names) {
+                    const tr = document.createElement("tr") as HTMLTableRowElement;
+                    let resetButton = ``;
+                    if (this._names[id].enabled) {
+                        resetButton = `<i class="icon ri-restart-line" title="${window.lang.get("strings", "reset")}"></i>`;
+                    }
+                    tr.innerHTML = `
+                    <td>${this._names[id].name}</td>
+                    <td>${resetButton}</td>
+                    <td><span class="button ~info !normal" title="${window.lang.get("strings", "edit")}"><i class="icon ri-edit-line"></i></span></td>
+                    `;
+                    (tr.querySelector("span.button") as HTMLSpanElement).onclick = () => {
+                        window.modals.customizeEmails.close()
+                        this.loadEditor(id);
+                    };
+                    if (this._names[id].enabled) {
+                        const rb = tr.querySelector("i.ri-restart-line") as HTMLElement;
+                        rb.onclick = () => _post("/config/emails/" + id + "/state/disable", null, (req: XMLHttpRequest) => {
+                            if (req.readyState == 4) {
+                                if (req.status != 200 && req.status != 204) {
+                                    window.notifications.customError("setEmailStateError", window.lang.notif("errorFailureCheckLogs"));
+                                    return;
+                                }
+                                rb.remove();
+                            }
+                        });
+                    }
+                    list.appendChild(tr);
+                }
+                window.modals.customizeEmails.show();
             }
         });
-    
-        let timeout: number;
-        const finishInterval = 1000;
+    }
+
+    constructor() {
         this._textArea.onkeyup = () => {
-            clearTimeout(timeout);
-            timeout = setTimeout(this.loadPreview, finishInterval);
+            clearTimeout(this._timeout);
+            this._timeout = setTimeout(this.loadPreview, this._finishInterval);
         };
         this._textArea.onkeydown = () => {
-            clearTimeout(timeout);
+            clearTimeout(this._timeout);
         };
 
         this._form.onsubmit = (event: Event) => {
@@ -775,5 +835,3 @@ class EmailEditor {
         };
     }
 }
-
-(window as any).ee = () => { (window as any).ee = new EmailEditor(); };

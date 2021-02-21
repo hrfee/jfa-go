@@ -153,6 +153,11 @@ div.card:contains(section.banner.footer) {
     margin: 0.5rem;
 }
 
+.flex-col {
+    display: flex;
+    flex-direction: column;
+}
+
 @media screen and (max-width: 400px) {
     .row {
         flex-direction: column;
@@ -271,6 +276,10 @@ sup.\~critical, .text-critical {
 .full-width { /* full width inputs */
     box-sizing: border-box; /* TODO: maybe remove if we figure out input thing? */
     width: 100%;
+}
+
+.flex-auto {
+    flex: auto;
 }
 
 .center {

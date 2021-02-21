@@ -1,7 +1,9 @@
 {{ .aUserWasCreated }}
 
 {{ .nameString }}: {{ .name }}
+
 {{ .addressString }}: {{ .address }}
+
 {{ .timeString }}: {{ .time }}
 
 {{ .notificationNotice }}

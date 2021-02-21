@@ -76,6 +76,7 @@ declare interface Modals {
     addProfile: Modal;
     announce: Modal;
     editor: Modal;
+    customizeEmails: Modal;
 }
 
 interface Invite {

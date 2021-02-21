@@ -109,15 +109,33 @@
                 </div>
             </form>
         </div>
+        <div id="modal-customize" class="modal">
+            <div class="modal-content card">
+                <span class="heading">{{ .strings.customizeEmails }} <span class="modal-close">&times;</span></span>
+                <p class="content">{{ .strings.customizeEmailsDescription }}</p>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>{{ .strings.name }}</th>
+                                <th>{{ .strings.reset }}</th>
+                                <th>{{ .strings.edit }}</th>
+                            </tr>
+                        </thead>
+                        <tbody id="customize-list"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
         <div id="modal-editor" class="modal">
             <form class="modal-content wide card" id="form-editor" href="">
                 <span class="heading"><span id="header-editor"></span> <span class="modal-close">&times;</span></span>
                 <div class="row">
-                    <div class="col content mt-half">
+                    <div class="col flex-col content mt-half">
                         <span class="label supra" for="editor-variables">{{ .strings.variables }}</span>
                         <div id="editor-variables"></div>
                         <label class="label supra" for="textarea-editor">{{ .strings.message }}</label>
-                        <textarea id="textarea-editor" class="textarea full-width ~neutral !normal mt-half monospace"></textarea>
+                        <textarea id="textarea-editor" class="textarea full-width flex-auto ~neutral !normal mt-half monospace"></textarea>
                         <p class="support mt-half mb-1">{{ .strings.markdownSupported }}</p>
                         <div class="flex-row">
                             <label class="full-width ml-half">

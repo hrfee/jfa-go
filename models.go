@@ -175,7 +175,12 @@ type settings struct {
 
 type langDTO map[string]string
 
-type emailListDTO map[string]string
+type emailListDTO map[string]emailListEl
+
+type emailListEl struct {
+	Name    string `json:"name"`
+	Enabled bool   `json:"enabled"`
+}
 
 type emailSetDTO struct {
 	Content string `json:"content"`
