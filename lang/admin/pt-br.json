@@ -69,7 +69,13 @@
         "announce": "Anunciar",
         "subject": "Assunto do email",
         "message": "Mensagem",
-        "markdownSupported": "Suporte a Markdown."
+        "markdownSupported": "Suporte a Markdown.",
+        "customizeEmailsDescription": "Se não quiser usar os modelos de email do jfa-go, você pode criar o seu próprio usando o Markdown.",
+        "variables": "Variáveis",
+        "preview": "Pre-visualizar",
+        "reset": "Reiniciar",
+        "edit": "Editar",
+        "customizeEmails": "Customizar Emails"
     },
     "notifications": {
         "changedEmailAddress": "Endereço de e-mail alterado de {n}.",
@@ -99,7 +105,9 @@
         "errorPartialFailureCheckLogs": "Falha parcial (verificar console/logs)",
         "errorUserCreated": "Falha ao criar o usuário {n}.",
         "errorSendWelcomeEmail": "Falha ao enviar e-mail de boas-vindas (verifique console/logs)",
-        "sentAnnouncement": "Comunicado enviado."
+        "sentAnnouncement": "Comunicado enviado.",
+        "saveEmail": "Email salvo.",
+        "errorSaveEmail": "Falha ao salvar o email."
     },
     "quantityStrings": {
         "modifySettingsFor": {
