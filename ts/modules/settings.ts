@@ -1,5 +1,6 @@
 import { _get, _post, toggleLoader } from "../modules/common.js";
 import { Marked } from "@ts-stack/markdown";
+import { stripMarkdown } from "../modules/stripmd.js";
 
 interface settingsBoolEvent extends Event { 
     detail: boolean;
@@ -672,17 +673,12 @@ class ombiDefaults {
     }
 }
 
-interface Email {
-    subject: string;
-    html: string;
-    text: string;
-}
-
 interface templateEmail {
     content: string;
     variables: string[];
     values: { [key: string]: string };
     html: string;
+    plaintext: string;
 }
 
 interface emailListEl {
@@ -700,6 +696,7 @@ class EmailEditor {
     private _variables = document.getElementById("editor-variables") as HTMLDivElement;
     private _textArea = document.getElementById("textarea-editor") as HTMLTextAreaElement;
     private _preview = document.getElementById("editor-preview") as HTMLDivElement;
+    private _previewContent: HTMLElement;
     // private _timeout: number;
     // private _finishInterval = 200;
 
@@ -734,7 +731,12 @@ class EmailEditor {
                 } 
                 this._templ = req.response as templateEmail;
                 this._textArea.value = this._templ.content;
-                this._preview.innerHTML = this._templ.html;
+                if (this._templ.html == "") {
+                    this._preview.innerHTML = `<pre id="preview-content" class="monospace"></pre>`;
+                } else {
+                    this._preview.innerHTML = this._templ.html;
+                }
+                this._previewContent = document.getElementById("preview-content");
                 this.loadPreview();
                 this._content = this._templ.content;
                 const colors = ["info", "urge", "positive", "neutral"];
@@ -764,8 +766,13 @@ class EmailEditor {
             if (value === undefined) { value = variable; }
             content = content.replace(new RegExp(variable, "g"), value);
         }
-        content = Marked.parse(content)
-        document.getElementById("preview-content").innerHTML = content;
+        if (this._templ.html == "") {
+            content = stripMarkdown(content);
+            this._previewContent.textContent = content;
+        } else {
+            content = Marked.parse(content);
+            this._previewContent.innerHTML = content;
+        }
         // _post("/config/emails/" + this._currentID + "/test", { "content": this._textArea.value }, (req: XMLHttpRequest) => {
         //     if (req.readyState == 4) {
         //         if (req.status != 200) {

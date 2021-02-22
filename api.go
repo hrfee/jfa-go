@@ -1514,7 +1514,7 @@ func (app *appContext) GetEmail(gc *gin.Context) {
 		respondBool(500, false, gc)
 		return
 	}
-	gc.JSON(200, customEmailDTO{Content: content, Variables: variables, Values: values, HTML: email.HTML})
+	gc.JSON(200, customEmailDTO{Content: content, Variables: variables, Values: values, HTML: email.HTML, Plaintext: email.Text})
 }
 
 // @Summary Logout by deleting refresh token from cookies.

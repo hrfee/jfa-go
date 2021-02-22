@@ -195,4 +195,5 @@ type customEmailDTO struct {
 	Variables []string               `json:"variables"`
 	Values    map[string]interface{} `json:"values"`
 	HTML      string                 `json:"html"`
+	Plaintext string                 `json:"plaintext"`
 }

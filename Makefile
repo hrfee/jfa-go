@@ -63,7 +63,7 @@ compile-debug:
 	$(GOBINARY) mod download
 	$(info Building)
 	mkdir -p build
-	cd build && CGO_ENABLED=0 $(GOBINARY) build -o ./jfa-go ../*.go -ldflags "-X main.version=$(VERSION) -X main.commit=$(COMMIT)"
+	cd build && CGO_ENABLED=0 $(GOBINARY) build -ldflags "-X main.version=$(VERSION) -X main.commit=$(COMMIT)" -o ./jfa-go ../*.go
 
 compress:
 	upx --lzma build/jfa-go

@@ -571,6 +571,5 @@ func (emailer *Emailer) constructWelcome(username string, app *appContext, noSub
 
 // calls the send method in the underlying emailClient.
 func (emailer *Emailer) send(email *Email, address ...string) error {
-	fmt.Printf("%+v\n", email)
 	return emailer.sender.send(emailer.fromName, emailer.fromAddr, email, address...)
 }

@@ -23,6 +23,7 @@
     "lodash": "^4.17.19",
     "mjml": "^4.8.0",
     "remixicon": "^2.5.0",
+    "remove-markdown": "^0.3.0",
     "typescript": "^4.0.3"
   },
   "devDependencies": {}

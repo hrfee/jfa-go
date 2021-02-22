@@ -33,7 +33,6 @@ func (app *appContext) loadConfig() error {
 
 	for _, key := range app.config.Section("files").Keys() {
 		if name := key.Name(); name != "html_templates" && name != "lang_files" {
-			fmt.Println(name)
 			key.SetValue(key.MustString(filepath.Join(app.dataPath, (key.Name() + ".json"))))
 		}
 	}
