@@ -44,6 +44,8 @@ var (
 	info               = color.New(color.FgMagenta).SprintfFunc()
 	hiwhite            = color.New(color.FgHiWhite).SprintfFunc()
 	white              = color.New(color.FgWhite).SprintfFunc()
+	version            string
+	commit             string
 )
 
 var serverTypes = map[string]string{
@@ -624,7 +626,7 @@ func flagPassed(name string) (found bool) {
 // @tag.description Things that dont fit elsewhere.
 
 func printVersion() {
-	fmt.Println(info("jfa-go version: %s (%s)\n", hiwhite(VERSION), white(COMMIT)))
+	fmt.Println(info("jfa-go version: %s (%s)\n", hiwhite(version), white(commit)))
 }
 
 func main() {

@@ -6,6 +6,10 @@ else
 endif
 GOBINARY ?= go
 
+VERSION ?= $(shell git describe --exact-match HEAD &> /dev/null || echo vgit)
+VERSION := $(shell echo $(VERSION) | sed 's/v//g')
+COMMIT ?= $(shell git rev-parse --short HEAD || echo unknown)
+
 npm:
 	$(info installing npm dependencies)
 	npm install
@@ -47,22 +51,19 @@ swagger:
 	$(GOBINARY) get github.com/swaggo/swag/cmd/swag
 	swag init -g main.go
 
-version:
-	python3 scripts/version.py auto
-
 compile:
 	$(info Downloading deps)
 	$(GOBINARY) mod download
 	$(info Building)
 	mkdir -p build
-	cd build && CGO_ENABLED=0 $(GOBINARY) build -ldflags="-s -w" -o ./jfa-go ../*.go
+	cd build && CGO_ENABLED=0 $(GOBINARY) build -ldflags="-s -w -X main.version=$(VERSION) -X main.commit=$(COMMIT)" -o ./jfa-go ../*.go
 
 compile-debug:
 	$(info Downloading deps)
 	$(GOBINARY) mod download
 	$(info Building)
 	mkdir -p build
-	cd build && CGO_ENABLED=0 $(GOBINARY) build -o ./jfa-go ../*.go
+	cd build && CGO_ENABLED=0 $(GOBINARY) build -o ./jfa-go ../*.go -ldflags "-X main.version=$(VERSION) -X main.commit=$(COMMIT)"
 
 compress:
 	upx --lzma build/jfa-go
@@ -95,6 +96,6 @@ external-files:
 install:
 	cp -r build $(DESTDIR)/jfa-go
 
-all: configuration npm email version typescript bundle-css swagger copy internal-files compile
-all-external: configuration npm email version typescript bundle-css swagger copy external-files compile
-debug: configuration npm email version ts-debug bundle-css swagger copy external-files compile-debug
+all: configuration npm email typescript bundle-css swagger copy internal-files compile
+all-external: configuration npm email typescript bundle-css swagger copy external-files compile
+debug: configuration npm email ts-debug bundle-css swagger copy external-files compile-debug

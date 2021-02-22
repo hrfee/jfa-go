@@ -67,9 +67,9 @@ func (app *appContext) loadConfig() error {
 	app.config.Section("template_email").Key("email_html").SetValue(app.config.Section("template_email").Key("email_html").MustString("jfa-go:" + "template.html"))
 	app.config.Section("template_email").Key("email_text").SetValue(app.config.Section("template_email").Key("email_text").MustString("jfa-go:" + "template.txt"))
 
-	app.config.Section("jellyfin").Key("version").SetValue(VERSION)
+	app.config.Section("jellyfin").Key("version").SetValue(version)
 	app.config.Section("jellyfin").Key("device").SetValue("jfa-go")
-	app.config.Section("jellyfin").Key("device_id").SetValue(fmt.Sprintf("jfa-go-%s-%s", VERSION, COMMIT))
+	app.config.Section("jellyfin").Key("device_id").SetValue(fmt.Sprintf("jfa-go-%s-%s", version, commit))
 
 	if app.config.Section("email").Key("method").MustString("") == "" {
 		emailEnabled = false
