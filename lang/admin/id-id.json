@@ -13,7 +13,7 @@
         "warning": "Peringatan",
         "inviteInfiniteUsesWarning": "Undangan dalam jumlah tak terbatas dapat disalahgunakan",
         "inviteSendToEmail": "Dikirim kepada",
-        "login": "Gabung",
+        "login": "Masuk",
         "logout": "Keluar",
         "create": "Buat",
         "apply": "Terapkan",
@@ -35,15 +35,15 @@
         "applyHomescreenLayout": "Terapkan tata letak layar beranda",
         "sendDeleteNotificationEmail": "Kirim email notifikasi",
         "sendDeleteNotifiationExample": "Akun anda telah dihapus.",
-        "settingsRestart": "Restart",
+        "settingsRestart": "Mulai ulang",
         "settingsRestarting": "Mengulang kembali…",
-        "settingsRestartRequired": "Perlu restart",
-        "settingsRestartRequiredDescription": "Restart diperlukan untuk menerapkan beberapa pengaturan yang Anda ubah. Mulai ulang sekarang atau nanti?",
+        "settingsRestartRequired": "Mulai ulang diperlukan",
+        "settingsRestartRequiredDescription": "Mulai ulang diperlukan untuk menerapkan beberapa pengaturan yang Anda ubah. Mulai ulang sekarang atau nanti?",
         "settingsApplyRestartLater": "Terapkan, mulai ulang nanti",
-        "settingsApplyRestartNow": "Terapkan dan mulai ulang kembali",
+        "settingsApplyRestartNow": "Terapkan & mulai ulang",
         "settingsApplied": "Pengaturan diterapkan.",
         "settingsRefreshPage": "Segarkan halaman dalam beberapa detik.",
-        "settingsRequiredOrRestartMessage": "Catatan: {n} harus diisi, {n} mengindikasikan perubahan memerlukan restart.",
+        "settingsRequiredOrRestartMessage": "Catatan: {n} harus diisi, {n} mengindikasikan perubahan memerlukan mulai ulang.",
         "settingsSave": "Simpan",
         "ombiUserDefaults": "Default pengguna Ombi",
         "ombiUserDefaultsDescription": "Buat pengguna Ombi dan konfigurasikan, lalu pilih di bawah. Pengaturan / izinnya akan disimpan dan diterapkan ke pengguna Ombi baru yang dibuat oleh jfa-go",
@@ -65,7 +65,17 @@
         "inviteExpiresInTime": "Kadaluarsa dalam {n}",
         "notifyEvent": "Beritahu pada:",
         "notifyInviteExpiry": "Saat kadaluarsa",
-        "notifyUserCreation": "Saat pembuatan pengguna"
+        "notifyUserCreation": "Saat pembuatan pengguna",
+        "variables": "Variabel",
+        "preview": "Pratinjau",
+        "reset": "Setel ulang",
+        "edit": "Edit",
+        "customizeEmails": "Sesuaikan Email",
+        "customizeEmailsDescription": "Jika Anda tidak ingin menggunakan templat email jfa-go, Anda dapat membuatnya sendiri menggunakan Markdown.",
+        "announce": "Mengumumkan",
+        "subject": "Subjek Email",
+        "message": "Pesan",
+        "markdownSupported": "Markdown didukung."
     },
     "notifications": {
         "changedEmailAddress": "Alamat email {n} diubah.",
@@ -94,7 +104,10 @@
         "errorFailureCheckLogs": "Gagal (periksa konsol / log)",
         "errorPartialFailureCheckLogs": "Kegagalan sebagian (periksa konsol / log)",
         "errorUserCreated": "Gagal membuat pengguna {n}.",
-        "errorSendWelcomeEmail": "Gagal mengirim email selamat datang (periksa konsol / log)"
+        "errorSendWelcomeEmail": "Gagal mengirim email selamat datang (periksa konsol / log)",
+        "saveEmail": "Email disimpan.",
+        "sentAnnouncement": "Pengumuman dikirim.",
+        "errorSaveEmail": "Gagal menyimpan email."
     },
     "quantityStrings": {
         "modifySettingsFor": {
@@ -120,6 +133,10 @@
         "appliedSettings": {
             "singular": "Pengaturan diterapkan pada {n} pengguna.",
             "plural": "Pengaturan diterapkan pada {n} pengguna."
+        },
+        "announceTo": {
+            "singular": "Umumkan kepada {n} pengguna",
+            "plural": "Umumkan kepada {n} pengguna"
         }
     }
 }
