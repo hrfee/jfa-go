@@ -142,7 +142,6 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 		api.GET(p+"/config/emails", app.GetEmails)
 		api.GET(p+"/config/emails/:id", app.GetEmail)
 		api.POST(p+"/config/emails/:id", app.SetEmail)
-		api.POST(p+"/config/emails/:id/test", app.GetTestEmail)
 		api.POST(p+"/config/emails/:id/state/:state", app.SetEmailState)
 		api.GET(p+"/config", app.GetConfig)
 		api.POST(p+"/config", app.ModifyConfig)
