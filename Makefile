@@ -6,7 +6,7 @@ else
 endif
 GOBINARY ?= go
 
-VERSION ?= $(shell git describe --exact-match HEAD &> /dev/null || echo vgit)
+VERSION ?= $(shell git describe --exact-match HEAD 2> /dev/null || echo vgit)
 VERSION := $(shell echo $(VERSION) | sed 's/v//g')
 COMMIT ?= $(shell git rev-parse --short HEAD || echo unknown)
 
