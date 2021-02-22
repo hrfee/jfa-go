@@ -10,25 +10,29 @@
         "title": "Perhatian: User telah dibuat",
         "aUserWasCreated": "User telah dibuat menggunakan kode {code}.",
         "time": "Waktu",
-        "notificationNotice": "Catatan: Email notifikasi dapat diganti pada dasbor admin."
+        "notificationNotice": "Catatan: Email notifikasi dapat diganti pada dasbor admin.",
+        "name": "Pembuatan pengguna"
     },
     "inviteExpiry": {
         "title": "Perhatian: Undangan telah kadaluarsa",
         "inviteExpired": "Undangan telah kadaluarsa.",
         "expiredAt": "Kode {code} kadaluarsa pada {time}.",
-        "notificationNotice": "Catatan: Email notifikasi dapat diganti pada dasbor admin."
+        "notificationNotice": "Catatan: Email notifikasi dapat diganti pada dasbor admin.",
+        "name": "Waktu kedaluwarsa undangan"
     },
     "passwordReset": {
         "title": "Reset password telah di-request - Jellyfin",
         "someoneHasRequestedReset": "Seseorang baru saja me-request reset password pada Jellyfin.",
         "ifItWasYou": "Jika ini adalah benar anda, masukkan pin dibawah ke dalam tempat yang sudah disediakan.",
         "codeExpiry": "Kode akan kadaluarsa pada {date}, pada waktu {time} UTC, yaitu dalam {expiresInMinutes}.",
-        "pin": "PIN"
+        "pin": "PIN",
+        "name": "Atur ulang kata sandi"
     },
     "userDeleted": {
         "title": "Akun anda telah dihapus - Jellyfin",
         "yourAccountWasDeleted": "Akun Jellyfin anda telah dihapus.",
-        "reason": "Alasan"
+        "reason": "Alasan",
+        "name": "Penghapusan pengguna"
     },
     "inviteEmail": {
         "title": "Undangan - Jellyfin",
@@ -36,17 +40,20 @@
         "youHaveBeenInvited": "Anda telah diundang ke Jellyfin.",
         "toJoin": "Untuk masuk, silahkan ikuti link dibawah ini.",
         "inviteExpiry": "Undangan ini akan berakhir dalam {date} pada {time}, yaitu dalam {expiresInMinutes}, jadi bergegaslah.",
-        "linkButton": "Persiapkan akunmu"
+        "linkButton": "Persiapkan akunmu",
+        "name": "Email Undangan"
     },
     "welcomeEmail": {
         "title": "Selamat datang di Jellyfin",
         "welcome": "Selamat datang di Jellyfin!",
         "youCanLoginWith": "Anda dapat masuk dengan menggunakan data dibawah ini",
-        "jellyfinURL": "URL"
+        "jellyfinURL": "URL",
+        "name": "Email selamat datang"
     },
     "emailConfirmation": {
         "title": "Konfirmasi emailmu - Jellyfin",
         "clickBelow": "Klik link dibawah ini untuk mengkonfirmasikan alamat emailmu untuk mulai menggunakan Jellyfin.",
-        "confirmEmail": "Konfirmasi Email"
+        "confirmEmail": "Konfirmasi Email",
+        "name": "Email konfirmasi"
     }
 }
