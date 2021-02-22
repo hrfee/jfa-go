@@ -212,11 +212,7 @@ func (emailer *Emailer) construct(app *appContext, section, keyFragment string, 
 	return
 }
 
-func (emailer *Emailer) constructConfirmation(code, username, key string, app *appContext, noSub bool) (*Email, error) {
-	email := &Email{
-		Subject: app.config.Section("email_confirmation").Key("subject").MustString(emailer.lang.EmailConfirmation.get("title")),
-	}
-	var err error
+func (emailer *Emailer) confirmationValues(code, username, key string, app *appContext, noSub bool) map[string]interface{} {
 	template := map[string]interface{}{
 		"clickBelow":    emailer.lang.EmailConfirmation.get("clickBelow"),
 		"ifItWasNotYou": emailer.lang.Strings.get("ifItWasNotYou"),
@@ -238,6 +234,15 @@ func (emailer *Emailer) constructConfirmation(code, username, key string, app *a
 		template["confirmationURL"] = inviteLink
 		template["message"] = message
 	}
+	return template
+}
+
+func (emailer *Emailer) constructConfirmation(code, username, key string, app *appContext, noSub bool) (*Email, error) {
+	email := &Email{
+		Subject: app.config.Section("email_confirmation").Key("subject").MustString(emailer.lang.EmailConfirmation.get("title")),
+	}
+	var err error
+	template := emailer.confirmationValues(code, username, key, app, noSub)
 	if app.storage.customEmails.EmailConfirmation.Enabled {
 		content := app.storage.customEmails.EmailConfirmation.Content
 		for _, v := range app.storage.customEmails.EmailConfirmation.Variables {
@@ -274,10 +279,7 @@ func (emailer *Emailer) constructTemplate(subject, md string, app *appContext) (
 	return email, nil
 }
 
-func (emailer *Emailer) constructInvite(code string, invite Invite, app *appContext, noSub bool) (*Email, error) {
-	email := &Email{
-		Subject: app.config.Section("email_confirmation").Key("subject").MustString(emailer.lang.InviteEmail.get("title")),
-	}
+func (emailer *Emailer) inviteValues(code string, invite Invite, app *appContext, noSub bool) map[string]interface{} {
 	expiry := invite.ValidTill
 	d, t, expiresIn := emailer.formatExpiry(expiry, false, app.datePattern, app.timePattern)
 	message := app.config.Section("email").Key("message").String()
@@ -304,6 +306,14 @@ func (emailer *Emailer) constructInvite(code string, invite Invite, app *appCont
 		template["inviteURL"] = inviteLink
 		template["message"] = message
 	}
+	return template
+}
+
+func (emailer *Emailer) constructInvite(code string, invite Invite, app *appContext, noSub bool) (*Email, error) {
+	email := &Email{
+		Subject: app.config.Section("email_confirmation").Key("subject").MustString(emailer.lang.InviteEmail.get("title")),
+	}
+	template := emailer.inviteValues(code, invite, app, noSub)
 	var err error
 	if app.storage.customEmails.InviteEmail.Enabled {
 		content := app.storage.customEmails.InviteEmail.Content
@@ -323,10 +333,7 @@ func (emailer *Emailer) constructInvite(code string, invite Invite, app *appCont
 	return email, nil
 }
 
-func (emailer *Emailer) constructExpiry(code string, invite Invite, app *appContext, noSub bool) (*Email, error) {
-	email := &Email{
-		Subject: emailer.lang.InviteExpiry.get("title"),
-	}
+func (emailer *Emailer) expiryValues(code string, invite Invite, app *appContext, noSub bool) map[string]interface{} {
 	expiry := app.formatDatetime(invite.ValidTill)
 	template := map[string]interface{}{
 		"inviteExpired":      emailer.lang.InviteExpiry.get("inviteExpired"),
@@ -339,7 +346,15 @@ func (emailer *Emailer) constructExpiry(code string, invite Invite, app *appCont
 	} else {
 		template["expiredAt"] = emailer.lang.InviteExpiry.template("expiredAt", tmpl{"code": template["code"].(string), "time": template["time"].(string)})
 	}
+	return template
+}
+
+func (emailer *Emailer) constructExpiry(code string, invite Invite, app *appContext, noSub bool) (*Email, error) {
+	email := &Email{
+		Subject: emailer.lang.InviteExpiry.get("title"),
+	}
 	var err error
+	template := emailer.expiryValues(code, invite, app, noSub)
 	if app.storage.customEmails.InviteExpiry.Enabled {
 		content := app.storage.customEmails.InviteExpiry.Content
 		for _, v := range app.storage.customEmails.InviteExpiry.Variables {
@@ -358,10 +373,7 @@ func (emailer *Emailer) constructExpiry(code string, invite Invite, app *appCont
 	return email, nil
 }
 
-func (emailer *Emailer) constructCreated(code, username, address string, invite Invite, app *appContext, noSub bool) (*Email, error) {
-	email := &Email{
-		Subject: emailer.lang.UserCreated.get("title"),
-	}
+func (emailer *Emailer) createdValues(code, username, address string, invite Invite, app *appContext, noSub bool) map[string]interface{} {
 	template := map[string]interface{}{
 		"nameString":         emailer.lang.Strings.get("name"),
 		"addressString":      emailer.lang.Strings.get("emailAddress"),
@@ -389,6 +401,14 @@ func (emailer *Emailer) constructCreated(code, username, address string, invite 
 		template["time"] = created
 		template["notificationNotice"] = emailer.lang.UserCreated.get("notificationNotice")
 	}
+	return template
+}
+
+func (emailer *Emailer) constructCreated(code, username, address string, invite Invite, app *appContext, noSub bool) (*Email, error) {
+	email := &Email{
+		Subject: emailer.lang.UserCreated.get("title"),
+	}
+	template := emailer.createdValues(code, username, address, invite, app, noSub)
 	var err error
 	if app.storage.customEmails.UserCreated.Enabled {
 		content := app.storage.customEmails.UserCreated.Content
@@ -408,10 +428,7 @@ func (emailer *Emailer) constructCreated(code, username, address string, invite 
 	return email, nil
 }
 
-func (emailer *Emailer) constructReset(pwr PasswordReset, app *appContext, noSub bool) (*Email, error) {
-	email := &Email{
-		Subject: app.config.Section("password_resets").Key("subject").MustString(emailer.lang.PasswordReset.get("title")),
-	}
+func (emailer *Emailer) resetValues(pwr PasswordReset, app *appContext, noSub bool) map[string]interface{} {
 	d, t, expiresIn := emailer.formatExpiry(pwr.Expiry, true, app.datePattern, app.timePattern)
 	message := app.config.Section("email").Key("message").String()
 	template := map[string]interface{}{
@@ -438,6 +455,14 @@ func (emailer *Emailer) constructReset(pwr PasswordReset, app *appContext, noSub
 		template["pin"] = pwr.Pin
 		template["message"] = message
 	}
+	return template
+}
+
+func (emailer *Emailer) constructReset(pwr PasswordReset, app *appContext, noSub bool) (*Email, error) {
+	email := &Email{
+		Subject: app.config.Section("password_resets").Key("subject").MustString(emailer.lang.PasswordReset.get("title")),
+	}
+	template := emailer.resetValues(pwr, app, noSub)
 	var err error
 	if app.storage.customEmails.PasswordReset.Enabled {
 		content := app.storage.customEmails.PasswordReset.Content
@@ -457,10 +482,7 @@ func (emailer *Emailer) constructReset(pwr PasswordReset, app *appContext, noSub
 	return email, nil
 }
 
-func (emailer *Emailer) constructDeleted(reason string, app *appContext, noSub bool) (*Email, error) {
-	email := &Email{
-		Subject: app.config.Section("deletion").Key("subject").MustString(emailer.lang.UserDeleted.get("title")),
-	}
+func (emailer *Emailer) deletedValues(reason string, app *appContext, noSub bool) map[string]interface{} {
 	template := map[string]interface{}{
 		"yourAccountWasDeleted": emailer.lang.UserDeleted.get("yourAccountWasDeleted"),
 		"reasonString":          emailer.lang.UserDeleted.get("reason"),
@@ -475,7 +497,15 @@ func (emailer *Emailer) constructDeleted(reason string, app *appContext, noSub b
 		template["reason"] = reason
 		template["message"] = app.config.Section("email").Key("message").String()
 	}
+	return template
+}
+
+func (emailer *Emailer) constructDeleted(reason string, app *appContext, noSub bool) (*Email, error) {
+	email := &Email{
+		Subject: app.config.Section("deletion").Key("subject").MustString(emailer.lang.UserDeleted.get("title")),
+	}
 	var err error
+	template := emailer.deletedValues(reason, app, noSub)
 	if app.storage.customEmails.UserDeleted.Enabled {
 		content := app.storage.customEmails.UserDeleted.Content
 		for _, v := range app.storage.customEmails.UserDeleted.Variables {
@@ -494,10 +524,7 @@ func (emailer *Emailer) constructDeleted(reason string, app *appContext, noSub b
 	return email, nil
 }
 
-func (emailer *Emailer) constructWelcome(username string, app *appContext, noSub bool) (*Email, error) {
-	email := &Email{
-		Subject: app.config.Section("welcome_email").Key("subject").MustString(emailer.lang.WelcomeEmail.get("title")),
-	}
+func (emailer *Emailer) welcomeValues(username string, app *appContext, noSub bool) map[string]interface{} {
 	template := map[string]interface{}{
 		"welcome":           emailer.lang.WelcomeEmail.get("welcome"),
 		"youCanLoginWith":   emailer.lang.WelcomeEmail.get("youCanLoginWith"),
@@ -515,7 +542,15 @@ func (emailer *Emailer) constructWelcome(username string, app *appContext, noSub
 		template["username"] = username
 		template["message"] = app.config.Section("email").Key("message").String()
 	}
+	return template
+}
+
+func (emailer *Emailer) constructWelcome(username string, app *appContext, noSub bool) (*Email, error) {
+	email := &Email{
+		Subject: app.config.Section("welcome_email").Key("subject").MustString(emailer.lang.WelcomeEmail.get("title")),
+	}
 	var err error
+	template := emailer.welcomeValues(username, app, noSub)
 	if app.storage.customEmails.WelcomeEmail.Enabled {
 		content := app.storage.customEmails.WelcomeEmail.Content
 		for _, v := range app.storage.customEmails.WelcomeEmail.Variables {

@@ -189,3 +189,10 @@ type emailSetDTO struct {
 type emailTestDTO struct {
 	Address string `json:"address"`
 }
+
+type customEmailDTO struct {
+	Content   string                 `json:"content"`
+	Variables []string               `json:"variables"`
+	Values    map[string]interface{} `json:"values"`
+	HTML      string                 `json:"html"`
+}

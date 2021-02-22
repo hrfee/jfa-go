@@ -19,7 +19,7 @@ I chose to rewrite the python [jellyfin-accounts](https://github.com/hrfee/jelly
     * Email addresses can optionally be used instead of usernames
 * 🔑 Password resets: When user's forget their passwords and request a change in Jellyfin, jfa-go reads the PIN from the created file and sends it straight to the user via email.
 * Notifications: Get notified when someone creates an account, or an invite expires.
-* 📣 Announcements: Bulk email you users with announcements about your server.
+* 📣 Announcements: Bulk email your users with announcements about your server.
 * Authentication via Jellyfin: Instead of using separate credentials for jfa-go and Jellyfin, jfa-go can use it as the authentication provider.
     * Enables the usage of jfa-go by multiple people
 * 🌓 Customizable look

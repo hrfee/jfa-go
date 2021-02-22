@@ -1,4 +1,5 @@
 import { _get, _post, toggleLoader } from "../modules/common.js";
+import { Marked } from "@ts-stack/markdown";
 
 interface settingsBoolEvent extends Event { 
     detail: boolean;
@@ -680,6 +681,8 @@ interface Email {
 interface templateEmail {
     content: string;
     variables: string[];
+    values: { [key: string]: string };
+    html: string;
 }
 
 interface emailListEl {
@@ -691,13 +694,14 @@ class EmailEditor {
     private _currentID: string;
     private _names: { [id: string]: emailListEl };
     private _content: string;
+    private _templ: templateEmail;
     private _form = document.getElementById("form-editor") as HTMLFormElement;
     private _header = document.getElementById("header-editor") as HTMLSpanElement;
     private _variables = document.getElementById("editor-variables") as HTMLDivElement;
     private _textArea = document.getElementById("textarea-editor") as HTMLTextAreaElement;
     private _preview = document.getElementById("editor-preview") as HTMLDivElement;
-    private _timeout: number;
-    private _finishInterval = 1000;
+    // private _timeout: number;
+    // private _finishInterval = 200;
 
     insert = (textarea: HTMLTextAreaElement, text: string) => { // https://kubyshkin.name/posts/insert-text-into-textarea-at-cursor-position <3
         const isSuccess = document.execCommand("insertText", false, text);
@@ -728,23 +732,25 @@ class EmailEditor {
                 if (this._names[id] !== undefined) {
                     this._header.textContent = this._names[id].name;
                 } 
-                const templ = req.response as templateEmail;
-                this._textArea.value = templ.content;
+                this._templ = req.response as templateEmail;
+                this._textArea.value = this._templ.content;
+                this._preview.innerHTML = this._templ.html;
                 this.loadPreview();
-                this._content = templ.content;
+                this._content = this._templ.content;
                 const colors = ["info", "urge", "positive", "neutral"];
                 let innerHTML = '';
-                for (let i = 0; i < templ.variables.length; i++) {
+                for (let i = 0; i < this._templ.variables.length; i++) {
                     let ci = i % colors.length;
                     innerHTML += '<span class="button ~' + colors[ci] +' !normal mb-1" style="margin-left: 0.25rem; margin-right: 0.25rem;"></span>'
                 }
                 this._variables.innerHTML = innerHTML
                 const buttons = this._variables.querySelectorAll("span.button") as NodeListOf<HTMLSpanElement>;
-                for (let i = 0; i < templ.variables.length; i++) {
-                    buttons[i].innerHTML = `<span class="monospace">` + templ.variables[i] + `</span>`;
+                for (let i = 0; i < this._templ.variables.length; i++) {
+                    buttons[i].innerHTML = `<span class="monospace">` + this._templ.variables[i] + `</span>`;
                     buttons[i].onclick = () => {
-                        this.insert(this._textArea, templ.variables[i]);
-                        this._timeout = setTimeout(this.loadPreview, this._finishInterval);
+                        this.insert(this._textArea, this._templ.variables[i]);
+                        this.loadPreview();
+                        // this._timeout = setTimeout(this.loadPreview, this._finishInterval);
                     }
                 }
                 window.modals.editor.show();
@@ -752,15 +758,23 @@ class EmailEditor {
         })
     }
     loadPreview = () => {
-        _post("/config/emails/" + this._currentID + "/test", { "content": this._textArea.value }, (req: XMLHttpRequest) => {
-            if (req.readyState == 4) {
-                if (req.status != 200) {
-                    window.notifications.customError("loadTemplateError", window.lang.notif("errorFailureCheckLogs"));
-                    return;
-                }
-                this._preview.innerHTML = (req.response as Email).html;
-            }
-        }, true);
+        let content = this._textArea.value;
+        for (let variable of this._templ.variables) {
+            let value = this._templ.values[variable.slice(1, -1)];
+            if (value === undefined) { value = variable; }
+            content = content.replace(new RegExp(variable, "g"), value);
+        }
+        content = Marked.parse(content)
+        document.getElementById("preview-content").innerHTML = content;
+        // _post("/config/emails/" + this._currentID + "/test", { "content": this._textArea.value }, (req: XMLHttpRequest) => {
+        //     if (req.readyState == 4) {
+        //         if (req.status != 200) {
+        //             window.notifications.customError("loadTemplateError", window.lang.notif("errorFailureCheckLogs"));
+        //             return;
+        //         }
+        //         this._preview.innerHTML = (req.response as Email).html;
+        //     }
+        // }, true);
     }
 
     showList = () => {
@@ -809,12 +823,13 @@ class EmailEditor {
 
     constructor() {
         this._textArea.onkeyup = () => {
-            clearTimeout(this._timeout);
-            this._timeout = setTimeout(this.loadPreview, this._finishInterval);
+            // clearTimeout(this._timeout);
+            // this._timeout = setTimeout(this.loadPreview, this._finishInterval);
+            this.loadPreview();
         };
-        this._textArea.onkeydown = () => {
-            clearTimeout(this._timeout);
-        };
+        // this._textArea.onkeydown = () => {
+        //     clearTimeout(this._timeout);
+        // };
 
         this._form.onsubmit = (event: Event) => {
             if (this._textArea.value == this._content) {

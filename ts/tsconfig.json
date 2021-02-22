@@ -3,6 +3,8 @@
         "outDir": "../js",
         "target": "es6",
         "lib": ["dom", "es2017"],
-        "typeRoots": ["./node_modules/@types", "./typings"]
+        "typeRoots": ["./typings", "./node_modules/@types"],
+        "moduleResolution": "node",
+        "esModuleInterop": true
     }
 }

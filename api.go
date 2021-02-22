@@ -1375,87 +1375,9 @@ func (app *appContext) SetEmailState(gc *gin.Context) {
 	respondBool(200, true, gc)
 }
 
-// @Summary Render and return an email for testing purposes.
+// @Summary Returns the custom email (generating it if not set) and list of used variables in it.
 // @Produce json
-// @Param customEmail body customEmail true "Content = email (in markdown)."
-// @Success 200 {object} Email
-// @Failure 400 {object} boolResponse
-// @Failure 500 {object} boolResponse
-// @Router /config/emails/{id}/test [post]
-// @tags Configuration
-func (app *appContext) GetTestEmail(gc *gin.Context) {
-	var req customEmail
-	gc.BindJSON(&req)
-	if req.Content == "" {
-		app.debug.Println("Test failed: Content was empty")
-		respondBool(400, false, gc)
-		return
-	}
-	id := gc.Param("id")
-	var msg *Email
-	var err error
-	var cache customEmail
-	var restore func(cache customEmail)
-	username := app.storage.lang.Email[app.storage.lang.chosenEmailLang].Strings.get("username")
-	emailAddress := app.storage.lang.Email[app.storage.lang.chosenEmailLang].Strings.get("emailAddress")
-	if id == "UserCreated" {
-		cache = app.storage.customEmails.UserCreated
-		restore = func(cache customEmail) { app.storage.customEmails.UserCreated = cache }
-		app.storage.customEmails.UserCreated.Content = req.Content
-		app.storage.customEmails.UserCreated.Enabled = true
-		msg, err = app.email.constructCreated("xxxxxx", username, emailAddress, Invite{}, app, false)
-	} else if id == "InviteExpiry" {
-		cache = app.storage.customEmails.InviteExpiry
-		restore = func(cache customEmail) { app.storage.customEmails.InviteExpiry = cache }
-		app.storage.customEmails.InviteExpiry.Content = req.Content
-		app.storage.customEmails.InviteExpiry.Enabled = true
-		msg, err = app.email.constructExpiry("xxxxxx", Invite{}, app, false)
-	} else if id == "PasswordReset" {
-		cache = app.storage.customEmails.PasswordReset
-		restore = func(cache customEmail) { app.storage.customEmails.PasswordReset = cache }
-		app.storage.customEmails.PasswordReset.Content = req.Content
-		app.storage.customEmails.PasswordReset.Enabled = true
-		msg, err = app.email.constructReset(PasswordReset{Pin: "12-34-56", Username: username}, app, false)
-	} else if id == "UserDeleted" {
-		cache = app.storage.customEmails.UserDeleted
-		restore = func(cache customEmail) { app.storage.customEmails.UserDeleted = cache }
-		app.storage.customEmails.UserDeleted.Content = req.Content
-		app.storage.customEmails.UserDeleted.Enabled = true
-		msg, err = app.email.constructDeleted(app.storage.lang.Email[app.storage.lang.chosenEmailLang].UserDeleted.get("reason"), app, false)
-	} else if id == "InviteEmail" {
-		cache = app.storage.customEmails.InviteEmail
-		restore = func(cache customEmail) { app.storage.customEmails.InviteEmail = cache }
-		app.storage.customEmails.InviteEmail.Content = req.Content
-		app.storage.customEmails.InviteEmail.Enabled = true
-		msg, err = app.email.constructInvite("xxxxxx", Invite{}, app, false)
-	} else if id == "WelcomeEmail" {
-		cache = app.storage.customEmails.WelcomeEmail
-		restore = func(cache customEmail) { app.storage.customEmails.WelcomeEmail = cache }
-		app.storage.customEmails.WelcomeEmail.Content = req.Content
-		app.storage.customEmails.WelcomeEmail.Enabled = true
-		msg, err = app.email.constructWelcome(username, app, false)
-	} else if id == "EmailConfirmation" {
-		cache = app.storage.customEmails.EmailConfirmation
-		restore = func(cache customEmail) { app.storage.customEmails.EmailConfirmation = cache }
-		app.storage.customEmails.EmailConfirmation.Content = req.Content
-		app.storage.customEmails.EmailConfirmation.Enabled = true
-		msg, err = app.email.constructConfirmation("xxxxxx", username, "xxxxxx", app, false)
-	} else {
-		respondBool(400, false, gc)
-		return
-	}
-	restore(cache)
-	if err != nil {
-		respondBool(500, false, gc)
-		app.err.Printf("Failed to construct test email: %s", err)
-		return
-	}
-	gc.JSON(200, msg)
-}
-
-// @Summary Returns the boilerplate email and list of used variables in it.
-// @Produce json
-// @Success 200 {object} customEmail
+// @Success 200 {object} customEmailDTO
 // @Failure 400 {object} boolResponse
 // @Failure 500 {object} boolResponse
 // @Router /config/emails/{id} [get]
@@ -1466,8 +1388,11 @@ func (app *appContext) GetEmail(gc *gin.Context) {
 	var err error
 	var msg *Email
 	var variables []string
+	var values map[string]interface{}
 	var writeVars func(variables []string)
 	newEmail := false
+	username := app.storage.lang.Email[app.storage.lang.chosenEmailLang].Strings.get("username")
+	emailAddress := app.storage.lang.Email[app.storage.lang.chosenEmailLang].Strings.get("emailAddress")
 	if id == "UserCreated" {
 		content = app.storage.customEmails.UserCreated.Content
 		if content == "" {
@@ -1478,6 +1403,7 @@ func (app *appContext) GetEmail(gc *gin.Context) {
 			variables = app.storage.customEmails.UserCreated.Variables
 		}
 		writeVars = func(variables []string) { app.storage.customEmails.UserCreated.Variables = variables }
+		values = app.email.createdValues("xxxxxx", username, emailAddress, Invite{}, app, false)
 		// app.storage.customEmails.UserCreated = content
 	} else if id == "InviteExpiry" {
 		content = app.storage.customEmails.InviteExpiry.Content
@@ -1489,6 +1415,7 @@ func (app *appContext) GetEmail(gc *gin.Context) {
 			variables = app.storage.customEmails.InviteExpiry.Variables
 		}
 		writeVars = func(variables []string) { app.storage.customEmails.InviteExpiry.Variables = variables }
+		values = app.email.expiryValues("xxxxxx", Invite{}, app, false)
 		// app.storage.customEmails.InviteExpiry = content
 	} else if id == "PasswordReset" {
 		content = app.storage.customEmails.PasswordReset.Content
@@ -1500,6 +1427,7 @@ func (app *appContext) GetEmail(gc *gin.Context) {
 			variables = app.storage.customEmails.PasswordReset.Variables
 		}
 		writeVars = func(variables []string) { app.storage.customEmails.PasswordReset.Variables = variables }
+		values = app.email.resetValues(PasswordReset{Pin: "12-34-56", Username: username}, app, false)
 		// app.storage.customEmails.PasswordReset = content
 	} else if id == "UserDeleted" {
 		content = app.storage.customEmails.UserDeleted.Content
@@ -1511,6 +1439,7 @@ func (app *appContext) GetEmail(gc *gin.Context) {
 			variables = app.storage.customEmails.UserDeleted.Variables
 		}
 		writeVars = func(variables []string) { app.storage.customEmails.UserDeleted.Variables = variables }
+		values = app.email.deletedValues(app.storage.lang.Email[app.storage.lang.chosenEmailLang].UserDeleted.get("reason"), app, false)
 		// app.storage.customEmails.UserDeleted = content
 	} else if id == "InviteEmail" {
 		content = app.storage.customEmails.InviteEmail.Content
@@ -1522,6 +1451,7 @@ func (app *appContext) GetEmail(gc *gin.Context) {
 			variables = app.storage.customEmails.InviteEmail.Variables
 		}
 		writeVars = func(variables []string) { app.storage.customEmails.InviteEmail.Variables = variables }
+		values = app.email.inviteValues("xxxxxx", Invite{}, app, false)
 		// app.storage.customEmails.InviteEmail = content
 	} else if id == "WelcomeEmail" {
 		content = app.storage.customEmails.WelcomeEmail.Content
@@ -1534,6 +1464,7 @@ func (app *appContext) GetEmail(gc *gin.Context) {
 		}
 		writeVars = func(variables []string) { app.storage.customEmails.WelcomeEmail.Variables = variables }
 		// app.storage.customEmails.WelcomeEmail = content
+		values = app.email.welcomeValues(username, app, false)
 	} else if id == "EmailConfirmation" {
 		content = app.storage.customEmails.EmailConfirmation.Content
 		if content == "" {
@@ -1544,6 +1475,7 @@ func (app *appContext) GetEmail(gc *gin.Context) {
 			variables = app.storage.customEmails.EmailConfirmation.Variables
 		}
 		writeVars = func(variables []string) { app.storage.customEmails.EmailConfirmation.Variables = variables }
+		values = app.email.confirmationValues("xxxxxx", username, "xxxxxx", app, false)
 		// app.storage.customEmails.EmailConfirmation = content
 	} else {
 		respondBool(400, false, gc)
@@ -1577,7 +1509,12 @@ func (app *appContext) GetEmail(gc *gin.Context) {
 		respondBool(500, false, gc)
 		return
 	}
-	gc.JSON(200, customEmail{Content: content, Variables: variables})
+	email, err := app.email.constructTemplate("", "<div id=\"preview-content\"></div>", app)
+	if err != nil {
+		respondBool(500, false, gc)
+		return
+	}
+	gc.JSON(200, customEmailDTO{Content: content, Variables: variables, Values: values, HTML: email.HTML})
 }
 
 // @Summary Logout by deleting refresh token from cookies.
