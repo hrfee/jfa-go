@@ -69,7 +69,13 @@
         "announce": "Aankondiging",
         "markdownSupported": "Markdown wordt ondersteund.",
         "subject": "E-mailonderwerp",
-        "message": "Bericht"
+        "message": "Bericht",
+        "variables": "Variabelen",
+        "customizeEmailsDescription": "Als je de e-mailsjablonen van jfa-go niet wilt gebruiken, kun je met gebruik van Markdown je eigen aanmaken.",
+        "preview": "Voorbeeld",
+        "reset": "Resetten",
+        "edit": "Bewerken",
+        "customizeEmails": "E-mails aanpassen"
     },
     "notifications": {
         "changedEmailAddress": "E-mailadres van {n} gewijzigd.",
@@ -99,7 +105,9 @@
         "errorPartialFailureCheckLogs": "Gedeeltelijke fout (controleer console/logbestanden)",
         "errorSendWelcomeEmail": "Versturen van welkomste-mail is mislukt (zie console/logs)",
         "errorUserCreated": "Aanmaken van gebruiker {n} is mislukt.",
-        "sentAnnouncement": "Aankondiging verzonden."
+        "sentAnnouncement": "Aankondiging verzonden.",
+        "saveEmail": "E-mail opgeslagen.",
+        "errorSaveEmail": "Opslaan van e-mail mislukt."
     },
     "quantityStrings": {
         "modifySettingsFor": {
