@@ -1,47 +1,47 @@
 {
     "meta": {
-        "name": ""
+        "name": "Engelska (US)"
     },
     "strings": {
-        "pageTitle": "",
-        "createAccountHeader": "",
-        "accountDetails": "",
-        "emailAddress": "",
-        "username": "",
-        "password": "",
-        "reEnterPassword": "",
-        "reEnterPasswordInvalid": "",
-        "createAccountButton": "",
-        "passwordRequirementsHeader": "",
-        "successHeader": "",
-        "successContinueButton": "",
-        "confirmationRequired": "",
-        "confirmationRequiredMessage": ""
+        "pageTitle": "Skapa Jellyfin-konto",
+        "createAccountHeader": "Skapa konto",
+        "accountDetails": "Detaljer",
+        "emailAddress": "E-post",
+        "username": "Användarnamn",
+        "password": "Lösenord",
+        "reEnterPassword": "Skriv lösenordet igen",
+        "reEnterPasswordInvalid": "Lösenorden är inte samma.",
+        "createAccountButton": "Skapa konto",
+        "passwordRequirementsHeader": "Lösenordskrav",
+        "successHeader": "Lyckades!",
+        "successContinueButton": "Fortsätt",
+        "confirmationRequired": "E-postbekräftelse krävs",
+        "confirmationRequiredMessage": "Kontrollera din e-postkorg för att verifiera din adress."
     },
     "notifications": {
-        "errorUserExists": "",
-        "errorInvalidCode": ""
+        "errorUserExists": "Användare finns redan.",
+        "errorInvalidCode": "Ogiltig inbjudningskod."
     },
     "validationStrings": {
         "length": {
-            "singular": "",
-            "plural": ""
+            "singular": "Måste ha minst {n} tecken",
+            "plural": "Måste ha minst {n} tecken"
         },
         "uppercase": {
-            "singular": "",
-            "plural": ""
+            "singular": "Måste ha minst {n} versaler",
+            "plural": "Måste ha minst {n} versaler"
         },
         "lowercase": {
-            "singular": "",
-            "plural": ""
+            "singular": "Måste ha minst {n} gemener",
+            "plural": "Måste ha minst {n} gemener"
         },
         "number": {
-            "singular": "",
-            "plural": ""
+            "singular": "Måste ha minst {n} siffra",
+            "plural": "Måste ha minst {n} siffror"
         },
         "special": {
-            "singular": "",
-            "plural": ""
+            "singular": "Måste ha minst {n} specialtecken",
+            "plural": "Måste ha minst {n} specialtecken"
         }
     }
 }
