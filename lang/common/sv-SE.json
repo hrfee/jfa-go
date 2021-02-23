@@ -1,15 +1,15 @@
 {
     "meta": {
-        "name": ""
+        "name": "Engelska (US)"
     },
     "strings": {
-        "username": "",
-        "password": "",
-        "emailAddress": "",
-        "name": "",
-        "submit": "",
-        "success": "",
-        "error": "",
-        "theme": ""
+        "username": "Användarnamn",
+        "password": "Lösenord",
+        "emailAddress": "E-postadress",
+        "name": "Namn",
+        "submit": "Skicka",
+        "success": "Lyckades",
+        "error": "Fel",
+        "theme": "Tema"
     }
 }
