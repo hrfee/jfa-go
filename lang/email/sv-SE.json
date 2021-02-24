@@ -1,59 +1,59 @@
 {
     "meta": {
-        "name": ""
+        "name": "Engelska (US)"
     },
     "strings": {
-        "ifItWasNotYou": "",
-        "helloUser": ""
+        "ifItWasNotYou": "Om detta inte var du, ignorera det här e-postmeddelandet.",
+        "helloUser": "Hej {användarnamn},"
     },
     "userCreated": {
-        "name": "",
-        "title": "",
-        "aUserWasCreated": "",
-        "time": "",
-        "notificationNotice": ""
+        "name": "Användarskapande",
+        "title": "Meddelande: Användare skapad",
+        "aUserWasCreated": "En användare skapades med hjälp av koden {code}.",
+        "time": "Tid",
+        "notificationNotice": "Observera: E-postmeddelanden om avisering kan ändras på admin-instrumentpanelen."
     },
     "inviteExpiry": {
-        "name": "",
-        "title": "",
-        "inviteExpired": "",
-        "expiredAt": "",
-        "notificationNotice": ""
+        "name": "Utgångsdatum för inbjudan",
+        "title": "Meddelande: Inbjudan har upphört att gälla",
+        "inviteExpired": "Inbjudan har upphört att gälla.",
+        "expiredAt": "Koden {code} upphörde att gälla {time}.",
+        "notificationNotice": "Observera: Notifierings-e-postmeddelanden kan ändras på admin-instrumentpanelen."
     },
     "passwordReset": {
-        "name": "",
-        "title": "",
-        "someoneHasRequestedReset": "",
-        "ifItWasYou": "",
-        "codeExpiry": "",
-        "pin": ""
+        "name": "Återställning av lösenord",
+        "title": "Lösenordsåterställning begärd - Jellyfin",
+        "someoneHasRequestedReset": "Någon har nyligen begärt en återställning av lösenordet på Jellyfin.",
+        "ifItWasYou": "Om det var du, ange pinkoden nedan i prompten.",
+        "codeExpiry": "Koden upphör att gälla den {date}, vid {time} UTC, vilket är om {expiresInMinutes}.",
+        "pin": "Pinkod"
     },
     "userDeleted": {
-        "name": "",
-        "title": "",
-        "yourAccountWasDeleted": "",
-        "reason": ""
+        "name": "Radering av användare",
+        "title": "Ditt konto raderades - Jellyfin",
+        "yourAccountWasDeleted": "Ditt Jellyfin-konto raderades.",
+        "reason": "Anledning"
     },
     "inviteEmail": {
-        "name": "",
-        "title": "",
-        "hello": "",
-        "youHaveBeenInvited": "",
-        "toJoin": "",
-        "inviteExpiry": "",
-        "linkButton": ""
+        "name": "Inbjudnings e-post",
+        "title": "Inbjudan - Jellyfin",
+        "hello": "Hej",
+        "youHaveBeenInvited": "Du har blivit inbjuden till Jellyfin.",
+        "toJoin": "För att gå med, följ länken nedan.",
+        "inviteExpiry": "Denna inbjudan upphör att gälla den {date} vid {time}, vilket är om {expiresInMinutes}, så agera snabbt.",
+        "linkButton": "Ställ in ditt konto"
     },
     "welcomeEmail": {
-        "name": "",
-        "title": "",
-        "welcome": "",
-        "youCanLoginWith": "",
-        "jellyfinURL": ""
+        "name": "Välkomst e-post",
+        "title": "Välkommen till Jellyfin",
+        "welcome": "Välkommen till Jellyfin!",
+        "youCanLoginWith": "Du kan logga in med informationen nedan",
+        "jellyfinURL": "URL"
     },
     "emailConfirmation": {
-        "name": "",
-        "title": "",
-        "clickBelow": "",
-        "confirmEmail": ""
+        "name": "Bekräftelse e-post",
+        "title": "Bekräfta din e-postadress - Jellyfin",
+        "clickBelow": "Klicka på länken nedan för att bekräfta din e-postadress och börja använda Jellyfin.",
+        "confirmEmail": "Bekräfta e-postadress"
     }
 }
