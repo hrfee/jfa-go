@@ -1,129 +1,129 @@
 {
     "meta": {
-        "name": ""
+        "name": "Engelska (US)"
     },
     "strings": {
-        "pageTitle": "",
-        "next": "",
-        "back": "",
-        "optional": "",
-        "serverType": "",
-        "disabled": "",
-        "enabled": "",
-        "port": "",
-        "message": "",
-        "serverAddress": "",
-        "emailSubject": "",
-        "URL": "",
-        "apiKey": ""
+        "pageTitle": "Konfigurera - jfa-go",
+        "next": "Nästa",
+        "back": "Tillbaka",
+        "optional": "Valfri",
+        "serverType": "Servertyp",
+        "disabled": "Inaktiverad",
+        "enabled": "Aktiverad",
+        "port": "Port",
+        "message": "Meddelande",
+        "serverAddress": "Serveradress",
+        "emailSubject": "E-postämne",
+        "URL": "URL",
+        "apiKey": "API-nyckel"
     },
     "startPage": {
-        "welcome": "",
-        "pressStart": "",
-        "httpsNotice": "",
-        "start": ""
+        "welcome": "Välkommen!",
+        "pressStart": "Du måste göra några saker för att konfigurera jfa-go. Tryck på starta för att fortsätta.",
+        "httpsNotice": "Se till att du kommer åt den här sidan via HTTPS eller via ett privat nätverk.",
+        "start": "Starta"
     },
     "endPage": {
-        "finished": "",
-        "restartMessage": "",
-        "refreshPage": ""
+        "finished": "Färdig!",
+        "restartMessage": "Det finns fler inställningar som du kan konfigurera på administratörssidan. Klicka nedan för att starta om och uppdatera sedan sidan.",
+        "refreshPage": "Uppdatera"
     },
     "language": {
-        "title": "",
-        "description": "",
-        "defaultAdminLang": "",
-        "defaultFormLang": "",
-        "defaultEmailLang": ""
+        "title": "Språk",
+        "description": "Gemensamma översättningar är tillgängliga för de flesta delar av jfa-go. Du kan välja standardspråken nedan, men användarna kan ändå ändra det om de vill. Om du vill hjälpa till med översättningen kan du registrera dig på {n} för att börja bidra!",
+        "defaultAdminLang": "Standard admin-språk",
+        "defaultFormLang": "Standardspråk för skapande av konto",
+        "defaultEmailLang": "Standard e-postspråk"
     },
     "general": {
-        "title": "",
-        "listenAddress": "",
-        "urlBase": "",
-        "urlBaseNotice": "",
-        "lightTheme": "",
-        "darkTheme": "",
-        "useHTTPS": "",
-        "httpsPort": "",
-        "useHTTPSNotice": "",
-        "pathToCertificate": "",
-        "pathToKeyFile": ""
+        "title": "Allmänt",
+        "listenAddress": "Lyssnar på adress",
+        "urlBase": "URL-bas",
+        "urlBaseNotice": "Behövs bara om du använder en omvänd proxy på en underdomän (t.ex. 'jellyf.in/accounts').",
+        "lightTheme": "Ljus",
+        "darkTheme": "Mörk",
+        "useHTTPS": "Använd HTTPS",
+        "httpsPort": "HTTPS port",
+        "useHTTPSNotice": "Rekommenderas endast om du inte använder en omvänd proxy.",
+        "pathToCertificate": "Sökväg till certifikat",
+        "pathToKeyFile": "Sökväg till privat nyckel"
     },
     "login": {
-        "title": "",
-        "description": "",
-        "authorizeWithJellyfin": "",
-        "authorizeManual": "",
-        "adminOnly": "",
-        "emailNotice": ""
+        "title": "Logga in",
+        "description": "För att komma åt administratörssidan måste du logga in med en metod nedan:",
+        "authorizeWithJellyfin": "Auktorisera med Jellyfin/Emby: Inloggningsuppgifter delas med Jellyfin, vilket möjliggör flera användare.",
+        "authorizeManual": "Användarnamn och lösenord: Ange användarnamn och lösenord manuellt.",
+        "adminOnly": "Endast administratörsanvändare (rekommenderas)",
+        "emailNotice": "Din e-postadress kan användas för att ta emot aviseringar."
     },
     "jellyfinEmby": {
-        "title": "",
-        "description": "",
-        "embyNotice": "",
-        "internal": "",
-        "external": "",
-        "replaceJellyfin": "",
-        "replaceJellyfinNotice": "",
-        "addressExternalNotice": "",
-        "testConnection": ""
+        "title": "Jellyfin/Emby",
+        "description": "Ett administratörskonto behövs eftersom API: et inte tillåter användarskapande med en API-nyckel. Du bör skapa ett separat konto och markera \"Tillåt den här användaren att hantera servern\". Du kan inaktivera allt annat. När du är klar anger du inloggningsuppgifterna här.",
+        "embyNotice": "Emby-stöd är begränsat och stöder inte återställning av lösenord.",
+        "internal": "Intern",
+        "external": "Extern",
+        "replaceJellyfin": "Servernamn",
+        "replaceJellyfinNotice": "Om detta anges kommer det att ersätta alla förekomster av 'Jellyfin' i appen.",
+        "addressExternalNotice": "Lämna tomt för att använda samma adress.",
+        "testConnection": "Testa anslutning"
     },
     "ombi": {
-        "title": "",
-        "description": "",
-        "apiKeyNotice": ""
+        "title": "Ombi",
+        "description": "Genom att ansluta till Ombi skapas både ett Jellyfin- och Ombi-konto när en användare går med genom jfa-go. Efter installationen, om du är klar, gå till Inställningar för att ställa in en standardprofil för nya ombi-användare.",
+        "apiKeyNotice": "Hitta detta i den första fliken i Ombi-inställningarna."
     },
     "email": {
-        "title": "",
-        "description": "",
-        "method": "",
-        "useEmailAsUsername": "",
-        "useEmailAsUsernameNotice": "",
-        "fromAddress": "",
-        "senderName": "",
-        "dateFormat": "",
-        "dateFormatNotice": "",
-        "time24h": "",
-        "time12h": "",
-        "encryption": "",
-        "mailgunApiURL": ""
+        "title": "E-post",
+        "description": "jfa-go kan skicka PIN-koder för återställning av lösenord och olika meddelanden via e-post. Du kan ansluta till en SMTP-server eller använda {n} API.",
+        "method": "Sändningsmetod",
+        "useEmailAsUsername": "Använd e-postadresser som användarnamn",
+        "useEmailAsUsernameNotice": "Om detta är aktiverat kommer nya användare att logga in på Jellyfin / Emby med sin e-postadress istället för ett användarnamn.",
+        "fromAddress": "Från adress",
+        "senderName": "Avsändarens namn",
+        "dateFormat": "Datumformat",
+        "dateFormatNotice": "Datum följer strftime-formatet. Mer information finns på {n}.",
+        "time24h": "24 timmarsklocka",
+        "time12h": "12 timmarsklocka",
+        "encryption": "Kryptering",
+        "mailgunApiURL": "API URL"
     },
     "notifications": {
-        "title": "",
-        "description": ""
+        "title": "Aviseringar",
+        "description": "Om detta är aktiverat kan du välja (per inbjudan) att få ett e-postmeddelande när en inbjudan upphör eller när en användare skapas. Om du inte valde inloggningsmetoden Jellyfin, se till att du angav din e-postadress."
     },
     "welcomeEmails": {
-        "title": "",
-        "description": ""
+        "title": "Välkomstmeddelanden",
+        "description": "Om aktiverat skickas ett e-postmeddelande till nya användare med Jellyfin/Emby URL och deras användarnamn."
     },
     "inviteEmails": {
-        "title": "",
-        "description": ""
+        "title": "Inbjudnings e-post",
+        "description": "Om detta är aktiverat kan du skicka inbjudningar direkt till en användares e-postadress. Eftersom du kanske använder en omvänd proxy måste du ange att webbadressinbjudningar nås från. Skriv din URL-bas och lägg till '/invite'."
     },
     "passwordResets": {
-        "title": "",
-        "description": "",
-        "pathToJellyfin": "",
-        "pathToJellyfinNotice": ""
+        "title": "Lösenordsåterställningar",
+        "description": "När en användare försöker återställa sitt lösenord skapar Jellyfin en fil med namnet 'passwordreset-*.json' som innehåller en PIN-kod. jfa-go läser filen och skickar PIN-koden till användaren.",
+        "pathToJellyfin": "Sökväg till Jellyfin-konfigurationskatalogen",
+        "pathToJellyfinNotice": "Om du inte vet var det är, försök återställa lösenordet i Jellyfin. En popup med '<sökväg till jellyfin>/passwordreset-*.json' kommer då visas."
     },
     "passwordValidation": {
-        "title": "",
-        "description": "",
-        "length": "",
-        "uppercase": "",
-        "lowercase": "",
-        "numbers": "",
-        "special": ""
+        "title": "Validering av lösenord",
+        "description": "Om detta är aktiverat kommer en uppsättning lösenordskrav att visas på sidan för skapande av konto, till exempel minsta längd, stora/små bokstäver etc.",
+        "length": "Längd",
+        "uppercase": "Versaler",
+        "lowercase": "Gemener",
+        "numbers": "Nummer",
+        "special": "Specialtecken (%, *, etc.)"
     },
     "helpMessages": {
-        "title": "",
-        "description": "",
-        "contactMessage": "",
-        "contactMessageNotice": "",
-        "helpMessage": "",
-        "helpMessageNotice": "",
-        "successMessage": "",
-        "successMessageNotice": "",
-        "emailMessage": "",
-        "emailMessageNotice": ""
+        "title": "Hjälpmeddelanden",
+        "description": "Dessa meddelanden visas på sidan för skapande av konto och i vissa e-postmeddelanden.",
+        "contactMessage": "Kontaktmeddelande",
+        "contactMessageNotice": "Visas längst ner på alla sidor utom admin.",
+        "helpMessage": "Hjälpmeddelande",
+        "helpMessageNotice": "Visas på sidan för att skapa konto.",
+        "successMessage": "Meddelande om genomförd åtgärd",
+        "successMessageNotice": "Visas när en användare skapar sitt konto.",
+        "emailMessage": "E-postmeddelande",
+        "emailMessageNotice": "Visas längst ner i e-postmeddelanden."
     }
 }
