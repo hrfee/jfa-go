@@ -7,11 +7,11 @@
     window.code = "{{ .code }}";
     window.messages = JSON.parse({{ .notifications }});
     window.confirmation = {{ .confirmation }};
-    window.userDurationEnabled = {{ .userDuration }};
-    window.userDurationDays = {{ .userDurationDays }};
-    window.userDurationHours = {{ .userDurationHours }};
-    window.userDurationMinutes = {{ .userDurationMinutes }};
-    window.userDurationMessage = {{ .userDurationMessage }};
+    window.userExpiryEnabled = {{ .userExpiry }};
+    window.userExpiryDays = {{ .userExpiryDays }};
+    window.userExpiryHours = {{ .userExpiryHours }};
+    window.userExpiryMinutes = {{ .userExpiryMinutes }};
+    window.userExpiryMessage = {{ .userExpiryMessage }};
 </script>
 <script src="js/form.js" type="module"></script>
 {{ end }}

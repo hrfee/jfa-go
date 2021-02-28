@@ -81,6 +81,7 @@ func (app *appContext) AdminPage(gc *gin.Context) {
 		"strings":         app.storage.lang.Admin[lang].Strings,
 		"quantityStrings": app.storage.lang.Admin[lang].QuantityStrings,
 		"language":        app.storage.lang.Admin[lang].JSON,
+		"langName":        lang,
 	})
 }
 
@@ -167,26 +168,26 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 		email = ""
 	}
 	gcHTML(gc, http.StatusOK, "form-loader.html", gin.H{
-		"urlBase":             app.getURLBase(gc),
-		"cssClass":            app.cssClass,
-		"contactMessage":      app.config.Section("ui").Key("contact_message").String(),
-		"helpMessage":         app.config.Section("ui").Key("help_message").String(),
-		"successMessage":      app.config.Section("ui").Key("success_message").String(),
-		"jfLink":              app.config.Section("jellyfin").Key("public_server").String(),
-		"validate":            app.config.Section("password_validation").Key("enabled").MustBool(false),
-		"requirements":        app.validator.getCriteria(),
-		"email":               email,
-		"username":            !app.config.Section("email").Key("no_username").MustBool(false),
-		"strings":             app.storage.lang.Form[lang].Strings,
-		"validationStrings":   app.storage.lang.Form[lang].validationStringsJSON,
-		"notifications":       app.storage.lang.Form[lang].notificationsJSON,
-		"code":                code,
-		"confirmation":        app.config.Section("email_confirmation").Key("enabled").MustBool(false),
-		"userDuration":        inv.UserDuration,
-		"userDurationDays":    inv.UserDays,
-		"userDurationHours":   inv.UserHours,
-		"userDurationMinutes": inv.UserMinutes,
-		"userDurationMessage": app.storage.lang.Form[lang].Strings.get("yourAccountIsValidUntil"),
+		"urlBase":           app.getURLBase(gc),
+		"cssClass":          app.cssClass,
+		"contactMessage":    app.config.Section("ui").Key("contact_message").String(),
+		"helpMessage":       app.config.Section("ui").Key("help_message").String(),
+		"successMessage":    app.config.Section("ui").Key("success_message").String(),
+		"jfLink":            app.config.Section("jellyfin").Key("public_server").String(),
+		"validate":          app.config.Section("password_validation").Key("enabled").MustBool(false),
+		"requirements":      app.validator.getCriteria(),
+		"email":             email,
+		"username":          !app.config.Section("email").Key("no_username").MustBool(false),
+		"strings":           app.storage.lang.Form[lang].Strings,
+		"validationStrings": app.storage.lang.Form[lang].validationStringsJSON,
+		"notifications":     app.storage.lang.Form[lang].notificationsJSON,
+		"code":              code,
+		"confirmation":      app.config.Section("email_confirmation").Key("enabled").MustBool(false),
+		"userExpiry":        inv.UserExpiry,
+		"userExpiryDays":    inv.UserDays,
+		"userExpiryHours":   inv.UserHours,
+		"userExpiryMinutes": inv.UserMinutes,
+		"userExpiryMessage": app.storage.lang.Form[lang].Strings.get("yourAccountIsValidUntil"),
 	})
 }
 

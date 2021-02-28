@@ -9,6 +9,7 @@
             window.ombiEnabled = {{ .ombiEnabled }};
             window.usernameEnabled = {{ .username }};
             window.langFile = JSON.parse({{ .language }});
+            window.language = "{{ .langName }}";
         </script>
         {{ template "header.html" . }}
         <title>Admin - jfa-go</title>
@@ -132,7 +133,7 @@
                 <span class="heading"><span id="header-editor"></span> <span class="modal-close">&times;</span></span>
                 <div class="row">
                     <div class="col flex-col content mt-half">
-                        <span class="label supra" for="editor-variables">{{ .strings.variables }}</span>
+                        <span class="label supra" for="editor-variables" id="label-editor-variables">{{ .strings.variables }}</span>
                         <div id="editor-variables"></div>
                         <label class="label supra" for="textarea-editor">{{ .strings.message }}</label>
                         <textarea id="textarea-editor" class="textarea full-width flex-auto ~neutral !normal mt-half monospace"></textarea>
@@ -265,8 +266,8 @@
                                     <span class="button ~neutral !high supra full-width center">{{ .strings.inviteDuration }}</span>
                                 </label>
                                 <label class="flex-row-group ml-1">
-                                    <input type="radio" name="duration" class="unfocused" id="radio-user-duration">
-                                    <span class="button ~neutral !normal supra full-width center">{{ .strings.userDuration }}</span>
+                                    <input type="radio" name="duration" class="unfocused" id="radio-user-expiry">
+                                    <span class="button ~neutral !normal supra full-width center">{{ .strings.userExpiry }}</span>
                                 </label>
                             </div>
                             <div id="inv-duration">
@@ -289,11 +290,11 @@
                                     </select>
                                 </div>
                             </div>
-                            <div id="user-duration" class="unfocused">
-                                <p class="support">{{ .strings.userDurationDescription }}</p>
+                            <div id="user-expiry" class="unfocused">
+                                <p class="support">{{ .strings.userExpiryDescription }}</p>
                                 <div class="mb-half">
-                                    <label for="create-user-duration-enabled" class="button ~neutral !normal">
-                                        <input type="checkbox" id="create-user-duration-enabled" aria-label="User duration enabled">
+                                    <label for="create-user-expiry-enabled" class="button ~neutral !normal">
+                                        <input type="checkbox" id="create-user-expiry-enabled" aria-label="User duration enabled">
                                         <span class="ml-half">{{ .strings.enabled }} </span>
                                     </label>
                                 </div>

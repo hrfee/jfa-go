@@ -694,6 +694,7 @@ class EmailEditor {
     private _form = document.getElementById("form-editor") as HTMLFormElement;
     private _header = document.getElementById("header-editor") as HTMLSpanElement;
     private _variables = document.getElementById("editor-variables") as HTMLDivElement;
+    private _variablesLabel = document.getElementById("label-editor-variables") as HTMLElement;
     private _textArea = document.getElementById("textarea-editor") as HTMLTextAreaElement;
     private _preview = document.getElementById("editor-preview") as HTMLDivElement;
     private _previewContent: HTMLElement;
@@ -745,6 +746,11 @@ class EmailEditor {
                     let ci = i % colors.length;
                     innerHTML += '<span class="button ~' + colors[ci] +' !normal mb-1" style="margin-left: 0.25rem; margin-right: 0.25rem;"></span>'
                 }
+                if (this._templ.variables.length == 0) {
+                    this._variablesLabel.classList.add("unfocused");
+                } else {
+                    this._variablesLabel.classList.remove("unfocused");
+                }
                 this._variables.innerHTML = innerHTML
                 const buttons = this._variables.querySelectorAll("span.button") as NodeListOf<HTMLSpanElement>;
                 for (let i = 0; i < this._templ.variables.length; i++) {
@@ -761,10 +767,12 @@ class EmailEditor {
     }
     loadPreview = () => {
         let content = this._textArea.value;
-        for (let variable of this._templ.variables) {
-            let value = this._templ.values[variable.slice(1, -1)];
-            if (value === undefined) { value = variable; }
-            content = content.replace(new RegExp(variable, "g"), value);
+        if (this._templ.variables) {
+            for (let variable of this._templ.variables) {
+                let value = this._templ.values[variable.slice(1, -1)];
+                if (value === undefined) { value = variable; }
+                content = content.replace(new RegExp(variable, "g"), value);
+            }
         }
         if (this._templ.html == "") {
             content = stripMarkdown(content);
@@ -785,7 +793,7 @@ class EmailEditor {
     }
 
     showList = () => {
-        _get("/config/emails", null, (req: XMLHttpRequest) => {
+        _get("/config/emails?lang=" + window.language, null, (req: XMLHttpRequest) => {
             if (req.readyState == 4) {
                 if (req.status != 200) {
                     window.notifications.customError("loadTemplateError", window.lang.notif("errorFailureCheckLogs"));

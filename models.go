@@ -33,7 +33,7 @@ type generateInviteDTO struct {
 	Days          int    `json:"days" example:"1"`                   // Number of days
 	Hours         int    `json:"hours" example:"2"`                  // Number of hours
 	Minutes       int    `json:"minutes" example:"3"`                // Number of minutes
-	UserDuration  bool   `json:"user-duration"`                      // Whether or not user duration is enabled
+	UserExpiry    bool   `json:"user-expiry"`                        // Whether or not user expiry is enabled
 	UserDays      int    `json:"user-days,omitempty" example:"1"`    // Number of days till user expiry
 	UserHours     int    `json:"user-hours,omitempty" example:"2"`   // Number of hours till user expiry
 	UserMinutes   int    `json:"user-minutes,omitempty" example:"3"` // Number of minutes till user expiry
@@ -76,7 +76,7 @@ type inviteDTO struct {
 	Days           int        `json:"days" example:"1"`                      // Number of days till expiry
 	Hours          int        `json:"hours" example:"2"`                     // Number of hours till expiry
 	Minutes        int        `json:"minutes" example:"3"`                   // Number of minutes till expiry
-	UserDuration   bool       `json:"user-duration"`                         // Whether or not user duration is enabled
+	UserExpiry     bool       `json:"user-expiry"`                           // Whether or not user expiry is enabled
 	UserDays       int        `json:"user-days,omitempty" example:"1"`       // Number of days till user expiry
 	UserHours      int        `json:"user-hours,omitempty" example:"2"`      // Number of hours till user expiry
 	UserMinutes    int        `json:"user-minutes,omitempty" example:"3"`    // Number of minutes till user expiry
@@ -204,4 +204,8 @@ type customEmailDTO struct {
 	Values    map[string]interface{} `json:"values"`
 	HTML      string                 `json:"html"`
 	Plaintext string                 `json:"plaintext"`
+}
+
+type getEmailDTO struct {
+	Lang string `json:"lang" example:"en-us"` // Language code. If not given, defaults ot one specified in settings.
 }

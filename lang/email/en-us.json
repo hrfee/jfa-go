@@ -55,5 +55,11 @@
         "title": "Confirm your email - Jellyfin",
         "clickBelow": "Click the link below to confirm your email address and start using Jellyfin.",
         "confirmEmail": "Confirm Email"
+    },
+    "userExpired": {
+        "name": "User expiry",
+        "title": "Your account has expired - Jellyfin",
+        "yourAccountHasExpired": "Your account has expired.",
+        "contactTheAdmin": "Contact the administrator for more info."
     }
 }

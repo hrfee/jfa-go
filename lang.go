@@ -83,6 +83,7 @@ type emailLang struct {
 	InviteEmail       langSection `json:"inviteEmail"`
 	WelcomeEmail      langSection `json:"welcomeEmail"`
 	EmailConfirmation langSection `json:"emailConfirmation"`
+	UserExpired       langSection `json:"userExpired"`
 }
 
 type setupLangs map[string]setupLang

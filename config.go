@@ -36,7 +36,7 @@ func (app *appContext) loadConfig() error {
 			key.SetValue(key.MustString(filepath.Join(app.dataPath, (key.Name() + ".json"))))
 		}
 	}
-	for _, key := range []string{"user_configuration", "user_displayprefs", "user_profiles", "ombi_template", "invites", "emails", "user_template", "custom_emails"} {
+	for _, key := range []string{"user_configuration", "user_displayprefs", "user_profiles", "ombi_template", "invites", "emails", "user_template", "custom_emails", "users"} {
 		app.config.Section("files").Key(key).SetValue(app.config.Section("files").Key(key).MustString(filepath.Join(app.dataPath, (key + ".json"))))
 	}
 	app.URLBase = strings.TrimSuffix(app.config.Section("ui").Key("url_base").MustString(""), "/")
@@ -65,6 +65,10 @@ func (app *appContext) loadConfig() error {
 
 	app.config.Section("template_email").Key("email_html").SetValue(app.config.Section("template_email").Key("email_html").MustString("jfa-go:" + "template.html"))
 	app.config.Section("template_email").Key("email_text").SetValue(app.config.Section("template_email").Key("email_text").MustString("jfa-go:" + "template.txt"))
+
+	app.config.Section("user_expiry").Key("behaviour").SetValue(app.config.Section("user_expiry").Key("behaviour").MustString("disable_user"))
+	app.config.Section("user_expiry").Key("email_html").SetValue(app.config.Section("user_expiry").Key("email_html").MustString("jfa-go:" + "user-expired.html"))
+	app.config.Section("user_expiry").Key("email_text").SetValue(app.config.Section("user_expiry").Key("email_text").MustString("jfa-go:" + "user-expired.txt"))
 
 	app.config.Section("jellyfin").Key("version").SetValue(version)
 	app.config.Section("jellyfin").Key("device").SetValue("jfa-go")

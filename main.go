@@ -338,6 +338,8 @@ func start(asDaemon, firstCall bool) {
 		app.storage.loadConfiguration()
 		app.storage.displayprefs_path = app.config.Section("files").Key("user_displayprefs").String()
 		app.storage.loadDisplayprefs()
+		app.storage.users_path = app.config.Section("files").Key("users").String()
+		app.storage.loadUsers()
 
 		app.storage.profiles_path = app.config.Section("files").Key("user_profiles").String()
 		app.storage.loadProfiles()
@@ -510,8 +512,11 @@ func start(asDaemon, firstCall bool) {
 			os.Exit(0)
 		}
 
-		inviteDaemon := newRepeater(time.Duration(60*time.Second), app)
+		inviteDaemon := newInviteDaemon(time.Duration(60*time.Second), app)
 		go inviteDaemon.run()
+
+		userDaemon := newUserDaemon(time.Duration(60*time.Second), app)
+		go userDaemon.run()
 
 		if app.config.Section("password_resets").Key("enabled").MustBool(false) && serverType == mediabrowser.JellyfinServer {
 			go app.StartPWR()

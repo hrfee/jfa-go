@@ -10,11 +10,11 @@ interface formWindow extends Window {
     messages: { [key: string]: string };
     confirmation: boolean;
     confirmationModal: Modal
-    userDurationEnabled: boolean;
-    userDurationDays: number;
-    userDurationHours: number;
-    userDurationMinutes: number;
-    userDurationMessage: string;
+    userExpiryEnabled: boolean;
+    userExpiryDays: number;
+    userExpiryHours: number;
+    userExpiryMinutes: number;
+    userExpiryMessage: string;
 }
 
 interface pwValString {
@@ -39,14 +39,14 @@ if (window.confirmation) {
 }
 declare var window: formWindow;
 
-if (window.userDurationEnabled) {
-    const messageEl = document.getElementById("user-duration-message") as HTMLElement;
+if (window.userExpiryEnabled) {
+    const messageEl = document.getElementById("user-expiry-message") as HTMLElement;
     const calculateTime = () => {
         let time = new Date()
-        time.setDate(time.getDate() + window.userDurationDays);
-        time.setHours(time.getHours() + window.userDurationHours);
-        time.setMinutes(time.getMinutes() + window.userDurationMinutes);
-        messageEl.textContent = window.userDurationMessage.replace("{date}", time.toDateString() + " " + time.toLocaleTimeString());
+        time.setDate(time.getDate() + window.userExpiryDays);
+        time.setHours(time.getHours() + window.userExpiryHours);
+        time.setMinutes(time.getMinutes() + window.userExpiryMinutes);
+        messageEl.textContent = window.userExpiryMessage.replace("{date}", time.toDateString() + " " + time.toLocaleTimeString());
         setTimeout(calculateTime, 1000);
     };
     calculateTime();

@@ -765,6 +765,63 @@
                 }
             }
         },
+        "user_expiry": {
+            "order": [],
+            "meta": {
+                "name": "User Expiry",
+                "description": "When set on an invite, users will be deleted or disabled a specified amount of time after they create their account."
+            },
+            "settings": {
+                "behaviour": {
+                    "name": "Behaviour",
+                    "required": false,
+                    "requires_restart": false,
+                    "type": "select",
+                    "options": [
+                        ["delete_user", "Delete user"],
+                        ["disable_user", "Disable user"]
+                    ],
+                    "value": "disable_user",
+                    "description": "Whether to delete or disable users on expiry."
+                },
+                "send_email": {
+                    "name": "Send email",
+                    "required": false,
+                    "requires_restart": false,
+                    "type": "bool",
+                    "value": true,
+                    "depends_true": "email|method",
+                    "description": "Send an email when a user's account expires."
+                },
+                "subject": {
+                    "name": "Email subject",
+                    "required": false,
+                    "requires_restart": false,
+                    "depends_true": "email|method",
+                    "type": "text",
+                    "value": "",
+                    "description": "Subject of user expiry emails."
+                },
+                "email_html": {
+                    "name": "Custom email (HTML)",
+                    "required": false,
+                    "requires_restart": false,
+                    "depends_true": "email|method",
+                    "type": "text",
+                    "value": "",
+                    "description": "Path to custom email html"
+                },
+                "email_text": {
+                    "name": "Custom email (plaintext)",
+                    "required": false,
+                    "requires_restart": false,
+                    "depends_true": "email|method",
+                    "type": "text",
+                    "value": "",
+                    "description": "Path to custom email in plain text"
+                }
+            }
+        },
         "deletion": {
             "order": [],
             "meta": {
@@ -821,6 +878,14 @@
                     "type": "text",
                     "value": "",
                     "description": "Location of stored email addresses (json)."
+                },
+                "users": {
+                    "name": "User storage",
+                    "required": false,
+                    "requires_restart": false,
+                    "type": "text",
+                    "value": "",
+                    "description": "Stores users temporarily when a user expiry is set."
                 },
                 "ombi_template": {
                     "name": "Ombi user template",

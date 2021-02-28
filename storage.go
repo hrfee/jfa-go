@@ -14,16 +14,17 @@ import (
 )
 
 type Storage struct {
-	timePattern                                                                                                               string
-	invite_path, emails_path, policy_path, configuration_path, displayprefs_path, ombi_path, profiles_path, customEmails_path string
-	invites                                                                                                                   Invites
-	profiles                                                                                                                  map[string]Profile
-	defaultProfile                                                                                                            string
-	emails, displayprefs, ombi_template                                                                                       map[string]interface{}
-	customEmails                                                                                                              customEmails
-	policy                                                                                                                    mediabrowser.Policy
-	configuration                                                                                                             mediabrowser.Configuration
-	lang                                                                                                                      Lang
+	timePattern                                                                                                                           string
+	invite_path, emails_path, policy_path, configuration_path, displayprefs_path, ombi_path, profiles_path, customEmails_path, users_path string
+	users                                                                                                                                 map[string]time.Time
+	invites                                                                                                                               Invites
+	profiles                                                                                                                              map[string]Profile
+	defaultProfile                                                                                                                        string
+	emails, displayprefs, ombi_template                                                                                                   map[string]interface{}
+	customEmails                                                                                                                          customEmails
+	policy                                                                                                                                mediabrowser.Policy
+	configuration                                                                                                                         mediabrowser.Configuration
+	lang                                                                                                                                  Lang
 }
 
 type customEmails struct {
@@ -34,6 +35,7 @@ type customEmails struct {
 	InviteEmail       customEmail `json:"inviteEmail"`
 	WelcomeEmail      customEmail `json:"welcomeEmail"`
 	EmailConfirmation customEmail `json:"emailConfirmation"`
+	UserExpired       customEmail `json:"userExpired"`
 }
 
 type customEmail struct {
@@ -59,7 +61,7 @@ type Invite struct {
 	NoLimit       bool                       `json:"no-limit"`
 	RemainingUses int                        `json:"remaining-uses"`
 	ValidTill     time.Time                  `json:"valid_till"`
-	UserDuration  bool                       `json:"user-duration"`
+	UserExpiry    bool                       `json:"user-duration"`
 	UserDays      int                        `json:"user-days,omitempty"`
 	UserHours     int                        `json:"user-hours,omitempty"`
 	UserMinutes   int                        `json:"user-minutes,omitempty"`
@@ -405,6 +407,14 @@ func (st *Storage) loadInvites() error {
 
 func (st *Storage) storeInvites() error {
 	return storeJSON(st.invite_path, st.invites)
+}
+
+func (st *Storage) loadUsers() error {
+	return loadJSON(st.users_path, &st.users)
+}
+
+func (st *Storage) storeUsers() error {
+	return storeJSON(st.users_path, st.users)
 }
 
 func (st *Storage) loadEmails() error {

@@ -1,0 +1,76 @@
+<mjml>
+  <mj-head>
+    <mj-raw>
+      <meta name="color-scheme" content="light dark">
+      <meta name="supported-color-schemes" content="light dark">
+    </mj-raw>
+    <mj-style>
+        :root {
+            Color-scheme: light dark;
+            supported-color-schemes: light dark;
+        }
+        @media (prefers-color-scheme: light) {
+            Color-scheme: dark;
+            .body {
+                background: #242424 !important;
+                background-color: #242424 !important;
+            }
+            [data-ogsc] .body {
+                background: #242424 !important;
+                background-color: #242424 !important;
+            }
+            [data-ogsb] .body {
+                background: #242424 !important;
+                background-color: #242424 !important;
+            }
+        }
+        @media (prefers-color-scheme: dark) {
+            Color-scheme: dark;
+            .body {
+                background: #242424 !important;
+                background-color: #242424 !important;
+            }
+            [data-ogsc] .body {
+                background: #242424 !important;
+                background-color: #242424 !important;
+            }
+            [data-ogsb] .body {
+                background: #242424 !important;
+                background-color: #242424 !important;
+            }
+        }
+    </mj-style>
+    <mj-attributes>
+      <mj-class name="bg" background-color="#101010" />
+      <mj-class name="bg2" background-color="#242424" />
+      <mj-class name="text" color="#cacaca" />
+      <mj-class name="bold" color="rgba(255,255,255,0.87)" />
+      <mj-class name="secondary" color="rgb(153,153,153)" />
+      <mj-class name="blue" background-color="rgb(0,164,220)" />
+    </mj-attributes>
+    <mj-font name="Quicksand" href="https://fonts.googleapis.com/css2?family=Quicksand" />
+    <mj-font name="Noto Sans" href="https://fonts.googleapis.com/css2?family=Noto+Sans" />
+  </mj-head>
+  <mj-body>
+    <mj-section mj-class="bg2">
+      <mj-column>
+          <mj-text mj-class="bold" font-size="25px" font-family="Quicksand, Noto Sans, Helvetica, Arial, sans-serif"> {{ .jellyfin }} </mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-section mj-class="bg">
+      <mj-column>
+        <mj-text mj-class="text" font-size="16px" font-family="Noto Sans, Helvetica, Arial, sans-serif">
+            <h3>{{ .yourAccountHasExpired }}</h3>
+            <p>{{ .contactTheAdmin }}</p>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-section mj-class="bg2">
+      <mj-column>
+        <mj-text mj-class="secondary" font-style="italic" font-size="14px">
+          {{ .message }}
+        </mj-text>
+      </mj-column>
+    </mj-section>
+    </body>
+</mjml>

@@ -569,6 +569,42 @@ func (emailer *Emailer) constructWelcome(username string, app *appContext, noSub
 	return email, nil
 }
 
+func (emailer *Emailer) userExpiredValues(app *appContext, noSub bool) map[string]interface{} {
+	template := map[string]interface{}{
+		"yourAccountHasExpired": emailer.lang.UserExpired.get("yourAccountHasExpired"),
+		"contactTheAdmin":       emailer.lang.UserExpired.get("contactTheAdmin"),
+		"message":               "",
+	}
+	if !noSub {
+		template["message"] = app.config.Section("email").Key("message").String()
+	}
+	return template
+}
+
+func (emailer *Emailer) constructUserExpired(app *appContext, noSub bool) (*Email, error) {
+	email := &Email{
+		Subject: app.config.Section("user_expiry").Key("subject").MustString(emailer.lang.UserExpired.get("title")),
+	}
+	var err error
+	template := emailer.userExpiredValues(app, noSub)
+	if app.storage.customEmails.UserExpired.Enabled {
+		content := app.storage.customEmails.UserExpired.Content
+		for _, v := range app.storage.customEmails.UserExpired.Variables {
+			replaceWith, ok := template[v[1:len(v)-1]]
+			if ok {
+				content = strings.ReplaceAll(content, v, replaceWith.(string))
+			}
+		}
+		email, err = emailer.constructTemplate(email.Subject, content, app)
+	} else {
+		email.HTML, email.Text, err = emailer.construct(app, "user_expiry", "email_", template)
+	}
+	if err != nil {
+		return nil, err
+	}
+	return email, nil
+}
+
 // calls the send method in the underlying emailClient.
 func (emailer *Emailer) send(email *Email, address ...string) error {
 	return emailer.sender.send(emailer.fromName, emailer.fromAddr, email, address...)

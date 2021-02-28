@@ -445,6 +445,14 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 			app.info.Printf("%s: Sent welcome email to %s", req.Username, req.Email)
 		}
 	}
+	if invite.UserExpiry {
+		expiry := time.Now().Add(time.Duration(60*(invite.UserDays*24+invite.UserHours)+invite.UserMinutes) * time.Minute)
+		app.storage.users[id] = expiry
+		err := app.storage.storeUsers()
+		if err != nil {
+			app.err.Printf("Failed to store user duration: %s", err)
+		}
+	}
 	success = true
 	return
 }
@@ -634,8 +642,8 @@ func (app *appContext) GenerateInvite(gc *gin.Context) {
 	} else {
 		invite.RemainingUses = 1
 	}
-	invite.UserDuration = req.UserDuration
-	if invite.UserDuration {
+	invite.UserExpiry = req.UserExpiry
+	if invite.UserExpiry {
 		invite.UserDays = req.UserDays
 		invite.UserHours = req.UserHours
 		invite.UserMinutes = req.UserMinutes
@@ -819,18 +827,18 @@ func (app *appContext) GetInvites(gc *gin.Context) {
 	for code, inv := range app.storage.invites {
 		_, _, days, hours, minutes, _ := timeDiff(inv.ValidTill, currentTime)
 		invite := inviteDTO{
-			Code:         code,
-			Days:         days,
-			Hours:        hours,
-			Minutes:      minutes,
-			UserDuration: inv.UserDuration,
-			UserDays:     inv.UserDays,
-			UserHours:    inv.UserHours,
-			UserMinutes:  inv.UserMinutes,
-			Created:      app.formatDatetime(inv.Created),
-			Profile:      inv.Profile,
-			NoLimit:      inv.NoLimit,
-			Label:        inv.Label,
+			Code:        code,
+			Days:        days,
+			Hours:       hours,
+			Minutes:     minutes,
+			UserExpiry:  inv.UserExpiry,
+			UserDays:    inv.UserDays,
+			UserHours:   inv.UserHours,
+			UserMinutes: inv.UserMinutes,
+			Created:     app.formatDatetime(inv.Created),
+			Profile:     inv.Profile,
+			NoLimit:     inv.NoLimit,
+			Label:       inv.Label,
 		}
 		if len(inv.UsedBy) != 0 {
 			invite.UsedBy = inv.UsedBy
@@ -1281,18 +1289,24 @@ func (app *appContext) ModifyConfig(gc *gin.Context) {
 
 // @Summary Get a list of email names and IDs.
 // @Produce json
+// @Param lang query string false "Language for email titles."
 // @Success 200 {object} emailListDTO
 // @Router /config/emails [get]
 // @tags Configuration
 func (app *appContext) GetEmails(gc *gin.Context) {
+	lang := gc.Query("lang")
+	if _, ok := app.storage.lang.Email[lang]; !ok {
+		lang = app.storage.lang.chosenEmailLang
+	}
 	gc.JSON(200, emailListDTO{
-		"UserCreated":       {Name: app.storage.lang.Email["en-us"].UserCreated["name"], Enabled: app.storage.customEmails.UserCreated.Enabled},
-		"InviteExpiry":      {Name: app.storage.lang.Email["en-us"].InviteExpiry["name"], Enabled: app.storage.customEmails.InviteExpiry.Enabled},
-		"PasswordReset":     {Name: app.storage.lang.Email["en-us"].PasswordReset["name"], Enabled: app.storage.customEmails.PasswordReset.Enabled},
-		"UserDeleted":       {Name: app.storage.lang.Email["en-us"].UserDeleted["name"], Enabled: app.storage.customEmails.UserDeleted.Enabled},
-		"InviteEmail":       {Name: app.storage.lang.Email["en-us"].InviteEmail["name"], Enabled: app.storage.customEmails.InviteEmail.Enabled},
-		"WelcomeEmail":      {Name: app.storage.lang.Email["en-us"].WelcomeEmail["name"], Enabled: app.storage.customEmails.WelcomeEmail.Enabled},
-		"EmailConfirmation": {Name: app.storage.lang.Email["en-us"].EmailConfirmation["name"], Enabled: app.storage.customEmails.EmailConfirmation.Enabled},
+		"UserCreated":       {Name: app.storage.lang.Email[lang].UserCreated["name"], Enabled: app.storage.customEmails.UserCreated.Enabled},
+		"InviteExpiry":      {Name: app.storage.lang.Email[lang].InviteExpiry["name"], Enabled: app.storage.customEmails.InviteExpiry.Enabled},
+		"PasswordReset":     {Name: app.storage.lang.Email[lang].PasswordReset["name"], Enabled: app.storage.customEmails.PasswordReset.Enabled},
+		"UserDeleted":       {Name: app.storage.lang.Email[lang].UserDeleted["name"], Enabled: app.storage.customEmails.UserDeleted.Enabled},
+		"InviteEmail":       {Name: app.storage.lang.Email[lang].InviteEmail["name"], Enabled: app.storage.customEmails.InviteEmail.Enabled},
+		"WelcomeEmail":      {Name: app.storage.lang.Email[lang].WelcomeEmail["name"], Enabled: app.storage.customEmails.WelcomeEmail.Enabled},
+		"EmailConfirmation": {Name: app.storage.lang.Email[lang].EmailConfirmation["name"], Enabled: app.storage.customEmails.EmailConfirmation.Enabled},
+		"UserExpired":       {Name: app.storage.lang.Email[lang].UserExpired["name"], Enabled: app.storage.customEmails.UserExpired.Enabled},
 	})
 }
 
@@ -1333,6 +1347,9 @@ func (app *appContext) SetEmail(gc *gin.Context) {
 	} else if id == "EmailConfirmation" {
 		app.storage.customEmails.EmailConfirmation.Content = req.Content
 		app.storage.customEmails.EmailConfirmation.Enabled = true
+	} else if id == "UserExpired" {
+		app.storage.customEmails.UserExpired.Content = req.Content
+		app.storage.customEmails.UserExpired.Enabled = true
 	} else {
 		respondBool(400, false, gc)
 		return
@@ -1374,6 +1391,8 @@ func (app *appContext) SetEmailState(gc *gin.Context) {
 		app.storage.customEmails.WelcomeEmail.Enabled = enabled
 	} else if id == "EmailConfirmation" {
 		app.storage.customEmails.EmailConfirmation.Enabled = enabled
+	} else if id == "UserExpired" {
+		app.storage.customEmails.UserExpired.Enabled = enabled
 	} else {
 		respondBool(400, false, gc)
 		return
@@ -1393,6 +1412,7 @@ func (app *appContext) SetEmailState(gc *gin.Context) {
 // @Router /config/emails/{id} [get]
 // @tags Configuration
 func (app *appContext) GetEmail(gc *gin.Context) {
+	lang := app.storage.lang.chosenEmailLang
 	id := gc.Param("id")
 	var content string
 	var err error
@@ -1401,8 +1421,8 @@ func (app *appContext) GetEmail(gc *gin.Context) {
 	var values map[string]interface{}
 	var writeVars func(variables []string)
 	newEmail := false
-	username := app.storage.lang.Email[app.storage.lang.chosenEmailLang].Strings.get("username")
-	emailAddress := app.storage.lang.Email[app.storage.lang.chosenEmailLang].Strings.get("emailAddress")
+	username := app.storage.lang.Email[lang].Strings.get("username")
+	emailAddress := app.storage.lang.Email[lang].Strings.get("emailAddress")
 	if id == "UserCreated" {
 		content = app.storage.customEmails.UserCreated.Content
 		if content == "" {
@@ -1449,7 +1469,7 @@ func (app *appContext) GetEmail(gc *gin.Context) {
 			variables = app.storage.customEmails.UserDeleted.Variables
 		}
 		writeVars = func(variables []string) { app.storage.customEmails.UserDeleted.Variables = variables }
-		values = app.email.deletedValues(app.storage.lang.Email[app.storage.lang.chosenEmailLang].UserDeleted.get("reason"), app, false)
+		values = app.email.deletedValues(app.storage.lang.Email[lang].UserDeleted.get("reason"), app, false)
 		// app.storage.customEmails.UserDeleted = content
 	} else if id == "InviteEmail" {
 		content = app.storage.customEmails.InviteEmail.Content
@@ -1487,6 +1507,17 @@ func (app *appContext) GetEmail(gc *gin.Context) {
 		writeVars = func(variables []string) { app.storage.customEmails.EmailConfirmation.Variables = variables }
 		values = app.email.confirmationValues("xxxxxx", username, "xxxxxx", app, false)
 		// app.storage.customEmails.EmailConfirmation = content
+	} else if id == "UserExpired" {
+		content = app.storage.customEmails.UserExpired.Content
+		if content == "" {
+			newEmail = true
+			msg, err = app.email.constructUserExpired(app, true)
+			content = msg.Text
+		} else {
+			variables = app.storage.customEmails.UserExpired.Variables
+		}
+		writeVars = func(variables []string) { app.storage.customEmails.UserExpired.Variables = variables }
+		values = app.email.userExpiredValues(app, false)
 	} else {
 		respondBool(400, false, gc)
 		return
@@ -1514,6 +1545,9 @@ func (app *appContext) GetEmail(gc *gin.Context) {
 			}
 		}
 		writeVars(variables)
+	}
+	if variables == nil {
+		variables = []string{}
 	}
 	if app.storage.storeCustomEmails() != nil {
 		respondBool(500, false, gc)
