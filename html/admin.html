@@ -259,23 +259,62 @@
                     <span class="heading">{{ .strings.create }}</span>
                     <div class="row" id="create-inv">
                         <div class="card ~neutral !normal col">
-                            <label class="label supra" for="create-days">{{ .strings.inviteDays }}</label>
-                            <div class="select ~neutral !normal mb-1 mt-half">
-                                <select id="create-days">
-                                    <option>0</option>
-                                </select>
+                            <div class="flex-row mb-1">
+                                <label class="flex-row-group mr-1">
+                                    <input type="radio" name="duration" class="unfocused" id="radio-inv-duration" checked>
+                                    <span class="button ~neutral !high supra full-width center">{{ .strings.inviteDuration }}</span>
+                                </label>
+                                <label class="flex-row-group ml-1">
+                                    <input type="radio" name="duration" class="unfocused" id="radio-user-duration">
+                                    <span class="button ~neutral !normal supra full-width center">{{ .strings.userDuration }}</span>
+                                </label>
                             </div>
-                            <label class="label supra" for="create-hours">{{ .strings.inviteHours }}</label>
-                            <div class="select ~neutral !normal mb-1 mt-half">
-                                <select id="create-hours">
-                                    <option>0</option>
-                                </select>
+                            <div id="inv-duration">
+                                <label class="label supra" for="create-days">{{ .strings.inviteDays }}</label>
+                                <div class="select ~neutral !normal mb-1 mt-half">
+                                    <select id="create-days">
+                                        <option>0</option>
+                                    </select>
+                                </div>
+                                <label class="label supra" for="create-hours">{{ .strings.inviteHours }}</label>
+                                <div class="select ~neutral !normal mb-1 mt-half">
+                                    <select id="create-hours">
+                                        <option>0</option>
+                                    </select>
+                                </div>
+                                <label class="label supra" for="create-minutes">{{ .strings.inviteMinutes }}</label>
+                                <div class="select ~neutral !normal mb-1 mt-half">
+                                    <select id="create-minutes">
+                                        <option>0</option>
+                                    </select>
+                                </div>
                             </div>
-                            <label class="label supra" for="create-minutes">{{ .strings.inviteMinutes }}</label>
-                            <div class="select ~neutral !normal mb-1 mt-half">
-                                <select id="create-minutes">
-                                    <option>0</option>
-                                </select>
+                            <div id="user-duration" class="unfocused">
+                                <p class="support">{{ .strings.userDurationDescription }}</p>
+                                <div class="mb-half">
+                                    <label for="create-user-duration-enabled" class="button ~neutral !normal">
+                                        <input type="checkbox" id="create-user-duration-enabled" aria-label="User duration enabled">
+                                        <span class="ml-half">{{ .strings.enabled }} </span>
+                                    </label>
+                                </div>
+                                <label class="label supra" for="user-days">{{ .strings.inviteDays }}</label>
+                                <div class="select ~neutral !normal mb-1 mt-half">
+                                    <select id="user-days">
+                                        <option>0</option>
+                                    </select>
+                                </div>
+                                <label class="label supra" for="user-hours">{{ .strings.inviteHours }}</label>
+                                <div class="select ~neutral !normal mb-1 mt-half">
+                                    <select id="user-hours">
+                                        <option>0</option>
+                                    </select>
+                                </div>
+                                <label class="label supra" for="user-minutes">{{ .strings.inviteMinutes }}</label>
+                                <div class="select ~neutral !normal mb-1 mt-half">
+                                    <select id="user-minutes">
+                                        <option>0</option>
+                                    </select>
+                                </div>
                             </div>
                             <label class="label supra" for="create-label"> {{ .strings.label }}</label>
                             <input type="text" id="create-label" class="input ~neutral !normal mb-1 mt-half">

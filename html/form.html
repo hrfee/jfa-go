@@ -37,6 +37,9 @@
                 </div>
                 <div class="row">
                     <div class="col">
+                        {{ if .userDuration }}
+                        <aside class="col aside sm ~warning" id="user-duration-message"></aside>
+                        {{ end }}
                         <form class="card ~neutral !normal" id="form-create" href="">
                             <label class="label supra">
                                 {{ .strings.username }}
@@ -44,13 +47,13 @@
                             </label>
                             
                             <label class="label supra" for="create-email">{{ .strings.emailAddress }}</label>
-                            <input type="email" class="input ~neutral 1high mt-half mb-1" placeholder="{{ .strings.emailAddress }}" id="create-email" aria-label="{{ .strings.emailAddress }}" value="{{ .email }}">
+                            <input type="email" class="input ~neutral !high mt-half mb-1" placeholder="{{ .strings.emailAddress }}" id="create-email" aria-label="{{ .strings.emailAddress }}" value="{{ .email }}">
                             
                             <label class="label supra" for="create-password">{{ .strings.password }}</label>
-                            <input type="password" class="input ~neutral 1high mt-half mb-1" placeholder="{{ .strings.password }}" id="create-password" aria-label="{{ .strings.password }}">
+                            <input type="password" class="input ~neutral !high mt-half mb-1" placeholder="{{ .strings.password }}" id="create-password" aria-label="{{ .strings.password }}">
                             
                             <label class="label supra" for="create-reenter-password">{{ .strings.reEnterPassword }}</label>
-                            <input type="password" class="input ~neutral 1high mt-half mb-1" placeholder="{{ .strings.password }}" id="create-reenter-password" aria-label="{{ .strings.reEnterPassword }}">
+                            <input type="password" class="input ~neutral !high mt-half mb-1" placeholder="{{ .strings.password }}" id="create-reenter-password" aria-label="{{ .strings.reEnterPassword }}">
                             <label>
                                 <input type="submit" class="unfocused">
                                 <span class="button ~urge !normal full-width center supra submit">{{ .strings.createAccountButton }}</span>

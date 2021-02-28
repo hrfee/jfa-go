@@ -634,6 +634,12 @@ func (app *appContext) GenerateInvite(gc *gin.Context) {
 	} else {
 		invite.RemainingUses = 1
 	}
+	invite.UserDuration = req.UserDuration
+	if invite.UserDuration {
+		invite.UserDays = req.UserDays
+		invite.UserHours = req.UserHours
+		invite.UserMinutes = req.UserMinutes
+	}
 	invite.ValidTill = validTill
 	if emailEnabled && req.Email != "" && app.config.Section("invite_emails").Key("enabled").MustBool(false) {
 		app.debug.Printf("%s: Sending invite email", inviteCode)
@@ -813,14 +819,18 @@ func (app *appContext) GetInvites(gc *gin.Context) {
 	for code, inv := range app.storage.invites {
 		_, _, days, hours, minutes, _ := timeDiff(inv.ValidTill, currentTime)
 		invite := inviteDTO{
-			Code:    code,
-			Days:    days,
-			Hours:   hours,
-			Minutes: minutes,
-			Created: app.formatDatetime(inv.Created),
-			Profile: inv.Profile,
-			NoLimit: inv.NoLimit,
-			Label:   inv.Label,
+			Code:         code,
+			Days:         days,
+			Hours:        hours,
+			Minutes:      minutes,
+			UserDuration: inv.UserDuration,
+			UserDays:     inv.UserDays,
+			UserHours:    inv.UserHours,
+			UserMinutes:  inv.UserMinutes,
+			Created:      app.formatDatetime(inv.Created),
+			Profile:      inv.Profile,
+			NoLimit:      inv.NoLimit,
+			Label:        inv.Label,
 		}
 		if len(inv.UsedBy) != 0 {
 			invite.UsedBy = inv.UsedBy

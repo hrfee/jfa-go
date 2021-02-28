@@ -10,6 +10,11 @@ interface formWindow extends Window {
     messages: { [key: string]: string };
     confirmation: boolean;
     confirmationModal: Modal
+    userDurationEnabled: boolean;
+    userDurationDays: number;
+    userDurationHours: number;
+    userDurationMinutes: number;
+    userDurationMessage: string;
 }
 
 interface pwValString {
@@ -33,6 +38,19 @@ if (window.confirmation) {
     window.confirmationModal = new Modal(document.getElementById("modal-confirmation"), true);
 }
 declare var window: formWindow;
+
+if (window.userDurationEnabled) {
+    const messageEl = document.getElementById("user-duration-message") as HTMLElement;
+    const calculateTime = () => {
+        let time = new Date()
+        time.setDate(time.getDate() + window.userDurationDays);
+        time.setHours(time.getHours() + window.userDurationHours);
+        time.setMinutes(time.getMinutes() + window.userDurationMinutes);
+        messageEl.textContent = window.userDurationMessage.replace("{date}", time.toDateString() + " " + time.toLocaleTimeString());
+        setTimeout(calculateTime, 1000);
+    };
+    calculateTime();
+}
 
 var defaultPwValStrings: pwValStrings = {
     length: {

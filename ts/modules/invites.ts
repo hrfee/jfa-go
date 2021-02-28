@@ -62,6 +62,19 @@ export class DOMInvite implements Invite {
         this._infoArea.querySelector("span.inv-expiry").textContent = expiry;
     }
 
+    private _userDuration: string;
+    get userDurationTime(): string { return this._userDuration; }
+    set userDurationTime(d: string) {
+        const duration = this._middle.querySelector("span.user-duration") as HTMLSpanElement;
+        if (!d) {
+            duration.textContent = "";
+        } else {
+            duration.textContent = window.lang.strings("userDuration");
+        }
+        this._userDuration = d;
+        this._middle.querySelector("strong.user-duration-time").textContent = d;
+    }
+
     private _remainingUses: string = "1";
     get remainingUses(): string { return this._remainingUses; }
     set remainingUses(remaining: string) {
@@ -331,6 +344,7 @@ export class DOMInvite implements Invite {
         this._middle.innerHTML = `
         <p class="supra mb-1 top">${window.lang.strings("inviteDateCreated")} <strong class="inv-created"></strong></p>
         <p class="supra mb-1">${window.lang.strings("inviteRemainingUses")} <strong class="inv-remaining"></strong></p>
+        <p class="supra mb-1"><span class="user-duration"></span> <strong class="user-duration-time"></strong></p>
         `;
 
         this._right = document.createElement('div') as HTMLDivElement;
@@ -362,6 +376,7 @@ export class DOMInvite implements Invite {
         if (invite.label) {
             this.label = invite.label;
         }
+        this.userDurationTime = invite.userDurationTime || "";
     }
 
     asElement = (): HTMLDivElement => { return this._container; }
@@ -462,13 +477,25 @@ function parseInvite(invite: { [f: string]: string | number | string[][] | boole
     parsed.email = invite["email"] as string || "";
     parsed.label = invite["label"] as string || "";
     let time = "";
+    let userDurationTime = "";
     const fields = ["days", "hours", "minutes"];
+    let prefixes = [""];
+    if (invite["user-duration"] as boolean) { prefixes.push("user-"); }
     for (let i = 0; i < fields.length; i++) {
-        if (invite[fields[i]] != 0) {
-            time += `${invite[fields[i]]}${fields[i][0]} `;
+        for (let j = 0; j < prefixes.length; j++) {
+            if (invite[prefixes[j]+fields[i]]) {
+                let text = `${invite[prefixes[j]+fields[i]]}${fields[i][0]} `;
+                if (prefixes[j] ==  "user-") {
+                    userDurationTime += text;
+                } else {
+                    time += text;
+                }
+            }
         }
     }
     parsed.expiresIn = window.lang.var("strings", "inviteExpiresInTime", time.slice(0, -1));
+    parsed.userDuration = invite["user-duration"] as boolean;
+    parsed.userDurationTime = userDurationTime.slice(0, -1);
     parsed.remainingUses = invite["no-limit"] ? "∞" : String(invite["remaining-uses"])
     parsed.usedBy = invite["used-by"] as string[][] || [];
     parsed.created = invite["created"] as string || window.lang.strings("unknown");
@@ -481,6 +508,7 @@ function parseInvite(invite: { [f: string]: string | number | string[][] | boole
 export class createInvite {
     private _sendToEnabled = document.getElementById("create-send-to-enabled") as HTMLInputElement;
     private _sendTo = document.getElementById("create-send-to") as HTMLInputElement;
+    private _userDurationToggle = document.getElementById("create-user-duration-enabled") as HTMLInputElement;
     private _uses = document.getElementById('create-uses') as HTMLInputElement;
     private _infUses = document.getElementById("create-inf-uses") as HTMLInputElement;
     private _infUsesWarning = document.getElementById('create-inf-uses-warning') as HTMLParagraphElement;
@@ -491,6 +519,14 @@ export class createInvite {
     private _days = document.getElementById("create-days") as HTMLSelectElement;
     private _hours = document.getElementById("create-hours") as HTMLSelectElement;
     private _minutes = document.getElementById("create-minutes") as HTMLSelectElement;
+    private _userDays = document.getElementById("user-days") as HTMLSelectElement;
+    private _userHours = document.getElementById("user-hours") as HTMLSelectElement;
+    private _userMinutes = document.getElementById("user-minutes") as HTMLSelectElement;
+
+    private _invDurationButton = document.getElementById('radio-inv-duration') as HTMLInputElement;
+    private _userDurationButton = document.getElementById('radio-user-duration') as HTMLInputElement;
+    private _invDuration = document.getElementById('inv-duration');
+    private _userDuration = document.getElementById('user-duration');
 
     // Broadcast when new invite created
     private _newInviteEvent = new CustomEvent("newInviteEvent");
@@ -498,15 +534,18 @@ export class createInvite {
 
     private _count: Number = 30;
     private _populateNumbers = () => {
-        const fieldIDs = ["create-days", "create-hours", "create-minutes"];
+        const fieldIDs = ["days", "hours", "minutes"];
+        const prefixes = ["create-", "user-"];
         for (let i = 0; i < fieldIDs.length; i++) {
-            const field = document.getElementById(fieldIDs[i]);
-            field.textContent = '';
-            for (let n = 0; n <= this._count; n++) {
-               const opt = document.createElement("option") as HTMLOptionElement;
-               opt.textContent = ""+n;
-               opt.value = ""+n;
-               field.appendChild(opt);
+            for (let j = 0; j < prefixes.length; j++) { 
+                const field = document.getElementById(prefixes[j] + fieldIDs[i]);
+                field.textContent = '';
+                for (let n = 0; n <= this._count; n++) {
+                   const opt = document.createElement("option") as HTMLOptionElement;
+                   opt.textContent = ""+n;
+                   opt.value = ""+n;
+                   field.appendChild(opt);
+                }
             }
         }
     }
@@ -580,6 +619,33 @@ export class createInvite {
         this._minutes.value = ""+n;
         this._checkDurationValidity();
     }
+    get userDuration(): boolean {
+        return this._userDurationToggle.checked;
+    }
+    set userDuration(enabled: boolean) {
+        this._userDurationToggle.checked = enabled;
+        this._userDays.disabled = !enabled;
+        this._userHours.disabled = !enabled;
+        this._userMinutes.disabled = !enabled;
+    }
+    get userDays(): number {
+        return +this._userDays.value;
+    }
+    set userDays(n: number) {
+        this._userDays.value = ""+n;
+    }
+    get userHours(): number {
+        return +this._userHours.value;
+    }
+    set userHours(n: number) {
+        this._userHours.value = ""+n;
+    }
+    get userMinutes(): number {
+        return +this._userMinutes.value;
+    }
+    set userMinutes(n: number) {
+        this._userMinutes.value = ""+n;
+    }
 
     get sendTo(): string { return this._sendTo.value; }
     set sendTo(address: string) { this._sendTo.value = address; }
@@ -613,10 +679,18 @@ export class createInvite {
 
     create = () => {
         toggleLoader(this._createButton);
+        let userDuration = this.userDuration;
+        if (this.userDays == 0 && this.userHours == 0 && this.userMinutes == 0) {
+            userDuration = false;
+        }
         let send = {
             "days": this.days,
             "hours": this.hours,
             "minutes": this.minutes,
+            "user-duration": userDuration,
+            "user-days": this.userDays,
+            "user-hours": this.userHours,
+            "user-minutes": this.userMinutes,
             "multiple-uses": (this.uses > 1 || this.infiniteUses),
             "no-limit": this.infiniteUses,
             "remaining-uses": this.uses,
@@ -642,11 +716,42 @@ export class createInvite {
         this._infUses.onchange = () => { this.infiniteUses = this.infiniteUses; };
         this.infiniteUses = false;
         this._sendToEnabled.onchange = () => { this.sendToEnabled = this.sendToEnabled; };
+        this.userDuration = false;
+        this._userDurationToggle.onchange = () => { this.userDuration = this._userDurationToggle.checked; }
+        this._userDays.disabled = true;
+        this._userHours.disabled = true;
+        this._userMinutes.disabled = true;
         this.sendToEnabled = false;
         this._createButton.onclick = this.create;
         this.sendTo = "";
         this.uses = 1;
         this.label = "";
+
+        const checkDuration = () => {
+            console.log("bbbb")
+            const invSpan = this._invDurationButton.nextElementSibling as HTMLSpanElement;
+            const userSpan = this._userDurationButton.nextElementSibling as HTMLSpanElement;
+            if (this._invDurationButton.checked) {
+                this._invDuration.classList.remove("unfocused");
+                this._userDuration.classList.add("unfocused");
+                invSpan.classList.add("!high");
+                invSpan.classList.remove("!normal");
+                userSpan.classList.add("!normal");
+                userSpan.classList.remove("!high");
+            } else if (this._userDurationButton.checked) {
+                this._userDuration.classList.remove("unfocused");
+                this._invDuration.classList.add("unfocused");
+                invSpan.classList.add("!normal");
+                invSpan.classList.remove("!high");
+                userSpan.classList.add("!high");
+                userSpan.classList.remove("!normal");
+            }
+        };
+
+        this._userDurationButton.checked = false;
+        this._invDurationButton.checked = true;
+        this._userDurationButton.onchange = checkDuration;
+        this._invDurationButton.onchange = checkDuration;
 
         this._days.onchange = this._checkDurationValidity;
         this._hours.onchange = this._checkDurationValidity;

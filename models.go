@@ -30,15 +30,19 @@ type deleteUserDTO struct {
 }
 
 type generateInviteDTO struct {
-	Days          int    `json:"days" example:"1"`                 // Number of days
-	Hours         int    `json:"hours" example:"2"`                // Number of hours
-	Minutes       int    `json:"minutes" example:"3"`              // Number of minutes
-	Email         string `json:"email" example:"jeff@jellyf.in"`   // Send invite to this address
-	MultipleUses  bool   `json:"multiple-uses" example:"true"`     // Allow multiple uses
-	NoLimit       bool   `json:"no-limit" example:"false"`         // No invite use limit
-	RemainingUses int    `json:"remaining-uses" example:"5"`       // Remaining invite uses
-	Profile       string `json:"profile" example:"DefaultProfile"` // Name of profile to apply on this invite
-	Label         string `json:"label" example:"For Friends"`      // Optional label for the invite
+	Days          int    `json:"days" example:"1"`                   // Number of days
+	Hours         int    `json:"hours" example:"2"`                  // Number of hours
+	Minutes       int    `json:"minutes" example:"3"`                // Number of minutes
+	UserDuration  bool   `json:"user-duration"`                      // Whether or not user duration is enabled
+	UserDays      int    `json:"user-days,omitempty" example:"1"`    // Number of days till user expiry
+	UserHours     int    `json:"user-hours,omitempty" example:"2"`   // Number of hours till user expiry
+	UserMinutes   int    `json:"user-minutes,omitempty" example:"3"` // Number of minutes till user expiry
+	Email         string `json:"email" example:"jeff@jellyf.in"`     // Send invite to this address
+	MultipleUses  bool   `json:"multiple-uses" example:"true"`       // Allow multiple uses
+	NoLimit       bool   `json:"no-limit" example:"false"`           // No invite use limit
+	RemainingUses int    `json:"remaining-uses" example:"5"`         // Remaining invite uses
+	Profile       string `json:"profile" example:"DefaultProfile"`   // Name of profile to apply on this invite
+	Label         string `json:"label" example:"For Friends"`        // Optional label for the invite
 }
 
 type inviteProfileDTO struct {
@@ -72,6 +76,10 @@ type inviteDTO struct {
 	Days           int        `json:"days" example:"1"`                      // Number of days till expiry
 	Hours          int        `json:"hours" example:"2"`                     // Number of hours till expiry
 	Minutes        int        `json:"minutes" example:"3"`                   // Number of minutes till expiry
+	UserDuration   bool       `json:"user-duration"`                         // Whether or not user duration is enabled
+	UserDays       int        `json:"user-days,omitempty" example:"1"`       // Number of days till user expiry
+	UserHours      int        `json:"user-hours,omitempty" example:"2"`      // Number of hours till user expiry
+	UserMinutes    int        `json:"user-minutes,omitempty" example:"3"`    // Number of minutes till user expiry
 	Created        string     `json:"created" example:"01/01/20 12:00"`      // Date of creation
 	Profile        string     `json:"profile" example:"DefaultProfile"`      // Profile used on this invite
 	UsedBy         [][]string `json:"used-by,omitempty"`                     // Users who have used this invite

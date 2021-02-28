@@ -90,6 +90,8 @@ interface Invite {
     notifyCreation?: boolean;
     profile?: string;
     label?: string;
+    userDuration?: boolean;
+    userDurationTime?: string;
 }
 
 interface inviteList {

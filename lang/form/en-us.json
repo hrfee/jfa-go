@@ -16,7 +16,8 @@
         "successHeader": "Success!",
         "successContinueButton": "Continue",
         "confirmationRequired": "Email confirmation required",
-        "confirmationRequiredMessage": "Please check your email inbox to verify your address."
+        "confirmationRequiredMessage": "Please check your email inbox to verify your address.",
+        "yourAccountIsValidUntil": "Your account will be valid until {date}."
     },
     "notifications": {
         "errorUserExists": "User already exists.",
