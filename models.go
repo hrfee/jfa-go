@@ -114,6 +114,8 @@ type respUser struct {
 	Email      string `json:"email,omitempty" example:"jeff@jellyf.in"` // Email address of user (if available)
 	LastActive string `json:"last_active"`                              // Time of last activity on Jellyfin
 	Admin      bool   `json:"admin" example:"false"`                    // Whether or not the user is Administrator
+	Expiry     string `json:"expiry" example:"01/02/21 12:00"`          // Expiry time of user, if applicable.
+	Disabled   bool   `json:"disabled"`                                 // Whether or not the user is disabled.
 }
 
 type getUsersDTO struct {
@@ -206,6 +208,9 @@ type customEmailDTO struct {
 	Plaintext string                 `json:"plaintext"`
 }
 
-type getEmailDTO struct {
-	Lang string `json:"lang" example:"en-us"` // Language code. If not given, defaults ot one specified in settings.
+type extendExpiryDTO struct {
+	Users   []string `json:"users"`               // List of user IDs to apply to.
+	Days    int      `json:"days" example:"1"`    // Number of days to add.
+	Hours   int      `json:"hours" example:"2"`   // Number of hours to add.
+	Minutes int      `json:"minutes" example:"3"` // Number of minutes to add.
 }

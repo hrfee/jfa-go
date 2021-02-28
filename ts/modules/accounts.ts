@@ -6,6 +6,8 @@ interface User {
     email: string | undefined;
     last_active: string;
     admin: boolean;
+    disabled: boolean;
+    expiry: string;
 }
 
 class user implements User {
@@ -13,9 +15,11 @@ class user implements User {
     private _check: HTMLInputElement;
     private _username: HTMLSpanElement;
     private _admin: HTMLSpanElement;
+    private _disabled: HTMLSpanElement;
     private _email: HTMLInputElement;
     private _emailAddress: string;
     private _emailEditButton: HTMLElement;
+    private _expiry: HTMLTableDataCellElement;
     private _lastActive: HTMLTableDataCellElement;
     id: string;
     private _selected: boolean;
@@ -34,10 +38,21 @@ class user implements User {
     set admin(state: boolean) {
         if (state) {
             this._admin.classList.add("chip", "~info", "ml-1");
-            this._admin.textContent = "Admin";
+            this._admin.textContent = window.lang.strings("admin");
         } else {
             this._admin.classList.remove("chip", "~info", "ml-1");
-            this._admin.textContent = ""
+            this._admin.textContent = "";
+        }
+    }
+
+    get disabled(): boolean { return this._disabled.classList.contains("chip"); }
+    set disabled(state: boolean) {
+        if (state) {
+            this._disabled.classList.add("chip", "~warning", "ml-1");
+            this._disabled.textContent = window.lang.strings("disabled");
+        } else {
+            this._disabled.classList.remove("chip", "~warning", "ml-1");
+            this._disabled.textContent = "";
         }
     }
 
@@ -52,6 +67,9 @@ class user implements User {
         }
     }
     
+    get expiry(): string { return this._expiry.textContent; }
+    set expiry(value: string) { this._expiry.textContent = value; }
+
     get last_active(): string { return this._lastActive.textContent; }
     set last_active(value: string) { this._lastActive.textContent = value; }
 
@@ -62,16 +80,19 @@ class user implements User {
         this._row = document.createElement("tr") as HTMLTableRowElement;
         this._row.innerHTML = `
             <td><input type="checkbox" value=""></td>
-            <td><span class="accounts-username"></span> <span class="accounts-admin"></span></td>
+            <td><span class="accounts-username"></span> <span class="accounts-admin"></span> <span class="accounts-disabled"></span></td>
             <td><i class="icon ri-edit-line accounts-email-edit"></i><span class="accounts-email-container ml-half"></span></td>
+            <td class="accounts-expiry"></td>
             <td class="accounts-last-active"></td>
         `;
         const emailEditor = `<input type="email" class="input ~neutral !normal stealth-input">`;
         this._check = this._row.querySelector("input[type=checkbox]") as HTMLInputElement;
         this._username = this._row.querySelector(".accounts-username") as HTMLSpanElement;
         this._admin = this._row.querySelector(".accounts-admin") as HTMLSpanElement;
+        this._disabled = this._row.querySelector(".accounts-disabled") as HTMLSpanElement;
         this._email = this._row.querySelector(".accounts-email-container") as HTMLInputElement;
         this._emailEditButton = this._row.querySelector(".accounts-email-edit") as HTMLElement;
+        this._expiry = this._row.querySelector(".accounts-expiry") as HTMLTableDataCellElement;
         this._lastActive = this._row.querySelector(".accounts-last-active") as HTMLTableDataCellElement;
         this._check.onchange = () => { this.selected = this._check.checked; }
 
@@ -130,6 +151,8 @@ class user implements User {
         this.email = user.email || "";
         this.last_active = user.last_active;
         this.admin = user.admin;
+        this.disabled = user.disabled;
+        this.expiry = user.expiry;
     }
 
     asElement = (): HTMLTableRowElement => { return this._row; }
@@ -152,6 +175,7 @@ export class accountsList {
     private _deleteUser = document.getElementById("accounts-delete-user") as HTMLSpanElement;
     private _deleteNotify = document.getElementById("delete-user-notify") as HTMLInputElement;
     private _deleteReason = document.getElementById("textarea-delete-user") as HTMLTextAreaElement;
+    private _extendExpiry = document.getElementById("accounts-extend-expiry") as HTMLSpanElement;
     private _modifySettings = document.getElementById("accounts-modify-user") as HTMLSpanElement;
     private _modifySettingsProfile = document.getElementById("radio-use-profile") as HTMLInputElement;
     private _modifySettingsUser = document.getElementById("radio-use-user") as HTMLInputElement;
@@ -167,6 +191,24 @@ export class accountsList {
     private _addUserEmail = this._addUserForm.querySelector("input[type=email]") as HTMLInputElement;
     private _addUserPassword = this._addUserForm.querySelector("input[type=password]") as HTMLInputElement;
     
+    private _count = 30;
+    private _populateNumbers = () => {
+        const fieldIDs = ["days", "hours", "minutes"];
+        const prefixes = ["extend-expiry-"];
+        for (let i = 0; i < fieldIDs.length; i++) {
+            for (let j = 0; j < prefixes.length; j++) { 
+                const field = document.getElementById(prefixes[j] + fieldIDs[i]);
+                field.textContent = '';
+                for (let n = 0; n <= this._count; n++) {
+                   const opt = document.createElement("option") as HTMLOptionElement;
+                   opt.textContent = ""+n;
+                   opt.value = ""+n;
+                   field.appendChild(opt);
+                }
+            }
+        }
+    }
+
     get selectAll(): boolean { return this._selectAll.checked; }
     set selectAll(state: boolean) { 
         for (let id in this._users) {
@@ -193,6 +235,7 @@ export class accountsList {
             if (window.emailEnabled) {
                 this._announceButton.classList.add("unfocused");
             }
+            this._extendExpiry.classList.add("unfocused");
         } else {
             if (this._checkCount == Object.keys(this._users).length) {
                 this._selectAll.checked = true;
@@ -206,6 +249,18 @@ export class accountsList {
             this._deleteUser.textContent = window.lang.quantity("deleteUser", this._checkCount);
             if (window.emailEnabled) {
                 this._announceButton.classList.remove("unfocused");
+            }
+            const list = this._collectUsers();
+            let anyNonExpiries = false;
+            for (let id of list) {
+                if (!this._users[id].expiry) {
+                    anyNonExpiries = true;
+                    this._extendExpiry.classList.add("unfocused");
+                    break;
+                }
+            }
+            if (!anyNonExpiries) {
+                this._extendExpiry.classList.remove("unfocused");
             }
         }
     }
@@ -394,7 +449,39 @@ export class accountsList {
         window.modals.modifyUser.show();
     }
 
+    extendExpiry = () => {
+        const list = this._collectUsers();
+        let applyList: string[] = [];
+        for (let id of list) {
+            if (this._users[id].expiry) {
+                applyList.push(id);
+            }
+        }
+        document.getElementById("header-extend-expiry").textContent = window.lang.quantity("extendExpiry", applyList.length);
+        const form = document.getElementById("form-extend-expiry") as HTMLFormElement;
+        form.onsubmit = (event: Event) => {
+            event.preventDefault();
+            let send = { "users": applyList }
+            for (let field of ["days", "hours", "minutes"]) {
+                send[field] = +(document.getElementById("extend-expiry-"+field) as HTMLSelectElement).value;
+            }
+            _post("/users/extend", send, (req: XMLHttpRequest) => {
+                if (req.readyState == 4) {
+                    if (req.status != 200 && req.status != 204) {
+                        window.notifications.customError("extendExpiryError", window.lang.notif("errorFailureCheckLogs"));
+                    } else {
+                        window.notifications.customSuccess("extendExpiry", window.lang.quantity("extendedExpiry", applyList.length));
+                    }
+                    window.modals.extendExpiry.close()
+                    this.reload();
+                }
+            });
+        }
+        window.modals.extendExpiry.show();
+    }
+
     constructor() {
+        this._populateNumbers();
         this._users = {};
         this._selectAll.checked = false;
         this._selectAll.onchange = () => { this.selectAll = this._selectAll.checked };
@@ -439,6 +526,9 @@ export class accountsList {
 
         this._announceButton.onclick = this.announce;
         this._announceButton.classList.add("unfocused");
+
+        this._extendExpiry.onclick = this.extendExpiry;
+        this._extendExpiry.classList.add("unfocused");
 
         if (!window.usernameEnabled) {
             this._addUserName.classList.add("unfocused");

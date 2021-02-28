@@ -457,6 +457,36 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 	return
 }
 
+// @Summary Extend time before the user(s) expiry.
+// @Produce json
+// @Param extendExpiryDTO body extendExpiryDTO true "Extend expiry object"
+// @Success 200 {object} boolResponse
+// @Failure 400 {object} boolResponse
+// @Failure 500 {object} boolResponse
+// @Router /users/extend [post]
+// @tags Users
+func (app *appContext) ExtendExpiry(gc *gin.Context) {
+	var req extendExpiryDTO
+	app.info.Printf("Expiry extension requested for %d user(s)", len(req.Users))
+	gc.BindJSON(&req)
+	if req.Days == 0 && req.Hours == 0 && req.Minutes == 0 {
+		respondBool(400, false, gc)
+		return
+	}
+	for _, id := range req.Users {
+		if expiry, ok := app.storage.users[id]; ok {
+			app.storage.users[id] = expiry.Add(time.Duration(60*(req.Days*24+req.Hours)+req.Minutes) * time.Minute)
+			app.debug.Printf("Expiry extended for \"%s\"", id)
+		}
+	}
+	if err := app.storage.storeUsers(); err != nil {
+		app.err.Printf("Failed to store user duration: %s", err)
+		respondBool(500, false, gc)
+		return
+	}
+	respondBool(204, true, gc)
+}
+
 // @Summary Creates a new Jellyfin user via invite code
 // @Produce json
 // @Param newUserDTO body newUserDTO true "New user request object"
@@ -998,9 +1028,10 @@ func (app *appContext) GetUsers(gc *gin.Context) {
 	}
 	for _, jfUser := range users {
 		user := respUser{
-			ID:    jfUser.ID,
-			Name:  jfUser.Name,
-			Admin: jfUser.Policy.IsAdministrator,
+			ID:       jfUser.ID,
+			Name:     jfUser.Name,
+			Admin:    jfUser.Policy.IsAdministrator,
+			Disabled: jfUser.Policy.IsDisabled,
 		}
 		user.LastActive = "n/a"
 		if !jfUser.LastActivityDate.IsZero() {
@@ -1008,6 +1039,9 @@ func (app *appContext) GetUsers(gc *gin.Context) {
 		}
 		if email, ok := app.storage.emails[jfUser.ID]; ok {
 			user.Email = email.(string)
+		}
+		if expiry, ok := app.storage.users[jfUser.ID]; ok {
+			user.Expiry = app.formatDatetime(expiry)
 		}
 
 		resp.UserList = append(resp.UserList, user)

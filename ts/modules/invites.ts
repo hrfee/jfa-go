@@ -624,6 +624,14 @@ export class createInvite {
     }
     set userExpiry(enabled: boolean) {
         this._userExpiryToggle.checked = enabled;
+        const parent = this._userExpiryToggle.parentElement;
+        if (enabled) {
+            parent.classList.add("~urge");
+            parent.classList.remove("~neutral");
+        } else {
+            parent.classList.add("~neutral");
+            parent.classList.remove("~urge");
+        }
         this._userDays.disabled = !enabled;
         this._userHours.disabled = !enabled;
         this._userMinutes.disabled = !enabled;

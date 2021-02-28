@@ -94,6 +94,35 @@
                 </div>
             </form>
         </div>
+        <div id="modal-extend-expiry" class="modal">
+            <form class="modal-content card" id="form-extend-expiry" href="">
+                <span class="heading"><span id="header-extend-expiry"></span> <span class="modal-close">&times;</span></span>
+                <div class="content mt-half">
+                    <label class="label supra" for="extend-expiry-days">{{ .strings.inviteDays }}</label>
+                    <div class="select ~neutral !normal mb-1 mt-half">
+                        <select id="extend-expiry-days">
+                            <option>0</option>
+                        </select>
+                    </div>
+                    <label class="label supra" for="extend-expiry-hours">{{ .strings.inviteHours }}</label>
+                    <div class="select ~neutral !normal mb-1 mt-half">
+                        <select id="extend-expiry-hours">
+                            <option>0</option>
+                        </select>
+                    </div>
+                    <label class="label supra" for="extend-expiry-minutes">{{ .strings.inviteMinutes }}</label>
+                    <div class="select ~neutral !normal mb-1 mt-half">
+                        <select id="extend-expiry-minutes">
+                            <option>0</option>
+                        </select>
+                    </div>
+                    <label>
+                        <input type="submit" class="unfocused">
+                        <span class="button ~critical !normal full-width center supra submit">{{ .strings.submit }}</span>
+                    </label>
+                </div>
+            </form>
+        </div>
         <div id="modal-announce" class="modal">
             <form class="modal-content card" id="form-announce" href="">
                 <span class="heading"><span id="header-announce"></span> <span class="modal-close">&times;</span></span>
@@ -353,10 +382,11 @@
                 <div class="card ~neutral !low accounts mb-1">
                     <span class="heading">{{ .strings.accounts }}</span>
                     <div class="fr">
-                        <span class="button ~neutral !normal" id="accounts-add-user">{{ .quantityStrings.addUser.Singular }}</span>
-                        <span class="button ~info !normal" id="accounts-announce">{{ .strings.announce }}</span>
-                        <span class="button ~urge !normal" id="accounts-modify-user">{{ .strings.modifySettings }}</span>
-                        <span class="button ~critical !normal" id="accounts-delete-user">{{ .quantityStrings.deleteUser.Singular }}</span>
+                        <span class="button ~neutral !normal mb-half" id="accounts-add-user">{{ .quantityStrings.addUser.Singular }}</span>
+                        <span class="button ~info !normal mb-half" id="accounts-announce">{{ .strings.announce }}</span>
+                        <span class="button ~urge !normal mb-half" id="accounts-modify-user">{{ .strings.modifySettings }}</span>
+                        <span class="button ~warning !normal mb-half" id="accounts-extend-expiry">{{ .strings.extendExpiry }}</span>
+                        <span class="button ~critical !normal mb-half" id="accounts-delete-user">{{ .quantityStrings.deleteUser.Singular }}</span>
                     </div>
                     <div class="card ~neutral !normal accounts-header table-responsive mt-half">
                         <table class="table">
@@ -365,6 +395,7 @@
                                     <th><input type="checkbox" value="" id="accounts-select-all"></th>
                                     <th>{{ .strings.username }}</th>
                                     <th>{{ .strings.emailAddress }}</th>
+                                    <th>{{ .strings.expiry }}</th>
                                     <th>{{ .strings.lastActiveTime }}</th>
                                 </tr>
                             </thead>

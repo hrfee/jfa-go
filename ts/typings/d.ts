@@ -77,6 +77,7 @@ declare interface Modals {
     announce: Modal;
     editor: Modal;
     customizeEmails: Modal;
+    extendExpiry: Modal;
 }
 
 interface Invite {
@@ -90,8 +91,8 @@ interface Invite {
     notifyCreation?: boolean;
     profile?: string;
     label?: string;
-    userDuration?: boolean;
-    userDurationTime?: string;
+    userExpiry?: boolean;
+    userExpiryTime?: string;
 }
 
 interface inviteList {

@@ -22,9 +22,12 @@
         "name": "Name",
         "date": "Date",
         "enabled": "Enabled",
+        "disabled": "Disabled",
+        "admin": "Admin",
         "lastActiveTime": "Last Active",
         "from": "From",
         "user": "User",
+        "expiry": "Expiry",
         "userExpiry": "User Expiry",
         "userExpiryDescription": "A specified amount of time after each signup, jfa-go will delete/disable the account. You can change this behaviour in settings.",
         "aboutProgram": "About",
@@ -41,6 +44,7 @@
         "preview": "Preview",
         "reset": "Reset",
         "edit": "Edit",
+        "extendExpiry": "Extend expiry",
         "customizeEmails": "Customize Emails",
         "customizeEmailsDescription": "If you don't want to use jfa-go's email templates, you can create your own using Markdown.",
         "markdownSupported": "Markdown is supported.",
@@ -141,6 +145,14 @@
         "appliedSettings": {
             "singular": "Applied settings to {n} user.",
             "plural": "Applied settings to {n} users."
+        },
+        "extendExpiry": {
+            "singular": "Extend expiry for {n} user",
+            "plural": "Extend expiry for {n} users"
+        },
+        "extendedExpiry": {
+            "singular": "Extended expiry for {n} user.",
+            "plural": "Extended expiry for {n} users."
         }
     }
 }

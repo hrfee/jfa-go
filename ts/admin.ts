@@ -57,6 +57,8 @@ window.availableProfiles = window.availableProfiles || [];
     window.modals.editor = new Modal(document.getElementById("modal-editor"));
 
     window.modals.customizeEmails = new Modal(document.getElementById("modal-customize"));
+
+    window.modals.extendExpiry = new Modal(document.getElementById("modal-extend-expiry"));
 })();
 
 var inviteCreator = new createInvite();
