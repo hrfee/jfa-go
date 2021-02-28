@@ -794,6 +794,7 @@ func (app *appContext) CreateProfile(gc *gin.Context) {
 	app.info.Println("Profile creation requested")
 	var req newProfileDTO
 	gc.BindJSON(&req)
+	app.jf.CacheExpiry = time.Now()
 	user, status, err := app.jf.UserByID(req.ID, false)
 	if !(status == 200 || status == 204) || err != nil {
 		app.err.Printf("Failed to get user from Jellyfin (%d): %s", status, err)

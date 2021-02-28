@@ -22,6 +22,10 @@ func (app *appContext) GetPath(sect, key string) (fs.FS, string) {
 	return os.DirFS(dir), file
 }
 
+func (app *appContext) MustSetValue(section, key, val string) {
+	app.config.Section(section).Key(key).SetValue(app.config.Section(section).Key(key).MustString(val))
+}
+
 func (app *appContext) loadConfig() error {
 	var err error
 	app.config, err = ini.Load(app.configPath)
@@ -29,7 +33,7 @@ func (app *appContext) loadConfig() error {
 		return err
 	}
 
-	app.config.Section("jellyfin").Key("public_server").SetValue(app.config.Section("jellyfin").Key("public_server").MustString(app.config.Section("jellyfin").Key("server").String()))
+	app.MustSetValue("jellyfin", "public_server", app.config.Section("jellyfin").Key("server").String())
 
 	for _, key := range app.config.Section("files").Keys() {
 		if name := key.Name(); name != "html_templates" && name != "lang_files" {
@@ -42,33 +46,33 @@ func (app *appContext) loadConfig() error {
 	app.URLBase = strings.TrimSuffix(app.config.Section("ui").Key("url_base").MustString(""), "/")
 	app.config.Section("email").Key("no_username").SetValue(strconv.FormatBool(app.config.Section("email").Key("no_username").MustBool(false)))
 
-	app.config.Section("password_resets").Key("email_html").SetValue(app.config.Section("password_resets").Key("email_html").MustString("jfa-go:" + "email.html"))
-	app.config.Section("password_resets").Key("email_text").SetValue(app.config.Section("password_resets").Key("email_text").MustString("jfa-go:" + "email.txt"))
+	app.MustSetValue("password_resets", "email_html", "jfa-go:"+"email.html")
+	app.MustSetValue("password_resets", "email_text", "jfa-go:"+"email.txt")
 
-	app.config.Section("invite_emails").Key("email_html").SetValue(app.config.Section("invite_emails").Key("email_html").MustString("jfa-go:" + "invite-email.html"))
-	app.config.Section("invite_emails").Key("email_text").SetValue(app.config.Section("invite_emails").Key("email_text").MustString("jfa-go:" + "invite-email.txt"))
+	app.MustSetValue("invite_emails", "email_html", "jfa-go:"+"invite-email.html")
+	app.MustSetValue("invite_emails", "email_text", "jfa-go:"+"invite-email.txt")
 
-	app.config.Section("email_confirmation").Key("email_html").SetValue(app.config.Section("email_confirmation").Key("email_html").MustString("jfa-go:" + "confirmation.html"))
-	app.config.Section("email_confirmation").Key("email_text").SetValue(app.config.Section("email_confirmation").Key("email_text").MustString("jfa-go:" + "confirmation.txt"))
+	app.MustSetValue("email_confirmation", "email_html", "jfa-go:"+"confirmation.html")
+	app.MustSetValue("email_confirmation", "email_text", "jfa-go:"+"confirmation.txt")
 
-	app.config.Section("notifications").Key("expiry_html").SetValue(app.config.Section("notifications").Key("expiry_html").MustString("jfa-go:" + "expired.html"))
-	app.config.Section("notifications").Key("expiry_text").SetValue(app.config.Section("notifications").Key("expiry_text").MustString("jfa-go:" + "expired.txt"))
+	app.MustSetValue("notifications", "expiry_html", "jfa-go:"+"expired.html")
+	app.MustSetValue("notifications", "expiry_text", "jfa-go:"+"expired.txt")
 
-	app.config.Section("notifications").Key("created_html").SetValue(app.config.Section("notifications").Key("created_html").MustString("jfa-go:" + "created.html"))
-	app.config.Section("notifications").Key("created_text").SetValue(app.config.Section("notifications").Key("created_text").MustString("jfa-go:" + "created.txt"))
+	app.MustSetValue("notifications", "created_html", "jfa-go:"+"created.html")
+	app.MustSetValue("notifications", "created_text", "jfa-go:"+"created.txt")
 
-	app.config.Section("deletion").Key("email_html").SetValue(app.config.Section("deletion").Key("email_html").MustString("jfa-go:" + "deleted.html"))
-	app.config.Section("deletion").Key("email_text").SetValue(app.config.Section("deletion").Key("email_text").MustString("jfa-go:" + "deleted.txt"))
+	app.MustSetValue("deletion", "email_html", "jfa-go:"+"deleted.html")
+	app.MustSetValue("deletion", "email_text", "jfa-go:"+"deleted.txt")
 
-	app.config.Section("welcome_email").Key("email_html").SetValue(app.config.Section("welcome_email").Key("email_html").MustString("jfa-go:" + "welcome.html"))
-	app.config.Section("welcome_email").Key("email_text").SetValue(app.config.Section("welcome_email").Key("email_text").MustString("jfa-go:" + "welcome.txt"))
+	app.MustSetValue("welcome_email", "email_html", "jfa-go:"+"welcome.html")
+	app.MustSetValue("welcome_email", "email_text", "jfa-go:"+"welcome.txt")
 
-	app.config.Section("template_email").Key("email_html").SetValue(app.config.Section("template_email").Key("email_html").MustString("jfa-go:" + "template.html"))
-	app.config.Section("template_email").Key("email_text").SetValue(app.config.Section("template_email").Key("email_text").MustString("jfa-go:" + "template.txt"))
+	app.MustSetValue("template_email", "email_html", "jfa-go:"+"template.html")
+	app.MustSetValue("template_email", "email_text", "jfa-go:"+"template.txt")
 
-	app.config.Section("user_expiry").Key("behaviour").SetValue(app.config.Section("user_expiry").Key("behaviour").MustString("disable_user"))
-	app.config.Section("user_expiry").Key("email_html").SetValue(app.config.Section("user_expiry").Key("email_html").MustString("jfa-go:" + "user-expired.html"))
-	app.config.Section("user_expiry").Key("email_text").SetValue(app.config.Section("user_expiry").Key("email_text").MustString("jfa-go:" + "user-expired.txt"))
+	app.MustSetValue("user_expiry", "behaviour", "disable_user")
+	app.MustSetValue("user_expiry", "email_html", "jfa-go:"+"user-expired.html")
+	app.MustSetValue("user_expiry", "email_text", "jfa-go:"+"user-expired.txt")
 
 	app.config.Section("jellyfin").Key("version").SetValue(version)
 	app.config.Section("jellyfin").Key("device").SetValue("jfa-go")
