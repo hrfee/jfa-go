@@ -75,7 +75,15 @@
         "preview": "Voorbeeld",
         "reset": "Resetten",
         "edit": "Bewerken",
-        "customizeEmails": "E-mails aanpassen"
+        "customizeEmails": "E-mails aanpassen",
+        "inviteDuration": "Geldigheidsduur uitnodiging",
+        "userExpiryDescription": "Een bepaalde tijd na elke aanmelding, wordt de account verwijderd/uitgeschakeld door jfa-go. Dit kan aangepast worden in de instellingen.",
+        "enabled": "Ingeschakeld",
+        "disabled": "Uitgeschakeld",
+        "admin": "Beheerder",
+        "expiry": "Verloop",
+        "userExpiry": "Gebruikersverloop",
+        "extendExpiry": "Verleng verloop"
     },
     "notifications": {
         "changedEmailAddress": "E-mailadres van {n} gewijzigd.",
@@ -137,6 +145,14 @@
         "announceTo": {
             "singular": "Aankondigen aan {n} gebruikers",
             "plural": "aankondigen aan {n} gebruikerss"
+        },
+        "extendExpiry": {
+            "singular": "Verleng verloop voor {n} gebruiker",
+            "plural": "Verleng verloop voor {n} gebruikers"
+        },
+        "extendedExpiry": {
+            "singular": "Verloop uitgesteld voor {n} gebruiker.",
+            "plural": "Verloop uitgesteld voor {n} gebruikers."
         }
     }
 }
