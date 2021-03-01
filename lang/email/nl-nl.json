@@ -55,5 +55,11 @@
         "clickBelow": "Klik op onderstaande link om je e-mailadres te bevestigen en te beginnen met Jellyfin.",
         "confirmEmail": "Bevestig e-mailadres",
         "name": "Bevestingingse-mail"
+    },
+    "userExpired": {
+        "name": "Gebruikersverloop",
+        "title": "Je account is verlopen - Jellyfin",
+        "yourAccountHasExpired": "Je account is verlopen.",
+        "contactTheAdmin": "Neem contact op met de beheerder voor meer info."
     }
 }
