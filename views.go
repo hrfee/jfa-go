@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io/fs"
 	"net/http"
 	"strconv"
 	"strings"
@@ -68,6 +69,12 @@ func (app *appContext) AdminPage(gc *gin.Context) {
 	emailEnabled, _ := app.config.Section("invite_emails").Key("enabled").Bool()
 	notificationsEnabled, _ := app.config.Section("notifications").Key("enabled").Bool()
 	ombiEnabled := app.config.Section("ombi").Key("enabled").MustBool(false)
+	var license string
+	l, err := fs.ReadFile(localFS, "LICENSE")
+	if err != nil {
+		license = ""
+	}
+	license = string(l)
 	gcHTML(gc, http.StatusOK, "admin.html", gin.H{
 		"urlBase":         app.getURLBase(gc),
 		"cssClass":        app.cssClass,
@@ -82,6 +89,7 @@ func (app *appContext) AdminPage(gc *gin.Context) {
 		"quantityStrings": app.storage.lang.Admin[lang].QuantityStrings,
 		"language":        app.storage.lang.Admin[lang].JSON,
 		"langName":        lang,
+		"license":         license,
 	})
 }
 

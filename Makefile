@@ -83,6 +83,7 @@ copy:
 	cp -r static/* data/web/
 	$(info copying language files)
 	cp -r lang data/
+	cp LICENSE data/
 
 internal-files:
 	python3 scripts/embed.py internal

@@ -1172,6 +1172,7 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 		policy = app.storage.profiles[req.Profile].Policy
 	} else if req.From == "user" {
 		applyingFrom = "user"
+		app.jf.CacheExpiry = time.Now()
 		user, status, err := app.jf.UserByID(req.ID, false)
 		if !(status == 200 || status == 204) || err != nil {
 			app.err.Printf("Failed to get user from Jellyfin (%d): %s", status, err)
