@@ -2,6 +2,9 @@
 [![Build Status](https://drone.hrfee.dev/api/badges/hrfee/jfa-go/status.svg?ref=refs/heads/main)](https://drone.hrfee.dev/hrfee/jfa-go)
 [![Docker Hub](https://img.shields.io/docker/pulls/hrfee/jfa-go?label=docker)](https://hub.docker.com/r/hrfee/jfa-go)
 [![Translation status](https://weblate.hrfee.pw/widgets/jfa-go/-/svg-badge.svg)](https://weblate.hrfee.pw/engage/jfa-go/)
+
+##### Downloads:
+##### [dockerhub](https://hub.docker.com/r/hrfee/jfa-go) | [stable](https://github.com/hrfee/jfa-go/releases) | [nightly](https://builds.hrfee.pw/view/hrfee/jfa-go) | [aur stable](https://aur.archlinux.org/packages/jfa-go) | [aur binary](https://aur.archlinux.org/packages/jfa-go-bin) | [aur nightly](https://aur.archlinux.org/packages/jfa-go-git)
 ---
 jfa-go is a user management app for [Jellyfin](https://github.com/jellyfin/jellyfin) (and now [Emby](https://emby.media/)) that provides invite-based account creation as well as other features that make one's instance much easier to manage.
 
@@ -49,7 +52,7 @@ docker create \
              -v /etc/localtime:/etc/localtime:ro \ # Makes sure time is correct
              hrfee/jfa-go # hrfee/jfa-go:unstable for latest build from git
 ```
-Available on the AUR as [jfa-go](https://aur.archlinux.org/packages/jfa-go/) or [jfa-go-git](https://aur.archlinux.org/packages/jfa-go-git/).
+Available on the AUR as [jfa-go](https://aur.archlinux.org/packages/jfa-go/), [jfa-go-bin](https://aur.archlinux.org/packages/jfa-go) or [jfa-go-git](https://aur.archlinux.org/packages/jfa-go-git/).
 
 For other platforms, grab an archive from the release section for your platform (or nightly builds [here](https://builds.hrfee.dev/view/hrfee/jfa-go)), and extract the `jfa-go` executable to somewhere useful.
 * For \*nix/macOS users, `chmod +x jfa-go` then place it somewhere in your PATH like `/usr/bin`.
