@@ -16,7 +16,8 @@
         "successHeader": "Sucesso!",
         "successContinueButton": "Continuar",
         "confirmationRequired": "Necessária confirmação de e-mail",
-        "confirmationRequiredMessage": "Verifique sua caixa de email para finalizar o cadastro."
+        "confirmationRequiredMessage": "Verifique sua caixa de email para finalizar o cadastro.",
+        "yourAccountIsValidUntil": "Sua conta é válida até {data}."
     },
     "notifications": {
         "errorUserExists": "Esse usuário já existe.",
