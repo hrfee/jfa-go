@@ -75,7 +75,15 @@
         "preview": "Pre-visualizar",
         "reset": "Reiniciar",
         "edit": "Editar",
-        "customizeEmails": "Customizar Emails"
+        "customizeEmails": "Customizar Emails",
+        "disabled": "Desativado",
+        "userExpiryDescription": "Após um determinado período de tempo de cada inscrição, o jfa-go apagará/desabilitará a conta. Você pode alterar essa opção nas configurações.",
+        "inviteDuration": "Duração do Convite",
+        "enabled": "Habilitado",
+        "admin": "Admin",
+        "expiry": "Expiração",
+        "userExpiry": "Vencimento do Usuário",
+        "extendExpiry": "Extender o vencimento"
     },
     "notifications": {
         "changedEmailAddress": "Endereço de e-mail alterado de {n}.",
@@ -137,6 +145,14 @@
         "announceTo": {
             "singular": "Comunicar o usuário {n}",
             "plural": "Comunicar os usuários {n}"
+        },
+        "extendExpiry": {
+            "singular": "Extender o vencimento para {n}",
+            "plural": "Extender o vencimento para {n} usuários"
+        },
+        "extendedExpiry": {
+            "plural": "Extender o vencimento para {n} usuários.",
+            "singular": "Extender vencimento para {n}."
         }
     }
 }
