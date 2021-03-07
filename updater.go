@@ -201,7 +201,7 @@ func (ud *Updater) GetTag() (Tag, int, error) {
 }
 
 func (t *Tag) IsNew() bool {
-	return t.Version != version
+	return t.Version != commit
 }
 
 func (ud *Updater) getRelease() (release GHRelease, status int, err error) {
