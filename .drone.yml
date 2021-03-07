@@ -40,6 +40,9 @@ steps:
       volumes:
           - name: ssh_key
             path: /root/drone_rsa
+      environment:
+          BUILDRONE_KEY:
+              from_secret: BUILDRONE_KEY
       settings:
           host:
               from_secret: ssh2_host
@@ -55,6 +58,7 @@ steps:
               - BUILDRONE_KEY
           script:
               - /mnt/buildx/jfa-go/build.sh stable
+              - rm -f upload.py
               - wget https://builds.hrfee.pw/upload.py
               - pip3 install requests
               - bash -c 'python3 upload.py https://builds.hrfee.pw hrfee jfa-go --tag docker-stable=true'
@@ -107,6 +111,9 @@ steps:
       volumes:
           - name: ssh_key
             path: /root/drone_rsa
+      environment:
+          BUILDRONE_KEY:
+              from_secret: BUILDRONE_KEY
       settings:
           host:
               from_secret: ssh2_host
