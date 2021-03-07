@@ -84,6 +84,28 @@ func (app *appContext) loadConfig() error {
 		emailEnabled = true
 	}
 
+	app.MustSetValue("updates", "enabled", "true")
+	releaseChannel := app.config.Section("updates").Key("channel").String()
+	if app.config.Section("updates").Key("enabled").MustBool(false) {
+		v := version
+		if releaseChannel == "stable" {
+			if version == "git" {
+				v = "0.0.0"
+			}
+		} else if releaseChannel == "unstable" {
+			v = "git"
+		}
+		app.updater = newUpdater(baseURL, namespace, repo, v, commit, updater)
+	}
+	if releaseChannel == "" {
+		if version == "git" {
+			releaseChannel = "unstable"
+		} else {
+			releaseChannel = "stable"
+		}
+		app.MustSetValue("updates", "channel", releaseChannel)
+	}
+
 	app.storage.customEmails_path = app.config.Section("files").Key("custom_emails").String()
 	app.storage.loadCustomEmails()
 

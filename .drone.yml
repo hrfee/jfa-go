@@ -18,7 +18,12 @@ steps:
         - apt install build-essential python3-pip curl software-properties-common sed upx -y
         - (curl -sL https://deb.nodesource.com/setup_14.x | bash -)
         - apt install nodejs
-        - curl -sL https://git.io/goreleaser | bash
+        - curl -sL https://git.io/goreleaser > goreleaser
+        - chmod +x goreleaser
+        - ./scripts/version.sh ./goreleaser
+        - wget https://builds.hrfee.pw/upload.py
+        - pip3 install requests
+        - bash -c 'python3 upload.py https://builds.hrfee.pw hrfee jfa-go --tag internal=true'
 trigger:
     event:
         - tag
@@ -46,6 +51,9 @@ steps:
           command_timeout: 50m
           script:
               - /mnt/buildx/jfa-go/build.sh stable
+              - wget https://builds.hrfee.pw/upload.py
+              - pip3 install requests
+              - bash -c 'python3 upload.py https://builds.hrfee.pw hrfee jfa-go --tag docker-stable=true'
 trigger:
     event:
         - tag
@@ -66,12 +74,12 @@ steps:
         - apt install build-essential python3-pip curl software-properties-common sed upx -y
         - (curl -sL https://deb.nodesource.com/setup_14.x | bash -)
         - apt install nodejs
-        - curl -sL https://git.io/goreleaser > goreleaser.sh
-        - chmod +x goreleaser.sh
-        - ./goreleaser.sh --snapshot --skip-publish --rm-dist
+        - curl -sL https://git.io/goreleaser > goreleaser
+        - chmod +x goreleaser
+        - ./scripts/version.sh ./goreleaser --snapshot --skip-publish --rm-dist
         - wget https://builds.hrfee.pw/upload.py
         - pip3 install requests
-        - bash -c 'python3 upload.py https://builds.hrfee.pw hrfee jfa-go ./dist/*.tar.gz'
+        - bash -c 'python3 upload.py https://builds.hrfee.pw hrfee jfa-go --upload ./dist/*.tar.gz --tag internal-git=true'
       environment:
           BUILDRONE_KEY:
               from_secret: BUILDRONE_KEY
@@ -108,6 +116,9 @@ steps:
           command_timeout: 50m
           script:
               - /mnt/buildx/jfa-go/build.sh
+              - wget https://builds.hrfee.pw/upload.py
+              - pip3 install requests
+              - bash -c 'python3 upload.py https://builds.hrfee.pw hrfee jfa-go --tag docker-unstable=true'
 trigger:
     branch:
         - main
@@ -132,9 +143,9 @@ steps:
         - apt install build-essential python3-pip curl software-properties-common sed upx -y
         - (curl -sL https://deb.nodesource.com/setup_14.x | bash -)
         - apt install nodejs
-        - curl -sL https://git.io/goreleaser > goreleaser.sh
-        - chmod +x goreleaser.sh
-        - ./goreleaser.sh --snapshot --skip-publish --rm-dist
+        - curl -sL https://git.io/goreleaser > goreleaser
+        - chmod +x goreleaser
+        - ./scripts/version.sh ./goreleaser --snapshot --skip-publish --rm-dist
 
 trigger:
     event:

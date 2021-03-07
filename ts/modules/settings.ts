@@ -598,6 +598,14 @@ export class settingsList {
                         `;
                         (editButton.querySelector("span.button") as HTMLSpanElement).onclick = this._emailEditor.showList;
                         this.addSection(name, settings.sections[name], editButton);
+                    } else if (name == "updates") {
+                        const icon = document.createElement("span") as HTMLSpanElement;
+                        if (window.updater.updateAvailable) {
+                            icon.classList.add("button", "~urge");
+                            icon.innerHTML = `<i class="ri-download-line" title="${window.lang.strings("update")}"></i>`;
+                            icon.onclick = () => window.updater.checkForUpdates(window.modals.updateInfo.show);
+                        }
+                        this.addSection(name, settings.sections[name], icon);
                     } else {
                         this.addSection(name, settings.sections[name]);
                     }

@@ -6,6 +6,8 @@ import (
 	"log"
 )
 
+const binaryType = "internal"
+
 //go:embed data data/html data/web data/web/css data/web/js
 var loFS embed.FS
 

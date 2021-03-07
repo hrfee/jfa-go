@@ -1440,6 +1440,39 @@ func (app *appContext) SetEmailState(gc *gin.Context) {
 	respondBool(200, true, gc)
 }
 
+// @Summary Returns whether there's a new update, and extra info if there is.
+// @Produce json
+// @Success 200 {object} checkUpdateDTO
+// @Router /config/update [get]
+// @tags Configuration
+func (app *appContext) CheckUpdate(gc *gin.Context) {
+	if !app.newUpdate {
+		app.update = Update{}
+	}
+	gc.JSON(200, checkUpdateDTO{New: app.newUpdate, Update: app.update})
+}
+
+// @Summary Apply an update.
+// @Produce json
+// @Success 200 {object} boolResponse
+// @Success 400 {object} stringResponse
+// @Success 500 {object} boolResponse
+// @Router /config/update [post]
+// @tags Configuration
+func (app *appContext) ApplyUpdate(gc *gin.Context) {
+	if !app.update.CanUpdate {
+		respond(400, "Update is manual", gc)
+		return
+	}
+	err := app.update.update()
+	if err != nil {
+		app.err.Printf("Failed to apply update: %s", err)
+		respondBool(500, false, gc)
+		return
+	}
+	respondBool(200, true, gc)
+}
+
 // @Summary Returns the custom email (generating it if not set) and list of used variables in it.
 // @Produce json
 // @Success 200 {object} customEmailDTO

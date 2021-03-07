@@ -7,6 +7,7 @@ import { accountsList } from "./modules/accounts.js";
 import { settingsList } from "./modules/settings.js";
 import { ProfileEditor } from "./modules/profiles.js";
 import { _get, _post, notificationBox, whichAnimationEvent, toggleLoader } from "./modules/common.js";
+import { Updater } from "./modules/update.js";
 
 loadTheme();
 (document.getElementById('button-theme') as HTMLSpanElement).onclick = toggleTheme;
@@ -59,9 +60,12 @@ window.availableProfiles = window.availableProfiles || [];
     window.modals.customizeEmails = new Modal(document.getElementById("modal-customize"));
 
     window.modals.extendExpiry = new Modal(document.getElementById("modal-extend-expiry"));
+
+    window.modals.updateInfo = new Modal(document.getElementById("modal-update"));
 })();
 
 var inviteCreator = new createInvite();
+
 var accounts = new accountsList();
 
 window.invites = new inviteList();
@@ -154,6 +158,7 @@ function login(username: string, password: string, run?: (state?: number) => voi
             } else {
                 const data = this.response;
                 window.token = data["token"];
+                window.updater = new Updater(); // mmm, a race condition
                 window.modals.login.close();
                 setInterval(() => { window.invites.reload(); accounts.reload(); }, 30*1000);
                 const currentTab = window.tabs.current;
@@ -198,4 +203,3 @@ login("", "");
         return false;
     }
 });
-

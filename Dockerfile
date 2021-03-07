@@ -16,7 +16,7 @@ ENV GOARCH=$TARGETARCH
 
 COPY --from=support /opt/build /opt/build
 
-RUN (cd /opt/build; make compile)
+RUN (cd /opt/build; make compile UPDATER=docker)
 
 FROM golang:latest
 

@@ -10,6 +10,14 @@ VERSION ?= $(shell git describe --exact-match HEAD 2> /dev/null || echo vgit)
 VERSION := $(shell echo $(VERSION) | sed 's/v//g')
 COMMIT ?= $(shell git rev-parse --short HEAD || echo unknown)
 
+UPDATER ?= off
+BUILDFLAGS := -X main.version=$(VERSION) -X main.commit=$(COMMIT)
+ifeq ($(UPDATER), on)
+	BUILDFLAGS := $(BUILDFLAGS) -X main.updater=binary
+else ifneq ($(UPDATER), off)
+	BUILDFLAGS := $(BUILDFLAGS) -X main.updater=$(UPDATER)
+endif
+
 npm:
 	$(info installing npm dependencies)
 	npm install
@@ -56,14 +64,14 @@ compile:
 	$(GOBINARY) mod download
 	$(info Building)
 	mkdir -p build
-	cd build && CGO_ENABLED=0 $(GOBINARY) build -ldflags="-s -w -X main.version=$(VERSION) -X main.commit=$(COMMIT)" -o ./jfa-go ../*.go
+	cd build && CGO_ENABLED=0 $(GOBINARY) build -ldflags="-s -w $(BUILDFLAGS)" -o ./jfa-go ../*.go
 
 compile-debug:
 	$(info Downloading deps)
 	$(GOBINARY) mod download
 	$(info Building)
 	mkdir -p build
-	cd build && CGO_ENABLED=0 $(GOBINARY) build -ldflags "-X main.version=$(VERSION) -X main.commit=$(COMMIT)" -o ./jfa-go ../*.go
+	cd build && CGO_ENABLED=0 $(GOBINARY) build -ldflags "$(BUILDFLAGS)" -o ./jfa-go ../*.go
 
 compress:
 	upx --lzma build/jfa-go

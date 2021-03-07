@@ -254,6 +254,21 @@
                 </label>
             </form>
         </div>
+        <div id="modal-update" class="modal">
+            <div class="modal-content wide card">
+                <span class="heading">{{ .strings.updates }} <span class="modal-close">&times;</span></span>
+                <p class="content">
+                    <h2>
+                        <a id="update-version"></a> (<span class="monospace" id="update-commit"></span>)
+                    </h2>
+                    <p class="content" id="update-description"></p>
+                    <p class="support" id="update-date"></p>
+                    <div class="content markdown-box" id="update-changelog"></div>
+                </p>
+                <span class="button ~info !normal full-width center" id="update-download">{{ .strings.download }}</span>
+                <span class="button ~urge !normal full-width center" id="update-update">{{ .strings.update }}</span>
+            </div>
+        </div>
         <div id="notification-box"></div>
         <span class="dropdown" tabindex="0" id="lang-dropdown">
             <span class="button ~urge dropdown-button">

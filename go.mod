@@ -11,6 +11,7 @@ replace github.com/hrfee/jfa-go/common => ./common
 replace github.com/hrfee/jfa-go/ombi => ./ombi
 
 require (
+	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/evanw/esbuild v0.8.50 // indirect
 	github.com/fatih/color v1.10.0
@@ -34,6 +35,7 @@ require (
 	github.com/mailgun/mailgun-go/v4 v4.3.0
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
+	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/smartystreets/goconvey v1.6.4 // indirect
 	github.com/swaggo/files v0.0.0-20190704085106-630677cd5c14
 	github.com/swaggo/gin-swagger v1.3.0
@@ -41,7 +43,8 @@ require (
 	github.com/ugorji/go v1.2.0 // indirect
 	github.com/writeas/go-strip-markdown v2.0.1+incompatible
 	golang.org/x/crypto v0.0.0-20201112155050-0c6587e931a9 // indirect
-	golang.org/x/sys v0.0.0-20210220050731-9a76102bfb43 // indirect
+	golang.org/x/net v0.0.0-20210226172049-e18ecbb05110 // indirect
+	golang.org/x/sys v0.0.0-20210303074136-134d130e1a04 // indirect
 	golang.org/x/tools v0.1.0 // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
 	gopkg.in/ini.v1 v1.62.0

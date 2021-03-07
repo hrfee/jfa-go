@@ -30,6 +30,24 @@ declare interface Window {
     language: string;
     lang: Lang;
     langFile: {};
+    updater: updater;
+}
+
+declare interface Update {
+	version: string; 
+    commit: string;    
+	date: number;
+    description: string;
+    changelog: string;
+    link: string;
+    download_link?: string;
+    can_update: boolean;
+}
+
+declare interface updater extends Update {
+    checkForUpdates: (run?: (req: XMLHttpRequest) => void) => void;
+    updateAvailable: boolean;
+    update: Update;
 }
 
 declare interface Lang {
@@ -78,6 +96,7 @@ declare interface Modals {
     editor: Modal;
     customizeEmails: Modal;
     extendExpiry: Modal;
+    updateInfo: Modal;
 }
 
 interface Invite {

@@ -417,3 +417,31 @@ pre {
     white-space: -o-pre-wrap;    /* Opera 7 */
     word-wrap: break-word;       /* Internet Explorer 5.5+ */
 }
+
+.circle {
+    height: 0.5rem;
+    width: 0.5rem;
+    border-radius: 50%;
+}
+
+.circle.\~urge {
+    background-color: var(--color-urge-200);
+}
+
+.markdown-box {
+    max-height: 20rem;
+    display: block;
+    overflow-y: scroll;
+}
+
+a:link {
+    color: var(--color-urge-200);
+}
+
+a:visited {
+    color: var(--color-urge-100);
+}
+
+a:hover, a:active {
+    color: var(--color-urge-200);
+}

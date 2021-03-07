@@ -48,6 +48,14 @@ var (
 	commit             string
 )
 
+var temp = func() string {
+	temp := "/tmp"
+	if PLATFORM == "windows" {
+		temp = os.Getenv("TEMP")
+	}
+	return temp
+}()
+
 var serverTypes = map[string]string{
 	"jellyfin": "Jellyfin",
 	"emby":     "Emby (experimental)",
@@ -90,6 +98,10 @@ type appContext struct {
 	version          string
 	quit             chan os.Signal
 	URLBase          string
+	updater          *Updater
+	newUpdate        bool // Whether whatever's in update is new.
+	tag              Tag
+	update           Update
 }
 
 func generateSecret(length int) (string, error) {
@@ -521,6 +533,10 @@ func start(asDaemon, firstCall bool) {
 		if app.config.Section("password_resets").Key("enabled").MustBool(false) && serverType == mediabrowser.JellyfinServer {
 			go app.StartPWR()
 		}
+
+		if app.config.Section("updates").Key("enabled").MustBool(false) {
+			go app.checkForUpdates()
+		}
 	} else {
 		debugMode = false
 		address = "0.0.0.0:8056"
@@ -636,11 +652,7 @@ func printVersion() {
 
 func main() {
 	printVersion()
-	folder := "/tmp"
-	if PLATFORM == "windows" {
-		folder = os.Getenv("TEMP")
-	}
-	SOCK = filepath.Join(folder, SOCK)
+	SOCK = filepath.Join(temp, SOCK)
 	fmt.Println("Socket:", SOCK)
 	if flagPassed("test") {
 		TEST = true

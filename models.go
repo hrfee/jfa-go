@@ -214,3 +214,8 @@ type extendExpiryDTO struct {
 	Hours   int      `json:"hours" example:"2"`   // Number of hours to add.
 	Minutes int      `json:"minutes" example:"3"` // Number of minutes to add.
 }
+
+type checkUpdateDTO struct {
+	New    bool   `json:"new"` // Whether or not there's a new update.
+	Update Update `json:"update"`
+}

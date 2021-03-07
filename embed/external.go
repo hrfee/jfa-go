@@ -8,6 +8,8 @@ import (
 	"strings"
 )
 
+const binaryType = "external"
+
 var localFS fs.FS
 var langFS fs.FS
 

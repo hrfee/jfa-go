@@ -1,6 +1,35 @@
 {
     "order": [],
     "sections": {
+        "updates": {
+            "order": [],
+            "meta": {
+                "name": "Updates",
+                "description": "Settings for update notifications and release channel."
+            },
+            "settings": {
+                "enabled": {
+                    "name": "Enabled",
+                    "required": true,
+                    "requires_restart": true,
+                    "type": "bool",
+                    "value": true,
+                    "description": "Enable/disable updating notifications and downloading/applying updates."
+                },
+                "channel": {
+                    "name": "Release Channel",
+                    "required": true,
+                    "requires_restart": false,
+                    "type": "select",
+                    "options": [
+                        ["stable", "Stable"],
+                        ["unstable", "Unstable"]
+                    ],
+                    "value": "",
+                    "description": "Release channel for updates."
+                }
+            }
+        },
         "jellyfin": {
             "order": [],
             "meta": {
