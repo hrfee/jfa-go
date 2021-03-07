@@ -61,7 +61,7 @@ steps:
               - rm -f upload.py
               - wget https://builds.hrfee.pw/upload.py
               - pip3 install requests
-              - bash -c 'python3 upload.py https://builds.hrfee.pw hrfee jfa-go --tag docker-stable=true'
+              - bash -c 'BUILDRONE_KEY=$(cat /mnt/buildx/jfa-go/key) python3 upload.py https://builds.hrfee.pw hrfee jfa-go --tag docker-stable=true'
 trigger:
     event:
         - tag
@@ -111,9 +111,6 @@ steps:
       volumes:
           - name: ssh_key
             path: /root/drone_rsa
-      environment:
-          BUILDRONE_KEY:
-              from_secret: BUILDRONE_KEY
       settings:
           host:
               from_secret: ssh2_host
@@ -123,15 +120,13 @@ steps:
               from_secret: ssh2_port
           volumes:
               - /root/.ssh/docker-build:/root/drone_rsa
-          envs:
-              - BUILDRONE_KEY
           key_path: /root/drone_rsa
           command_timeout: 50m
           script:
               - /mnt/buildx/jfa-go/build.sh
               - wget https://builds.hrfee.pw/upload.py
               - pip3 install requests
-              - bash -c 'python3 upload.py https://builds.hrfee.pw hrfee jfa-go --tag docker-unstable=true'
+              - bash -c 'BUILDRONE_KEY=$(cat /mnt/buildx/jfa-go/key) python3 upload.py https://builds.hrfee.pw hrfee jfa-go --tag docker-unstable=true'
 trigger:
     branch:
         - main
