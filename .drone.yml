@@ -11,6 +11,8 @@ steps:
     - name: release
       image: golang:latest
       environment:
+          BUILDRONE_KEY:
+              from_secret: BUILDRONE_KEY
           GITHUB_TOKEN:
               from_secret: github_token
       commands:
@@ -49,6 +51,8 @@ steps:
               - /root/.ssh/docker-build:/root/drone_rsa
           key_path: /root/drone_rsa
           command_timeout: 50m
+          envs:
+              - BUILDRONE_KEY
           script:
               - /mnt/buildx/jfa-go/build.sh stable
               - wget https://builds.hrfee.pw/upload.py
@@ -112,6 +116,8 @@ steps:
               from_secret: ssh2_port
           volumes:
               - /root/.ssh/docker-build:/root/drone_rsa
+          envs:
+              - BUILDRONE_KEY
           key_path: /root/drone_rsa
           command_timeout: 50m
           script:

@@ -31,7 +31,7 @@ builds:
       env:
         - CGO_ENABLED=0
       ldflags:
-        - -s -w -X main.version={{.Env.VERSION}} -X main.commit={{.ShortCommit}} -X main.updater=binary
+        - -s -w -X main.version={{.Env.JFA_GO_VERSION}} -X main.commit={{.ShortCommit}} -X main.updater=binary
       goos:
         - linux
         - windows
