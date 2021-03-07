@@ -58,10 +58,10 @@ steps:
               - BUILDRONE_KEY
           script:
               - /mnt/buildx/jfa-go/build.sh stable
-              - rm -f upload.py
-              - wget https://builds.hrfee.pw/upload.py
+              - wget https://builds.hrfee.pw/upload.py -O /mnt/buildx/jfa-go/jfa-go/upload.py
               - pip3 install requests
-              - bash -c 'BUILDRONE_KEY=$(cat /mnt/buildx/jfa-go/key) python3 upload.py https://builds.hrfee.pw hrfee jfa-go --tag docker-stable=true'
+              - bash -c 'cd /mnt/buildx/jfa-go/jfa-go && BUILDRONE_KEY=$(cat /mnt/buildx/jfa-go/key) python3 upload.py https://builds.hrfee.pw hrfee jfa-go --tag docker-stable=true'
+              - rm -f /mnt/buildx/jfa-go/jfa-go/upload.py
 trigger:
     event:
         - tag
@@ -124,9 +124,10 @@ steps:
           command_timeout: 50m
           script:
               - /mnt/buildx/jfa-go/build.sh
-              - wget https://builds.hrfee.pw/upload.py
+              - wget https://builds.hrfee.pw/upload.py -O /mnt/buildx/jfa-go/jfa-go/upload.py
               - pip3 install requests
-              - bash -c 'BUILDRONE_KEY=$(cat /mnt/buildx/jfa-go/key) python3 upload.py https://builds.hrfee.pw hrfee jfa-go --tag docker-unstable=true'
+              - bash -c 'cd /mnt/buildx/jfa-go/jfa-go && BUILDRONE_KEY=$(cat /mnt/buildx/jfa-go/key) python3 upload.py https://builds.hrfee.pw hrfee jfa-go --tag docker-unstable=true'
+              - rm -f /mnt/buildx/jfa-go/jfa-go/upload.py
 trigger:
     branch:
         - main
