@@ -124,7 +124,6 @@ type Updater struct {
 
 func newUpdater(buildroneURL, namespace, repo, version, commit, buildType string) *Updater {
 	bType := off
-	fmt.Println("BT", buildType)
 	tag := ""
 	switch buildType {
 	case "binary":
@@ -202,7 +201,7 @@ func (ud *Updater) GetTag() (Tag, int, error) {
 }
 
 func (t *Tag) IsNew() bool {
-	return t.Version == version
+	return t.Version != version
 }
 
 func (ud *Updater) getRelease() (release GHRelease, status int, err error) {

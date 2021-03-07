@@ -72,6 +72,7 @@ func (app *appContext) AdminPage(gc *gin.Context) {
 	var license string
 	l, err := fs.ReadFile(localFS, "LICENSE")
 	if err != nil {
+		app.debug.Printf("Failed to load LICENSE: %s", err)
 		license = ""
 	}
 	license = string(l)
