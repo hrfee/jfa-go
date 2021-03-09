@@ -197,11 +197,14 @@ func (ud *Updater) GetTag() (Tag, int, error) {
 
 	var tag Tag
 	err = json.Unmarshal(body, &tag)
+	if tag.Version == "" {
+		err = errors.New("Tag was empty")
+	}
 	return tag, resp.StatusCode, err
 }
 
 func (t *Tag) IsNew() bool {
-	return t.Version != commit
+	return t.Version[:7] != commit
 }
 
 func (ud *Updater) getRelease() (release GHRelease, status int, err error) {
@@ -462,7 +465,7 @@ func (app *appContext) checkForUpdates() {
 		go func() {
 			tag, status, err := app.updater.GetTag()
 			if status != 200 || err != nil {
-				if strings.Contains(err.Error(), "strconv.ParseInt") {
+				if err != nil && strings.Contains(err.Error(), "strconv.ParseInt") {
 					app.err.Println("No new updates available.")
 				} else {
 					app.err.Printf("Failed to get latest tag (%d): %v", status, err)
