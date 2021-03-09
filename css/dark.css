@@ -85,3 +85,7 @@
 .dark-only {
   display: initial;
 }
+
+.dark-theme select option {
+    background: #202020;
+}
