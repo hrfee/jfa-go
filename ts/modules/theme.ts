@@ -12,5 +12,8 @@ export function loadTheme() {
     } else if (theme == "light") {
         document.documentElement.classList.add('light-theme');
         document.documentElement.classList.remove('dark-theme');
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').media !== 'not all') {
+        document.documentElement.classList.add('dark-theme');
+        document.documentElement.classList.remove('light-theme');
     }
 }
