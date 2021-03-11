@@ -55,5 +55,11 @@
         "title": "Bekräfta din e-postadress - Jellyfin",
         "clickBelow": "Klicka på länken nedan för att bekräfta din e-postadress och börja använda Jellyfin.",
         "confirmEmail": "Bekräfta e-postadress"
+    },
+    "userExpired": {
+        "name": "Användarens upphörande",
+        "title": "Ditt konto har gått ut - Jellyfin",
+        "yourAccountHasExpired": "Ditt konto har gått ut.",
+        "contactTheAdmin": "Kontakta administratören för mer information."
     }
 }
