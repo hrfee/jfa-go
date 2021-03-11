@@ -16,7 +16,8 @@
         "successHeader": "Lyckades!",
         "successContinueButton": "Fortsätt",
         "confirmationRequired": "E-postbekräftelse krävs",
-        "confirmationRequiredMessage": "Kontrollera din e-postkorg för att verifiera din adress."
+        "confirmationRequiredMessage": "Kontrollera din e-postkorg för att verifiera din adress.",
+        "yourAccountIsValidUntil": "Ditt konto är giltigt fram tills {date}."
     },
     "notifications": {
         "errorUserExists": "Användare finns redan.",
