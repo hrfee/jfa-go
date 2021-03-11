@@ -75,7 +75,15 @@
         "inviteExpiresInTime": "Går ut om {n}",
         "notifyEvent": "Meddela den:",
         "notifyInviteExpiry": "Vid utgång",
-        "notifyUserCreation": "Vid användarskapande"
+        "notifyUserCreation": "Vid användarskapande",
+        "disabled": "Inaktiverad",
+        "enabled": "Aktiverad",
+        "inviteDuration": "Varaktighet för inbjudan",
+        "admin": "Admin",
+        "expiry": "Löper ut",
+        "userExpiry": "Användarutgång",
+        "userExpiryDescription": "Efter en angiven tid efter varje registrering så tar jfa-go bort/inaktiverar kontot. Du kan ändra detta beteende i inställningarna.",
+        "extendExpiry": "Förläng utgång"
     },
     "notifications": {
         "changedEmailAddress": "Ändrad e-postadress för {n}.",
@@ -137,6 +145,14 @@
         "appliedSettings": {
             "singular": "Tillämpade inställningar för {n} användare.",
             "plural": "Tillämpade inställningar för {n} användare."
+        },
+        "extendExpiry": {
+            "plural": "Förläng utgången för {n} användare",
+            "singular": "Förläng utgången för {n} användare"
+        },
+        "extendedExpiry": {
+            "singular": "Utökad giltighetstid för {n} användare.",
+            "plural": "Utökad giltighetstid för {n} användare."
         }
     }
 }
