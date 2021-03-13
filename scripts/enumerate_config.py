@@ -1,3 +1,5 @@
+# Since go doesn't order its json, this script adds ordered lists
+# of section/setting names for the settings tab to use.
 import json, argparse
 
 parser = argparse.ArgumentParser()

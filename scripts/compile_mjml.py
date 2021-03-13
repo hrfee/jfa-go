@@ -3,6 +3,7 @@ import shutil
 import os
 import argparse
 from pathlib import Path
+from threading import Thread
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-o", "--output", help="output directory for .html and .txt files")
@@ -15,15 +16,23 @@ def runcmd(cmd):
     proc = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE)
     return proc.communicate()
 
-
-local_path = Path("mail")
-
-for mjml in [f for f in local_path.iterdir() if f.is_file() and "mjml" in f.suffix]:
-    print(f"Compiling {mjml.name}")
+def compile(mjml: Path):
     fname = mjml.with_suffix(".html")
     runcmd(f"npx mjml {str(mjml)} -o {str(fname)}")
     if fname.is_file():
-        print("Done.")
+        print(f"Compiled {mjml.name}")
+
+local_path = Path("mail")
+
+threads = []
+
+for mjml in [f for f in local_path.iterdir() if f.is_file() and "mjml" in f.suffix]:
+    threads.append(Thread(target=compile, args=(mjml,)))
+
+for thread in threads:
+    thread.start()
+for thread in threads:
+    thread.join()
 
 html = [f for f in local_path.iterdir() if f.is_file() and "html" in f.suffix]
 
