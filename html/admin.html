@@ -396,13 +396,18 @@
             </div>
             <div id="tab-accounts" class="unfocused">
                 <div class="card ~neutral !low accounts mb-1">
-                    <span class="heading">{{ .strings.accounts }}</span>
-                    <div class="fr">
-                        <span class="button ~neutral !normal mb-half" id="accounts-add-user">{{ .quantityStrings.addUser.Singular }}</span>
-                        <span class="button ~info !normal mb-half" id="accounts-announce">{{ .strings.announce }}</span>
-                        <span class="button ~urge !normal mb-half" id="accounts-modify-user">{{ .strings.modifySettings }}</span>
-                        <span class="button ~warning !normal mb-half" id="accounts-extend-expiry">{{ .strings.extendExpiry }}</span>
-                        <span class="button ~critical !normal mb-half" id="accounts-delete-user">{{ .quantityStrings.deleteUser.Singular }}</span>
+                    <div class="flex-expand">
+                        <div class="flex-row">
+                            <span class="heading">{{ .strings.accounts }}</span>
+                            <input type="search" class="field ~neutral !normal input search ml-1" id="accounts-search" placeholder="{{ .strings.search }}">
+                        </div>
+                        <div>
+                            <span class="button ~neutral !normal mb-half" id="accounts-add-user">{{ .quantityStrings.addUser.Singular }}</span>
+                            <span class="button ~info !normal mb-half" id="accounts-announce">{{ .strings.announce }}</span>
+                            <span class="button ~urge !normal mb-half" id="accounts-modify-user">{{ .strings.modifySettings }}</span>
+                            <span class="button ~warning !normal mb-half" id="accounts-extend-expiry">{{ .strings.extendExpiry }}</span>
+                            <span class="button ~critical !normal mb-half" id="accounts-delete-user">{{ .quantityStrings.deleteUser.Singular }}</span>
+                        </div>
                     </div>
                     <div class="card ~neutral !normal accounts-header table-responsive mt-half">
                         <table class="table">

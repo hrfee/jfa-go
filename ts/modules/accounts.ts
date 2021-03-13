@@ -181,10 +181,13 @@ export class accountsList {
     private _modifySettingsUser = document.getElementById("radio-use-user") as HTMLInputElement;
     private _profileSelect = document.getElementById("modify-user-profiles") as HTMLSelectElement;
     private _userSelect = document.getElementById("modify-user-users") as HTMLSelectElement;
+    private _search = document.getElementById("accounts-search") as HTMLInputElement;
 
     private _selectAll = document.getElementById("accounts-select-all") as HTMLInputElement;
     private _users: { [id: string]: user };
+    private _sortedByName: string[] = [];
     private _checkCount: number = 0;
+    private _inSearch = false;
 
     private _addUserForm = document.getElementById("form-add-user") as HTMLFormElement;
     private _addUserName = this._addUserForm.querySelector("input[type=text]") as HTMLInputElement;
@@ -208,25 +211,94 @@ export class accountsList {
             }
         }
     }
+    
+    search = (query: string): string[] => {
+        query = query.toLowerCase()
+        let result: string[] = [];
+        if (query.includes(":")) {  // Support admin:<true/false> and disabled:<true/false>
+            const words = query.split(" ");
+            query = "";
+            for (let word of words) {
+                if (word.includes(":")) {
+                    const querySplit = word.split(":")
+                    let state = false;
+                    if (querySplit[1] == "true") {
+                        state = true;
+                    }
+                    for (let id in this._users) {
+                        const user = this._users[id];
+                        let attrib: boolean;
+                        if (querySplit[0] == "admin") { attrib = user.admin; }
+                        else if (querySplit[0] == "disabled") { attrib = user.disabled; }
+                        if (attrib == state) { result.push(id); }
+                    }
+                } else { query += word + " "; }
+            }
+        }
+        if (query == "") { return result; }
+        for (let id in this._users) {
+            const user = this._users[id];
+            if (user.name.toLowerCase().includes(query)) {
+                result.push(id);
+            } else if (user.email.toLowerCase().includes(query)) {
+                result.push(id);
+            }
+        }
+        return result;
+    }
 
     get selectAll(): boolean { return this._selectAll.checked; }
-    set selectAll(state: boolean) { 
+    set selectAll(state: boolean) {
+        let count = 0;
         for (let id in this._users) {
-            this._users[id].selected = state;
+            if (this._table.contains(this._users[id].asElement())) { // Only select visible elements
+                this._users[id].selected = state;
+                count++;
+            }
         }
         this._selectAll.checked = state;
         this._selectAll.indeterminate = false;
-        state ? this._checkCount = Object.keys(this._users).length : 0;
-
+        state ? this._checkCount = count : 0;
     }
     
     add = (u: User) => {
         let domAccount = new user(u);
         this._users[u.id] = domAccount;
-        this._table.appendChild(domAccount.asElement());
+        this.unhide(u.id);
+    }
+
+    unhide = (id: string) => {
+        const keys = Object.keys(this._users);
+        if (keys.length == 0) {
+            this._table.appendChild(this._users[id].asElement());
+            return;
+        }
+        this._sortedByName = keys.sort((a, b) => this._users[a].name.localeCompare(this._users[b].name));
+        let index = this._sortedByName.indexOf(id)+1;
+        if (index == this._sortedByName.length-1) {
+            this._table.appendChild(this._users[id].asElement());
+            return;
+        }
+        while (index < this._sortedByName.length) {
+            if (this._table.contains(this._users[this._sortedByName[index]].asElement())) {
+                this._table.insertBefore(this._users[id].asElement(), this._users[this._sortedByName[index]].asElement());
+                return;
+            }
+            index++;
+        }
+        this._table.appendChild(this._users[id].asElement());
+    }
+
+    hide = (id: string) => {
+        const el = this._users[id].asElement();
+        if (this._table.contains(el)) {
+            this._table.removeChild(this._users[id].asElement());
+        }
     }
 
     private _checkCheckCount = () => {
+        const list = this._collectUsers();
+        this._checkCount = list.length;
         if (this._checkCount == 0) {
             this._selectAll.indeterminate = false;
             this._selectAll.checked = false;
@@ -237,7 +309,13 @@ export class accountsList {
             }
             this._extendExpiry.classList.add("unfocused");
         } else {
-            if (this._checkCount == Object.keys(this._users).length) {
+            let visibleCount = 0;
+            for (let id in this._users) {
+                if (this._table.contains(this._users[id].asElement())) {
+                    visibleCount++;
+                }
+            }
+            if (this._checkCount == visibleCount) {
                 this._selectAll.checked = true;
                 this._selectAll.indeterminate = false;
             } else {
@@ -246,12 +324,11 @@ export class accountsList {
             }
             this._modifySettings.classList.remove("unfocused");
             this._deleteUser.classList.remove("unfocused");
-            this._deleteUser.textContent = window.lang.quantity("deleteUser", this._checkCount);
+            this._deleteUser.textContent = window.lang.quantity("deleteUser", list.length);
             if (window.emailEnabled) {
                 this._announceButton.classList.remove("unfocused");
             }
-            const list = this._collectUsers();
-            let anyNonExpiries = false;
+            let anyNonExpiries = list.length == 0 ? true : false;
             for (let id of list) {
                 if (!this._users[id].expiry) {
                     anyNonExpiries = true;
@@ -268,7 +345,7 @@ export class accountsList {
     private _collectUsers = (): string[] => {
         let list: string[] = [];
         for (let id in this._users) {
-            if (this._users[id].selected) { list.push(id); }
+            if (this._table.contains(this._users[id].asElement()) && this._users[id].selected) { list.push(id); }
         }
         return list;
     }
@@ -312,7 +389,7 @@ export class accountsList {
     
     announce = () => {
         const modalHeader = document.getElementById("header-announce");
-        modalHeader.textContent = window.lang.quantity("announceTo", this._checkCount);
+        modalHeader.textContent = window.lang.quantity("announceTo", this._collectUsers().length);
         const form = document.getElementById("form-announce") as HTMLFormElement;
         let list = this._collectUsers();
         const button = form.querySelector("span.submit") as HTMLSpanElement;
@@ -345,7 +422,7 @@ export class accountsList {
 
     deleteUsers = () => {
         const modalHeader = document.getElementById("header-delete-user");
-        modalHeader.textContent = window.lang.quantity("deleteNUsers", this._checkCount);
+        modalHeader.textContent = window.lang.quantity("deleteNUsers", this._collectUsers().length);
         let list = this._collectUsers();
         const form = document.getElementById("form-delete-user") as HTMLFormElement;
         const button = form.querySelector("span.submit") as HTMLSpanElement;
@@ -371,7 +448,7 @@ export class accountsList {
                         }
                         window.notifications.customError("deleteUserError", errorMsg);
                     } else {
-                        window.notifications.customSuccess("deleteUserSuccess", window.lang.quantity("deletedUser", this._checkCount));
+                        window.notifications.customSuccess("deleteUserSuccess", window.lang.quantity("deletedUser", this._collectUsers().length));
                     }
                     this.reload();
                 }
@@ -382,7 +459,7 @@ export class accountsList {
 
     modifyUsers = () => {
         const modalHeader = document.getElementById("header-modify-user");
-        modalHeader.textContent = window.lang.quantity("modifySettingsFor", this._checkCount)
+        modalHeader.textContent = window.lang.quantity("modifySettingsFor", this._collectUsers().length)
         let list = this._collectUsers();
         (() => {
             let innerHTML = "";
@@ -439,7 +516,7 @@ export class accountsList {
                         }
                         window.notifications.customError("modifySettingsError", errorMsg);
                     } else if (req.status == 200 || req.status == 204) {
-                        window.notifications.customSuccess("modifySettingsSuccess", window.lang.quantity("appliedSettings", this._checkCount));
+                        window.notifications.customSuccess("modifySettingsSuccess", window.lang.quantity("appliedSettings", this._collectUsers().length));
                     }
                     this.reload();
                     window.modals.modifyUser.close();
@@ -484,7 +561,9 @@ export class accountsList {
         this._populateNumbers();
         this._users = {};
         this._selectAll.checked = false;
-        this._selectAll.onchange = () => { this.selectAll = this._selectAll.checked };
+        this._selectAll.onchange = () => {
+            this.selectAll = this._selectAll.checked;
+        };
         document.addEventListener("accountCheckEvent", () => { this._checkCount++; this._checkCheckCount(); });
         document.addEventListener("accountUncheckEvent", () => { this._checkCount--; this._checkCheckCount(); });
         this._addUserButton.onclick = window.modals.addUser.toggle;
@@ -538,6 +617,36 @@ export class accountsList {
             this._deleteNotify.parentElement.classList.add("unfocused");
             this._deleteNotify.checked = false;
         }*/
+
+        const setVisibility = (users: string[], visible: boolean) => {
+            for (let id in this._users) {
+                if (users.indexOf(id) != -1) {
+                    if (visible) {
+                        this.unhide(id);
+                    } else {
+                        this.hide(id);
+                    }
+                } else {
+                    if (visible) {
+                        this.hide(id);
+                    } else {
+                        this.unhide(id);
+                    }
+                }
+            }
+        }
+
+        this._search.oninput = () => {
+            const query = this._search.value;
+            if (!query) {
+                setVisibility(Object.keys(this._users), true);
+                this._inSearch = false;
+            } else {
+                this._inSearch = true;
+                setVisibility(this.search(query), true);
+            }
+            this._checkCheckCount();
+        };
     }
 
     reload = () => _get("/users", null, (req: XMLHttpRequest) => {

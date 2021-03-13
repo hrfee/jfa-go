@@ -445,3 +445,7 @@ a:visited {
 a:hover, a:active {
     color: var(--color-urge-200);
 }
+
+.search {
+    max-width: 15rem;
+}
