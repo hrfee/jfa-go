@@ -83,7 +83,11 @@
         "admin": "Beheerder",
         "expiry": "Verloop",
         "userExpiry": "Gebruikersverloop",
-        "extendExpiry": "Verleng verloop"
+        "extendExpiry": "Verleng verloop",
+        "updates": "Updates",
+        "update": "Bijwerken",
+        "download": "Download",
+        "search": "Zoeken"
     },
     "notifications": {
         "changedEmailAddress": "E-mailadres van {n} gewijzigd.",
@@ -115,7 +119,12 @@
         "errorUserCreated": "Aanmaken van gebruiker {n} is mislukt.",
         "sentAnnouncement": "Aankondiging verzonden.",
         "saveEmail": "E-mail opgeslagen.",
-        "errorSaveEmail": "Opslaan van e-mail mislukt."
+        "errorSaveEmail": "Opslaan van e-mail mislukt.",
+        "updateApplied": "De update is geïnstalleerd, doe alsjeblieft een herstart.",
+        "errorApplyUpdate": "Installatie van update mislukt, probeer handmatig.",
+        "errorCheckUpdate": "Controleren op update mislukt.",
+        "updateAvailable": "Er is een nieuwe update beschikbaar, kijk bij instellingen.",
+        "noUpdatesAvailable": "Geen nieuwe updates beschikbaar."
     },
     "quantityStrings": {
         "modifySettingsFor": {
