@@ -9,6 +9,7 @@ interface settingsBoolEvent extends Event {
 interface Meta {
     name: string;
     description: string;
+    advanced?: boolean;
     depends_true?: string;
     depends_false?: string;
 }
@@ -18,6 +19,7 @@ interface Setting {
     description: string;
     required: boolean;
     requires_restart: boolean;
+    advanced?: boolean;
     type: string;
     value: string | boolean | number;
     depends_true?: string;
@@ -41,6 +43,25 @@ class DOMInput {
     private _tooltip: HTMLDivElement;
     private _required: HTMLSpanElement;
     private _restart: HTMLSpanElement;
+    private _advanced: boolean;
+
+    private _advancedListener = (event: settingsBoolEvent) => {
+        if (!Boolean(event.detail)) {
+            this._input.parentElement.classList.add("unfocused");
+        } else {
+            this._input.parentElement.classList.remove("unfocused");
+        }
+    }
+
+    get advanced(): boolean { return this._advanced; }
+    set advanced(advanced: boolean) {
+        this._advanced = advanced;
+        if (advanced) {
+            document.addEventListener("settings-advancedState", this._advancedListener);
+        } else {
+            document.removeEventListener("settings-advancedState", this._advancedListener);
+        }
+    }
 
     get name(): string { return this._container.querySelector("span.setting-label").textContent; }
     set name(n: string) { this._container.querySelector("span.setting-label").textContent = n; }
@@ -125,6 +146,7 @@ class DOMInput {
         this.required = s.required;
         this.requires_restart = s.requires_restart;
         this.value = s.value;
+        this.advanced = s.advanced;
     }
     
     asElement = (): HTMLDivElement => { return this._container; }
@@ -180,6 +202,25 @@ class DOMBool implements SBool {
     private _required: HTMLSpanElement;
     private _restart: HTMLSpanElement;
     type: string = "bool";
+    private _advanced: boolean;
+
+    private _advancedListener = (event: settingsBoolEvent) => {
+        if (!Boolean(event.detail)) {
+            this._input.parentElement.classList.add("unfocused");
+        } else {
+            this._input.parentElement.classList.remove("unfocused");
+        }
+    }
+
+    get advanced(): boolean { return this._advanced; }
+    set advanced(advanced: boolean) {
+        this._advanced = advanced;
+        if (advanced) {
+            document.addEventListener("settings-advancedState", this._advancedListener);
+        } else {
+            document.removeEventListener("settings-advancedState", this._advancedListener);
+        }
+    }
 
     get name(): string { return this._container.querySelector("span.setting-label").textContent; }
     set name(n: string) { this._container.querySelector("span.setting-label").textContent = n; }
@@ -265,6 +306,7 @@ class DOMBool implements SBool {
         this.required = s.required;
         this.requires_restart = s.requires_restart;
         this.value = s.value;
+        this.advanced = s.advanced;
     }
     
     asElement = (): HTMLDivElement => { return this._container; }
@@ -282,6 +324,25 @@ class DOMSelect implements SSelect {
     private _restart: HTMLSpanElement;
     private _options: string[][];
     type: string = "bool";
+    private _advanced: boolean;
+
+    private _advancedListener = (event: settingsBoolEvent) => {
+        if (!Boolean(event.detail)) {
+            this._container.classList.add("unfocused");
+        } else {
+            this._container.classList.remove("unfocused");
+        }
+    }
+
+    get advanced(): boolean { return this._advanced; }
+    set advanced(advanced: boolean) {
+        this._advanced = advanced;
+        if (advanced) {
+            document.addEventListener("settings-advancedState", this._advancedListener);
+        } else {
+            document.removeEventListener("settings-advancedState", this._advancedListener);
+        }
+    }
 
     get name(): string { return this._container.querySelector("span.setting-label").textContent; }
     set name(n: string) { this._container.querySelector("span.setting-label").textContent = n; }
@@ -444,7 +505,7 @@ class sectionPanel {
                 }
                 this.values[name] = ""+setting.value;
                 document.addEventListener(`settings-${this._sectionName}-${name}`, (event: CustomEvent) => {
-                    const oldValue = this.values[name];
+                    // const oldValue = this.values[name];
                     this.values[name] = ""+event.detail;
                     document.dispatchEvent(new CustomEvent("settings-section-changed"));
                 });
@@ -498,6 +559,15 @@ export class settingsList {
             if (s.meta.depends_false) { state = false; }
             document.addEventListener(`settings-${dependant[0]}-${dependant[1]}`, (event: settingsBoolEvent) => {
                 if (Boolean(event.detail) !== state) {
+                    button.classList.add("unfocused");
+                } else {
+                    button.classList.remove("unfocused");
+                }
+            });
+        }
+        if (s.meta.advanced) {
+            document.addEventListener("settings-advancedState", (event: settingsBoolEvent) => {
+                if (!Boolean(event.detail)) {
                     button.classList.add("unfocused");
                 } else {
                     button.classList.remove("unfocused");
@@ -567,6 +637,20 @@ export class settingsList {
         };
         this._saveButton.onclick = this._save;
         document.addEventListener("settings-requires-restart", () => { this._needsRestart = true; });
+        
+        const advancedEnableToggle = document.getElementById("settings-advanced-enabled") as HTMLInputElement;
+        advancedEnableToggle.onchange = () => {
+            document.dispatchEvent(new CustomEvent("settings-advancedState", { detail: advancedEnableToggle.checked }));
+            const parent = advancedEnableToggle.parentElement;
+            if (advancedEnableToggle.checked) {
+                parent.classList.add("~urge");
+                parent.classList.remove("~neutral");
+            } else {
+                parent.classList.add("~neutral");
+                parent.classList.remove("~urge");
+            }
+        };
+        advancedEnableToggle.checked = false;
 
         if (window.ombiEnabled) {
             let ombi = new ombiDefaults();
@@ -613,6 +697,7 @@ export class settingsList {
             }
             this._showPanel(settings.order[0]);
             document.dispatchEvent(new CustomEvent("settings-loaded"));
+            document.dispatchEvent(new CustomEvent("settings-advancedState", { detail: false }));
             this._saveButton.classList.add("unfocused");
             this._needsRestart = false;
         }

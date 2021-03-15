@@ -427,10 +427,18 @@
             </div>
             <div id="tab-settings" class="unfocused">
                 <div class="card ~neutral !low settings overflow">
-                    <span class="heading">{{ .strings.settings }}</span>
-                    <div class="fr">
-                        <span class="button ~neutral !normal" id="settings-restart">{{ .strings.settingsRestart }}</span>
-                        <span class="button ~urge !normal unfocused" id="settings-save">{{ .strings.settingsSave }}</span>
+                    <div class="flex-expand">
+                        <div class="flex-row">
+                            <span class="heading">{{ .strings.settings }}</span>
+                            <label for="settings-advanced-enabled" class="button ~neutral !normal ml-1">
+                                <input type="checkbox" id="settings-advanced-enabled" aria-label="Advanced settings enabled">
+                                <span class="ml-half">{{ .strings.advancedSettings }} </span>
+                            </label>
+                        </div>
+                        <div>
+                            <span class="button ~neutral !normal" id="settings-restart">{{ .strings.settingsRestart }}</span>
+                            <span class="button ~urge !normal unfocused" id="settings-save">{{ .strings.settingsSave }}</span>
+                        </div>
                     </div>
                     <div class="row">
                         <div class="card ~neutral !normal col" id="settings-sidebar">

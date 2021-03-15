@@ -72,6 +72,7 @@
                     "name": "Client Name",
                     "required": true,
                     "requires_restart": true,
+                    "advanced": true,
                     "type": "text",
                     "value": "jfa-go",
                     "description": "The name of the client that will show up in the Jellyfin dashboard."
@@ -80,6 +81,7 @@
                     "name": "User cache timeout (minutes)",
                     "required": false,
                     "requires_restart": true,
+                    "advanced": true,
                     "type": "number",
                     "value": 30,
                     "description": "Timeout of user cache in minutes. Set to 0 to disable."
@@ -383,6 +385,7 @@
                     "name": "Date format",
                     "required": false,
                     "requires_restart": false,
+                    "advanced": true,
                     "depends_true": "method",
                     "type": "text",
                     "value": "%d/%m/%y",
@@ -432,6 +435,7 @@
                     "name": "Send emails as plain text",
                     "required": false,
                     "requires_restart": false,
+                    "advanced": true,
                     "depends_true": "method",
                     "type": "bool",
                     "value": false,
@@ -468,6 +472,7 @@
                     "name": "Custom email (HTML)",
                     "required": false,
                     "requires_restart": false,
+                    "advanced": true,
                     "depends_true": "enabled",
                     "type": "text",
                     "value": "",
@@ -477,6 +482,7 @@
                     "name": "Custom email (plaintext)",
                     "required": false,
                     "requires_restart": false,
+                    "advanced": true,
                     "depends_true": "enabled",
                     "type": "text",
                     "value": "",
@@ -512,6 +518,7 @@
                     "name": "Custom email (HTML)",
                     "required": false,
                     "requires_restart": false,
+                    "advanced": true,
                     "depends_true": "enabled",
                     "type": "text",
                     "value": "",
@@ -521,6 +528,7 @@
                     "name": "Custom email (plaintext)",
                     "required": false,
                     "requires_restart": false,
+                    "advanced": true,
                     "depends_true": "enabled",
                     "type": "text",
                     "value": "",
@@ -566,6 +574,7 @@
                     "name": "Expiry email (HTML)",
                     "required": false,
                     "requires_restart": false,
+                    "advanced":  true,
                     "depends_true": "enabled",
                     "type": "text",
                     "value": "",
@@ -575,6 +584,7 @@
                     "name": "Expiry email (Plaintext)",
                     "required": false,
                     "requires_restart": "false",
+                    "advanced":  true,
                     "depends_true": "enabled",
                     "type": "text",
                     "value": "",
@@ -584,6 +594,7 @@
                     "name": "User created email (HTML)",
                     "required": false,
                     "requires_restart": false,
+                    "advanced":  true,
                     "depends_true": "enabled",
                     "type": "text",
                     "value": "",
@@ -593,6 +604,7 @@
                     "name": "User created email (Plaintext)",
                     "required": false,
                     "requires_restart": false,
+                    "advanced":  true,
                     "depends_true": "enabled",
                     "type": "text",
                     "value": "",
@@ -678,6 +690,7 @@
                     "name": "Path to custom SSL certificate",
                     "required": false,
                     "requires_restart": false,
+                    "advanced":  true,
                     "type": "text",
                     "value": "",
                     "description": "Use if your SMTP server's SSL Certificate is not trusted by the system."
@@ -747,6 +760,7 @@
                     "name": "Custom email (HTML)",
                     "required": false,
                     "requires_restart": false,
+                    "advanced": true,
                     "type": "text",
                     "value": "",
                     "description": "Path to custom email html"
@@ -755,6 +769,7 @@
                     "name": "Custom email (plaintext)",
                     "required": false,
                     "requires_restart": false,
+                    "advanced": true,
                     "type": "text",
                     "value": "",
                     "description": "Path to custom email in plain text"
@@ -788,6 +803,7 @@
                     "name": "Custom email (HTML)",
                     "required": false,
                     "requires_restart": false,
+                    "advanced": true,
                     "type": "text",
                     "value": "",
                     "description": "Path to custom email html"
@@ -796,6 +812,7 @@
                     "name": "Custom email (plaintext)",
                     "required": false,
                     "requires_restart": false,
+                    "advanced": true,
                     "type": "text",
                     "value": "",
                     "description": "Path to custom email in plain text"
@@ -843,6 +860,7 @@
                     "name": "Custom email (HTML)",
                     "required": false,
                     "requires_restart": false,
+                    "advanced": true,
                     "depends_true": "email|method",
                     "type": "text",
                     "value": "",
@@ -852,6 +870,7 @@
                     "name": "Custom email (plaintext)",
                     "required": false,
                     "requires_restart": false,
+                    "advanced": true,
                     "depends_true": "email|method",
                     "type": "text",
                     "value": "",
@@ -879,6 +898,7 @@
                     "name": "Custom email (HTML)",
                     "required": false,
                     "requires_restart": false,
+                    "advanced": true,
                     "type": "text",
                     "value": "",
                     "description": "Path to custom email html"
@@ -887,6 +907,7 @@
                     "name": "Custom email (plaintext)",
                     "required": false,
                     "requires_restart": false,
+                    "advanced": true,
                     "type": "text",
                     "value": "",
                     "description": "Path to custom email in plain text"
@@ -897,7 +918,8 @@
             "order": [],
             "meta": {
                 "name": "File Storage",
-                "description": "Optional settings for changing storage locations."
+                "description": "Optional settings for changing storage locations.",
+                "advanced": true
             },
             "settings": {
                 "invites": {

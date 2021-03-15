@@ -156,6 +156,7 @@ type configDTO map[string]interface{}
 type meta struct {
 	Name         string `json:"name"`
 	Description  string `json:"description"`
+	Advanced     bool   `json:"advanced,omitempty"`
 	DependsTrue  string `json:"depends_true,omitempty"`
 	DependsFalse string `json:"depends_false,omitempty"`
 }
@@ -164,6 +165,7 @@ type setting struct {
 	Name            string      `json:"name"`
 	Description     string      `json:"description"`
 	Required        bool        `json:"required"`
+	Advanced        bool        `json:"advanced,omitempty"`
 	RequiresRestart bool        `json:"requires_restart"`
 	Type            string      `json:"type"` // Type (string, number, bool, etc.)
 	Value           interface{} `json:"value"`
