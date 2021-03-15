@@ -83,7 +83,11 @@
         "admin": "Admin",
         "expiry": "Expiração",
         "userExpiry": "Vencimento do Usuário",
-        "extendExpiry": "Extender o vencimento"
+        "extendExpiry": "Extender o vencimento",
+        "updates": "Atualizações",
+        "update": "Atualizar",
+        "download": "Download",
+        "search": "Procurar"
     },
     "notifications": {
         "changedEmailAddress": "Endereço de e-mail alterado de {n}.",
@@ -115,7 +119,12 @@
         "errorSendWelcomeEmail": "Falha ao enviar e-mail de boas-vindas (verifique console/logs)",
         "sentAnnouncement": "Comunicado enviado.",
         "saveEmail": "Email salvo.",
-        "errorSaveEmail": "Falha ao salvar o email."
+        "errorSaveEmail": "Falha ao salvar o email.",
+        "updateApplied": "Atualização aplicada, reinicie.",
+        "errorApplyUpdate": "Falha ao aplicar a atualização, tente manualmente.",
+        "updateAvailable": "Uma nova atualização está disponível, verifique as configurações.",
+        "errorCheckUpdate": "Falha ao verificar atualizações.",
+        "noUpdatesAvailable": "Nenhuma atualização disponível."
     },
     "quantityStrings": {
         "modifySettingsFor": {
