@@ -4,10 +4,13 @@ import (
 	"bytes"
 	"context"
 	"crypto/tls"
+	"crypto/x509"
+	"errors"
 	"fmt"
 	"html/template"
 	"io"
 	"net/smtp"
+	"os"
 	"strings"
 	"sync"
 	textTemplate "text/template"
@@ -49,18 +52,15 @@ func (mg *Mailgun) send(fromName, fromAddr string, email *Email, address ...stri
 
 // SMTP supports SSL/TLS and STARTTLS; implements emailClient.
 type SMTP struct {
-	sslTLS bool
-	server string
-	port   int
-	auth   smtp.Auth
+	sslTLS    bool
+	server    string
+	port      int
+	auth      smtp.Auth
+	tlsConfig *tls.Config
 }
 
 func (sm *SMTP) send(fromName, fromAddr string, email *Email, address ...string) error {
 	server := fmt.Sprintf("%s:%d", sm.server, sm.port)
-	tlsConfig := &tls.Config{
-		InsecureSkipVerify: false,
-		ServerName:         sm.server,
-	}
 	from := fmt.Sprintf("%s <%s>", fromName, fromAddr)
 	var wg sync.WaitGroup
 	var err error
@@ -75,9 +75,9 @@ func (sm *SMTP) send(fromName, fromAddr string, email *Email, address ...string)
 			e.HTML = []byte(email.HTML)
 			e.To = []string{addr}
 			if sm.sslTLS {
-				err = e.SendWithTLS(server, sm.auth, tlsConfig)
+				err = e.SendWithTLS(server, sm.auth, sm.tlsConfig)
 			} else {
-				err = e.SendWithStartTLS(server, sm.auth, tlsConfig)
+				err = e.SendWithStartTLS(server, sm.auth, sm.tlsConfig)
 			}
 		}(addr)
 	}
@@ -139,7 +139,10 @@ func NewEmailer(app *appContext) *Emailer {
 		} else {
 			username = emailer.fromAddr
 		}
-		emailer.NewSMTP(app.config.Section("smtp").Key("server").String(), app.config.Section("smtp").Key("port").MustInt(465), username, app.config.Section("smtp").Key("password").String(), sslTls)
+		err := emailer.NewSMTP(app.config.Section("smtp").Key("server").String(), app.config.Section("smtp").Key("port").MustInt(465), username, app.config.Section("smtp").Key("password").String(), sslTls, app.config.Section("smtp").Key("ssl_cert").MustString(""))
+		if err != nil {
+			app.err.Printf("Error while initiating SMTP mailer: %v", err)
+		}
 	} else if method == "mailgun" {
 		emailer.NewMailgun(app.config.Section("mailgun").Key("api_url").String(), app.config.Section("mailgun").Key("api_key").String())
 	}
@@ -161,13 +164,30 @@ func (emailer *Emailer) NewMailgun(url, key string) {
 }
 
 // NewSMTP returns an SMTP emailClient.
-func (emailer *Emailer) NewSMTP(server string, port int, username, password string, sslTLS bool) {
+func (emailer *Emailer) NewSMTP(server string, port int, username, password string, sslTLS bool, certPath string) (err error) {
+	rootCAs, err := x509.SystemCertPool()
+	if rootCAs == nil || err != nil {
+		rootCAs = x509.NewCertPool()
+	}
+	if certPath != "" {
+		var cert []byte
+		cert, err = os.ReadFile(certPath)
+		if rootCAs.AppendCertsFromPEM(cert) == false {
+			err = errors.New("Failed to append cert to pool")
+		}
+	}
 	emailer.sender = &SMTP{
 		auth:   smtp.PlainAuth("", username, password, server),
 		server: server,
 		port:   port,
 		sslTLS: sslTLS,
+		tlsConfig: &tls.Config{
+			InsecureSkipVerify: false,
+			ServerName:         server,
+			RootCAs:            rootCAs,
+		},
 	}
+	return
 }
 
 type templ interface {

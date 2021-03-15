@@ -673,6 +673,14 @@
                     "requires_restart": false,
                     "type": "password",
                     "value": "smtp password"
+                },
+                "ssl_cert": {
+                    "name": "Path to custom SSL certificate",
+                    "required": false,
+                    "requires_restart": false,
+                    "type": "text",
+                    "value": "",
+                    "description": "Use if your SMTP server's SSL Certificate is not trusted by the system."
                 }
             }
         },
