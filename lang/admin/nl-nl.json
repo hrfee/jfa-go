@@ -87,7 +87,8 @@
         "updates": "Updates",
         "update": "Bijwerken",
         "download": "Download",
-        "search": "Zoeken"
+        "search": "Zoeken",
+        "advancedSettings": "Geavanceerde instellingen"
     },
     "notifications": {
         "changedEmailAddress": "E-mailadres van {n} gewijzigd.",
