@@ -287,20 +287,17 @@ const settings = {
     }
 };
 
-(() => {
-    const checkTheme = () => {
-        if (settings["ui"]["theme"].value.includes("Dark")) {
-            document.documentElement.classList.add("dark-theme");
-            document.documentElement.classList.remove("light-theme");
-        } else {
-            document.documentElement.classList.add("light-theme");
-            document.documentElement.classList.remove("dark-theme");
-        }
-    };
-    settings["ui"]["theme"].onchange = checkTheme;
-    checkTheme();
-})();
-
+const checkTheme = () => {
+    if (settings["ui"]["theme"].value.includes("Dark")) {
+        document.documentElement.classList.add("dark-theme");
+        document.documentElement.classList.remove("light-theme");
+    } else {
+        document.documentElement.classList.add("light-theme");
+        document.documentElement.classList.remove("dark-theme");
+    }
+};
+settings["ui"]["theme"].onchange = checkTheme;
+checkTheme();
 
 const restartButton = document.getElementById("restart") as HTMLSpanElement;
 const serialize = () => {
@@ -358,6 +355,18 @@ const emailMethodChange = () => {
 };
 settings["email"]["method"].onchange = emailMethodChange;
 emailMethodChange();
+
+const embyHidePWR = () => {
+    const pwr = document.getElementById("password-resets");
+    const val = settings["jellyfin"]["type"].value;
+    if (val == "jellyfin") {
+        pwr.classList.remove("hidden");
+    } else if (val == "emby") {
+        pwr.classList.add("hidden");
+    }
+}
+settings["jellyfin"]["type"].onchange = embyHidePWR;
+embyHidePWR();
 
 (window as any).settings = settings;
 

@@ -48,7 +48,7 @@ docker create \
              -p 8056:8056 \
             # -p 8057:8057 if using tls
              -v /path/to/.config/jfa-go:/data \ # Path to wherever you want to store the config file and other data
-             -v /path/to/jellyfin:/jf \ # Path to jellyfin config directory
+             -v /path/to/jellyfin:/jf \ # Path to Jellyfin config directory, ignore if using Emby
              -v /etc/localtime:/etc/localtime:ro \ # Makes sure time is correct
              hrfee/jfa-go # hrfee/jfa-go:unstable for latest build from git
 ```
