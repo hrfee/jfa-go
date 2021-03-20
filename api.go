@@ -1246,6 +1246,15 @@ func (app *appContext) GetConfig(gc *gin.Context) {
 	el := resp.Sections["email"].Settings["language"]
 	el.Options = emailOptions
 	el.Value = app.config.Section("email").Key("language").MustString("en-us")
+	if updater == "" {
+		delete(resp.Sections, "updates")
+		for i, v := range resp.Order {
+			if v == "updates" {
+				resp.Order = append(resp.Order[:i], resp.Order[i+1:]...)
+				break
+			}
+		}
+	}
 	for sectName, section := range resp.Sections {
 		for settingName, setting := range section.Settings {
 			val := app.config.Section(sectName).Key(settingName)
