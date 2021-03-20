@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/hrfee/jfa-go/mediabrowser"
@@ -25,6 +26,7 @@ type Storage struct {
 	policy                                                                                                                                mediabrowser.Policy
 	configuration                                                                                                                         mediabrowser.Configuration
 	lang                                                                                                                                  Lang
+	invitesLock                                                                                                                           sync.Mutex
 }
 
 type customEmails struct {
@@ -402,10 +404,14 @@ func (st *Storage) loadLangEmail(filesystems ...fs.FS) error {
 type Invites map[string]Invite
 
 func (st *Storage) loadInvites() error {
+	st.invitesLock.Lock()
+	defer st.invitesLock.Unlock()
 	return loadJSON(st.invite_path, &st.invites)
 }
 
 func (st *Storage) storeInvites() error {
+	st.invitesLock.Lock()
+	defer st.invitesLock.Unlock()
 	return storeJSON(st.invite_path, st.invites)
 }
 

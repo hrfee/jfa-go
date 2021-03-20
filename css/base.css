@@ -448,4 +448,5 @@ a:hover:not(.lang-link):not(.\~urge), a:active:not(.lang-link):not(.\~urge) {
 
 .search {
     max-width: 15rem;
+    min-width: 10rem;
 }
