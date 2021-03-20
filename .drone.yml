@@ -40,9 +40,6 @@ steps:
       volumes:
           - name: ssh_key
             path: /root/drone_rsa
-      environment:
-          BUILDRONE_KEY:
-              from_secret: BUILDRONE_KEY
       settings:
           host:
               from_secret: ssh2_host
@@ -54,8 +51,6 @@ steps:
               - /root/.ssh/docker-build:/root/drone_rsa
           key_path: /root/drone_rsa
           command_timeout: 50m
-          envs:
-              - BUILDRONE_KEY
           script:
               - /mnt/buildx/jfa-go/build.sh stable
               - wget https://builds.hrfee.pw/upload.py -O /mnt/buildx/jfa-go/jfa-go/upload.py
