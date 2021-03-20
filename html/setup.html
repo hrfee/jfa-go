@@ -82,6 +82,20 @@
                             <span class="mt-half">{{ .lang.General.pathToKeyFile }}</span>
                             <input type="text" class="input ~neutral !normal mt-half mb-1" id="advanced-tls_key">
                         </label>
+                        <span class="heading">{{ .lang.Updates.title }}</span>
+                        <p class="content" id="updates-description"></p>
+                        <label class="row switch pb-1">
+                            <input type="checkbox" id="updates-enabled" checked><span>{{ .lang.Strings.enabled }}</span>
+                        </label>
+                        <label class="label">
+                            <span>{{ .lang.Updates.updateChannel }}</span>
+                            <div class="select ~neutral !normal mt-half mb-1">
+                                <select id="updates-channel">
+                                    <option value="stable">{{ .lang.Updates.stable }}</option>
+                                    <option value="unstable">{{ .lang.Updates.unstable }}</option>
+                                </select>
+                            </div>
+                        </label>
                     </div>
                     <div class="col">
                         <label class="label">

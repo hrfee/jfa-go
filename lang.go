@@ -94,6 +94,7 @@ type setupLang struct {
 	StartPage          langSection `json:"startPage"`
 	EndPage            langSection `json:"endPage"`
 	General            langSection `json:"general"`
+	Updates            langSection `json:"updates"`
 	Language           langSection `json:"language"`
 	Login              langSection `json:"login"`
 	JellyfinEmby       langSection `json:"jellyfinEmby"`

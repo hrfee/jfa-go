@@ -89,6 +89,7 @@ func (st *Storage) loadLangSetup(filesystems ...fs.FS) error {
 		if fname != "en-us.json" {
 			patchLang(&english.Strings, &lang.Strings)
 			patchLang(&english.StartPage, &lang.StartPage)
+			patchLang(&english.Updates, &lang.Updates)
 			patchLang(&english.EndPage, &lang.EndPage)
 			patchLang(&english.Language, &lang.Language)
 			patchLang(&english.Login, &lang.Login)

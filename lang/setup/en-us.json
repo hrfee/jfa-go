@@ -48,6 +48,13 @@
         "pathToCertificate": "Path to certificate",
         "pathToKeyFile": "Path to key file"
     },
+    "updates": {
+        "title": "Updates",
+        "description": "Enable to be notified when new updates are available. jfa-go will check {n} every 30 minutes. No IPs or personally identifiable information are collected.",
+        "updateChannel": "Update Channel",
+        "stable": "Stable",
+        "unstable": "Unstable"
+    },
     "login": {
         "title": "Login",
         "description": "To access the admin page, you need to login with a method below:",

@@ -173,7 +173,9 @@ class Select {
         if (depends) {
             document.addEventListener(`settings-${section}-${depends}`, (event: boolEvent) => {
                 let el = this._el as HTMLElement;
-                if (el.parentElement.tagName == "LABEL") { el = el.parentElement; }
+                while (el.tagName != "LABEL") {
+                    el = el.parentElement;
+                }
                 if (event.detail !== dependsTrue) {
                     el.classList.add("unfocused");
                 } else {
@@ -202,6 +204,7 @@ window.lang = new lang(window.langFile as LangFile);
 html("language-description", window.lang.var("language", "description", `<a href="https://weblate.hrfee.pw">Weblate</a>`));
 html("email-description", window.lang.var("email", "description", `<a href="https://mailgun.com">Mailgun</a>`));
 html("email-dateformat-notice", window.lang.var("email", "dateFormatNotice", `<a href="https://strftime.ninja/">strftime.ninja</a>`));
+html("updates-description", window.lang.var("updates", "description", `<a href="https://builds.hrfee.dev/view/hrfee/jfa-go">buildrone</a>`));
 
 const settings = {
     "jellyfin": {
@@ -211,6 +214,10 @@ const settings = {
         "username": new Input(get("jellyfin-username")),
         "password": new Input(get("jellyfin-password")),
         "substitute_jellyfin_strings": new Input(get("jellyfin-substitute_jellyfin_strings"))
+    },
+    "updates": {
+        "enabled": new Checkbox(get("updates-enabled"), "", false, "updates", "enabled"),
+        "channel": new Select(get("updates-channel"), "enabled", true, "updates")
     },
     "ui": {
         "host": new Input(get("ui-host")),

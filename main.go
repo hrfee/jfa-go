@@ -152,7 +152,8 @@ func start(asDaemon, firstCall bool) {
 		set default config and data paths
 		data: Contains invites.json, emails.json, user_profile.json, etc.
 		config: config.ini. Usually in data, but can be changed via -config.
-		localFS is jfa-go's internal data. On external builds, the directory is named "data" and placed next to the executable.
+		localFS: jfa-go's internal data. On internal builds, this is contained within the binary.
+				 On external builds, the directory is named "data" and placed next to the executable.
 	*/
 	userConfigDir, _ := os.UserConfigDir()
 	app.dataPath = filepath.Join(userConfigDir, "jfa-go")
@@ -164,7 +165,7 @@ func start(asDaemon, firstCall bool) {
 	}
 
 	app.info = NewLogger(os.Stdout, "[INFO] ", log.Ltime, color.FgHiWhite)
-	app.err = NewLogger(os.Stdout, "[ERROR] ", log.Ltime|log.Lshortfile, color.FgRed)
+	app.err = NewLogger(os.Stdout, "[ERROR] ", log.Ltime, color.FgRed)
 
 	if firstCall {
 		DATA = flag.String("data", app.dataPath, "alternate path to data directory.")
@@ -200,8 +201,7 @@ func start(asDaemon, firstCall bool) {
 		app.dataPath = *DATA
 	}
 
-	// env variables are necessary because syscall.Exec for self-restarts doesn't doesn't work with arguments for some reason.
-
+	// Previously used for self-restarts but leaving them here as they might be useful.
 	if v := os.Getenv("JFA_CONFIGPATH"); v != "" {
 		app.configPath = v
 	}
@@ -254,6 +254,7 @@ func start(asDaemon, firstCall bool) {
 		app.debug = emptyLogger(false)
 	}
 
+	// Starts listener to receive commands over a unix socket. Use with 'jfa-go start/stop'
 	if asDaemon {
 		go func() {
 			socket := SOCK
@@ -384,6 +385,7 @@ func start(asDaemon, firstCall bool) {
 
 		}
 
+		// Read config-base for settings on web.
 		app.configBasePath = "config-base.json"
 		configBase, _ := fs.ReadFile(localFS, app.configBasePath)
 		json.Unmarshal(configBase, &app.configBase)
@@ -392,6 +394,7 @@ func start(asDaemon, firstCall bool) {
 			"Jellyfin (Dark)": "dark-theme",
 			"Default (Light)": "light-theme",
 		}
+		// For move from Bootstrap to a17t
 		if app.config.Section("ui").Key("theme").String() == "Bootstrap (Light)" {
 			app.config.Section("ui").Key("theme").SetValue("Default (Light)")
 		}
@@ -403,18 +406,8 @@ func start(asDaemon, firstCall bool) {
 			app.err.Fatal(err)
 		}
 		os.Setenv("JFA_SECRET", secret)
-		app.jellyfinLogin = true
-		if val, _ := app.config.Section("ui").Key("jellyfin_login").Bool(); !val {
-			app.jellyfinLogin = false
-			user := User{}
-			user.UserID = shortuuid.New()
-			user.Username = app.config.Section("ui").Key("username").String()
-			user.Password = app.config.Section("ui").Key("password").String()
-			app.users = append(app.users, user)
-		} else {
-			app.debug.Println("Using Jellyfin for authentication")
-		}
 
+		// Initialize jellyfin/emby connection
 		server := app.config.Section("jellyfin").Key("server").String()
 		cacheTimeout := int(app.config.Section("jellyfin").Key("cache_timeout").MustUint(30))
 		stringServerType := app.config.Section("jellyfin").Key("type").String()
@@ -444,7 +437,8 @@ func start(asDaemon, firstCall bool) {
 			app.err.Fatalf("Failed to authenticate with Jellyfin @ %s: Code %d", server, status)
 		}
 		app.info.Printf("Authenticated with %s", server)
-		// from 10.7.0, jellyfin may hyphenate user IDs. This checks if the version is equal or higher.
+		/* A couple of unstable Jellyfin 10.7.0 releases decided to hyphenate user IDs.
+		This checks if the version is equal or higher. */
 		checkVersion := func(version string) int {
 			numberStrings := strings.Split(version, ".")
 			n := 0
@@ -498,27 +492,40 @@ func start(asDaemon, firstCall bool) {
 			}
 		}
 
+		// Auth (manual user/pass or jellyfin)
+		app.jellyfinLogin = true
+		if jfLogin, _ := app.config.Section("ui").Key("jellyfin_login").Bool(); !jfLogin {
+			app.jellyfinLogin = false
+			user := User{}
+			user.UserID = shortuuid.New()
+			user.Username = app.config.Section("ui").Key("username").String()
+			user.Password = app.config.Section("ui").Key("password").String()
+			app.users = append(app.users, user)
+		} else {
+			app.debug.Println("Using Jellyfin for authentication")
+			app.authJf, _ = mediabrowser.NewServer(serverType, server, "jfa-go", app.version, "auth", "auth", timeoutHandler, cacheTimeout)
+		}
+
 		// Since email depends on language, the email reload in loadConfig won't work first time.
 		app.email = NewEmailer(app)
-
-		app.authJf, _ = mediabrowser.NewServer(serverType, server, "jfa-go", app.version, "auth", "auth", timeoutHandler, cacheTimeout)
-
 		app.loadStrftime()
 
-		validatorConf := ValidatorConf{
-			"length":    app.config.Section("password_validation").Key("min_length").MustInt(0),
-			"uppercase": app.config.Section("password_validation").Key("upper").MustInt(0),
-			"lowercase": app.config.Section("password_validation").Key("lower").MustInt(0),
-			"number":    app.config.Section("password_validation").Key("number").MustInt(0),
-			"special":   app.config.Section("password_validation").Key("special").MustInt(0),
-		}
+		var validatorConf ValidatorConf
+
 		if !app.config.Section("password_validation").Key("enabled").MustBool(false) {
-			for key := range validatorConf {
-				validatorConf[key] = 0
+			validatorConf = ValidatorConf{}
+		} else {
+			validatorConf = ValidatorConf{
+				"length":    app.config.Section("password_validation").Key("min_length").MustInt(0),
+				"uppercase": app.config.Section("password_validation").Key("upper").MustInt(0),
+				"lowercase": app.config.Section("password_validation").Key("lower").MustInt(0),
+				"number":    app.config.Section("password_validation").Key("number").MustInt(0),
+				"special":   app.config.Section("password_validation").Key("special").MustInt(0),
 			}
 		}
 		app.validator.init(validatorConf)
 
+		// Test mode for testing connection to Jellyfin, accessed with 'jfa-go test'
 		if TEST {
 			test(app)
 			os.Exit(0)
@@ -546,6 +553,7 @@ func start(asDaemon, firstCall bool) {
 			app.info.Fatalf("Failed to load language files: %+v\n", err)
 		}
 	}
+
 	cssHeader = app.loadCSSHeader()
 	// workaround for potentially broken windows mime types
 	mime.AddExtensionType(".js", "application/javascript")
