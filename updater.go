@@ -467,7 +467,7 @@ func (app *appContext) checkForUpdates() {
 			if status != 200 || err != nil {
 				if err != nil && strings.Contains(err.Error(), "strconv.ParseInt") {
 					app.err.Println("No new updates available.")
-				} else {
+				} else if status != -1 { // -1 means updates disabled, we don't need to log it.
 					app.err.Printf("Failed to get latest tag (%d): %v", status, err)
 				}
 				return
