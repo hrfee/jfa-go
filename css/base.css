@@ -153,6 +153,10 @@ div.card:contains(section.banner.footer) {
     margin: 0.5rem;
 }
 
+.col.sm {
+    margin: .25rem;
+}
+
 .flex-col {
     display: flex;
     flex-direction: column;

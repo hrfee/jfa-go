@@ -305,12 +305,12 @@
                     <span class="heading">{{ .strings.create }}</span>
                     <div class="row" id="create-inv">
                         <div class="card ~neutral !normal col">
-                            <div class="flex-row mb-1">
-                                <label class="flex-row-group mr-1">
+                            <div class="row mb-1">
+                                <label class="col mr-1">
                                     <input type="radio" name="duration" class="unfocused" id="radio-inv-duration" checked>
                                     <span class="button ~neutral !high supra full-width center">{{ .strings.inviteDuration }}</span>
                                 </label>
-                                <label class="flex-row-group ml-1">
+                                <label class="col ml-1">
                                     <input type="radio" name="duration" class="unfocused" id="radio-user-expiry">
                                     <span class="button ~neutral !normal supra full-width center">{{ .strings.userExpiry }}</span>
                                 </label>
@@ -398,15 +398,15 @@
                 <div class="card ~neutral !low accounts mb-1">
                     <div class="flex-expand row">
                         <div class="row">
-                            <span class="heading mr-1 col">{{ .strings.accounts }}</span>
-                            <input type="search" class="col field ~neutral !normal input search ml-1 mr-1" id="accounts-search" placeholder="{{ .strings.search }}">
+                            <span class="heading mr-1 col sm">{{ .strings.accounts }}</span>
+                            <input type="search" class="col sm field ~neutral !normal input search ml-1 mr-1" id="accounts-search" placeholder="{{ .strings.search }}">
                         </div>
                         <div class="row">
-                            <span class="col button ~neutral !normal mb-half" id="accounts-add-user">{{ .quantityStrings.addUser.Singular }}</span>
-                            <span class="col button ~info !normal mb-half" id="accounts-announce">{{ .strings.announce }}</span>
-                            <span class="col button ~urge !normal mb-half" id="accounts-modify-user">{{ .strings.modifySettings }}</span>
-                            <span class="col button ~warning !normal mb-half" id="accounts-extend-expiry">{{ .strings.extendExpiry }}</span>
-                            <span class="col button ~critical !normal mb-half" id="accounts-delete-user">{{ .quantityStrings.deleteUser.Singular }}</span>
+                            <span class="col sm button ~neutral !normal center mb-half" id="accounts-add-user">{{ .quantityStrings.addUser.Singular }}</span>
+                            <span class="col sm button ~info !normal center mb-half" id="accounts-announce">{{ .strings.announce }}</span>
+                            <span class="col sm button ~urge !normal center mb-half" id="accounts-modify-user">{{ .strings.modifySettings }}</span>
+                            <span class="col sm button ~warning !normal center mb-half" id="accounts-extend-expiry">{{ .strings.extendExpiry }}</span>
+                            <span class="col sm button ~critical !normal center mb-half" id="accounts-delete-user">{{ .quantityStrings.deleteUser.Singular }}</span>
                         </div>
                     </div>
                     <div class="card ~neutral !normal accounts-header table-responsive mt-half">
