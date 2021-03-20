@@ -23,9 +23,9 @@ steps:
         - curl -sL https://git.io/goreleaser > goreleaser
         - chmod +x goreleaser
         - ./scripts/version.sh ./goreleaser
-        - wget https://builds.hrfee.pw/upload.py
+        - wget https://builds.hrfee.pw/upload.py -P ../
         - pip3 install requests
-        - bash -c 'python3 upload.py https://builds.hrfee.pw hrfee jfa-go --tag internal=true'
+        - bash -c 'python3 ../upload.py https://builds.hrfee.pw hrfee jfa-go --tag internal=true'
 trigger:
     event:
         - tag
