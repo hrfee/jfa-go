@@ -434,15 +434,15 @@ pre {
     overflow-y: scroll;
 }
 
-a:link {
+a:link:not(.lang-link) {
     color: var(--color-urge-200);
 }
 
-a:visited {
+a:visited:not(.lang-link) {
     color: var(--color-urge-100);
 }
 
-a:hover, a:active {
+a:hover:not(.lang-link), a:active:not(.lang-link) {
     color: var(--color-urge-200);
 }
 

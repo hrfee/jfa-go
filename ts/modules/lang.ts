@@ -56,7 +56,7 @@ export const loadLangSelector = (page: string) => _get("/lang/" + page, null, (r
         const list = document.getElementById("lang-list") as HTMLDivElement;
         let innerHTML = '';
         for (let code in req.response) {
-            innerHTML += `<a href="?lang=${code}" class="button input ~neutral field mb-half">${req.response[code]}</a>`;
+            innerHTML += `<a href="?lang=${code}" class="button input ~neutral field mb-half lang-link">${req.response[code]}</a>`;
         }
         list.innerHTML = innerHTML;
     }
