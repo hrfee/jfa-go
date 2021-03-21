@@ -125,5 +125,12 @@
         "successMessageNotice": "Getoond wanneer een gebruiker een account aanmaakt.",
         "emailMessage": "E-mailtext",
         "emailMessageNotice": "Getoond onderaan e-mails."
+    },
+    "updates": {
+        "unstable": "Instabiel",
+        "updateChannel": "Update kanaal",
+        "stable": "Stabiel",
+        "title": "Updates",
+        "description": "Vink aan om een melding te krijgen wanneer nieuwe updates beschikbaar zijn. jfa-go controleert {n} elke 30 minuten. Er worden geen IPs of persoonsgegevens verzameld."
     }
 }
