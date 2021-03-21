@@ -1,3 +1,6 @@
+// Mediabrowser provides user-related bindings to the Jellyfin & Emby APIs.
+// Some data aren't bound to structs as jfa-go doesn't need to interact with them, for example DisplayPreferences.
+// See Jellyfin/Emby swagger docs for more info on them.
 package mediabrowser
 
 import (
@@ -21,7 +24,8 @@ const (
 	EmbyServer
 )
 
-type serverInfo struct {
+// ServerInfo stores info about the server.
+type ServerInfo struct {
 	LocalAddress string `json:"LocalAddress"`
 	Name         string `json:"ServerName"`
 	Version      string `json:"Version"`
@@ -39,7 +43,7 @@ type MediaBrowser struct {
 	useragent      string
 	auth           string
 	header         map[string]string
-	ServerInfo     serverInfo
+	ServerInfo     ServerInfo
 	Username       string
 	password       string
 	Authenticated  bool
@@ -56,7 +60,7 @@ type MediaBrowser struct {
 	timeoutHandler common.TimeoutHandler
 }
 
-// NewServer returns a new Jellyfin object.
+// NewServer returns a new Mediabrowser object.
 func NewServer(st serverType, server, client, version, device, deviceID string, timeoutHandler common.TimeoutHandler, cacheTimeout int) (*MediaBrowser, error) {
 	mb := &MediaBrowser{}
 	mb.serverType = st

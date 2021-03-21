@@ -11,6 +11,7 @@ type magicParse struct {
 	Parsed time.Time `json:"parseme"`
 }
 
+// Time embeds time.Time with a custom JSON Unmarshal method to work with Jellyfin & Emby's time formatting.
 type Time struct {
 	time.Time
 }
@@ -62,7 +63,8 @@ type User struct {
 	LastLoginDate             Time          `json:"LastLoginDate"`
 	LastActivityDate          Time          `json:"LastActivityDate"`
 	Configuration             Configuration `json:"Configuration"`
-	Policy                    Policy        `json:"Policy"`
+	// Policy stores the user's permissions.
+	Policy Policy `json:"Policy"`
 }
 
 type SessionInfo struct {

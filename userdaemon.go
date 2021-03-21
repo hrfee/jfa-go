@@ -76,6 +76,7 @@ func (app *appContext) checkUsers() {
 			}
 			if !found {
 				app.info.Printf("Expired user already deleted, ignoring.")
+				delete(app.storage.users, id)
 				continue
 			}
 			app.info.Printf("%s expired user \"%s\"", termPlural, user.Name)

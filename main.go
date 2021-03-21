@@ -79,7 +79,7 @@ type appContext struct {
 	configBase     settings
 	dataPath       string
 	webFS          httpFS
-	cssClass       string
+	cssClass       string // Default theme, "light-theme"|"dark-theme".
 	jellyfinLogin  bool
 	users          []User
 	invalidTokens  []string
