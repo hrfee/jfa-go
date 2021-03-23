@@ -38,6 +38,7 @@ var (
 	DATA, CONFIG, HOST *string
 	PORT               *int
 	DEBUG              *bool
+	PPROF              *bool
 	TEST               bool
 	SWAGGER            *bool
 	warning            = color.New(color.FgYellow).SprintfFunc()
@@ -172,7 +173,8 @@ func start(asDaemon, firstCall bool) {
 		CONFIG = flag.String("config", app.configPath, "alternate path to config file.")
 		HOST = flag.String("host", "", "alternate address to host web ui on.")
 		PORT = flag.Int("port", 0, "alternate port to host web ui on.")
-		DEBUG = flag.Bool("debug", false, "Enables debug logging and exposes pprof.")
+		DEBUG = flag.Bool("debug", false, "Enables debug logging.")
+		PPROF = flag.Bool("pprof", false, "Exposes pprof profiler on /debug/pprof.")
 		SWAGGER = flag.Bool("swagger", false, "Enable swagger at /swagger/index.html")
 
 		flag.Parse()
@@ -182,6 +184,9 @@ func start(asDaemon, firstCall bool) {
 		if *DEBUG {
 			os.Setenv("DEBUG", "1")
 		}
+		if *PPROF {
+			os.Setenv("PPROF", "1")
+		}
 	}
 
 	if os.Getenv("SWAGGER") == "1" {
@@ -189,6 +194,9 @@ func start(asDaemon, firstCall bool) {
 	}
 	if os.Getenv("DEBUG") == "1" {
 		*DEBUG = true
+	}
+	if os.Getenv("PPROF") == "1" {
+		*PPROF = true
 	}
 	// attempt to apply command line flags correctly
 	if app.configPath == *CONFIG && app.dataPath != *DATA {
@@ -248,10 +256,12 @@ func start(asDaemon, firstCall bool) {
 		debugMode = true
 	}
 	if debugMode {
-		app.info.Print(warning("\n\nWARNING: Don't use debug mode in production, as it exposes pprof on the network.\n\n"))
 		app.debug = NewLogger(os.Stdout, "[DEBUG] ", log.Ltime|log.Lshortfile, color.FgYellow)
 	} else {
 		app.debug = emptyLogger(false)
+	}
+	if *PPROF {
+		app.info.Print(warning("\n\nWARNING: Don't use pprof in production.\n\n"))
 	}
 
 	// Starts listener to receive commands over a unix socket. Use with 'jfa-go start/stop'

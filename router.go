@@ -85,7 +85,7 @@ func (app *appContext) loadRouter(address string, debug bool) *gin.Engine {
 	app.loadHTML(router)
 	router.Use(static.Serve("/", app.webFS))
 	router.NoRoute(app.NoRouteHandler)
-	if debug {
+	if *PPROF {
 		app.debug.Println("Loading pprof")
 		pprof.Register(router)
 	}
