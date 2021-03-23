@@ -81,13 +81,14 @@
         "inviteDuration": "Duração do Convite",
         "enabled": "Habilitado",
         "admin": "Admin",
-        "expiry": "Expiração",
+        "expiry": "Expira",
         "userExpiry": "Vencimento do Usuário",
         "extendExpiry": "Extender o vencimento",
         "updates": "Atualizações",
         "update": "Atualizar",
         "download": "Download",
-        "search": "Procurar"
+        "search": "Procurar",
+        "advancedSettings": "Configurações Avançada"
     },
     "notifications": {
         "changedEmailAddress": "Endereço de e-mail alterado de {n}.",
