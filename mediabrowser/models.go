@@ -1,9 +1,6 @@
 package mediabrowser
 
 import (
-	"encoding/json"
-	"fmt"
-	"strings"
 	"time"
 )
 
@@ -17,44 +14,29 @@ type Time struct {
 }
 
 func (t *Time) UnmarshalJSON(b []byte) (err error) {
-	str := strings.TrimSuffix(strings.TrimPrefix(string(b), "\""), "\"")
-	// Trim nanoseconds to always have 6 digits, so overall length is always the same.
-	if str[len(str)-1] == 'Z' {
-		if str[len(str)-2] == 'Z' {
-			/* From #69, "ZZ" is sometimes used, meaning UTC-8:00.
-			TZ doesn't really matter to us, so we'll pretend it's UTC. */
-			str = str[:25] + "0Z"
-		} else {
-			str = str[:26] + "Z"
-		}
-	} else {
-		str = str[:26]
+	// str := strings.TrimSuffix(strings.TrimPrefix(string(b), "\""), "\"")
+	// Trim quotes from beginning and end, and any number of Zs (indicates UTC).
+	for b[0] == '"' {
+		b = b[1:]
 	}
-	// decent method
-	t.Time, err = time.Parse("2006-01-02T15:04:05.000000Z", str)
-	if err == nil {
-		return
+	for b[len(b)-1] == '"' || b[len(b)-1] == 'Z' {
+		b = b[:len(b)-1]
 	}
-	t.Time, err = time.Parse("2006-01-02T15:04:05.000000", str)
-	if err == nil {
-		return
+	// Trim nanoseconds and anything after, we don't care
+	i := len(b) - 1
+	for b[i] != '.' && i > 0 {
+		i--
 	}
-	// emby method
-	t.Time, err = time.Parse("2006-01-02T15:04:05.0000000+00:00", str)
-	if err == nil {
-		return
+	if i != 0 {
+		b = b[:i]
 	}
-	fmt.Println("THIRDERR", err)
-	// if all else fails, just do whatever would usually be done.
-	// some stored dates from jellyfin have no timezone at the end, if not we assume UTC
-	if str[len(str)-1] != 'Z' {
-		str += "Z"
-	}
-	timeJSON := []byte("{ \"parseme\": \"" + str + "\" }")
-	var parsed magicParse
-	// Magically turn it into a time.Time
-	err = json.Unmarshal(timeJSON, &parsed)
-	t.Time = parsed.Parsed
+	t.Time, err = time.Parse("2006-01-02T15:04:05", string(b))
+	// str := string(b) + "Z"
+	// timeJSON := []byte("{ \"parseme\": \"" + str + "\" }")
+	// var parsed magicParse
+	// // Magically turn it into a time.Time
+	// err = json.Unmarshal(timeJSON, &parsed)
+	// t.Time = parsed.Parsed
 	return
 }
 
