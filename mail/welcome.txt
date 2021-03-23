@@ -3,6 +3,7 @@
 {{ .youCanLoginWith }}:
 
 {{ .jellyfinURLString }}: {{ .jellyfinURL }}
+
 {{ .usernameString }}: {{ .username }}
 
 

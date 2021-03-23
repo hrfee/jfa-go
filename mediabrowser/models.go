@@ -20,7 +20,13 @@ func (t *Time) UnmarshalJSON(b []byte) (err error) {
 	str := strings.TrimSuffix(strings.TrimPrefix(string(b), "\""), "\"")
 	// Trim nanoseconds to always have 6 digits, so overall length is always the same.
 	if str[len(str)-1] == 'Z' {
-		str = str[:26] + "Z"
+		if str[len(str)-2] == 'Z' {
+			/* From #69, "ZZ" is sometimes used, meaning UTC-8:00.
+			TZ doesn't really matter to us, so we'll pretend it's UTC. */
+			str = str[:25] + "0Z"
+		} else {
+			str = str[:26] + "Z"
+		}
 	} else {
 		str = str[:26]
 	}
@@ -39,7 +45,7 @@ func (t *Time) UnmarshalJSON(b []byte) (err error) {
 		return
 	}
 	fmt.Println("THIRDERR", err)
-	// magic method
+	// if all else fails, just do whatever would usually be done.
 	// some stored dates from jellyfin have no timezone at the end, if not we assume UTC
 	if str[len(str)-1] != 'Z' {
 		str += "Z"
