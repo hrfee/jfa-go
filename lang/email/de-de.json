@@ -55,5 +55,11 @@
         "clickBelow": "Klicke den untenstehenden Link, um deine E-Mail-Adresse zu bestätigen, und fange an, Jellyfin zu benutzen.",
         "confirmEmail": "E-Mail bestätigen",
         "name": "Bestätigungs-E-Mail"
+    },
+    "userExpired": {
+        "name": "Benutzer Ablaufdatum",
+        "title": "Dein Konto ist abgelaufen - Jellyfin",
+        "yourAccountHasExpired": "Dein Konto ist abgelaufen.",
+        "contactTheAdmin": "Kontaktiere den Administrator für weitere Informationen."
     }
 }
