@@ -6,50 +6,41 @@ import (
 	stripmd "github.com/writeas/go-strip-markdown"
 )
 
-func stripMarkdown(md string) string {
-	// Search for markdown-formatted urls, and replace them with just the url, then use a library to strip any traces of markdown. You'll need some eyebleach after this.
-	foundOpenSquare := false
-	openSquare := -1
-	openBracket := -1
-	closeBracket := -1
-	openSquares := []int{}
-	closeBrackets := []int{}
-	links := []string{}
-	foundOpen := false
-	for i, c := range md {
-		if !foundOpenSquare && !foundOpen && c != '[' && c != ']' {
+// StripAltText removes Markdown alt text from links and images and replaces them with just the URL.
+// Currently uses the deepest alt text when links/images are nested.
+func StripAltText(md string) string {
+	altTextStart := -1 // Start of alt text (between '[' & ']')
+	URLStart := -1     // Start of url (between '(' & ')')
+	URLEnd := -1
+	previousURLEnd := -2
+	out := ""
+	for i := range md {
+		if altTextStart != -1 && URLStart != -1 && md[i] == ')' {
+			URLEnd = i - 1
+			out += md[previousURLEnd+2:altTextStart-1] + md[URLStart:URLEnd+1]
+			previousURLEnd = URLEnd
+			altTextStart, URLStart, URLEnd = -1, -1, -1
 			continue
 		}
-		if c == '[' && md[i-1] != '!' {
-			foundOpenSquare = true
-			openSquare = i
-		} else if c == ']' {
-			if md[i+1] == '(' {
-				foundOpenSquare = false
-				foundOpen = true
-				openBracket = i + 1
-				continue
+		if md[i] == '[' && altTextStart == -1 {
+			altTextStart = i + 1
+			if i > 0 && md[i-1] == '!' {
+				altTextStart--
 			}
-		} else if c == ')' {
-			closeBracket = i
-			openSquares = append(openSquares, openSquare)
-			closeBrackets = append(closeBrackets, closeBracket)
-			links = append(links, md[openBracket+1:closeBracket])
-			openBracket = -1
-			closeBracket = -1
-			openSquare = -1
-			foundOpenSquare = false
-			foundOpen = false
+		}
+		if i > 0 && md[i-1] == ']' && md[i] == '(' && URLStart == -1 {
+			URLStart = i + 1
 		}
 	}
-	fullLinks := make([]string, len(openSquares))
-	for i := range openSquares {
-		if openSquares[i] != -1 && closeBrackets[i] != -1 {
-			fullLinks[i] = md[openSquares[i] : closeBrackets[i]+1]
-		}
+	if previousURLEnd+1 != len(md)-1 {
+		out += md[previousURLEnd+2:]
 	}
-	for i, _ := range openSquares {
-		md = strings.Replace(md, fullLinks[i], links[i], 1)
+	if out == "" {
+		return md
 	}
-	return strings.TrimPrefix(strings.TrimSuffix(stripmd.Strip(md), "</p>"), "<p>")
+	return out
+}
+
+func stripMarkdown(md string) string {
+	return strings.TrimPrefix(strings.TrimSuffix(stripmd.Strip(StripAltText(md)), "</p>"), "<p>")
 }

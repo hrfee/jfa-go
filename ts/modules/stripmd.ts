@@ -1,49 +1,40 @@
 const removeMd = require("remove-markdown");
 
-export function stripMarkdown(md: string): string {
-    let foundOpenSquare = false;
-    let openSquare = -1;
-	let openBracket = -1;
-	let closeBracket = -1;
-	let openSquares: number[] = [];
-	let closeBrackets: number[] = [];
-	let links: string[] = [];
-	let foundOpen = false;
+function stripAltText(md: string): string {
+	let altStart = -1; // Start of alt text (between '[' & ']')
+	let urlStart = -1; // Start of url (between '(' & ')')
+	let urlEnd = -1;
+	let prevURLEnd = -2;
+	let out = "";
     for (let i = 0; i < md.length; i++) {
-        const c = md.charAt(i);
-		if (!foundOpenSquare && !foundOpen && c != '[' && c != ']') {
+		if (altStart != -1 && urlStart != -1 && md.charAt(i) == ')') {
+			urlEnd = i - 1;
+            out += md.substring(prevURLEnd+2, altStart-1) + md.substring(urlStart, urlEnd+1);
+			prevURLEnd = urlEnd;
+			altStart = -1;
+            urlStart = -1;
+            urlEnd = -1;
 			continue;
 		}
-		if (c == '[' && md.charAt(i-1) != '!') {
-			foundOpenSquare = true;
-			openSquare = i;
-		} else if (c == ']') {
-			if (md.charAt(i+1) == '(') {
-				foundOpenSquare = false;
-				foundOpen = true;
-				openBracket = i + 1;
-				continue;
+		if (md.charAt(i) == '[' && altStart == -1) {
+			altStart = i + 1
+			if (i > 0 && md.charAt(i-1) == '!') {
+				altStart--
 			}
-		} else if (c == ')') {
-			closeBracket = i;
-			openSquares.push(openSquare);
-			closeBrackets.push(closeBracket);
-			links.push(md.slice(openBracket+1, closeBracket))
-			openBracket = -1;
-			closeBracket = -1;
-			openSquare = -1;
-			foundOpenSquare = false;
-			foundOpen = false;
+		}
+		if (i > 0 && md.charAt(i-1) == ']' && md.charAt(i) == '(' && urlStart == -1) {
+			urlStart = i + 1
 		}
 	}
-	let fullLinks: string[] = new Array(openSquares.length);
-	for (let i = 0; i < openSquares.length; i++) {
-		if (openSquares[i] != -1 && closeBrackets[i] != -1) {
-			fullLinks[i] = md.slice(openSquares[i], closeBrackets[i]+1)
-		}
-	}
-	for (let i = 0; i < openSquares.length; i++) {
-        md = md.replace(fullLinks[i], links[i]);
-	}
-    return removeMd(md);
+    if (prevURLEnd + 1 != md.length - 1) {
+        out += md.substring(prevURLEnd+2)
+    }
+    if (out == "") {
+        return md
+    }
+	return out
+}
+
+export function stripMarkdown(md: string): string {
+    return removeMd(stripAltText(md));
 }
