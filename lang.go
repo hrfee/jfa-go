@@ -1,9 +1,5 @@
 package main
 
-import (
-	"strings"
-)
-
 type langMeta struct {
 	Name string `json:"name"`
 }
@@ -123,10 +119,29 @@ type langSection map[string]string
 type tmpl map[string]string
 
 func templateString(text string, vals tmpl) string {
-	for key, val := range vals {
-		text = strings.ReplaceAll(text, "{"+key+"}", val)
+	start, previousEnd := -1, -1
+	out := ""
+	for i := range text {
+		if text[i] == '{' {
+			start = i
+			continue
+		}
+		if start != -1 && text[i] == '}' {
+			varName := text[start+1 : i]
+			val, ok := vals[varName]
+			if !ok {
+				start = -1
+				continue
+			}
+			out += text[previousEnd+1:start] + val
+			previousEnd = i
+			start = -1
+		}
 	}
-	return text
+	if previousEnd != len(text)-1 {
+		out += text[previousEnd+1:]
+	}
+	return out
 }
 
 func (el langSection) template(field string, vals tmpl) string {
@@ -136,10 +151,27 @@ func (el langSection) template(field string, vals tmpl) string {
 
 func (el langSection) format(field string, vals ...string) string {
 	text := el.get(field)
-	for _, val := range vals {
-		text = strings.Replace(text, "{n}", val, 1)
+	start, previous := -1, -3
+	out := ""
+	val := 0
+	for i := range text {
+		if i == len(text)-2 { // Check if there's even enough space for a {n}
+			break
+		}
+		if text[i:i+3] == "{n}" {
+			start = i
+			out += text[previous+3:start] + vals[val]
+			previous = start
+			val++
+			if val == len(vals) {
+				break
+			}
+		}
 	}
-	return text
+	if previous+2 != len(text)-1 {
+		out += text[previous+3:]
+	}
+	return out
 }
 
 func (el langSection) get(field string) string {

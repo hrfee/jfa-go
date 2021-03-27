@@ -24,6 +24,7 @@ type logger struct {
 }
 
 func Lshortfile() string {
+	// 0 = This function, 1 = Print/Printf/Println, 2 = Caller of Print/Printf/Println
 	_, file, line, ok := runtime.Caller(2)
 	lineString := strconv.Itoa(line)
 	if !ok {
