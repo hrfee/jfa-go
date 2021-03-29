@@ -10,12 +10,31 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strings"
 	"time"
-
-	"github.com/hrfee/jfa-go/common"
 )
+
+// TimeoutHandler should recover from an http timeout or panic.
+type TimeoutHandler func()
+
+// NewNamedTimeoutHandler returns a new Timeout handler that logs the error.
+// name is the name of the server to use in the log (e.g Jellyfin/Emby)
+// addr is the address of the server being accessed
+// if noFail is false, the program will exit on a timeout.
+func NewNamedTimeoutHandler(name, addr string, noFail bool) TimeoutHandler {
+	return func() {
+		if r := recover(); r != nil {
+			out := fmt.Sprintf("Failed to authenticate with %s @ %s: Timed out", name, addr)
+			if noFail {
+				log.Print(out)
+			} else {
+				log.Fatalf(out)
+			}
+		}
+	}
+}
 
 type serverType int
 
@@ -57,11 +76,11 @@ type MediaBrowser struct {
 	noFail         bool
 	Hyphens        bool
 	serverType     serverType
-	timeoutHandler common.TimeoutHandler
+	timeoutHandler TimeoutHandler
 }
 
 // NewServer returns a new Mediabrowser object.
-func NewServer(st serverType, server, client, version, device, deviceID string, timeoutHandler common.TimeoutHandler, cacheTimeout int) (*MediaBrowser, error) {
+func NewServer(st serverType, server, client, version, device, deviceID string, timeoutHandler TimeoutHandler, cacheTimeout int) (*MediaBrowser, error) {
 	mb := &MediaBrowser{}
 	mb.serverType = st
 	mb.Server = server

@@ -5,7 +5,7 @@ import (
 	"log"
 )
 
-// TimeoutHandler recovers from an http timeout.
+// TimeoutHandler recovers from an http timeout or panic.
 type TimeoutHandler func()
 
 // NewTimeoutHandler returns a new Timeout handler.

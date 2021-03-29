@@ -421,10 +421,10 @@ func start(asDaemon, firstCall bool) {
 		server := app.config.Section("jellyfin").Key("server").String()
 		cacheTimeout := int(app.config.Section("jellyfin").Key("cache_timeout").MustUint(30))
 		stringServerType := app.config.Section("jellyfin").Key("type").String()
-		timeoutHandler := common.NewTimeoutHandler("Jellyfin", server, true)
+		timeoutHandler := mediabrowser.NewNamedTimeoutHandler("Jellyfin", server, true)
 		if stringServerType == "emby" {
 			serverType = mediabrowser.EmbyServer
-			timeoutHandler = common.NewTimeoutHandler("Emby", server, true)
+			timeoutHandler = mediabrowser.NewNamedTimeoutHandler("Emby", server, true)
 			app.info.Println("Using Emby server type")
 			fmt.Println(warning("WARNING: Emby compatibility is experimental, and support is limited.\nPassword resets are not available."))
 		} else {

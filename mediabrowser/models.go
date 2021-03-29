@@ -14,7 +14,6 @@ type Time struct {
 }
 
 func (t *Time) UnmarshalJSON(b []byte) (err error) {
-	// str := strings.TrimSuffix(strings.TrimPrefix(string(b), "\""), "\"")
 	// Trim quotes from beginning and end, and any number of Zs (indicates UTC).
 	for b[0] == '"' {
 		b = b[1:]
@@ -31,12 +30,6 @@ func (t *Time) UnmarshalJSON(b []byte) (err error) {
 		b = b[:i]
 	}
 	t.Time, err = time.Parse("2006-01-02T15:04:05", string(b))
-	// str := string(b) + "Z"
-	// timeJSON := []byte("{ \"parseme\": \"" + str + "\" }")
-	// var parsed magicParse
-	// // Magically turn it into a time.Time
-	// err = json.Unmarshal(timeJSON, &parsed)
-	// t.Time = parsed.Parsed
 	return
 }
 
