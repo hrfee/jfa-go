@@ -10,7 +10,7 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
-	"github.com/hrfee/jfa-go/mediabrowser"
+	"github.com/hrfee/mediabrowser"
 	"github.com/knz/strtime"
 	"github.com/lithammer/shortuuid/v3"
 	"gopkg.in/ini.v1"

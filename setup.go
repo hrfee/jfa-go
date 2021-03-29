@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/hrfee/jfa-go/mediabrowser"
+	"github.com/hrfee/mediabrowser"
 )
 
 func (app *appContext) ServeSetup(gc *gin.Context) {

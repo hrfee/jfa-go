@@ -3,7 +3,7 @@ package main
 import (
 	"time"
 
-	"github.com/hrfee/jfa-go/mediabrowser"
+	"github.com/hrfee/mediabrowser"
 )
 
 type userDaemon struct {

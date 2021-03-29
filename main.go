@@ -24,8 +24,8 @@ import (
 	"github.com/fatih/color"
 	"github.com/hrfee/jfa-go/common"
 	_ "github.com/hrfee/jfa-go/docs"
-	"github.com/hrfee/jfa-go/mediabrowser"
 	"github.com/hrfee/jfa-go/ombi"
+	"github.com/hrfee/mediabrowser"
 	"github.com/lithammer/shortuuid/v3"
 	"gopkg.in/ini.v1"
 )
