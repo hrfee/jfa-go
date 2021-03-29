@@ -125,5 +125,12 @@
         "successMessageNotice": "Exibido quando um usuário cria sua conta.",
         "emailMessage": "Mensagem de Email",
         "emailMessageNotice": "Exibido na parte inferior dos emails."
+    },
+    "updates": {
+        "title": "Atualizações",
+        "description": "Ative para ser notificado quando novas atualizações estiverem disponíveis. jfa-go verificará {n} a cada 30 minutos. Nenhum IP ou informação de identificação pessoal é coletada.",
+        "updateChannel": "Canal de Atualização",
+        "stable": "Estável",
+        "unstable": "Instável"
     }
 }
