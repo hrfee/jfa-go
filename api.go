@@ -1238,6 +1238,10 @@ func (app *appContext) GetConfig(gc *gin.Context) {
 	fl := resp.Sections["ui"].Settings["language-form"]
 	fl.Options = formOptions
 	fl.Value = app.config.Section("ui").Key("language-form").MustString("en-us")
+	pwrOptions := app.storage.lang.PasswordReset.getOptions()
+	pl := resp.Sections["password_resets"].Settings["language"]
+	pl.Options = pwrOptions
+	pl.Value = app.config.Section("password_resets").Key("language").MustString("en-us")
 	adminOptions := app.storage.lang.Admin.getOptions()
 	al := resp.Sections["ui"].Settings["language-admin"]
 	al.Options = adminOptions
@@ -1273,6 +1277,7 @@ func (app *appContext) GetConfig(gc *gin.Context) {
 	resp.Sections["ui"].Settings["language-form"] = fl
 	resp.Sections["ui"].Settings["language-admin"] = al
 	resp.Sections["email"].Settings["language"] = el
+	resp.Sections["password_resets"].Settings["language"] = pl
 
 	gc.JSON(200, resp)
 }

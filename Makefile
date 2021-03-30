@@ -42,6 +42,7 @@ typescript:
 	$(info compiling typescript)
 	-mkdir -p data/web/js
 	-$(ESBUILD) --bundle ts/admin.ts --outfile=./data/web/js/admin.js --minify
+	-$(ESBUILD) --bundle ts/pwr.ts --outfile=./data/web/js/pwr.js --minify
 	-$(ESBUILD) --bundle ts/form.ts --outfile=./data/web/js/form.js --minify
 	-$(ESBUILD) --bundle ts/setup.ts --outfile=./data/web/js/setup.js --minify
 
@@ -49,6 +50,7 @@ ts-debug:
 	$(info compiling typescript w/ sourcemaps)
 	-mkdir -p data/web/js
 	-$(ESBUILD) --bundle ts/admin.ts --sourcemap --outfile=./data/web/js/admin.js
+	-$(ESBUILD) --bundle ts/pwr.ts --sourcemap --outfile=./data/web/js/pwr.js
 	-$(ESBUILD) --bundle ts/form.ts --sourcemap --outfile=./data/web/js/form.js
 	-$(ESBUILD) --bundle ts/setup.ts --sourcemap --outfile=./data/web/js/setup.js
 	-rm -r data/web/js/ts

@@ -72,24 +72,27 @@ type Invite struct {
 	Notify        map[string]map[string]bool `json:"notify"`
 	Profile       string                     `json:"profile"`
 	Label         string                     `json:"label,omitempty"`
-	Keys          []string                   `json"keys,omitempty"`
+	Keys          []string                   `json:"keys,omitempty"`
 }
 
 type Lang struct {
-	chosenFormLang  string
-	chosenAdminLang string
-	chosenEmailLang string
-	AdminPath       string
-	Admin           adminLangs
-	AdminJSON       map[string]string
-	FormPath        string
-	Form            formLangs
-	EmailPath       string
-	Email           emailLangs
-	CommonPath      string
-	Common          commonLangs
-	SetupPath       string
-	Setup           setupLangs
+	AdminPath         string
+	chosenAdminLang   string
+	Admin             adminLangs
+	AdminJSON         map[string]string
+	FormPath          string
+	chosenFormLang    string
+	Form              formLangs
+	PasswordResetPath string
+	chosenPWRLang     string
+	PasswordReset     pwrLangs
+	EmailPath         string
+	chosenEmailLang   string
+	Email             emailLangs
+	CommonPath        string
+	Common            commonLangs
+	SetupPath         string
+	Setup             setupLangs
 }
 
 func (st *Storage) loadLang(filesystems ...fs.FS) (err error) {
@@ -102,6 +105,10 @@ func (st *Storage) loadLang(filesystems ...fs.FS) (err error) {
 		return
 	}
 	err = st.loadLangForm(filesystems...)
+	if err != nil {
+		return
+	}
+	err = st.loadLangPWR(filesystems...)
 	if err != nil {
 		return
 	}
@@ -321,6 +328,63 @@ func (st *Storage) loadLangForm(filesystems ...fs.FS) error {
 	formLoaded := false
 	for _, filesystem := range filesystems {
 		files, err := fs.ReadDir(filesystem, st.lang.FormPath)
+		if err != nil {
+			continue
+		}
+		for _, f := range files {
+			if f.Name() != "en-us.json" {
+				err = load(filesystem, f.Name())
+				if err == nil {
+					formLoaded = true
+				}
+			}
+		}
+	}
+	if !formLoaded {
+		return err
+	}
+	return nil
+}
+
+func (st *Storage) loadLangPWR(filesystems ...fs.FS) error {
+	st.lang.PasswordReset = map[string]pwrLang{}
+	var english pwrLang
+	load := func(filesystem fs.FS, fname string) error {
+		index := strings.TrimSuffix(fname, filepath.Ext(fname))
+		lang := pwrLang{}
+		f, err := fs.ReadFile(filesystem, FSJoin(st.lang.PasswordResetPath, fname))
+		if err != nil {
+			return err
+		}
+		if substituteStrings != "" {
+			f = []byte(strings.ReplaceAll(string(f), "Jellyfin", substituteStrings))
+		}
+		err = json.Unmarshal(f, &lang)
+		if err != nil {
+			return err
+		}
+		st.lang.Common.patchCommon(index, &lang.Strings)
+		if fname != "en-us.json" {
+			patchLang(&english.Strings, &lang.Strings)
+		}
+		st.lang.PasswordReset[index] = lang
+		return nil
+	}
+	engFound := false
+	var err error
+	for _, filesystem := range filesystems {
+		err = load(filesystem, "en-us.json")
+		if err == nil {
+			engFound = true
+		}
+	}
+	if !engFound {
+		return err
+	}
+	english = st.lang.PasswordReset["en-us"]
+	formLoaded := false
+	for _, filesystem := range filesystems {
+		files, err := fs.ReadDir(filesystem, st.lang.PasswordResetPath)
 		if err != nil {
 			continue
 		}

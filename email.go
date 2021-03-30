@@ -453,14 +453,20 @@ func (emailer *Emailer) resetValues(pwr PasswordReset, app *appContext, noSub bo
 	message := app.config.Section("email").Key("message").String()
 	template := map[string]interface{}{
 		"someoneHasRequestedReset": emailer.lang.PasswordReset.get("someoneHasRequestedReset"),
-		"ifItWasYou":               emailer.lang.PasswordReset.get("ifItWasYou"),
 		"ifItWasNotYou":            emailer.lang.Strings.get("ifItWasNotYou"),
 		"pinString":                emailer.lang.PasswordReset.get("pin"),
+		"link_reset":               false,
 		"message":                  "",
 		"username":                 pwr.Username,
 		"date":                     d,
 		"time":                     t,
 		"expiresInMinutes":         expiresIn,
+	}
+	linkResetEnabled := app.config.Section("password_resets").Key("link_reset").MustBool(false)
+	if linkResetEnabled {
+		template["ifItWasYou"] = emailer.lang.PasswordReset.get("ifItWasYouLink")
+	} else {
+		template["ifItWasYou"] = emailer.lang.PasswordReset.get("ifItWasYou")
 	}
 	if noSub {
 		template["helloUser"] = emailer.lang.Strings.get("helloUser")
@@ -472,7 +478,22 @@ func (emailer *Emailer) resetValues(pwr PasswordReset, app *appContext, noSub bo
 	} else {
 		template["helloUser"] = emailer.lang.Strings.template("helloUser", tmpl{"username": pwr.Username})
 		template["codeExpiry"] = emailer.lang.PasswordReset.template("codeExpiry", tmpl{"date": d, "time": t, "expiresInMinutes": expiresIn})
-		template["pin"] = pwr.Pin
+		inviteLink := app.config.Section("invite_emails").Key("url_base").String()
+		if linkResetEnabled {
+			if inviteLink != "" {
+				// Strip /invite form end of this URL, ik its ugly.
+				template["link_reset"] = true
+				pinLink := fmt.Sprintf("%s/reset?pin=%s", strings.Replace(inviteLink, "/invite", "", 1), pwr.Pin)
+				template["pin"] = pinLink
+				// Only used in html email.
+				template["pin_code"] = pwr.Pin
+			} else {
+				app.info.Println("Password Reset link disabled as no URL Base provided. Set in Settings > Invite Emails.")
+				template["pin"] = pwr.Pin
+			}
+		} else {
+			template["pin"] = pwr.Pin
+		}
 		template["message"] = message
 	}
 	return template

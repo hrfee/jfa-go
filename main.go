@@ -308,6 +308,7 @@ func start(asDaemon, firstCall bool) {
 	app.storage.lang.FormPath = "form"
 	app.storage.lang.AdminPath = "admin"
 	app.storage.lang.EmailPath = "email"
+	app.storage.lang.PasswordResetPath = "pwreset"
 	externalLang := app.config.Section("files").Key("lang_files").MustString("")
 	var err error
 	if externalLang == "" {

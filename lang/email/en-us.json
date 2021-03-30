@@ -25,6 +25,7 @@
         "title": "Password reset requested - Jellyfin",
         "someoneHasRequestedReset": "Someone has recently requested a password reset on Jellyfin.",
         "ifItWasYou": "If this was you, enter the pin below into the prompt.",
+        "ifItWasYouLink": "If this was you, click the link below.",
         "codeExpiry": "The code will expire on {date}, at {time} UTC, which is in {expiresInMinutes}.",
         "pin": "PIN"
     },

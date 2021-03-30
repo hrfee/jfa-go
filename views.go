@@ -94,6 +94,30 @@ func (app *appContext) AdminPage(gc *gin.Context) {
 	})
 }
 
+func (app *appContext) ResetPassword(gc *gin.Context) {
+	pin := gc.Query("pin")
+	if pin == "" {
+		app.NoRouteHandler(gc)
+		return
+	}
+	app.pushResources(gc, false)
+	lang := app.getLang(gc, app.storage.lang.chosenPWRLang)
+	data := gin.H{
+		"urlBase":        app.getURLBase(gc),
+		"contactMessage": app.config.Section("ui").Key("contact_message").String(),
+		"strings":        app.storage.lang.PasswordReset[lang].Strings,
+		"success":        false,
+	}
+	resp, status, err := app.jf.ResetPassword(pin)
+	if status == 200 && err == nil && resp.Success {
+		data["success"] = true
+		data["pin"] = pin
+	} else {
+		app.err.Printf("Password Reset failed (%d): %v", status, err)
+	}
+	gcHTML(gc, http.StatusOK, "password-reset.html", data)
+}
+
 func (app *appContext) InviteProxy(gc *gin.Context) {
 	app.pushResources(gc, false)
 	code := gc.Param("invCode")

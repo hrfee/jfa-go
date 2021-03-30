@@ -57,6 +57,23 @@ type formLang struct {
 	validationStringsJSON string
 }
 
+type pwrLangs map[string]pwrLang
+
+func (ls *pwrLangs) getOptions() [][2]string {
+	opts := make([][2]string, len(*ls))
+	i := 0
+	for key, lang := range *ls {
+		opts[i] = [2]string{key, lang.Meta.Name}
+		i++
+	}
+	return opts
+}
+
+type pwrLang struct {
+	Meta    langMeta    `json:"meta"`
+	Strings langSection `json:"strings"`
+}
+
 type emailLangs map[string]emailLang
 
 func (ls *emailLangs) getOptions() [][2]string {

@@ -121,6 +121,7 @@ func (app *appContext) loadConfig() error {
 	}
 	app.storage.lang.chosenAdminLang = app.config.Section("ui").Key("language-admin").MustString("en-us")
 	app.storage.lang.chosenEmailLang = app.config.Section("email").Key("language").MustString("en-us")
+	app.storage.lang.chosenPWRLang = app.config.Section("password_resets").Key("language").MustString("en-us")
 
 	app.email = NewEmailer(app)
 

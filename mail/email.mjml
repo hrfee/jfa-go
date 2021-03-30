@@ -66,7 +66,11 @@
             <p>{{ .codeExpiry }}</p>
             <p>{{ .ifItWasNotYou }}</p>
         </mj-text>
+        <mj-raw>{{ if .link_reset }}</mj-raw>
+        <mj-button mj-class="blue bold" href="{{ .pin }}"><mj-raw>{{ .pin_code }}</mj-raw></mj-button>
+        <mj-raw>{{ else }}</mj-raw>
         <mj-button mj-class="blue bold"><mj-raw>{{ .pin }}</mj-raw></mj-button>
+        <mj-raw>{{ end }}</mj-raw>
       </mj-column>
     </mj-section>
     <mj-section mj-class="bg2">

@@ -105,6 +105,11 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 		router.GET(p+"/lang/:page", app.GetLanguages)
 		router.Use(static.Serve(p+"/", app.webFS))
 		router.GET(p+"/", app.AdminPage)
+
+		if app.config.Section("password_resets").Key("link_reset").MustBool(false) {
+			router.GET(p+"/reset", app.ResetPassword)
+		}
+
 		router.GET(p+"/accounts", app.AdminPage)
 		router.GET(p+"/settings", app.AdminPage)
 		router.GET(p+"/lang/:page/:file", app.ServeLang)
