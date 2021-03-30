@@ -1,0 +1,12 @@
+{
+    "meta": {
+        "name": "English (US)"
+    },
+    "strings": {
+        "passwordReset": "Password reset",
+        "resetFailed": "Password reset failed",
+        "tryAgain": "Please try again.",
+        "youCanLogin": "You can now log in with the below code as your password.",
+        "changeYourPassword": "Make sure to change your password after you log in."
+    }
+}

@@ -10,6 +10,8 @@
         "submit": "Submit",
         "success": "Success",
         "error": "Error",
+        "copy": "Copy",
+        "copied": "Copied",
         "theme": "Theme"
     }
 }

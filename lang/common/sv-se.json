@@ -10,6 +10,7 @@
         "submit": "Skicka",
         "success": "Lyckades",
         "error": "Fel",
+        "copy": "Kopiera",
         "theme": "Tema"
     }
 }
