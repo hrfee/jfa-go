@@ -10,25 +10,29 @@
         "title": "Σημείωση: Δημιουργήθηκε χρήστης",
         "aUserWasCreated": "Δημιουργήθηκε ένας χρήστης χρησιμοποιώντας τον κωδικό {code}.",
         "time": "Ώρα",
-        "notificationNotice": "Σημείωση: Τα email ειδοποιήσεων μπορούν να ενεργοποιηθούν στον πίνακα ελέγχου διαχειριστή."
+        "notificationNotice": "Σημείωση: Τα email ειδοποιήσεων μπορούν να ενεργοποιηθούν στον πίνακα ελέγχου διαχειριστή.",
+        "name": "Δημιουργία χρήστη"
     },
     "inviteExpiry": {
         "title": "Σημείωση: Η πρόσκληση έληξε",
         "inviteExpired": "Η πρόσκληση έληξε.",
         "expiredAt": "Ο κωδικός {code} έληξε στις {time}.",
-        "notificationNotice": "Σημείωση: Τα email ειδοποιήσεων μπορούν να ενεργοποιηθούν στον πίνακα ελέγχου διαχειριστή."
+        "notificationNotice": "Σημείωση: Τα email ειδοποιήσεων μπορούν να ενεργοποιηθούν στον πίνακα ελέγχου διαχειριστή.",
+        "name": "Λήξη πρόσκλησης"
     },
     "passwordReset": {
         "title": "Ζητήθηκε επαναφορά κωδικού πρόσβασης - Jellyfin",
         "someoneHasRequestedReset": "Κάποιος ζήτησε πρόσφατα επαναφορά κωδικού πρόσβασης στο Jellyfin.",
         "ifItWasYou": "Εάν ήσασταν εσείς, εισαγάγετε το πιν στο πεδίο.",
         "codeExpiry": "Ο κωδικός θα λήξει στις {date}, στις {time} UTC, το οποίο είναι σε {expiresInMinutes}.",
-        "pin": "PIN"
+        "pin": "PIN",
+        "name": "Επαναφορά κωδικού πρόσβασης"
     },
     "userDeleted": {
         "title": "Ο λογαριασμός σας διαγράφηκε - Jellyfin",
         "yourAccountWasDeleted": "Ο λογαριασμός σας Jellyfin διαγράφηκε.",
-        "reason": "Λόγος"
+        "reason": "Λόγος",
+        "name": "Διαγραφή χρήστη"
     },
     "inviteEmail": {
         "title": "Πρόσκληση - Jellyfin",
@@ -36,17 +40,26 @@
         "youHaveBeenInvited": "Έχετε προσκληθεί στο Jellyfin.",
         "toJoin": "Για να συμμετέχετε, ακολουθήστε τον παρακάτω σύνδεσμο.",
         "inviteExpiry": "Αυτή η πρόσκληση θα λήξει στις {date} στις {time}, που είναι σε {expiresInMinutes}, οπότε ενεργήστε γρήγορα.",
-        "linkButton": "Ρυθμίστε τον λογαριασμό σας"
+        "linkButton": "Ρυθμίστε τον λογαριασμό σας",
+        "name": "Email πρόσκλησης"
     },
     "welcomeEmail": {
         "title": "Καλώς ήλθατε στο Jellyfin",
         "welcome": "Καλώς ήλθατε στο Jellyfin!",
         "youCanLoginWith": "Μπορείτε να συνδεθείτε με τα παρακάτω στοιχεία",
-        "jellyfinURL": "URL"
+        "jellyfinURL": "URL",
+        "name": "Email καλωσορίσματος"
     },
     "emailConfirmation": {
         "title": "Επιβεβαιώστε το email σας - Jellyfin",
         "clickBelow": "Κάντε κλικ στον παρακάτω σύνδεσμο για να επιβεβαιώσετε τη διεύθυνση email σας και ξεκινήστε να χρησιμοποιείτε το Jellyfin.",
-        "confirmEmail": "Επιβεβαίωση Email"
+        "confirmEmail": "Επιβεβαίωση Email",
+        "name": "Email επιβεβαίωσης"
+    },
+    "userExpired": {
+        "name": "Λήξη Χρήστη",
+        "title": "Ο λογαριασμός σας έληξε - Jellyfin",
+        "yourAccountHasExpired": "Ο λογαριασμός σας έχει λήξει.",
+        "contactTheAdmin": "Επικοινωνήστε με τον διαχειριστή για περισσότερες πληροφορίες."
     }
 }
