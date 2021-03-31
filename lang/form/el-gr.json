@@ -16,7 +16,8 @@
         "successHeader": "Επιτυχία!",
         "successContinueButton": "Συνέχεια",
         "confirmationRequired": "Απαιτείται επιβεβαίωση Email",
-        "confirmationRequiredMessage": "Παρακαλώ ελέγξτε το email σας για να επιβεβαιώσετε την διεύθυνση σας ."
+        "confirmationRequiredMessage": "Παρακαλώ ελέγξτε το email σας για να επιβεβαιώσετε την διεύθυνση σας .",
+        "yourAccountIsValidUntil": "Ο λογαριασμός σου θα ισχύει μέχρι {date}."
     },
     "notifications": {
         "errorUserExists": "Ο χρήστης υπάρχει ήδη.",
