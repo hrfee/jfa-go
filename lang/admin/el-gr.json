@@ -64,7 +64,30 @@
         "inviteExpiresInTime": "Λήγει σε {n}",
         "notifyEvent": "Ενημέρωση όταν:",
         "notifyInviteExpiry": "Στην λήξη",
-        "notifyUserCreation": "Στην δημιουργία χρήστη"
+        "notifyUserCreation": "Στην δημιουργία χρήστη",
+        "variables": "Μεταβλητές",
+        "preview": "Προεπισκόπηση",
+        "reset": "Επαναφορά",
+        "edit": "Επεξεργασία",
+        "customizeEmails": "Παραμετροποίηση Emails",
+        "advancedSettings": "Προχωρημένες Ρυθμίσεις",
+        "customizeEmailsDescription": "Αν δεν θέλετε να ζρησιμοποιήσετε τα πρότυπα email του jfa-go, μπορείτε να δημιουργήσετε τα δικά σας με χρήση Markdown.",
+        "updates": "Ενημερώσεις",
+        "update": "Ενημέρωση",
+        "download": "Λήψη",
+        "search": "Αναζήτηση",
+        "inviteDuration": "Διάρκεια Πρόσκλησης",
+        "enabled": "Ενεργοποιημένο",
+        "disabled": "Απενεργοποιημένο",
+        "admin": "Διαχειριστής",
+        "expiry": "Λήξη",
+        "userExpiry": "Λήξη Χρήστη",
+        "userExpiryDescription": "Μετά απο ένα καθορισμένο χρόνο μετά απο κάθε εγγραφή, το jfa-go θα διαγράφει/απενεργοποιεί τον λογαριασμό. Μπορείτε να αλλάξετε αυτή την συμπεριφορά στις ρυθμίσεις.",
+        "announce": "Ανακοίνωση",
+        "subject": "Θέμα Email",
+        "message": "Μήνυμα",
+        "extendExpiry": "Παράταση λήξης",
+        "markdownSupported": "Το Markdown υποστυρίζεται."
     },
     "notifications": {
         "changedEmailAddress": "Αλλαγή {n} διεύθυνσεων email.",
@@ -93,7 +116,15 @@
         "errorFailureCheckLogs": "Αποτυχία (ελέγξτε κονσόλα/καταγραφές)",
         "errorPartialFailureCheckLogs": "Μερική αποτυχία (ελέγξτε κονσόλα/καταγραφές)",
         "errorUserCreated": "Αποτυχία δημιουργίας του χρήστη {n}.",
-        "errorSendWelcomeEmail": "Αποτυχία αποστολής email καλωσορίσματος (ελέγξτε κονσόλα/καταγραφές)"
+        "errorSendWelcomeEmail": "Αποτυχία αποστολής email καλωσορίσματος (ελέγξτε κονσόλα/καταγραφές)",
+        "saveEmail": "Το email αποθηκεύτηκε.",
+        "sentAnnouncement": "Ανακοίνωση εστάλη.",
+        "updateApplied": "Η ενημέρωση εφαρμόστηκε, παρακαλώ επανεκκινήστε.",
+        "errorSaveEmail": "Αποτυχία αποθήκευσης του email.",
+        "errorApplyUpdate": "Αποτυχία εγκατάστασης ενημέρωσης, προσπαθήστε χειροκίνητα.",
+        "errorCheckUpdate": "Αποτυχία ελέγχου για ενημερώσεις.",
+        "updateAvailable": "Μια νέα ενημέρωση είναι διαθέσιμη, ελέγξτε τις ρυθμίσεις.",
+        "noUpdatesAvailable": "Δεν υπάρχουν διαθέσιμες ενημερώσεις."
     },
     "quantityStrings": {
         "modifySettingsFor": {
@@ -119,6 +150,18 @@
         "appliedSettings": {
             "singular": "Εφαρμογή ρυθμίσεων σε {n} χρήστη.",
             "plural": "Εφαρμογή ρυθμίσεων σε {n} χρήστες."
+        },
+        "announceTo": {
+            "singular": "Ανακοίνωση σε {n} χρήστη",
+            "plural": "Ανακοίνωση σε {n} χρήστες"
+        },
+        "extendExpiry": {
+            "plural": "Επέκταση λήξης σε {n} χρήστες",
+            "singular": "Επέκταση λήξης σε {n} χρήστη"
+        },
+        "extendedExpiry": {
+            "singular": "Εκτεταμένη λήξη για {n} χρήστη.",
+            "plural": "Εκτεταμένη λήξη για {n} χρήστες."
         }
     }
 }
