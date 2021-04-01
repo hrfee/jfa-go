@@ -6,7 +6,7 @@ RUN apt-get update -y \
     && apt-get install build-essential python3-pip curl software-properties-common sed -y \
     && (curl -sL https://deb.nodesource.com/setup_14.x | bash -) \
     && apt-get install nodejs \
-    && (cd /opt/build; make configuration npm email typescript bundle-css swagger copy external-files GOESBUILD=on) \
+    && (cd /opt/build; make configuration npm email typescript bundle-css swagger copy INTERNAL=off GOESBUILD=on) \
     && sed -i 's#id="password_resets-watch_directory" placeholder="/config/jellyfin"#id="password_resets-watch_directory" value="/jf" disabled#g' /opt/build/build/data/html/setup.html
 
 
@@ -16,7 +16,7 @@ ENV GOARCH=$TARGETARCH
 
 COPY --from=support /opt/build /opt/build
 
-RUN (cd /opt/build; make compile UPDATER=docker)
+RUN (cd /opt/build; make compile INTERNAL=off UPDATER=docker)
 
 FROM golang:latest
 
