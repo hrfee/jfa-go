@@ -26,7 +26,8 @@
         "ifItWasYou": "Se foi você, insira o PIN abaixo.",
         "codeExpiry": "O código irá expirar em {date}, ás {time}, que está em {expiresInMinutes}.",
         "pin": "PIN",
-        "name": "Redefinir senha"
+        "name": "Redefinir senha",
+        "ifItWasYouLink": "Se foi você, clique no link abaixo."
     },
     "userDeleted": {
         "title": "Sua conta foi excluída - Jellyfin",
