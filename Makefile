@@ -18,20 +18,24 @@ else ifneq ($(UPDATER), off)
 	LDFLAGS := $(LDFLAGS) -X main.updater=$(UPDATER)
 endif
 
-DEBUG ?= off
-ifeq ($(DEBUG), on)
-	LDFLAGS := -s -w $(LDFLAGS)
-endif
-
 INTERNAL ?= on
 ifeq ($(INTERNAL), on)
-	# GOFILES := $(addprefix ../,$(filter-out external.go, $(wildcard *.go)))
 	TAGS :=
 	DATA := data
 else
-	# GOFILES := $(addprefix ../,$(filter-out internal.go, $(wildcard *.go)))
 	DATA := build/data
 	TAGS := -tags external
+endif
+
+DEBUG ?= off
+ifeq ($(DEBUG), on)
+	LDFLAGS := -s -w $(LDFLAGS)
+	SOURCEMAP := --sourcemap
+	# jank
+	COPYTS := rm -r $(DATA)/web/js/ts; cp -r ts $(DATA)/web/js
+else
+	SOURCEMAP :=
+	COPYTS :=
 endif
 
 npm:
@@ -57,21 +61,11 @@ email:
 typescript:
 	$(info compiling typescript)
 	-mkdir -p $(DATA)/web/js
-	-$(ESBUILD) --bundle ts/admin.ts --outfile=./$(DATA)/web/js/admin.js --minify
-	-$(ESBUILD) --bundle ts/pwr.ts --outfile=./$(DATA)/web/js/pwr.js --minify
-	-$(ESBUILD) --bundle ts/form.ts --outfile=./$(DATA)/web/js/form.js --minify
-	-$(ESBUILD) --bundle ts/setup.ts --outfile=./$(DATA)/web/js/setup.js --minify
-
-ts-debug:
-	$(info compiling typescript w/ sourcemaps)
-	-mkdir -p $(DATA)/web/js
-	-$(ESBUILD) --bundle ts/admin.ts --sourcemap --outfile=./$(DATA)/web/js/admin.js
-	-$(ESBUILD) --bundle ts/pwr.ts --sourcemap --outfile=./$(DATA)/web/js/pwr.js
-	-$(ESBUILD) --bundle ts/form.ts --sourcemap --outfile=./$(DATA)/web/js/form.js
-	-$(ESBUILD) --bundle ts/setup.ts --sourcemap --outfile=./$(DATA)/web/js/setup.js
-	-rm -r $(DATA)/web/js/ts
-	$(info copying typescript)
-	cp -r ts $(DATA)/web/js
+	-$(ESBUILD) --bundle ts/admin.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/admin.js --minify
+	-$(ESBUILD) --bundle ts/pwr.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/pwr.js --minify
+	-$(ESBUILD) --bundle ts/form.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/form.js --minify
+	-$(ESBUILD) --bundle ts/setup.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/setup.js --minify
+	$(COPYTS)
 
 swagger:
 	$(GOBINARY) get github.com/swaggo/swag/cmd/swag
@@ -82,7 +76,6 @@ compile:
 	$(GOBINARY) mod download
 	$(info Building)
 	mkdir -p build
-	# cd build && CGO_ENABLED=0 $(GOBINARY) build -ldflags="-s -w $(LDFLAGS)" -o ./jfa-go ../*.go
 	CGO_ENABLED=0 $(GOBINARY) build -ldflags="-s -w $(LDFLAGS)" $(TAGS) -o build/jfa-go
 
 compress:
