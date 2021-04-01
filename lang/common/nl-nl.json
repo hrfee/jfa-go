@@ -11,6 +11,7 @@
         "success": "Success",
         "error": "Fout",
         "copy": "Kopiëer",
-        "theme": "Thema"
+        "theme": "Thema",
+        "copied": "Gekopieerd"
     }
 }
