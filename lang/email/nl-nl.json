@@ -23,10 +23,11 @@
     "passwordReset": {
         "title": "Wachtwoordreset aangevraagd - Jellyfin",
         "someoneHasRequestedReset": "Iemand heeft recentelijk een wachtwoordreset aangevraagd in Jellyfin.",
-        "ifItWasYou": "Als jij dit was, voor dan onderstaande PIN in.",
+        "ifItWasYou": "Als jij dit was, voer dan onderstaande PIN in.",
         "codeExpiry": "De code verloopt op {date}, op {time} UTC, dat is over {expiresInMinutes}.",
         "pin": "PIN",
-        "name": "Wachtwoordreset"
+        "name": "Wachtwoordreset",
+        "ifItWasYouLink": "Als jij dit was, klik dan op onderstaande link."
     },
     "userDeleted": {
         "title": "Je account is verwijderd - Jellyfin",
