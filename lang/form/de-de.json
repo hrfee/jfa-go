@@ -13,11 +13,11 @@
         "reEnterPasswordInvalid": "Passwörter stimmen nicht überein.",
         "createAccountButton": "Konto erstellen",
         "passwordRequirementsHeader": "Passwortanforderungen",
-        "successHeader": "Erfolg!",
+        "successHeader": "Erfolgreich!",
         "successContinueButton": "Weiter",
         "confirmationRequired": "E-Mail-Bestätigung erforderlich",
         "confirmationRequiredMessage": "Bitte überprüfe dein Posteingang und bestätige deine E-Mail-Adresse.",
-        "yourAccountIsValidUntil": "Dein Konto wird bis am {date} gültig sein."
+        "yourAccountIsValidUntil": "Dein Konto wird bis zum {date} gültig sein."
     },
     "validationStrings": {
         "length": {
