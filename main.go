@@ -442,10 +442,13 @@ func start(asDaemon, firstCall bool) {
 			timeoutHandler,
 			cacheTimeout,
 		)
+		if debugMode {
+			app.jf.Verbose = true
+		}
 		var status int
 		_, status, err = app.jf.Authenticate(app.config.Section("jellyfin").Key("username").String(), app.config.Section("jellyfin").Key("password").String())
 		if status != 200 || err != nil {
-			app.err.Fatalf("Failed to authenticate with Jellyfin @ %s: Code %d", server, status)
+			app.err.Fatalf("Failed to authenticate with Jellyfin @ %s (%d): %v", server, status, err)
 		}
 		app.info.Printf("Authenticated with %s", server)
 		/* A couple of unstable Jellyfin 10.7.0 releases decided to hyphenate user IDs.
@@ -515,6 +518,9 @@ func start(asDaemon, firstCall bool) {
 		} else {
 			app.debug.Println("Using Jellyfin for authentication")
 			app.authJf, _ = mediabrowser.NewServer(serverType, server, "jfa-go", app.version, "auth", "auth", timeoutHandler, cacheTimeout)
+			if debugMode {
+				app.authJf.Verbose = true
+			}
 		}
 
 		// Since email depends on language, the email reload in loadConfig won't work first time.

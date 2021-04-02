@@ -128,9 +128,9 @@ func (app *appContext) checkInvites() {
 					defer wait.Done()
 					msg, err := app.email.constructExpiry(code, data, app, false)
 					if err != nil {
-						app.err.Printf("%s: Failed to construct expiry notification: %s", code, err)
+						app.err.Printf("%s: Failed to construct expiry notification: %v", code, err)
 					} else if err := app.email.send(msg, addr); err != nil {
-						app.err.Printf("%s: Failed to send expiry notification: %s", code, err)
+						app.err.Printf("%s: Failed to send expiry notification: %v", code, err)
 					} else {
 						app.info.Printf("Sent expiry notification to %s", addr)
 					}
@@ -165,9 +165,9 @@ func (app *appContext) checkInvite(code string, used bool, username string) bool
 					go func() {
 						msg, err := app.email.constructExpiry(code, inv, app, false)
 						if err != nil {
-							app.err.Printf("%s: Failed to construct expiry notification: %s", code, err)
+							app.err.Printf("%s: Failed to construct expiry notification: %v", code, err)
 						} else if err := app.email.send(msg, address); err != nil {
-							app.err.Printf("%s: Failed to send expiry notification: %s", code, err)
+							app.err.Printf("%s: Failed to send expiry notification: %v", code, err)
 						} else {
 							app.info.Printf("Sent expiry notification to %s", address)
 						}
@@ -256,15 +256,15 @@ func (app *appContext) NewUserAdmin(gc *gin.Context) {
 	}
 	user, status, err := app.jf.NewUser(req.Username, req.Password)
 	if !(status == 200 || status == 204) || err != nil {
-		app.err.Printf("%s New user failed: Jellyfin responded with %d", req.Username, status)
-		respondUser(401, false, false, "Unknown error", gc)
+		app.err.Printf("%s New user failed (%d): %v", req.Username, status, err)
+		respondUser(401, false, false, err.Error(), gc)
 		return
 	}
 	id := user.ID
 	if app.storage.policy.BlockedTags != nil {
 		status, err = app.jf.SetPolicy(id, app.storage.policy)
 		if !(status == 200 || status == 204 || err == nil) {
-			app.err.Printf("%s: Failed to set user policy (%d): %s", req.Username, status, err)
+			app.err.Printf("%s: Failed to set user policy (%d): %v", req.Username, status, err)
 		}
 	}
 	if app.storage.configuration.GroupedFolders != nil && len(app.storage.displayprefs) != 0 {
@@ -273,7 +273,7 @@ func (app *appContext) NewUserAdmin(gc *gin.Context) {
 			status, err = app.jf.SetDisplayPreferences(id, app.storage.displayprefs)
 		}
 		if !((status == 200 || status == 204) && err == nil) {
-			app.err.Printf("%s: Failed to set configuration template: Code %d", req.Username, status)
+			app.err.Printf("%s: Failed to set configuration template (%d): %v", req.Username, status, err)
 		}
 	}
 	app.jf.CacheExpiry = time.Now()
@@ -286,7 +286,7 @@ func (app *appContext) NewUserAdmin(gc *gin.Context) {
 		if len(app.storage.ombi_template) != 0 {
 			errors, code, err := app.ombi.NewUser(req.Username, req.Password, req.Email, app.storage.ombi_template)
 			if err != nil || code != 200 {
-				app.info.Printf("Failed to create Ombi user (%d): %s", code, err)
+				app.err.Printf("Failed to create Ombi user (%d): %v", code, err)
 				app.debug.Printf("Errors reported by Ombi: %s", strings.Join(errors, ", "))
 			} else {
 				app.info.Println("Created Ombi user")
@@ -297,11 +297,11 @@ func (app *appContext) NewUserAdmin(gc *gin.Context) {
 		app.debug.Printf("%s: Sending welcome email to %s", req.Username, req.Email)
 		msg, err := app.email.constructWelcome(req.Username, app, false)
 		if err != nil {
-			app.err.Printf("%s: Failed to construct welcome email: %s", req.Username, err)
+			app.err.Printf("%s: Failed to construct welcome email: %v", req.Username, err)
 			respondUser(500, true, false, err.Error(), gc)
 			return
 		} else if err := app.email.send(msg, req.Email); err != nil {
-			app.err.Printf("%s: Failed to send welcome email: %s", req.Username, err)
+			app.err.Printf("%s: Failed to send welcome email: %v", req.Username, err)
 			respondUser(500, true, false, err.Error(), gc)
 			return
 		} else {
@@ -353,11 +353,11 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 			respond(401, "confirmEmail", gc)
 			msg, err := app.email.constructConfirmation(req.Code, req.Username, key, app, false)
 			if err != nil {
-				app.err.Printf("%s: Failed to construct confirmation email: %s", req.Code, err)
+				app.err.Printf("%s: Failed to construct confirmation email: %v", req.Code, err)
 			} else if err := app.email.send(msg, req.Email); err != nil {
-				app.err.Printf("%s: Failed to send user confirmation email: %s", req.Code, err)
+				app.err.Printf("%s: Failed to send user confirmation email: %v", req.Code, err)
 			} else {
-				app.info.Printf("%s: Sent user confirmation email to %s", req.Code, req.Email)
+				app.info.Printf("%s: Sent user confirmation email to \"%s\"", req.Code, req.Email)
 			}
 		}
 		success = false
@@ -367,7 +367,7 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 	user, status, err := app.jf.NewUser(req.Username, req.Password)
 	if !(status == 200 || status == 204) || err != nil {
 		f = func(gc *gin.Context) {
-			app.err.Printf("%s New user failed: Jellyfin responded with %d", req.Code, status)
+			app.err.Printf("%s New user failed (%d): %v", req.Code, status, err)
 			respond(401, app.storage.lang.Admin[app.storage.lang.chosenAdminLang].Notifications.get("errorUnknown"), gc)
 		}
 		success = false
@@ -382,11 +382,11 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 				go func() {
 					msg, err := app.email.constructCreated(req.Code, req.Username, req.Email, invite, app, false)
 					if err != nil {
-						app.err.Printf("%s: Failed to construct user creation notification: %s", req.Code, err)
+						app.err.Printf("%s: Failed to construct user creation notification: %v", req.Code, err)
 					} else if err := app.email.send(msg, address); err != nil {
-						app.err.Printf("%s: Failed to send user creation notification: %s", req.Code, err)
+						app.err.Printf("%s: Failed to send user creation notification: %v", req.Code, err)
 					} else {
-						app.info.Printf("%s: Sent user creation notification to %s", req.Code, address)
+						app.info.Printf("%s: Sent user creation notification to %v", req.Code, address)
 					}
 				}()
 			}
@@ -403,7 +403,7 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 			app.debug.Printf("Applying policy from profile \"%s\"", invite.Profile)
 			status, err = app.jf.SetPolicy(id, profile.Policy)
 			if !((status == 200 || status == 204) && err == nil) {
-				app.err.Printf("%s: Failed to set user policy (%d): %s", req.Code, status, err)
+				app.err.Printf("%s: Failed to set user policy (%d): %v", req.Code, status, err)
 			}
 		}
 		if profile.Configuration.GroupedFolders != nil && len(profile.Displayprefs) != 0 {
@@ -413,7 +413,7 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 				status, err = app.jf.SetDisplayPreferences(id, profile.Displayprefs)
 			}
 			if !((status == 200 || status == 204) && err == nil) {
-				app.err.Printf("%s: Failed to set configuration template (%d): %s", req.Code, status, err)
+				app.err.Printf("%s: Failed to set configuration template (%d): %v", req.Code, status, err)
 			}
 		}
 	}
@@ -438,11 +438,11 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 		app.debug.Printf("%s: Sending welcome email to %s", req.Username, req.Email)
 		msg, err := app.email.constructWelcome(req.Username, app, false)
 		if err != nil {
-			app.err.Printf("%s: Failed to construct welcome email: %s", req.Username, err)
+			app.err.Printf("%s: Failed to construct welcome email: %v", req.Username, err)
 		} else if err := app.email.send(msg, req.Email); err != nil {
-			app.err.Printf("%s: Failed to send welcome email: %s", req.Username, err)
+			app.err.Printf("%s: Failed to send welcome email: %v", req.Username, err)
 		} else {
-			app.info.Printf("%s: Sent welcome email to %s", req.Username, req.Email)
+			app.info.Printf("%s: Sent welcome email to \"%s\"", req.Username, req.Email)
 		}
 	}
 	if invite.UserExpiry {
@@ -450,7 +450,7 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 		app.storage.users[id] = expiry
 		err := app.storage.storeUsers()
 		if err != nil {
-			app.err.Printf("Failed to store user duration: %s", err)
+			app.err.Printf("Failed to store user duration: %v", err)
 		}
 	}
 	success = true
@@ -480,7 +480,7 @@ func (app *appContext) ExtendExpiry(gc *gin.Context) {
 		}
 	}
 	if err := app.storage.storeUsers(); err != nil {
-		app.err.Printf("Failed to store user duration: %s", err)
+		app.err.Printf("Failed to store user duration: %v", err)
 		respondBool(500, false, gc)
 		return
 	}
@@ -512,7 +512,7 @@ func (app *appContext) NewUser(gc *gin.Context) {
 	}
 	if !valid {
 		// 200 bcs idk what i did in js
-		app.info.Printf("%s New user failed: Invalid password", req.Code)
+		app.info.Printf("%s: New user failed: Invalid password", req.Code)
 		gc.JSON(200, validation)
 		return
 	}
@@ -556,11 +556,11 @@ func (app *appContext) Announce(gc *gin.Context) {
 	}
 	msg, err := app.email.constructTemplate(req.Subject, req.Message, app)
 	if err != nil {
-		app.err.Printf("Failed to construct announcement emails: %s", err)
+		app.err.Printf("Failed to construct announcement emails: %v", err)
 		respondBool(500, false, gc)
 		return
 	} else if err := app.email.send(msg, addresses...); err != nil {
-		app.err.Printf("Failed to send announcement emails: %s", err)
+		app.err.Printf("Failed to send announcement emails: %v", err)
 		respondBool(500, false, gc)
 		return
 	}
@@ -590,15 +590,15 @@ func (app *appContext) DeleteUsers(gc *gin.Context) {
 				if id, ok := ombiUser["id"]; ok {
 					status, err := app.ombi.DeleteUser(id.(string))
 					if err != nil || status != 200 {
-						app.err.Printf("Failed to delete ombi user (%d): %s", status, err)
-						errors[userID] = fmt.Sprintf("Ombi: %d %s, ", status, err)
+						app.err.Printf("Failed to delete ombi user (%d): %v", status, err)
+						errors[userID] = fmt.Sprintf("Ombi: %d %v, ", status, err)
 					}
 				}
 			}
 		}
 		status, err := app.jf.DeleteUser(userID)
 		if !(status == 200 || status == 204) || err != nil {
-			msg := fmt.Sprintf("%d: %s", status, err)
+			msg := fmt.Sprintf("%d: %v", status, err)
 			if _, ok := errors[userID]; !ok {
 				errors[userID] = msg
 			} else {
@@ -616,9 +616,9 @@ func (app *appContext) DeleteUsers(gc *gin.Context) {
 		go func(reason string, addresses []string) {
 			msg, err := app.email.constructDeleted(reason, app, false)
 			if err != nil {
-				app.err.Printf("Failed to construct account deletion emails: %s", err)
+				app.err.Printf("Failed to construct account deletion emails: %v", err)
 			} else if err := app.email.send(msg, addresses...); err != nil {
-				app.err.Printf("Failed to send account deletion emails: %s", err)
+				app.err.Printf("Failed to send account deletion emails: %v", err)
 			} else {
 				app.info.Println("Sent account deletion emails")
 			}
@@ -685,12 +685,12 @@ func (app *appContext) GenerateInvite(gc *gin.Context) {
 		msg, err := app.email.constructInvite(inviteCode, invite, app, false)
 		if err != nil {
 			invite.Email = fmt.Sprintf("Failed to send to %s", req.Email)
-			app.err.Printf("%s: Failed to construct invite email: %s", inviteCode, err)
+			app.err.Printf("%s: Failed to construct invite email: %v", inviteCode, err)
 		} else if err := app.email.send(msg, req.Email); err != nil {
 			invite.Email = fmt.Sprintf("Failed to send to %s", req.Email)
-			app.err.Printf("%s: %s: %s", inviteCode, invite.Email, err)
+			app.err.Printf("%s: %s: %v", inviteCode, invite.Email, err)
 		} else {
-			app.info.Printf("%s: Sent invite email to %s", inviteCode, req.Email)
+			app.info.Printf("%s: Sent invite email to \"%s\"", inviteCode, req.Email)
 		}
 	}
 	if req.Profile != "" {
@@ -797,7 +797,7 @@ func (app *appContext) CreateProfile(gc *gin.Context) {
 	app.jf.CacheExpiry = time.Now()
 	user, status, err := app.jf.UserByID(req.ID, false)
 	if !(status == 200 || status == 204) || err != nil {
-		app.err.Printf("Failed to get user from Jellyfin (%d): %s", status, err)
+		app.err.Printf("Failed to get user from Jellyfin (%d): %v", status, err)
 		respond(500, "Couldn't get user", gc)
 		return
 	}
@@ -810,7 +810,7 @@ func (app *appContext) CreateProfile(gc *gin.Context) {
 		profile.Configuration = user.Configuration
 		profile.Displayprefs, status, err = app.jf.GetDisplayPreferences(req.ID)
 		if !(status == 200 || status == 204) || err != nil {
-			app.err.Printf("Failed to get DisplayPrefs (%d): %s", status, err)
+			app.err.Printf("Failed to get DisplayPrefs (%d): %v", status, err)
 			respond(500, "Couldn't get displayprefs", gc)
 			return
 		}
@@ -1023,7 +1023,7 @@ func (app *appContext) GetUsers(gc *gin.Context) {
 	resp.UserList = []respUser{}
 	users, status, err := app.jf.GetUsers(false)
 	if !(status == 200 || status == 204) || err != nil {
-		app.err.Printf("Failed to get users from Jellyfin (%d): %s", status, err)
+		app.err.Printf("Failed to get users from Jellyfin (%d): %v", status, err)
 		respond(500, "Couldn't get users", gc)
 		return
 	}
@@ -1061,7 +1061,7 @@ func (app *appContext) OmbiUsers(gc *gin.Context) {
 	app.debug.Println("Ombi users requested")
 	users, status, err := app.ombi.GetUsers()
 	if err != nil || status != 200 {
-		app.err.Printf("Failed to get users from Ombi (%d): %s", status, err)
+		app.err.Printf("Failed to get users from Ombi (%d): %v", status, err)
 		respond(500, "Couldn't get users", gc)
 		return
 	}
@@ -1088,7 +1088,7 @@ func (app *appContext) SetOmbiDefaults(gc *gin.Context) {
 	gc.BindJSON(&req)
 	template, code, err := app.ombi.TemplateByID(req.ID)
 	if err != nil || code != 200 || len(template) == 0 {
-		app.err.Printf("Couldn't get user from Ombi: %d %s", code, err)
+		app.err.Printf("Couldn't get user from Ombi (%d): %v", code, err)
 		respond(500, "Couldn't get user", gc)
 		return
 	}
@@ -1111,7 +1111,7 @@ func (app *appContext) ModifyEmails(gc *gin.Context) {
 	app.debug.Println("Email modification requested")
 	users, status, err := app.jf.GetUsers(false)
 	if !(status == 200 || status == 204) || err != nil {
-		app.err.Printf("Failed to get users from Jellyfin (%d): %s", status, err)
+		app.err.Printf("Failed to get users from Jellyfin (%d): %v", status, err)
 		respond(500, "Couldn't get users", gc)
 		return
 	}
@@ -1126,7 +1126,7 @@ func (app *appContext) ModifyEmails(gc *gin.Context) {
 					ombiUser["emailAddress"] = address
 					code, err = app.ombi.ModifyUser(ombiUser)
 					if code != 200 || err != nil {
-						app.err.Printf("%s: Failed to change ombi email address: %d %s", ombiUser["userName"].(string), code, err)
+						app.err.Printf("%s: Failed to change ombi email address (%d): %v", ombiUser["userName"].(string), code, err)
 					}
 				}
 			}
@@ -1155,6 +1155,7 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 	var displayprefs map[string]interface{}
 	if req.From == "profile" {
 		app.storage.loadProfiles()
+		// Check profile exists & isn't empty
 		if _, ok := app.storage.profiles[req.Profile]; !ok || app.storage.profiles[req.Profile].Policy.BlockedTags == nil {
 			app.err.Printf("Couldn't find profile \"%s\" or profile was empty", req.Profile)
 			respond(500, "Couldn't find profile", gc)
@@ -1175,7 +1176,7 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 		app.jf.CacheExpiry = time.Now()
 		user, status, err := app.jf.UserByID(req.ID, false)
 		if !(status == 200 || status == 204) || err != nil {
-			app.err.Printf("Failed to get user from Jellyfin (%d): %s", status, err)
+			app.err.Printf("Failed to get user from Jellyfin (%d): %v", status, err)
 			respond(500, "Couldn't get user", gc)
 			return
 		}
@@ -1184,7 +1185,7 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 		if req.Homescreen {
 			displayprefs, status, err = app.jf.GetDisplayPreferences(req.ID)
 			if !(status == 200 || status == 204) || err != nil {
-				app.err.Printf("Failed to get DisplayPrefs (%d): %s", status, err)
+				app.err.Printf("Failed to get DisplayPrefs (%d): %v", status, err)
 				respond(500, "Couldn't get displayprefs", gc)
 				return
 			}
@@ -1314,7 +1315,7 @@ func (app *appContext) ModifyConfig(gc *gin.Context) {
 		app.info.Println("Restarting...")
 		err := app.Restart()
 		if err != nil {
-			app.err.Printf("Couldn't restart, try restarting manually. (%s)", err)
+			app.err.Printf("Couldn't restart, try restarting manually: %s", err)
 		}
 	}
 	app.loadConfig()
@@ -1480,7 +1481,7 @@ func (app *appContext) ApplyUpdate(gc *gin.Context) {
 	}
 	err := app.update.update()
 	if err != nil {
-		app.err.Printf("Failed to apply update: %s", err)
+		app.err.Printf("Failed to apply update: %v", err)
 		respondBool(500, false, gc)
 		return
 	}
@@ -1702,7 +1703,7 @@ func (app *appContext) restart(gc *gin.Context) {
 	app.info.Println("Restarting...")
 	err := app.Restart()
 	if err != nil {
-		app.err.Printf("Couldn't restart, try restarting manually. (%s)", err)
+		app.err.Printf("Couldn't restart, try restarting manually: %v", err)
 	}
 }
 
