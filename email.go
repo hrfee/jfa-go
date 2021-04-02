@@ -11,6 +11,7 @@ import (
 	"io"
 	"net/smtp"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
 	textTemplate "text/template"
@@ -108,13 +109,13 @@ func (emailer *Emailer) formatExpiry(expiry time.Time, tzaware bool, datePattern
 	}
 	_, _, days, hours, minutes, _ := timeDiff(expiry, currentTime)
 	if days != 0 {
-		expiresIn += fmt.Sprintf("%dd ", days)
+		expiresIn += strconv.Itoa(days) + "d "
 	}
 	if hours != 0 {
-		expiresIn += fmt.Sprintf("%dh ", hours)
+		expiresIn += strconv.Itoa(hours) + "h "
 	}
 	if minutes != 0 {
-		expiresIn += fmt.Sprintf("%dm ", minutes)
+		expiresIn += strconv.Itoa(minutes) + "m "
 	}
 	expiresIn = strings.TrimSuffix(expiresIn, " ")
 	return
