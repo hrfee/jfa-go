@@ -31,9 +31,9 @@
     "language": {
         "title": "Sprache",
         "description": "Gemeinschaftsübersetzungen sind für die meisten Teile von jfa-go verfügbar. Du kannst unten die Standardsprachen auswählen, aber Benutzer können dies immer noch ändern, wenn sie wollen. Wenn du helfen willst zu übersetzen, melde dich bei {n} an, um anzufangen, etwas beizutragen!",
-        "defaultAdminLang": "Standardsprache Admin",
-        "defaultFormLang": "Standardsprache Kontoerstellung",
-        "defaultEmailLang": "Standardsprache E-Mail"
+        "defaultAdminLang": "Admin Standardsprache",
+        "defaultFormLang": "Kontoerstellung Standardsprache",
+        "defaultEmailLang": "E-Mail Standardsprache"
     },
     "general": {
         "title": "Allgemein",
