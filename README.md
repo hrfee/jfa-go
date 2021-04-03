@@ -44,7 +44,7 @@ I chose to rewrite the python [jellyfin-accounts](https://github.com/hrfee/jelly
 
 #### Install
 
-The [Docker](https://hub.docker.com/repository/docker/hrfee/jfa-go) image is your best bet.
+The [Docker](https://hub.docker.com/r/hrfee/jfa-go) image is your best bet.
 ```sh
 docker create \
              --name "jfa-go" \ # Whatever you want to name it
