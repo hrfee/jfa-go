@@ -1294,6 +1294,7 @@ func (app *appContext) ModifyConfig(gc *gin.Context) {
 	app.info.Println("Config modification requested")
 	var req configDTO
 	gc.BindJSON(&req)
+	// Load a new config, as we set various default values in app.config that shouldn't be stored.
 	tempConfig, _ := ini.Load(app.configPath)
 	for section, settings := range req {
 		if section != "restart-program" {

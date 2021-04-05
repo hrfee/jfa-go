@@ -25,7 +25,7 @@ require (
 	github.com/hrfee/jfa-go/common v0.0.0-20210105184019-fdc97b4e86cc
 	github.com/hrfee/jfa-go/docs v0.0.0-20201112212552-b6f3cd7c1f71
 	github.com/hrfee/jfa-go/ombi v0.0.0-20201112212552-b6f3cd7c1f71
-	github.com/hrfee/mediabrowser v0.3.2
+	github.com/hrfee/mediabrowser v0.3.3
 	github.com/jordan-wright/email v4.0.1-0.20200917010138-e1c00e156980+incompatible
 	github.com/knz/strtime v0.0.0-20200924090105-187c67f2bf5e
 	github.com/lithammer/shortuuid/v3 v3.0.4
