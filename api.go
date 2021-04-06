@@ -471,7 +471,7 @@ func (app *appContext) ExtendExpiry(gc *gin.Context) {
 	var req extendExpiryDTO
 	gc.BindJSON(&req)
 	app.info.Printf("Expiry extension requested for %d user(s)", len(req.Users))
-	if req.Days == 0 && req.Hours == 0 && req.Minutes == 0 {
+	if req.Days <= 0 && req.Hours <= 0 && req.Minutes <= 0 {
 		respondBool(400, false, gc)
 		return
 	}
@@ -1024,13 +1024,14 @@ func (app *appContext) DeleteInvite(gc *gin.Context) {
 func (app *appContext) GetUsers(gc *gin.Context) {
 	app.debug.Println("Users requested")
 	var resp getUsersDTO
-	resp.UserList = []respUser{}
 	users, status, err := app.jf.GetUsers(false)
+	resp.UserList = make([]respUser, len(users))
 	if !(status == 200 || status == 204) || err != nil {
 		app.err.Printf("Failed to get users from Jellyfin (%d): %v", status, err)
 		respond(500, "Couldn't get users", gc)
 		return
 	}
+	i := 0
 	for _, jfUser := range users {
 		user := respUser{
 			ID:       jfUser.ID,
@@ -1049,7 +1050,8 @@ func (app *appContext) GetUsers(gc *gin.Context) {
 			user.Expiry = app.formatDatetime(expiry)
 		}
 
-		resp.UserList = append(resp.UserList, user)
+		resp.UserList[i] = user
+		i++
 	}
 	gc.JSON(200, resp)
 }

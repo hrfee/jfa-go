@@ -480,6 +480,9 @@ func (st *Storage) storeInvites() error {
 }
 
 func (st *Storage) loadUsers() error {
+	if st.users == nil {
+		st.users = map[string]time.Time{}
+	}
 	st.usersLock.Lock()
 	defer st.usersLock.Unlock()
 	temp := map[string]time.Time{}
