@@ -1032,6 +1032,9 @@ func (app *appContext) GetUsers(gc *gin.Context) {
 		return
 	}
 	i := 0
+	app.storage.usersLock.Lock()
+	defer app.storage.usersLock.Unlock()
+	fmt.Printf("GETUSERS user.json:\n%+v\n", app.storage.users)
 	for _, jfUser := range users {
 		user := respUser{
 			ID:       jfUser.ID,
@@ -1046,8 +1049,11 @@ func (app *appContext) GetUsers(gc *gin.Context) {
 		if email, ok := app.storage.emails[jfUser.ID]; ok {
 			user.Email = email.(string)
 		}
-		if expiry, ok := app.storage.users[jfUser.ID]; ok {
+		expiry, ok := app.storage.users[jfUser.ID]
+		fmt.Printf("CHECKING User: %s, ID: %s, Match: %t\n", user.Name, user.ID, ok)
+		if ok {
 			user.Expiry = app.formatDatetime(expiry)
+			fmt.Printf("EXPIRY FOR User %s, ID: %s, Expiry: %+v, Formatted: %s\n", user.Name, user.ID, expiry, user.Expiry)
 		}
 
 		resp.UserList[i] = user

@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/fs"
 	"log"
 	"os"
@@ -480,11 +481,11 @@ func (st *Storage) storeInvites() error {
 }
 
 func (st *Storage) loadUsers() error {
+	st.usersLock.Lock()
+	defer st.usersLock.Unlock()
 	if st.users == nil {
 		st.users = map[string]time.Time{}
 	}
-	st.usersLock.Lock()
-	defer st.usersLock.Unlock()
 	temp := map[string]time.Time{}
 	err := loadJSON(st.users_path, &temp)
 	if err != nil {
@@ -495,6 +496,7 @@ func (st *Storage) loadUsers() error {
 			st.users[id] = t1
 		}
 	}
+	fmt.Printf("CURRENT USERS:\n%+v\n", st.users)
 	return nil
 }
 

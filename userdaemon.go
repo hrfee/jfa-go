@@ -35,7 +35,6 @@ func (rt *userDaemon) run() {
 			break
 		}
 		started := time.Now()
-		rt.app.storage.loadInvites()
 		rt.app.checkUsers()
 		finished := time.Now()
 		duration := finished.Sub(started)
@@ -76,12 +75,8 @@ func (app *appContext) checkUsers() {
 	}
 	for id, expiry := range app.storage.users {
 		if _, ok := userExists[id]; !ok {
-			app.debug.Printf("Deleting expiry for non-existent user \"%s\"", id)
+			app.info.Printf("Deleting expiry for non-existent user \"%s\"", id)
 			delete(app.storage.users, id)
-			err = app.storage.storeUsers()
-			if err != nil {
-				app.err.Printf("Failed to store user duration: %s", err)
-			}
 		} else if time.Now().After(expiry) {
 			found := false
 			var user mediabrowser.User
@@ -111,10 +106,6 @@ func (app *appContext) checkUsers() {
 				continue
 			}
 			delete(app.storage.users, id)
-			err = app.storage.storeUsers()
-			if err != nil {
-				app.err.Printf("Failed to store user duration: %s", err)
-			}
 			if email {
 				address, ok := app.storage.emails[id]
 				if !ok {
@@ -130,5 +121,9 @@ func (app *appContext) checkUsers() {
 				}
 			}
 		}
+	}
+	err = app.storage.storeUsers()
+	if err != nil {
+		app.err.Printf("Failed to store user expiries: %s", err)
 	}
 }
