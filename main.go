@@ -489,31 +489,47 @@ func start(asDaemon, firstCall bool) {
 			}
 			if noHyphens == app.jf.Hyphens {
 				var newEmails map[string]interface{}
-				var status int
-				var err error
+				var newUsers map[string]time.Time
+				var status, status2 int
+				var err, err2 error
 				if app.jf.Hyphens {
-					app.info.Println(info("Your build of Jellyfin appears to hypenate user IDs. Your emails.json file will be modified to match."))
+					app.info.Println(info("Your build of Jellyfin appears to hypenate user IDs. Your emails.json/users.json file will be modified to match."))
 					time.Sleep(time.Second * time.Duration(3))
 					newEmails, status, err = app.hyphenateEmailStorage(app.storage.emails)
+					newUsers, status2, err2 = app.hyphenateUserStorage(app.storage.users)
 				} else {
-					app.info.Println(info("Your emails.json file uses hyphens, but the Jellyfin server no longer does. It will be modified."))
+					app.info.Println(info("Your emails.json/users.json file uses hyphens, but the Jellyfin server no longer does. It will be modified."))
 					time.Sleep(time.Second * time.Duration(3))
 					newEmails, status, err = app.deHyphenateEmailStorage(app.storage.emails)
+					newUsers, status2, err2 = app.deHyphenateUserStorage(app.storage.users)
 				}
 				if status != 200 || err != nil {
-					app.err.Printf("Failed to get users from Jellyfin: Code %d", status)
-					app.debug.Printf("Error: %s", err)
+					app.err.Printf("Failed to get users from Jellyfin (%d): %v", status, err)
 					app.err.Fatalf("Couldn't upgrade emails.json")
 				}
-				bakFile := app.storage.emails_path + ".bak"
-				err = storeJSON(bakFile, app.storage.emails)
+				if status2 != 200 || err2 != nil {
+					app.err.Printf("Failed to get users from Jellyfin (%d): %v", status, err)
+					app.err.Fatalf("Couldn't upgrade users.json")
+				}
+				emailBakFile := app.storage.emails_path + ".bak"
+				usersBakFile := app.storage.users_path + ".bak"
+				err = storeJSON(emailBakFile, app.storage.emails)
+				err2 = storeJSON(usersBakFile, app.storage.users)
 				if err != nil {
-					app.err.Fatalf("couldn't store emails.json backup: %s", err)
+					app.err.Fatalf("couldn't store emails.json backup: %v", err)
+				}
+				if err2 != nil {
+					app.err.Fatalf("couldn't store users.json backup: %v", err)
 				}
 				app.storage.emails = newEmails
+				app.storage.users = newUsers
 				err = app.storage.storeEmails()
+				err2 = app.storage.storeUsers()
 				if err != nil {
-					app.err.Fatalf("couldn't store emails.json: %s", err)
+					app.err.Fatalf("couldn't store emails.json: %v", err)
+				}
+				if err2 != nil {
+					app.err.Fatalf("couldn't store users.json: %v", err)
 				}
 			}
 		}

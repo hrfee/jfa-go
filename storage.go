@@ -638,7 +638,7 @@ func hyphenate(userID string) string {
 	return userID[:8] + "-" + userID[8:12] + "-" + userID[12:16] + "-" + userID[16:20] + "-" + userID[20:]
 }
 
-func (app *appContext) deHyphenateEmailStorage(old map[string]interface{}) (map[string]interface{}, int, error) {
+func (app *appContext) deHyphenateStorage(old map[string]interface{}) (map[string]interface{}, int, error) {
 	jfUsers, status, err := app.jf.GetUsers(false)
 	if status != 200 || err != nil {
 		return nil, status, err
@@ -647,15 +647,15 @@ func (app *appContext) deHyphenateEmailStorage(old map[string]interface{}) (map[
 	for _, user := range jfUsers {
 		unHyphenated := user.ID
 		hyphenated := hyphenate(unHyphenated)
-		email, ok := old[hyphenated]
+		val, ok := old[hyphenated]
 		if ok {
-			newEmails[unHyphenated] = email
+			newEmails[unHyphenated] = val
 		}
 	}
 	return newEmails, status, err
 }
 
-func (app *appContext) hyphenateEmailStorage(old map[string]interface{}) (map[string]interface{}, int, error) {
+func (app *appContext) hyphenateStorage(old map[string]interface{}) (map[string]interface{}, int, error) {
 	jfUsers, status, err := app.jf.GetUsers(false)
 	if status != 200 || err != nil {
 		return nil, status, err
@@ -664,10 +664,50 @@ func (app *appContext) hyphenateEmailStorage(old map[string]interface{}) (map[st
 	for _, user := range jfUsers {
 		unstripped := user.ID
 		stripped := strings.ReplaceAll(unstripped, "-", "")
-		email, ok := old[stripped]
+		val, ok := old[stripped]
 		if ok {
-			newEmails[unstripped] = email
+			newEmails[unstripped] = val
 		}
 	}
 	return newEmails, status, err
+}
+
+func (app *appContext) hyphenateEmailStorage(old map[string]interface{}) (map[string]interface{}, int, error) {
+	return app.hyphenateStorage(old)
+}
+
+func (app *appContext) deHyphenateEmailStorage(old map[string]interface{}) (map[string]interface{}, int, error) {
+	return app.deHyphenateStorage(old)
+}
+
+func (app *appContext) hyphenateUserStorage(old map[string]time.Time) (map[string]time.Time, int, error) {
+	asInterface := map[string]interface{}{}
+	for k, v := range old {
+		asInterface[k] = v
+	}
+	fixed, status, err := app.hyphenateStorage(asInterface)
+	if err != nil {
+		return nil, status, err
+	}
+	out := map[string]time.Time{}
+	for k, v := range fixed {
+		out[k] = v.(time.Time)
+	}
+	return out, status, err
+}
+
+func (app *appContext) deHyphenateUserStorage(old map[string]time.Time) (map[string]time.Time, int, error) {
+	asInterface := map[string]interface{}{}
+	for k, v := range old {
+		asInterface[k] = v
+	}
+	fixed, status, err := app.deHyphenateStorage(asInterface)
+	if err != nil {
+		return nil, status, err
+	}
+	out := map[string]time.Time{}
+	for k, v := range fixed {
+		out[k] = v.(time.Time)
+	}
+	return out, status, err
 }
