@@ -448,11 +448,11 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 	if invite.UserExpiry {
 		expiry := time.Now().Add(time.Duration(60*(invite.UserDays*24+invite.UserHours)+invite.UserMinutes) * time.Minute)
 		app.storage.users[id] = expiry
-		err := app.storage.storeUsers()
-		if err != nil {
+		if err := app.storage.storeUsers(); err != nil {
 			app.err.Printf("Failed to store user duration: %v", err)
 		}
 	}
+	app.jf.CacheExpiry = time.Now()
 	success = true
 	return
 }
@@ -467,8 +467,8 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 // @tags Users
 func (app *appContext) ExtendExpiry(gc *gin.Context) {
 	var req extendExpiryDTO
-	app.info.Printf("Expiry extension requested for %d user(s)", len(req.Users))
 	gc.BindJSON(&req)
+	app.info.Printf("Expiry extension requested for %d user(s)", len(req.Users))
 	if req.Days == 0 && req.Hours == 0 && req.Minutes == 0 {
 		respondBool(400, false, gc)
 		return

@@ -63,8 +63,20 @@ func (app *appContext) checkUsers() {
 	if emailEnabled && app.config.Section("user_expiry").Key("send_email").MustBool(true) {
 		email = true
 	}
+	// Use a map to speed up checking for deleted users later
+	userExists := map[string]bool{}
+	for _, user := range users {
+		userExists[user.ID] = true
+	}
 	for id, expiry := range app.storage.users {
-		if time.Now().After(expiry) {
+		if _, ok := userExists[id]; !ok {
+			app.debug.Printf("Deleting expiry for non-existent user \"%s\"", id)
+			delete(app.storage.users, id)
+			err = app.storage.storeUsers()
+			if err != nil {
+				app.err.Printf("Failed to store user duration: %s", err)
+			}
+		} else if time.Now().After(expiry) {
 			found := false
 			var user mediabrowser.User
 			for _, u := range users {
@@ -84,6 +96,8 @@ func (app *appContext) checkUsers() {
 				status, err = app.jf.DeleteUser(id)
 			} else if mode == "disable" {
 				user.Policy.IsDisabled = true
+				// Admins can't be disabled
+				user.Policy.IsAdministrator = false
 				status, err = app.jf.SetPolicy(id, user.Policy)
 			}
 			if !(status == 200 || status == 204) || err != nil {
@@ -91,6 +105,10 @@ func (app *appContext) checkUsers() {
 				continue
 			}
 			delete(app.storage.users, id)
+			err = app.storage.storeUsers()
+			if err != nil {
+				app.err.Printf("Failed to store user duration: %s", err)
+			}
 			if email {
 				address, ok := app.storage.emails[id]
 				if !ok {
@@ -106,9 +124,5 @@ func (app *appContext) checkUsers() {
 				}
 			}
 		}
-	}
-	err = app.storage.storeUsers()
-	if err != nil {
-		app.err.Printf("Failed to store user duration: %s", err)
 	}
 }
