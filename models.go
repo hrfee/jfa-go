@@ -112,9 +112,9 @@ type respUser struct {
 	ID         string `json:"id" example:"fdgsdfg45534fa"`              // userID of user
 	Name       string `json:"name" example:"jeff"`                      // Username of user
 	Email      string `json:"email,omitempty" example:"jeff@jellyf.in"` // Email address of user (if available)
-	LastActive string `json:"last_active"`                              // Time of last activity on Jellyfin
+	LastActive int64  `json:"last_active" example:"1617737207510"`      // Time of last activity on Jellyfin
 	Admin      bool   `json:"admin" example:"false"`                    // Whether or not the user is Administrator
-	Expiry     string `json:"expiry" example:"01/02/21 12:00"`          // Expiry time of user, if applicable.
+	Expiry     int64  `json:"expiry" example:"1617737207510"`           // Expiry time of user as Epoch/Unix time.
 	Disabled   bool   `json:"disabled"`                                 // Whether or not the user is disabled.
 }
 

@@ -1,13 +1,13 @@
-import { _get, _post, _delete, toggleLoader } from "../modules/common.js";
+import { _get, _post, _delete, toggleLoader, toDateString } from "../modules/common.js";
 
 interface User {
     id: string;
     name: string;
     email: string | undefined;
-    last_active: string;
+    last_active: number;
     admin: boolean;
     disabled: boolean;
-    expiry: string;
+    expiry: number;
 }
 
 class user implements User {
@@ -20,7 +20,9 @@ class user implements User {
     private _emailAddress: string;
     private _emailEditButton: HTMLElement;
     private _expiry: HTMLTableDataCellElement;
+    private _expiryUnix: number;
     private _lastActive: HTMLTableDataCellElement;
+    private _lastActiveUnix: number;
     id: string;
     private _selected: boolean;
 
@@ -67,11 +69,25 @@ class user implements User {
         }
     }
     
-    get expiry(): string { return this._expiry.textContent; }
-    set expiry(value: string) { this._expiry.textContent = value; }
+    get expiry(): number { return this._expiryUnix; }
+    set expiry(unix: number) {
+        this._expiryUnix = unix;
+        if (unix == 0) {
+            this._expiry.textContent = "";
+        } else {
+            this._expiry.textContent = toDateString(new Date(unix*1000));
+        }
+    }
 
-    get last_active(): string { return this._lastActive.textContent; }
-    set last_active(value: string) { this._lastActive.textContent = value; }
+    get last_active(): number { return this._lastActiveUnix; }
+    set last_active(unix: number) {
+        this._lastActiveUnix = unix;
+        if (unix == 0) {
+            this._lastActive.textContent == "";
+        } else {
+            this._lastActive.textContent = toDateString(new Date(unix*1000));
+        }
+    }
 
     private _checkEvent = new CustomEvent("accountCheckEvent");
     private _uncheckEvent = new CustomEvent("accountUncheckEvent");

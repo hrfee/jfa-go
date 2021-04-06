@@ -6,6 +6,13 @@ export function createEl(html: string): HTMLElement {
     return div.firstElementChild as HTMLElement;
 }
 
+export function toDateString(date: Date): string {
+    return date.toLocaleDateString() + " " + date.toLocaleString([], {
+        hour: "2-digit",
+        minute: "2-digit"
+    })
+}
+
 export function serializeForm(id: string): Object {
     const form = document.getElementById(id) as HTMLFormElement;
     let formData = {};

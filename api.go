@@ -1041,16 +1041,15 @@ func (app *appContext) GetUsers(gc *gin.Context) {
 			Admin:    jfUser.Policy.IsAdministrator,
 			Disabled: jfUser.Policy.IsDisabled,
 		}
-		user.LastActive = "n/a"
 		if !jfUser.LastActivityDate.IsZero() {
-			user.LastActive = app.formatDatetime(jfUser.LastActivityDate.Time)
+			user.LastActive = jfUser.LastActivityDate.Unix()
 		}
 		if email, ok := app.storage.emails[jfUser.ID]; ok {
 			user.Email = email.(string)
 		}
 		expiry, ok := app.storage.users[jfUser.ID]
 		if ok {
-			user.Expiry = app.formatDatetime(expiry)
+			user.Expiry = expiry.Unix()
 		}
 
 		resp.UserList[i] = user
