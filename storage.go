@@ -26,7 +26,7 @@ type Storage struct {
 	policy                                                                                                                                mediabrowser.Policy
 	configuration                                                                                                                         mediabrowser.Configuration
 	lang                                                                                                                                  Lang
-	invitesLock                                                                                                                           sync.Mutex
+	invitesLock, usersLock                                                                                                                sync.Mutex
 }
 
 type customEmails struct {
@@ -480,6 +480,8 @@ func (st *Storage) storeInvites() error {
 }
 
 func (st *Storage) loadUsers() error {
+	st.usersLock.Lock()
+	defer st.usersLock.Unlock()
 	return loadJSON(st.users_path, &st.users)
 }
 

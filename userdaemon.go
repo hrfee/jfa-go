@@ -44,6 +44,12 @@ func (rt *userDaemon) run() {
 }
 
 func (app *appContext) checkUsers() {
+	if err := app.storage.loadUsers(); err != nil {
+		app.err.Printf("Failed to load user expiries: %v", err)
+		return
+	}
+	app.storage.usersLock.Lock()
+	defer app.storage.usersLock.Unlock()
 	if len(app.storage.users) == 0 {
 		return
 	}

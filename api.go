@@ -446,6 +446,8 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 		}
 	}
 	if invite.UserExpiry {
+		app.storage.usersLock.Lock()
+		defer app.storage.usersLock.Unlock()
 		expiry := time.Now().Add(time.Duration(60*(invite.UserDays*24+invite.UserHours)+invite.UserMinutes) * time.Minute)
 		app.storage.users[id] = expiry
 		if err := app.storage.storeUsers(); err != nil {
@@ -473,6 +475,8 @@ func (app *appContext) ExtendExpiry(gc *gin.Context) {
 		respondBool(400, false, gc)
 		return
 	}
+	app.storage.usersLock.Lock()
+	defer app.storage.usersLock.Unlock()
 	for _, id := range req.Users {
 		if expiry, ok := app.storage.users[id]; ok {
 			app.storage.users[id] = expiry.Add(time.Duration(60*(req.Days*24+req.Hours)+req.Minutes) * time.Minute)

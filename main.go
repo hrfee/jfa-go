@@ -353,17 +353,29 @@ func start(asDaemon, firstCall bool) {
 		app.debug.Println("Loading storage")
 
 		app.storage.invite_path = app.config.Section("files").Key("invites").String()
-		app.storage.loadInvites()
+		if err := app.storage.loadInvites(); err != nil {
+			app.err.Printf("Failed to load Invites: %v", err)
+		}
 		app.storage.emails_path = app.config.Section("files").Key("emails").String()
-		app.storage.loadEmails()
+		if err := app.storage.loadEmails(); err != nil {
+			app.err.Printf("Failed to load Emails: %v", err)
+		}
 		app.storage.policy_path = app.config.Section("files").Key("user_template").String()
-		app.storage.loadPolicy()
+		if err := app.storage.loadPolicy(); err != nil {
+			app.err.Printf("Failed to load Policy: %v", err)
+		}
 		app.storage.configuration_path = app.config.Section("files").Key("user_configuration").String()
-		app.storage.loadConfiguration()
+		if err := app.storage.loadConfiguration(); err != nil {
+			app.err.Printf("Failed to load Configuration: %v", err)
+		}
 		app.storage.displayprefs_path = app.config.Section("files").Key("user_displayprefs").String()
-		app.storage.loadDisplayprefs()
+		if err := app.storage.loadDisplayprefs(); err != nil {
+			app.err.Printf("Failed to load Displayprefs: %v", err)
+		}
 		app.storage.users_path = app.config.Section("files").Key("users").String()
-		app.storage.loadUsers()
+		if err := app.storage.loadUsers(); err != nil {
+			app.err.Printf("Failed to load Users: %v", err)
+		}
 
 		app.storage.profiles_path = app.config.Section("files").Key("user_profiles").String()
 		app.storage.loadProfiles()
