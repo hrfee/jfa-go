@@ -113,6 +113,7 @@ func (app *appContext) checkUsers() {
 				continue
 			}
 			delete(app.storage.users, id)
+			app.jf.CacheExpiry = time.Now()
 			if email {
 				address, ok := app.storage.emails[id]
 				if !ok {
