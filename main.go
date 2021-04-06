@@ -576,11 +576,13 @@ func start(asDaemon, firstCall bool) {
 			os.Exit(0)
 		}
 
-		inviteDaemon := newInviteDaemon(time.Duration(60*time.Second), app)
-		go inviteDaemon.run()
+		invDaemon := newInviteDaemon(time.Duration(60*time.Second), app)
+		go invDaemon.run()
+		defer invDaemon.shutdown()
 
 		userDaemon := newUserDaemon(time.Duration(60*time.Second), app)
 		go userDaemon.run()
+		defer userDaemon.shutdown()
 
 		if app.config.Section("password_resets").Key("enabled").MustBool(false) && serverType == mediabrowser.JellyfinServer {
 			go app.StartPWR()

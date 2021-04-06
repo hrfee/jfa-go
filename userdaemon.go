@@ -42,6 +42,13 @@ func (rt *userDaemon) run() {
 	}
 }
 
+func (rt *userDaemon) shutdown() {
+	rt.Stopped = true
+	rt.ShutdownChannel <- "Down"
+	<-rt.ShutdownChannel
+	close(rt.ShutdownChannel)
+}
+
 func (app *appContext) checkUsers() {
 	if err := app.storage.loadUsers(); err != nil {
 		app.err.Printf("Failed to load user expiries: %v", err)
