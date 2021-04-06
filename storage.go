@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/fs"
 	"log"
 	"os"
@@ -496,7 +495,6 @@ func (st *Storage) loadUsers() error {
 			st.users[id] = t1
 		}
 	}
-	fmt.Printf("CURRENT USERS:\n%+v\n", st.users)
 	return nil
 }
 
