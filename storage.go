@@ -59,20 +59,21 @@ type Profile struct {
 }
 
 type Invite struct {
-	Created       time.Time                  `json:"created"`
-	NoLimit       bool                       `json:"no-limit"`
-	RemainingUses int                        `json:"remaining-uses"`
-	ValidTill     time.Time                  `json:"valid_till"`
-	UserExpiry    bool                       `json:"user-duration"`
-	UserDays      int                        `json:"user-days,omitempty"`
-	UserHours     int                        `json:"user-hours,omitempty"`
-	UserMinutes   int                        `json:"user-minutes,omitempty"`
-	Email         string                     `json:"email"`
-	UsedBy        [][]string                 `json:"used-by"`
-	Notify        map[string]map[string]bool `json:"notify"`
-	Profile       string                     `json:"profile"`
-	Label         string                     `json:"label,omitempty"`
-	Keys          []string                   `json:"keys,omitempty"`
+	Created       time.Time `json:"created"`
+	NoLimit       bool      `json:"no-limit"`
+	RemainingUses int       `json:"remaining-uses"`
+	ValidTill     time.Time `json:"valid_till"`
+	UserExpiry    bool      `json:"user-duration"`
+	UserDays      int       `json:"user-days,omitempty"`
+	UserHours     int       `json:"user-hours,omitempty"`
+	UserMinutes   int       `json:"user-minutes,omitempty"`
+	Email         string    `json:"email"`
+	// Used to be stored as formatted time, now as Unix.
+	UsedBy  [][]string                 `json:"used-by"`
+	Notify  map[string]map[string]bool `json:"notify"`
+	Profile string                     `json:"profile"`
+	Label   string                     `json:"label,omitempty"`
+	Keys    []string                   `json:"keys,omitempty"`
 }
 
 type Lang struct {

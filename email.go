@@ -19,8 +19,8 @@ import (
 
 	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/html"
+	"github.com/itchyny/timefmt-go"
 	jEmail "github.com/jordan-wright/email"
-	"github.com/knz/strtime"
 	"github.com/mailgun/mailgun-go/v4"
 )
 
@@ -101,8 +101,8 @@ type Email struct {
 }
 
 func (emailer *Emailer) formatExpiry(expiry time.Time, tzaware bool, datePattern, timePattern string) (d, t, expiresIn string) {
-	d, _ = strtime.Strftime(expiry, datePattern)
-	t, _ = strtime.Strftime(expiry, timePattern)
+	d = timefmt.Format(expiry, datePattern)
+	t = timefmt.Format(expiry, timePattern)
 	currentTime := time.Now()
 	if tzaware {
 		currentTime = currentTime.UTC()

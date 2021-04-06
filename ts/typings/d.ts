@@ -104,8 +104,8 @@ interface Invite {
     expiresIn?: string;
     remainingUses?: string;
     email?: string;
-    usedBy?: string[][];
-    created?: string;
+    usedBy?: { [name: string]: number };
+    created?: number;
     notifyExpiry?: boolean;
     notifyCreation?: boolean;
     profile?: string;

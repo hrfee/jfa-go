@@ -72,23 +72,23 @@ type newProfileDTO struct {
 }
 
 type inviteDTO struct {
-	Code           string     `json:"code" example:"sajdlj23423j23"`         // Invite code
-	Days           int        `json:"days" example:"1"`                      // Number of days till expiry
-	Hours          int        `json:"hours" example:"2"`                     // Number of hours till expiry
-	Minutes        int        `json:"minutes" example:"3"`                   // Number of minutes till expiry
-	UserExpiry     bool       `json:"user-expiry"`                           // Whether or not user expiry is enabled
-	UserDays       int        `json:"user-days,omitempty" example:"1"`       // Number of days till user expiry
-	UserHours      int        `json:"user-hours,omitempty" example:"2"`      // Number of hours till user expiry
-	UserMinutes    int        `json:"user-minutes,omitempty" example:"3"`    // Number of minutes till user expiry
-	Created        string     `json:"created" example:"01/01/20 12:00"`      // Date of creation
-	Profile        string     `json:"profile" example:"DefaultProfile"`      // Profile used on this invite
-	UsedBy         [][]string `json:"used-by,omitempty"`                     // Users who have used this invite
-	NoLimit        bool       `json:"no-limit,omitempty"`                    // If true, invite can be used any number of times
-	RemainingUses  int        `json:"remaining-uses,omitempty"`              // Remaining number of uses (if applicable)
-	Email          string     `json:"email,omitempty"`                       // Email the invite was sent to (if applicable)
-	NotifyExpiry   bool       `json:"notify-expiry,omitempty"`               // Whether to notify the requesting user of expiry or not
-	NotifyCreation bool       `json:"notify-creation,omitempty"`             // Whether to notify the requesting user of account creation or not
-	Label          string     `json:"label,omitempty" example:"For Friends"` // Optional label for the invite
+	Code           string           `json:"code" example:"sajdlj23423j23"`         // Invite code
+	Days           int              `json:"days" example:"1"`                      // Number of days till expiry
+	Hours          int              `json:"hours" example:"2"`                     // Number of hours till expiry
+	Minutes        int              `json:"minutes" example:"3"`                   // Number of minutes till expiry
+	UserExpiry     bool             `json:"user-expiry"`                           // Whether or not user expiry is enabled
+	UserDays       int              `json:"user-days,omitempty" example:"1"`       // Number of days till user expiry
+	UserHours      int              `json:"user-hours,omitempty" example:"2"`      // Number of hours till user expiry
+	UserMinutes    int              `json:"user-minutes,omitempty" example:"3"`    // Number of minutes till user expiry
+	Created        int64            `json:"created" example:"1617737207510"`       // Date of creation
+	Profile        string           `json:"profile" example:"DefaultProfile"`      // Profile used on this invite
+	UsedBy         map[string]int64 `json:"used-by,omitempty"`                     // Users who have used this invite mapped to their creation time in Epoch/Unix time
+	NoLimit        bool             `json:"no-limit,omitempty"`                    // If true, invite can be used any number of times
+	RemainingUses  int              `json:"remaining-uses,omitempty"`              // Remaining number of uses (if applicable)
+	Email          string           `json:"email,omitempty"`                       // Email the invite was sent to (if applicable)
+	NotifyExpiry   bool             `json:"notify-expiry,omitempty"`               // Whether to notify the requesting user of expiry or not
+	NotifyCreation bool             `json:"notify-creation,omitempty"`             // Whether to notify the requesting user of account creation or not
+	Label          string           `json:"label,omitempty" example:"For Friends"` // Optional label for the invite
 }
 
 type getInvitesDTO struct {

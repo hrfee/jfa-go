@@ -1,4 +1,4 @@
-import { _get, _post, toggleLoader } from "../modules/common.js";
+import { _get, _post, toggleLoader, toDateString } from "../modules/common.js";
 import { Marked, Renderer } from "@ts-stack/markdown";
 
 interface updateDTO {
@@ -29,7 +29,7 @@ export class Updater implements updater {
     get date(): number { return Math.floor(this._date.getTime() / 1000); }
     set date(unix: number) {
         this._date = new Date(unix * 1000);
-        document.getElementById("update-date").textContent = this._date.toDateString() + " " + this._date.toLocaleTimeString();
+        document.getElementById("update-date").textContent = toDateString(this._date);
     }
     
     get description(): string { return this._update.description; }

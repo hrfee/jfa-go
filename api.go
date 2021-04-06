@@ -11,7 +11,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"github.com/hrfee/mediabrowser"
-	"github.com/knz/strtime"
+	"github.com/itchyny/timefmt-go"
 	"github.com/lithammer/shortuuid/v3"
 	"gopkg.in/ini.v1"
 )
@@ -48,8 +48,8 @@ func (app *appContext) loadStrftime() {
 }
 
 func (app *appContext) prettyTime(dt time.Time) (date, time string) {
-	date, _ = strtime.Strftime(dt, app.datePattern)
-	time, _ = strtime.Strftime(dt, app.timePattern)
+	date = timefmt.Format(dt, app.datePattern)
+	time = timefmt.Format(dt, app.timePattern)
 	return
 }
 
@@ -189,7 +189,7 @@ func (app *appContext) checkInvite(code string, used bool, username string) bool
 			// 0 means infinite i guess?
 			newInv.RemainingUses--
 		}
-		newInv.UsedBy = append(newInv.UsedBy, []string{username, app.formatDatetime(currentTime)})
+		newInv.UsedBy = append(newInv.UsedBy, []string{username, strconv.FormatInt(currentTime.Unix(), 10)})
 		if !del {
 			app.storage.invites[code] = newInv
 		}
@@ -870,13 +870,25 @@ func (app *appContext) GetInvites(gc *gin.Context) {
 			UserDays:    inv.UserDays,
 			UserHours:   inv.UserHours,
 			UserMinutes: inv.UserMinutes,
-			Created:     app.formatDatetime(inv.Created),
+			Created:     inv.Created.Unix(),
 			Profile:     inv.Profile,
 			NoLimit:     inv.NoLimit,
 			Label:       inv.Label,
 		}
 		if len(inv.UsedBy) != 0 {
-			invite.UsedBy = inv.UsedBy
+			invite.UsedBy = map[string]int64{}
+			for _, pair := range inv.UsedBy {
+				// These used to be stored formatted instead of as a unix timestamp.
+				unix, err := strconv.ParseInt(pair[1], 10, 64)
+				if err != nil {
+					date, err := timefmt.Parse(pair[1], app.datePattern+" "+app.timePattern)
+					if err != nil {
+						app.err.Printf("Failed to parse usedBy time: %v", err)
+					}
+					unix = date.Unix()
+				}
+				invite.UsedBy[pair[0]] = unix
+			}
 		}
 		invite.RemainingUses = 1
 		if inv.RemainingUses != 0 {

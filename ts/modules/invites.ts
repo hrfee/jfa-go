@@ -1,4 +1,4 @@
-import { _get, _post, _delete, toClipboard, toggleLoader } from "../modules/common.js";
+import { _get, _post, _delete, toClipboard, toggleLoader, toDateString } from "../modules/common.js";
 
 export class DOMInvite implements Invite {
     updateNotify = (checkbox: HTMLInputElement) => {
@@ -116,10 +116,9 @@ export class DOMInvite implements Invite {
         tooltip.textContent = address;
     }
 
-    private _usedBy: string[][];
-    get usedBy(): string[][] { return this._usedBy; }
-    set usedBy(uB: string[][]) {
-        // ub[i][0]: username, ub[i][1]: date
+    private _usedBy: { [name: string]: number };
+    get usedBy(): { [name: string]: number } { return this._usedBy; }
+    set usedBy(uB: { [name: string]: number }) {
         this._usedBy = uB;
         if (uB.length == 0) {
             this._right.classList.add("empty");
@@ -137,11 +136,11 @@ export class DOMInvite implements Invite {
             </thead>
             <tbody>
         `;
-        for (let user of uB) {
+        for (let username in uB) {
             innerHTML += `
                 <tr>
-                    <td>${user[0]}</td>
-                    <td>${user[1]}</td>
+                    <td>${username}</td>
+                    <td>${toDateString(new Date(uB[username] * 1000))}</td>
                 </tr>
             `;
         }
@@ -152,11 +151,16 @@ export class DOMInvite implements Invite {
         this._userTable.innerHTML = innerHTML;
     }
 
-    private _created: string;
-    get created(): string { return this._created; }
-    set created(created: string) {
-        this._created = created;
-        this._middle.querySelector("strong.inv-created").textContent = created;
+    private _createdUnix: number;
+    get created(): number { return this._createdUnix; }
+    set created(unix: number) {
+        this._createdUnix = unix;
+        const el = this._middle.querySelector("strong.inv-created");
+        if (unix == 0) {
+            el.textContent = "n/a";
+        } else {
+            el.textContent = toDateString(new Date(unix*1000));
+        }
     }
     
     private _notifyExpiry: boolean = false;
