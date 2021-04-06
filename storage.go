@@ -482,7 +482,17 @@ func (st *Storage) storeInvites() error {
 func (st *Storage) loadUsers() error {
 	st.usersLock.Lock()
 	defer st.usersLock.Unlock()
-	return loadJSON(st.users_path, &st.users)
+	temp := map[string]time.Time{}
+	err := loadJSON(st.users_path, &temp)
+	if err != nil {
+		return err
+	}
+	for id, t1 := range temp {
+		if _, ok := st.users[id]; !ok {
+			st.users[id] = t1
+		}
+	}
+	return nil
 }
 
 func (st *Storage) storeUsers() error {
