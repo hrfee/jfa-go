@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -390,11 +391,13 @@ func (ud *Updater) pullInternal(url string) (applyUpdate ApplyUpdate, status int
 	if err != nil || resp.StatusCode != 200 {
 		return
 	}
+	defer resp.Body.Close()
 	gz, err := gzip.NewReader(resp.Body)
 	if err != nil {
 		status = -1
 		return
 	}
+	defer gz.Close()
 	tarReader := tar.NewReader(gz)
 	var header *tar.Header
 	for {
@@ -410,31 +413,33 @@ func (ud *Updater) pullInternal(url string) (applyUpdate ApplyUpdate, status int
 		case tar.TypeReg:
 			// Search only for file named ud.binary
 			if header.Name == ud.binary {
+				var file string
+				file, err = os.Executable()
+				if err != nil {
+					return
+				}
+				var path string
+				path, err = filepath.EvalSymlinks(file)
+				if err != nil {
+					return
+				}
+				var info fs.FileInfo
+				info, err = os.Stat(path)
+				if err != nil {
+					return
+				}
+				mode := info.Mode()
+				var f *os.File
+				f, err = os.OpenFile(path+"_", os.O_RDWR|os.O_CREATE|os.O_TRUNC, mode)
+				if err != nil {
+					return
+				}
+				defer f.Close()
+				_, err = io.Copy(f, tarReader)
+				if err != nil {
+					return
+				}
 				applyUpdate = func() error {
-					defer gz.Close()
-					defer resp.Body.Close()
-					file, err := os.Executable()
-					if err != nil {
-						return err
-					}
-					path, err := filepath.EvalSymlinks(file)
-					if err != nil {
-						return err
-					}
-					info, err := os.Stat(path)
-					if err != nil {
-						return err
-					}
-					mode := info.Mode()
-					f, err := os.OpenFile(path+"_", os.O_RDWR|os.O_CREATE|os.O_TRUNC, mode)
-					if err != nil {
-						return err
-					}
-					defer f.Close()
-					_, err = io.Copy(f, tarReader)
-					if err != nil {
-						return err
-					}
 					return os.Rename(path+"_", path)
 				}
 				return
