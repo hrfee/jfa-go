@@ -82,8 +82,6 @@
         "senderName": "Absendername",
         "dateFormat": "Datumsformat",
         "dateFormatNotice": "Datum folgt dem strftime-Format. Für weitere Informationen, besuche {n}.",
-        "time24h": "24h-Format",
-        "time12h": "12h-Format",
         "encryption": "Verschlüsselung",
         "mailgunApiURL": "API-URL"
     },

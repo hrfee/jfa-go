@@ -12,6 +12,8 @@
         "error": "Fout",
         "copy": "Kopiëer",
         "theme": "Thema",
+        "time24h": "24u-formaat",
+        "time12h": "12u-formaat",
         "copied": "Gekopieerd"
     }
 }

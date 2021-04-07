@@ -82,8 +82,6 @@
         "senderName": "Nama Pengirim",
         "dateFormat": "Format Tanggal",
         "dateFormatNotice": "Tanggal mengikuti format strftime. Untuk info lebih lanjut, kunjungi {n}.",
-        "time24h": "Waktu 24 jam",
-        "time12h": "Waktu 12 jam",
         "encryption": "Enkripsi",
         "mailgunApiURL": "URL API"
     },

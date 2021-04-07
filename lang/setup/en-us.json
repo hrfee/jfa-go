@@ -89,8 +89,6 @@
         "senderName": "Sender Name",
         "dateFormat": "Date Format",
         "dateFormatNotice": "Date follows the strftime format. For more info, visit {n}.",
-        "time24h": "24h Time",
-        "time12h": "12h Time",
         "encryption": "Encryption",
         "mailgunApiURL": "API URL"
     },

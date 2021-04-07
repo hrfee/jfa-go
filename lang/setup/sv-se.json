@@ -82,8 +82,6 @@
         "senderName": "Avsändarens namn",
         "dateFormat": "Datumformat",
         "dateFormatNotice": "Datum följer strftime-formatet. Mer information finns på {n}.",
-        "time24h": "24 timmarsklocka",
-        "time12h": "12 timmarsklocka",
         "encryption": "Kryptering",
         "mailgunApiURL": "API URL"
     },

@@ -82,8 +82,6 @@
         "senderName": "Nom de l'envoyeur",
         "dateFormat": "Format de la date",
         "dateFormatNotice": "La date suis le format srtftime. Pour plus d'informations, consultez {n}.",
-        "time24h": "Temps 24h",
-        "time12h": "Temps 12h",
         "encryption": "Chiffrement",
         "mailgunApiURL": "URL de l'API"
     },

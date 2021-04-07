@@ -82,8 +82,6 @@
         "senderName": "Nome do remetente",
         "dateFormat": "Formato da Data",
         "dateFormatNotice": "A data segue o formato strftime. Para obter mais informações, visite {n}.",
-        "time24h": "Horário 24h",
-        "time12h": "Horário 12h",
         "encryption": "Encriptação",
         "mailgunApiURL": "API URL"
     },

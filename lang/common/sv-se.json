@@ -11,6 +11,8 @@
         "success": "Lyckades",
         "error": "Fel",
         "copy": "Kopiera",
+        "time24h": "24 timmarsklocka",
+        "time12h": "12 timmarsklocka",
         "theme": "Tema"
     }
 }

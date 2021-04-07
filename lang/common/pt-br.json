@@ -12,6 +12,8 @@
         "error": "Erro",
         "copy": "Copiar",
         "theme": "Tema",
+        "time24h": "Horário 24h",
+        "time12h": "Horário 12h",
         "copied": "Copiado"
     }
 }

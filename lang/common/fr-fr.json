@@ -12,6 +12,8 @@
         "success": "Succès",
         "error": "Erreur",
         "copy": "Copier",
+        "time24h": "Temps 24h",
+        "time12h": "Temps 12h",
         "theme": "Thème"
     }
 }

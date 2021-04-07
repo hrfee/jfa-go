@@ -11,6 +11,8 @@
         "success": "Sukses",
         "error": "Error",
         "copy": "Salin",
+        "time24h": "Waktu 24 jam",
+        "time12h": "Waktu 12 jam",
         "theme": "Tema"
     }
 }

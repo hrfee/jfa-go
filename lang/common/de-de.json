@@ -12,6 +12,8 @@
         "error": "Fehler",
         "copy": "Kopieren",
         "theme": "Thema",
+        "time24h": "24h-Format",
+        "time12h": "12h-Format",
         "copied": "Kopiert"
     }
 }
