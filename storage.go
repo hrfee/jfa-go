@@ -144,11 +144,14 @@ func patchLang(english, other *langSection) {
 }
 
 func patchQuantityStrings(english, other *map[string]quantityString) {
+	if *other == nil {
+		*other = map[string]quantityString{}
+	}
 	for n, ev := range *english {
 		qs, ok := (*other)[n]
 		if !ok {
 			(*other)[n] = ev
-			return
+			continue
 		} else if qs.Singular == "" {
 			qs.Singular = ev.Singular
 		} else if (*other)[n].Plural == "" {
@@ -429,6 +432,8 @@ func (st *Storage) loadLangEmail(filesystems ...fs.FS) error {
 			patchLang(&english.UserDeleted, &lang.UserDeleted)
 			patchLang(&english.InviteEmail, &lang.InviteEmail)
 			patchLang(&english.WelcomeEmail, &lang.WelcomeEmail)
+			patchLang(&english.EmailConfirmation, &lang.EmailConfirmation)
+			patchLang(&english.UserExpired, &lang.UserExpired)
 		}
 		st.lang.Email[index] = lang
 		return nil
