@@ -7,7 +7,8 @@ export function createEl(html: string): HTMLElement {
 }
 
 export function toDateString(date: Date): string {
-    return date.toLocaleDateString() + " " + date.toLocaleString([], {
+    const locale = (window as any).navigator.userLanguage || window.navigator.language;
+    return date.toLocaleDateString(locale) + " " + date.toLocaleString(locale, {
         hour: "2-digit",
         minute: "2-digit"
     })

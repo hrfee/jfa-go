@@ -8,7 +8,7 @@ interface updateDTO {
 
 export class Updater implements updater {
     private _update: Update;
-    private _date: Date;
+    private _date: number;
     updateAvailable = false;
 
     checkForUpdates = (run?: (req: XMLHttpRequest) => void) => _get("/config/update", null, (req: XMLHttpRequest) => {
@@ -26,10 +26,10 @@ export class Updater implements updater {
             }
         }
     });
-    get date(): number { return Math.floor(this._date.getTime() / 1000); }
+    get date(): number { return this._date; }
     set date(unix: number) {
-        this._date = new Date(unix * 1000);
-        document.getElementById("update-date").textContent = toDateString(this._date);
+        this._date = unix;
+        document.getElementById("update-date").textContent = toDateString(new Date(this._date * 1000));
     }
     
     get description(): string { return this._update.description; }

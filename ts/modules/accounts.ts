@@ -83,7 +83,7 @@ class user implements User {
     set last_active(unix: number) {
         this._lastActiveUnix = unix;
         if (unix == 0) {
-            this._lastActive.textContent == "";
+            this._lastActive.textContent == "n/a";
         } else {
             this._lastActive.textContent = toDateString(new Date(unix*1000));
         }
