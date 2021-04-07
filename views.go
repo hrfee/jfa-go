@@ -221,6 +221,7 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 		"userExpiryHours":   inv.UserHours,
 		"userExpiryMinutes": inv.UserMinutes,
 		"userExpiryMessage": app.storage.lang.Form[lang].Strings.get("yourAccountIsValidUntil"),
+		"langName":          lang,
 	})
 }
 

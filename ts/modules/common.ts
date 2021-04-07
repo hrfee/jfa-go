@@ -15,12 +15,14 @@ export function toDateString(date: Date): string {
         hour: "2-digit",
         minute: "2-digit"
     };
-    if (t12.checked) {
-        args1["hour12"] = true;
-        args2["hour12"] = true;
-    } else if (t24.checked) {
-        args1["hour12"] = false;
-        args2["hour12"] = false;
+    if (t12 && t24) {
+        if (t12.checked) {
+            args1["hour12"] = true;
+            args2["hour12"] = true;
+        } else if (t24.checked) {
+            args1["hour12"] = false;
+            args2["hour12"] = false;
+        }
     }
     return date.toLocaleDateString(locale, args1) + " " + date.toLocaleString(locale, args2);
 }

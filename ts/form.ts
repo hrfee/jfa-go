@@ -1,5 +1,5 @@
 import { Modal } from "./modules/modal.js";
-import { _get, _post, toggleLoader } from "./modules/common.js";
+import { _get, _post, toggleLoader, toDateString } from "./modules/common.js";
 import { loadLangSelector } from "./modules/lang.js";
 
 interface formWindow extends Window {
@@ -46,7 +46,7 @@ if (window.userExpiryEnabled) {
         time.setDate(time.getDate() + window.userExpiryDays);
         time.setHours(time.getHours() + window.userExpiryHours);
         time.setMinutes(time.getMinutes() + window.userExpiryMinutes);
-        messageEl.textContent = window.userExpiryMessage.replace("{date}", time.toDateString() + " " + time.toLocaleTimeString());
+        messageEl.textContent = window.userExpiryMessage.replace("{date}", toDateString(time));
         setTimeout(calculateTime, 1000);
     };
     calculateTime();
