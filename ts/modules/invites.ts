@@ -363,6 +363,10 @@ export class DOMInvite implements Invite {
         this.update(invite);
 
         document.addEventListener("profileLoadEvent", () => { this.loadProfiles(); }, false);
+        document.addEventListener("timefmt-change", () => {
+            this.created = this.created;
+            this.usedBy = this.usedBy;
+        });
     }
 
     update = (invite: Invite) => {

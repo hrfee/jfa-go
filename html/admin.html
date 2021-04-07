@@ -276,7 +276,16 @@
                 <span class="ml-1 chev"></span>
             </span>
             <div class="dropdown-display">
-                <div class="card ~neutral !low" id="lang-list">
+                <div class="card ~neutral !low">
+                    <label class="switch pb-1">
+                        <input type="radio" name="lang-time" id="lang-12h">
+                        <span>{{ .strings.time12h }}</span>
+                    </label>
+                    <label class="switch pb-1">
+                        <input type="radio" name="lang-time" id="lang-24h">
+                        <span>{{ .strings.time24h }}</span>
+                    </label>
+                    <div id="lang-list"></div>
                 </div>
             </div>
         </span>

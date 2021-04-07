@@ -47,21 +47,39 @@ export class lang implements Lang {
     }
 }
 
-export const loadLangSelector = (page: string) => _get("/lang/" + page, null, (req: XMLHttpRequest) => {
-    if (req.readyState == 4) {
-        if (req.status != 200) {
-            document.getElementById("lang-dropdown").remove();
-            return;
+export const loadLangSelector = (page: string) => {
+    if (page == "admin") {
+        const ev = new CustomEvent("timefmt-change");
+        const setTimefmt = (fmt: string) => {
+            document.dispatchEvent(ev);
+            localStorage.setItem("timefmt", fmt);
+        };
+        const t12 = document.getElementById("lang-12h") as HTMLInputElement;
+        t12.onchange = () => setTimefmt("12h");
+        const t24 = document.getElementById("lang-24h") as HTMLInputElement;
+        t24.onchange = () => setTimefmt("24h");
+
+        const preference = localStorage.getItem("timefmt");
+        if (preference == "12h") {
+            t12.checked = true;
+            t24.checked = false;
+        } else if (preference == "24h") {
+            t24.checked = true;
+            t12.checked = false;
         }
-        const list = document.getElementById("lang-list") as HTMLDivElement;
-        let innerHTML = '';
-        for (let code in req.response) {
-            innerHTML += `<a href="?lang=${code}" class="button input ~neutral field mb-half lang-link">${req.response[code]}</a>`;
-        }
-        list.innerHTML = innerHTML;
     }
-});
-
-
-
-
+    _get("/lang/" + page, null, (req: XMLHttpRequest) => {
+        if (req.readyState == 4) {
+            if (req.status != 200) {
+                document.getElementById("lang-dropdown").remove();
+                return;
+            }
+            const list = document.getElementById("lang-list") as HTMLDivElement;
+            let innerHTML = '';
+            for (let code in req.response) {
+                innerHTML += `<a href="?lang=${code}" class="button input ~neutral field mb-half lang-link">${req.response[code]}</a>`;
+            }
+            list.innerHTML = innerHTML;
+        }
+    });
+};

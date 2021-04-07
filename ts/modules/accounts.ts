@@ -142,6 +142,11 @@ class user implements User {
         };
 
         this.update(user);
+        
+        document.addEventListener("timefmt-change", () => {
+            this.expiry = this.expiry;
+            this.last_active = this.last_active;
+        });
     }
 
     private _updateEmail = () => {

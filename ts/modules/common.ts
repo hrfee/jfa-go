@@ -7,11 +7,22 @@ export function createEl(html: string): HTMLElement {
 }
 
 export function toDateString(date: Date): string {
-    const locale = (window as any).navigator.userLanguage || window.navigator.language;
-    return date.toLocaleDateString(locale) + " " + date.toLocaleString(locale, {
+    const locale = window.language || (window as any).navigator.userLanguage || window.navigator.language;
+    const t12 = document.getElementById("lang-12h") as HTMLInputElement;
+    const t24 = document.getElementById("lang-24h") as HTMLInputElement;
+    let args1 = {};
+    let args2 = {
         hour: "2-digit",
         minute: "2-digit"
-    })
+    };
+    if (t12.checked) {
+        args1["hour12"] = true;
+        args2["hour12"] = true;
+    } else if (t24.checked) {
+        args1["hour12"] = false;
+        args2["hour12"] = false;
+    }
+    return date.toLocaleDateString(locale, args1) + " " + date.toLocaleString(locale, args2);
 }
 
 export function serializeForm(id: string): Object {
