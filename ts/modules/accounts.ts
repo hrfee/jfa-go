@@ -217,7 +217,7 @@ export class accountsList {
     
     private _count = 30;
     private _populateNumbers = () => {
-        const fieldIDs = ["days", "hours", "minutes"];
+        const fieldIDs = ["months", "days", "hours", "minutes"];
         const prefixes = ["extend-expiry-"];
         for (let i = 0; i < fieldIDs.length; i++) {
             for (let j = 0; j < prefixes.length; j++) { 
@@ -560,7 +560,7 @@ export class accountsList {
         form.onsubmit = (event: Event) => {
             event.preventDefault();
             let send = { "users": applyList }
-            for (let field of ["days", "hours", "minutes"]) {
+            for (let field of ["months", "days", "hours", "minutes"]) {
                 send[field] = +(document.getElementById("extend-expiry-"+field) as HTMLSelectElement).value;
             }
             _post("/users/extend", send, (req: XMLHttpRequest) => {

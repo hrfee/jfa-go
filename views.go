@@ -254,6 +254,7 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 		"code":              code,
 		"confirmation":      app.config.Section("email_confirmation").Key("enabled").MustBool(false),
 		"userExpiry":        inv.UserExpiry,
+		"userExpiryMonths":  inv.UserMonths,
 		"userExpiryDays":    inv.UserDays,
 		"userExpiryHours":   inv.UserHours,
 		"userExpiryMinutes": inv.UserMinutes,

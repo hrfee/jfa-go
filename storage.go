@@ -64,6 +64,7 @@ type Invite struct {
 	RemainingUses int       `json:"remaining-uses"`
 	ValidTill     time.Time `json:"valid_till"`
 	UserExpiry    bool      `json:"user-duration"`
+	UserMonths    int       `json:"user-months,omitempty"`
 	UserDays      int       `json:"user-days,omitempty"`
 	UserHours     int       `json:"user-hours,omitempty"`
 	UserMinutes   int       `json:"user-minutes,omitempty"`

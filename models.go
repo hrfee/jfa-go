@@ -30,10 +30,12 @@ type deleteUserDTO struct {
 }
 
 type generateInviteDTO struct {
+	Months        int    `json:"months" example:"0"`                 // Number of months
 	Days          int    `json:"days" example:"1"`                   // Number of days
 	Hours         int    `json:"hours" example:"2"`                  // Number of hours
 	Minutes       int    `json:"minutes" example:"3"`                // Number of minutes
 	UserExpiry    bool   `json:"user-expiry"`                        // Whether or not user expiry is enabled
+	UserMonths    int    `json:"user-months,omitempty" example:"1"`  // Number of months till user expiry
 	UserDays      int    `json:"user-days,omitempty" example:"1"`    // Number of days till user expiry
 	UserHours     int    `json:"user-hours,omitempty" example:"2"`   // Number of hours till user expiry
 	UserMinutes   int    `json:"user-minutes,omitempty" example:"3"` // Number of minutes till user expiry
@@ -73,10 +75,12 @@ type newProfileDTO struct {
 
 type inviteDTO struct {
 	Code           string           `json:"code" example:"sajdlj23423j23"`         // Invite code
+	Months         int              `json:"months" example:"1"`                    // Number of months till expiry
 	Days           int              `json:"days" example:"1"`                      // Number of days till expiry
 	Hours          int              `json:"hours" example:"2"`                     // Number of hours till expiry
 	Minutes        int              `json:"minutes" example:"3"`                   // Number of minutes till expiry
 	UserExpiry     bool             `json:"user-expiry"`                           // Whether or not user expiry is enabled
+	UserMonths     int              `json:"user-months,omitempty" example:"1"`     // Number of months till user expiry
 	UserDays       int              `json:"user-days,omitempty" example:"1"`       // Number of days till user expiry
 	UserHours      int              `json:"user-hours,omitempty" example:"2"`      // Number of hours till user expiry
 	UserMinutes    int              `json:"user-minutes,omitempty" example:"3"`    // Number of minutes till user expiry
@@ -212,6 +216,7 @@ type customEmailDTO struct {
 
 type extendExpiryDTO struct {
 	Users   []string `json:"users"`               // List of user IDs to apply to.
+	Months  int      `json:"months" example:"1"`  // Number of months to add.
 	Days    int      `json:"days" example:"1"`    // Number of days to add.
 	Hours   int      `json:"hours" example:"2"`   // Number of hours to add.
 	Minutes int      `json:"minutes" example:"3"` // Number of minutes to add.

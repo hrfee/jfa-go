@@ -438,7 +438,7 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 	if invite.UserExpiry {
 		app.storage.usersLock.Lock()
 		defer app.storage.usersLock.Unlock()
-		expiry = time.Now().Add(time.Duration(60*(invite.UserDays*24+invite.UserHours)+invite.UserMinutes) * time.Minute)
+		expiry = time.Now().AddDate(0, invite.UserMonths, invite.UserDays).Add(time.Duration((60*invite.UserHours)+invite.UserMinutes) * time.Minute)
 		app.storage.users[id] = expiry
 		if err := app.storage.storeUsers(); err != nil {
 			app.err.Printf("Failed to store user duration: %v", err)
@@ -472,7 +472,7 @@ func (app *appContext) ExtendExpiry(gc *gin.Context) {
 	var req extendExpiryDTO
 	gc.BindJSON(&req)
 	app.info.Printf("Expiry extension requested for %d user(s)", len(req.Users))
-	if req.Days <= 0 && req.Hours <= 0 && req.Minutes <= 0 {
+	if req.Months <= 0 && req.Days <= 0 && req.Hours <= 0 && req.Minutes <= 0 {
 		respondBool(400, false, gc)
 		return
 	}
@@ -480,7 +480,7 @@ func (app *appContext) ExtendExpiry(gc *gin.Context) {
 	defer app.storage.usersLock.Unlock()
 	for _, id := range req.Users {
 		if expiry, ok := app.storage.users[id]; ok {
-			app.storage.users[id] = expiry.Add(time.Duration(60*(req.Days*24+req.Hours)+req.Minutes) * time.Minute)
+			app.storage.users[id] = expiry.AddDate(0, req.Months, req.Days).Add(time.Duration(((60 * req.Hours) + req.Minutes)) * time.Minute)
 			app.debug.Printf("Expiry extended for \"%s\"", id)
 		}
 	}
@@ -654,7 +654,7 @@ func (app *appContext) GenerateInvite(gc *gin.Context) {
 	app.storage.loadInvites()
 	gc.BindJSON(&req)
 	currentTime := time.Now()
-	validTill := currentTime.AddDate(0, 0, req.Days)
+	validTill := currentTime.AddDate(0, req.Months, req.Days)
 	validTill = validTill.Add(time.Hour*time.Duration(req.Hours) + time.Minute*time.Duration(req.Minutes))
 	// make sure code doesn't begin with number
 	inviteCode := shortuuid.New()
@@ -679,6 +679,7 @@ func (app *appContext) GenerateInvite(gc *gin.Context) {
 	}
 	invite.UserExpiry = req.UserExpiry
 	if invite.UserExpiry {
+		invite.UserMonths = req.UserMonths
 		invite.UserDays = req.UserDays
 		invite.UserHours = req.UserHours
 		invite.UserMinutes = req.UserMinutes
@@ -861,13 +862,15 @@ func (app *appContext) GetInvites(gc *gin.Context) {
 	app.checkInvites()
 	var invites []inviteDTO
 	for code, inv := range app.storage.invites {
-		_, _, days, hours, minutes, _ := timeDiff(inv.ValidTill, currentTime)
+		_, months, days, hours, minutes, _ := timeDiff(inv.ValidTill, currentTime)
 		invite := inviteDTO{
 			Code:        code,
+			Months:      months,
 			Days:        days,
 			Hours:       hours,
 			Minutes:     minutes,
 			UserExpiry:  inv.UserExpiry,
+			UserMonths:  inv.UserMonths,
 			UserDays:    inv.UserDays,
 			UserHours:   inv.UserHours,
 			UserMinutes: inv.UserMinutes,

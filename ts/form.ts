@@ -11,6 +11,7 @@ interface formWindow extends Window {
     confirmation: boolean;
     confirmationModal: Modal
     userExpiryEnabled: boolean;
+    userExpiryMonths: number;
     userExpiryDays: number;
     userExpiryHours: number;
     userExpiryMinutes: number;
@@ -43,6 +44,7 @@ if (window.userExpiryEnabled) {
     const messageEl = document.getElementById("user-expiry-message") as HTMLElement;
     const calculateTime = () => {
         let time = new Date()
+        time.setMonth(time.getMonth() + window.userExpiryMonths);
         time.setDate(time.getDate() + window.userExpiryDays);
         time.setHours(time.getHours() + window.userExpiryHours);
         time.setMinutes(time.getMinutes() + window.userExpiryMinutes);

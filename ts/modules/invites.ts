@@ -486,13 +486,17 @@ function parseInvite(invite: { [f: string]: string | number | string[][] | boole
     parsed.label = invite["label"] as string || "";
     let time = "";
     let userExpiryTime = "";
-    const fields = ["days", "hours", "minutes"];
+    const fields = ["months", "days", "hours", "minutes"];
     let prefixes = [""];
     if (invite["user-expiry"] as boolean) { prefixes.push("user-"); }
     for (let i = 0; i < fields.length; i++) {
         for (let j = 0; j < prefixes.length; j++) {
             if (invite[prefixes[j]+fields[i]]) {
-                let text = `${invite[prefixes[j]+fields[i]]}${fields[i][0]} `;
+                let abbreviation = fields[i][0];
+                if (fields[i] == "months") {
+                    abbreviation += fields[i][1];
+                }
+                let text = `${invite[prefixes[j]+fields[i]]}${abbreviation} `;
                 if (prefixes[j] ==  "user-") {
                     userExpiryTime += text;
                 } else {
@@ -524,9 +528,11 @@ export class createInvite {
     private _profile = document.getElementById("create-profile") as HTMLSelectElement;
     private _label = document.getElementById("create-label") as HTMLInputElement;
 
+    private _months = document.getElementById("create-months") as HTMLSelectElement;
     private _days = document.getElementById("create-days") as HTMLSelectElement;
     private _hours = document.getElementById("create-hours") as HTMLSelectElement;
     private _minutes = document.getElementById("create-minutes") as HTMLSelectElement;
+    private _userMonths = document.getElementById("user-months") as HTMLSelectElement;
     private _userDays = document.getElementById("user-days") as HTMLSelectElement;
     private _userHours = document.getElementById("user-hours") as HTMLSelectElement;
     private _userMinutes = document.getElementById("user-minutes") as HTMLSelectElement;
@@ -542,7 +548,7 @@ export class createInvite {
 
     private _count: Number = 30;
     private _populateNumbers = () => {
-        const fieldIDs = ["days", "hours", "minutes"];
+        const fieldIDs = ["months", "days", "hours", "minutes"];
         const prefixes = ["create-", "user-"];
         for (let i = 0; i < fieldIDs.length; i++) {
             for (let j = 0; j < prefixes.length; j++) { 
@@ -597,7 +603,7 @@ export class createInvite {
     set uses(n: number) { this._uses.valueAsNumber = n; }
 
     private _checkDurationValidity = () => {
-        if (this.days + this.hours + this.minutes == 0) {
+        if (this.months + this.days + this.hours + this.minutes == 0) {
             this._createButton.setAttribute("disabled", "");
             this._createButton.onclick = null;
         } else {
@@ -606,6 +612,13 @@ export class createInvite {
         }
     }
 
+    get months(): number {
+        return +this._months.value;
+    }
+    set months(n: number) {
+        this._months.value = ""+n;
+        this._checkDurationValidity();
+    }
     get days(): number {
         return +this._days.value;
     }
@@ -640,9 +653,16 @@ export class createInvite {
             parent.classList.add("~neutral");
             parent.classList.remove("~urge");
         }
+        this._userMonths.disabled = !enabled;
         this._userDays.disabled = !enabled;
         this._userHours.disabled = !enabled;
         this._userMinutes.disabled = !enabled;
+    }
+    get userMonths(): number {
+        return +this._userMonths.value;
+    }
+    set userMonths(n: number) {
+        this._userMonths.value = ""+n;
     }
     get userDays(): number {
         return +this._userDays.value;
@@ -700,10 +720,12 @@ export class createInvite {
             userExpiry = false;
         }
         let send = {
+            "months": this.months,
             "days": this.days,
             "hours": this.hours,
             "minutes": this.minutes,
             "user-expiry": userExpiry,
+            "user-months": this.userMonths,
             "user-days": this.userDays,
             "user-hours": this.userHours,
             "user-minutes": this.userMinutes,
@@ -726,6 +748,7 @@ export class createInvite {
 
     constructor() {
         this._populateNumbers();
+        this.months = 0;
         this.days = 0;
         this.hours = 0;
         this.minutes = 30;
@@ -734,6 +757,7 @@ export class createInvite {
         this._sendToEnabled.onchange = () => { this.sendToEnabled = this.sendToEnabled; };
         this.userExpiry = false;
         this._userExpiryToggle.onchange = () => { this.userExpiry = this._userExpiryToggle.checked; }
+        this._userMonths.disabled = true;
         this._userDays.disabled = true;
         this._userHours.disabled = true;
         this._userMinutes.disabled = true;
