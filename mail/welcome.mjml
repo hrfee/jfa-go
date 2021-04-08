@@ -64,6 +64,7 @@
             <p>{{ .youCanLoginWith }}:</p>
             {{ .jellyfinURLString }}: <a href="{{ .jellyfinURLVal }}">{{ .jellyfinURL }}</a>
             <p>{{ .usernameString }}: <i>{{ .username }}</i></p>
+          	<p>{{ .yourAccountWillExpire }}</p>
         </mj-text>
       </mj-column>
     </mj-section>

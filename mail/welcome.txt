@@ -6,5 +6,6 @@
 
 {{ .usernameString }}: {{ .username }}
 
+{{ .yourAccountWillExpire }}
 
 {{ .message }}

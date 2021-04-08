@@ -49,6 +49,7 @@
         "title": "Welcome to Jellyfin",
         "welcome": "Welcome to Jellyfin!",
         "youCanLoginWith": "You can login with the details below",
+        "yourAccountWillExpire": "Your account will expire on {date}.",
         "jellyfinURL": "URL"
     },
     "emailConfirmation": {

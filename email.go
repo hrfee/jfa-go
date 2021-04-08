@@ -29,6 +29,13 @@ type emailClient interface {
 	send(fromName, fromAddr string, email *Email, address ...string) error
 }
 
+type dummyClient struct{}
+
+func (dc *dummyClient) send(fromName, fromAddr string, email *Email, address ...string) error {
+	fmt.Printf("FROM: %s <%s>\nTO: %s\nTEXT: %s\n", fromName, fromAddr, strings.Join(address, ", "), email.Text)
+	return nil
+}
+
 // Mailgun client implements emailClient.
 type Mailgun struct {
 	client *mailgun.MailgunImpl
@@ -146,6 +153,8 @@ func NewEmailer(app *appContext) *Emailer {
 		}
 	} else if method == "mailgun" {
 		emailer.NewMailgun(app.config.Section("mailgun").Key("api_url").String(), app.config.Section("mailgun").Key("api_key").String())
+	} else if method == "dummy" {
+		emailer.sender = &dummyClient{}
 	}
 	return emailer
 }
@@ -566,7 +575,7 @@ func (emailer *Emailer) constructDeleted(reason string, app *appContext, noSub b
 	return email, nil
 }
 
-func (emailer *Emailer) welcomeValues(username string, app *appContext, noSub bool) map[string]interface{} {
+func (emailer *Emailer) welcomeValues(username string, expiry time.Time, app *appContext, noSub bool, custom bool) map[string]interface{} {
 	template := map[string]interface{}{
 		"welcome":           emailer.lang.WelcomeEmail.get("welcome"),
 		"youCanLoginWith":   emailer.lang.WelcomeEmail.get("youCanLoginWith"),
@@ -575,7 +584,7 @@ func (emailer *Emailer) welcomeValues(username string, app *appContext, noSub bo
 		"message":           "",
 	}
 	if noSub {
-		empty := []string{"jellyfinURL", "username"}
+		empty := []string{"jellyfinURL", "username", "yourAccountWillExpire"}
 		for _, v := range empty {
 			template[v] = "{" + v + "}"
 		}
@@ -583,16 +592,34 @@ func (emailer *Emailer) welcomeValues(username string, app *appContext, noSub bo
 		template["jellyfinURL"] = app.config.Section("jellyfin").Key("public_server").String()
 		template["username"] = username
 		template["message"] = app.config.Section("email").Key("message").String()
+		exp := app.formatDatetime(expiry)
+		if custom {
+			template["yourAccountWillExpire"] = exp
+		} else if !expiry.IsZero() {
+			template["yourAccountWillExpire"] = emailer.lang.WelcomeEmail.template("yourAccountWillExpire", tmpl{
+				"date": exp,
+			})
+		}
 	}
 	return template
 }
 
-func (emailer *Emailer) constructWelcome(username string, app *appContext, noSub bool) (*Email, error) {
+func (emailer *Emailer) constructWelcome(username string, expiry time.Time, app *appContext, noSub bool) (*Email, error) {
 	email := &Email{
 		Subject: app.config.Section("welcome_email").Key("subject").MustString(emailer.lang.WelcomeEmail.get("title")),
 	}
 	var err error
-	template := emailer.welcomeValues(username, app, noSub)
+	var template map[string]interface{}
+	if app.storage.customEmails.WelcomeEmail.Enabled {
+		template = emailer.welcomeValues(username, expiry, app, noSub, true)
+	} else {
+		template = emailer.welcomeValues(username, expiry, app, noSub, false)
+	}
+	if noSub {
+		template["yourAccountWillExpire"] = emailer.lang.WelcomeEmail.template("yourAccountWillExpire", tmpl{
+			"date": "{yourAccountWillExpire}",
+		})
+	}
 	if app.storage.customEmails.WelcomeEmail.Enabled {
 		content := app.storage.customEmails.WelcomeEmail.Content
 		for _, v := range app.storage.customEmails.WelcomeEmail.Variables {

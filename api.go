@@ -295,7 +295,7 @@ func (app *appContext) NewUserAdmin(gc *gin.Context) {
 	}
 	if emailEnabled && app.config.Section("welcome_email").Key("enabled").MustBool(false) && req.Email != "" {
 		app.debug.Printf("%s: Sending welcome email to %s", req.Username, req.Email)
-		msg, err := app.email.constructWelcome(req.Username, app, false)
+		msg, err := app.email.constructWelcome(req.Username, time.Time{}, app, false)
 		if err != nil {
 			app.err.Printf("%s: Failed to construct welcome email: %v", req.Username, err)
 			respondUser(500, true, false, err.Error(), gc)
@@ -434,24 +434,25 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 			}
 		}
 	}
+	expiry := time.Time{}
+	if invite.UserExpiry {
+		app.storage.usersLock.Lock()
+		defer app.storage.usersLock.Unlock()
+		expiry = time.Now().Add(time.Duration(60*(invite.UserDays*24+invite.UserHours)+invite.UserMinutes) * time.Minute)
+		app.storage.users[id] = expiry
+		if err := app.storage.storeUsers(); err != nil {
+			app.err.Printf("Failed to store user duration: %v", err)
+		}
+	}
 	if emailEnabled && app.config.Section("welcome_email").Key("enabled").MustBool(false) && req.Email != "" {
 		app.debug.Printf("%s: Sending welcome email to %s", req.Username, req.Email)
-		msg, err := app.email.constructWelcome(req.Username, app, false)
+		msg, err := app.email.constructWelcome(req.Username, expiry, app, false)
 		if err != nil {
 			app.err.Printf("%s: Failed to construct welcome email: %v", req.Username, err)
 		} else if err := app.email.send(msg, req.Email); err != nil {
 			app.err.Printf("%s: Failed to send welcome email: %v", req.Username, err)
 		} else {
 			app.info.Printf("%s: Sent welcome email to \"%s\"", req.Username, req.Email)
-		}
-	}
-	if invite.UserExpiry {
-		app.storage.usersLock.Lock()
-		defer app.storage.usersLock.Unlock()
-		expiry := time.Now().Add(time.Duration(60*(invite.UserDays*24+invite.UserHours)+invite.UserMinutes) * time.Minute)
-		app.storage.users[id] = expiry
-		if err := app.storage.storeUsers(); err != nil {
-			app.err.Printf("Failed to store user duration: %v", err)
 		}
 	}
 	app.jf.CacheExpiry = time.Now()
@@ -1592,14 +1593,14 @@ func (app *appContext) GetEmail(gc *gin.Context) {
 		content = app.storage.customEmails.WelcomeEmail.Content
 		if content == "" {
 			newEmail = true
-			msg, err = app.email.constructWelcome("", app, true)
+			msg, err = app.email.constructWelcome("", time.Time{}, app, true)
 			content = msg.Text
 		} else {
 			variables = app.storage.customEmails.WelcomeEmail.Variables
 		}
 		writeVars = func(variables []string) { app.storage.customEmails.WelcomeEmail.Variables = variables }
 		// app.storage.customEmails.WelcomeEmail = content
-		values = app.email.welcomeValues(username, app, false)
+		values = app.email.welcomeValues(username, time.Time{}, app, false, true)
 	} else if id == "EmailConfirmation" {
 		content = app.storage.customEmails.EmailConfirmation.Content
 		if content == "" {
