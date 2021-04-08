@@ -53,19 +53,56 @@ func (app *appContext) pushResources(gc *gin.Context, admin bool) {
 	gc.Header("Link", cssHeader)
 }
 
-func (app *appContext) getLang(gc *gin.Context, chosen string) string {
+const (
+	AdminPage = iota + 1
+	FormPage
+	PWRPage
+)
+
+func (app *appContext) getLang(gc *gin.Context, page int, chosen string) string {
 	lang := gc.Query("lang")
-	if lang == "" {
-		lang = chosen
-	} else if _, ok := app.storage.lang.Admin[lang]; !ok {
-		lang = chosen
+	cookie, err := gc.Cookie("lang")
+	if lang != "" {
+		switch page {
+		case AdminPage:
+			if _, ok := app.storage.lang.Admin[lang]; ok {
+				gc.SetCookie("lang", lang, (365 * 3600), "/", gc.Request.URL.Hostname(), true, true)
+				return lang
+			}
+		case FormPage:
+			if _, ok := app.storage.lang.Form[lang]; ok {
+				gc.SetCookie("lang", lang, (365 * 3600), "/", gc.Request.URL.Hostname(), true, true)
+				return lang
+			}
+		case PWRPage:
+			if _, ok := app.storage.lang.PasswordReset[lang]; ok {
+				gc.SetCookie("lang", lang, (365 * 3600), "/", gc.Request.URL.Hostname(), true, true)
+				return lang
+			}
+		}
 	}
-	return lang
+	if cookie != "" && err == nil {
+		switch page {
+		case AdminPage:
+			if _, ok := app.storage.lang.Admin[cookie]; ok {
+				return cookie
+			}
+		case FormPage:
+			if _, ok := app.storage.lang.Form[cookie]; ok {
+				return cookie
+			}
+		case PWRPage:
+			if _, ok := app.storage.lang.PasswordReset[cookie]; ok {
+				return cookie
+			}
+		}
+	}
+	return chosen
 }
 
 func (app *appContext) AdminPage(gc *gin.Context) {
 	app.pushResources(gc, true)
-	lang := app.getLang(gc, app.storage.lang.chosenAdminLang)
+	lang := app.getLang(gc, AdminPage, app.storage.lang.chosenAdminLang)
 	emailEnabled, _ := app.config.Section("invite_emails").Key("enabled").Bool()
 	notificationsEnabled, _ := app.config.Section("notifications").Key("enabled").Bool()
 	ombiEnabled := app.config.Section("ombi").Key("enabled").MustBool(false)
@@ -101,7 +138,7 @@ func (app *appContext) ResetPassword(gc *gin.Context) {
 		return
 	}
 	app.pushResources(gc, false)
-	lang := app.getLang(gc, app.storage.lang.chosenPWRLang)
+	lang := app.getLang(gc, PWRPage, app.storage.lang.chosenPWRLang)
 	data := gin.H{
 		"urlBase":        app.getURLBase(gc),
 		"contactMessage": app.config.Section("ui").Key("contact_message").String(),
@@ -121,7 +158,7 @@ func (app *appContext) ResetPassword(gc *gin.Context) {
 func (app *appContext) InviteProxy(gc *gin.Context) {
 	app.pushResources(gc, false)
 	code := gc.Param("invCode")
-	lang := app.getLang(gc, app.storage.lang.chosenFormLang)
+	lang := app.getLang(gc, FormPage, app.storage.lang.chosenFormLang)
 	/* Don't actually check if the invite is valid, just if it exists, just so the page loads quicker. Invite is actually checked on submit anyway. */
 	// if app.checkInvite(code, false, "") {
 	inv, ok := app.storage.invites[code]
