@@ -49,7 +49,8 @@
         "welcome": "Bem vindo ao Jellyfin!",
         "youCanLoginWith": "Abaixo está os detalhes para fazer o login",
         "jellyfinURL": "URL",
-        "name": "Email de Boas vindas"
+        "name": "Email de Boas vindas",
+        "yourAccountWillExpire": "Sua conta irá expirar em {date}."
     },
     "emailConfirmation": {
         "title": "Confirme seu email - Jellyfin",
