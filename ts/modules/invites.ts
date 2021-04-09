@@ -716,7 +716,7 @@ export class createInvite {
     create = () => {
         toggleLoader(this._createButton);
         let userExpiry = this.userExpiry;
-        if (this.userDays == 0 && this.userHours == 0 && this.userMinutes == 0) {
+        if (this.userMonths == 0 && this.userDays == 0 && this.userHours == 0 && this.userMinutes == 0) {
             userExpiry = false;
         }
         let send = {
