@@ -4,6 +4,7 @@
     },
     "strings": {
         "ifItWasNotYou": "Jika ini bukan kamu, silahkan mengabaikan email ini.",
+        "reason": "Alasan",
         "helloUser": "Halo {username},"
     },
     "userCreated": {
@@ -31,7 +32,6 @@
     "userDeleted": {
         "title": "Akun anda telah dihapus - Jellyfin",
         "yourAccountWasDeleted": "Akun Jellyfin anda telah dihapus.",
-        "reason": "Alasan",
         "name": "Penghapusan pengguna"
     },
     "inviteEmail": {

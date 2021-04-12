@@ -64,6 +64,12 @@ func (app *appContext) loadConfig() error {
 	app.MustSetValue("deletion", "email_html", "jfa-go:"+"deleted.html")
 	app.MustSetValue("deletion", "email_text", "jfa-go:"+"deleted.txt")
 
+	// Deletion template is good enough for these as well.
+	app.MustSetValue("disable_enable", "disabled_html", "jfa-go:"+"deleted.html")
+	app.MustSetValue("disable_enable", "disabled_text", "jfa-go:"+"deleted.txt")
+	app.MustSetValue("disable_enable", "enabled_html", "jfa-go:"+"deleted.html")
+	app.MustSetValue("disable_enable", "enabled_text", "jfa-go:"+"deleted.txt")
+
 	app.MustSetValue("welcome_email", "email_html", "jfa-go:"+"welcome.html")
 	app.MustSetValue("welcome_email", "email_text", "jfa-go:"+"welcome.txt")
 

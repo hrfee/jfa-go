@@ -4,6 +4,7 @@
     },
     "strings": {
         "ifItWasNotYou": "Se não foi você, ignore este e-mail.",
+        "reason": "Razão",
         "helloUser": "Ola {username},"
     },
     "userCreated": {
@@ -32,7 +33,6 @@
     "userDeleted": {
         "title": "Sua conta foi excluída - Jellyfin",
         "yourAccountWasDeleted": "Sua conta Jellyfin foi excluída.",
-        "reason": "Razão",
         "name": "Exclusão do usuário"
     },
     "inviteEmail": {

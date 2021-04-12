@@ -1,4 +1,4 @@
-{{ .yourAccountWasDeleted }}
+{{ .yourAccountWas }}
 
 {{ .reasonString }}: {{ .reason }}
 

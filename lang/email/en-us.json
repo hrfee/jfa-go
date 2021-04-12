@@ -4,7 +4,8 @@
     },
     "strings": {
         "ifItWasNotYou": "If this wasn't you, please ignore this email.",
-        "helloUser": "Hi {username},"
+        "helloUser": "Hi {username},",
+        "reason": "Reason"
     },
     "userCreated": {
         "name": "User creation",
@@ -32,8 +33,17 @@
     "userDeleted": {
         "name": "User deletion",
         "title": "Your account was deleted - Jellyfin",
-        "yourAccountWasDeleted": "Your Jellyfin account was deleted.",
-        "reason": "Reason"
+        "yourAccountWasDeleted": "Your Jellyfin account was deleted."
+    },
+    "userDisabled": {
+        "name": "User disabled",
+        "title": "Your account has been disabled - Jellyfin",
+        "yourAccountWasDisabled": "Your account was disabled."
+    },
+    "userEnabled": {
+        "name": "User enabled",
+        "title": "Your account has been re-enabled - Jellyfin",
+        "yourAccountWasEnabled": "Your account was re-enabled."
     },
     "inviteEmail": {
         "name": "Invite email",

@@ -194,6 +194,7 @@ export class accountsList {
     private _addUserButton = document.getElementById("accounts-add-user") as HTMLSpanElement;
     private _announceButton = document.getElementById("accounts-announce") as HTMLSpanElement;
     private _deleteUser = document.getElementById("accounts-delete-user") as HTMLSpanElement;
+    private _disableEnable = document.getElementById("accounts-disable-enable") as HTMLSpanElement;
     private _deleteNotify = document.getElementById("delete-user-notify") as HTMLInputElement;
     private _deleteReason = document.getElementById("textarea-delete-user") as HTMLTextAreaElement;
     private _extendExpiry = document.getElementById("accounts-extend-expiry") as HTMLSpanElement;
@@ -209,6 +210,8 @@ export class accountsList {
     private _sortedByName: string[] = [];
     private _checkCount: number = 0;
     private _inSearch = false;
+    // Whether the enable/disable button should enable or not.
+    private _shouldEnable = false;
 
     private _addUserForm = document.getElementById("form-add-user") as HTMLFormElement;
     private _addUserName = this._addUserForm.querySelector("input[type=text]") as HTMLInputElement;
@@ -329,6 +332,7 @@ export class accountsList {
                 this._announceButton.classList.add("unfocused");
             }
             this._extendExpiry.classList.add("unfocused");
+            this._disableEnable.classList.add("unfocused");
         } else {
             let visibleCount = 0;
             for (let id in this._users) {
@@ -350,15 +354,36 @@ export class accountsList {
                 this._announceButton.classList.remove("unfocused");
             }
             let anyNonExpiries = list.length == 0 ? true : false;
+            // Only show enable/disable button if all selected have the same state.
+            this._shouldEnable = this._users[list[0]].disabled
+            let showDisableEnable = true;
             for (let id of list) {
-                if (!this._users[id].expiry) {
+                if (!anyNonExpiries && !this._users[id].expiry) {
                     anyNonExpiries = true;
                     this._extendExpiry.classList.add("unfocused");
-                    break;
                 }
+                if (showDisableEnable && this._users[id].disabled != this._shouldEnable) {
+                    showDisableEnable = false;
+                    this._disableEnable.classList.add("unfocused");
+                }
+                if (!showDisableEnable && anyNonExpiries) { break; }
             }
             if (!anyNonExpiries) {
                 this._extendExpiry.classList.remove("unfocused");
+            }
+            if (showDisableEnable) {
+                let message: string;
+                if (this._shouldEnable) {
+                    message = window.lang.strings("reEnable");
+                    this._disableEnable.classList.add("~positive");
+                    this._disableEnable.classList.remove("~warning");
+                } else {
+                    message = window.lang.strings("disable");
+                    this._disableEnable.classList.add("~warning");
+                    this._disableEnable.classList.remove("~positive");
+                }
+                this._disableEnable.classList.remove("unfocused");
+                this._disableEnable.textContent = message;
             }
         }
     }
@@ -440,13 +465,67 @@ export class accountsList {
         };
         window.modals.announce.show();
     }
+    
+    enableDisableUsers = () => {
+        // We can share the delete modal for this
+        const modalHeader = document.getElementById("header-delete-user");
+        const form = document.getElementById("form-delete-user") as HTMLFormElement;
+        const button = form.querySelector("span.submit") as HTMLSpanElement;
+        let list = this._collectUsers();
+        if (this._shouldEnable) {
+            modalHeader.textContent = window.lang.quantity("reEnableUsers", list.length);
+            button.textContent = window.lang.strings("reEnable");
+            button.classList.add("~urge");
+            button.classList.remove("~critical");
+        } else {
+            modalHeader.textContent = window.lang.quantity("disableUsers", list.length);
+            button.textContent = window.lang.strings("disable");
+            button.classList.add("~critical");
+            button.classList.remove("~urge");
+        }
+        this._deleteNotify.checked = false;
+        this._deleteReason.value = "";
+        this._deleteReason.classList.add("unfocused");
+        form.onsubmit = (event: Event) => {
+            event.preventDefault();
+            toggleLoader(button);
+            let send = {
+                "users": list,
+                "enabled": this._shouldEnable,
+                "notify": this._deleteNotify.checked,
+                "reason": this._deleteNotify ? this._deleteReason.value : ""
+            };
+            _post("/users/enable", send, (req: XMLHttpRequest) => {
+                if (req.readyState == 4) {
+                    toggleLoader(button);
+                    window.modals.deleteUser.close();
+                    if (req.status != 200 && req.status != 204) {
+                        let errorMsg = window.lang.notif("errorFailureCheckLogs");
+                        if (!("error" in req.response)) {
+                            errorMsg = window.lang.notif("errorPartialFailureCheckLogs");
+                        }
+                        window.notifications.customError("deleteUserError", errorMsg);
+                    } else if (this._shouldEnable) {
+                        window.notifications.customSuccess("enableUserSuccess", window.lang.quantity("enabledUser", list.length));
+                    } else {
+                        window.notifications.customSuccess("disableUserSuccess", window.lang.quantity("disabledUser", list.length));
+                    }
+                    this.reload();
+                }
+            }, true);
+        }
+        window.modals.deleteUser.show();
+    }
 
     deleteUsers = () => {
         const modalHeader = document.getElementById("header-delete-user");
-        modalHeader.textContent = window.lang.quantity("deleteNUsers", this._collectUsers().length);
         let list = this._collectUsers();
+        modalHeader.textContent = window.lang.quantity("deleteNUsers", list.length);
         const form = document.getElementById("form-delete-user") as HTMLFormElement;
         const button = form.querySelector("span.submit") as HTMLSpanElement;
+        button.textContent = window.lang.strings("delete");
+        button.classList.add("~critical");
+        button.classList.remove("~urge");
         this._deleteNotify.checked = false;
         this._deleteReason.value = "";
         this._deleteReason.classList.add("unfocused");
@@ -469,7 +548,7 @@ export class accountsList {
                         }
                         window.notifications.customError("deleteUserError", errorMsg);
                     } else {
-                        window.notifications.customSuccess("deleteUserSuccess", window.lang.quantity("deletedUser", this._collectUsers().length));
+                        window.notifications.customSuccess("deleteUserSuccess", window.lang.quantity("deletedUser", list.length));
                     }
                     this.reload();
                 }
@@ -629,6 +708,9 @@ export class accountsList {
 
         this._extendExpiry.onclick = this.extendExpiry;
         this._extendExpiry.classList.add("unfocused");
+
+        this._disableEnable.onclick = this.enableDisableUsers;
+        this._disableEnable.classList.add("unfocused");
 
         if (!window.usernameEnabled) {
             this._addUserName.classList.add("unfocused");

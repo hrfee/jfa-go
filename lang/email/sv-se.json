@@ -4,7 +4,8 @@
     },
     "strings": {
         "ifItWasNotYou": "Om detta inte var du, ignorera det här e-postmeddelandet.",
-        "helloUser": "Hej {användarnamn},"
+        "helloUser": "Hej {username},",
+        "reason": "Anledning"
     },
     "userCreated": {
         "name": "Användarskapande",
@@ -31,8 +32,7 @@
     "userDeleted": {
         "name": "Radering av användare",
         "title": "Ditt konto raderades - Jellyfin",
-        "yourAccountWasDeleted": "Ditt Jellyfin-konto raderades.",
-        "reason": "Anledning"
+        "yourAccountWasDeleted": "Ditt Jellyfin-konto raderades."
     },
     "inviteEmail": {
         "name": "Inbjudnings e-post",

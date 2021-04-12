@@ -60,7 +60,7 @@
     <mj-section mj-class="bg">
       <mj-column>
         <mj-text mj-class="text" font-size="16px" font-family="Noto Sans, Helvetica, Arial, sans-serif">
-            <h3>{{ .yourAccountWasDeleted }}</h3>
+            <h3>{{ .yourAccountWas }}</h3>
             <p>{{ .reasonString }}: <i>{{ .reason }}</i></p>
         </mj-text>
       </mj-column>

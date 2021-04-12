@@ -34,6 +34,8 @@ type customEmails struct {
 	InviteExpiry      customEmail `json:"inviteExpiry"`
 	PasswordReset     customEmail `json:"passwordReset"`
 	UserDeleted       customEmail `json:"userDeleted"`
+	UserDisabled      customEmail `json:"userDisabled"`
+	UserEnabled       customEmail `json:"userEnabled"`
 	InviteEmail       customEmail `json:"inviteEmail"`
 	WelcomeEmail      customEmail `json:"welcomeEmail"`
 	EmailConfirmation customEmail `json:"emailConfirmation"`
@@ -431,10 +433,13 @@ func (st *Storage) loadLangEmail(filesystems ...fs.FS) error {
 			patchLang(&english.InviteExpiry, &lang.InviteExpiry)
 			patchLang(&english.PasswordReset, &lang.PasswordReset)
 			patchLang(&english.UserDeleted, &lang.UserDeleted)
+			patchLang(&english.UserDisabled, &lang.UserDisabled)
+			patchLang(&english.UserEnabled, &lang.UserEnabled)
 			patchLang(&english.InviteEmail, &lang.InviteEmail)
 			patchLang(&english.WelcomeEmail, &lang.WelcomeEmail)
 			patchLang(&english.EmailConfirmation, &lang.EmailConfirmation)
 			patchLang(&english.UserExpired, &lang.UserExpired)
+			patchLang(&english.Strings, &lang.Strings)
 		}
 		st.lang.Email[index] = lang
 		return nil

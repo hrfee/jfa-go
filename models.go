@@ -29,6 +29,13 @@ type deleteUserDTO struct {
 	Reason string   `json:"reason"`                   // Account deletion reason (for notification)
 }
 
+type enableDisableUserDTO struct {
+	Users   []string `json:"users" binding:"required"` // List of usernames to delete
+	Enabled bool     `json:"enabled"`                  // True = enable users, False = disable.
+	Notify  bool     `json:"notify"`                   // Whether to notify users of deletion
+	Reason  string   `json:"reason"`                   // Account deletion reason (for notification)
+}
+
 type generateInviteDTO struct {
 	Months        int    `json:"months" example:"0"`                 // Number of months
 	Days          int    `json:"days" example:"1"`                   // Number of days

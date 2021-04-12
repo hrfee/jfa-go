@@ -793,6 +793,7 @@ export class createInvite {
         this._invDurationButton.onchange = checkDuration;
 
         this._days.onchange = this._checkDurationValidity;
+        this._months.onchange = this._checkDurationValidity;
         this._hours.onchange = this._checkDurationValidity;
         this._minutes.onchange = this._checkDurationValidity;
         document.addEventListener("profileLoadEvent", () => { this.loadProfiles(); }, false);

@@ -899,6 +899,68 @@
                 }
             }
         },
+        "disable_enable": {
+            "order": [],
+            "meta": {
+                "name": "Account Disabling/Enabling",
+                "description": "Subject/email files for account disabling/enabling emails.",
+                "depends_true": "email|method"
+            },
+            "settings": {
+                "subject_disabled": {
+                    "name": "Email subject (Disabled)",
+                    "required": false,
+                    "requires_restart": false,
+                    "type": "text",
+                    "value": "",
+                    "description": "Subject of account disabling emails."
+                },
+                "subject_enabled": { 
+                    "name": "Email subject (Enabled)",
+                    "required": false,
+                    "requires_restart": false,
+                    "type": "text",
+                    "value": "",
+                    "description": "Subject of account enabling emails."
+                },
+                "disabled_html": {
+                    "name": "Custom disabling email (HTML)",
+                    "required": false,
+                    "requires_restart": false,
+                    "advanced": true,
+                    "type": "text",
+                    "value": "",
+                    "description": "Path to custom email html"
+                },
+                "disabled_text": {
+                    "name": "Custom disabling email (plaintext)",
+                    "required": false,
+                    "requires_restart": false,
+                    "advanced": true,
+                    "type": "text",
+                    "value": "",
+                    "description": "Path to custom email in plain text"
+                },
+                "enabled_html": {
+                    "name": "Custom enabling email (HTML)",
+                    "required": false,
+                    "requires_restart": false,
+                    "advanced": true,
+                    "type": "text",
+                    "value": "",
+                    "description": "Path to custom email html"
+                },
+                "enabled_text": {
+                    "name": "Custom enabling email (plaintext)",
+                    "required": false,
+                    "requires_restart": false,
+                    "advanced": true,
+                    "type": "text",
+                    "value": "",
+                    "description": "Path to custom email in plain text"
+                }
+            }
+        },
         "deletion": {
             "order": [],
             "meta": {

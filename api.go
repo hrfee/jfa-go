@@ -573,6 +573,70 @@ func (app *appContext) Announce(gc *gin.Context) {
 	respondBool(200, true, gc)
 }
 
+// @Summary Enable/Disable a list of users, optionally notifying them why.
+// @Produce json
+// @Param enableDisableUserDTO body enableDisableUserDTO true "User enable/disable request object"
+// @Success 200 {object} boolResponse
+// @Failure 400 {object} stringResponse
+// @Failure 500 {object} errorListDTO "List of errors"
+// @Router /users/enable [post]
+// @Security Bearer
+// @tags Users
+func (app *appContext) EnableDisableUsers(gc *gin.Context) {
+	var req enableDisableUserDTO
+	gc.BindJSON(&req)
+	errors := errorListDTO{
+		"GetUser":   map[string]string{},
+		"SetPolicy": map[string]string{},
+	}
+	var addresses []string
+	for _, userID := range req.Users {
+		user, status, err := app.jf.UserByID(userID, false)
+		if status != 200 || err != nil {
+			errors["GetUser"][userID] = fmt.Sprintf("%d %v", status, err)
+			app.err.Printf("Failed to get user \"%s\" (%d): %v", userID, status, err)
+			continue
+		}
+		user.Policy.IsDisabled = !req.Enabled
+		status, err = app.jf.SetPolicy(userID, user.Policy)
+		if !(status == 200 || status == 204) || err != nil {
+			errors["SetPolicy"][userID] = fmt.Sprintf("%d %v", status, err)
+			app.err.Printf("Failed to set policy for user \"%s\" (%d): %v", userID, status, err)
+			continue
+		}
+		if emailEnabled && req.Notify {
+			addr, ok := app.storage.emails[userID]
+			if addr != nil && ok {
+				addresses = append(addresses, addr.(string))
+			}
+		}
+	}
+	if len(addresses) != 0 {
+		go func(reason string, addresses []string) {
+			var msg *Email
+			var err error
+			if req.Enabled {
+				msg, err = app.email.constructEnabled(reason, app, false)
+			} else {
+				msg, err = app.email.constructDisabled(reason, app, false)
+			}
+			if err != nil {
+				app.err.Printf("Failed to construct account enabled/disabled emails: %v", err)
+			} else if err := app.email.send(msg, addresses...); err != nil {
+				app.err.Printf("Failed to send account enabled/disabled emails: %v", err)
+			} else {
+				app.info.Println("Sent account enabled/disabled emails")
+			}
+		}(req.Reason, addresses)
+	}
+	app.jf.CacheExpiry = time.Now()
+	if len(errors["GetUser"]) != 0 || len(errors["SetPolicy"]) != 0 {
+		gc.JSON(500, errors)
+		return
+	}
+	respondBool(200, true, gc)
+}
+
 // @Summary Delete a list of users, optionally notifying them why.
 // @Produce json
 // @Param deleteUserDTO body deleteUserDTO true "User deletion request object"
@@ -1379,6 +1443,8 @@ func (app *appContext) GetEmails(gc *gin.Context) {
 		"InviteExpiry":      {Name: app.storage.lang.Email[lang].InviteExpiry["name"], Enabled: app.storage.customEmails.InviteExpiry.Enabled},
 		"PasswordReset":     {Name: app.storage.lang.Email[lang].PasswordReset["name"], Enabled: app.storage.customEmails.PasswordReset.Enabled},
 		"UserDeleted":       {Name: app.storage.lang.Email[lang].UserDeleted["name"], Enabled: app.storage.customEmails.UserDeleted.Enabled},
+		"UserDisabled":      {Name: app.storage.lang.Email[lang].UserDisabled["name"], Enabled: app.storage.customEmails.UserDisabled.Enabled},
+		"UserEnabled":       {Name: app.storage.lang.Email[lang].UserEnabled["name"], Enabled: app.storage.customEmails.UserEnabled.Enabled},
 		"InviteEmail":       {Name: app.storage.lang.Email[lang].InviteEmail["name"], Enabled: app.storage.customEmails.InviteEmail.Enabled},
 		"WelcomeEmail":      {Name: app.storage.lang.Email[lang].WelcomeEmail["name"], Enabled: app.storage.customEmails.WelcomeEmail.Enabled},
 		"EmailConfirmation": {Name: app.storage.lang.Email[lang].EmailConfirmation["name"], Enabled: app.storage.customEmails.EmailConfirmation.Enabled},
@@ -1414,6 +1480,12 @@ func (app *appContext) SetEmail(gc *gin.Context) {
 	} else if id == "UserDeleted" {
 		app.storage.customEmails.UserDeleted.Content = req.Content
 		app.storage.customEmails.UserDeleted.Enabled = true
+	} else if id == "UserDisabled" {
+		app.storage.customEmails.UserDisabled.Content = req.Content
+		app.storage.customEmails.UserDisabled.Enabled = true
+	} else if id == "UserEnabled" {
+		app.storage.customEmails.UserEnabled.Content = req.Content
+		app.storage.customEmails.UserEnabled.Enabled = true
 	} else if id == "InviteEmail" {
 		app.storage.customEmails.InviteEmail.Content = req.Content
 		app.storage.customEmails.InviteEmail.Enabled = true
@@ -1461,6 +1533,10 @@ func (app *appContext) SetEmailState(gc *gin.Context) {
 		app.storage.customEmails.PasswordReset.Enabled = enabled
 	} else if id == "UserDeleted" {
 		app.storage.customEmails.UserDeleted.Enabled = enabled
+	} else if id == "UserDisabled" {
+		app.storage.customEmails.UserDisabled.Enabled = enabled
+	} else if id == "UserEnabled" {
+		app.storage.customEmails.UserEnabled.Enabled = enabled
 	} else if id == "InviteEmail" {
 		app.storage.customEmails.InviteEmail.Enabled = enabled
 	} else if id == "WelcomeEmail" {
@@ -1474,39 +1550,6 @@ func (app *appContext) SetEmailState(gc *gin.Context) {
 		return
 	}
 	if app.storage.storeCustomEmails() != nil {
-		respondBool(500, false, gc)
-		return
-	}
-	respondBool(200, true, gc)
-}
-
-// @Summary Returns whether there's a new update, and extra info if there is.
-// @Produce json
-// @Success 200 {object} checkUpdateDTO
-// @Router /config/update [get]
-// @tags Configuration
-func (app *appContext) CheckUpdate(gc *gin.Context) {
-	if !app.newUpdate {
-		app.update = Update{}
-	}
-	gc.JSON(200, checkUpdateDTO{New: app.newUpdate, Update: app.update})
-}
-
-// @Summary Apply an update.
-// @Produce json
-// @Success 200 {object} boolResponse
-// @Success 400 {object} stringResponse
-// @Success 500 {object} boolResponse
-// @Router /config/update [post]
-// @tags Configuration
-func (app *appContext) ApplyUpdate(gc *gin.Context) {
-	if !app.update.CanUpdate {
-		respond(400, "Update is manual", gc)
-		return
-	}
-	err := app.update.update()
-	if err != nil {
-		app.err.Printf("Failed to apply update: %v", err)
 		respondBool(500, false, gc)
 		return
 	}
@@ -1578,8 +1621,32 @@ func (app *appContext) GetEmail(gc *gin.Context) {
 			variables = app.storage.customEmails.UserDeleted.Variables
 		}
 		writeVars = func(variables []string) { app.storage.customEmails.UserDeleted.Variables = variables }
-		values = app.email.deletedValues(app.storage.lang.Email[lang].UserDeleted.get("reason"), app, false)
+		values = app.email.deletedValues(app.storage.lang.Email[lang].Strings.get("reason"), app, false)
 		// app.storage.customEmails.UserDeleted = content
+	} else if id == "UserDisabled" {
+		content = app.storage.customEmails.UserDisabled.Content
+		if content == "" {
+			newEmail = true
+			msg, err = app.email.constructDisabled("", app, true)
+			content = msg.Text
+		} else {
+			variables = app.storage.customEmails.UserDisabled.Variables
+		}
+		writeVars = func(variables []string) { app.storage.customEmails.UserDisabled.Variables = variables }
+		values = app.email.deletedValues(app.storage.lang.Email[lang].Strings.get("reason"), app, false)
+		// app.storage.customEmails.UserDeleted = content
+	} else if id == "UserEnabled" {
+		content = app.storage.customEmails.UserEnabled.Content
+		if content == "" {
+			newEmail = true
+			msg, err = app.email.constructEnabled("", app, true)
+			content = msg.Text
+		} else {
+			variables = app.storage.customEmails.UserEnabled.Variables
+		}
+		writeVars = func(variables []string) { app.storage.customEmails.UserEnabled.Variables = variables }
+		values = app.email.deletedValues(app.storage.lang.Email[lang].Strings.get("reason"), app, false)
+		// app.storage.customEmails.UserEnabled = content
 	} else if id == "InviteEmail" {
 		content = app.storage.customEmails.InviteEmail.Content
 		if content == "" {
@@ -1668,6 +1735,39 @@ func (app *appContext) GetEmail(gc *gin.Context) {
 		return
 	}
 	gc.JSON(200, customEmailDTO{Content: content, Variables: variables, Values: values, HTML: email.HTML, Plaintext: email.Text})
+}
+
+// @Summary Returns whether there's a new update, and extra info if there is.
+// @Produce json
+// @Success 200 {object} checkUpdateDTO
+// @Router /config/update [get]
+// @tags Configuration
+func (app *appContext) CheckUpdate(gc *gin.Context) {
+	if !app.newUpdate {
+		app.update = Update{}
+	}
+	gc.JSON(200, checkUpdateDTO{New: app.newUpdate, Update: app.update})
+}
+
+// @Summary Apply an update.
+// @Produce json
+// @Success 200 {object} boolResponse
+// @Success 400 {object} stringResponse
+// @Success 500 {object} boolResponse
+// @Router /config/update [post]
+// @tags Configuration
+func (app *appContext) ApplyUpdate(gc *gin.Context) {
+	if !app.update.CanUpdate {
+		respond(400, "Update is manual", gc)
+		return
+	}
+	err := app.update.update()
+	if err != nil {
+		app.err.Printf("Failed to apply update: %v", err)
+		respondBool(500, false, gc)
+		return
+	}
+	respondBool(200, true, gc)
 }
 
 // @Summary Logout by deleting refresh token from cookies.

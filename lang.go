@@ -93,6 +93,8 @@ type emailLang struct {
 	InviteExpiry      langSection `json:"inviteExpiry"`
 	PasswordReset     langSection `json:"passwordReset"`
 	UserDeleted       langSection `json:"userDeleted"`
+	UserDisabled      langSection `json:"userDisabled"`
+	UserEnabled       langSection `json:"userEnabled"`
 	InviteEmail       langSection `json:"inviteEmail"`
 	WelcomeEmail      langSection `json:"welcomeEmail"`
 	EmailConfirmation langSection `json:"emailConfirmation"`

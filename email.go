@@ -535,9 +535,9 @@ func (emailer *Emailer) constructReset(pwr PasswordReset, app *appContext, noSub
 
 func (emailer *Emailer) deletedValues(reason string, app *appContext, noSub bool) map[string]interface{} {
 	template := map[string]interface{}{
-		"yourAccountWasDeleted": emailer.lang.UserDeleted.get("yourAccountWasDeleted"),
-		"reasonString":          emailer.lang.UserDeleted.get("reason"),
-		"message":               "",
+		"yourAccountWas": emailer.lang.UserDeleted.get("yourAccountWasDeleted"),
+		"reasonString":   emailer.lang.Strings.get("reason"),
+		"message":        "",
 	}
 	if noSub {
 		empty := []string{"reason"}
@@ -568,6 +568,90 @@ func (emailer *Emailer) constructDeleted(reason string, app *appContext, noSub b
 		email, err = emailer.constructTemplate(email.Subject, content, app)
 	} else {
 		email.HTML, email.Text, err = emailer.construct(app, "deletion", "email_", template)
+	}
+	if err != nil {
+		return nil, err
+	}
+	return email, nil
+}
+
+func (emailer *Emailer) disabledValues(reason string, app *appContext, noSub bool) map[string]interface{} {
+	template := map[string]interface{}{
+		"yourAccountWas": emailer.lang.UserDisabled.get("yourAccountWasDisabled"),
+		"reasonString":   emailer.lang.Strings.get("reason"),
+		"message":        "",
+	}
+	if noSub {
+		empty := []string{"reason"}
+		for _, v := range empty {
+			template[v] = "{" + v + "}"
+		}
+	} else {
+		template["reason"] = reason
+		template["message"] = app.config.Section("email").Key("message").String()
+	}
+	return template
+}
+
+func (emailer *Emailer) constructDisabled(reason string, app *appContext, noSub bool) (*Email, error) {
+	email := &Email{
+		Subject: app.config.Section("disable_enable").Key("subject_disabled").MustString(emailer.lang.UserDisabled.get("title")),
+	}
+	var err error
+	template := emailer.disabledValues(reason, app, noSub)
+	if app.storage.customEmails.UserDisabled.Enabled {
+		content := app.storage.customEmails.UserDisabled.Content
+		for _, v := range app.storage.customEmails.UserDisabled.Variables {
+			replaceWith, ok := template[v[1:len(v)-1]]
+			if ok {
+				content = strings.ReplaceAll(content, v, replaceWith.(string))
+			}
+		}
+		email, err = emailer.constructTemplate(email.Subject, content, app)
+	} else {
+		email.HTML, email.Text, err = emailer.construct(app, "disable_enable", "disabled_", template)
+	}
+	if err != nil {
+		return nil, err
+	}
+	return email, nil
+}
+
+func (emailer *Emailer) enabledValues(reason string, app *appContext, noSub bool) map[string]interface{} {
+	template := map[string]interface{}{
+		"yourAccountWas": emailer.lang.UserEnabled.get("yourAccountWasEnabled"),
+		"reasonString":   emailer.lang.Strings.get("reason"),
+		"message":        "",
+	}
+	if noSub {
+		empty := []string{"reason"}
+		for _, v := range empty {
+			template[v] = "{" + v + "}"
+		}
+	} else {
+		template["reason"] = reason
+		template["message"] = app.config.Section("email").Key("message").String()
+	}
+	return template
+}
+
+func (emailer *Emailer) constructEnabled(reason string, app *appContext, noSub bool) (*Email, error) {
+	email := &Email{
+		Subject: app.config.Section("disable_enable").Key("subject_enabled").MustString(emailer.lang.UserEnabled.get("title")),
+	}
+	var err error
+	template := emailer.enabledValues(reason, app, noSub)
+	if app.storage.customEmails.UserEnabled.Enabled {
+		content := app.storage.customEmails.UserEnabled.Content
+		for _, v := range app.storage.customEmails.UserEnabled.Variables {
+			replaceWith, ok := template[v[1:len(v)-1]]
+			if ok {
+				content = strings.ReplaceAll(content, v, replaceWith.(string))
+			}
+		}
+		email, err = emailer.constructTemplate(email.Subject, content, app)
+	} else {
+		email.HTML, email.Text, err = emailer.construct(app, "disable_enable", "enabled_", template)
 	}
 	if err != nil {
 		return nil, err

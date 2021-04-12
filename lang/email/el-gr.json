@@ -4,6 +4,7 @@
     },
     "strings": {
         "ifItWasNotYou": "Αν δεν ήσασταν εσείς, παρακαλώ αγνοήστε αυτό το email.",
+        "reason": "Λόγος",
         "helloUser": "Γεία σου {username},"
     },
     "userCreated": {
@@ -32,7 +33,6 @@
     "userDeleted": {
         "title": "Ο λογαριασμός σας διαγράφηκε - Jellyfin",
         "yourAccountWasDeleted": "Ο λογαριασμός σας Jellyfin διαγράφηκε.",
-        "reason": "Λόγος",
         "name": "Διαγραφή χρήστη"
     },
     "inviteEmail": {

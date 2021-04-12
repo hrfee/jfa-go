@@ -24,6 +24,8 @@
         "date": "Date",
         "enabled": "Enabled",
         "disabled": "Disabled",
+        "reEnable": "Re-enable",
+        "disable": "Disable",
         "admin": "Admin",
         "updates": "Updates",
         "update": "Update",
@@ -136,6 +138,14 @@
             "singular": "Delete {n} user",
             "plural": "Delete {n} users"
         },
+        "disableUsers": {
+            "singular": "Disable {n} user",
+            "plural": "Disable {n} users"
+        },
+        "reEnableUsers": {
+            "singular": "Re-enable {n} user",
+            "plural": "Re-enable {n} users"
+        },
         "addUser": {
             "singular": "Add user",
             "plural": "Add users"
@@ -147,6 +157,14 @@
         "deletedUser": {
             "singular": "Deleted {n} user.",
             "plural": "Deleted {n} users."
+        },
+        "disabledUser": {
+            "singular": "Disabled {n} user.",
+            "plural": "Disabled {n} users."
+        },
+        "enabledUser": {
+            "singular": "Enabled {n} user.",
+            "plural": "Enabled {n} users."
         },
         "announceTo": {
             "singular": "Announce to {n} user",
