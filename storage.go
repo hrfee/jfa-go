@@ -120,54 +120,86 @@ func (st *Storage) loadLang(filesystems ...fs.FS) (err error) {
 	return
 }
 
-func (common *commonLangs) patchCommon(lang string, other *langSection) {
-	if *other == nil {
-		*other = langSection{}
+// The following patch* functions fill in a language with missing values
+// from a list of other sources in a preferred order.
+// languages to patch from should be in decreasing priority,
+// E.g: If to = fr-be, from = [fr-fr, en-us].
+func (common *commonLangs) patchCommon(to *langSection, from ...string) {
+	if *to == nil {
+		*to = langSection{}
 	}
-	if _, ok := (*common)[lang]; !ok {
-		lang = "en-us"
-	}
-	for n, ev := range (*common)[lang].Strings {
-		if v, ok := (*other)[n]; !ok || v == "" {
-			(*other)[n] = ev
+	for n, ev := range (*common)[from[len(from)-1]].Strings {
+		if v, ok := (*to)[n]; !ok || v == "" {
+			i := 0
+			for i < len(from)-1 {
+				ev, ok = (*common)[from[i]].Strings[n]
+				if ok && ev != "" {
+					break
+				}
+				i++
+			}
+			(*to)[n] = ev
 		}
 	}
 }
 
-// If a given language has missing values, fill it in with the english value.
-func patchLang(english, other *langSection) {
-	if *other == nil {
-		*other = langSection{}
+func patchLang(to *langSection, from ...*langSection) {
+	if *to == nil {
+		*to = langSection{}
 	}
-	for n, ev := range *english {
-		if v, ok := (*other)[n]; !ok || v == "" {
-			(*other)[n] = ev
+	for n, ev := range *from[len(from)-1] {
+		if v, ok := (*to)[n]; !ok || v == "" {
+			i := 0
+			for i < len(from)-1 {
+				ev, ok = (*from[i])[n]
+				if ok && ev != "" {
+					break
+				}
+				i++
+			}
+			(*to)[n] = ev
 		}
 	}
 }
 
-func patchQuantityStrings(english, other *map[string]quantityString) {
-	if *other == nil {
-		*other = map[string]quantityString{}
+func patchQuantityStrings(to *map[string]quantityString, from ...*map[string]quantityString) {
+	if *to == nil {
+		*to = map[string]quantityString{}
 	}
-	for n, ev := range *english {
-		qs, ok := (*other)[n]
-		if !ok {
-			(*other)[n] = ev
-			continue
-		} else if qs.Singular == "" {
-			qs.Singular = ev.Singular
-		} else if (*other)[n].Plural == "" {
-			qs.Plural = ev.Plural
+	for n, ev := range *from[len(from)-1] {
+		qs, ok := (*to)[n]
+		if !ok || qs.Singular == "" || qs.Plural == "" {
+			i := 0
+			subOk := false
+			for i < len(from)-1 {
+				ev, subOk = (*from[i])[n]
+				if subOk && ev.Singular != "" && ev.Plural != "" {
+					break
+				}
+				i++
+			}
+			if !ok {
+				(*to)[n] = ev
+				continue
+			} else if qs.Singular == "" {
+				qs.Singular = ev.Singular
+			} else if qs.Plural == "" {
+				qs.Plural = ev.Plural
+			}
+			(*to)[n] = qs
 		}
-		(*other)[n] = qs
 	}
 }
+
+type loadLangFunc func(fsIndex int, name string) error
 
 func (st *Storage) loadLangCommon(filesystems ...fs.FS) error {
 	st.lang.Common = map[string]commonLang{}
 	var english commonLang
-	load := func(filesystem fs.FS, fname string) error {
+	loadedLangs := make([]map[string]bool, len(filesystems))
+	var load loadLangFunc
+	load = func(fsIndex int, fname string) error {
+		filesystem := filesystems[fsIndex]
 		index := strings.TrimSuffix(fname, filepath.Ext(fname))
 		lang := commonLang{}
 		f, err := fs.ReadFile(filesystem, FSJoin(st.lang.CommonPath, fname))
@@ -182,34 +214,51 @@ func (st *Storage) loadLangCommon(filesystems ...fs.FS) error {
 			return err
 		}
 		if fname != "en-us.json" {
-			patchLang(&english.Strings, &lang.Strings)
+			if lang.Meta.Fallback != "" {
+				fallback, ok := st.lang.Common[lang.Meta.Fallback]
+				err = nil
+				if !ok {
+					err = load(fsIndex, lang.Meta.Fallback+".json")
+					fallback = st.lang.Common[lang.Meta.Fallback]
+				}
+				if err == nil {
+					loadedLangs[fsIndex][lang.Meta.Fallback+".json"] = true
+					patchLang(&lang.Strings, &fallback.Strings, &english.Strings)
+				}
+			}
+			if (lang.Meta.Fallback != "" && err != nil) || lang.Meta.Fallback == "" {
+				patchLang(&lang.Strings, &english.Strings)
+			}
 		}
 		st.lang.Common[index] = lang
 		return nil
 	}
 	engFound := false
 	var err error
-	for _, filesystem := range filesystems {
-		err = load(filesystem, "en-us.json")
+	for i := range filesystems {
+		loadedLangs[i] = map[string]bool{}
+		err = load(i, "en-us.json")
 		if err == nil {
 			engFound = true
 		}
+		loadedLangs[i]["en-us.json"] = true
 	}
 	if !engFound {
 		return err
 	}
 	english = st.lang.Common["en-us"]
 	commonLoaded := false
-	for _, filesystem := range filesystems {
-		files, err := fs.ReadDir(filesystem, st.lang.CommonPath)
+	for i := range filesystems {
+		files, err := fs.ReadDir(filesystems[i], st.lang.CommonPath)
 		if err != nil {
 			continue
 		}
 		for _, f := range files {
-			if f.Name() != "en-us.json" {
-				err = load(filesystem, f.Name())
+			if !loadedLangs[i][f.Name()] {
+				err = load(i, f.Name())
 				if err == nil {
 					commonLoaded = true
+					loadedLangs[i][f.Name()] = true
 				}
 			}
 		}
@@ -223,7 +272,10 @@ func (st *Storage) loadLangCommon(filesystems ...fs.FS) error {
 func (st *Storage) loadLangAdmin(filesystems ...fs.FS) error {
 	st.lang.Admin = map[string]adminLang{}
 	var english adminLang
-	load := func(filesystem fs.FS, fname string) error {
+	loadedLangs := make([]map[string]bool, len(filesystems))
+	var load loadLangFunc
+	load = func(fsIndex int, fname string) error {
+		filesystem := filesystems[fsIndex]
 		index := strings.TrimSuffix(fname, filepath.Ext(fname))
 		lang := adminLang{}
 		f, err := fs.ReadFile(filesystem, FSJoin(st.lang.AdminPath, fname))
@@ -237,11 +289,27 @@ func (st *Storage) loadLangAdmin(filesystems ...fs.FS) error {
 		if err != nil {
 			return err
 		}
-		st.lang.Common.patchCommon(index, &lang.Strings)
+		st.lang.Common.patchCommon(&lang.Strings, index)
 		if fname != "en-us.json" {
-			patchLang(&english.Strings, &lang.Strings)
-			patchLang(&english.Notifications, &lang.Notifications)
-			patchQuantityStrings(&english.QuantityStrings, &lang.QuantityStrings)
+			if lang.Meta.Fallback != "" {
+				fallback, ok := st.lang.Admin[lang.Meta.Fallback]
+				err = nil
+				if !ok {
+					err = load(fsIndex, lang.Meta.Fallback+".json")
+					fallback = st.lang.Admin[lang.Meta.Fallback]
+				}
+				if err == nil {
+					loadedLangs[fsIndex][lang.Meta.Fallback+".json"] = true
+					patchLang(&lang.Strings, &fallback.Strings, &english.Strings)
+					patchLang(&lang.Notifications, &fallback.Notifications, &english.Notifications)
+					patchQuantityStrings(&lang.QuantityStrings, &fallback.QuantityStrings, &english.QuantityStrings)
+				}
+			}
+			if (lang.Meta.Fallback != "" && err != nil) || lang.Meta.Fallback == "" {
+				patchLang(&lang.Strings, &english.Strings)
+				patchLang(&lang.Notifications, &english.Notifications)
+				patchQuantityStrings(&lang.QuantityStrings, &english.QuantityStrings)
+			}
 		}
 		stringAdmin, err := json.Marshal(lang)
 		if err != nil {
@@ -253,27 +321,30 @@ func (st *Storage) loadLangAdmin(filesystems ...fs.FS) error {
 	}
 	engFound := false
 	var err error
-	for _, filesystem := range filesystems {
-		err = load(filesystem, "en-us.json")
+	for i := range filesystems {
+		loadedLangs[i] = map[string]bool{}
+		err = load(i, "en-us.json")
 		if err == nil {
 			engFound = true
 		}
+		loadedLangs[i]["en-us.json"] = true
 	}
 	if !engFound {
 		return err
 	}
 	english = st.lang.Admin["en-us"]
 	adminLoaded := false
-	for _, filesystem := range filesystems {
-		files, err := fs.ReadDir(filesystem, st.lang.AdminPath)
+	for i := range filesystems {
+		files, err := fs.ReadDir(filesystems[i], st.lang.AdminPath)
 		if err != nil {
 			continue
 		}
 		for _, f := range files {
-			if f.Name() != "en-us.json" {
-				err = load(filesystem, f.Name())
+			if !loadedLangs[i][f.Name()] {
+				err = load(i, f.Name())
 				if err == nil {
 					adminLoaded = true
+					loadedLangs[i][f.Name()] = true
 				}
 			}
 		}
@@ -287,7 +358,10 @@ func (st *Storage) loadLangAdmin(filesystems ...fs.FS) error {
 func (st *Storage) loadLangForm(filesystems ...fs.FS) error {
 	st.lang.Form = map[string]formLang{}
 	var english formLang
-	load := func(filesystem fs.FS, fname string) error {
+	loadedLangs := make([]map[string]bool, len(filesystems))
+	var load loadLangFunc
+	load = func(fsIndex int, fname string) error {
+		filesystem := filesystems[fsIndex]
 		index := strings.TrimSuffix(fname, filepath.Ext(fname))
 		lang := formLang{}
 		f, err := fs.ReadFile(filesystem, FSJoin(st.lang.FormPath, fname))
@@ -301,11 +375,27 @@ func (st *Storage) loadLangForm(filesystems ...fs.FS) error {
 		if err != nil {
 			return err
 		}
-		st.lang.Common.patchCommon(index, &lang.Strings)
+		st.lang.Common.patchCommon(&lang.Strings, index)
 		if fname != "en-us.json" {
-			patchLang(&english.Strings, &lang.Strings)
-			patchLang(&english.Notifications, &lang.Notifications)
-			patchQuantityStrings(&english.ValidationStrings, &lang.ValidationStrings)
+			if lang.Meta.Fallback != "" {
+				fallback, ok := st.lang.Form[lang.Meta.Fallback]
+				err = nil
+				if !ok {
+					err = load(fsIndex, lang.Meta.Fallback+".json")
+					fallback = st.lang.Form[lang.Meta.Fallback]
+				}
+				if err == nil {
+					loadedLangs[fsIndex][lang.Meta.Fallback+".json"] = true
+					patchLang(&lang.Strings, &fallback.Strings, &english.Strings)
+					patchLang(&lang.Notifications, &fallback.Notifications, &english.Notifications)
+					patchQuantityStrings(&lang.ValidationStrings, &fallback.ValidationStrings, &english.ValidationStrings)
+				}
+			}
+			if (lang.Meta.Fallback != "" && err != nil) || lang.Meta.Fallback == "" {
+				patchLang(&lang.Strings, &english.Strings)
+				patchLang(&lang.Notifications, &english.Notifications)
+				patchQuantityStrings(&lang.ValidationStrings, &english.ValidationStrings)
+			}
 		}
 		notifications, err := json.Marshal(lang.Notifications)
 		if err != nil {
@@ -322,27 +412,30 @@ func (st *Storage) loadLangForm(filesystems ...fs.FS) error {
 	}
 	engFound := false
 	var err error
-	for _, filesystem := range filesystems {
-		err = load(filesystem, "en-us.json")
+	for i := range filesystems {
+		loadedLangs[i] = map[string]bool{}
+		err = load(i, "en-us.json")
 		if err == nil {
 			engFound = true
 		}
+		loadedLangs[i]["en-us.json"] = true
 	}
 	if !engFound {
 		return err
 	}
 	english = st.lang.Form["en-us"]
 	formLoaded := false
-	for _, filesystem := range filesystems {
-		files, err := fs.ReadDir(filesystem, st.lang.FormPath)
+	for i := range filesystems {
+		files, err := fs.ReadDir(filesystems[i], st.lang.FormPath)
 		if err != nil {
 			continue
 		}
 		for _, f := range files {
-			if f.Name() != "en-us.json" {
-				err = load(filesystem, f.Name())
+			if !loadedLangs[i][f.Name()] {
+				err = load(i, f.Name())
 				if err == nil {
 					formLoaded = true
+					loadedLangs[i][f.Name()] = true
 				}
 			}
 		}
@@ -356,7 +449,10 @@ func (st *Storage) loadLangForm(filesystems ...fs.FS) error {
 func (st *Storage) loadLangPWR(filesystems ...fs.FS) error {
 	st.lang.PasswordReset = map[string]pwrLang{}
 	var english pwrLang
-	load := func(filesystem fs.FS, fname string) error {
+	loadedLangs := make([]map[string]bool, len(filesystems))
+	var load loadLangFunc
+	load = func(fsIndex int, fname string) error {
+		filesystem := filesystems[fsIndex]
 		index := strings.TrimSuffix(fname, filepath.Ext(fname))
 		lang := pwrLang{}
 		f, err := fs.ReadFile(filesystem, FSJoin(st.lang.PasswordResetPath, fname))
@@ -370,36 +466,52 @@ func (st *Storage) loadLangPWR(filesystems ...fs.FS) error {
 		if err != nil {
 			return err
 		}
-		st.lang.Common.patchCommon(index, &lang.Strings)
+		st.lang.Common.patchCommon(&lang.Strings, index)
 		if fname != "en-us.json" {
-			patchLang(&english.Strings, &lang.Strings)
+			if lang.Meta.Fallback != "" {
+				fallback, ok := st.lang.PasswordReset[lang.Meta.Fallback]
+				err = nil
+				if !ok {
+					err = load(fsIndex, lang.Meta.Fallback+".json")
+					fallback = st.lang.PasswordReset[lang.Meta.Fallback]
+				}
+				if err == nil {
+					patchLang(&lang.Strings, &fallback.Strings, &english.Strings)
+				}
+			}
+			if (lang.Meta.Fallback != "" && err != nil) || lang.Meta.Fallback == "" {
+				patchLang(&lang.Strings, &english.Strings)
+			}
 		}
 		st.lang.PasswordReset[index] = lang
 		return nil
 	}
 	engFound := false
 	var err error
-	for _, filesystem := range filesystems {
-		err = load(filesystem, "en-us.json")
+	for i := range filesystems {
+		loadedLangs[i] = map[string]bool{}
+		err = load(i, "en-us.json")
 		if err == nil {
 			engFound = true
 		}
+		loadedLangs[i]["en-us.json"] = true
 	}
 	if !engFound {
 		return err
 	}
 	english = st.lang.PasswordReset["en-us"]
 	formLoaded := false
-	for _, filesystem := range filesystems {
-		files, err := fs.ReadDir(filesystem, st.lang.PasswordResetPath)
+	for i := range filesystems {
+		files, err := fs.ReadDir(filesystems[i], st.lang.PasswordResetPath)
 		if err != nil {
 			continue
 		}
 		for _, f := range files {
-			if f.Name() != "en-us.json" {
-				err = load(filesystem, f.Name())
+			if !loadedLangs[i][f.Name()] {
+				err = load(i, f.Name())
 				if err == nil {
 					formLoaded = true
+					loadedLangs[i][f.Name()] = true
 				}
 			}
 		}
@@ -413,7 +525,10 @@ func (st *Storage) loadLangPWR(filesystems ...fs.FS) error {
 func (st *Storage) loadLangEmail(filesystems ...fs.FS) error {
 	st.lang.Email = map[string]emailLang{}
 	var english emailLang
-	load := func(filesystem fs.FS, fname string) error {
+	loadedLangs := make([]map[string]bool, len(filesystems))
+	var load loadLangFunc
+	load = func(fsIndex int, fname string) error {
+		filesystem := filesystems[fsIndex]
 		index := strings.TrimSuffix(fname, filepath.Ext(fname))
 		lang := emailLang{}
 		f, err := fs.ReadFile(filesystem, FSJoin(st.lang.EmailPath, fname))
@@ -427,46 +542,73 @@ func (st *Storage) loadLangEmail(filesystems ...fs.FS) error {
 		if err != nil {
 			return err
 		}
-		st.lang.Common.patchCommon(index, &lang.Strings)
+		st.lang.Common.patchCommon(&lang.Strings, index)
 		if fname != "en-us.json" {
-			patchLang(&english.UserCreated, &lang.UserCreated)
-			patchLang(&english.InviteExpiry, &lang.InviteExpiry)
-			patchLang(&english.PasswordReset, &lang.PasswordReset)
-			patchLang(&english.UserDeleted, &lang.UserDeleted)
-			patchLang(&english.UserDisabled, &lang.UserDisabled)
-			patchLang(&english.UserEnabled, &lang.UserEnabled)
-			patchLang(&english.InviteEmail, &lang.InviteEmail)
-			patchLang(&english.WelcomeEmail, &lang.WelcomeEmail)
-			patchLang(&english.EmailConfirmation, &lang.EmailConfirmation)
-			patchLang(&english.UserExpired, &lang.UserExpired)
-			patchLang(&english.Strings, &lang.Strings)
+			if lang.Meta.Fallback != "" {
+				fallback, ok := st.lang.Email[lang.Meta.Fallback]
+				err = nil
+				if !ok {
+					err = load(fsIndex, lang.Meta.Fallback+".json")
+					fallback = st.lang.Email[lang.Meta.Fallback]
+				}
+				if err == nil {
+					loadedLangs[fsIndex][lang.Meta.Fallback+".json"] = true
+					patchLang(&lang.UserCreated, &fallback.UserCreated, &english.UserCreated)
+					patchLang(&lang.InviteExpiry, &fallback.InviteExpiry, &english.InviteExpiry)
+					patchLang(&lang.PasswordReset, &fallback.PasswordReset, &english.PasswordReset)
+					patchLang(&lang.UserDeleted, &fallback.UserDeleted, &english.UserDeleted)
+					patchLang(&lang.UserDisabled, &fallback.UserDisabled, &english.UserDisabled)
+					patchLang(&lang.UserEnabled, &fallback.UserEnabled, &english.UserEnabled)
+					patchLang(&lang.InviteEmail, &fallback.InviteEmail, &english.InviteEmail)
+					patchLang(&lang.WelcomeEmail, &fallback.WelcomeEmail, &english.WelcomeEmail)
+					patchLang(&lang.EmailConfirmation, &fallback.EmailConfirmation, &english.EmailConfirmation)
+					patchLang(&lang.UserExpired, &fallback.UserExpired, &english.UserExpired)
+					patchLang(&lang.Strings, &fallback.Strings, &english.Strings)
+				}
+			}
+			if (lang.Meta.Fallback != "" && err != nil) || lang.Meta.Fallback == "" {
+				patchLang(&lang.UserCreated, &english.UserCreated)
+				patchLang(&lang.InviteExpiry, &english.InviteExpiry)
+				patchLang(&lang.PasswordReset, &english.PasswordReset)
+				patchLang(&lang.UserDeleted, &english.UserDeleted)
+				patchLang(&lang.UserDisabled, &english.UserDisabled)
+				patchLang(&lang.UserEnabled, &english.UserEnabled)
+				patchLang(&lang.InviteEmail, &english.InviteEmail)
+				patchLang(&lang.WelcomeEmail, &english.WelcomeEmail)
+				patchLang(&lang.EmailConfirmation, &english.EmailConfirmation)
+				patchLang(&lang.UserExpired, &english.UserExpired)
+				patchLang(&lang.Strings, &english.Strings)
+			}
 		}
 		st.lang.Email[index] = lang
 		return nil
 	}
 	engFound := false
 	var err error
-	for _, filesystem := range filesystems {
-		err = load(filesystem, "en-us.json")
+	for i := range filesystems {
+		loadedLangs[i] = map[string]bool{}
+		err = load(i, "en-us.json")
 		if err == nil {
 			engFound = true
 		}
+		loadedLangs[i]["en-us.json"] = true
 	}
 	if !engFound {
 		return err
 	}
 	english = st.lang.Email["en-us"]
 	emailLoaded := false
-	for _, filesystem := range filesystems {
-		files, err := fs.ReadDir(filesystem, st.lang.EmailPath)
+	for i := range filesystems {
+		files, err := fs.ReadDir(filesystems[i], st.lang.EmailPath)
 		if err != nil {
 			continue
 		}
 		for _, f := range files {
-			if f.Name() != "en-us.json" {
-				err = load(filesystem, f.Name())
+			if !loadedLangs[i][f.Name()] {
+				err = load(i, f.Name())
 				if err == nil {
 					emailLoaded = true
+					loadedLangs[i][f.Name()] = true
 				}
 			}
 		}

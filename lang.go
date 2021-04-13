@@ -2,6 +2,8 @@ package main
 
 type langMeta struct {
 	Name string `json:"name"`
+	// Language to fall back on if strings are missing. Defaults to en-us.
+	Fallback string `json:"fallback,omitempty"`
 }
 
 type quantityString struct {

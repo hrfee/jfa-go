@@ -73,7 +73,10 @@ func (app *appContext) TestJF(gc *gin.Context) {
 func (st *Storage) loadLangSetup(filesystems ...fs.FS) error {
 	st.lang.Setup = map[string]setupLang{}
 	var english setupLang
-	load := func(filesystem fs.FS, fname string) error {
+	loadedLangs := make([]map[string]bool, len(filesystems))
+	var load loadLangFunc
+	load = func(fsIndex int, fname string) error {
+		filesystem := filesystems[fsIndex]
 		index := strings.TrimSuffix(fname, filepath.Ext(fname))
 		lang := setupLang{}
 		f, err := fs.ReadFile(filesystem, FSJoin(st.lang.SetupPath, fname))
@@ -84,21 +87,47 @@ func (st *Storage) loadLangSetup(filesystems ...fs.FS) error {
 		if err != nil {
 			return err
 		}
-		st.lang.Common.patchCommon(index, &lang.Strings)
+		st.lang.Common.patchCommon(&lang.Strings, index)
 		if fname != "en-us.json" {
-			patchLang(&english.Strings, &lang.Strings)
-			patchLang(&english.StartPage, &lang.StartPage)
-			patchLang(&english.Updates, &lang.Updates)
-			patchLang(&english.EndPage, &lang.EndPage)
-			patchLang(&english.Language, &lang.Language)
-			patchLang(&english.Login, &lang.Login)
-			patchLang(&english.JellyfinEmby, &lang.JellyfinEmby)
-			patchLang(&english.Email, &lang.Email)
-			patchLang(&english.Notifications, &lang.Notifications)
-			patchLang(&english.PasswordResets, &lang.PasswordResets)
-			patchLang(&english.InviteEmails, &lang.InviteEmails)
-			patchLang(&english.PasswordValidation, &lang.PasswordValidation)
-			patchLang(&english.HelpMessages, &lang.HelpMessages)
+			if lang.Meta.Fallback != "" {
+				fallback, ok := st.lang.Setup[lang.Meta.Fallback]
+				err = nil
+				if !ok {
+					err = load(fsIndex, lang.Meta.Fallback+".json")
+					fallback = st.lang.Setup[lang.Meta.Fallback]
+				}
+				if err == nil {
+					loadedLangs[fsIndex][lang.Meta.Fallback+".json"] = true
+					patchLang(&lang.Strings, &fallback.Strings, &english.Strings)
+					patchLang(&lang.StartPage, &fallback.StartPage, &english.StartPage)
+					patchLang(&lang.Updates, &fallback.Updates, &english.Updates)
+					patchLang(&lang.EndPage, &fallback.EndPage, &english.EndPage)
+					patchLang(&lang.Language, &fallback.Language, &english.Language)
+					patchLang(&lang.Login, &fallback.Login, &english.Login)
+					patchLang(&lang.JellyfinEmby, &fallback.JellyfinEmby, &english.JellyfinEmby)
+					patchLang(&lang.Email, &fallback.Email, &english.Email)
+					patchLang(&lang.Notifications, &fallback.Notifications, &english.Notifications)
+					patchLang(&lang.PasswordResets, &fallback.PasswordResets, &english.PasswordResets)
+					patchLang(&lang.InviteEmails, &fallback.InviteEmails, &english.InviteEmails)
+					patchLang(&lang.PasswordValidation, &fallback.PasswordValidation, &english.PasswordValidation)
+					patchLang(&lang.HelpMessages, &fallback.HelpMessages, &english.HelpMessages)
+				}
+			}
+			if (lang.Meta.Fallback != "" && err != nil) || lang.Meta.Fallback == "" {
+				patchLang(&lang.Strings, &english.Strings)
+				patchLang(&lang.StartPage, &english.StartPage)
+				patchLang(&lang.Updates, &english.Updates)
+				patchLang(&lang.EndPage, &english.EndPage)
+				patchLang(&lang.Language, &english.Language)
+				patchLang(&lang.Login, &english.Login)
+				patchLang(&lang.JellyfinEmby, &english.JellyfinEmby)
+				patchLang(&lang.Email, &english.Email)
+				patchLang(&lang.Notifications, &english.Notifications)
+				patchLang(&lang.PasswordResets, &english.PasswordResets)
+				patchLang(&lang.InviteEmails, &english.InviteEmails)
+				patchLang(&lang.PasswordValidation, &english.PasswordValidation)
+				patchLang(&lang.HelpMessages, &english.HelpMessages)
+			}
 		}
 		stringSettings, err := json.Marshal(lang)
 		if err != nil {
@@ -110,27 +139,30 @@ func (st *Storage) loadLangSetup(filesystems ...fs.FS) error {
 	}
 	engFound := false
 	var err error
-	for _, filesystem := range filesystems {
-		err = load(filesystem, "en-us.json")
+	for i := range filesystems {
+		loadedLangs[i] = map[string]bool{}
+		err = load(i, "en-us.json")
 		if err == nil {
 			engFound = true
 		}
+		loadedLangs[i]["en-us.json"] = true
 	}
 	if !engFound {
 		return err
 	}
 	english = st.lang.Setup["en-us"]
 	setupLoaded := false
-	for _, filesystem := range filesystems {
-		files, err := fs.ReadDir(filesystem, st.lang.SetupPath)
+	for i := range filesystems {
+		files, err := fs.ReadDir(filesystems[i], st.lang.SetupPath)
 		if err != nil {
 			return err
 		}
 		for _, f := range files {
-			if f.Name() != "en-us.json" {
-				err = load(filesystem, f.Name())
+			if !loadedLangs[i][f.Name()] {
+				err = load(i, f.Name())
 				if err == nil {
 					setupLoaded = true
+					loadedLangs[i][f.Name()] = true
 				}
 			}
 		}
