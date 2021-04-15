@@ -769,6 +769,7 @@ class ombiDefaults {
 interface templateEmail {
     content: string;
     variables: string[];
+    conditionals: string[];
     values: { [key: string]: string };
     html: string;
     plaintext: string;
@@ -788,6 +789,8 @@ class EmailEditor {
     private _header = document.getElementById("header-editor") as HTMLSpanElement;
     private _variables = document.getElementById("editor-variables") as HTMLDivElement;
     private _variablesLabel = document.getElementById("label-editor-variables") as HTMLElement;
+    private _conditionals = document.getElementById("editor-conditionals") as HTMLDivElement;
+    private _conditionalsLabel = document.getElementById("label-editor-conditionals") as HTMLElement;
     private _textArea = document.getElementById("textarea-editor") as HTMLTextAreaElement;
     private _preview = document.getElementById("editor-preview") as HTMLDivElement;
     private _previewContent: HTMLElement;
@@ -845,7 +848,7 @@ class EmailEditor {
                     this._variablesLabel.classList.remove("unfocused");
                 }
                 this._variables.innerHTML = innerHTML
-                const buttons = this._variables.querySelectorAll("span.button") as NodeListOf<HTMLSpanElement>;
+                let buttons = this._variables.querySelectorAll("span.button") as NodeListOf<HTMLSpanElement>;
                 for (let i = 0; i < this._templ.variables.length; i++) {
                     buttons[i].innerHTML = `<span class="monospace">` + this._templ.variables[i] + `</span>`;
                     buttons[i].onclick = () => {
@@ -854,6 +857,28 @@ class EmailEditor {
                         // this._timeout = setTimeout(this.loadPreview, this._finishInterval);
                     }
                 }
+
+                innerHTML = '';
+                for (let i = this._templ.conditionals.length-1; i >= 0; i--) {
+                    let ci = i % colors.length;
+                    innerHTML += '<span class="button ~' + colors[ci] +' !normal mb-1" style="margin-left: 0.25rem; margin-right: 0.25rem;"></span>'
+                }
+                if (this._templ.conditionals.length == 0) {
+                    this._conditionalsLabel.classList.add("unfocused");
+                } else {
+                    this._conditionalsLabel.classList.remove("unfocused");
+                }
+                this._conditionals.innerHTML = innerHTML
+                buttons = this._conditionals.querySelectorAll("span.button") as NodeListOf<HTMLSpanElement>;
+                for (let i = 0; i < this._templ.conditionals.length; i++) {
+                    buttons[i].innerHTML = `<span class="monospace">{if ` + this._templ.conditionals[i].slice(1) + `</span>`;
+                    buttons[i].onclick = () => {
+                        this.insert(this._textArea, "{if " + this._templ.conditionals[i].slice(1) + "{endif}");
+                        this.loadPreview();
+                        // this._timeout = setTimeout(this.loadPreview, this._finishInterval);
+                    }
+                }
+
                 window.modals.editor.show();
             }
         })

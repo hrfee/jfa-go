@@ -43,9 +43,10 @@ type customEmails struct {
 }
 
 type customEmail struct {
-	Enabled   bool     `json:"enabled,omitempty"`
-	Content   string   `json:"content"`
-	Variables []string `json:"variables,omitempty"`
+	Enabled      bool     `json:"enabled,omitempty"`
+	Content      string   `json:"content"`
+	Variables    []string `json:"variables,omitempty"`
+	Conditionals []string `json:"conditionals,omitempty"`
 }
 
 // timePattern: %Y-%m-%dT%H:%M:%S.%f

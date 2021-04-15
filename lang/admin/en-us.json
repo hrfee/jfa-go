@@ -49,6 +49,7 @@
         "subject": "Email Subject",
         "message": "Message",
         "variables": "Variables",
+        "conditionals": "Conditionals",
         "preview": "Preview",
         "reset": "Reset",
         "edit": "Edit",

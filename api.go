@@ -1570,6 +1570,7 @@ func (app *appContext) GetEmail(gc *gin.Context) {
 	var err error
 	var msg *Email
 	var variables []string
+	var conditionals []string
 	var values map[string]interface{}
 	var writeVars func(variables []string)
 	newEmail := false
@@ -1661,16 +1662,21 @@ func (app *appContext) GetEmail(gc *gin.Context) {
 		// app.storage.customEmails.InviteEmail = content
 	} else if id == "WelcomeEmail" {
 		content = app.storage.customEmails.WelcomeEmail.Content
+		conditionals = []string{"{yourAccountWillExpire}"}
+		app.storage.customEmails.WelcomeEmail.Conditionals = conditionals
 		if content == "" {
 			newEmail = true
 			msg, err = app.email.constructWelcome("", time.Time{}, app, true)
 			content = msg.Text
+			conditionals = []string{"{yourAccountWillExpire}"}
 		} else {
 			variables = app.storage.customEmails.WelcomeEmail.Variables
 		}
-		writeVars = func(variables []string) { app.storage.customEmails.WelcomeEmail.Variables = variables }
+		writeVars = func(variables []string) {
+			app.storage.customEmails.WelcomeEmail.Variables = variables
+		}
 		// app.storage.customEmails.WelcomeEmail = content
-		values = app.email.welcomeValues(username, time.Time{}, app, false, true)
+		values = app.email.welcomeValues(username, time.Now(), app, false, true)
 	} else if id == "EmailConfirmation" {
 		content = app.storage.customEmails.EmailConfirmation.Content
 		if content == "" {
@@ -1734,7 +1740,7 @@ func (app *appContext) GetEmail(gc *gin.Context) {
 		respondBool(500, false, gc)
 		return
 	}
-	gc.JSON(200, customEmailDTO{Content: content, Variables: variables, Values: values, HTML: email.HTML, Plaintext: email.Text})
+	gc.JSON(200, customEmailDTO{Content: content, Variables: variables, Conditionals: conditionals, Values: values, HTML: email.HTML, Plaintext: email.Text})
 }
 
 // @Summary Returns whether there's a new update, and extra info if there is.

@@ -214,11 +214,12 @@ type emailTestDTO struct {
 }
 
 type customEmailDTO struct {
-	Content   string                 `json:"content"`
-	Variables []string               `json:"variables"`
-	Values    map[string]interface{} `json:"values"`
-	HTML      string                 `json:"html"`
-	Plaintext string                 `json:"plaintext"`
+	Content      string                 `json:"content"`
+	Variables    []string               `json:"variables"`
+	Conditionals []string               `json:"conditionals"`
+	Values       map[string]interface{} `json:"values"`
+	HTML         string                 `json:"html"`
+	Plaintext    string                 `json:"plaintext"`
 }
 
 type extendExpiryDTO struct {
