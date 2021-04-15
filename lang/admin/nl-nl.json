@@ -88,7 +88,9 @@
         "download": "Download",
         "search": "Zoeken",
         "advancedSettings": "Geavanceerde instellingen",
-        "inviteMonths": "Maanden"
+        "inviteMonths": "Maanden",
+        "reEnable": "Opnieuw inschakelen",
+        "disable": "Uitschakelen"
     },
     "notifications": {
         "changedEmailAddress": "E-mailadres van {n} gewijzigd.",
@@ -163,6 +165,22 @@
         "extendedExpiry": {
             "singular": "Verloop uitgesteld voor {n} gebruiker.",
             "plural": "Verloop uitgesteld voor {n} gebruikers."
+        },
+        "disableUsers": {
+            "singular": "Schakel {n} gebruiker uit",
+            "plural": "Schakel {n} gebruikers uit"
+        },
+        "reEnableUsers": {
+            "singular": "Schakel {n} gebruiker opnieuw in",
+            "plural": "Schakel {n} gebruikers opnieuw in"
+        },
+        "disabledUser": {
+            "singular": "{n} gebruiker uitgeschakeld.",
+            "plural": "{n} gebruikers uitgeschakeld."
+        },
+        "enabledUser": {
+            "singular": "{n} gebruiker ingeschakeld.",
+            "plural": "{n} gebruikers ingeschakeld."
         }
     }
 }
