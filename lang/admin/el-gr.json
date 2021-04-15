@@ -87,7 +87,10 @@
         "subject": "Θέμα Email",
         "message": "Μήνυμα",
         "extendExpiry": "Παράταση λήξης",
-        "markdownSupported": "Το Markdown υποστυρίζεται."
+        "markdownSupported": "Το Markdown υποστυρίζεται.",
+        "reEnable": "Επανα-ενεργοποίηση",
+        "disable": "Απενεργοποίηση",
+        "inviteMonths": "Μήνες"
     },
     "notifications": {
         "changedEmailAddress": "Αλλαγή {n} διεύθυνσεων email.",
@@ -162,6 +165,22 @@
         "extendedExpiry": {
             "singular": "Εκτεταμένη λήξη για {n} χρήστη.",
             "plural": "Εκτεταμένη λήξη για {n} χρήστες."
+        },
+        "disableUsers": {
+            "singular": "Απενεργοποίηση {n} χρήστη",
+            "plural": "Απενεργοποίηση {n} χρηστών"
+        },
+        "reEnableUsers": {
+            "singular": "Εκ νέου ενεργοποίηση {n} χρήστη",
+            "plural": "Εκ νέου ενεργοποίηση {n} χρηστών"
+        },
+        "disabledUser": {
+            "singular": "Απενεργοποιήθηκε {n} χρήστης.",
+            "plural": "Απενεργοποιήθηκαν {n} χρήστες."
+        },
+        "enabledUser": {
+            "singular": "Εργοποιήθηκε {n} χρήστης.",
+            "plural": "Εργοποιήθηκαν {n} χρήστες."
         }
     }
 }
