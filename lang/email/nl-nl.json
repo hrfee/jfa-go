@@ -63,5 +63,15 @@
         "title": "Je account is verlopen - Jellyfin",
         "yourAccountHasExpired": "Je account is verlopen.",
         "contactTheAdmin": "Neem contact op met de beheerder voor meer info."
+    },
+    "userDisabled": {
+        "title": "Je account is uitgeschakeld - Jellyfin",
+        "name": "Gebruiker uitgeschakeld",
+        "yourAccountWasDisabled": "Je account is uitgeschakeld."
+    },
+    "userEnabled": {
+        "yourAccountWasEnabled": "Je account is opnieuw ingeschakeld.",
+        "name": "Gebruiker ingeschakeld",
+        "title": "Je account is opnieuw ingeschakeld - Jellyfin"
     }
 }
