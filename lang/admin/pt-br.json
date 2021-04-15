@@ -87,7 +87,8 @@
         "update": "Atualizar",
         "download": "Download",
         "search": "Procurar",
-        "advancedSettings": "Configurações Avançada"
+        "advancedSettings": "Configurações Avançada",
+        "inviteMonths": "Meses"
     },
     "notifications": {
         "changedEmailAddress": "Endereço de e-mail alterado de {n}.",
