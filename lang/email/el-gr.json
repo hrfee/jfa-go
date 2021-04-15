@@ -49,7 +49,8 @@
         "welcome": "Καλώς ήλθατε στο Jellyfin!",
         "youCanLoginWith": "Μπορείτε να συνδεθείτε με τα παρακάτω στοιχεία",
         "jellyfinURL": "URL",
-        "name": "Email καλωσορίσματος"
+        "name": "Email καλωσορίσματος",
+        "yourAccountWillExpire": "Ο λογαριασμός σας θα λήξει στις {date}."
     },
     "emailConfirmation": {
         "title": "Επιβεβαιώστε το email σας - Jellyfin",
@@ -62,5 +63,15 @@
         "title": "Ο λογαριασμός σας έληξε - Jellyfin",
         "yourAccountHasExpired": "Ο λογαριασμός σας έχει λήξει.",
         "contactTheAdmin": "Επικοινωνήστε με τον διαχειριστή για περισσότερες πληροφορίες."
+    },
+    "userDisabled": {
+        "name": "Ο χρήστης απενεργοποιήθηκε",
+        "title": "Ο λογαριασμός σας έχει απενεργοποιηθεί - Jellyfin",
+        "yourAccountWasDisabled": "Ο λογαριασμός σας απενεργοποιήθηκε."
+    },
+    "userEnabled": {
+        "title": "Ο λογαριασμός σας έχει ενεργοποιηθεί ξανά - Jellyfin",
+        "name": "Ο χρήστης ενεργοποιήθηκε",
+        "yourAccountWasEnabled": "Ο λογαριασμός σας ενεργοποιήθηκε εκ νέου."
     }
 }
