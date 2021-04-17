@@ -88,7 +88,9 @@
         "download": "Download",
         "search": "Procurar",
         "advancedSettings": "Configurações Avançada",
-        "inviteMonths": "Meses"
+        "inviteMonths": "Meses",
+        "reEnable": "Reativar",
+        "disable": "Desativar"
     },
     "notifications": {
         "changedEmailAddress": "Endereço de e-mail alterado de {n}.",
@@ -163,6 +165,22 @@
         "extendedExpiry": {
             "plural": "Extender o vencimento para {n} usuários.",
             "singular": "Extender vencimento para {n}."
+        },
+        "disableUsers": {
+            "singular": "Desativar {n} usuário",
+            "plural": "Desativar {n} usuários"
+        },
+        "reEnableUsers": {
+            "singular": "Reativar {n} usuário",
+            "plural": "Reativar {n} usuários"
+        },
+        "disabledUser": {
+            "singular": "{n} Usuário desativado.",
+            "plural": "{n} usuários desativado."
+        },
+        "enabledUser": {
+            "singular": "{n} Usuário habilitado.",
+            "plural": "{n} Usuários habilitado."
         }
     }
 }
