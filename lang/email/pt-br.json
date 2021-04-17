@@ -63,5 +63,15 @@
         "title": "Sua conta expirou - Jellyfin",
         "yourAccountHasExpired": "Sua conta expirou.",
         "contactTheAdmin": "Entre em contato com administrador para mais informações."
+    },
+    "userDisabled": {
+        "name": "Usuário desativado",
+        "title": "Sua conta foi desativada - Jellyfin",
+        "yourAccountWasDisabled": "Sua conta foi desativada."
+    },
+    "userEnabled": {
+        "title": "Sua conta foi reativada - Jellyfin",
+        "name": "Usuário ativado",
+        "yourAccountWasEnabled": "Sua conta foi reativada."
     }
 }
