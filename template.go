@@ -47,8 +47,7 @@ func templateEmail(content string, variables []string, conditionals []string, va
 			}
 			ifEnd = i - 1
 			if ifTrue {
-				b := templateEmail(content[ifStart:ifEnd+1], variables, conditionals, values)
-				out += b
+				out += templateEmail(content[ifStart:ifEnd+1], variables, conditionals, values)
 				ifTrue = false
 			}
 		} else if c == '}' {

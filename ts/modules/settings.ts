@@ -859,26 +859,25 @@ class EmailEditor {
                 }
 
                 innerHTML = '';
-                for (let i = this._templ.conditionals.length-1; i >= 0; i--) {
-                    let ci = i % colors.length;
-                    innerHTML += '<span class="button ~' + colors[ci] +' !normal mb-1" style="margin-left: 0.25rem; margin-right: 0.25rem;"></span>'
-                }
-                if (this._templ.conditionals.length == 0) {
+                if (this._templ.conditionals == null || this._templ.conditionals.length == 0) {
                     this._conditionalsLabel.classList.add("unfocused");
                 } else {
+                    for (let i = this._templ.conditionals.length-1; i >= 0; i--) {
+                        let ci = i % colors.length;
+                        innerHTML += '<span class="button ~' + colors[ci] +' !normal mb-1" style="margin-left: 0.25rem; margin-right: 0.25rem;"></span>'
+                    }
                     this._conditionalsLabel.classList.remove("unfocused");
-                }
-                this._conditionals.innerHTML = innerHTML
-                buttons = this._conditionals.querySelectorAll("span.button") as NodeListOf<HTMLSpanElement>;
-                for (let i = 0; i < this._templ.conditionals.length; i++) {
-                    buttons[i].innerHTML = `<span class="monospace">{if ` + this._templ.conditionals[i].slice(1) + `</span>`;
-                    buttons[i].onclick = () => {
-                        this.insert(this._textArea, "{if " + this._templ.conditionals[i].slice(1) + "{endif}");
-                        this.loadPreview();
-                        // this._timeout = setTimeout(this.loadPreview, this._finishInterval);
+                    this._conditionals.innerHTML = innerHTML
+                    buttons = this._conditionals.querySelectorAll("span.button") as NodeListOf<HTMLSpanElement>;
+                    for (let i = 0; i < this._templ.conditionals.length; i++) {
+                        buttons[i].innerHTML = `<span class="monospace">{if ` + this._templ.conditionals[i].slice(1) + `</span>`;
+                        buttons[i].onclick = () => {
+                            this.insert(this._textArea, "{if " + this._templ.conditionals[i].slice(1) + "{endif}");
+                            this.loadPreview();
+                            // this._timeout = setTimeout(this.loadPreview, this._finishInterval);
+                        }
                     }
                 }
-
                 window.modals.editor.show();
             }
         })
