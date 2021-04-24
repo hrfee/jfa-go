@@ -116,7 +116,6 @@ clean:
 	-rm -r $(DATA)
 	-rm -r build
 	-rm mail/*.html
-	-rm embed.go
 	-rm docs/docs.go docs/swagger.json docs/swagger.yaml
 	go clean
 

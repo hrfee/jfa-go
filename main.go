@@ -169,15 +169,26 @@ func start(asDaemon, firstCall bool) {
 	app.err = NewLogger(os.Stdout, "[ERROR] ", log.Ltime, color.FgRed)
 
 	if firstCall {
+		flag.Usage = helpFunc
+		help := flag.Bool("help", false, "prints this message.")
+		flag.BoolVar(help, "h", false, "SHORTHAND")
+
 		DATA = flag.String("data", app.dataPath, "alternate path to data directory.")
+		flag.StringVar(DATA, "d", app.dataPath, "SHORTHAND")
 		CONFIG = flag.String("config", app.configPath, "alternate path to config file.")
+		flag.StringVar(CONFIG, "c", app.configPath, "SHORTHAND")
 		HOST = flag.String("host", "", "alternate address to host web ui on.")
 		PORT = flag.Int("port", 0, "alternate port to host web ui on.")
+		flag.IntVar(PORT, "p", 0, "SHORTHAND")
 		DEBUG = flag.Bool("debug", false, "Enables debug logging.")
 		PPROF = flag.Bool("pprof", false, "Exposes pprof profiler on /debug/pprof.")
 		SWAGGER = flag.Bool("swagger", false, "Enable swagger at /swagger/index.html")
 
 		flag.Parse()
+		if *help {
+			flag.Usage()
+			os.Exit(0)
+		}
 		if *SWAGGER {
 			os.Setenv("SWAGGER", "1")
 		}
