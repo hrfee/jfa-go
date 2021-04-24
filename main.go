@@ -739,6 +739,40 @@ func main() {
 		fmt.Println("Sent.")
 	} else if flagPassed("daemon") {
 		start(true, true)
+	} else if flagPassed("systemd") {
+		service, err := fs.ReadFile(localFS, "jfa-go.service")
+		if err != nil {
+			fmt.Printf("Couldn't read jfa-go.service: %v\n", err)
+			os.Exit(1)
+		}
+		absPath, err := filepath.Abs(os.Args[0])
+		if err != nil {
+			absPath = os.Args[0]
+		}
+		command := absPath
+		for i, v := range os.Args {
+			if i != 0 && v != "systemd" {
+				command += " " + v
+			}
+		}
+		service = []byte(strings.Replace(string(service), "{executable}", command, 1))
+		err = os.WriteFile("jfa-go.service", service, 0666)
+		if err != nil {
+			fmt.Printf("Couldn't write jfa-go.service: %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Print(info(`If you want to execute jfa-go with special arguments, re-run this command with them.
+Move the newly created "jfa-go.service" file to ~/.config/systemd/user (Creating it if necessary).
+Then run "systemctl --user daemon-reload".
+You can then run:
+
+`))
+		color.New(color.FgGreen).PrintFunc()("To start: ")
+		fmt.Print(info("systemctl --user start jfa-go\n\n"))
+		color.New(color.FgRed).PrintFunc()("To stop: ")
+		fmt.Print(info("systemctl --user stop jfa-go\n\n"))
+		color.New(color.FgYellow).PrintFunc()("To restart: ")
+		fmt.Print(info("systemctl --user stop jfa-go\n"))
 	} else {
 		RESTART = make(chan bool, 1)
 		start(false, true)

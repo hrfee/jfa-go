@@ -8,8 +8,6 @@
 ---
 jfa-go is a user management app for [Jellyfin](https://github.com/jellyfin/jellyfin) (and now [Emby](https://emby.media/)) that provides invite-based account creation as well as other features that make one's instance much easier to manage.
 
-I chose to rewrite the python [jellyfin-accounts](https://github.com/hrfee/jellyfin-accounts) in Go mainly as a learning experience, but also to slightly improve speeds and efficiency.
-
 #### Features
 * 🧑 Invite based account creation: Sends invites to your friends or family, and let them choose their own username and password without relying on you.
     * Send invites via a link and/or email
@@ -26,8 +24,8 @@ I chose to rewrite the python [jellyfin-accounts](https://github.com/hrfee/jelly
 * 📣 Announcements: Bulk email your users with announcements about your server.
 * Authentication via Jellyfin: Instead of using separate credentials for jfa-go and Jellyfin, jfa-go can use it as the authentication provider.
     * Enables the usage of jfa-go by multiple people
-* 🌓 Customizable look
-    * Edit emails with variables and markdown
+* 🌓 Customizations
+    * Customize emails with variables and markdown
     * Specify contact and help messages to appear in emails and pages
     * Light and dark themes available
 
@@ -71,8 +69,6 @@ Otherwise, full build instructions can be found [here](https://github.com/hrfee/
 #### Usage
 Simply run `jfa-go` to start the application. A setup wizard will start on `localhost:8056` (or your own specified address). Upon completion, refresh the page.
 
-Note: jfa-go does not run as a daemon by default. You'll need to figure this out yourself.
-
 ```
 Usage of ./jfa-go:
   -config string
@@ -88,6 +84,11 @@ Usage of ./jfa-go:
   -swagger
     	Enable swagger at /swagger/index.html
 ```
+
+#### Systemd
+jfa-go does not run as a daemon by default. Run `jfa-go systemd` to create a systemd `.service` file in your current directory, which you can copy into `~/.config/systemd/user` or somewhere else.
+
+---
 
 If you're switching from jellyfin-accounts, copy your existing `~/.jf-accounts` to:
 

@@ -94,6 +94,8 @@ copy:
 	$(info copying static data)
 	-mkdir -p $(DATA)/web
 	cp -r static/* $(DATA)/web/
+	$(info copying systemd service)
+	cp jfa-go.service $(DATA)/
 	$(info copying language files)
 	cp -r lang $(DATA)/
 	cp LICENSE $(DATA)/
