@@ -1,134 +1,134 @@
 {
     "meta": {
-        "name": ""
+        "name": "Inglés (US)"
     },
     "strings": {
-        "pageTitle": "",
-        "next": "",
-        "back": "",
-        "optional": "",
-        "serverType": "",
-        "disabled": "",
-        "enabled": "",
-        "port": "",
-        "message": "",
-        "serverAddress": "",
-        "emailSubject": "",
-        "URL": "",
-        "apiKey": ""
+        "pageTitle": "Configuración - jfa-go",
+        "next": "Siguiente",
+        "back": "Volver",
+        "optional": "Opcional",
+        "serverType": "Tipo de servidor",
+        "disabled": "Desactivado",
+        "enabled": "Activado",
+        "port": "Puerto",
+        "message": "Mensaje",
+        "serverAddress": "Dirección del servidor",
+        "emailSubject": "Asunto",
+        "URL": "URL",
+        "apiKey": "Llave de autorización (API)"
     },
     "startPage": {
-        "welcome": "",
-        "pressStart": "",
-        "httpsNotice": "",
-        "start": ""
+        "welcome": "¡Bienvenido!",
+        "pressStart": "Deberá hacer algunas cosas para configurar jfa-go. Presione comenzar para continuar.",
+        "httpsNotice": "Asegúrese de acceder a esta página a través de HTTPS o bien desde una red privada.",
+        "start": "Empezar"
     },
     "endPage": {
-        "finished": "",
-        "restartMessage": "",
-        "refreshPage": ""
+        "finished": "¡Terminado!",
+        "restartMessage": "Hay más opciones que puede configurar en la página de administración. Haga clic a continuación para reiniciar, luego actualice la página.",
+        "refreshPage": "Actualizar"
     },
     "language": {
-        "title": "",
-        "description": "",
-        "defaultAdminLang": "",
-        "defaultFormLang": "",
-        "defaultEmailLang": ""
+        "title": "Lenguaje",
+        "description": "Las traducciones de la comunidad están disponibles para la mayor parte de jfa-go. Puede elegir los idiomas predeterminados a continuación, pero los usuarios aún pueden cambiarlo si lo desean. Si quieres ayudar a traducir, regístrate en {n} para empezar a contribuir.",
+        "defaultAdminLang": "Idioma de administrador predeterminado",
+        "defaultFormLang": "Idioma de creación de cuenta predeterminado",
+        "defaultEmailLang": "Idioma de correo electrónico predeterminado"
     },
     "general": {
-        "title": "",
-        "listenAddress": "",
-        "urlBase": "",
-        "urlBaseNotice": "",
-        "lightTheme": "",
-        "darkTheme": "",
-        "useHTTPS": "",
-        "httpsPort": "",
-        "useHTTPSNotice": "",
-        "pathToCertificate": "",
-        "pathToKeyFile": ""
+        "title": "General",
+        "listenAddress": "Dirección de recibidor (Listen Address)",
+        "urlBase": "Base de URL",
+        "urlBaseNotice": "Solo es necesario si se usa un proxy inverso en un subdominio (por ejemplo, 'jellyf.in/accounts').",
+        "lightTheme": "Light",
+        "darkTheme": "Oscuro",
+        "useHTTPS": "Usar HTTPS (Conexión segura SSL)",
+        "httpsPort": "Puerto HTTPS",
+        "useHTTPSNotice": "Solo se recomienda si no está utilizando un proxy inverso.",
+        "pathToCertificate": "Ruta al certificado",
+        "pathToKeyFile": "Ruta al archivo de claves"
     },
     "updates": {
-        "title": "",
-        "description": "",
-        "updateChannel": "",
-        "stable": "",
-        "unstable": ""
+        "title": "Actualizaciones",
+        "description": "Habilite para recibir notificaciones cuando haya nuevas actualizaciones disponibles. jfa-go comprobará {n} cada 30 minutos. No se recopilan IP ni información de identificación personal.",
+        "updateChannel": "Actualizar canal",
+        "stable": "Estable",
+        "unstable": "Inestable"
     },
     "login": {
-        "title": "",
-        "description": "",
-        "authorizeWithJellyfin": "",
-        "authorizeManual": "",
-        "adminOnly": "",
-        "emailNotice": ""
+        "title": "Iniciar sesión",
+        "description": "Para acceder a la página de administración, debe iniciar sesión con un método a continuación:",
+        "authorizeWithJellyfin": "Autorizar con Jellyfin/Emby: los detalles de inicio de sesión se comparten con Jellyfin, lo que permite a varios usuarios.",
+        "authorizeManual": "Nombre de usuario y contraseña: establezca manualmente el nombre de usuario y la contraseña.",
+        "adminOnly": "Solo usuarios administradores (recomendado)",
+        "emailNotice": "Su dirección de correo electrónico se puede utilizar para recibir notificaciones."
     },
     "jellyfinEmby": {
-        "title": "",
-        "description": "",
-        "embyNotice": "",
-        "internal": "",
-        "external": "",
-        "replaceJellyfin": "",
-        "replaceJellyfinNotice": "",
-        "addressExternalNotice": "",
-        "testConnection": ""
+        "title": "Jellyfin/Emby",
+        "description": "Se necesita una cuenta de administrador porque la API no permite la creación de usuarios mediante una clave de API. Debe crear una cuenta separada y marcar 'Permitir que este usuario administre el servidor'. Puede desactivar todo lo demás. Una vez hecho esto, ingrese los detalles de inicio de sesión aquí.",
+        "embyNotice": "El soporte de Emby es limitado y no admite el restablecimiento de contraseñas.",
+        "internal": "Interno",
+        "external": "Externo",
+        "replaceJellyfin": "Nombre del servidor",
+        "replaceJellyfinNotice": "Si se proporciona, reemplazará cualquier aparición de 'Jellyfin' en la aplicación.",
+        "addressExternalNotice": "Déjelo en blanco para usar la misma dirección.",
+        "testConnection": "Probar conexión"
     },
     "ombi": {
-        "title": "",
-        "description": "",
-        "apiKeyNotice": ""
+        "title": "Ombi",
+        "description": "Al conectarse a Ombi, se creará una cuenta de Jellyfin y Ombi cuando un usuario se una a través de jfa-go. Una vez finalizada la configuración, vaya a Configuración para establecer un perfil predeterminado para los nuevos usuarios de ombi.",
+        "apiKeyNotice": "Encuentra esto en la primera pestaña de la configuración de Ombi."
     },
     "email": {
-        "title": "",
-        "description": "",
-        "method": "",
-        "useEmailAsUsername": "",
-        "useEmailAsUsernameNotice": "",
-        "fromAddress": "",
-        "senderName": "",
-        "dateFormat": "",
-        "dateFormatNotice": "",
-        "encryption": "",
-        "mailgunApiURL": ""
+        "title": "Correo electrónico",
+        "description": "jfa-go puede enviar PIN de restablecimiento de contraseña y varias notificaciones por correo electrónico. Puede conectarse a un servidor SMTP o utilizar la {n} API.",
+        "method": "Método de envío",
+        "useEmailAsUsername": "Utilice direcciones de correo electrónico como nombre de usuario",
+        "useEmailAsUsernameNotice": "Si está habilitado, los nuevos usuarios iniciarán sesión en Jellyfin / Emby con su dirección de correo electrónico en lugar de un nombre de usuario.",
+        "fromAddress": "Dirección de envío",
+        "senderName": "Nombre del remitente",
+        "dateFormat": "Formato de fecha",
+        "dateFormatNotice": "La fecha sigue el formato strftime. Para obtener más información, visite {n}.",
+        "encryption": "Cifrado",
+        "mailgunApiURL": "URL de API"
     },
     "notifications": {
-        "title": "",
-        "description": ""
+        "title": "Notificaciones",
+        "description": "Si está habilitado, puede elegir (por invitación) recibir un correo electrónico cuando una invitación caduque o se cree un usuario. Si no eligió el método de inicio de sesión de Jellyfin, asegúrese de proporcionar su dirección de correo electrónico."
     },
     "welcomeEmails": {
-        "title": "",
-        "description": ""
+        "title": "Correos de bienvenida",
+        "description": "Si está habilitado, se enviará un correo electrónico a los nuevos usuarios con la URL de Jellyfin/Emby y su nombre de usuario."
     },
     "inviteEmails": {
-        "title": "",
-        "description": ""
+        "title": "Correos de invitación",
+        "description": "Si está habilitado, puede enviar invitaciones directamente a la dirección de correo electrónico de un usuario. Debido a que es posible que esté utilizando un proxy inverso, debe proporcionar la URL desde la que se accede a las invitaciones. Escriba su base de URL y agregue '/ invite'."
     },
     "passwordResets": {
-        "title": "",
-        "description": "",
-        "pathToJellyfin": "",
-        "pathToJellyfinNotice": ""
+        "title": "Restablecimiento de contraseña",
+        "description": "Cuando un usuario intenta restablecer su contraseña, Jellyfin crea un archivo llamado 'passwordreset - *. Json' que contiene un PIN. jfa-go lee el archivo y envía el PIN al usuario.",
+        "pathToJellyfin": "Ruta al directorio de configuración de Jellyfin",
+        "pathToJellyfinNotice": "Si no sabe dónde está, intente restablecer su contraseña en Jellyfin. Aparecerá una ventana emergente con '<ruta a jellyfin>/passwordreset-. Json'."
     },
     "passwordValidation": {
-        "title": "",
-        "description": "",
-        "length": "",
-        "uppercase": "",
-        "lowercase": "",
-        "numbers": "",
-        "special": ""
+        "title": "Validación de contraseña",
+        "description": "Si está habilitado, se mostrará un conjunto de requisitos de contraseña en la página de creación de la cuenta, como la longitud mínima, caracteres en mayúsculas/minúsculas, etc.",
+        "length": "Largo",
+        "uppercase": "Letras mayúsculas",
+        "lowercase": "Caracteres en minúscula",
+        "numbers": "Números",
+        "special": "Caracteres especiales (%, *, etc.)"
     },
     "helpMessages": {
-        "title": "",
-        "description": "",
-        "contactMessage": "",
-        "contactMessageNotice": "",
-        "helpMessage": "",
-        "helpMessageNotice": "",
-        "successMessage": "",
-        "successMessageNotice": "",
-        "emailMessage": "",
-        "emailMessageNotice": ""
+        "title": "Mensajes de ayuda",
+        "description": "Estos mensajes se mostrarán en la página de creación de la cuenta y en algunos correos electrónicos.",
+        "contactMessage": "Mensaje de contacto",
+        "contactMessageNotice": "Aparece en la parte inferior de todas las páginas excepto admin.",
+        "helpMessage": "Mensaje de ayuda",
+        "helpMessageNotice": "Aparece en la página de creación de cuenta.",
+        "successMessage": "Mensaje de éxito",
+        "successMessageNotice": "Se muestra cuando un usuario crea su cuenta.",
+        "emailMessage": "Mensaje de correo electrónico",
+        "emailMessageNotice": "Aparece en la parte inferior de los correos electrónicos."
     }
 }
