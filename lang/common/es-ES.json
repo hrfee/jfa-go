@@ -1,0 +1,19 @@
+{
+    "meta": {
+        "name": ""
+    },
+    "strings": {
+        "username": "",
+        "password": "",
+        "emailAddress": "",
+        "name": "",
+        "submit": "",
+        "success": "",
+        "error": "",
+        "copy": "",
+        "copied": "",
+        "time24h": "",
+        "time12h": "",
+        "theme": ""
+    }
+}
