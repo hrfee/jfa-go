@@ -1,19 +1,19 @@
 {
     "meta": {
-        "name": ""
+        "name": "Inglés (US)"
     },
     "strings": {
-        "username": "",
-        "password": "",
-        "emailAddress": "",
-        "name": "",
-        "submit": "",
-        "success": "",
-        "error": "",
-        "copy": "",
-        "copied": "",
-        "time24h": "",
-        "time12h": "",
-        "theme": ""
+        "username": "Nombre de usuario",
+        "password": "Contraseña",
+        "emailAddress": "Dirección de correo electrónico",
+        "name": "Nombre",
+        "submit": "Enviar",
+        "success": "Éxito",
+        "error": "Error",
+        "copy": "Copiar",
+        "copied": "Copiado",
+        "time24h": "24 horas",
+        "time12h": "24 horas",
+        "theme": "Tema"
     }
 }
