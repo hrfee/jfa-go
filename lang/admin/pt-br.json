@@ -90,7 +90,8 @@
         "advancedSettings": "Configurações Avançada",
         "inviteMonths": "Meses",
         "reEnable": "Reativar",
-        "disable": "Desativar"
+        "disable": "Desativar",
+        "conditionals": "Condicionais"
     },
     "notifications": {
         "changedEmailAddress": "Endereço de e-mail alterado de {n}.",
