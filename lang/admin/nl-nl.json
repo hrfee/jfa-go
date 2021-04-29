@@ -90,7 +90,8 @@
         "advancedSettings": "Geavanceerde instellingen",
         "inviteMonths": "Maanden",
         "reEnable": "Opnieuw inschakelen",
-        "disable": "Uitschakelen"
+        "disable": "Uitschakelen",
+        "conditionals": "Voorwaarden"
     },
     "notifications": {
         "changedEmailAddress": "E-mailadres van {n} gewijzigd.",
