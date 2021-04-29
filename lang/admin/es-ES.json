@@ -90,7 +90,8 @@
         "inviteExpiresInTime": "Caduca en {n}",
         "notifyEvent": "Notificar en:",
         "notifyInviteExpiry": "Al vencimiento",
-        "notifyUserCreation": "Sobre la creación de usuarios"
+        "notifyUserCreation": "Sobre la creación de usuarios",
+        "conditionals": "Condicionales"
     },
     "notifications": {
         "changedEmailAddress": "Se cambió la dirección de correo electrónico de {n}.",
