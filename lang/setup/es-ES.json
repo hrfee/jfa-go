@@ -40,7 +40,7 @@
         "listenAddress": "Dirección de recibidor (Listen Address)",
         "urlBase": "Base de URL",
         "urlBaseNotice": "Solo es necesario si se usa un proxy inverso en un subdominio (por ejemplo, 'jellyf.in/accounts').",
-        "lightTheme": "Light",
+        "lightTheme": "Claro",
         "darkTheme": "Oscuro",
         "useHTTPS": "Usar HTTPS (Conexión segura SSL)",
         "httpsPort": "Puerto HTTPS",
