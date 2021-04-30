@@ -1668,7 +1668,6 @@ func (app *appContext) GetEmail(gc *gin.Context) {
 			newEmail = true
 			msg, err = app.email.constructWelcome("", time.Time{}, app, true)
 			content = msg.Text
-			conditionals = []string{"{yourAccountWillExpire}"}
 		} else {
 			variables = app.storage.customEmails.WelcomeEmail.Variables
 		}
