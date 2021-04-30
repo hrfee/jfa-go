@@ -1,4 +1,5 @@
-package main
+// Package logger provides a wrapper around log that adds color support with github.com/fatih/color.
+package logger
 
 import (
 	"io"
@@ -99,10 +100,10 @@ func (l logger) Fatalf(format string, v ...interface{}) {
 	l.logger.Fatal(out)
 }
 
-type emptyLogger bool
+type EmptyLogger bool
 
-func (l emptyLogger) Printf(format string, v ...interface{}) {}
-func (l emptyLogger) Print(v ...interface{})                 {}
-func (l emptyLogger) Println(v ...interface{})               {}
-func (l emptyLogger) Fatal(v ...interface{})                 {}
-func (l emptyLogger) Fatalf(format string, v ...interface{}) {}
+func (l EmptyLogger) Printf(format string, v ...interface{}) {}
+func (l EmptyLogger) Print(v ...interface{})                 {}
+func (l EmptyLogger) Println(v ...interface{})               {}
+func (l EmptyLogger) Fatal(v ...interface{})                 {}
+func (l EmptyLogger) Fatalf(format string, v ...interface{}) {}

@@ -8,6 +8,8 @@ replace github.com/hrfee/jfa-go/common => ./common
 
 replace github.com/hrfee/jfa-go/ombi => ./ombi
 
+replace github.com/hrfee/jfa-go/logger => ./logger
+
 require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/fatih/color v1.10.0
@@ -24,6 +26,7 @@ require (
 	github.com/google/uuid v1.1.2 // indirect
 	github.com/hrfee/jfa-go/common v0.0.0-20210105184019-fdc97b4e86cc
 	github.com/hrfee/jfa-go/docs v0.0.0-20201112212552-b6f3cd7c1f71
+	github.com/hrfee/jfa-go/logger v0.0.0-00010101000000-000000000000 // indirect
 	github.com/hrfee/jfa-go/ombi v0.0.0-20201112212552-b6f3cd7c1f71
 	github.com/hrfee/mediabrowser v0.3.3
 	github.com/itchyny/timefmt-go v0.1.2

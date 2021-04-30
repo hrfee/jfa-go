@@ -6,8 +6,74 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 )
+
+func (app *appContext) loadArgs(firstCall bool) {
+	if firstCall {
+		flag.Usage = helpFunc
+		help := flag.Bool("help", false, "prints this message.")
+		flag.BoolVar(help, "h", false, "SHORTHAND")
+
+		DATA = flag.String("data", app.dataPath, "alternate path to data directory.")
+		flag.StringVar(DATA, "d", app.dataPath, "SHORTHAND")
+		CONFIG = flag.String("config", app.configPath, "alternate path to config file.")
+		flag.StringVar(CONFIG, "c", app.configPath, "SHORTHAND")
+		HOST = flag.String("host", "", "alternate address to host web ui on.")
+		PORT = flag.Int("port", 0, "alternate port to host web ui on.")
+		flag.IntVar(PORT, "p", 0, "SHORTHAND")
+		DEBUG = flag.Bool("debug", false, "Enables debug logging.")
+		PPROF = flag.Bool("pprof", false, "Exposes pprof profiler on /debug/pprof.")
+		SWAGGER = flag.Bool("swagger", false, "Enable swagger at /swagger/index.html")
+
+		flag.Parse()
+		if *help {
+			flag.Usage()
+			os.Exit(0)
+		}
+		if *SWAGGER {
+			os.Setenv("SWAGGER", "1")
+		}
+		if *DEBUG {
+			os.Setenv("DEBUG", "1")
+		}
+		if *PPROF {
+			os.Setenv("PPROF", "1")
+		}
+	}
+
+	if os.Getenv("SWAGGER") == "1" {
+		*SWAGGER = true
+	}
+	if os.Getenv("DEBUG") == "1" {
+		*DEBUG = true
+	}
+	if os.Getenv("PPROF") == "1" {
+		*PPROF = true
+	}
+	// attempt to apply command line flags correctly
+	if app.configPath == *CONFIG && app.dataPath != *DATA {
+		app.dataPath = *DATA
+		app.configPath = filepath.Join(app.dataPath, "config.ini")
+	} else if app.configPath != *CONFIG && app.dataPath == *DATA {
+		app.configPath = *CONFIG
+	} else {
+		app.configPath = *CONFIG
+		app.dataPath = *DATA
+	}
+
+	// Previously used for self-restarts but leaving them here as they might be useful.
+	if v := os.Getenv("JFA_CONFIGPATH"); v != "" {
+		app.configPath = v
+	}
+	if v := os.Getenv("JFA_DATAPATH"); v != "" {
+		app.dataPath = v
+	}
+
+	os.Setenv("JFA_CONFIGPATH", app.configPath)
+	os.Setenv("JFA_DATAPATH", app.dataPath)
+}
 
 /* Adds start/stop/systemd to help message, and
 also gets rid of usage for shorthand flags, and merge them with the full-length one.

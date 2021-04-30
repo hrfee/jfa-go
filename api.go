@@ -1468,37 +1468,38 @@ func (app *appContext) SetEmail(gc *gin.Context) {
 		respondBool(400, false, gc)
 		return
 	}
-	if id == "UserCreated" {
+	switch id {
+	case "UserCreated":
 		app.storage.customEmails.UserCreated.Content = req.Content
 		app.storage.customEmails.UserCreated.Enabled = true
-	} else if id == "InviteExpiry" {
+	case "InviteExpiry":
 		app.storage.customEmails.InviteExpiry.Content = req.Content
 		app.storage.customEmails.InviteExpiry.Enabled = true
-	} else if id == "PasswordReset" {
+	case "PasswordReset":
 		app.storage.customEmails.PasswordReset.Content = req.Content
 		app.storage.customEmails.PasswordReset.Enabled = true
-	} else if id == "UserDeleted" {
+	case "UserDeleted":
 		app.storage.customEmails.UserDeleted.Content = req.Content
 		app.storage.customEmails.UserDeleted.Enabled = true
-	} else if id == "UserDisabled" {
+	case "UserDisabled":
 		app.storage.customEmails.UserDisabled.Content = req.Content
 		app.storage.customEmails.UserDisabled.Enabled = true
-	} else if id == "UserEnabled" {
+	case "UserEnabled":
 		app.storage.customEmails.UserEnabled.Content = req.Content
 		app.storage.customEmails.UserEnabled.Enabled = true
-	} else if id == "InviteEmail" {
+	case "InviteEmail":
 		app.storage.customEmails.InviteEmail.Content = req.Content
 		app.storage.customEmails.InviteEmail.Enabled = true
-	} else if id == "WelcomeEmail" {
+	case "WelcomeEmail":
 		app.storage.customEmails.WelcomeEmail.Content = req.Content
 		app.storage.customEmails.WelcomeEmail.Enabled = true
-	} else if id == "EmailConfirmation" {
+	case "EmailConfirmation":
 		app.storage.customEmails.EmailConfirmation.Content = req.Content
 		app.storage.customEmails.EmailConfirmation.Enabled = true
-	} else if id == "UserExpired" {
+	case "UserExpired":
 		app.storage.customEmails.UserExpired.Content = req.Content
 		app.storage.customEmails.UserExpired.Enabled = true
-	} else {
+	default:
 		respondBool(400, false, gc)
 		return
 	}
@@ -1525,27 +1526,28 @@ func (app *appContext) SetEmailState(gc *gin.Context) {
 	} else if s != "disable" {
 		respondBool(400, false, gc)
 	}
-	if id == "UserCreated" {
+	switch id {
+	case "UserCreated":
 		app.storage.customEmails.UserCreated.Enabled = enabled
-	} else if id == "InviteExpiry" {
+	case "InviteExpiry":
 		app.storage.customEmails.InviteExpiry.Enabled = enabled
-	} else if id == "PasswordReset" {
+	case "PasswordReset":
 		app.storage.customEmails.PasswordReset.Enabled = enabled
-	} else if id == "UserDeleted" {
+	case "UserDeleted":
 		app.storage.customEmails.UserDeleted.Enabled = enabled
-	} else if id == "UserDisabled" {
+	case "UserDisabled":
 		app.storage.customEmails.UserDisabled.Enabled = enabled
-	} else if id == "UserEnabled" {
+	case "UserEnabled":
 		app.storage.customEmails.UserEnabled.Enabled = enabled
-	} else if id == "InviteEmail" {
+	case "InviteEmail":
 		app.storage.customEmails.InviteEmail.Enabled = enabled
-	} else if id == "WelcomeEmail" {
+	case "WelcomeEmail":
 		app.storage.customEmails.WelcomeEmail.Enabled = enabled
-	} else if id == "EmailConfirmation" {
+	case "EmailConfirmation":
 		app.storage.customEmails.EmailConfirmation.Enabled = enabled
-	} else if id == "UserExpired" {
+	case "UserExpired":
 		app.storage.customEmails.UserExpired.Enabled = enabled
-	} else {
+	default:
 		respondBool(400, false, gc)
 		return
 	}
@@ -1576,7 +1578,8 @@ func (app *appContext) GetEmail(gc *gin.Context) {
 	newEmail := false
 	username := app.storage.lang.Email[lang].Strings.get("username")
 	emailAddress := app.storage.lang.Email[lang].Strings.get("emailAddress")
-	if id == "UserCreated" {
+	switch id {
+	case "UserCreated":
 		content = app.storage.customEmails.UserCreated.Content
 		if content == "" {
 			newEmail = true
@@ -1588,7 +1591,7 @@ func (app *appContext) GetEmail(gc *gin.Context) {
 		writeVars = func(variables []string) { app.storage.customEmails.UserCreated.Variables = variables }
 		values = app.email.createdValues("xxxxxx", username, emailAddress, Invite{}, app, false)
 		// app.storage.customEmails.UserCreated = content
-	} else if id == "InviteExpiry" {
+	case "InviteExpiry":
 		content = app.storage.customEmails.InviteExpiry.Content
 		if content == "" {
 			newEmail = true
@@ -1600,7 +1603,7 @@ func (app *appContext) GetEmail(gc *gin.Context) {
 		writeVars = func(variables []string) { app.storage.customEmails.InviteExpiry.Variables = variables }
 		values = app.email.expiryValues("xxxxxx", Invite{}, app, false)
 		// app.storage.customEmails.InviteExpiry = content
-	} else if id == "PasswordReset" {
+	case "PasswordReset":
 		content = app.storage.customEmails.PasswordReset.Content
 		if content == "" {
 			newEmail = true
@@ -1612,7 +1615,7 @@ func (app *appContext) GetEmail(gc *gin.Context) {
 		writeVars = func(variables []string) { app.storage.customEmails.PasswordReset.Variables = variables }
 		values = app.email.resetValues(PasswordReset{Pin: "12-34-56", Username: username}, app, false)
 		// app.storage.customEmails.PasswordReset = content
-	} else if id == "UserDeleted" {
+	case "UserDeleted":
 		content = app.storage.customEmails.UserDeleted.Content
 		if content == "" {
 			newEmail = true
@@ -1624,7 +1627,7 @@ func (app *appContext) GetEmail(gc *gin.Context) {
 		writeVars = func(variables []string) { app.storage.customEmails.UserDeleted.Variables = variables }
 		values = app.email.deletedValues(app.storage.lang.Email[lang].Strings.get("reason"), app, false)
 		// app.storage.customEmails.UserDeleted = content
-	} else if id == "UserDisabled" {
+	case "UserDisabled":
 		content = app.storage.customEmails.UserDisabled.Content
 		if content == "" {
 			newEmail = true
@@ -1636,7 +1639,7 @@ func (app *appContext) GetEmail(gc *gin.Context) {
 		writeVars = func(variables []string) { app.storage.customEmails.UserDisabled.Variables = variables }
 		values = app.email.deletedValues(app.storage.lang.Email[lang].Strings.get("reason"), app, false)
 		// app.storage.customEmails.UserDeleted = content
-	} else if id == "UserEnabled" {
+	case "UserEnabled":
 		content = app.storage.customEmails.UserEnabled.Content
 		if content == "" {
 			newEmail = true
@@ -1648,7 +1651,7 @@ func (app *appContext) GetEmail(gc *gin.Context) {
 		writeVars = func(variables []string) { app.storage.customEmails.UserEnabled.Variables = variables }
 		values = app.email.deletedValues(app.storage.lang.Email[lang].Strings.get("reason"), app, false)
 		// app.storage.customEmails.UserEnabled = content
-	} else if id == "InviteEmail" {
+	case "InviteEmail":
 		content = app.storage.customEmails.InviteEmail.Content
 		if content == "" {
 			newEmail = true
@@ -1660,7 +1663,7 @@ func (app *appContext) GetEmail(gc *gin.Context) {
 		writeVars = func(variables []string) { app.storage.customEmails.InviteEmail.Variables = variables }
 		values = app.email.inviteValues("xxxxxx", Invite{}, app, false)
 		// app.storage.customEmails.InviteEmail = content
-	} else if id == "WelcomeEmail" {
+	case "WelcomeEmail":
 		content = app.storage.customEmails.WelcomeEmail.Content
 		conditionals = []string{"{yourAccountWillExpire}"}
 		app.storage.customEmails.WelcomeEmail.Conditionals = conditionals
@@ -1676,7 +1679,7 @@ func (app *appContext) GetEmail(gc *gin.Context) {
 		}
 		// app.storage.customEmails.WelcomeEmail = content
 		values = app.email.welcomeValues(username, time.Now(), app, false, true)
-	} else if id == "EmailConfirmation" {
+	case "EmailConfirmation":
 		content = app.storage.customEmails.EmailConfirmation.Content
 		if content == "" {
 			newEmail = true
@@ -1688,7 +1691,7 @@ func (app *appContext) GetEmail(gc *gin.Context) {
 		writeVars = func(variables []string) { app.storage.customEmails.EmailConfirmation.Variables = variables }
 		values = app.email.confirmationValues("xxxxxx", username, "xxxxxx", app, false)
 		// app.storage.customEmails.EmailConfirmation = content
-	} else if id == "UserExpired" {
+	case "UserExpired":
 		content = app.storage.customEmails.UserExpired.Content
 		if content == "" {
 			newEmail = true
@@ -1699,7 +1702,7 @@ func (app *appContext) GetEmail(gc *gin.Context) {
 		}
 		writeVars = func(variables []string) { app.storage.customEmails.UserExpired.Variables = variables }
 		values = app.email.userExpiredValues(app, false)
-	} else {
+	default:
 		respondBool(400, false, gc)
 		return
 	}

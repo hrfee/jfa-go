@@ -5,7 +5,6 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"io/fs"
 	"log"
@@ -24,6 +23,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/hrfee/jfa-go/common"
 	_ "github.com/hrfee/jfa-go/docs"
+	"github.com/hrfee/jfa-go/logger"
 	"github.com/hrfee/jfa-go/ombi"
 	"github.com/hrfee/mediabrowser"
 	"github.com/lithammer/shortuuid/v3"
@@ -93,7 +93,7 @@ type appContext struct {
 	storage          Storage
 	validator        Validator
 	email            *Emailer
-	info, debug, err Logger
+	info, debug, err logger.Logger
 	host             string
 	port             int
 	version          string
@@ -165,71 +165,10 @@ func start(asDaemon, firstCall bool) {
 		fs:  localFS,
 	}
 
-	app.info = NewLogger(os.Stdout, "[INFO] ", log.Ltime, color.FgHiWhite)
-	app.err = NewLogger(os.Stdout, "[ERROR] ", log.Ltime, color.FgRed)
+	app.info = logger.NewLogger(os.Stdout, "[INFO] ", log.Ltime, color.FgHiWhite)
+	app.err = logger.NewLogger(os.Stdout, "[ERROR] ", log.Ltime|log.Lshortfile, color.FgRed)
 
-	if firstCall {
-		flag.Usage = helpFunc
-		help := flag.Bool("help", false, "prints this message.")
-		flag.BoolVar(help, "h", false, "SHORTHAND")
-
-		DATA = flag.String("data", app.dataPath, "alternate path to data directory.")
-		flag.StringVar(DATA, "d", app.dataPath, "SHORTHAND")
-		CONFIG = flag.String("config", app.configPath, "alternate path to config file.")
-		flag.StringVar(CONFIG, "c", app.configPath, "SHORTHAND")
-		HOST = flag.String("host", "", "alternate address to host web ui on.")
-		PORT = flag.Int("port", 0, "alternate port to host web ui on.")
-		flag.IntVar(PORT, "p", 0, "SHORTHAND")
-		DEBUG = flag.Bool("debug", false, "Enables debug logging.")
-		PPROF = flag.Bool("pprof", false, "Exposes pprof profiler on /debug/pprof.")
-		SWAGGER = flag.Bool("swagger", false, "Enable swagger at /swagger/index.html")
-
-		flag.Parse()
-		if *help {
-			flag.Usage()
-			os.Exit(0)
-		}
-		if *SWAGGER {
-			os.Setenv("SWAGGER", "1")
-		}
-		if *DEBUG {
-			os.Setenv("DEBUG", "1")
-		}
-		if *PPROF {
-			os.Setenv("PPROF", "1")
-		}
-	}
-
-	if os.Getenv("SWAGGER") == "1" {
-		*SWAGGER = true
-	}
-	if os.Getenv("DEBUG") == "1" {
-		*DEBUG = true
-	}
-	if os.Getenv("PPROF") == "1" {
-		*PPROF = true
-	}
-	// attempt to apply command line flags correctly
-	if app.configPath == *CONFIG && app.dataPath != *DATA {
-		app.dataPath = *DATA
-		app.configPath = filepath.Join(app.dataPath, "config.ini")
-	} else if app.configPath != *CONFIG && app.dataPath == *DATA {
-		app.configPath = *CONFIG
-	} else {
-		app.configPath = *CONFIG
-		app.dataPath = *DATA
-	}
-
-	// Previously used for self-restarts but leaving them here as they might be useful.
-	if v := os.Getenv("JFA_CONFIGPATH"); v != "" {
-		app.configPath = v
-	}
-	if v := os.Getenv("JFA_DATAPATH"); v != "" {
-		app.dataPath = v
-	}
-
-	os.Setenv("JFA_CONFIGPATH", app.configPath)
-	os.Setenv("JFA_DATAPATH", app.dataPath)
+	app.loadArgs(firstCall)
 
 	var firstRun bool
 	if _, err := os.Stat(app.dataPath); os.IsNotExist(err) {
@@ -256,8 +195,8 @@ func start(asDaemon, firstCall bool) {
 
 	var debugMode bool
 	var address string
-	if app.loadConfig() != nil {
-		app.err.Fatalf("Failed to load config file \"%s\"", app.configPath)
+	if err := app.loadConfig(); err != nil {
+		app.err.Fatalf("Failed to load config file \"%s\": %v", app.configPath, err)
 	}
 	app.version = app.config.Section("jellyfin").Key("version").String()
 	// read from config...
@@ -267,9 +206,9 @@ func start(asDaemon, firstCall bool) {
 		debugMode = true
 	}
 	if debugMode {
-		app.debug = NewLogger(os.Stdout, "[DEBUG] ", log.Ltime|log.Lshortfile, color.FgYellow)
+		app.debug = logger.NewLogger(os.Stdout, "[DEBUG] ", log.Ltime|log.Lshortfile, color.FgYellow)
 	} else {
-		app.debug = emptyLogger(false)
+		app.debug = logger.EmptyLogger(false)
 	}
 	if *PPROF {
 		app.info.Print(warning("\n\nWARNING: Don't use pprof in production.\n\n"))
@@ -278,9 +217,8 @@ func start(asDaemon, firstCall bool) {
 	// Starts listener to receive commands over a unix socket. Use with 'jfa-go start/stop'
 	if asDaemon {
 		go func() {
-			socket := SOCK
-			os.Remove(socket)
-			listener, err := net.Listen("unix", socket)
+			os.Remove(SOCK)
+			listener, err := net.Listen("unix", SOCK)
 			if err != nil {
 				app.err.Fatalf("Couldn't establish socket connection at %s\n", SOCK)
 			}
@@ -288,7 +226,7 @@ func start(asDaemon, firstCall bool) {
 			signal.Notify(c, os.Interrupt)
 			go func() {
 				<-c
-				os.Remove(socket)
+				os.Remove(SOCK)
 				os.Exit(1)
 			}()
 			defer func() {
@@ -298,13 +236,13 @@ func start(asDaemon, firstCall bool) {
 			for {
 				con, err := listener.Accept()
 				if err != nil {
-					app.err.Printf("Couldn't read message on %s: %s", socket, err)
+					app.err.Printf("Couldn't read message on %s: %s", SOCK, err)
 					continue
 				}
 				buf := make([]byte, 512)
 				nr, err := con.Read(buf)
 				if err != nil {
-					app.err.Printf("Couldn't read message on %s: %s", socket, err)
+					app.err.Printf("Couldn't read message on %s: %s", SOCK, err)
 					continue
 				}
 				command := string(buf[0:nr])
@@ -390,6 +328,7 @@ func start(asDaemon, firstCall bool) {
 
 		app.storage.profiles_path = app.config.Section("files").Key("user_profiles").String()
 		app.storage.loadProfiles()
+		// Migrate from pre-0.2.0 user templates to profiles
 		if !(app.storage.policy.BlockedTags == nil && app.storage.configuration.GroupedFolders == nil && len(app.storage.displayprefs) == 0) {
 			app.info.Println("Migrating user template files to new profile format")
 			app.storage.migrateToProfile()
@@ -428,7 +367,7 @@ func start(asDaemon, firstCall bool) {
 			"Jellyfin (Dark)": "dark-theme",
 			"Default (Light)": "light-theme",
 		}
-		// For move from Bootstrap to a17t
+		// For move from Bootstrap to a17t (0.2.5)
 		if app.config.Section("ui").Key("theme").String() == "Bootstrap (Light)" {
 			app.config.Section("ui").Key("theme").SetValue("Default (Light)")
 		}
