@@ -1,6 +1,6 @@
 {
     "meta": {
-        "name": "Español (ES)"
+        "name": "Español(ES)"
     },
     "strings": {
         "invites": "Invitaciones",
@@ -13,7 +13,7 @@
         "inviteNumberOfUses": "Números de usos",
         "inviteDuration": "Duración de invitación",
         "warning": "Advertencia",
-        "inviteInfiniteUsesWarning": "Las invitaciones con usos infinitos pueden usarse abusivamente.",
+        "inviteInfiniteUsesWarning": "Las invitaciones con usos infinitos pueden usarse abusivamente",
         "inviteSendToEmail": "Enviar a",
         "login": "Acceso",
         "logout": "Cerrar sesión",
