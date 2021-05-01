@@ -1,12 +1,12 @@
 {
     "meta": {
-        "name": ""
+        "name": "Español(ES)"
     },
     "strings": {
-        "passwordReset": "",
-        "resetFailed": "",
-        "tryAgain": "",
-        "youCanLogin": "",
-        "changeYourPassword": ""
+        "passwordReset": "Cambiar contraseña",
+        "resetFailed": "Error al cambiar contraseña",
+        "tryAgain": "Por favor intente nuevamente.",
+        "youCanLogin": "Ahora puedes logearte con el codigo como contraseña.",
+        "changeYourPassword": "Recuerda cambiar tu contraseña luego de iniciar sesión."
     }
 }
