@@ -30,7 +30,7 @@
     },
     "language": {
         "title": "Lenguaje",
-        "description": "Las traducciones de la comunidad están disponibles para la mayor parte de jfa-go. Puede elegir los idiomas predeterminados a continuación, pero los usuarios aún pueden cambiarlo si lo desean. Si quieres ayudar a traducir, regístrate en {n} para empezar a contribuir.",
+        "description": "Las traducciones de la comunidad están disponibles para la mayor parte de jfa-go. Puede elegir los idiomas predeterminados a continuación, pero los usuarios aún pueden cambiarlo si lo desean. Si quieres ayudar a traducir, regístrate en {n} para empezar a contribuir!",
         "defaultAdminLang": "Idioma de administrador predeterminado",
         "defaultFormLang": "Idioma de creación de cuenta predeterminado",
         "defaultEmailLang": "Idioma de correo electrónico predeterminado"
