@@ -1,0 +1,12 @@
+{
+    "meta": {
+        "name": ""
+    },
+    "strings": {
+        "passwordReset": "",
+        "resetFailed": "",
+        "tryAgain": "",
+        "youCanLogin": "",
+        "changeYourPassword": ""
+    }
+}
