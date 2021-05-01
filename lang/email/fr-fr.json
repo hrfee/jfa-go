@@ -28,7 +28,8 @@
         "ifItWasYou": "Si c'était bien toi, renseigne le code PIN en dessous.",
         "codeExpiry": "Ce code expirera le {date}, à {time} UTC, soit dans {expiresInMinutes}.",
         "pin": "PIN",
-        "name": "Réinitialisation du mot de passe"
+        "name": "Réinitialisation du mot de passe",
+        "ifItWasYouLink": "Si c'était bien toi, clique sur le lien en dessous."
     },
     "userDeleted": {
         "title": "Ton compte a été désactivé - Jellyfin",
@@ -40,7 +41,7 @@
         "hello": "Salut",
         "youHaveBeenInvited": "Tu as été invité à rejoindre Jellyfin.",
         "toJoin": "Pour continuer, suis le lien en dessous.",
-        "inviteExpiry": "L'invitation expirera le {date}, à {time}, soit dans {expiresInMinutes}, alors fais vite !",
+        "inviteExpiry": "L'invitation expirera le {date}, à {time}, soit dans {expiresInMinutes}, alors fais vite.",
         "linkButton": "Lien",
         "name": "Courriel d'invitation"
     },
@@ -49,12 +50,29 @@
         "title": "Bienvenue sur Jellyfin",
         "welcome": "Bienvenue sur Jellyfin !",
         "jellyfinURL": "URL",
-        "name": "Courriel de bienvenue"
+        "name": "Courriel de bienvenue",
+        "yourAccountWillExpire": "Ton compte expirera le {date}."
     },
     "emailConfirmation": {
         "title": "Confirmez votre adresse e-mail - Jellyfin",
         "clickBelow": "Clique sur le lien ci-dessous pour confirmer ton adresse e-mail et commencer à utiliser Jellyfin.",
         "confirmEmail": "Confirmer l'adresse e-mail",
         "name": "Email de confirmation"
+    },
+    "userExpired": {
+        "contactTheAdmin": "Contacte l'administrateur pour plus d'informations.",
+        "name": "Utilisateur expiré",
+        "title": "Ton compte a expiré - Jellyfin",
+        "yourAccountHasExpired": "Ton compte a expiré."
+    },
+    "userDisabled": {
+        "name": "Utilisateur désactivé",
+        "title": "Ton compte a été désactivé - Jellyfin",
+        "yourAccountWasDisabled": "Ton compte a été désactivé."
+    },
+    "userEnabled": {
+        "name": "Utilisateur activé",
+        "title": "Ton compte a été ré-activé - Jellyfin",
+        "yourAccountWasEnabled": "Ton compte a été ré-activé."
     }
 }
