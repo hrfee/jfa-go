@@ -1,6 +1,6 @@
 {
     "meta": {
-        "name": "Español (ES)"
+        "name": "Español(ES)"
     },
     "strings": {
         "pageTitle": "Configuración - jfa-go",
@@ -75,7 +75,7 @@
         "testConnection": "Probar conexión"
     },
     "ombi": {
-        "title": "Ombi",
+        "title": "Ombi.",
         "description": "Al conectarse a Ombi, se creará una cuenta de Jellyfin y Ombi cuando un usuario se una a través de jfa-go. Una vez finalizada la configuración, vaya a Configuración para establecer un perfil predeterminado para los nuevos usuarios de ombi.",
         "apiKeyNotice": "Encuentra esto en la primera pestaña de la configuración de Ombi."
     },
