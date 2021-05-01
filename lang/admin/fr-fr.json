@@ -76,7 +76,21 @@
         "preview": "Aperçu",
         "reset": "Réinitialiser",
         "edit": "Éditer",
-        "customizeEmails": "Personnaliser les e-mails"
+        "customizeEmails": "Personnaliser les e-mails",
+        "inviteDuration": "Durée de l'invitation",
+        "enabled": "Activé",
+        "disabled": "Désactivé",
+        "reEnable": "Ré-activé",
+        "disable": "Désactivé",
+        "admin": "Administrateur",
+        "expiry": "Expiration",
+        "advancedSettings": "Paramètres avancés",
+        "userExpiry": "Expiration de l'utilisateur",
+        "updates": "Mises à jour",
+        "update": "Mise à jour",
+        "download": "Téléchargement",
+        "search": "Recherche",
+        "conditionals": "Conditions"
     },
     "notifications": {
         "changedEmailAddress": "Adresse e-mail modifiée de {n}.",
@@ -108,7 +122,8 @@
         "errorSendWelcomeEmail": "Echec lors de l'envoi du mail de bienvenue (vérifier la console/les journaux)",
         "sentAnnouncement": "Annonce envoyée.",
         "saveEmail": "Email enregistré.",
-        "errorSaveEmail": "Échec de l'enregistrement de l'e-mail."
+        "errorSaveEmail": "Échec de l'enregistrement de l'e-mail.",
+        "updateApplied": "Mise à jour appliquée, veuillez redémarrer."
     },
     "quantityStrings": {
         "modifySettingsFor": {
