@@ -340,7 +340,7 @@ func (emailer *Emailer) inviteValues(code string, invite Invite, app *appContext
 
 func (emailer *Emailer) constructInvite(code string, invite Invite, app *appContext, noSub bool) (*Email, error) {
 	email := &Email{
-		Subject: app.config.Section("email_confirmation").Key("subject").MustString(emailer.lang.InviteEmail.get("title")),
+		Subject: app.config.Section("invite_emails").Key("subject").MustString(emailer.lang.InviteEmail.get("title")),
 	}
 	template := emailer.inviteValues(code, invite, app, noSub)
 	var err error
