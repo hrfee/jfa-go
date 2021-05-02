@@ -76,7 +76,7 @@
     },
     "ombi": {
         "title": "Ombi",
-        "description": "By connecting to Ombi, both a Jellyfin and Ombi account will be created when a user joins through jfa-go. After setup if finished, go to Settings to set a default profile for new ombi users.",
+        "description": "By connecting to Ombi, both a Jellyfin and Ombi account will be created when a user joins through jfa-go. After setup is finished, go to Settings to set a default profile for new ombi users.",
         "apiKeyNotice": "Find this in the first tab of Ombi settings."
     },
     "email": {
@@ -108,7 +108,10 @@
         "title": "Password Resets",
         "description": "When a user tries to reset their password, Jellyfin creates a file named 'passwordreset-*.json' which contains a PIN. jfa-go reads the file and sends the PIN to the user.",
         "pathToJellyfin": "Path to Jellyfin configuration directory",
-        "pathToJellyfinNotice": "If you don't know where this is, try resetting your password in Jellyfin. A popup with '<path to jellyfin>/passwordreset-*.json' will appear."
+        "pathToJellyfinNotice": "If you don't know where this is, try resetting your password in Jellyfin. A popup with '<path to jellyfin>/passwordreset-*.json' will appear.",
+        "resetLinks": "Send a link instead of a PIN",
+        "resetLinksNotice": "If Ombi integration is enabled, use this to sync Jellyfin password resets with Ombi.",
+        "resetLinksLanguage": "Default reset link language"
     },
     "passwordValidation": {
         "title": "Password Validation",

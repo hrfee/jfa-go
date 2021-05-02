@@ -1805,20 +1805,25 @@ func (app *appContext) Logout(gc *gin.Context) {
 func (app *appContext) GetLanguages(gc *gin.Context) {
 	page := gc.Param("page")
 	resp := langDTO{}
-	if page == "form" {
+	switch page {
+	case "form":
 		for key, lang := range app.storage.lang.Form {
 			resp[key] = lang.Meta.Name
 		}
-	} else if page == "admin" {
+	case "admin":
 		for key, lang := range app.storage.lang.Admin {
 			resp[key] = lang.Meta.Name
 		}
-	} else if page == "setup" {
+	case "setup":
 		for key, lang := range app.storage.lang.Setup {
 			resp[key] = lang.Meta.Name
 		}
-	} else if page == "email" {
+	case "email":
 		for key, lang := range app.storage.lang.Email {
+			resp[key] = lang.Meta.Name
+		}
+	case "pwr":
+		for key, lang := range app.storage.lang.PasswordReset {
 			resp[key] = lang.Meta.Name
 		}
 	}

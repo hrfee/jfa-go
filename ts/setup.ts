@@ -187,8 +187,8 @@ class Select {
 }
 
 class LangSelect extends Select {
-    constructor(page: string, el: HTMLElement) {
-        super(el);
+    constructor(page: string, el: HTMLElement, depends?: string, dependsTrue?: boolean, section?: string, setting?: string) {
+        super(el, depends, dependsTrue, section, setting);
         _get("/lang/" + page, null, (req: XMLHttpRequest) => {
             if (req.readyState == 4 && req.status == 200) {
                 for (let code in req.response) {
@@ -256,7 +256,9 @@ const settings = {
     "password_resets": {
         "enabled": new Checkbox(get("password_resets-enabled"), "", false, "password_resets", "enabled"),
         "watch_directory": new Input(get("password_resets-watch_directory"), "", "", "enabled", true, "password_resets"),
-        "subject": new Input(get("password_resets-subject"), "", "", "enabled", true, "password_resets")
+        "subject": new Input(get("password_resets-subject"), "", "", "enabled", true, "password_resets"),
+        "link_reset": new Checkbox(get("password_resets-link_reset"), "enabled", true, "password_resets", "link_reset"),
+        "language": new LangSelect("pwr", get("password_resets-language"), "link_reset", true, "password_resets", "language")
     },
     "notifications": {
         "enabled": new Checkbox(get("notifications-enabled"))

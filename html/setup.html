@@ -376,7 +376,18 @@
                     <input type="text" class="input ~neutral !normal mt-half" id="password_resets-watch_directory" placeholder="/config/jellyfin">
                     <p class="support mb-1">{{ .lang.PasswordResets.pathToJellyfinNotice }}</p>
                 </label>
-                <label class="label">
+                <label class="switch">
+                    <input type="checkbox" id="password_resets-link_reset"><span>{{ .lang.PasswordResets.resetLinks }}</span>
+                    <p class="support mb-1">{{ .lang.PasswordResets.resetLinksNotice }}</p>
+                </label>
+                <label class="row label">
+                    <p class="mt-half">{{ .lang.PasswordResets.resetLinksLanguage }}</p>
+                    <div class="select ~neutral !normal mt-half mb-1">
+                        <select id="password_resets-language">
+                        </select>
+                    </div>
+                </label>
+                <label class="row label">
                     <span class="mt-half">{{ .lang.Strings.emailSubject }}</span>
                     <input type="text" class="input ~neutral !normal mt-half mb-1" id="password_resets-subject" placeholder="{{ .emailLang.PasswordReset.title }}">
                 </label>
