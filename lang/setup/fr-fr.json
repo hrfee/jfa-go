@@ -101,7 +101,10 @@
         "title": "Réinitialisation de mot de passe",
         "description": "Lorsqu'un utilisateur essaie de réinitialiser son mot de passe, Jellyfin créé un fichier nommé 'passwordreset-*.json' qui contient le code PIN. jfa-go lit le fichier et envoie le code PIN à l'utilisateur.",
         "pathToJellyfin": "Chemin du dossier de configuration de Jellyfin",
-        "pathToJellyfinNotice": "Si vous ne savez pas où c'est, essayez de réinitialiser votre mot de passe dans Jellyfin. Une popup avec '<path to jellyfin>/passwordreset-*.json' apparaitra."
+        "pathToJellyfinNotice": "Si vous ne savez pas où c'est, essayez de réinitialiser votre mot de passe dans Jellyfin. Une popup avec '<path to jellyfin>/passwordreset-*.json' apparaitra.",
+        "resetLinks": "Envoyer un lien plutôt qu'un PIN",
+        "resetLinksNotice": "Si l'intégration est activée, utilisez ceci pour synchroniser les réinitialisations de mots de passe Jellyfin avec Ombi.",
+        "resetLinksLanguage": "Langue du lien de réinitialisation par défaut"
     },
     "passwordValidation": {
         "title": "Validation du mot de passe",
@@ -123,5 +126,12 @@
         "successMessageNotice": "S'affiche lorsqu'un utilisateur crée son compte.",
         "emailMessage": "Message de l'e-mail",
         "emailMessageNotice": "S'affiche au bas des e-mails."
+    },
+    "updates": {
+        "title": "Mises à jour",
+        "description": "Activez pour être averti lorsque de nouvelles mises à jour sont disponibles. jfa-go vérifiera {n} toutes les 30 minutes. Aucune adresse IP ou information personnellement identifiable n'est collectée.",
+        "updateChannel": "Mettre à jour la chaîne",
+        "stable": "Stable",
+        "unstable": "Instable"
     }
 }
