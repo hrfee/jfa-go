@@ -160,20 +160,25 @@ func (app *appContext) checkInvite(code string, used bool, username string) bool
 		notify := inv.Notify
 		if emailEnabled && app.config.Section("notifications").Key("enabled").MustBool(false) && len(notify) != 0 {
 			app.debug.Printf("%s: Expiry notification", code)
+			var wait sync.WaitGroup
 			for address, settings := range notify {
-				if settings["notify-expiry"] {
-					go func() {
-						msg, err := app.email.constructExpiry(code, inv, app, false)
-						if err != nil {
-							app.err.Printf("%s: Failed to construct expiry notification: %v", code, err)
-						} else if err := app.email.send(msg, address); err != nil {
-							app.err.Printf("%s: Failed to send expiry notification: %v", code, err)
-						} else {
-							app.info.Printf("Sent expiry notification to %s", address)
-						}
-					}()
+				if !settings["notify-expiry"] {
+					continue
 				}
+				wait.Add(1)
+				go func(addr string) {
+					defer wait.Done()
+					msg, err := app.email.constructExpiry(code, inv, app, false)
+					if err != nil {
+						app.err.Printf("%s: Failed to construct expiry notification: %v", code, err)
+					} else if err := app.email.send(msg, addr); err != nil {
+						app.err.Printf("%s: Failed to send expiry notification: %v", code, err)
+					} else {
+						app.info.Printf("Sent expiry notification to %s", addr)
+					}
+				}(address)
 			}
+			wait.Wait()
 		}
 		changed = true
 		match = false
@@ -313,6 +318,7 @@ func (app *appContext) NewUserAdmin(gc *gin.Context) {
 
 type errorFunc func(gc *gin.Context)
 
+// Used on the form & when a users email has been confirmed.
 func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, success bool) {
 	existingUser, _, _ := app.jf.UserByName(req.Username, false)
 	if existingUser.Name != "" {
@@ -460,38 +466,6 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 	return
 }
 
-// @Summary Extend time before the user(s) expiry.
-// @Produce json
-// @Param extendExpiryDTO body extendExpiryDTO true "Extend expiry object"
-// @Success 200 {object} boolResponse
-// @Failure 400 {object} boolResponse
-// @Failure 500 {object} boolResponse
-// @Router /users/extend [post]
-// @tags Users
-func (app *appContext) ExtendExpiry(gc *gin.Context) {
-	var req extendExpiryDTO
-	gc.BindJSON(&req)
-	app.info.Printf("Expiry extension requested for %d user(s)", len(req.Users))
-	if req.Months <= 0 && req.Days <= 0 && req.Hours <= 0 && req.Minutes <= 0 {
-		respondBool(400, false, gc)
-		return
-	}
-	app.storage.usersLock.Lock()
-	defer app.storage.usersLock.Unlock()
-	for _, id := range req.Users {
-		if expiry, ok := app.storage.users[id]; ok {
-			app.storage.users[id] = expiry.AddDate(0, req.Months, req.Days).Add(time.Duration(((60 * req.Hours) + req.Minutes)) * time.Minute)
-			app.debug.Printf("Expiry extended for \"%s\"", id)
-		}
-	}
-	if err := app.storage.storeUsers(); err != nil {
-		app.err.Printf("Failed to store user duration: %v", err)
-		respondBool(500, false, gc)
-		return
-	}
-	respondBool(204, true, gc)
-}
-
 // @Summary Creates a new Jellyfin user via invite code
 // @Produce json
 // @Param newUserDTO body newUserDTO true "New user request object"
@@ -533,44 +507,6 @@ func (app *appContext) NewUser(gc *gin.Context) {
 		}
 	}
 	gc.JSON(code, validation)
-}
-
-// @Summary Send an announcement via email to a given list of users.
-// @Produce json
-// @Param announcementDTO body announcementDTO true "Announcement request object"
-// @Success 200 {object} boolResponse
-// @Failure 400 {object} boolResponse
-// @Failure 500 {object} boolResponse
-// @Router /users/announce [post]
-// @Security Bearer
-// @tags Users
-func (app *appContext) Announce(gc *gin.Context) {
-	var req announcementDTO
-	gc.BindJSON(&req)
-	if !emailEnabled {
-		respondBool(400, false, gc)
-		return
-	}
-	addresses := []string{}
-	for _, userID := range req.Users {
-		addr, ok := app.storage.emails[userID]
-		if !ok || addr == "" {
-			continue
-		}
-		addresses = append(addresses, addr.(string))
-	}
-	msg, err := app.email.constructTemplate(req.Subject, req.Message, app)
-	if err != nil {
-		app.err.Printf("Failed to construct announcement emails: %v", err)
-		respondBool(500, false, gc)
-		return
-	} else if err := app.email.send(msg, addresses...); err != nil {
-		app.err.Printf("Failed to send announcement emails: %v", err)
-		respondBool(500, false, gc)
-		return
-	}
-	app.info.Printf("Sent announcement email to %d users", len(addresses))
-	respondBool(200, true, gc)
 }
 
 // @Summary Enable/Disable a list of users, optionally notifying them why.
@@ -705,6 +641,76 @@ func (app *appContext) DeleteUsers(gc *gin.Context) {
 	respondBool(200, true, gc)
 }
 
+// @Summary Extend time before the user(s) expiry.
+// @Produce json
+// @Param extendExpiryDTO body extendExpiryDTO true "Extend expiry object"
+// @Success 200 {object} boolResponse
+// @Failure 400 {object} boolResponse
+// @Failure 500 {object} boolResponse
+// @Router /users/extend [post]
+// @tags Users
+func (app *appContext) ExtendExpiry(gc *gin.Context) {
+	var req extendExpiryDTO
+	gc.BindJSON(&req)
+	app.info.Printf("Expiry extension requested for %d user(s)", len(req.Users))
+	if req.Months <= 0 && req.Days <= 0 && req.Hours <= 0 && req.Minutes <= 0 {
+		respondBool(400, false, gc)
+		return
+	}
+	app.storage.usersLock.Lock()
+	defer app.storage.usersLock.Unlock()
+	for _, id := range req.Users {
+		if expiry, ok := app.storage.users[id]; ok {
+			app.storage.users[id] = expiry.AddDate(0, req.Months, req.Days).Add(time.Duration(((60 * req.Hours) + req.Minutes)) * time.Minute)
+			app.debug.Printf("Expiry extended for \"%s\"", id)
+		}
+	}
+	if err := app.storage.storeUsers(); err != nil {
+		app.err.Printf("Failed to store user duration: %v", err)
+		respondBool(500, false, gc)
+		return
+	}
+	respondBool(204, true, gc)
+}
+
+// @Summary Send an announcement via email to a given list of users.
+// @Produce json
+// @Param announcementDTO body announcementDTO true "Announcement request object"
+// @Success 200 {object} boolResponse
+// @Failure 400 {object} boolResponse
+// @Failure 500 {object} boolResponse
+// @Router /users/announce [post]
+// @Security Bearer
+// @tags Users
+func (app *appContext) Announce(gc *gin.Context) {
+	var req announcementDTO
+	gc.BindJSON(&req)
+	if !emailEnabled {
+		respondBool(400, false, gc)
+		return
+	}
+	addresses := []string{}
+	for _, userID := range req.Users {
+		addr, ok := app.storage.emails[userID]
+		if !ok || addr == "" {
+			continue
+		}
+		addresses = append(addresses, addr.(string))
+	}
+	msg, err := app.email.constructTemplate(req.Subject, req.Message, app)
+	if err != nil {
+		app.err.Printf("Failed to construct announcement emails: %v", err)
+		respondBool(500, false, gc)
+		return
+	} else if err := app.email.send(msg, addresses...); err != nil {
+		app.err.Printf("Failed to send announcement emails: %v", err)
+		respondBool(500, false, gc)
+		return
+	}
+	app.info.Printf("Sent announcement email to %d users", len(addresses))
+	respondBool(200, true, gc)
+}
+
 // @Summary Create a new invite.
 // @Produce json
 // @Param generateInviteDTO body generateInviteDTO true "New invite request object"
@@ -773,6 +779,99 @@ func (app *appContext) GenerateInvite(gc *gin.Context) {
 	app.storage.invites[inviteCode] = invite
 	app.storage.storeInvites()
 	respondBool(200, true, gc)
+}
+
+// @Summary Get invites.
+// @Produce json
+// @Success 200 {object} getInvitesDTO
+// @Router /invites [get]
+// @Security Bearer
+// @tags Invites
+func (app *appContext) GetInvites(gc *gin.Context) {
+	app.debug.Println("Invites requested")
+	currentTime := time.Now()
+	app.storage.loadInvites()
+	app.checkInvites()
+	var invites []inviteDTO
+	for code, inv := range app.storage.invites {
+		_, months, days, hours, minutes, _ := timeDiff(inv.ValidTill, currentTime)
+		invite := inviteDTO{
+			Code:        code,
+			Months:      months,
+			Days:        days,
+			Hours:       hours,
+			Minutes:     minutes,
+			UserExpiry:  inv.UserExpiry,
+			UserMonths:  inv.UserMonths,
+			UserDays:    inv.UserDays,
+			UserHours:   inv.UserHours,
+			UserMinutes: inv.UserMinutes,
+			Created:     inv.Created.Unix(),
+			Profile:     inv.Profile,
+			NoLimit:     inv.NoLimit,
+			Label:       inv.Label,
+		}
+		if len(inv.UsedBy) != 0 {
+			invite.UsedBy = map[string]int64{}
+			for _, pair := range inv.UsedBy {
+				// These used to be stored formatted instead of as a unix timestamp.
+				unix, err := strconv.ParseInt(pair[1], 10, 64)
+				if err != nil {
+					date, err := timefmt.Parse(pair[1], app.datePattern+" "+app.timePattern)
+					if err != nil {
+						app.err.Printf("Failed to parse usedBy time: %v", err)
+					}
+					unix = date.Unix()
+				}
+				invite.UsedBy[pair[0]] = unix
+			}
+		}
+		invite.RemainingUses = 1
+		if inv.RemainingUses != 0 {
+			invite.RemainingUses = inv.RemainingUses
+		}
+		if inv.Email != "" {
+			invite.Email = inv.Email
+		}
+		if len(inv.Notify) != 0 {
+			var address string
+			if app.config.Section("ui").Key("jellyfin_login").MustBool(false) {
+				app.storage.loadEmails()
+				if addr := app.storage.emails[gc.GetString("jfId")]; addr != nil {
+					address = addr.(string)
+				}
+			} else {
+				address = app.config.Section("ui").Key("email").String()
+			}
+			if _, ok := inv.Notify[address]; ok {
+				if _, ok = inv.Notify[address]["notify-expiry"]; ok {
+					invite.NotifyExpiry = inv.Notify[address]["notify-expiry"]
+				}
+				if _, ok = inv.Notify[address]["notify-creation"]; ok {
+					invite.NotifyCreation = inv.Notify[address]["notify-creation"]
+				}
+			}
+		}
+		invites = append(invites, invite)
+	}
+	profiles := make([]string, len(app.storage.profiles))
+	if len(app.storage.profiles) != 0 {
+		profiles[0] = app.storage.defaultProfile
+		i := 1
+		if len(app.storage.profiles) > 1 {
+			for p := range app.storage.profiles {
+				if p != app.storage.defaultProfile {
+					profiles[i] = p
+					i++
+				}
+			}
+		}
+	}
+	resp := getInvitesDTO{
+		Profiles: profiles,
+		Invites:  invites,
+	}
+	gc.JSON(200, resp)
 }
 
 // @Summary Set profile for an invite
@@ -911,99 +1010,6 @@ func (app *appContext) DeleteProfile(gc *gin.Context) {
 	}
 	app.storage.storeProfiles()
 	respondBool(200, true, gc)
-}
-
-// @Summary Get invites.
-// @Produce json
-// @Success 200 {object} getInvitesDTO
-// @Router /invites [get]
-// @Security Bearer
-// @tags Invites
-func (app *appContext) GetInvites(gc *gin.Context) {
-	app.debug.Println("Invites requested")
-	currentTime := time.Now()
-	app.storage.loadInvites()
-	app.checkInvites()
-	var invites []inviteDTO
-	for code, inv := range app.storage.invites {
-		_, months, days, hours, minutes, _ := timeDiff(inv.ValidTill, currentTime)
-		invite := inviteDTO{
-			Code:        code,
-			Months:      months,
-			Days:        days,
-			Hours:       hours,
-			Minutes:     minutes,
-			UserExpiry:  inv.UserExpiry,
-			UserMonths:  inv.UserMonths,
-			UserDays:    inv.UserDays,
-			UserHours:   inv.UserHours,
-			UserMinutes: inv.UserMinutes,
-			Created:     inv.Created.Unix(),
-			Profile:     inv.Profile,
-			NoLimit:     inv.NoLimit,
-			Label:       inv.Label,
-		}
-		if len(inv.UsedBy) != 0 {
-			invite.UsedBy = map[string]int64{}
-			for _, pair := range inv.UsedBy {
-				// These used to be stored formatted instead of as a unix timestamp.
-				unix, err := strconv.ParseInt(pair[1], 10, 64)
-				if err != nil {
-					date, err := timefmt.Parse(pair[1], app.datePattern+" "+app.timePattern)
-					if err != nil {
-						app.err.Printf("Failed to parse usedBy time: %v", err)
-					}
-					unix = date.Unix()
-				}
-				invite.UsedBy[pair[0]] = unix
-			}
-		}
-		invite.RemainingUses = 1
-		if inv.RemainingUses != 0 {
-			invite.RemainingUses = inv.RemainingUses
-		}
-		if inv.Email != "" {
-			invite.Email = inv.Email
-		}
-		if len(inv.Notify) != 0 {
-			var address string
-			if app.config.Section("ui").Key("jellyfin_login").MustBool(false) {
-				app.storage.loadEmails()
-				if addr := app.storage.emails[gc.GetString("jfId")]; addr != nil {
-					address = addr.(string)
-				}
-			} else {
-				address = app.config.Section("ui").Key("email").String()
-			}
-			if _, ok := inv.Notify[address]; ok {
-				if _, ok = inv.Notify[address]["notify-expiry"]; ok {
-					invite.NotifyExpiry = inv.Notify[address]["notify-expiry"]
-				}
-				if _, ok = inv.Notify[address]["notify-creation"]; ok {
-					invite.NotifyCreation = inv.Notify[address]["notify-creation"]
-				}
-			}
-		}
-		invites = append(invites, invite)
-	}
-	profiles := make([]string, len(app.storage.profiles))
-	if len(app.storage.profiles) != 0 {
-		profiles[0] = app.storage.defaultProfile
-		i := 1
-		if len(app.storage.profiles) > 1 {
-			for p := range app.storage.profiles {
-				if p != app.storage.defaultProfile {
-					profiles[i] = p
-					i++
-				}
-			}
-		}
-	}
-	resp := getInvitesDTO{
-		Profiles: profiles,
-		Invites:  invites,
-	}
-	gc.JSON(200, resp)
 }
 
 // @Summary Set notification preferences for an invite.
@@ -1433,7 +1439,7 @@ func (app *appContext) ModifyConfig(gc *gin.Context) {
 // @Success 200 {object} emailListDTO
 // @Router /config/emails [get]
 // @tags Configuration
-func (app *appContext) GetEmails(gc *gin.Context) {
+func (app *appContext) GetCustomEmails(gc *gin.Context) {
 	lang := gc.Query("lang")
 	if _, ok := app.storage.lang.Email[lang]; !ok {
 		lang = app.storage.lang.chosenEmailLang
@@ -1458,9 +1464,10 @@ func (app *appContext) GetEmails(gc *gin.Context) {
 // @Success 200 {object} boolResponse
 // @Failure 400 {object} boolResponse
 // @Failure 500 {object} boolResponse
+// @Param id path string true "ID of email"
 // @Router /config/emails/{id} [post]
 // @tags Configuration
-func (app *appContext) SetEmail(gc *gin.Context) {
+func (app *appContext) SetCustomEmail(gc *gin.Context) {
 	var req customEmail
 	gc.BindJSON(&req)
 	id := gc.Param("id")
@@ -1515,9 +1522,11 @@ func (app *appContext) SetEmail(gc *gin.Context) {
 // @Success 200 {object} boolResponse
 // @Failure 400 {object} boolResponse
 // @Failure 500 {object} boolResponse
+// @Param enable/disable path string true "enable/disable"
+// @Param id path string true "ID of email"
 // @Router /config/emails/{id}/state/{enable/disable} [post]
 // @tags Configuration
-func (app *appContext) SetEmailState(gc *gin.Context) {
+func (app *appContext) SetCustomEmailState(gc *gin.Context) {
 	id := gc.Param("id")
 	s := gc.Param("state")
 	enabled := false
@@ -1563,9 +1572,10 @@ func (app *appContext) SetEmailState(gc *gin.Context) {
 // @Success 200 {object} customEmailDTO
 // @Failure 400 {object} boolResponse
 // @Failure 500 {object} boolResponse
+// @Param id path string true "ID of email"
 // @Router /config/emails/{id} [get]
 // @tags Configuration
-func (app *appContext) GetEmail(gc *gin.Context) {
+func (app *appContext) GetCustomEmailTemplate(gc *gin.Context) {
 	lang := app.storage.lang.chosenEmailLang
 	id := gc.Param("id")
 	var content string
@@ -1800,6 +1810,7 @@ func (app *appContext) Logout(gc *gin.Context) {
 // @Produce json
 // @Success 200 {object} langDTO
 // @Failure 500 {object} stringResponse
+// @Param page path string true "admin/form/setup/email/pwr"
 // @Router /lang/{page} [get]
 // @tags Other
 func (app *appContext) GetLanguages(gc *gin.Context) {
@@ -1834,17 +1845,14 @@ func (app *appContext) GetLanguages(gc *gin.Context) {
 	gc.JSON(200, resp)
 }
 
-// @Summary Restarts the program. No response means success.
-// @Router /restart [post]
+// @Summary Serves a translations for pages "admin" or "form".
+// @Produce json
+// @Success 200 {object} adminLang
+// @Failure 400 {object} boolResponse
+// @Param page path string true "admin or form."
+// @Param language path string true "language code, e.g en-us."
+// @Router /lang/{page}/{language} [get]
 // @tags Other
-func (app *appContext) restart(gc *gin.Context) {
-	app.info.Println("Restarting...")
-	err := app.Restart()
-	if err != nil {
-		app.err.Printf("Couldn't restart, try restarting manually: %v", err)
-	}
-}
-
 func (app *appContext) ServeLang(gc *gin.Context) {
 	page := gc.Param("page")
 	lang := strings.Replace(gc.Param("file"), ".json", "", 1)
@@ -1856,6 +1864,17 @@ func (app *appContext) ServeLang(gc *gin.Context) {
 		return
 	}
 	respondBool(400, false, gc)
+}
+
+// @Summary Restarts the program. No response means success.
+// @Router /restart [post]
+// @tags Other
+func (app *appContext) restart(gc *gin.Context) {
+	app.info.Println("Restarting...")
+	err := app.Restart()
+	if err != nil {
+		app.err.Printf("Couldn't restart, try restarting manually: %v", err)
+	}
 }
 
 // no need to syscall.exec anymore!
