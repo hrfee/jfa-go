@@ -90,7 +90,10 @@
         "update": "Mise à jour",
         "download": "Téléchargement",
         "search": "Recherche",
-        "conditionals": "Conditions"
+        "conditionals": "Conditions",
+        "userExpiryDescription": "Un laps de temps spécifié après chaque inscription, jfa-go supprimera / désactivera le compte. Vous pouvez modifier ce comportement dans les paramètres.",
+        "donate": "Faire un don",
+        "extendExpiry": "Prolonger l'expiration"
     },
     "notifications": {
         "changedEmailAddress": "Adresse e-mail modifiée de {n}.",
@@ -123,7 +126,11 @@
         "sentAnnouncement": "Annonce envoyée.",
         "saveEmail": "Email enregistré.",
         "errorSaveEmail": "Échec de l'enregistrement de l'e-mail.",
-        "updateApplied": "Mise à jour appliquée, veuillez redémarrer."
+        "updateApplied": "Mise à jour appliquée, veuillez redémarrer.",
+        "errorApplyUpdate": "Échec de l'application de la mise à jour, essayez manuellement.",
+        "errorCheckUpdate": "Échec de la vérification de la mise à jour.",
+        "updateAvailable": "Une nouvelle mise à jour est disponible, vérifiez les paramètres.",
+        "noUpdatesAvailable": "Aucune nouvelle mise à jour disponible."
     },
     "quantityStrings": {
         "modifySettingsFor": {
@@ -153,6 +160,30 @@
         "announceTo": {
             "singular": "Annonce à {n} utilisateur",
             "plural": "Annonce à {n} utilisateurs"
+        },
+        "enabledUser": {
+            "plural": "{n} utilisateurs activés.",
+            "singular": "{n} utilisateur activé."
+        },
+        "extendExpiry": {
+            "singular": "Prolonger l'expiration pour {n} utilisateur",
+            "plural": "Prolonger l'expiration pour {n} utilisateurs"
+        },
+        "extendedExpiry": {
+            "singular": "Expiration prolongée pour {n} utilisateur.",
+            "plural": "Expiration prolongée pour {n} utilisateurs."
+        },
+        "disableUsers": {
+            "singular": "Désactiver {n} utilisateur",
+            "plural": "Désactiver {n} utilisateurs"
+        },
+        "reEnableUsers": {
+            "singular": "Ré-activer {n} utilisateur",
+            "plural": "Ré-activer {n} utilisateurs"
+        },
+        "disabledUser": {
+            "singular": "{n} utilisateur désactivé.",
+            "plural": "{n} utilisateurs désactivés."
         }
     }
 }
