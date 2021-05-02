@@ -653,11 +653,12 @@ func (emailer *Emailer) constructEnabled(reason string, app *appContext, noSub b
 
 func (emailer *Emailer) welcomeValues(username string, expiry time.Time, app *appContext, noSub bool, custom bool) map[string]interface{} {
 	template := map[string]interface{}{
-		"welcome":           emailer.lang.WelcomeEmail.get("welcome"),
-		"youCanLoginWith":   emailer.lang.WelcomeEmail.get("youCanLoginWith"),
-		"jellyfinURLString": emailer.lang.WelcomeEmail.get("jellyfinURL"),
-		"usernameString":    emailer.lang.Strings.get("username"),
-		"message":           "",
+		"welcome":               emailer.lang.WelcomeEmail.get("welcome"),
+		"youCanLoginWith":       emailer.lang.WelcomeEmail.get("youCanLoginWith"),
+		"jellyfinURLString":     emailer.lang.WelcomeEmail.get("jellyfinURL"),
+		"usernameString":        emailer.lang.Strings.get("username"),
+		"message":               "",
+		"yourAccountWillExpire": "",
 	}
 	if noSub {
 		empty := []string{"jellyfinURL", "username", "yourAccountWillExpire"}

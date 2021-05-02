@@ -62,7 +62,7 @@
         <mj-text mj-class="text" font-size="16px" font-family="Noto Sans, Helvetica, Arial, sans-serif">
             <h3>{{ .welcome }}</h3>
             <p>{{ .youCanLoginWith }}:</p>
-            {{ .jellyfinURLString }}: <a href="{{ .jellyfinURLVal }}">{{ .jellyfinURL }}</a>
+            {{ .jellyfinURLString }}: <a href="{{ .jellyfinURL }}">{{ .jellyfinURL }}</a>
             <p>{{ .usernameString }}: <i>{{ .username }}</i></p>
           	<p>{{ .yourAccountWillExpire }}</p>
         </mj-text>
