@@ -130,7 +130,7 @@ func (ombi *Ombi) ModifyUser(user map[string]interface{}) (status int, err error
 		err = fmt.Errorf("No ID provided")
 		return
 	}
-	_, status, err = ombi.put(ombi.server+"/api/v1/Identity", user, false)
+	_, status, err = ombi.put(ombi.server+"/api/v1/Identity/", user, false)
 	return
 }
 

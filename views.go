@@ -144,6 +144,7 @@ func (app *appContext) ResetPassword(gc *gin.Context) {
 		"contactMessage": app.config.Section("ui").Key("contact_message").String(),
 		"strings":        app.storage.lang.PasswordReset[lang].Strings,
 		"success":        false,
+		"ombiEnabled":    app.config.Section("ombi").Key("enabled").MustBool(false),
 	}
 	resp, status, err := app.jf.ResetPassword(pin)
 	if status == 200 && err == nil && resp.Success {
@@ -152,7 +153,26 @@ func (app *appContext) ResetPassword(gc *gin.Context) {
 	} else {
 		app.err.Printf("Password Reset failed (%d): %v", status, err)
 	}
-	gcHTML(gc, http.StatusOK, "password-reset.html", data)
+	defer gcHTML(gc, http.StatusOK, "password-reset.html", data)
+	if app.config.Section("ombi").Key("enabled").MustBool(false) {
+		jfUser, status, err := app.jf.UserByName(resp.UsersReset[0], false)
+		if status != 200 || err != nil {
+			app.err.Printf("Failed to get user \"%s\" from jellyfin/emby (%d): %v", resp.UsersReset[0], status, err)
+			return
+		}
+		ombiUser, status, err := app.getOmbiUser(jfUser.ID)
+		if status != 200 || err != nil {
+			app.err.Printf("Failed to get user \"%s\" from ombi (%d): %v", resp.UsersReset[0], status, err)
+			return
+		}
+		ombiUser["password"] = pin
+		status, err = app.ombi.ModifyUser(ombiUser)
+		if status != 200 || err != nil {
+			app.err.Printf("Failed to set password for ombi user \"%s\" (%d): %v", ombiUser["userName"], status, err)
+			return
+		}
+		app.debug.Printf("Reset password for ombi user \"%s\"", ombiUser["userName"])
+	}
 }
 
 func (app *appContext) InviteProxy(gc *gin.Context) {

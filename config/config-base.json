@@ -469,13 +469,13 @@
                     "description": "Path to the folder Jellyfin puts password-reset files."
                 },
                 "link_reset": {
-                    "name": "Use reset link instead of PIN",
+                    "name": "Use reset link instead of PIN (Required for Ombi)",
                     "required": false,
                     "requires_restart": true,
                     "depends_true": "enabled",
                     "type": "bool",
                     "value": false,
-                    "description": "Send users a link to reset their password instead of a PIN."
+                    "description": "Send users a link to reset their password instead of a PIN. Must be enabled to reset Ombi password at the same time as the Jellyfin password."
                 },
                 "language": {
                     "name": "Default reset link language",
@@ -722,7 +722,7 @@
             "order": [],
             "meta": {
                 "name": "Ombi Integration",
-                "description": "Connect to Ombi to automatically create both Ombi and Jellyfin accounts for new users. You'll need to create a user template for this to work. Once enabled, refresh to see an option in settings for this."
+                "description": "Connect to Ombi to automatically create both Ombi and Jellyfin accounts for new users. You'll need to create a user template for this to work. Once enabled, refresh to see an option in settings for this. To handle password resets for Ombi & Jellyfin, enable \"Use reset link instead of PIN\"."
             },
             "settings": {
                 "enabled": {
