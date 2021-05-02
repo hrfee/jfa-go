@@ -1,6 +1,6 @@
 import { _get, _post, _delete, toClipboard, toggleLoader, toDateString } from "../modules/common.js";
 
-export class DOMInvite implements Invite {
+class DOMInvite implements Invite {
     updateNotify = (checkbox: HTMLInputElement) => {
         let state: { [code: string]: { [type: string]: boolean } } = {};
         let revertChanges: () => void;
