@@ -53,6 +53,7 @@
         "preview": "Preview",
         "reset": "Reset",
         "edit": "Edit",
+        "donate": "Donate",
         "extendExpiry": "Extend expiry",
         "customizeEmails": "Customize Emails",
         "customizeEmailsDescription": "If you don't want to use jfa-go's email templates, you can create your own using Markdown.",

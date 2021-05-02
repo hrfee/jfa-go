@@ -45,6 +45,19 @@
                 <p><i class="icon ri-github-fill"></i><a href="https://github.com/hrfee/jfa-go">jfa-go</a></p>
                 <p>{{ .strings.version }} <span class="code monospace">{{ .version }}</span></p>
                 <p>{{ .strings.commitNoun }} <span class="code monospace">{{ .commit }}</span></p>
+                <div class="dropdown" tabindex="0">
+                    <span class="button ~info dropdown-button">
+                        <i class="ri-hand-heart-line mr-half"></i>
+                        {{ .strings.donate }}
+                        <span class="ml-1 chev"></span>
+                    </span>
+                    <div class="dropdown-display">
+                        <div class="card ~neutral !low">
+                            <a href="https://github.com/sponsors/hrfee" target="_blank" class="button input ~neutral field mb-half lang-link">GitHub</a>
+                            <a href="https://ko-fi.com/hrfee" target="_blank" class="button input ~neutral field mb-half lang-link">Ko-fi</a>
+                        </div>
+                    </div>
+                </div>
                 <p><a href="https://github.com/hrfee/jfa-go/blob/main/LICENSE">Available under the MIT License.</a></p>
                 <pre class="monospace">{{ .license }}</pre>
             </div>
