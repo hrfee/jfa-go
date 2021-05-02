@@ -17,7 +17,8 @@
         "successHeader": "Succes!",
         "successContinueButton": "Continuer",
         "confirmationRequired": "Confirmation de l'adresse e-mail requise",
-        "confirmationRequiredMessage": "Veuillez vérifier votre boite de réception pour confirmer votre adresse e-mail."
+        "confirmationRequiredMessage": "Veuillez vérifier votre boite de réception pour confirmer votre adresse e-mail.",
+        "yourAccountIsValidUntil": "Votre compte sera valide jusqu'au {date}."
     },
     "validationStrings": {
         "length": {
