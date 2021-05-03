@@ -31,11 +31,13 @@ DEBUG ?= off
 ifeq ($(DEBUG), on)
 	LDFLAGS := -s -w $(LDFLAGS)
 	SOURCEMAP := --sourcemap
+	TYPECHECK := tsc -noEmit --project ts/tsconfig.json
 	# jank
 	COPYTS := rm -r $(DATA)/web/js/ts; cp -r ts $(DATA)/web/js
 else
 	SOURCEMAP :=
 	COPYTS :=
+	TYPECHECK :=
 endif
 
 npm:
@@ -59,6 +61,7 @@ email:
 	python3 scripts/compile_mjml.py -o $(DATA)/
 
 typescript:
+	$(TYPECHECK)
 	$(info compiling typescript)
 	-mkdir -p $(DATA)/web/js
 	-$(ESBUILD) --bundle ts/admin.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/admin.js --minify
