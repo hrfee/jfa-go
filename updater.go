@@ -440,7 +440,16 @@ func (ud *Updater) pullInternal(url string) (applyUpdate ApplyUpdate, status int
 					return
 				}
 				applyUpdate = func() error {
-					return os.Rename(path+"_", path)
+					oldName := path + "-" + version + "-" + commit
+					err := os.Rename(path, oldName)
+					if err != nil {
+						return err
+					}
+					err = os.Rename(path+"_", path)
+					if err != nil {
+						return err
+					}
+					return os.Remove(oldName)
 				}
 				return
 			}

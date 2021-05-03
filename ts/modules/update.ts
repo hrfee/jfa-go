@@ -107,13 +107,20 @@ export class Updater implements updater {
             _post("/config/update", null, (req: XMLHttpRequest) => {
                 if (req.readyState == 4) {
                     toggleLoader(update);
-                    if (req.status != 200) {
+                    const success = req.response["success"] as Boolean;
+                    if (req.status == 500 && success) {
+                        window.notifications.customSuccess("applyUpdate", window.lang.notif("updateAppliedRefresh"));
+                    } else if (req.status != 200) {
                         window.notifications.customError("applyUpdateError", window.lang.notif("errorApplyUpdate"));
                     } else {
-                        window.notifications.customSuccess("applyUpdate", window.lang.notif("updateApplied"));
+                        window.notifications.customSuccess("applyUpdate", window.lang.notif("updateAppliedRefresh"));
                     }
                     window.modals.updateInfo.close();
                 }
+            }, true, (req: XMLHttpRequest) => {
+                 if (req.status == 0) {
+                    window.notifications.customSuccess("applyUpdate", window.lang.notif("updateAppliedRefresh"));
+                 }
             });
         };
         this.checkForUpdates(() => {

@@ -103,6 +103,7 @@
         "sentAnnouncement": "Announcement sent.",
         "setOmbiDefaults": "Stored ombi defaults.",
         "updateApplied": "Update applied, please restart.",
+        "updateAppliedRefresh": "Update applied, please refresh.",
         "errorConnection": "Couldn't connect to jfa-go.",
         "error401Unauthorized": "Unauthorized. Try refreshing the page.",
         "errorSettingsAppliedNoHomescreenLayout": "Settings were applied, but applying homescreen layout may have failed.",

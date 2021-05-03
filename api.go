@@ -1788,7 +1788,12 @@ func (app *appContext) ApplyUpdate(gc *gin.Context) {
 		respondBool(500, false, gc)
 		return
 	}
+	if PLATFORM == "windows" {
+		respondBool(500, true, gc)
+		return
+	}
 	respondBool(200, true, gc)
+	app.HardRestart()
 }
 
 // @Summary Logout by deleting refresh token from cookies.
