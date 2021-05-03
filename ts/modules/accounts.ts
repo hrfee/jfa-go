@@ -808,7 +808,7 @@ export class accountsList {
                 this._users[id].remove();
                 delete this._users[id];
             }
-            this._checkCheckCount;
+            this._checkCheckCount();
         }
     })
 }
