@@ -91,7 +91,8 @@
         "inviteMonths": "Maanden",
         "reEnable": "Opnieuw inschakelen",
         "disable": "Uitschakelen",
-        "conditionals": "Voorwaarden"
+        "conditionals": "Voorwaarden",
+        "donate": "Doneer"
     },
     "notifications": {
         "changedEmailAddress": "E-mailadres van {n} gewijzigd.",
