@@ -69,12 +69,12 @@
     },
     "ombi": {
         "title": "Ombi",
-        "description": "Bij verbinding met Ombi, worden voor nieuwe gebruikers via jfa-go zowel een Jellyfin als een Ombi account aangemaakt. Ga nadat de setup voltooid is naar instellingen om een standaardprofiel voor nieuwe Ombi-gebruikers te kiezen.",
+        "description": "Bij verbinding met Ombi, wordt voor nieuwe gebruikers via jfa-go zowel een Jellyfin als een Ombi account aangemaakt. Ga nadat de setup voltooid is naar instellingen om een standaardprofiel voor nieuwe Ombi-gebruikers te kiezen.",
         "apiKeyNotice": "Te vinden op het eerste tabblad van de Ombi-instellingen."
     },
     "email": {
         "title": "E-mail",
-        "description": "jfa-go kan wachtwoord reset PINs en meldingen via e-mail versturen. Je kunt verbinding maken met een SMTP server, of de {n} API gebruiken.",
+        "description": "jfa-go kan wachtwoord reset pincodes en meldingen via e-mail versturen. Je kunt verbinding maken met een SMTP server, of de {n} API gebruiken.",
         "method": "Verstuurmethode",
         "useEmailAsUsername": "Gebruik e-mailadres als gebruikersnaam",
         "useEmailAsUsernameNotice": "Indien ingeschakeld wordt voor nieuwe Jellyfin/Emby-gebruikers hun e-mailadres in plaats van gebruikersnaam gebruikt.",
@@ -99,9 +99,12 @@
     },
     "passwordResets": {
         "title": "Wachtwoordresets",
-        "description": "Wanneer een gebruiker een wachtwoordreset aanvraagt, maakt Jellyfin een bestand aan dat 'passwordreset-*.json' heet en een PIN bevat. jfa-go leest dit bestand uit en stuurt de PIN naar de gebruiker.",
+        "description": "Wanneer een gebruiker een wachtwoordreset aanvraagt, maakt Jellyfin een bestand aan dat 'passwordreset-*.json' heet en een pincode bevat. jfa-go leest dit bestand uit en stuurt de pincode naar de gebruiker.",
         "pathToJellyfin": "Pad naar Jellyfin configuratiemap",
-        "pathToJellyfinNotice": "Als je niet weet waar dit is, probeer de je wachtwoord te resetten in Jellyfin. Er verschijnt dan een popup met '<path to jellyfin>/passwordreset-*.json'."
+        "pathToJellyfinNotice": "Als je niet weet waar dit is, probeer de je wachtwoord te resetten in Jellyfin. Er verschijnt dan een popup met '<path to jellyfin>/passwordreset-*.json'.",
+        "resetLinks": "Stuur een link in plaats van een pincode",
+        "resetLinksNotice": "Als Ombi-integratie is ingeschakeld, gebruik dan dit om Jellyfin wachtwoordresets te synchroniseren met Ombi.",
+        "resetLinksLanguage": "Standaard reset-link taal"
     },
     "passwordValidation": {
         "title": "Wachtwoordvalidatie",
