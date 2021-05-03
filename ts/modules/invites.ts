@@ -157,7 +157,7 @@ class DOMInvite implements Invite {
         this._createdUnix = unix;
         const el = this._middle.querySelector("strong.inv-created");
         if (unix == 0) {
-            el.textContent = "n/a";
+            el.textContent = window.lang.strings("unknown");
         } else {
             el.textContent = toDateString(new Date(unix*1000));
         }
@@ -479,7 +479,7 @@ export class inviteList implements inviteList {
 }
     
 
-function parseInvite(invite: { [f: string]: string | number | string[][] | boolean }): Invite {
+function parseInvite(invite: { [f: string]: string | number | { [name: string]: number } | boolean }): Invite {
     let parsed: Invite = {};
     parsed.code = invite["code"] as string;
     parsed.email = invite["email"] as string || "";
@@ -509,8 +509,8 @@ function parseInvite(invite: { [f: string]: string | number | string[][] | boole
     parsed.userExpiry = invite["user-expiry"] as boolean;
     parsed.userExpiryTime = userExpiryTime.slice(0, -1);
     parsed.remainingUses = invite["no-limit"] ? "∞" : String(invite["remaining-uses"])
-    parsed.usedBy = invite["used-by"] as string[][] || [];
-    parsed.created = invite["created"] as string || window.lang.strings("unknown");
+    parsed.usedBy = invite["used-by"] as { [name: string]: number } || {} ;
+    parsed.created = invite["created"] as number || 0;
     parsed.profile = invite["profile"] as string || "";
     parsed.notifyExpiry = invite["notify-expiry"] as boolean || false;
     parsed.notifyCreation = invite["notify-creation"] as boolean || false;

@@ -53,13 +53,15 @@ func (app *appContext) pushResources(gc *gin.Context, admin bool) {
 	gc.Header("Link", cssHeader)
 }
 
+type Page int
+
 const (
-	AdminPage = iota + 1
+	AdminPage Page = iota + 1
 	FormPage
 	PWRPage
 )
 
-func (app *appContext) getLang(gc *gin.Context, page int, chosen string) string {
+func (app *appContext) getLang(gc *gin.Context, page Page, chosen string) string {
 	lang := gc.Query("lang")
 	cookie, err := gc.Cookie("lang")
 	if lang != "" {

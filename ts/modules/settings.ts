@@ -766,7 +766,7 @@ class ombiDefaults {
     }
 }
 
-interface templateEmail {
+export interface templateEmail {
     content: string;
     variables: string[];
     conditionals: string[];
@@ -829,11 +829,11 @@ class EmailEditor {
                 this._templ = req.response as templateEmail;
                 this._textArea.value = this._templ.content;
                 if (this._templ.html == "") {
-                    this._preview.innerHTML = `<pre id="preview-content" class="monospace"></pre>`;
+                    this._preview.innerHTML = `<pre class="preview-content" class="monospace"></pre>`;
                 } else {
                     this._preview.innerHTML = this._templ.html;
                 }
-                this._previewContent = document.getElementById("preview-content");
+                this._previewContent = this._preview.getElementsByClassName("preview-content")[0] as HTMLElement;
                 this.loadPreview();
                 this._content = this._templ.content;
                 const colors = ["info", "urge", "positive", "neutral"];

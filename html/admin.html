@@ -156,18 +156,24 @@
             </form>
         </div>
         <div id="modal-announce" class="modal">
-            <form class="modal-content card" id="form-announce" href="">
+            <form class="modal-content wide card" id="form-announce" href="">
                 <span class="heading"><span id="header-announce"></span> <span class="modal-close">&times;</span></span>
-                <div class="content mt-half">
-                    <label class="label supra" for="announce-subject"> {{ .strings.subject }}</label>
-                    <input type="text" id="announce-subject" class="input ~neutral !normal mb-1 mt-half">
-                    <label class="label supra" for="textarea-announce">{{ .strings.message }}</label>
-                    <textarea id="textarea-announce" class="textarea full-width ~neutral !normal mt-half monospace"></textarea>
-                    <p class="support mt-half mb-1">{{ .strings.markdownSupported }}</p>
-                    <label>
-                        <input type="submit" class="unfocused">
-                        <span class="button ~urge !normal full-width center supra submit">{{ .strings.submit }}</span>
-                    </label>
+                <div class="row">
+                    <div class="col flex-col content mt-half">
+                        <label class="label supra" for="announce-subject"> {{ .strings.subject }}</label>
+                        <input type="text" id="announce-subject" class="input ~neutral !normal mb-1 mt-half">
+                        <label class="label supra" for="textarea-announce">{{ .strings.message }}</label>
+                        <textarea id="textarea-announce" class="textarea full-width ~neutral !normal mt-half monospace"></textarea>
+                        <p class="support mt-half mb-1">{{ .strings.markdownSupported }}</p>
+                        <label>
+                            <input type="submit" class="unfocused">
+                            <span class="button ~urge !normal full-width center supra submit">{{ .strings.submit }}</span>
+                        </label>
+                    </div>
+                    <div class="col card ~neutral !low">
+                        <span class="subheading supra">{{ .strings.preview }}</span>
+                        <div class="mt-half" id="announce-preview"></div>
+                    </div>
                 </div>
             </form>
         </div>

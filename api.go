@@ -1712,6 +1712,9 @@ func (app *appContext) GetCustomEmailTemplate(gc *gin.Context) {
 		}
 		writeVars = func(variables []string) { app.storage.customEmails.UserExpired.Variables = variables }
 		values = app.email.userExpiredValues(app, false)
+	// Just send the email html
+	case "Announcement":
+		content = ""
 	default:
 		respondBool(400, false, gc)
 		return
@@ -1747,7 +1750,7 @@ func (app *appContext) GetCustomEmailTemplate(gc *gin.Context) {
 		respondBool(500, false, gc)
 		return
 	}
-	email, err := app.email.constructTemplate("", "<div id=\"preview-content\"></div>", app)
+	email, err := app.email.constructTemplate("", "<div class=\"preview-content\"></div>", app)
 	if err != nil {
 		respondBool(500, false, gc)
 		return

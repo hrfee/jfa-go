@@ -1,4 +1,7 @@
 import { _get, _post, _delete, toggleLoader, toDateString } from "../modules/common.js";
+import { templateEmail } from "../modules/settings.js";
+import { Marked } from "@ts-stack/markdown";
+import { stripMarkdown } from "../modules/stripmd.js";
 
 interface User {
     id: string;
@@ -193,6 +196,9 @@ export class accountsList {
     
     private _addUserButton = document.getElementById("accounts-add-user") as HTMLSpanElement;
     private _announceButton = document.getElementById("accounts-announce") as HTMLSpanElement;
+    private _announcePreview: HTMLElement;
+    private _previewLoaded = false;
+    private _announceTextarea = document.getElementById("textarea-announce") as HTMLTextAreaElement;
     private _deleteUser = document.getElementById("accounts-delete-user") as HTMLSpanElement;
     private _disableEnable = document.getElementById("accounts-disable-enable") as HTMLSpanElement;
     private _deleteNotify = document.getElementById("delete-user-notify") as HTMLInputElement;
@@ -432,7 +438,16 @@ export class accountsList {
             }
         }, true);
     }
-    
+    loadPreview = () => {
+        let content = this._announceTextarea.value;
+        if (!this._previewLoaded) {
+            content = stripMarkdown(content);
+            this._announcePreview.textContent = content;
+        } else {
+            content = Marked.parse(content);
+            this._announcePreview.innerHTML = content;
+        }
+    }
     announce = () => {
         const modalHeader = document.getElementById("header-announce");
         modalHeader.textContent = window.lang.quantity("announceTo", this._collectUsers().length);
@@ -440,16 +455,16 @@ export class accountsList {
         let list = this._collectUsers();
         const button = form.querySelector("span.submit") as HTMLSpanElement;
         const subject = document.getElementById("announce-subject") as HTMLInputElement;
-        const message = document.getElementById("textarea-announce") as HTMLTextAreaElement;
+
         subject.value = "";
-        message.value = "";
+        this._announceTextarea.value = "";
         form.onsubmit = (event: Event) => {
             event.preventDefault();
             toggleLoader(button);
             let send = {
                 "users": list,
                 "subject": subject.value,
-                "message": message.value
+                "message": this._announceTextarea.value
             }
             _post("/users/announce", send, (req: XMLHttpRequest) => {
                 if (req.readyState == 4) {
@@ -463,7 +478,29 @@ export class accountsList {
                 }
             });
         };
-        window.modals.announce.show();
+        _get("/config/emails/Announcement", null, (req: XMLHttpRequest) => {
+            if (req.readyState == 4) {
+                const preview = document.getElementById("announce-preview") as HTMLDivElement;
+                if (req.status != 200) {
+                    preview.innerHTML = `<pre class="preview-content" class="monospace"></pre>`;
+                    window.modals.announce.show();
+                    this._previewLoaded = false;
+                    return;
+                }
+                    
+                let templ = req.response as templateEmail;
+                if (!templ.html) {
+                    preview.innerHTML = `<pre class="preview-content" class="monospace"></pre>`;
+                    this._previewLoaded = false;
+                } else {
+                    preview.innerHTML = templ.html;
+                    this._previewLoaded = true;
+                }
+                this._announcePreview = preview.getElementsByClassName("preview-content")[0] as HTMLElement;
+                this.loadPreview();
+                window.modals.announce.show();
+            }
+        });
     }
     
     enableDisableUsers = () => {
@@ -750,6 +787,8 @@ export class accountsList {
             }
             this._checkCheckCount();
         };
+
+        this._announceTextarea.onkeyup = this.loadPreview;
     }
 
     reload = () => _get("/users", null, (req: XMLHttpRequest) => {
