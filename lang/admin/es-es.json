@@ -91,7 +91,8 @@
         "notifyEvent": "Notificar en:",
         "notifyInviteExpiry": "Al vencimiento",
         "notifyUserCreation": "Sobre la creación de usuarios",
-        "conditionals": "Condicionales"
+        "conditionals": "Condicionales",
+        "donate": "Donar"
     },
     "notifications": {
         "changedEmailAddress": "Se cambió la dirección de correo electrónico de {n}.",
