@@ -755,3 +755,30 @@ func (emailer *Emailer) constructUserExpired(app *appContext, noSub bool) (*Mess
 func (emailer *Emailer) send(email *Message, address ...string) error {
 	return emailer.sender.Send(emailer.fromName, emailer.fromAddr, email, address...)
 }
+
+func (app *appContext) sendByID(email *Message, ID ...string) error {
+	tgEnabled := app.config.Section("telegram").Key("enabled").MustBool(false)
+	for _, id := range ID {
+		var err error
+		if tgChat, ok := app.storage.telegram[id]; ok && tgChat.Contact && tgEnabled {
+			err = app.telegram.Send(email, tgChat.ChatID)
+		} else if address, ok := app.storage.emails[id]; ok {
+			err = app.email.send(email, address.(string))
+		}
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (app *appContext) getAddressOrName(jfID string) string {
+	tgEnabled := app.config.Section("telegram").Key("enabled").MustBool(false)
+	if tgChat, ok := app.storage.telegram[jfID]; ok && tgChat.Contact && tgEnabled {
+		return "@" + tgChat.Username
+	}
+	if addr, ok := app.storage.emails[jfID]; ok {
+		return addr.(string)
+	}
+	return ""
+}

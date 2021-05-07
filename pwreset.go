@@ -69,27 +69,24 @@ func pwrMonitor(app *appContext, watcher *fsnotify.Watcher) {
 						return
 					}
 					app.storage.loadEmails()
-					var address string
 					uid := user.ID
 					if uid == "" {
 						app.err.Printf("Couldn't get user ID for user \"%s\"", pwr.Username)
 						return
 					}
-					addr, ok := app.storage.emails[uid]
-					if !ok || addr == nil {
-						app.err.Printf("Couldn't find email for user \"%s\". Make sure it's set", pwr.Username)
-						return
-					}
-					address = addr.(string)
-					msg, err := app.email.constructReset(pwr, app, false)
-					if err != nil {
-						app.err.Printf("Failed to construct password reset email for %s", pwr.Username)
-						app.debug.Printf("%s: Error: %s", pwr.Username, err)
-					} else if err := app.email.send(msg, address); err != nil {
-						app.err.Printf("Failed to send password reset email to \"%s\"", address)
-						app.debug.Printf("%s: Error: %s", pwr.Username, err)
-					} else {
-						app.info.Printf("Sent password reset email to \"%s\"", address)
+					name := app.getAddressOrName(uid)
+					if name != "" {
+						msg, err := app.email.constructReset(pwr, app, false)
+
+						if err != nil {
+							app.err.Printf("Failed to construct password reset message for %s", pwr.Username)
+							app.debug.Printf("%s: Error: %s", pwr.Username, err)
+						} else if err := app.sendByID(msg, uid); err != nil {
+							app.err.Printf("Failed to send password reset message to \"%s\"", name)
+							app.debug.Printf("%s: Error: %s", pwr.Username, err)
+						} else {
+							app.info.Printf("Sent password reset message to \"%s\"", name)
+						}
 					}
 				} else {
 					app.err.Printf("Password reset for user \"%s\" has already expired (%s). Check your time settings.", pwr.Username, pwr.Expiry)

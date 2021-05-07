@@ -12,7 +12,6 @@ interface formWindow extends Window {
     code: string;
     messages: { [key: string]: string };
     confirmation: boolean;
-    telegramEnabled: boolean;
     telegramRequired: boolean;
     telegramPIN: string;
     userExpiryEnabled: boolean;

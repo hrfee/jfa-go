@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"math/rand"
-	"strconv"
 	"strings"
 	"time"
 
@@ -194,15 +193,11 @@ func (t *TelegramDaemon) QuoteReply(upd *tg.Update, content string) error {
 	return err
 }
 
-// Send adds compatibility with EmailClient, fromName/fromAddr are discarded, message.Text is used, addresses are Chat IDs as strings.
-func (t *TelegramDaemon) Send(fromName, fromAddr string, message *Message, address ...string) error {
-	for _, addr := range address {
-		ChatID, err := strconv.ParseInt(addr, 10, 64)
-		if err != nil {
-			return err
-		}
-		msg := tg.NewMessage(ChatID, message.Text)
-		_, err = t.bot.Send(msg)
+// Send will send a telegram message to a list of chat IDs. message.text is used.
+func (t *TelegramDaemon) Send(message *Message, ID ...int64) error {
+	for _, id := range ID {
+		msg := tg.NewMessage(id, message.Text)
+		_, err := t.bot.Send(msg)
 		if err != nil {
 			return err
 		}

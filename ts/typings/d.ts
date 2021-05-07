@@ -18,6 +18,7 @@ declare interface Window {
     jfUsers: Array<Object>;
     notificationsEnabled: boolean;
     emailEnabled: boolean;
+    telegramEnabled: boolean;
     ombiEnabled: boolean;
     usernameEnabled: boolean;
     token: string;

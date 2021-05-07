@@ -334,7 +334,7 @@ export class accountsList {
             this._selectAll.checked = false;
             this._modifySettings.classList.add("unfocused");
             this._deleteUser.classList.add("unfocused");
-            if (window.emailEnabled) {
+            if (window.emailEnabled || window.telegramEnabled) {
                 this._announceButton.classList.add("unfocused");
             }
             this._extendExpiry.classList.add("unfocused");
@@ -356,7 +356,7 @@ export class accountsList {
             this._modifySettings.classList.remove("unfocused");
             this._deleteUser.classList.remove("unfocused");
             this._deleteUser.textContent = window.lang.quantity("deleteUser", list.length);
-            if (window.emailEnabled) {
+            if (window.emailEnabled || window.telegramEnabled) {
                 this._announceButton.classList.remove("unfocused");
             }
             let anyNonExpiries = list.length == 0 ? true : false;

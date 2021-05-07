@@ -282,7 +282,7 @@ func (app *appContext) NewUserAdmin(gc *gin.Context) {
 		}
 	}
 	app.jf.CacheExpiry = time.Now()
-	if app.config.Section("password_resets").Key("enabled").MustBool(false) {
+	if emailEnabled {
 		app.storage.emails[id] = req.Email
 		app.storage.storeEmails()
 	}
@@ -500,15 +500,16 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 		}
 	}
 
-	if emailEnabled && app.config.Section("welcome_email").Key("enabled").MustBool(false) && req.Email != "" {
-		app.debug.Printf("%s: Sending welcome email to %s", req.Username, req.Email)
+	if (emailEnabled && app.config.Section("welcome_email").Key("enabled").MustBool(false) && req.Email != "") || telegramTokenIndex != -1 {
+		name := app.getAddressOrName(user.ID)
+		app.debug.Printf("%s: Sending welcome message to %s", req.Username, name)
 		msg, err := app.email.constructWelcome(req.Username, expiry, app, false)
 		if err != nil {
-			app.err.Printf("%s: Failed to construct welcome email: %v", req.Username, err)
-		} else if err := app.email.send(msg, req.Email); err != nil {
-			app.err.Printf("%s: Failed to send welcome email: %v", req.Username, err)
+			app.err.Printf("%s: Failed to construct welcome message: %v", req.Username, err)
+		} else if err := app.sendByID(msg, user.ID); err != nil {
+			app.err.Printf("%s: Failed to send welcome message: %v", req.Username, err)
 		} else {
-			app.info.Printf("%s: Sent welcome email to \"%s\"", req.Username, req.Email)
+			app.info.Printf("%s: Sent welcome message to \"%s\"", req.Username, name)
 		}
 	}
 	app.jf.CacheExpiry = time.Now()
@@ -575,7 +576,20 @@ func (app *appContext) EnableDisableUsers(gc *gin.Context) {
 		"GetUser":   map[string]string{},
 		"SetPolicy": map[string]string{},
 	}
-	var addresses []string
+	sendMail := emailEnabled || app.config.Section("telegram").Key("enabled").MustBool(false)
+	var msg *Message
+	var err error
+	if sendMail {
+		if req.Enabled {
+			msg, err = app.email.constructEnabled(req.Reason, app, false)
+		} else {
+			msg, err = app.email.constructDisabled(req.Reason, app, false)
+		}
+		if err != nil {
+			app.err.Printf("Failed to construct account enabled/disabled emails: %v", err)
+			sendMail = false
+		}
+	}
 	for _, userID := range req.Users {
 		user, status, err := app.jf.UserByID(userID, false)
 		if status != 200 || err != nil {
@@ -590,30 +604,12 @@ func (app *appContext) EnableDisableUsers(gc *gin.Context) {
 			app.err.Printf("Failed to set policy for user \"%s\" (%d): %v", userID, status, err)
 			continue
 		}
-		if emailEnabled && req.Notify {
-			addr, ok := app.storage.emails[userID]
-			if addr != nil && ok {
-				addresses = append(addresses, addr.(string))
+		if sendMail && req.Notify {
+			if err := app.sendByID(msg, userID); err != nil {
+				app.err.Printf("Failed to send account enabled/disabled email: %v", err)
+				continue
 			}
 		}
-	}
-	if len(addresses) != 0 {
-		go func(reason string, addresses []string) {
-			var msg *Message
-			var err error
-			if req.Enabled {
-				msg, err = app.email.constructEnabled(reason, app, false)
-			} else {
-				msg, err = app.email.constructDisabled(reason, app, false)
-			}
-			if err != nil {
-				app.err.Printf("Failed to construct account enabled/disabled emails: %v", err)
-			} else if err := app.email.send(msg, addresses...); err != nil {
-				app.err.Printf("Failed to send account enabled/disabled emails: %v", err)
-			} else {
-				app.info.Println("Sent account enabled/disabled emails")
-			}
-		}(req.Reason, addresses)
 	}
 	app.jf.CacheExpiry = time.Now()
 	if len(errors["GetUser"]) != 0 || len(errors["SetPolicy"]) != 0 {
@@ -634,10 +630,19 @@ func (app *appContext) EnableDisableUsers(gc *gin.Context) {
 // @tags Users
 func (app *appContext) DeleteUsers(gc *gin.Context) {
 	var req deleteUserDTO
-	var addresses []string
 	gc.BindJSON(&req)
 	errors := map[string]string{}
 	ombiEnabled := app.config.Section("ombi").Key("enabled").MustBool(false)
+	sendMail := emailEnabled || app.config.Section("telegram").Key("enabled").MustBool(false)
+	var msg *Message
+	var err error
+	if sendMail {
+		msg, err = app.email.constructDeleted(req.Reason, app, false)
+		if err != nil {
+			app.err.Printf("Failed to construct account deletion emails: %v", err)
+			sendMail = false
+		}
+	}
 	for _, userID := range req.Users {
 		if ombiEnabled {
 			ombiUser, code, err := app.getOmbiUser(userID)
@@ -660,24 +665,11 @@ func (app *appContext) DeleteUsers(gc *gin.Context) {
 				errors[userID] += msg
 			}
 		}
-		if emailEnabled && req.Notify {
-			addr, ok := app.storage.emails[userID]
-			if addr != nil && ok {
-				addresses = append(addresses, addr.(string))
+		if sendMail && req.Notify {
+			if err := app.sendByID(msg, userID); err != nil {
+				app.err.Printf("Failed to send account deletion email: %v", err)
 			}
 		}
-	}
-	if len(addresses) != 0 {
-		go func(reason string, addresses []string) {
-			msg, err := app.email.constructDeleted(reason, app, false)
-			if err != nil {
-				app.err.Printf("Failed to construct account deletion emails: %v", err)
-			} else if err := app.email.send(msg, addresses...); err != nil {
-				app.err.Printf("Failed to send account deletion emails: %v", err)
-			} else {
-				app.info.Println("Sent account deletion emails")
-			}
-		}(req.Reason, addresses)
 	}
 	app.jf.CacheExpiry = time.Now()
 	if len(errors) == len(req.Users) {
@@ -735,29 +727,21 @@ func (app *appContext) ExtendExpiry(gc *gin.Context) {
 func (app *appContext) Announce(gc *gin.Context) {
 	var req announcementDTO
 	gc.BindJSON(&req)
-	if !emailEnabled {
+	if !(emailEnabled || app.config.Section("telegram").Key("enabled").MustBool(false)) {
 		respondBool(400, false, gc)
 		return
 	}
-	addresses := []string{}
-	for _, userID := range req.Users {
-		addr, ok := app.storage.emails[userID]
-		if !ok || addr == "" {
-			continue
-		}
-		addresses = append(addresses, addr.(string))
-	}
 	msg, err := app.email.constructTemplate(req.Subject, req.Message, app)
 	if err != nil {
-		app.err.Printf("Failed to construct announcement emails: %v", err)
+		app.err.Printf("Failed to construct announcement messages: %v", err)
 		respondBool(500, false, gc)
 		return
-	} else if err := app.email.send(msg, addresses...); err != nil {
-		app.err.Printf("Failed to send announcement emails: %v", err)
+	} else if err := app.sendByID(msg, req.Users...); err != nil {
+		app.err.Printf("Failed to send announcement messages: %v", err)
 		respondBool(500, false, gc)
 		return
 	}
-	app.info.Printf("Sent announcement email to %d users", len(addresses))
+	app.info.Println("Sent announcement messages")
 	respondBool(200, true, gc)
 }
 
