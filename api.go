@@ -549,7 +549,7 @@ func (app *appContext) EnableDisableUsers(gc *gin.Context) {
 	}
 	if len(addresses) != 0 {
 		go func(reason string, addresses []string) {
-			var msg *Email
+			var msg *Message
 			var err error
 			if req.Enabled {
 				msg, err = app.email.constructEnabled(reason, app, false)
@@ -1580,7 +1580,7 @@ func (app *appContext) GetCustomEmailTemplate(gc *gin.Context) {
 	id := gc.Param("id")
 	var content string
 	var err error
-	var msg *Email
+	var msg *Message
 	var variables []string
 	var conditionals []string
 	var values map[string]interface{}
@@ -1872,6 +1872,36 @@ func (app *appContext) ServeLang(gc *gin.Context) {
 		return
 	}
 	respondBool(400, false, gc)
+}
+
+// @Summary Returns true/false on whether or not a telegram PIN was verified.
+// @Produce json
+// @Success 200 {object} boolResponse
+// @Success 401 {object} boolResponse
+// @Param pin path string true "PIN code to check"
+// @Param invCode path string true "invite Code"
+// @Router /invite/{invCode}/telegram/verified/{pin} [get]
+// @tags Other
+func (app *appContext) TelegramVerified(gc *gin.Context) {
+	code := gc.Param("invCode")
+	if _, ok := app.storage.invites[code]; !ok {
+		respondBool(401, false, gc)
+		return
+	}
+	pin := gc.Param("pin")
+	tokenIndex := -1
+	for i, v := range app.telegram.verifiedTokens {
+		if v == pin {
+			tokenIndex = i
+			break
+		}
+	}
+	if tokenIndex != -1 {
+		length := len(app.telegram.verifiedTokens)
+		app.telegram.verifiedTokens[length-1], app.telegram.verifiedTokens[tokenIndex] = app.telegram.verifiedTokens[tokenIndex], app.telegram.verifiedTokens[length-1]
+		app.telegram.verifiedTokens = app.telegram.verifiedTokens[:length-1]
+	}
+	respondBool(200, tokenIndex != -1, gc)
 }
 
 // @Summary Restarts the program. No response means success.

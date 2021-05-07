@@ -136,6 +136,23 @@ func (ls *setupLangs) getOptions() [][2]string {
 	return opts
 }
 
+type telegramLangs map[string]telegramLang
+
+type telegramLang struct {
+	Meta    langMeta    `json:"meta"`
+	Strings langSection `json:"strings"`
+}
+
+func (ts *telegramLangs) getOptions() [][2]string {
+	opts := make([][2]string, len(*ts))
+	i := 0
+	for key, lang := range *ts {
+		opts[i] = [2]string{key, lang.Meta.Name}
+		i++
+	}
+	return opts
+}
+
 type langSection map[string]string
 type tmpl map[string]string
 

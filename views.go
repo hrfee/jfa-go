@@ -259,7 +259,7 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 	if strings.Contains(email, "Failed") {
 		email = ""
 	}
-	gcHTML(gc, http.StatusOK, "form-loader.html", gin.H{
+	data := gin.H{
 		"urlBase":           app.getURLBase(gc),
 		"cssClass":          app.cssClass,
 		"contactMessage":    app.config.Section("ui").Key("contact_message").String(),
@@ -282,7 +282,15 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 		"userExpiryMinutes": inv.UserMinutes,
 		"userExpiryMessage": app.storage.lang.Form[lang].Strings.get("yourAccountIsValidUntil"),
 		"langName":          lang,
-	})
+		"telegramEnabled":   app.config.Section("telegram").Key("enabled").MustBool(false),
+	}
+	if data["telegramEnabled"].(bool) {
+		data["telegramPIN"] = app.telegram.NewAuthToken()
+		data["telegramUsername"] = app.telegram.username
+		data["telegramURL"] = app.telegram.link
+		data["telegramRequired"] = app.config.Section("telegram").Key("required").MustBool(false)
+	}
+	gcHTML(gc, http.StatusOK, "form-loader.html", data)
 }
 
 func (app *appContext) NoRouteHandler(gc *gin.Context) {

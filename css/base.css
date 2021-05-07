@@ -121,6 +121,10 @@ div.card:contains(section.banner.footer) {
     text-align: right;
 }
 
+.ac {
+    text-align: center;
+}
+
 .inline-block {
     display: inline-block;
 }
@@ -457,6 +461,11 @@ a:visited:not(.lang-link):not(.\~urge) {
 
 a:hover:not(.lang-link):not(.\~urge), a:active:not(.lang-link):not(.\~urge) {
     color: var(--color-urge-200);
+}
+
+.link-center {
+    display: block;
+    text-align: center;
 }
 
 .search {

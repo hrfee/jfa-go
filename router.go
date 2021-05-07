@@ -118,6 +118,9 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 		router.POST(p+"/newUser", app.NewUser)
 		router.Use(static.Serve(p+"/invite/", app.webFS))
 		router.GET(p+"/invite/:invCode", app.InviteProxy)
+		if app.config.Section("telegram").Key("enabled").MustBool(false) {
+			router.GET(p+"/invite/:invCode/telegram/verified/:pin", app.TelegramVerified)
+		}
 	}
 	if *SWAGGER {
 		app.info.Print(warning("\n\nWARNING: Swagger should not be used on a public instance.\n\n"))

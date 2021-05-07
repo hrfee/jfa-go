@@ -40,7 +40,7 @@ func (app *appContext) loadConfig() error {
 			key.SetValue(key.MustString(filepath.Join(app.dataPath, (key.Name() + ".json"))))
 		}
 	}
-	for _, key := range []string{"user_configuration", "user_displayprefs", "user_profiles", "ombi_template", "invites", "emails", "user_template", "custom_emails", "users"} {
+	for _, key := range []string{"user_configuration", "user_displayprefs", "user_profiles", "ombi_template", "invites", "emails", "user_template", "custom_emails", "users", "telegram_users"} {
 		app.config.Section("files").Key(key).SetValue(app.config.Section("files").Key(key).MustString(filepath.Join(app.dataPath, (key + ".json"))))
 	}
 	app.URLBase = strings.TrimSuffix(app.config.Section("ui").Key("url_base").MustString(""), "/")
@@ -128,6 +128,7 @@ func (app *appContext) loadConfig() error {
 	app.storage.lang.chosenAdminLang = app.config.Section("ui").Key("language-admin").MustString("en-us")
 	app.storage.lang.chosenEmailLang = app.config.Section("email").Key("language").MustString("en-us")
 	app.storage.lang.chosenPWRLang = app.config.Section("password_resets").Key("language").MustString("en-us")
+	app.storage.lang.chosenTelegramLang = app.config.Section("telegram").Key("language").MustString("en-us")
 
 	app.email = NewEmailer(app)
 

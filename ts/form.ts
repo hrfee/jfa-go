@@ -1,15 +1,20 @@
 import { Modal } from "./modules/modal.js";
+import { notificationBox } from "./modules/common.js";
 import { _get, _post, toggleLoader, toDateString } from "./modules/common.js";
 import { loadLangSelector } from "./modules/lang.js";
 
 interface formWindow extends Window {
     validationStrings: pwValStrings;
     invalidPassword: string;
-    modal: Modal;
+    successModal: Modal;
+    telegramModal: Modal;
+    confirmationModal: Modal
     code: string;
     messages: { [key: string]: string };
     confirmation: boolean;
-    confirmationModal: Modal
+    telegramEnabled: boolean;
+    telegramRequired: boolean;
+    telegramPIN: string;
     userExpiryEnabled: boolean;
     userExpiryMonths: number;
     userExpiryDays: number;
@@ -34,7 +39,37 @@ interface pwValStrings {
 
 loadLangSelector("form");
 
-window.modal = new Modal(document.getElementById("modal-success"), true);
+window.notifications = new notificationBox(document.getElementById("notification-box") as HTMLDivElement);
+
+window.successModal = new Modal(document.getElementById("modal-success"), true);
+
+if (window.telegramEnabled) {
+    window.telegramModal = new Modal(document.getElementById("modal-telegram"), window.telegramRequired);
+    (document.getElementById("link-telegram") as HTMLSpanElement).onclick = () => {
+        const waiting = document.getElementById("telegram-waiting") as HTMLSpanElement;
+        toggleLoader(waiting);
+        window.telegramModal.show();
+        const checkVerified = () => _get("/invite/" + window.code + "/telegram/verified/" + window.telegramPIN, null, (req: XMLHttpRequest) => {
+            if (req.readyState == 4) {
+                if (req.status == 401) {
+                    window.telegramModal.close();
+                    window.notifications.customError("invalidCodeError", window.lang.notif("errorInvalidCode"));
+                    return;
+                } else if (req.status == 200) {
+                    if (req.response["success"] as boolean) {
+                        toggleLoader(waiting);
+                        window.telegramModal.close()
+                        window.notifications.customSuccess("accountVerified", window.lang.notif("telegramVerified"))
+                    } else {
+                        setTimeout(checkVerified, 1500);
+                    }
+                }
+            }
+        });
+        checkVerified();
+    };
+}
+
 if (window.confirmation) {
     window.confirmationModal = new Modal(document.getElementById("modal-confirmation"), true);
 }
@@ -130,7 +165,7 @@ const create = (event: SubmitEvent) => {
                 if (!vals[type]) { valid = false; }
             }
             if (req.status == 200 && valid) {
-                window.modal.show();
+                window.successModal.show();
             } else {
                 submitSpan.classList.add("~critical");
                 submitSpan.classList.remove("~urge");
