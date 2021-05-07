@@ -330,15 +330,44 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 		success = false
 		return
 	}
+	telegramTokenIndex := -1
+	if app.config.Section("telegram").Key("enabled").MustBool(false) {
+		if req.TelegramPIN == "" {
+			if app.config.Section("telegram").Key("required").MustBool(false) {
+				f = func(gc *gin.Context) {
+					app.debug.Printf("%s: New user failed: Telegram verification not completed", req.Code)
+					respond(401, "errorTelegramVerification", gc)
+				}
+				success = false
+				return
+			}
+		} else {
+			for i, v := range app.telegram.verifiedTokens {
+				if v.Token == req.TelegramPIN {
+					telegramTokenIndex = i
+					break
+				}
+			}
+			if telegramTokenIndex == -1 {
+				f = func(gc *gin.Context) {
+					app.debug.Printf("%s: New user failed: Telegram PIN was invalid", req.Code)
+					respond(401, "errorInvalidPIN", gc)
+				}
+				success = false
+				return
+			}
+		}
+	}
 	if emailEnabled && app.config.Section("email_confirmation").Key("enabled").MustBool(false) && !confirmed {
 		claims := jwt.MapClaims{
-			"valid":    true,
-			"invite":   req.Code,
-			"email":    req.Email,
-			"username": req.Username,
-			"password": req.Password,
-			"exp":      strconv.FormatInt(time.Now().Add(time.Hour*12).Unix(), 10),
-			"type":     "confirmation",
+			"valid":       true,
+			"invite":      req.Code,
+			"email":       req.Email,
+			"username":    req.Username,
+			"password":    req.Password,
+			"telegramPIN": req.TelegramPIN,
+			"exp":         strconv.FormatInt(time.Now().Add(time.Hour*12).Unix(), 10),
+			"type":        "confirmation",
 		}
 		tk := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 		key, err := tk.SignedString([]byte(os.Getenv("JFA_SECRET")))
@@ -450,6 +479,27 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 			app.err.Printf("Failed to store user duration: %v", err)
 		}
 	}
+
+	if app.config.Section("telegram").Key("enabled").MustBool(false) && telegramTokenIndex != -1 {
+		tgToken := app.telegram.verifiedTokens[telegramTokenIndex]
+		tgUser := TelegramUser{
+			ChatID:   tgToken.ChatID,
+			Username: tgToken.Username,
+			Contact:  req.TelegramContact,
+		}
+		if lang, ok := app.telegram.languages[tgToken.ChatID]; ok {
+			tgUser.Lang = lang
+		}
+		app.storage.telegram[user.ID] = tgUser
+		err := app.storage.storeTelegramUsers()
+		if err != nil {
+			app.err.Printf("Failed to store Telegram users: %v", err)
+		} else {
+			app.telegram.verifiedTokens[len(app.telegram.verifiedTokens)-1], app.telegram.verifiedTokens[telegramTokenIndex] = app.telegram.verifiedTokens[telegramTokenIndex], app.telegram.verifiedTokens[len(app.telegram.verifiedTokens)-1]
+			app.telegram.verifiedTokens = app.telegram.verifiedTokens[:len(app.telegram.verifiedTokens)-1]
+		}
+	}
+
 	if emailEnabled && app.config.Section("welcome_email").Key("enabled").MustBool(false) && req.Email != "" {
 		app.debug.Printf("%s: Sending welcome email to %s", req.Username, req.Email)
 		msg, err := app.email.constructWelcome(req.Username, expiry, app, false)
@@ -1891,16 +1941,16 @@ func (app *appContext) TelegramVerified(gc *gin.Context) {
 	pin := gc.Param("pin")
 	tokenIndex := -1
 	for i, v := range app.telegram.verifiedTokens {
-		if v == pin {
+		if v.Token == pin {
 			tokenIndex = i
 			break
 		}
 	}
-	if tokenIndex != -1 {
-		length := len(app.telegram.verifiedTokens)
-		app.telegram.verifiedTokens[length-1], app.telegram.verifiedTokens[tokenIndex] = app.telegram.verifiedTokens[tokenIndex], app.telegram.verifiedTokens[length-1]
-		app.telegram.verifiedTokens = app.telegram.verifiedTokens[:length-1]
-	}
+	// if tokenIndex != -1 {
+	// 	length := len(app.telegram.verifiedTokens)
+	// 	app.telegram.verifiedTokens[length-1], app.telegram.verifiedTokens[tokenIndex] = app.telegram.verifiedTokens[tokenIndex], app.telegram.verifiedTokens[length-1]
+	// 	app.telegram.verifiedTokens = app.telegram.verifiedTokens[:length-1]
+	// }
 	respondBool(200, tokenIndex != -1, gc)
 }
 

@@ -10,13 +10,20 @@ import (
 	tg "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
+type VerifiedToken struct {
+	Token    string
+	ChatID   int64
+	Username string
+}
+
 type TelegramDaemon struct {
 	Stopped         bool
 	ShutdownChannel chan string
 	bot             *tg.BotAPI
 	username        string
 	tokens          []string
-	verifiedTokens  []string
+	verifiedTokens  []VerifiedToken
+	languages       map[int64]string // Store of languages for chatIDs. Added to on first interaction, and loaded from app.storage.telegram on start.
 	link            string
 	app             *appContext
 }
@@ -30,16 +37,23 @@ func newTelegramDaemon(app *appContext) (*TelegramDaemon, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &TelegramDaemon{
+	td := &TelegramDaemon{
 		Stopped:         false,
 		ShutdownChannel: make(chan string),
 		bot:             bot,
 		username:        bot.Self.UserName,
 		tokens:          []string{},
-		verifiedTokens:  []string{},
+		verifiedTokens:  []VerifiedToken{},
+		languages:       map[int64]string{},
 		link:            "https://t.me/" + bot.Self.UserName,
 		app:             app,
-	}, nil
+	}
+	for _, user := range app.storage.telegram {
+		if user.Lang != "" {
+			td.languages[user.ChatID] = user.Lang
+		}
+	}
+	return td, nil
 }
 
 var runes = []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
@@ -80,28 +94,21 @@ func (t *TelegramDaemon) run() {
 				continue
 			}
 			lang := t.app.storage.lang.chosenTelegramLang
-			user, ok := t.app.storage.telegram[upd.Message.Chat.ID]
+			storedLang, ok := t.languages[upd.Message.Chat.ID]
 			if !ok {
-				user := TelegramUser{
-					Username: upd.Message.Chat.UserName,
-					ChatID:   upd.Message.Chat.ID,
-					Lang:     "",
-				}
-				t.app.storage.telegram[upd.Message.Chat.ID] = user
-				err := t.app.storage.storeTelegramUsers()
-				if err != nil {
-					t.app.err.Printf("Failed to store Telegram users: %v", err)
-				}
-			}
-			if user.Lang != "" {
-				lang = user.Lang
-			} else {
+				found := false
 				for code := range t.app.storage.lang.Telegram {
 					if code[:2] == upd.Message.From.LanguageCode {
 						lang = code
+						found = true
 						break
 					}
 				}
+				if found {
+					t.languages[upd.Message.Chat.ID] = lang
+				}
+			} else {
+				lang = storedLang
 			}
 			switch msg := sects[0]; msg {
 			case "/start":
@@ -125,11 +132,17 @@ func (t *TelegramDaemon) run() {
 					continue
 				}
 				if _, ok := t.app.storage.lang.Telegram[sects[1]]; ok {
-					user.Lang = sects[1]
-					t.app.storage.telegram[upd.Message.Chat.ID] = user
-					err := t.app.storage.storeTelegramUsers()
-					if err != nil {
-						t.app.err.Printf("Failed to store Telegram users: %v", err)
+					t.languages[upd.Message.Chat.ID] = sects[1]
+					for jfID, user := range t.app.storage.telegram {
+						if user.ChatID == upd.Message.Chat.ID {
+							user.Lang = sects[1]
+							t.app.storage.telegram[jfID] = user
+							err := t.app.storage.storeTelegramUsers()
+							if err != nil {
+								t.app.err.Printf("Failed to store Telegram users: %v", err)
+							}
+							break
+						}
 					}
 				}
 				continue
@@ -148,11 +161,15 @@ func (t *TelegramDaemon) run() {
 					}
 					continue
 				}
-				err := t.QuoteReply(&upd, t.app.storage.lang.Telegram[lang].Strings.get("success"))
+				err := t.QuoteReply(&upd, t.app.storage.lang.Telegram[lang].Strings.get("pinSuccess"))
 				if err != nil {
 					t.app.err.Printf("Telegram: Failed to send message to \"%s\": %v", upd.Message.From.UserName, err)
 				}
-				t.verifiedTokens = append(t.verifiedTokens, upd.Message.Text)
+				t.verifiedTokens = append(t.verifiedTokens, VerifiedToken{
+					Token:    upd.Message.Text,
+					ChatID:   upd.Message.Chat.ID,
+					Username: upd.Message.Chat.UserName,
+				})
 				t.tokens[len(t.tokens)-1], t.tokens[tokenIndex] = t.tokens[tokenIndex], t.tokens[len(t.tokens)-1]
 				t.tokens = t.tokens[:len(t.tokens)-1]
 			}

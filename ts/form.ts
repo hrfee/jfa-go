@@ -1,5 +1,5 @@
 import { Modal } from "./modules/modal.js";
-import { notificationBox } from "./modules/common.js";
+import { notificationBox, whichAnimationEvent } from "./modules/common.js";
 import { _get, _post, toggleLoader, toDateString } from "./modules/common.js";
 import { loadLangSelector } from "./modules/lang.js";
 
@@ -41,26 +41,39 @@ loadLangSelector("form");
 
 window.notifications = new notificationBox(document.getElementById("notification-box") as HTMLDivElement);
 
+window.animationEvent = whichAnimationEvent();
+
 window.successModal = new Modal(document.getElementById("modal-success"), true);
 
+var telegramVerified = false;
 if (window.telegramEnabled) {
     window.telegramModal = new Modal(document.getElementById("modal-telegram"), window.telegramRequired);
-    (document.getElementById("link-telegram") as HTMLSpanElement).onclick = () => {
+    const telegramButton = document.getElementById("link-telegram") as HTMLSpanElement;
+    telegramButton.onclick = () => {
         const waiting = document.getElementById("telegram-waiting") as HTMLSpanElement;
         toggleLoader(waiting);
         window.telegramModal.show();
+        let modalClosed = false;
+        window.telegramModal.onclose = () => { modalClosed = true; }
         const checkVerified = () => _get("/invite/" + window.code + "/telegram/verified/" + window.telegramPIN, null, (req: XMLHttpRequest) => {
             if (req.readyState == 4) {
                 if (req.status == 401) {
                     window.telegramModal.close();
-                    window.notifications.customError("invalidCodeError", window.lang.notif("errorInvalidCode"));
+                    window.notifications.customError("invalidCodeError", window.messages["errorInvalidCode"]);
                     return;
                 } else if (req.status == 200) {
                     if (req.response["success"] as boolean) {
+                        telegramVerified = true;
                         toggleLoader(waiting);
-                        window.telegramModal.close()
-                        window.notifications.customSuccess("accountVerified", window.lang.notif("telegramVerified"))
-                    } else {
+                        waiting.classList.add("~positive");
+                        waiting.classList.remove("~info");
+                        window.notifications.customPositive("telegramVerified", "", window.messages["telegramVerified"]); 
+                        setTimeout(window.telegramModal.close, 2000);
+                        telegramButton.classList.add("unfocused");
+                        document.getElementById("contact-via").classList.remove("unfocused");
+                        const radio = document.getElementById("contact-via-telegram") as HTMLInputElement;
+                        radio.checked = true;
+                    } else if (!modalClosed) {
                         setTimeout(checkVerified, 1500);
                     }
                 }
@@ -145,6 +158,8 @@ interface sendDTO {
     email: string;
     username: string;
     password: string;
+    telegram_pin?: string;
+    telegram_contact?: boolean;
 }
 
 const create = (event: SubmitEvent) => {
@@ -156,6 +171,13 @@ const create = (event: SubmitEvent) => {
         email: emailField.value,
         password: passwordField.value
     };
+    if (telegramVerified) {
+        send.telegram_pin = window.telegramPIN;
+        const radio = document.getElementById("contact-via-telegram") as HTMLInputElement;
+        if (radio.checked) {
+            send.telegram_contact = true;
+        }
+    }
     _post("/newUser", send, (req: XMLHttpRequest) => {
         if (req.readyState == 4) {
             let vals = req.response as respDTO;

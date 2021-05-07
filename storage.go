@@ -22,7 +22,7 @@ type Storage struct {
 	profiles                                                                                                                                             map[string]Profile
 	defaultProfile                                                                                                                                       string
 	emails, displayprefs, ombi_template                                                                                                                  map[string]interface{}
-	telegram                                                                                                                                             map[int64]TelegramUser
+	telegram                                                                                                                                             map[string]TelegramUser // Map of Jellyfin User IDs to telegram users.
 	customEmails                                                                                                                                         customEmails
 	policy                                                                                                                                               mediabrowser.Policy
 	configuration                                                                                                                                        mediabrowser.Configuration
@@ -34,6 +34,7 @@ type TelegramUser struct {
 	ChatID   int64
 	Username string
 	Lang     string
+	Contact  bool // Whether to contact through telegram or not
 }
 
 type customEmails struct {

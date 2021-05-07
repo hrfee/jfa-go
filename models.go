@@ -11,10 +11,12 @@ type boolResponse struct {
 }
 
 type newUserDTO struct {
-	Username string `json:"username" example:"jeff" binding:"required"`  // User's username
-	Password string `json:"password" example:"guest" binding:"required"` // User's password
-	Email    string `json:"email" example:"jeff@jellyf.in"`              // User's email address
-	Code     string `json:"code" example:"abc0933jncjkcjj"`              // Invite code (required on /newUser)
+	Username        string `json:"username" example:"jeff" binding:"required"`  // User's username
+	Password        string `json:"password" example:"guest" binding:"required"` // User's password
+	Email           string `json:"email" example:"jeff@jellyf.in"`              // User's email address
+	Code            string `json:"code" example:"abc0933jncjkcjj"`              // Invite code (required on /newUser)
+	TelegramPIN     string `json:"telegram_pin" example:"A1-B2-3C"`             // Telegram verification PIN (if used)
+	TelegramContact bool   `json:"telegram_contact"`                            // Whether or not to use telegram for notifications/pwrs
 }
 
 type newUserResponse struct {
