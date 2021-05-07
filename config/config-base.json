@@ -559,7 +559,7 @@
                     "requires_restart": true,
                     "type": "bool",
                     "value": false,
-                    "description": "Enable signup verification through Telegram and the sending of notifications through it."
+                    "description": "Enable signup verification through Telegram and the sending of notifications through it.\nSee the jfa-go wiki for setting up a bot."
                 },
                 "required": {
                     "name": "Require on sign-up",
