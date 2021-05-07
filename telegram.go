@@ -193,10 +193,16 @@ func (t *TelegramDaemon) QuoteReply(upd *tg.Update, content string) error {
 	return err
 }
 
-// Send will send a telegram message to a list of chat IDs. message.text is used.
+// Send will send a telegram message to a list of chat IDs. message.text is used if no markdown is given.
 func (t *TelegramDaemon) Send(message *Message, ID ...int64) error {
 	for _, id := range ID {
-		msg := tg.NewMessage(id, message.Text)
+		var msg tg.MessageConfig
+		if message.Markdown == "" {
+			msg = tg.NewMessage(id, message.Text)
+		} else {
+			msg = tg.NewMessage(id, strings.ReplaceAll(message.Markdown, ".", "\\."))
+			msg.ParseMode = "MarkdownV2"
+		}
 		_, err := t.bot.Send(msg)
 		if err != nil {
 			return err
