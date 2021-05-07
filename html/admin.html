@@ -504,6 +504,9 @@
                                     <th><input type="checkbox" value="" id="accounts-select-all"></th>
                                     <th>{{ .strings.username }}</th>
                                     <th>{{ .strings.emailAddress }}</th>
+                                    {{ if .telegram_enabled }}
+                                    <th>Telegram</th>
+                                    {{ end }}
                                     <th>{{ .strings.expiry }}</th>
                                     <th>{{ .strings.lastActiveTime }}</th>
                                 </tr>

@@ -1171,7 +1171,9 @@ func (app *appContext) GetUsers(gc *gin.Context) {
 		if ok {
 			user.Expiry = expiry.Unix()
 		}
-
+		if tgUser, ok := app.storage.telegram[jfUser.ID]; ok {
+			user.Telegram = tgUser.Username
+		}
 		resp.UserList[i] = user
 		i++
 	}

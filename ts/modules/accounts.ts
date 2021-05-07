@@ -11,6 +11,7 @@ interface User {
     admin: boolean;
     disabled: boolean;
     expiry: number;
+    telegram: string;
 }
 
 class user implements User {
@@ -22,6 +23,8 @@ class user implements User {
     private _email: HTMLInputElement;
     private _emailAddress: string;
     private _emailEditButton: HTMLElement;
+    private _telegram: HTMLTableDataCellElement;
+    private _telegramUsername: string;
     private _expiry: HTMLTableDataCellElement;
     private _expiryUnix: number;
     private _lastActive: HTMLTableDataCellElement;
@@ -72,6 +75,18 @@ class user implements User {
         }
     }
     
+    get telegram(): string { return this._telegramUsername; }
+    set telegram(u: string) {
+        if (!window.telegramEnabled) return;
+        this._telegramUsername = u;
+        if (u == "") {
+            this._telegram.textContent = "";
+        } else {
+            this._telegram.innerHTML = `<a href="https://t.me/${u}" target="_blank">@${u}</a>`;
+        }
+    }
+
+
     get expiry(): number { return this._expiryUnix; }
     set expiry(unix: number) {
         this._expiryUnix = unix;
@@ -97,13 +112,21 @@ class user implements User {
 
     constructor(user: User) {
         this._row = document.createElement("tr") as HTMLTableRowElement;
-        this._row.innerHTML = `
+        let innerHTML = `
             <td><input type="checkbox" value=""></td>
             <td><span class="accounts-username"></span> <span class="accounts-admin"></span> <span class="accounts-disabled"></span></td>
             <td><i class="icon ri-edit-line accounts-email-edit"></i><span class="accounts-email-container ml-half"></span></td>
-            <td class="accounts-expiry"></td>
-            <td class="accounts-last-active"></td>
         `;
+        if (window.telegramEnabled) {
+            innerHTML += `
+            <td class="accounts-telegram"></td>
+            `;
+        }
+        innerHTML += `
+        <td class="accounts-expiry"></td>
+        <td class="accounts-last-active"></td>
+        `;
+        this._row.innerHTML = innerHTML;
         const emailEditor = `<input type="email" class="input ~neutral !normal stealth-input">`;
         this._check = this._row.querySelector("input[type=checkbox]") as HTMLInputElement;
         this._username = this._row.querySelector(".accounts-username") as HTMLSpanElement;
@@ -111,6 +134,7 @@ class user implements User {
         this._disabled = this._row.querySelector(".accounts-disabled") as HTMLSpanElement;
         this._email = this._row.querySelector(".accounts-email-container") as HTMLInputElement;
         this._emailEditButton = this._row.querySelector(".accounts-email-edit") as HTMLElement;
+        this._telegram = this._row.querySelector(".accounts-telegram") as HTMLTableDataCellElement;
         this._expiry = this._row.querySelector(".accounts-expiry") as HTMLTableDataCellElement;
         this._lastActive = this._row.querySelector(".accounts-last-active") as HTMLTableDataCellElement;
         this._check.onchange = () => { this.selected = this._check.checked; }
@@ -173,6 +197,7 @@ class user implements User {
         this.id = user.id;
         this.name = user.name;
         this.email = user.email || "";
+        this.telegram = user.telegram;
         this.last_active = user.last_active;
         this.admin = user.admin;
         this.disabled = user.disabled;
@@ -187,9 +212,6 @@ class user implements User {
         this._row.remove(); 
     }
 }    
-
-
-
 
 export class accountsList {
     private _table = document.getElementById("accounts-list") as HTMLTableSectionElement;

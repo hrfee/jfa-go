@@ -129,6 +129,7 @@ type respUser struct {
 	Admin      bool   `json:"admin" example:"false"`                    // Whether or not the user is Administrator
 	Expiry     int64  `json:"expiry" example:"1617737207510"`           // Expiry time of user as Epoch/Unix time.
 	Disabled   bool   `json:"disabled"`                                 // Whether or not the user is disabled.
+	Telegram   string `json:"telegram"`                                 // Telegram username (if known)
 }
 
 type getUsersDTO struct {
