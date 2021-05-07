@@ -101,7 +101,10 @@
         "title": "Redefinir Senha",
         "description": "Quando um usuário tenta redefinir sua senha, o Jellyfin cria um arquivo chamado 'passwordreset-*.json' que contém um PIN. jfa-go lê o arquivo e envia o PIN ao usuário.",
         "pathToJellyfin": "Local do diretório de configuração do Jellyfin",
-        "pathToJellyfinNotice": "Se você não sabe o local onde fica, tente redefinir sua senha no Jellyfin. Um pop-up com '<path to jellyfin>/passwordreset-*.json' aparecerá."
+        "pathToJellyfinNotice": "Se você não sabe o local onde fica, tente redefinir sua senha no Jellyfin. Um pop-up com '<path to jellyfin>/passwordreset-*.json' aparecerá.",
+        "resetLinks": "Envie um link em vez de um PIN",
+        "resetLinksNotice": "Se a integração do Ombi estiver habilitada, use para sincronizar as redefinições de senha do Jellyfin com o Ombi.",
+        "resetLinksLanguage": "Idioma do link de redefinição padrão"
     },
     "passwordValidation": {
         "title": "Validar Senha",
