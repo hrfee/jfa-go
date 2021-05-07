@@ -1,0 +1,11 @@
+{
+    "meta": {
+        "name": "English (US)"
+    },
+    "strings": {
+        "startMessage": "Hi!\nEnter your test PIN code here to verify your account.",
+        "languageMessage": "Note: See available languages with /lang, and set language with /lang <language code>.",
+        "invalidPIN": "That PIN was invalid, try again.",
+        "pinSuccess": "Success! You can now return to the sign-up page."
+    }
+}

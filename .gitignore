@@ -14,4 +14,4 @@ server.pem
 server.crt
 instructions-debian.txt
 cl.md
-telegram/
+./telegram/
