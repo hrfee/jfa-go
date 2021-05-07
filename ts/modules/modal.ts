@@ -7,9 +7,9 @@ export class Modal implements Modal {
     closeEvent: CustomEvent;
     constructor(modal: HTMLElement, important: boolean = false) {
         this.modal = modal;
-        this.openEvent = new CustomEvent("modal-open-" + modal.id)
-        this.closeEvent = new CustomEvent("modal-close-" + modal.id)
-        const closeButton = this.modal.querySelector('span.modal-close')
+        this.openEvent = new CustomEvent("modal-open-" + modal.id);
+        this.closeEvent = new CustomEvent("modal-close-" + modal.id);
+        const closeButton = this.modal.querySelector('span.modal-close');
         if (closeButton !== null) {
             this.closeButton = closeButton as HTMLSpanElement;
             this.closeButton.onclick = this.close;
@@ -26,7 +26,7 @@ export class Modal implements Modal {
         }
         this.modal.classList.add('modal-hiding');
         const modal = this.modal;
-        const listenerFunc = function () {
+        const listenerFunc = () => {
             modal.classList.remove('modal-shown');
             modal.classList.remove('modal-hiding');
             modal.removeEventListener(window.animationEvent, listenerFunc);
