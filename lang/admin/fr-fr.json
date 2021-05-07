@@ -68,7 +68,7 @@
         "settingsRestarting": "Redémarrage…",
         "settingsRestart": "Redémarrer",
         "announce": "Annoncer",
-        "subject": "Sujet du courriel",
+        "subject": "Sujet",
         "message": "Message",
         "markdownSupported": "Markdown est pris en charge.",
         "customizeEmailsDescription": "Si vous ne souhaitez pas utiliser les modèles d'e-mails de jfa-go, vous pouvez créer les vôtres à l'aide de Markdown.",

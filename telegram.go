@@ -174,6 +174,7 @@ func (t *TelegramDaemon) run() {
 			}
 
 		case <-t.ShutdownChannel:
+			t.bot.StopReceivingUpdates()
 			t.ShutdownChannel <- "Down"
 			return
 		}
