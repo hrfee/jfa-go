@@ -3,7 +3,7 @@
         "name": "English (US)"
     },
     "strings": {
-        "ifItWasNotYou": "If this wasn't you, please ignore this email.",
+        "ifItWasNotYou": "If this wasn't you, please ignore this.",
         "helloUser": "Hi {username},",
         "reason": "Reason"
     },
@@ -55,7 +55,7 @@
         "linkButton": "Setup your account"
     },
     "welcomeEmail": {
-        "name": "Welcome email",
+        "name": "Welcome",
         "title": "Welcome to Jellyfin",
         "welcome": "Welcome to Jellyfin!",
         "youCanLoginWith": "You can login with the details below",

@@ -72,8 +72,7 @@ func (app *appContext) checkUsers() {
 		termPlural = "Deleting"
 	}
 	contact := false
-	if (emailEnabled && app.config.Section("user_expiry").Key("send_email").MustBool(true)) ||
-		app.config.Section("telegram").Key("enabled").MustBool(false) {
+	if messagesEnabled && app.config.Section("user_expiry").Key("send_email").MustBool(true) {
 		contact = true
 	}
 	// Use a map to speed up checking for deleted users later

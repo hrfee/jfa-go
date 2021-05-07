@@ -12,6 +12,8 @@ import (
 )
 
 var emailEnabled = false
+var messagesEnabled = false
+var telegramEnabled = false
 
 func (app *appContext) GetPath(sect, key string) (fs.FS, string) {
 	val := app.config.Section(sect).Key(key).MustString("")
@@ -83,11 +85,18 @@ func (app *appContext) loadConfig() error {
 	app.config.Section("jellyfin").Key("version").SetValue(version)
 	app.config.Section("jellyfin").Key("device").SetValue("jfa-go")
 	app.config.Section("jellyfin").Key("device_id").SetValue(fmt.Sprintf("jfa-go-%s-%s", version, commit))
-
-	if app.config.Section("email").Key("method").MustString("") == "" {
+	messagesEnabled = app.config.Section("messages").Key("enabled").MustBool(false)
+	telegramEnabled = app.config.Section("telegram").Key("enabled").MustBool(false)
+	if !messagesEnabled {
+		emailEnabled = false
+		telegramEnabled = false
+	} else if app.config.Section("email").Key("method").MustString("") == "" {
 		emailEnabled = false
 	} else {
 		emailEnabled = true
+	}
+	if !emailEnabled && !telegramEnabled {
+		messagesEnabled = false
 	}
 
 	app.MustSetValue("updates", "enabled", "true")
@@ -133,4 +142,29 @@ func (app *appContext) loadConfig() error {
 	app.email = NewEmailer(app)
 
 	return nil
+}
+
+func (app *appContext) migrateEmailConfig() {
+	tempConfig, _ := ini.Load(app.configPath)
+	fmt.Println(warning("Part of your email configuration will be migrated to the new \"messages\" section.\nA backup will be made."))
+	err := tempConfig.SaveTo(app.configPath + "_" + commit + ".bak")
+	if err != nil {
+		app.err.Fatalf("Failed to backup config: %v", err)
+		return
+	}
+	for _, setting := range []string{"use_24h", "date_format", "message"} {
+		if val := app.config.Section("email").Key(setting).Value(); val != "" {
+			tempConfig.Section("email").Key(setting).SetValue("")
+			tempConfig.Section("messages").Key(setting).SetValue(val)
+		}
+	}
+	if app.config.Section("messages").Key("enabled").MustBool(false) || app.config.Section("telegram").Key("enabled").MustBool(false) {
+		tempConfig.Section("messages").Key("enabled").SetValue("true")
+	}
+	err = tempConfig.SaveTo(app.configPath)
+	if err != nil {
+		app.err.Fatalf("Failed to save config: %v", err)
+		return
+	}
+	app.loadConfig()
 }

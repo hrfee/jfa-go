@@ -560,10 +560,18 @@ export class settingsList {
             document.addEventListener(`settings-${dependant[0]}-${dependant[1]}`, (event: settingsBoolEvent) => {
                 if (Boolean(event.detail) !== state) {
                     button.classList.add("unfocused");
+                    document.dispatchEvent(new CustomEvent(`settings-${name}`, { detail: false }));
                 } else {
                     button.classList.remove("unfocused");
+                    document.dispatchEvent(new CustomEvent(`settings-${name}`, { detail: true }));
                 }
             });
+            document.addEventListener(`settings-${dependant[0]}`, (event: settingsBoolEvent) => {
+                if (Boolean(event.detail) !== state) {
+                    button.classList.add("unfocused");
+                    document.dispatchEvent(new CustomEvent(`settings-${name}`, { detail: false }));
+                }
+            }); 
         }
         if (s.meta.advanced) {
             document.addEventListener("settings-advancedState", (event: settingsBoolEvent) => {
@@ -669,7 +677,7 @@ export class settingsList {
                 if (name in this._sections) {
                     this._sections[name].update(settings.sections[name]);
                 } else {
-                    if (name == "email") {
+                    if (name == "messages") {
                         const editButton = document.createElement("div");
                         editButton.classList.add("tooltip", "left");
                         editButton.innerHTML = `
@@ -677,7 +685,7 @@ export class settingsList {
                             <i class="icon ri-edit-line"></i>
                         </span>
                         <span class="content sm">
-                        ${window.lang.get("strings", "customizeEmails")}
+                        ${window.lang.get("strings", "customizeMessages")}
                         </span>
                         `;
                         (editButton.querySelector("span.button") as HTMLSpanElement).onclick = this._emailEditor.showList;

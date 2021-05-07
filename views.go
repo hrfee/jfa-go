@@ -120,7 +120,7 @@ func (app *appContext) AdminPage(gc *gin.Context) {
 		"cssClass":         app.cssClass,
 		"contactMessage":   "",
 		"email_enabled":    emailEnabled,
-		"telegram_enabled": app.config.Section("telegram").Key("enabled").MustBool(false),
+		"telegram_enabled": telegramEnabled,
 		"notifications":    notificationsEnabled,
 		"version":          version,
 		"commit":           commit,
@@ -283,7 +283,7 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 		"userExpiryMinutes": inv.UserMinutes,
 		"userExpiryMessage": app.storage.lang.Form[lang].Strings.get("yourAccountIsValidUntil"),
 		"langName":          lang,
-		"telegramEnabled":   app.config.Section("telegram").Key("enabled").MustBool(false),
+		"telegramEnabled":   telegramEnabled,
 	}
 	if data["telegramEnabled"].(bool) {
 		data["telegramPIN"] = app.telegram.NewAuthToken()

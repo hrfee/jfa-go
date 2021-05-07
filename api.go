@@ -39,9 +39,9 @@ func respondBool(code int, val bool, gc *gin.Context) {
 }
 
 func (app *appContext) loadStrftime() {
-	app.datePattern = app.config.Section("email").Key("date_format").String()
+	app.datePattern = app.config.Section("messages").Key("date_format").String()
 	app.timePattern = `%H:%M`
-	if val, _ := app.config.Section("email").Key("use_24h").Bool(); !val {
+	if val, _ := app.config.Section("messages").Key("use_24h").Bool(); !val {
 		app.timePattern = `%I:%M %p`
 	}
 	return
@@ -331,7 +331,7 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 		return
 	}
 	telegramTokenIndex := -1
-	if app.config.Section("telegram").Key("enabled").MustBool(false) {
+	if telegramEnabled {
 		if req.TelegramPIN == "" {
 			if app.config.Section("telegram").Key("required").MustBool(false) {
 				f = func(gc *gin.Context) {
@@ -480,7 +480,7 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 		}
 	}
 
-	if app.config.Section("telegram").Key("enabled").MustBool(false) && telegramTokenIndex != -1 {
+	if telegramEnabled && telegramTokenIndex != -1 {
 		tgToken := app.telegram.verifiedTokens[telegramTokenIndex]
 		tgUser := TelegramUser{
 			ChatID:   tgToken.ChatID,
@@ -579,7 +579,7 @@ func (app *appContext) EnableDisableUsers(gc *gin.Context) {
 		"GetUser":   map[string]string{},
 		"SetPolicy": map[string]string{},
 	}
-	sendMail := emailEnabled || app.config.Section("telegram").Key("enabled").MustBool(false)
+	sendMail := messagesEnabled
 	var msg *Message
 	var err error
 	if sendMail {
@@ -636,7 +636,7 @@ func (app *appContext) DeleteUsers(gc *gin.Context) {
 	gc.BindJSON(&req)
 	errors := map[string]string{}
 	ombiEnabled := app.config.Section("ombi").Key("enabled").MustBool(false)
-	sendMail := emailEnabled || app.config.Section("telegram").Key("enabled").MustBool(false)
+	sendMail := messagesEnabled
 	var msg *Message
 	var err error
 	if sendMail {
@@ -730,7 +730,7 @@ func (app *appContext) ExtendExpiry(gc *gin.Context) {
 func (app *appContext) Announce(gc *gin.Context) {
 	var req announcementDTO
 	gc.BindJSON(&req)
-	if !(emailEnabled || app.config.Section("telegram").Key("enabled").MustBool(false)) {
+	if !messagesEnabled {
 		respondBool(400, false, gc)
 		return
 	}
@@ -1384,6 +1384,10 @@ func (app *appContext) GetConfig(gc *gin.Context) {
 	el := resp.Sections["email"].Settings["language"]
 	el.Options = emailOptions
 	el.Value = app.config.Section("email").Key("language").MustString("en-us")
+	telegramOptions := app.storage.lang.Email.getOptions()
+	tl := resp.Sections["telegram"].Settings["language"]
+	tl.Options = telegramOptions
+	tl.Value = app.config.Section("telegram").Key("language").MustString("en-us")
 	if updater == "" {
 		delete(resp.Sections, "updates")
 		for i, v := range resp.Order {
@@ -1412,6 +1416,7 @@ func (app *appContext) GetConfig(gc *gin.Context) {
 	resp.Sections["ui"].Settings["language-admin"] = al
 	resp.Sections["email"].Settings["language"] = el
 	resp.Sections["password_resets"].Settings["language"] = pl
+	resp.Sections["telegram"].Settings["language"] = tl
 
 	gc.JSON(200, resp)
 }
@@ -1436,6 +1441,9 @@ func (app *appContext) ModifyConfig(gc *gin.Context) {
 				tempConfig.NewSection(section)
 			}
 			for setting, value := range settings.(map[string]interface{}) {
+				if section == "email" && setting == "method" && value == "disabled" {
+					value = ""
+				}
 				if value.(string) != app.config.Section(section).Key(setting).MustString("") {
 					tempConfig.Section(section).Key(setting).SetValue(value.(string))
 				}

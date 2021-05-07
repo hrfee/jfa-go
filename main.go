@@ -199,6 +199,12 @@ func start(asDaemon, firstCall bool) {
 	if err := app.loadConfig(); err != nil {
 		app.err.Fatalf("Failed to load config file \"%s\": %v", app.configPath, err)
 	}
+
+	// Some message settings have been moved from "email" to "messages", this will switch them.
+	if app.config.Section("email").Key("use_24h").Value() != "" {
+		app.migrateEmailConfig()
+	}
+
 	app.version = app.config.Section("jellyfin").Key("version").String()
 	// read from config...
 	debugMode = app.config.Section("ui").Key("debug").MustBool(false)
@@ -548,7 +554,7 @@ func start(asDaemon, firstCall bool) {
 			go app.checkForUpdates()
 		}
 
-		if app.config.Section("telegram").Key("enabled").MustBool(false) {
+		if telegramEnabled {
 			app.telegram, err = newTelegramDaemon(app)
 			if err != nil {
 				app.err.Printf("Failed to authenticate with Telegram: %v", err)

@@ -118,7 +118,7 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 		router.POST(p+"/newUser", app.NewUser)
 		router.Use(static.Serve(p+"/invite/", app.webFS))
 		router.GET(p+"/invite/:invCode", app.InviteProxy)
-		if app.config.Section("telegram").Key("enabled").MustBool(false) {
+		if telegramEnabled {
 			router.GET(p+"/invite/:invCode/telegram/verified/:pin", app.TelegramVerifiedInvite)
 		}
 	}
@@ -158,7 +158,7 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 		api.GET(p+"/config", app.GetConfig)
 		api.POST(p+"/config", app.ModifyConfig)
 		api.POST(p+"/restart", app.restart)
-		if app.config.Section("telegram").Key("enabled").MustBool(false) {
+		if telegramEnabled {
 			api.GET(p+"/telegram/pin", app.TelegramGetPin)
 			api.GET(p+"/telegram/verified/:pin", app.TelegramVerified)
 			api.POST(p+"/users/telegram", app.TelegramAddUser)

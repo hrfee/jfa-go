@@ -345,33 +345,20 @@
                 }
             }
         },
-        "email": {
+        "messages": {
             "order": [],
             "meta": {
-                "name": "Email",
-                "description": "General email settings."
+                "name": "Messages/Notifications",
+                "description": "General settings for emails/messages."
             },
             "settings": {
-                "language": {
-                    "name": "Email Language",
-                    "required": false,
-                    "requires_restart": false,
-                    "depends_true": "method",
-                    "type": "select",
-                    "options": [
-                        ["en-us", "English (US)"]
-                    ],
-                    "value": "en-us",
-                    "description": "Default email language. Submit a PR on github if you'd like to translate."
-                },
-                "no_username": {
-                    "name": "Use email addresses as username",
-                    "required": false,
-                    "requires_restart": false,
-                    "depends_true": "method",
+                "enabled": {
+                    "name": "Enabled",
+                    "required": true,
+                    "requires_restart": true,
                     "type": "bool",
-                    "value": false,
-                    "description": "Use email address from invite form as username on Jellyfin."
+                    "value": true,
+                    "description": "Enable the sending of emails/messages such as password resets, announcements, etc."
                 },
                 "use_24h": {
                     "name": "Use 24h time",
@@ -399,6 +386,37 @@
                     "type": "text",
                     "value": "Need help? contact me.",
                     "description": "Message displayed at bottom of emails."
+                }
+            }
+        },
+        "email": {
+            "order": [],
+            "meta": {
+                "name": "Email",
+                "description": "General email settings.",
+                "depends_true": "messages|enabled"
+            },
+            "settings": {
+                "language": {
+                    "name": "Email Language",
+                    "required": false,
+                    "requires_restart": false,
+                    "depends_true": "method",
+                    "type": "select",
+                    "options": [
+                        ["en-us", "English (US)"]
+                    ],
+                    "value": "en-us",
+                    "description": "Default email language. Submit a PR on github if you'd like to translate."
+                },
+                "no_username": {
+                    "name": "Use email addresses as username",
+                    "required": false,
+                    "requires_restart": false,
+                    "depends_true": "method",
+                    "type": "bool",
+                    "value": false,
+                    "description": "Use email address from invite form as username on Jellyfin."
                 },
                 "method": {
                     "name": "Email method",
@@ -443,12 +461,143 @@
                 }
             }
         },
+        "mailgun": {
+            "order": [],
+            "meta": {
+                "name": "Mailgun (Email)",
+                "description": "Mailgun API connection settings",
+                "depends_true": "email|method"
+            },
+            "settings": {
+                "api_url": {
+                    "name": "API URL",
+                    "required": false,
+                    "requires_restart": false,
+                    "type": "text",
+                    "value": "https://api.mailgun.net..."
+                },
+                "api_key": {
+                    "name": "API Key",
+                    "required": false,
+                    "requires_restart": false,
+                    "type": "text",
+                    "value": "your api key"
+                }
+            }
+        },
+        "smtp": {
+            "order": [],
+            "meta": {
+                "name": "SMTP (Email)",
+                "description": "SMTP Server connection settings.",
+                "depends_true": "email|method"
+            },
+            "settings": {
+                "username": {
+                    "name": "Username",
+                    "required": false,
+                    "requires_restart": false,
+                    "type": "text",
+                    "value": "",
+                    "description": "Username for SMTP. Leave blank to user send from address as username."
+                },
+                "encryption": {
+                    "name": "Encryption Method",
+                    "required": false,
+                    "requires_restart": false,
+                    "type": "select",
+                    "options": [
+                        ["ssl_tls", "SSL/TLS"],
+                        ["starttls", "STARTTLS"]
+                    ],
+                    "value": "starttls",
+                    "description": "Your email provider should provide different ports for each encryption method. Generally 465 for ssl_tls, 587 for starttls."
+                },
+                "server": {
+                    "name": "Server address",
+                    "required": false,
+                    "requires_restart": false,
+                    "type": "text",
+                    "value": "smtp.jellyf.in",
+                    "description": "SMTP Server address."
+                },
+                "port": {
+                    "name": "Port",
+                    "required": false,
+                    "requires_restart": false,
+                    "type": "number",
+                    "value": 465
+                },
+                "password": {
+                    "name": "Password",
+                    "required": false,
+                    "requires_restart": false,
+                    "type": "password",
+                    "value": "smtp password"
+                },
+                "ssl_cert": {
+                    "name": "Path to custom SSL certificate",
+                    "required": false,
+                    "requires_restart": false,
+                    "advanced":  true,
+                    "type": "text",
+                    "value": "",
+                    "description": "Use if your SMTP server's SSL Certificate is not trusted by the system."
+                }
+            }
+        },
+        "telegram": {
+            "order": [],
+            "meta": {
+                "name": "Telegram",
+                "description": "Settings for Telegram signup/notifications"
+            },
+            "settings": {
+                "enabled": {
+                    "name": "Enabled",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "bool",
+                    "value": false,
+                    "description": "Enable signup verification through Telegram and the sending of notifications through it."
+                },
+                "required": {
+                    "name": "Require on sign-up",
+                    "required": false,
+                    "required_restart": true,
+                    "type": "bool",
+                    "value": false,
+                    "description": "Require telegram connection on sign-up."
+                },
+                "token": {
+                    "name": "API Token",
+                    "required": false,
+                    "requires_restart": true,
+                    "depends_true": "enabled",
+                    "type": "text",
+                    "value": "",
+                    "description": "Telegram Bot API Token."
+                },
+                "language": {
+                    "name": "Language",
+                    "required": false,
+                    "requires_restart": false,
+                    "depends_true": "enabled",
+                    "type": "select",
+                    "options": [
+                        ["en-us", "English (US)"]
+                    ],
+                    "value": "en-us",
+                    "description": "Default telegram message language. Visit weblate if you'd like to translate."
+                }
+            }
+        },
         "password_resets": {
             "order": [],
             "meta": {
                 "name": "Password Resets",
                 "description": "Settings for the password reset handler.",
-                "depends_true": "email|method"
+                "depends_true": "messages|enabled"
             },
             "settings": {
                 "enabled": {
@@ -580,7 +729,7 @@
             "meta": {
                 "name": "Notifications",
                 "description": "Notification related settings.",
-                "depends_true": "email|method"
+                "depends_true": "messages|enabled"
             },
             "settings": {
                 "enabled": {
@@ -633,91 +782,6 @@
                 }
             }
         },
-        "mailgun": {
-            "order": [],
-            "meta": {
-                "name": "Mailgun (Email)",
-                "description": "Mailgun API connection settings",
-                "depends_true": "email|method"
-            },
-            "settings": {
-                "api_url": {
-                    "name": "API URL",
-                    "required": false,
-                    "requires_restart": false,
-                    "type": "text",
-                    "value": "https://api.mailgun.net..."
-                },
-                "api_key": {
-                    "name": "API Key",
-                    "required": false,
-                    "requires_restart": false,
-                    "type": "text",
-                    "value": "your api key"
-                }
-            }
-        },
-        "smtp": {
-            "order": [],
-            "meta": {
-                "name": "SMTP (Email)",
-                "description": "SMTP Server connection settings.",
-                "depends_true": "email|method"
-            },
-            "settings": {
-                "username": {
-                    "name": "Username",
-                    "required": false,
-                    "requires_restart": false,
-                    "type": "text",
-                    "value": "",
-                    "description": "Username for SMTP. Leave blank to user send from address as username."
-                },
-                "encryption": {
-                    "name": "Encryption Method",
-                    "required": false,
-                    "requires_restart": false,
-                    "type": "select",
-                    "options": [
-                        ["ssl_tls", "SSL/TLS"],
-                        ["starttls", "STARTTLS"]
-                    ],
-                    "value": "starttls",
-                    "description": "Your email provider should provide different ports for each encryption method. Generally 465 for ssl_tls, 587 for starttls."
-                },
-                "server": {
-                    "name": "Server address",
-                    "required": false,
-                    "requires_restart": false,
-                    "type": "text",
-                    "value": "smtp.jellyf.in",
-                    "description": "SMTP Server address."
-                },
-                "port": {
-                    "name": "Port",
-                    "required": false,
-                    "requires_restart": false,
-                    "type": "number",
-                    "value": 465
-                },
-                "password": {
-                    "name": "Password",
-                    "required": false,
-                    "requires_restart": false,
-                    "type": "password",
-                    "value": "smtp password"
-                },
-                "ssl_cert": {
-                    "name": "Path to custom SSL certificate",
-                    "required": false,
-                    "requires_restart": false,
-                    "advanced":  true,
-                    "type": "text",
-                    "value": "",
-                    "description": "Use if your SMTP server's SSL Certificate is not trusted by the system."
-                }
-            }
-        },
         "ombi": {
             "order": [],
             "meta": {
@@ -756,9 +820,9 @@
         "welcome_email": {
             "order": [],
             "meta": {
-                "name": "Welcome Emails",
-                "description": "Optionally send a welcome email to new users with the Jellyfin URL and their username.",
-                "depends_true": "email|method"
+                "name": "Welcome Message",
+                "description": "Optionally send a welcome message to new users with the Jellyfin URL and their username.",
+                "depends_true": "messages|enabled"
             },
             "settings": {
                 "enabled": {
@@ -865,14 +929,14 @@
                     "requires_restart": false,
                     "type": "bool",
                     "value": true,
-                    "depends_true": "email|method",
+                    "depends_true": "messages|enabled",
                     "description": "Send an email when a user's account expires."
                 },
                 "subject": {
                     "name": "Email subject",
                     "required": false,
                     "requires_restart": false,
-                    "depends_true": "email|method",
+                    "depends_true": "messages|enabled",
                     "type": "text",
                     "value": "",
                     "description": "Subject of user expiry emails."
@@ -882,7 +946,7 @@
                     "required": false,
                     "requires_restart": false,
                     "advanced": true,
-                    "depends_true": "email|method",
+                    "depends_true": "messages|enabled",
                     "type": "text",
                     "value": "",
                     "description": "Path to custom email html"
@@ -892,7 +956,7 @@
                     "required": false,
                     "requires_restart": false,
                     "advanced": true,
-                    "depends_true": "email|method",
+                    "depends_true": "messages|enabled",
                     "type": "text",
                     "value": "",
                     "description": "Path to custom email in plain text"
@@ -904,7 +968,7 @@
             "meta": {
                 "name": "Account Disabling/Enabling",
                 "description": "Subject/email files for account disabling/enabling emails.",
-                "depends_true": "email|method"
+                "depends_true": "messages|enabled"
             },
             "settings": {
                 "subject_disabled": {
@@ -966,7 +1030,7 @@
             "meta": {
                 "name": "Account Deletion",
                 "description": "Subject/email files for account deletion emails.",
-                "depends_true": "email|method"
+                "depends_true": "messages|enabled"
             },
             "settings": {
                 "subject": {
@@ -996,53 +1060,6 @@
                     "description": "Path to custom email in plain text"
                 }
             }
-        },
-        "telegram": {
-            "order": [],
-            "meta": {
-                "name": "Telegram",
-                "description": "Settings for Telegram signup/notifications"
-            },
-            "settings": {
-                "enabled": {
-                    "name": "Enabled",
-                    "required": false,
-                    "requires_restart": true,
-                    "type": "bool",
-                    "value": false,
-                    "description": "Enable signup verification through Telegram and the sending of notifications through it."
-                },
-                "required": {
-                    "name": "Require on sign-up",
-                    "required": false,
-                    "required_restart": true,
-                    "type": "bool",
-                    "value": false,
-                    "description": "Require telegram connection on sign-up."
-                },
-                "token": {
-                    "name": "API Token",
-                    "required": false,
-                    "requires_restart": true,
-                    "depends_true": "enabled",
-                    "type": "text",
-                    "value": "",
-                    "description": "Telegram Bot API Token."
-                },
-                "language": {
-                    "name": "Language",
-                    "required": false,
-                    "requires_restart": false,
-                    "depends_true": "enabled",
-                    "type": "select",
-                    "options": [
-                        ["en-us", "English (US)"]
-                    ],
-                    "value": "en-us",
-                    "description": "Default telegram message language. Visit weblate if you'd like to translate."
-                }
-            }
-
         },
         "files": {
             "order": [],

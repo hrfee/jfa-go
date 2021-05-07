@@ -289,7 +289,7 @@ func (emailer *Emailer) confirmationValues(code, username, key string, app *appC
 			template[v] = "{" + v + "}"
 		}
 	} else {
-		message := app.config.Section("email").Key("message").String()
+		message := app.config.Section("messages").Key("message").String()
 		inviteLink := app.config.Section("invite_emails").Key("url_base").String()
 		inviteLink = fmt.Sprintf("%s/%s?key=%s", inviteLink, code, key)
 		template["helloUser"] = emailer.lang.Strings.template("helloUser", tmpl{"username": username})
@@ -327,7 +327,7 @@ func (emailer *Emailer) constructTemplate(subject, md string, app *appContext) (
 	renderer := html.NewRenderer(html.RendererOptions{Flags: html.Smartypants})
 	html := markdown.ToHTML([]byte(md), nil, renderer)
 	text := stripMarkdown(md)
-	message := app.config.Section("email").Key("message").String()
+	message := app.config.Section("messages").Key("message").String()
 	var err error
 	email.HTML, email.Text, email.Markdown, err = emailer.construct(app, "template_email", "email_", map[string]interface{}{
 		"text":      template.HTML(html),
@@ -344,7 +344,7 @@ func (emailer *Emailer) constructTemplate(subject, md string, app *appContext) (
 func (emailer *Emailer) inviteValues(code string, invite Invite, app *appContext, noSub bool) map[string]interface{} {
 	expiry := invite.ValidTill
 	d, t, expiresIn := emailer.formatExpiry(expiry, false, app.datePattern, app.timePattern)
-	message := app.config.Section("email").Key("message").String()
+	message := app.config.Section("messages").Key("message").String()
 	inviteLink := app.config.Section("invite_emails").Key("url_base").String()
 	inviteLink = fmt.Sprintf("%s/%s", inviteLink, code)
 	template := map[string]interface{}{
@@ -489,7 +489,7 @@ func (emailer *Emailer) constructCreated(code, username, address string, invite 
 
 func (emailer *Emailer) resetValues(pwr PasswordReset, app *appContext, noSub bool) map[string]interface{} {
 	d, t, expiresIn := emailer.formatExpiry(pwr.Expiry, true, app.datePattern, app.timePattern)
-	message := app.config.Section("email").Key("message").String()
+	message := app.config.Section("messages").Key("message").String()
 	template := map[string]interface{}{
 		"someoneHasRequestedReset": emailer.lang.PasswordReset.get("someoneHasRequestedReset"),
 		"ifItWasNotYou":            emailer.lang.Strings.get("ifItWasNotYou"),
@@ -574,7 +574,7 @@ func (emailer *Emailer) deletedValues(reason string, app *appContext, noSub bool
 		}
 	} else {
 		template["reason"] = reason
-		template["message"] = app.config.Section("email").Key("message").String()
+		template["message"] = app.config.Section("messages").Key("message").String()
 	}
 	return template
 }
@@ -615,7 +615,7 @@ func (emailer *Emailer) disabledValues(reason string, app *appContext, noSub boo
 		}
 	} else {
 		template["reason"] = reason
-		template["message"] = app.config.Section("email").Key("message").String()
+		template["message"] = app.config.Section("messages").Key("message").String()
 	}
 	return template
 }
@@ -656,7 +656,7 @@ func (emailer *Emailer) enabledValues(reason string, app *appContext, noSub bool
 		}
 	} else {
 		template["reason"] = reason
-		template["message"] = app.config.Section("email").Key("message").String()
+		template["message"] = app.config.Section("messages").Key("message").String()
 	}
 	return template
 }
@@ -701,7 +701,7 @@ func (emailer *Emailer) welcomeValues(username string, expiry time.Time, app *ap
 	} else {
 		template["jellyfinURL"] = app.config.Section("jellyfin").Key("public_server").String()
 		template["username"] = username
-		template["message"] = app.config.Section("email").Key("message").String()
+		template["message"] = app.config.Section("messages").Key("message").String()
 		exp := app.formatDatetime(expiry)
 		if !expiry.IsZero() {
 			if custom {
@@ -756,7 +756,7 @@ func (emailer *Emailer) userExpiredValues(app *appContext, noSub bool) map[strin
 		"message":               "",
 	}
 	if !noSub {
-		template["message"] = app.config.Section("email").Key("message").String()
+		template["message"] = app.config.Section("messages").Key("message").String()
 	}
 	return template
 }
@@ -790,10 +790,9 @@ func (emailer *Emailer) send(email *Message, address ...string) error {
 }
 
 func (app *appContext) sendByID(email *Message, ID ...string) error {
-	tgEnabled := app.config.Section("telegram").Key("enabled").MustBool(false)
 	for _, id := range ID {
 		var err error
-		if tgChat, ok := app.storage.telegram[id]; ok && tgChat.Contact && tgEnabled {
+		if tgChat, ok := app.storage.telegram[id]; ok && tgChat.Contact && telegramEnabled {
 			err = app.telegram.Send(email, tgChat.ChatID)
 		} else if address, ok := app.storage.emails[id]; ok {
 			err = app.email.send(email, address.(string))
@@ -806,8 +805,7 @@ func (app *appContext) sendByID(email *Message, ID ...string) error {
 }
 
 func (app *appContext) getAddressOrName(jfID string) string {
-	tgEnabled := app.config.Section("telegram").Key("enabled").MustBool(false)
-	if tgChat, ok := app.storage.telegram[jfID]; ok && tgChat.Contact && tgEnabled {
+	if tgChat, ok := app.storage.telegram[jfID]; ok && tgChat.Contact && telegramEnabled {
 		return "@" + tgChat.Username
 	}
 	if addr, ok := app.storage.emails[jfID]; ok {
