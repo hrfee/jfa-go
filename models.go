@@ -237,3 +237,13 @@ type checkUpdateDTO struct {
 	New    bool   `json:"new"` // Whether or not there's a new update.
 	Update Update `json:"update"`
 }
+
+type telegramPinDTO struct {
+	Token    string `json:"token" example:"A1-B2-3C"`
+	Username string `json:"username"`
+}
+
+type telegramSetDTO struct {
+	Token string `json:"token" example:"A1-B2-3C"`
+	ID    string `json:"id"` // Jellyfin ID of user.
+}

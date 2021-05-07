@@ -309,6 +309,24 @@
                 <span class="button ~urge !normal full-width center" id="update-update">{{ .strings.update }}</span>
             </div>
         </div>
+        {{ if .telegram_enabled }}
+        <div id="modal-telegram" class="modal">
+            <div class="modal-content card">
+                <span class="heading mb-1">{{ .strings.linkTelegram }}</span>
+                <p class="content mb-1">{{ .strings.sendPIN }}</p>
+                <h1 class="ac" id="telegram-pin"></h1>
+                <a class="subheading link-center" id="telegram-link" target="_blank">
+                    <span class="shield ~info mr-1">
+                        <span class="icon">
+                            <i class="ri-telegram-line"></i>
+                        </span>
+                    </span>
+                    &#64;<span id="telegram-username">
+                </a>
+                <span class="button ~info !normal full-width center mt-1" id="telegram-waiting">{{ .strings.success }}</span>
+            </div>
+        </div>
+        {{ end }}
         <div id="notification-box"></div>
         <span class="dropdown" tabindex="0" id="lang-dropdown">
             <span class="button ~urge dropdown-button">

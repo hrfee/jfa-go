@@ -1,4 +1,4 @@
-import { _get, _post, _delete, toggleLoader, toDateString } from "../modules/common.js";
+import { _get, _post, _delete, toggleLoader, addLoader, removeLoader, toDateString } from "../modules/common.js";
 import { templateEmail } from "../modules/settings.js";
 import { Marked } from "@ts-stack/markdown";
 import { stripMarkdown } from "../modules/stripmd.js";
@@ -12,6 +12,11 @@ interface User {
     disabled: boolean;
     expiry: number;
     telegram: string;
+}
+
+interface getPinResponse {
+    token: string;
+    username: string;
 }
 
 class user implements User {
@@ -80,7 +85,8 @@ class user implements User {
         if (!window.telegramEnabled) return;
         this._telegramUsername = u;
         if (u == "") {
-            this._telegram.textContent = "";
+            this._telegram.innerHTML = `<span class="chip btn !low">Add</span>`;
+            (this._telegram.querySelector("span") as HTMLSpanElement).onclick = this._addTelegram;
         } else {
             this._telegram.innerHTML = `<a href="https://t.me/${u}" target="_blank">@${u}</a>`;
         }
@@ -192,6 +198,50 @@ class user implements User {
             }
         });
     }
+
+    private _addTelegram = () => _get("/telegram/pin", null, (req: XMLHttpRequest) => {
+        if (req.readyState == 4 && req.status == 200) {
+            const pin = document.getElementById("telegram-pin");
+            const link = document.getElementById("telegram-link") as HTMLAnchorElement;
+            const username = document.getElementById("telegram-username") as HTMLSpanElement;
+            const waiting = document.getElementById("telegram-waiting") as HTMLSpanElement;
+            let resp = req.response as getPinResponse;
+            pin.textContent = resp.token;
+            link.href = "https://t.me/" + resp.username;
+            username.textContent = resp.username;
+            addLoader(waiting);
+            let modalClosed = false;
+            window.modals.telegram.onclose = () => { 
+                modalClosed = true;
+                removeLoader(waiting);
+            }
+            let send = {
+                token: resp.token,
+                id: this.id
+            };
+            const checkVerified = () => _post("/users/telegram", send, (req: XMLHttpRequest) => {
+                if (req.readyState == 4) {
+                    if (req.status == 200 && req.response["success"] as boolean) {
+                        removeLoader(waiting);
+                        waiting.classList.add("~positive");
+                        waiting.classList.remove("~info");
+                        window.notifications.customSuccess("telegramVerified", window.lang.notif("telegramVerified"));
+                        setTimeout(() => {
+                            window.modals.telegram.close();
+                            waiting.classList.add("~info");
+                            waiting.classList.remove("~positive");
+                        }, 2000);
+                        document.dispatchEvent(new CustomEvent("accounts-reload"));
+                    } else if (!modalClosed) {
+                        setTimeout(checkVerified, 1500);
+                    }
+                }
+            }, true);
+            window.modals.telegram.show();
+            checkVerified();
+        }
+    });
+
 
     update = (user: User) => {
         this.id = user.id;
@@ -723,6 +773,7 @@ export class accountsList {
         this._selectAll.onchange = () => {
             this.selectAll = this._selectAll.checked;
         };
+        document.addEventListener("accounts-reload", this.reload);
         document.addEventListener("accountCheckEvent", () => { this._checkCount++; this._checkCheckCount(); });
         document.addEventListener("accountUncheckEvent", () => { this._checkCount--; this._checkCheckCount(); });
         this._addUserButton.onclick = window.modals.addUser.toggle;

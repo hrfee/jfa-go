@@ -39,6 +39,11 @@
     }
 }
 
+.chip.btn:hover:not([disabled]):not(.textarea),
+.chip.btn:focus:not([disabled]):not(.textarea) {
+    filter: brightness(var(--button-filter-brightness,95%));
+}
+
 .banner {
     margin: calc(-1 * var(--spacing-4,1rem));
 }

@@ -18,10 +18,7 @@
         "confirmationRequired": "Email confirmation required",
         "confirmationRequiredMessage": "Please check your email inbox to verify your address.",
         "yourAccountIsValidUntil": "Your account will be valid until {date}.",
-        "linkTelegram": "Link Telegram",
-        "sendPIN": "Send the PIN below to the bot, then come back here to link your account.",
-        "contactEmail": "Contact through Email",
-        "contactTelegram": "Contact through Telegram"
+        "sendPIN": "Send the PIN below to the bot, then come back here to link your account."
     },
     "notifications": {
         "errorUserExists": "User already exists.",

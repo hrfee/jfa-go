@@ -179,3 +179,22 @@ export function toggleLoader(el: HTMLElement, small: boolean = true) {
         el.appendChild(dot);
     }
 }
+
+export function addLoader(el: HTMLElement, small: boolean = true) {
+    if (!el.classList.contains("loader")) {
+        el.classList.add("loader");
+        if (small) { el.classList.add("loader-sm"); }
+        const dot = document.createElement("span") as HTMLSpanElement;
+        dot.classList.add("dot")
+        el.appendChild(dot);
+    }
+}
+
+export function removeLoader(el: HTMLElement, small: boolean = true) {
+    if (el.classList.contains("loader")) {
+        el.classList.remove("loader");
+        el.classList.remove("loader-sm");
+        const dot = el.querySelector("span.dot");
+        if (dot) { dot.remove(); }
+    }
+}

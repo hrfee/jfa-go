@@ -62,6 +62,10 @@ window.availableProfiles = window.availableProfiles || [];
     window.modals.extendExpiry = new Modal(document.getElementById("modal-extend-expiry"));
 
     window.modals.updateInfo = new Modal(document.getElementById("modal-update"));
+
+    if (window.telegramEnabled) {
+        window.modals.telegram = new Modal(document.getElementById("modal-telegram"));
+    }
 })();
 
 var inviteCreator = new createInvite();

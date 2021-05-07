@@ -92,7 +92,8 @@
         "inviteExpiresInTime": "Expires in {n}",
         "notifyEvent": "Notify on:",
         "notifyInviteExpiry": "On expiry",
-        "notifyUserCreation": "On user creation"
+        "notifyUserCreation": "On user creation",
+        "sendPIN": "Ask the user to send the PIN below to the bot."
     },
     "notifications": {
         "changedEmailAddress": "Changed email address of {n}.",
@@ -104,6 +105,7 @@
         "setOmbiDefaults": "Stored ombi defaults.",
         "updateApplied": "Update applied, please restart.",
         "updateAppliedRefresh": "Update applied, please refresh.",
+        "telegramVerified": "Telegram account verified.",
         "errorConnection": "Couldn't connect to jfa-go.",
         "error401Unauthorized": "Unauthorized. Try refreshing the page.",
         "errorSettingsAppliedNoHomescreenLayout": "Settings were applied, but applying homescreen layout may have failed.",

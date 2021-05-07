@@ -490,6 +490,9 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 		if lang, ok := app.telegram.languages[tgToken.ChatID]; ok {
 			tgUser.Lang = lang
 		}
+		if app.storage.telegram == nil {
+			app.storage.telegram = map[string]TelegramUser{}
+		}
 		app.storage.telegram[user.ID] = tgUser
 		err := app.storage.storeTelegramUsers()
 		if err != nil {
@@ -1474,6 +1477,7 @@ func (app *appContext) ModifyConfig(gc *gin.Context) {
 // @Param lang query string false "Language for email titles."
 // @Success 200 {object} emailListDTO
 // @Router /config/emails [get]
+// @Security Bearer
 // @tags Configuration
 func (app *appContext) GetCustomEmails(gc *gin.Context) {
 	lang := gc.Query("lang")
@@ -1502,6 +1506,7 @@ func (app *appContext) GetCustomEmails(gc *gin.Context) {
 // @Failure 500 {object} boolResponse
 // @Param id path string true "ID of email"
 // @Router /config/emails/{id} [post]
+// @Security Bearer
 // @tags Configuration
 func (app *appContext) SetCustomEmail(gc *gin.Context) {
 	var req customEmail
@@ -1561,6 +1566,7 @@ func (app *appContext) SetCustomEmail(gc *gin.Context) {
 // @Param enable/disable path string true "enable/disable"
 // @Param id path string true "ID of email"
 // @Router /config/emails/{id}/state/{enable/disable} [post]
+// @Security Bearer
 // @tags Configuration
 func (app *appContext) SetCustomEmailState(gc *gin.Context) {
 	id := gc.Param("id")
@@ -1610,6 +1616,7 @@ func (app *appContext) SetCustomEmailState(gc *gin.Context) {
 // @Failure 500 {object} boolResponse
 // @Param id path string true "ID of email"
 // @Router /config/emails/{id} [get]
+// @Security Bearer
 // @tags Configuration
 func (app *appContext) GetCustomEmailTemplate(gc *gin.Context) {
 	lang := app.storage.lang.chosenEmailLang
@@ -1798,6 +1805,7 @@ func (app *appContext) GetCustomEmailTemplate(gc *gin.Context) {
 // @Produce json
 // @Success 200 {object} checkUpdateDTO
 // @Router /config/update [get]
+// @Security Bearer
 // @tags Configuration
 func (app *appContext) CheckUpdate(gc *gin.Context) {
 	if !app.newUpdate {
@@ -1812,6 +1820,7 @@ func (app *appContext) CheckUpdate(gc *gin.Context) {
 // @Success 400 {object} stringResponse
 // @Success 500 {object} boolResponse
 // @Router /config/update [post]
+// @Security Bearer
 // @tags Configuration
 func (app *appContext) ApplyUpdate(gc *gin.Context) {
 	if !app.update.CanUpdate {
@@ -1837,6 +1846,7 @@ func (app *appContext) ApplyUpdate(gc *gin.Context) {
 // @Success 200 {object} boolResponse
 // @Failure 500 {object} stringResponse
 // @Router /logout [post]
+// @Security Bearer
 // @tags Other
 func (app *appContext) Logout(gc *gin.Context) {
 	cookie, err := gc.Cookie("refresh")
@@ -1910,7 +1920,94 @@ func (app *appContext) ServeLang(gc *gin.Context) {
 	respondBool(400, false, gc)
 }
 
-// @Summary Returns true/false on whether or not a telegram PIN was verified.
+// @Summary Returns a new Telegram verification PIN, and the bot username.
+// @Produce json
+// @Success 200 {object} telegramPinDTO
+// @Router /telegram/pin [get]
+// @Security Bearer
+// @tags Other
+func (app *appContext) TelegramGetPin(gc *gin.Context) {
+	gc.JSON(200, telegramPinDTO{
+		Token:    app.telegram.NewAuthToken(),
+		Username: app.telegram.username,
+	})
+}
+
+// @Summary Link a Jellyfin & Telegram user together via a verification PIN.
+// @Produce json
+// @Param telegramSetDTO body telegramSetDTO true "Token and user's Jellyfin ID."
+// @Success 200 {object} boolResponse
+// @Failure 500 {object} boolResponse
+// @Failure 400 {object} boolResponse
+// @Router /users/telegram [post]
+// @Security Bearer
+// @tags Other
+func (app *appContext) TelegramAddUser(gc *gin.Context) {
+	var req telegramSetDTO
+	gc.BindJSON(&req)
+	if req.Token == "" || req.ID == "" {
+		respondBool(400, false, gc)
+		return
+	}
+	tokenIndex := -1
+	for i, v := range app.telegram.verifiedTokens {
+		if v.Token == req.Token {
+			tokenIndex = i
+			break
+		}
+	}
+	if tokenIndex == -1 {
+		respondBool(500, false, gc)
+		return
+	}
+	tgToken := app.telegram.verifiedTokens[tokenIndex]
+	tgUser := TelegramUser{
+		ChatID:   tgToken.ChatID,
+		Username: tgToken.Username,
+		Contact:  true,
+	}
+	if lang, ok := app.telegram.languages[tgToken.ChatID]; ok {
+		tgUser.Lang = lang
+	}
+	if app.storage.telegram == nil {
+		app.storage.telegram = map[string]TelegramUser{}
+	}
+	app.storage.telegram[req.ID] = tgUser
+	err := app.storage.storeTelegramUsers()
+	if err != nil {
+		app.err.Printf("Failed to store Telegram users: %v", err)
+	} else {
+		app.telegram.verifiedTokens[len(app.telegram.verifiedTokens)-1], app.telegram.verifiedTokens[tokenIndex] = app.telegram.verifiedTokens[tokenIndex], app.telegram.verifiedTokens[len(app.telegram.verifiedTokens)-1]
+		app.telegram.verifiedTokens = app.telegram.verifiedTokens[:len(app.telegram.verifiedTokens)-1]
+	}
+	respondBool(200, true, gc)
+}
+
+// @Summary Returns true/false on whether or not a telegram PIN was verified. Requires bearer auth.
+// @Produce json
+// @Success 200 {object} boolResponse
+// @Param pin path string true "PIN code to check"
+// @Router /telegram/verified/{pin} [get]
+// @Security Bearer
+// @tags Other
+func (app *appContext) TelegramVerified(gc *gin.Context) {
+	pin := gc.Param("pin")
+	tokenIndex := -1
+	for i, v := range app.telegram.verifiedTokens {
+		if v.Token == pin {
+			tokenIndex = i
+			break
+		}
+	}
+	// if tokenIndex != -1 {
+	// 	length := len(app.telegram.verifiedTokens)
+	// 	app.telegram.verifiedTokens[length-1], app.telegram.verifiedTokens[tokenIndex] = app.telegram.verifiedTokens[tokenIndex], app.telegram.verifiedTokens[length-1]
+	// 	app.telegram.verifiedTokens = app.telegram.verifiedTokens[:length-1]
+	// }
+	respondBool(200, tokenIndex != -1, gc)
+}
+
+// @Summary Returns true/false on whether or not a telegram PIN was verified. Requires invite code.
 // @Produce json
 // @Success 200 {object} boolResponse
 // @Success 401 {object} boolResponse
@@ -1918,7 +2015,7 @@ func (app *appContext) ServeLang(gc *gin.Context) {
 // @Param invCode path string true "invite Code"
 // @Router /invite/{invCode}/telegram/verified/{pin} [get]
 // @tags Other
-func (app *appContext) TelegramVerified(gc *gin.Context) {
+func (app *appContext) TelegramVerifiedInvite(gc *gin.Context) {
 	code := gc.Param("invCode")
 	if _, ok := app.storage.invites[code]; !ok {
 		respondBool(401, false, gc)
@@ -1942,6 +2039,7 @@ func (app *appContext) TelegramVerified(gc *gin.Context) {
 
 // @Summary Restarts the program. No response means success.
 // @Router /restart [post]
+// @Security Bearer
 // @tags Other
 func (app *appContext) restart(gc *gin.Context) {
 	app.info.Println("Restarting...")

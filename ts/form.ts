@@ -53,7 +53,10 @@ if (window.telegramEnabled) {
         toggleLoader(waiting);
         window.telegramModal.show();
         let modalClosed = false;
-        window.telegramModal.onclose = () => { modalClosed = true; }
+        window.telegramModal.onclose = () => {
+            modalClosed = true;
+            toggleLoader(waiting);
+        }
         const checkVerified = () => _get("/invite/" + window.code + "/telegram/verified/" + window.telegramPIN, null, (req: XMLHttpRequest) => {
             if (req.readyState == 4) {
                 if (req.status == 401) {
@@ -63,7 +66,6 @@ if (window.telegramEnabled) {
                 } else if (req.status == 200) {
                     if (req.response["success"] as boolean) {
                         telegramVerified = true;
-                        toggleLoader(waiting);
                         waiting.classList.add("~positive");
                         waiting.classList.remove("~info");
                         window.notifications.customPositive("telegramVerified", "", window.messages["telegramVerified"]); 
