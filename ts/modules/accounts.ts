@@ -12,6 +12,7 @@ interface User {
     disabled: boolean;
     expiry: number;
     telegram: string;
+    notify_telegram: boolean;
 }
 
 interface getPinResponse {
@@ -30,6 +31,7 @@ class user implements User {
     private _emailEditButton: HTMLElement;
     private _telegram: HTMLTableDataCellElement;
     private _telegramUsername: string;
+    private _notifyTelegram: boolean;
     private _expiry: HTMLTableDataCellElement;
     private _expiryUnix: number;
     private _lastActive: HTMLTableDataCellElement;
@@ -88,10 +90,80 @@ class user implements User {
             this._telegram.innerHTML = `<span class="chip btn !low">Add</span>`;
             (this._telegram.querySelector("span") as HTMLSpanElement).onclick = this._addTelegram;
         } else {
-            this._telegram.innerHTML = `<a href="https://t.me/${u}" target="_blank">@${u}</a>`;
+            this._telegram.innerHTML = `
+            <a href="https://t.me/${u}" target="_blank">@${u}</a>
+            <i class="icon ri-settings-2-line ml-half dropdown-button"></i>
+            <div class="dropdown manual">
+                <div class="dropdown-display">
+                    <div class="card ~neutral !low">
+                        <span class="supra sm">${window.lang.strings("contactThrough")}</span>
+                        <label class="switch pb-1 mt-half">
+                            <input type="radio" name="accounts-contact-${this.id}" class="accounts-contact-email">
+                            <span>Email</span>
+                        </label>
+                        <label class="switch pb-1">
+                            <input type="radio" name="accounts-contact-${this.id}">
+                            <span>Telegram</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            `;
+            // Javascript is necessary as including the button inside the dropdown would make it too wide to display next to the username.
+            const button = this._telegram.querySelector("i");
+            const dropdown = this._telegram.querySelector("div.dropdown") as HTMLDivElement;
+            const radios = this._telegram.querySelectorAll("input") as NodeListOf<HTMLInputElement>;
+            for (let i = 0; i < radios.length; i++) {
+                radios[i].onclick = this._setTelegramNotify;
+            }
+
+            button.onclick = () => {
+                dropdown.classList.add("selected");
+                document.addEventListener("click", outerClickListener);
+            };
+            const outerClickListener = (event: Event) => {
+                if (!(event.target instanceof HTMLElement && (this._telegram.contains(event.target) || button.contains(event.target)))) {
+                    dropdown.classList.remove("selected");
+                    document.removeEventListener("click", outerClickListener);
+                }
+            };
         }
     }
+    
+    get notify_telegram(): boolean { return this._notifyTelegram; }
+    set notify_telegram(s: boolean) {
+        if (!window.telegramEnabled || !this._telegramUsername) return;
+        this._notifyTelegram = s;
+        const radios = this._telegram.querySelectorAll("input") as NodeListOf<HTMLInputElement>;
+        radios[0].checked = !s;
+        radios[1].checked = s;
+    }
 
+    private _setTelegramNotify = () => {
+        const radios = this._telegram.querySelectorAll("input") as NodeListOf<HTMLInputElement>;
+        let send = {
+            id: this.id,
+            enabled: radios[1].checked
+        };
+        _post("/users/telegram/notify", send, (req: XMLHttpRequest) => {
+            if (req.readyState == 4) {
+                if (req.status != 200) {
+                    window.notifications.customError("errorSetTelegramNotify", window.lang.notif("errorSaveSettings"));
+                    radios[0].checked, radios[1].checked= radios[1].checked, radios[0].checked;
+                    return;
+                }
+            }
+        }, false, (req: XMLHttpRequest) => {
+            if (req.status == 0) {
+                window.notifications.connectionError();
+                radios[0].checked, radios[1].checked= radios[1].checked, radios[0].checked;
+                return;
+            } else if (req.status == 401) {
+                radios[0].checked, radios[1].checked= radios[1].checked, radios[0].checked;
+                window.notifications.customError("401Error", window.lang.notif("error401Unauthorized"));
+            }
+        });
+    }
 
     get expiry(): number { return this._expiryUnix; }
     set expiry(unix: number) {
@@ -252,6 +324,7 @@ class user implements User {
         this.admin = user.admin;
         this.disabled = user.disabled;
         this.expiry = user.expiry;
+        this.notify_telegram = user.notify_telegram;
     }
 
     asElement = (): HTMLTableRowElement => { return this._row; }

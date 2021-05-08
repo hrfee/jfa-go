@@ -162,6 +162,7 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 			api.GET(p+"/telegram/pin", app.TelegramGetPin)
 			api.GET(p+"/telegram/verified/:pin", app.TelegramVerified)
 			api.POST(p+"/users/telegram", app.TelegramAddUser)
+			api.POST(p+"/users/telegram/notify", app.TelegramSetNotify)
 		}
 		if app.config.Section("ombi").Key("enabled").MustBool(false) {
 			api.GET(p+"/ombi/users", app.OmbiUsers)

@@ -54,6 +54,7 @@
         "reset": "Reset",
         "edit": "Edit",
         "donate": "Donate",
+        "contactThrough": "Contact through:",
         "extendExpiry": "Extend expiry",
         "customizeMessages": "Customize Messages",
         "customizeMessagesDescription": "If you don't want to use jfa-go's message templates, you can create your own using Markdown.",

@@ -122,14 +122,15 @@ type deleteInviteDTO struct {
 }
 
 type respUser struct {
-	ID         string `json:"id" example:"fdgsdfg45534fa"`              // userID of user
-	Name       string `json:"name" example:"jeff"`                      // Username of user
-	Email      string `json:"email,omitempty" example:"jeff@jellyf.in"` // Email address of user (if available)
-	LastActive int64  `json:"last_active" example:"1617737207510"`      // Time of last activity on Jellyfin
-	Admin      bool   `json:"admin" example:"false"`                    // Whether or not the user is Administrator
-	Expiry     int64  `json:"expiry" example:"1617737207510"`           // Expiry time of user as Epoch/Unix time.
-	Disabled   bool   `json:"disabled"`                                 // Whether or not the user is disabled.
-	Telegram   string `json:"telegram"`                                 // Telegram username (if known)
+	ID                    string `json:"id" example:"fdgsdfg45534fa"`              // userID of user
+	Name                  string `json:"name" example:"jeff"`                      // Username of user
+	Email                 string `json:"email,omitempty" example:"jeff@jellyf.in"` // Email address of user (if available)
+	LastActive            int64  `json:"last_active" example:"1617737207510"`      // Time of last activity on Jellyfin
+	Admin                 bool   `json:"admin" example:"false"`                    // Whether or not the user is Administrator
+	Expiry                int64  `json:"expiry" example:"1617737207510"`           // Expiry time of user as Epoch/Unix time.
+	Disabled              bool   `json:"disabled"`                                 // Whether or not the user is disabled.
+	Telegram              string `json:"telegram"`                                 // Telegram username (if known)
+	NotifyThroughTelegram bool   `json:"notify_telegram"`
 }
 
 type getUsersDTO struct {
@@ -246,4 +247,9 @@ type telegramPinDTO struct {
 type telegramSetDTO struct {
 	Token string `json:"token" example:"A1-B2-3C"`
 	ID    string `json:"id"` // Jellyfin ID of user.
+}
+
+type telegramNotifyDTO struct {
+	ID      string `json:"id"`
+	Enabled bool   `json:"enabled"`
 }

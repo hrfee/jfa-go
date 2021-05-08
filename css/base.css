@@ -171,6 +171,12 @@ div.card:contains(section.banner.footer) {
     margin: 0.5rem;
 }
 
+p.sm,
+span.sm {
+    font-size: 0.75rem;
+}
+
+
 .col.sm {
     margin: .25rem;
 }

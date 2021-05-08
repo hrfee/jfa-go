@@ -1176,6 +1176,7 @@ func (app *appContext) GetUsers(gc *gin.Context) {
 		}
 		if tgUser, ok := app.storage.telegram[jfUser.ID]; ok {
 			user.Telegram = tgUser.Username
+			user.NotifyThroughTelegram = tgUser.Contact
 		}
 		resp.UserList[i] = user
 		i++
@@ -1989,6 +1990,42 @@ func (app *appContext) TelegramAddUser(gc *gin.Context) {
 		app.telegram.verifiedTokens = app.telegram.verifiedTokens[:len(app.telegram.verifiedTokens)-1]
 	}
 	respondBool(200, true, gc)
+}
+
+// @Summary Sets whether to notify a user through telegram or not.
+// @Produce json
+// @Param telegramNotifyDTO body telegramNotifyDTO true "User's Jellyfin ID and whether or not to notify then through Telegram."
+// @Success 200 {object} boolResponse
+// @Success 400 {object} boolResponse
+// @Success 500 {object} boolResponse
+// @Router /users/telegram/notify [post]
+// @Security Bearer
+// @tags Other
+func (app *appContext) TelegramSetNotify(gc *gin.Context) {
+	var req telegramNotifyDTO
+	gc.BindJSON(&req)
+	if req.ID == "" {
+		respondBool(400, false, gc)
+		return
+	}
+	if tgUser, ok := app.storage.telegram[req.ID]; ok {
+		tgUser.Contact = req.Enabled
+		app.storage.telegram[req.ID] = tgUser
+		if err := app.storage.storeTelegramUsers(); err != nil {
+			respondBool(500, false, gc)
+			app.err.Printf("Telegram: Failed to store users: %v", err)
+			return
+		}
+		respondBool(200, true, gc)
+		msg := ""
+		if !req.Enabled {
+			msg = "not"
+		}
+		app.debug.Printf("Telegram: User \"%s\" will %s be notified through Telegram.", tgUser.Username, msg)
+		return
+	}
+	app.err.Printf("Telegram: User \"%s\" does not have a telegram account registered.", req.ID)
+	respondBool(400, false, gc)
 }
 
 // @Summary Returns true/false on whether or not a telegram PIN was verified. Requires bearer auth.
