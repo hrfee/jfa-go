@@ -3,9 +3,9 @@
         "name": "English (US)"
     },
     "strings": {
-        "startMessage": "Hi!\nEnter your test PIN code here to verify your account.",
-        "languageMessage": "Note: See available languages with /lang, and set language with /lang <language code>.",
+        "startMessage": "Hi!\nEnter your Jellyfin PIN code here to verify your account.",
         "invalidPIN": "That PIN was invalid, try again.",
-        "pinSuccess": "Success! You can now return to the sign-up page."
+        "pinSuccess": "Success! You can now return to the sign-up page.",
+        "languageMessage": "Note: See available languages with /lang, and set language with /lang <language code>."
     }
 }

@@ -120,7 +120,7 @@ class DOMInvite implements Invite {
     get usedBy(): { [name: string]: number } { return this._usedBy; }
     set usedBy(uB: { [name: string]: number }) {
         this._usedBy = uB;
-        if (uB.length == 0) {
+        if (Object.keys(uB).length == 0) {
             this._right.classList.add("empty");
             this._userTable.innerHTML = `<p class="content">${window.lang.strings("inviteNoUsersCreated")}</p>`;
             return;
