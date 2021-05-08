@@ -19,6 +19,24 @@
                 <p class="content mb-1">{{ .strings.confirmationRequiredMessage }}</p>
             </div>
         </div>
+        {{ if .telegramEnabled }}
+        <div id="modal-telegram" class="modal">
+            <div class="modal-content card">
+                <span class="heading mb-1">{{ .strings.linkTelegram }}</span>
+                <p class="content mb-1">{{ .strings.sendPIN }}</p>
+                <h1 class="ac">{{ .telegramPIN }}</h1>
+                <a class="subheading link-center" href="{{ .telegramURL }}" target="_blank">
+                    <span class="shield ~info mr-1">
+                        <span class="icon">
+                            <i class="ri-telegram-line"></i>
+                        </span>
+                    </span>
+                    &#64;{{ .telegramUsername }}
+                </a>
+                <span class="button ~info !normal full-width center mt-1" id="telegram-waiting">{{ .strings.success }}</span>
+            </div>
+        </div>
+        {{ end }}
         <span class="dropdown" tabindex="0" id="lang-dropdown">
             <span class="button ~urge dropdown-button">
                 <i class="ri-global-line"></i>
@@ -29,6 +47,7 @@
                 </div>
             </div>
         </span>
+        <div id="notification-box"></div>
         <div class="page-container">
             <div class="card ~neutral !low">
                 <div class="row baseline">
@@ -48,7 +67,17 @@
                             
                             <label class="label supra" for="create-email">{{ .strings.emailAddress }}</label>
                             <input type="email" class="input ~neutral !high mt-half mb-1" placeholder="{{ .strings.emailAddress }}" id="create-email" aria-label="{{ .strings.emailAddress }}" value="{{ .email }}">
-                            
+                            {{ if .telegramEnabled }}
+                            <span class="button ~info !normal full-width center mb-1" id="link-telegram">{{ .strings.linkTelegram }}</span>
+                            <div id="contact-via" class="unfocused">
+                                <label class="row switch pb-1">
+                                    <input type="radio" name="contact-via" value="email"><span>Contact through Email</span>
+                                </label>
+                                <label class="row switch pb-1">
+                                    <input type="radio" name="contact-via" value="telegram" id="contact-via-telegram"><span>Contact through Telegram</span>
+                                </label>
+                            </div>
+                            {{ end }}
                             <label class="label supra" for="create-password">{{ .strings.password }}</label>
                             <input type="password" class="input ~neutral !high mt-half mb-1" placeholder="{{ .strings.password }}" id="create-password" aria-label="{{ .strings.password }}">
                             

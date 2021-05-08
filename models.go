@@ -11,10 +11,12 @@ type boolResponse struct {
 }
 
 type newUserDTO struct {
-	Username string `json:"username" example:"jeff" binding:"required"`  // User's username
-	Password string `json:"password" example:"guest" binding:"required"` // User's password
-	Email    string `json:"email" example:"jeff@jellyf.in"`              // User's email address
-	Code     string `json:"code" example:"abc0933jncjkcjj"`              // Invite code (required on /newUser)
+	Username        string `json:"username" example:"jeff" binding:"required"`  // User's username
+	Password        string `json:"password" example:"guest" binding:"required"` // User's password
+	Email           string `json:"email" example:"jeff@jellyf.in"`              // User's email address
+	Code            string `json:"code" example:"abc0933jncjkcjj"`              // Invite code (required on /newUser)
+	TelegramPIN     string `json:"telegram_pin" example:"A1-B2-3C"`             // Telegram verification PIN (if used)
+	TelegramContact bool   `json:"telegram_contact"`                            // Whether or not to use telegram for notifications/pwrs
 }
 
 type newUserResponse struct {
@@ -120,13 +122,15 @@ type deleteInviteDTO struct {
 }
 
 type respUser struct {
-	ID         string `json:"id" example:"fdgsdfg45534fa"`              // userID of user
-	Name       string `json:"name" example:"jeff"`                      // Username of user
-	Email      string `json:"email,omitempty" example:"jeff@jellyf.in"` // Email address of user (if available)
-	LastActive int64  `json:"last_active" example:"1617737207510"`      // Time of last activity on Jellyfin
-	Admin      bool   `json:"admin" example:"false"`                    // Whether or not the user is Administrator
-	Expiry     int64  `json:"expiry" example:"1617737207510"`           // Expiry time of user as Epoch/Unix time.
-	Disabled   bool   `json:"disabled"`                                 // Whether or not the user is disabled.
+	ID                    string `json:"id" example:"fdgsdfg45534fa"`              // userID of user
+	Name                  string `json:"name" example:"jeff"`                      // Username of user
+	Email                 string `json:"email,omitempty" example:"jeff@jellyf.in"` // Email address of user (if available)
+	LastActive            int64  `json:"last_active" example:"1617737207510"`      // Time of last activity on Jellyfin
+	Admin                 bool   `json:"admin" example:"false"`                    // Whether or not the user is Administrator
+	Expiry                int64  `json:"expiry" example:"1617737207510"`           // Expiry time of user as Epoch/Unix time.
+	Disabled              bool   `json:"disabled"`                                 // Whether or not the user is disabled.
+	Telegram              string `json:"telegram"`                                 // Telegram username (if known)
+	NotifyThroughTelegram bool   `json:"notify_telegram"`
 }
 
 type getUsersDTO struct {
@@ -233,4 +237,19 @@ type extendExpiryDTO struct {
 type checkUpdateDTO struct {
 	New    bool   `json:"new"` // Whether or not there's a new update.
 	Update Update `json:"update"`
+}
+
+type telegramPinDTO struct {
+	Token    string `json:"token" example:"A1-B2-3C"`
+	Username string `json:"username"`
+}
+
+type telegramSetDTO struct {
+	Token string `json:"token" example:"A1-B2-3C"`
+	ID    string `json:"id"` // Jellyfin ID of user.
+}
+
+type telegramNotifyDTO struct {
+	ID      string `json:"id"`
+	Enabled bool   `json:"enabled"`
 }

@@ -71,9 +71,9 @@ func (app *appContext) checkUsers() {
 		mode = "delete"
 		termPlural = "Deleting"
 	}
-	email := false
-	if emailEnabled && app.config.Section("user_expiry").Key("send_email").MustBool(true) {
-		email = true
+	contact := false
+	if messagesEnabled && app.config.Section("user_expiry").Key("send_email").MustBool(true) {
+		contact = true
 	}
 	// Use a map to speed up checking for deleted users later
 	userExists := map[string]bool{}
@@ -114,18 +114,18 @@ func (app *appContext) checkUsers() {
 			}
 			delete(app.storage.users, id)
 			app.jf.CacheExpiry = time.Now()
-			if email {
-				address, ok := app.storage.emails[id]
+			if contact {
 				if !ok {
 					continue
 				}
+				name := app.getAddressOrName(user.ID)
 				msg, err := app.email.constructUserExpired(app, false)
 				if err != nil {
-					app.err.Printf("Failed to construct expiry email for \"%s\": %s", user.Name, err)
-				} else if err := app.email.send(msg, address.(string)); err != nil {
-					app.err.Printf("Failed to send expiry email to \"%s\": %s", user.Name, err)
+					app.err.Printf("Failed to construct expiry message for \"%s\": %s", user.Name, err)
+				} else if err := app.sendByID(msg, user.ID); err != nil {
+					app.err.Printf("Failed to send expiry message to \"%s\": %s", name, err)
 				} else {
-					app.info.Printf("Sent expiry notification to \"%s\"", address.(string))
+					app.info.Printf("Sent expiry notification to \"%s\"", name)
 				}
 			}
 		}

@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"html/template"
 	"io"
+	"io/fs"
 	"net/smtp"
 	"os"
 	"strconv"
@@ -25,13 +26,13 @@ import (
 )
 
 // implements email sending, right now via smtp or mailgun.
-type emailClient interface {
-	send(fromName, fromAddr string, email *Email, address ...string) error
+type EmailClient interface {
+	Send(fromName, fromAddr string, message *Message, address ...string) error
 }
 
-type dummyClient struct{}
+type DummyClient struct{}
 
-func (dc *dummyClient) send(fromName, fromAddr string, email *Email, address ...string) error {
+func (dc *DummyClient) Send(fromName, fromAddr string, email *Message, address ...string) error {
 	fmt.Printf("FROM: %s <%s>\nTO: %s\nTEXT: %s\n", fromName, fromAddr, strings.Join(address, ", "), email.Text)
 	return nil
 }
@@ -41,7 +42,7 @@ type Mailgun struct {
 	client *mailgun.MailgunImpl
 }
 
-func (mg *Mailgun) send(fromName, fromAddr string, email *Email, address ...string) error {
+func (mg *Mailgun) Send(fromName, fromAddr string, email *Message, address ...string) error {
 	message := mg.client.NewMessage(
 		fmt.Sprintf("%s <%s>", fromName, fromAddr),
 		email.Subject,
@@ -67,7 +68,7 @@ type SMTP struct {
 	tlsConfig *tls.Config
 }
 
-func (sm *SMTP) send(fromName, fromAddr string, email *Email, address ...string) error {
+func (sm *SMTP) Send(fromName, fromAddr string, email *Message, address ...string) error {
 	server := fmt.Sprintf("%s:%d", sm.server, sm.port)
 	from := fmt.Sprintf("%s <%s>", fromName, fromAddr)
 	var wg sync.WaitGroup
@@ -93,18 +94,19 @@ func (sm *SMTP) send(fromName, fromAddr string, email *Email, address ...string)
 	return err
 }
 
-// Emailer contains the email sender, email content, and methods to construct message content.
+// Emailer contains the email sender, translations, and methods to construct messages.
 type Emailer struct {
 	fromAddr, fromName string
 	lang               emailLang
-	sender             emailClient
+	sender             EmailClient
 }
 
-// Email stores content.
-type Email struct {
-	Subject string `json:"subject"`
-	HTML    string `json:"html"`
-	Text    string `json:"text"`
+// Message stores content.
+type Message struct {
+	Subject  string `json:"subject"`
+	HTML     string `json:"html"`
+	Text     string `json:"text"`
+	Markdown string `json:"markdown"`
 }
 
 func (emailer *Emailer) formatExpiry(expiry time.Time, tzaware bool, datePattern, timePattern string) (d, t, expiresIn string) {
@@ -154,7 +156,7 @@ func NewEmailer(app *appContext) *Emailer {
 	} else if method == "mailgun" {
 		emailer.NewMailgun(app.config.Section("mailgun").Key("api_url").String(), app.config.Section("mailgun").Key("api_key").String())
 	} else if method == "dummy" {
-		emailer.sender = &dummyClient{}
+		emailer.sender = &DummyClient{}
 	}
 	return emailer
 }
@@ -204,7 +206,7 @@ type templ interface {
 	Execute(wr io.Writer, data interface{}) error
 }
 
-func (emailer *Emailer) construct(app *appContext, section, keyFragment string, data map[string]interface{}) (html, text string, err error) {
+func (emailer *Emailer) construct(app *appContext, section, keyFragment string, data map[string]interface{}) (html, text, markdown string, err error) {
 	var tpl templ
 	if substituteStrings == "" {
 		data["jellyfin"] = "Jellyfin"
@@ -212,14 +214,31 @@ func (emailer *Emailer) construct(app *appContext, section, keyFragment string, 
 		data["jellyfin"] = substituteStrings
 	}
 	var keys []string
-	if app.config.Section("email").Key("plaintext").MustBool(false) {
-		keys = []string{"text"}
-		text = ""
+	plaintext := app.config.Section("email").Key("plaintext").MustBool(false)
+	telegram := app.config.Section("telegram").Key("enabled").MustBool(false)
+	if plaintext {
+		if telegram {
+			keys = []string{"text"}
+			text, markdown = "", ""
+		} else {
+			keys = []string{"text"}
+			text = ""
+		}
 	} else {
-		keys = []string{"html", "text"}
+		if telegram {
+			keys = []string{"html", "text", "markdown"}
+		} else {
+			keys = []string{"html", "text"}
+		}
 	}
 	for _, key := range keys {
-		filesystem, fpath := app.GetPath(section, keyFragment+key)
+		var filesystem fs.FS
+		var fpath string
+		if key == "markdown" {
+			filesystem, fpath = app.GetPath(section, keyFragment+"text")
+		} else {
+			filesystem, fpath = app.GetPath(section, keyFragment+key)
+		}
 		if key == "html" {
 			tpl, err = template.ParseFS(filesystem, fpath)
 		} else {
@@ -228,15 +247,28 @@ func (emailer *Emailer) construct(app *appContext, section, keyFragment string, 
 		if err != nil {
 			return
 		}
+		// For constructTemplate, if "md" is found in data it's used in stead of "text".
+		foundMarkdown := false
+		if key == "markdown" {
+			_, foundMarkdown = data["md"]
+			if foundMarkdown {
+				data["plaintext"], data["md"] = data["md"], data["plaintext"]
+			}
+		}
 		var tplData bytes.Buffer
 		err = tpl.Execute(&tplData, data)
 		if err != nil {
 			return
 		}
+		if foundMarkdown {
+			data["plaintext"], data["md"] = data["md"], data["plaintext"]
+		}
 		if key == "html" {
 			html = tplData.String()
-		} else {
+		} else if key == "text" {
 			text = tplData.String()
+		} else {
+			markdown = tplData.String()
 		}
 	}
 	return
@@ -257,7 +289,7 @@ func (emailer *Emailer) confirmationValues(code, username, key string, app *appC
 			template[v] = "{" + v + "}"
 		}
 	} else {
-		message := app.config.Section("email").Key("message").String()
+		message := app.config.Section("messages").Key("message").String()
 		inviteLink := app.config.Section("invite_emails").Key("url_base").String()
 		inviteLink = fmt.Sprintf("%s/%s?key=%s", inviteLink, code, key)
 		template["helloUser"] = emailer.lang.Strings.template("helloUser", tmpl{"username": username})
@@ -267,8 +299,8 @@ func (emailer *Emailer) confirmationValues(code, username, key string, app *appC
 	return template
 }
 
-func (emailer *Emailer) constructConfirmation(code, username, key string, app *appContext, noSub bool) (*Email, error) {
-	email := &Email{
+func (emailer *Emailer) constructConfirmation(code, username, key string, app *appContext, noSub bool) (*Message, error) {
+	email := &Message{
 		Subject: app.config.Section("email_confirmation").Key("subject").MustString(emailer.lang.EmailConfirmation.get("title")),
 	}
 	var err error
@@ -282,7 +314,7 @@ func (emailer *Emailer) constructConfirmation(code, username, key string, app *a
 		)
 		email, err = emailer.constructTemplate(email.Subject, content, app)
 	} else {
-		email.HTML, email.Text, err = emailer.construct(app, "email_confirmation", "email_", template)
+		email.HTML, email.Text, email.Markdown, err = emailer.construct(app, "email_confirmation", "email_", template)
 	}
 	if err != nil {
 		return nil, err
@@ -290,17 +322,18 @@ func (emailer *Emailer) constructConfirmation(code, username, key string, app *a
 	return email, nil
 }
 
-func (emailer *Emailer) constructTemplate(subject, md string, app *appContext) (*Email, error) {
-	email := &Email{Subject: subject}
+func (emailer *Emailer) constructTemplate(subject, md string, app *appContext) (*Message, error) {
+	email := &Message{Subject: subject}
 	renderer := html.NewRenderer(html.RendererOptions{Flags: html.Smartypants})
 	html := markdown.ToHTML([]byte(md), nil, renderer)
 	text := stripMarkdown(md)
-	message := app.config.Section("email").Key("message").String()
+	message := app.config.Section("messages").Key("message").String()
 	var err error
-	email.HTML, email.Text, err = emailer.construct(app, "template_email", "email_", map[string]interface{}{
+	email.HTML, email.Text, email.Markdown, err = emailer.construct(app, "template_email", "email_", map[string]interface{}{
 		"text":      template.HTML(html),
 		"plaintext": text,
 		"message":   message,
+		"md":        md,
 	})
 	if err != nil {
 		return nil, err
@@ -311,7 +344,7 @@ func (emailer *Emailer) constructTemplate(subject, md string, app *appContext) (
 func (emailer *Emailer) inviteValues(code string, invite Invite, app *appContext, noSub bool) map[string]interface{} {
 	expiry := invite.ValidTill
 	d, t, expiresIn := emailer.formatExpiry(expiry, false, app.datePattern, app.timePattern)
-	message := app.config.Section("email").Key("message").String()
+	message := app.config.Section("messages").Key("message").String()
 	inviteLink := app.config.Section("invite_emails").Key("url_base").String()
 	inviteLink = fmt.Sprintf("%s/%s", inviteLink, code)
 	template := map[string]interface{}{
@@ -338,8 +371,8 @@ func (emailer *Emailer) inviteValues(code string, invite Invite, app *appContext
 	return template
 }
 
-func (emailer *Emailer) constructInvite(code string, invite Invite, app *appContext, noSub bool) (*Email, error) {
-	email := &Email{
+func (emailer *Emailer) constructInvite(code string, invite Invite, app *appContext, noSub bool) (*Message, error) {
+	email := &Message{
 		Subject: app.config.Section("invite_emails").Key("subject").MustString(emailer.lang.InviteEmail.get("title")),
 	}
 	template := emailer.inviteValues(code, invite, app, noSub)
@@ -353,7 +386,7 @@ func (emailer *Emailer) constructInvite(code string, invite Invite, app *appCont
 		)
 		email, err = emailer.constructTemplate(email.Subject, content, app)
 	} else {
-		email.HTML, email.Text, err = emailer.construct(app, "invite_emails", "email_", template)
+		email.HTML, email.Text, email.Markdown, err = emailer.construct(app, "invite_emails", "email_", template)
 	}
 	if err != nil {
 		return nil, err
@@ -377,8 +410,8 @@ func (emailer *Emailer) expiryValues(code string, invite Invite, app *appContext
 	return template
 }
 
-func (emailer *Emailer) constructExpiry(code string, invite Invite, app *appContext, noSub bool) (*Email, error) {
-	email := &Email{
+func (emailer *Emailer) constructExpiry(code string, invite Invite, app *appContext, noSub bool) (*Message, error) {
+	email := &Message{
 		Subject: emailer.lang.InviteExpiry.get("title"),
 	}
 	var err error
@@ -392,7 +425,7 @@ func (emailer *Emailer) constructExpiry(code string, invite Invite, app *appCont
 		)
 		email, err = emailer.constructTemplate(email.Subject, content, app)
 	} else {
-		email.HTML, email.Text, err = emailer.construct(app, "notifications", "expiry_", template)
+		email.HTML, email.Text, email.Markdown, err = emailer.construct(app, "notifications", "expiry_", template)
 	}
 	if err != nil {
 		return nil, err
@@ -431,8 +464,8 @@ func (emailer *Emailer) createdValues(code, username, address string, invite Inv
 	return template
 }
 
-func (emailer *Emailer) constructCreated(code, username, address string, invite Invite, app *appContext, noSub bool) (*Email, error) {
-	email := &Email{
+func (emailer *Emailer) constructCreated(code, username, address string, invite Invite, app *appContext, noSub bool) (*Message, error) {
+	email := &Message{
 		Subject: emailer.lang.UserCreated.get("title"),
 	}
 	template := emailer.createdValues(code, username, address, invite, app, noSub)
@@ -446,7 +479,7 @@ func (emailer *Emailer) constructCreated(code, username, address string, invite 
 		)
 		email, err = emailer.constructTemplate(email.Subject, content, app)
 	} else {
-		email.HTML, email.Text, err = emailer.construct(app, "notifications", "created_", template)
+		email.HTML, email.Text, email.Markdown, err = emailer.construct(app, "notifications", "created_", template)
 	}
 	if err != nil {
 		return nil, err
@@ -456,7 +489,7 @@ func (emailer *Emailer) constructCreated(code, username, address string, invite 
 
 func (emailer *Emailer) resetValues(pwr PasswordReset, app *appContext, noSub bool) map[string]interface{} {
 	d, t, expiresIn := emailer.formatExpiry(pwr.Expiry, true, app.datePattern, app.timePattern)
-	message := app.config.Section("email").Key("message").String()
+	message := app.config.Section("messages").Key("message").String()
 	template := map[string]interface{}{
 		"someoneHasRequestedReset": emailer.lang.PasswordReset.get("someoneHasRequestedReset"),
 		"ifItWasNotYou":            emailer.lang.Strings.get("ifItWasNotYou"),
@@ -505,8 +538,8 @@ func (emailer *Emailer) resetValues(pwr PasswordReset, app *appContext, noSub bo
 	return template
 }
 
-func (emailer *Emailer) constructReset(pwr PasswordReset, app *appContext, noSub bool) (*Email, error) {
-	email := &Email{
+func (emailer *Emailer) constructReset(pwr PasswordReset, app *appContext, noSub bool) (*Message, error) {
+	email := &Message{
 		Subject: app.config.Section("password_resets").Key("subject").MustString(emailer.lang.PasswordReset.get("title")),
 	}
 	template := emailer.resetValues(pwr, app, noSub)
@@ -520,7 +553,7 @@ func (emailer *Emailer) constructReset(pwr PasswordReset, app *appContext, noSub
 		)
 		email, err = emailer.constructTemplate(email.Subject, content, app)
 	} else {
-		email.HTML, email.Text, err = emailer.construct(app, "password_resets", "email_", template)
+		email.HTML, email.Text, email.Markdown, err = emailer.construct(app, "password_resets", "email_", template)
 	}
 	if err != nil {
 		return nil, err
@@ -541,13 +574,13 @@ func (emailer *Emailer) deletedValues(reason string, app *appContext, noSub bool
 		}
 	} else {
 		template["reason"] = reason
-		template["message"] = app.config.Section("email").Key("message").String()
+		template["message"] = app.config.Section("messages").Key("message").String()
 	}
 	return template
 }
 
-func (emailer *Emailer) constructDeleted(reason string, app *appContext, noSub bool) (*Email, error) {
-	email := &Email{
+func (emailer *Emailer) constructDeleted(reason string, app *appContext, noSub bool) (*Message, error) {
+	email := &Message{
 		Subject: app.config.Section("deletion").Key("subject").MustString(emailer.lang.UserDeleted.get("title")),
 	}
 	var err error
@@ -561,7 +594,7 @@ func (emailer *Emailer) constructDeleted(reason string, app *appContext, noSub b
 		)
 		email, err = emailer.constructTemplate(email.Subject, content, app)
 	} else {
-		email.HTML, email.Text, err = emailer.construct(app, "deletion", "email_", template)
+		email.HTML, email.Text, email.Markdown, err = emailer.construct(app, "deletion", "email_", template)
 	}
 	if err != nil {
 		return nil, err
@@ -582,13 +615,13 @@ func (emailer *Emailer) disabledValues(reason string, app *appContext, noSub boo
 		}
 	} else {
 		template["reason"] = reason
-		template["message"] = app.config.Section("email").Key("message").String()
+		template["message"] = app.config.Section("messages").Key("message").String()
 	}
 	return template
 }
 
-func (emailer *Emailer) constructDisabled(reason string, app *appContext, noSub bool) (*Email, error) {
-	email := &Email{
+func (emailer *Emailer) constructDisabled(reason string, app *appContext, noSub bool) (*Message, error) {
+	email := &Message{
 		Subject: app.config.Section("disable_enable").Key("subject_disabled").MustString(emailer.lang.UserDisabled.get("title")),
 	}
 	var err error
@@ -602,7 +635,7 @@ func (emailer *Emailer) constructDisabled(reason string, app *appContext, noSub 
 		)
 		email, err = emailer.constructTemplate(email.Subject, content, app)
 	} else {
-		email.HTML, email.Text, err = emailer.construct(app, "disable_enable", "disabled_", template)
+		email.HTML, email.Text, email.Markdown, err = emailer.construct(app, "disable_enable", "disabled_", template)
 	}
 	if err != nil {
 		return nil, err
@@ -623,13 +656,13 @@ func (emailer *Emailer) enabledValues(reason string, app *appContext, noSub bool
 		}
 	} else {
 		template["reason"] = reason
-		template["message"] = app.config.Section("email").Key("message").String()
+		template["message"] = app.config.Section("messages").Key("message").String()
 	}
 	return template
 }
 
-func (emailer *Emailer) constructEnabled(reason string, app *appContext, noSub bool) (*Email, error) {
-	email := &Email{
+func (emailer *Emailer) constructEnabled(reason string, app *appContext, noSub bool) (*Message, error) {
+	email := &Message{
 		Subject: app.config.Section("disable_enable").Key("subject_enabled").MustString(emailer.lang.UserEnabled.get("title")),
 	}
 	var err error
@@ -643,7 +676,7 @@ func (emailer *Emailer) constructEnabled(reason string, app *appContext, noSub b
 		)
 		email, err = emailer.constructTemplate(email.Subject, content, app)
 	} else {
-		email.HTML, email.Text, err = emailer.construct(app, "disable_enable", "enabled_", template)
+		email.HTML, email.Text, email.Markdown, err = emailer.construct(app, "disable_enable", "enabled_", template)
 	}
 	if err != nil {
 		return nil, err
@@ -668,7 +701,7 @@ func (emailer *Emailer) welcomeValues(username string, expiry time.Time, app *ap
 	} else {
 		template["jellyfinURL"] = app.config.Section("jellyfin").Key("public_server").String()
 		template["username"] = username
-		template["message"] = app.config.Section("email").Key("message").String()
+		template["message"] = app.config.Section("messages").Key("message").String()
 		exp := app.formatDatetime(expiry)
 		if !expiry.IsZero() {
 			if custom {
@@ -683,8 +716,8 @@ func (emailer *Emailer) welcomeValues(username string, expiry time.Time, app *ap
 	return template
 }
 
-func (emailer *Emailer) constructWelcome(username string, expiry time.Time, app *appContext, noSub bool) (*Email, error) {
-	email := &Email{
+func (emailer *Emailer) constructWelcome(username string, expiry time.Time, app *appContext, noSub bool) (*Message, error) {
+	email := &Message{
 		Subject: app.config.Section("welcome_email").Key("subject").MustString(emailer.lang.WelcomeEmail.get("title")),
 	}
 	var err error
@@ -708,7 +741,7 @@ func (emailer *Emailer) constructWelcome(username string, expiry time.Time, app 
 		)
 		email, err = emailer.constructTemplate(email.Subject, content, app)
 	} else {
-		email.HTML, email.Text, err = emailer.construct(app, "welcome_email", "email_", template)
+		email.HTML, email.Text, email.Markdown, err = emailer.construct(app, "welcome_email", "email_", template)
 	}
 	if err != nil {
 		return nil, err
@@ -723,13 +756,13 @@ func (emailer *Emailer) userExpiredValues(app *appContext, noSub bool) map[strin
 		"message":               "",
 	}
 	if !noSub {
-		template["message"] = app.config.Section("email").Key("message").String()
+		template["message"] = app.config.Section("messages").Key("message").String()
 	}
 	return template
 }
 
-func (emailer *Emailer) constructUserExpired(app *appContext, noSub bool) (*Email, error) {
-	email := &Email{
+func (emailer *Emailer) constructUserExpired(app *appContext, noSub bool) (*Message, error) {
+	email := &Message{
 		Subject: app.config.Section("user_expiry").Key("subject").MustString(emailer.lang.UserExpired.get("title")),
 	}
 	var err error
@@ -743,7 +776,7 @@ func (emailer *Emailer) constructUserExpired(app *appContext, noSub bool) (*Emai
 		)
 		email, err = emailer.constructTemplate(email.Subject, content, app)
 	} else {
-		email.HTML, email.Text, err = emailer.construct(app, "user_expiry", "email_", template)
+		email.HTML, email.Text, email.Markdown, err = emailer.construct(app, "user_expiry", "email_", template)
 	}
 	if err != nil {
 		return nil, err
@@ -752,6 +785,31 @@ func (emailer *Emailer) constructUserExpired(app *appContext, noSub bool) (*Emai
 }
 
 // calls the send method in the underlying emailClient.
-func (emailer *Emailer) send(email *Email, address ...string) error {
-	return emailer.sender.send(emailer.fromName, emailer.fromAddr, email, address...)
+func (emailer *Emailer) send(email *Message, address ...string) error {
+	return emailer.sender.Send(emailer.fromName, emailer.fromAddr, email, address...)
+}
+
+func (app *appContext) sendByID(email *Message, ID ...string) error {
+	for _, id := range ID {
+		var err error
+		if tgChat, ok := app.storage.telegram[id]; ok && tgChat.Contact && telegramEnabled {
+			err = app.telegram.Send(email, tgChat.ChatID)
+		} else if address, ok := app.storage.emails[id]; ok {
+			err = app.email.send(email, address.(string))
+		}
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (app *appContext) getAddressOrName(jfID string) string {
+	if tgChat, ok := app.storage.telegram[jfID]; ok && tgChat.Contact && telegramEnabled {
+		return "@" + tgChat.Username
+	}
+	if addr, ok := app.storage.emails[jfID]; ok {
+		return addr.(string)
+	}
+	return ""
 }

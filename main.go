@@ -93,6 +93,7 @@ type appContext struct {
 	storage          Storage
 	validator        Validator
 	email            *Emailer
+	telegram         *TelegramDaemon
 	info, debug, err logger.Logger
 	host             string
 	port             int
@@ -198,6 +199,12 @@ func start(asDaemon, firstCall bool) {
 	if err := app.loadConfig(); err != nil {
 		app.err.Fatalf("Failed to load config file \"%s\": %v", app.configPath, err)
 	}
+
+	// Some message settings have been moved from "email" to "messages", this will switch them.
+	if app.config.Section("email").Key("use_24h").Value() != "" {
+		app.migrateEmailConfig()
+	}
+
 	app.version = app.config.Section("jellyfin").Key("version").String()
 	// read from config...
 	debugMode = app.config.Section("ui").Key("debug").MustBool(false)
@@ -257,6 +264,7 @@ func start(asDaemon, firstCall bool) {
 	app.storage.lang.FormPath = "form"
 	app.storage.lang.AdminPath = "admin"
 	app.storage.lang.EmailPath = "email"
+	app.storage.lang.TelegramPath = "telegram"
 	app.storage.lang.PasswordResetPath = "pwreset"
 	externalLang := app.config.Section("files").Key("lang_files").MustString("")
 	var err error
@@ -324,6 +332,10 @@ func start(asDaemon, firstCall bool) {
 		app.storage.users_path = app.config.Section("files").Key("users").String()
 		if err := app.storage.loadUsers(); err != nil {
 			app.err.Printf("Failed to load Users: %v", err)
+		}
+		app.storage.telegram_path = app.config.Section("files").Key("telegram_users").String()
+		if err := app.storage.loadTelegramUsers(); err != nil {
+			app.err.Printf("Failed to load Telegram users: %v", err)
 		}
 
 		app.storage.profiles_path = app.config.Section("files").Key("user_profiles").String()
@@ -540,6 +552,16 @@ func start(asDaemon, firstCall bool) {
 
 		if app.config.Section("updates").Key("enabled").MustBool(false) {
 			go app.checkForUpdates()
+		}
+
+		if telegramEnabled {
+			app.telegram, err = newTelegramDaemon(app)
+			if err != nil {
+				app.err.Printf("Failed to authenticate with Telegram: %v", err)
+			} else {
+				go app.telegram.run()
+				defer app.telegram.Shutdown()
+			}
 		}
 	} else {
 		debugMode = false

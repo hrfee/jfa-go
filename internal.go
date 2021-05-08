@@ -13,7 +13,7 @@ const binaryType = "internal"
 //go:embed data data/html data/web data/web/css data/web/js
 var loFS embed.FS
 
-//go:embed lang/common lang/admin lang/email lang/form lang/setup lang/pwreset
+//go:embed lang/common lang/admin lang/email lang/form lang/setup lang/pwreset lang/telegram
 var laFS embed.FS
 
 var langFS rewriteFS

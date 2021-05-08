@@ -17,11 +17,15 @@
         "successContinueButton": "Continue",
         "confirmationRequired": "Email confirmation required",
         "confirmationRequiredMessage": "Please check your email inbox to verify your address.",
-        "yourAccountIsValidUntil": "Your account will be valid until {date}."
+        "yourAccountIsValidUntil": "Your account will be valid until {date}.",
+        "sendPIN": "Send the PIN below to the bot, then come back here to link your account."
     },
     "notifications": {
         "errorUserExists": "User already exists.",
-        "errorInvalidCode": "Invalid invite code."
+        "errorInvalidCode": "Invalid invite code.",
+        "errorTelegramVerification": "Telegram verification required.",
+        "errorInvalidPIN": "Telegram PIN is invalid.",
+        "telegramVerified": "Telegram account verified."
     },
     "validationStrings": {
         "length": {

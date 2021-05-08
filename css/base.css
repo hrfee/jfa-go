@@ -39,6 +39,11 @@
     }
 }
 
+.chip.btn:hover:not([disabled]):not(.textarea),
+.chip.btn:focus:not([disabled]):not(.textarea) {
+    filter: brightness(var(--button-filter-brightness,95%));
+}
+
 .banner {
     margin: calc(-1 * var(--spacing-4,1rem));
 }
@@ -121,6 +126,10 @@ div.card:contains(section.banner.footer) {
     text-align: right;
 }
 
+.ac {
+    text-align: center;
+}
+
 .inline-block {
     display: inline-block;
 }
@@ -161,6 +170,12 @@ div.card:contains(section.banner.footer) {
     flex: 1;
     margin: 0.5rem;
 }
+
+p.sm,
+span.sm {
+    font-size: 0.75rem;
+}
+
 
 .col.sm {
     margin: .25rem;
@@ -457,6 +472,11 @@ a:visited:not(.lang-link):not(.\~urge) {
 
 a:hover:not(.lang-link):not(.\~urge), a:active:not(.lang-link):not(.\~urge) {
     color: var(--color-urge-200);
+}
+
+.link-center {
+    display: block;
+    text-align: center;
 }
 
 .search {

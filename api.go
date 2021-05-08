@@ -39,9 +39,9 @@ func respondBool(code int, val bool, gc *gin.Context) {
 }
 
 func (app *appContext) loadStrftime() {
-	app.datePattern = app.config.Section("email").Key("date_format").String()
+	app.datePattern = app.config.Section("messages").Key("date_format").String()
 	app.timePattern = `%H:%M`
-	if val, _ := app.config.Section("email").Key("use_24h").Bool(); !val {
+	if val, _ := app.config.Section("messages").Key("use_24h").Bool(); !val {
 		app.timePattern = `%I:%M %p`
 	}
 	return
@@ -282,7 +282,7 @@ func (app *appContext) NewUserAdmin(gc *gin.Context) {
 		}
 	}
 	app.jf.CacheExpiry = time.Now()
-	if app.config.Section("password_resets").Key("enabled").MustBool(false) {
+	if emailEnabled {
 		app.storage.emails[id] = req.Email
 		app.storage.storeEmails()
 	}
@@ -330,15 +330,44 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 		success = false
 		return
 	}
+	telegramTokenIndex := -1
+	if telegramEnabled {
+		if req.TelegramPIN == "" {
+			if app.config.Section("telegram").Key("required").MustBool(false) {
+				f = func(gc *gin.Context) {
+					app.debug.Printf("%s: New user failed: Telegram verification not completed", req.Code)
+					respond(401, "errorTelegramVerification", gc)
+				}
+				success = false
+				return
+			}
+		} else {
+			for i, v := range app.telegram.verifiedTokens {
+				if v.Token == req.TelegramPIN {
+					telegramTokenIndex = i
+					break
+				}
+			}
+			if telegramTokenIndex == -1 {
+				f = func(gc *gin.Context) {
+					app.debug.Printf("%s: New user failed: Telegram PIN was invalid", req.Code)
+					respond(401, "errorInvalidPIN", gc)
+				}
+				success = false
+				return
+			}
+		}
+	}
 	if emailEnabled && app.config.Section("email_confirmation").Key("enabled").MustBool(false) && !confirmed {
 		claims := jwt.MapClaims{
-			"valid":    true,
-			"invite":   req.Code,
-			"email":    req.Email,
-			"username": req.Username,
-			"password": req.Password,
-			"exp":      strconv.FormatInt(time.Now().Add(time.Hour*12).Unix(), 10),
-			"type":     "confirmation",
+			"valid":       true,
+			"invite":      req.Code,
+			"email":       req.Email,
+			"username":    req.Username,
+			"password":    req.Password,
+			"telegramPIN": req.TelegramPIN,
+			"exp":         strconv.FormatInt(time.Now().Add(time.Hour*12).Unix(), 10),
+			"type":        "confirmation",
 		}
 		tk := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 		key, err := tk.SignedString([]byte(os.Getenv("JFA_SECRET")))
@@ -450,15 +479,40 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 			app.err.Printf("Failed to store user duration: %v", err)
 		}
 	}
-	if emailEnabled && app.config.Section("welcome_email").Key("enabled").MustBool(false) && req.Email != "" {
-		app.debug.Printf("%s: Sending welcome email to %s", req.Username, req.Email)
+
+	if telegramEnabled && telegramTokenIndex != -1 {
+		tgToken := app.telegram.verifiedTokens[telegramTokenIndex]
+		tgUser := TelegramUser{
+			ChatID:   tgToken.ChatID,
+			Username: tgToken.Username,
+			Contact:  req.TelegramContact,
+		}
+		if lang, ok := app.telegram.languages[tgToken.ChatID]; ok {
+			tgUser.Lang = lang
+		}
+		if app.storage.telegram == nil {
+			app.storage.telegram = map[string]TelegramUser{}
+		}
+		app.storage.telegram[user.ID] = tgUser
+		err := app.storage.storeTelegramUsers()
+		if err != nil {
+			app.err.Printf("Failed to store Telegram users: %v", err)
+		} else {
+			app.telegram.verifiedTokens[len(app.telegram.verifiedTokens)-1], app.telegram.verifiedTokens[telegramTokenIndex] = app.telegram.verifiedTokens[telegramTokenIndex], app.telegram.verifiedTokens[len(app.telegram.verifiedTokens)-1]
+			app.telegram.verifiedTokens = app.telegram.verifiedTokens[:len(app.telegram.verifiedTokens)-1]
+		}
+	}
+
+	if (emailEnabled && app.config.Section("welcome_email").Key("enabled").MustBool(false) && req.Email != "") || telegramTokenIndex != -1 {
+		name := app.getAddressOrName(user.ID)
+		app.debug.Printf("%s: Sending welcome message to %s", req.Username, name)
 		msg, err := app.email.constructWelcome(req.Username, expiry, app, false)
 		if err != nil {
-			app.err.Printf("%s: Failed to construct welcome email: %v", req.Username, err)
-		} else if err := app.email.send(msg, req.Email); err != nil {
-			app.err.Printf("%s: Failed to send welcome email: %v", req.Username, err)
+			app.err.Printf("%s: Failed to construct welcome message: %v", req.Username, err)
+		} else if err := app.sendByID(msg, user.ID); err != nil {
+			app.err.Printf("%s: Failed to send welcome message: %v", req.Username, err)
 		} else {
-			app.info.Printf("%s: Sent welcome email to \"%s\"", req.Username, req.Email)
+			app.info.Printf("%s: Sent welcome message to \"%s\"", req.Username, name)
 		}
 	}
 	app.jf.CacheExpiry = time.Now()
@@ -525,7 +579,20 @@ func (app *appContext) EnableDisableUsers(gc *gin.Context) {
 		"GetUser":   map[string]string{},
 		"SetPolicy": map[string]string{},
 	}
-	var addresses []string
+	sendMail := messagesEnabled
+	var msg *Message
+	var err error
+	if sendMail {
+		if req.Enabled {
+			msg, err = app.email.constructEnabled(req.Reason, app, false)
+		} else {
+			msg, err = app.email.constructDisabled(req.Reason, app, false)
+		}
+		if err != nil {
+			app.err.Printf("Failed to construct account enabled/disabled emails: %v", err)
+			sendMail = false
+		}
+	}
 	for _, userID := range req.Users {
 		user, status, err := app.jf.UserByID(userID, false)
 		if status != 200 || err != nil {
@@ -540,30 +607,12 @@ func (app *appContext) EnableDisableUsers(gc *gin.Context) {
 			app.err.Printf("Failed to set policy for user \"%s\" (%d): %v", userID, status, err)
 			continue
 		}
-		if emailEnabled && req.Notify {
-			addr, ok := app.storage.emails[userID]
-			if addr != nil && ok {
-				addresses = append(addresses, addr.(string))
+		if sendMail && req.Notify {
+			if err := app.sendByID(msg, userID); err != nil {
+				app.err.Printf("Failed to send account enabled/disabled email: %v", err)
+				continue
 			}
 		}
-	}
-	if len(addresses) != 0 {
-		go func(reason string, addresses []string) {
-			var msg *Email
-			var err error
-			if req.Enabled {
-				msg, err = app.email.constructEnabled(reason, app, false)
-			} else {
-				msg, err = app.email.constructDisabled(reason, app, false)
-			}
-			if err != nil {
-				app.err.Printf("Failed to construct account enabled/disabled emails: %v", err)
-			} else if err := app.email.send(msg, addresses...); err != nil {
-				app.err.Printf("Failed to send account enabled/disabled emails: %v", err)
-			} else {
-				app.info.Println("Sent account enabled/disabled emails")
-			}
-		}(req.Reason, addresses)
 	}
 	app.jf.CacheExpiry = time.Now()
 	if len(errors["GetUser"]) != 0 || len(errors["SetPolicy"]) != 0 {
@@ -584,10 +633,19 @@ func (app *appContext) EnableDisableUsers(gc *gin.Context) {
 // @tags Users
 func (app *appContext) DeleteUsers(gc *gin.Context) {
 	var req deleteUserDTO
-	var addresses []string
 	gc.BindJSON(&req)
 	errors := map[string]string{}
 	ombiEnabled := app.config.Section("ombi").Key("enabled").MustBool(false)
+	sendMail := messagesEnabled
+	var msg *Message
+	var err error
+	if sendMail {
+		msg, err = app.email.constructDeleted(req.Reason, app, false)
+		if err != nil {
+			app.err.Printf("Failed to construct account deletion emails: %v", err)
+			sendMail = false
+		}
+	}
 	for _, userID := range req.Users {
 		if ombiEnabled {
 			ombiUser, code, err := app.getOmbiUser(userID)
@@ -610,24 +668,11 @@ func (app *appContext) DeleteUsers(gc *gin.Context) {
 				errors[userID] += msg
 			}
 		}
-		if emailEnabled && req.Notify {
-			addr, ok := app.storage.emails[userID]
-			if addr != nil && ok {
-				addresses = append(addresses, addr.(string))
+		if sendMail && req.Notify {
+			if err := app.sendByID(msg, userID); err != nil {
+				app.err.Printf("Failed to send account deletion email: %v", err)
 			}
 		}
-	}
-	if len(addresses) != 0 {
-		go func(reason string, addresses []string) {
-			msg, err := app.email.constructDeleted(reason, app, false)
-			if err != nil {
-				app.err.Printf("Failed to construct account deletion emails: %v", err)
-			} else if err := app.email.send(msg, addresses...); err != nil {
-				app.err.Printf("Failed to send account deletion emails: %v", err)
-			} else {
-				app.info.Println("Sent account deletion emails")
-			}
-		}(req.Reason, addresses)
 	}
 	app.jf.CacheExpiry = time.Now()
 	if len(errors) == len(req.Users) {
@@ -685,29 +730,21 @@ func (app *appContext) ExtendExpiry(gc *gin.Context) {
 func (app *appContext) Announce(gc *gin.Context) {
 	var req announcementDTO
 	gc.BindJSON(&req)
-	if !emailEnabled {
+	if !messagesEnabled {
 		respondBool(400, false, gc)
 		return
 	}
-	addresses := []string{}
-	for _, userID := range req.Users {
-		addr, ok := app.storage.emails[userID]
-		if !ok || addr == "" {
-			continue
-		}
-		addresses = append(addresses, addr.(string))
-	}
 	msg, err := app.email.constructTemplate(req.Subject, req.Message, app)
 	if err != nil {
-		app.err.Printf("Failed to construct announcement emails: %v", err)
+		app.err.Printf("Failed to construct announcement messages: %v", err)
 		respondBool(500, false, gc)
 		return
-	} else if err := app.email.send(msg, addresses...); err != nil {
-		app.err.Printf("Failed to send announcement emails: %v", err)
+	} else if err := app.sendByID(msg, req.Users...); err != nil {
+		app.err.Printf("Failed to send announcement messages: %v", err)
 		respondBool(500, false, gc)
 		return
 	}
-	app.info.Printf("Sent announcement email to %d users", len(addresses))
+	app.info.Println("Sent announcement messages")
 	respondBool(200, true, gc)
 }
 
@@ -1137,7 +1174,10 @@ func (app *appContext) GetUsers(gc *gin.Context) {
 		if ok {
 			user.Expiry = expiry.Unix()
 		}
-
+		if tgUser, ok := app.storage.telegram[jfUser.ID]; ok {
+			user.Telegram = tgUser.Username
+			user.NotifyThroughTelegram = tgUser.Contact
+		}
 		resp.UserList[i] = user
 		i++
 	}
@@ -1345,6 +1385,10 @@ func (app *appContext) GetConfig(gc *gin.Context) {
 	el := resp.Sections["email"].Settings["language"]
 	el.Options = emailOptions
 	el.Value = app.config.Section("email").Key("language").MustString("en-us")
+	telegramOptions := app.storage.lang.Email.getOptions()
+	tl := resp.Sections["telegram"].Settings["language"]
+	tl.Options = telegramOptions
+	tl.Value = app.config.Section("telegram").Key("language").MustString("en-us")
 	if updater == "" {
 		delete(resp.Sections, "updates")
 		for i, v := range resp.Order {
@@ -1373,6 +1417,7 @@ func (app *appContext) GetConfig(gc *gin.Context) {
 	resp.Sections["ui"].Settings["language-admin"] = al
 	resp.Sections["email"].Settings["language"] = el
 	resp.Sections["password_resets"].Settings["language"] = pl
+	resp.Sections["telegram"].Settings["language"] = tl
 
 	gc.JSON(200, resp)
 }
@@ -1397,6 +1442,9 @@ func (app *appContext) ModifyConfig(gc *gin.Context) {
 				tempConfig.NewSection(section)
 			}
 			for setting, value := range settings.(map[string]interface{}) {
+				if section == "email" && setting == "method" && value == "disabled" {
+					value = ""
+				}
 				if value.(string) != app.config.Section(section).Key(setting).MustString("") {
 					tempConfig.Section(section).Key(setting).SetValue(value.(string))
 				}
@@ -1438,6 +1486,7 @@ func (app *appContext) ModifyConfig(gc *gin.Context) {
 // @Param lang query string false "Language for email titles."
 // @Success 200 {object} emailListDTO
 // @Router /config/emails [get]
+// @Security Bearer
 // @tags Configuration
 func (app *appContext) GetCustomEmails(gc *gin.Context) {
 	lang := gc.Query("lang")
@@ -1466,6 +1515,7 @@ func (app *appContext) GetCustomEmails(gc *gin.Context) {
 // @Failure 500 {object} boolResponse
 // @Param id path string true "ID of email"
 // @Router /config/emails/{id} [post]
+// @Security Bearer
 // @tags Configuration
 func (app *appContext) SetCustomEmail(gc *gin.Context) {
 	var req customEmail
@@ -1525,6 +1575,7 @@ func (app *appContext) SetCustomEmail(gc *gin.Context) {
 // @Param enable/disable path string true "enable/disable"
 // @Param id path string true "ID of email"
 // @Router /config/emails/{id}/state/{enable/disable} [post]
+// @Security Bearer
 // @tags Configuration
 func (app *appContext) SetCustomEmailState(gc *gin.Context) {
 	id := gc.Param("id")
@@ -1574,13 +1625,14 @@ func (app *appContext) SetCustomEmailState(gc *gin.Context) {
 // @Failure 500 {object} boolResponse
 // @Param id path string true "ID of email"
 // @Router /config/emails/{id} [get]
+// @Security Bearer
 // @tags Configuration
 func (app *appContext) GetCustomEmailTemplate(gc *gin.Context) {
 	lang := app.storage.lang.chosenEmailLang
 	id := gc.Param("id")
 	var content string
 	var err error
-	var msg *Email
+	var msg *Message
 	var variables []string
 	var conditionals []string
 	var values map[string]interface{}
@@ -1762,6 +1814,7 @@ func (app *appContext) GetCustomEmailTemplate(gc *gin.Context) {
 // @Produce json
 // @Success 200 {object} checkUpdateDTO
 // @Router /config/update [get]
+// @Security Bearer
 // @tags Configuration
 func (app *appContext) CheckUpdate(gc *gin.Context) {
 	if !app.newUpdate {
@@ -1776,6 +1829,7 @@ func (app *appContext) CheckUpdate(gc *gin.Context) {
 // @Success 400 {object} stringResponse
 // @Success 500 {object} boolResponse
 // @Router /config/update [post]
+// @Security Bearer
 // @tags Configuration
 func (app *appContext) ApplyUpdate(gc *gin.Context) {
 	if !app.update.CanUpdate {
@@ -1801,6 +1855,7 @@ func (app *appContext) ApplyUpdate(gc *gin.Context) {
 // @Success 200 {object} boolResponse
 // @Failure 500 {object} stringResponse
 // @Router /logout [post]
+// @Security Bearer
 // @tags Other
 func (app *appContext) Logout(gc *gin.Context) {
 	cookie, err := gc.Cookie("refresh")
@@ -1874,8 +1929,162 @@ func (app *appContext) ServeLang(gc *gin.Context) {
 	respondBool(400, false, gc)
 }
 
+// @Summary Returns a new Telegram verification PIN, and the bot username.
+// @Produce json
+// @Success 200 {object} telegramPinDTO
+// @Router /telegram/pin [get]
+// @Security Bearer
+// @tags Other
+func (app *appContext) TelegramGetPin(gc *gin.Context) {
+	gc.JSON(200, telegramPinDTO{
+		Token:    app.telegram.NewAuthToken(),
+		Username: app.telegram.username,
+	})
+}
+
+// @Summary Link a Jellyfin & Telegram user together via a verification PIN.
+// @Produce json
+// @Param telegramSetDTO body telegramSetDTO true "Token and user's Jellyfin ID."
+// @Success 200 {object} boolResponse
+// @Failure 500 {object} boolResponse
+// @Failure 400 {object} boolResponse
+// @Router /users/telegram [post]
+// @Security Bearer
+// @tags Other
+func (app *appContext) TelegramAddUser(gc *gin.Context) {
+	var req telegramSetDTO
+	gc.BindJSON(&req)
+	if req.Token == "" || req.ID == "" {
+		respondBool(400, false, gc)
+		return
+	}
+	tokenIndex := -1
+	for i, v := range app.telegram.verifiedTokens {
+		if v.Token == req.Token {
+			tokenIndex = i
+			break
+		}
+	}
+	if tokenIndex == -1 {
+		respondBool(500, false, gc)
+		return
+	}
+	tgToken := app.telegram.verifiedTokens[tokenIndex]
+	tgUser := TelegramUser{
+		ChatID:   tgToken.ChatID,
+		Username: tgToken.Username,
+		Contact:  true,
+	}
+	if lang, ok := app.telegram.languages[tgToken.ChatID]; ok {
+		tgUser.Lang = lang
+	}
+	if app.storage.telegram == nil {
+		app.storage.telegram = map[string]TelegramUser{}
+	}
+	app.storage.telegram[req.ID] = tgUser
+	err := app.storage.storeTelegramUsers()
+	if err != nil {
+		app.err.Printf("Failed to store Telegram users: %v", err)
+	} else {
+		app.telegram.verifiedTokens[len(app.telegram.verifiedTokens)-1], app.telegram.verifiedTokens[tokenIndex] = app.telegram.verifiedTokens[tokenIndex], app.telegram.verifiedTokens[len(app.telegram.verifiedTokens)-1]
+		app.telegram.verifiedTokens = app.telegram.verifiedTokens[:len(app.telegram.verifiedTokens)-1]
+	}
+	respondBool(200, true, gc)
+}
+
+// @Summary Sets whether to notify a user through telegram or not.
+// @Produce json
+// @Param telegramNotifyDTO body telegramNotifyDTO true "User's Jellyfin ID and whether or not to notify then through Telegram."
+// @Success 200 {object} boolResponse
+// @Success 400 {object} boolResponse
+// @Success 500 {object} boolResponse
+// @Router /users/telegram/notify [post]
+// @Security Bearer
+// @tags Other
+func (app *appContext) TelegramSetNotify(gc *gin.Context) {
+	var req telegramNotifyDTO
+	gc.BindJSON(&req)
+	if req.ID == "" {
+		respondBool(400, false, gc)
+		return
+	}
+	if tgUser, ok := app.storage.telegram[req.ID]; ok {
+		tgUser.Contact = req.Enabled
+		app.storage.telegram[req.ID] = tgUser
+		if err := app.storage.storeTelegramUsers(); err != nil {
+			respondBool(500, false, gc)
+			app.err.Printf("Telegram: Failed to store users: %v", err)
+			return
+		}
+		respondBool(200, true, gc)
+		msg := ""
+		if !req.Enabled {
+			msg = "not"
+		}
+		app.debug.Printf("Telegram: User \"%s\" will %s be notified through Telegram.", tgUser.Username, msg)
+		return
+	}
+	app.err.Printf("Telegram: User \"%s\" does not have a telegram account registered.", req.ID)
+	respondBool(400, false, gc)
+}
+
+// @Summary Returns true/false on whether or not a telegram PIN was verified. Requires bearer auth.
+// @Produce json
+// @Success 200 {object} boolResponse
+// @Param pin path string true "PIN code to check"
+// @Router /telegram/verified/{pin} [get]
+// @Security Bearer
+// @tags Other
+func (app *appContext) TelegramVerified(gc *gin.Context) {
+	pin := gc.Param("pin")
+	tokenIndex := -1
+	for i, v := range app.telegram.verifiedTokens {
+		if v.Token == pin {
+			tokenIndex = i
+			break
+		}
+	}
+	// if tokenIndex != -1 {
+	// 	length := len(app.telegram.verifiedTokens)
+	// 	app.telegram.verifiedTokens[length-1], app.telegram.verifiedTokens[tokenIndex] = app.telegram.verifiedTokens[tokenIndex], app.telegram.verifiedTokens[length-1]
+	// 	app.telegram.verifiedTokens = app.telegram.verifiedTokens[:length-1]
+	// }
+	respondBool(200, tokenIndex != -1, gc)
+}
+
+// @Summary Returns true/false on whether or not a telegram PIN was verified. Requires invite code.
+// @Produce json
+// @Success 200 {object} boolResponse
+// @Success 401 {object} boolResponse
+// @Param pin path string true "PIN code to check"
+// @Param invCode path string true "invite Code"
+// @Router /invite/{invCode}/telegram/verified/{pin} [get]
+// @tags Other
+func (app *appContext) TelegramVerifiedInvite(gc *gin.Context) {
+	code := gc.Param("invCode")
+	if _, ok := app.storage.invites[code]; !ok {
+		respondBool(401, false, gc)
+		return
+	}
+	pin := gc.Param("pin")
+	tokenIndex := -1
+	for i, v := range app.telegram.verifiedTokens {
+		if v.Token == pin {
+			tokenIndex = i
+			break
+		}
+	}
+	// if tokenIndex != -1 {
+	// 	length := len(app.telegram.verifiedTokens)
+	// 	app.telegram.verifiedTokens[length-1], app.telegram.verifiedTokens[tokenIndex] = app.telegram.verifiedTokens[tokenIndex], app.telegram.verifiedTokens[length-1]
+	// 	app.telegram.verifiedTokens = app.telegram.verifiedTokens[:length-1]
+	// }
+	respondBool(200, tokenIndex != -1, gc)
+}
+
 // @Summary Restarts the program. No response means success.
 // @Router /restart [post]
+// @Security Bearer
 // @tags Other
 func (app *appContext) restart(gc *gin.Context) {
 	app.info.Println("Restarting...")

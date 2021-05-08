@@ -17,11 +17,12 @@ jfa-go is a user management app for [Jellyfin](https://github.com/jellyfin/jelly
 * ⌛ User expiry: Specify a validity period, and new users accounts will be disabled/deleted after it. The period can be manually extended too.
 * 🔗 Ombi Integration: Automatically creates Ombi accounts for new users using their email address and login details, and your own defined set of permissions.
 * Account management: Apply settings to your users individually or en masse, and delete users, optionally sending them an email notification with a reason.
+* Telegram Integration: Verify users via telegram, and send Password Resets, Announcements, etc. through it.
 * 📨 Email storage: Add your existing users email addresses through the UI, and jfa-go will ask new users for them on account creation.
     * Email addresses can optionally be used instead of usernames
-* 🔑 Password resets: When users forget their passwords and request a change in Jellyfin, jfa-go reads the PIN from the created file and sends it straight to the user via email.
+* 🔑 Password resets: When users forget their passwords and request a change in Jellyfin, jfa-go reads the PIN from the created file and sends it straight to the user via email/telegram.
 * Notifications: Get notified when someone creates an account, or an invite expires.
-* 📣 Announcements: Bulk email your users with announcements about your server.
+* 📣 Announcements: Bulk message your users with announcements about your server.
 * Authentication via Jellyfin: Instead of using separate credentials for jfa-go and Jellyfin, jfa-go can use it as the authentication provider.
     * Enables the usage of jfa-go by multiple people
 * 🌓 Customizations

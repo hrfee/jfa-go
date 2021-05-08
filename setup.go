@@ -29,7 +29,7 @@ func (app *appContext) ServeSetup(gc *gin.Context) {
 			"success_message": app.config.Section("ui").Key("success_message").String(),
 		},
 		"email": {
-			"message": app.config.Section("email").Key("message").String(),
+			"message": app.config.Section("messages").Key("message").String(),
 		},
 	}
 	msg, err := json.Marshal(messages)

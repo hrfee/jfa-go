@@ -116,20 +116,21 @@ func (app *appContext) AdminPage(gc *gin.Context) {
 	}
 	license = string(l)
 	gcHTML(gc, http.StatusOK, "admin.html", gin.H{
-		"urlBase":         app.getURLBase(gc),
-		"cssClass":        app.cssClass,
-		"contactMessage":  "",
-		"email_enabled":   emailEnabled,
-		"notifications":   notificationsEnabled,
-		"version":         version,
-		"commit":          commit,
-		"ombiEnabled":     ombiEnabled,
-		"username":        !app.config.Section("email").Key("no_username").MustBool(false),
-		"strings":         app.storage.lang.Admin[lang].Strings,
-		"quantityStrings": app.storage.lang.Admin[lang].QuantityStrings,
-		"language":        app.storage.lang.Admin[lang].JSON,
-		"langName":        lang,
-		"license":         license,
+		"urlBase":          app.getURLBase(gc),
+		"cssClass":         app.cssClass,
+		"contactMessage":   "",
+		"email_enabled":    emailEnabled,
+		"telegram_enabled": telegramEnabled,
+		"notifications":    notificationsEnabled,
+		"version":          version,
+		"commit":           commit,
+		"ombiEnabled":      ombiEnabled,
+		"username":         !app.config.Section("email").Key("no_username").MustBool(false),
+		"strings":          app.storage.lang.Admin[lang].Strings,
+		"quantityStrings":  app.storage.lang.Admin[lang].QuantityStrings,
+		"language":         app.storage.lang.Admin[lang].JSON,
+		"langName":         lang,
+		"license":          license,
 	})
 }
 
@@ -259,7 +260,7 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 	if strings.Contains(email, "Failed") {
 		email = ""
 	}
-	gcHTML(gc, http.StatusOK, "form-loader.html", gin.H{
+	data := gin.H{
 		"urlBase":           app.getURLBase(gc),
 		"cssClass":          app.cssClass,
 		"contactMessage":    app.config.Section("ui").Key("contact_message").String(),
@@ -282,7 +283,15 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 		"userExpiryMinutes": inv.UserMinutes,
 		"userExpiryMessage": app.storage.lang.Form[lang].Strings.get("yourAccountIsValidUntil"),
 		"langName":          lang,
-	})
+		"telegramEnabled":   telegramEnabled,
+	}
+	if data["telegramEnabled"].(bool) {
+		data["telegramPIN"] = app.telegram.NewAuthToken()
+		data["telegramUsername"] = app.telegram.username
+		data["telegramURL"] = app.telegram.link
+		data["telegramRequired"] = app.config.Section("telegram").Key("required").MustBool(false)
+	}
+	gcHTML(gc, http.StatusOK, "form-loader.html", data)
 }
 
 func (app *appContext) NoRouteHandler(gc *gin.Context) {

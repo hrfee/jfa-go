@@ -15,18 +15,26 @@ import (
 )
 
 type Storage struct {
-	timePattern                                                                                                                           string
-	invite_path, emails_path, policy_path, configuration_path, displayprefs_path, ombi_path, profiles_path, customEmails_path, users_path string
-	users                                                                                                                                 map[string]time.Time
-	invites                                                                                                                               Invites
-	profiles                                                                                                                              map[string]Profile
-	defaultProfile                                                                                                                        string
-	emails, displayprefs, ombi_template                                                                                                   map[string]interface{}
-	customEmails                                                                                                                          customEmails
-	policy                                                                                                                                mediabrowser.Policy
-	configuration                                                                                                                         mediabrowser.Configuration
-	lang                                                                                                                                  Lang
-	invitesLock, usersLock                                                                                                                sync.Mutex
+	timePattern                                                                                                                                          string
+	invite_path, emails_path, policy_path, configuration_path, displayprefs_path, ombi_path, profiles_path, customEmails_path, users_path, telegram_path string
+	users                                                                                                                                                map[string]time.Time
+	invites                                                                                                                                              Invites
+	profiles                                                                                                                                             map[string]Profile
+	defaultProfile                                                                                                                                       string
+	emails, displayprefs, ombi_template                                                                                                                  map[string]interface{}
+	telegram                                                                                                                                             map[string]TelegramUser // Map of Jellyfin User IDs to telegram users.
+	customEmails                                                                                                                                         customEmails
+	policy                                                                                                                                               mediabrowser.Policy
+	configuration                                                                                                                                        mediabrowser.Configuration
+	lang                                                                                                                                                 Lang
+	invitesLock, usersLock                                                                                                                               sync.Mutex
+}
+
+type TelegramUser struct {
+	ChatID   int64
+	Username string
+	Lang     string
+	Contact  bool // Whether to contact through telegram or not
 }
 
 type customEmails struct {
@@ -81,23 +89,26 @@ type Invite struct {
 }
 
 type Lang struct {
-	AdminPath         string
-	chosenAdminLang   string
-	Admin             adminLangs
-	AdminJSON         map[string]string
-	FormPath          string
-	chosenFormLang    string
-	Form              formLangs
-	PasswordResetPath string
-	chosenPWRLang     string
-	PasswordReset     pwrLangs
-	EmailPath         string
-	chosenEmailLang   string
-	Email             emailLangs
-	CommonPath        string
-	Common            commonLangs
-	SetupPath         string
-	Setup             setupLangs
+	AdminPath          string
+	chosenAdminLang    string
+	Admin              adminLangs
+	AdminJSON          map[string]string
+	FormPath           string
+	chosenFormLang     string
+	Form               formLangs
+	PasswordResetPath  string
+	chosenPWRLang      string
+	PasswordReset      pwrLangs
+	EmailPath          string
+	chosenEmailLang    string
+	Email              emailLangs
+	CommonPath         string
+	Common             commonLangs
+	SetupPath          string
+	Setup              setupLangs
+	chosenTelegramLang string
+	TelegramPath       string
+	Telegram           telegramLangs
 }
 
 func (st *Storage) loadLang(filesystems ...fs.FS) (err error) {
@@ -118,6 +129,10 @@ func (st *Storage) loadLang(filesystems ...fs.FS) (err error) {
 		return
 	}
 	err = st.loadLangEmail(filesystems...)
+	if err != nil {
+		return
+	}
+	err = st.loadLangTelegram(filesystems...)
 	return
 }
 
@@ -620,6 +635,83 @@ func (st *Storage) loadLangEmail(filesystems ...fs.FS) error {
 	return nil
 }
 
+func (st *Storage) loadLangTelegram(filesystems ...fs.FS) error {
+	st.lang.Telegram = map[string]telegramLang{}
+	var english telegramLang
+	loadedLangs := make([]map[string]bool, len(filesystems))
+	var load loadLangFunc
+	load = func(fsIndex int, fname string) error {
+		filesystem := filesystems[fsIndex]
+		index := strings.TrimSuffix(fname, filepath.Ext(fname))
+		lang := telegramLang{}
+		f, err := fs.ReadFile(filesystem, FSJoin(st.lang.TelegramPath, fname))
+		if err != nil {
+			return err
+		}
+		if substituteStrings != "" {
+			f = []byte(strings.ReplaceAll(string(f), "Jellyfin", substituteStrings))
+		}
+		err = json.Unmarshal(f, &lang)
+		if err != nil {
+			return err
+		}
+		st.lang.Common.patchCommon(&lang.Strings, index)
+		if fname != "en-us.json" {
+			if lang.Meta.Fallback != "" {
+				fallback, ok := st.lang.Telegram[lang.Meta.Fallback]
+				err = nil
+				if !ok {
+					err = load(fsIndex, lang.Meta.Fallback+".json")
+					fallback = st.lang.Telegram[lang.Meta.Fallback]
+				}
+				if err == nil {
+					loadedLangs[fsIndex][lang.Meta.Fallback+".json"] = true
+					patchLang(&lang.Strings, &fallback.Strings, &english.Strings)
+				}
+			}
+			if (lang.Meta.Fallback != "" && err != nil) || lang.Meta.Fallback == "" {
+				patchLang(&lang.Strings, &english.Strings)
+			}
+		}
+		st.lang.Telegram[index] = lang
+		return nil
+	}
+	engFound := false
+	var err error
+	for i := range filesystems {
+		loadedLangs[i] = map[string]bool{}
+		err = load(i, "en-us.json")
+		if err == nil {
+			engFound = true
+		}
+		loadedLangs[i]["en-us.json"] = true
+	}
+	if !engFound {
+		return err
+	}
+	english = st.lang.Telegram["en-us"]
+	telegramLoaded := false
+	for i := range filesystems {
+		files, err := fs.ReadDir(filesystems[i], st.lang.TelegramPath)
+		if err != nil {
+			continue
+		}
+		for _, f := range files {
+			if !loadedLangs[i][f.Name()] {
+				err = load(i, f.Name())
+				if err == nil {
+					telegramLoaded = true
+					loadedLangs[i][f.Name()] = true
+				}
+			}
+		}
+	}
+	if !telegramLoaded {
+		return err
+	}
+	return nil
+}
+
 type Invites map[string]Invite
 
 func (st *Storage) loadInvites() error {
@@ -663,6 +755,14 @@ func (st *Storage) loadEmails() error {
 
 func (st *Storage) storeEmails() error {
 	return storeJSON(st.emails_path, st.emails)
+}
+
+func (st *Storage) loadTelegramUsers() error {
+	return loadJSON(st.telegram_path, &st.telegram)
+}
+
+func (st *Storage) storeTelegramUsers() error {
+	return storeJSON(st.telegram_path, st.telegram)
 }
 
 func (st *Storage) loadCustomEmails() error {

@@ -1,4 +1,4 @@
-import { _get, _post, _delete, toggleLoader, toDateString } from "../modules/common.js";
+import { _get, _post, _delete, toggleLoader, addLoader, removeLoader, toDateString } from "../modules/common.js";
 import { templateEmail } from "../modules/settings.js";
 import { Marked } from "@ts-stack/markdown";
 import { stripMarkdown } from "../modules/stripmd.js";
@@ -11,6 +11,13 @@ interface User {
     admin: boolean;
     disabled: boolean;
     expiry: number;
+    telegram: string;
+    notify_telegram: boolean;
+}
+
+interface getPinResponse {
+    token: string;
+    username: string;
 }
 
 class user implements User {
@@ -22,6 +29,9 @@ class user implements User {
     private _email: HTMLInputElement;
     private _emailAddress: string;
     private _emailEditButton: HTMLElement;
+    private _telegram: HTMLTableDataCellElement;
+    private _telegramUsername: string;
+    private _notifyTelegram: boolean;
     private _expiry: HTMLTableDataCellElement;
     private _expiryUnix: number;
     private _lastActive: HTMLTableDataCellElement;
@@ -72,6 +82,89 @@ class user implements User {
         }
     }
     
+    get telegram(): string { return this._telegramUsername; }
+    set telegram(u: string) {
+        if (!window.telegramEnabled) return;
+        this._telegramUsername = u;
+        if (u == "") {
+            this._telegram.innerHTML = `<span class="chip btn !low">Add</span>`;
+            (this._telegram.querySelector("span") as HTMLSpanElement).onclick = this._addTelegram;
+        } else {
+            this._telegram.innerHTML = `
+            <a href="https://t.me/${u}" target="_blank">@${u}</a>
+            <i class="icon ri-settings-2-line ml-half dropdown-button"></i>
+            <div class="dropdown manual">
+                <div class="dropdown-display">
+                    <div class="card ~neutral !low">
+                        <span class="supra sm">${window.lang.strings("contactThrough")}</span>
+                        <label class="switch pb-1 mt-half">
+                            <input type="radio" name="accounts-contact-${this.id}" class="accounts-contact-email">
+                            <span>Email</span>
+                        </label>
+                        <label class="switch pb-1">
+                            <input type="radio" name="accounts-contact-${this.id}">
+                            <span>Telegram</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            `;
+            // Javascript is necessary as including the button inside the dropdown would make it too wide to display next to the username.
+            const button = this._telegram.querySelector("i");
+            const dropdown = this._telegram.querySelector("div.dropdown") as HTMLDivElement;
+            const radios = this._telegram.querySelectorAll("input") as NodeListOf<HTMLInputElement>;
+            for (let i = 0; i < radios.length; i++) {
+                radios[i].onclick = this._setTelegramNotify;
+            }
+
+            button.onclick = () => {
+                dropdown.classList.add("selected");
+                document.addEventListener("click", outerClickListener);
+            };
+            const outerClickListener = (event: Event) => {
+                if (!(event.target instanceof HTMLElement && (this._telegram.contains(event.target) || button.contains(event.target)))) {
+                    dropdown.classList.remove("selected");
+                    document.removeEventListener("click", outerClickListener);
+                }
+            };
+        }
+    }
+    
+    get notify_telegram(): boolean { return this._notifyTelegram; }
+    set notify_telegram(s: boolean) {
+        if (!window.telegramEnabled || !this._telegramUsername) return;
+        this._notifyTelegram = s;
+        const radios = this._telegram.querySelectorAll("input") as NodeListOf<HTMLInputElement>;
+        radios[0].checked = !s;
+        radios[1].checked = s;
+    }
+
+    private _setTelegramNotify = () => {
+        const radios = this._telegram.querySelectorAll("input") as NodeListOf<HTMLInputElement>;
+        let send = {
+            id: this.id,
+            enabled: radios[1].checked
+        };
+        _post("/users/telegram/notify", send, (req: XMLHttpRequest) => {
+            if (req.readyState == 4) {
+                if (req.status != 200) {
+                    window.notifications.customError("errorSetTelegramNotify", window.lang.notif("errorSaveSettings"));
+                    radios[0].checked, radios[1].checked= radios[1].checked, radios[0].checked;
+                    return;
+                }
+            }
+        }, false, (req: XMLHttpRequest) => {
+            if (req.status == 0) {
+                window.notifications.connectionError();
+                radios[0].checked, radios[1].checked= radios[1].checked, radios[0].checked;
+                return;
+            } else if (req.status == 401) {
+                radios[0].checked, radios[1].checked= radios[1].checked, radios[0].checked;
+                window.notifications.customError("401Error", window.lang.notif("error401Unauthorized"));
+            }
+        });
+    }
+
     get expiry(): number { return this._expiryUnix; }
     set expiry(unix: number) {
         this._expiryUnix = unix;
@@ -97,13 +190,21 @@ class user implements User {
 
     constructor(user: User) {
         this._row = document.createElement("tr") as HTMLTableRowElement;
-        this._row.innerHTML = `
+        let innerHTML = `
             <td><input type="checkbox" value=""></td>
             <td><span class="accounts-username"></span> <span class="accounts-admin"></span> <span class="accounts-disabled"></span></td>
             <td><i class="icon ri-edit-line accounts-email-edit"></i><span class="accounts-email-container ml-half"></span></td>
-            <td class="accounts-expiry"></td>
-            <td class="accounts-last-active"></td>
         `;
+        if (window.telegramEnabled) {
+            innerHTML += `
+            <td class="accounts-telegram"></td>
+            `;
+        }
+        innerHTML += `
+        <td class="accounts-expiry"></td>
+        <td class="accounts-last-active"></td>
+        `;
+        this._row.innerHTML = innerHTML;
         const emailEditor = `<input type="email" class="input ~neutral !normal stealth-input">`;
         this._check = this._row.querySelector("input[type=checkbox]") as HTMLInputElement;
         this._username = this._row.querySelector(".accounts-username") as HTMLSpanElement;
@@ -111,6 +212,7 @@ class user implements User {
         this._disabled = this._row.querySelector(".accounts-disabled") as HTMLSpanElement;
         this._email = this._row.querySelector(".accounts-email-container") as HTMLInputElement;
         this._emailEditButton = this._row.querySelector(".accounts-email-edit") as HTMLElement;
+        this._telegram = this._row.querySelector(".accounts-telegram") as HTMLTableDataCellElement;
         this._expiry = this._row.querySelector(".accounts-expiry") as HTMLTableDataCellElement;
         this._lastActive = this._row.querySelector(".accounts-last-active") as HTMLTableDataCellElement;
         this._check.onchange = () => { this.selected = this._check.checked; }
@@ -169,14 +271,60 @@ class user implements User {
         });
     }
 
+    private _addTelegram = () => _get("/telegram/pin", null, (req: XMLHttpRequest) => {
+        if (req.readyState == 4 && req.status == 200) {
+            const pin = document.getElementById("telegram-pin");
+            const link = document.getElementById("telegram-link") as HTMLAnchorElement;
+            const username = document.getElementById("telegram-username") as HTMLSpanElement;
+            const waiting = document.getElementById("telegram-waiting") as HTMLSpanElement;
+            let resp = req.response as getPinResponse;
+            pin.textContent = resp.token;
+            link.href = "https://t.me/" + resp.username;
+            username.textContent = resp.username;
+            addLoader(waiting);
+            let modalClosed = false;
+            window.modals.telegram.onclose = () => { 
+                modalClosed = true;
+                removeLoader(waiting);
+            }
+            let send = {
+                token: resp.token,
+                id: this.id
+            };
+            const checkVerified = () => _post("/users/telegram", send, (req: XMLHttpRequest) => {
+                if (req.readyState == 4) {
+                    if (req.status == 200 && req.response["success"] as boolean) {
+                        removeLoader(waiting);
+                        waiting.classList.add("~positive");
+                        waiting.classList.remove("~info");
+                        window.notifications.customSuccess("telegramVerified", window.lang.notif("telegramVerified"));
+                        setTimeout(() => {
+                            window.modals.telegram.close();
+                            waiting.classList.add("~info");
+                            waiting.classList.remove("~positive");
+                        }, 2000);
+                        document.dispatchEvent(new CustomEvent("accounts-reload"));
+                    } else if (!modalClosed) {
+                        setTimeout(checkVerified, 1500);
+                    }
+                }
+            }, true);
+            window.modals.telegram.show();
+            checkVerified();
+        }
+    });
+
+
     update = (user: User) => {
         this.id = user.id;
         this.name = user.name;
         this.email = user.email || "";
+        this.telegram = user.telegram;
         this.last_active = user.last_active;
         this.admin = user.admin;
         this.disabled = user.disabled;
         this.expiry = user.expiry;
+        this.notify_telegram = user.notify_telegram;
     }
 
     asElement = (): HTMLTableRowElement => { return this._row; }
@@ -187,9 +335,6 @@ class user implements User {
         this._row.remove(); 
     }
 }    
-
-
-
 
 export class accountsList {
     private _table = document.getElementById("accounts-list") as HTMLTableSectionElement;
@@ -334,7 +479,7 @@ export class accountsList {
             this._selectAll.checked = false;
             this._modifySettings.classList.add("unfocused");
             this._deleteUser.classList.add("unfocused");
-            if (window.emailEnabled) {
+            if (window.emailEnabled || window.telegramEnabled) {
                 this._announceButton.classList.add("unfocused");
             }
             this._extendExpiry.classList.add("unfocused");
@@ -356,7 +501,7 @@ export class accountsList {
             this._modifySettings.classList.remove("unfocused");
             this._deleteUser.classList.remove("unfocused");
             this._deleteUser.textContent = window.lang.quantity("deleteUser", list.length);
-            if (window.emailEnabled) {
+            if (window.emailEnabled || window.telegramEnabled) {
                 this._announceButton.classList.remove("unfocused");
             }
             let anyNonExpiries = list.length == 0 ? true : false;
@@ -701,6 +846,7 @@ export class accountsList {
         this._selectAll.onchange = () => {
             this.selectAll = this._selectAll.checked;
         };
+        document.addEventListener("accounts-reload", this.reload);
         document.addEventListener("accountCheckEvent", () => { this._checkCount++; this._checkCheckCount(); });
         document.addEventListener("accountUncheckEvent", () => { this._checkCount--; this._checkCheckCount(); });
         this._addUserButton.onclick = window.modals.addUser.toggle;

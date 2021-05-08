@@ -4,6 +4,8 @@ declare interface Modal {
     show: () => void;
     close: (event?: Event) => void;
     toggle: () => void;
+    onopen: (f: () => void) => void;
+    onclose: (f: () => void) => void;
 }
 
 interface ArrayConstructor {
@@ -18,6 +20,7 @@ declare interface Window {
     jfUsers: Array<Object>;
     notificationsEnabled: boolean;
     emailEnabled: boolean;
+    telegramEnabled: boolean;
     ombiEnabled: boolean;
     usernameEnabled: boolean;
     token: string;
@@ -97,6 +100,7 @@ declare interface Modals {
     customizeEmails: Modal;
     extendExpiry: Modal;
     updateInfo: Modal;
+    telegram: Modal;
 }
 
 interface Invite {

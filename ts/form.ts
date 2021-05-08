@@ -1,15 +1,19 @@
 import { Modal } from "./modules/modal.js";
+import { notificationBox, whichAnimationEvent } from "./modules/common.js";
 import { _get, _post, toggleLoader, toDateString } from "./modules/common.js";
 import { loadLangSelector } from "./modules/lang.js";
 
 interface formWindow extends Window {
     validationStrings: pwValStrings;
     invalidPassword: string;
-    modal: Modal;
+    successModal: Modal;
+    telegramModal: Modal;
+    confirmationModal: Modal
     code: string;
     messages: { [key: string]: string };
     confirmation: boolean;
-    confirmationModal: Modal
+    telegramRequired: boolean;
+    telegramPIN: string;
     userExpiryEnabled: boolean;
     userExpiryMonths: number;
     userExpiryDays: number;
@@ -34,7 +38,52 @@ interface pwValStrings {
 
 loadLangSelector("form");
 
-window.modal = new Modal(document.getElementById("modal-success"), true);
+window.notifications = new notificationBox(document.getElementById("notification-box") as HTMLDivElement);
+
+window.animationEvent = whichAnimationEvent();
+
+window.successModal = new Modal(document.getElementById("modal-success"), true);
+
+var telegramVerified = false;
+if (window.telegramEnabled) {
+    window.telegramModal = new Modal(document.getElementById("modal-telegram"), window.telegramRequired);
+    const telegramButton = document.getElementById("link-telegram") as HTMLSpanElement;
+    telegramButton.onclick = () => {
+        const waiting = document.getElementById("telegram-waiting") as HTMLSpanElement;
+        toggleLoader(waiting);
+        window.telegramModal.show();
+        let modalClosed = false;
+        window.telegramModal.onclose = () => {
+            modalClosed = true;
+            toggleLoader(waiting);
+        }
+        const checkVerified = () => _get("/invite/" + window.code + "/telegram/verified/" + window.telegramPIN, null, (req: XMLHttpRequest) => {
+            if (req.readyState == 4) {
+                if (req.status == 401) {
+                    window.telegramModal.close();
+                    window.notifications.customError("invalidCodeError", window.messages["errorInvalidCode"]);
+                    return;
+                } else if (req.status == 200) {
+                    if (req.response["success"] as boolean) {
+                        telegramVerified = true;
+                        waiting.classList.add("~positive");
+                        waiting.classList.remove("~info");
+                        window.notifications.customPositive("telegramVerified", "", window.messages["telegramVerified"]); 
+                        setTimeout(window.telegramModal.close, 2000);
+                        telegramButton.classList.add("unfocused");
+                        document.getElementById("contact-via").classList.remove("unfocused");
+                        const radio = document.getElementById("contact-via-telegram") as HTMLInputElement;
+                        radio.checked = true;
+                    } else if (!modalClosed) {
+                        setTimeout(checkVerified, 1500);
+                    }
+                }
+            }
+        });
+        checkVerified();
+    };
+}
+
 if (window.confirmation) {
     window.confirmationModal = new Modal(document.getElementById("modal-confirmation"), true);
 }
@@ -110,6 +159,8 @@ interface sendDTO {
     email: string;
     username: string;
     password: string;
+    telegram_pin?: string;
+    telegram_contact?: boolean;
 }
 
 const create = (event: SubmitEvent) => {
@@ -121,6 +172,13 @@ const create = (event: SubmitEvent) => {
         email: emailField.value,
         password: passwordField.value
     };
+    if (telegramVerified) {
+        send.telegram_pin = window.telegramPIN;
+        const radio = document.getElementById("contact-via-telegram") as HTMLInputElement;
+        if (radio.checked) {
+            send.telegram_contact = true;
+        }
+    }
     _post("/newUser", send, (req: XMLHttpRequest) => {
         if (req.readyState == 4) {
             let vals = req.response as respDTO;
@@ -130,7 +188,7 @@ const create = (event: SubmitEvent) => {
                 if (!vals[type]) { valid = false; }
             }
             if (req.status == 200 && valid) {
-                window.modal.show();
+                window.successModal.show();
             } else {
                 submitSpan.classList.add("~critical");
                 submitSpan.classList.remove("~urge");

@@ -6,6 +6,7 @@
             window.URLBase = "{{ .urlBase }}";
             window.notificationsEnabled = {{ .notifications }};
             window.emailEnabled = {{ .email_enabled }};
+            window.telegramEnabled = {{ .telegram_enabled }};
             window.ombiEnabled = {{ .ombiEnabled }};
             window.usernameEnabled = {{ .username }};
             window.langFile = JSON.parse({{ .language }});
@@ -179,8 +180,8 @@
         </div>
         <div id="modal-customize" class="modal">
             <div class="modal-content card">
-                <span class="heading">{{ .strings.customizeEmails }} <span class="modal-close">&times;</span></span>
-                <p class="content">{{ .strings.customizeEmailsDescription }}</p>
+                <span class="heading">{{ .strings.customizeMessages }} <span class="modal-close">&times;</span></span>
+                <p class="content">{{ .strings.customizeMessagesDescription }}</p>
                 <div class="table-responsive">
                     <table class="table">
                         <thead>
@@ -308,6 +309,24 @@
                 <span class="button ~urge !normal full-width center" id="update-update">{{ .strings.update }}</span>
             </div>
         </div>
+        {{ if .telegram_enabled }}
+        <div id="modal-telegram" class="modal">
+            <div class="modal-content card">
+                <span class="heading mb-1">{{ .strings.linkTelegram }}</span>
+                <p class="content mb-1">{{ .strings.sendPIN }}</p>
+                <h1 class="ac" id="telegram-pin"></h1>
+                <a class="subheading link-center" id="telegram-link" target="_blank">
+                    <span class="shield ~info mr-1">
+                        <span class="icon">
+                            <i class="ri-telegram-line"></i>
+                        </span>
+                    </span>
+                    &#64;<span id="telegram-username">
+                </a>
+                <span class="button ~info !normal full-width center mt-1" id="telegram-waiting">{{ .strings.success }}</span>
+            </div>
+        </div>
+        {{ end }}
         <div id="notification-box"></div>
         <span class="dropdown" tabindex="0" id="lang-dropdown">
             <span class="button ~urge dropdown-button">
@@ -503,6 +522,9 @@
                                     <th><input type="checkbox" value="" id="accounts-select-all"></th>
                                     <th>{{ .strings.username }}</th>
                                     <th>{{ .strings.emailAddress }}</th>
+                                    {{ if .telegram_enabled }}
+                                    <th>Telegram</th>
+                                    {{ end }}
                                     <th>{{ .strings.expiry }}</th>
                                     <th>{{ .strings.lastActiveTime }}</th>
                                 </tr>
