@@ -32,7 +32,7 @@
         "modifySettings": "Instellingen aanpassen",
         "modifySettingsDescription": "Pas instellingen van een bestaand profiel toe, of neem ze direct over van een gebruiker.",
         "applyHomescreenLayout": "Sla startpagina indeling op",
-        "sendDeleteNotificationEmail": "Stuur meldingse-mail",
+        "sendDeleteNotificationEmail": "Stuur melding",
         "sendDeleteNotifiationExample": "Je account is verwijderd.",
         "settingsRestartRequired": "Herstart nodig",
         "settingsRestartRequiredDescription": "Er is een herstart nodig om de wijzigingen door te voeren. Herstart nu of later?",
@@ -67,7 +67,7 @@
         "settingsRestarting": "Aan het herstarten…",
         "announce": "Aankondiging",
         "markdownSupported": "Markdown wordt ondersteund.",
-        "subject": "E-mailonderwerp",
+        "subject": "Onderwerp",
         "message": "Bericht",
         "variables": "Variabelen",
         "customizeMessagesDescription": "Als je de e-mailsjablonen van jfa-go niet wilt gebruiken, kun je met gebruik van Markdown je eigen aanmaken.",
@@ -92,7 +92,9 @@
         "reEnable": "Opnieuw inschakelen",
         "disable": "Uitschakelen",
         "conditionals": "Voorwaarden",
-        "donate": "Doneer"
+        "donate": "Doneer",
+        "contactThrough": "Stuur bericht via:",
+        "sendPIN": "Vraag de gebruiker om onderstaande pincode naar de bot te sturen."
     },
     "notifications": {
         "changedEmailAddress": "E-mailadres van {n} gewijzigd.",
@@ -120,7 +122,7 @@
         "errorChangedEmailAddress": "Wijzigen van e-mailadres van {n} mislukt.",
         "errorFailureCheckLogs": "Mislukt (controleer console/logbestanden)",
         "errorPartialFailureCheckLogs": "Gedeeltelijke fout (controleer console/logbestanden)",
-        "errorSendWelcomeEmail": "Versturen van welkomste-mail is mislukt (zie console/logs)",
+        "errorSendWelcomeEmail": "Versturen van welkomstbericht is mislukt (zie console/logs)",
         "errorUserCreated": "Aanmaken van gebruiker {n} is mislukt.",
         "sentAnnouncement": "Aankondiging verzonden.",
         "saveEmail": "E-mail opgeslagen.",
@@ -129,7 +131,9 @@
         "errorApplyUpdate": "Installatie van update mislukt, probeer handmatig.",
         "errorCheckUpdate": "Controleren op update mislukt.",
         "updateAvailable": "Er is een nieuwe update beschikbaar, kijk bij instellingen.",
-        "noUpdatesAvailable": "Geen nieuwe updates beschikbaar."
+        "noUpdatesAvailable": "Geen nieuwe updates beschikbaar.",
+        "telegramVerified": "Telegram-account goedgekeurd.",
+        "updateAppliedRefresh": "Update toegepast, ververs alsjeblieft."
     },
     "quantityStrings": {
         "modifySettingsFor": {
