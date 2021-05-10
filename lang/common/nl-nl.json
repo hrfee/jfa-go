@@ -8,12 +8,15 @@
         "password": "Wachtwoord",
         "emailAddress": "E-mailadres",
         "submit": "Verstuur",
-        "success": "Success",
+        "success": "Succes",
         "error": "Fout",
         "copy": "Kopiëer",
         "theme": "Thema",
         "time24h": "24u-formaat",
         "time12h": "12u-formaat",
-        "copied": "Gekopieerd"
+        "copied": "Gekopieerd",
+        "linkTelegram": "Koppel Telegram",
+        "contactEmail": "Stuur e-mailbericht",
+        "contactTelegram": "Stuur Telegram-bericht"
     }
 }
