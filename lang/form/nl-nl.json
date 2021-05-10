@@ -17,7 +17,8 @@
         "successContinueButton": "Doorgaan",
         "confirmationRequired": "Bevestiging van e-mailadres verplicht",
         "confirmationRequiredMessage": "Controleer je e-mail inbox om je adres te bevestigen.",
-        "yourAccountIsValidUntil": "Je account zal geldig zijn tot {date}."
+        "yourAccountIsValidUntil": "Je account zal geldig zijn tot {date}.",
+        "sendPIN": "Stuur onderstaande pincode naar de bot, en kom daarna hier terug om je account te koppelen."
     },
     "validationStrings": {
         "length": {
@@ -43,6 +44,9 @@
     },
     "notifications": {
         "errorUserExists": "Gebruiker bestaat al.",
-        "errorInvalidCode": "Ongeldige uitnodigingscode."
+        "errorInvalidCode": "Ongeldige uitnodigingscode.",
+        "telegramVerified": "Telegram-account goedgekeurd.",
+        "errorTelegramVerification": "Telegram-verificatie nodig.",
+        "errorInvalidPIN": "Telegram pincode is ongeldig."
     }
 }
