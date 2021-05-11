@@ -4,7 +4,7 @@
         "author": "https://github.com/Cornichon420"
     },
     "strings": {
-        "ifItWasNotYou": "Si ce n'était pas toi, tu peux ignorer ce mail.",
+        "ifItWasNotYou": "Si ce n'était pas toi, tu peux ignorer ceci.",
         "reason": "Motif",
         "helloUser": "Salut {username},"
     },
@@ -50,7 +50,7 @@
         "title": "Bienvenue sur Jellyfin",
         "welcome": "Bienvenue sur Jellyfin !",
         "jellyfinURL": "URL",
-        "name": "Courriel de bienvenue",
+        "name": "Bienvenue",
         "yourAccountWillExpire": "Ton compte expirera le {date}."
     },
     "emailConfirmation": {
