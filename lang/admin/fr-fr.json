@@ -34,7 +34,7 @@
         "modifySettings": "Modifier les paramètres",
         "modifySettingsDescription": "Appliquez les paramètres à partir d'un profil existant ou obtenez-les directement auprès d'un utilisateur.",
         "applyHomescreenLayout": "Appliquer la disposition de l'écran d'accueil",
-        "sendDeleteNotificationEmail": "Envoyer un e-mail de notification",
+        "sendDeleteNotificationEmail": "Envoyer un message de notification",
         "sendDeleteNotifiationExample": "Votre compte a été supprimé.",
         "settingsRestartRequired": "Redémarrage nécessaire",
         "settingsRestartRequiredDescription": "Un redémarrage est nécessaire pour appliquer certains paramètres que vous avez modifiés. Redémarrer maintenant ou plus tard ?",
@@ -93,7 +93,9 @@
         "conditionals": "Conditions",
         "userExpiryDescription": "Un laps de temps spécifié après chaque inscription, jfa-go supprimera / désactivera le compte. Vous pouvez modifier ce comportement dans les paramètres.",
         "donate": "Faire un don",
-        "extendExpiry": "Prolonger l'expiration"
+        "extendExpiry": "Prolonger l'expiration",
+        "contactThrough": "Contactez par :",
+        "sendPIN": "Demandez à l'utilisateur d'envoyer le code PIN ci-dessous au bot."
     },
     "notifications": {
         "changedEmailAddress": "Adresse e-mail modifiée de {n}.",
@@ -122,7 +124,7 @@
         "errorFailureCheckLogs": "Échec (vérifier la console / les journaux)",
         "errorPartialFailureCheckLogs": "Panne partielle (vérifier la console / les journaux)",
         "errorUserCreated": "Echec lors de la création de l'utilisateur {n}.",
-        "errorSendWelcomeEmail": "Echec lors de l'envoi du mail de bienvenue (vérifier la console/les journaux)",
+        "errorSendWelcomeEmail": "Echec lors de l'envoi du message de bienvenue (vérifier la console/les journaux)",
         "sentAnnouncement": "Annonce envoyée.",
         "saveEmail": "Email enregistré.",
         "errorSaveEmail": "Échec de l'enregistrement de l'e-mail.",
@@ -130,7 +132,9 @@
         "errorApplyUpdate": "Échec de l'application de la mise à jour, essayez manuellement.",
         "errorCheckUpdate": "Échec de la vérification de la mise à jour.",
         "updateAvailable": "Une nouvelle mise à jour est disponible, vérifiez les paramètres.",
-        "noUpdatesAvailable": "Aucune nouvelle mise à jour disponible."
+        "noUpdatesAvailable": "Aucune nouvelle mise à jour disponible.",
+        "telegramVerified": "Compte Telegram vérifié.",
+        "updateAppliedRefresh": "Mise à jour appliquée, veuillez actualiser."
     },
     "quantityStrings": {
         "modifySettingsFor": {
