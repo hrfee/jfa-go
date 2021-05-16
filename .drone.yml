@@ -20,6 +20,7 @@ steps:
         - apt-get install build-essential python3-pip curl software-properties-common sed upx gcc libgtk-3-dev libappindicator3-dev gcc-mingw-w64-x86-64 -y
         - (curl -sL https://deb.nodesource.com/setup_14.x | bash -)
         - apt-get install nodejs
+
         - curl -sL https://git.io/goreleaser > ../goreleaser
         - chmod +x ../goreleaser
         - ./scripts/version.sh ../goreleaser
@@ -82,7 +83,7 @@ steps:
         - ./scripts/version.sh ./goreleaser --snapshot --skip-publish --rm-dist
         - wget https://builds.hrfee.pw/upload.py
         - pip3 install requests
-        - bash -c 'python3 upload.py https://builds.hrfee.pw hrfee jfa-go --upload ./dist/*.zip --tag internal-git=true'
+        - bash -c 'python3 upload.py https://builds.hrfee.pw hrfee jfa-go --upload ./dist/*.zip ./dist/*.deb ./dist/*.rpm ./dist/*.apk --tag internal-git=true'
       environment:
           BUILDRONE_KEY:
               from_secret: BUILDRONE_KEY

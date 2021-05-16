@@ -40,6 +40,7 @@ builds:
       goarch:
         - arm
         - arm64
+        - amd64
     - id: windows-tray
       dir: ./
       env:
@@ -71,7 +72,7 @@ archives:
     builds:
         - windows-tray
     format: zip
-    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    name_template: "{{ .ProjectName }}_{{ .Version }}_TrayIcon_{{ .Os }}_{{ .Arch }}"
     replacements:
         darwin: macOS
         linux: Linux
@@ -81,7 +82,7 @@ archives:
     builds:
         - linux-tray
     format: zip
-    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    name_template: "{{ .ProjectName }}_{{ .Version }}_TrayIcon_{{ .Os }}_{{ .Arch }}"
     replacements:
         darwin: macOS
         linux: Linux
@@ -91,7 +92,7 @@ archives:
     builds:
         - notray
     format: zip
-    name_template: "{{ .ProjectName }}_{{ .Version }}_noTrayIcon_{{ .Os }}_{{ .Arch }}"
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     replacements:
         darwin: macOS
         linux: Linux
@@ -100,10 +101,56 @@ archives:
 checksum:
     name_template: 'checksums.txt'
 snapshot:
-    name_template: "git-{{.ShortCommit}}"
+    name_template: "0.0.0-{{.ShortCommit}}"
 changelog:
     sort: asc
     filters:
         exclude:
             - '^docs:'
             - '^test:'
+nfpms:
+  - id: notray
+    file_name_template: '{{ .ProjectName }}_{{ .Arch }}_v{{ .Version }}'
+    homepage: https://github.com/hrfee/jfa-go
+    description: A web app for managing users on Jellyfin
+    maintainer: Harvey Tindall <hrfee@hrfee.dev>
+    license: MIT
+    vendor: hrfee.dev
+    version_metadata: git
+    builds:
+      - notray
+    contents:
+      - src: ./LICENSE
+        dst: /usr/share/licenses/jfa-go
+    formats:
+      - apk
+      - deb
+      - rpm
+  - id: tray
+    file_name_template: '{{ .ProjectName }}_Tray_{{ .Arch }}_v{{ .Version }}'
+    homepage: https://github.com/hrfee/jfa-go
+    description: A web app for managing users on Jellyfin
+    maintainer: Harvey Tindall <hrfee@hrfee.dev>
+    license: MIT
+    vendor: hrfee.dev
+    version_metadata: git
+    builds:
+      - linux-tray
+    contents:
+      - src: ./LICENSE
+        dst: /usr/share/licenses/jfa-go
+    formats:
+      - apk
+      - deb
+      - rpm
+    overrides:
+        deb:
+            dependencies:
+                - libappindicator3-1
+        rpm:
+            dependencies:
+                - libappindicator-gtk3
+        apk:
+            dependencies:
+                - libappindicator
+
