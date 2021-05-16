@@ -28,21 +28,71 @@ before:
     - go get -u github.com/swaggo/swag/cmd/swag
     - swag init -g main.go
 builds:
-    - dir: ./
+    - id: notray
+      dir: ./
       env:
         - CGO_ENABLED=0
       ldflags:
         - -s -w -X main.version={{.Env.JFA_GO_VERSION}} -X main.commit={{.ShortCommit}} -X main.updater=binary
       goos:
         - linux
-        - windows
         - darwin
       goarch:
-        - amd64
         - arm
         - arm64
+    - id: windows-tray
+      dir: ./
+      env:
+        - CGO_ENABLED=1
+        - CC=x86_64-w64-mingw32-gcc
+        - CXX=x86_64-w64-mingw32-g++
+      flags:
+        - -tags=tray
+      ldflags:
+        - -s -w -X main.version={{.Env.JFA_GO_VERSION}} -X main.commit={{.ShortCommit}} -X main.updater=binary
+      goos:
+        - windows
+      goarch:
+        - amd64
+    - id: linux-tray
+      dir: ./
+      env:
+        - CGO_ENABLED=1
+      flags:
+        - -tags=tray
+      ldflags:
+        - -s -w -X main.version={{.Env.JFA_GO_VERSION}} -X main.commit={{.ShortCommit}} -X main.updater=binary
+      goos:
+        - linux
+      goarch:
+        - amd64
 archives:
-  - replacements:
+  - id: windows-tray
+    builds:
+        - windows-tray
+    format: zip
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    replacements:
+        darwin: macOS
+        linux: Linux
+        windows: Windows
+        amd64: x86_64
+  - id: linux-tray
+    builds:
+        - linux-tray
+    format: zip
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    replacements:
+        darwin: macOS
+        linux: Linux
+        windows: Windows
+        amd64: x86_64
+  - id: notray
+    builds:
+        - notray
+    format: zip
+    name_template: "{{ .ProjectName }}_{{ .Version }}_noTrayIcon_{{ .Os }}_{{ .Arch }}"
+    replacements:
         darwin: macOS
         linux: Linux
         windows: Windows
