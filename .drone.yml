@@ -82,7 +82,7 @@ steps:
         - ./scripts/version.sh ./goreleaser --snapshot --skip-publish --rm-dist
         - wget https://builds.hrfee.pw/upload.py
         - pip3 install requests
-        - bash -c 'python3 upload.py https://builds.hrfee.pw hrfee jfa-go --upload ./dist/*.tar.gz --tag internal-git=true'
+        - bash -c 'python3 upload.py https://builds.hrfee.pw hrfee jfa-go --upload ./dist/*.zip --tag internal-git=true'
       environment:
           BUILDRONE_KEY:
               from_secret: BUILDRONE_KEY
