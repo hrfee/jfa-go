@@ -27,6 +27,18 @@ else
 	TAGS := -tags external
 endif
 
+TRAY ?= off
+ifeq ($(INTERNAL)$(TRAY), offon)
+	TAGS := $(TAGS) tray
+else ifeq ($(INTERNAL)$(TRAY), onon)
+	TAGS := -tags tray
+endif
+
+OS := $(shell go env GOOS)
+ifeq ($(TRAY)$(OS), onwindows)
+	LDFLAGS := $(LDFLAGS) -H=windowsgui
+endif
+
 DEBUG ?= off
 ifeq ($(DEBUG), on)
 	SOURCEMAP := --sourcemap
@@ -79,7 +91,7 @@ compile:
 	$(GOBINARY) mod download
 	$(info Building)
 	mkdir -p build
-	CGO_ENABLED=0 $(GOBINARY) build -ldflags="$(LDFLAGS)" $(TAGS) -o build/jfa-go
+	$(GOBINARY) build -ldflags="$(LDFLAGS)" $(TAGS) -o build/jfa-go
 
 compress:
 	upx --lzma build/jfa-go

@@ -41,6 +41,8 @@ var (
 	PPROF              *bool
 	TEST               bool
 	SWAGGER            *bool
+	QUIT               = false
+	RUNNING            = false
 	warning            = color.New(color.FgYellow).SprintfFunc()
 	info               = color.New(color.FgMagenta).SprintfFunc()
 	hiwhite            = color.New(color.FgHiWhite).SprintfFunc()
@@ -147,6 +149,8 @@ func test(app *appContext) {
 }
 
 func start(asDaemon, firstCall bool) {
+	RUNNING = true
+	defer func() { RUNNING = false }()
 	// app encompasses essentially all useful functions.
 	app := new(appContext)
 
@@ -618,13 +622,19 @@ func start(asDaemon, firstCall bool) {
 
 func (app *appContext) shutdown() {
 	app.info.Println("Shutting down...")
-
-	cntx, cancel := context.WithTimeout(context.Background(), time.Second*5)
-	defer cancel()
-	if err := SRV.Shutdown(cntx); err != nil {
-		app.err.Fatalf("Server shutdown error: %s", err)
+	QUIT = true
+	RESTART <- true
+	for {
+		if RUNNING {
+			continue
+		}
+		cntx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+		defer cancel()
+		if err := SRV.Shutdown(cntx); err != nil {
+			app.err.Fatalf("Server shutdown error: %s", err)
+		}
+		os.Exit(1)
 	}
-	os.Exit(1)
 }
 
 func flagPassed(name string) (found bool) {
@@ -745,10 +755,15 @@ You can then run:
 		fmt.Print(info("systemctl --user stop jfa-go\n\n"))
 		color.New(color.FgYellow).PrintFunc()("To restart: ")
 		fmt.Print(info("systemctl --user stop jfa-go\n"))
+	} else if TRAY && flagPassed("tray") {
+		RunTray()
 	} else {
 		RESTART = make(chan bool, 1)
 		start(false, true)
 		for {
+			if QUIT {
+				continue
+			}
 			printVersion()
 			start(false, false)
 		}
