@@ -21,7 +21,7 @@
     "@types/node": "^15.0.1",
     "a17t": "^0.4.0",
     "esbuild": "^0.8.57",
-    "lodash": "^4.17.19",
+    "lodash": "^4.17.21",
     "mjml": "^4.8.0",
     "remixicon": "^2.5.0",
     "remove-markdown": "^0.3.0",
