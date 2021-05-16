@@ -29,12 +29,12 @@ endif
 
 DEBUG ?= off
 ifeq ($(DEBUG), on)
-	LDFLAGS := -s -w $(LDFLAGS)
 	SOURCEMAP := --sourcemap
 	TYPECHECK := tsc -noEmit --project ts/tsconfig.json
 	# jank
 	COPYTS := rm -r $(DATA)/web/js/ts; cp -r ts $(DATA)/web/js
 else
+	LDFLAGS := -s -w $(LDFLAGS)
 	SOURCEMAP :=
 	COPYTS :=
 	TYPECHECK :=
@@ -79,7 +79,7 @@ compile:
 	$(GOBINARY) mod download
 	$(info Building)
 	mkdir -p build
-	CGO_ENABLED=0 $(GOBINARY) build -ldflags="-s -w $(LDFLAGS)" $(TAGS) -o build/jfa-go
+	CGO_ENABLED=0 $(GOBINARY) build -ldflags="$(LDFLAGS)" $(TAGS) -o build/jfa-go
 
 compress:
 	upx --lzma build/jfa-go

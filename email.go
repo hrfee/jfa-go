@@ -215,9 +215,8 @@ func (emailer *Emailer) construct(app *appContext, section, keyFragment string, 
 	}
 	var keys []string
 	plaintext := app.config.Section("email").Key("plaintext").MustBool(false)
-	telegram := app.config.Section("telegram").Key("enabled").MustBool(false)
 	if plaintext {
-		if telegram {
+		if telegramEnabled {
 			keys = []string{"text"}
 			text, markdown = "", ""
 		} else {
@@ -225,7 +224,7 @@ func (emailer *Emailer) construct(app *appContext, section, keyFragment string, 
 			text = ""
 		}
 	} else {
-		if telegram {
+		if telegramEnabled {
 			keys = []string{"html", "text", "markdown"}
 		} else {
 			keys = []string{"html", "text"}

@@ -637,10 +637,10 @@ func flagPassed(name string) (found bool) {
 }
 
 // @title jfa-go internal API
-// @version 0.2.0
+// @version 0.3.4
 // @description API for the jfa-go frontend
 // @contact.name Harvey Tindall
-// @contact.email hrfee@protonmail.ch
+// @contact.email hrfee@hrfee.dev
 // @license.name MIT
 // @license.url https://raw.githubusercontent.com/hrfee/jfa-go/main/LICENSE
 // @BasePath /

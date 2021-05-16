@@ -111,66 +111,13 @@ func (t *TelegramDaemon) run() {
 			}
 			switch msg := sects[0]; msg {
 			case "/start":
-				content := t.app.storage.lang.Telegram[lang].Strings.get("startMessage") + "\n"
-				content += t.app.storage.lang.Telegram[lang].Strings.get("languageMessage")
-				err := t.Reply(&upd, content)
-				if err != nil {
-					t.app.err.Printf("Telegram: Failed to send message to \"%s\": %v", upd.Message.From.UserName, err)
-				}
+				t.commandStart(&upd, sects, lang)
 				continue
 			case "/lang":
-				if len(sects) == 1 {
-					list := "/lang <lang>\n"
-					for code := range t.app.storage.lang.Telegram {
-						list += fmt.Sprintf("%s: %s\n", code, t.app.storage.lang.Telegram[code].Meta.Name)
-					}
-					err := t.Reply(&upd, list)
-					if err != nil {
-						t.app.err.Printf("Telegram: Failed to send message to \"%s\": %v", upd.Message.From.UserName, err)
-					}
-					continue
-				}
-				if _, ok := t.app.storage.lang.Telegram[sects[1]]; ok {
-					t.languages[upd.Message.Chat.ID] = sects[1]
-					for jfID, user := range t.app.storage.telegram {
-						if user.ChatID == upd.Message.Chat.ID {
-							user.Lang = sects[1]
-							t.app.storage.telegram[jfID] = user
-							err := t.app.storage.storeTelegramUsers()
-							if err != nil {
-								t.app.err.Printf("Failed to store Telegram users: %v", err)
-							}
-							break
-						}
-					}
-				}
+				t.commandLang(&upd, sects, lang)
 				continue
 			default:
-				tokenIndex := -1
-				for i, token := range t.tokens {
-					if upd.Message.Text == token {
-						tokenIndex = i
-						break
-					}
-				}
-				if tokenIndex == -1 {
-					err := t.QuoteReply(&upd, t.app.storage.lang.Telegram[lang].Strings.get("invalidPIN"))
-					if err != nil {
-						t.app.err.Printf("Telegram: Failed to send message to \"%s\": %v", upd.Message.From.UserName, err)
-					}
-					continue
-				}
-				err := t.QuoteReply(&upd, t.app.storage.lang.Telegram[lang].Strings.get("pinSuccess"))
-				if err != nil {
-					t.app.err.Printf("Telegram: Failed to send message to \"%s\": %v", upd.Message.From.UserName, err)
-				}
-				t.verifiedTokens = append(t.verifiedTokens, VerifiedToken{
-					Token:    upd.Message.Text,
-					ChatID:   upd.Message.Chat.ID,
-					Username: upd.Message.Chat.UserName,
-				})
-				t.tokens[len(t.tokens)-1], t.tokens[tokenIndex] = t.tokens[tokenIndex], t.tokens[len(t.tokens)-1]
-				t.tokens = t.tokens[:len(t.tokens)-1]
+				t.commandPIN(&upd, sects, lang)
 			}
 
 		case <-t.ShutdownChannel:
@@ -217,4 +164,69 @@ func (t *TelegramDaemon) Shutdown() {
 	t.ShutdownChannel <- "Down"
 	<-t.ShutdownChannel
 	close(t.ShutdownChannel)
+}
+
+func (t *TelegramDaemon) commandStart(upd *tg.Update, sects []string, lang string) {
+	content := t.app.storage.lang.Telegram[lang].Strings.get("startMessage") + "\n"
+	content += t.app.storage.lang.Telegram[lang].Strings.get("languageMessage")
+	err := t.Reply(upd, content)
+	if err != nil {
+		t.app.err.Printf("Telegram: Failed to send message to \"%s\": %v", upd.Message.From.UserName, err)
+	}
+}
+
+func (t *TelegramDaemon) commandLang(upd *tg.Update, sects []string, lang string) {
+	if len(sects) == 1 {
+		list := "/lang <lang>\n"
+		for code := range t.app.storage.lang.Telegram {
+			list += fmt.Sprintf("%s: %s\n", code, t.app.storage.lang.Telegram[code].Meta.Name)
+		}
+		err := t.Reply(upd, list)
+		if err != nil {
+			t.app.err.Printf("Telegram: Failed to send message to \"%s\": %v", upd.Message.From.UserName, err)
+		}
+		return
+	}
+	if _, ok := t.app.storage.lang.Telegram[sects[1]]; ok {
+		t.languages[upd.Message.Chat.ID] = sects[1]
+		for jfID, user := range t.app.storage.telegram {
+			if user.ChatID == upd.Message.Chat.ID {
+				user.Lang = sects[1]
+				t.app.storage.telegram[jfID] = user
+				err := t.app.storage.storeTelegramUsers()
+				if err != nil {
+					t.app.err.Printf("Failed to store Telegram users: %v", err)
+				}
+				break
+			}
+		}
+	}
+}
+
+func (t *TelegramDaemon) commandPIN(upd *tg.Update, sects []string, lang string) {
+	tokenIndex := -1
+	for i, token := range t.tokens {
+		if upd.Message.Text == token {
+			tokenIndex = i
+			break
+		}
+	}
+	if tokenIndex == -1 {
+		err := t.QuoteReply(upd, t.app.storage.lang.Telegram[lang].Strings.get("invalidPIN"))
+		if err != nil {
+			t.app.err.Printf("Telegram: Failed to send message to \"%s\": %v", upd.Message.From.UserName, err)
+		}
+		return
+	}
+	err := t.QuoteReply(upd, t.app.storage.lang.Telegram[lang].Strings.get("pinSuccess"))
+	if err != nil {
+		t.app.err.Printf("Telegram: Failed to send message to \"%s\": %v", upd.Message.From.UserName, err)
+	}
+	t.verifiedTokens = append(t.verifiedTokens, VerifiedToken{
+		Token:    upd.Message.Text,
+		ChatID:   upd.Message.Chat.ID,
+		Username: upd.Message.Chat.UserName,
+	})
+	t.tokens[len(t.tokens)-1], t.tokens[tokenIndex] = t.tokens[tokenIndex], t.tokens[len(t.tokens)-1]
+	t.tokens = t.tokens[:len(t.tokens)-1]
 }
