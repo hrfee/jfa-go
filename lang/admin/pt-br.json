@@ -33,7 +33,7 @@
         "modifySettings": "Modificar configurações",
         "modifySettingsDescription": "Aplique as configurações de um perfil existente ou obtenha-as diretamente de um usuário.",
         "applyHomescreenLayout": "Aplicar layout na tela inicial",
-        "sendDeleteNotificationEmail": "Enviar email de notificação",
+        "sendDeleteNotificationEmail": "Enviar mensagem de notificação",
         "sendDeleteNotifiationExample": "Sua conta foi deletada.",
         "settingsRestartRequired": "Necessário reiniciar",
         "settingsRestartRequiredDescription": "É necessário reiniciar para aplicar algumas configurações alteradas. Deseja reiniciar agora ou mais tarde?",
@@ -66,7 +66,7 @@
         "settingsRestart": "Reiniciar",
         "settingsRestarting": "Reiniciando…",
         "announce": "Anunciar",
-        "subject": "Assunto do email",
+        "subject": "Assunto",
         "message": "Mensagem",
         "markdownSupported": "Suporte a Markdown.",
         "customizeMessagesDescription": "Se não quiser usar os modelos de email do jfa-go, você pode criar o seu próprio usando o Markdown.",
@@ -91,7 +91,10 @@
         "inviteMonths": "Meses",
         "reEnable": "Reativar",
         "disable": "Desativar",
-        "conditionals": "Condicionais"
+        "conditionals": "Condicionais",
+        "donate": "Doar",
+        "contactThrough": "Contato através:",
+        "sendPIN": "Peça ao usuário para enviar o PIN abaixo para o bot."
     },
     "notifications": {
         "changedEmailAddress": "Endereço de e-mail alterado de {n}.",
@@ -120,7 +123,7 @@
         "errorFailureCheckLogs": "Falha (verificar console/logs)",
         "errorPartialFailureCheckLogs": "Falha parcial (verificar console/logs)",
         "errorUserCreated": "Falha ao criar o usuário {n}.",
-        "errorSendWelcomeEmail": "Falha ao enviar e-mail de boas-vindas (verifique console/logs)",
+        "errorSendWelcomeEmail": "Falha ao enviar mensagem de boas-vindas (verifique console/logs)",
         "sentAnnouncement": "Comunicado enviado.",
         "saveEmail": "Email salvo.",
         "errorSaveEmail": "Falha ao salvar o email.",
@@ -128,7 +131,9 @@
         "errorApplyUpdate": "Falha ao aplicar a atualização, tente manualmente.",
         "updateAvailable": "Uma nova atualização está disponível, verifique as configurações.",
         "errorCheckUpdate": "Falha ao verificar atualizações.",
-        "noUpdatesAvailable": "Nenhuma atualização disponível."
+        "noUpdatesAvailable": "Nenhuma atualização disponível.",
+        "telegramVerified": "Conta do Telegram verificada.",
+        "updateAppliedRefresh": "Atualização instalada, atualize."
     },
     "quantityStrings": {
         "modifySettingsFor": {
