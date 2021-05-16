@@ -12,6 +12,7 @@ replace github.com/hrfee/jfa-go/logger => ./logger
 
 require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/emersion/go-autostart v0.0.0-20210130080809-00ed301c8e9a // indirect
 	github.com/fatih/color v1.10.0
 	github.com/fsnotify/fsnotify v1.4.9
 	github.com/getlantern/systray v1.1.0 // indirect
