@@ -4,6 +4,8 @@ import json
 import argparse
 from pathlib import Path
 
+def fix_description(desc):
+    return "; " + desc.replace("\n", "\n; ")
 
 def generate_ini(base_file, ini_file):
     """
@@ -17,10 +19,10 @@ def generate_ini(base_file, ini_file):
     for section in config_base["sections"]:
         ini.add_section(section)
         if "meta" in config_base["sections"][section]:
-            ini.set(section, "; " + config_base["sections"][section]["meta"]["description"])
+            ini.set(section, fix_description(config_base["sections"][section]["meta"]["description"]))
         for entry in config_base["sections"][section]["settings"]:
             if "description" in config_base["sections"][section]["settings"][entry]:
-                ini.set(section, "; " + config_base["sections"][section]["settings"][entry]["description"])
+                ini.set(section, fix_description(config_base["sections"][section]["settings"][entry]["description"]))
             value = config_base["sections"][section]["settings"][entry]["value"]
             if isinstance(value, bool):
                 value = str(value).lower()
