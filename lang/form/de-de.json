@@ -17,7 +17,8 @@
         "successContinueButton": "Weiter",
         "confirmationRequired": "E-Mail-Bestätigung erforderlich",
         "confirmationRequiredMessage": "Bitte überprüfe dein Posteingang und bestätige deine E-Mail-Adresse.",
-        "yourAccountIsValidUntil": "Dein Konto wird bis zum {date} gültig sein."
+        "yourAccountIsValidUntil": "Dein Konto wird bis zum {date} gültig sein.",
+        "sendPIN": "Sende die untenstehende PIN an den Bot und komm dann hierher zurück, um dein Konto zu verbinden."
     },
     "validationStrings": {
         "length": {
@@ -43,6 +44,9 @@
     },
     "notifications": {
         "errorUserExists": "Benutzer existiert bereits.",
-        "errorInvalidCode": "Ungültiger Invite-Code."
+        "errorInvalidCode": "Ungültiger Invite-Code.",
+        "telegramVerified": "Telegram-Konto verifiziert.",
+        "errorTelegramVerification": "Verifizierung von Telegram erforderlich.",
+        "errorInvalidPIN": "Telegram PIN ist ungültig."
     }
 }
