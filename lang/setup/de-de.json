@@ -101,7 +101,10 @@
         "title": "Passwortzurücksetzungen",
         "description": "Wenn ein Benutzer versucht sein Passwort zurückzusetzen, erstellt Jellyfin eine Datei namens 'passwordreset-*.json', welche eine PIN enthält. jfa-go liest die Datei und sendet die PIN an den Benutzer.",
         "pathToJellyfin": "Pfad zum Jellyfin-Konfigurationsverzeichnis",
-        "pathToJellyfinNotice": "Wenn du nicht weißt, wo das ist, versuche dein Passwort in Jellyfin zurückzusetzen. Ein Popup mit '<Pfad zu Jellyfin>/passwordreset-*.json' wird angezeigt werden."
+        "pathToJellyfinNotice": "Wenn du nicht weißt, wo das ist, versuche dein Passwort in Jellyfin zurückzusetzen. Ein Popup mit '<Pfad zu Jellyfin>/passwordreset-*.json' wird angezeigt werden.",
+        "resetLinks": "Einen Link statt einer PIN senden",
+        "resetLinksNotice": "Wenn die Ombi-Integration aktiviert ist, verwende dies, um zurückgesetzte Passwörter von Jellyfin mit Ombi zu synchronisieren.",
+        "resetLinksLanguage": "Standardsprache für den Link zum Zurücksetzen des Passworts"
     },
     "passwordValidation": {
         "title": "Passwortüberprüfung",
