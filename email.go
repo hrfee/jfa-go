@@ -196,7 +196,6 @@ func (emailer *Emailer) NewSMTP(server string, port int, username, password stri
 		rootCAs = x509.NewCertPool()
 	}
 	if certPath != "" {
-		fmt.Println("RUN")
 		var cert []byte
 		cert, err = os.ReadFile(certPath)
 		if rootCAs.AppendCertsFromPEM(cert) == false {
