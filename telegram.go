@@ -9,7 +9,7 @@ import (
 	tg "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
-type VerifiedToken struct {
+type TelegramVerifiedToken struct {
 	Token    string
 	ChatID   int64
 	Username string
@@ -21,7 +21,7 @@ type TelegramDaemon struct {
 	bot             *tg.BotAPI
 	username        string
 	tokens          []string
-	verifiedTokens  []VerifiedToken
+	verifiedTokens  []TelegramVerifiedToken
 	languages       map[int64]string // Store of languages for chatIDs. Added to on first interaction, and loaded from app.storage.telegram on start.
 	link            string
 	app             *appContext
@@ -37,12 +37,11 @@ func newTelegramDaemon(app *appContext) (*TelegramDaemon, error) {
 		return nil, err
 	}
 	td := &TelegramDaemon{
-		Stopped:         false,
 		ShutdownChannel: make(chan string),
 		bot:             bot,
 		username:        bot.Self.UserName,
 		tokens:          []string{},
-		verifiedTokens:  []VerifiedToken{},
+		verifiedTokens:  []TelegramVerifiedToken{},
 		languages:       map[int64]string{},
 		link:            "https://t.me/" + bot.Self.UserName,
 		app:             app,
@@ -55,10 +54,7 @@ func newTelegramDaemon(app *appContext) (*TelegramDaemon, error) {
 	return td, nil
 }
 
-var runes = []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
-
-// NewAuthToken generates an 8-character pin in the form "A1-2B-CD".
-func (t *TelegramDaemon) NewAuthToken() string {
+func genAuthToken() string {
 	rand.Seed(time.Now().UnixNano())
 	pin := make([]rune, 8)
 	for i := range pin {
@@ -68,8 +64,16 @@ func (t *TelegramDaemon) NewAuthToken() string {
 			pin[i] = runes[rand.Intn(len(runes))]
 		}
 	}
-	t.tokens = append(t.tokens, string(pin))
 	return string(pin)
+}
+
+var runes = []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+
+// NewAuthToken generates an 8-character pin in the form "A1-2B-CD".
+func (t *TelegramDaemon) NewAuthToken() string {
+	pin := genAuthToken()
+	t.tokens = append(t.tokens, pin)
+	return pin
 }
 
 func (t *TelegramDaemon) run() {
@@ -222,7 +226,7 @@ func (t *TelegramDaemon) commandPIN(upd *tg.Update, sects []string, lang string)
 	if err != nil {
 		t.app.err.Printf("Telegram: Failed to send message to \"%s\": %v", upd.Message.From.UserName, err)
 	}
-	t.verifiedTokens = append(t.verifiedTokens, VerifiedToken{
+	t.verifiedTokens = append(t.verifiedTokens, TelegramVerifiedToken{
 		Token:    upd.Message.Text,
 		ChatID:   upd.Message.Chat.ID,
 		Username: upd.Message.Chat.UserName,

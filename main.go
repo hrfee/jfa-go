@@ -96,6 +96,7 @@ type appContext struct {
 	validator        Validator
 	email            *Emailer
 	telegram         *TelegramDaemon
+	discord          *DiscordDaemon
 	info, debug, err logger.Logger
 	host             string
 	port             int
@@ -341,6 +342,10 @@ func start(asDaemon, firstCall bool) {
 		if err := app.storage.loadTelegramUsers(); err != nil {
 			app.err.Printf("Failed to load Telegram users: %v", err)
 		}
+		app.storage.discord_path = app.config.Section("files").Key("discord_users").String()
+		if err := app.storage.loadDiscordUsers(); err != nil {
+			app.err.Printf("Failed to load Discord users: %v", err)
+		}
 
 		app.storage.profiles_path = app.config.Section("files").Key("user_profiles").String()
 		app.storage.loadProfiles()
@@ -565,6 +570,15 @@ func start(asDaemon, firstCall bool) {
 			} else {
 				go app.telegram.run()
 				defer app.telegram.Shutdown()
+			}
+		}
+		if discordEnabled {
+			app.discord, err = newDiscordDaemon(app)
+			if err != nil {
+				app.err.Printf("Failed to authenticate with Discord: %v", err)
+			} else {
+				go app.discord.run()
+				defer app.discord.Shutdown()
 			}
 		}
 	} else {
