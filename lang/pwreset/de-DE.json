@@ -1,13 +1,13 @@
 {
     "meta": {
-        "name": ""
+        "name": "Deutsch (DE)"
     },
     "strings": {
-        "passwordReset": "",
-        "resetFailed": "",
-        "tryAgain": "",
-        "youCanLogin": "",
-        "youCanLoginOmbi": "",
-        "changeYourPassword": ""
+        "passwordReset": "Passwort zurücksetzen",
+        "resetFailed": "Zurücksetzen des Passworts fehlgeschlagen",
+        "tryAgain": "Bitte versuche es erneut.",
+        "youCanLogin": "Du kannst dich nun mit dem unten stehenden Code als Passwort anmelden.",
+        "youCanLoginOmbi": "Du kannst dich jetzt bei Jellyfin und Ombi mit dem unten stehenden Code als Passwort anmelden.",
+        "changeYourPassword": "Achte darauf, dass du dein Passwort nach der Anmeldung änderst."
     }
 }
