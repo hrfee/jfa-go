@@ -177,11 +177,26 @@ func (emailer *Emailer) NewMailgun(url, key string) {
 
 // NewSMTP returns an SMTP emailClient.
 func (emailer *Emailer) NewSMTP(server string, port int, username, password string, sslTLS bool, certPath string) (err error) {
+	// x509.SystemCertPool is unavailable on windows
+	if PLATFORM == "windows" {
+		emailer.sender = &SMTP{
+			auth:   smtp.PlainAuth("", username, password, server),
+			server: server,
+			port:   port,
+			sslTLS: sslTLS,
+			tlsConfig: &tls.Config{
+				InsecureSkipVerify: false,
+				ServerName:         server,
+			},
+		}
+		return
+	}
 	rootCAs, err := x509.SystemCertPool()
 	if rootCAs == nil || err != nil {
 		rootCAs = x509.NewCertPool()
 	}
 	if certPath != "" {
+		fmt.Println("RUN")
 		var cert []byte
 		cert, err = os.ReadFile(certPath)
 		if rootCAs.AppendCertsFromPEM(cert) == false {
