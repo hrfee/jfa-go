@@ -32,7 +32,7 @@
         "modifySettings": "Einstellungen ändern",
         "modifySettingsDescription": "Wende Einstellungen von einem bestehenden Profil an, oder beziehe sie direkt von einem Benutzer.",
         "applyHomescreenLayout": "Startbildschirmlayout anwenden",
-        "sendDeleteNotificationEmail": "Benachrichtigungs-E-Mail senden",
+        "sendDeleteNotificationEmail": "Benachrichtigung senden",
         "sendDeleteNotifiationExample": "Dein Konto wurde gelöscht.",
         "settingsRestartRequired": "Neustart erforderlich",
         "settingsRestartRequiredDescription": "Ein Neustart ist notwendig, um einige Einstellungen anzuwenden, die du geändert hast. Jetzt oder später neu starten?",
@@ -72,7 +72,7 @@
         "customizeMessages": "E-Mails anpassen",
         "customizeMessagesDescription": "Wenn du jfa-go's E-Mail-Vorlagen nicht benutzen willst, kannst du deinen eigenen unter Verwendung von Markdown erstellen.",
         "announce": "Ankündigen",
-        "subject": "E-Mail-Betreff",
+        "subject": "Betreff",
         "message": "Nachricht",
         "markdownSupported": "Markdown wird unterstützt.",
         "advancedSettings": "Erweiterte Einstellungen",
@@ -87,7 +87,14 @@
         "update": "Aktualisieren",
         "updates": "Aktualisierungen",
         "expiry": "Ablaufdatum",
-        "extendExpiry": "Ablaufdatum verlängern"
+        "extendExpiry": "Ablaufdatum verlängern",
+        "reEnable": "Wieder aktivieren",
+        "disable": "Deaktivieren",
+        "donate": "Spenden",
+        "conditionals": "Bedingungen",
+        "contactThrough": "Kontakt über:",
+        "sendPIN": "Bitte den Benutzer, die unten stehende PIN an den Bot zu senden.",
+        "inviteMonths": "Monate"
     },
     "notifications": {
         "changedEmailAddress": "E-Mail-Adresse von {n} geändert.",
@@ -116,7 +123,7 @@
         "errorFailureCheckLogs": "Fehlgeschlagen (überprüfe die Konsole/Logs)",
         "errorPartialFailureCheckLogs": "Teilweiser Fehlschlag (überprüfe die Konsole/Logs)",
         "errorUserCreated": "Fehler beim Erstellen des Benutzers {n}.",
-        "errorSendWelcomeEmail": "Fehler beim Senden der Willkommens-E-Mail (überprüfe die Konsole/Logs)",
+        "errorSendWelcomeEmail": "Fehler beim Senden der Willkommensnachricht (überprüfe die Konsole/Logs)",
         "saveEmail": "E-Mail gespeichert.",
         "errorSaveEmail": "Fehler beim Speichern der E-Mail.",
         "sentAnnouncement": "Ankündigung gesendet.",
@@ -124,7 +131,9 @@
         "errorApplyUpdate": "Fehler beim Anwenden der Aktualisierung, versuche es manuell.",
         "errorCheckUpdate": "Fehler beim Suchen nach Aktualisierungen.",
         "updateAvailable": "Eine neue Aktualisierung ist verfügbar, überprüfe die Einstellungen.",
-        "noUpdatesAvailable": "Keinen neuen Aktualisierungen verfügbar."
+        "noUpdatesAvailable": "Keinen neuen Aktualisierungen verfügbar.",
+        "updateAppliedRefresh": "Update angewendet, bitte aktualisieren.",
+        "telegramVerified": "Telegram-Konto verifiziert."
     },
     "quantityStrings": {
         "modifySettingsFor": {
@@ -162,6 +171,22 @@
         "extendedExpiry": {
             "singular": "Ablaufdatum für {n} Benutzer verlängern.",
             "plural": "Ablaufdatum für {n} Benutzer verlängern."
+        },
+        "disabledUser": {
+            "plural": "Benutzer {n} Deaktiviert.",
+            "singular": "Benutzer {n} Deaktiviert."
+        },
+        "enabledUser": {
+            "singular": "Benutzer {n} Aktiviert.",
+            "plural": "Benutzer {n} Aktiviert."
+        },
+        "disableUsers": {
+            "singular": "Benutzer {n} deaktivieren",
+            "plural": "Deaktiviere {n} Benutzer"
+        },
+        "reEnableUsers": {
+            "singular": "Benutzer {n} wieder aktivieren",
+            "plural": "Benutzer {n} wieder aktivieren"
         }
     }
 }
