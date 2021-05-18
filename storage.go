@@ -40,6 +40,7 @@ type TelegramUser struct {
 
 type DiscordUser struct {
 	ChannelID string
+	ID        string
 	Username  string
 	Lang      string
 	Contact   bool

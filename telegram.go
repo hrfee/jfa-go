@@ -172,7 +172,7 @@ func (t *TelegramDaemon) Shutdown() {
 
 func (t *TelegramDaemon) commandStart(upd *tg.Update, sects []string, lang string) {
 	content := t.app.storage.lang.Telegram[lang].Strings.get("startMessage") + "\n"
-	content += t.app.storage.lang.Telegram[lang].Strings.get("languageMessage")
+	content += t.app.storage.lang.Telegram[lang].Strings.template("languageMessage", tmpl{"command": "/lang"})
 	err := t.Reply(upd, content)
 	if err != nil {
 		t.app.err.Printf("Telegram: Failed to send message to \"%s\": %v", upd.Message.From.UserName, err)
@@ -181,9 +181,9 @@ func (t *TelegramDaemon) commandStart(upd *tg.Update, sects []string, lang strin
 
 func (t *TelegramDaemon) commandLang(upd *tg.Update, sects []string, lang string) {
 	if len(sects) == 1 {
-		list := "/lang <lang>\n"
+		list := "/lang `<lang>`\n"
 		for code := range t.app.storage.lang.Telegram {
-			list += fmt.Sprintf("%s: %s\n", code, t.app.storage.lang.Telegram[code].Meta.Name)
+			list += fmt.Sprintf("`%s`: %s\n", code, t.app.storage.lang.Telegram[code].Meta.Name)
 		}
 		err := t.Reply(upd, list)
 		if err != nil {
@@ -197,8 +197,7 @@ func (t *TelegramDaemon) commandLang(upd *tg.Update, sects []string, lang string
 			if user.ChatID == upd.Message.Chat.ID {
 				user.Lang = sects[1]
 				t.app.storage.telegram[jfID] = user
-				err := t.app.storage.storeTelegramUsers()
-				if err != nil {
+				if err := t.app.storage.storeTelegramUsers(); err != nil {
 					t.app.err.Printf("Failed to store Telegram users: %v", err)
 				}
 				break

@@ -21,7 +21,7 @@ type DiscordDaemon struct {
 	username        string
 	tokens          map[string]DiscordToken // map of user IDs to tokens.
 	verifiedTokens  []DiscordToken
-	languages       map[string]string // Store of languages for user channelIDs. Added to on first interaction, and loaded from app.storage.discord on start.
+	languages       map[string]string // Store of languages for user IDs. Added to on first interaction, and loaded from app.storage.discord on start.
 	app             *appContext
 }
 
@@ -45,7 +45,7 @@ func newDiscordDaemon(app *appContext) (*DiscordDaemon, error) {
 	}
 	for _, user := range app.storage.discord {
 		if user.Lang != "" {
-			dd.languages[user.ChannelID] = user.Lang
+			dd.languages[user.ID] = user.Lang
 		}
 	}
 	return dd, nil
@@ -98,8 +98,10 @@ func (d *DiscordDaemon) messageHandler(s *dg.Session, m *dg.MessageCreate) {
 	switch msg := sects[0]; msg {
 	case d.app.config.Section("telegram").Key("start_command").MustString("!start"):
 		d.commandStart(s, m, lang)
+	case "!lang":
+		d.commandLang(s, m, sects, lang)
 	default:
-		d.commandPIN(s, m, lang)
+		d.commandPIN(s, m, sects, lang)
 	}
 }
 
@@ -112,7 +114,7 @@ func (d *DiscordDaemon) commandStart(s *dg.Session, m *dg.MessageCreate, lang st
 	token := d.NewAuthToken(channel.ID, m.Author.ID, m.Author.Username)
 	d.tokens[m.Author.ID] = token
 	content := d.app.storage.lang.Telegram[lang].Strings.get("startMessage") + "\n"
-	content += d.app.storage.lang.Telegram[lang].Strings.get("languageMessage")
+	content += d.app.storage.lang.Telegram[lang].Strings.template("languageMessage", tmpl{"command": "!lang"})
 	_, err = s.ChannelMessageSend(channel.ID, content)
 	if err != nil {
 		d.app.err.Printf("Discord: Failed to send message to \"%s\": %v", m.Author.Username, err)
@@ -120,9 +122,40 @@ func (d *DiscordDaemon) commandStart(s *dg.Session, m *dg.MessageCreate, lang st
 	}
 }
 
-func (d *DiscordDaemon) commandPIN(s *dg.Session, m *dg.MessageCreate, lang string) {
+func (d *DiscordDaemon) commandLang(s *dg.Session, m *dg.MessageCreate, sects []string, lang string) {
+	if len(sects) == 1 {
+		list := "!lang <lang>\n"
+		for code := range d.app.storage.lang.Telegram {
+			list += fmt.Sprintf("%s: %s\n", code, d.app.storage.lang.Telegram[code].Meta.Name)
+		}
+		_, err := s.ChannelMessageSendReply(
+			m.ChannelID,
+			list,
+			m.Reference(),
+		)
+		if err != nil {
+			d.app.err.Printf("Discord: Failed to send message to \"%s\": %v", m.Author.Username, err)
+		}
+		return
+	}
+	if _, ok := d.app.storage.lang.Telegram[sects[1]]; ok {
+		d.languages[m.Author.ID] = sects[1]
+		for jfID, user := range d.app.storage.discord {
+			if user.ID == m.Author.ID {
+				user.Lang = sects[1]
+				d.app.storage.discord[jfID] = user
+				if err := d.app.storage.storeDiscordUsers(); err != nil {
+					d.app.err.Printf("Failed to store Discord users: %v", err)
+				}
+				break
+			}
+		}
+	}
+}
+
+func (d *DiscordDaemon) commandPIN(s *dg.Session, m *dg.MessageCreate, sects []string, lang string) {
 	token, ok := d.tokens[m.Author.ID]
-	if !ok || token.Token != m.Content {
+	if !ok || token.Token != sects[0] {
 		_, err := s.ChannelMessageSendReply(
 			m.ChannelID,
 			d.app.storage.lang.Telegram[lang].Strings.get("invalidPIN"),
