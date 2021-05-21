@@ -232,19 +232,49 @@ func (d *DiscordDaemon) commandPIN(s *dg.Session, m *dg.MessageCreate, sects []s
 }
 
 func (d *DiscordDaemon) Send(message *Message, channelID ...string) error {
-	for _, id := range channelID {
-		msg := ""
-		if message.Markdown == "" {
-			msg = message.Text
-		} else {
-			msg = message.Markdown
+	msg := ""
+	var embeds []*dg.MessageEmbed
+	if message.Markdown != "" {
+		var links []Link
+		msg, links = StripAltText(message.Markdown, true)
+		embeds = make([]*dg.MessageEmbed, len(links))
+		for i := range links {
+			embeds[i] = &dg.MessageEmbed{
+				URL:   links[i].URL,
+				Title: links[i].Alt,
+				Type:  dg.EmbedTypeLink,
+			}
 		}
-		_, err := d.bot.ChannelMessageSend(
-			id,
-			msg,
-		)
-		if err != nil {
-			return err
+	} else {
+		msg = message.Text
+	}
+	for _, id := range channelID {
+		var err error
+		if len(embeds) != 0 {
+			_, err = d.bot.ChannelMessageSendComplex(
+				id,
+				&dg.MessageSend{
+					Content: msg,
+					Embed:   embeds[0],
+				},
+			)
+			if err != nil {
+				return err
+			}
+			for i := 1; i < len(embeds); i++ {
+				_, err := d.bot.ChannelMessageSendEmbed(id, embeds[i])
+				if err != nil {
+					return err
+				}
+			}
+		} else {
+			_, err := d.bot.ChannelMessageSend(
+				id,
+				msg,
+			)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil
