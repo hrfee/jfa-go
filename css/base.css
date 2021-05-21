@@ -172,7 +172,7 @@ div.card:contains(section.banner.footer) {
 }
 
 p.sm,
-span.sm {
+span.sm:not(.heading) {
     font-size: 0.75rem;
 }
 
