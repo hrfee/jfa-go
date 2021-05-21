@@ -171,3 +171,28 @@ func (app *appContext) migrateEmailConfig() {
 	}
 	app.loadConfig()
 }
+
+func (app *appContext) migrateEmailStorage() error {
+	var emails map[string]interface{}
+	err := loadJSON(app.storage.emails_path, &emails)
+	if err != nil {
+		return err
+	}
+	newEmails := map[string]EmailAddress{}
+	for jfID, addr := range emails {
+		newEmails[jfID] = EmailAddress{
+			Addr:    addr.(string),
+			Contact: true,
+		}
+	}
+	err = storeJSON(app.storage.emails_path+".bak", emails)
+	if err != nil {
+		return err
+	}
+	err = storeJSON(app.storage.emails_path, newEmails)
+	if err != nil {
+		return err
+	}
+	app.info.Println("Migrated to new email format. A backup has also been made.")
+	return nil
+}

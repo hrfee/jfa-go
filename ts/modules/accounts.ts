@@ -228,18 +228,18 @@ class user implements User {
                     <div class="card ~neutral !low">
                         <span class="supra sm">${window.lang.strings("contactThrough")}</span>
                         <label class="switch pb-1 mt-half">
-                            <input type="radio" name="accounts-contact-${this.id}" class="accounts-contact-email">
+                            <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-email">
                             <span>Email</span>
                         </label>
                         <label class="switch pb-1">
-                            <input type="radio" name="accounts-contact-${this.id}" class="accounts-contact-discord">
+                            <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-discord">
                             <span>Discord</span>
                         </label>
             `;
             if (window.telegramEnabled && this._telegramUsername != "") {
                 innerHTML += `
                         <label class="switch pb-1">
-                            <input type="radio" name="accounts-contact-${this.id}" class="accounts-contact-telegram">
+                            <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-telegram">
                             <span>Telegram</span>
                         </label>
                 `;

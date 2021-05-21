@@ -217,7 +217,7 @@ func (app *appContext) getOmbiUser(jfID string) (map[string]interface{}, int, er
 	username := jfUser.Name
 	email := ""
 	if e, ok := app.storage.emails[jfID]; ok {
-		email = e.(string)
+		email = e.Addr
 	}
 	for _, ombiUser := range ombiUsers {
 		ombiAddr := ""
@@ -283,7 +283,7 @@ func (app *appContext) NewUserAdmin(gc *gin.Context) {
 	}
 	app.jf.CacheExpiry = time.Now()
 	if emailEnabled {
-		app.storage.emails[id] = req.Email
+		app.storage.emails[id] = EmailAddress{Addr: req.Email, Contact: true}
 		app.storage.storeEmails()
 	}
 	if app.config.Section("ombi").Key("enabled").MustBool(false) {
@@ -478,7 +478,7 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 	}
 	// if app.config.Section("password_resets").Key("enabled").MustBool(false) {
 	if req.Email != "" {
-		app.storage.emails[id] = req.Email
+		app.storage.emails[id] = EmailAddress{Addr: req.Email, Contact: true}
 		app.storage.storeEmails()
 	}
 	if app.config.Section("ombi").Key("enabled").MustBool(false) {
@@ -908,8 +908,8 @@ func (app *appContext) GetInvites(gc *gin.Context) {
 			var address string
 			if app.config.Section("ui").Key("jellyfin_login").MustBool(false) {
 				app.storage.loadEmails()
-				if addr := app.storage.emails[gc.GetString("jfId")]; addr != nil {
-					address = addr.(string)
+				if addr, ok := app.storage.emails[gc.GetString("jfId")]; ok && addr.Addr != "" {
+					address = addr.Addr
 				}
 			} else {
 				address = app.config.Section("ui").Key("email").String()
@@ -1108,14 +1108,14 @@ func (app *appContext) SetNotify(gc *gin.Context) {
 		}
 		var address string
 		if app.config.Section("ui").Key("jellyfin_login").MustBool(false) {
-			var ok bool
-			address, ok = app.storage.emails[gc.GetString("jfId")].(string)
+			addr, ok := app.storage.emails[gc.GetString("jfId")]
 			if !ok {
 				app.err.Printf("%s: Couldn't find email address. Make sure it's set", code)
 				app.debug.Printf("%s: User ID \"%s\"", code, gc.GetString("jfId"))
 				respond(500, "Missing user email", gc)
 				return
 			}
+			address = addr.Addr
 		} else {
 			address = app.config.Section("ui").Key("email").String()
 		}
@@ -1202,7 +1202,7 @@ func (app *appContext) GetUsers(gc *gin.Context) {
 			user.LastActive = jfUser.LastActivityDate.Unix()
 		}
 		if email, ok := app.storage.emails[jfUser.ID]; ok {
-			user.Email = email.(string)
+			user.Email = email.Addr
 			user.NotifyThroughEmail = user.Email != ""
 		}
 		expiry, ok := app.storage.users[jfUser.ID]
@@ -1293,7 +1293,11 @@ func (app *appContext) ModifyEmails(gc *gin.Context) {
 	for _, jfUser := range users {
 		id := jfUser.ID
 		if address, ok := req[id]; ok {
-			app.storage.emails[id] = address
+			contact := true
+			if oldAddr, ok := app.storage.emails[id]; ok {
+				contact = oldAddr.Contact
+			}
+			app.storage.emails[id] = EmailAddress{Addr: address, Contact: contact}
 			if ombiEnabled {
 				ombiUser, code, err := app.getOmbiUser(id)
 				if code == 200 && err == nil {
@@ -2052,7 +2056,7 @@ func (app *appContext) TelegramAddUser(gc *gin.Context) {
 // @Security Bearer
 // @tags Other
 func (app *appContext) SetContactMethods(gc *gin.Context) {
-	var req telegramNotifyDTO
+	var req SetContactMethodsDTO
 	gc.BindJSON(&req)
 	if req.ID == "" {
 		respondBool(400, false, gc)
@@ -2068,9 +2072,9 @@ func (app *appContext) SetContactMethods(gc *gin.Context) {
 		}
 		msg := ""
 		if !req.Telegram {
-			msg = "not"
+			msg = " not"
 		}
-		app.debug.Printf("Telegram: User \"%s\" will %s be notified through Telegram.", tgUser.Username, msg)
+		app.debug.Printf("Telegram: User \"%s\" will%s be notified through Telegram.", tgUser.Username, msg)
 	}
 	if dcUser, ok := app.storage.discord[req.ID]; ok {
 		dcUser.Contact = req.Discord
@@ -2082,9 +2086,23 @@ func (app *appContext) SetContactMethods(gc *gin.Context) {
 		}
 		msg := ""
 		if !req.Discord {
-			msg = "not"
+			msg = " not"
 		}
-		app.debug.Printf("Discord: User \"%s\" will %s be notified through Discord.", dcUser.Username, msg)
+		app.debug.Printf("Discord: User \"%s\" will%s be notified through Discord.", dcUser.Username, msg)
+	}
+	if email, ok := app.storage.emails[req.ID]; ok {
+		email.Contact = req.Email
+		app.storage.emails[req.ID] = email
+		if err := app.storage.storeEmails(); err != nil {
+			respondBool(500, false, gc)
+			app.err.Printf("Failed to store emails: %v", err)
+			return
+		}
+		msg := ""
+		if !req.Email {
+			msg = " not"
+		}
+		app.debug.Printf("\"%s\" will%s be notified via Email.", email.Addr, msg)
 	}
 	respondBool(200, true, gc)
 }

@@ -21,7 +21,8 @@ type Storage struct {
 	invites                                                                                                                                                            Invites
 	profiles                                                                                                                                                           map[string]Profile
 	defaultProfile                                                                                                                                                     string
-	emails, displayprefs, ombi_template                                                                                                                                map[string]interface{}
+	displayprefs, ombi_template                                                                                                                                        map[string]interface{}
+	emails                                                                                                                                                             map[string]EmailAddress
 	telegram                                                                                                                                                           map[string]TelegramUser // Map of Jellyfin User IDs to telegram users.
 	discord                                                                                                                                                            map[string]DiscordUser  // Map of Jellyfin user IDs to discord users.
 	customEmails                                                                                                                                                       customEmails
@@ -45,6 +46,11 @@ type DiscordUser struct {
 	Discriminator string
 	Lang          string
 	Contact       bool
+}
+
+type EmailAddress struct {
+	Addr    string
+	Contact bool
 }
 
 type customEmails struct {
@@ -902,85 +908,85 @@ func storeJSON(path string, obj interface{}) error {
 	return err
 }
 
-// One build of JF 10.7.0 hyphenated user IDs while another one later didn't. These functions will hyphenate/de-hyphenate email storage.
-
-func hyphenate(userID string) string {
-	if userID[8] == '-' {
-		return userID
-	}
-	return userID[:8] + "-" + userID[8:12] + "-" + userID[12:16] + "-" + userID[16:20] + "-" + userID[20:]
-}
-
-func (app *appContext) deHyphenateStorage(old map[string]interface{}) (map[string]interface{}, int, error) {
-	jfUsers, status, err := app.jf.GetUsers(false)
-	if status != 200 || err != nil {
-		return nil, status, err
-	}
-	newEmails := map[string]interface{}{}
-	for _, user := range jfUsers {
-		unHyphenated := user.ID
-		hyphenated := hyphenate(unHyphenated)
-		val, ok := old[hyphenated]
-		if ok {
-			newEmails[unHyphenated] = val
-		}
-	}
-	return newEmails, status, err
-}
-
-func (app *appContext) hyphenateStorage(old map[string]interface{}) (map[string]interface{}, int, error) {
-	jfUsers, status, err := app.jf.GetUsers(false)
-	if status != 200 || err != nil {
-		return nil, status, err
-	}
-	newEmails := map[string]interface{}{}
-	for _, user := range jfUsers {
-		unstripped := user.ID
-		stripped := strings.ReplaceAll(unstripped, "-", "")
-		val, ok := old[stripped]
-		if ok {
-			newEmails[unstripped] = val
-		}
-	}
-	return newEmails, status, err
-}
-
-func (app *appContext) hyphenateEmailStorage(old map[string]interface{}) (map[string]interface{}, int, error) {
-	return app.hyphenateStorage(old)
-}
-
-func (app *appContext) deHyphenateEmailStorage(old map[string]interface{}) (map[string]interface{}, int, error) {
-	return app.deHyphenateStorage(old)
-}
-
-func (app *appContext) hyphenateUserStorage(old map[string]time.Time) (map[string]time.Time, int, error) {
-	asInterface := map[string]interface{}{}
-	for k, v := range old {
-		asInterface[k] = v
-	}
-	fixed, status, err := app.hyphenateStorage(asInterface)
-	if err != nil {
-		return nil, status, err
-	}
-	out := map[string]time.Time{}
-	for k, v := range fixed {
-		out[k] = v.(time.Time)
-	}
-	return out, status, err
-}
-
-func (app *appContext) deHyphenateUserStorage(old map[string]time.Time) (map[string]time.Time, int, error) {
-	asInterface := map[string]interface{}{}
-	for k, v := range old {
-		asInterface[k] = v
-	}
-	fixed, status, err := app.deHyphenateStorage(asInterface)
-	if err != nil {
-		return nil, status, err
-	}
-	out := map[string]time.Time{}
-	for k, v := range fixed {
-		out[k] = v.(time.Time)
-	}
-	return out, status, err
-}
+// // One build of JF 10.7.0 hyphenated user IDs while another one later didn't. These functions will hyphenate/de-hyphenate email storage.
+//
+// func hyphenate(userID string) string {
+// 	if userID[8] == '-' {
+// 		return userID
+// 	}
+// 	return userID[:8] + "-" + userID[8:12] + "-" + userID[12:16] + "-" + userID[16:20] + "-" + userID[20:]
+// }
+//
+// func (app *appContext) deHyphenateStorage(old map[string]interface{}) (map[string]interface{}, int, error) {
+// 	jfUsers, status, err := app.jf.GetUsers(false)
+// 	if status != 200 || err != nil {
+// 		return nil, status, err
+// 	}
+// 	newEmails := map[string]interface{}{}
+// 	for _, user := range jfUsers {
+// 		unHyphenated := user.ID
+// 		hyphenated := hyphenate(unHyphenated)
+// 		val, ok := old[hyphenated]
+// 		if ok {
+// 			newEmails[unHyphenated] = val
+// 		}
+// 	}
+// 	return newEmails, status, err
+// }
+//
+// func (app *appContext) hyphenateStorage(old map[string]interface{}) (map[string]interface{}, int, error) {
+// 	jfUsers, status, err := app.jf.GetUsers(false)
+// 	if status != 200 || err != nil {
+// 		return nil, status, err
+// 	}
+// 	newEmails := map[string]interface{}{}
+// 	for _, user := range jfUsers {
+// 		unstripped := user.ID
+// 		stripped := strings.ReplaceAll(unstripped, "-", "")
+// 		val, ok := old[stripped]
+// 		if ok {
+// 			newEmails[unstripped] = val
+// 		}
+// 	}
+// 	return newEmails, status, err
+// }
+//
+// func (app *appContext) hyphenateEmailStorage(old map[string]interface{}) (map[string]interface{}, int, error) {
+// 	return app.hyphenateStorage(old)
+// }
+//
+// func (app *appContext) deHyphenateEmailStorage(old map[string]interface{}) (map[string]interface{}, int, error) {
+// 	return app.deHyphenateStorage(old)
+// }
+//
+// func (app *appContext) hyphenateUserStorage(old map[string]time.Time) (map[string]time.Time, int, error) {
+// 	asInterface := map[string]interface{}{}
+// 	for k, v := range old {
+// 		asInterface[k] = v
+// 	}
+// 	fixed, status, err := app.hyphenateStorage(asInterface)
+// 	if err != nil {
+// 		return nil, status, err
+// 	}
+// 	out := map[string]time.Time{}
+// 	for k, v := range fixed {
+// 		out[k] = v.(time.Time)
+// 	}
+// 	return out, status, err
+// }
+//
+// func (app *appContext) deHyphenateUserStorage(old map[string]time.Time) (map[string]time.Time, int, error) {
+// 	asInterface := map[string]interface{}{}
+// 	for k, v := range old {
+// 		asInterface[k] = v
+// 	}
+// 	fixed, status, err := app.deHyphenateStorage(asInterface)
+// 	if err != nil {
+// 		return nil, status, err
+// 	}
+// 	out := map[string]time.Time{}
+// 	for k, v := range fixed {
+// 		out[k] = v.(time.Time)
+// 	}
+// 	return out, status, err
+// }

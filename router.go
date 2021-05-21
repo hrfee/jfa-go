@@ -161,10 +161,12 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 		api.GET(p+"/config", app.GetConfig)
 		api.POST(p+"/config", app.ModifyConfig)
 		api.POST(p+"/restart", app.restart)
-		if telegramEnabled {
+		if telegramEnabled || discordEnabled {
 			api.GET(p+"/telegram/pin", app.TelegramGetPin)
 			api.GET(p+"/telegram/verified/:pin", app.TelegramVerified)
 			api.POST(p+"/users/telegram", app.TelegramAddUser)
+		}
+		if discordEnabled || telegramEnabled {
 			api.POST(p+"/users/contact", app.SetContactMethods)
 		}
 		if app.config.Section("ombi").Key("enabled").MustBool(false) {

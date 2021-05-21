@@ -817,8 +817,8 @@ func (app *appContext) sendByID(email *Message, ID ...string) error {
 				return err
 			}
 		}
-		if address, ok := app.storage.emails[id]; ok {
-			err = app.email.send(email, address.(string))
+		if address, ok := app.storage.emails[id]; ok && address.Contact && emailEnabled {
+			err = app.email.send(email, address.Addr)
 			if err != nil {
 				return err
 			}
@@ -838,7 +838,7 @@ func (app *appContext) getAddressOrName(jfID string) string {
 		return "@" + tgChat.Username
 	}
 	if addr, ok := app.storage.emails[jfID]; ok {
-		return addr.(string)
+		return addr.Addr
 	}
 	return ""
 }
