@@ -330,6 +330,30 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 		success = false
 		return
 	}
+	var discordUser DiscordUser
+	discordVerified := false
+	if discordEnabled {
+		if req.DiscordPIN == "" {
+			if app.config.Section("discord").Key("required").MustBool(false) {
+				f = func(gc *gin.Context) {
+					app.debug.Printf("%s: New user failed: Discord verification not completed", req.Code)
+					respond(401, "errorDiscordVerification", gc)
+				}
+				success = false
+				return
+			}
+		} else {
+			discordUser, discordVerified = app.discord.verifiedTokens[req.DiscordPIN]
+			if !discordVerified {
+				f = func(gc *gin.Context) {
+					app.debug.Printf("%s: New user failed: Discord PIN was invalid", req.Code)
+					respond(401, "errorInvalidPIN", gc)
+				}
+				success = false
+				return
+			}
+		}
+	}
 	telegramTokenIndex := -1
 	if telegramEnabled {
 		if req.TelegramPIN == "" {
@@ -479,7 +503,18 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 			app.err.Printf("Failed to store user duration: %v", err)
 		}
 	}
-
+	if discordEnabled && discordVerified {
+		discordUser.Contact = req.DiscordContact
+		if app.storage.discord == nil {
+			app.storage.discord = map[string]DiscordUser{}
+		}
+		app.storage.discord[user.ID] = discordUser
+		if err := app.storage.storeDiscordUsers(); err != nil {
+			app.err.Printf("Failed to store Discord users: %v", err)
+		} else {
+			delete(app.discord.verifiedTokens, req.DiscordPIN)
+		}
+	}
 	if telegramEnabled && telegramTokenIndex != -1 {
 		tgToken := app.telegram.verifiedTokens[telegramTokenIndex]
 		tgUser := TelegramUser{
@@ -494,8 +529,7 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 			app.storage.telegram = map[string]TelegramUser{}
 		}
 		app.storage.telegram[user.ID] = tgUser
-		err := app.storage.storeTelegramUsers()
-		if err != nil {
+		if err := app.storage.storeTelegramUsers(); err != nil {
 			app.err.Printf("Failed to store Telegram users: %v", err)
 		} else {
 			app.telegram.verifiedTokens[len(app.telegram.verifiedTokens)-1], app.telegram.verifiedTokens[telegramTokenIndex] = app.telegram.verifiedTokens[telegramTokenIndex], app.telegram.verifiedTokens[len(app.telegram.verifiedTokens)-1]
@@ -503,7 +537,7 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 		}
 	}
 
-	if (emailEnabled && app.config.Section("welcome_email").Key("enabled").MustBool(false) && req.Email != "") || telegramTokenIndex != -1 {
+	if (emailEnabled && app.config.Section("welcome_email").Key("enabled").MustBool(false) && req.Email != "") || telegramTokenIndex != -1 || discordVerified {
 		name := app.getAddressOrName(user.ID)
 		app.debug.Printf("%s: Sending welcome message to %s", req.Username, name)
 		msg, err := app.email.constructWelcome(req.Username, expiry, app, false)
@@ -1169,6 +1203,7 @@ func (app *appContext) GetUsers(gc *gin.Context) {
 		}
 		if email, ok := app.storage.emails[jfUser.ID]; ok {
 			user.Email = email.(string)
+			user.NotifyThroughEmail = user.Email != ""
 		}
 		expiry, ok := app.storage.users[jfUser.ID]
 		if ok {
@@ -1177,6 +1212,11 @@ func (app *appContext) GetUsers(gc *gin.Context) {
 		if tgUser, ok := app.storage.telegram[jfUser.ID]; ok {
 			user.Telegram = tgUser.Username
 			user.NotifyThroughTelegram = tgUser.Contact
+		}
+		if dc, ok := app.storage.discord[jfUser.ID]; ok {
+			user.Discord = dc.Username + "#" + dc.Discriminator
+			user.DiscordID = dc.ID
+			user.NotifyThroughDiscord = dc.Contact
 		}
 		resp.UserList[i] = user
 		i++
@@ -2011,7 +2051,7 @@ func (app *appContext) TelegramAddUser(gc *gin.Context) {
 // @Router /users/telegram/notify [post]
 // @Security Bearer
 // @tags Other
-func (app *appContext) TelegramSetNotify(gc *gin.Context) {
+func (app *appContext) SetContactMethods(gc *gin.Context) {
 	var req telegramNotifyDTO
 	gc.BindJSON(&req)
 	if req.ID == "" {
@@ -2019,23 +2059,34 @@ func (app *appContext) TelegramSetNotify(gc *gin.Context) {
 		return
 	}
 	if tgUser, ok := app.storage.telegram[req.ID]; ok {
-		tgUser.Contact = req.Enabled
+		tgUser.Contact = req.Telegram
 		app.storage.telegram[req.ID] = tgUser
 		if err := app.storage.storeTelegramUsers(); err != nil {
 			respondBool(500, false, gc)
 			app.err.Printf("Telegram: Failed to store users: %v", err)
 			return
 		}
-		respondBool(200, true, gc)
 		msg := ""
-		if !req.Enabled {
+		if !req.Telegram {
 			msg = "not"
 		}
 		app.debug.Printf("Telegram: User \"%s\" will %s be notified through Telegram.", tgUser.Username, msg)
-		return
 	}
-	app.err.Printf("Telegram: User \"%s\" does not have a telegram account registered.", req.ID)
-	respondBool(400, false, gc)
+	if dcUser, ok := app.storage.discord[req.ID]; ok {
+		dcUser.Contact = req.Discord
+		app.storage.discord[req.ID] = dcUser
+		if err := app.storage.storeDiscordUsers(); err != nil {
+			respondBool(500, false, gc)
+			app.err.Printf("Discord: Failed to store users: %v", err)
+			return
+		}
+		msg := ""
+		if !req.Discord {
+			msg = "not"
+		}
+		app.debug.Printf("Discord: User \"%s\" will %s be notified through Discord.", dcUser.Username, msg)
+	}
+	respondBool(200, true, gc)
 }
 
 // @Summary Returns true/false on whether or not a telegram PIN was verified. Requires bearer auth.
@@ -2090,6 +2141,25 @@ func (app *appContext) TelegramVerifiedInvite(gc *gin.Context) {
 	// 	app.telegram.verifiedTokens = app.telegram.verifiedTokens[:length-1]
 	// }
 	respondBool(200, tokenIndex != -1, gc)
+}
+
+// @Summary Returns true/false on whether or not a discord PIN was verified. Requires invite code.
+// @Produce json
+// @Success 200 {object} boolResponse
+// @Success 401 {object} boolResponse
+// @Param pin path string true "PIN code to check"
+// @Param invCode path string true "invite Code"
+// @Router /invite/{invCode}/discord/verified/{pin} [get]
+// @tags Other
+func (app *appContext) DiscordVerifiedInvite(gc *gin.Context) {
+	code := gc.Param("invCode")
+	if _, ok := app.storage.invites[code]; !ok {
+		respondBool(401, false, gc)
+		return
+	}
+	pin := gc.Param("pin")
+	_, ok := app.discord.verifiedTokens[pin]
+	respondBool(200, ok, gc)
 }
 
 // @Summary Restarts the program. No response means success.

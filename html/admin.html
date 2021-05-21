@@ -7,6 +7,7 @@
             window.notificationsEnabled = {{ .notifications }};
             window.emailEnabled = {{ .email_enabled }};
             window.telegramEnabled = {{ .telegram_enabled }};
+            window.discordEnabled = {{ .discord_enabled }};
             window.ombiEnabled = {{ .ombiEnabled }};
             window.usernameEnabled = {{ .username }};
             window.langFile = JSON.parse({{ .language }});
@@ -524,6 +525,9 @@
                                     <th>{{ .strings.emailAddress }}</th>
                                     {{ if .telegram_enabled }}
                                     <th>Telegram</th>
+                                    {{ end }}
+                                    {{ if .discord_enabled }}
+                                    <th>Discord</th>
                                     {{ end }}
                                     <th>{{ .strings.expiry }}</th>
                                     <th>{{ .strings.lastActiveTime }}</th>

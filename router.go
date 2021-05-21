@@ -121,6 +121,9 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 		if telegramEnabled {
 			router.GET(p+"/invite/:invCode/telegram/verified/:pin", app.TelegramVerifiedInvite)
 		}
+		if discordEnabled {
+			router.GET(p+"/invite/:invCode/discord/verified/:pin", app.DiscordVerifiedInvite)
+		}
 	}
 	if *SWAGGER {
 		app.info.Print(warning("\n\nWARNING: Swagger should not be used on a public instance.\n\n"))
@@ -162,7 +165,7 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 			api.GET(p+"/telegram/pin", app.TelegramGetPin)
 			api.GET(p+"/telegram/verified/:pin", app.TelegramVerified)
 			api.POST(p+"/users/telegram", app.TelegramAddUser)
-			api.POST(p+"/users/telegram/notify", app.TelegramSetNotify)
+			api.POST(p+"/users/contact", app.SetContactMethods)
 		}
 		if app.config.Section("ombi").Key("enabled").MustBool(false) {
 			api.GET(p+"/ombi/users", app.OmbiUsers)

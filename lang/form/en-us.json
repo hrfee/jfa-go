@@ -18,14 +18,16 @@
         "confirmationRequired": "Email confirmation required",
         "confirmationRequiredMessage": "Please check your email inbox to verify your address.",
         "yourAccountIsValidUntil": "Your account will be valid until {date}.",
-        "sendPIN": "Send the PIN below to the bot, then come back here to link your account."
+        "sendPIN": "Send the PIN below to the bot, then come back here to link your account.",
+        "sendPINDiscord": "Type {command} in {server_channel} on Discord, then send the PIN below via DM to the bot."
     },
     "notifications": {
         "errorUserExists": "User already exists.",
         "errorInvalidCode": "Invalid invite code.",
         "errorTelegramVerification": "Telegram verification required.",
-        "errorInvalidPIN": "Telegram PIN is invalid.",
-        "telegramVerified": "Telegram account verified."
+        "errorDiscordVerification": "Discord verification required.",
+        "errorInvalidPIN": "PIN is invalid.",
+        "verified": "Account verified."
     },
     "validationStrings": {
         "length": {

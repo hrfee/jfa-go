@@ -588,6 +588,15 @@
                     "value": "!start",
                     "description": "Command to start the user verification process."
                 },
+                "channel": {
+                    "name": "Channel to monitor",
+                    "required": false,
+                    "requires_restart": true,
+                    "depens_true": "enabled",
+                    "type": "text",
+                    "value": "",
+                    "description": "Only listen to commands in specified channel. Leave blank to monitor all."
+                },
                 "language": {
                     "name": "Language",
                     "required": false,

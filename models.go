@@ -17,6 +17,8 @@ type newUserDTO struct {
 	Code            string `json:"code" example:"abc0933jncjkcjj"`              // Invite code (required on /newUser)
 	TelegramPIN     string `json:"telegram_pin" example:"A1-B2-3C"`             // Telegram verification PIN (if used)
 	TelegramContact bool   `json:"telegram_contact"`                            // Whether or not to use telegram for notifications/pwrs
+	DiscordPIN      string `json:"discord_pin" example:"A1-B2-3C"`              // Discord verification PIN (if used)
+	DiscordContact  bool   `json:"discord_contact"`                             // Whether or not to use discord for notifications/pwrs
 }
 
 type newUserResponse struct {
@@ -125,12 +127,16 @@ type respUser struct {
 	ID                    string `json:"id" example:"fdgsdfg45534fa"`              // userID of user
 	Name                  string `json:"name" example:"jeff"`                      // Username of user
 	Email                 string `json:"email,omitempty" example:"jeff@jellyf.in"` // Email address of user (if available)
-	LastActive            int64  `json:"last_active" example:"1617737207510"`      // Time of last activity on Jellyfin
-	Admin                 bool   `json:"admin" example:"false"`                    // Whether or not the user is Administrator
-	Expiry                int64  `json:"expiry" example:"1617737207510"`           // Expiry time of user as Epoch/Unix time.
-	Disabled              bool   `json:"disabled"`                                 // Whether or not the user is disabled.
-	Telegram              string `json:"telegram"`                                 // Telegram username (if known)
+	NotifyThroughEmail    bool   `json:"notify_email"`
+	LastActive            int64  `json:"last_active" example:"1617737207510"` // Time of last activity on Jellyfin
+	Admin                 bool   `json:"admin" example:"false"`               // Whether or not the user is Administrator
+	Expiry                int64  `json:"expiry" example:"1617737207510"`      // Expiry time of user as Epoch/Unix time.
+	Disabled              bool   `json:"disabled"`                            // Whether or not the user is disabled.
+	Telegram              string `json:"telegram"`                            // Telegram username (if known)
 	NotifyThroughTelegram bool   `json:"notify_telegram"`
+	Discord               string `json:"discord"`    // Discord username (if known)
+	DiscordID             string `json:"discord_id"` // Discord user ID for creating links.
+	NotifyThroughDiscord  bool   `json:"notify_discord"`
 }
 
 type getUsersDTO struct {
@@ -250,6 +256,8 @@ type telegramSetDTO struct {
 }
 
 type telegramNotifyDTO struct {
-	ID      string `json:"id"`
-	Enabled bool   `json:"enabled"`
+	ID       string `json:"id"`
+	Email    bool   `json:"email"`
+	Discord  bool   `json:"discord"`
+	Telegram bool   `json:"telegram"`
 }

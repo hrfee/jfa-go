@@ -21,6 +21,7 @@ declare interface Window {
     notificationsEnabled: boolean;
     emailEnabled: boolean;
     telegramEnabled: boolean;
+    discordEnabled: boolean;
     ombiEnabled: boolean;
     usernameEnabled: boolean;
     token: string;

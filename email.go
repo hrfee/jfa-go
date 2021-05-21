@@ -230,7 +230,7 @@ func (emailer *Emailer) construct(app *appContext, section, keyFragment string, 
 	var keys []string
 	plaintext := app.config.Section("email").Key("plaintext").MustBool(false)
 	if plaintext {
-		if telegramEnabled {
+		if telegramEnabled || discordEnabled {
 			keys = []string{"text"}
 			text, markdown = "", ""
 		} else {
@@ -238,7 +238,7 @@ func (emailer *Emailer) construct(app *appContext, section, keyFragment string, 
 			text = ""
 		}
 	} else {
-		if telegramEnabled {
+		if telegramEnabled || discordEnabled {
 			keys = []string{"html", "text", "markdown"}
 		} else {
 			keys = []string{"html", "text"}
@@ -807,8 +807,21 @@ func (app *appContext) sendByID(email *Message, ID ...string) error {
 		var err error
 		if tgChat, ok := app.storage.telegram[id]; ok && tgChat.Contact && telegramEnabled {
 			err = app.telegram.Send(email, tgChat.ChatID)
-		} else if address, ok := app.storage.emails[id]; ok {
+			if err != nil {
+				return err
+			}
+		}
+		if dcChat, ok := app.storage.discord[id]; ok && dcChat.Contact && discordEnabled {
+			err = app.discord.Send(email, dcChat.ChannelID)
+			if err != nil {
+				return err
+			}
+		}
+		if address, ok := app.storage.emails[id]; ok {
 			err = app.email.send(email, address.(string))
+			if err != nil {
+				return err
+			}
 		}
 		if err != nil {
 			return err
@@ -818,6 +831,9 @@ func (app *appContext) sendByID(email *Message, ID ...string) error {
 }
 
 func (app *appContext) getAddressOrName(jfID string) string {
+	if dcChat, ok := app.storage.discord[jfID]; ok && dcChat.Contact && discordEnabled {
+		return dcChat.Username + "#" + dcChat.Discriminator
+	}
 	if tgChat, ok := app.storage.telegram[jfID]; ok && tgChat.Contact && telegramEnabled {
 		return "@" + tgChat.Username
 	}

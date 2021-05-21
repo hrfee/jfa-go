@@ -17,6 +17,8 @@
         "linkTelegram": "Link Telegram",
         "contactEmail": "Contact through Email",
         "contactTelegram": "Contact through Telegram",
+        "linkDiscord": "Link Discord",
+        "contactDiscord": "Contact through Discord",
         "theme": "Theme"
     }
 }

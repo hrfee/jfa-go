@@ -1,6 +1,7 @@
 package main
 
 import (
+	"html/template"
 	"io/fs"
 	"net/http"
 	"strconv"
@@ -121,6 +122,7 @@ func (app *appContext) AdminPage(gc *gin.Context) {
 		"contactMessage":   "",
 		"email_enabled":    emailEnabled,
 		"telegram_enabled": telegramEnabled,
+		"discord_enabled":  discordEnabled,
 		"notifications":    notificationsEnabled,
 		"version":          version,
 		"commit":           commit,
@@ -284,13 +286,28 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 		"userExpiryMessage": app.storage.lang.Form[lang].Strings.get("yourAccountIsValidUntil"),
 		"langName":          lang,
 		"telegramEnabled":   telegramEnabled,
+		"discordEnabled":    discordEnabled,
 	}
-	if data["telegramEnabled"].(bool) {
+	if telegramEnabled {
 		data["telegramPIN"] = app.telegram.NewAuthToken()
 		data["telegramUsername"] = app.telegram.username
 		data["telegramURL"] = app.telegram.link
 		data["telegramRequired"] = app.config.Section("telegram").Key("required").MustBool(false)
 	}
+	if discordEnabled {
+		data["discordPIN"] = app.discord.NewAuthToken()
+		data["discordUsername"] = app.discord.username
+		data["discordRequired"] = app.config.Section("discord").Key("required").MustBool(false)
+		data["discordSendPINMessage"] = template.HTML(app.storage.lang.Form[lang].Strings.template("sendPINDiscord", tmpl{
+			"command":        `<code class="code">` + app.config.Section("discord").Key("start_command").MustString("!start") + `</code>`,
+			"server_channel": app.discord.serverChannelName,
+		}))
+	}
+
+	// if discordEnabled {
+	// 	pin := ""
+	// 	for _, token := range app.discord.tokens {
+	// 		if
 	gcHTML(gc, http.StatusOK, "form-loader.html", data)
 }
 
