@@ -148,7 +148,10 @@ func (t *TelegramDaemon) Send(message *Message, ID ...int64) error {
 		if message.Markdown == "" {
 			msg = tg.NewMessage(id, message.Text)
 		} else {
-			msg = tg.NewMessage(id, strings.ReplaceAll(message.Markdown, ".", "\\."))
+			text := strings.ReplaceAll(message.Markdown, ".", "\\.")
+			text = strings.ReplaceAll(text, "![", "[")
+			text = strings.ReplaceAll(text, "!", "\\!")
+			msg = tg.NewMessage(id, text)
 			msg.ParseMode = "MarkdownV2"
 		}
 		_, err := t.bot.Send(msg)
