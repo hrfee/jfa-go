@@ -221,7 +221,7 @@ class user implements User {
             // (this._discord.querySelector("span") as HTMLSpanElement).onclick = this._addDiscord;
         } else {
             let innerHTML = `
-            <a href="https://discord.com/users/${this._discordID}" class="discord-link" target="_blank">@${u}</a>
+            <a href="https://discord.com/users/${this._discordID}" class="discord-link" target="_blank">${u}</a>
             <i class="icon ri-settings-2-line ml-half dropdown-button"></i>
             <div class="dropdown manual">
                 <div class="dropdown-display">
