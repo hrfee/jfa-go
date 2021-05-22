@@ -17,11 +17,15 @@
         "successContinueButton": "Continuar",
         "confirmationRequired": "Necessária confirmação de e-mail",
         "confirmationRequiredMessage": "Verifique sua caixa de email para finalizar o cadastro.",
-        "yourAccountIsValidUntil": "Sua conta é válida até {date}."
+        "yourAccountIsValidUntil": "Sua conta é válida até {date}.",
+        "sendPIN": "Envie o PIN abaixo para o bot e volte aqui para vincular sua conta."
     },
     "notifications": {
         "errorUserExists": "Esse usuário já existe.",
-        "errorInvalidCode": "Código do convite invalido."
+        "errorInvalidCode": "Código do convite invalido.",
+        "telegramVerified": "Conta do Telegram verificada.",
+        "errorInvalidPIN": "O PIN do telegram é inválido.",
+        "errorTelegramVerification": "Requer a verificação do telegram."
     },
     "validationStrings": {
         "length": {

@@ -3,7 +3,7 @@
         "name": "Nederlands (NL)"
     },
     "strings": {
-        "ifItWasNotYou": "Als jij dit niet was, negeer dan alsjeblieft deze email.",
+        "ifItWasNotYou": "Als jij dit niet was, negeer dit dan alsjeblieft.",
         "reason": "Reden",
         "helloUser": "Hoi {username},"
     },
@@ -49,7 +49,7 @@
         "welcome": "Welkom bij Jellyfin!",
         "youCanLoginWith": "Je kunt inloggen met onderstaande gegevens",
         "jellyfinURL": "URL",
-        "name": "Welkomste-mail",
+        "name": "Welkom",
         "yourAccountWillExpire": "Je account verloopt op {date}."
     },
     "emailConfirmation": {

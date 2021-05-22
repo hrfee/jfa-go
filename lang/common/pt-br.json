@@ -14,6 +14,9 @@
         "theme": "Tema",
         "time24h": "Horário 24h",
         "time12h": "Horário 12h",
-        "copied": "Copiado"
+        "copied": "Copiado",
+        "linkTelegram": "Link Telegram",
+        "contactEmail": "Contato por Email",
+        "contactTelegram": "Contato pelo Telegram"
     }
 }

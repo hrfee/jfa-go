@@ -14,6 +14,9 @@
         "theme": "Thema",
         "time24h": "24h-Format",
         "time12h": "12h-Format",
-        "copied": "Kopiert"
+        "copied": "Kopiert",
+        "linkTelegram": "Link Telegram",
+        "contactEmail": "Kontakt über E-Mail",
+        "contactTelegram": "Kontakt über Telegram"
     }
 }

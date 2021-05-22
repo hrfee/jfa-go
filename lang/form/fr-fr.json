@@ -18,7 +18,8 @@
         "successContinueButton": "Continuer",
         "confirmationRequired": "Confirmation de l'adresse e-mail requise",
         "confirmationRequiredMessage": "Veuillez vérifier votre boite de réception pour confirmer votre adresse e-mail.",
-        "yourAccountIsValidUntil": "Votre compte sera valide jusqu'au {date}."
+        "yourAccountIsValidUntil": "Votre compte sera valide jusqu'au {date}.",
+        "sendPIN": "Envoyez le code PIN ci-dessous au bot, puis revenez ici pour lier votre compte."
     },
     "validationStrings": {
         "length": {
@@ -44,6 +45,9 @@
     },
     "notifications": {
         "errorUserExists": "Utilisateur déjà existant.",
-        "errorInvalidCode": "Code d’invitation non valide."
+        "errorInvalidCode": "Code d’invitation non valide.",
+        "errorTelegramVerification": "Vérification Telegram requise.",
+        "errorInvalidPIN": "PIN Telegram invalide.",
+        "telegramVerified": "Compte Telegram vérifié."
     }
 }

@@ -3,7 +3,7 @@
         "name": "Deutsch (DE)"
     },
     "strings": {
-        "ifItWasNotYou": "Wenn du das nicht warst, ignoriere bitte diese E-Mail.",
+        "ifItWasNotYou": "Wenn du das nicht warst, ignoriere bitte dies.",
         "reason": "Grund",
         "helloUser": "Hallo {username},"
     },
@@ -27,7 +27,8 @@
         "ifItWasYou": "Wenn du das warst, gib die PIN unten in die Eingabeaufforderung ein.",
         "codeExpiry": "Der Code wird am {date}, um {time} UTC ablaufen, was in {expiresInMinutes} ist.",
         "pin": "PIN",
-        "name": "Passwortzurücksetzung"
+        "name": "Passwortzurücksetzung",
+        "ifItWasYouLink": "Wenn du das warst, klick auf den Link unten."
     },
     "userDeleted": {
         "title": "Dein Konto wurde gelöscht - Jellyfin",
@@ -48,7 +49,8 @@
         "welcome": "Willkommen bei Jellyfin!",
         "youCanLoginWith": "Du kannst dich mit den mit den untenstehenden Zugangsdaten anmelden",
         "jellyfinURL": "URL",
-        "name": "Willkommens-E-Mail"
+        "name": "Willkommen",
+        "yourAccountWillExpire": "Dein Konto läuft am {date} ab."
     },
     "emailConfirmation": {
         "title": "Bestätige deine E-Mail - Jellyfin",
@@ -61,5 +63,15 @@
         "title": "Dein Konto ist abgelaufen - Jellyfin",
         "yourAccountHasExpired": "Dein Konto ist abgelaufen.",
         "contactTheAdmin": "Kontaktiere den Administrator für weitere Informationen."
+    },
+    "userDisabled": {
+        "name": "Benutzer deaktiviert",
+        "title": "Dein Konto wurde deaktiviert - Jellyfin",
+        "yourAccountWasDisabled": "Dein Konto wurde deaktiviert."
+    },
+    "userEnabled": {
+        "name": "Benutzer aktiviert",
+        "title": "Dein Konto wurde wieder freigeschaltet - Jellyfin",
+        "yourAccountWasEnabled": "Dein Konto wurde wieder aktiviert."
     }
 }
