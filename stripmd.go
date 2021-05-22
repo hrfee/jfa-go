@@ -3,6 +3,7 @@ package main
 import (
 	"strings"
 
+	dg "github.com/bwmarrin/discordgo"
 	stripmd "github.com/writeas/go-strip-markdown"
 )
 
@@ -13,22 +14,32 @@ type Link struct {
 // StripAltText removes Markdown alt text from links and images and replaces them with just the URL.
 // Currently uses the deepest alt text when links/images are nested.
 // If links = true, links are completely removed, and a list of URLs and their alt text is also returned.
-func StripAltText(md string, links bool) (string, []Link) {
+func StripAltText(md string, links bool) (string, []*dg.MessageEmbed) {
 	altTextStart := -1 // Start of alt text (between '[' & ']')
 	URLStart := -1     // Start of url (between '(' & ')')
 	URLEnd := -1
 	previousURLEnd := -2
 	out := ""
-	embeds := []Link{}
+	embeds := []*dg.MessageEmbed{}
 	for i := range md {
 		if altTextStart != -1 && URLStart != -1 && md[i] == ')' {
 			URLEnd = i - 1
 			out += md[previousURLEnd+2 : altTextStart-1]
 			if links {
-				embeds = append(embeds, Link{
-					URL: md[URLStart : URLEnd+1],
-					Alt: md[altTextStart : URLStart-2],
-				})
+				embed := &dg.MessageEmbed{
+					Type:  dg.EmbedTypeLink,
+					Title: md[altTextStart : URLStart-2],
+				}
+				if md[altTextStart-1] == '!' {
+					embed.Title = md[altTextStart+1 : URLStart-2]
+					embed.Type = dg.EmbedTypeImage
+					embed.Image = &dg.MessageEmbedImage{
+						URL: md[URLStart : URLEnd+1],
+					}
+				} else {
+					embed.URL = md[URLStart : URLEnd+1]
+				}
+				embeds = append(embeds, embed)
 			} else {
 				out += md[URLStart : URLEnd+1]
 			}

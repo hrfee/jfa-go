@@ -41,6 +41,7 @@ func newDiscordDaemon(app *appContext) (*DiscordDaemon, error) {
 	for _, user := range app.storage.discord {
 		dd.users[user.ID] = user
 	}
+
 	return dd, nil
 }
 
@@ -89,13 +90,6 @@ func (d *DiscordDaemon) run() {
 	<-d.ShutdownChannel
 	d.ShutdownChannel <- "Down"
 	return
-}
-
-func (d *DiscordDaemon) Shutdown() {
-	d.Stopped = true
-	d.ShutdownChannel <- "Down"
-	<-d.ShutdownChannel
-	close(d.ShutdownChannel)
 }
 
 func (d *DiscordDaemon) messageHandler(s *dg.Session, m *dg.MessageCreate) {
@@ -235,16 +229,7 @@ func (d *DiscordDaemon) Send(message *Message, channelID ...string) error {
 	msg := ""
 	var embeds []*dg.MessageEmbed
 	if message.Markdown != "" {
-		var links []Link
-		msg, links = StripAltText(message.Markdown, true)
-		embeds = make([]*dg.MessageEmbed, len(links))
-		for i := range links {
-			embeds[i] = &dg.MessageEmbed{
-				URL:   links[i].URL,
-				Title: links[i].Alt,
-				Type:  dg.EmbedTypeLink,
-			}
-		}
+		msg, embeds = StripAltText(message.Markdown, true)
 	} else {
 		msg = message.Text
 	}

@@ -2048,7 +2048,7 @@ func (app *appContext) TelegramAddUser(gc *gin.Context) {
 
 // @Summary Sets whether to notify a user through telegram or not.
 // @Produce json
-// @Param telegramNotifyDTO body telegramNotifyDTO true "User's Jellyfin ID and whether or not to notify then through Telegram."
+// @Param SetContactMethodDTO body SetContactMethodsDTO true "User's Jellyfin ID and whether or not to notify then through Telegram."
 // @Success 200 {object} boolResponse
 // @Success 400 {object} boolResponse
 // @Success 500 {object} boolResponse
