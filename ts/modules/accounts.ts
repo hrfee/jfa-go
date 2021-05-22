@@ -128,14 +128,14 @@ class user implements User {
                 <div class="table-inline">
                     <i class="icon ri-settings-2-line ml-half dropdown-button"></i>
                     <div class="dropdown manual">
-                        <div class="dropdown-display">
+                        <div class="dropdown-display lg">
                             <div class="card ~neutral !low">
                                 <span class="supra sm">${window.lang.strings("contactThrough")}</span>
-                                <label class="switch pb-1 mt-half">
+                                <label class="row switch pb-1 mt-half">
                                     <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-email">
                                     <span>Email</span>
                                 </label>
-                                <label class="switch pb-1">
+                                <label class="row switch pb-1">
                                     <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-telegram">
                                     <span>Telegram</span>
                                 </label>
@@ -233,21 +233,21 @@ class user implements User {
                 <a href="https://discord.com/users/${this._discordID}" class="discord-link" target="_blank">${u}</a>
                 <i class="icon ri-settings-2-line ml-half dropdown-button"></i>
                 <div class="dropdown manual">
-                    <div class="dropdown-display">
+                    <div class="dropdown-display lg">
                         <div class="card ~neutral !low">
                             <span class="supra sm">${window.lang.strings("contactThrough")}</span>
-                            <label class="switch pb-1 mt-half">
+                            <label class="row switch pb-1 mt-half">
                                 <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-email">
                                 <span>Email</span>
                             </label>
-                            <label class="switch pb-1">
+                            <label class="row switch pb-1">
                                 <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-discord">
                                 <span>Discord</span>
                             </label>
             `;
             if (window.telegramEnabled && this._telegramUsername != "") {
                 innerHTML += `
-                            <label class="switch pb-1">
+                            <label class="row switch pb-1">
                                 <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-telegram">
                                 <span>Telegram</span>
                             </label>
