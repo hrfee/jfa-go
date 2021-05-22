@@ -261,3 +261,18 @@ type SetContactMethodsDTO struct {
 	Discord  bool   `json:"discord"`
 	Telegram bool   `json:"telegram"`
 }
+
+type DiscordUserDTO struct {
+	Name      string `json:"name"`
+	AvatarURL string `json:"avatar_url"`
+	ID        string `json:"id"`
+}
+
+type DiscordUsersDTO struct {
+	Users []DiscordUserDTO `json:"users"`
+}
+
+type DiscordConnectUserDTO struct {
+	JellyfinID string `json:"jf_id"`
+	DiscordID  string `json:"discord_id"`
+}

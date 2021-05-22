@@ -24,6 +24,12 @@ interface getPinResponse {
     username: string;
 }
 
+interface DiscordUser {
+    name: string;
+    avatar_url: string;
+    id: string;
+}
+
 class user implements User {
     private _row: HTMLTableRowElement;
     private _check: HTMLInputElement;
@@ -218,7 +224,7 @@ class user implements User {
         this._discordUsername = u;
         if (u == "") {
             this._discord.innerHTML = `<span class="chip btn !low">Add</span>`;
-            // (this._discord.querySelector("span") as HTMLSpanElement).onclick = this._addDiscord;
+            (this._discord.querySelector("span") as HTMLSpanElement).onclick = this._addDiscord;
         } else {
             let innerHTML = `
             <a href="https://discord.com/users/${this._discordID}" class="discord-link" target="_blank">${u}</a>
@@ -400,6 +406,76 @@ class user implements User {
                 }
             }
         });
+    }
+    
+    private _timer: NodeJS.Timer;
+
+    private _discordKbListener = () => {
+        clearTimeout(this._timer);
+        const list = document.getElementById("discord-list") as HTMLTableElement;
+        const input = document.getElementById("discord-search") as HTMLInputElement;
+        if (input.value.length < 2) {
+            return;
+        }
+        list.innerHTML = ``;
+        addLoader(list);
+        list.parentElement.classList.add("mb-1", "mt-1");
+        this._timer = setTimeout(() => {
+            _get("/users/discord/" + input.value, null, (req: XMLHttpRequest) => {
+                if (req.readyState == 4) {
+                    if (req.status != 200) {
+                        removeLoader(list);
+                        list.parentElement.classList.remove("mb-1", "mt-1");
+                        return;
+                    }
+                    const users = req.response["users"] as Array<DiscordUser>;
+                    let innerHTML = ``;
+                    for (let i = 0; i < users.length; i++) {
+                        innerHTML += `
+                        <tr>
+                            <td class="img-circle sm">
+                                <img class="img-circle" src="${users[i].avatar_url}" width="32" height="32">
+                            </td>
+                            <td class="w-100 sm">
+                                <p class="content">${users[i].name}</p>
+                            </td>
+                            <td class="sm">
+                                <span id="discord-user-${users[i].id}" class="button ~info !high">${window.lang.strings("add")}</span>
+                            </td>
+                        </tr>
+                        `;
+                    }
+                    list.innerHTML = innerHTML;
+                    removeLoader(list);
+                    list.parentElement.classList.remove("mb-1", "mt-1");
+                    for (let i = 0; i < users.length; i++) {
+                        const button = document.getElementById(`discord-user-${users[i].id}`) as HTMLInputElement;
+                        button.onclick = () => _post("/users/discord", {jf_id: this.id, discord_id: users[i].id}, (req: XMLHttpRequest) => {
+                            if (req.readyState == 4) {
+                                document.dispatchEvent(new CustomEvent("accounts-reload"));
+                                if (req.status != 200) {
+                                    window.notifications.customError("errorConnectDiscord", window.lang.notif("errorFailureCheckLogs"));
+                                    return
+                                }
+                                window.notifications.customSuccess("discordConnected", window.lang.notif("accountConnected"));
+                                window.modals.discord.close()
+                            }
+                        });
+                    }
+                }
+            });
+        }, 750);
+    }
+
+    private _addDiscord = () => {
+        if (!window.discordEnabled) { return; }
+        const input = document.getElementById("discord-search") as HTMLInputElement;
+        const list = document.getElementById("discord-list") as HTMLDivElement;
+        list.innerHTML = ``;
+        input.value = "";
+        input.removeEventListener("keyup", this._discordKbListener);
+        input.addEventListener("keyup", this._discordKbListener);
+        window.modals.discord.show();
     }
 
     private _addTelegram = () => _get("/telegram/pin", null, (req: XMLHttpRequest) => {

@@ -102,6 +102,7 @@ declare interface Modals {
     extendExpiry: Modal;
     updateInfo: Modal;
     telegram: Modal;
+    discord: Modal;
 }
 
 interface Invite {

@@ -20,6 +20,7 @@
         "create": "Create",
         "apply": "Apply",
         "delete": "Delete",
+        "add": "Add",
         "name": "Name",
         "date": "Date",
         "enabled": "Enabled",
@@ -94,7 +95,8 @@
         "notifyEvent": "Notify on:",
         "notifyInviteExpiry": "On expiry",
         "notifyUserCreation": "On user creation",
-        "sendPIN": "Ask the user to send the PIN below to the bot."
+        "sendPIN": "Ask the user to send the PIN below to the bot.",
+        "searchDiscordUser": "Start typing the Discord username to link it."
     },
     "notifications": {
         "changedEmailAddress": "Changed email address of {n}.",
@@ -107,6 +109,7 @@
         "updateApplied": "Update applied, please restart.",
         "updateAppliedRefresh": "Update applied, please refresh.",
         "telegramVerified": "Telegram account verified.",
+        "accountConnected": "Account connected.",
         "errorConnection": "Couldn't connect to jfa-go.",
         "error401Unauthorized": "Unauthorized. Try refreshing the page.",
         "errorSettingsAppliedNoHomescreenLayout": "Settings were applied, but applying homescreen layout may have failed.",

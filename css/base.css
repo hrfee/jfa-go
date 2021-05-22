@@ -130,6 +130,10 @@ div.card:contains(section.banner.footer) {
     text-align: center;
 }
 
+.w-100 {
+    width: 100%;
+}
+
 .inline-block {
     display: inline-block;
 }
@@ -482,4 +486,23 @@ a:hover:not(.lang-link):not(.\~urge), a:active:not(.lang-link):not(.\~urge) {
 .search {
     max-width: 15rem;
     min-width: 10rem;
+}
+
+td.img-circle {
+    width: 32px;
+    height: 32px;
+}
+
+span.shield.img-circle {
+    padding: 0.2rem;
+}
+
+img.img-circle {
+    border-radius: 50%;
+    vertical-align: middle;
+}
+
+.table td.sm {
+    padding-top: 0.1rem;
+    padding-bottom: 0.1rem;
 }

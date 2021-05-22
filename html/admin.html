@@ -328,6 +328,18 @@
             </div>
         </div>
         {{ end }}
+        {{ if .discord_enabled }}
+        <div id="modal-discord" class="modal">
+            <div class="modal-content card">
+                <span class="heading mb-1">{{ .strings.linkDiscord }}<span class="modal-close">&times;</span></span>
+                <p class="content mb-1">{{ .strings.searchDiscordUser }}</p>
+                <div class="row">
+                    <input type="search" class="col sm field ~neutral !normal input" id="discord-search" placeholder="user#1234">
+                </div>
+                <table class="table"><tbody id="discord-list"></tbody></table>
+            </div>
+        </div>
+        {{ end }}
         <div id="notification-box"></div>
         <span class="dropdown" tabindex="0" id="lang-dropdown">
             <span class="button ~urge dropdown-button">

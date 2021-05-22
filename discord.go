@@ -71,7 +71,7 @@ func (d *DiscordDaemon) MustGetUser(channelID, userID, discrim, username string)
 
 func (d *DiscordDaemon) run() {
 	d.bot.AddHandler(d.messageHandler)
-	d.bot.Identify.Intents = dg.IntentsGuildMessages | dg.IntentsDirectMessages
+	d.bot.Identify.Intents = dg.IntentsGuildMessages | dg.IntentsDirectMessages | dg.IntentsGuildMembers
 	if err := d.bot.Open(); err != nil {
 		d.app.err.Printf("Discord: Failed to start daemon: %v", err)
 		return
@@ -90,6 +90,60 @@ func (d *DiscordDaemon) run() {
 	<-d.ShutdownChannel
 	d.ShutdownChannel <- "Down"
 	return
+}
+
+// Returns the user(s) roughly corresponding to the username (if they are in the guild).
+// if no discriminator (#xxxx) is given in the username and there are multiple corresponding users, a list of all matching users is returned.
+func (d *DiscordDaemon) GetUsers(username string) []*dg.Member {
+	members, err := d.bot.GuildMembers(
+		d.bot.State.Guilds[len(d.bot.State.Guilds)-1].ID,
+		"",
+		1000,
+	)
+	if err != nil {
+		d.app.err.Printf("Discord: Failed to get members: %v", err)
+		return nil
+	}
+	hasDiscriminator := strings.Contains(username, "#")
+	var users []*dg.Member
+	for _, member := range members {
+		if !hasDiscriminator {
+			userSplit := strings.Split(member.User.Username, "#")
+			if strings.Contains(userSplit[0], username) {
+				users = append(users, member)
+			}
+		} else if strings.Contains(member.User.Username, username) {
+			return nil
+		}
+	}
+	return users
+}
+
+func (d *DiscordDaemon) NewUser(ID string) (user DiscordUser, ok bool) {
+	u, err := d.bot.User(ID)
+	if err != nil {
+		d.app.err.Printf("Discord: Failed to get user: %v", err)
+		return
+	}
+	user.ID = ID
+	user.Username = u.Username
+	user.Contact = true
+	user.Discriminator = u.Discriminator
+	channel, err := d.bot.UserChannelCreate(ID)
+	if err != nil {
+		d.app.err.Printf("Discord: Failed to create DM channel: %v", err)
+		return
+	}
+	user.ChannelID = channel.ID
+	ok = true
+	return
+}
+
+func (d *DiscordDaemon) Shutdown() {
+	d.Stopped = true
+	d.ShutdownChannel <- "Down"
+	<-d.ShutdownChannel
+	close(d.ShutdownChannel)
 }
 
 func (d *DiscordDaemon) messageHandler(s *dg.Session, m *dg.MessageCreate) {

@@ -2048,7 +2048,7 @@ func (app *appContext) TelegramAddUser(gc *gin.Context) {
 
 // @Summary Sets whether to notify a user through telegram or not.
 // @Produce json
-// @Param SetContactMethodDTO body SetContactMethodsDTO true "User's Jellyfin ID and whether or not to notify then through Telegram."
+// @Param SetContactMethodsDTO body SetContactMethodsDTO true "User's Jellyfin ID and whether or not to notify then through Telegram."
 // @Success 200 {object} boolResponse
 // @Success 400 {object} boolResponse
 // @Success 500 {object} boolResponse
@@ -2164,7 +2164,7 @@ func (app *appContext) TelegramVerifiedInvite(gc *gin.Context) {
 // @Summary Returns true/false on whether or not a discord PIN was verified. Requires invite code.
 // @Produce json
 // @Success 200 {object} boolResponse
-// @Success 401 {object} boolResponse
+// @Failure 401 {object} boolResponse
 // @Param pin path string true "PIN code to check"
 // @Param invCode path string true "invite Code"
 // @Router /invite/{invCode}/discord/verified/{pin} [get]
@@ -2178,6 +2178,61 @@ func (app *appContext) DiscordVerifiedInvite(gc *gin.Context) {
 	pin := gc.Param("pin")
 	_, ok := app.discord.verifiedTokens[pin]
 	respondBool(200, ok, gc)
+}
+
+// @Summary Returns a list of matching users from a Discord guild, given a username (discriminator optional).
+// @Produce json
+// @Success 200 {object} DiscordUsersDTO
+// @Failure 400 {object} boolResponse
+// @Failure 500 {object} boolResponse
+// @Param username path string true "username to search."
+// @Router /users/discord/{username} [get]
+// @tags Other
+func (app *appContext) DiscordGetUsers(gc *gin.Context) {
+	name := gc.Param("username")
+	if name == "" {
+		respondBool(400, false, gc)
+		return
+	}
+	users := app.discord.GetUsers(name)
+	resp := DiscordUsersDTO{Users: make([]DiscordUserDTO, len(users))}
+	for i, u := range users {
+		resp.Users[i] = DiscordUserDTO{
+			Name:      u.User.Username + "#" + u.User.Discriminator,
+			ID:        u.User.ID,
+			AvatarURL: u.User.AvatarURL("32"),
+		}
+	}
+	gc.JSON(200, resp)
+}
+
+// @Summary Links a Discord account to a Jellyfin account via user IDs. Notifications are turned on by default.
+// @Produce json
+// @Success 200 {object} boolResponse
+// @Failure 400 {object} boolResponse
+// @Failure 500 {object} boolResponse
+// @Param DiscordConnectUserDTO body DiscordConnectUserDTO true "User's Jellyfin ID & Discord ID."
+// @Router /users/discord [post]
+// @tags Other
+func (app *appContext) DiscordConnect(gc *gin.Context) {
+	var req DiscordConnectUserDTO
+	gc.BindJSON(&req)
+	if req.JellyfinID == "" || req.DiscordID == "" {
+		respondBool(400, false, gc)
+		return
+	}
+	user, ok := app.discord.NewUser(req.DiscordID)
+	if !ok {
+		respondBool(500, false, gc)
+		return
+	}
+	app.storage.discord[req.JellyfinID] = user
+	if err := app.storage.storeDiscordUsers(); err != nil {
+		app.err.Printf("Failed to store Discord users: %v", err)
+		respondBool(500, false, gc)
+		return
+	}
+	respondBool(200, true, gc)
 }
 
 // @Summary Restarts the program. No response means success.
