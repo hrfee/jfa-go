@@ -30,12 +30,12 @@
     }
 }
 
-@media screen and (max-width: 750px) {
+@media screen and (max-width: 1000px) {
     :root {
         font-size: 0.9rem;
     }
     .table-responsive table {
-        min-width: 660px;
+        min-width: 800px;
     }
 }
 
@@ -428,6 +428,7 @@ p.top {
 
 .table-responsive {
     overflow-x: auto;
+    font-size: 0.9rem;
 }
 
 #notification-box {
@@ -505,4 +506,9 @@ img.img-circle {
 .table td.sm {
     padding-top: 0.1rem;
     padding-bottom: 0.1rem;
+}
+
+.table-inline {
+    display: flex !important;
+    align-items: center;
 }

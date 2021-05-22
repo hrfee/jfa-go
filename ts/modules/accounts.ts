@@ -102,7 +102,9 @@ class user implements User {
         this._notifyEmail = s;
         if (window.telegramEnabled && this._telegramUsername != "") {
             const email = this._telegram.getElementsByClassName("accounts-contact-email")[0] as HTMLInputElement;
-            email.checked = s;
+            if (email) {
+                email.checked = s;
+            }
         }
         if (window.discordEnabled && this._discordUsername != "") {
             const email = this._discord.getElementsByClassName("accounts-contact-email")[0] as HTMLInputElement;
@@ -120,52 +122,50 @@ class user implements User {
         } else {
             let innerHTML = `
             <a href="https://t.me/${u}" target="_blank">@${u}</a>
-            <i class="icon ri-settings-2-line ml-half dropdown-button"></i>
-            <div class="dropdown manual">
-                <div class="dropdown-display">
-                    <div class="card ~neutral !low">
-                        <span class="supra sm">${window.lang.strings("contactThrough")}</span>
-                        <label class="switch pb-1 mt-half">
-                            <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-email">
-                            <span>Email</span>
-                        </label>
-                        <label class="switch pb-1">
-                            <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-telegram">
-                            <span>Telegram</span>
-                        </label>
             `;
-            if (window.discordEnabled && this._discordUsername != "") {
+            if (!window.discordEnabled || this._discordUsername == "") {
                 innerHTML += `
-                        <label class="switch pb-1">
-                            <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-discord">
-                            <span>Discord</span>
-                        </label>
-                `;
-            }
-            innerHTML += `
+                <div class="table-inline">
+                    <i class="icon ri-settings-2-line ml-half dropdown-button"></i>
+                    <div class="dropdown manual">
+                        <div class="dropdown-display">
+                            <div class="card ~neutral !low">
+                                <span class="supra sm">${window.lang.strings("contactThrough")}</span>
+                                <label class="switch pb-1 mt-half">
+                                    <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-email">
+                                    <span>Email</span>
+                                </label>
+                                <label class="switch pb-1">
+                                    <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-telegram">
+                                    <span>Telegram</span>
+                                </label>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-            `;
-            this._discord.innerHTML = innerHTML;
-            // Javascript is necessary as including the button inside the dropdown would make it too wide to display next to the username.
-            const button = this._telegram.querySelector("i");
-            const dropdown = this._telegram.querySelector("div.dropdown") as HTMLDivElement;
-            const checks = this._telegram.querySelectorAll("input") as NodeListOf<HTMLInputElement>;
-            for (let i = 0; i < checks.length; i++) {
-                checks[i].onclick = () => this._setNotifyMethod("telegram");
+                `;
             }
-
-            button.onclick = () => {
-                dropdown.classList.add("selected");
-                document.addEventListener("click", outerClickListener);
-            };
-            const outerClickListener = (event: Event) => {
-                if (!(event.target instanceof HTMLElement && (this._telegram.contains(event.target) || button.contains(event.target)))) {
-                    dropdown.classList.remove("selected");
-                    document.removeEventListener("click", outerClickListener);
+            this._telegram.innerHTML = innerHTML;
+            if (!window.discordEnabled || this._discordUsername == "") {
+                // Javascript is necessary as including the button inside the dropdown would make it too wide to display next to the username.
+                const button = this._telegram.querySelector("i");
+                const dropdown = this._telegram.querySelector("div.dropdown") as HTMLDivElement;
+                const checks = this._telegram.querySelectorAll("input") as NodeListOf<HTMLInputElement>;
+                for (let i = 0; i < checks.length; i++) {
+                    checks[i].onclick = () => this._setNotifyMethod("telegram");
                 }
-            };
+
+                button.onclick = () => {
+                    dropdown.classList.add("selected");
+                    document.addEventListener("click", outerClickListener);
+                };
+                const outerClickListener = (event: Event) => {
+                    if (!(event.target instanceof HTMLElement && (this._telegram.contains(event.target) || button.contains(event.target)))) {
+                        dropdown.classList.remove("selected");
+                        document.removeEventListener("click", outerClickListener);
+                    }
+                };
+            }
         }
     }
     
@@ -174,7 +174,9 @@ class user implements User {
         if (!window.telegramEnabled || !this._telegramUsername) return;
         this._notifyTelegram = s;
         const telegram = this._telegram.getElementsByClassName("accounts-contact-telegram")[0] as HTMLInputElement;
-        telegram.checked = s;
+        if (telegram) {
+            telegram.checked = s;
+        }
         if (window.discordEnabled && this._discordUsername != "") {
             const telegram = this._discord.getElementsByClassName("accounts-contact-telegram")[0] as HTMLInputElement;
             telegram.checked = s;
@@ -227,30 +229,32 @@ class user implements User {
             (this._discord.querySelector("span") as HTMLSpanElement).onclick = this._addDiscord;
         } else {
             let innerHTML = `
-            <a href="https://discord.com/users/${this._discordID}" class="discord-link" target="_blank">${u}</a>
-            <i class="icon ri-settings-2-line ml-half dropdown-button"></i>
-            <div class="dropdown manual">
-                <div class="dropdown-display">
-                    <div class="card ~neutral !low">
-                        <span class="supra sm">${window.lang.strings("contactThrough")}</span>
-                        <label class="switch pb-1 mt-half">
-                            <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-email">
-                            <span>Email</span>
-                        </label>
-                        <label class="switch pb-1">
-                            <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-discord">
-                            <span>Discord</span>
-                        </label>
+            <div class="table-inline">
+                <a href="https://discord.com/users/${this._discordID}" class="discord-link" target="_blank">${u}</a>
+                <i class="icon ri-settings-2-line ml-half dropdown-button"></i>
+                <div class="dropdown manual">
+                    <div class="dropdown-display">
+                        <div class="card ~neutral !low">
+                            <span class="supra sm">${window.lang.strings("contactThrough")}</span>
+                            <label class="switch pb-1 mt-half">
+                                <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-email">
+                                <span>Email</span>
+                            </label>
+                            <label class="switch pb-1">
+                                <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-discord">
+                                <span>Discord</span>
+                            </label>
             `;
             if (window.telegramEnabled && this._telegramUsername != "") {
                 innerHTML += `
-                        <label class="switch pb-1">
-                            <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-telegram">
-                            <span>Telegram</span>
-                        </label>
+                            <label class="switch pb-1">
+                                <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-telegram">
+                                <span>Telegram</span>
+                            </label>
                 `;
             }
             innerHTML += `
+                        </div>
                     </div>
                 </div>
             </div>
@@ -323,8 +327,8 @@ class user implements User {
         this._row = document.createElement("tr") as HTMLTableRowElement;
         let innerHTML = `
             <td><input type="checkbox" value=""></td>
-            <td><span class="accounts-username"></span> <span class="accounts-admin"></span> <span class="accounts-disabled"></span></td>
-            <td><i class="icon ri-edit-line accounts-email-edit"></i><span class="accounts-email-container ml-half"></span></td>
+            <td><div class="table-inline"><span class="accounts-username"></span> <span class="accounts-admin"></span> <span class="accounts-disabled"></span></span></td>
+            <td><div class="table-inline"><i class="icon ri-edit-line accounts-email-edit"></i><span class="accounts-email-container ml-half"></span></div></td>
         `;
         if (window.telegramEnabled) {
             innerHTML += `
