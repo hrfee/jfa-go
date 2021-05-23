@@ -280,6 +280,7 @@ class user implements User {
 
     get discord_id(): string { return this._discordID; }
     set discord_id(id: string) {
+        if (!window.discordEnabled || this._discordUsername == "") return; 
         this._discordID = id;
         const link = this._discord.getElementsByClassName("discord-link")[0] as HTMLAnchorElement;
         link.href = `https://discord.com/users/${id}`;
@@ -466,6 +467,7 @@ class user implements User {
         this.notify_telegram = user.notify_telegram;
         this.notify_discord = user.notify_discord;
         this.notify_email = user.notify_email;
+        this.discord_id = user.discord_id;
     }
 
     asElement = (): HTMLTableRowElement => { return this._row; }

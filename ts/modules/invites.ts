@@ -1,4 +1,5 @@
 import { _get, _post, _delete, toClipboard, toggleLoader, toDateString } from "../modules/common.js";
+import { newDiscordSearch } from "../modules/discord.js";
 
 class DOMInvite implements Invite {
     updateNotify = (checkbox: HTMLInputElement) => {
