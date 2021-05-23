@@ -1203,7 +1203,7 @@ func (app *appContext) GetUsers(gc *gin.Context) {
 		}
 		if email, ok := app.storage.emails[jfUser.ID]; ok {
 			user.Email = email.Addr
-			user.NotifyThroughEmail = user.Email != ""
+			user.NotifyThroughEmail = email.Contact
 		}
 		expiry, ok := app.storage.users[jfUser.ID]
 		if ok {
