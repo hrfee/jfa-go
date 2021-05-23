@@ -54,6 +54,8 @@ docker create \
              -v /etc/localtime:/etc/localtime:ro \ # Makes sure time is correct
              hrfee/jfa-go # hrfee/jfa-go:unstable for latest build from git
 ```
+`TrayIcon` builds include a tray icon to start/stop/restart, and an option to automatically start when you log-in to your computer. For Linux users, these builds depend on the `libappindicator3-1`/`libappindicator-gtk3`/`libappindicator` package for Debian/Ubuntu, Fedora, and Alpine respectively.
+
 Available on the AUR as [jfa-go](https://aur.archlinux.org/packages/jfa-go/), [jfa-go-bin](https://aur.archlinux.org/packages/jfa-go) or [jfa-go-git](https://aur.archlinux.org/packages/jfa-go-git/).
 
 For other platforms, grab an archive from the release section for your platform (or nightly builds [here](https://builds.hrfee.dev/view/hrfee/jfa-go)), and extract the `jfa-go` executable to somewhere useful.
