@@ -76,6 +76,10 @@ func (d *DiscordDaemon) run() {
 		d.app.err.Printf("Discord: Failed to start daemon: %v", err)
 		return
 	}
+	// Sometimes bot.State isn't populated quick enough
+	for d.bot.State == nil {
+		continue
+	}
 	d.username = d.bot.State.User.Username
 	// Choose the last guild (server), for now we don't really support multiple anyway
 	guild, err := d.bot.Guild(d.bot.State.Guilds[len(d.bot.State.Guilds)-1].ID)
