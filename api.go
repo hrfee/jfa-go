@@ -826,18 +826,44 @@ func (app *appContext) GenerateInvite(gc *gin.Context) {
 		invite.UserMinutes = req.UserMinutes
 	}
 	invite.ValidTill = validTill
-	if emailEnabled && req.Email != "" && app.config.Section("invite_emails").Key("enabled").MustBool(false) {
-		app.debug.Printf("%s: Sending invite email", inviteCode)
-		invite.Email = req.Email
-		msg, err := app.email.constructInvite(inviteCode, invite, app, false)
-		if err != nil {
-			invite.Email = fmt.Sprintf("Failed to send to %s", req.Email)
-			app.err.Printf("%s: Failed to construct invite email: %v", inviteCode, err)
-		} else if err := app.email.send(msg, req.Email); err != nil {
-			invite.Email = fmt.Sprintf("Failed to send to %s", req.Email)
-			app.err.Printf("%s: %s: %v", inviteCode, invite.Email, err)
-		} else {
-			app.info.Printf("%s: Sent invite email to \"%s\"", inviteCode, req.Email)
+	if req.SendTo != "" && app.config.Section("invite_emails").Key("enabled").MustBool(false) {
+		addressValid := false
+		discord := ""
+		app.debug.Printf("%s: Sending invite message", inviteCode)
+		if discordEnabled && !strings.Contains(req.SendTo, "@") {
+			users := app.discord.GetUsers(req.SendTo)
+			if len(users) == 0 {
+				invite.SendTo = fmt.Sprintf("Failed: User not found: \"%s\"", req.SendTo)
+			} else if len(users) > 1 {
+				invite.SendTo = fmt.Sprintf("Failed: Multiple users found: \"%s\"", req.SendTo)
+			} else {
+				invite.SendTo = req.SendTo
+				addressValid = true
+				discord = users[0].User.ID
+			}
+		} else if emailEnabled {
+			addressValid = true
+			invite.SendTo = req.SendTo
+		}
+		if addressValid {
+			msg, err := app.email.constructInvite(inviteCode, invite, app, false)
+			if err != nil {
+				invite.SendTo = fmt.Sprintf("Failed to send to %s", req.SendTo)
+				app.err.Printf("%s: Failed to construct invite message: %v", inviteCode, err)
+			} else {
+				var err error
+				if discord != "" {
+					err = app.discord.SendDM(msg, discord)
+				} else {
+					err = app.email.send(msg, req.SendTo)
+				}
+				if err != nil {
+					invite.SendTo = fmt.Sprintf("Failed to send to %s", req.SendTo)
+					app.err.Printf("%s: %s: %v", inviteCode, invite.SendTo, err)
+				} else {
+					app.info.Printf("%s: Sent invite email to \"%s\"", inviteCode, req.SendTo)
+				}
+			}
 		}
 	}
 	if req.Profile != "" {
@@ -901,8 +927,8 @@ func (app *appContext) GetInvites(gc *gin.Context) {
 		if inv.RemainingUses != 0 {
 			invite.RemainingUses = inv.RemainingUses
 		}
-		if inv.Email != "" {
-			invite.Email = inv.Email
+		if inv.SendTo != "" {
+			invite.SendTo = inv.SendTo
 		}
 		if len(inv.Notify) != 0 {
 			var address string

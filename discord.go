@@ -111,13 +111,13 @@ func (d *DiscordDaemon) GetUsers(username string) []*dg.Member {
 	hasDiscriminator := strings.Contains(username, "#")
 	var users []*dg.Member
 	for _, member := range members {
-		if !hasDiscriminator {
-			userSplit := strings.Split(member.User.Username, "#")
-			if strings.Contains(userSplit[0], username) {
-				users = append(users, member)
+		if hasDiscriminator {
+			if member.User.Username+"#"+member.User.Discriminator == username {
+				return []*dg.Member{member}
 			}
-		} else if strings.Contains(member.User.Username, username) {
-			return nil
+		}
+		if strings.Contains(member.User.Username, username) {
+			users = append(users, member)
 		}
 	}
 	return users
@@ -281,6 +281,18 @@ func (d *DiscordDaemon) commandPIN(s *dg.Session, m *dg.MessageCreate, sects []s
 	d.verifiedTokens[sects[0]] = d.users[m.Author.ID]
 	d.tokens[len(d.tokens)-1], d.tokens[tokenIndex] = d.tokens[tokenIndex], d.tokens[len(d.tokens)-1]
 	d.tokens = d.tokens[:len(d.tokens)-1]
+}
+
+func (d *DiscordDaemon) SendDM(message *Message, userID ...string) error {
+	channels := make([]string, len(userID))
+	for i, id := range userID {
+		channel, err := d.bot.UserChannelCreate(id)
+		if err != nil {
+			return err
+		}
+		channels[i] = channel.ID
+	}
+	return d.Send(message, channels...)
 }
 
 func (d *DiscordDaemon) Send(message *Message, channelID ...string) error {

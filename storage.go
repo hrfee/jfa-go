@@ -95,7 +95,7 @@ type Invite struct {
 	UserDays      int       `json:"user-days,omitempty"`
 	UserHours     int       `json:"user-hours,omitempty"`
 	UserMinutes   int       `json:"user-minutes,omitempty"`
-	Email         string    `json:"email"`
+	SendTo        string    `json:"email"`
 	// Used to be stored as formatted time, now as Unix.
 	UsedBy  [][]string                 `json:"used-by"`
 	Notify  map[string]map[string]bool `json:"notify"`

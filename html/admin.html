@@ -501,7 +501,14 @@
                             <div id="create-send-to-container">
                                 <label class="label supra">{{ .strings.inviteSendToEmail }}</label>
                                 <div class="flex-expand mb-1 mt-half">
+                                    {{ if .discord_enabled }}
+                                    <input type="text" id="create-send-to" class="input ~neutral !normal mr-1" placeholder="example@example.com | user#1234">
+                                    <span id="create-send-to-search" class="button ~neutral !normal mr-1">
+                                        <i class="icon ri-search-2-line" title="{{ .strings.search }}"></i>
+                                    </span>
+                                    {{ else }}
                                     <input type="email" id="create-send-to" class="input ~neutral !normal mr-1" placeholder="example@example.com">
+                                    {{ end }}
                                     <label for="create-send-to-enabled" class="button ~neutral !normal">
                                         <input type="checkbox" id="create-send-to-enabled" aria-label="Send to address enabled">
                                     </label>

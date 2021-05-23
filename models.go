@@ -50,7 +50,7 @@ type generateInviteDTO struct {
 	UserDays      int    `json:"user-days,omitempty" example:"1"`    // Number of days till user expiry
 	UserHours     int    `json:"user-hours,omitempty" example:"2"`   // Number of hours till user expiry
 	UserMinutes   int    `json:"user-minutes,omitempty" example:"3"` // Number of minutes till user expiry
-	Email         string `json:"email" example:"jeff@jellyf.in"`     // Send invite to this address
+	SendTo        string `json:"send-to" example:"jeff@jellyf.in"`   // Send invite to this address or discord name
 	MultipleUses  bool   `json:"multiple-uses" example:"true"`       // Allow multiple uses
 	NoLimit       bool   `json:"no-limit" example:"false"`           // No invite use limit
 	RemainingUses int    `json:"remaining-uses" example:"5"`         // Remaining invite uses
@@ -100,7 +100,7 @@ type inviteDTO struct {
 	UsedBy         map[string]int64 `json:"used-by,omitempty"`                     // Users who have used this invite mapped to their creation time in Epoch/Unix time
 	NoLimit        bool             `json:"no-limit,omitempty"`                    // If true, invite can be used any number of times
 	RemainingUses  int              `json:"remaining-uses,omitempty"`              // Remaining number of uses (if applicable)
-	Email          string           `json:"email,omitempty"`                       // Email the invite was sent to (if applicable)
+	SendTo         string           `json:"send_to,omitempty"`                     // Email/Discord username the invite was sent to (if applicable)
 	NotifyExpiry   bool             `json:"notify-expiry,omitempty"`               // Whether to notify the requesting user of expiry or not
 	NotifyCreation bool             `json:"notify-creation,omitempty"`             // Whether to notify the requesting user of account creation or not
 	Label          string           `json:"label,omitempty" example:"For Friends"` // Optional label for the invite

@@ -258,8 +258,8 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 		}
 		return
 	}
-	email := app.storage.invites[code].Email
-	if strings.Contains(email, "Failed") {
+	email := app.storage.invites[code].SendTo
+	if strings.Contains(email, "Failed") || !strings.Contains(email, "@") {
 		email = ""
 	}
 	data := gin.H{
