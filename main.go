@@ -621,12 +621,12 @@ func start(asDaemon, firstCall bool) {
 				app.err.Printf("Failure serving: %s", err)
 			}
 		}
-		if firstRun {
-			app.info.Printf("Loaded, visit %s to start.", address)
-		} else {
-			app.info.Printf("Loaded @ %s", address)
-		}
 	}()
+	if firstRun {
+		app.info.Printf("Loaded, visit %s to start.", address)
+	} else {
+		app.info.Printf("Loaded @ %s", address)
+	}
 	app.quit = make(chan os.Signal)
 	signal.Notify(app.quit, os.Interrupt)
 	go func() {
@@ -779,7 +779,7 @@ You can then run:
 		fmt.Print(info("systemctl --user stop jfa-go\n\n"))
 		color.New(color.FgYellow).PrintFunc()("To restart: ")
 		fmt.Print(info("systemctl --user stop jfa-go\n"))
-	} else if TRAY && flagPassed("tray") {
+	} else if TRAY {
 		RunTray()
 	} else {
 		RESTART = make(chan bool, 1)
