@@ -498,6 +498,11 @@ td.img-circle {
     height: 32px;
 }
 
+span.img-circle.lg {
+    width: 64px;
+    height: 64px;
+}
+
 span.shield.img-circle {
     padding: 0.2rem;
 }

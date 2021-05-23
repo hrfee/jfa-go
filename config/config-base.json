@@ -592,10 +592,28 @@
                     "name": "Channel to monitor",
                     "required": false,
                     "requires_restart": true,
-                    "depens_true": "enabled",
+                    "depends_true": "enabled",
                     "type": "text",
                     "value": "",
                     "description": "Only listen to commands in specified channel. Leave blank to monitor all."
+                },
+                "provide_invite": {
+                    "name": "Provide server invite",
+                    "required": false,
+                    "requires_restart": true,
+                    "depends_true": "enabled",
+                    "type": "bool",
+                    "value": false,
+                    "description": "Generate a one-time discord server invite for the account creation form. Required Bot permission \"Create instant invite\", you may need to re-add the bot to your server after."
+                },
+                "invite_channel": {
+                    "name": "Invite channel",
+                    "required": false,
+                    "requires_restart": true,
+                    "depends_true": "provide_invite",
+                    "type": "text",
+                    "value": "",
+                    "description": "Channel to invite new users to."
                 },
                 "language": {
                     "name": "Language",

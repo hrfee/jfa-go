@@ -2206,6 +2206,33 @@ func (app *appContext) DiscordVerifiedInvite(gc *gin.Context) {
 	respondBool(200, ok, gc)
 }
 
+// @Summary Returns a 10-minute, one-use Discord server invite
+// @Produce json
+// @Success 200 {object} DiscordInviteDTO
+// @Failure 400 {object} boolResponse
+// @Failure 401 {object} boolResponse
+// @Failure 500 {object} boolResponse
+// @Param invCode path string true "invite Code"
+// @Router /invite/{invCode}/discord/invite [get]
+// @tags Other
+func (app *appContext) DiscordServerInvite(gc *gin.Context) {
+	if app.discord.inviteChannelName == "" {
+		respondBool(400, false, gc)
+		return
+	}
+	code := gc.Param("invCode")
+	if _, ok := app.storage.invites[code]; !ok {
+		respondBool(401, false, gc)
+		return
+	}
+	invURL, iconURL := app.discord.NewTempInvite(10*60, 1)
+	if invURL == "" {
+		respondBool(500, false, gc)
+		return
+	}
+	gc.JSON(200, DiscordInviteDTO{invURL, iconURL})
+}
+
 // @Summary Returns a list of matching users from a Discord guild, given a username (discriminator optional).
 // @Produce json
 // @Success 200 {object} DiscordUsersDTO

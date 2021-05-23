@@ -8,16 +8,17 @@ import (
 )
 
 type DiscordDaemon struct {
-	Stopped                bool
-	ShutdownChannel        chan string
-	bot                    *dg.Session
-	username               string
-	tokens                 []string
-	verifiedTokens         map[string]DiscordUser // Map of tokens to discord users.
-	channelID, channelName string
-	serverChannelName      string
-	users                  map[string]DiscordUser // Map of user IDs to users. Added to on first interaction, and loaded from app.storage.discord on start.
-	app                    *appContext
+	Stopped                                                    bool
+	ShutdownChannel                                            chan string
+	bot                                                        *dg.Session
+	username                                                   string
+	tokens                                                     []string
+	verifiedTokens                                             map[string]DiscordUser // Map of tokens to discord users.
+	channelID, channelName, inviteChannelID, inviteChannelName string
+	guildID                                                    string
+	serverChannelName, serverName                              string
+	users                                                      map[string]DiscordUser // Map of user IDs to users. Added to on first interaction, and loaded from app.storage.discord on start.
+	app                                                        *appContext
 }
 
 func newDiscordDaemon(app *appContext) (*DiscordDaemon, error) {
@@ -71,7 +72,7 @@ func (d *DiscordDaemon) MustGetUser(channelID, userID, discrim, username string)
 
 func (d *DiscordDaemon) run() {
 	d.bot.AddHandler(d.messageHandler)
-	d.bot.Identify.Intents = dg.IntentsGuildMessages | dg.IntentsDirectMessages | dg.IntentsGuildMembers
+	d.bot.Identify.Intents = dg.IntentsGuildMessages | dg.IntentsDirectMessages | dg.IntentsGuildMembers | dg.IntentsGuildInvites
 	if err := d.bot.Open(); err != nil {
 		d.app.err.Printf("Discord: Failed to start daemon: %v", err)
 		return
@@ -82,14 +83,21 @@ func (d *DiscordDaemon) run() {
 	}
 	d.username = d.bot.State.User.Username
 	// Choose the last guild (server), for now we don't really support multiple anyway
-	guild, err := d.bot.Guild(d.bot.State.Guilds[len(d.bot.State.Guilds)-1].ID)
+	d.guildID = d.bot.State.Guilds[len(d.bot.State.Guilds)-1].ID
+	guild, err := d.bot.Guild(d.guildID)
 	if err != nil {
 		d.app.err.Printf("Discord: Failed to get guild: %v", err)
 	}
 	d.serverChannelName = guild.Name
+	d.serverName = guild.Name
 	if channel := d.app.config.Section("discord").Key("channel").String(); channel != "" {
 		d.channelName = channel
 		d.serverChannelName += "/" + channel
+	}
+	if d.app.config.Section("discord").Key("provide_invite").MustBool(false) {
+		if invChannel := d.app.config.Section("discord").Key("invite_channel").String(); invChannel != "" {
+			d.inviteChannelName = invChannel
+		}
 	}
 	defer d.bot.Close()
 	<-d.ShutdownChannel
@@ -97,11 +105,70 @@ func (d *DiscordDaemon) run() {
 	return
 }
 
+// NewTempInvite creates an invite link, and returns the invite URL, as well as the URL for the server icon.
+func (d *DiscordDaemon) NewTempInvite(ageSeconds, maxUses int) (inviteURL, iconURL string) {
+	var inv *dg.Invite
+	var err error
+	if d.inviteChannelName == "" {
+		d.app.err.Println("Discord: Cannot create invite without channel specified in settings.")
+		return
+	}
+	if d.inviteChannelID == "" {
+		channels, err := d.bot.GuildChannels(d.guildID)
+		if err != nil {
+			d.app.err.Printf("Discord: Couldn't get channel list: %v", err)
+			return
+		}
+		found := false
+		for _, channel := range channels {
+			// channel, err := d.bot.Channel(ch.ID)
+			// if err != nil {
+			// 	d.app.err.Printf("Discord: Couldn't get channel: %v", err)
+			// 	return
+			// }
+			if channel.Name == d.inviteChannelName {
+				d.inviteChannelID = channel.ID
+				found = true
+				break
+			}
+		}
+		if !found {
+			d.app.err.Printf("Discord: Couldn't find invite channel \"%s\"", d.inviteChannelName)
+			return
+		}
+	}
+	// channel, err := d.bot.Channel(d.inviteChannelID)
+	// if err != nil {
+	// 	d.app.err.Printf("Discord: Couldn't get invite channel: %v", err)
+	// 	return
+	// }
+	inv, err = d.bot.ChannelInviteCreate(d.inviteChannelID, dg.Invite{
+		// Guild:   d.bot.State.Guilds[len(d.bot.State.Guilds)-1],
+		// Channel: channel,
+		// Inviter: d.bot.State.User,
+		MaxAge:    ageSeconds,
+		MaxUses:   maxUses,
+		Temporary: false,
+	})
+	if err != nil {
+		d.app.err.Printf("Discord: Failed to create invite: %v", err)
+		return
+	}
+	inviteURL = "https://discord.gg/" + inv.Code
+	guild, err := d.bot.Guild(d.guildID)
+	if err != nil {
+		d.app.err.Printf("Discord: Failed to get guild: %v", err)
+		return
+	}
+	iconURL = guild.IconURL()
+	return
+}
+
 // Returns the user(s) roughly corresponding to the username (if they are in the guild).
 // if no discriminator (#xxxx) is given in the username and there are multiple corresponding users, a list of all matching users is returned.
 func (d *DiscordDaemon) GetUsers(username string) []*dg.Member {
 	members, err := d.bot.GuildMembers(
-		d.bot.State.Guilds[len(d.bot.State.Guilds)-1].ID,
+		d.guildID,
 		"",
 		1000,
 	)

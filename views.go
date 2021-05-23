@@ -302,6 +302,8 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 			"command":        `<code class="code">` + app.config.Section("discord").Key("start_command").MustString("!start") + `</code>`,
 			"server_channel": app.discord.serverChannelName,
 		}))
+		data["discordServerName"] = app.discord.serverName
+		data["discordInviteLink"] = app.discord.inviteChannelName != ""
 	}
 
 	// if discordEnabled {

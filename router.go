@@ -123,6 +123,9 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 		}
 		if discordEnabled {
 			router.GET(p+"/invite/:invCode/discord/verified/:pin", app.DiscordVerifiedInvite)
+			if app.config.Section("discord").Key("provide_invite").MustBool(false) {
+				router.GET(p+"/invite/:invCode/discord/invite", app.DiscordServerInvite)
+			}
 		}
 	}
 	if *SWAGGER {

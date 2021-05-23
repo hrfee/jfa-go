@@ -276,3 +276,8 @@ type DiscordConnectUserDTO struct {
 	JellyfinID string `json:"jf_id"`
 	DiscordID  string `json:"discord_id"`
 }
+
+type DiscordInviteDTO struct {
+	InviteURL string `json:"invite"`
+	IconURL   string `json:"icon"`
+}

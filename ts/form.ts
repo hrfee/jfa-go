@@ -18,6 +18,8 @@ interface formWindow extends Window {
     discordRequired: boolean;
     discordPIN: string;
     discordStartCommand: string;
+    discordInviteLink: boolean;
+    discordServerName: string;
     userExpiryEnabled: boolean;
     userExpiryMonths: number;
     userExpiryDays: number;
@@ -88,10 +90,30 @@ if (window.telegramEnabled) {
     };
 }
 
+interface DiscordInvite {
+    invite: string;
+    icon: string;
+}
+
 var discordVerified = false;
 if (window.discordEnabled) {
     window.discordModal = new Modal(document.getElementById("modal-discord"), window.discordRequired);
     const discordButton = document.getElementById("link-discord") as HTMLSpanElement;
+    if (window.discordInviteLink) {
+        _get("/invite/" + window.code + "/discord/invite", null, (req: XMLHttpRequest) => {
+            if (req.readyState == 4) {
+                if (req.status != 200) {
+                    return;
+                }
+                const inv = req.response as DiscordInvite;
+                const link = document.getElementById("discord-invite") as HTMLAnchorElement;
+                link.classList.add("subheading", "link-center");
+                link.href = inv.invite;
+                link.target = "_blank";
+                link.innerHTML = `<span class="img-circle lg mr-1"><img class="img-circle" src="${inv.icon}" width="64" height="64"></span>${window.discordServerName}`;
+            }
+        });
+    }
     discordButton.onclick = () => {
         const waiting = document.getElementById("discord-waiting") as HTMLSpanElement;
         toggleLoader(waiting);
