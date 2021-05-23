@@ -17,6 +17,8 @@ type newUserDTO struct {
 	Code            string `json:"code" example:"abc0933jncjkcjj"`              // Invite code (required on /newUser)
 	TelegramPIN     string `json:"telegram_pin" example:"A1-B2-3C"`             // Telegram verification PIN (if used)
 	TelegramContact bool   `json:"telegram_contact"`                            // Whether or not to use telegram for notifications/pwrs
+	DiscordPIN      string `json:"discord_pin" example:"A1-B2-3C"`              // Discord verification PIN (if used)
+	DiscordContact  bool   `json:"discord_contact"`                             // Whether or not to use discord for notifications/pwrs
 }
 
 type newUserResponse struct {
@@ -48,7 +50,7 @@ type generateInviteDTO struct {
 	UserDays      int    `json:"user-days,omitempty" example:"1"`    // Number of days till user expiry
 	UserHours     int    `json:"user-hours,omitempty" example:"2"`   // Number of hours till user expiry
 	UserMinutes   int    `json:"user-minutes,omitempty" example:"3"` // Number of minutes till user expiry
-	Email         string `json:"email" example:"jeff@jellyf.in"`     // Send invite to this address
+	SendTo        string `json:"send-to" example:"jeff@jellyf.in"`   // Send invite to this address or discord name
 	MultipleUses  bool   `json:"multiple-uses" example:"true"`       // Allow multiple uses
 	NoLimit       bool   `json:"no-limit" example:"false"`           // No invite use limit
 	RemainingUses int    `json:"remaining-uses" example:"5"`         // Remaining invite uses
@@ -98,7 +100,7 @@ type inviteDTO struct {
 	UsedBy         map[string]int64 `json:"used-by,omitempty"`                     // Users who have used this invite mapped to their creation time in Epoch/Unix time
 	NoLimit        bool             `json:"no-limit,omitempty"`                    // If true, invite can be used any number of times
 	RemainingUses  int              `json:"remaining-uses,omitempty"`              // Remaining number of uses (if applicable)
-	Email          string           `json:"email,omitempty"`                       // Email the invite was sent to (if applicable)
+	SendTo         string           `json:"send_to,omitempty"`                     // Email/Discord username the invite was sent to (if applicable)
 	NotifyExpiry   bool             `json:"notify-expiry,omitempty"`               // Whether to notify the requesting user of expiry or not
 	NotifyCreation bool             `json:"notify-creation,omitempty"`             // Whether to notify the requesting user of account creation or not
 	Label          string           `json:"label,omitempty" example:"For Friends"` // Optional label for the invite
@@ -125,12 +127,16 @@ type respUser struct {
 	ID                    string `json:"id" example:"fdgsdfg45534fa"`              // userID of user
 	Name                  string `json:"name" example:"jeff"`                      // Username of user
 	Email                 string `json:"email,omitempty" example:"jeff@jellyf.in"` // Email address of user (if available)
-	LastActive            int64  `json:"last_active" example:"1617737207510"`      // Time of last activity on Jellyfin
-	Admin                 bool   `json:"admin" example:"false"`                    // Whether or not the user is Administrator
-	Expiry                int64  `json:"expiry" example:"1617737207510"`           // Expiry time of user as Epoch/Unix time.
-	Disabled              bool   `json:"disabled"`                                 // Whether or not the user is disabled.
-	Telegram              string `json:"telegram"`                                 // Telegram username (if known)
+	NotifyThroughEmail    bool   `json:"notify_email"`
+	LastActive            int64  `json:"last_active" example:"1617737207510"` // Time of last activity on Jellyfin
+	Admin                 bool   `json:"admin" example:"false"`               // Whether or not the user is Administrator
+	Expiry                int64  `json:"expiry" example:"1617737207510"`      // Expiry time of user as Epoch/Unix time.
+	Disabled              bool   `json:"disabled"`                            // Whether or not the user is disabled.
+	Telegram              string `json:"telegram"`                            // Telegram username (if known)
 	NotifyThroughTelegram bool   `json:"notify_telegram"`
+	Discord               string `json:"discord"`    // Discord username (if known)
+	DiscordID             string `json:"discord_id"` // Discord user ID for creating links.
+	NotifyThroughDiscord  bool   `json:"notify_discord"`
 }
 
 type getUsersDTO struct {
@@ -249,7 +255,29 @@ type telegramSetDTO struct {
 	ID    string `json:"id"` // Jellyfin ID of user.
 }
 
-type telegramNotifyDTO struct {
-	ID      string `json:"id"`
-	Enabled bool   `json:"enabled"`
+type SetContactMethodsDTO struct {
+	ID       string `json:"id"`
+	Email    bool   `json:"email"`
+	Discord  bool   `json:"discord"`
+	Telegram bool   `json:"telegram"`
+}
+
+type DiscordUserDTO struct {
+	Name      string `json:"name"`
+	AvatarURL string `json:"avatar_url"`
+	ID        string `json:"id"`
+}
+
+type DiscordUsersDTO struct {
+	Users []DiscordUserDTO `json:"users"`
+}
+
+type DiscordConnectUserDTO struct {
+	JellyfinID string `json:"jf_id"`
+	DiscordID  string `json:"discord_id"`
+}
+
+type DiscordInviteDTO struct {
+	InviteURL string `json:"invite"`
+	IconURL   string `json:"icon"`
 }

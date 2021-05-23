@@ -546,6 +546,89 @@
                 }
             }
         },
+        "discord": {
+            "order": [],
+            "meta": {
+                "name": "Discord",
+                "description": "Settings for Discord invites/signup/notifications"
+            },
+            "settings": {
+                "enabled": {
+                    "name": "Enabled",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "bool",
+                    "value": false,
+                    "description": "Enable signup verification through Discord and the sending of notifications through it.\nSee the jfa-go wiki for setting up a bot."
+                },
+                "required": {
+                    "name": "Require on sign-up",
+                    "required": false,
+                    "required_restart": true,
+                    "depends_true": "enabled",
+                    "type": "bool",
+                    "value": false,
+                    "description": "Require Discord connection on sign-up."
+                },
+                "token": {
+                    "name": "API Token",
+                    "required": false,
+                    "requires_restart": true,
+                    "depends_true": "enabled",
+                    "type": "text",
+                    "value": "",
+                    "description": "Discord Bot API Token."
+                },
+                "start_command": {
+                    "name": "Start command",
+                    "required": false,
+                    "requires_restart": true,
+                    "depends_true": "enabled",
+                    "type": "text",
+                    "value": "!start",
+                    "description": "Command to start the user verification process."
+                },
+                "channel": {
+                    "name": "Channel to monitor",
+                    "required": false,
+                    "requires_restart": true,
+                    "depends_true": "enabled",
+                    "type": "text",
+                    "value": "",
+                    "description": "Only listen to commands in specified channel. Leave blank to monitor all."
+                },
+                "provide_invite": {
+                    "name": "Provide server invite",
+                    "required": false,
+                    "requires_restart": true,
+                    "depends_true": "enabled",
+                    "type": "bool",
+                    "value": false,
+                    "description": "Generate a one-time discord server invite for the account creation form. Required Bot permission \"Create instant invite\", you may need to re-add the bot to your server after."
+                },
+                "invite_channel": {
+                    "name": "Invite channel",
+                    "required": false,
+                    "requires_restart": true,
+                    "depends_true": "provide_invite",
+                    "type": "text",
+                    "value": "",
+                    "description": "Channel to invite new users to."
+                },
+                "language": {
+                    "name": "Language",
+                    "required": false,
+                    "requires_restart": false,
+                    "depends_true": "enabled",
+                    "type": "select",
+                    "options": [
+                        ["en-us", "English (US)"]
+                    ],
+                    "value": "en-us",
+                    "description": "Default Discord message language. Visit weblate if you'd like to translate."
+                }
+            }
+        },
         "telegram": {
             "order": [],
             "meta": {
@@ -565,6 +648,7 @@
                     "name": "Require on sign-up",
                     "required": false,
                     "required_restart": true,
+                    "depends_true": "enabled",
                     "type": "bool",
                     "value": false,
                     "description": "Require telegram connection on sign-up."
@@ -1140,6 +1224,14 @@
                     "type": "text",
                     "value": "",
                     "description": "Stores telegram user IDs and language preferences."
+                },
+                "discord_users": {
+                    "name": "Discord users",
+                    "required": false,
+                    "requires_restart": false,
+                    "type": "text",
+                    "value": "",
+                    "description": "Stores discord user IDs and language preferences."
                 }
             }
         }

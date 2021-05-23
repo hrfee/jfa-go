@@ -7,6 +7,7 @@
             window.notificationsEnabled = {{ .notifications }};
             window.emailEnabled = {{ .email_enabled }};
             window.telegramEnabled = {{ .telegram_enabled }};
+            window.discordEnabled = {{ .discord_enabled }};
             window.ombiEnabled = {{ .ombiEnabled }};
             window.usernameEnabled = {{ .username }};
             window.langFile = JSON.parse({{ .language }});
@@ -327,6 +328,18 @@
             </div>
         </div>
         {{ end }}
+        {{ if .discord_enabled }}
+        <div id="modal-discord" class="modal">
+            <div class="modal-content card">
+                <span class="heading mb-1"><span id="discord-header"></span><span class="modal-close">&times;</span></span>
+                <p class="content mb-1" id="discord-description"></p>
+                <div class="row">
+                    <input type="search" class="col sm field ~neutral !normal input" id="discord-search" placeholder="user#1234">
+                </div>
+                <table class="table"><tbody id="discord-list"></tbody></table>
+            </div>
+        </div>
+        {{ end }}
         <div id="notification-box"></div>
         <span class="dropdown" tabindex="0" id="lang-dropdown">
             <span class="button ~urge dropdown-button">
@@ -488,7 +501,14 @@
                             <div id="create-send-to-container">
                                 <label class="label supra">{{ .strings.inviteSendToEmail }}</label>
                                 <div class="flex-expand mb-1 mt-half">
+                                    {{ if .discord_enabled }}
+                                    <input type="text" id="create-send-to" class="input ~neutral !normal mr-1" placeholder="example@example.com | user#1234">
+                                    <span id="create-send-to-search" class="button ~neutral !normal mr-1">
+                                        <i class="icon ri-search-2-line" title="{{ .strings.search }}"></i>
+                                    </span>
+                                    {{ else }}
                                     <input type="email" id="create-send-to" class="input ~neutral !normal mr-1" placeholder="example@example.com">
+                                    {{ end }}
                                     <label for="create-send-to-enabled" class="button ~neutral !normal">
                                         <input type="checkbox" id="create-send-to-enabled" aria-label="Send to address enabled">
                                     </label>
@@ -524,6 +544,9 @@
                                     <th>{{ .strings.emailAddress }}</th>
                                     {{ if .telegram_enabled }}
                                     <th>Telegram</th>
+                                    {{ end }}
+                                    {{ if .discord_enabled }}
+                                    <th>Discord</th>
                                     {{ end }}
                                     <th>{{ .strings.expiry }}</th>
                                     <th>{{ .strings.lastActiveTime }}</th>

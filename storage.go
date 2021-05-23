@@ -15,19 +15,21 @@ import (
 )
 
 type Storage struct {
-	timePattern                                                                                                                                          string
-	invite_path, emails_path, policy_path, configuration_path, displayprefs_path, ombi_path, profiles_path, customEmails_path, users_path, telegram_path string
-	users                                                                                                                                                map[string]time.Time
-	invites                                                                                                                                              Invites
-	profiles                                                                                                                                             map[string]Profile
-	defaultProfile                                                                                                                                       string
-	emails, displayprefs, ombi_template                                                                                                                  map[string]interface{}
-	telegram                                                                                                                                             map[string]TelegramUser // Map of Jellyfin User IDs to telegram users.
-	customEmails                                                                                                                                         customEmails
-	policy                                                                                                                                               mediabrowser.Policy
-	configuration                                                                                                                                        mediabrowser.Configuration
-	lang                                                                                                                                                 Lang
-	invitesLock, usersLock                                                                                                                               sync.Mutex
+	timePattern                                                                                                                                                        string
+	invite_path, emails_path, policy_path, configuration_path, displayprefs_path, ombi_path, profiles_path, customEmails_path, users_path, telegram_path, discord_path string
+	users                                                                                                                                                              map[string]time.Time
+	invites                                                                                                                                                            Invites
+	profiles                                                                                                                                                           map[string]Profile
+	defaultProfile                                                                                                                                                     string
+	displayprefs, ombi_template                                                                                                                                        map[string]interface{}
+	emails                                                                                                                                                             map[string]EmailAddress
+	telegram                                                                                                                                                           map[string]TelegramUser // Map of Jellyfin User IDs to telegram users.
+	discord                                                                                                                                                            map[string]DiscordUser  // Map of Jellyfin user IDs to discord users.
+	customEmails                                                                                                                                                       customEmails
+	policy                                                                                                                                                             mediabrowser.Policy
+	configuration                                                                                                                                                      mediabrowser.Configuration
+	lang                                                                                                                                                               Lang
+	invitesLock, usersLock                                                                                                                                             sync.Mutex
 }
 
 type TelegramUser struct {
@@ -35,6 +37,20 @@ type TelegramUser struct {
 	Username string
 	Lang     string
 	Contact  bool // Whether to contact through telegram or not
+}
+
+type DiscordUser struct {
+	ChannelID     string
+	ID            string
+	Username      string
+	Discriminator string
+	Lang          string
+	Contact       bool
+}
+
+type EmailAddress struct {
+	Addr    string
+	Contact bool
 }
 
 type customEmails struct {
@@ -79,7 +95,7 @@ type Invite struct {
 	UserDays      int       `json:"user-days,omitempty"`
 	UserHours     int       `json:"user-hours,omitempty"`
 	UserMinutes   int       `json:"user-minutes,omitempty"`
-	Email         string    `json:"email"`
+	SendTo        string    `json:"email"`
 	// Used to be stored as formatted time, now as Unix.
 	UsedBy  [][]string                 `json:"used-by"`
 	Notify  map[string]map[string]bool `json:"notify"`
@@ -89,23 +105,24 @@ type Invite struct {
 }
 
 type Lang struct {
-	AdminPath          string
-	chosenAdminLang    string
-	Admin              adminLangs
-	AdminJSON          map[string]string
-	FormPath           string
-	chosenFormLang     string
-	Form               formLangs
-	PasswordResetPath  string
-	chosenPWRLang      string
-	PasswordReset      pwrLangs
-	EmailPath          string
-	chosenEmailLang    string
-	Email              emailLangs
-	CommonPath         string
-	Common             commonLangs
-	SetupPath          string
-	Setup              setupLangs
+	AdminPath         string
+	chosenAdminLang   string
+	Admin             adminLangs
+	AdminJSON         map[string]string
+	FormPath          string
+	chosenFormLang    string
+	Form              formLangs
+	PasswordResetPath string
+	chosenPWRLang     string
+	PasswordReset     pwrLangs
+	EmailPath         string
+	chosenEmailLang   string
+	Email             emailLangs
+	CommonPath        string
+	Common            commonLangs
+	SetupPath         string
+	Setup             setupLangs
+	// Telegram translations are also used for Discord bots (and likely future ones).
 	chosenTelegramLang string
 	TelegramPath       string
 	Telegram           telegramLangs
@@ -765,6 +782,14 @@ func (st *Storage) storeTelegramUsers() error {
 	return storeJSON(st.telegram_path, st.telegram)
 }
 
+func (st *Storage) loadDiscordUsers() error {
+	return loadJSON(st.discord_path, &st.discord)
+}
+
+func (st *Storage) storeDiscordUsers() error {
+	return storeJSON(st.discord_path, st.discord)
+}
+
 func (st *Storage) loadCustomEmails() error {
 	return loadJSON(st.customEmails_path, &st.customEmails)
 }
@@ -884,85 +909,85 @@ func storeJSON(path string, obj interface{}) error {
 	return err
 }
 
-// One build of JF 10.7.0 hyphenated user IDs while another one later didn't. These functions will hyphenate/de-hyphenate email storage.
-
-func hyphenate(userID string) string {
-	if userID[8] == '-' {
-		return userID
-	}
-	return userID[:8] + "-" + userID[8:12] + "-" + userID[12:16] + "-" + userID[16:20] + "-" + userID[20:]
-}
-
-func (app *appContext) deHyphenateStorage(old map[string]interface{}) (map[string]interface{}, int, error) {
-	jfUsers, status, err := app.jf.GetUsers(false)
-	if status != 200 || err != nil {
-		return nil, status, err
-	}
-	newEmails := map[string]interface{}{}
-	for _, user := range jfUsers {
-		unHyphenated := user.ID
-		hyphenated := hyphenate(unHyphenated)
-		val, ok := old[hyphenated]
-		if ok {
-			newEmails[unHyphenated] = val
-		}
-	}
-	return newEmails, status, err
-}
-
-func (app *appContext) hyphenateStorage(old map[string]interface{}) (map[string]interface{}, int, error) {
-	jfUsers, status, err := app.jf.GetUsers(false)
-	if status != 200 || err != nil {
-		return nil, status, err
-	}
-	newEmails := map[string]interface{}{}
-	for _, user := range jfUsers {
-		unstripped := user.ID
-		stripped := strings.ReplaceAll(unstripped, "-", "")
-		val, ok := old[stripped]
-		if ok {
-			newEmails[unstripped] = val
-		}
-	}
-	return newEmails, status, err
-}
-
-func (app *appContext) hyphenateEmailStorage(old map[string]interface{}) (map[string]interface{}, int, error) {
-	return app.hyphenateStorage(old)
-}
-
-func (app *appContext) deHyphenateEmailStorage(old map[string]interface{}) (map[string]interface{}, int, error) {
-	return app.deHyphenateStorage(old)
-}
-
-func (app *appContext) hyphenateUserStorage(old map[string]time.Time) (map[string]time.Time, int, error) {
-	asInterface := map[string]interface{}{}
-	for k, v := range old {
-		asInterface[k] = v
-	}
-	fixed, status, err := app.hyphenateStorage(asInterface)
-	if err != nil {
-		return nil, status, err
-	}
-	out := map[string]time.Time{}
-	for k, v := range fixed {
-		out[k] = v.(time.Time)
-	}
-	return out, status, err
-}
-
-func (app *appContext) deHyphenateUserStorage(old map[string]time.Time) (map[string]time.Time, int, error) {
-	asInterface := map[string]interface{}{}
-	for k, v := range old {
-		asInterface[k] = v
-	}
-	fixed, status, err := app.deHyphenateStorage(asInterface)
-	if err != nil {
-		return nil, status, err
-	}
-	out := map[string]time.Time{}
-	for k, v := range fixed {
-		out[k] = v.(time.Time)
-	}
-	return out, status, err
-}
+// // One build of JF 10.7.0 hyphenated user IDs while another one later didn't. These functions will hyphenate/de-hyphenate email storage.
+//
+// func hyphenate(userID string) string {
+// 	if userID[8] == '-' {
+// 		return userID
+// 	}
+// 	return userID[:8] + "-" + userID[8:12] + "-" + userID[12:16] + "-" + userID[16:20] + "-" + userID[20:]
+// }
+//
+// func (app *appContext) deHyphenateStorage(old map[string]interface{}) (map[string]interface{}, int, error) {
+// 	jfUsers, status, err := app.jf.GetUsers(false)
+// 	if status != 200 || err != nil {
+// 		return nil, status, err
+// 	}
+// 	newEmails := map[string]interface{}{}
+// 	for _, user := range jfUsers {
+// 		unHyphenated := user.ID
+// 		hyphenated := hyphenate(unHyphenated)
+// 		val, ok := old[hyphenated]
+// 		if ok {
+// 			newEmails[unHyphenated] = val
+// 		}
+// 	}
+// 	return newEmails, status, err
+// }
+//
+// func (app *appContext) hyphenateStorage(old map[string]interface{}) (map[string]interface{}, int, error) {
+// 	jfUsers, status, err := app.jf.GetUsers(false)
+// 	if status != 200 || err != nil {
+// 		return nil, status, err
+// 	}
+// 	newEmails := map[string]interface{}{}
+// 	for _, user := range jfUsers {
+// 		unstripped := user.ID
+// 		stripped := strings.ReplaceAll(unstripped, "-", "")
+// 		val, ok := old[stripped]
+// 		if ok {
+// 			newEmails[unstripped] = val
+// 		}
+// 	}
+// 	return newEmails, status, err
+// }
+//
+// func (app *appContext) hyphenateEmailStorage(old map[string]interface{}) (map[string]interface{}, int, error) {
+// 	return app.hyphenateStorage(old)
+// }
+//
+// func (app *appContext) deHyphenateEmailStorage(old map[string]interface{}) (map[string]interface{}, int, error) {
+// 	return app.deHyphenateStorage(old)
+// }
+//
+// func (app *appContext) hyphenateUserStorage(old map[string]time.Time) (map[string]time.Time, int, error) {
+// 	asInterface := map[string]interface{}{}
+// 	for k, v := range old {
+// 		asInterface[k] = v
+// 	}
+// 	fixed, status, err := app.hyphenateStorage(asInterface)
+// 	if err != nil {
+// 		return nil, status, err
+// 	}
+// 	out := map[string]time.Time{}
+// 	for k, v := range fixed {
+// 		out[k] = v.(time.Time)
+// 	}
+// 	return out, status, err
+// }
+//
+// func (app *appContext) deHyphenateUserStorage(old map[string]time.Time) (map[string]time.Time, int, error) {
+// 	asInterface := map[string]interface{}{}
+// 	for k, v := range old {
+// 		asInterface[k] = v
+// 	}
+// 	fixed, status, err := app.deHyphenateStorage(asInterface)
+// 	if err != nil {
+// 		return nil, status, err
+// 	}
+// 	out := map[string]time.Time{}
+// 	for k, v := range fixed {
+// 		out[k] = v.(time.Time)
+// 	}
+// 	return out, status, err
+// }

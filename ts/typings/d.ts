@@ -21,6 +21,7 @@ declare interface Window {
     notificationsEnabled: boolean;
     emailEnabled: boolean;
     telegramEnabled: boolean;
+    discordEnabled: boolean;
     ombiEnabled: boolean;
     usernameEnabled: boolean;
     token: string;
@@ -101,13 +102,14 @@ declare interface Modals {
     extendExpiry: Modal;
     updateInfo: Modal;
     telegram: Modal;
+    discord: Modal;
 }
 
 interface Invite {
     code?: string;
     expiresIn?: string;
     remainingUses?: string;
-    email?: string;
+    send_to?: string;
     usedBy?: { [name: string]: number };
     created?: number;
     notifyExpiry?: boolean;

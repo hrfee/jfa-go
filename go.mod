@@ -11,6 +11,7 @@ replace github.com/hrfee/jfa-go/ombi => ./ombi
 replace github.com/hrfee/jfa-go/logger => ./logger
 
 require (
+	github.com/bwmarrin/discordgo v0.23.2 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/emersion/go-autostart v0.0.0-20210130080809-00ed301c8e9a // indirect

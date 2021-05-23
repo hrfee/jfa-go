@@ -66,6 +66,10 @@ window.availableProfiles = window.availableProfiles || [];
     if (window.telegramEnabled) {
         window.modals.telegram = new Modal(document.getElementById("modal-telegram"));
     }
+
+    if (window.discordEnabled) {
+        window.modals.discord = new Modal(document.getElementById("modal-discord"));
+    }
 })();
 
 var inviteCreator = new createInvite();

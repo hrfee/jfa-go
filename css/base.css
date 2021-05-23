@@ -30,12 +30,12 @@
     }
 }
 
-@media screen and (max-width: 750px) {
+@media screen and (max-width: 1000px) {
     :root {
         font-size: 0.9rem;
     }
     .table-responsive table {
-        min-width: 660px;
+        min-width: 800px;
     }
 }
 
@@ -130,6 +130,10 @@ div.card:contains(section.banner.footer) {
     text-align: center;
 }
 
+.w-100 {
+    width: 100%;
+}
+
 .inline-block {
     display: inline-block;
 }
@@ -172,7 +176,7 @@ div.card:contains(section.banner.footer) {
 }
 
 p.sm,
-span.sm {
+span.sm:not(.heading) {
     font-size: 0.75rem;
 }
 
@@ -424,6 +428,7 @@ p.top {
 
 .table-responsive {
     overflow-x: auto;
+    font-size: 0.9rem;
 }
 
 #notification-box {
@@ -436,6 +441,10 @@ p.top {
 .dropdown {
     padding-bottom: 0.5rem;
     margin-bottom: -0.5rem;
+}
+
+.dropdown-display.lg {
+    white-space: nowrap;
 }
 
 pre {
@@ -482,4 +491,33 @@ a:hover:not(.lang-link):not(.\~urge), a:active:not(.lang-link):not(.\~urge) {
 .search {
     max-width: 15rem;
     min-width: 10rem;
+}
+
+td.img-circle {
+    width: 32px;
+    height: 32px;
+}
+
+span.img-circle.lg {
+    width: 64px;
+    height: 64px;
+}
+
+span.shield.img-circle {
+    padding: 0.2rem;
+}
+
+img.img-circle {
+    border-radius: 50%;
+    vertical-align: middle;
+}
+
+.table td.sm {
+    padding-top: 0.1rem;
+    padding-bottom: 0.1rem;
+}
+
+.table-inline {
+    display: flex !important;
+    align-items: center;
 }

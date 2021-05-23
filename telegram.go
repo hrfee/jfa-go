@@ -9,7 +9,7 @@ import (
 	tg "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
-type VerifiedToken struct {
+type TelegramVerifiedToken struct {
 	Token    string
 	ChatID   int64
 	Username string
@@ -21,7 +21,7 @@ type TelegramDaemon struct {
 	bot             *tg.BotAPI
 	username        string
 	tokens          []string
-	verifiedTokens  []VerifiedToken
+	verifiedTokens  []TelegramVerifiedToken
 	languages       map[int64]string // Store of languages for chatIDs. Added to on first interaction, and loaded from app.storage.telegram on start.
 	link            string
 	app             *appContext
@@ -37,12 +37,11 @@ func newTelegramDaemon(app *appContext) (*TelegramDaemon, error) {
 		return nil, err
 	}
 	td := &TelegramDaemon{
-		Stopped:         false,
 		ShutdownChannel: make(chan string),
 		bot:             bot,
 		username:        bot.Self.UserName,
 		tokens:          []string{},
-		verifiedTokens:  []VerifiedToken{},
+		verifiedTokens:  []TelegramVerifiedToken{},
 		languages:       map[int64]string{},
 		link:            "https://t.me/" + bot.Self.UserName,
 		app:             app,
@@ -55,10 +54,7 @@ func newTelegramDaemon(app *appContext) (*TelegramDaemon, error) {
 	return td, nil
 }
 
-var runes = []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
-
-// NewAuthToken generates an 8-character pin in the form "A1-2B-CD".
-func (t *TelegramDaemon) NewAuthToken() string {
+func genAuthToken() string {
 	rand.Seed(time.Now().UnixNano())
 	pin := make([]rune, 8)
 	for i := range pin {
@@ -68,8 +64,16 @@ func (t *TelegramDaemon) NewAuthToken() string {
 			pin[i] = runes[rand.Intn(len(runes))]
 		}
 	}
-	t.tokens = append(t.tokens, string(pin))
 	return string(pin)
+}
+
+var runes = []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+
+// NewAuthToken generates an 8-character pin in the form "A1-2B-CD".
+func (t *TelegramDaemon) NewAuthToken() string {
+	pin := genAuthToken()
+	t.tokens = append(t.tokens, pin)
+	return pin
 }
 
 func (t *TelegramDaemon) run() {
@@ -79,6 +83,7 @@ func (t *TelegramDaemon) run() {
 	updates, err := t.bot.GetUpdatesChan(u)
 	if err != nil {
 		t.app.err.Printf("Failed to start Telegram daemon: %v", err)
+		telegramEnabled = false
 		return
 	}
 	for {
@@ -171,7 +176,7 @@ func (t *TelegramDaemon) Shutdown() {
 
 func (t *TelegramDaemon) commandStart(upd *tg.Update, sects []string, lang string) {
 	content := t.app.storage.lang.Telegram[lang].Strings.get("startMessage") + "\n"
-	content += t.app.storage.lang.Telegram[lang].Strings.get("languageMessage")
+	content += t.app.storage.lang.Telegram[lang].Strings.template("languageMessage", tmpl{"command": "/lang"})
 	err := t.Reply(upd, content)
 	if err != nil {
 		t.app.err.Printf("Telegram: Failed to send message to \"%s\": %v", upd.Message.From.UserName, err)
@@ -180,9 +185,9 @@ func (t *TelegramDaemon) commandStart(upd *tg.Update, sects []string, lang strin
 
 func (t *TelegramDaemon) commandLang(upd *tg.Update, sects []string, lang string) {
 	if len(sects) == 1 {
-		list := "/lang <lang>\n"
+		list := "/lang `<lang>`\n"
 		for code := range t.app.storage.lang.Telegram {
-			list += fmt.Sprintf("%s: %s\n", code, t.app.storage.lang.Telegram[code].Meta.Name)
+			list += fmt.Sprintf("`%s`: %s\n", code, t.app.storage.lang.Telegram[code].Meta.Name)
 		}
 		err := t.Reply(upd, list)
 		if err != nil {
@@ -196,8 +201,7 @@ func (t *TelegramDaemon) commandLang(upd *tg.Update, sects []string, lang string
 			if user.ChatID == upd.Message.Chat.ID {
 				user.Lang = sects[1]
 				t.app.storage.telegram[jfID] = user
-				err := t.app.storage.storeTelegramUsers()
-				if err != nil {
+				if err := t.app.storage.storeTelegramUsers(); err != nil {
 					t.app.err.Printf("Failed to store Telegram users: %v", err)
 				}
 				break
@@ -225,7 +229,7 @@ func (t *TelegramDaemon) commandPIN(upd *tg.Update, sects []string, lang string)
 	if err != nil {
 		t.app.err.Printf("Telegram: Failed to send message to \"%s\": %v", upd.Message.From.UserName, err)
 	}
-	t.verifiedTokens = append(t.verifiedTokens, VerifiedToken{
+	t.verifiedTokens = append(t.verifiedTokens, TelegramVerifiedToken{
 		Token:    upd.Message.Text,
 		ChatID:   upd.Message.Chat.ID,
 		Username: upd.Message.Chat.UserName,

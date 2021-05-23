@@ -8,12 +8,18 @@ interface formWindow extends Window {
     invalidPassword: string;
     successModal: Modal;
     telegramModal: Modal;
+    discordModal: Modal;
     confirmationModal: Modal
     code: string;
     messages: { [key: string]: string };
     confirmation: boolean;
     telegramRequired: boolean;
     telegramPIN: string;
+    discordRequired: boolean;
+    discordPIN: string;
+    discordStartCommand: string;
+    discordInviteLink: boolean;
+    discordServerName: string;
     userExpiryEnabled: boolean;
     userExpiryMonths: number;
     userExpiryDays: number;
@@ -68,11 +74,71 @@ if (window.telegramEnabled) {
                         telegramVerified = true;
                         waiting.classList.add("~positive");
                         waiting.classList.remove("~info");
-                        window.notifications.customPositive("telegramVerified", "", window.messages["telegramVerified"]); 
+                        window.notifications.customPositive("telegramVerified", "", window.messages["verified"]); 
                         setTimeout(window.telegramModal.close, 2000);
                         telegramButton.classList.add("unfocused");
                         document.getElementById("contact-via").classList.remove("unfocused");
                         const radio = document.getElementById("contact-via-telegram") as HTMLInputElement;
+                        radio.checked = true;
+                    } else if (!modalClosed) {
+                        setTimeout(checkVerified, 1500);
+                    }
+                }
+            }
+        });
+        checkVerified();
+    };
+}
+
+interface DiscordInvite {
+    invite: string;
+    icon: string;
+}
+
+var discordVerified = false;
+if (window.discordEnabled) {
+    window.discordModal = new Modal(document.getElementById("modal-discord"), window.discordRequired);
+    const discordButton = document.getElementById("link-discord") as HTMLSpanElement;
+    if (window.discordInviteLink) {
+        _get("/invite/" + window.code + "/discord/invite", null, (req: XMLHttpRequest) => {
+            if (req.readyState == 4) {
+                if (req.status != 200) {
+                    return;
+                }
+                const inv = req.response as DiscordInvite;
+                const link = document.getElementById("discord-invite") as HTMLAnchorElement;
+                link.classList.add("subheading", "link-center");
+                link.href = inv.invite;
+                link.target = "_blank";
+                link.innerHTML = `<span class="img-circle lg mr-1"><img class="img-circle" src="${inv.icon}" width="64" height="64"></span>${window.discordServerName}`;
+            }
+        });
+    }
+    discordButton.onclick = () => {
+        const waiting = document.getElementById("discord-waiting") as HTMLSpanElement;
+        toggleLoader(waiting);
+        window.discordModal.show();
+        let modalClosed = false;
+        window.discordModal.onclose = () => {
+            modalClosed = true;
+            toggleLoader(waiting);
+        }
+        const checkVerified = () => _get("/invite/" + window.code + "/discord/verified/" + window.discordPIN, null, (req: XMLHttpRequest) => {
+            if (req.readyState == 4) {
+                if (req.status == 401) {
+                    window.discordModal.close();
+                    window.notifications.customError("invalidCodeError", window.messages["errorInvalidCode"]);
+                    return;
+                } else if (req.status == 200) {
+                    if (req.response["success"] as boolean) {
+                        discordVerified = true;
+                        waiting.classList.add("~positive");
+                        waiting.classList.remove("~info");
+                        window.notifications.customPositive("discordVerified", "", window.messages["verified"]); 
+                        setTimeout(window.discordModal.close, 2000);
+                        discordButton.classList.add("unfocused");
+                        document.getElementById("contact-via").classList.remove("unfocused");
+                        const radio = document.getElementById("contact-via-discord") as HTMLInputElement;
                         radio.checked = true;
                     } else if (!modalClosed) {
                         setTimeout(checkVerified, 1500);
@@ -161,6 +227,8 @@ interface sendDTO {
     password: string;
     telegram_pin?: string;
     telegram_contact?: boolean;
+    discord_pin?: string;
+    discord_contact?: boolean;
 }
 
 const create = (event: SubmitEvent) => {
@@ -177,6 +245,13 @@ const create = (event: SubmitEvent) => {
         const radio = document.getElementById("contact-via-telegram") as HTMLInputElement;
         if (radio.checked) {
             send.telegram_contact = true;
+        }
+    }
+    if (discordVerified) {
+        send.discord_pin = window.discordPIN;
+        const radio = document.getElementById("contact-via-discord") as HTMLInputElement;
+        if (radio.checked) {
+            send.discord_contact = true;
         }
     }
     _post("/newUser", send, (req: XMLHttpRequest) => {

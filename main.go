@@ -16,7 +16,6 @@ import (
 	"os/signal"
 	"path/filepath"
 	"runtime"
-	"strconv"
 	"strings"
 	"time"
 
@@ -96,6 +95,7 @@ type appContext struct {
 	validator        Validator
 	email            *Emailer
 	telegram         *TelegramDaemon
+	discord          *DiscordDaemon
 	info, debug, err logger.Logger
 	host             string
 	port             int
@@ -320,6 +320,10 @@ func start(asDaemon, firstCall bool) {
 		app.storage.emails_path = app.config.Section("files").Key("emails").String()
 		if err := app.storage.loadEmails(); err != nil {
 			app.err.Printf("Failed to load Emails: %v", err)
+			err := app.migrateEmailStorage()
+			if err != nil {
+				app.err.Printf("Failed to migrate Email storage: %v", err)
+			}
 		}
 		app.storage.policy_path = app.config.Section("files").Key("user_template").String()
 		if err := app.storage.loadPolicy(); err != nil {
@@ -340,6 +344,10 @@ func start(asDaemon, firstCall bool) {
 		app.storage.telegram_path = app.config.Section("files").Key("telegram_users").String()
 		if err := app.storage.loadTelegramUsers(); err != nil {
 			app.err.Printf("Failed to load Telegram users: %v", err)
+		}
+		app.storage.discord_path = app.config.Section("files").Key("discord_users").String()
+		if err := app.storage.loadDiscordUsers(); err != nil {
+			app.err.Printf("Failed to load Discord users: %v", err)
 		}
 
 		app.storage.profiles_path = app.config.Section("files").Key("user_profiles").String()
@@ -429,76 +437,76 @@ func start(asDaemon, firstCall bool) {
 			app.err.Fatalf("Failed to authenticate with Jellyfin @ %s (%d): %v", server, status, err)
 		}
 		app.info.Printf("Authenticated with %s", server)
-		/* A couple of unstable Jellyfin 10.7.0 releases decided to hyphenate user IDs.
-		This checks if the version is equal or higher. */
-		checkVersion := func(version string) int {
-			numberStrings := strings.Split(version, ".")
-			n := 0
-			for _, s := range numberStrings {
-				num, err := strconv.Atoi(s)
-				if err == nil {
-					n += num
-				}
-			}
-			return n
-		}
-		if serverType == mediabrowser.JellyfinServer && checkVersion(app.jf.ServerInfo.Version) >= checkVersion("10.7.0") {
-			// Get users to check if server uses hyphenated userIDs
-			app.jf.GetUsers(false)
+		// /* A couple of unstable Jellyfin 10.7.0 releases decided to hyphenate user IDs.
+		// This checks if the version is equal or higher. */
+		// checkVersion := func(version string) int {
+		// 	numberStrings := strings.Split(version, ".")
+		// 	n := 0
+		// 	for _, s := range numberStrings {
+		// 		num, err := strconv.Atoi(s)
+		// 		if err == nil {
+		// 			n += num
+		// 		}
+		// 	}
+		// 	return n
+		// }
+		// if serverType == mediabrowser.JellyfinServer && checkVersion(app.jf.ServerInfo.Version) >= checkVersion("10.7.0") {
+		// 	// Get users to check if server uses hyphenated userIDs
+		// 	app.jf.GetUsers(false)
 
-			noHyphens := true
-			for id := range app.storage.emails {
-				if strings.Contains(id, "-") {
-					noHyphens = false
-					break
-				}
-			}
-			if noHyphens == app.jf.Hyphens {
-				var newEmails map[string]interface{}
-				var newUsers map[string]time.Time
-				var status, status2 int
-				var err, err2 error
-				if app.jf.Hyphens {
-					app.info.Println(info("Your build of Jellyfin appears to hypenate user IDs. Your emails.json/users.json file will be modified to match."))
-					time.Sleep(time.Second * time.Duration(3))
-					newEmails, status, err = app.hyphenateEmailStorage(app.storage.emails)
-					newUsers, status2, err2 = app.hyphenateUserStorage(app.storage.users)
-				} else {
-					app.info.Println(info("Your emails.json/users.json file uses hyphens, but the Jellyfin server no longer does. It will be modified."))
-					time.Sleep(time.Second * time.Duration(3))
-					newEmails, status, err = app.deHyphenateEmailStorage(app.storage.emails)
-					newUsers, status2, err2 = app.deHyphenateUserStorage(app.storage.users)
-				}
-				if status != 200 || err != nil {
-					app.err.Printf("Failed to get users from Jellyfin (%d): %v", status, err)
-					app.err.Fatalf("Couldn't upgrade emails.json")
-				}
-				if status2 != 200 || err2 != nil {
-					app.err.Printf("Failed to get users from Jellyfin (%d): %v", status, err)
-					app.err.Fatalf("Couldn't upgrade users.json")
-				}
-				emailBakFile := app.storage.emails_path + ".bak"
-				usersBakFile := app.storage.users_path + ".bak"
-				err = storeJSON(emailBakFile, app.storage.emails)
-				err2 = storeJSON(usersBakFile, app.storage.users)
-				if err != nil {
-					app.err.Fatalf("couldn't store emails.json backup: %v", err)
-				}
-				if err2 != nil {
-					app.err.Fatalf("couldn't store users.json backup: %v", err)
-				}
-				app.storage.emails = newEmails
-				app.storage.users = newUsers
-				err = app.storage.storeEmails()
-				err2 = app.storage.storeUsers()
-				if err != nil {
-					app.err.Fatalf("couldn't store emails.json: %v", err)
-				}
-				if err2 != nil {
-					app.err.Fatalf("couldn't store users.json: %v", err)
-				}
-			}
-		}
+		// 	noHyphens := true
+		// 	for id := range app.storage.emails {
+		// 		if strings.Contains(id, "-") {
+		// 			noHyphens = false
+		// 			break
+		// 		}
+		// 	}
+		// 	if noHyphens == app.jf.Hyphens {
+		// 		var newEmails map[string]interface{}
+		// 		var newUsers map[string]time.Time
+		// 		var status, status2 int
+		// 		var err, err2 error
+		// 		if app.jf.Hyphens {
+		// 			app.info.Println(info("Your build of Jellyfin appears to hypenate user IDs. Your emails.json/users.json file will be modified to match."))
+		// 			time.Sleep(time.Second * time.Duration(3))
+		// 			newEmails, status, err = app.hyphenateEmailStorage(app.storage.emails)
+		// 			newUsers, status2, err2 = app.hyphenateUserStorage(app.storage.users)
+		// 		} else {
+		// 			app.info.Println(info("Your emails.json/users.json file uses hyphens, but the Jellyfin server no longer does. It will be modified."))
+		// 			time.Sleep(time.Second * time.Duration(3))
+		// 			newEmails, status, err = app.deHyphenateEmailStorage(app.storage.emails)
+		// 			newUsers, status2, err2 = app.deHyphenateUserStorage(app.storage.users)
+		// 		}
+		// 		if status != 200 || err != nil {
+		// 			app.err.Printf("Failed to get users from Jellyfin (%d): %v", status, err)
+		// 			app.err.Fatalf("Couldn't upgrade emails.json")
+		// 		}
+		// 		if status2 != 200 || err2 != nil {
+		// 			app.err.Printf("Failed to get users from Jellyfin (%d): %v", status, err)
+		// 			app.err.Fatalf("Couldn't upgrade users.json")
+		// 		}
+		// 		emailBakFile := app.storage.emails_path + ".bak"
+		// 		usersBakFile := app.storage.users_path + ".bak"
+		// 		err = storeJSON(emailBakFile, app.storage.emails)
+		// 		err2 = storeJSON(usersBakFile, app.storage.users)
+		// 		if err != nil {
+		// 			app.err.Fatalf("couldn't store emails.json backup: %v", err)
+		// 		}
+		// 		if err2 != nil {
+		// 			app.err.Fatalf("couldn't store users.json backup: %v", err)
+		// 		}
+		// 		app.storage.emails = newEmails
+		// 		app.storage.users = newUsers
+		// 		err = app.storage.storeEmails()
+		// 		err2 = app.storage.storeUsers()
+		// 		if err != nil {
+		// 			app.err.Fatalf("couldn't store emails.json: %v", err)
+		// 		}
+		// 		if err2 != nil {
+		// 			app.err.Fatalf("couldn't store users.json: %v", err)
+		// 		}
+		// 	}
+		// }
 
 		// Auth (manual user/pass or jellyfin)
 		app.jellyfinLogin = true
@@ -562,9 +570,20 @@ func start(asDaemon, firstCall bool) {
 			app.telegram, err = newTelegramDaemon(app)
 			if err != nil {
 				app.err.Printf("Failed to authenticate with Telegram: %v", err)
+				telegramEnabled = false
 			} else {
 				go app.telegram.run()
 				defer app.telegram.Shutdown()
+			}
+		}
+		if discordEnabled {
+			app.discord, err = newDiscordDaemon(app)
+			if err != nil {
+				app.err.Printf("Failed to authenticate with Discord: %v", err)
+				discordEnabled = false
+			} else {
+				go app.discord.run()
+				defer app.discord.Shutdown()
 			}
 		}
 	} else {

@@ -217,7 +217,7 @@ func (app *appContext) getOmbiUser(jfID string) (map[string]interface{}, int, er
 	username := jfUser.Name
 	email := ""
 	if e, ok := app.storage.emails[jfID]; ok {
-		email = e.(string)
+		email = e.Addr
 	}
 	for _, ombiUser := range ombiUsers {
 		ombiAddr := ""
@@ -283,7 +283,7 @@ func (app *appContext) NewUserAdmin(gc *gin.Context) {
 	}
 	app.jf.CacheExpiry = time.Now()
 	if emailEnabled {
-		app.storage.emails[id] = req.Email
+		app.storage.emails[id] = EmailAddress{Addr: req.Email, Contact: true}
 		app.storage.storeEmails()
 	}
 	if app.config.Section("ombi").Key("enabled").MustBool(false) {
@@ -329,6 +329,30 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 		}
 		success = false
 		return
+	}
+	var discordUser DiscordUser
+	discordVerified := false
+	if discordEnabled {
+		if req.DiscordPIN == "" {
+			if app.config.Section("discord").Key("required").MustBool(false) {
+				f = func(gc *gin.Context) {
+					app.debug.Printf("%s: New user failed: Discord verification not completed", req.Code)
+					respond(401, "errorDiscordVerification", gc)
+				}
+				success = false
+				return
+			}
+		} else {
+			discordUser, discordVerified = app.discord.verifiedTokens[req.DiscordPIN]
+			if !discordVerified {
+				f = func(gc *gin.Context) {
+					app.debug.Printf("%s: New user failed: Discord PIN was invalid", req.Code)
+					respond(401, "errorInvalidPIN", gc)
+				}
+				success = false
+				return
+			}
+		}
 	}
 	telegramTokenIndex := -1
 	if telegramEnabled {
@@ -454,7 +478,7 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 	}
 	// if app.config.Section("password_resets").Key("enabled").MustBool(false) {
 	if req.Email != "" {
-		app.storage.emails[id] = req.Email
+		app.storage.emails[id] = EmailAddress{Addr: req.Email, Contact: true}
 		app.storage.storeEmails()
 	}
 	if app.config.Section("ombi").Key("enabled").MustBool(false) {
@@ -479,7 +503,18 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 			app.err.Printf("Failed to store user duration: %v", err)
 		}
 	}
-
+	if discordEnabled && discordVerified {
+		discordUser.Contact = req.DiscordContact
+		if app.storage.discord == nil {
+			app.storage.discord = map[string]DiscordUser{}
+		}
+		app.storage.discord[user.ID] = discordUser
+		if err := app.storage.storeDiscordUsers(); err != nil {
+			app.err.Printf("Failed to store Discord users: %v", err)
+		} else {
+			delete(app.discord.verifiedTokens, req.DiscordPIN)
+		}
+	}
 	if telegramEnabled && telegramTokenIndex != -1 {
 		tgToken := app.telegram.verifiedTokens[telegramTokenIndex]
 		tgUser := TelegramUser{
@@ -494,8 +529,7 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 			app.storage.telegram = map[string]TelegramUser{}
 		}
 		app.storage.telegram[user.ID] = tgUser
-		err := app.storage.storeTelegramUsers()
-		if err != nil {
+		if err := app.storage.storeTelegramUsers(); err != nil {
 			app.err.Printf("Failed to store Telegram users: %v", err)
 		} else {
 			app.telegram.verifiedTokens[len(app.telegram.verifiedTokens)-1], app.telegram.verifiedTokens[telegramTokenIndex] = app.telegram.verifiedTokens[telegramTokenIndex], app.telegram.verifiedTokens[len(app.telegram.verifiedTokens)-1]
@@ -503,7 +537,7 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 		}
 	}
 
-	if (emailEnabled && app.config.Section("welcome_email").Key("enabled").MustBool(false) && req.Email != "") || telegramTokenIndex != -1 {
+	if (emailEnabled && app.config.Section("welcome_email").Key("enabled").MustBool(false) && req.Email != "") || telegramTokenIndex != -1 || discordVerified {
 		name := app.getAddressOrName(user.ID)
 		app.debug.Printf("%s: Sending welcome message to %s", req.Username, name)
 		msg, err := app.email.constructWelcome(req.Username, expiry, app, false)
@@ -792,18 +826,44 @@ func (app *appContext) GenerateInvite(gc *gin.Context) {
 		invite.UserMinutes = req.UserMinutes
 	}
 	invite.ValidTill = validTill
-	if emailEnabled && req.Email != "" && app.config.Section("invite_emails").Key("enabled").MustBool(false) {
-		app.debug.Printf("%s: Sending invite email", inviteCode)
-		invite.Email = req.Email
-		msg, err := app.email.constructInvite(inviteCode, invite, app, false)
-		if err != nil {
-			invite.Email = fmt.Sprintf("Failed to send to %s", req.Email)
-			app.err.Printf("%s: Failed to construct invite email: %v", inviteCode, err)
-		} else if err := app.email.send(msg, req.Email); err != nil {
-			invite.Email = fmt.Sprintf("Failed to send to %s", req.Email)
-			app.err.Printf("%s: %s: %v", inviteCode, invite.Email, err)
-		} else {
-			app.info.Printf("%s: Sent invite email to \"%s\"", inviteCode, req.Email)
+	if req.SendTo != "" && app.config.Section("invite_emails").Key("enabled").MustBool(false) {
+		addressValid := false
+		discord := ""
+		app.debug.Printf("%s: Sending invite message", inviteCode)
+		if discordEnabled && !strings.Contains(req.SendTo, "@") {
+			users := app.discord.GetUsers(req.SendTo)
+			if len(users) == 0 {
+				invite.SendTo = fmt.Sprintf("Failed: User not found: \"%s\"", req.SendTo)
+			} else if len(users) > 1 {
+				invite.SendTo = fmt.Sprintf("Failed: Multiple users found: \"%s\"", req.SendTo)
+			} else {
+				invite.SendTo = req.SendTo
+				addressValid = true
+				discord = users[0].User.ID
+			}
+		} else if emailEnabled {
+			addressValid = true
+			invite.SendTo = req.SendTo
+		}
+		if addressValid {
+			msg, err := app.email.constructInvite(inviteCode, invite, app, false)
+			if err != nil {
+				invite.SendTo = fmt.Sprintf("Failed to send to %s", req.SendTo)
+				app.err.Printf("%s: Failed to construct invite message: %v", inviteCode, err)
+			} else {
+				var err error
+				if discord != "" {
+					err = app.discord.SendDM(msg, discord)
+				} else {
+					err = app.email.send(msg, req.SendTo)
+				}
+				if err != nil {
+					invite.SendTo = fmt.Sprintf("Failed to send to %s", req.SendTo)
+					app.err.Printf("%s: %s: %v", inviteCode, invite.SendTo, err)
+				} else {
+					app.info.Printf("%s: Sent invite email to \"%s\"", inviteCode, req.SendTo)
+				}
+			}
 		}
 	}
 	if req.Profile != "" {
@@ -867,15 +927,15 @@ func (app *appContext) GetInvites(gc *gin.Context) {
 		if inv.RemainingUses != 0 {
 			invite.RemainingUses = inv.RemainingUses
 		}
-		if inv.Email != "" {
-			invite.Email = inv.Email
+		if inv.SendTo != "" {
+			invite.SendTo = inv.SendTo
 		}
 		if len(inv.Notify) != 0 {
 			var address string
 			if app.config.Section("ui").Key("jellyfin_login").MustBool(false) {
 				app.storage.loadEmails()
-				if addr := app.storage.emails[gc.GetString("jfId")]; addr != nil {
-					address = addr.(string)
+				if addr, ok := app.storage.emails[gc.GetString("jfId")]; ok && addr.Addr != "" {
+					address = addr.Addr
 				}
 			} else {
 				address = app.config.Section("ui").Key("email").String()
@@ -1074,14 +1134,14 @@ func (app *appContext) SetNotify(gc *gin.Context) {
 		}
 		var address string
 		if app.config.Section("ui").Key("jellyfin_login").MustBool(false) {
-			var ok bool
-			address, ok = app.storage.emails[gc.GetString("jfId")].(string)
+			addr, ok := app.storage.emails[gc.GetString("jfId")]
 			if !ok {
 				app.err.Printf("%s: Couldn't find email address. Make sure it's set", code)
 				app.debug.Printf("%s: User ID \"%s\"", code, gc.GetString("jfId"))
 				respond(500, "Missing user email", gc)
 				return
 			}
+			address = addr.Addr
 		} else {
 			address = app.config.Section("ui").Key("email").String()
 		}
@@ -1168,7 +1228,8 @@ func (app *appContext) GetUsers(gc *gin.Context) {
 			user.LastActive = jfUser.LastActivityDate.Unix()
 		}
 		if email, ok := app.storage.emails[jfUser.ID]; ok {
-			user.Email = email.(string)
+			user.Email = email.Addr
+			user.NotifyThroughEmail = email.Contact
 		}
 		expiry, ok := app.storage.users[jfUser.ID]
 		if ok {
@@ -1177,6 +1238,11 @@ func (app *appContext) GetUsers(gc *gin.Context) {
 		if tgUser, ok := app.storage.telegram[jfUser.ID]; ok {
 			user.Telegram = tgUser.Username
 			user.NotifyThroughTelegram = tgUser.Contact
+		}
+		if dc, ok := app.storage.discord[jfUser.ID]; ok {
+			user.Discord = dc.Username + "#" + dc.Discriminator
+			user.DiscordID = dc.ID
+			user.NotifyThroughDiscord = dc.Contact
 		}
 		resp.UserList[i] = user
 		i++
@@ -1253,7 +1319,11 @@ func (app *appContext) ModifyEmails(gc *gin.Context) {
 	for _, jfUser := range users {
 		id := jfUser.ID
 		if address, ok := req[id]; ok {
-			app.storage.emails[id] = address
+			contact := true
+			if oldAddr, ok := app.storage.emails[id]; ok {
+				contact = oldAddr.Contact
+			}
+			app.storage.emails[id] = EmailAddress{Addr: address, Contact: contact}
 			if ombiEnabled {
 				ombiUser, code, err := app.getOmbiUser(id)
 				if code == 200 && err == nil {
@@ -2004,38 +2074,63 @@ func (app *appContext) TelegramAddUser(gc *gin.Context) {
 
 // @Summary Sets whether to notify a user through telegram or not.
 // @Produce json
-// @Param telegramNotifyDTO body telegramNotifyDTO true "User's Jellyfin ID and whether or not to notify then through Telegram."
+// @Param SetContactMethodsDTO body SetContactMethodsDTO true "User's Jellyfin ID and whether or not to notify then through Telegram."
 // @Success 200 {object} boolResponse
 // @Success 400 {object} boolResponse
 // @Success 500 {object} boolResponse
 // @Router /users/telegram/notify [post]
 // @Security Bearer
 // @tags Other
-func (app *appContext) TelegramSetNotify(gc *gin.Context) {
-	var req telegramNotifyDTO
+func (app *appContext) SetContactMethods(gc *gin.Context) {
+	var req SetContactMethodsDTO
 	gc.BindJSON(&req)
 	if req.ID == "" {
 		respondBool(400, false, gc)
 		return
 	}
 	if tgUser, ok := app.storage.telegram[req.ID]; ok {
-		tgUser.Contact = req.Enabled
+		tgUser.Contact = req.Telegram
 		app.storage.telegram[req.ID] = tgUser
 		if err := app.storage.storeTelegramUsers(); err != nil {
 			respondBool(500, false, gc)
 			app.err.Printf("Telegram: Failed to store users: %v", err)
 			return
 		}
-		respondBool(200, true, gc)
 		msg := ""
-		if !req.Enabled {
-			msg = "not"
+		if !req.Telegram {
+			msg = " not"
 		}
-		app.debug.Printf("Telegram: User \"%s\" will %s be notified through Telegram.", tgUser.Username, msg)
-		return
+		app.debug.Printf("Telegram: User \"%s\" will%s be notified through Telegram.", tgUser.Username, msg)
 	}
-	app.err.Printf("Telegram: User \"%s\" does not have a telegram account registered.", req.ID)
-	respondBool(400, false, gc)
+	if dcUser, ok := app.storage.discord[req.ID]; ok {
+		dcUser.Contact = req.Discord
+		app.storage.discord[req.ID] = dcUser
+		if err := app.storage.storeDiscordUsers(); err != nil {
+			respondBool(500, false, gc)
+			app.err.Printf("Discord: Failed to store users: %v", err)
+			return
+		}
+		msg := ""
+		if !req.Discord {
+			msg = " not"
+		}
+		app.debug.Printf("Discord: User \"%s\" will%s be notified through Discord.", dcUser.Username, msg)
+	}
+	if email, ok := app.storage.emails[req.ID]; ok {
+		email.Contact = req.Email
+		app.storage.emails[req.ID] = email
+		if err := app.storage.storeEmails(); err != nil {
+			respondBool(500, false, gc)
+			app.err.Printf("Failed to store emails: %v", err)
+			return
+		}
+		msg := ""
+		if !req.Email {
+			msg = " not"
+		}
+		app.debug.Printf("\"%s\" will%s be notified via Email.", email.Addr, msg)
+	}
+	respondBool(200, true, gc)
 }
 
 // @Summary Returns true/false on whether or not a telegram PIN was verified. Requires bearer auth.
@@ -2090,6 +2185,107 @@ func (app *appContext) TelegramVerifiedInvite(gc *gin.Context) {
 	// 	app.telegram.verifiedTokens = app.telegram.verifiedTokens[:length-1]
 	// }
 	respondBool(200, tokenIndex != -1, gc)
+}
+
+// @Summary Returns true/false on whether or not a discord PIN was verified. Requires invite code.
+// @Produce json
+// @Success 200 {object} boolResponse
+// @Failure 401 {object} boolResponse
+// @Param pin path string true "PIN code to check"
+// @Param invCode path string true "invite Code"
+// @Router /invite/{invCode}/discord/verified/{pin} [get]
+// @tags Other
+func (app *appContext) DiscordVerifiedInvite(gc *gin.Context) {
+	code := gc.Param("invCode")
+	if _, ok := app.storage.invites[code]; !ok {
+		respondBool(401, false, gc)
+		return
+	}
+	pin := gc.Param("pin")
+	_, ok := app.discord.verifiedTokens[pin]
+	respondBool(200, ok, gc)
+}
+
+// @Summary Returns a 10-minute, one-use Discord server invite
+// @Produce json
+// @Success 200 {object} DiscordInviteDTO
+// @Failure 400 {object} boolResponse
+// @Failure 401 {object} boolResponse
+// @Failure 500 {object} boolResponse
+// @Param invCode path string true "invite Code"
+// @Router /invite/{invCode}/discord/invite [get]
+// @tags Other
+func (app *appContext) DiscordServerInvite(gc *gin.Context) {
+	if app.discord.inviteChannelName == "" {
+		respondBool(400, false, gc)
+		return
+	}
+	code := gc.Param("invCode")
+	if _, ok := app.storage.invites[code]; !ok {
+		respondBool(401, false, gc)
+		return
+	}
+	invURL, iconURL := app.discord.NewTempInvite(10*60, 1)
+	if invURL == "" {
+		respondBool(500, false, gc)
+		return
+	}
+	gc.JSON(200, DiscordInviteDTO{invURL, iconURL})
+}
+
+// @Summary Returns a list of matching users from a Discord guild, given a username (discriminator optional).
+// @Produce json
+// @Success 200 {object} DiscordUsersDTO
+// @Failure 400 {object} boolResponse
+// @Failure 500 {object} boolResponse
+// @Param username path string true "username to search."
+// @Router /users/discord/{username} [get]
+// @tags Other
+func (app *appContext) DiscordGetUsers(gc *gin.Context) {
+	name := gc.Param("username")
+	if name == "" {
+		respondBool(400, false, gc)
+		return
+	}
+	users := app.discord.GetUsers(name)
+	resp := DiscordUsersDTO{Users: make([]DiscordUserDTO, len(users))}
+	for i, u := range users {
+		resp.Users[i] = DiscordUserDTO{
+			Name:      u.User.Username + "#" + u.User.Discriminator,
+			ID:        u.User.ID,
+			AvatarURL: u.User.AvatarURL("32"),
+		}
+	}
+	gc.JSON(200, resp)
+}
+
+// @Summary Links a Discord account to a Jellyfin account via user IDs. Notifications are turned on by default.
+// @Produce json
+// @Success 200 {object} boolResponse
+// @Failure 400 {object} boolResponse
+// @Failure 500 {object} boolResponse
+// @Param DiscordConnectUserDTO body DiscordConnectUserDTO true "User's Jellyfin ID & Discord ID."
+// @Router /users/discord [post]
+// @tags Other
+func (app *appContext) DiscordConnect(gc *gin.Context) {
+	var req DiscordConnectUserDTO
+	gc.BindJSON(&req)
+	if req.JellyfinID == "" || req.DiscordID == "" {
+		respondBool(400, false, gc)
+		return
+	}
+	user, ok := app.discord.NewUser(req.DiscordID)
+	if !ok {
+		respondBool(500, false, gc)
+		return
+	}
+	app.storage.discord[req.JellyfinID] = user
+	if err := app.storage.storeDiscordUsers(); err != nil {
+		app.err.Printf("Failed to store Discord users: %v", err)
+		respondBool(500, false, gc)
+		return
+	}
+	respondBool(200, true, gc)
 }
 
 // @Summary Restarts the program. No response means success.

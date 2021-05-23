@@ -1,4 +1,5 @@
 import { _get, _post, _delete, toClipboard, toggleLoader, toDateString } from "../modules/common.js";
+import { DiscordUser, newDiscordSearch } from "../modules/discord.js";
 
 class DOMInvite implements Invite {
     updateNotify = (checkbox: HTMLInputElement) => {
@@ -25,6 +26,7 @@ class DOMInvite implements Invite {
             document.dispatchEvent(inviteDeletedEvent);
         }
     })
+
     private _label: string = "";
     get label(): string { return this._label; }
     set label(label: string) {
@@ -82,10 +84,10 @@ class DOMInvite implements Invite {
         this._middle.querySelector("strong.inv-remaining").textContent = remaining;
     }
 
-    private _email: string = "";
-    get email(): string { return this._email };
-    set email(address: string) {
-        this._email = address;
+    private _send_to: string = "";
+    get send_to(): string { return this._send_to };
+    set send_to(address: string) {
+        this._send_to = address;
         const container = this._infoArea.querySelector(".tooltip") as HTMLDivElement;
         const icon = container.querySelector("i");
         const chip = container.querySelector("span.inv-email-chip");
@@ -100,7 +102,7 @@ class DOMInvite implements Invite {
         } else {
             container.classList.add("mr-1");
             chip.classList.add("chip");
-            if (address.includes("Failed to send to")) {
+            if (address.includes("Failed")) {
                 icon.classList.remove("ri-mail-line");
                 icon.classList.add("ri-mail-close-line");
                 chip.classList.remove("~neutral");
@@ -372,7 +374,7 @@ class DOMInvite implements Invite {
     update = (invite: Invite) => {
         this.code = invite.code;
         this.created = invite.created;
-        this.email = invite.email;
+        this.send_to = invite.send_to;
         this.expiresIn = invite.expiresIn;
         if (window.notificationsEnabled) {
             this.notifyCreation = invite.notifyCreation;
@@ -482,7 +484,7 @@ export class inviteList implements inviteList {
 function parseInvite(invite: { [f: string]: string | number | { [name: string]: number } | boolean }): Invite {
     let parsed: Invite = {};
     parsed.code = invite["code"] as string;
-    parsed.email = invite["email"] as string || "";
+    parsed.send_to = invite["send_to"] as string || "";
     parsed.label = invite["label"] as string || "";
     let time = "";
     let userExpiryTime = "";
@@ -520,6 +522,7 @@ function parseInvite(invite: { [f: string]: string | number | { [name: string]: 
 export class createInvite {
     private _sendToEnabled = document.getElementById("create-send-to-enabled") as HTMLInputElement;
     private _sendTo = document.getElementById("create-send-to") as HTMLInputElement;
+    private _discordSearch: HTMLSpanElement;
     private _userExpiryToggle = document.getElementById("create-user-expiry-enabled") as HTMLInputElement;
     private _uses = document.getElementById('create-uses') as HTMLInputElement;
     private _infUses = document.getElementById("create-inf-uses") as HTMLInputElement;
@@ -541,6 +544,8 @@ export class createInvite {
     private _userExpiryButton = document.getElementById('radio-user-expiry') as HTMLInputElement;
     private _invDuration = document.getElementById('inv-duration');
     private _userExpiry = document.getElementById('user-expiry');
+
+    private _sendToDiscord: (passData: string) => void;
 
     // Broadcast when new invite created
     private _newInviteEvent = new CustomEvent("newInviteEvent");
@@ -576,9 +581,19 @@ export class createInvite {
         if (state) {
             this._sendToEnabled.parentElement.classList.remove("~neutral");
             this._sendToEnabled.parentElement.classList.add("~urge");
+            if (window.discordEnabled) {
+                this._discordSearch.classList.remove("~neutral");
+                this._discordSearch.classList.add("~urge");
+                this._discordSearch.onclick = () => this._sendToDiscord("");
+            }
         } else {
             this._sendToEnabled.parentElement.classList.remove("~urge");
             this._sendToEnabled.parentElement.classList.add("~neutral");
+            if (window.discordEnabled) {
+                this._discordSearch.classList.remove("~urge");
+                this._discordSearch.classList.add("~neutral");
+                this._discordSearch.onclick = null;
+            }
         }
     }
 
@@ -732,7 +747,7 @@ export class createInvite {
             "multiple-uses": (this.uses > 1 || this.infiniteUses),
             "no-limit": this.infiniteUses,
             "remaining-uses": this.uses,
-            "email": this.sendToEnabled ? this.sendTo : "",
+            "send-to": this.sendToEnabled ? this.sendTo : "",
             "profile": this.profile,
             "label": this.label
         };
@@ -761,7 +776,6 @@ export class createInvite {
         this._userDays.disabled = true;
         this._userHours.disabled = true;
         this._userMinutes.disabled = true;
-        this.sendToEnabled = false;
         this._createButton.onclick = this.create;
         this.sendTo = "";
         this.uses = 1;
@@ -798,11 +812,22 @@ export class createInvite {
         this._minutes.onchange = this._checkDurationValidity;
         document.addEventListener("profileLoadEvent", () => { this.loadProfiles(); }, false);
 
-        if (!window.emailEnabled) {
+        if (!window.emailEnabled && !window.discordEnabled) {
             document.getElementById("create-send-to-container").classList.add("unfocused");
         }
+
+        if (window.discordEnabled) {
+            this._discordSearch = document.getElementById("create-send-to-search") as HTMLSpanElement;
+            this._sendToDiscord = newDiscordSearch(
+                window.lang.strings("findDiscordUser"),
+                window.lang.strings("searchDiscordUser"),
+                window.lang.strings("select"),
+                (user: DiscordUser) => {
+                    this.sendTo = user.name;
+                    window.modals.discord.close();
+                }
+            );
+        }
+        this.sendToEnabled = false;
     }
 }
-
-
-

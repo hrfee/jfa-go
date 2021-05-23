@@ -2,23 +2,30 @@ import { _get, _post, _delete, toggleLoader, addLoader, removeLoader, toDateStri
 import { templateEmail } from "../modules/settings.js";
 import { Marked } from "@ts-stack/markdown";
 import { stripMarkdown } from "../modules/stripmd.js";
+import { DiscordUser, newDiscordSearch } from "../modules/discord.js";
 
 interface User {
     id: string;
     name: string;
     email: string | undefined;
+    notify_email: boolean;
     last_active: number;
     admin: boolean;
     disabled: boolean;
     expiry: number;
     telegram: string;
     notify_telegram: boolean;
+    discord: string;
+    notify_discord: boolean;
+    discord_id: string;
 }
 
 interface getPinResponse {
     token: string;
     username: string;
 }
+        
+var addDiscord: (passData: string) => void;
 
 class user implements User {
     private _row: HTMLTableRowElement;
@@ -27,16 +34,21 @@ class user implements User {
     private _admin: HTMLSpanElement;
     private _disabled: HTMLSpanElement;
     private _email: HTMLInputElement;
+    private _notifyEmail: boolean;
     private _emailAddress: string;
     private _emailEditButton: HTMLElement;
     private _telegram: HTMLTableDataCellElement;
     private _telegramUsername: string;
     private _notifyTelegram: boolean;
+    private _discord: HTMLTableDataCellElement;
+    private _discordUsername: string;
+    private _discordID: string;
+    private _notifyDiscord: boolean;
     private _expiry: HTMLTableDataCellElement;
     private _expiryUnix: number;
     private _lastActive: HTMLTableDataCellElement;
     private _lastActiveUnix: number;
-    id: string;
+    id = "";
     private _selected: boolean;
 
     get selected(): boolean { return this._selected; }
@@ -81,6 +93,21 @@ class user implements User {
             this._email.textContent = value;
         }
     }
+
+    get notify_email(): boolean { return this._notifyEmail; }
+    set notify_email(s: boolean) {
+        this._notifyEmail = s;
+        if (window.telegramEnabled && this._telegramUsername != "") {
+            const email = this._telegram.getElementsByClassName("accounts-contact-email")[0] as HTMLInputElement;
+            if (email) {
+                email.checked = s;
+            }
+        }
+        if (window.discordEnabled && this._discordUsername) {
+            const email = this._discord.getElementsByClassName("accounts-contact-email")[0] as HTMLInputElement;
+            email.checked = s;
+        }
+    }
     
     get telegram(): string { return this._telegramUsername; }
     set telegram(u: string) {
@@ -90,43 +117,52 @@ class user implements User {
             this._telegram.innerHTML = `<span class="chip btn !low">Add</span>`;
             (this._telegram.querySelector("span") as HTMLSpanElement).onclick = this._addTelegram;
         } else {
-            this._telegram.innerHTML = `
-            <a href="https://t.me/${u}" target="_blank">@${u}</a>
-            <i class="icon ri-settings-2-line ml-half dropdown-button"></i>
-            <div class="dropdown manual">
-                <div class="dropdown-display">
-                    <div class="card ~neutral !low">
-                        <span class="supra sm">${window.lang.strings("contactThrough")}</span>
-                        <label class="switch pb-1 mt-half">
-                            <input type="radio" name="accounts-contact-${this.id}" class="accounts-contact-email">
-                            <span>Email</span>
-                        </label>
-                        <label class="switch pb-1">
-                            <input type="radio" name="accounts-contact-${this.id}">
-                            <span>Telegram</span>
-                        </label>
-                    </div>
-                </div>
-            </div>
+            let innerHTML = `
+            <div class="table-inline">
+                <a href="https://t.me/${u}" target="_blank">@${u}</a>
             `;
-            // Javascript is necessary as including the button inside the dropdown would make it too wide to display next to the username.
-            const button = this._telegram.querySelector("i");
-            const dropdown = this._telegram.querySelector("div.dropdown") as HTMLDivElement;
-            const radios = this._telegram.querySelectorAll("input") as NodeListOf<HTMLInputElement>;
-            for (let i = 0; i < radios.length; i++) {
-                radios[i].onclick = this._setTelegramNotify;
+            if (!window.discordEnabled || !this._discordUsername) {
+                innerHTML += `
+                    <i class="icon ri-settings-2-line ml-half dropdown-button"></i>
+                    <div class="dropdown manual">
+                        <div class="dropdown-display lg">
+                            <div class="card ~neutral !low">
+                                <span class="supra sm">${window.lang.strings("contactThrough")}</span>
+                                <label class="row switch pb-1 mt-half">
+                                    <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-email">
+                                    <span>Email</span>
+                                </label>
+                                <label class="row switch pb-1">
+                                    <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-telegram">
+                                    <span>Telegram</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                `;
             }
-
-            button.onclick = () => {
-                dropdown.classList.add("selected");
-                document.addEventListener("click", outerClickListener);
-            };
-            const outerClickListener = (event: Event) => {
-                if (!(event.target instanceof HTMLElement && (this._telegram.contains(event.target) || button.contains(event.target)))) {
-                    dropdown.classList.remove("selected");
-                    document.removeEventListener("click", outerClickListener);
+            innerHTML += "</div>";
+            this._telegram.innerHTML = innerHTML;
+            if (!window.discordEnabled || !this._discordUsername) {
+                // Javascript is necessary as including the button inside the dropdown would make it too wide to display next to the username.
+                const button = this._telegram.querySelector("i");
+                const dropdown = this._telegram.querySelector("div.dropdown") as HTMLDivElement;
+                const checks = this._telegram.querySelectorAll("input") as NodeListOf<HTMLInputElement>;
+                for (let i = 0; i < checks.length; i++) {
+                    checks[i].onclick = () => this._setNotifyMethod("telegram");
                 }
-            };
+
+                button.onclick = () => {
+                    dropdown.classList.add("selected");
+                    document.addEventListener("click", outerClickListener);
+                };
+                const outerClickListener = (event: Event) => {
+                    if (!(event.target instanceof HTMLElement && (this._telegram.contains(event.target) || button.contains(event.target)))) {
+                        dropdown.classList.remove("selected");
+                        document.removeEventListener("click", outerClickListener);
+                    }
+                };
+            }
         }
     }
     
@@ -134,35 +170,132 @@ class user implements User {
     set notify_telegram(s: boolean) {
         if (!window.telegramEnabled || !this._telegramUsername) return;
         this._notifyTelegram = s;
-        const radios = this._telegram.querySelectorAll("input") as NodeListOf<HTMLInputElement>;
-        radios[0].checked = !s;
-        radios[1].checked = s;
+        const telegram = this._telegram.getElementsByClassName("accounts-contact-telegram")[0] as HTMLInputElement;
+        if (telegram) {
+            telegram.checked = s;
+        }
+        if (window.discordEnabled && this._discordUsername) {
+            const telegram = this._discord.getElementsByClassName("accounts-contact-telegram")[0] as HTMLInputElement;
+            telegram.checked = s;
+        }
     }
 
-    private _setTelegramNotify = () => {
-        const radios = this._telegram.querySelectorAll("input") as NodeListOf<HTMLInputElement>;
+    private _setNotifyMethod = (mode: string = "telegram") => {
+        let el: HTMLElement;
+        if (mode == "telegram") { el = this._telegram }
+        else if (mode == "discord") { el = this._discord }
+        const email = el.getElementsByClassName("accounts-contact-email")[0] as HTMLInputElement;
         let send = {
             id: this.id,
-            enabled: radios[1].checked
-        };
-        _post("/users/telegram/notify", send, (req: XMLHttpRequest) => {
+            email: email.checked
+        }
+        if (window.telegramEnabled && this._telegramUsername) {
+            const telegram = el.getElementsByClassName("accounts-contact-telegram")[0] as HTMLInputElement;
+            send["telegram"] = telegram.checked;
+        }
+        if (window.discordEnabled && this._discordUsername) {
+            const discord = el.getElementsByClassName("accounts-contact-discord")[0] as HTMLInputElement;
+            send["discord"] = discord.checked;
+        }
+        _post("/users/contact", send, (req: XMLHttpRequest) => {
             if (req.readyState == 4) {
                 if (req.status != 200) {
-                    window.notifications.customError("errorSetTelegramNotify", window.lang.notif("errorSaveSettings"));
-                    radios[0].checked, radios[1].checked= radios[1].checked, radios[0].checked;
+                    window.notifications.customError("errorSetNotify", window.lang.notif("errorSaveSettings"));
+                    document.dispatchEvent(new CustomEvent("accounts-reload"));
                     return;
                 }
             }
         }, false, (req: XMLHttpRequest) => {
             if (req.status == 0) {
                 window.notifications.connectionError();
-                radios[0].checked, radios[1].checked= radios[1].checked, radios[0].checked;
+                document.dispatchEvent(new CustomEvent("accounts-reload"));
                 return;
             } else if (req.status == 401) {
-                radios[0].checked, radios[1].checked= radios[1].checked, radios[0].checked;
                 window.notifications.customError("401Error", window.lang.notif("error401Unauthorized"));
+                document.dispatchEvent(new CustomEvent("accounts-reload"));
             }
         });
+    }
+    
+    get discord(): string { return this._discordUsername; }
+    set discord(u: string) {
+        if (!window.discordEnabled) return;
+        this._discordUsername = u;
+        if (u == "") {
+            this._discord.innerHTML = `<span class="chip btn !low">Add</span>`;
+            (this._discord.querySelector("span") as HTMLSpanElement).onclick = () => addDiscord(this.id);
+        } else {
+            let innerHTML = `
+            <div class="table-inline">
+                <a href="https://discord.com/users/${this._discordID}" class="discord-link" target="_blank">${u}</a>
+                <i class="icon ri-settings-2-line ml-half dropdown-button"></i>
+                <div class="dropdown manual">
+                    <div class="dropdown-display lg">
+                        <div class="card ~neutral !low">
+                            <span class="supra sm">${window.lang.strings("contactThrough")}</span>
+                            <label class="row switch pb-1 mt-half">
+                                <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-email">
+                                <span>Email</span>
+                            </label>
+                            <label class="row switch pb-1">
+                                <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-discord">
+                                <span>Discord</span>
+                            </label>
+            `;
+            if (window.telegramEnabled && this._telegramUsername != "") {
+                innerHTML += `
+                            <label class="row switch pb-1">
+                                <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-telegram">
+                                <span>Telegram</span>
+                            </label>
+                `;
+            }
+            innerHTML += `
+                        </div>
+                    </div>
+                </div>
+            </div>
+            `;
+            this._discord.innerHTML = innerHTML;
+            // Javascript is necessary as including the button inside the dropdown would make it too wide to display next to the username.
+            const button = this._discord.querySelector("i");
+            const dropdown = this._discord.querySelector("div.dropdown") as HTMLDivElement;
+            const checks = this._discord.querySelectorAll("input") as NodeListOf<HTMLInputElement>;
+            for (let i = 0; i < checks.length; i++) {
+                checks[i].onclick = () => this._setNotifyMethod("discord");
+            }
+
+            button.onclick = () => {
+                dropdown.classList.add("selected");
+                document.addEventListener("click", outerClickListener);
+            };
+            const outerClickListener = (event: Event) => {
+                if (!(event.target instanceof HTMLElement && (this._discord.contains(event.target) || button.contains(event.target)))) {
+                    dropdown.classList.remove("selected");
+                    document.removeEventListener("click", outerClickListener);
+                }
+            };
+        }
+    }
+
+    get discord_id(): string { return this._discordID; }
+    set discord_id(id: string) {
+        if (!window.discordEnabled || this._discordUsername == "") return; 
+        this._discordID = id;
+        const link = this._discord.getElementsByClassName("discord-link")[0] as HTMLAnchorElement;
+        link.href = `https://discord.com/users/${id}`;
+    }
+    
+    get notify_discord(): boolean { return this._notifyDiscord; }
+    set notify_discord(s: boolean) {
+        if (!window.discordEnabled || !this._discordUsername) return;
+        this._notifyDiscord = s;
+        const discord = this._discord.getElementsByClassName("accounts-contact-discord")[0] as HTMLInputElement;
+        discord.checked = s;
+        if (window.telegramEnabled && this._telegramUsername != "") {
+            const discord = this._discord.getElementsByClassName("accounts-contact-discord")[0] as HTMLInputElement;
+            discord.checked = s;
+        }
     }
 
     get expiry(): number { return this._expiryUnix; }
@@ -192,12 +325,17 @@ class user implements User {
         this._row = document.createElement("tr") as HTMLTableRowElement;
         let innerHTML = `
             <td><input type="checkbox" value=""></td>
-            <td><span class="accounts-username"></span> <span class="accounts-admin"></span> <span class="accounts-disabled"></span></td>
-            <td><i class="icon ri-edit-line accounts-email-edit"></i><span class="accounts-email-container ml-half"></span></td>
+            <td><div class="table-inline"><span class="accounts-username"></span> <span class="accounts-admin"></span> <span class="accounts-disabled"></span></span></td>
+            <td><div class="table-inline"><i class="icon ri-edit-line accounts-email-edit"></i><span class="accounts-email-container ml-half"></span></div></td>
         `;
         if (window.telegramEnabled) {
             innerHTML += `
             <td class="accounts-telegram"></td>
+            `;
+        }
+        if (window.discordEnabled) {
+            innerHTML += `
+            <td class="accounts-discord"></td>
             `;
         }
         innerHTML += `
@@ -213,6 +351,7 @@ class user implements User {
         this._email = this._row.querySelector(".accounts-email-container") as HTMLInputElement;
         this._emailEditButton = this._row.querySelector(".accounts-email-edit") as HTMLElement;
         this._telegram = this._row.querySelector(".accounts-telegram") as HTMLTableDataCellElement;
+        this._discord = this._row.querySelector(".accounts-discord") as HTMLTableDataCellElement;
         this._expiry = this._row.querySelector(".accounts-expiry") as HTMLTableDataCellElement;
         this._lastActive = this._row.querySelector(".accounts-last-active") as HTMLTableDataCellElement;
         this._check.onchange = () => { this.selected = this._check.checked; }
@@ -270,7 +409,7 @@ class user implements User {
             }
         });
     }
-
+    
     private _addTelegram = () => _get("/telegram/pin", null, (req: XMLHttpRequest) => {
         if (req.readyState == 4 && req.status == 200) {
             const pin = document.getElementById("telegram-pin");
@@ -319,12 +458,16 @@ class user implements User {
         this.id = user.id;
         this.name = user.name;
         this.email = user.email || "";
+        this.discord = user.discord;
         this.telegram = user.telegram;
         this.last_active = user.last_active;
         this.admin = user.admin;
         this.disabled = user.disabled;
         this.expiry = user.expiry;
+        this.notify_discord = user.notify_discord;
         this.notify_telegram = user.notify_telegram;
+        this.notify_email = user.notify_email;
+        this.discord_id = user.discord_id;
     }
 
     asElement = (): HTMLTableRowElement => { return this._row; }
@@ -935,6 +1078,19 @@ export class accountsList {
         };
 
         this._announceTextarea.onkeyup = this.loadPreview;
+        addDiscord = newDiscordSearch(window.lang.strings("linkDiscord"), window.lang.strings("searchDiscordUser"), window.lang.strings("add"), (user: DiscordUser, id: string) => { 
+            _post("/users/discord", {jf_id: id, discord_id: user.id}, (req: XMLHttpRequest) => {
+                if (req.readyState == 4) {
+                    document.dispatchEvent(new CustomEvent("accounts-reload"));
+                    if (req.status != 200) {
+                        window.notifications.customError("errorConnectDiscord", window.lang.notif("errorFailureCheckLogs"));
+                        return
+                    }
+                    window.notifications.customSuccess("discordConnected", window.lang.notif("accountConnected"));
+                    window.modals.discord.close()
+                }
+            });
+        });
     }
 
     reload = () => _get("/users", null, (req: XMLHttpRequest) => {
