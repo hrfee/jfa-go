@@ -21,6 +21,7 @@
         "apply": "Apply",
         "delete": "Delete",
         "add": "Add",
+        "select": "Select",
         "name": "Name",
         "date": "Date",
         "enabled": "Enabled",

@@ -2,6 +2,7 @@ import { _get, _post, _delete, toggleLoader, addLoader, removeLoader, toDateStri
 import { templateEmail } from "../modules/settings.js";
 import { Marked } from "@ts-stack/markdown";
 import { stripMarkdown } from "../modules/stripmd.js";
+import { DiscordUser, newDiscordSearch } from "../modules/discord.js";
 
 interface User {
     id: string;
@@ -23,12 +24,8 @@ interface getPinResponse {
     token: string;
     username: string;
 }
-
-interface DiscordUser {
-    name: string;
-    avatar_url: string;
-    id: string;
-}
+        
+var addDiscord: (passData: string) => void;
 
 class user implements User {
     private _row: HTMLTableRowElement;
@@ -51,7 +48,7 @@ class user implements User {
     private _expiryUnix: number;
     private _lastActive: HTMLTableDataCellElement;
     private _lastActiveUnix: number;
-    id: string;
+    id = "";
     private _selected: boolean;
 
     get selected(): boolean { return this._selected; }
@@ -226,7 +223,7 @@ class user implements User {
         this._discordUsername = u;
         if (u == "") {
             this._discord.innerHTML = `<span class="chip btn !low">Add</span>`;
-            (this._discord.querySelector("span") as HTMLSpanElement).onclick = this._addDiscord;
+            (this._discord.querySelector("span") as HTMLSpanElement).onclick = () => addDiscord(this.id);
         } else {
             let innerHTML = `
             <div class="table-inline">
@@ -412,76 +409,6 @@ class user implements User {
         });
     }
     
-    private _timer: NodeJS.Timer;
-
-    private _discordKbListener = () => {
-        clearTimeout(this._timer);
-        const list = document.getElementById("discord-list") as HTMLTableElement;
-        const input = document.getElementById("discord-search") as HTMLInputElement;
-        if (input.value.length < 2) {
-            return;
-        }
-        list.innerHTML = ``;
-        addLoader(list);
-        list.parentElement.classList.add("mb-1", "mt-1");
-        this._timer = setTimeout(() => {
-            _get("/users/discord/" + input.value, null, (req: XMLHttpRequest) => {
-                if (req.readyState == 4) {
-                    if (req.status != 200) {
-                        removeLoader(list);
-                        list.parentElement.classList.remove("mb-1", "mt-1");
-                        return;
-                    }
-                    const users = req.response["users"] as Array<DiscordUser>;
-                    let innerHTML = ``;
-                    for (let i = 0; i < users.length; i++) {
-                        innerHTML += `
-                        <tr>
-                            <td class="img-circle sm">
-                                <img class="img-circle" src="${users[i].avatar_url}" width="32" height="32">
-                            </td>
-                            <td class="w-100 sm">
-                                <p class="content">${users[i].name}</p>
-                            </td>
-                            <td class="sm">
-                                <span id="discord-user-${users[i].id}" class="button ~info !high">${window.lang.strings("add")}</span>
-                            </td>
-                        </tr>
-                        `;
-                    }
-                    list.innerHTML = innerHTML;
-                    removeLoader(list);
-                    list.parentElement.classList.remove("mb-1", "mt-1");
-                    for (let i = 0; i < users.length; i++) {
-                        const button = document.getElementById(`discord-user-${users[i].id}`) as HTMLInputElement;
-                        button.onclick = () => _post("/users/discord", {jf_id: this.id, discord_id: users[i].id}, (req: XMLHttpRequest) => {
-                            if (req.readyState == 4) {
-                                document.dispatchEvent(new CustomEvent("accounts-reload"));
-                                if (req.status != 200) {
-                                    window.notifications.customError("errorConnectDiscord", window.lang.notif("errorFailureCheckLogs"));
-                                    return
-                                }
-                                window.notifications.customSuccess("discordConnected", window.lang.notif("accountConnected"));
-                                window.modals.discord.close()
-                            }
-                        });
-                    }
-                }
-            });
-        }, 750);
-    }
-
-    private _addDiscord = () => {
-        if (!window.discordEnabled) { return; }
-        const input = document.getElementById("discord-search") as HTMLInputElement;
-        const list = document.getElementById("discord-list") as HTMLDivElement;
-        list.innerHTML = ``;
-        input.value = "";
-        input.removeEventListener("keyup", this._discordKbListener);
-        input.addEventListener("keyup", this._discordKbListener);
-        window.modals.discord.show();
-    }
-
     private _addTelegram = () => _get("/telegram/pin", null, (req: XMLHttpRequest) => {
         if (req.readyState == 4 && req.status == 200) {
             const pin = document.getElementById("telegram-pin");
@@ -1149,6 +1076,19 @@ export class accountsList {
         };
 
         this._announceTextarea.onkeyup = this.loadPreview;
+        addDiscord = newDiscordSearch(window.lang.strings("linkDiscord"), window.lang.strings("searchDiscordUser"), window.lang.strings("add"), (user: DiscordUser, id: string) => { 
+            _post("/users/discord", {jf_id: id, discord_id: user.id}, (req: XMLHttpRequest) => {
+                if (req.readyState == 4) {
+                    document.dispatchEvent(new CustomEvent("accounts-reload"));
+                    if (req.status != 200) {
+                        window.notifications.customError("errorConnectDiscord", window.lang.notif("errorFailureCheckLogs"));
+                        return
+                    }
+                    window.notifications.customSuccess("discordConnected", window.lang.notif("accountConnected"));
+                    window.modals.discord.close()
+                }
+            });
+        });
     }
 
     reload = () => _get("/users", null, (req: XMLHttpRequest) => {
