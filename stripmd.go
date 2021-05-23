@@ -44,6 +44,16 @@ func StripAltText(md string, links bool) (string, []*dg.MessageEmbed) {
 				out += md[URLStart : URLEnd+1]
 			}
 			previousURLEnd = URLEnd
+			// Removing links often leaves a load of extra newlines which look weird, this removes them.
+			if links {
+				next := 2
+				for md[URLEnd+next] == '\n' {
+					next++
+				}
+				if next >= 3 {
+					previousURLEnd += next - 2
+				}
+			}
 			altTextStart, URLStart, URLEnd = -1, -1, -1
 			continue
 		}
