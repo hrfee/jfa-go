@@ -105,23 +105,24 @@ type Invite struct {
 }
 
 type Lang struct {
-	AdminPath          string
-	chosenAdminLang    string
-	Admin              adminLangs
-	AdminJSON          map[string]string
-	FormPath           string
-	chosenFormLang     string
-	Form               formLangs
-	PasswordResetPath  string
-	chosenPWRLang      string
-	PasswordReset      pwrLangs
-	EmailPath          string
-	chosenEmailLang    string
-	Email              emailLangs
-	CommonPath         string
-	Common             commonLangs
-	SetupPath          string
-	Setup              setupLangs
+	AdminPath         string
+	chosenAdminLang   string
+	Admin             adminLangs
+	AdminJSON         map[string]string
+	FormPath          string
+	chosenFormLang    string
+	Form              formLangs
+	PasswordResetPath string
+	chosenPWRLang     string
+	PasswordReset     pwrLangs
+	EmailPath         string
+	chosenEmailLang   string
+	Email             emailLangs
+	CommonPath        string
+	Common            commonLangs
+	SetupPath         string
+	Setup             setupLangs
+	// Telegram translations are also used for Discord bots (and likely future ones).
 	chosenTelegramLang string
 	TelegramPath       string
 	Telegram           telegramLangs

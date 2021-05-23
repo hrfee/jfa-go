@@ -89,6 +89,7 @@ func (d *DiscordDaemon) run() {
 	d.serverChannelName = guild.Name
 	if channel := d.app.config.Section("discord").Key("channel").String(); channel != "" {
 		d.channelName = channel
+		d.serverChannelName += "/" + channel
 	}
 	defer d.bot.Close()
 	<-d.ShutdownChannel
