@@ -1,8 +1,8 @@
 package main
 
 import (
-	"archive/tar"
-	"compress/gzip"
+	"archive/zip"
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -392,69 +392,129 @@ func (ud *Updater) pullInternal(url string) (applyUpdate ApplyUpdate, status int
 		return
 	}
 	defer resp.Body.Close()
-	gz, err := gzip.NewReader(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		status = -1
 		return
 	}
-	defer gz.Close()
-	tarReader := tar.NewReader(gz)
-	var header *tar.Header
-	for {
-		header, err = tarReader.Next()
-		if err == io.EOF {
-			break
+	zp, err := zip.NewReader(bytes.NewReader(body), int64(len(body)))
+	if err != nil {
+		status = -1
+		return
+	}
+	for _, zf := range zp.File {
+		if zf.Name != ud.binary {
+			continue
 		}
+		var file string
+		file, err = os.Executable()
 		if err != nil {
-			status = -1
 			return
 		}
-		switch header.Typeflag {
-		case tar.TypeReg:
-			// Search only for file named ud.binary
-			if header.Name == ud.binary {
-				var file string
-				file, err = os.Executable()
-				if err != nil {
-					return
-				}
-				var path string
-				path, err = filepath.EvalSymlinks(file)
-				if err != nil {
-					return
-				}
-				var info fs.FileInfo
-				info, err = os.Stat(path)
-				if err != nil {
-					return
-				}
-				mode := info.Mode()
-				var f *os.File
-				f, err = os.OpenFile(path+"_", os.O_RDWR|os.O_CREATE|os.O_TRUNC, mode)
-				if err != nil {
-					return
-				}
-				defer f.Close()
-				_, err = io.Copy(f, tarReader)
-				if err != nil {
-					return
-				}
-				applyUpdate = func() error {
-					oldName := path + "-" + version + "-" + commit
-					err := os.Rename(path, oldName)
-					if err != nil {
-						return err
-					}
-					err = os.Rename(path+"_", path)
-					if err != nil {
-						return err
-					}
-					return os.Remove(oldName)
-				}
-				return
-			}
+		var path string
+		path, err = filepath.EvalSymlinks(file)
+		if err != nil {
+			return
 		}
+		var info fs.FileInfo
+		info, err = os.Stat(path)
+		if err != nil {
+			return
+		}
+		mode := info.Mode()
+		var unzippedFile io.ReadCloser
+		unzippedFile, err = zf.Open()
+		if err != nil {
+			return
+		}
+		defer unzippedFile.Close()
+		var f *os.File
+		f, err = os.OpenFile(path+"_", os.O_RDWR|os.O_CREATE|os.O_TRUNC, mode)
+		if err != nil {
+			return
+		}
+		defer f.Close()
+		_, err = io.Copy(f, unzippedFile)
+		if err != nil {
+			return
+		}
+		applyUpdate = func() error {
+			oldName := path + "-" + version + "-" + commit
+			err := os.Rename(path, oldName)
+			if err != nil {
+				return err
+			}
+			err = os.Rename(path+"_", path)
+			if err != nil {
+				return err
+			}
+			return os.Remove(oldName)
+		}
+		return
 	}
+	// gz, err := gzip.NewReader(resp.Body)
+	// if err != nil {
+	// 	status = -1
+	// 	return
+	// }
+	// defer gz.Close()
+	// tarReader := tar.NewReader(gz)
+	// var header *tar.Header
+	// for {
+	// 	header, err = tarReader.Next()
+	// 	if err == io.EOF {
+	// 		break
+	// 	}
+	// 	if err != nil {
+	// 		status = -1
+	// 		return
+	// 	}
+	// 	switch header.Typeflag {
+	// 	case tar.TypeReg:
+	// 		// Search only for file named ud.binary
+	// 		if header.Name == ud.binary {
+	// 			var file string
+	// 			file, err = os.Executable()
+	// 			if err != nil {
+	// 				return
+	// 			}
+	// 			var path string
+	// 			path, err = filepath.EvalSymlinks(file)
+	// 			if err != nil {
+	// 				return
+	// 			}
+	// 			var info fs.FileInfo
+	// 			info, err = os.Stat(path)
+	// 			if err != nil {
+	// 				return
+	// 			}
+	// 			mode := info.Mode()
+	// 			var f *os.File
+	// 			f, err = os.OpenFile(path+"_", os.O_RDWR|os.O_CREATE|os.O_TRUNC, mode)
+	// 			if err != nil {
+	// 				return
+	// 			}
+	// 			defer f.Close()
+	// 			_, err = io.Copy(f, tarReader)
+	// 			if err != nil {
+	// 				return
+	// 			}
+	// 			applyUpdate = func() error {
+	// 				oldName := path + "-" + version + "-" + commit
+	// 				err := os.Rename(path, oldName)
+	// 				if err != nil {
+	// 					return err
+	// 				}
+	// 				err = os.Rename(path+"_", path)
+	// 				if err != nil {
+	// 					return err
+	// 				}
+	// 				return os.Remove(oldName)
+	// 			}
+	// 			return
+	// 		}
+	// 	}
+	// }
 	err = errors.New("Couldn't find file: " + ud.binary)
 	return
 }
