@@ -184,6 +184,7 @@ func (ud *Updater) GetTag() (Tag, int, error) {
 		return Tag{}, -1, nil
 	}
 	url := fmt.Sprintf("%s/repo/%s/%s/tag/latest/%s", ud.url, ud.namespace, ud.name, ud.tag)
+	fmt.Println(url)
 	req, _ := http.NewRequest("GET", url, nil)
 	resp, err := ud.httpClient.Do(req)
 	defer ud.timeoutHandler()
@@ -347,7 +348,11 @@ func getBuildName() string {
 	if arch == "" {
 		return ""
 	}
-	return operatingSystem + "_" + arch
+	tray := ""
+	if TRAY {
+		tray = "TrayIcon_"
+	}
+	return tray + operatingSystem + "_" + arch
 }
 
 func (ud *Updater) downloadInternal(assets *[]GHAsset, tag Tag) (applyUpdate ApplyUpdate, status int, err error) {
