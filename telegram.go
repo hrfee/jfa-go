@@ -83,6 +83,7 @@ func (t *TelegramDaemon) run() {
 	updates, err := t.bot.GetUpdatesChan(u)
 	if err != nil {
 		t.app.err.Printf("Failed to start Telegram daemon: %v", err)
+		telegramEnabled = false
 		return
 	}
 	for {

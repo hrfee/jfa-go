@@ -570,6 +570,7 @@ func start(asDaemon, firstCall bool) {
 			app.telegram, err = newTelegramDaemon(app)
 			if err != nil {
 				app.err.Printf("Failed to authenticate with Telegram: %v", err)
+				telegramEnabled = false
 			} else {
 				go app.telegram.run()
 				defer app.telegram.Shutdown()
@@ -579,6 +580,7 @@ func start(asDaemon, firstCall bool) {
 			app.discord, err = newDiscordDaemon(app)
 			if err != nil {
 				app.err.Printf("Failed to authenticate with Discord: %v", err)
+				discordEnabled = false
 			} else {
 				go app.discord.run()
 				defer app.discord.Shutdown()
