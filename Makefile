@@ -52,6 +52,13 @@ else
 	TYPECHECK :=
 endif
 
+RACE ?= off
+ifeq ($(RACE), on)
+	RACEDETECTOR := -race
+else
+	RACEDETECTOR :=
+endif
+
 npm:
 	$(info installing npm dependencies)
 	npm install
@@ -91,7 +98,7 @@ compile:
 	$(GOBINARY) mod download
 	$(info Building)
 	mkdir -p build
-	$(GOBINARY) build -ldflags="$(LDFLAGS)" $(TAGS) -o build/jfa-go
+	$(GOBINARY) build $(RACEDETECTOR) -ldflags="$(LDFLAGS)" $(TAGS) -o build/jfa-go
 
 compress:
 	upx --lzma build/jfa-go
