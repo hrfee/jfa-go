@@ -60,17 +60,17 @@ docker create \
 ```shell
 sudo apt-get update && sudo apt-get install curl apt-transport-https gnupg
 curl https://apt.hrfee.dev/hrfee.pubkey.gpg | sudo apt-key add -
+
+# For stable releases
 echo "deb https://apt.hrfee.dev trusty main" | sudo tee /etc/apt/sources.list.d/hrfee.list
+
+# For unstable releases
+echo "deb https://apt.hrfee.dev trusty-unstable main" | sudo tee /etc/apt/sources.list.d/hrfee.list
+
+
 sudo apt-get update
 
 # Stable releases
-
-## For servers
-#sudo apt-get install jfa-go
-## For desktops/servers with GUI (has dependencies)
-#sudo apt-get install jfa-go-tray
-
-# Unstable (nightly) releases
 
 ## For servers
 #sudo apt-get install jfa-go
