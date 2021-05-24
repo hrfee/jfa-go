@@ -4,7 +4,7 @@
 [![Translation status](https://weblate.hrfee.pw/widgets/jfa-go/-/svg-badge.svg)](https://weblate.hrfee.pw/engage/jfa-go/)
 
 ##### Downloads:
-##### [dockerhub](https://hub.docker.com/r/hrfee/jfa-go) | [debian](#debian) | [stable](https://github.com/hrfee/jfa-go/releases) | [nightly](https://builds.hrfee.pw/view/hrfee/jfa-go) | [aur stable](https://aur.archlinux.org/packages/jfa-go) | [aur binary](https://aur.archlinux.org/packages/jfa-go-bin) | [aur nightly](https://aur.archlinux.org/packages/jfa-go-git)
+##### [docker](#docker) | [debian](#debian) | [arch (aur)](#aur) | [other platforms](#other-platforms)
 ---
 jfa-go is a user management app for [Jellyfin](https://github.com/jellyfin/jellyfin) (and now [Emby](https://emby.media/)) that provides invite-based account creation as well as other features that make one's instance much easier to manage.
 
@@ -43,7 +43,9 @@ jfa-go is a user management app for [Jellyfin](https://github.com/jellyfin/jelly
 
 #### Install
 
-The [Docker](https://hub.docker.com/r/hrfee/jfa-go) image is your best bet.
+**Note**: `TrayIcon` builds include a tray icon to start/stop/restart, and an option to automatically start when you log-in to your computer. For Linux users, these builds depend on the `libappindicator3-1`/`libappindicator-gtk3`/`libappindicator` package for Debian/Ubuntu, Fedora, and Alpine respectively.
+
+##### [Docker](https://hub.docker.com/r/hrfee/jfa-go)
 ```sh
 docker create \
              --name "jfa-go" \ # Whatever you want to name it
@@ -54,32 +56,41 @@ docker create \
              -v /etc/localtime:/etc/localtime:ro \ # Makes sure time is correct
              hrfee/jfa-go # hrfee/jfa-go:unstable for latest build from git
 ```
-`TrayIcon` builds include a tray icon to start/stop/restart, and an option to automatically start when you log-in to your computer. For Linux users, these builds depend on the `libappindicator3-1`/`libappindicator-gtk3`/`libappindicator` package for Debian/Ubuntu, Fedora, and Alpine respectively.
 
-##### Debian
+##### [Debian](https://apt.hrfee.dev)
 ```sh
 sudo apt-get update && sudo apt-get install curl apt-transport-https gnupg
 curl https://apt.hrfee.dev/hrfee.pubkey.gpg | sudo apt-key add -
 
 # For stable releases
 echo "deb https://apt.hrfee.dev trusty main" | sudo tee /etc/apt/sources.list.d/hrfee.list
-
+# ------
 # For unstable releases
 echo "deb https://apt.hrfee.dev trusty-unstable main" | sudo tee /etc/apt/sources.list.d/hrfee.list
-
+# ------
 
 sudo apt-get update
 
-# Stable releases
-
-## For servers
-#sudo apt-get install jfa-go
-## For desktops/servers with GUI (has dependencies)
-#sudo apt-get install jfa-go-tray
+# For servers
+sudo apt-get install jfa-go
+# ------
+# For desktops/servers with GUI (has dependencies)
+sudo apt-get install jfa-go-tray
+# ------
 ```
-Available on the AUR as [jfa-go](https://aur.archlinux.org/packages/jfa-go/), [jfa-go-bin](https://aur.archlinux.org/packages/jfa-go) or [jfa-go-git](https://aur.archlinux.org/packages/jfa-go-git/).
 
-For other platforms, grab an archive from the release section for your platform (or nightly builds [here](https://builds.hrfee.dev/view/hrfee/jfa-go)), and extract the `jfa-go` executable to somewhere useful.
+##### Arch
+Available on the AUR as:
+* [jfa-go](https://aur.archlinux.org/packages/jfa-go/) (stable)
+* [jfa-go-bin](https://aur.archlinux.org/packages/jfa-go) (pre-compiled, stable)
+* [jfa-go-git](https://aur.archlinux.org/packages/jfa-go-git/) (nightly)
+
+##### Other platforms
+Download precompiled binaries from:
+ * [The releases section](https://github.com/hrfee/jfa-go/releases) (stable)
+ * [Buildrone](https://builds.hrfee.dev/view/hrfee/jfa-go) (nightly)
+
+unzip the `jfa-go`/`jfa-go.exe` executable to somewhere useful.
 * For \*nix/macOS users, `chmod +x jfa-go` then place it somewhere in your PATH like `/usr/bin`.
 
 Run the executable to start.
@@ -94,17 +105,28 @@ Otherwise, full build instructions can be found [here](https://github.com/hrfee/
 Simply run `jfa-go` to start the application. A setup wizard will start on `localhost:8056` (or your own specified address). Upon completion, refresh the page.
 
 ```
-Usage of ./jfa-go:
-  -config string
-    	alternate path to config file. (default "~/.config/jfa-go/config.ini")
-  -data string
-    	alternate path to data directory. (default "~/.config/jfa-go")
+Usage of jfa-go:
+  start
+	start jfa-go as a daemon and run in the background.
+  stop
+	stop a daemonized instance of jfa-go.
+  systemd
+	generate a systemd .service file.
+
+  -config, -c string
+    	alternate path to config file. (default "/home/hrfee/.config/jfa-go/config.ini")
+  -data, -d string
+    	alternate path to data directory. (default "/home/hrfee/.config/jfa-go")
   -debug
-    	Enables debug logging and exposes pprof.
+    	Enables debug logging.
+  -help, -h
+    	prints this message.
   -host string
     	alternate address to host web ui on.
-  -port int
+  -port, -p int
     	alternate port to host web ui on.
+  -pprof
+    	Exposes pprof profiler on /debug/pprof.
   -swagger
     	Enable swagger at /swagger/index.html
 ```
