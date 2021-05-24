@@ -4,7 +4,7 @@
 [![Translation status](https://weblate.hrfee.pw/widgets/jfa-go/-/svg-badge.svg)](https://weblate.hrfee.pw/engage/jfa-go/)
 
 ##### Downloads:
-##### [dockerhub](https://hub.docker.com/r/hrfee/jfa-go) | [stable](https://github.com/hrfee/jfa-go/releases) | [nightly](https://builds.hrfee.pw/view/hrfee/jfa-go) | [aur stable](https://aur.archlinux.org/packages/jfa-go) | [aur binary](https://aur.archlinux.org/packages/jfa-go-bin) | [aur nightly](https://aur.archlinux.org/packages/jfa-go-git)
+##### [dockerhub](https://hub.docker.com/r/hrfee/jfa-go) | [debian](#debian) | [stable](https://github.com/hrfee/jfa-go/releases) | [nightly](https://builds.hrfee.pw/view/hrfee/jfa-go) | [aur stable](https://aur.archlinux.org/packages/jfa-go) | [aur binary](https://aur.archlinux.org/packages/jfa-go-bin) | [aur nightly](https://aur.archlinux.org/packages/jfa-go-git)
 ---
 jfa-go is a user management app for [Jellyfin](https://github.com/jellyfin/jellyfin) (and now [Emby](https://emby.media/)) that provides invite-based account creation as well as other features that make one's instance much easier to manage.
 
@@ -57,7 +57,7 @@ docker create \
 `TrayIcon` builds include a tray icon to start/stop/restart, and an option to automatically start when you log-in to your computer. For Linux users, these builds depend on the `libappindicator3-1`/`libappindicator-gtk3`/`libappindicator` package for Debian/Ubuntu, Fedora, and Alpine respectively.
 
 ##### Debian
-```shell
+```sh
 sudo apt-get update && sudo apt-get install curl apt-transport-https gnupg
 curl https://apt.hrfee.dev/hrfee.pubkey.gpg | sudo apt-key add -
 
