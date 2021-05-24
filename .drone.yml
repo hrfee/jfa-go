@@ -10,6 +10,9 @@ steps:
           - git fetch --tags
     - name: release
       image: golang:latest
+      volumes:
+        - name: ssh_key
+          path: /id_rsa
       environment:
           BUILDRONE_KEY:
               from_secret: BUILDRONE_KEY
@@ -26,7 +29,13 @@ steps:
         - ./scripts/version.sh ../goreleaser
         - wget https://builds.hrfee.pw/upload.py -P ../
         - pip3 install requests
+        - bash -c 'sftp -P 2022 -i /id_rsa -o StrictHostKeyChecking=no root@161.97.102.153:/repo/incoming <<< $"put dist/*.deb"'
+        - bash -c 'ssh -i /id_rsa root@161.97.102.153 -p 2022 "repo-process-deb trusty"'
         - bash -c 'python3 ../upload.py https://builds.hrfee.pw hrfee jfa-go --tag internal=true'
+volumes:
+    - name: ssh_key
+      host:
+          path: /root/.ssh/id_rsa_packaging
 trigger:
     event:
         - tag
@@ -73,6 +82,9 @@ type: docker
 steps:
     - name: build
       image: golang:latest
+      volumes:
+        - name: ssh_key
+          path: /id_rsa
       commands:
         - apt-get update -y
         - apt-get install build-essential python3-pip curl software-properties-common sed upx gcc libgtk-3-dev libappindicator3-dev gcc-mingw-w64-x86-64 -y
@@ -83,11 +95,17 @@ steps:
         - ./scripts/version.sh ./goreleaser --snapshot --skip-publish --rm-dist
         - wget https://builds.hrfee.pw/upload.py
         - pip3 install requests
+        - bash -c 'sftp -P 2022 -i /id_rsa -o StrictHostKeyChecking=no root@161.97.102.153:/repo/incoming <<< $"put dist/*.deb"'
+        - bash -c 'ssh -i /id_rsa root@161.97.102.153 -p 2022 "repo-process-deb trusty"'
         - bash -c 'python3 upload.py https://builds.hrfee.pw hrfee jfa-go --upload ./dist/*.zip ./dist/*.deb ./dist/*.rpm ./dist/*.apk --tag internal-git=true'
       environment:
           BUILDRONE_KEY:
               from_secret: BUILDRONE_KEY
 
+volumes:
+    - name: ssh_key
+      host:
+          path: /root/.ssh/id_rsa_packaging
 trigger:
     branch:
         - main

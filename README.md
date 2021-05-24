@@ -56,6 +56,27 @@ docker create \
 ```
 `TrayIcon` builds include a tray icon to start/stop/restart, and an option to automatically start when you log-in to your computer. For Linux users, these builds depend on the `libappindicator3-1`/`libappindicator-gtk3`/`libappindicator` package for Debian/Ubuntu, Fedora, and Alpine respectively.
 
+##### Debian
+```shell
+sudo apt-get update && sudo apt-get install curl apt-transport-https gnupg
+curl https://apt.hrfee.dev/hrfee.pubkey.gpg | sudo apt-key add -
+echo "deb https://apt.hrfee.dev trusty main" | sudo tee /etc/apt/sources.list.d/hrfee.list
+sudo apt-get update
+
+# Stable releases
+
+## For servers
+#sudo apt-get install jfa-go
+## For desktops/servers with GUI (has dependencies)
+#sudo apt-get install jfa-go-tray
+
+# Unstable (nightly) releases
+
+## For servers
+#sudo apt-get install jfa-go
+## For desktops/servers with GUI (has dependencies)
+#sudo apt-get install jfa-go-tray
+```
 Available on the AUR as [jfa-go](https://aur.archlinux.org/packages/jfa-go/), [jfa-go-bin](https://aur.archlinux.org/packages/jfa-go) or [jfa-go-git](https://aur.archlinux.org/packages/jfa-go-git/).
 
 For other platforms, grab an archive from the release section for your platform (or nightly builds [here](https://builds.hrfee.dev/view/hrfee/jfa-go)), and extract the `jfa-go` executable to somewhere useful.

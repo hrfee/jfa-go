@@ -1,7 +1,0 @@
-conventional-commits: false
-deb:
-  distribution: []
-  urgency: ""
-debug: false
-owner: "Harvey Tindall"
-package-name: "jfa-go"

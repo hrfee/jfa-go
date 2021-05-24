@@ -111,6 +111,7 @@ changelog:
 nfpms:
   - id: notray
     file_name_template: '{{ .ProjectName }}_{{ .Arch }}_v{{ .Version }}'
+    package_name: "jfa-go{{ if .IsSnapshot }}-git{{ end }}"
     homepage: https://github.com/hrfee/jfa-go
     description: A web app for managing users on Jellyfin
     maintainer: Harvey Tindall <hrfee@hrfee.dev>
@@ -128,6 +129,7 @@ nfpms:
       - rpm
   - id: tray
     file_name_template: '{{ .ProjectName }}_TrayIcon_{{ .Arch }}_v{{ .Version }}'
+    package_name: "jfa-go-tray{{ if .IsSnapshot }}-git{{ end }}"
     homepage: https://github.com/hrfee/jfa-go
     description: A web app for managing users on Jellyfin
     maintainer: Harvey Tindall <hrfee@hrfee.dev>
@@ -145,6 +147,10 @@ nfpms:
       - rpm
     overrides:
         deb:
+            conflicts:
+                - jfa-go
+            replaces:
+                - jfa-go
             dependencies:
                 - libappindicator3-1
         rpm:
