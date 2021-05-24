@@ -708,7 +708,11 @@ func flagPassed(name string) (found bool) {
 // @tag.description Things that dont fit elsewhere.
 
 func printVersion() {
-	fmt.Println(info("jfa-go version: %s (%s)\n", hiwhite(version), white(commit)))
+	tray := ""
+	if TRAY {
+		tray = " TrayIcon"
+	}
+	fmt.Println(info("jfa-go version: %s (%s)%s\n", hiwhite(version), white(commit), tray))
 }
 
 func main() {

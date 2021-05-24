@@ -153,4 +153,3 @@ nfpms:
         apk:
             dependencies:
                 - libappindicator
-

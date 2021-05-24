@@ -184,7 +184,6 @@ func (ud *Updater) GetTag() (Tag, int, error) {
 		return Tag{}, -1, nil
 	}
 	url := fmt.Sprintf("%s/repo/%s/%s/tag/latest/%s", ud.url, ud.namespace, ud.name, ud.tag)
-	fmt.Println(url)
 	req, _ := http.NewRequest("GET", url, nil)
 	resp, err := ud.httpClient.Do(req)
 	defer ud.timeoutHandler()
