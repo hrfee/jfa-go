@@ -110,7 +110,7 @@ changelog:
             - '^test:'
 nfpms:
   - id: notray
-    file_name_template: '{{ .ProjectName }}_{{ .Arch }}_v{{ .Version }}'
+    file_name_template: '{{ .ProjectName }}{{ if .IsSnapshot }}-git{{ end }}_{{ .Arch }}_{{ if .IsSnapshot }}{{ .ShortCommit }}{{ else }}v{{ .Version }}{{ end }}'
     package_name: "jfa-go{{ if .IsSnapshot }}-git{{ end }}"
     homepage: https://github.com/hrfee/jfa-go
     description: A web app for managing users on Jellyfin
@@ -128,7 +128,7 @@ nfpms:
       - deb
       - rpm
   - id: tray
-    file_name_template: '{{ .ProjectName }}_TrayIcon_{{ .Arch }}_v{{ .Version }}'
+    file_name_template: '{{ .ProjectName }}{{ if .IsSnapshot }}-git{{ end }}_TrayIcon_{{ .Arch }}_{{ if .IsSnapshot }}{{ .ShortCommit }}{{ else }}v{{ .Version }}{{ end }}'
     package_name: "jfa-go-tray{{ if .IsSnapshot }}-git{{ end }}"
     homepage: https://github.com/hrfee/jfa-go
     description: A web app for managing users on Jellyfin
