@@ -723,7 +723,7 @@ func logOutput() func() {
 	old := os.Stdout
 	log.Printf("Logging to \"%s\"", logPath)
 	f, err := os.OpenFile(logPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
-	if err == nil {
+	if err != nil {
 		return func() {}
 	}
 	writer := io.MultiWriter(old, f)

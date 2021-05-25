@@ -9,6 +9,7 @@ import (
 	"syscall"
 
 	"github.com/getlantern/systray"
+	"github.com/skratchdot/open-golang/open"
 	// "github.com/getlantern/systray"
 )
 
@@ -36,6 +37,7 @@ func onReady() {
 	mStart := systray.AddMenuItem("Start", "Start jfa-go")
 	mStop := systray.AddMenuItem("Stop", "Stop jfa-go")
 	mRestart := systray.AddMenuItem("Restart", "Restart jfa-go")
+	mOpenLogs := systray.AddMenuItem("Open logs", "Open jfa-go log file.")
 	as := NewAutostart("jfa-go", "A user management system for Jellyfin", "Run on login", "Run jfa-go on user login.")
 	mQuit := systray.AddMenuItem("Quit", "Quit jfa-go")
 
@@ -88,6 +90,8 @@ func onReady() {
 				mStop.Enable()
 				mRestart.Enable()
 			}
+		case <-mOpenLogs.ClickedCh:
+			open.Start(logPath)
 		case <-mQuit.ClickedCh:
 			systray.Quit()
 			// case <-mOnLogin.ClickedCh:
