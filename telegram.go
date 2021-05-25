@@ -146,6 +146,9 @@ func (t *TelegramDaemon) QuoteReply(upd *tg.Update, content string) error {
 	return err
 }
 
+var escapedChars = []string{"_", "\\_", "*", "\\*", "[", "\\[", "]", "\\]", "(", "\\(", ")", "\\)", "~", "\\~", "`", "\\`", ">", "\\>", "#", "\\#", "+", "\\+", "-", "\\-", "=", "\\=", "|", "\\|", "{", "\\{", "}", "\\}", ".", "\\.", "!", "\\!"}
+var escaper = strings.NewReplacer(escapedChars...)
+
 // Send will send a telegram message to a list of chat IDs. message.text is used if no markdown is given.
 func (t *TelegramDaemon) Send(message *Message, ID ...int64) error {
 	for _, id := range ID {
@@ -153,9 +156,7 @@ func (t *TelegramDaemon) Send(message *Message, ID ...int64) error {
 		if message.Markdown == "" {
 			msg = tg.NewMessage(id, message.Text)
 		} else {
-			text := strings.ReplaceAll(message.Markdown, ".", "\\.")
-			text = strings.ReplaceAll(text, "![", "[")
-			text = strings.ReplaceAll(text, "!", "\\!")
+			text := escaper.Replace(message.Markdown)
 			msg = tg.NewMessage(id, text)
 			msg.ParseMode = "MarkdownV2"
 		}
