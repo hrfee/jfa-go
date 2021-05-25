@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/fs"
 	"log"
 	"mime"
@@ -20,6 +21,7 @@ import (
 	"time"
 
 	"github.com/fatih/color"
+	"github.com/gin-gonic/gin"
 	"github.com/hrfee/jfa-go/common"
 	_ "github.com/hrfee/jfa-go/docs"
 	"github.com/hrfee/jfa-go/logger"
@@ -57,6 +59,8 @@ var temp = func() string {
 	}
 	return temp
 }()
+
+var logPath string = filepath.Join(temp, "jfa-go.log")
 
 var serverTypes = map[string]string{
 	"jellyfin": "Jellyfin",
@@ -715,7 +719,34 @@ func printVersion() {
 	fmt.Println(info("jfa-go version: %s (%s)%s\n", hiwhite(version), white(commit), tray))
 }
 
+func logOutput() func() {
+	old := os.Stdout
+	log.Printf("Logging to \"%s\"", logPath)
+	f, err := os.OpenFile(logPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
+	if err == nil {
+		return func() {}
+	}
+	writer := io.MultiWriter(old, f)
+	r, w, _ := os.Pipe()
+	os.Stdout, os.Stderr = w, w
+	log.SetOutput(writer)
+	gin.DefaultWriter, gin.DefaultErrorWriter = writer, writer
+	wExit := make(chan bool)
+	go func() {
+		io.Copy(writer, r)
+		wExit <- true
+	}()
+	return func() {
+		w.Close()
+		<-wExit
+		f.Close()
+	}
+}
+
 func main() {
+	if TRAY {
+		defer logOutput()()
+	}
 	printVersion()
 	SOCK = filepath.Join(temp, SOCK)
 	fmt.Println("Socket:", SOCK)

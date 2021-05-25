@@ -8,6 +8,9 @@
 ---
 jfa-go is a user management app for [Jellyfin](https://github.com/jellyfin/jellyfin) (and now [Emby](https://emby.media/)) that provides invite-based account creation as well as other features that make one's instance much easier to manage.
 
+a rewrite of [jellyfin-accounts](https://github.com/hrfee/jellyfin-accounts) (original naming for both, ik 
+😂).
+
 #### Features
 * 🧑 Invite based account creation: Send invites to your friends or family, and let them choose their own username and password without relying on you.
     * Send invites via a link and/or email
