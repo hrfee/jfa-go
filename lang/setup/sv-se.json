@@ -69,7 +69,7 @@
     },
     "ombi": {
         "title": "Ombi",
-        "description": "Genom att ansluta till Ombi skapas både ett Jellyfin- och Ombi-konto när en användare går med genom jfa-go. Efter installationen, om du är klar, gå till Inställningar för att ställa in en standardprofil för nya ombi-användare.",
+        "description": "Genom att ansluta till Ombi skapas både ett Jellyfin- och Ombi-konto när en användare går med genom jfa-go. Efter installationen är klar, gå till Inställningar för att ställa in en standardprofil för nya ombi-användare.",
         "apiKeyNotice": "Hitta detta i den första fliken i Ombi-inställningarna."
     },
     "email": {
@@ -101,7 +101,10 @@
         "title": "Lösenordsåterställningar",
         "description": "När en användare försöker återställa sitt lösenord skapar Jellyfin en fil med namnet 'passwordreset-*.json' som innehåller en PIN-kod. jfa-go läser filen och skickar PIN-koden till användaren.",
         "pathToJellyfin": "Sökväg till Jellyfin-konfigurationskatalogen",
-        "pathToJellyfinNotice": "Om du inte vet var det är, försök återställa lösenordet i Jellyfin. En popup med '<sökväg till jellyfin>/passwordreset-*.json' kommer då visas."
+        "pathToJellyfinNotice": "Om du inte vet var det är, försök återställa lösenordet i Jellyfin. En popup med '<sökväg till jellyfin>/passwordreset-*.json' kommer då visas.",
+        "resetLinks": "Skicka en länk istället för en PIN",
+        "resetLinksNotice": "Om Ombi-integrationen är aktiverad, använd den för att synkronisera lösenordsåterställningar med Ombi.",
+        "resetLinksLanguage": "Förvalt språk för återställningslänk"
     },
     "passwordValidation": {
         "title": "Validering av lösenord",
@@ -123,5 +126,12 @@
         "successMessageNotice": "Visas när en användare skapar sitt konto.",
         "emailMessage": "E-postmeddelande",
         "emailMessageNotice": "Visas längst ner i e-postmeddelanden."
+    },
+    "updates": {
+        "title": "Uppdateringar",
+        "updateChannel": "Uppdateringskanal",
+        "description": "Aktivera för att få notifikation när nya uppdateringar finns tillgängliga. jfa-go kollar {n} var 30:e minut. Inga IP-adresser eller personligt identifierande handlingar samlas in.",
+        "stable": "Stabil",
+        "unstable": "Ostabil"
     }
 }
