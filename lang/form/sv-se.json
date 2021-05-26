@@ -17,11 +17,15 @@
         "successContinueButton": "Fortsätt",
         "confirmationRequired": "E-postbekräftelse krävs",
         "confirmationRequiredMessage": "Kontrollera din e-postkorg för att verifiera din adress.",
-        "yourAccountIsValidUntil": "Ditt konto är giltigt fram tills {date}."
+        "yourAccountIsValidUntil": "Ditt konto är giltigt fram tills {date}.",
+        "sendPIN": "Skicka PIN-koden nedan till botten, återvänd sedan till den här sidan för att länka ditt konto."
     },
     "notifications": {
         "errorUserExists": "Användare finns redan.",
-        "errorInvalidCode": "Ogiltig inbjudningskod."
+        "errorInvalidCode": "Ogiltig inbjudningskod.",
+        "errorInvalidPIN": "Telegram-PIN är ogiltig.",
+        "errorTelegramVerification": "Telegram-verifiering krävs.",
+        "telegramVerified": "Telegram-konto verifierades."
     },
     "validationStrings": {
         "length": {
