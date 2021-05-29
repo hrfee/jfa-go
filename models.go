@@ -139,6 +139,8 @@ type respUser struct {
 	Discord               string `json:"discord"`    // Discord username (if known)
 	DiscordID             string `json:"discord_id"` // Discord user ID for creating links.
 	NotifyThroughDiscord  bool   `json:"notify_discord"`
+	Matrix                string `json:"matrix"` // Matrix ID (if known)
+	NotifyThroughMatrix   bool   `json:"notify_matrix"`
 }
 
 type getUsersDTO struct {
@@ -262,6 +264,7 @@ type SetContactMethodsDTO struct {
 	Email    bool   `json:"email"`
 	Discord  bool   `json:"discord"`
 	Telegram bool   `json:"telegram"`
+	Matrix   bool   `json:"matrix"`
 }
 
 type DiscordUserDTO struct {

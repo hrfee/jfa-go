@@ -8,6 +8,7 @@
             window.emailEnabled = {{ .email_enabled }};
             window.telegramEnabled = {{ .telegram_enabled }};
             window.discordEnabled = {{ .discord_enabled }};
+            window.matrixEnabled = {{ .matrix_enabled }};
             window.ombiEnabled = {{ .ombiEnabled }};
             window.usernameEnabled = {{ .username }};
             window.langFile = JSON.parse({{ .language }});
@@ -544,6 +545,9 @@
                                     <th>{{ .strings.emailAddress }}</th>
                                     {{ if .telegram_enabled }}
                                     <th>Telegram</th>
+                                    {{ end }}
+                                    {{ if .matrix_enabled }}
+                                    <th>Matrix</th>
                                     {{ end }}
                                     {{ if .discord_enabled }}
                                     <th>Discord</th>

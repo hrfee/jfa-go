@@ -1277,10 +1277,14 @@ func (app *appContext) GetUsers(gc *gin.Context) {
 			user.Telegram = tgUser.Username
 			user.NotifyThroughTelegram = tgUser.Contact
 		}
-		if dc, ok := app.storage.discord[jfUser.ID]; ok {
-			user.Discord = dc.Username + "#" + dc.Discriminator
-			user.DiscordID = dc.ID
-			user.NotifyThroughDiscord = dc.Contact
+		if mxUser, ok := app.storage.matrix[jfUser.ID]; ok {
+			user.Matrix = mxUser.UserID
+			user.NotifyThroughMatrix = mxUser.Contact
+		}
+		if dcUser, ok := app.storage.discord[jfUser.ID]; ok {
+			user.Discord = dcUser.Username + "#" + dcUser.Discriminator
+			user.DiscordID = dcUser.ID
+			user.NotifyThroughDiscord = dcUser.Contact
 		}
 		resp.UserList[i] = user
 		i++
@@ -2127,6 +2131,7 @@ func (app *appContext) SetContactMethods(gc *gin.Context) {
 		return
 	}
 	if tgUser, ok := app.storage.telegram[req.ID]; ok {
+		change := tgUser.Contact != req.Telegram
 		tgUser.Contact = req.Telegram
 		app.storage.telegram[req.ID] = tgUser
 		if err := app.storage.storeTelegramUsers(); err != nil {
@@ -2134,13 +2139,16 @@ func (app *appContext) SetContactMethods(gc *gin.Context) {
 			app.err.Printf("Telegram: Failed to store users: %v", err)
 			return
 		}
-		msg := ""
-		if !req.Telegram {
-			msg = " not"
+		if change {
+			msg := ""
+			if !req.Telegram {
+				msg = " not"
+			}
+			app.debug.Printf("Telegram: User \"%s\" will%s be notified through Telegram.", tgUser.Username, msg)
 		}
-		app.debug.Printf("Telegram: User \"%s\" will%s be notified through Telegram.", tgUser.Username, msg)
 	}
 	if dcUser, ok := app.storage.discord[req.ID]; ok {
+		change := dcUser.Contact != req.Discord
 		dcUser.Contact = req.Discord
 		app.storage.discord[req.ID] = dcUser
 		if err := app.storage.storeDiscordUsers(); err != nil {
@@ -2148,13 +2156,33 @@ func (app *appContext) SetContactMethods(gc *gin.Context) {
 			app.err.Printf("Discord: Failed to store users: %v", err)
 			return
 		}
-		msg := ""
-		if !req.Discord {
-			msg = " not"
+		if change {
+			msg := ""
+			if !req.Discord {
+				msg = " not"
+			}
+			app.debug.Printf("Discord: User \"%s\" will%s be notified through Discord.", dcUser.Username, msg)
 		}
-		app.debug.Printf("Discord: User \"%s\" will%s be notified through Discord.", dcUser.Username, msg)
+	}
+	if mxUser, ok := app.storage.matrix[req.ID]; ok {
+		change := mxUser.Contact != req.Matrix
+		mxUser.Contact = req.Matrix
+		app.storage.matrix[req.ID] = mxUser
+		if err := app.storage.storeMatrixUsers(); err != nil {
+			respondBool(500, false, gc)
+			app.err.Printf("Matrix: Failed to store users: %v", err)
+			return
+		}
+		if change {
+			msg := ""
+			if !req.Matrix {
+				msg = " not"
+			}
+			app.debug.Printf("Matrix: User \"%s\" will%s be notified through Matrix.", mxUser.UserID, msg)
+		}
 	}
 	if email, ok := app.storage.emails[req.ID]; ok {
+		change := email.Contact != req.Email
 		email.Contact = req.Email
 		app.storage.emails[req.ID] = email
 		if err := app.storage.storeEmails(); err != nil {
@@ -2162,11 +2190,13 @@ func (app *appContext) SetContactMethods(gc *gin.Context) {
 			app.err.Printf("Failed to store emails: %v", err)
 			return
 		}
-		msg := ""
-		if !req.Email {
-			msg = " not"
+		if change {
+			msg := ""
+			if !req.Email {
+				msg = " not"
+			}
+			app.debug.Printf("\"%s\" will%s be notified via Email.", email.Addr, msg)
 		}
-		app.debug.Printf("\"%s\" will%s be notified via Email.", email.Addr, msg)
 	}
 	respondBool(200, true, gc)
 }

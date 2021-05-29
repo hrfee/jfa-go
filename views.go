@@ -123,6 +123,7 @@ func (app *appContext) AdminPage(gc *gin.Context) {
 		"email_enabled":    emailEnabled,
 		"telegram_enabled": telegramEnabled,
 		"discord_enabled":  discordEnabled,
+		"matrix_enabled":   matrixEnabled,
 		"notifications":    notificationsEnabled,
 		"version":          version,
 		"commit":           commit,
