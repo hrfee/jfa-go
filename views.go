@@ -137,6 +137,7 @@ func (app *appContext) AdminPage(gc *gin.Context) {
 }
 
 func (app *appContext) ResetPassword(gc *gin.Context) {
+	isBot := strings.Contains(gc.Request.Header.Get("User-Agent"), "Bot")
 	pin := gc.Query("pin")
 	if pin == "" {
 		app.NoRouteHandler(gc)
@@ -151,32 +152,39 @@ func (app *appContext) ResetPassword(gc *gin.Context) {
 		"success":        false,
 		"ombiEnabled":    app.config.Section("ombi").Key("enabled").MustBool(false),
 	}
-	resp, status, err := app.jf.ResetPassword(pin)
-	if status == 200 && err == nil && resp.Success {
-		data["success"] = true
-		data["pin"] = pin
-	} else {
-		app.err.Printf("Password Reset failed (%d): %v", status, err)
-	}
 	defer gcHTML(gc, http.StatusOK, "password-reset.html", data)
-	if app.config.Section("ombi").Key("enabled").MustBool(false) {
-		jfUser, status, err := app.jf.UserByName(resp.UsersReset[0], false)
-		if status != 200 || err != nil {
-			app.err.Printf("Failed to get user \"%s\" from jellyfin/emby (%d): %v", resp.UsersReset[0], status, err)
-			return
+	// If it's a bot, pretend to be a success so the preview is nice.
+	if isBot {
+		app.debug.Println("PWR: Ignoring magic link visit from bot")
+		data["success"] = true
+		data["pin"] = "NO-BO-TS"
+	} else {
+		resp, status, err := app.jf.ResetPassword(pin)
+		if status == 200 && err == nil && resp.Success {
+			data["success"] = true
+			data["pin"] = pin
+		} else {
+			app.err.Printf("Password Reset failed (%d): %v", status, err)
 		}
-		ombiUser, status, err := app.getOmbiUser(jfUser.ID)
-		if status != 200 || err != nil {
-			app.err.Printf("Failed to get user \"%s\" from ombi (%d): %v", resp.UsersReset[0], status, err)
-			return
+		if app.config.Section("ombi").Key("enabled").MustBool(false) {
+			jfUser, status, err := app.jf.UserByName(resp.UsersReset[0], false)
+			if status != 200 || err != nil {
+				app.err.Printf("Failed to get user \"%s\" from jellyfin/emby (%d): %v", resp.UsersReset[0], status, err)
+				return
+			}
+			ombiUser, status, err := app.getOmbiUser(jfUser.ID)
+			if status != 200 || err != nil {
+				app.err.Printf("Failed to get user \"%s\" from ombi (%d): %v", resp.UsersReset[0], status, err)
+				return
+			}
+			ombiUser["password"] = pin
+			status, err = app.ombi.ModifyUser(ombiUser)
+			if status != 200 || err != nil {
+				app.err.Printf("Failed to set password for ombi user \"%s\" (%d): %v", ombiUser["userName"], status, err)
+				return
+			}
+			app.debug.Printf("Reset password for ombi user \"%s\"", ombiUser["userName"])
 		}
-		ombiUser["password"] = pin
-		status, err = app.ombi.ModifyUser(ombiUser)
-		if status != 200 || err != nil {
-			app.err.Printf("Failed to set password for ombi user \"%s\" (%d): %v", ombiUser["userName"], status, err)
-			return
-		}
-		app.debug.Printf("Reset password for ombi user \"%s\"", ombiUser["userName"])
 	}
 }
 

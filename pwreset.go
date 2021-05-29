@@ -54,10 +54,12 @@ func pwrMonitor(app *appContext, watcher *fsnotify.Watcher) {
 				var pwr PasswordReset
 				data, err := os.ReadFile(event.Name)
 				if err != nil {
+					app.debug.Printf("PWR: Failed to read file: %v", err)
 					return
 				}
 				err = json.Unmarshal(data, &pwr)
 				if len(pwr.Pin) == 0 || err != nil {
+					app.debug.Printf("PWR: Failed to read PIN: %v", err)
 					return
 				}
 				app.info.Printf("New password reset for user \"%s\"", pwr.Username)
