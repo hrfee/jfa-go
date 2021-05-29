@@ -535,7 +535,7 @@ func (emailer *Emailer) resetValues(pwr PasswordReset, app *appContext, noSub bo
 			if inviteLink != "" {
 				// Strip /invite form end of this URL, ik its ugly.
 				template["link_reset"] = true
-				pinLink := fmt.Sprintf("%s/reset?pin=%s", strings.Replace(inviteLink, "/invite", "", 1), pwr.Pin)
+				pinLink := fmt.Sprintf("%s/reset?pin=%s", strings.TrimPrefix(inviteLink, "/invite"), pwr.Pin)
 				template["pin"] = pinLink
 				// Only used in html email.
 				template["pin_code"] = pwr.Pin
