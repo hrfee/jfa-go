@@ -22,6 +22,7 @@ declare interface Window {
     emailEnabled: boolean;
     telegramEnabled: boolean;
     discordEnabled: boolean;
+    matrixEnabled: boolean;
     ombiEnabled: boolean;
     usernameEnabled: boolean;
     token: string;

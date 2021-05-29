@@ -100,6 +100,7 @@ type appContext struct {
 	email            *Emailer
 	telegram         *TelegramDaemon
 	discord          *DiscordDaemon
+	matrix           *MatrixDaemon
 	info, debug, err logger.Logger
 	host             string
 	port             int
@@ -588,6 +589,16 @@ func start(asDaemon, firstCall bool) {
 			} else {
 				go app.discord.run()
 				defer app.discord.Shutdown()
+			}
+		}
+		if matrixEnabled {
+			app.matrix, err = newMatrixDaemon(app)
+			if err != nil {
+				app.err.Printf("Failed to initialize Matrix daemon: %v", err)
+				matrixEnabled = false
+			} else {
+				go app.matrix.run()
+				defer app.matrix.Shutdown()
 			}
 		}
 	} else {

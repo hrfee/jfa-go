@@ -281,3 +281,10 @@ type DiscordInviteDTO struct {
 	InviteURL string `json:"invite"`
 	IconURL   string `json:"icon"`
 }
+
+type MatrixSendPINDTO struct {
+	UserID string `json:"user_id"`
+}
+type MatrixCheckPINDTO struct {
+	PIN string `json:"pin"`
+}

@@ -8,6 +8,7 @@
         "emailAddress": "Email Address",
         "name": "Name",
         "submit": "Submit",
+        "send": "Send",
         "success": "Success",
         "error": "Error",
         "copy": "Copy",
@@ -18,6 +19,7 @@
         "contactEmail": "Contact through Email",
         "contactTelegram": "Contact through Telegram",
         "linkDiscord": "Link Discord",
+        "linkMatrix": "Link Matrix",
         "contactDiscord": "Contact through Discord",
         "theme": "Theme"
     }

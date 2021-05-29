@@ -287,12 +287,17 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 		"langName":          lang,
 		"telegramEnabled":   telegramEnabled,
 		"discordEnabled":    discordEnabled,
+		"matrixEnabled":     matrixEnabled,
 	}
 	if telegramEnabled {
 		data["telegramPIN"] = app.telegram.NewAuthToken()
 		data["telegramUsername"] = app.telegram.username
 		data["telegramURL"] = app.telegram.link
 		data["telegramRequired"] = app.config.Section("telegram").Key("required").MustBool(false)
+	}
+	if matrixEnabled {
+		data["matrixRequired"] = app.config.Section("matrix").Key("required").MustBool(false)
+		data["matrixUser"] = app.matrix.userID
 	}
 	if discordEnabled {
 		data["discordPIN"] = app.discord.NewAuthToken()

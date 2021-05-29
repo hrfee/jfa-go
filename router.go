@@ -127,6 +127,10 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 				router.GET(p+"/invite/:invCode/discord/invite", app.DiscordServerInvite)
 			}
 		}
+		if matrixEnabled {
+			router.GET(p+"/invite/:invCode/matrix/verified/:userID/:pin", app.MatrixCheckPIN)
+			router.POST(p+"/invite/:invCode/matrix/user", app.MatrixSendPIN)
+		}
 	}
 	if *SWAGGER {
 		app.info.Print(warning("\n\nWARNING: Swagger should not be used on a public instance.\n\n"))

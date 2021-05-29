@@ -2233,6 +2233,68 @@ func (app *appContext) DiscordServerInvite(gc *gin.Context) {
 	gc.JSON(200, DiscordInviteDTO{invURL, iconURL})
 }
 
+// @Summary Generate and send a new PIN to a specified Matrix user.
+// @Produce json
+// @Success 200 {object} boolResponse
+// @Failure 400 {object} boolResponse
+// @Failure 401 {object} boolResponse
+// @Failure 500 {object} boolResponse
+// @Param invCode path string true "invite Code"
+// @Param MatrixSendPINDTO body MatrixSendPINDTO true "User's Matrix ID."
+// @Router /invite/{invCode}/matrix/user [post]
+// @tags Other
+func (app *appContext) MatrixSendPIN(gc *gin.Context) {
+	code := gc.Param("invCode")
+	if _, ok := app.storage.invites[code]; !ok {
+		respondBool(401, false, gc)
+		return
+	}
+	var req MatrixSendPINDTO
+	gc.BindJSON(&req)
+	if req.UserID == "" {
+		respondBool(400, false, gc)
+		return
+	}
+	ok := app.matrix.SendStart(req.UserID)
+	if !ok {
+		respondBool(500, false, gc)
+		return
+	}
+	respondBool(200, true, gc)
+}
+
+// @Summary Check whether a matrix PIN is valid. Requires invite code.
+// @Produce json
+// @Success 200 {object} boolResponse
+// @Failure 401 {object} boolResponse
+// @Param pin path string true "PIN code to check"
+// @Param invCode path string true "invite Code"
+// @Param userID path string true "Matrix User ID"
+// @Router /invite/{invCode}/matrix/verified/{userID}/{pin} [get]
+// @tags Other
+func (app *appContext) MatrixCheckPIN(gc *gin.Context) {
+	code := gc.Param("invCode")
+	if _, ok := app.storage.invites[code]; !ok {
+		app.debug.Println("Matrix: Invite code was invalid")
+		respondBool(401, false, gc)
+		return
+	}
+	userID := gc.Param("userID")
+	pin := gc.Param("pin")
+	user, ok := app.matrix.tokens[pin]
+	if !ok {
+		app.debug.Println("Matrix: PIN not found")
+		respondBool(200, false, gc)
+		return
+	}
+	if user.User.UserID != userID {
+		app.debug.Println("Matrix: User ID of PIN didn't match")
+		respondBool(200, false, gc)
+		return
+	}
+	respondBool(200, true, gc)
+}
+
 // @Summary Returns a list of matching users from a Discord guild, given a username (discriminator optional).
 // @Produce json
 // @Success 200 {object} DiscordUsersDTO

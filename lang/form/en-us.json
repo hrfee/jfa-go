@@ -19,7 +19,8 @@
         "confirmationRequiredMessage": "Please check your email inbox to verify your address.",
         "yourAccountIsValidUntil": "Your account will be valid until {date}.",
         "sendPIN": "Send the PIN below to the bot, then come back here to link your account.",
-        "sendPINDiscord": "Type {command} in {server_channel} on Discord, then send the PIN below via DM to the bot."
+        "sendPINDiscord": "Type {command} in {server_channel} on Discord, then send the PIN below via DM to the bot.",
+        "matrixEnterUser": "Enter your User ID, press submit, and a PIN will be sent to you. Enter it here to continue."
     },
     "notifications": {
         "errorUserExists": "User already exists.",
@@ -27,6 +28,7 @@
         "errorTelegramVerification": "Telegram verification required.",
         "errorDiscordVerification": "Discord verification required.",
         "errorInvalidPIN": "PIN is invalid.",
+        "errorUnknown": "Unknown error.",
         "verified": "Account verified."
     },
     "validationStrings": {

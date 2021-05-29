@@ -48,6 +48,24 @@
             </div>
         </div>
         {{ end }}
+        {{ if .matrixEnabled }}
+        <div id="modal-matrix" class="modal">
+            <div class="modal-content card">
+                <span class="heading mb-1">{{ .strings.linkMatrix }}</span>
+                <p class="content mb-1"> {{ .strings.matrixEnterUser }}</p>
+                <input type="text" class="input ~neutral !high" placeholder="@user:riot.im" id="matrix-userid">
+                <div class="subheading link-center mt-1">
+                    <span class="shield ~info mr-1">
+                        <span class="icon">
+                            <i class="ri-chat-3-line"></i>
+                        </span>
+                    </span>
+                    {{ .matrixUser }}
+                </div>
+                <span class="button ~info !normal full-width center mt-1" id="matrix-send">{{ .strings.submit }}</span>
+            </div>
+        </div>
+        {{ end }}
         <span class="dropdown" tabindex="0" id="lang-dropdown">
             <span class="button ~urge dropdown-button">
                 <i class="ri-global-line"></i>
@@ -84,7 +102,10 @@
                             {{ if .discordEnabled }}
                             <span class="button ~info !normal full-width center mb-1" id="link-discord">{{ .strings.linkDiscord }}</span>
                             {{ end }}
-                            {{ if or (.telegramEnabled) (.discordEnabled) }}
+                            {{ if .matrixEnabled }}
+                            <span class="button ~info !normal full-width center mb-1" id="link-matrix">{{ .strings.linkMatrix }}</span>
+                            {{ end }}
+                            {{ if or (.telegramEnabled) (or .discordEnabled .matrixEnabled) }}
                             <div id="contact-via" class="unfocused">
                                 <label class="row switch pb-1">
                                     <input type="radio" name="contact-via" value="email"><span>Contact through Email</span>
@@ -97,6 +118,11 @@
                                 {{ if .discordEnabled }}
                                 <label class="row switch pb-1">
                                     <input type="radio" name="contact-via" value="discord" id="contact-via-discord"><span>Contact through Discord</span>
+                                </label>
+                                {{ end }}
+                                {{ if .matrixEnabled }}
+                                <label class="row switch pb-1">
+                                    <input type="radio" name="contact-via" value="matrix" id="contact-via-matrix"><span>Contact through Matrix</span>
                                 </label>
                                 {{ end }}
                             </div>

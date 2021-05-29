@@ -676,6 +676,71 @@
                 }
             }
         },
+        "matrix": {
+            "order": [],
+            "meta": {
+                "name": "Matrix",
+                "description": "Settings for Matrix invites/signup/notifications"
+            },
+            "settings": {
+                "enabled": {
+                    "name": "Enabled",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "bool",
+                    "value": false,
+                    "description": "Enable signup verification through Matrix and the sending of notifications through it.\nSee the jfa-go wiki for setting up a bot."
+                },
+                "required": {
+                    "name": "Require on sign-up",
+                    "required": false,
+                    "required_restart": true,
+                    "depends_true": "enabled",
+                    "type": "bool",
+                    "value": false,
+                    "description": "Require Matrix connection on sign-up."
+                },
+                "homeserver": {
+                    "name": "Home Server URL",
+                    "required": false,
+                    "requires_restart": true,
+                    "depends_true": "enabled",
+                    "type": "text",
+                    "value": "",
+                    "description": "Matrix Home server URL."
+                },
+                "token": {
+                    "name": "Access Token",
+                    "required": false,
+                    "requires_restart": true,
+                    "depends_true": "enabled",
+                    "type": "text",
+                    "value": "",
+                    "description": "Matrix Bot API Token."
+                },
+                "user_id": {
+                    "name": "Bot User ID",
+                    "required": false,
+                    "requires_restart": true,
+                    "depends_true": "enabled",
+                    "type": "text",
+                    "value": "",
+                    "description": "User ID of bot account (Example: @jfa-bot:riot.im)"
+                },
+                "language": {
+                    "name": "Language",
+                    "required": false,
+                    "requires_restart": false,
+                    "depends_true": "enabled",
+                    "type": "select",
+                    "options": [
+                        ["en-us", "English (US)"]
+                    ],
+                    "value": "en-us",
+                    "description": "Default Matrix message language. Visit weblate if you'd like to translate."
+                }
+            }
+        },
         "password_resets": {
             "order": [],
             "meta": {
@@ -1224,6 +1289,14 @@
                     "type": "text",
                     "value": "",
                     "description": "Stores telegram user IDs and language preferences."
+                },
+                "matrix_users": {
+                    "name": "Matrix users",
+                    "required": false,
+                    "requires_restart": false,
+                    "type": "text",
+                    "value": "",
+                    "description": "Stores matrix user IDs and language preferences."
                 },
                 "discord_users": {
                     "name": "Discord users",
