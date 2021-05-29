@@ -2,7 +2,10 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
+	"strings"
 
+	"github.com/gomarkdown/markdown"
 	"github.com/matrix-org/gomatrix"
 )
 
@@ -93,7 +96,54 @@ func (d *MatrixDaemon) Shutdown() {
 	close(d.ShutdownChannel)
 }
 
-func (d *MatrixDaemon) handleMessage(event *gomatrix.Event) { return }
+func (d *MatrixDaemon) handleMessage(event *gomatrix.Event) {
+	if event.Sender == d.userID {
+		return
+	}
+	lang := "en-us"
+	if l, ok := d.languages[event.RoomID]; ok {
+		if _, ok := d.app.storage.lang.Telegram[l]; ok {
+			lang = l
+		}
+	}
+	sects := strings.Split(event.Content["body"].(string), " ")
+	switch sects[0] {
+	case "!lang":
+		if len(sects) == 2 {
+			d.commandLang(event, sects[1], lang)
+		} else {
+			d.commandLang(event, "", lang)
+		}
+	}
+}
+
+func (d *MatrixDaemon) commandLang(event *gomatrix.Event, code, lang string) {
+	if code == "" {
+		list := "!lang <lang>\n"
+		for c := range d.app.storage.lang.Telegram {
+			list += fmt.Sprintf("%s: %s\n", c, d.app.storage.lang.Telegram[c].Meta.Name)
+		}
+		_, err := d.bot.SendText(
+			event.RoomID,
+			list,
+		)
+		if err != nil {
+			d.app.err.Printf("Matrix: Failed to send message to \"%s\": %v", event.Sender, err)
+		}
+		return
+	}
+	if _, ok := d.app.storage.lang.Telegram[code]; !ok {
+		return
+	}
+	d.languages[event.RoomID] = code
+	if u, ok := d.app.storage.matrix[event.RoomID]; ok {
+		u.Lang = code
+		d.app.storage.matrix[event.RoomID] = u
+		if err := d.app.storage.storeMatrixUsers(); err != nil {
+			d.app.err.Printf("Matrix: Failed to store Matrix users: %v", err)
+		}
+	}
+}
 
 func (d *MatrixDaemon) SendStart(userID string) (ok bool) {
 	room, err := d.bot.CreateRoom(&gomatrix.ReqCreateRoom{
@@ -125,6 +175,25 @@ func (d *MatrixDaemon) SendStart(userID string) (ok bool) {
 		return
 	}
 	ok = true
+	return
+}
+
+func (d *MatrixDaemon) Send(message *Message, roomID ...string) (err error) {
+	md := ""
+	if message.Markdown != "" {
+		// Convert images to links
+		md = string(markdown.ToHTML([]byte(strings.ReplaceAll(message.Markdown, "![", "[")), nil, renderer))
+	}
+	for _, id := range roomID {
+		if md != "" {
+			_, err = d.bot.SendFormattedText(id, message.Text, md)
+		} else {
+			_, err = d.bot.SendText(id, message.Text)
+		}
+		if err != nil {
+			return
+		}
+	}
 	return
 }
 
