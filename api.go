@@ -361,7 +361,7 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 			if app.config.Section("matrix").Key("required").MustBool(false) {
 				f = func(gc *gin.Context) {
 					app.debug.Printf("%s: New user failed: Matrix verification not completed", req.Code)
-					respond(401, "errorMatrixVerification")
+					respond(401, "errorMatrixVerification", gc)
 				}
 				success = false
 				return
@@ -565,12 +565,13 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 		}
 	}
 	if matrixVerified {
+		matrixUser.Contact = req.MatrixContact
 		delete(app.matrix.tokens, req.MatrixPIN)
 		if app.storage.matrix == nil {
 			app.storage.matrix = map[string]MatrixUser{}
 		}
 		app.storage.matrix[user.ID] = matrixUser
-		if err := app.storage.storeMatrixUsers; err != nil {
+		if err := app.storage.storeMatrixUsers(); err != nil {
 			app.err.Printf("Failed to store Matrix users: %v", err)
 		}
 	}
@@ -2300,7 +2301,7 @@ func (app *appContext) MatrixSendPIN(gc *gin.Context) {
 	respondBool(200, true, gc)
 }
 
-// @Summary Check whether a matrix PIN is valid. Requires invite code.
+// @Summary Check whether a matrix PIN is valid, and mark the token as verified if so. Requires invite code.
 // @Produce json
 // @Success 200 {object} boolResponse
 // @Failure 401 {object} boolResponse
@@ -2329,6 +2330,8 @@ func (app *appContext) MatrixCheckPIN(gc *gin.Context) {
 		respondBool(200, false, gc)
 		return
 	}
+	user.Verified = true
+	app.matrix.tokens[pin] = user
 	respondBool(200, true, gc)
 }
 
