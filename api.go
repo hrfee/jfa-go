@@ -354,6 +354,34 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 			}
 		}
 	}
+	var matrixUser MatrixUser
+	matrixVerified := false
+	if matrixEnabled {
+		if req.MatrixPIN == "" {
+			if app.config.Section("matrix").Key("required").MustBool(false) {
+				f = func(gc *gin.Context) {
+					app.debug.Printf("%s: New user failed: Matrix verification not completed", req.Code)
+					respond(401, "errorMatrixVerification")
+				}
+				success = false
+				return
+			}
+		} else {
+			user, ok := app.matrix.tokens[req.MatrixPIN]
+			if !ok || !user.Verified {
+				matrixVerified = false
+				f = func(gc *gin.Context) {
+					app.debug.Printf("%s: New user failed: Matrix PIN was invalid", req.Code)
+					respond(401, "errorInvalidPIN", gc)
+				}
+				success = false
+				return
+			}
+			matrixVerified = user.Verified
+			matrixUser = *user.User
+
+		}
+	}
 	telegramTokenIndex := -1
 	if telegramEnabled {
 		if req.TelegramPIN == "" {
@@ -536,7 +564,16 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 			app.telegram.verifiedTokens = app.telegram.verifiedTokens[:len(app.telegram.verifiedTokens)-1]
 		}
 	}
-
+	if matrixVerified {
+		delete(app.matrix.tokens, req.MatrixPIN)
+		if app.storage.matrix == nil {
+			app.storage.matrix = map[string]MatrixUser{}
+		}
+		app.storage.matrix[user.ID] = matrixUser
+		if err := app.storage.storeMatrixUsers; err != nil {
+			app.err.Printf("Failed to store Matrix users: %v", err)
+		}
+	}
 	if (emailEnabled && app.config.Section("welcome_email").Key("enabled").MustBool(false) && req.Email != "") || telegramTokenIndex != -1 || discordVerified {
 		name := app.getAddressOrName(user.ID)
 		app.debug.Printf("%s: Sending welcome message to %s", req.Username, name)

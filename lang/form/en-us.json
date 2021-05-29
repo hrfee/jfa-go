@@ -27,6 +27,7 @@
         "errorInvalidCode": "Invalid invite code.",
         "errorTelegramVerification": "Telegram verification required.",
         "errorDiscordVerification": "Discord verification required.",
+        "errorMatrixVerification": "Matrix verification required.",
         "errorInvalidPIN": "PIN is invalid.",
         "errorUnknown": "Unknown error.",
         "verified": "Account verified."

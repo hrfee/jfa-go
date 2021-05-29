@@ -19,6 +19,8 @@ type newUserDTO struct {
 	TelegramContact bool   `json:"telegram_contact"`                            // Whether or not to use telegram for notifications/pwrs
 	DiscordPIN      string `json:"discord_pin" example:"A1-B2-3C"`              // Discord verification PIN (if used)
 	DiscordContact  bool   `json:"discord_contact"`                             // Whether or not to use discord for notifications/pwrs
+	MatrixPIN       string `json:"matrix_pin" example:"A1-B2-3C"`               // Matrix verification PIN (if used)
+	MatrixContact   bool   `json:"matrix_contact"`                              // Whether or not to use matrix for notifications/pwrs
 }
 
 type newUserResponse struct {
