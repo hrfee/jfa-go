@@ -96,6 +96,7 @@ steps:
         - wget https://builds.hrfee.pw/upload.py
         - pip3 install requests
         - bash -c 'sftp -P 2022 -i /id_rsa -o StrictHostKeyChecking=no root@161.97.102.153:/repo/incoming <<< $"put dist/*.deb"'
+        - bash -c 'ssh -i /id_rsa root@161.97.102.153 -p 2022 "reprepro -Vb /repo remove trusty-unstable jfa-go"'
         - bash -c 'ssh -i /id_rsa root@161.97.102.153 -p 2022 "repo-process-deb trusty"'
         - bash -c 'python3 upload.py https://builds.hrfee.pw hrfee jfa-go --upload ./dist/*.zip ./dist/*.rpm ./dist/*.apk --tag internal-git=true'
       environment:
