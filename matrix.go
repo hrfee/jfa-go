@@ -145,12 +145,20 @@ func (d *MatrixDaemon) commandLang(event *gomatrix.Event, code, lang string) {
 	}
 }
 
-func (d *MatrixDaemon) SendStart(userID string) (ok bool) {
+func (d *MatrixDaemon) CreateRoom(userID string) (string, error) {
 	room, err := d.bot.CreateRoom(&gomatrix.ReqCreateRoom{
 		Visibility: "private",
 		Invite:     []string{userID},
-		Topic:      "jfa-go",
+		Topic:      d.app.config.Section("matrix").Key("topic").String(),
 	})
+	if err != nil {
+		return "", err
+	}
+	return room.RoomID, nil
+}
+
+func (d *MatrixDaemon) SendStart(userID string) (ok bool) {
+	roomID, err := d.CreateRoom(userID)
 	if err != nil {
 		d.app.err.Printf("Failed to create room for user \"%s\": %v", userID, err)
 		return
@@ -160,13 +168,13 @@ func (d *MatrixDaemon) SendStart(userID string) (ok bool) {
 	d.tokens[pin] = UnverifiedUser{
 		false,
 		&MatrixUser{
-			RoomID: room.RoomID,
+			RoomID: roomID,
 			UserID: userID,
 			Lang:   lang,
 		},
 	}
 	_, err = d.bot.SendText(
-		room.RoomID,
+		roomID,
 		d.app.storage.lang.Telegram[lang].Strings.get("matrixStartMessage")+"\n\n"+pin+"\n\n"+
 			d.app.storage.lang.Telegram[lang].Strings.template("languageMessage", tmpl{"command": "!lang"}),
 	)

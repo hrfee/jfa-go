@@ -186,8 +186,11 @@ class user implements User {
         this._matrixID = u;
         if (!u) {
             this._notifyDropdown.querySelector(".accounts-area-matrix").classList.add("unfocused");
-            this._matrix.innerHTML = `<span class="chip btn !low">${window.lang.strings("add")}</span>`;
-            // (this._matrix.querySelector("span") as HTMLSpanElement).onclick = this._addMatrix;
+            this._matrix.innerHTML = `
+            <span class="chip btn !low">${window.lang.strings("add")}</span>
+            <input type="text" class="input ~neutral !normal stealth-input unfocused" placeholder="@user:riot.im">
+            `;
+            (this._matrix.querySelector("span") as HTMLSpanElement).onclick = this._addMatrix;
         } else {
             this._notifyDropdown.querySelector(".accounts-area-matrix").classList.remove("unfocused");
             this._matrix.innerHTML = `
@@ -200,7 +203,37 @@ class user implements User {
             }
         }
     }
-    
+   
+    private _addMatrix = () => {
+        const addButton = this._matrix.querySelector(".btn") as HTMLSpanElement;
+        const icon = this._matrix.querySelector("i");
+        const input = this._matrix.querySelector("input.stealth-input") as HTMLInputElement;
+        if (addButton.classList.contains("chip")) {
+            input.classList.remove("unfocused");
+            addButton.innerHTML = `<i class="ri-check-line"></i>`;
+            addButton.classList.remove("chip")
+            if (icon) {
+                icon.classList.add("unfocused");
+            }
+        } else {
+            if (input.value.charAt(0) != "@" || !input.value.includes(":")) return;
+            const send = {
+                jf_id: this.id,
+                user_id: input.value
+            }
+            _post("/users/matrix", send, (req: XMLHttpRequest) => {
+                if (req.readyState == 4) {
+                    document.dispatchEvent(new CustomEvent("accounts-reload"));
+                    if (req.status != 200) {
+                        window.notifications.customError("errorConnectMatrix", window.lang.notif("errorFailureCheckLogs"));
+                        return;
+                    }
+                    window.notifications.customSuccess("connectMatrix", window.lang.notif("accountConnected"));
+                }
+            });
+        }
+    }
+
     get notify_matrix(): boolean { return this._notifyMatrix; }
     set notify_matrix(s: boolean) {
         if (this._notifyDropdown) {

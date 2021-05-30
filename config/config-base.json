@@ -727,6 +727,15 @@
                     "value": "",
                     "description": "User ID of bot account (Example: @jfa-bot:riot.im)"
                 },
+                "topic": {
+                    "name": "Chat topic",
+                    "required": false,
+                    "requires_restart": true,
+                    "depends_true": "enabled",
+                    "type": "text",
+                    "value": "Jellyfin notifications",
+                    "description": "Topic of Matrix private chats."
+                },
                 "language": {
                     "name": "Language",
                     "required": false,

@@ -290,6 +290,12 @@ type DiscordInviteDTO struct {
 type MatrixSendPINDTO struct {
 	UserID string `json:"user_id"`
 }
+
 type MatrixCheckPINDTO struct {
 	PIN string `json:"pin"`
+}
+
+type MatrixConnectUserDTO struct {
+	JellyfinID string `json:"jf_id"`
+	UserID     string `json:"user_id"`
 }

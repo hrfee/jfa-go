@@ -130,6 +130,7 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 		if matrixEnabled {
 			router.GET(p+"/invite/:invCode/matrix/verified/:userID/:pin", app.MatrixCheckPIN)
 			router.POST(p+"/invite/:invCode/matrix/user", app.MatrixSendPIN)
+			router.POST(p+"/users/matrix", app.MatrixConnect)
 		}
 	}
 	if *SWAGGER {

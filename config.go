@@ -84,6 +84,8 @@ func (app *appContext) loadConfig() error {
 	app.MustSetValue("user_expiry", "email_html", "jfa-go:"+"user-expired.html")
 	app.MustSetValue("user_expiry", "email_text", "jfa-go:"+"user-expired.txt")
 
+	app.MustSetValue("matrix", "topic", "Jellyfin notifications")
+
 	app.config.Section("jellyfin").Key("version").SetValue(version)
 	app.config.Section("jellyfin").Key("device").SetValue("jfa-go")
 	app.config.Section("jellyfin").Key("device_id").SetValue(fmt.Sprintf("jfa-go-%s-%s", version, commit))

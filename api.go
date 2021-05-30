@@ -1540,6 +1540,8 @@ func (app *appContext) GetConfig(gc *gin.Context) {
 	resp.Sections["email"].Settings["language"] = el
 	resp.Sections["password_resets"].Settings["language"] = pl
 	resp.Sections["telegram"].Settings["language"] = tl
+	resp.Sections["discord"].Settings["language"] = tl
+	resp.Sections["matrix"].Settings["language"] = tl
 
 	gc.JSON(200, resp)
 }
@@ -2362,6 +2364,40 @@ func (app *appContext) MatrixCheckPIN(gc *gin.Context) {
 	}
 	user.Verified = true
 	app.matrix.tokens[pin] = user
+	respondBool(200, true, gc)
+}
+
+// @Summary Links a Matrix user to a Jellyfin account via user IDs. Notifications are turned on by default.
+// @Produce json
+// @Success 200 {object} boolResponse
+// @Failure 400 {object} boolResponse
+// @Failure 500 {object} boolResponse
+// @Param MatrixConnectUserDTO body MatrixConnectUserDTO true "User's Jellyfin ID & Matrix user ID."
+// @Router /users/matrix [post]
+// @tags Other
+func (app *appContext) MatrixConnect(gc *gin.Context) {
+	var req MatrixConnectUserDTO
+	gc.BindJSON(&req)
+	if app.storage.matrix == nil {
+		app.storage.matrix = map[string]MatrixUser{}
+	}
+	roomID, err := app.matrix.CreateRoom(req.UserID)
+	if err != nil {
+		app.err.Printf("Matrix: Failed to create room: %v", err)
+		respondBool(500, false, gc)
+		return
+	}
+	app.storage.matrix[req.JellyfinID] = MatrixUser{
+		UserID:  req.UserID,
+		RoomID:  roomID,
+		Lang:    "en-us",
+		Contact: true,
+	}
+	if err := app.storage.storeMatrixUsers(); err != nil {
+		app.err.Printf("Failed to store Matrix users: %v", err)
+		respondBool(500, false, gc)
+		return
+	}
 	respondBool(200, true, gc)
 }
 
