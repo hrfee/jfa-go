@@ -1550,6 +1550,7 @@ func (app *appContext) GetConfig(gc *gin.Context) {
 // @Produce json
 // @Param appConfig body configDTO true "Config split into sections as in config.ini, all values as strings."
 // @Success 200 {object} boolResponse
+// @Failure 500 {object} boolResponse
 // @Router /config [post]
 // @Security Bearer
 // @tags Configuration
@@ -1575,7 +1576,11 @@ func (app *appContext) ModifyConfig(gc *gin.Context) {
 			}
 		}
 	}
-	tempConfig.SaveTo(app.configPath)
+	if err := tempConfig.SaveTo(app.configPath); err != nil {
+		app.err.Printf("Failed to save config to \"%s\": %v", app.configPath, err)
+		respondBool(500, false, gc)
+		return
+	}
 	app.debug.Println("Config saved")
 	gc.JSON(200, map[string]bool{"success": true})
 	if req["restart-program"] != nil && req["restart-program"].(bool) {
@@ -2364,6 +2369,42 @@ func (app *appContext) MatrixCheckPIN(gc *gin.Context) {
 	}
 	user.Verified = true
 	app.matrix.tokens[pin] = user
+	respondBool(200, true, gc)
+}
+
+// @Summary Generates a Matrix access token from a username and password.
+// @Produce json
+// @Success 200 {object} boolResponse
+// @Failure 400 {object} stringResponse
+// @Failure 401 {object} boolResponse
+// @Failure 500 {object} boolResponse
+// @Param MatrixLoginDTO body MatrixLoginDTO true "Username & password."
+// @Router /matrix/login [post]
+// @tags Other
+func (app *appContext) MatrixLogin(gc *gin.Context) {
+	var req MatrixLoginDTO
+	gc.BindJSON(&req)
+	if req.Username == "" || req.Password == "" {
+		respond(400, "errorLoginBlank", gc)
+		return
+	}
+	token, err := app.matrix.generateAccessToken(req.Homeserver, req.Username, req.Password)
+	if err != nil {
+		app.err.Printf("Matrix: Failed to generate token: %v", err)
+		respond(401, "Unauthorized", gc)
+		return
+	}
+	tempConfig, _ := ini.Load(app.configPath)
+	matrix := tempConfig.Section("matrix")
+	matrix.Key("enabled").SetValue("true")
+	matrix.Key("homeserver").SetValue(req.Homeserver)
+	matrix.Key("token").SetValue(token)
+	matrix.Key("user_id").SetValue(req.Username)
+	if err := tempConfig.SaveTo(app.configPath); err != nil {
+		app.err.Printf("Failed to save config to \"%s\": %v", app.configPath, err)
+		respondBool(500, false, gc)
+		return
+	}
 	respondBool(200, true, gc)
 }
 

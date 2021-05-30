@@ -104,6 +104,7 @@ declare interface Modals {
     updateInfo: Modal;
     telegram: Modal;
     discord: Modal;
+    matrix: Modal;
 }
 
 interface Invite {

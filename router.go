@@ -169,7 +169,7 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 		api.GET(p+"/config", app.GetConfig)
 		api.POST(p+"/config", app.ModifyConfig)
 		api.POST(p+"/restart", app.restart)
-		if telegramEnabled || discordEnabled {
+		if telegramEnabled || discordEnabled || matrixEnabled {
 			api.GET(p+"/telegram/pin", app.TelegramGetPin)
 			api.GET(p+"/telegram/verified/:pin", app.TelegramVerified)
 			api.POST(p+"/users/telegram", app.TelegramAddUser)
@@ -183,6 +183,8 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 			api.GET(p+"/ombi/users", app.OmbiUsers)
 			api.POST(p+"/ombi/defaults", app.SetOmbiDefaults)
 		}
+		api.POST(p+"/matrix/login", app.MatrixLogin)
+
 	}
 }
 

@@ -299,3 +299,9 @@ type MatrixConnectUserDTO struct {
 	JellyfinID string `json:"jf_id"`
 	UserID     string `json:"user_id"`
 }
+
+type MatrixLoginDTO struct {
+	Homeserver string `json:"homeserver"`
+	Username   string `json:"username"`
+	Password   string `json:"password"`
+}

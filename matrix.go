@@ -31,6 +31,13 @@ type MatrixUser struct {
 	Contact bool
 }
 
+type MatrixIdentifier struct {
+	User      string `json:"user"`
+	IdentType string `json:"type"`
+}
+
+func (m MatrixIdentifier) Type() string { return m.IdentType }
+
 var matrixFilter = gomatrix.Filter{
 	Room: gomatrix.RoomFilter{
 		Timeline: gomatrix.FilterPart{
@@ -78,6 +85,27 @@ func newMatrixDaemon(app *appContext) (d *MatrixDaemon, err error) {
 		}
 	}
 	return
+}
+
+func (d *MatrixDaemon) generateAccessToken(homeserver, username, password string) (string, error) {
+	req := &gomatrix.ReqLogin{
+		Type: "m.login.password",
+		Identifier: MatrixIdentifier{
+			User:      username,
+			IdentType: "m.id.user",
+		},
+		Password: password,
+		DeviceID: "jfa-go-" + commit,
+	}
+	bot, err := gomatrix.NewClient(homeserver, username, "")
+	if err != nil {
+		return "", err
+	}
+	resp, err := bot.Login(req)
+	if err != nil {
+		return "", err
+	}
+	return resp.AccessToken, nil
 }
 
 func (d *MatrixDaemon) run() {
