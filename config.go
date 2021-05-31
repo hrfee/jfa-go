@@ -15,6 +15,7 @@ var emailEnabled = false
 var messagesEnabled = false
 var telegramEnabled = false
 var discordEnabled = false
+var matrixEnabled = false
 
 func (app *appContext) GetPath(sect, key string) (fs.FS, string) {
 	val := app.config.Section(sect).Key(key).MustString("")
@@ -43,7 +44,7 @@ func (app *appContext) loadConfig() error {
 			key.SetValue(key.MustString(filepath.Join(app.dataPath, (key.Name() + ".json"))))
 		}
 	}
-	for _, key := range []string{"user_configuration", "user_displayprefs", "user_profiles", "ombi_template", "invites", "emails", "user_template", "custom_emails", "users", "telegram_users", "discord_users"} {
+	for _, key := range []string{"user_configuration", "user_displayprefs", "user_profiles", "ombi_template", "invites", "emails", "user_template", "custom_emails", "users", "telegram_users", "discord_users", "matrix_users"} {
 		app.config.Section("files").Key(key).SetValue(app.config.Section("files").Key(key).MustString(filepath.Join(app.dataPath, (key + ".json"))))
 	}
 	app.URLBase = strings.TrimSuffix(app.config.Section("ui").Key("url_base").MustString(""), "/")
@@ -83,22 +84,26 @@ func (app *appContext) loadConfig() error {
 	app.MustSetValue("user_expiry", "email_html", "jfa-go:"+"user-expired.html")
 	app.MustSetValue("user_expiry", "email_text", "jfa-go:"+"user-expired.txt")
 
+	app.MustSetValue("matrix", "topic", "Jellyfin notifications")
+
 	app.config.Section("jellyfin").Key("version").SetValue(version)
 	app.config.Section("jellyfin").Key("device").SetValue("jfa-go")
 	app.config.Section("jellyfin").Key("device_id").SetValue(fmt.Sprintf("jfa-go-%s-%s", version, commit))
 	messagesEnabled = app.config.Section("messages").Key("enabled").MustBool(false)
 	telegramEnabled = app.config.Section("telegram").Key("enabled").MustBool(false)
 	discordEnabled = app.config.Section("discord").Key("enabled").MustBool(false)
+	matrixEnabled = app.config.Section("matrix").Key("enabled").MustBool(false)
 	if !messagesEnabled {
 		emailEnabled = false
 		telegramEnabled = false
 		discordEnabled = false
+		matrixEnabled = false
 	} else if app.config.Section("email").Key("method").MustString("") == "" {
 		emailEnabled = false
 	} else {
 		emailEnabled = true
 	}
-	if !emailEnabled && !telegramEnabled && !discordEnabled {
+	if !emailEnabled && !telegramEnabled && !discordEnabled && !matrixEnabled {
 		messagesEnabled = false
 	}
 

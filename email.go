@@ -25,6 +25,8 @@ import (
 	"github.com/mailgun/mailgun-go/v4"
 )
 
+var renderer = html.NewRenderer(html.RendererOptions{Flags: html.Smartypants})
+
 // implements email sending, right now via smtp or mailgun.
 type EmailClient interface {
 	Send(fromName, fromAddr string, message *Message, address ...string) error
@@ -337,7 +339,6 @@ func (emailer *Emailer) constructConfirmation(code, username, key string, app *a
 
 func (emailer *Emailer) constructTemplate(subject, md string, app *appContext) (*Message, error) {
 	email := &Message{Subject: subject}
-	renderer := html.NewRenderer(html.RendererOptions{Flags: html.Smartypants})
 	html := markdown.ToHTML([]byte(md), nil, renderer)
 	text := stripMarkdown(md)
 	message := app.config.Section("messages").Key("message").String()
@@ -813,6 +814,12 @@ func (app *appContext) sendByID(email *Message, ID ...string) error {
 		}
 		if dcChat, ok := app.storage.discord[id]; ok && dcChat.Contact && discordEnabled {
 			err = app.discord.Send(email, dcChat.ChannelID)
+			if err != nil {
+				return err
+			}
+		}
+		if mxChat, ok := app.storage.matrix[id]; ok && mxChat.Contact && matrixEnabled {
+			err = app.matrix.Send(email, mxChat.RoomID)
 			if err != nil {
 				return err
 			}

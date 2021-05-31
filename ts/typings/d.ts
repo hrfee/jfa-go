@@ -22,6 +22,7 @@ declare interface Window {
     emailEnabled: boolean;
     telegramEnabled: boolean;
     discordEnabled: boolean;
+    matrixEnabled: boolean;
     ombiEnabled: boolean;
     usernameEnabled: boolean;
     token: string;
@@ -103,6 +104,7 @@ declare interface Modals {
     updateInfo: Modal;
     telegram: Modal;
     discord: Modal;
+    matrix: Modal;
 }
 
 interface Invite {

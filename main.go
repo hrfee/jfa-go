@@ -100,6 +100,7 @@ type appContext struct {
 	email            *Emailer
 	telegram         *TelegramDaemon
 	discord          *DiscordDaemon
+	matrix           *MatrixDaemon
 	info, debug, err logger.Logger
 	host             string
 	port             int
@@ -353,6 +354,10 @@ func start(asDaemon, firstCall bool) {
 		if err := app.storage.loadDiscordUsers(); err != nil {
 			app.err.Printf("Failed to load Discord users: %v", err)
 		}
+		app.storage.matrix_path = app.config.Section("files").Key("matrix_users").String()
+		if err := app.storage.loadMatrixUsers(); err != nil {
+			app.err.Printf("Failed to load Matrix users: %v", err)
+		}
 
 		app.storage.profiles_path = app.config.Section("files").Key("user_profiles").String()
 		app.storage.loadProfiles()
@@ -588,6 +593,16 @@ func start(asDaemon, firstCall bool) {
 			} else {
 				go app.discord.run()
 				defer app.discord.Shutdown()
+			}
+		}
+		if matrixEnabled {
+			app.matrix, err = newMatrixDaemon(app)
+			if err != nil {
+				app.err.Printf("Failed to initialize Matrix daemon: %v", err)
+				matrixEnabled = false
+			} else {
+				go app.matrix.run()
+				defer app.matrix.Shutdown()
 			}
 		}
 	} else {

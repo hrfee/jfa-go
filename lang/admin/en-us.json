@@ -98,7 +98,9 @@
         "notifyUserCreation": "On user creation",
         "sendPIN": "Ask the user to send the PIN below to the bot.",
         "searchDiscordUser": "Start typing the Discord username to find the user.",
-        "findDiscordUser": "Find Discord user"
+        "findDiscordUser": "Find Discord user",
+        "linkMatrixDescription": "Enter the username and password of the user to use as a bot. Once submitted, the app will restart.",
+        "matrixHomeServer": "Home server address"
     },
     "notifications": {
         "changedEmailAddress": "Changed email address of {n}.",

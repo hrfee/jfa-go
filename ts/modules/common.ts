@@ -105,7 +105,11 @@ export class notificationBox implements NotificationBox {
     private _error = (message: string): HTMLElement => {
         const noti = document.createElement('aside');
         noti.classList.add("aside", "~critical", "!normal", "mt-half", "notification-error");
-        noti.innerHTML = `<strong>${window.lang.strings("error")}:</strong> ${message}`;
+        let error = "";
+        if (window.lang) {
+            error = window.lang.strings("error") + ":"
+        }
+        noti.innerHTML = `<strong>${error}</strong> ${message}`;
         const closeButton = document.createElement('span') as HTMLSpanElement;
         closeButton.classList.add("button", "~critical", "!low", "ml-1");
         closeButton.innerHTML = `<i class="icon ri-close-line"></i>`;
