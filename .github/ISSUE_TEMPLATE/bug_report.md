@@ -19,7 +19,10 @@ What to do to reproduce the problem.
 
 **Logs**
 
+**If you're using a build with a tray icon, right-click on it and press "Open logs" to access your logs.**
+
 When you notice the problem, check the output of `jfa-go`. If the problem is not obvious (e.g a panic (red text) or 'ERROR' log), re-run jfa-go with the `-debug` argument and reproduce the problem. You should then take a screenshot of the output, or paste it here, preferably between \`\`\` tags (e.g \`\`\``Log here`\`\`\`). Remember to censor any personal information.
+
 
 If nothing catches your eye in the log, access the admin page via your browser, go into the console (Right click > Inspect Element > Console), refresh, reproduce the problem then paste the output here in the same way as above.
 
