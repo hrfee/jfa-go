@@ -101,7 +101,7 @@ archives:
 checksum:
     name_template: 'checksums.txt'
 snapshot:
-    name_template: "0.0.0-{{.ShortCommit}}"
+    name_template: "0{{.ShortCommit}}"
 changelog:
     sort: asc
     filters:
