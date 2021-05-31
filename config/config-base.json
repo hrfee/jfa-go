@@ -568,7 +568,7 @@
                     "depends_true": "enabled",
                     "type": "bool",
                     "value": false,
-                    "description": "Require Discord connection on sign-up."
+                    "description": "Require Discord connection on sign-up. See the jfa-go wiki for info on setting this up."
                 },
                 "token": {
                     "name": "API Token",
@@ -633,7 +633,7 @@
             "order": [],
             "meta": {
                 "name": "Telegram",
-                "description": "Settings for Telegram signup/notifications"
+                "description": "Settings for Telegram signup/notifications. See the jfa-go wiki for info on setting this up."
             },
             "settings": {
                 "enabled": {
@@ -680,7 +680,7 @@
             "order": [],
             "meta": {
                 "name": "Matrix",
-                "description": "Settings for Matrix invites/signup/notifications"
+                "description": "Settings for Matrix invites/signup/notifications. See the jfa-go wiki for info on setting this up."
             },
             "settings": {
                 "enabled": {
