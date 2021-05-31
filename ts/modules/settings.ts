@@ -1,4 +1,4 @@
-import { _get, _post, toggleLoader } from "../modules/common.js";
+import { _get, _post, toggleLoader, addLoader, removeLoader } from "../modules/common.js";
 import { Marked } from "@ts-stack/markdown";
 import { stripMarkdown } from "../modules/stripmd.js";
 
@@ -666,6 +666,40 @@ export class settingsList {
         }
     }
 
+    private _addMatrix = () => {
+        // Modify the login modal, why not
+        const modal = document.getElementById("form-matrix") as HTMLFormElement;
+        modal.onsubmit = (event: Event) => {
+            event.preventDefault();
+            const button = modal.querySelector("span.submit") as HTMLSpanElement;
+            addLoader(button);
+            let send = {
+                homeserver: (document.getElementById("matrix-homeserver") as HTMLInputElement).value,
+                username: (document.getElementById("matrix-user") as HTMLInputElement).value,
+                password: (document.getElementById("matrix-password") as HTMLInputElement).value
+            }
+            _post("/matrix/login", send, (req: XMLHttpRequest) => {
+                if (req.readyState == 4) {
+                    removeLoader(button);
+                    if (req.status == 400) {
+                        window.notifications.customError("errorUnknown", window.lang.notif(req.response["error"] as string));
+                        return;
+                    } else if (req.status == 401) {
+                        window.notifications.customError("errorUnauthorized", req.response["error"] as string);
+                        return;
+                    } else if (req.status == 500) {
+                        window.notifications.customError("errorAddMatrix", window.lang.notif("errorFailureCheckLogs"));
+                        return;
+                    }
+                    window.modals.matrix.close();
+                    _post("/restart", null, () => {});
+                    window.location.reload();
+                }
+            }, true);
+        };
+        window.modals.matrix.show();
+    }
+
     reload = () => _get("/config", null, (req: XMLHttpRequest) => {
         if (req.readyState == 4) {
             if (req.status != 200) {
@@ -698,6 +732,17 @@ export class settingsList {
                             icon.onclick = () => window.updater.checkForUpdates(window.modals.updateInfo.show);
                         }
                         this.addSection(name, settings.sections[name], icon);
+                    } else if (name == "matrix" && !window.matrixEnabled) {
+                        const addButton = document.createElement("div");
+                        addButton.classList.add("tooltip", "left");
+                        addButton.innerHTML = `
+                        <span class="button ~neutral !normal">+</span>
+                        <span class="content sm">
+                        ${window.lang.strings("linkMatrix")}
+                        </span>
+                        `;
+                        (addButton.querySelector("span.button") as HTMLSpanElement).onclick = this._addMatrix;
+                        this.addSection(name, settings.sections[name], addButton);
                     } else {
                         this.addSection(name, settings.sections[name]);
                     }

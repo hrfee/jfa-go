@@ -18,6 +18,8 @@ interface User {
     discord: string;
     notify_discord: boolean;
     discord_id: string;
+    matrix: string;
+    notify_matrix: boolean;
 }
 
 interface getPinResponse {
@@ -44,12 +46,26 @@ class user implements User {
     private _discordUsername: string;
     private _discordID: string;
     private _notifyDiscord: boolean;
+    private _matrix: HTMLTableDataCellElement;
+    private _matrixID: string;
+    private _notifyMatrix: boolean;
     private _expiry: HTMLTableDataCellElement;
     private _expiryUnix: number;
     private _lastActive: HTMLTableDataCellElement;
     private _lastActiveUnix: number;
+    private _notifyDropdown: HTMLDivElement;
     id = "";
     private _selected: boolean;
+
+    private _lastNotifyMethod = (): string => {
+        // Telegram, Matrix, Discord
+        const telegram = this._telegramUsername && this._telegramUsername != "";
+        const discord = this._discordUsername && this._discordUsername != "";
+        const matrix = this._matrixID && this._matrixID != "";
+        if (discord) return "discord";
+        if (matrix) return "matrix";
+        if (telegram) return "telegram";
+    }
 
     get selected(): boolean { return this._selected; }
     set selected(state: boolean) {
@@ -96,105 +112,179 @@ class user implements User {
 
     get notify_email(): boolean { return this._notifyEmail; }
     set notify_email(s: boolean) {
-        this._notifyEmail = s;
-        if (window.telegramEnabled && this._telegramUsername != "") {
-            const email = this._telegram.getElementsByClassName("accounts-contact-email")[0] as HTMLInputElement;
-            if (email) {
-                email.checked = s;
+        if (this._notifyDropdown) {
+            (this._notifyDropdown.querySelector(".accounts-contact-email") as HTMLInputElement).checked = s;
+        }
+    }
+
+    private _constructDropdown = (): HTMLDivElement => {
+        const el = document.createElement("div") as HTMLDivElement;
+        const telegram = this._telegramUsername != "";
+        const discord = this._discordUsername != "";
+        const matrix = this._matrixID != "";
+        if (!telegram && !discord && !matrix) return;
+        let innerHTML = `
+        <i class="icon ri-settings-2-line ml-half dropdown-button"></i>
+        <div class="dropdown manual">
+            <div class="dropdown-display lg">
+                <div class="card ~neutral !low">
+                    <span class="supra sm">${window.lang.strings("contactThrough")}</span>
+                    <label class="row switch pb-1 mt-half">
+                        <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-email">
+                        </span>Email</span>
+                    </label>
+                    <div class="accounts-area-telegram">
+                        <label class="row switch pb-1">
+                            <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-telegram">
+                            <span>Telegram</span>
+                        </label>
+                    </div>
+                    <div class="accounts-area-discord">
+                        <label class="row switch pb-1">
+                            <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-discord">
+                            <span>Discord</span>
+                        </label>
+                    </div>
+                    <div class="accounts-area-matrix">
+                        <label class="row switch pb-1">
+                            <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-matrix">
+                            <span>Matrix</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        `;
+        el.innerHTML = innerHTML;
+        const button = el.querySelector("i");
+        const dropdown = el.querySelector("div.dropdown") as HTMLDivElement;
+        const checks = el.querySelectorAll("input") as NodeListOf<HTMLInputElement>;
+        for (let i = 0; i < checks.length; i++) {
+            checks[i].onclick = () => this._setNotifyMethod();
+        }
+
+        button.onclick = () => {
+            dropdown.classList.add("selected");
+            document.addEventListener("click", outerClickListener);
+        };
+        const outerClickListener = (event: Event) => {
+            if (!(event.target instanceof HTMLElement && (el.contains(event.target) || button.contains(event.target)))) {
+                dropdown.classList.remove("selected");
+                document.removeEventListener("click", outerClickListener);
+            }
+        };
+        return el;
+    }
+
+    get matrix(): string { return this._matrixID; }
+    set matrix(u: string) {
+        if (!window.matrixEnabled) {
+            this._notifyDropdown.querySelector(".accounts-area-matrix").classList.add("unfocused");
+            return;
+        }
+        const lastNotifyMethod = this._lastNotifyMethod() == "matrix";
+        this._matrixID = u;
+        if (!u) {
+            this._notifyDropdown.querySelector(".accounts-area-matrix").classList.add("unfocused");
+            this._matrix.innerHTML = `
+            <span class="chip btn !low">${window.lang.strings("add")}</span>
+            <input type="text" class="input ~neutral !normal stealth-input unfocused" placeholder="@user:riot.im">
+            `;
+            (this._matrix.querySelector("span") as HTMLSpanElement).onclick = this._addMatrix;
+        } else {
+            this._notifyDropdown.querySelector(".accounts-area-matrix").classList.remove("unfocused");
+            this._matrix.innerHTML = `
+            <div class="table-inline">
+                ${u}
+            </div>
+            `;
+            if (lastNotifyMethod) {
+                (this._matrix.querySelector(".table-inline") as HTMLDivElement).appendChild(this._notifyDropdown);
             }
         }
-        if (window.discordEnabled && this._discordUsername) {
-            const email = this._discord.getElementsByClassName("accounts-contact-email")[0] as HTMLInputElement;
-            email.checked = s;
+    }
+   
+    private _addMatrix = () => {
+        const addButton = this._matrix.querySelector(".btn") as HTMLSpanElement;
+        const icon = this._matrix.querySelector("i");
+        const input = this._matrix.querySelector("input.stealth-input") as HTMLInputElement;
+        if (addButton.classList.contains("chip")) {
+            input.classList.remove("unfocused");
+            addButton.innerHTML = `<i class="ri-check-line"></i>`;
+            addButton.classList.remove("chip")
+            if (icon) {
+                icon.classList.add("unfocused");
+            }
+        } else {
+            if (input.value.charAt(0) != "@" || !input.value.includes(":")) return;
+            const send = {
+                jf_id: this.id,
+                user_id: input.value
+            }
+            _post("/users/matrix", send, (req: XMLHttpRequest) => {
+                if (req.readyState == 4) {
+                    document.dispatchEvent(new CustomEvent("accounts-reload"));
+                    if (req.status != 200) {
+                        window.notifications.customError("errorConnectMatrix", window.lang.notif("errorFailureCheckLogs"));
+                        return;
+                    }
+                    window.notifications.customSuccess("connectMatrix", window.lang.notif("accountConnected"));
+                }
+            });
+        }
+    }
+
+    get notify_matrix(): boolean { return this._notifyMatrix; }
+    set notify_matrix(s: boolean) {
+        if (this._notifyDropdown) {
+            (this._notifyDropdown.querySelector(".accounts-contact-matrix") as HTMLInputElement).checked = s;
         }
     }
     
     get telegram(): string { return this._telegramUsername; }
     set telegram(u: string) {
-        if (!window.telegramEnabled) return;
+        if (!window.telegramEnabled) {
+            this._notifyDropdown.querySelector(".accounts-area-telegram").classList.add("unfocused");
+            return;
+        }
+        const lastNotifyMethod = this._lastNotifyMethod() == "telegram";
         this._telegramUsername = u;
-        if (u == "") {
-            this._telegram.innerHTML = `<span class="chip btn !low">Add</span>`;
+        if (!u) {
+            this._notifyDropdown.querySelector(".accounts-area-telegram").classList.add("unfocused");
+            this._telegram.innerHTML = `<span class="chip btn !low">${window.lang.strings("add")}</span>`;
             (this._telegram.querySelector("span") as HTMLSpanElement).onclick = this._addTelegram;
         } else {
-            let innerHTML = `
+            this._notifyDropdown.querySelector(".accounts-area-telegram").classList.remove("unfocused");
+            this._telegram.innerHTML = `
             <div class="table-inline">
                 <a href="https://t.me/${u}" target="_blank">@${u}</a>
+            </div>
             `;
-            if (!window.discordEnabled || !this._discordUsername) {
-                innerHTML += `
-                    <i class="icon ri-settings-2-line ml-half dropdown-button"></i>
-                    <div class="dropdown manual">
-                        <div class="dropdown-display lg">
-                            <div class="card ~neutral !low">
-                                <span class="supra sm">${window.lang.strings("contactThrough")}</span>
-                                <label class="row switch pb-1 mt-half">
-                                    <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-email">
-                                    <span>Email</span>
-                                </label>
-                                <label class="row switch pb-1">
-                                    <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-telegram">
-                                    <span>Telegram</span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
-            innerHTML += "</div>";
-            this._telegram.innerHTML = innerHTML;
-            if (!window.discordEnabled || !this._discordUsername) {
-                // Javascript is necessary as including the button inside the dropdown would make it too wide to display next to the username.
-                const button = this._telegram.querySelector("i");
-                const dropdown = this._telegram.querySelector("div.dropdown") as HTMLDivElement;
-                const checks = this._telegram.querySelectorAll("input") as NodeListOf<HTMLInputElement>;
-                for (let i = 0; i < checks.length; i++) {
-                    checks[i].onclick = () => this._setNotifyMethod("telegram");
-                }
-
-                button.onclick = () => {
-                    dropdown.classList.add("selected");
-                    document.addEventListener("click", outerClickListener);
-                };
-                const outerClickListener = (event: Event) => {
-                    if (!(event.target instanceof HTMLElement && (this._telegram.contains(event.target) || button.contains(event.target)))) {
-                        dropdown.classList.remove("selected");
-                        document.removeEventListener("click", outerClickListener);
-                    }
-                };
+            if (lastNotifyMethod) {
+                (this._telegram.querySelector(".table-inline") as HTMLDivElement).appendChild(this._notifyDropdown);
             }
         }
     }
     
     get notify_telegram(): boolean { return this._notifyTelegram; }
     set notify_telegram(s: boolean) {
-        if (!window.telegramEnabled || !this._telegramUsername) return;
-        this._notifyTelegram = s;
-        const telegram = this._telegram.getElementsByClassName("accounts-contact-telegram")[0] as HTMLInputElement;
-        if (telegram) {
-            telegram.checked = s;
-        }
-        if (window.discordEnabled && this._discordUsername) {
-            const telegram = this._discord.getElementsByClassName("accounts-contact-telegram")[0] as HTMLInputElement;
-            telegram.checked = s;
+        if (this._notifyDropdown) {
+            (this._notifyDropdown.querySelector(".accounts-contact-telegram") as HTMLInputElement).checked = s;
         }
     }
 
-    private _setNotifyMethod = (mode: string = "telegram") => {
-        let el: HTMLElement;
-        if (mode == "telegram") { el = this._telegram }
-        else if (mode == "discord") { el = this._discord }
-        const email = el.getElementsByClassName("accounts-contact-email")[0] as HTMLInputElement;
+    private _setNotifyMethod = () => {
+        const email = this._notifyDropdown.getElementsByClassName("accounts-contact-email")[0] as HTMLInputElement;
         let send = {
             id: this.id,
             email: email.checked
         }
         if (window.telegramEnabled && this._telegramUsername) {
-            const telegram = el.getElementsByClassName("accounts-contact-telegram")[0] as HTMLInputElement;
+            const telegram = this._notifyDropdown.getElementsByClassName("accounts-contact-telegram")[0] as HTMLInputElement;
             send["telegram"] = telegram.checked;
         }
         if (window.discordEnabled && this._discordUsername) {
-            const discord = el.getElementsByClassName("accounts-contact-discord")[0] as HTMLInputElement;
+            const discord = this._notifyDropdown.getElementsByClassName("accounts-contact-discord")[0] as HTMLInputElement;
             send["discord"] = discord.checked;
         }
         _post("/users/contact", send, (req: XMLHttpRequest) => {
@@ -219,62 +309,26 @@ class user implements User {
     
     get discord(): string { return this._discordUsername; }
     set discord(u: string) {
-        if (!window.discordEnabled) return;
+        if (!window.discordEnabled) {
+            this._notifyDropdown.querySelector(".accounts-area-discord").classList.add("unfocused");
+            return;
+        }
+        const lastNotifyMethod = this._lastNotifyMethod() == "discord";
         this._discordUsername = u;
-        if (u == "") {
+        if (!u) {
             this._discord.innerHTML = `<span class="chip btn !low">Add</span>`;
             (this._discord.querySelector("span") as HTMLSpanElement).onclick = () => addDiscord(this.id);
+            this._notifyDropdown.querySelector(".accounts-area-discord").classList.add("unfocused");
         } else {
-            let innerHTML = `
+            this._notifyDropdown.querySelector(".accounts-area-discord").classList.remove("unfocused");
+            this._discord.innerHTML = `
             <div class="table-inline">
                 <a href="https://discord.com/users/${this._discordID}" class="discord-link" target="_blank">${u}</a>
-                <i class="icon ri-settings-2-line ml-half dropdown-button"></i>
-                <div class="dropdown manual">
-                    <div class="dropdown-display lg">
-                        <div class="card ~neutral !low">
-                            <span class="supra sm">${window.lang.strings("contactThrough")}</span>
-                            <label class="row switch pb-1 mt-half">
-                                <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-email">
-                                <span>Email</span>
-                            </label>
-                            <label class="row switch pb-1">
-                                <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-discord">
-                                <span>Discord</span>
-                            </label>
-            `;
-            if (window.telegramEnabled && this._telegramUsername != "") {
-                innerHTML += `
-                            <label class="row switch pb-1">
-                                <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-telegram">
-                                <span>Telegram</span>
-                            </label>
-                `;
-            }
-            innerHTML += `
-                        </div>
-                    </div>
-                </div>
             </div>
             `;
-            this._discord.innerHTML = innerHTML;
-            // Javascript is necessary as including the button inside the dropdown would make it too wide to display next to the username.
-            const button = this._discord.querySelector("i");
-            const dropdown = this._discord.querySelector("div.dropdown") as HTMLDivElement;
-            const checks = this._discord.querySelectorAll("input") as NodeListOf<HTMLInputElement>;
-            for (let i = 0; i < checks.length; i++) {
-                checks[i].onclick = () => this._setNotifyMethod("discord");
+            if (lastNotifyMethod) {
+                (this._discord.querySelector(".table-inline") as HTMLDivElement).appendChild(this._notifyDropdown);
             }
-
-            button.onclick = () => {
-                dropdown.classList.add("selected");
-                document.addEventListener("click", outerClickListener);
-            };
-            const outerClickListener = (event: Event) => {
-                if (!(event.target instanceof HTMLElement && (this._discord.contains(event.target) || button.contains(event.target)))) {
-                    dropdown.classList.remove("selected");
-                    document.removeEventListener("click", outerClickListener);
-                }
-            };
         }
     }
 
@@ -288,13 +342,8 @@ class user implements User {
     
     get notify_discord(): boolean { return this._notifyDiscord; }
     set notify_discord(s: boolean) {
-        if (!window.discordEnabled || !this._discordUsername) return;
-        this._notifyDiscord = s;
-        const discord = this._discord.getElementsByClassName("accounts-contact-discord")[0] as HTMLInputElement;
-        discord.checked = s;
-        if (window.telegramEnabled && this._telegramUsername != "") {
-            const discord = this._discord.getElementsByClassName("accounts-contact-discord")[0] as HTMLInputElement;
-            discord.checked = s;
+        if (this._notifyDropdown) {
+            (this._notifyDropdown.querySelector(".accounts-contact-discord") as HTMLInputElement).checked = s;
         }
     }
 
@@ -333,6 +382,11 @@ class user implements User {
             <td class="accounts-telegram"></td>
             `;
         }
+        if (window.matrixEnabled) {
+            innerHTML += `
+            <td class="accounts-matrix"></td>
+            `;
+        }
         if (window.discordEnabled) {
             innerHTML += `
             <td class="accounts-discord"></td>
@@ -352,9 +406,12 @@ class user implements User {
         this._emailEditButton = this._row.querySelector(".accounts-email-edit") as HTMLElement;
         this._telegram = this._row.querySelector(".accounts-telegram") as HTMLTableDataCellElement;
         this._discord = this._row.querySelector(".accounts-discord") as HTMLTableDataCellElement;
+        this._matrix = this._row.querySelector(".accounts-matrix") as HTMLTableDataCellElement;
         this._expiry = this._row.querySelector(".accounts-expiry") as HTMLTableDataCellElement;
         this._lastActive = this._row.querySelector(".accounts-last-active") as HTMLTableDataCellElement;
         this._check.onchange = () => { this.selected = this._check.checked; }
+
+        this._notifyDropdown = this._constructDropdown();
 
         const toggleStealthInput = () => {
             if (this._emailEditButton.classList.contains("ri-edit-line")) {
@@ -458,14 +515,20 @@ class user implements User {
         this.id = user.id;
         this.name = user.name;
         this.email = user.email || "";
+        // Little hack to get settings cogs to appear on first load
+        this._discordUsername = user.discord;
+        this._telegramUsername = user.telegram;
+        this._matrixID = user.matrix;
         this.discord = user.discord;
         this.telegram = user.telegram;
+        this.matrix = user.matrix;
         this.last_active = user.last_active;
         this.admin = user.admin;
         this.disabled = user.disabled;
         this.expiry = user.expiry;
         this.notify_discord = user.notify_discord;
         this.notify_telegram = user.notify_telegram;
+        this.notify_matrix = user.notify_matrix;
         this.notify_email = user.notify_email;
         this.discord_id = user.discord_id;
     }

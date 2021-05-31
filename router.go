@@ -127,6 +127,11 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 				router.GET(p+"/invite/:invCode/discord/invite", app.DiscordServerInvite)
 			}
 		}
+		if matrixEnabled {
+			router.GET(p+"/invite/:invCode/matrix/verified/:userID/:pin", app.MatrixCheckPIN)
+			router.POST(p+"/invite/:invCode/matrix/user", app.MatrixSendPIN)
+			router.POST(p+"/users/matrix", app.MatrixConnect)
+		}
 	}
 	if *SWAGGER {
 		app.info.Print(warning("\n\nWARNING: Swagger should not be used on a public instance.\n\n"))
@@ -164,7 +169,7 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 		api.GET(p+"/config", app.GetConfig)
 		api.POST(p+"/config", app.ModifyConfig)
 		api.POST(p+"/restart", app.restart)
-		if telegramEnabled || discordEnabled {
+		if telegramEnabled || discordEnabled || matrixEnabled {
 			api.GET(p+"/telegram/pin", app.TelegramGetPin)
 			api.GET(p+"/telegram/verified/:pin", app.TelegramVerified)
 			api.POST(p+"/users/telegram", app.TelegramAddUser)
@@ -178,6 +183,8 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 			api.GET(p+"/ombi/users", app.OmbiUsers)
 			api.POST(p+"/ombi/defaults", app.SetOmbiDefaults)
 		}
+		api.POST(p+"/matrix/login", app.MatrixLogin)
+
 	}
 }
 

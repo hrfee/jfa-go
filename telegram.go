@@ -58,7 +58,7 @@ func genAuthToken() string {
 	rand.Seed(time.Now().UnixNano())
 	pin := make([]rune, 8)
 	for i := range pin {
-		if i == 2 || i == 5 {
+		if (i+1)%3 == 0 {
 			pin[i] = '-'
 		} else {
 			pin[i] = runes[rand.Intn(len(runes))]

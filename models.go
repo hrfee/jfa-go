@@ -19,6 +19,8 @@ type newUserDTO struct {
 	TelegramContact bool   `json:"telegram_contact"`                            // Whether or not to use telegram for notifications/pwrs
 	DiscordPIN      string `json:"discord_pin" example:"A1-B2-3C"`              // Discord verification PIN (if used)
 	DiscordContact  bool   `json:"discord_contact"`                             // Whether or not to use discord for notifications/pwrs
+	MatrixPIN       string `json:"matrix_pin" example:"A1-B2-3C"`               // Matrix verification PIN (if used)
+	MatrixContact   bool   `json:"matrix_contact"`                              // Whether or not to use matrix for notifications/pwrs
 }
 
 type newUserResponse struct {
@@ -137,6 +139,8 @@ type respUser struct {
 	Discord               string `json:"discord"`    // Discord username (if known)
 	DiscordID             string `json:"discord_id"` // Discord user ID for creating links.
 	NotifyThroughDiscord  bool   `json:"notify_discord"`
+	Matrix                string `json:"matrix"` // Matrix ID (if known)
+	NotifyThroughMatrix   bool   `json:"notify_matrix"`
 }
 
 type getUsersDTO struct {
@@ -260,6 +264,7 @@ type SetContactMethodsDTO struct {
 	Email    bool   `json:"email"`
 	Discord  bool   `json:"discord"`
 	Telegram bool   `json:"telegram"`
+	Matrix   bool   `json:"matrix"`
 }
 
 type DiscordUserDTO struct {
@@ -280,4 +285,23 @@ type DiscordConnectUserDTO struct {
 type DiscordInviteDTO struct {
 	InviteURL string `json:"invite"`
 	IconURL   string `json:"icon"`
+}
+
+type MatrixSendPINDTO struct {
+	UserID string `json:"user_id"`
+}
+
+type MatrixCheckPINDTO struct {
+	PIN string `json:"pin"`
+}
+
+type MatrixConnectUserDTO struct {
+	JellyfinID string `json:"jf_id"`
+	UserID     string `json:"user_id"`
+}
+
+type MatrixLoginDTO struct {
+	Homeserver string `json:"homeserver"`
+	Username   string `json:"username"`
+	Password   string `json:"password"`
 }

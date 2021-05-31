@@ -15,21 +15,22 @@ import (
 )
 
 type Storage struct {
-	timePattern                                                                                                                                                        string
-	invite_path, emails_path, policy_path, configuration_path, displayprefs_path, ombi_path, profiles_path, customEmails_path, users_path, telegram_path, discord_path string
-	users                                                                                                                                                              map[string]time.Time
-	invites                                                                                                                                                            Invites
-	profiles                                                                                                                                                           map[string]Profile
-	defaultProfile                                                                                                                                                     string
-	displayprefs, ombi_template                                                                                                                                        map[string]interface{}
-	emails                                                                                                                                                             map[string]EmailAddress
-	telegram                                                                                                                                                           map[string]TelegramUser // Map of Jellyfin User IDs to telegram users.
-	discord                                                                                                                                                            map[string]DiscordUser  // Map of Jellyfin user IDs to discord users.
-	customEmails                                                                                                                                                       customEmails
-	policy                                                                                                                                                             mediabrowser.Policy
-	configuration                                                                                                                                                      mediabrowser.Configuration
-	lang                                                                                                                                                               Lang
-	invitesLock, usersLock                                                                                                                                             sync.Mutex
+	timePattern                                                                                                                                                                     string
+	invite_path, emails_path, policy_path, configuration_path, displayprefs_path, ombi_path, profiles_path, customEmails_path, users_path, telegram_path, discord_path, matrix_path string
+	users                                                                                                                                                                           map[string]time.Time
+	invites                                                                                                                                                                         Invites
+	profiles                                                                                                                                                                        map[string]Profile
+	defaultProfile                                                                                                                                                                  string
+	displayprefs, ombi_template                                                                                                                                                     map[string]interface{}
+	emails                                                                                                                                                                          map[string]EmailAddress
+	telegram                                                                                                                                                                        map[string]TelegramUser // Map of Jellyfin User IDs to telegram users.
+	discord                                                                                                                                                                         map[string]DiscordUser  // Map of Jellyfin user IDs to discord users.
+	matrix                                                                                                                                                                          map[string]MatrixUser   // Map of Jellyfin user IDs to Matrix users.
+	customEmails                                                                                                                                                                    customEmails
+	policy                                                                                                                                                                          mediabrowser.Policy
+	configuration                                                                                                                                                                   mediabrowser.Configuration
+	lang                                                                                                                                                                            Lang
+	invitesLock, usersLock                                                                                                                                                          sync.Mutex
 }
 
 type TelegramUser struct {
@@ -788,6 +789,14 @@ func (st *Storage) loadDiscordUsers() error {
 
 func (st *Storage) storeDiscordUsers() error {
 	return storeJSON(st.discord_path, st.discord)
+}
+
+func (st *Storage) loadMatrixUsers() error {
+	return loadJSON(st.matrix_path, &st.matrix)
+}
+
+func (st *Storage) storeMatrixUsers() error {
+	return storeJSON(st.matrix_path, st.matrix)
 }
 
 func (st *Storage) loadCustomEmails() error {

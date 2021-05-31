@@ -354,6 +354,34 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 			}
 		}
 	}
+	var matrixUser MatrixUser
+	matrixVerified := false
+	if matrixEnabled {
+		if req.MatrixPIN == "" {
+			if app.config.Section("matrix").Key("required").MustBool(false) {
+				f = func(gc *gin.Context) {
+					app.debug.Printf("%s: New user failed: Matrix verification not completed", req.Code)
+					respond(401, "errorMatrixVerification", gc)
+				}
+				success = false
+				return
+			}
+		} else {
+			user, ok := app.matrix.tokens[req.MatrixPIN]
+			if !ok || !user.Verified {
+				matrixVerified = false
+				f = func(gc *gin.Context) {
+					app.debug.Printf("%s: New user failed: Matrix PIN was invalid", req.Code)
+					respond(401, "errorInvalidPIN", gc)
+				}
+				success = false
+				return
+			}
+			matrixVerified = user.Verified
+			matrixUser = *user.User
+
+		}
+	}
 	telegramTokenIndex := -1
 	if telegramEnabled {
 		if req.TelegramPIN == "" {
@@ -536,7 +564,17 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 			app.telegram.verifiedTokens = app.telegram.verifiedTokens[:len(app.telegram.verifiedTokens)-1]
 		}
 	}
-
+	if matrixVerified {
+		matrixUser.Contact = req.MatrixContact
+		delete(app.matrix.tokens, req.MatrixPIN)
+		if app.storage.matrix == nil {
+			app.storage.matrix = map[string]MatrixUser{}
+		}
+		app.storage.matrix[user.ID] = matrixUser
+		if err := app.storage.storeMatrixUsers(); err != nil {
+			app.err.Printf("Failed to store Matrix users: %v", err)
+		}
+	}
 	if (emailEnabled && app.config.Section("welcome_email").Key("enabled").MustBool(false) && req.Email != "") || telegramTokenIndex != -1 || discordVerified {
 		name := app.getAddressOrName(user.ID)
 		app.debug.Printf("%s: Sending welcome message to %s", req.Username, name)
@@ -1239,10 +1277,14 @@ func (app *appContext) GetUsers(gc *gin.Context) {
 			user.Telegram = tgUser.Username
 			user.NotifyThroughTelegram = tgUser.Contact
 		}
-		if dc, ok := app.storage.discord[jfUser.ID]; ok {
-			user.Discord = dc.Username + "#" + dc.Discriminator
-			user.DiscordID = dc.ID
-			user.NotifyThroughDiscord = dc.Contact
+		if mxUser, ok := app.storage.matrix[jfUser.ID]; ok {
+			user.Matrix = mxUser.UserID
+			user.NotifyThroughMatrix = mxUser.Contact
+		}
+		if dcUser, ok := app.storage.discord[jfUser.ID]; ok {
+			user.Discord = dcUser.Username + "#" + dcUser.Discriminator
+			user.DiscordID = dcUser.ID
+			user.NotifyThroughDiscord = dcUser.Contact
 		}
 		resp.UserList[i] = user
 		i++
@@ -1498,6 +1540,8 @@ func (app *appContext) GetConfig(gc *gin.Context) {
 	resp.Sections["email"].Settings["language"] = el
 	resp.Sections["password_resets"].Settings["language"] = pl
 	resp.Sections["telegram"].Settings["language"] = tl
+	resp.Sections["discord"].Settings["language"] = tl
+	resp.Sections["matrix"].Settings["language"] = tl
 
 	gc.JSON(200, resp)
 }
@@ -1506,6 +1550,7 @@ func (app *appContext) GetConfig(gc *gin.Context) {
 // @Produce json
 // @Param appConfig body configDTO true "Config split into sections as in config.ini, all values as strings."
 // @Success 200 {object} boolResponse
+// @Failure 500 {object} boolResponse
 // @Router /config [post]
 // @Security Bearer
 // @tags Configuration
@@ -1531,7 +1576,11 @@ func (app *appContext) ModifyConfig(gc *gin.Context) {
 			}
 		}
 	}
-	tempConfig.SaveTo(app.configPath)
+	if err := tempConfig.SaveTo(app.configPath); err != nil {
+		app.err.Printf("Failed to save config to \"%s\": %v", app.configPath, err)
+		respondBool(500, false, gc)
+		return
+	}
 	app.debug.Println("Config saved")
 	gc.JSON(200, map[string]bool{"success": true})
 	if req["restart-program"] != nil && req["restart-program"].(bool) {
@@ -2089,6 +2138,7 @@ func (app *appContext) SetContactMethods(gc *gin.Context) {
 		return
 	}
 	if tgUser, ok := app.storage.telegram[req.ID]; ok {
+		change := tgUser.Contact != req.Telegram
 		tgUser.Contact = req.Telegram
 		app.storage.telegram[req.ID] = tgUser
 		if err := app.storage.storeTelegramUsers(); err != nil {
@@ -2096,13 +2146,16 @@ func (app *appContext) SetContactMethods(gc *gin.Context) {
 			app.err.Printf("Telegram: Failed to store users: %v", err)
 			return
 		}
-		msg := ""
-		if !req.Telegram {
-			msg = " not"
+		if change {
+			msg := ""
+			if !req.Telegram {
+				msg = " not"
+			}
+			app.debug.Printf("Telegram: User \"%s\" will%s be notified through Telegram.", tgUser.Username, msg)
 		}
-		app.debug.Printf("Telegram: User \"%s\" will%s be notified through Telegram.", tgUser.Username, msg)
 	}
 	if dcUser, ok := app.storage.discord[req.ID]; ok {
+		change := dcUser.Contact != req.Discord
 		dcUser.Contact = req.Discord
 		app.storage.discord[req.ID] = dcUser
 		if err := app.storage.storeDiscordUsers(); err != nil {
@@ -2110,13 +2163,33 @@ func (app *appContext) SetContactMethods(gc *gin.Context) {
 			app.err.Printf("Discord: Failed to store users: %v", err)
 			return
 		}
-		msg := ""
-		if !req.Discord {
-			msg = " not"
+		if change {
+			msg := ""
+			if !req.Discord {
+				msg = " not"
+			}
+			app.debug.Printf("Discord: User \"%s\" will%s be notified through Discord.", dcUser.Username, msg)
 		}
-		app.debug.Printf("Discord: User \"%s\" will%s be notified through Discord.", dcUser.Username, msg)
+	}
+	if mxUser, ok := app.storage.matrix[req.ID]; ok {
+		change := mxUser.Contact != req.Matrix
+		mxUser.Contact = req.Matrix
+		app.storage.matrix[req.ID] = mxUser
+		if err := app.storage.storeMatrixUsers(); err != nil {
+			respondBool(500, false, gc)
+			app.err.Printf("Matrix: Failed to store users: %v", err)
+			return
+		}
+		if change {
+			msg := ""
+			if !req.Matrix {
+				msg = " not"
+			}
+			app.debug.Printf("Matrix: User \"%s\" will%s be notified through Matrix.", mxUser.UserID, msg)
+		}
 	}
 	if email, ok := app.storage.emails[req.ID]; ok {
+		change := email.Contact != req.Email
 		email.Contact = req.Email
 		app.storage.emails[req.ID] = email
 		if err := app.storage.storeEmails(); err != nil {
@@ -2124,11 +2197,13 @@ func (app *appContext) SetContactMethods(gc *gin.Context) {
 			app.err.Printf("Failed to store emails: %v", err)
 			return
 		}
-		msg := ""
-		if !req.Email {
-			msg = " not"
+		if change {
+			msg := ""
+			if !req.Email {
+				msg = " not"
+			}
+			app.debug.Printf("\"%s\" will%s be notified via Email.", email.Addr, msg)
 		}
-		app.debug.Printf("\"%s\" will%s be notified via Email.", email.Addr, msg)
 	}
 	respondBool(200, true, gc)
 }
@@ -2231,6 +2306,140 @@ func (app *appContext) DiscordServerInvite(gc *gin.Context) {
 		return
 	}
 	gc.JSON(200, DiscordInviteDTO{invURL, iconURL})
+}
+
+// @Summary Generate and send a new PIN to a specified Matrix user.
+// @Produce json
+// @Success 200 {object} boolResponse
+// @Failure 400 {object} boolResponse
+// @Failure 401 {object} boolResponse
+// @Failure 500 {object} boolResponse
+// @Param invCode path string true "invite Code"
+// @Param MatrixSendPINDTO body MatrixSendPINDTO true "User's Matrix ID."
+// @Router /invite/{invCode}/matrix/user [post]
+// @tags Other
+func (app *appContext) MatrixSendPIN(gc *gin.Context) {
+	code := gc.Param("invCode")
+	if _, ok := app.storage.invites[code]; !ok {
+		respondBool(401, false, gc)
+		return
+	}
+	var req MatrixSendPINDTO
+	gc.BindJSON(&req)
+	if req.UserID == "" {
+		respondBool(400, false, gc)
+		return
+	}
+	ok := app.matrix.SendStart(req.UserID)
+	if !ok {
+		respondBool(500, false, gc)
+		return
+	}
+	respondBool(200, true, gc)
+}
+
+// @Summary Check whether a matrix PIN is valid, and mark the token as verified if so. Requires invite code.
+// @Produce json
+// @Success 200 {object} boolResponse
+// @Failure 401 {object} boolResponse
+// @Param pin path string true "PIN code to check"
+// @Param invCode path string true "invite Code"
+// @Param userID path string true "Matrix User ID"
+// @Router /invite/{invCode}/matrix/verified/{userID}/{pin} [get]
+// @tags Other
+func (app *appContext) MatrixCheckPIN(gc *gin.Context) {
+	code := gc.Param("invCode")
+	if _, ok := app.storage.invites[code]; !ok {
+		app.debug.Println("Matrix: Invite code was invalid")
+		respondBool(401, false, gc)
+		return
+	}
+	userID := gc.Param("userID")
+	pin := gc.Param("pin")
+	user, ok := app.matrix.tokens[pin]
+	if !ok {
+		app.debug.Println("Matrix: PIN not found")
+		respondBool(200, false, gc)
+		return
+	}
+	if user.User.UserID != userID {
+		app.debug.Println("Matrix: User ID of PIN didn't match")
+		respondBool(200, false, gc)
+		return
+	}
+	user.Verified = true
+	app.matrix.tokens[pin] = user
+	respondBool(200, true, gc)
+}
+
+// @Summary Generates a Matrix access token from a username and password.
+// @Produce json
+// @Success 200 {object} boolResponse
+// @Failure 400 {object} stringResponse
+// @Failure 401 {object} boolResponse
+// @Failure 500 {object} boolResponse
+// @Param MatrixLoginDTO body MatrixLoginDTO true "Username & password."
+// @Router /matrix/login [post]
+// @tags Other
+func (app *appContext) MatrixLogin(gc *gin.Context) {
+	var req MatrixLoginDTO
+	gc.BindJSON(&req)
+	if req.Username == "" || req.Password == "" {
+		respond(400, "errorLoginBlank", gc)
+		return
+	}
+	token, err := app.matrix.generateAccessToken(req.Homeserver, req.Username, req.Password)
+	if err != nil {
+		app.err.Printf("Matrix: Failed to generate token: %v", err)
+		respond(401, "Unauthorized", gc)
+		return
+	}
+	tempConfig, _ := ini.Load(app.configPath)
+	matrix := tempConfig.Section("matrix")
+	matrix.Key("enabled").SetValue("true")
+	matrix.Key("homeserver").SetValue(req.Homeserver)
+	matrix.Key("token").SetValue(token)
+	matrix.Key("user_id").SetValue(req.Username)
+	if err := tempConfig.SaveTo(app.configPath); err != nil {
+		app.err.Printf("Failed to save config to \"%s\": %v", app.configPath, err)
+		respondBool(500, false, gc)
+		return
+	}
+	respondBool(200, true, gc)
+}
+
+// @Summary Links a Matrix user to a Jellyfin account via user IDs. Notifications are turned on by default.
+// @Produce json
+// @Success 200 {object} boolResponse
+// @Failure 400 {object} boolResponse
+// @Failure 500 {object} boolResponse
+// @Param MatrixConnectUserDTO body MatrixConnectUserDTO true "User's Jellyfin ID & Matrix user ID."
+// @Router /users/matrix [post]
+// @tags Other
+func (app *appContext) MatrixConnect(gc *gin.Context) {
+	var req MatrixConnectUserDTO
+	gc.BindJSON(&req)
+	if app.storage.matrix == nil {
+		app.storage.matrix = map[string]MatrixUser{}
+	}
+	roomID, err := app.matrix.CreateRoom(req.UserID)
+	if err != nil {
+		app.err.Printf("Matrix: Failed to create room: %v", err)
+		respondBool(500, false, gc)
+		return
+	}
+	app.storage.matrix[req.JellyfinID] = MatrixUser{
+		UserID:  req.UserID,
+		RoomID:  roomID,
+		Lang:    "en-us",
+		Contact: true,
+	}
+	if err := app.storage.storeMatrixUsers(); err != nil {
+		app.err.Printf("Failed to store Matrix users: %v", err)
+		respondBool(500, false, gc)
+		return
+	}
+	respondBool(200, true, gc)
 }
 
 // @Summary Returns a list of matching users from a Discord guild, given a username (discriminator optional).

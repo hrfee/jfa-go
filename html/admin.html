@@ -8,6 +8,7 @@
             window.emailEnabled = {{ .email_enabled }};
             window.telegramEnabled = {{ .telegram_enabled }};
             window.discordEnabled = {{ .discord_enabled }};
+            window.matrixEnabled = {{ .matrix_enabled }};
             window.ombiEnabled = {{ .ombiEnabled }};
             window.usernameEnabled = {{ .username }};
             window.langFile = JSON.parse({{ .language }});
@@ -340,6 +341,19 @@
             </div>
         </div>
         {{ end }}
+        <div id="modal-matrix" class="modal">
+            <form class="modal-content card" id="form-matrix" href="">
+                <span class="heading">{{ .strings.linkMatrix }}</span>
+                <p class="content">{{ .strings.linkMatrixDescription }}</p>
+                <input type="text" class="field input ~neutral !high mt-half mb-1" placeholder="{{ .strings.matrixHomeServer }}" id="matrix-homeserver">
+                <input type="text" class="field input ~neutral !high mt-half mb-1" placeholder="{{ .strings.username }}" id="matrix-user">
+                <input type="password" class="field input ~neutral !high mt-half mb-1" placeholder="{{ .strings.password }}" id="matrix-password">
+                <label>
+                    <input type="submit" class="unfocused">
+                    <span class="button ~urge !normal full-width center supra submit">{{ .strings.submit }}</span>
+                </label>
+            </form>
+        </div>
         <div id="notification-box"></div>
         <span class="dropdown" tabindex="0" id="lang-dropdown">
             <span class="button ~urge dropdown-button">
@@ -544,6 +558,9 @@
                                     <th>{{ .strings.emailAddress }}</th>
                                     {{ if .telegram_enabled }}
                                     <th>Telegram</th>
+                                    {{ end }}
+                                    {{ if .matrix_enabled }}
+                                    <th>Matrix</th>
                                     {{ end }}
                                     {{ if .discord_enabled }}
                                     <th>Discord</th>

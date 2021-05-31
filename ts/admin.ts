@@ -63,6 +63,8 @@ window.availableProfiles = window.availableProfiles || [];
 
     window.modals.updateInfo = new Modal(document.getElementById("modal-update"));
 
+    window.modals.matrix = new Modal(document.getElementById("modal-matrix"));
+
     if (window.telegramEnabled) {
         window.modals.telegram = new Modal(document.getElementById("modal-telegram"));
     }
