@@ -9,7 +9,7 @@ steps:
       commands:
           - git fetch --tags
     - name: release
-      image: golang:latest
+      image: hrfee/jfa-go-build-docker:latest
       volumes:
         - name: ssh_key
           path: /id_rsa
@@ -19,11 +19,6 @@ steps:
           GITHUB_TOKEN:
               from_secret: github_token
       commands:
-        - apt-get update -y
-        - apt-get install build-essential python3-pip curl software-properties-common sed upx gcc libgtk-3-dev libappindicator3-dev gcc-mingw-w64-x86-64 -y
-        - (curl -sL https://deb.nodesource.com/setup_14.x | bash -)
-        - apt-get install nodejs
-
         - curl -sL https://git.io/goreleaser > ../goreleaser
         - chmod +x ../goreleaser
         - ./scripts/version.sh ../goreleaser
@@ -81,15 +76,11 @@ type: docker
 
 steps:
     - name: build
-      image: golang:latest
+      image: hrfee/jfa-go-build-docker:latest
       volumes:
         - name: ssh_key
           path: /id_rsa
       commands:
-        - apt-get update -y
-        - apt-get install build-essential python3-pip curl software-properties-common sed upx gcc libgtk-3-dev libappindicator3-dev gcc-mingw-w64-x86-64 -y
-        - (curl -sL https://deb.nodesource.com/setup_14.x | bash -)
-        - apt-get install nodejs
         - curl -sL https://git.io/goreleaser > goreleaser
         - chmod +x goreleaser
         - ./scripts/version.sh ./goreleaser --snapshot --skip-publish --rm-dist
