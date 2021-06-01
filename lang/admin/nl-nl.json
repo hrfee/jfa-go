@@ -94,7 +94,13 @@
         "conditionals": "Voorwaarden",
         "donate": "Doneer",
         "contactThrough": "Stuur bericht via:",
-        "sendPIN": "Vraag de gebruiker om onderstaande pincode naar de bot te sturen."
+        "sendPIN": "Vraag de gebruiker om onderstaande pincode naar de bot te sturen.",
+        "add": "Voeg toe",
+        "searchDiscordUser": "Begin de Discord gebruikersnaam te typen om de gebruiker te vinden.",
+        "linkMatrixDescription": "Vul de gebruikersnaam en wachtwoord in van de gebruiker om als bot te gebruiken. De app start zodra ze zijn verstuurd.",
+        "select": "Selecteer",
+        "findDiscordUser": "Zoek Discord gebruiker",
+        "matrixHomeServer": "Adres home server"
     },
     "notifications": {
         "changedEmailAddress": "E-mailadres van {n} gewijzigd.",
@@ -133,7 +139,8 @@
         "updateAvailable": "Er is een nieuwe update beschikbaar, kijk bij instellingen.",
         "noUpdatesAvailable": "Geen nieuwe updates beschikbaar.",
         "telegramVerified": "Telegram-account goedgekeurd.",
-        "updateAppliedRefresh": "Update toegepast, ververs alsjeblieft."
+        "updateAppliedRefresh": "Update toegepast, ververs alsjeblieft.",
+        "accountConnected": "Account gekoppeld."
     },
     "quantityStrings": {
         "modifySettingsFor": {
