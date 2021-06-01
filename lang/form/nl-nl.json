@@ -18,7 +18,9 @@
         "confirmationRequired": "Bevestiging van e-mailadres verplicht",
         "confirmationRequiredMessage": "Controleer je e-mail inbox om je adres te bevestigen.",
         "yourAccountIsValidUntil": "Je account zal geldig zijn tot {date}.",
-        "sendPIN": "Stuur onderstaande pincode naar de bot, en kom daarna hier terug om je account te koppelen."
+        "sendPIN": "Stuur onderstaande pincode naar de bot, en kom daarna hier terug om je account te koppelen.",
+        "matrixEnterUser": "Voer je gebruikers ID in, druk op versturen, en er wordt je een pincode toegestuurd. Vul die hier in om door te gaan.",
+        "sendPINDiscord": "Typ {command} in {server_channel} op Discord, stuur daarna onderstaande pincode via DM naar de bot."
     },
     "validationStrings": {
         "length": {
@@ -47,6 +49,10 @@
         "errorInvalidCode": "Ongeldige uitnodigingscode.",
         "telegramVerified": "Telegram-account goedgekeurd.",
         "errorTelegramVerification": "Telegram-verificatie nodig.",
-        "errorInvalidPIN": "Telegram pincode is ongeldig."
+        "errorInvalidPIN": "Pincode is ongeldig.",
+        "errorDiscordVerification": "Discord-verificatie vereist.",
+        "errorUnknown": "Onbekende fout.",
+        "errorMatrixVerification": "Matrix-verificatie vereist.",
+        "verified": "Account geverifieerd."
     }
 }
