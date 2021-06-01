@@ -17,6 +17,10 @@
         "copied": "Gekopieerd",
         "linkTelegram": "Koppel Telegram",
         "contactEmail": "Stuur e-mailbericht",
-        "contactTelegram": "Stuur Telegram-bericht"
+        "contactTelegram": "Stuur Telegram-bericht",
+        "send": "Verstuur",
+        "linkDiscord": "Koppel Discord",
+        "linkMatrix": "Koppel Matrix",
+        "contactDiscord": "Stuur Discord bericht"
     }
 }
