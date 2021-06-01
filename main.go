@@ -36,6 +36,7 @@ var (
 	SOCK               string = "jfa-go.sock"
 	SRV                *http.Server
 	RESTART            chan bool
+	TRAYRESTART        chan bool
 	DATA, CONFIG, HOST *string
 	PORT               *int
 	DEBUG              *bool
@@ -201,12 +202,19 @@ func start(asDaemon, firstCall bool) {
 			app.err.Fatalf("Couldn't copy default config.")
 		}
 		app.info.Printf("Copied default configuration to \"%s\"", app.configPath)
+		tempConfig, _ := ini.Load(app.configPath)
+		tempConfig.Section("").Key("first_run").SetValue("true")
+		tempConfig.SaveTo(app.configPath)
 	}
 
 	var debugMode bool
 	var address string
 	if err := app.loadConfig(); err != nil {
 		app.err.Fatalf("Failed to load config file \"%s\": %v", app.configPath, err)
+	}
+
+	if app.config.Section("").Key("first_run").MustBool(false) {
+		firstRun = true
 	}
 
 	app.version = app.config.Section("jellyfin").Key("version").String()
@@ -394,7 +402,7 @@ func start(asDaemon, firstCall bool) {
 			app.info.Println("Using Jellyfin server type")
 		}
 
-		app.jf, _ = mediabrowser.NewServer(
+		app.jf, err = mediabrowser.NewServer(
 			serverType,
 			server,
 			app.config.Section("jellyfin").Key("client").String(),
@@ -404,6 +412,9 @@ func start(asDaemon, firstCall bool) {
 			timeoutHandler,
 			cacheTimeout,
 		)
+		if err != nil {
+			app.err.Fatalf("Failed to authenticate with Jellyfin @ %s: %v", server, err)
+		}
 		if debugMode {
 			app.jf.Verbose = true
 		}
@@ -589,7 +600,7 @@ func flagPassed(name string) (found bool) {
 }
 
 // @title jfa-go internal API
-// @version 0.3.4
+// @version 0.3.6
 // @description API for the jfa-go frontend
 // @contact.name Harvey Tindall
 // @contact.email hrfee@hrfee.dev

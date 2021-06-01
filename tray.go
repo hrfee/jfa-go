@@ -53,11 +53,29 @@ func onReady() {
 	}()
 
 	RESTART = make(chan bool, 1)
+	TRAYRESTART = make(chan bool, 1)
 	go start(false, true)
 	mStart.Disable()
 	mStop.Enable()
 	mRestart.Enable()
 	go as.HandleCheck()
+	trayRestart := func() {
+		if RUNNING {
+			RESTART <- true
+			mStop.Disable()
+			mStart.Enable()
+			mRestart.Disable()
+			for {
+				if !RUNNING {
+					break
+				}
+			}
+			go start(false, false)
+			mStart.Disable()
+			mStop.Enable()
+			mRestart.Enable()
+		}
+	}
 	for {
 		select {
 		case <-mStart.ClickedCh:
@@ -74,22 +92,10 @@ func onReady() {
 				mStart.Enable()
 				mRestart.Disable()
 			}
+		case <-TRAYRESTART:
+			trayRestart()
 		case <-mRestart.ClickedCh:
-			if RUNNING {
-				RESTART <- true
-				mStop.Disable()
-				mStart.Enable()
-				mRestart.Disable()
-				for {
-					if !RUNNING {
-						break
-					}
-				}
-				go start(false, false)
-				mStart.Disable()
-				mStop.Enable()
-				mRestart.Enable()
-			}
+			trayRestart()
 		case <-mOpenLogs.ClickedCh:
 			open.Start(logPath)
 		case <-mQuit.ClickedCh:

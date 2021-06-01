@@ -1576,6 +1576,7 @@ func (app *appContext) ModifyConfig(gc *gin.Context) {
 			}
 		}
 	}
+	tempConfig.Section("").Key("first_run").SetValue("false")
 	if err := tempConfig.SaveTo(app.configPath); err != nil {
 		app.err.Printf("Failed to save config to \"%s\": %v", app.configPath, err)
 		respondBool(500, false, gc)
@@ -1585,9 +1586,10 @@ func (app *appContext) ModifyConfig(gc *gin.Context) {
 	gc.JSON(200, map[string]bool{"success": true})
 	if req["restart-program"] != nil && req["restart-program"].(bool) {
 		app.info.Println("Restarting...")
-		err := app.Restart()
-		if err != nil {
-			app.err.Printf("Couldn't restart, try restarting manually: %s", err)
+		if TRAY {
+			TRAYRESTART <- true
+		} else {
+			RESTART <- true
 		}
 	}
 	app.loadConfig()
