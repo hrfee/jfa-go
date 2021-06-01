@@ -18,7 +18,9 @@
         "confirmationRequired": "E-Mail-Bestätigung erforderlich",
         "confirmationRequiredMessage": "Bitte überprüfe dein Posteingang und bestätige deine E-Mail-Adresse.",
         "yourAccountIsValidUntil": "Dein Konto wird bis zum {date} gültig sein.",
-        "sendPIN": "Sende die untenstehende PIN an den Bot und komm dann hierher zurück, um dein Konto zu verbinden."
+        "sendPIN": "Sende die untenstehende PIN an den Bot und komm dann hierher zurück, um dein Konto zu verbinden.",
+        "sendPINDiscord": "Gib auf Discord {command} in {server_channel} ein und sende die untenstehende PIN als DM an den Bot.",
+        "matrixEnterUser": "Gib deine Benutzer-ID ein und drücke auf Absenden. Anschließend erhälst du ein PIN, die hier eingegeben wird um fortzufahren."
     },
     "validationStrings": {
         "length": {
@@ -47,6 +49,10 @@
         "errorInvalidCode": "Ungültiger Invite-Code.",
         "telegramVerified": "Telegram-Konto verifiziert.",
         "errorTelegramVerification": "Verifizierung von Telegram erforderlich.",
-        "errorInvalidPIN": "Telegram PIN ist ungültig."
+        "errorInvalidPIN": "PIN ist ungültig.",
+        "errorDiscordVerification": "Discord-Verifizierung erforderlich.",
+        "errorMatrixVerification": "Matrix-Verifizierung erforderlich.",
+        "errorUnknown": "Unbekannter Fehler.",
+        "verified": "Konto verifiziert."
     }
 }
