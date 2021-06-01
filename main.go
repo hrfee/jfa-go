@@ -209,11 +209,6 @@ func start(asDaemon, firstCall bool) {
 		app.err.Fatalf("Failed to load config file \"%s\": %v", app.configPath, err)
 	}
 
-	// Some message settings have been moved from "email" to "messages", this will switch them.
-	if app.config.Section("email").Key("use_24h").Value() != "" {
-		app.migrateEmailConfig()
-	}
-
 	app.version = app.config.Section("jellyfin").Key("version").String()
 	// read from config...
 	debugMode = app.config.Section("ui").Key("debug").MustBool(false)
@@ -325,7 +320,7 @@ func start(asDaemon, firstCall bool) {
 		app.storage.emails_path = app.config.Section("files").Key("emails").String()
 		if err := app.storage.loadEmails(); err != nil {
 			app.err.Printf("Failed to load Emails: %v", err)
-			err := app.migrateEmailStorage()
+			err := migrateEmailStorage(app)
 			if err != nil {
 				app.err.Printf("Failed to migrate Email storage: %v", err)
 			}
@@ -361,23 +356,6 @@ func start(asDaemon, firstCall bool) {
 
 		app.storage.profiles_path = app.config.Section("files").Key("user_profiles").String()
 		app.storage.loadProfiles()
-		// Migrate from pre-0.2.0 user templates to profiles
-		if !(app.storage.policy.BlockedTags == nil && app.storage.configuration.GroupedFolders == nil && len(app.storage.displayprefs) == 0) {
-			app.info.Println("Migrating user template files to new profile format")
-			app.storage.migrateToProfile()
-			for _, path := range [3]string{app.storage.policy_path, app.storage.configuration_path, app.storage.displayprefs_path} {
-				if _, err := os.Stat(path); !os.IsNotExist(err) {
-					dir, fname := filepath.Split(path)
-					newFname := strings.Replace(fname, ".json", ".old.json", 1)
-					err := os.Rename(path, filepath.Join(dir, newFname))
-					if err != nil {
-						app.err.Fatalf("Failed to rename %s: %s", fname, err)
-					}
-				}
-			}
-			app.info.Println("In case of a problem, your original files have been renamed to <file>.old.json")
-			app.storage.storeProfiles()
-		}
 
 		if app.config.Section("ombi").Key("enabled").MustBool(false) {
 			app.storage.ombi_path = app.config.Section("files").Key("ombi_template").String()
@@ -396,17 +374,6 @@ func start(asDaemon, firstCall bool) {
 		configBase, _ := fs.ReadFile(localFS, app.configBasePath)
 		json.Unmarshal(configBase, &app.configBase)
 
-		themes := map[string]string{
-			"Jellyfin (Dark)": "dark-theme",
-			"Default (Light)": "light-theme",
-		}
-		// For move from Bootstrap to a17t (0.2.5)
-		if app.config.Section("ui").Key("theme").String() == "Bootstrap (Light)" {
-			app.config.Section("ui").Key("theme").SetValue("Default (Light)")
-		}
-		if val, ok := themes[app.config.Section("ui").Key("theme").String()]; ok {
-			app.cssClass = val
-		}
 		secret, err := generateSecret(16)
 		if err != nil {
 			app.err.Fatal(err)
@@ -446,76 +413,8 @@ func start(asDaemon, firstCall bool) {
 			app.err.Fatalf("Failed to authenticate with Jellyfin @ %s (%d): %v", server, status, err)
 		}
 		app.info.Printf("Authenticated with %s", server)
-		// /* A couple of unstable Jellyfin 10.7.0 releases decided to hyphenate user IDs.
-		// This checks if the version is equal or higher. */
-		// checkVersion := func(version string) int {
-		// 	numberStrings := strings.Split(version, ".")
-		// 	n := 0
-		// 	for _, s := range numberStrings {
-		// 		num, err := strconv.Atoi(s)
-		// 		if err == nil {
-		// 			n += num
-		// 		}
-		// 	}
-		// 	return n
-		// }
-		// if serverType == mediabrowser.JellyfinServer && checkVersion(app.jf.ServerInfo.Version) >= checkVersion("10.7.0") {
-		// 	// Get users to check if server uses hyphenated userIDs
-		// 	app.jf.GetUsers(false)
 
-		// 	noHyphens := true
-		// 	for id := range app.storage.emails {
-		// 		if strings.Contains(id, "-") {
-		// 			noHyphens = false
-		// 			break
-		// 		}
-		// 	}
-		// 	if noHyphens == app.jf.Hyphens {
-		// 		var newEmails map[string]interface{}
-		// 		var newUsers map[string]time.Time
-		// 		var status, status2 int
-		// 		var err, err2 error
-		// 		if app.jf.Hyphens {
-		// 			app.info.Println(info("Your build of Jellyfin appears to hypenate user IDs. Your emails.json/users.json file will be modified to match."))
-		// 			time.Sleep(time.Second * time.Duration(3))
-		// 			newEmails, status, err = app.hyphenateEmailStorage(app.storage.emails)
-		// 			newUsers, status2, err2 = app.hyphenateUserStorage(app.storage.users)
-		// 		} else {
-		// 			app.info.Println(info("Your emails.json/users.json file uses hyphens, but the Jellyfin server no longer does. It will be modified."))
-		// 			time.Sleep(time.Second * time.Duration(3))
-		// 			newEmails, status, err = app.deHyphenateEmailStorage(app.storage.emails)
-		// 			newUsers, status2, err2 = app.deHyphenateUserStorage(app.storage.users)
-		// 		}
-		// 		if status != 200 || err != nil {
-		// 			app.err.Printf("Failed to get users from Jellyfin (%d): %v", status, err)
-		// 			app.err.Fatalf("Couldn't upgrade emails.json")
-		// 		}
-		// 		if status2 != 200 || err2 != nil {
-		// 			app.err.Printf("Failed to get users from Jellyfin (%d): %v", status, err)
-		// 			app.err.Fatalf("Couldn't upgrade users.json")
-		// 		}
-		// 		emailBakFile := app.storage.emails_path + ".bak"
-		// 		usersBakFile := app.storage.users_path + ".bak"
-		// 		err = storeJSON(emailBakFile, app.storage.emails)
-		// 		err2 = storeJSON(usersBakFile, app.storage.users)
-		// 		if err != nil {
-		// 			app.err.Fatalf("couldn't store emails.json backup: %v", err)
-		// 		}
-		// 		if err2 != nil {
-		// 			app.err.Fatalf("couldn't store users.json backup: %v", err)
-		// 		}
-		// 		app.storage.emails = newEmails
-		// 		app.storage.users = newUsers
-		// 		err = app.storage.storeEmails()
-		// 		err2 = app.storage.storeUsers()
-		// 		if err != nil {
-		// 			app.err.Fatalf("couldn't store emails.json: %v", err)
-		// 		}
-		// 		if err2 != nil {
-		// 			app.err.Fatalf("couldn't store users.json: %v", err)
-		// 		}
-		// 	}
-		// }
+		runMigrations(app)
 
 		// Auth (manual user/pass or jellyfin)
 		app.jellyfinLogin = true
@@ -561,7 +460,7 @@ func start(asDaemon, firstCall bool) {
 
 		invDaemon := newInviteDaemon(time.Duration(60*time.Second), app)
 		go invDaemon.run()
-		defer invDaemon.shutdown()
+		defer invDaemon.Shutdown()
 
 		userDaemon := newUserDaemon(time.Duration(60*time.Second), app)
 		go userDaemon.run()

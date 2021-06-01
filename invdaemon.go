@@ -42,7 +42,7 @@ func (rt *inviteDaemon) run() {
 	}
 }
 
-func (rt *inviteDaemon) shutdown() {
+func (rt *inviteDaemon) Shutdown() {
 	rt.Stopped = true
 	rt.ShutdownChannel <- "Down"
 	<-rt.ShutdownChannel

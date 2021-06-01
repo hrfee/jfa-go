@@ -94,7 +94,6 @@ func onReady() {
 			open.Start(logPath)
 		case <-mQuit.ClickedCh:
 			systray.Quit()
-			// case <-mOnLogin.ClickedCh:
 		}
 	}
 }
