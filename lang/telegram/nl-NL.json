@@ -1,0 +1,12 @@
+{
+    "meta": {
+        "name": ""
+    },
+    "strings": {
+        "startMessage": "",
+        "matrixStartMessage": "",
+        "invalidPIN": "",
+        "pinSuccess": "",
+        "languageMessage": ""
+    }
+}
