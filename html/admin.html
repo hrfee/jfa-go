@@ -311,7 +311,7 @@
                 <span class="button ~urge !normal full-width center" id="update-update">{{ .strings.update }}</span>
             </div>
         </div>
-        {{ if .telegram_enabled }}
+        {{ if .telegramEnabled }}
         <div id="modal-telegram" class="modal">
             <div class="modal-content card">
                 <span class="heading mb-1">{{ .strings.linkTelegram }}</span>
@@ -329,7 +329,7 @@
             </div>
         </div>
         {{ end }}
-        {{ if .discord_enabled }}
+        {{ if .discordEnabled }}
         <div id="modal-discord" class="modal">
             <div class="modal-content card">
                 <span class="heading mb-1"><span id="discord-header"></span><span class="modal-close">&times;</span></span>
@@ -515,7 +515,7 @@
                             <div id="create-send-to-container">
                                 <label class="label supra">{{ .strings.inviteSendToEmail }}</label>
                                 <div class="flex-expand mb-1 mt-half">
-                                    {{ if .discord_enabled }}
+                                    {{ if .discordEnabled }}
                                     <input type="text" id="create-send-to" class="input ~neutral !normal mr-1" placeholder="example@example.com | user#1234">
                                     <span id="create-send-to-search" class="button ~neutral !normal mr-1">
                                         <i class="icon ri-search-2-line" title="{{ .strings.search }}"></i>
@@ -556,13 +556,13 @@
                                     <th><input type="checkbox" value="" id="accounts-select-all"></th>
                                     <th>{{ .strings.username }}</th>
                                     <th>{{ .strings.emailAddress }}</th>
-                                    {{ if .telegram_enabled }}
+                                    {{ if .telegramEnabled }}
                                     <th>Telegram</th>
                                     {{ end }}
-                                    {{ if .matrix_enabled }}
+                                    {{ if .matrixEnabled }}
                                     <th>Matrix</th>
                                     {{ end }}
-                                    {{ if .discord_enabled }}
+                                    {{ if .discordEnabled }}
                                     <th>Discord</th>
                                     {{ end }}
                                     <th>{{ .strings.expiry }}</th>
