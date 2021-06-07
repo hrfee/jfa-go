@@ -1,0 +1,12 @@
+{
+    "meta": {
+        "name": "Nederlands (NL)"
+    },
+    "strings": {
+        "startMessage": "Hallo!\nVoer je Jellyfin pincode in om je account te verifiëren.",
+        "matrixStartMessage": "Hallo\nVoer onderstaande pincode in op de Jellyfin aanmeldpagina om je account te verifiëren.",
+        "invalidPIN": "Die pincode was ongeldig, probeer het nogmaals.",
+        "pinSuccess": "Succes! Je kunt nu teruggaan naar de aanmeldpagina.",
+        "languageMessage": "Opmerking: Bekijk beschikbare talen met {command}, en stel de taal in met {command} <taalcode>."
+    }
+}

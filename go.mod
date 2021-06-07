@@ -10,8 +10,6 @@ replace github.com/hrfee/jfa-go/ombi => ./ombi
 
 replace github.com/hrfee/jfa-go/logger => ./logger
 
-replace github.com/hrfee/mediabrowser => ../mediabrowser
-
 require (
 	github.com/bwmarrin/discordgo v0.23.2
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
@@ -33,7 +31,7 @@ require (
 	github.com/hrfee/jfa-go/docs v0.0.0-20201112212552-b6f3cd7c1f71
 	github.com/hrfee/jfa-go/logger v0.0.0-00010101000000-000000000000
 	github.com/hrfee/jfa-go/ombi v0.0.0-20201112212552-b6f3cd7c1f71
-	github.com/hrfee/mediabrowser v0.0.0-00010101000000-000000000000
+	github.com/hrfee/mediabrowser v0.3.4
 	github.com/itchyny/timefmt-go v0.1.2
 	github.com/jordan-wright/email v4.0.1-0.20210109023952-943e75fe5223+incompatible
 	github.com/lithammer/shortuuid/v3 v3.0.4
