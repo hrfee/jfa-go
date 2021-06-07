@@ -3,7 +3,13 @@
     <head>
         <link rel="stylesheet" type="text/css" href="css/bundle.css">
         {{ template "header.html" . }}
-        <title>{{ .strings.pageTitle }}</title>
+        <title>
+            {{ if .passwordReset }}
+            {{ .strings.passwordReset }}
+            {{ else }}
+            {{ .strings.pageTitle }}
+            {{ end }}
+        </title>
     </head>
     <body class="max-w-full overflow-x-hidden section">
         <div id="modal-success" class="modal">
@@ -80,8 +86,20 @@
         <div class="page-container">
             <div class="card ~neutral !low">
                 <div class="row baseline">
-                    <span class="col heading">{{ .strings.createAccountHeader }}</span>
-                    <span class="col subheading"> {{ .helpMessage }}</span>
+                    <span class="col heading">
+                        {{ if .passwordReset }}
+                        {{ .strings.passwordReset }}
+                        {{ else }}
+                        {{ .strings.createAccountHeader }}
+                        {{ end }}
+                    </span>
+                    <span class="col subheading"> 
+                        {{ if .passwordReset }}
+                        {{ .strings.enterYourPassword }}
+                        {{ else }}
+                        {{ .helpMessage }}
+                        {{ end }}
+                    </span>
                 </div>
                 <div class="row">
                     <div class="col">
@@ -89,6 +107,7 @@
                         <aside class="col aside sm ~warning" id="user-expiry-message"></aside>
                         {{ end }}
                         <form class="card ~neutral !normal" id="form-create" href="">
+                            {{ if not .passwordReset }}
                             <label class="label supra">
                                 {{ .strings.username }}
                                 <input type="text" class="input ~neutral !high mt-half mb-1" placeholder="{{ .strings.username }}" id="create-username" aria-label="{{ .strings.username }}">
@@ -127,6 +146,7 @@
                                 {{ end }}
                             </div>
                             {{ end }}
+                            {{ end }}
                             <label class="label supra" for="create-password">{{ .strings.password }}</label>
                             <input type="password" class="input ~neutral !high mt-half mb-1" placeholder="{{ .strings.password }}" id="create-password" aria-label="{{ .strings.password }}">
                             
@@ -134,7 +154,13 @@
                             <input type="password" class="input ~neutral !high mt-half mb-1" placeholder="{{ .strings.password }}" id="create-reenter-password" aria-label="{{ .strings.reEnterPassword }}">
                             <label>
                                 <input type="submit" class="unfocused">
-                                <span class="button ~urge !normal full-width center supra submit">{{ .strings.createAccountButton }}</span>
+                                <span class="button ~urge !normal full-width center supra submit">
+                                    {{ if .passwordReset }}
+                                    {{ .strings.reset }}
+                                    {{ else }}
+                                    {{ .strings.createAccountButton }}
+                                    {{ end }}
+                                </span>
                             </label>
                         </form>
                     </div>
@@ -159,4 +185,3 @@
         {{ template "form-base" . }}
     </body>
 </html>
-

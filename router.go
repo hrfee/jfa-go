@@ -108,6 +108,9 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 
 		if app.config.Section("password_resets").Key("link_reset").MustBool(false) {
 			router.GET(p+"/reset", app.ResetPassword)
+			if app.config.Section("password_resets").Key("set_password").MustBool(false) {
+				router.POST(p+"/reset", app.ResetSetPassword)
+			}
 		}
 
 		router.GET(p+"/accounts", app.AdminPage)

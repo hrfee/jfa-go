@@ -305,3 +305,8 @@ type MatrixLoginDTO struct {
 	Username   string `json:"username"`
 	Password   string `json:"password"`
 }
+
+type ResetPasswordDTO struct {
+	PIN      string `json:"pin"`
+	Password string `json:"password"`
+}

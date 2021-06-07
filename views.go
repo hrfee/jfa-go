@@ -139,6 +139,7 @@ func (app *appContext) AdminPage(gc *gin.Context) {
 
 func (app *appContext) ResetPassword(gc *gin.Context) {
 	isBot := strings.Contains(gc.Request.Header.Get("User-Agent"), "Bot")
+	setPassword := app.config.Section("password_resets").Key("set_password").MustBool(false)
 	pin := gc.Query("pin")
 	if pin == "" {
 		app.NoRouteHandler(gc)
@@ -148,10 +149,28 @@ func (app *appContext) ResetPassword(gc *gin.Context) {
 	lang := app.getLang(gc, PWRPage, app.storage.lang.chosenPWRLang)
 	data := gin.H{
 		"urlBase":        app.getURLBase(gc),
+		"cssClass":       app.cssClass,
 		"contactMessage": app.config.Section("ui").Key("contact_message").String(),
 		"strings":        app.storage.lang.PasswordReset[lang].Strings,
 		"success":        false,
 		"ombiEnabled":    app.config.Section("ombi").Key("enabled").MustBool(false),
+	}
+	if setPassword {
+		data["helpMessage"] = app.config.Section("ui").Key("help_message").String()
+		data["successMessage"] = app.config.Section("ui").Key("success_message").String()
+		data["jfLink"] = app.config.Section("jellyfin").Key("public_server").String()
+		data["validate"] = app.config.Section("password_validation").Key("enabled").MustBool(false)
+		data["requirements"] = app.validator.getCriteria()
+		data["strings"] = app.storage.lang.PasswordReset[lang].Strings
+		data["validationStrings"] = app.storage.lang.Form[lang].validationStringsJSON
+		data["notifications"] = app.storage.lang.Form[lang].notificationsJSON
+		data["langName"] = lang
+		data["passwordReset"] = true
+		data["telegramEnabled"] = false
+		data["discordEnabled"] = false
+		data["matrixEnabled"] = false
+		gcHTML(gc, http.StatusOK, "form-loader.html", data)
+		return
 	}
 	defer gcHTML(gc, http.StatusOK, "password-reset.html", data)
 	// If it's a bot, pretend to be a success so the preview is nice.
@@ -294,6 +313,7 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 		"userExpiryMinutes": inv.UserMinutes,
 		"userExpiryMessage": app.storage.lang.Form[lang].Strings.get("yourAccountIsValidUntil"),
 		"langName":          lang,
+		"passwordReset":     false,
 		"telegramEnabled":   telegramEnabled,
 		"discordEnabled":    discordEnabled,
 		"matrixEnabled":     matrixEnabled,

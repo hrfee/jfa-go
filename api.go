@@ -1383,6 +1383,77 @@ func (app *appContext) ModifyEmails(gc *gin.Context) {
 	respondBool(200, true, gc)
 }
 
+// @Summary Resets a user's password with a PIN, and optionally set a new password if given.
+// @Produce json
+// @Success 200 {object} boolResponse
+// @Success 400 {object} PasswordValidation
+// @Failure 500 {object} boolResponse
+// @Param ResetPasswordDTO body ResetPasswordDTO true "Pin and optional Password."
+// @Router /reset [post]
+// @tags Other
+func (app *appContext) ResetSetPassword(gc *gin.Context) {
+	var req ResetPasswordDTO
+	gc.BindJSON(&req)
+	validation := app.validator.validate(req.Password)
+	valid := true
+	for _, val := range validation {
+		if !val {
+			valid = false
+		}
+	}
+	if !valid || req.PIN == "" {
+		// 200 bcs idk what i did in js
+		app.info.Printf("%s: Password reset failed: Invalid password", req.PIN)
+		gc.JSON(400, validation)
+		return
+	}
+	resp, status, err := app.jf.ResetPassword(req.PIN)
+	if status != 200 || err != nil || !resp.Success {
+		app.err.Printf("Password Reset failed (%d): %v", status, err)
+		respondBool(status, false, gc)
+		return
+	}
+	if req.Password == "" || len(resp.UsersReset) == 0 {
+		respondBool(200, false, gc)
+		return
+	}
+	user, status, err := app.jf.UserByName(resp.UsersReset[0], false)
+	if status != 200 || err != nil {
+		app.err.Printf("Failed to get user \"%s\" (%d): %v", resp.UsersReset[0], status, err)
+		respondBool(500, false, gc)
+		return
+	}
+	status, err = app.jf.SetPassword(user.ID, req.PIN, req.Password)
+	if !(status == 200 || status == 204) || err != nil {
+		app.err.Printf("Failed to change password for \"%s\" (%d): %v", resp.UsersReset[0], status, err)
+		respondBool(500, false, gc)
+		return
+	}
+	if app.config.Section("ombi").Key("enabled").MustBool(false) {
+		// Silently fail for changing ombi passwords
+		if status != 200 || err != nil {
+			app.err.Printf("Failed to get user \"%s\" from jellyfin/emby (%d): %v", resp.UsersReset[0], status, err)
+			respondBool(200, true, gc)
+			return
+		}
+		ombiUser, status, err := app.getOmbiUser(user.ID)
+		if status != 200 || err != nil {
+			app.err.Printf("Failed to get user \"%s\" from ombi (%d): %v", resp.UsersReset[0], status, err)
+			respondBool(200, true, gc)
+			return
+		}
+		ombiUser["password"] = req.Password
+		status, err = app.ombi.ModifyUser(ombiUser)
+		if status != 200 || err != nil {
+			app.err.Printf("Failed to set password for ombi user \"%s\" (%d): %v", ombiUser["userName"], status, err)
+			respondBool(200, true, gc)
+			return
+		}
+		app.debug.Printf("Reset password for ombi user \"%s\"", ombiUser["userName"])
+	}
+	respondBool(200, true, gc)
+}
+
 // @Summary Apply settings to a list of users, either from a profile or from another user.
 // @Produce json
 // @Param userSettingsDTO body userSettingsDTO true "Parameters for applying settings"
@@ -2123,7 +2194,7 @@ func (app *appContext) TelegramAddUser(gc *gin.Context) {
 	respondBool(200, true, gc)
 }
 
-// @Summary Sets whether to notify a user through telegram or not.
+// @Summary Sets whether to notify a user through telegram/discord/matrix/email or not.
 // @Produce json
 // @Param SetContactMethodsDTO body SetContactMethodsDTO true "User's Jellyfin ID and whether or not to notify then through Telegram."
 // @Success 200 {object} boolResponse

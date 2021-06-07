@@ -784,6 +784,15 @@
                     "value": false,
                     "description": "Send users a link to reset their password instead of a PIN. Must be enabled to reset Ombi password at the same time as the Jellyfin password."
                 },
+                "set_password": {
+                    "name": "Set password through link",
+                    "required": false,
+                    "requires_restart": true,
+                    "depends_true": "link_reset",
+                    "type": "bool",
+                    "value": false,
+                    "description": "Instead of automatically setting the user's password to the PIN, allow them to set a new password through the reset link."
+                },
                 "language": {
                     "name": "Default reset link language",
                     "required": false,
@@ -1234,6 +1243,14 @@
                     "type": "text",
                     "value": "",
                     "description": "Location of stored invites (json)."
+                },
+                "password_resets": {
+                    "name": "Password Resets",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "text",
+                    "value": "",
+                    "description": "Location of stored non-Jellyfin password resets (json)."
                 },
                 "emails": {
                     "name": "Email Addresses",

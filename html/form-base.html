@@ -26,5 +26,9 @@
     window.matrixRequired = {{ .matrixRequired }};
     window.matrixUserID = "{{ .matrixUser }}";
 </script>
+{{ if .passwordReset }}
+<script src="js/pwr.js" type="module"></script>
+{{ else }}
 <script src="js/form.js" type="module"></script>
+{{ end }}
 {{ end }}
