@@ -17,8 +17,10 @@ func Exit(err interface{}) {
 		log.Fatalf("Failed to load template: %v", err)
 	}
 	logCache := lineCache.String()
+	sanitized := sanitizeLog(logCache)
 	data := map[string]interface{}{
-		"Log": logCache,
+		"Log":          logCache,
+		"SanitizedLog": sanitized,
 	}
 	if err != nil {
 		data["Err"] = err
@@ -28,6 +30,7 @@ func Exit(err interface{}) {
 	if err2 != nil {
 		log.Fatalf("Failed to write crash dump file: %v", err2)
 	}
+	log.Printf("\n------\nA crash report has been saved to \"%s\".\n------", fpath+".txt")
 	f, err2 := os.OpenFile(fpath+".html", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
 	if err2 != nil {
 		log.Fatalf("Failed to open crash dump file: %v", err2)

@@ -67,3 +67,11 @@ func (c colorStripper) Write(p []byte) (n int, err error) {
 	n = len(p)
 	return
 }
+
+func sanitizeLog(l string) string {
+	quoteCensor, err := regexp.Compile("\"([^\"]*)\"")
+	if err != nil {
+		log.Fatalf("Failed to compile sanitizing regexp: %v", err)
+	}
+	return string(quoteCensor.ReplaceAll([]byte(l), []byte("\"CENSORED\"")))
+}

@@ -2,6 +2,7 @@
 package logger
 
 import (
+	"errors"
 	"io"
 	"log"
 	"runtime"
@@ -16,12 +17,14 @@ type Logger interface {
 	Println(v ...interface{})
 	Fatal(v ...interface{})
 	Fatalf(format string, v ...interface{})
+	SetFatalFunc(f func(err interface{}))
 }
 
 type logger struct {
 	logger    *log.Logger
 	shortfile bool
 	printer   *c.Color
+	fatalFunc func(err interface{})
 }
 
 func Lshortfile() string {
@@ -97,7 +100,16 @@ func (l logger) Fatalf(format string, v ...interface{}) {
 		out = Lshortfile()
 	}
 	out += " " + l.printer.Sprintf(format, v...)
-	l.logger.Fatal(out)
+	if l.fatalFunc != nil {
+		l.logger.Print(out)
+		l.fatalFunc(errors.New(out))
+	} else {
+		l.logger.Fatal(out)
+	}
+}
+
+func (l logger) SetFatalFunc(f func(err interface{})) {
+	l.fatalFunc = f
 }
 
 type EmptyLogger bool
@@ -107,3 +119,4 @@ func (l EmptyLogger) Print(v ...interface{})                 {}
 func (l EmptyLogger) Println(v ...interface{})               {}
 func (l EmptyLogger) Fatal(v ...interface{})                 {}
 func (l EmptyLogger) Fatalf(format string, v ...interface{}) {}
+func (l EmptyLogger) SetFatalFunc(f func(err interface{}))   {}

@@ -173,7 +173,9 @@ func start(asDaemon, firstCall bool) {
 	}
 
 	app.info = logger.NewLogger(os.Stdout, "[INFO] ", log.Ltime, color.FgHiWhite)
+	app.info.SetFatalFunc(Exit)
 	app.err = logger.NewLogger(os.Stdout, "[ERROR] ", log.Ltime|log.Lshortfile, color.FgRed)
+	app.err.SetFatalFunc(Exit)
 
 	app.loadArgs(firstCall)
 
@@ -409,7 +411,7 @@ func start(asDaemon, firstCall bool) {
 			cacheTimeout,
 		)
 		if err != nil {
-			app.err.Fatalf("Failed to authenticate with Jellyfin @ %s: %v", server, err)
+			app.err.Fatalf("Failed to authenticate with Jellyfin @ \"%s\": %v", server, err)
 		}
 		if debugMode {
 			app.jf.Verbose = true
@@ -417,7 +419,7 @@ func start(asDaemon, firstCall bool) {
 		var status int
 		_, status, err = app.jf.Authenticate(app.config.Section("jellyfin").Key("username").String(), app.config.Section("jellyfin").Key("password").String())
 		if status != 200 || err != nil {
-			app.err.Fatalf("Failed to authenticate with Jellyfin @ %s (%d): %v", server, status, err)
+			app.err.Fatalf("Failed to authenticate with Jellyfin @ \"%s\" (%d): %v", server, status, err)
 		}
 		app.info.Printf("Authenticated with %s", server)
 

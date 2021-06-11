@@ -87,6 +87,7 @@ typescript:
 	-$(ESBUILD) --bundle ts/pwr.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/pwr.js --minify
 	-$(ESBUILD) --bundle ts/form.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/form.js --minify
 	-$(ESBUILD) --bundle ts/setup.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/setup.js --minify
+	-$(ESBUILD) --bundle ts/crash.ts --outfile=./$(DATA)/crash.js --minify
 	$(COPYTS)
 
 swagger:
@@ -107,10 +108,13 @@ bundle-css:
 	-mkdir -p $(DATA)/web/css
 	$(info bundling css)
 	$(ESBUILD) --bundle css/base.css --outfile=$(DATA)/web/css/bundle.css --external:remixicon.css --minify
+
+inline:
 	cp html/crash.html $(DATA)/crash.html
 	npx uncss $(DATA)/crash.html --csspath web/css --output $(DATA)/bundle.css
 	bash -c 'cd $(DATA); npx inline-css-cli -i crash.html -o crash.html'
 	rm $(DATA)/bundle.css
+	npx inline-source --root $(DATA) $(DATA)/crash.html $(DATA)/crash.html
 
 copy:
 	$(info copying fonts)
@@ -146,4 +150,4 @@ clean:
 	-rm docs/docs.go docs/swagger.json docs/swagger.yaml
 	go clean
 
-all: configuration npm email typescript bundle-css swagger copy compile
+all: configuration npm email typescript bundle-css inline swagger copy compile

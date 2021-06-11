@@ -25,6 +25,13 @@ before:
     - npx esbuild --bundle ts/pwr.ts --outfile=./data/web/js/pwr.js --minify
     - npx esbuild --bundle ts/form.ts --outfile=./data/web/js/form.js --minify
     - npx esbuild --bundle ts/setup.ts --outfile=./data/web/js/setup.js --minify
+    - npx esbuild --bundle ts/crash.ts --outfile=./data/crash.js --minify
+    - cp html/crash.html data/
+    - npx uncss data/crash.html --csspath web/css --output data/bundle.css
+    - bash -c 'cd data; npx inline-css-cli -i crash.html -o crash.html'
+    - rm data/bundle.css
+    - npx inline-source --root data data/crash.html data/crash.html
+    - mv data/crash.html data/html/
     - go get -u github.com/swaggo/swag/cmd/swag
     - swag init -g main.go
 builds:

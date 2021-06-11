@@ -21,11 +21,26 @@
                         </section>
                         <section class="section ~neutral !low">
                             <span class="subheading">Full Log</span>
-                            <pre class="monospace pre-line">{{ .Log }}</pre>
+                            <div class="row mb-1">
+                                <label class="col mr-1">
+                                    <span class="button ~neutral !high supra full-width center" id="button-log-normal">Normal</span>
+                                </label>
+                                <label class="col mr-1">
+                                    <span class="button ~neutral !normal supra full-width center" id="button-log-sanitized">Sanitized</span>
+                                </label>
+                            </div>
+                            <div id="log-normal">
+                                <pre class="monospace pre-line">{{ .Log }}</pre>
+                            </div>
+                            <div id="log-sanitized" class="unfocused">
+                                <p class="subheading">An attempt has been made to remove sensitive info, but make sure to check yourself.</p>
+                                <pre class="monospace pre-line">{{ .SanitizedLog }}</pre>
+                            </div>
                         </section>
                     </div>
                 </div>
             </div>
         </div>
+        <script inline src="crash.js"></script>
     </body>
 </html>
