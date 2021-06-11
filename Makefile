@@ -112,9 +112,8 @@ bundle-css:
 inline:
 	cp html/crash.html $(DATA)/crash.html
 	npx uncss $(DATA)/crash.html --csspath web/css --output $(DATA)/bundle.css
-	bash -c 'cd $(DATA); npx inline-css-cli -i crash.html -o crash.html'
-	rm $(DATA)/bundle.css
 	npx inline-source --root $(DATA) $(DATA)/crash.html $(DATA)/crash.html
+	rm $(DATA)/bundle.css
 
 copy:
 	$(info copying fonts)
