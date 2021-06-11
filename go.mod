@@ -10,6 +10,8 @@ replace github.com/hrfee/jfa-go/ombi => ./ombi
 
 replace github.com/hrfee/jfa-go/logger => ./logger
 
+replace github.com/hrfee/jfa-go/linecache => ./linecache
+
 require (
 	github.com/bwmarrin/discordgo v0.23.2
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
@@ -29,6 +31,7 @@ require (
 	github.com/google/uuid v1.1.2 // indirect
 	github.com/hrfee/jfa-go/common v0.0.0-20210105184019-fdc97b4e86cc
 	github.com/hrfee/jfa-go/docs v0.0.0-20201112212552-b6f3cd7c1f71
+	github.com/hrfee/jfa-go/linecache v0.0.0-00010101000000-000000000000 // indirect
 	github.com/hrfee/jfa-go/logger v0.0.0-00010101000000-000000000000
 	github.com/hrfee/jfa-go/ombi v0.0.0-20201112212552-b6f3cd7c1f71
 	github.com/hrfee/mediabrowser v0.3.4
@@ -38,6 +41,7 @@ require (
 	github.com/mailgun/mailgun-go/v4 v4.5.1
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/matrix-org/gomatrix v0.0.0-20210324163249-be2af5ef2e16
+	github.com/pkg/browser v0.0.0-20210606212950-a7b7a6107d32 // indirect
 	github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966
 	github.com/smartystreets/goconvey v1.6.4 // indirect
 	github.com/swaggo/files v0.0.0-20190704085106-630677cd5c14

@@ -521,3 +521,15 @@ img.img-circle {
     display: flex !important;
     align-items: center;
 }
+
+div.card:contains(section.banner.footer) {
+    padding-bottom: 0px;
+}
+
+.card.sectioned {
+    padding: 0px;
+}
+
+.card.sectioned .section {
+    padding: var(--spacing-4, 1rem);
+}

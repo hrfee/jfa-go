@@ -107,12 +107,17 @@ bundle-css:
 	-mkdir -p $(DATA)/web/css
 	$(info bundling css)
 	$(ESBUILD) --bundle css/base.css --outfile=$(DATA)/web/css/bundle.css --external:remixicon.css --minify
+	cp html/crash.html $(DATA)/crash.html
+	npx uncss $(DATA)/crash.html --csspath web/css --output $(DATA)/bundle.css
+	bash -c 'cd $(DATA); npx inline-css-cli -i crash.html -o crash.html'
+	rm $(DATA)/bundle.css
 
 copy:
 	$(info copying fonts)
 	cp -r node_modules/remixicon/fonts/remixicon.css node_modules/remixicon/fonts/remixicon.woff2 $(DATA)/web/css/
 	$(info copying html)
 	cp -r html $(DATA)/
+	mv $(DATA)/crash.html $(DATA)/html/
 	$(info copying static data)
 	-mkdir -p $(DATA)/web
 	cp -r static/* $(DATA)/web/
