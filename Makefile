@@ -45,11 +45,13 @@ ifeq ($(DEBUG), on)
 	TYPECHECK := tsc -noEmit --project ts/tsconfig.json
 	# jank
 	COPYTS := rm -r $(DATA)/web/js/ts; cp -r ts $(DATA)/web/js
+	UNCSS := cp $(DATA)/web/css/bundle.css $(DATA)/bundle.css
 else
 	LDFLAGS := -s -w $(LDFLAGS)
 	SOURCEMAP :=
 	COPYTS :=
 	TYPECHECK :=
+	UNCSS := npx uncss $(DATA)/crash.html --csspath web/css --output $(DATA)/bundle.css
 endif
 
 RACE ?= off
@@ -111,7 +113,7 @@ bundle-css:
 
 inline:
 	cp html/crash.html $(DATA)/crash.html
-	npx uncss $(DATA)/crash.html --csspath web/css --output $(DATA)/bundle.css
+	$(UNCSS)
 	npx inline-source --root $(DATA) $(DATA)/crash.html $(DATA)/crash.html
 	rm $(DATA)/bundle.css
 
