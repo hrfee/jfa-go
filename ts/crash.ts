@@ -1,3 +1,5 @@
+import { toClipboard } from "./modules/common.js";
+
 const buttonNormal = document.getElementById("button-log-normal") as HTMLInputElement;
 const buttonSanitized = document.getElementById("button-log-sanitized") as HTMLInputElement;
 
@@ -24,3 +26,14 @@ const buttonChange = (type: string) => {
 }
 buttonNormal.onclick = () => buttonChange("normal");
 buttonSanitized.onclick = () => buttonChange("sanitized");
+
+const copyButton = document.getElementById("copy-log") as HTMLSpanElement;
+copyButton.onclick = () => {
+    if (logSanitized.classList.contains("unfocused")) {
+        toClipboard("```\n" + logNormal.textContent + "```");
+    } else {
+        toClipboard("```\n" + logSanitized.textContent + "```");
+    }
+    copyButton.textContent = "Copied.";
+    setTimeout(() => { copyButton.textContent = "Copy"; }, 1500);
+};
