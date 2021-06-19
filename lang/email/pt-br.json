@@ -3,7 +3,7 @@
         "name": "Português (BR)"
     },
     "strings": {
-        "ifItWasNotYou": "Se não foi você, ignore este e-mail.",
+        "ifItWasNotYou": "Se não foi você, ignore.",
         "reason": "Razão",
         "helloUser": "Ola {username},"
     },
@@ -49,7 +49,7 @@
         "welcome": "Bem vindo ao Jellyfin!",
         "youCanLoginWith": "Abaixo está os detalhes para fazer o login",
         "jellyfinURL": "URL",
-        "name": "Email de Boas vindas",
+        "name": "Bem-vindo",
         "yourAccountWillExpire": "Sua conta irá expirar em {date}."
     },
     "emailConfirmation": {
