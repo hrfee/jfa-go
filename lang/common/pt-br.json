@@ -15,8 +15,12 @@
         "time24h": "Horário 24h",
         "time12h": "Horário 12h",
         "copied": "Copiado",
-        "linkTelegram": "Link Telegram",
+        "linkTelegram": "Link do Telegram",
         "contactEmail": "Contato por Email",
-        "contactTelegram": "Contato pelo Telegram"
+        "contactTelegram": "Contato pelo Telegram",
+        "send": "Enviar",
+        "linkDiscord": "Link do Discord",
+        "linkMatrix": "Link do Matrix",
+        "contactDiscord": "Contato através do Discord"
     }
 }
