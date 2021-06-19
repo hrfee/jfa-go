@@ -1,12 +1,12 @@
 {
     "meta": {
-        "name": ""
+        "name": "Português (BR)"
     },
     "strings": {
-        "startMessage": "",
-        "matrixStartMessage": "",
-        "invalidPIN": "",
-        "pinSuccess": "",
-        "languageMessage": ""
+        "startMessage": "Oi!\nDigite seu código PIN Jellyfin aqui para verificar sua conta.",
+        "matrixStartMessage": "Oi\nDigite o PIN abaixo na página do Jellyfin para verificar sua conta.",
+        "invalidPIN": "PIN invalido, tente novamente.",
+        "pinSuccess": "Concluído. Agora você pode retornar à página de inscrição.",
+        "languageMessage": "Nota: Veja os idiomas disponíveis com {command} e defina o idioma com {command} <language code>."
     }
 }
