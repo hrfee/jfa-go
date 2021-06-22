@@ -18,6 +18,10 @@
         "copied": "Copié",
         "linkTelegram": "Lien Telegram",
         "contactEmail": "Contact par e-mail",
-        "contactTelegram": "Contact par Telegram"
+        "contactTelegram": "Contact par Telegram",
+        "linkDiscord": "Lier Discord",
+        "linkMatrix": "Lier Matrix",
+        "send": "Envoyer",
+        "contactDiscord": "Contacter par Discord"
     }
 }
