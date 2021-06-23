@@ -28,7 +28,7 @@ func (app *appContext) ServeSetup(gc *gin.Context) {
 			"help_message":    app.config.Section("ui").Key("help_message").String(),
 			"success_message": app.config.Section("ui").Key("success_message").String(),
 		},
-		"email": {
+		"messages": {
 			"message": app.config.Section("messages").Key("message").String(),
 		},
 	}
@@ -106,6 +106,7 @@ func (st *Storage) loadLangSetup(filesystems ...fs.FS) error {
 					patchLang(&lang.Login, &fallback.Login, &english.Login)
 					patchLang(&lang.JellyfinEmby, &fallback.JellyfinEmby, &english.JellyfinEmby)
 					patchLang(&lang.Email, &fallback.Email, &english.Email)
+					patchLang(&lang.Messages, &fallback.Messages, &english.Messages)
 					patchLang(&lang.Notifications, &fallback.Notifications, &english.Notifications)
 					patchLang(&lang.PasswordResets, &fallback.PasswordResets, &english.PasswordResets)
 					patchLang(&lang.InviteEmails, &fallback.InviteEmails, &english.InviteEmails)

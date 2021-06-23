@@ -25,7 +25,7 @@
     },
     "endPage": {
         "finished": "Finished!",
-        "restartMessage": "There are more settings you can configure on the admin page. Click below to restart, then refresh the page.",
+        "restartMessage": "You can configure Discord/Telegram/Matrix bots, customize your messages and more in Settings. Click below to restart, then refresh the page.",
         "refreshPage": "Refresh"
     },
     "language": {
@@ -79,6 +79,10 @@
         "description": "By connecting to Ombi, both a Jellyfin and Ombi account will be created when a user joins through jfa-go. After setup is finished, go to Settings to set a default profile for new ombi users.",
         "apiKeyNotice": "Find this in the first tab of Ombi settings."
     },
+    "messages": {
+        "title": "Messages",
+        "description": "jfa-go can send password resets and various messages through Email, Discord, Telegram, and/or Matrix. You can set up email below, and the others can be configured in Settings later. Instructions can be found on the {n}. If you don't need this, you can disable these features here."
+    },
     "email": {
         "title": "Email",
         "description": "jfa-go can send password reset PINs and various notifications through email. You can connect to an SMTP server, or use the {n} API.",
@@ -93,16 +97,16 @@
         "mailgunApiURL": "API URL"
     },
     "notifications": {
-        "title": "Notifications",
-        "description": "If enabled, you can choose (per invite) to receive an email when an invite expires, or a user is created. If you didn't choose the Jellyfin login method, make sure you provided your email address."
+        "title": "Admin Notifications",
+        "description": "If enabled, you can choose (per invite) to receive an message when an invite expires, or a user is created. If you didn't choose the Jellyfin login method, make sure you provided your email address, or add another contact method later."
     },
     "welcomeEmails": {
-        "title": "Welcome emails",
-        "description": "If enabled, an email will be sent to new users with the Jellyfin/Emby URL and their username."
+        "title": "Welcome messages",
+        "description": "If enabled, an message will be sent to new users with the Jellyfin/Emby URL and their username."
     },
     "inviteEmails": {
-        "title": "Invite Emails",
-        "description": "If enabled, you can send invites directly to a user's email address. Because you might be using a reverse proxy, you need to provide the URL invites are accessed from. Write your URL Base, and append '/invite'."
+        "title": "Invite Messages",
+        "description": "If enabled, you can send invites directly to a user's email address, Discord or Matrix user. Because you might be using a reverse proxy, you need to provide the URL invites are accessed from. Write your URL Base, and append '/invite'."
     },
     "passwordResets": {
         "title": "Password Resets",
@@ -111,7 +115,9 @@
         "pathToJellyfinNotice": "If you don't know where this is, try resetting your password in Jellyfin. A popup with '<path to jellyfin>/passwordreset-*.json' will appear.",
         "resetLinks": "Send a link instead of a PIN",
         "resetLinksNotice": "If Ombi integration is enabled, use this to sync Jellyfin password resets with Ombi.",
-        "resetLinksLanguage": "Default reset link language"
+        "resetLinksLanguage": "Default reset link language",
+        "setPassword": "Set password through link",
+        "setPasswordNotice": "Enabling this means the user doesn't have to change their password from the PIN after the reset. Password validation will also be enforced."
     },
     "passwordValidation": {
         "title": "Password Validation",

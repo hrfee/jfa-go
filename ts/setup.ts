@@ -42,19 +42,29 @@ class Input {
 
 class Checkbox {
     private _el: HTMLInputElement;
+    private _hideEl: HTMLElement;
     get value(): string { return this._el.checked ? "true" : "false"; }
     set value(v: string) { this._el.checked = (v == "true") ? true : false; }
     
     private _section: string;
     private _setting: string;
     broadcast = () => {
+        let state = this._el.checked;
+        if (this._hideEl.classList.contains("unfocused")) {
+            state = false;
+        }
         if (this._section && this._setting) {
-            const ev = new CustomEvent(`settings-${this._section}-${this._setting}`, { "detail": this._el.checked })
+            const ev = new CustomEvent(`settings-${this._section}-${this._setting}`, { "detail": state })
             document.dispatchEvent(ev);
         }
     }
+    set onchange(f: () => void) {
+        this._el.addEventListener("change", f);
+    }
     constructor(el: HTMLElement, depends?: string, dependsTrue?: boolean, section?: string, setting?: string) {
         this._el = el as HTMLInputElement;
+        this._hideEl = this._el as HTMLElement;
+        if (this._hideEl.parentElement.tagName == "LABEL") { this._hideEl = this._hideEl.parentElement; }
         if (section && setting) {
             this._section = section;
             this._setting = setting;
@@ -62,12 +72,12 @@ class Checkbox {
         }
         if (depends) {
             document.addEventListener(`settings-${section}-${depends}`, (event: boolEvent) => {
-                let el = this._el as HTMLElement;
-                if (el.parentElement.tagName == "LABEL") { el = el.parentElement; }
                 if (event.detail !== dependsTrue) {
-                    el.classList.add("unfocused");
+                    this._hideEl.classList.add("unfocused");
+                    this.broadcast();
                 } else {
-                    el.classList.remove("unfocused");
+                    this._hideEl.classList.remove("unfocused");
+                    this.broadcast();
                 }
             });
         }
@@ -201,10 +211,11 @@ class LangSelect extends Select {
 }
 
 window.lang = new lang(window.langFile as LangFile);
-html("language-description", window.lang.var("language", "description", `<a href="https://weblate.hrfee.pw">Weblate</a>`));
-html("email-description", window.lang.var("email", "description", `<a href="https://mailgun.com">Mailgun</a>`));
-html("email-dateformat-notice", window.lang.var("email", "dateFormatNotice", `<a href="https://strftime.ninja/">strftime.ninja</a>`));
-html("updates-description", window.lang.var("updates", "description", `<a href="https://builds.hrfee.dev/view/hrfee/jfa-go">buildrone</a>`));
+html("language-description", window.lang.var("language", "description", `<a target="_blank" href="https://weblate.hrfee.pw">Weblate</a>`));
+html("email-description", window.lang.var("email", "description", `<a target="_blank" href="https://mailgun.com">Mailgun</a>`));
+html("email-dateformat-notice", window.lang.var("email", "dateFormatNotice", `<a target="_blank" href="https://strftime.ninja/">strftime.ninja</a>`));
+html("updates-description", window.lang.var("updates", "description", `<a target="_blank" href="https://builds.hrfee.dev/view/hrfee/jfa-go">buildrone</a>`));
+html("messages-description", window.lang.var("messages", "description", `<a target="_blank" href="https://github.com/hrfee/jfa-go/wiki">Wiki</a>`));
 
 const settings = {
     "jellyfin": {
@@ -243,12 +254,15 @@ const settings = {
         "number": new Input(get("password_validation-number"), "", 1, "enabled", true, "password_validation"),
         "special": new Input(get("password_validation-special"), "", 0, "enabled", true, "password_validation")
     },
+    "messages": {
+        "enabled": new Checkbox(get("messages-enabled"), "", false, "messages", "enabled"),
+        "use_24h": new BoolRadios("email-24h", "enabled", true, "messages"),
+        "date_format": new Input(get("email-date_format"), "", "%d/%m/%y", "enabled", true, "messages"),
+        "message": new Input(get("email-message"), window.messages["messages"]["message"], "", "enabled", true, "messages")
+    },
     "email": {
         "language": new LangSelect("email", get("email-language")),
         "no_username": new Checkbox(get("email-no_username"), "method", true, "email"),
-        "use_24h": new BoolRadios("email-24h", "method", true, "email"),
-        "date_format": new Input(get("email-date_format"), "", "%d/%m/%y", "method", true, "email"),
-        "message": new Input(get("email-message"), window.messages["email"]["message"], "", "method", true, "email"),
         "method": new Select(get("email-method"), "", false, "email", "method"),
         "address": new Input(get("email-address"), "jellyfin@jellyf.in", "", "method", true, "email"),
         "from": new Input(get("email-from"), "", "Jellyfin", "method", true, "email")
@@ -258,7 +272,8 @@ const settings = {
         "watch_directory": new Input(get("password_resets-watch_directory"), "", "", "enabled", true, "password_resets"),
         "subject": new Input(get("password_resets-subject"), "", "", "enabled", true, "password_resets"),
         "link_reset": new Checkbox(get("password_resets-link_reset"), "enabled", true, "password_resets", "link_reset"),
-        "language": new LangSelect("pwr", get("password_resets-language"), "link_reset", true, "password_resets", "language")
+        "language": new LangSelect("pwr", get("password_resets-language"), "link_reset", true, "password_resets", "language"),
+        "set_password": new Checkbox(get("password_resets-set_password"), "link_reset", true, "password_resets", "set_password")
     },
     "notifications": {
         "enabled": new Checkbox(get("notifications-enabled"))
@@ -342,12 +357,23 @@ const emailMethodChange = () => {
     const val = settings["email"]["method"].value;
     const smtp = document.getElementById("email-smtp");
     const mailgun = document.getElementById("email-mailgun");
-    if (val == "smtp") {
-        smtp.classList.remove("unfocused");
-        mailgun.classList.add("unfocused");
+    const emailSect = document.getElementById("email-sect");
+    const enabled = settings["messages"]["enabled"].value;
+    if (enabled == "false") {
+        for (let el of relatedToEmail) {
+            el.classList.add("hidden");
+        }
+        emailSect.classList.add("unfocused");
+        return;
+    } else {
         for (let el of relatedToEmail) {
             el.classList.remove("hidden");
         }
+        emailSect.classList.remove("unfocused");
+    }
+    if (val == "smtp") {
+        smtp.classList.remove("unfocused");
+        mailgun.classList.add("unfocused");
     } else if (val == "mailgun") {
         mailgun.classList.remove("unfocused");
         smtp.classList.add("unfocused");
@@ -357,12 +383,10 @@ const emailMethodChange = () => {
     } else {
         mailgun.classList.add("unfocused");
         smtp.classList.add("unfocused");
-        for (let el of relatedToEmail) {
-            el.classList.add("hidden");
-        }
     }
 };
 settings["email"]["method"].onchange = emailMethodChange;
+settings["messages"]["enabled"].onchange = emailMethodChange;
 emailMethodChange();
 
 const embyHidePWR = () => {

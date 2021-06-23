@@ -117,6 +117,7 @@ type setupLang struct {
 	JellyfinEmby       langSection `json:"jellyfinEmby"`
 	Ombi               langSection `json:"ombi"`
 	Email              langSection `json:"email"`
+	Messages           langSection `json:"messages"`
 	Notifications      langSection `json:"notifications"`
 	WelcomeEmails      langSection `json:"welcomeEmails"`
 	PasswordResets     langSection `json:"passwordResets"`

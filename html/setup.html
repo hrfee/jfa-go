@@ -233,85 +233,92 @@
                 </section>
             </div>
             <div class="card ~neutral !low mb-1 unfocused">
-                <span class="heading">{{ .lang.Email.title }}</span>
-                <p class="content" id="email-description"></p>
-                <div class="row">
-                    <div class="col">
-                        <label class="label">
-                            <span>{{ .lang.Email.method }}</span>
-                            <div class="select ~neutral !normal mt-half mb-1">
-                                <select id="email-method">
-                                    <option value="">{{ .lang.Strings.disabled }}</option>
-                                    <option value="smtp">SMTP</option>
-                                    <option value="mailgun">Mailgun</option>
-                                </select>
-                            </div>
-                        </label>
-                        <label class="row switch">
-                            <input type="checkbox" id="email-no_username"><span>{{ .lang.Email.useEmailAsUsername }}</span>
-                            <p class="support mb-1">{{ .lang.Email.useEmailAsUsernameNotice }}</p>
-                        </label>
-                        <label class="label">
-                            <span class="mt-half">{{ .lang.Email.fromAddress }}</span>
-                            <input type="email" class="input ~neutral !normal mt-half mb-1" id="email-address" placeholder="mail@jellyf.in">
-                        </label>
-                        <label class="label">
-                            <span class="mt-half">{{ .lang.Email.senderName }}</span>
-                            <input type="text" class="input ~neutral !normal mt-half mb-1" id="email-from" value="Jellyfin">
-                        </label>
-                        <label class="label">
-                            <span class="mt-half">{{ .lang.Email.dateFormat }}</span>
-                            <input type="text" class="input ~neutral !normal mt-half" id="email-date_format" value="%d/%m/%y">
-                            <p class="support mb-1" id="email-dateformat-notice"></p>
-                        </label>
-                        <div>
-                            <label class="row switch pb-1">
-                                <input type="radio" name="email-24h" value="true" checked><span>{{ .lang.Strings.time24h }}</span>
-                            </label>
-                            <label class="row switch pb-1">
-                                <input type="radio" name="email-24h" value="false"><span>{{ .lang.Strings.time12h }}</span>
-                            </label>
-                        </div>
-                    </div>
-                    <div class="col">
-                        <div id="email-smtp">
-                            <p class="subheading">SMTP</p>
+                <span class="heading">{{ .lang.Messages.title }}</span>
+                <p class="content" id="messages-description"></p>
+                <label class="row switch pb-1">
+                    <input type="checkbox" id="messages-enabled" checked><span>{{ .lang.Strings.enabled }}</span>
+                </label>
+                <label class="label">
+                    <span class="mt-half">{{ .lang.Email.dateFormat }}</span>
+                    <input type="text" class="input ~neutral !normal mt-half" id="email-date_format" value="%d/%m/%y">
+                    <p class="support mb-1" id="email-dateformat-notice"></p>
+                </label>
+                <div>
+                    <label class="row switch pb-1">
+                        <input type="radio" name="email-24h" value="true" checked><span>{{ .lang.Strings.time24h }}</span>
+                    </label>
+                    <label class="row switch pb-1">
+                        <input type="radio" name="email-24h" value="false"><span>{{ .lang.Strings.time12h }}</span>
+                    </label>
+                </div>
+                <div id="email-sect">
+                    <span class="heading">{{ .lang.Email.title }}</span>
+                    <p class="content" id="email-description"></p>
+                    <div class="row">
+                        <div class="col">
                             <label class="label">
-                                <span>{{ .lang.Email.encryption }}</span>
+                                <span>{{ .lang.Email.method }}</span>
                                 <div class="select ~neutral !normal mt-half mb-1">
-                                    <select id="smtp-encryption">
-                                        <option value="starttls">STARTTLS ({{ .lang.Strings.port }} 587)</option>
-                                        <option value="ssl_tls">SSL/TLS ({{ .lang.Strings.port }} 465)</option>
+                                    <select id="email-method">
+                                        <option value="">{{ .lang.Strings.disabled }}</option>
+                                        <option value="smtp">SMTP</option>
+                                        <option value="mailgun">Mailgun</option>
                                     </select>
                                 </div>
                             </label>
-                            <label class="label">
-                                <span class="mt-half">{{ .lang.Strings.serverAddress }}</span>
-                                <input type="url" class="input ~neutral !normal mt-half mb-1" id="smtp-server" placeholder="smtp.jellyf.in">
+                            <label class="row switch">
+                                <input type="checkbox" id="email-no_username"><span>{{ .lang.Email.useEmailAsUsername }}</span>
+                                <p class="support mb-1">{{ .lang.Email.useEmailAsUsernameNotice }}</p>
                             </label>
                             <label class="label">
-                                <span class="mt-half">{{ .lang.Strings.port }}</span>
-                                <input type="number" class="input ~neutral !normal mt-half mb-1" id="smtp-port" placeholder="587">
+                                <span class="mt-half">{{ .lang.Email.fromAddress }}</span>
+                                <input type="email" class="input ~neutral !normal mt-half mb-1" id="email-address" placeholder="mail@jellyf.in">
                             </label>
                             <label class="label">
-                                <span class="mt-half">{{ .lang.Strings.username }}</span>
-                                <input type="text" class="input ~neutral !normal mt-half mb-1" id="smtp-username">
-                            </label>
-                            <label class="label">
-                                <span class="mt-half">{{ .lang.Strings.password }}</span>
-                                <input type="password" class="input ~neutral !normal mt-half mb-1" id="smtp-password">
+                                <span class="mt-half">{{ .lang.Email.senderName }}</span>
+                                <input type="text" class="input ~neutral !normal mt-half mb-1" id="email-from" value="Jellyfin">
                             </label>
                         </div>
-                        <div id="email-mailgun">
-                            <p class="subheading">Mailgun</p>
-                            <label class="label">
-                                <span class="mt-half">{{ .lang.Email.mailgunApiURL }}</span>
-                                <input type="url" class="input ~neutral !normal mt-half mb-1" id="mailgun-api_url" placeholder="https://api.eu.mailgun.net/v3/mail.jellyf.in/messages">
-                            </label>
-                            <label class="label">
-                                <span class="mt-half">{{ .lang.Strings.apiKey }}</span>
-                                <input type="text" class="input ~neutral !normal mt-half mb-1" id="mailgun-api_key">
-                            </label>
+                        <div class="col">
+                            <div id="email-smtp">
+                                <p class="subheading">SMTP</p>
+                                <label class="label">
+                                    <span>{{ .lang.Email.encryption }}</span>
+                                    <div class="select ~neutral !normal mt-half mb-1">
+                                        <select id="smtp-encryption">
+                                            <option value="starttls">STARTTLS ({{ .lang.Strings.port }} 587)</option>
+                                            <option value="ssl_tls">SSL/TLS ({{ .lang.Strings.port }} 465)</option>
+                                        </select>
+                                    </div>
+                                </label>
+                                <label class="label">
+                                    <span class="mt-half">{{ .lang.Strings.serverAddress }}</span>
+                                    <input type="url" class="input ~neutral !normal mt-half mb-1" id="smtp-server" placeholder="smtp.jellyf.in">
+                                </label>
+                                <label class="label">
+                                    <span class="mt-half">{{ .lang.Strings.port }}</span>
+                                    <input type="number" class="input ~neutral !normal mt-half mb-1" id="smtp-port" placeholder="587">
+                                </label>
+                                <label class="label">
+                                    <span class="mt-half">{{ .lang.Strings.username }}</span>
+                                    <input type="text" class="input ~neutral !normal mt-half mb-1" id="smtp-username">
+                                </label>
+                                <label class="label">
+                                    <span class="mt-half">{{ .lang.Strings.password }}</span>
+                                    <input type="password" class="input ~neutral !normal mt-half mb-1" id="smtp-password">
+                                </label>
+                            </div>
+                            <div id="email-mailgun">
+                                <p class="subheading">Mailgun</p>
+                                <label class="label">
+                                    <span class="mt-half">{{ .lang.Email.mailgunApiURL }}</span>
+                                    <input type="url" class="input ~neutral !normal mt-half mb-1" id="mailgun-api_url" placeholder="https://api.eu.mailgun.net/v3/mail.jellyf.in/messages">
+                                </label>
+                                <label class="label">
+                                    <span class="mt-half">{{ .lang.Strings.apiKey }}</span>
+                                    <input type="text" class="input ~neutral !normal mt-half mb-1" id="mailgun-api_key">
+                                </label>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -380,7 +387,11 @@
                     <input type="checkbox" id="password_resets-link_reset"><span>{{ .lang.PasswordResets.resetLinks }}</span>
                     <p class="support mb-1">{{ .lang.PasswordResets.resetLinksNotice }}</p>
                 </label>
-                <label class="row label">
+                <label class="switch">
+                    <input type="checkbox" id="password_resets-set_password"><span>{{ .lang.PasswordResets.setPassword }}</span>
+                    <p class="support mb-1">{{ .lang.PasswordResets.setPasswordNotice }}</p>
+                </label>
+                <label class="label">
                     <p class="mt-half">{{ .lang.PasswordResets.resetLinksLanguage }}</p>
                     <div class="select ~neutral !normal mt-half mb-1">
                         <select id="password_resets-language">
