@@ -2,6 +2,7 @@
 [![Build Status](https://drone.hrfee.dev/api/badges/hrfee/jfa-go/status.svg?ref=refs/heads/main)](https://drone.hrfee.dev/hrfee/jfa-go)
 [![Docker Hub](https://img.shields.io/docker/pulls/hrfee/jfa-go?label=docker)](https://hub.docker.com/r/hrfee/jfa-go)
 [![Translation status](https://weblate.hrfee.pw/widgets/jfa-go/-/svg-badge.svg)](https://weblate.hrfee.pw/engage/jfa-go/)
+[![Docs/Wiki](https://img.shields.io/static/v1?label=documentation&message=jfa-go.com&color=informational)](https://jfa-go.com)
 
 ##### Downloads:
 ##### [docker](#docker) | [debian/ubuntu](#debian) | [arch (aur)](#aur) | [other platforms](#other-platforms)
@@ -102,7 +103,7 @@ Run the executable to start.
 #### Build from source
 If you're using docker, a Dockerfile is provided that builds from source.
 
-Otherwise, full build instructions can be found [here](https://github.com/hrfee/jfa-go/wiki/Build).
+Otherwise, full build instructions can be found [here](https://jfa-go.com/docs/build/).
 
 #### Usage
 Simply run `jfa-go` to start the application. A setup wizard will start on `localhost:8056` (or your own specified address). Upon completion, refresh the page.

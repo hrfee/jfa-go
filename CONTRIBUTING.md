@@ -17,4 +17,4 @@ Prefix each of these with `make DEBUG=on INTERNAL=off `:
 * `email` will compile email mjml, and copy the text versions in to `build/data`.
 * `copy` will copy iconography, html, language files and static data into `build/data`.
 
-See the [wiki](https://github.com/hrfee/jfa-go/wiki/Build) for more info.
+See the [wiki](https://jfa-go.com/docs/build/binary/) for more info.
