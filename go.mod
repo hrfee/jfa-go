@@ -14,7 +14,6 @@ replace github.com/hrfee/jfa-go/linecache => ./linecache
 
 require (
 	github.com/bwmarrin/discordgo v0.23.2
-	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/emersion/go-autostart v0.0.0-20210130080809-00ed301c8e9a
 	github.com/fatih/color v1.10.0
@@ -33,18 +32,17 @@ require (
 	github.com/google/uuid v1.1.2 // indirect
 	github.com/hrfee/jfa-go/common v0.0.0-20210105184019-fdc97b4e86cc
 	github.com/hrfee/jfa-go/docs v0.0.0-20201112212552-b6f3cd7c1f71
-	github.com/hrfee/jfa-go/linecache v0.0.0-00010101000000-000000000000 // indirect
+	github.com/hrfee/jfa-go/linecache v0.0.0-00010101000000-000000000000
 	github.com/hrfee/jfa-go/logger v0.0.0-00010101000000-000000000000
 	github.com/hrfee/jfa-go/ombi v0.0.0-20201112212552-b6f3cd7c1f71
-	github.com/hrfee/mediabrowser v0.3.4
+	github.com/hrfee/mediabrowser v0.3.5
 	github.com/itchyny/timefmt-go v0.1.2
 	github.com/jordan-wright/email v4.0.1-0.20210109023952-943e75fe5223+incompatible
 	github.com/lithammer/shortuuid/v3 v3.0.4
 	github.com/mailgun/mailgun-go/v4 v4.5.1
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/matrix-org/gomatrix v0.0.0-20210324163249-be2af5ef2e16
-	github.com/pkg/browser v0.0.0-20210606212950-a7b7a6107d32 // indirect
-	github.com/russross/blackfriday/v2 v2.1.0 // indirect
+	github.com/pkg/browser v0.0.0-20210606212950-a7b7a6107d32
 	github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966
 	github.com/smartystreets/goconvey v1.6.4 // indirect
 	github.com/swaggo/files v0.0.0-20190704085106-630677cd5c14
