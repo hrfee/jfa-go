@@ -1,0 +1,26 @@
+{
+    "meta": {
+        "name": ""
+    },
+    "strings": {
+        "username": "",
+        "password": "",
+        "emailAddress": "",
+        "name": "",
+        "submit": "",
+        "send": "",
+        "success": "",
+        "error": "",
+        "copy": "",
+        "copied": "",
+        "time24h": "",
+        "time12h": "",
+        "linkTelegram": "",
+        "contactEmail": "",
+        "contactTelegram": "",
+        "linkDiscord": "",
+        "linkMatrix": "",
+        "contactDiscord": "",
+        "theme": ""
+    }
+}
