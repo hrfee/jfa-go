@@ -1,77 +1,77 @@
 {
     "meta": {
-        "name": ""
+        "name": "Dansk (DK)"
     },
     "strings": {
-        "ifItWasNotYou": "",
-        "helloUser": "",
-        "reason": ""
+        "ifItWasNotYou": "Ignorer venligst hvis dette ikke var dig.",
+        "helloUser": "Hej {username},",
+        "reason": "Grund"
     },
     "userCreated": {
-        "name": "",
-        "title": "",
-        "aUserWasCreated": "",
-        "time": "",
-        "notificationNotice": ""
+        "name": "Bruger oprettet",
+        "title": "Meddelelse: Bruger oprettet",
+        "aUserWasCreated": "En bruger blev oprettet med koden {code}.",
+        "time": "Tid",
+        "notificationNotice": "Meddelelse: Notifikations e-mails kan blive ændret i admin panelet."
     },
     "inviteExpiry": {
-        "name": "",
-        "title": "",
-        "inviteExpired": "",
-        "expiredAt": "",
-        "notificationNotice": ""
+        "name": "Invitationens udløb",
+        "title": "Meddelelse: Invitation udløbet",
+        "inviteExpired": "Invitation udløbet.",
+        "expiredAt": "Koden {code} udløber om {time}.",
+        "notificationNotice": "Meddelelse: Notifikations e-mails kan blive ændret i admin panelet."
     },
     "passwordReset": {
-        "name": "",
-        "title": "",
-        "someoneHasRequestedReset": "",
-        "ifItWasYou": "",
-        "ifItWasYouLink": "",
-        "codeExpiry": "",
-        "pin": ""
+        "name": "Nulstil Adgangskode",
+        "title": "Nulstilling af adgangskode anmodet - Jellyfin",
+        "someoneHasRequestedReset": "Nogen har for nylig anmodet om nulstilling af din adgangskode på Jellyfin.",
+        "ifItWasYou": "Hvis dette var dig, så indtast venligst pinkoden nedenunder ind i prompten.",
+        "ifItWasYouLink": "Hvis dette var dig, så tryk på linket nedenunder.",
+        "codeExpiry": "Koden udløber den {date}, klokken {time} UTC, hvilket er om {expiresInMinutes}.",
+        "pin": "PINKODE"
     },
     "userDeleted": {
-        "name": "",
-        "title": "",
-        "yourAccountWasDeleted": ""
+        "name": "Sletning af bruger",
+        "title": "Din bruger blev slettet - Jellyfin",
+        "yourAccountWasDeleted": "Din Jellyfin bruger blev slettet."
     },
     "userDisabled": {
-        "name": "",
-        "title": "",
-        "yourAccountWasDisabled": ""
+        "name": "Bruger deaktiveret",
+        "title": "Din bruger er blevet deaktiveret - Jellyfin",
+        "yourAccountWasDisabled": "Din bruger blev deaktiveret."
     },
     "userEnabled": {
-        "name": "",
-        "title": "",
-        "yourAccountWasEnabled": ""
+        "name": "Bruger aktiveret",
+        "title": "Din bruger er blevet genaktiveret - Jellyfin",
+        "yourAccountWasEnabled": "Din bruger blev genaktiveret."
     },
     "inviteEmail": {
-        "name": "",
-        "title": "",
-        "hello": "",
-        "youHaveBeenInvited": "",
-        "toJoin": "",
-        "inviteExpiry": "",
-        "linkButton": ""
+        "name": "Invitations e-mail",
+        "title": "Invitation - Jellyfin",
+        "hello": "Hej",
+        "youHaveBeenInvited": "Du er blevet inviteret til Jellyfin.",
+        "toJoin": "Tilmeld dig med linket nedenfor.",
+        "inviteExpiry": "Invitationen vil udløbe den {date} kl. {time}, hvilket er om {expiresInMinutes}, så skynd dig.",
+        "linkButton": "Opsæt din konto"
     },
     "welcomeEmail": {
-        "name": "",
-        "title": "",
-        "welcome": "",
-        "youCanLoginWith": "",
-        "yourAccountWillExpire": "",
-        "jellyfinURL": ""
+        "name": "Velkommen",
+        "title": "Velkommen til Jellyfin",
+        "welcome": "Velkommen til Jellyfin!",
+        "youCanLoginWith": "Du kan logge ind med nedenstående oplysninger",
+        "yourAccountWillExpire": "Din bruger udløber den {date}.",
+        "jellyfinURL": "URL"
     },
     "emailConfirmation": {
-        "name": "",
-        "title": "",
-        "clickBelow": "",
-        "confirmEmail": ""
+        "name": "Bekræftelses e-mail",
+        "title": "Bekræft din e-mail - Jellyfin",
+        "clickBelow": "Klik på linket nedenunder for at bekræfte din e-mail adresse og start med at bruge Jellyfin.",
+        "confirmEmail": "Bekræft E-mail"
     },
     "userExpired": {
-        "name": "",
-        "title": "",
-        "yourAccountHasExpired": "",
-        "contactTheAdmin": ""
+        "name": "Brugerens udløb",
+        "title": "Din bruger er udløbet - Jellyfin",
+        "yourAccountHasExpired": "Din bruger er udløbet.",
+        "contactTheAdmin": "Kontakt administratoren for mere information."
     }
 }
