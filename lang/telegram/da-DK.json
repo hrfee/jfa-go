@@ -1,12 +1,12 @@
 {
     "meta": {
-        "name": ""
+        "name": "Dansk (DK)"
     },
     "strings": {
-        "startMessage": "",
-        "matrixStartMessage": "",
-        "invalidPIN": "",
-        "pinSuccess": "",
-        "languageMessage": ""
+        "startMessage": "Hej!\nIndtast din Jellyfin PIN-kode her for at verificere din bruger.",
+        "matrixStartMessage": "Hej!\nIndtast PIN-koden under ind i Jellyfin tilmeldingssiden for at verificere din bruger.",
+        "invalidPIN": "Den PIN-kode var ugyldig, prøv igen.",
+        "pinSuccess": "Sådan! Du kan nu gå tilbage til tilmeldingssiden.",
+        "languageMessage": "Meddelelse: Se tilgængelige sprog med {command}, og vælg sprog med {command} <sprog kode>."
     }
 }
