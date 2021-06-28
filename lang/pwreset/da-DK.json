@@ -1,15 +1,15 @@
 {
     "meta": {
-        "name": ""
+        "name": "Dansk"
     },
     "strings": {
-        "passwordReset": "",
-        "reset": "",
-        "resetFailed": "",
-        "tryAgain": "",
-        "youCanLogin": "",
-        "youCanLoginOmbi": "",
-        "changeYourPassword": "",
-        "enterYourPassword": ""
+        "passwordReset": "Nulstil adgangskode",
+        "reset": "Nulstil",
+        "resetFailed": "Nulstilling af adgangskode fejlede",
+        "tryAgain": "Prøv venligst igen.",
+        "youCanLogin": "Du kan nu logge ind med koden nedenfor som din adgangskode.",
+        "youCanLoginOmbi": "Du kan nu logge ind på Jellyfin & Ombi med koden nedenfor som din adgangskode.",
+        "changeYourPassword": "Sørg for at ændre din adgangskode, når du har logget ind.",
+        "enterYourPassword": "Indtast din nye adgangskode nedenfor."
     }
 }
