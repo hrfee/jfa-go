@@ -1,57 +1,57 @@
 {
     "meta": {
-        "name": ""
+        "name": "Dansk"
     },
     "strings": {
-        "pageTitle": "",
-        "createAccountHeader": "",
-        "accountDetails": "",
-        "emailAddress": "",
-        "username": "",
-        "password": "",
-        "reEnterPassword": "",
-        "reEnterPasswordInvalid": "",
-        "createAccountButton": "",
-        "passwordRequirementsHeader": "",
-        "successHeader": "",
-        "successContinueButton": "",
-        "confirmationRequired": "",
-        "confirmationRequiredMessage": "",
-        "yourAccountIsValidUntil": "",
-        "sendPIN": "",
-        "sendPINDiscord": "",
-        "matrixEnterUser": ""
+        "pageTitle": "Opret en Jellyfin Konto",
+        "createAccountHeader": "Opret Konto",
+        "accountDetails": "Detaljer",
+        "emailAddress": "E-mail",
+        "username": "Brugernavn",
+        "password": "Adgangskode",
+        "reEnterPassword": "Genindtast Adgangskode",
+        "reEnterPasswordInvalid": "Adgangskoderne er ikke ens.",
+        "createAccountButton": "Opret Konto",
+        "passwordRequirementsHeader": "Adgangskodekrav",
+        "successHeader": "Succes!",
+        "successContinueButton": "Fortsæt",
+        "confirmationRequired": "E-mail bekræftelse er påkrævet",
+        "confirmationRequiredMessage": "Tjek venligst din e-mail indbakke for at verificere din adresse.",
+        "yourAccountIsValidUntil": "Din konto er gyldig indtil {date}.",
+        "sendPIN": "Send nedenstående pinkode til boten, og kom derefter tilbage her for at linke din konto.",
+        "sendPINDiscord": "Skriv {command} i {server_channel} på Discord, og send PIN-koden nedenfor via. DM til boten.",
+        "matrixEnterUser": "Skriv dit Bruger ID, tryk Indsend, og en PIN-kode vil blive sendt til dig. Skriv den her efter for at fortsætte."
     },
     "notifications": {
-        "errorUserExists": "",
-        "errorInvalidCode": "",
-        "errorTelegramVerification": "",
-        "errorDiscordVerification": "",
-        "errorMatrixVerification": "",
-        "errorInvalidPIN": "",
-        "errorUnknown": "",
-        "verified": ""
+        "errorUserExists": "Brugeren eksistere allerede.",
+        "errorInvalidCode": "Ugyldig invitations kode.",
+        "errorTelegramVerification": "Telegram verifikation påkrævet.",
+        "errorDiscordVerification": "Discord verifikation påkrævet.",
+        "errorMatrixVerification": "Matrix verifikation påkrævet.",
+        "errorInvalidPIN": "PIN-koden er ugyldig.",
+        "errorUnknown": "Ukendt fejl.",
+        "verified": "konto verificeret."
     },
     "validationStrings": {
         "length": {
-            "singular": "",
-            "plural": ""
+            "singular": "Skal mindst have {n} tegn",
+            "plural": "Skal mindst have {n} tegn"
         },
         "uppercase": {
-            "singular": "",
-            "plural": ""
+            "singular": "Skal mindst have {n} store bogstaver",
+            "plural": "Skal mindst have {n} store bogstaver"
         },
         "lowercase": {
-            "singular": "",
-            "plural": ""
+            "singular": "Skal mindst have {n} små bogstaver",
+            "plural": "Skal mindst have {n} små bogstaver"
         },
         "number": {
-            "singular": "",
-            "plural": ""
+            "singular": "Skal mindst have {n} tal",
+            "plural": "Skal mindst have {n} tal"
         },
         "special": {
-            "singular": "",
-            "plural": ""
+            "singular": "Skal mindst have {n} specialtegn",
+            "plural": "Skal mindst have {n} specialtegn"
         }
     }
 }
