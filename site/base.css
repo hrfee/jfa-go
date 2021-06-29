@@ -1,0 +1,13 @@
+@import "../css/base.css";
+
+:root {
+    --c-1: #ffe3ef;
+    --c-2: rgba(173, 201, 233, 0.4);
+    --grad-base: rgb(238,174,202);
+    --grad: linear-gradient(45deg, rgba(238,174,202,0.5) 0%, rgba(148,187,233,0.5) 100%);
+}
+
+body {
+    background: #AA5CC3;
+    background: linear-gradient(90deg, #AA5CC3 0%, #00A4DC 100%) !important;
+}

@@ -1,4 +1,6 @@
 node_modules/
+site/node_modules/
+site/out/
 mail/*.html
 dist/
 build/
