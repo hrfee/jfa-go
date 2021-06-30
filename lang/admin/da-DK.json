@@ -87,113 +87,113 @@
         "addProfileNameOf": "Profil Navn",
         "addProfileStoreHomescreenLayout": "Gem startskærmens layout",
         "inviteNoUsersCreated": "Ingen endnu!",
-        "inviteUsersCreated": "",
-        "inviteNoProfile": "",
-        "inviteDateCreated": "",
-        "inviteRemainingUses": "",
-        "inviteNoInvites": "",
-        "inviteExpiresInTime": "",
-        "notifyEvent": "",
-        "notifyInviteExpiry": "",
-        "notifyUserCreation": "",
-        "sendPIN": "",
-        "searchDiscordUser": "",
-        "findDiscordUser": "",
-        "linkMatrixDescription": "",
-        "matrixHomeServer": ""
+        "inviteUsersCreated": "Oprettet brugere",
+        "inviteNoProfile": "Ingen Profil",
+        "inviteDateCreated": "Oprettet",
+        "inviteRemainingUses": "Resterende anvendelser",
+        "inviteNoInvites": "Ingen",
+        "inviteExpiresInTime": "Udløber om {n}",
+        "notifyEvent": "Meddel den:",
+        "notifyInviteExpiry": "Ved udløb",
+        "notifyUserCreation": "Ved oprettelse af brugere",
+        "sendPIN": "Bed brugeren om at sende pinkoden nedenfor til boten.",
+        "searchDiscordUser": "Begynd at skrive Discord brugernavnet for at finde brugeren.",
+        "findDiscordUser": "Find Discord bruger",
+        "linkMatrixDescription": "Indtast brugernavnet og adgangskoden til den bruger der skal bruges som en bot. Når indsendt, genstarter appen.",
+        "matrixHomeServer": "Hjemme server adresse"
     },
     "notifications": {
-        "changedEmailAddress": "",
-        "userCreated": "",
-        "createProfile": "",
-        "saveSettings": "",
-        "saveEmail": "",
-        "sentAnnouncement": "",
-        "setOmbiDefaults": "",
-        "updateApplied": "",
-        "updateAppliedRefresh": "",
-        "telegramVerified": "",
-        "accountConnected": "",
-        "errorConnection": "",
-        "error401Unauthorized": "",
-        "errorSettingsAppliedNoHomescreenLayout": "",
-        "errorHomescreenAppliedNoSettings": "",
-        "errorSettingsFailed": "",
-        "errorLoginBlank": "",
-        "errorUnknown": "",
-        "errorSaveEmail": "",
-        "errorBlankFields": "",
-        "errorDeleteProfile": "",
-        "errorLoadProfiles": "",
-        "errorCreateProfile": "",
-        "errorSetDefaultProfile": "",
-        "errorLoadUsers": "",
-        "errorSaveSettings": "",
-        "errorLoadSettings": "",
-        "errorSetOmbiDefaults": "",
-        "errorLoadOmbiUsers": "",
-        "errorChangedEmailAddress": "",
-        "errorFailureCheckLogs": "",
-        "errorPartialFailureCheckLogs": "",
-        "errorUserCreated": "",
-        "errorSendWelcomeEmail": "",
-        "errorApplyUpdate": "",
-        "errorCheckUpdate": "",
-        "updateAvailable": "",
-        "noUpdatesAvailable": ""
+        "changedEmailAddress": "Ændret e-mail adresse på {n}.",
+        "userCreated": "Bruger {n} oprettet.",
+        "createProfile": "Oprettede profil {n}.",
+        "saveSettings": "Indstillingerne blev gemt",
+        "saveEmail": "E-mail gemt.",
+        "sentAnnouncement": "Meddelelse sendt.",
+        "setOmbiDefaults": "Ombi standarder gemt.",
+        "updateApplied": "Opdatering anvendt, genstart.",
+        "updateAppliedRefresh": "Opdatering anvendt, genindlæs venligst siden.",
+        "telegramVerified": "Telegram konto verificeret.",
+        "accountConnected": "Konto tilsluttet.",
+        "errorConnection": "Kunne ikke oprette forbindelse til jfa-go.",
+        "error401Unauthorized": "Adgang nægtet. Prøv at genindlæse siden.",
+        "errorSettingsAppliedNoHomescreenLayout": "Indstillingerne blev anvendt, men anvendelse af startskærmens layout mislykkedes muligvis.",
+        "errorHomescreenAppliedNoSettings": "Startskærmens layout blev anvendt, men anvendelsen af indstillingerne mislykkedes muligvis.",
+        "errorSettingsFailed": "Ansøgningen mislykkedes.",
+        "errorLoginBlank": "Brugernavnet og/eller adgangskoden blev efterladt tomme.",
+        "errorUnknown": "Ukendt fejl.",
+        "errorSaveEmail": "Kunne ikke gemme e-mail.",
+        "errorBlankFields": "Felter blev efterladt tomme",
+        "errorDeleteProfile": "Kunne ikke slette profilen {n}",
+        "errorLoadProfiles": "Profiler kunne ikke indlæses.",
+        "errorCreateProfile": "Kunne ikke oprette profilen {n}",
+        "errorSetDefaultProfile": "Standard profilen kunne ikke indstilles.",
+        "errorLoadUsers": "Kunne ikke indlæse brugere.",
+        "errorSaveSettings": "Kunne ikke gemme indstillingerne.",
+        "errorLoadSettings": "Indstillingerne kunne ikke indlæses.",
+        "errorSetOmbiDefaults": "Ombi standarderne kunne ikke gemmes.",
+        "errorLoadOmbiUsers": "Kunne ikke indlæse ombi brugere.",
+        "errorChangedEmailAddress": "Kunne ikke ændre e-mail adressen på {n}.",
+        "errorFailureCheckLogs": "Mislykkedes (tjek konsol/logfiler)",
+        "errorPartialFailureCheckLogs": "Delvis fejl (tjek konsol/logfiler)",
+        "errorUserCreated": "Kunne ikke oprette bruger {n}.",
+        "errorSendWelcomeEmail": "Kunne ikke sende velkomst meddelelse (tjek konsol/logfiler",
+        "errorApplyUpdate": "Kunne ikke anvende opdateringen, prøv manuelt.",
+        "errorCheckUpdate": "Kunne ikke kontrollere for opdatering.",
+        "updateAvailable": "En ny opdatering er tilgængelig, tjek indstillingerne.",
+        "noUpdatesAvailable": "Ingen nye opdateringer tilgængelige."
     },
     "quantityStrings": {
         "modifySettingsFor": {
-            "singular": "",
-            "plural": ""
+            "singular": "Rediger indstillinger for {n} bruger",
+            "plural": "Rediger indstillinger for {n} brugere"
         },
         "deleteNUsers": {
-            "singular": "",
-            "plural": ""
+            "singular": "Slet {n} bruger",
+            "plural": "Slet {n} brugere"
         },
         "disableUsers": {
-            "singular": "",
-            "plural": ""
+            "singular": "Deaktiver {n} bruger",
+            "plural": "Deaktiver {n} brugere"
         },
         "reEnableUsers": {
-            "singular": "",
-            "plural": ""
+            "singular": "Genaktiver {n} bruger",
+            "plural": "Genaktiver {n} brugere"
         },
         "addUser": {
-            "singular": "",
-            "plural": ""
+            "singular": "Tilføj bruger",
+            "plural": "Tilføj brugere"
         },
         "deleteUser": {
-            "singular": "",
-            "plural": ""
+            "singular": "Slet bruger",
+            "plural": "Slet brugere"
         },
         "deletedUser": {
-            "singular": "",
-            "plural": ""
+            "singular": "Slettede {n} bruger.",
+            "plural": "Slettede {n} brugere."
         },
         "disabledUser": {
-            "singular": "",
-            "plural": ""
+            "singular": "Deaktiveret {n} bruger.",
+            "plural": "Deaktiverede {n} brugere."
         },
         "enabledUser": {
-            "singular": "",
-            "plural": ""
+            "singular": "Aktiveret {n} bruger.",
+            "plural": "Aktiveret {n} brugere."
         },
         "announceTo": {
-            "singular": "",
-            "plural": ""
+            "singular": "Annoncer til {n} bruger",
+            "plural": "Annoncer til {n} brugere"
         },
         "appliedSettings": {
-            "singular": "",
-            "plural": ""
+            "singular": "Anvendte indstillinger til {n} bruger.",
+            "plural": "Anvendte indstillinger til {n} brugere."
         },
         "extendExpiry": {
-            "singular": "",
-            "plural": ""
+            "singular": "Forlæng udløbet for {n} bruger",
+            "plural": "Forlæng udløbet for {n} brugere"
         },
         "extendedExpiry": {
-            "singular": "",
-            "plural": ""
+            "singular": "Forlængede udløb for {n} bruger.",
+            "plural": "Forlængede udløb for {n} brugere."
         }
     }
 }
