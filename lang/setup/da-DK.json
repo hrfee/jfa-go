@@ -1,0 +1,137 @@
+{
+    "meta": {
+        "name": "Dansk"
+    },
+    "strings": {
+        "pageTitle": "Installer - jfa-go",
+        "next": "Næste",
+        "back": "Tilbage",
+        "optional": "Valgfri",
+        "serverType": "Servertype",
+        "disabled": "Deaktiveret",
+        "enabled": "Aktiveret",
+        "port": "Port",
+        "message": "Meddelelse",
+        "serverAddress": "Serveradresse",
+        "emailSubject": "E-mail emne",
+        "URL": "URL",
+        "apiKey": "API Nøgle"
+    },
+    "startPage": {
+        "welcome": "Velkommen!",
+        "pressStart": "Du bliver nødt til at gøre et par ting for at konfigurere jfa-go. Tryk på start for at fortsætte.",
+        "httpsNotice": "Sørg for, at du tilgår denne side via HTTPS eller på et privat netværk.",
+        "start": "Start"
+    },
+    "endPage": {
+        "finished": "Færdig!",
+        "restartMessage": "Der er flere indstillinger du kan konfigurere på admin-siden. Klik nedenfor for at genstarte, og opdater derefter siden.",
+        "refreshPage": "Opdater"
+    },
+    "language": {
+        "title": "Sprog",
+        "description": "Fællesskabsoversættelser er tilgængelige for de fleste dele af jfa-go. Du kan vælge standardsprogene nedenfor, men brugere kan stadig ændre det, hvis de ønsker det. Hvis du vil hjælpe med at oversætte, skal du tilmelde dig til {n} for at begynde at bidrage!",
+        "defaultAdminLang": "Standard administrator sprog",
+        "defaultFormLang": "Standard kontooprettelses sprog",
+        "defaultEmailLang": "Standard e-mail sprog"
+    },
+    "general": {
+        "title": "Generel",
+        "listenAddress": "Listen Address",
+        "urlBase": "URL-base",
+        "urlBaseNotice": "Kun nødvendigt hvis du bruger en omvendt proxy på et underdomæne (f.eks. 'Jellyf.in/accounts').",
+        "lightTheme": "Lys",
+        "darkTheme": "Mørk",
+        "useHTTPS": "Brug HTTPS",
+        "httpsPort": "HTTPS Port",
+        "useHTTPSNotice": "Anbefales kun hvis du ikke bruger en omvendt proxy.",
+        "pathToCertificate": "Sti til certifikat",
+        "pathToKeyFile": "Sti til nøglefil"
+    },
+    "updates": {
+        "title": "Opdateringer",
+        "description": "Få besked når nye opdateringer er tilgængelige. jfa-go kontrollerer {n} hvert 30 minut. Ingen IP'er eller personlige identificerbare oplysninger indsamles.",
+        "updateChannel": "Opdaterings Kanal",
+        "stable": "Stabil",
+        "unstable": "Ustabil"
+    },
+    "login": {
+        "title": "Log på",
+        "description": "For at få adgang til admin-siden skal du logge ind med nedenstående metode:",
+        "authorizeWithJellyfin": "Autoriser med Jellyfin/Emby: Loginoplysninger deles med Jellyfin, hvilket giver mulighed for flere brugere.",
+        "authorizeManual": "Brugernavn og adgangskode: indtast brugernavn og adgangskode manuelt.",
+        "adminOnly": "Kun administratorbrugere (anbefalet)",
+        "emailNotice": "Din e-mail adresse kan bruges til at modtage underretninger."
+    },
+    "jellyfinEmby": {
+        "title": "Jellyfin/Emby",
+        "description": "En administratorkonto er nødvendig fordi API'en ikke tillader oprettelse af brugere ved hjælp af en API-nøgle. Du skal oprette en separat konto og markere 'Tillad denne bruger at administrere serveren'. Du kan deaktivere alt andet. Når du er færdig, skal du indtaste loginoplysningerne her.",
+        "embyNotice": "Emby support er begrænset og understøtter ikke nulstilling af adgangskode.",
+        "internal": "Intern",
+        "external": "Ekstern",
+        "replaceJellyfin": "Server navn",
+        "replaceJellyfinNotice": "Hvis angivet, vil dette erstatte enhver forekomst af 'Jellyfin' i appen.",
+        "addressExternalNotice": "Lad det være tomt for at bruge den samme adresse.",
+        "testConnection": "Test forbindelse"
+    },
+    "ombi": {
+        "title": "Ombi",
+        "description": "Ved at oprette forbindelse til Ombi, oprettes både en Jellyfin og Ombi konto når en bruger tilmelder sig via jfa-go. Når installationen er afsluttet, skal du gå til Indstillinger for at indstille en standardprofil til nye Ombi brugere.",
+        "apiKeyNotice": "Find dette i den første fane i Ombi indstillinger."
+    },
+    "email": {
+        "title": "E-mail",
+        "description": "jfa-go kan sende PIN-koder til nulstilling af adgangskoder og forskellige meddelelser via e-mail. Du kan oprette forbindelse til en SMTP-server eller bruge {n} API.",
+        "method": "Afsendelsesmetode",
+        "useEmailAsUsername": "Brug e-mail adresser som brugernavn",
+        "useEmailAsUsernameNotice": "Hvis aktiveret, logger nye brugere på Jellyfin/Emby med deres e-mail adresse i stedet for et brugernavn.",
+        "fromAddress": "Fra adresse",
+        "senderName": "Afsender navn",
+        "dateFormat": "Datoformat",
+        "dateFormatNotice": "Dato følger strftime formatet. For flere oplysninger, besøg {n}.",
+        "encryption": "Kryptering",
+        "mailgunApiURL": "API-URL"
+    },
+    "notifications": {
+        "title": "Meddelelser",
+        "description": "Hvis aktiveret, kan du vælge (pr. Invitation) at modtage en e-mail når en invitation udløber, eller når en bruger oprettes. Hvis du ikke valgte Jellyfin login metoden, skal du sørge for at angive din e-mail adresse."
+    },
+    "welcomeEmails": {
+        "title": "Velkomstmails",
+        "description": "Hvis aktiveret, sendes en e-mail til nye brugere med Jellyfin/Emby URL'en og deres brugernavn."
+    },
+    "inviteEmails": {
+        "title": "Invitations E-mails",
+        "description": "Hvis aktiveret, kan du sende invitationer direkte til en brugers e-mail adresse. Fordi du muligvis bruger en omvendt proxy, skal du angive en URL, invitationer tilgås fra. Skriv din URL-base, og tilføj '/invite'."
+    },
+    "passwordResets": {
+        "title": "Nulstilling af Adgangskoder",
+        "description": "Når en bruger forsøger at nulstille deres adgangskode, opretter Jellyfin en fil med navnet 'passwordreset - *. Json', som indeholder en PIN-kode. jfa-go læser filen og sender PIN-koden til brugeren.",
+        "pathToJellyfin": "Sti til Jellyfin's konfigurations mappe",
+        "pathToJellyfinNotice": "Hvis du ikke ved hvor dette er, kan du prøve at nulstille din adgangskode i Jellyfin. En popup med '<sti til jellyfin>/passwordreset - *. Json' vises.",
+        "resetLinks": "Send et link i stedet for en PIN-kode",
+        "resetLinksNotice": "Hvis Ombi integration er aktiveret, skal du bruge denne til at synkronisere nulstilling af Jellyfin's adgangskode med Ombi.",
+        "resetLinksLanguage": "Standard sprog til nulstillings link"
+    },
+    "passwordValidation": {
+        "title": "Validering af adgangskode",
+        "description": "Hvis aktiveret, vises et sæt adgangskrav på siden til oprettelse af konto, såsom minimumslængde, store/små bogstaver osv.",
+        "length": "Længde",
+        "uppercase": "Store bogstaver",
+        "lowercase": "Små bogstaver",
+        "numbers": "Tal",
+        "special": "Specialtegn (%, * osv.)"
+    },
+    "helpMessages": {
+        "title": "Hjælpe Meddelelser",
+        "description": "Disse meddelelser vises på siden til oprettelse af konto og i nogle e-mails.",
+        "contactMessage": "Kontakt Meddelelse",
+        "contactMessageNotice": "Vises nederst på alle sider undtagen admin-siden.",
+        "helpMessage": "Hjælpe Meddelelse",
+        "helpMessageNotice": "Vises på siden til oprettelse af konto.",
+        "successMessage": "Succes Meddelelse",
+        "successMessageNotice": "Vises når en bruger opretter sin konto.",
+        "emailMessage": "E-mail Meddelelse",
+        "emailMessageNotice": "Vises i bunden af e-mails."
+    }
+}

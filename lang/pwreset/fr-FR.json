@@ -1,0 +1,15 @@
+{
+    "meta": {
+        "name": "Français (FR)"
+    },
+    "strings": {
+        "passwordReset": "Réinitialisation du mot de passe",
+        "reset": "Réinitialisation",
+        "resetFailed": "Réinitialisation du mot de passe échouée",
+        "tryAgain": "Veuillez réessayer.",
+        "youCanLogin": "Vous pouvez maintenant vous connecter en utilisant ce code comme mot de passe.",
+        "youCanLoginOmbi": "Vous pouvez maintenant vous connecter à Jellyfin et Ombi en utilisant ce mot de passe.",
+        "changeYourPassword": "Assurez-vous de changer votre mot de passe après s'être connecté.",
+        "enterYourPassword": "Entrez votre nouveau mot de passe ici."
+    }
+}

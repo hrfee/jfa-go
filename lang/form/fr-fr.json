@@ -14,12 +14,14 @@
         "reEnterPasswordInvalid": "Les mots de passe ne correspondent pas.",
         "createAccountButton": "Créer le compte",
         "passwordRequirementsHeader": "Mot de passe requis",
-        "successHeader": "Succes!",
+        "successHeader": "Succès !",
         "successContinueButton": "Continuer",
         "confirmationRequired": "Confirmation de l'adresse e-mail requise",
         "confirmationRequiredMessage": "Veuillez vérifier votre boite de réception pour confirmer votre adresse e-mail.",
         "yourAccountIsValidUntil": "Votre compte sera valide jusqu'au {date}.",
-        "sendPIN": "Envoyez le code PIN ci-dessous au bot, puis revenez ici pour lier votre compte."
+        "sendPIN": "Envoyez le code PIN ci-dessous au bot, puis revenez ici pour lier votre compte.",
+        "sendPINDiscord": "Écrivez {command} dans le salon {server_channel} sur Discord puis envoyez le PIN en message privé au bot.",
+        "matrixEnterUser": "Entrez votre nom d'utilisateur, appuyez sur soumettre et un code PIN vous sera envoyé. Cliquez ici pour continuez."
     },
     "validationStrings": {
         "length": {
@@ -48,6 +50,10 @@
         "errorInvalidCode": "Code d’invitation non valide.",
         "errorTelegramVerification": "Vérification Telegram requise.",
         "errorInvalidPIN": "PIN Telegram invalide.",
-        "telegramVerified": "Compte Telegram vérifié."
+        "telegramVerified": "Compte Telegram vérifié.",
+        "errorDiscordVerification": "Vérification Discord requise.",
+        "errorMatrixVerification": "Vérification Matrix requise.",
+        "errorUnknown": "Erreur inconnue.",
+        "verified": "Compte vérifié."
     }
 }

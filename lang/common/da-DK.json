@@ -1,0 +1,26 @@
+{
+    "meta": {
+        "name": "Dansk"
+    },
+    "strings": {
+        "username": "Brugernavn",
+        "password": "Adgangskode",
+        "emailAddress": "E-mail Adresse",
+        "name": "Navn",
+        "submit": "Indsend",
+        "send": "Send",
+        "success": "Succes",
+        "error": "Fejl",
+        "copy": "Kopiér",
+        "copied": "Kopiret",
+        "time24h": "24 timers tid",
+        "time12h": "12 timers tid",
+        "linkTelegram": "Link Telegram",
+        "contactEmail": "Kontakt gennem E-mail",
+        "contactTelegram": "Kontakt gennem Telegram",
+        "linkDiscord": "Link Discord",
+        "linkMatrix": "Link Matrix",
+        "contactDiscord": "Kontakt gennem Discord",
+        "theme": "Tema"
+    }
+}
