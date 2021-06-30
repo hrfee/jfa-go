@@ -2,16 +2,17 @@
 <html lang="en" class="light-theme">
     <head>
         <link rel="stylesheet" type="text/css" href="bundle.css">
+        <link rel="stylesheet" type="text/css" href="modal.css">
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <meta name="Description" content="jfa-go, a better way to manage Jellyfin users.">
         <meta name="color-scheme" content="dark light">
 
-        <link rel="apple-touch-icon" sizes="180x180" href="{{ .urlBase }}/apple-touch-icon.png">
-        <link rel="icon" type="image/png" sizes="32x32" href="{{ .urlBase }}/favicon-32x32.png">
-        <link rel="icon" type="image/png" sizes="16x16" href="{{ .urlBase }}/favicon-16x16.png">
-        <link rel="manifest" href="{{ .urlBase }}/site.webmanifest">
-        <link rel="mask-icon" href="{{ .urlBase }}/safari-pinned-tab.svg" color="#5bbad5">
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+        <link rel="manifest" href="/site.webmanifest">
+        <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
         <meta name="msapplication-TileColor" content="#603cba">
         <meta name="theme-color" content="#ffffff">
         <title>jfa-go - a better way to manage Jellyfin users</title>
@@ -33,8 +34,7 @@ sudo apt-get install jfa-go
 # ------
 # For desktops/servers with GUI (has dependencies)
 sudo apt-get install jfa-go-tray
-# ------
-                </pre>
+# ------</pre>
             </div>
         </div>
         <div id="modal-deb-unstable" class="modal">
@@ -53,8 +53,7 @@ sudo apt-get install jfa-go
 # ------
 # For desktops/servers with GUI (has dependencies)
 sudo apt-get install jfa-go-tray
-# ------
-                </pre>
+# ------</pre>
             </div>
         </div>
         <div id="modal-docker" class="modal">
@@ -62,19 +61,13 @@ sudo apt-get install jfa-go-tray
                 <span class="heading"> Docker</span>
                 <pre class="monospace pre-line">
 docker create \
-             --name "jfa-go" \ # Whatever you want to name it
-             -p 8056:8056 \
-            # -p 8057:8057 if using tls
-             -v /path/to/.config/jfa-go:/data \ # Path to wherever you want to store the config file and other data
-             -v /path/to/jellyfin:/jf \ # Path to Jellyfin config directory, ignore if using Emby
-             -v /etc/localtime:/etc/localtime:ro \ # Makes sure time is correct
-             <span id="docker-stable">
-             hrfee/jfa-go
-             </span>
-             <span id="docker-unstable" class="unfocused">
-             hrfee/jfa-go:unstable
-             </span>
-                </pre>
+     --name "jfa-go" \ # Whatever you want to name it
+     -p 8056:8056 \
+    # -p 8057:8057 if using tls
+     -v /path/to/.config/jfa-go:/data \ # Path to wherever you want to store the config file and other data
+     -v /path/to/jellyfin:/jf \ # Path to Jellyfin config directory, ignore if using Emby
+     -v /etc/localtime:/etc/localtime:ro \ # Makes sure time is correct
+     <span id="docker-stable">hrfee/jfa-go</span><span id="docker-unstable" class="unfocused">hrfee/jfa-go:unstable</span></pre>
             </div>
         </div>
         <div class="page-container" id="page-container">
