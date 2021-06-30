@@ -211,7 +211,7 @@ class LangSelect extends Select {
 }
 
 window.lang = new lang(window.langFile as LangFile);
-html("language-description", window.lang.var("language", "description", `<a target="_blank" href="https://weblate.hrfee.pw">Weblate</a>`));
+html("language-description", window.lang.var("language", "description", `<a target="_blank" href="https://weblate.jfa-go.com">Weblate</a>`));
 html("email-description", window.lang.var("email", "description", `<a target="_blank" href="https://mailgun.com">Mailgun</a>`));
 html("email-dateformat-notice", window.lang.var("email", "dateFormatNotice", `<a target="_blank" href="https://strftime.ninja/">strftime.ninja</a>`));
 html("updates-description", window.lang.var("updates", "description", `<a target="_blank" href="https://builds.hrfee.dev/view/hrfee/jfa-go">buildrone</a>`));

@@ -1,7 +1,7 @@
 ![jfa-go](images/banner.svg)
 [![Build Status](https://drone.hrfee.dev/api/badges/hrfee/jfa-go/status.svg?ref=refs/heads/main)](https://drone.hrfee.dev/hrfee/jfa-go)
 [![Docker Hub](https://img.shields.io/docker/pulls/hrfee/jfa-go?label=docker)](https://hub.docker.com/r/hrfee/jfa-go)
-[![Translation status](https://weblate.hrfee.pw/widgets/jfa-go/-/svg-badge.svg)](https://weblate.hrfee.pw/engage/jfa-go/)
+[![Translation status](https://weblate.jfa-go.com/widgets/jfa-go/-/svg-badge.svg)](https://weblate.jfa-go.com/engage/jfa-go/)
 [![Docs/Wiki](https://img.shields.io/static/v1?label=documentation&message=jfa-go.com&color=informational)](https://wiki.jfa-go.com)
 
 ##### Downloads:
@@ -151,6 +151,6 @@ If you're switching from jellyfin-accounts, copy your existing `~/.jf-accounts` 
 #### Contributing
 See [CONTRIBUTING.md](https://github.com/hrfee/jfa-go/blob/main/CONTRIBUTING.md).
 ##### Translation
-[![Translation status](https://weblate.hrfee.pw/widgets/jfa-go/-/multi-auto.svg)](https://weblate.hrfee.pw/engage/jfa-go/)
+[![Translation status](https://weblate.jfa-go.com/widgets/jfa-go/-/multi-auto.svg)](https://weblate.jfa-go.com/engage/jfa-go/)
 
-For translations, use the weblate instance [here](https://weblate.hrfee.pw/engage/jfa-go/). You can login with github.
+For translations, use the weblate instance [here](https://weblate.jfa-go.com/engage/jfa-go/). You can login with github.
