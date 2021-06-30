@@ -21,53 +21,35 @@
         <div id="modal-deb" class="modal">
             <div class="modal-content wide card ~neutral">
                 <span class="heading"> Debian/Ubuntu (apt)</span>
-                <pre class="monospace pre-line">
-sudo apt-get update && sudo apt-get install curl apt-transport-https gnupg
-curl https://apt.hrfee.dev/hrfee.pubkey.gpg | sudo apt-key add -
+                <div class="mt-1">
+                    <pre style="margin: 0; line-height: 125%">curl https://apt.hrfee.dev/hrfee.pubkey.gpg | sudo apt-key add -
 
-echo "deb https://apt.hrfee.dev trusty main" | sudo tee /etc/apt/sources.list.d/hrfee.list
-
-sudo apt-get update
-
-# For servers
-sudo apt-get install jfa-go
-# ------
-# For desktops/servers with GUI (has dependencies)
-sudo apt-get install jfa-go-tray
-# ------</pre>
-            </div>
-        </div>
-        <div id="modal-deb-unstable" class="modal">
-            <div class="modal-content wide card ~neutral">
-                <span class="heading"> Debian/Ubuntu (apt)</span>
-                <pre class="monospace pre-line">
-sudo apt-get update && sudo apt-get install curl apt-transport-https gnupg
-curl https://apt.hrfee.dev/hrfee.pubkey.gpg | sudo apt-key add -
-
-echo "deb https://apt.hrfee.dev trusty-unstable main" | sudo tee /etc/apt/sources.list.d/hrfee.list
+echo <span style="color: #aa5500">&quot;deb https://apt.hrfee.dev trusty<span id="deb-unstable" class="unfocused">-unstable</span> main&quot;</span> | sudo tee /etc/apt/sources.list.d/hrfee.list
 
 sudo apt-get update
 
-# For servers
+<span style="color: #aaaaaa; font-style: italic"># For servers</span>
 sudo apt-get install jfa-go
-# ------
-# For desktops/servers with GUI (has dependencies)
+<span style="color: #aaaaaa; font-style: italic"># ------</span>
+<span style="color: #aaaaaa; font-style: italic"># For desktops/servers with GUI (has dependencies)</span>
 sudo apt-get install jfa-go-tray
-# ------</pre>
+<span style="color: #aaaaaa; font-style: italic"># ------</span></pre>
+                </div>
             </div>
         </div>
         <div id="modal-docker" class="modal">
             <div class="modal-content wide card ~neutral">
                 <span class="heading"> Docker</span>
-                <pre class="monospace pre-line">
-docker create \
-     --name "jfa-go" \ # Whatever you want to name it
-     -p 8056:8056 \
-    # -p 8057:8057 if using tls
-     -v /path/to/.config/jfa-go:/data \ # Path to wherever you want to store the config file and other data
-     -v /path/to/jellyfin:/jf \ # Path to Jellyfin config directory, ignore if using Emby
-     -v /etc/localtime:/etc/localtime:ro \ # Makes sure time is correct
-     <span id="docker-stable">hrfee/jfa-go</span><span id="docker-unstable" class="unfocused">hrfee/jfa-go:unstable</span></pre>
+                <div class="mt-1">
+                    <pre style="margin: 0; line-height: 125%">docker create <span style="color: #BB6622; font-weight: bold">\</span>
+     --name <span style="color: #BA2121">&quot;jfa-go&quot;</span> <span style="color: #BB6622; font-weight: bold">\ </span><span style="color: #408080; font-style: italic"># Whatever you want to name it</span>
+     -p 8056:8056 <span style="color: #BB6622; font-weight: bold">\</span>
+   <span style="color: #408080; font-style: italic"># -p 8057:8057 if using tls</span>
+     -v /path/to/.config/jfa-go:/data <span style="color: #BB6622; font-weight: bold">\ </span><span style="color: #408080; font-style: italic"># Path to wherever you want to store the config file and other data</span>
+     -v /path/to/jellyfin:/jf <span style="color: #BB6622; font-weight: bold">\ </span><span style="color: #408080; font-style: italic"># Path to Jellyfin config directory, ignore if using Emby</span>
+     -v /etc/localtime:/etc/localtime:ro <span style="color: #BB6622; font-weight: bold">\ </span><span style="color: #408080; font-style: italic"># Makes sure time is correct</span>
+     hrfee/jfa-go<span id="docker-unstable" class="unfocused">:unstable</span></pre>
+                </div>
             </div>
         </div>
         <div class="page-container" id="page-container">

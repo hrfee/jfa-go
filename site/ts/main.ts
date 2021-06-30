@@ -13,9 +13,9 @@ const debModal = new Modal(document.getElementById("modal-deb"));
 const debButton = document.getElementById("download-deb") as HTMLAnchorElement;
 debButton.onclick = debModal.toggle;
 
-const debUnstableModal = new Modal(document.getElementById("modal-deb-unstable"));
+const debUnstable = document.getElementById("deb-unstable");
 const debUnstableButton = document.getElementById("download-deb-unstable") as HTMLAnchorElement;
-debUnstableButton.onclick = debUnstableModal.toggle;
+debUnstableButton.onclick = debModal.toggle;
 
 const stableSect = document.getElementById("sect-stable");
 const unstableSect = document.getElementById("sect-unstable");
@@ -23,11 +23,10 @@ const unstableSect = document.getElementById("sect-unstable");
 const stableButton = document.getElementById("download-stable") as HTMLSpanElement;
 const unstableButton = document.getElementById("download-unstable") as HTMLSpanElement;
 
-const dockerStable = document.getElementById("docker-stable");
 const dockerUnstable = document.getElementById("docker-unstable");
 
 stableButton.onclick = () => {
-    dockerStable.classList.remove("unfocused");
+    debUnstable.classList.add("unfocused");
     dockerUnstable.classList.add("unfocused");
     stableButton.classList.add("!high");
     unstableButton.classList.remove("!high");
@@ -37,8 +36,8 @@ stableButton.onclick = () => {
 }
 
 unstableButton.onclick = () => {
+    debUnstable.classList.remove("unfocused");
     dockerUnstable.classList.remove("unfocused");
-    dockerStable.classList.add("unfocused");
     unstableButton.classList.add("!high");
     stableButton.classList.remove("!high");
     stableSect.classList.add("unfocused");
