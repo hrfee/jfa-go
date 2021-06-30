@@ -10,11 +10,11 @@
   "license": "MIT",
   "dependencies": {
     "a17t": "^0.5.1",
-    "esbuild": "^0.8.56",
+    "esbuild": "^0.12.12",
     "remixicon": "^2.5.0",
     "uncss": "^0.17.3"
   },
   "devDependencies": {
-    "live-server": "^1.2.1"
+    "live-server": "^1.1.0"
   }
 }
