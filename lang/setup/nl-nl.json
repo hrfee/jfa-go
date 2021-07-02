@@ -25,7 +25,7 @@
     },
     "endPage": {
         "finished": "Klaar!",
-        "restartMessage": "Er staan meer instellingen op de beheerderspagina. Druk op de knop hieronder om opnieuw op te starten, en ververs daarna de pagina.",
+        "restartMessage": "Je kunt Discord/Telegram/Matrix bots instellen, berichten aanpassen en meer bij Instellingen. Klik hieronder om te herstarten, en ververs de pagina.",
         "refreshPage": "Verversen"
     },
     "language": {
@@ -86,16 +86,16 @@
         "mailgunApiURL": "API-URL"
     },
     "notifications": {
-        "title": "Meldingen",
-        "description": "Indien ingeschakeld kun je er (per uitnodiging) voor kiezen om een e-mail te ontvangen wanneer een uitnodiging verloopt of er een gebruiker wordt aangemaakt. Als je niet inlogt via Jellyfin, controleer dan dat je je e-mailadres hebt ingevuld."
+        "title": "Beheersmeldingen",
+        "description": "Indien ingeschakeld kun je er (per uitnodiging) voor kiezen om een bericht te ontvangen wanneer een uitnodiging verloopt of er een gebruiker wordt aangemaakt. Als je niet inlogt via Jellyfin, controleer dan dat je je e-mailadres hebt ingevuld, of voeg later een andere contactmethode toe."
     },
     "welcomeEmails": {
-        "title": "Welkomste-mails",
-        "description": "Indien ingeschakeld wordt er een e-mail gestuurd aan nieuwe gebruikers met de Jellyfin/Emby-URL en hun gebruikersnaam."
+        "title": "Welkomstberichten",
+        "description": "Indien ingeschakeld wordt er een bericht gestuurd aan nieuwe gebruikers met de Jellyfin/Emby-URL en hun gebruikersnaam."
     },
     "inviteEmails": {
-        "title": "Uitnodigingse-mails",
-        "description": "Indien ingeschakeld kun je uitnodigingen direct naar het e-mailadres van gebruikers sturen. Omdat je misschien een reverse proxy gebruikt moet je het URL opgeven waarlangs uitnodigingen geopend worden. Geef de URL-basis op, gevolgd door '/invite'."
+        "title": "Uitnodigingsbericht",
+        "description": "Indien ingeschakeld kun je uitnodigingen direct naar het e-mailadres, Discord- of Matrix-account van gebruikers sturen. Omdat je misschien een reverse proxy gebruikt moet je het URL opgeven waarlangs uitnodigingen geopend worden. Geef de URL-basis op, gevolgd door '/invite'."
     },
     "passwordResets": {
         "title": "Wachtwoordresets",
@@ -104,7 +104,9 @@
         "pathToJellyfinNotice": "Als je niet weet waar dit is, probeer de je wachtwoord te resetten in Jellyfin. Er verschijnt dan een popup met '<path to jellyfin>/passwordreset-*.json'.",
         "resetLinks": "Stuur een link in plaats van een pincode",
         "resetLinksNotice": "Als Ombi-integratie is ingeschakeld, gebruik dan dit om Jellyfin wachtwoordresets te synchroniseren met Ombi.",
-        "resetLinksLanguage": "Standaard reset-link taal"
+        "resetLinksLanguage": "Standaard reset-link taal",
+        "setPassword": "Stel wachtwoord in via link",
+        "setPasswordNotice": "Als dit aanstaat hoeft de gebruiker het wachtwoord niet te wijzigen van de PINcode na de reset. Wachtwoordvalidatie wordt ook afgedwongen."
     },
     "passwordValidation": {
         "title": "Wachtwoordvalidatie",
@@ -133,5 +135,9 @@
         "stable": "Stabiel",
         "title": "Updates",
         "description": "Vink aan om een melding te krijgen wanneer nieuwe updates beschikbaar zijn. jfa-go controleert {n} elke 30 minuten. Er worden geen IPs of persoonsgegevens verzameld."
+    },
+    "messages": {
+        "title": "Berichten",
+        "description": "jfa-go kan wachtwoordresets en verschillende berichten sturen via E-mail, Discord, Telegram, en/of Matrix. Je kunt e-mail hieronder instellen, en de rest kan later bij Instellingen aangepast worden. Instructies staan op de {n}. Als je dit niet nodig hebt, kun je deze onderdelen hier uitschakelen."
     }
 }
