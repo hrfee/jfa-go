@@ -70,21 +70,27 @@ sudo apt-get install jfa-go-tray
                 <p class="row col flex center support">instructions can be found&nbsp<a target="_blank" href="https://github.com/hrfee/jfa-go#install">here</a></p>
                 <p class="row col flex center support">note: tray icon builds on linux require extra dependencies, see the github README for more info.</p>
                 <div class="row col flex center">
-                    <span class="button ~neutral !high mr-1 mb-1 mt-1" id="download-stable">Stable</span>
-                    <span class="button ~neutral mb-1 mt-1 mr-1" id="download-unstable">Unstable</span>
+                    <span class="button ~neutral !high mr-1 mt-1" id="download-stable">Stable</span>
+                    <span class="button ~neutral mt-1 mr-1" id="download-unstable">Unstable</span>
                 </div>
-                <div class="row col flex center" id="sect-stable">
-                    <a class="button ~info mr-half mb-half lang-link" target="_blank" href="https://github.com/hrfee/jfa-go/releases">windows/mac/linux</a>
-                    <a class="button ~info mr-half mb-half lang-link" id="download-docker">docker</a>
-                    <a class="button ~info mr-half mb-half lang-link" id="download-deb">debian/ubuntu</a>
-                    <a class="button ~info mr-half mb-half lang-link" target="_blank" href="https://aur.archlinux.org/packages/jfa-go">arch (aur)</a>
-                    <a class="button ~info mr-half mb-half lang-link" target="_blank" href="https://aur.archlinux.org/packages/jfa-go-bin">arch (aur binary)</a>
+                <div class="mt-1" id="sect-stable">
+                    <p class="row center">Usually released once/twice every month, and aren't necessarily super stable.</p>
+                    <div class="row col flex center">
+                        <a class="button ~info mr-half mb-half lang-link" target="_blank" href="https://github.com/hrfee/jfa-go/releases">windows/mac/linux</a>
+                        <a class="button ~info mr-half mb-half lang-link" id="download-docker">docker</a>
+                        <a class="button ~info mr-half mb-half lang-link" id="download-deb">debian/ubuntu</a>
+                        <a class="button ~info mr-half mb-half lang-link" target="_blank" href="https://aur.archlinux.org/packages/jfa-go">arch (aur)</a>
+                        <a class="button ~info mr-half mb-half lang-link" target="_blank" href="https://aur.archlinux.org/packages/jfa-go-bin">arch (aur binary)</a>
+                    </div>
                 </div>
-                <div class="row col flex center unfocused" id="sect-unstable">
-                    <a class="button ~info mr-half mb-half lang-link" target="_blank" href="https://dl.jfa-go.com/view/hrfee/jfa-go">windows/mac/linux</a>
-                    <a class="button ~info mr-half mb-half lang-link" id="download-docker-unstable">docker</a>
-                    <a class="button ~info mr-half mb-half lang-link" id="download-deb-unstable">debian/ubuntu</a>
-                    <a class="button ~info mr-half mb-half lang-link" target="_blank" href="https://aur.archlinux.org/packages/jfa-go-git">arch (aur git)</a>
+                <div class="mt-1 unfocused" id="sect-unstable">
+                    <p class="row center">These are built on every commit, so may include incomplete/broken features.</p>
+                    <div class="row col flex center">
+                        <a class="button ~info mr-half mb-half lang-link" target="_blank" href="https://dl.jfa-go.com/view/hrfee/jfa-go">windows/mac/linux</a>
+                        <a class="button ~info mr-half mb-half lang-link" id="download-docker-unstable">docker</a>
+                        <a class="button ~info mr-half mb-half lang-link" id="download-deb-unstable">debian/ubuntu</a>
+                        <a class="button ~info mr-half mb-half lang-link" target="_blank" href="https://aur.archlinux.org/packages/jfa-go-git">arch (aur git)</a>
+                    </div>
                 </div>
                 <section class="section ~neutral banner footer flex-expand middle">
                     <a href="https://github.com/hrfee/jfa-go/blob/main/LICENSE" class="support">© 2021 Harvey Tindall</a>
