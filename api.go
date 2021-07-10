@@ -820,6 +820,82 @@ func (app *appContext) Announce(gc *gin.Context) {
 	respondBool(200, true, gc)
 }
 
+// @Summary Save an announcement as a template for use or editing later.
+// @Produce json
+// @Param announcementTemplate body announcementTemplate true "Announcement request object"
+// @Success 200 {object} boolResponse
+// @Failure 500 {object} boolResponse
+// @Router /users/announce/template [post]
+// @Security Bearer
+// @tags Users
+func (app *appContext) SaveAnnounceTemplate(gc *gin.Context) {
+	var req announcementTemplate
+	gc.BindJSON(&req)
+	if !messagesEnabled {
+		respondBool(400, false, gc)
+		return
+	}
+	app.storage.announcements[req.Name] = req
+	if err := app.storage.storeAnnouncements(); err != nil {
+		respondBool(500, false, gc)
+		app.err.Printf("Failed to store announcement templates: %v", err)
+		return
+	}
+	respondBool(200, true, gc)
+}
+
+// @Summary Save an announcement as a template for use or editing later.
+// @Produce json
+// @Success 200 {object} getAnnouncementsDTO
+// @Router /users/announce/template [get]
+// @Security Bearer
+// @tags Users
+func (app *appContext) GetAnnounceTemplates(gc *gin.Context) {
+	resp := &getAnnouncementsDTO{make([]string, len(app.storage.announcements))}
+	i := 0
+	for name := range app.storage.announcements {
+		resp.Announcements[i] = name
+		i++
+	}
+	gc.JSON(200, resp)
+}
+
+// @Summary Get an announcement template.
+// @Produce json
+// @Success 200 {object} announcementTemplate
+// @Failure 400 {object} boolResponse
+// @Param name path string true "name of template"
+// @Router /users/announce/template/{name} [get]
+// @Security Bearer
+// @tags Users
+func (app *appContext) GetAnnounceTemplate(gc *gin.Context) {
+	name := gc.Param("name")
+	if announcement, ok := app.storage.announcements[name]; ok {
+		gc.JSON(200, announcement)
+		return
+	}
+	respondBool(400, false, gc)
+}
+
+// @Summary Delete an announcement template.
+// @Produce json
+// @Success 200 {object} boolResponse
+// @Failure 500 {object} boolResponse
+// @Param name path string true "name of template"
+// @Router /users/announce/template/{name} [delete]
+// @Security Bearer
+// @tags Users
+func (app *appContext) DeleteAnnounceTemplate(gc *gin.Context) {
+	name := gc.Param("name")
+	delete(app.storage.announcements, name)
+	if err := app.storage.storeAnnouncements(); err != nil {
+		respondBool(500, false, gc)
+		app.err.Printf("Failed to store announcement templates: %v", err)
+		return
+	}
+	respondBool(200, false, gc)
+}
+
 // @Summary Create a new invite.
 // @Produce json
 // @Param generateInviteDTO body generateInviteDTO true "New invite request object"

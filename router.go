@@ -163,6 +163,12 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 		// api.POST(p + "/setDefaults", app.SetDefaults)
 		api.POST(p+"/users/settings", app.ApplySettings)
 		api.POST(p+"/users/announce", app.Announce)
+
+		api.GET(p+"/users/announce", app.GetAnnounceTemplates)
+		api.POST(p+"/users/announce/template", app.SaveAnnounceTemplate)
+		api.GET(p+"/users/announce/:name", app.GetAnnounceTemplate)
+		api.DELETE(p+"/users/announce/:name", app.DeleteAnnounceTemplate)
+
 		api.GET(p+"/config/update", app.CheckUpdate)
 		api.POST(p+"/config/update", app.ApplyUpdate)
 		api.GET(p+"/config/emails", app.GetCustomEmails)

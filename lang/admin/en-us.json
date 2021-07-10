@@ -48,6 +48,7 @@
         "unknown": "Unknown",
         "label": "Label",
         "announce": "Announce",
+        "templates": "Templates",
         "subject": "Subject",
         "message": "Message",
         "variables": "Variables",
@@ -100,7 +101,10 @@
         "searchDiscordUser": "Start typing the Discord username to find the user.",
         "findDiscordUser": "Find Discord user",
         "linkMatrixDescription": "Enter the username and password of the user to use as a bot. Once submitted, the app will restart.",
-        "matrixHomeServer": "Home server address"
+        "matrixHomeServer": "Home server address",
+        "saveAsTemplate": "Save as template",
+        "deleteTemplate": "Delete template",
+        "templateEnterName": "Enter a name to save this template."
     },
     "notifications": {
         "changedEmailAddress": "Changed email address of {n}.",
@@ -109,6 +113,7 @@
         "saveSettings": "Settings were saved",
         "saveEmail": "Email saved.",
         "sentAnnouncement": "Announcement sent.",
+        "savedAnnouncement": "Announcement saved.",
         "setOmbiDefaults": "Stored ombi defaults.",
         "updateApplied": "Update applied, please restart.",
         "updateAppliedRefresh": "Update applied, please refresh.",

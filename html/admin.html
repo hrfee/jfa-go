@@ -163,15 +163,24 @@
                 <span class="heading"><span id="header-announce"></span> <span class="modal-close">&times;</span></span>
                 <div class="row">
                     <div class="col flex-col content mt-half">
-                        <label class="label supra" for="announce-subject"> {{ .strings.subject }}</label>
-                        <input type="text" id="announce-subject" class="input ~neutral !normal mb-1 mt-half">
-                        <label class="label supra" for="textarea-announce">{{ .strings.message }}</label>
-                        <textarea id="textarea-announce" class="textarea full-width ~neutral !normal mt-half monospace"></textarea>
-                        <p class="support mt-half mb-1">{{ .strings.markdownSupported }}</p>
-                        <label>
-                            <input type="submit" class="unfocused">
-                            <span class="button ~urge !normal full-width center supra submit">{{ .strings.submit }}</span>
+                        <div id="announce-details">
+                            <label class="label supra" for="announce-subject"> {{ .strings.subject }}</label>
+                            <input type="text" id="announce-subject" class="input ~neutral !normal mb-1 mt-half">
+                            <label class="label supra" for="textarea-announce">{{ .strings.message }}</label>
+                            <textarea id="textarea-announce" class="textarea full-width ~neutral !normal mt-half monospace"></textarea>
+                            <p class="support mt-half mb-1">{{ .strings.markdownSupported }}</p>
+                        </div>
+                        <label class="label unfocused" id="announce-name"><p class="supra">{{ .strings.name }}</p>
+                            <input type="text" class="input ~neutral !normal mb-1 mt-half">
+                            <p class="support">{{ .strings.templateEnterName }}</p>
                         </label>
+                        <div class="row flex-expand">
+                            <label>
+                                <input type="submit" class="unfocused">
+                                <span class="button ~urge !normal center supra submit">{{ .strings.send }}</span>
+                            </label>
+                            <span class="button ~info !normal center supra" id="save-announce">{{ .strings.saveAsTemplate }}</span>
+                        </div>
                     </div>
                     <div class="col card ~neutral !low">
                         <span class="subheading supra">{{ .strings.preview }}</span>
@@ -542,7 +551,15 @@
                         </div>
                         <div class="row">
                             <span class="col sm button ~neutral !normal center mb-half" id="accounts-add-user">{{ .quantityStrings.addUser.Singular }}</span>
-                            <span class="col sm button ~info !normal center mb-half" id="accounts-announce">{{ .strings.announce }}</span>
+                            <div id="accounts-announce-dropdown" class="col sm dropdown" tabindex="0">
+                                <span class="h-100 sm button ~info !normal center mb-half" id="accounts-announce">{{ .strings.announce }}</span>
+                                <div class="dropdown-display">
+                                    <div class="card ~neutral !low">
+                                        <span class="supra sm">{{ .strings.templates }}</span>
+                                        <div id="accounts-announce-templates"></div>
+                                    </div>
+                                </div>
+                            </div>
                             <span class="col sm button ~urge !normal center mb-half" id="accounts-modify-user">{{ .strings.modifySettings }}</span>
                             <span class="col sm button ~warning !normal center mb-half" id="accounts-extend-expiry">{{ .strings.extendExpiry }}</span>
                             <span class="col sm button ~positive !normal center mb-half" id="accounts-disable-enable">{{ .strings.disable }}</span>

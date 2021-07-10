@@ -1331,6 +1331,14 @@
                     "type": "text",
                     "value": "",
                     "description": "Stores discord user IDs and language preferences."
+                },
+                "announcements": {
+                    "name": "Announcement templates",
+                    "required": false,
+                    "requires_restart": false,
+                    "type": "text",
+                    "value": "",
+                    "description": "Stores custom announcement templates."
                 }
             }
         }

@@ -172,6 +172,16 @@ type announcementDTO struct {
 	Message string   `json:"message"` // Email content (markdown supported)
 }
 
+type announcementTemplate struct {
+	Name    string `json:"name"`    // Name of template
+	Subject string `json:"subject"` // Email subject
+	Message string `json:"message"` // Email content (markdown supported)
+}
+
+type getAnnouncementsDTO struct {
+	Announcements []string `json:"announcements"` // list of announcement names.
+}
+
 type errorListDTO map[string]map[string]string
 
 type configDTO map[string]interface{}

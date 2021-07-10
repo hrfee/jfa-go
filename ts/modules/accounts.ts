@@ -26,7 +26,13 @@ interface getPinResponse {
     token: string;
     username: string;
 }
-        
+
+interface announcementTemplate {
+    name: string;
+    subject: string;
+    message: string;
+}
+
 var addDiscord: (passData: string) => void;
 
 class user implements User {
@@ -547,6 +553,8 @@ export class accountsList {
     
     private _addUserButton = document.getElementById("accounts-add-user") as HTMLSpanElement;
     private _announceButton = document.getElementById("accounts-announce") as HTMLSpanElement;
+    private _announceSaveButton = document.getElementById("save-announce") as HTMLSpanElement;
+    private _announceNameLabel = document.getElementById("announce-name") as HTMLLabelElement;
     private _announcePreview: HTMLElement;
     private _previewLoaded = false;
     private _announceTextarea = document.getElementById("textarea-announce") as HTMLTextAreaElement;
@@ -799,16 +807,60 @@ export class accountsList {
             this._announcePreview.innerHTML = content;
         }
     }
-    announce = () => {
+    saveAnnouncement = (event: Event) => {
+        event.preventDefault();
+        const form = document.getElementById("form-announce") as HTMLFormElement;
+        const button = form.querySelector("span.submit") as HTMLSpanElement;
+        if (this._announceNameLabel.classList.contains("unfocused")) {
+            this._announceNameLabel.classList.remove("unfocused");
+            form.onsubmit = this.saveAnnouncement;
+            button.textContent = window.lang.get("strings", "saveAsTemplate");
+            this._announceSaveButton.classList.add("unfocused");
+            const details = document.getElementById("announce-details");
+            details.classList.add("unfocused");
+            return;
+        }
+        const name = (this._announceNameLabel.querySelector("input") as HTMLInputElement).value;
+        if (!name) { return; }
+        const subject = document.getElementById("announce-subject") as HTMLInputElement;
+        let send: announcementTemplate = {
+            name: name,
+            subject: subject.value,
+            message: this._announceTextarea.value
+        }
+        _post("/users/announce/template", send, (req: XMLHttpRequest) => {
+            if (req.readyState == 4) {
+                this.reload();
+                toggleLoader(button);
+                window.modals.announce.close();
+                if (req.status != 200 && req.status != 204) {
+                    window.notifications.customError("announcementError", window.lang.notif("errorFailureCheckLogs"));
+                } else {
+                    window.notifications.customSuccess("announcementSuccess", window.lang.notif("savedAnnouncement"));
+                }
+            }
+        });
+    }
+    announce = (event?: Event, template?: announcementTemplate) => {
         const modalHeader = document.getElementById("header-announce");
         modalHeader.textContent = window.lang.quantity("announceTo", this._collectUsers().length);
         const form = document.getElementById("form-announce") as HTMLFormElement;
         let list = this._collectUsers();
         const button = form.querySelector("span.submit") as HTMLSpanElement;
+        removeLoader(button);
+        button.textContent = window.lang.get("strings", "send");
+        const details = document.getElementById("announce-details");
+        details.classList.remove("unfocused");
+        this._announceSaveButton.classList.remove("unfocused");
         const subject = document.getElementById("announce-subject") as HTMLInputElement;
-
-        subject.value = "";
-        this._announceTextarea.value = "";
+        this._announceNameLabel.classList.add("unfocused");
+        if (template) {
+            subject.value = template.subject;
+            this._announceTextarea.value = template.message;
+        } else {
+            subject.value = "";
+            this._announceTextarea.value = "";
+        }
         form.onsubmit = (event: Event) => {
             event.preventDefault();
             toggleLoader(button);
@@ -853,7 +905,53 @@ export class accountsList {
             }
         });
     }
-    
+    loadTemplates = () => _get("/users/announce", null, (req: XMLHttpRequest) => {
+        if (req.readyState == 4) {
+            if (req.status != 200) {
+                this._announceButton.nextElementSibling.children[0].classList.add("unfocused");
+                return;
+            }
+            this._announceButton.nextElementSibling.children[0].classList.remove("unfocused");
+            const list = req.response["announcements"] as string[];
+            if (list.length == 0) {
+                this._announceButton.nextElementSibling.children[0].classList.add("unfocused");
+                return;
+            }
+            const dList = document.getElementById("accounts-announce-templates") as HTMLDivElement;
+            dList.textContent = '';
+            for (let name of list) {
+                const el = document.createElement("div") as HTMLDivElement;
+                el.classList.add("flex-expand", "ellipsis", "mt-half");
+                el.innerHTML = `
+                <span class="button ~neutral sm full-width accounts-announce-template-button">${name}</span><span class="button ~critical fr ml-1 accounts-announce-template-delete">&times;</span>
+                `;
+                (el.querySelector("span.accounts-announce-template-button") as HTMLSpanElement).onclick = () => {
+                    _get("/users/announce/" + name, null, (req: XMLHttpRequest) => {
+                        if (req.readyState == 4) {
+                            let template: announcementTemplate;
+                            if (req.status != 200) {
+                                window.notifications.customError("getTemplateError", window.lang.notif("errorFailureCheckLogs"));
+                            } else {
+                                template = req.response;
+                            }
+                            this.announce(null, template);
+                        }
+                    });
+                };
+                (el.querySelector("span.accounts-announce-template-delete") as HTMLSpanElement).onclick = () => {
+                    _delete("/users/announce/" + name, null, (req: XMLHttpRequest) => {
+                        if (req.readyState == 4) {
+                            if (req.status != 200) {
+                                window.notifications.customError("deleteTemplateError", window.lang.notif("errorFailureCheckLogs"));
+                            }
+                            this.reload();
+                        }
+                    });
+                };
+                dList.appendChild(el);
+            }
+        }
+    });
     enableDisableUsers = () => {
         // We can share the delete modal for this
         const modalHeader = document.getElementById("header-delete-user");
@@ -1154,26 +1252,31 @@ export class accountsList {
                 }
             });
         });
+
+        this._announceSaveButton.onclick = this.saveAnnouncement;
     }
 
-    reload = () => _get("/users", null, (req: XMLHttpRequest) => {
-        if (req.readyState == 4 && req.status == 200) {
-            // same method as inviteList.reload()
-            let accountsOnDOM: { [id: string]: boolean } = {};
-            for (let id in this._users) { accountsOnDOM[id] = true; }
-            for (let u of (req.response["users"] as User[])) {
-                if (u.id in this._users) {
-                    this._users[u.id].update(u);
-                    delete accountsOnDOM[u.id];
-                } else {
-                    this.add(u);
+    reload = () => {
+        _get("/users", null, (req: XMLHttpRequest) => {
+            if (req.readyState == 4 && req.status == 200) {
+                // same method as inviteList.reload()
+                let accountsOnDOM: { [id: string]: boolean } = {};
+                for (let id in this._users) { accountsOnDOM[id] = true; }
+                for (let u of (req.response["users"] as User[])) {
+                    if (u.id in this._users) {
+                        this._users[u.id].update(u);
+                        delete accountsOnDOM[u.id];
+                    } else {
+                        this.add(u);
+                    }
                 }
+                for (let id in accountsOnDOM) {
+                    this._users[id].remove();
+                    delete this._users[id];
+                }
+                this._checkCheckCount();
             }
-            for (let id in accountsOnDOM) {
-                this._users[id].remove();
-                delete this._users[id];
-            }
-            this._checkCheckCount();
-        }
-    })
+        });
+        this.loadTemplates();
+    }
 }

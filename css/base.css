@@ -134,6 +134,10 @@ div.card:contains(section.banner.footer) {
     width: 100%;
 }
 
+.h-100 {
+    height: 100%;
+}
+
 .inline-block {
     display: inline-block;
 }

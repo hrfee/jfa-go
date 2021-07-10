@@ -359,6 +359,10 @@ func start(asDaemon, firstCall bool) {
 		if err := app.storage.loadMatrixUsers(); err != nil {
 			app.err.Printf("Failed to load Matrix users: %v", err)
 		}
+		app.storage.announcements_path = app.config.Section("files").Key("announcements").String()
+		if err := app.storage.loadAnnouncements(); err != nil {
+			app.err.Printf("Failed to load announcement templates: %v", err)
+		}
 
 		app.storage.profiles_path = app.config.Section("files").Key("user_profiles").String()
 		app.storage.loadProfiles()
