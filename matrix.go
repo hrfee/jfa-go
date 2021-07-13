@@ -1,21 +1,22 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
 
 	"github.com/gomarkdown/markdown"
-	"github.com/matrix-org/gomatrix"
+	gomatrix "maunium.net/go/mautrix"
+	"maunium.net/go/mautrix/event"
+	"maunium.net/go/mautrix/id"
 )
 
 type MatrixDaemon struct {
 	Stopped         bool
 	ShutdownChannel chan string
 	bot             *gomatrix.Client
-	userID          string
+	userID          id.UserID
 	tokens          map[string]UnverifiedUser // Map of tokens to users
-	languages       map[string]string         // Map of roomIDs to language codes
+	languages       map[id.RoomID]string      // Map of roomIDs to language codes
 	app             *appContext
 }
 
@@ -41,9 +42,9 @@ func (m MatrixIdentifier) Type() string { return m.IdentType }
 var matrixFilter = gomatrix.Filter{
 	Room: gomatrix.RoomFilter{
 		Timeline: gomatrix.FilterPart{
-			Types: []string{
-				"m.room.message",
-				"m.room.member",
+			Types: []event.Type{
+				event.NewEventType("m.room.message"),
+				event.NewEventType("m.room.member"),
 			},
 		},
 	},
@@ -64,24 +65,20 @@ func newMatrixDaemon(app *appContext) (d *MatrixDaemon, err error) {
 	token := matrix.Key("token").String()
 	d = &MatrixDaemon{
 		ShutdownChannel: make(chan string),
-		userID:          matrix.Key("user_id").String(),
+		userID:          id.UserID(matrix.Key("user_id").String()),
 		tokens:          map[string]UnverifiedUser{},
-		languages:       map[string]string{},
+		languages:       map[id.RoomID]string{},
 		app:             app,
 	}
 	d.bot, err = gomatrix.NewClient(homeserver, d.userID, token)
 	if err != nil {
 		return
 	}
-	filter, err := json.Marshal(matrixFilter)
-	if err != nil {
-		return
-	}
-	resp, err := d.bot.CreateFilter(filter)
+	resp, err := d.bot.CreateFilter(&matrixFilter)
 	d.bot.Store.SaveFilterID(d.userID, resp.FilterID)
 	for _, user := range app.storage.matrix {
 		if user.Lang != "" {
-			d.languages[user.RoomID] = user.Lang
+			d.languages[id.RoomID(user.RoomID)] = user.Lang
 		}
 	}
 	return
@@ -90,14 +87,14 @@ func newMatrixDaemon(app *appContext) (d *MatrixDaemon, err error) {
 func (d *MatrixDaemon) generateAccessToken(homeserver, username, password string) (string, error) {
 	req := &gomatrix.ReqLogin{
 		Type: "m.login.password",
-		Identifier: MatrixIdentifier{
-			User:      username,
-			IdentType: "m.id.user",
+		Identifier: gomatrix.UserIdentifier{
+			User: username,
+			Type: "m.id.user",
 		},
 		Password: password,
-		DeviceID: "jfa-go-" + commit,
+		DeviceID: id.DeviceID("jfa-go-" + commit),
 	}
-	bot, err := gomatrix.NewClient(homeserver, username, "")
+	bot, err := gomatrix.NewClient(homeserver, id.UserID(username), "")
 	if err != nil {
 		return "", err
 	}
@@ -111,7 +108,7 @@ func (d *MatrixDaemon) generateAccessToken(homeserver, username, password string
 func (d *MatrixDaemon) run() {
 	d.app.info.Println("Starting Matrix bot daemon")
 	syncer := d.bot.Syncer.(*gomatrix.DefaultSyncer)
-	syncer.OnEventType("m.room.message", d.handleMessage)
+	syncer.OnEventType(event.NewEventType("m.room.message"), d.handleMessage)
 	// syncer.OnEventType("m.room.member", d.handleMembership)
 	if err := d.bot.Sync(); err != nil {
 		d.app.err.Printf("Matrix sync failed: %v", err)
@@ -124,59 +121,59 @@ func (d *MatrixDaemon) Shutdown() {
 	close(d.ShutdownChannel)
 }
 
-func (d *MatrixDaemon) handleMessage(event *gomatrix.Event) {
-	if event.Sender == d.userID {
+func (d *MatrixDaemon) handleMessage(source gomatrix.EventSource, evt *event.Event) {
+	if evt.Sender == d.userID {
 		return
 	}
 	lang := "en-us"
-	if l, ok := d.languages[event.RoomID]; ok {
+	if l, ok := d.languages[evt.RoomID]; ok {
 		if _, ok := d.app.storage.lang.Telegram[l]; ok {
 			lang = l
 		}
 	}
-	sects := strings.Split(event.Content["body"].(string), " ")
+	sects := strings.Split(evt.Content.Raw["body"].(string), " ")
 	switch sects[0] {
 	case "!lang":
 		if len(sects) == 2 {
-			d.commandLang(event, sects[1], lang)
+			d.commandLang(evt, sects[1], lang)
 		} else {
-			d.commandLang(event, "", lang)
+			d.commandLang(evt, "", lang)
 		}
 	}
 }
 
-func (d *MatrixDaemon) commandLang(event *gomatrix.Event, code, lang string) {
+func (d *MatrixDaemon) commandLang(evt *event.Event, code, lang string) {
 	if code == "" {
 		list := "!lang <lang>\n"
 		for c := range d.app.storage.lang.Telegram {
 			list += fmt.Sprintf("%s: %s\n", c, d.app.storage.lang.Telegram[c].Meta.Name)
 		}
 		_, err := d.bot.SendText(
-			event.RoomID,
+			evt.RoomID,
 			list,
 		)
 		if err != nil {
-			d.app.err.Printf("Matrix: Failed to send message to \"%s\": %v", event.Sender, err)
+			d.app.err.Printf("Matrix: Failed to send message to \"%s\": %v", evt.Sender, err)
 		}
 		return
 	}
 	if _, ok := d.app.storage.lang.Telegram[code]; !ok {
 		return
 	}
-	d.languages[event.RoomID] = code
-	if u, ok := d.app.storage.matrix[event.RoomID]; ok {
+	d.languages[evt.RoomID] = code
+	if u, ok := d.app.storage.matrix[string(evt.RoomID)]; ok {
 		u.Lang = code
-		d.app.storage.matrix[event.RoomID] = u
+		d.app.storage.matrix[string(evt.RoomID)] = u
 		if err := d.app.storage.storeMatrixUsers(); err != nil {
 			d.app.err.Printf("Matrix: Failed to store Matrix users: %v", err)
 		}
 	}
 }
 
-func (d *MatrixDaemon) CreateRoom(userID string) (string, error) {
+func (d *MatrixDaemon) CreateRoom(userID string) (id.RoomID, error) {
 	room, err := d.bot.CreateRoom(&gomatrix.ReqCreateRoom{
 		Visibility: "private",
-		Invite:     []string{userID},
+		Invite:     []id.UserID{id.UserID(userID)},
 		Topic:      d.app.config.Section("matrix").Key("topic").String(),
 	})
 	if err != nil {
@@ -196,7 +193,7 @@ func (d *MatrixDaemon) SendStart(userID string) (ok bool) {
 	d.tokens[pin] = UnverifiedUser{
 		false,
 		&MatrixUser{
-			RoomID: roomID,
+			RoomID: string(roomID),
 			UserID: userID,
 			Lang:   lang,
 		},
@@ -220,11 +217,17 @@ func (d *MatrixDaemon) Send(message *Message, roomID ...string) (err error) {
 		// Convert images to links
 		md = string(markdown.ToHTML([]byte(strings.ReplaceAll(message.Markdown, "![", "[")), nil, renderer))
 	}
-	for _, id := range roomID {
+	for _, ident := range roomID {
+
 		if md != "" {
-			_, err = d.bot.SendFormattedText(id, message.Text, md)
+			_, err = d.bot.SendMessageEvent(id.RoomID(ident), event.NewEventType("m.room.message"), map[string]interface{}{
+				"msgtype":        "m.text",
+				"body":           message.Text,
+				"formatted_body": md,
+				"format":         "org.matrix.custom.html",
+			}, gomatrix.ReqSendEvent{})
 		} else {
-			_, err = d.bot.SendText(id, message.Text)
+			_, err = d.bot.SendText(id.RoomID(ident), message.Text)
 		}
 		if err != nil {
 			return

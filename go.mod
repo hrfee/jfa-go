@@ -41,7 +41,6 @@ require (
 	github.com/lithammer/shortuuid/v3 v3.0.4
 	github.com/mailgun/mailgun-go/v4 v4.5.1
 	github.com/mailru/easyjson v0.7.7 // indirect
-	github.com/matrix-org/gomatrix v0.0.0-20210324163249-be2af5ef2e16
 	github.com/pkg/browser v0.0.0-20210606212950-a7b7a6107d32
 	github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966
 	github.com/smartystreets/goconvey v1.6.4 // indirect
@@ -51,10 +50,10 @@ require (
 	github.com/technoweenie/multipartstreamer v1.0.1 // indirect
 	github.com/ugorji/go v1.2.0 // indirect
 	github.com/writeas/go-strip-markdown v2.0.1+incompatible
-	golang.org/x/crypto v0.0.0-20201112155050-0c6587e931a9 // indirect
 	golang.org/x/net v0.0.0-20210610132358-84b48f89b13b // indirect
 	golang.org/x/sys v0.0.0-20210611083646-a4fc73990273 // indirect
 	golang.org/x/tools v0.1.3 // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
 	gopkg.in/ini.v1 v1.62.0
+	maunium.net/go/mautrix v0.9.14
 )

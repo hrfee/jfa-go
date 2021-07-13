@@ -2579,7 +2579,7 @@ func (app *appContext) MatrixConnect(gc *gin.Context) {
 	}
 	app.storage.matrix[req.JellyfinID] = MatrixUser{
 		UserID:  req.UserID,
-		RoomID:  roomID,
+		RoomID:  string(roomID),
 		Lang:    "en-us",
 		Contact: true,
 	}
