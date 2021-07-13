@@ -1324,6 +1324,14 @@
                     "value": "",
                     "description": "Stores matrix user IDs and language preferences."
                 },
+                "matrix_sql": {
+                    "name": "Matrix encryption DB",
+                    "required": false,
+                    "requires_restart": false,
+                    "type": "text",
+                    "value": "",
+                    "description": "Stores cryptographic material for Matrix end-to-end encryption."
+                },
                 "discord_users": {
                     "name": "Discord users",
                     "required": false,

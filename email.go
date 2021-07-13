@@ -819,7 +819,7 @@ func (app *appContext) sendByID(email *Message, ID ...string) error {
 			}
 		}
 		if mxChat, ok := app.storage.matrix[id]; ok && mxChat.Contact && matrixEnabled {
-			err = app.matrix.Send(email, mxChat.RoomID)
+			err = app.matrix.Send(email, mxChat)
 			if err != nil {
 				return err
 			}

@@ -15,23 +15,23 @@ import (
 )
 
 type Storage struct {
-	timePattern                                                                                                                                                                                         string
-	invite_path, emails_path, policy_path, configuration_path, displayprefs_path, ombi_path, profiles_path, customEmails_path, users_path, telegram_path, discord_path, matrix_path, announcements_path string
-	users                                                                                                                                                                                               map[string]time.Time
-	invites                                                                                                                                                                                             Invites
-	profiles                                                                                                                                                                                            map[string]Profile
-	defaultProfile                                                                                                                                                                                      string
-	displayprefs, ombi_template                                                                                                                                                                         map[string]interface{}
-	emails                                                                                                                                                                                              map[string]EmailAddress
-	telegram                                                                                                                                                                                            map[string]TelegramUser // Map of Jellyfin User IDs to telegram users.
-	discord                                                                                                                                                                                             map[string]DiscordUser  // Map of Jellyfin user IDs to discord users.
-	matrix                                                                                                                                                                                              map[string]MatrixUser   // Map of Jellyfin user IDs to Matrix users.
-	customEmails                                                                                                                                                                                        customEmails
-	policy                                                                                                                                                                                              mediabrowser.Policy
-	configuration                                                                                                                                                                                       mediabrowser.Configuration
-	lang                                                                                                                                                                                                Lang
-	announcements                                                                                                                                                                                       map[string]announcementTemplate
-	invitesLock, usersLock                                                                                                                                                                              sync.Mutex
+	timePattern                                                                                                                                                                                                          string
+	invite_path, emails_path, policy_path, configuration_path, displayprefs_path, ombi_path, profiles_path, customEmails_path, users_path, telegram_path, discord_path, matrix_path, announcements_path, matrix_sql_path string
+	users                                                                                                                                                                                                                map[string]time.Time
+	invites                                                                                                                                                                                                              Invites
+	profiles                                                                                                                                                                                                             map[string]Profile
+	defaultProfile                                                                                                                                                                                                       string
+	displayprefs, ombi_template                                                                                                                                                                                          map[string]interface{}
+	emails                                                                                                                                                                                                               map[string]EmailAddress
+	telegram                                                                                                                                                                                                             map[string]TelegramUser // Map of Jellyfin User IDs to telegram users.
+	discord                                                                                                                                                                                                              map[string]DiscordUser  // Map of Jellyfin user IDs to discord users.
+	matrix                                                                                                                                                                                                               map[string]MatrixUser   // Map of Jellyfin user IDs to Matrix users.
+	customEmails                                                                                                                                                                                                         customEmails
+	policy                                                                                                                                                                                                               mediabrowser.Policy
+	configuration                                                                                                                                                                                                        mediabrowser.Configuration
+	lang                                                                                                                                                                                                                 Lang
+	announcements                                                                                                                                                                                                        map[string]announcementTemplate
+	invitesLock, usersLock                                                                                                                                                                                               sync.Mutex
 }
 
 type TelegramUser struct {

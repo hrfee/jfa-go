@@ -2571,18 +2571,20 @@ func (app *appContext) MatrixConnect(gc *gin.Context) {
 	if app.storage.matrix == nil {
 		app.storage.matrix = map[string]MatrixUser{}
 	}
-	roomID, err := app.matrix.CreateRoom(req.UserID)
+	roomID, encrypted, err := app.matrix.CreateRoom(req.UserID)
 	if err != nil {
 		app.err.Printf("Matrix: Failed to create room: %v", err)
 		respondBool(500, false, gc)
 		return
 	}
 	app.storage.matrix[req.JellyfinID] = MatrixUser{
-		UserID:  req.UserID,
-		RoomID:  string(roomID),
-		Lang:    "en-us",
-		Contact: true,
+		UserID:    req.UserID,
+		RoomID:    string(roomID),
+		Lang:      "en-us",
+		Contact:   true,
+		Encrypted: encrypted,
 	}
+	app.matrix.isEncrypted[roomID] = encrypted
 	if err := app.storage.storeMatrixUsers(); err != nil {
 		app.err.Printf("Failed to store Matrix users: %v", err)
 		respondBool(500, false, gc)

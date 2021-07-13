@@ -56,4 +56,5 @@ require (
 	google.golang.org/protobuf v1.25.0 // indirect
 	gopkg.in/ini.v1 v1.62.0
 	maunium.net/go/mautrix v0.9.14
+	modernc.org/sqlite v1.11.2
 )

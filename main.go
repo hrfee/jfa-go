@@ -652,7 +652,8 @@ func main() {
 			Exit(r)
 		}
 	}()
-	defer logOutput()()
+	f := logOutput()
+	defer f()
 	printVersion()
 	SOCK = filepath.Join(temp, SOCK)
 	fmt.Println("Socket:", SOCK)
