@@ -891,6 +891,36 @@
                 }
             }
         },
+        "template_email": {
+            "order": [],
+            "meta": {
+                "name": "Custom email template",
+                "description": "Settings for the template used for announcements & custom messages. HTML should include {{ .text }}, Plaintext should include {{ .plaintext }}, and either can have {{ .message }} to include the contact message.",
+                "advanced": true
+            },
+            "settings": {
+                "email_html": {
+                    "name": "Custom template email (HTML)",
+                    "required": false,
+                    "requires_restart": false,
+                    "advanced": true,
+                    "depends_true": "enabled",
+                    "type": "text",
+                    "value": "",
+                    "description": "Path to custom email HTML template for announcements/custom messages."
+                },
+                "email_text": {
+                    "name": "Custom template email (plaintext)",
+                    "required": false,
+                    "requires_restart": false,
+                    "advanced": true,
+                    "depends_true": "enabled",
+                    "type": "text",
+                    "value": "",
+                    "description": "Path to custom email text template for announcements/custom messages."
+                }
+            }
+        },
         "notifications": {
             "order": [],
             "meta": {
