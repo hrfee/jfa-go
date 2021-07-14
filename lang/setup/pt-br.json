@@ -25,7 +25,7 @@
     },
     "endPage": {
         "finished": "Finalizado!",
-        "restartMessage": "Existem mais opções que você pode definir na página do administrador. Clique abaixo para reiniciar e atualize a página.",
+        "restartMessage": "Você pode configurar os bots Discord/Telegram/Matrix, personalizar suas mensagens e muito mais em Configurações. Clique abaixo para reiniciar e, em seguida, atualize a página.",
         "refreshPage": "Atualizar"
     },
     "language": {
@@ -86,16 +86,16 @@
         "mailgunApiURL": "API URL"
     },
     "notifications": {
-        "title": "Notificações",
-        "description": "Se ativado, você pode escolher (por convite) receber um email quando um convite expirar ou um usuário for criado. Se você não escolheu o método de login Jellyfin, certifique-se de fornecer seu endereço de e-mail."
+        "title": "Notificações do Administrador",
+        "description": "Se ativado, você pode escolher (por convite) receber uma mensagem quando um convite expirar ou um usuário for criado. Se você não escolheu o método de login Jellyfin, certifique-se de fornecer seu endereço de e-mail ou adicione outro método de contato posteriormente."
     },
     "welcomeEmails": {
-        "title": "Email de boas-vindas",
-        "description": "Se habilitado, um email será enviado para os novos usuários Jellyfin/Emby."
+        "title": "Mensagens de boas vindas",
+        "description": "Se habilitado, uma mensagem será enviada para novos usuários com a URL Jellyfin/Emby e seu nome de usuário."
     },
     "inviteEmails": {
-        "title": "Convidar por Emails",
-        "description": "Se ativado, você pode enviar convites diretamente para o endereço de email do usuário. Como você pode estar usando um proxy reverso, é necessário fornecer a URL de onde os convites são acessados. Escreva a sua URL Base e acrescente '/invite'."
+        "title": "Convite por Mensagens",
+        "description": "Se ativado, você pode enviar convites diretamente para o endereço de e-mail do usuário, Discord ou Matrix. Como você pode estar usando um proxy reverso, é necessário fornecer a URL de onde os convites são acessados. Escreva a sua base de URL e acrescente '/ invite'."
     },
     "passwordResets": {
         "title": "Redefinir Senha",
@@ -104,7 +104,9 @@
         "pathToJellyfinNotice": "Se você não sabe o local onde fica, tente redefinir sua senha no Jellyfin. Um pop-up com '<path to jellyfin>/passwordreset-*.json' aparecerá.",
         "resetLinks": "Envie um link em vez de um PIN",
         "resetLinksNotice": "Se a integração do Ombi estiver habilitada, use para sincronizar as redefinições de senha do Jellyfin com o Ombi.",
-        "resetLinksLanguage": "Idioma do link de redefinição padrão"
+        "resetLinksLanguage": "Idioma do link de redefinição padrão",
+        "setPassword": "Definir a senha por meio de link",
+        "setPasswordNotice": "Se habilitar significa que o usuário não precisa alterar a senha do PIN após a redefinição. A validação de senha também será aplicada."
     },
     "passwordValidation": {
         "title": "Validar Senha",
@@ -133,5 +135,9 @@
         "updateChannel": "Canal de Atualização",
         "stable": "Estável",
         "unstable": "Instável"
+    },
+    "messages": {
+        "title": "Mensagens",
+        "description": "jfa-go pode enviar redefinições de senha e várias mensagens por e-mail, Discord, Telegram e/ou Matrix. Você pode configurar o e-mail abaixo e os outros podem ser configurados em Configurações posteriormente. As instruções podem ser encontradas em {n}. Se você não precisar, pode desativar esses recursos aqui."
     }
 }
