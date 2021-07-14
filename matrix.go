@@ -2,17 +2,18 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"strings"
+	"time"
 
 	"database/sql"
 
 	"github.com/gomarkdown/markdown"
+	_ "github.com/mattn/go-sqlite3"
 	gomatrix "maunium.net/go/mautrix"
 	"maunium.net/go/mautrix/crypto"
 	"maunium.net/go/mautrix/event"
 	"maunium.net/go/mautrix/id"
-
-	_ "modernc.org/sqlite"
 )
 
 type MatrixDaemon struct {
@@ -23,10 +24,11 @@ type MatrixDaemon struct {
 	tokens          map[string]UnverifiedUser // Map of tokens to users
 	languages       map[id.RoomID]string      // Map of roomIDs to language codes
 	isEncrypted     map[id.RoomID]bool
-	cryptoStore     *crypto.SQLCryptoStore
+	cryptoStore     *crypto.GobStore
 	olm             *crypto.OlmMachine
 	db              *sql.DB
 	app             *appContext
+	start           int64
 }
 
 type UnverifiedUser struct {
@@ -43,7 +45,8 @@ type MatrixUser struct {
 }
 
 func (m *MatrixDaemon) IsEncrypted(roomID id.RoomID) bool {
-	return m.isEncrypted[roomID]
+	encrypted, ok := m.isEncrypted[roomID]
+	return ok && encrypted
 }
 
 func (m *MatrixDaemon) GetEncryptionEvent(roomID id.RoomID) *event.EncryptionEventContent {
@@ -55,7 +58,14 @@ func (m *MatrixDaemon) GetEncryptionEvent(roomID id.RoomID) *event.EncryptionEve
 }
 
 // Users are assumed to only have one common channel with the bot, so we can stub this out.
-func (m *MatrixDaemon) FindSharedRooms(userID id.UserID) []id.RoomID { return []id.RoomID{} }
+func (m *MatrixDaemon) FindSharedRooms(userID id.UserID) []id.RoomID {
+	for _, user := range m.app.storage.matrix {
+		if id.UserID(user.UserID) == userID {
+			return []id.RoomID{id.RoomID(user.RoomID)}
+		}
+	}
+	return []id.RoomID{}
+}
 
 type olmLogger struct {
 	app *appContext
@@ -121,18 +131,30 @@ func newMatrixDaemon(app *appContext) (d *MatrixDaemon, err error) {
 		}
 		d.isEncrypted[id.RoomID(user.RoomID)] = user.Encrypted
 	}
-	d.db, err = sql.Open("sqlite", app.config.Section("files").Key("matrix_sql").String())
-	olmLog := &olmLogger{app}
-	d.cryptoStore = crypto.NewSQLCryptoStore(d.db, "sqlite3", "jfa-go", "jfa-go", []byte("jfa-go"), olmLog)
-	err = d.cryptoStore.CreateTables()
+	dbPath := app.config.Section("files").Key("matrix_sql").String()
+	// If the db is maintained after restart, element reports "The secure channel with the sender was corrupted" when sending a message from the bot.
+	// This obviously isn't right, but it seems to work.
+	// Since its not really used anyway, just use the deprecated GobStore. This reduces cgo usage anyway.
+	os.Remove(dbPath)
+	cryptoStore, err := crypto.NewGobStore(dbPath)
+	// d.db, err = sql.Open("sqlite3", dbPath)
 	if err != nil {
 		return
 	}
-	d.olm = crypto.NewOlmMachine(d.bot, olmLog, d.cryptoStore, crypto.StateStore(d))
+	olmLog := &olmLogger{app}
+	// deviceID := "jfa-go" + commit
+	// cryptoStore := crypto.NewSQLCryptoStore(d.db, "sqlite3", string(d.userID)+deviceID, id.DeviceID(deviceID), []byte("jfa-go"), olmLog)
+	// err = cryptoStore.CreateTables()
+	// if err != nil {
+	// 	return
+	// }
+	d.olm = crypto.NewOlmMachine(d.bot, olmLog, cryptoStore, crypto.StateStore(d))
+	// d.olm.AllowUnverifiedDevices = true
 	err = d.olm.Load()
 	if err != nil {
 		return
 	}
+	d.cryptoStore = cryptoStore
 	return
 }
 
@@ -158,10 +180,14 @@ func (d *MatrixDaemon) generateAccessToken(homeserver, username, password string
 }
 
 func (d *MatrixDaemon) run() {
+	d.start = time.Now().UnixNano() / 1000000
 	d.app.info.Println("Starting Matrix bot daemon")
 	syncer := d.bot.Syncer.(*gomatrix.DefaultSyncer)
 	syncer.OnEventType(event.EventMessage, d.handleMessage)
 	syncer.OnEventType(event.EventEncrypted, func(source gomatrix.EventSource, evt *event.Event) {
+		if evt.Timestamp < d.start {
+			return
+		}
 		decrypted, err := d.olm.DecryptMegolmEvent(evt)
 		if err != nil {
 			d.app.err.Printf("Failed to decrypt Matrix message: %v", err)
@@ -181,6 +207,7 @@ func (d *MatrixDaemon) run() {
 }
 
 func (d *MatrixDaemon) Shutdown() {
+	d.olm.FlushStore()
 	d.bot.StopSync()
 	d.db.Close()
 	d.Stopped = true
@@ -188,6 +215,9 @@ func (d *MatrixDaemon) Shutdown() {
 }
 
 func (d *MatrixDaemon) handleMessage(source gomatrix.EventSource, evt *event.Event) {
+	if evt.Timestamp < d.start {
+		return
+	}
 	if evt.Sender == d.userID {
 		return
 	}
@@ -323,7 +353,7 @@ func (d *MatrixDaemon) SendEncrypted(content *event.MessageEventContent, users .
 		var encrypted *event.EncryptedEventContent
 		encrypted, err = d.olm.EncryptMegolmEvent(id.RoomID(user.RoomID), event.EventMessage, content)
 		if err == crypto.SessionExpired || err == crypto.SessionNotShared || err == crypto.NoGroupSession {
-			err = d.olm.ShareGroupSession(id.RoomID(user.RoomID), []id.UserID{id.UserID(user.UserID)})
+			err = d.olm.ShareGroupSession(id.RoomID(user.RoomID), []id.UserID{id.UserID(user.UserID), d.userID})
 			if err != nil {
 				return
 			}
@@ -332,7 +362,7 @@ func (d *MatrixDaemon) SendEncrypted(content *event.MessageEventContent, users .
 		if err != nil {
 			return
 		}
-		_, err = d.bot.SendMessageEvent(id.RoomID(user.RoomID), event.EventEncrypted, encrypted)
+		_, err = d.bot.SendMessageEvent(id.RoomID(user.RoomID), event.EventEncrypted, &event.Content{Parsed: encrypted})
 		if err != nil {
 			return
 		}

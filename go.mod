@@ -41,6 +41,7 @@ require (
 	github.com/lithammer/shortuuid/v3 v3.0.4
 	github.com/mailgun/mailgun-go/v4 v4.5.1
 	github.com/mailru/easyjson v0.7.7 // indirect
+	github.com/mattn/go-sqlite3 v1.14.7 // indirect
 	github.com/pkg/browser v0.0.0-20210606212950-a7b7a6107d32
 	github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966
 	github.com/smartystreets/goconvey v1.6.4 // indirect
