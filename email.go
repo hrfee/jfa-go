@@ -348,12 +348,16 @@ func (emailer *Emailer) constructTemplate(subject, md string, app *appContext, u
 	text := stripMarkdown(md)
 	message := app.config.Section("messages").Key("message").String()
 	var err error
-	email.HTML, email.Text, email.Markdown, err = emailer.construct(app, "template_email", "email_", map[string]interface{}{
+	data := map[string]interface{}{
 		"text":      template.HTML(html),
 		"plaintext": text,
 		"message":   message,
 		"md":        md,
-	})
+	}
+	if len(username) != 0 {
+		data["username"] = username
+	}
+	email.HTML, email.Text, email.Markdown, err = emailer.construct(app, "template_email", "email_", data)
 	if err != nil {
 		return nil, err
 	}
