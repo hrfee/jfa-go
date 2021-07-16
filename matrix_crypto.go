@@ -12,6 +12,11 @@ import (
 	"maunium.net/go/mautrix/id"
 )
 
+type Crypto struct {
+	cryptoStore *crypto.GobStore
+	olm         *crypto.OlmMachine
+}
+
 func MatrixE2EE() bool { return true }
 
 type stateStore struct {
@@ -105,13 +110,16 @@ func InitMatrixCrypto(d *MatrixDaemon) (err error) {
 	// if err != nil {
 	// 	return
 	// }
-	d.olm = crypto.NewOlmMachine(d.bot, olmLog, cryptoStore, &stateStore{&d.isEncrypted})
-	d.olm.AllowUnverifiedDevices = true
-	err = d.olm.Load()
+	olm := crypto.NewOlmMachine(d.bot, olmLog, cryptoStore, &stateStore{&d.isEncrypted})
+	olm.AllowUnverifiedDevices = true
+	err = d.crypto.olm.Load()
 	if err != nil {
 		return
 	}
-	d.cryptoStore = cryptoStore
+	d.crypto = Crypto{
+		cryptoStore: cryptoStore,
+		olm:         olm,
+	}
 	return
 }
 
@@ -120,11 +128,11 @@ func HandleSyncerCrypto(startTime int64, d *MatrixDaemon, syncer *mautrix.Defaul
 		return
 	}
 	syncer.OnSync(func(resp *mautrix.RespSync, since string) bool {
-		d.olm.ProcessSyncResponse(resp, since)
+		d.crypto.olm.ProcessSyncResponse(resp, since)
 		return true
 	})
 	syncer.OnEventType(event.StateMember, func(source mautrix.EventSource, evt *event.Event) {
-		d.olm.HandleMemberEvent(evt)
+		d.crypto.olm.HandleMemberEvent(evt)
 		// if evt.Content.AsMember().Membership != event.MembershipJoin {
 		// 	return
 		// }
@@ -133,7 +141,7 @@ func HandleSyncerCrypto(startTime int64, d *MatrixDaemon, syncer *mautrix.Defaul
 		// 	fmt.Println("FS", err)
 		// 	return
 		// }
-		// err = d.olm.ShareGroupSession(evt.RoomID, userIDs)
+		// err = d.crypto.olm.ShareGroupSession(evt.RoomID, userIDs)
 		// if err != nil {
 		// 	fmt.Println("FS", err)
 		// 	return
@@ -143,8 +151,8 @@ func HandleSyncerCrypto(startTime int64, d *MatrixDaemon, syncer *mautrix.Defaul
 		if evt.Timestamp < startTime {
 			return
 		}
-		fmt.Printf("%+v\n", d.cryptoStore.GroupSessions)
-		decrypted, err := d.olm.DecryptMegolmEvent(evt)
+		fmt.Printf("%+v\n", d.crypto.cryptoStore.GroupSessions)
+		decrypted, err := d.crypto.olm.DecryptMegolmEvent(evt)
 		if err != nil {
 			d.app.err.Printf("Failed to decrypt Matrix message: %v", err)
 			return
@@ -155,7 +163,7 @@ func HandleSyncerCrypto(startTime int64, d *MatrixDaemon, syncer *mautrix.Defaul
 
 func CryptoShutdown(d *MatrixDaemon) {
 	if d.Encryption {
-		d.olm.FlushStore()
+		d.crypto.olm.FlushStore()
 	}
 }
 
@@ -181,7 +189,7 @@ func EncryptRoom(d *MatrixDaemon, room *mautrix.RespCreateRoom, userID id.UserID
 		return
 	}
 	userIDs = append(userIDs, userID)
-	err = d.olm.ShareGroupSession(room.RoomID, userIDs)
+	err = d.crypto.olm.ShareGroupSession(room.RoomID, userIDs)
 	return
 }
 
@@ -191,19 +199,19 @@ func SendEncrypted(d *MatrixDaemon, content *event.MessageEventContent, roomID i
 		return
 	}
 	var encrypted *event.EncryptedEventContent
-	encrypted, err = d.olm.EncryptMegolmEvent(roomID, event.EventMessage, content)
+	encrypted, err = d.crypto.olm.EncryptMegolmEvent(roomID, event.EventMessage, content)
 	if err == crypto.SessionExpired || err == crypto.SessionNotShared || err == crypto.NoGroupSession {
-		// err = d.olm.ShareGroupSession(id.RoomID(user.RoomID), []id.UserID{id.UserID(user.UserID), d.userID})
+		// err = d.crypto.olm.ShareGroupSession(id.RoomID(user.RoomID), []id.UserID{id.UserID(user.UserID), d.userID})
 		var userIDs []id.UserID
 		userIDs, err = d.getUserIDs(roomID)
 		if err != nil {
 			return
 		}
-		err = d.olm.ShareGroupSession(roomID, userIDs)
+		err = d.crypto.olm.ShareGroupSession(roomID, userIDs)
 		if err != nil {
 			return
 		}
-		encrypted, err = d.olm.EncryptMegolmEvent(roomID, event.EventMessage, content)
+		encrypted, err = d.crypto.olm.EncryptMegolmEvent(roomID, event.EventMessage, content)
 	}
 	if err != nil {
 		return

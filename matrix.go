@@ -7,7 +7,6 @@ import (
 
 	"github.com/gomarkdown/markdown"
 	"maunium.net/go/mautrix"
-	"maunium.net/go/mautrix/crypto"
 	"maunium.net/go/mautrix/event"
 	"maunium.net/go/mautrix/id"
 )
@@ -21,8 +20,7 @@ type MatrixDaemon struct {
 	languages       map[id.RoomID]string      // Map of roomIDs to language codes
 	Encryption      bool
 	isEncrypted     map[id.RoomID]bool
-	cryptoStore     *crypto.GobStore
-	olm             *crypto.OlmMachine
+	crypto          Crypto
 	app             *appContext
 	start           int64
 }
