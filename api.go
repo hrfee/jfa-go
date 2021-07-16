@@ -1667,6 +1667,16 @@ func (app *appContext) GetConfig(gc *gin.Context) {
 			}
 		}
 	}
+	if !MatrixE2EE() {
+		delete(resp.Sections["matrix"].Settings, "encryption")
+		for i, v := range resp.Sections["matrix"].Order {
+			if v == "encryption" {
+				sect := resp.Sections["matrix"]
+				sect.Order = append(sect.Order[:i], sect.Order[i+1:]...)
+				resp.Sections["matrix"] = sect
+			}
+		}
+	}
 	for sectName, section := range resp.Sections {
 		for settingName, setting := range section.Settings {
 			val := app.config.Section(sectName).Key(settingName)
@@ -2571,18 +2581,20 @@ func (app *appContext) MatrixConnect(gc *gin.Context) {
 	if app.storage.matrix == nil {
 		app.storage.matrix = map[string]MatrixUser{}
 	}
-	roomID, err := app.matrix.CreateRoom(req.UserID)
+	roomID, encrypted, err := app.matrix.CreateRoom(req.UserID)
 	if err != nil {
 		app.err.Printf("Matrix: Failed to create room: %v", err)
 		respondBool(500, false, gc)
 		return
 	}
 	app.storage.matrix[req.JellyfinID] = MatrixUser{
-		UserID:  req.UserID,
-		RoomID:  roomID,
-		Lang:    "en-us",
-		Contact: true,
+		UserID:    req.UserID,
+		RoomID:    string(roomID),
+		Lang:      "en-us",
+		Contact:   true,
+		Encrypted: encrypted,
 	}
+	app.matrix.isEncrypted[roomID] = encrypted
 	if err := app.storage.storeMatrixUsers(); err != nil {
 		app.err.Printf("Failed to store Matrix users: %v", err)
 		respondBool(500, false, gc)
