@@ -355,7 +355,7 @@ func (emailer *Emailer) constructTemplate(subject, md string, app *appContext, u
 		"md":        md,
 	}
 	if len(username) != 0 {
-		data["username"] = username
+		data["username"] = username[0]
 	}
 	email.HTML, email.Text, email.Markdown, err = emailer.construct(app, "template_email", "email_", data)
 	if err != nil {
