@@ -29,6 +29,7 @@ require (
 	github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible
 	github.com/golang/protobuf v1.4.3 // indirect
 	github.com/gomarkdown/markdown v0.0.0-20210408062403-ad838ccf8cdd
+	github.com/google/go-cmp v0.5.3 // indirect
 	github.com/google/uuid v1.1.2 // indirect
 	github.com/hrfee/jfa-go/common v0.0.0-20210105184019-fdc97b4e86cc
 	github.com/hrfee/jfa-go/docs v0.0.0-20201112212552-b6f3cd7c1f71
@@ -57,5 +58,4 @@ require (
 	google.golang.org/protobuf v1.25.0 // indirect
 	gopkg.in/ini.v1 v1.62.0
 	maunium.net/go/mautrix v0.9.14
-	modernc.org/sqlite v1.11.2
 )
