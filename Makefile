@@ -18,21 +18,29 @@ else ifneq ($(UPDATER), off)
 	LDFLAGS := $(LDFLAGS) -X main.updater=$(UPDATER)
 endif
 
+
+
 INTERNAL ?= on
+TRAY ?= off
+E2EE ?= off
+TAGS := -tags "
+
 ifeq ($(INTERNAL), on)
-	TAGS :=
 	DATA := data
 else
 	DATA := build/data
-	TAGS := -tags external
+	TAGS := $(TAGS) external
 endif
 
-TRAY ?= off
-ifeq ($(INTERNAL)$(TRAY), offon)
+ifeq ($(TRAY), on)
 	TAGS := $(TAGS) tray
-else ifeq ($(INTERNAL)$(TRAY), onon)
-	TAGS := -tags tray
 endif
+
+ifeq ($(E2EE), on)
+	TAGS := $(TAGS) e2ee
+endif
+
+TAGS := $(TAGS)"
 
 OS := $(shell go env GOOS)
 ifeq ($(TRAY)$(OS), onwindows)

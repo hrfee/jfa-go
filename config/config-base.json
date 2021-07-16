@@ -747,6 +747,16 @@
                     ],
                     "value": "en-us",
                     "description": "Default Matrix message language. Visit weblate if you'd like to translate."
+                },
+                "encryption": {
+                    "name": "End-to-end encryption (experimental)",
+                    "required": false,
+                    "requires_restart": true,
+                    "depends_true": "enabled",
+                    "advanced": true,
+                    "type": "bool",
+                    "value": false,
+                    "description": "Enable end-to-end encryption for messages. Very experimental, currently does not support receiving commands (e.g !lang)."
                 }
             }
         },

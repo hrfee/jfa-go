@@ -1667,6 +1667,16 @@ func (app *appContext) GetConfig(gc *gin.Context) {
 			}
 		}
 	}
+	if !MatrixE2EE() {
+		delete(resp.Sections["matrix"].Settings, "encryption")
+		for i, v := range resp.Sections["matrix"].Order {
+			if v == "encryption" {
+				sect := resp.Sections["matrix"]
+				sect.Order = append(sect.Order[:i], sect.Order[i+1:]...)
+				resp.Sections["matrix"] = sect
+			}
+		}
+	}
 	for sectName, section := range resp.Sections {
 		for settingName, setting := range section.Settings {
 			val := app.config.Section(sectName).Key(settingName)

@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/gomarkdown/markdown"
-	gomatrix "maunium.net/go/mautrix"
+	"maunium.net/go/mautrix"
 	"maunium.net/go/mautrix/crypto"
 	"maunium.net/go/mautrix/event"
 	"maunium.net/go/mautrix/id"
@@ -15,7 +15,7 @@ import (
 type MatrixDaemon struct {
 	Stopped         bool
 	ShutdownChannel chan string
-	bot             *gomatrix.Client
+	bot             *mautrix.Client
 	userID          id.UserID
 	tokens          map[string]UnverifiedUser // Map of tokens to users
 	languages       map[id.RoomID]string      // Map of roomIDs to language codes
@@ -40,9 +40,9 @@ type MatrixUser struct {
 	Contact   bool
 }
 
-var matrixFilter = gomatrix.Filter{
-	Room: gomatrix.RoomFilter{
-		Timeline: gomatrix.FilterPart{
+var matrixFilter = mautrix.Filter{
+	Room: mautrix.RoomFilter{
+		Timeline: mautrix.FilterPart{
 			Types: []event.Type{
 				event.EventMessage,
 				event.EventEncrypted,
@@ -76,7 +76,7 @@ func newMatrixDaemon(app *appContext) (d *MatrixDaemon, err error) {
 		app:             app,
 		start:           time.Now().UnixNano() / 1e6,
 	}
-	d.bot, err = gomatrix.NewClient(homeserver, d.userID, token)
+	d.bot, err = mautrix.NewClient(homeserver, d.userID, token)
 	if err != nil {
 		return
 	}
@@ -96,16 +96,16 @@ func newMatrixDaemon(app *appContext) (d *MatrixDaemon, err error) {
 }
 
 func (d *MatrixDaemon) generateAccessToken(homeserver, username, password string) (string, error) {
-	req := &gomatrix.ReqLogin{
-		Type: gomatrix.AuthTypePassword,
-		Identifier: gomatrix.UserIdentifier{
-			Type: gomatrix.IdentifierTypeUser,
+	req := &mautrix.ReqLogin{
+		Type: mautrix.AuthTypePassword,
+		Identifier: mautrix.UserIdentifier{
+			Type: mautrix.IdentifierTypeUser,
 			User: username,
 		},
 		Password: password,
 		DeviceID: id.DeviceID("jfa-go-" + commit),
 	}
-	bot, err := gomatrix.NewClient(homeserver, id.UserID(username), "")
+	bot, err := mautrix.NewClient(homeserver, id.UserID(username), "")
 	if err != nil {
 		return "", err
 	}
@@ -119,7 +119,7 @@ func (d *MatrixDaemon) generateAccessToken(homeserver, username, password string
 func (d *MatrixDaemon) run() {
 	startTime := d.start
 	d.app.info.Println("Starting Matrix bot daemon")
-	syncer := d.bot.Syncer.(*gomatrix.DefaultSyncer)
+	syncer := d.bot.Syncer.(*mautrix.DefaultSyncer)
 	HandleSyncerCrypto(startTime, d, syncer)
 	syncer.OnEventType(event.EventMessage, d.handleMessage)
 
@@ -135,7 +135,7 @@ func (d *MatrixDaemon) Shutdown() {
 	close(d.ShutdownChannel)
 }
 
-func (d *MatrixDaemon) handleMessage(source gomatrix.EventSource, evt *event.Event) {
+func (d *MatrixDaemon) handleMessage(source mautrix.EventSource, evt *event.Event) {
 	if evt.Timestamp < d.start {
 		return
 	}
@@ -189,8 +189,8 @@ func (d *MatrixDaemon) commandLang(evt *event.Event, code, lang string) {
 }
 
 func (d *MatrixDaemon) CreateRoom(userID string) (roomID id.RoomID, encrypted bool, err error) {
-	var room *gomatrix.RespCreateRoom
-	room, err = d.bot.CreateRoom(&gomatrix.ReqCreateRoom{
+	var room *mautrix.RespCreateRoom
+	room, err = d.bot.CreateRoom(&mautrix.ReqCreateRoom{
 		Visibility: "private",
 		Invite:     []id.UserID{id.UserID(userID)},
 		Topic:      d.app.config.Section("matrix").Key("topic").String(),
@@ -221,7 +221,7 @@ func (d *MatrixDaemon) SendStart(userID string) (ok bool) {
 			Encrypted: encrypted,
 		},
 	}
-	err = d.send(
+	err = d.sendToRoom(
 		&event.MessageEventContent{
 			MsgType: event.MsgText,
 			Body: d.app.storage.lang.Telegram[lang].Strings.get("matrixStartMessage") + "\n\n" + pin + "\n\n" +
@@ -237,15 +237,17 @@ func (d *MatrixDaemon) SendStart(userID string) (ok bool) {
 	return
 }
 
-func (d *MatrixDaemon) send(content *event.MessageEventContent, roomID id.RoomID) (err error) {
+func (d *MatrixDaemon) sendToRoom(content *event.MessageEventContent, roomID id.RoomID) (err error) {
 	if encrypted, ok := d.isEncrypted[roomID]; ok && encrypted {
 		err = SendEncrypted(d, content, roomID)
 	} else {
-		_, err = d.bot.SendMessageEvent(roomID, event.NewEventType("m.room.message"), content, gomatrix.ReqSendEvent{})
+		_, err = d.bot.SendMessageEvent(roomID, event.EventMessage, content, mautrix.ReqSendEvent{})
 	}
-	if err != nil {
-		return
-	}
+	return
+}
+
+func (d *MatrixDaemon) send(content *event.MessageEventContent, roomID id.RoomID) (err error) {
+	_, err = d.bot.SendMessageEvent(roomID, event.EventMessage, content, mautrix.ReqSendEvent{})
 	return
 }
 
@@ -264,11 +266,7 @@ func (d *MatrixDaemon) Send(message *Message, users ...MatrixUser) (err error) {
 		content.Format = "org.matrix.custom.html"
 	}
 	for _, user := range users {
-		if user.Encrypted {
-			err = SendEncrypted(d, content, id.RoomID(user.RoomID))
-		} else {
-			err = d.send(content, id.RoomID(user.RoomID))
-		}
+		err = d.sendToRoom(content, id.RoomID(user.RoomID))
 		if err != nil {
 			return
 		}

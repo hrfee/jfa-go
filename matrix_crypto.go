@@ -1,3 +1,5 @@
+// +build e2ee
+
 package main
 
 import (
@@ -5,11 +7,12 @@ import (
 	"strings"
 
 	"maunium.net/go/mautrix"
-	gomatrix "maunium.net/go/mautrix"
 	"maunium.net/go/mautrix/crypto"
 	"maunium.net/go/mautrix/event"
 	"maunium.net/go/mautrix/id"
 )
+
+func MatrixE2EE() bool { return true }
 
 type stateStore struct {
 	isEncrypted *map[id.RoomID]bool
@@ -17,7 +20,6 @@ type stateStore struct {
 
 func (m *stateStore) IsEncrypted(roomID id.RoomID) bool {
 	// encrypted, ok := (*m.isEncrypted)[roomID]
-	// fmt.Println("ISENCRYPTED", roomID, ok && encrypted)
 	// return ok && encrypted
 	return true
 }
@@ -117,11 +119,11 @@ func HandleSyncerCrypto(startTime int64, d *MatrixDaemon, syncer *mautrix.Defaul
 	if !d.Encryption {
 		return
 	}
-	syncer.OnSync(func(resp *gomatrix.RespSync, since string) bool {
+	syncer.OnSync(func(resp *mautrix.RespSync, since string) bool {
 		d.olm.ProcessSyncResponse(resp, since)
 		return true
 	})
-	syncer.OnEventType(event.StateMember, func(source gomatrix.EventSource, evt *event.Event) {
+	syncer.OnEventType(event.StateMember, func(source mautrix.EventSource, evt *event.Event) {
 		d.olm.HandleMemberEvent(evt)
 		// if evt.Content.AsMember().Membership != event.MembershipJoin {
 		// 	return
@@ -137,7 +139,7 @@ func HandleSyncerCrypto(startTime int64, d *MatrixDaemon, syncer *mautrix.Defaul
 		// 	return
 		// }
 	})
-	syncer.OnEventType(event.EventEncrypted, func(source gomatrix.EventSource, evt *event.Event) {
+	syncer.OnEventType(event.EventEncrypted, func(source mautrix.EventSource, evt *event.Event) {
 		if evt.Timestamp < startTime {
 			return
 		}
@@ -147,7 +149,6 @@ func HandleSyncerCrypto(startTime int64, d *MatrixDaemon, syncer *mautrix.Defaul
 			d.app.err.Printf("Failed to decrypt Matrix message: %v", err)
 			return
 		}
-		fmt.Println("RECV", decrypted.Content.Raw["body"])
 		d.handleMessage(source, decrypted)
 	})
 }
@@ -192,14 +193,12 @@ func SendEncrypted(d *MatrixDaemon, content *event.MessageEventContent, roomID i
 	var encrypted *event.EncryptedEventContent
 	encrypted, err = d.olm.EncryptMegolmEvent(roomID, event.EventMessage, content)
 	if err == crypto.SessionExpired || err == crypto.SessionNotShared || err == crypto.NoGroupSession {
-		fmt.Println("SGS")
 		// err = d.olm.ShareGroupSession(id.RoomID(user.RoomID), []id.UserID{id.UserID(user.UserID), d.userID})
 		var userIDs []id.UserID
 		userIDs, err = d.getUserIDs(roomID)
 		if err != nil {
 			return
 		}
-		fmt.Println("SHARETO", userIDs)
 		err = d.olm.ShareGroupSession(roomID, userIDs)
 		if err != nil {
 			return
