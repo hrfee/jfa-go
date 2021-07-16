@@ -17,3 +17,5 @@ server.crt
 instructions-debian.txt
 cl.md
 ./telegram/
+mautrix/
+matacc.txt
