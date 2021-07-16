@@ -202,3 +202,24 @@ export function removeLoader(el: HTMLElement, small: boolean = true) {
         if (dot) { dot.remove(); }
     }
 }
+
+export function insertText(textarea: HTMLTextAreaElement, text: string) {
+    // https://kubyshkin.name/posts/insert-text-into-textarea-at-cursor-position <3
+    const isSuccess = document.execCommand("insertText", false, text);
+
+    // Firefox (non-standard method)
+    if (!isSuccess && typeof textarea.setRangeText === "function") {
+        const start = textarea.selectionStart;
+        textarea.setRangeText(text);
+        // update cursor to be at the end of insertion
+        textarea.selectionStart = textarea.selectionEnd = start + text.length;
+
+        // Notify any possible listeners of the change
+        const e = document.createEvent("UIEvent");
+        e.initEvent("input", true, false);
+        textarea.dispatchEvent(e);
+        textarea.focus();
+    }
+}
+
+

@@ -337,7 +337,12 @@ func (emailer *Emailer) constructConfirmation(code, username, key string, app *a
 	return email, nil
 }
 
-func (emailer *Emailer) constructTemplate(subject, md string, app *appContext) (*Message, error) {
+// username is optional, but should only be passed once.
+func (emailer *Emailer) constructTemplate(subject, md string, app *appContext, username ...string) (*Message, error) {
+	if len(username) != 0 {
+		md = templateEmail(md, []string{"{username}"}, nil, map[string]interface{}{"username": username[0]})
+		subject = templateEmail(subject, []string{"{username}"}, nil, map[string]interface{}{"username": username[0]})
+	}
 	email := &Message{Subject: subject}
 	html := markdown.ToHTML([]byte(md), nil, renderer)
 	text := stripMarkdown(md)

@@ -1,4 +1,4 @@
-import { _get, _post, toggleLoader, addLoader, removeLoader } from "../modules/common.js";
+import { _get, _post, toggleLoader, addLoader, removeLoader, insertText } from "../modules/common.js";
 import { Marked } from "@ts-stack/markdown";
 import { stripMarkdown } from "../modules/stripmd.js";
 
@@ -850,24 +850,6 @@ class EmailEditor {
     // private _timeout: number;
     // private _finishInterval = 200;
 
-    insert = (textarea: HTMLTextAreaElement, text: string) => { // https://kubyshkin.name/posts/insert-text-into-textarea-at-cursor-position <3
-        const isSuccess = document.execCommand("insertText", false, text);
-
-        // Firefox (non-standard method)
-        if (!isSuccess && typeof textarea.setRangeText === "function") {
-            const start = textarea.selectionStart;
-            textarea.setRangeText(text);
-            // update cursor to be at the end of insertion
-            textarea.selectionStart = textarea.selectionEnd = start + text.length;
-
-            // Notify any possible listeners of the change
-            const e = document.createEvent("UIEvent");
-            e.initEvent("input", true, false);
-            textarea.dispatchEvent(e);
-            textarea.focus();
-        }
-    }
-
     loadEditor = (id: string) => {
         this._currentID = id;
         _get("/config/emails/" + id, null, (req: XMLHttpRequest) => {
@@ -905,7 +887,7 @@ class EmailEditor {
                 for (let i = 0; i < this._templ.variables.length; i++) {
                     buttons[i].innerHTML = `<span class="monospace">` + this._templ.variables[i] + `</span>`;
                     buttons[i].onclick = () => {
-                        this.insert(this._textArea, this._templ.variables[i]);
+                        insertText(this._textArea, this._templ.variables[i]);
                         this.loadPreview();
                         // this._timeout = setTimeout(this.loadPreview, this._finishInterval);
                     }
@@ -925,7 +907,7 @@ class EmailEditor {
                     for (let i = 0; i < this._templ.conditionals.length; i++) {
                         buttons[i].innerHTML = `<span class="monospace">{if ` + this._templ.conditionals[i].slice(1) + `</span>`;
                         buttons[i].onclick = () => {
-                            this.insert(this._textArea, "{if " + this._templ.conditionals[i].slice(1) + "{endif}");
+                            insertText(this._textArea, "{if " + this._templ.conditionals[i].slice(1) + "{endif}");
                             this.loadPreview();
                             // this._timeout = setTimeout(this.loadPreview, this._finishInterval);
                         }

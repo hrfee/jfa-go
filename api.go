@@ -806,15 +806,37 @@ func (app *appContext) Announce(gc *gin.Context) {
 		respondBool(400, false, gc)
 		return
 	}
-	msg, err := app.email.constructTemplate(req.Subject, req.Message, app)
-	if err != nil {
-		app.err.Printf("Failed to construct announcement messages: %v", err)
-		respondBool(500, false, gc)
-		return
-	} else if err := app.sendByID(msg, req.Users...); err != nil {
-		app.err.Printf("Failed to send announcement messages: %v", err)
-		respondBool(500, false, gc)
-		return
+	// Generally, we only need to construct once. If {username} is included, however, this needs to be done for each user.
+	unique := strings.Contains(req.Message, "{username}")
+	if unique {
+		for _, userID := range req.Users {
+			user, status, err := app.jf.UserByID(userID, false)
+			if status != 200 || err != nil {
+				app.err.Printf("Failed to get user with ID \"%s\" (%d): %v", userID, status, err)
+				continue
+			}
+			msg, err := app.email.constructTemplate(req.Subject, req.Message, app, user.Name)
+			if err != nil {
+				app.err.Printf("Failed to construct announcement message: %v", err)
+				respondBool(500, false, gc)
+				return
+			} else if err := app.sendByID(msg, userID); err != nil {
+				app.err.Printf("Failed to send announcement message: %v", err)
+				respondBool(500, false, gc)
+				return
+			}
+		}
+	} else {
+		msg, err := app.email.constructTemplate(req.Subject, req.Message, app)
+		if err != nil {
+			app.err.Printf("Failed to construct announcement messages: %v", err)
+			respondBool(500, false, gc)
+			return
+		} else if err := app.sendByID(msg, req.Users...); err != nil {
+			app.err.Printf("Failed to send announcement messages: %v", err)
+			respondBool(500, false, gc)
+			return
+		}
 	}
 	app.info.Println("Sent announcement messages")
 	respondBool(200, true, gc)

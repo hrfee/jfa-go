@@ -1,4 +1,4 @@
-import { _get, _post, _delete, toggleLoader, addLoader, removeLoader, toDateString } from "../modules/common.js";
+import { _get, _post, _delete, toggleLoader, addLoader, removeLoader, toDateString, insertText } from "../modules/common.js";
 import { templateEmail } from "../modules/settings.js";
 import { Marked } from "@ts-stack/markdown";
 import { stripMarkdown } from "../modules/stripmd.js";
@@ -1254,6 +1254,11 @@ export class accountsList {
         });
 
         this._announceSaveButton.onclick = this.saveAnnouncement;
+        const announceVarUsername = document.getElementById("announce-variables-username") as HTMLSpanElement;
+        announceVarUsername.onclick = () => {
+            insertText(this._announceTextarea, announceVarUsername.children[0].textContent);
+            this.loadPreview();
+        };
     }
 
     reload = () => {

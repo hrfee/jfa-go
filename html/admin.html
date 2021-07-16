@@ -164,6 +164,10 @@
                 <div class="row">
                     <div class="col flex-col content mt-half">
                         <div id="announce-details">
+                            <span class="label supra" for="editor-variables" id="label-editor-variables">{{ .strings.variables }}</span>
+                            <div id="announce-variables">
+                                <span class="button ~urge !normal mb-1 mt-half" id="announce-variables-username" style="margin-left: 0.25rem; margin-right: 0.25rem;"><span class="monospace">{username}</span></span>
+                            </div>
                             <label class="label supra" for="announce-subject"> {{ .strings.subject }}</label>
                             <input type="text" id="announce-subject" class="input ~neutral !normal mb-1 mt-half">
                             <label class="label supra" for="textarea-announce">{{ .strings.message }}</label>
