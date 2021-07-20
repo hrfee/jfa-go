@@ -140,7 +140,6 @@ func (d *MatrixDaemon) handleMessage(source mautrix.EventSource, evt *event.Even
 	if evt.Sender == d.userID {
 		return
 	}
-	fmt.Printf("RECV %+v\n", evt.Content)
 	lang := "en-us"
 	if l, ok := d.languages[evt.RoomID]; ok {
 		if _, ok := d.app.storage.lang.Telegram[l]; ok {

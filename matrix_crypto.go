@@ -3,7 +3,6 @@
 package main
 
 import (
-	"fmt"
 	"strings"
 
 	"maunium.net/go/mautrix"
@@ -96,7 +95,6 @@ func InitMatrixCrypto(d *MatrixDaemon) (err error) {
 	// If the db is maintained after restart, element reports "The secure channel with the sender was corrupted" when sending a message from the bot.
 	// This obviously isn't right, but it seems to work.
 	// Since its not really used anyway, just use the deprecated GobStore. This reduces cgo usage anyway.
-	// os.Remove(dbPath)
 	var cryptoStore *crypto.GobStore
 	cryptoStore, err = crypto.NewGobStore(dbPath)
 	// d.db, err = sql.Open("sqlite3", dbPath)
@@ -112,7 +110,7 @@ func InitMatrixCrypto(d *MatrixDaemon) (err error) {
 	// }
 	olm := crypto.NewOlmMachine(d.bot, olmLog, cryptoStore, &stateStore{&d.isEncrypted})
 	olm.AllowUnverifiedDevices = true
-	err = d.crypto.olm.Load()
+	err = olm.Load()
 	if err != nil {
 		return
 	}
@@ -151,8 +149,11 @@ func HandleSyncerCrypto(startTime int64, d *MatrixDaemon, syncer *mautrix.Defaul
 		if evt.Timestamp < startTime {
 			return
 		}
-		fmt.Printf("%+v\n", d.crypto.cryptoStore.GroupSessions)
 		decrypted, err := d.crypto.olm.DecryptMegolmEvent(evt)
+		// if strings.Contains(err.Error(), crypto.NoSessionFound.Error()) {
+		// 	d.app.err.Printf("Failed to decrypt Matrix message: no session found")
+		// 	return
+		// }
 		if err != nil {
 			d.app.err.Printf("Failed to decrypt Matrix message: %v", err)
 			return
@@ -189,7 +190,6 @@ func EncryptRoom(d *MatrixDaemon, room *mautrix.RespCreateRoom, userID id.UserID
 		return
 	}
 	userIDs = append(userIDs, userID)
-	err = d.crypto.olm.ShareGroupSession(room.RoomID, userIDs)
 	return
 }
 
