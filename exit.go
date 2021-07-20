@@ -6,12 +6,42 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"runtime"
+	"runtime/debug"
+	"strings"
 	"time"
-
-	"github.com/hrfee/jfa-go/logger"
 
 	"github.com/pkg/browser"
 )
+
+// https://gist.github.com/swdunlop/9629168
+func identifyPanic() string {
+	var name, file string
+	var line int
+	var pc [16]uintptr
+
+	n := runtime.Callers(4, pc[:])
+	for _, pc := range pc[:n] {
+		fn := runtime.FuncForPC(pc)
+		if fn == nil {
+			continue
+		}
+		file, line = fn.FileLine(pc)
+		name = fn.Name()
+		if !strings.HasPrefix(name, "runtime.") {
+			break
+		}
+	}
+
+	switch {
+	case name != "":
+		return fmt.Sprintf("%v:%v", name, line)
+	case file != "":
+		return fmt.Sprintf("%v:%v", file, line)
+	}
+
+	return fmt.Sprintf("pc:%x", pc)
+}
 
 // Exit dumps the last 100 lines of output to a crash file in /tmp (or equivalent), and generates a prettier HTML file containing it that is opened in the browser if possible.
 func Exit(err interface{}) {
@@ -20,13 +50,14 @@ func Exit(err interface{}) {
 		log.Fatalf("Failed to load template: %v", err)
 	}
 	logCache := lineCache.String()
+	logCache += "\n" + string(debug.Stack())
 	sanitized := sanitizeLog(logCache)
 	data := map[string]interface{}{
 		"Log":          logCache,
 		"SanitizedLog": sanitized,
 	}
 	if err != nil {
-		data["Err"] = fmt.Sprintf("%s %v", logger.Lshortfile(), err)
+		data["Err"] = fmt.Sprintf("%s %v", identifyPanic(), err)
 	}
 	fpath := filepath.Join(temp, "jfa-go-crash-"+time.Now().Local().Format("2006-01-02T15:04:05"))
 	err2 = os.WriteFile(fpath+".txt", []byte(logCache), 0666)
