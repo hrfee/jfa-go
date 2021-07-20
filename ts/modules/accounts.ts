@@ -65,9 +65,9 @@ class user implements User {
 
     private _lastNotifyMethod = (): string => {
         // Telegram, Matrix, Discord
-        const telegram = this._telegramUsername && this._telegramUsername != "";
-        const discord = this._discordUsername && this._discordUsername != "";
-        const matrix = this._matrixID && this._matrixID != "";
+        const telegram = window.telegramEnabled && this._telegramUsername && this._telegramUsername != "";
+        const discord = window.discordEnabled && this._discordUsername && this._discordUsername != "";
+        const matrix = window.matrixEnabled && this._matrixID && this._matrixID != "";
         if (discord) return "discord";
         if (matrix) return "matrix";
         if (telegram) return "telegram";
