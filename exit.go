@@ -1,11 +1,14 @@
 package main
 
 import (
+	"fmt"
 	"html/template"
 	"log"
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/hrfee/jfa-go/logger"
 
 	"github.com/pkg/browser"
 )
@@ -23,7 +26,7 @@ func Exit(err interface{}) {
 		"SanitizedLog": sanitized,
 	}
 	if err != nil {
-		data["Err"] = err
+		data["Err"] = fmt.Sprintf("%s %v", logger.Lshortfile(), err)
 	}
 	fpath := filepath.Join(temp, "jfa-go-crash-"+time.Now().Local().Format("2006-01-02T15:04:05"))
 	err2 = os.WriteFile(fpath+".txt", []byte(logCache), 0666)
