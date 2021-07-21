@@ -524,7 +524,12 @@ func start(asDaemon, firstCall bool) {
 		} else {
 			app.port = 8056
 		}
-		address = fmt.Sprintf("0.0.0.0:%d", app.port)
+		if *HOST != app.host && *HOST != "" {
+			app.host = *HOST
+		} else {
+			app.host = "0.0.0.0"
+		}
+		address = fmt.Sprintf("%s:%d", app.host, app.port)
 		app.storage.lang.SetupPath = "setup"
 		err := app.storage.loadLangSetup(langFS)
 		if err != nil {
