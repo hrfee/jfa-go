@@ -55,15 +55,35 @@ type testReq struct {
 func (app *appContext) TestJF(gc *gin.Context) {
 	var req testReq
 	gc.BindJSON(&req)
+	if !(strings.HasPrefix(req.Server, "http://") || strings.HasPrefix(req.Server, "https://")) {
+		req.Server = "http://" + req.Server
+	}
 	serverType := mediabrowser.JellyfinServer
 	if req.ServerType == "emby" {
 		serverType = mediabrowser.EmbyServer
 	}
 	tempjf, _ := mediabrowser.NewServer(serverType, req.Server, "jfa-go-setup", app.version, "auth", "auth", mediabrowser.NewNamedTimeoutHandler("authJF", req.Server, true), 30)
-	_, status, err := tempjf.Authenticate(req.Username, req.Password)
+	user, status, err := tempjf.Authenticate(req.Username, req.Password)
 	if !(status == 200 || status == 204) || err != nil {
+		msg := ""
+		switch status {
+		case 401:
+			msg = "errorInvalidUserPass"
+		case 403:
+			msg = "errorUserDisabled"
+		case 404:
+			msg = "error404"
+		}
 		app.info.Printf("Auth failed with code %d (%s)", status, err)
-		gc.JSON(401, map[string]bool{"success": false})
+		if msg != "" {
+			respond(status, msg, gc)
+		} else {
+			respondBool(status, false, gc)
+		}
+		return
+	}
+	if !user.Policy.IsAdministrator {
+		respond(403, "errorNotAdmin", gc)
 		return
 	}
 	gc.JSON(200, map[string]bool{"success": true})

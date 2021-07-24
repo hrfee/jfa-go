@@ -15,7 +15,11 @@
         "serverAddress": "Server Address",
         "emailSubject": "Email Subject",
         "URL": "URL",
-        "apiKey": "API Key"
+        "apiKey": "API Key",
+        "errorInvalidUserPass": "Invalid username/password.",
+        "errorNotAdmin": "User is not allowed to manage server.",
+        "errorUserDisabled": "User may be disabled.",
+        "error404": "404, check the internal URL."
     },
     "startPage": {
         "welcome": "Welcome!",

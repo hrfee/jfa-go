@@ -461,18 +461,22 @@ window.onpopstate = (event: PopStateEvent) => {
             }
             window.scrollTo(0, 0);
         }); }
-        if (next) { next.addEventListener("click", () => {
-            let found = false;
-            for (let ind = 0; ind < cards.length; ind++) {
-                cards[ind].classList.add("unfocused");
-                if (ind > i && !(cards[ind].classList.contains("hidden")) && !found) {
-                    cards[ind].classList.remove("unfocused");
-                    changePage(pageNames[ind][0], pageNames[ind][1]);
-                    found = true;
+        if (next) {
+            const func = () => {
+                if (next.hasAttribute("disabled")) return;
+                let found = false;
+                for (let ind = 0; ind < cards.length; ind++) {
+                    cards[ind].classList.add("unfocused");
+                    if (ind > i && !(cards[ind].classList.contains("hidden")) && !found) {
+                        cards[ind].classList.remove("unfocused");
+                        changePage(pageNames[ind][0], pageNames[ind][1]);
+                        found = true;
+                    }
                 }
-            }
-            window.scrollTo(0, 0);
-        }); }
+                window.scrollTo(0, 0);
+            };
+            next.addEventListener("click", func)
+        }
     }
 })();
 
@@ -491,20 +495,8 @@ window.onpopstate = (event: PopStateEvent) => {
         _post("/jellyfin/test", send, (req: XMLHttpRequest) => {
             if (req.readyState == 4) {
                 toggleLoader(button);
-                const success = req.response["success"] as boolean;
-                if (success) {
-                    nextButton.removeAttribute("disabled");
-                    button.textContent = window.lang.strings("success");
-                    button.classList.add("~positive");
-                    button.classList.remove("~urge");
-                    setTimeout(() => {
-                        button.textContent = ogText;
-                        button.classList.add("~urge");
-                        button.classList.remove("~positive");
-                    }, 5000);
-                } else {
+                if (req.status != 200) {
                     nextButton.setAttribute("disabled", "");
-                    button.textContent = window.lang.strings("error");
                     button.classList.add("~critical");
                     button.classList.remove("~urge");
                     setTimeout(() => {
@@ -512,7 +504,23 @@ window.onpopstate = (event: PopStateEvent) => {
                         button.classList.add("~urge");
                         button.classList.remove("~critical");
                     }, 5000);
+                    const errorMsg = req.response["error"] as string;
+                    if (!errorMsg) {
+                        button.textContent = window.lang.strings("error");
+                    } else {
+                        button.textContent = window.lang.strings(errorMsg);
+                    }
+                    return;
                 }
+                nextButton.removeAttribute("disabled");
+                button.textContent = window.lang.strings("success");
+                button.classList.add("~positive");
+                button.classList.remove("~urge");
+                setTimeout(() => {
+                    button.textContent = ogText;
+                    button.classList.add("~urge");
+                    button.classList.remove("~positive");
+                }, 5000);
             }
         }, true, () => {});
     };
