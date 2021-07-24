@@ -999,11 +999,11 @@ class EmailEditor {
         // };
 
         this._form.onsubmit = (event: Event) => {
-            if (this._textArea.value == this._content) {
+            event.preventDefault()
+            if (this._textArea.value == this._content && this._names[this._currentID].enabled) {
                 window.modals.editor.close();
                 return;
             }
-            event.preventDefault()
             _post("/config/emails/" + this._currentID, { "content": this._textArea.value }, (req: XMLHttpRequest) => {
                 if (req.readyState == 4) {
                     window.modals.editor.close();

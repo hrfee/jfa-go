@@ -27,7 +27,7 @@ import (
 
 var renderer = html.NewRenderer(html.RendererOptions{Flags: html.Smartypants})
 
-// implements email sending, right now via smtp or mailgun.
+// EmailClient implements email sending, right now via smtp, mailgun or a dummy client.
 type EmailClient interface {
 	Send(fromName, fromAddr string, message *Message, address ...string) error
 }
@@ -39,7 +39,7 @@ func (dc *DummyClient) Send(fromName, fromAddr string, email *Message, address .
 	return nil
 }
 
-// Mailgun client implements emailClient.
+// Mailgun client implements EmailClient.
 type Mailgun struct {
 	client *mailgun.MailgunImpl
 }
@@ -61,7 +61,7 @@ func (mg *Mailgun) Send(fromName, fromAddr string, email *Message, address ...st
 	return err
 }
 
-// SMTP supports SSL/TLS and STARTTLS; implements emailClient.
+// SMTP supports SSL/TLS and STARTTLS; implements EmailClient.
 type SMTP struct {
 	sslTLS    bool
 	server    string
@@ -141,9 +141,9 @@ func NewEmailer(app *appContext) *Emailer {
 	}
 	method := app.config.Section("email").Key("method").String()
 	if method == "smtp" {
-		sslTls := false
+		sslTLS := false
 		if app.config.Section("smtp").Key("encryption").String() == "ssl_tls" {
-			sslTls = true
+			sslTLS = true
 		}
 		username := ""
 		if u := app.config.Section("smtp").Key("username").MustString(""); u != "" {
@@ -151,7 +151,7 @@ func NewEmailer(app *appContext) *Emailer {
 		} else {
 			username = emailer.fromAddr
 		}
-		err := emailer.NewSMTP(app.config.Section("smtp").Key("server").String(), app.config.Section("smtp").Key("port").MustInt(465), username, app.config.Section("smtp").Key("password").String(), sslTls, app.config.Section("smtp").Key("ssl_cert").MustString(""))
+		err := emailer.NewSMTP(app.config.Section("smtp").Key("server").String(), app.config.Section("smtp").Key("port").MustInt(465), username, app.config.Section("smtp").Key("password").String(), sslTLS, app.config.Section("smtp").Key("ssl_cert").MustString(""))
 		if err != nil {
 			app.err.Printf("Error while initiating SMTP mailer: %v", err)
 		}
@@ -599,6 +599,7 @@ func (emailer *Emailer) deletedValues(reason string, app *appContext, noSub bool
 		template["reason"] = reason
 		template["message"] = app.config.Section("messages").Key("message").String()
 	}
+	fmt.Println("TTTT", template)
 	return template
 }
 
