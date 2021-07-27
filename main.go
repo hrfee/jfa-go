@@ -190,6 +190,9 @@ func start(asDaemon, firstCall bool) {
 			app.err.Fatalf("Couldn't find default config file")
 		}
 		nConfig, err := os.Create(app.configPath)
+		if err != nil && os.IsNotExist(err) {
+			err = os.MkdirAll(filepath.Dir(app.configPath), 0760)
+		}
 		if err != nil {
 			app.err.Printf("Couldn't open config file for writing: \"%s\"", app.configPath)
 			app.err.Fatalf("Error: %s", err)
