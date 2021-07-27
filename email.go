@@ -369,6 +369,9 @@ func (emailer *Emailer) inviteValues(code string, invite Invite, app *appContext
 	d, t, expiresIn := emailer.formatExpiry(expiry, false, app.datePattern, app.timePattern)
 	message := app.config.Section("messages").Key("message").String()
 	inviteLink := app.config.Section("invite_emails").Key("url_base").String()
+	if !strings.HasSuffix(inviteLink, "/invite") {
+		inviteLink += "/invite"
+	}
 	inviteLink = fmt.Sprintf("%s/%s", inviteLink, code)
 	template := map[string]interface{}{
 		"hello":              emailer.lang.InviteEmail.get("hello"),
@@ -540,17 +543,17 @@ func (emailer *Emailer) resetValues(pwr PasswordReset, app *appContext, noSub bo
 	} else {
 		template["helloUser"] = emailer.lang.Strings.template("helloUser", tmpl{"username": pwr.Username})
 		template["codeExpiry"] = emailer.lang.PasswordReset.template("codeExpiry", tmpl{"date": d, "time": t, "expiresInMinutes": expiresIn})
-		inviteLink := app.config.Section("invite_emails").Key("url_base").String()
+		url := app.config.Section("password_resets").Key("url_base").String()
 		if linkResetEnabled {
-			if inviteLink != "" {
+			if url != "" {
 				// Strip /invite form end of this URL, ik its ugly.
 				template["link_reset"] = true
-				pinLink := fmt.Sprintf("%s/reset?pin=%s", strings.TrimSuffix(inviteLink, "/invite"), pwr.Pin)
+				pinLink := fmt.Sprintf("%s/reset?pin=%s", url, pwr.Pin)
 				template["pin"] = pinLink
 				// Only used in html email.
 				template["pin_code"] = pwr.Pin
 			} else {
-				app.info.Println("Password Reset link disabled as no URL Base provided. Set in Settings > Invite Emails.")
+				app.info.Println("Password Reset link disabled as no URL Base provided. Set in Settings > Password Resets.")
 				template["pin"] = pwr.Pin
 			}
 		} else {

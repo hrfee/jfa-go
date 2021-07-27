@@ -803,6 +803,15 @@
                     "value": false,
                     "description": "Instead of automatically setting the user's password to the PIN, allow them to set a new password through the reset link."
                 },
+                "url_base": {
+                    "name": "URL Base",
+                    "required": true,
+                    "requires_restart": false,
+                    "depends_true": "link_reset",
+                    "type": "text",
+                    "value": "http://accounts.jellyf.in:8056",
+                    "description": "Base URL for jfa-go. You can leave this if you have one set in \"Invite Emails\". This is necessary because using a reverse proxy means the program has no way of knowing the URL itself."
+                },
                 "language": {
                     "name": "Default reset link language",
                     "required": false,
@@ -896,7 +905,7 @@
                     "requires_restart": false,
                     "depends_true": "enabled",
                     "type": "text",
-                    "value": "http://accounts.jellyf.in:8056/invite",
+                    "value": "http://accounts.jellyf.in:8056",
                     "description": "Base URL for jfa-go. This is necessary because using a reverse proxy means the program has no way of knowing the URL itself."
                 }
             }

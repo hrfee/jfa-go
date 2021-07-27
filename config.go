@@ -97,6 +97,13 @@ func (app *appContext) loadConfig() error {
 	app.config.Section("jellyfin").Key("version").SetValue(version)
 	app.config.Section("jellyfin").Key("device").SetValue("jfa-go")
 	app.config.Section("jellyfin").Key("device_id").SetValue(fmt.Sprintf("jfa-go-%s-%s", version, commit))
+
+	// These two settings are pretty much the same
+	url1 := app.config.Section("invite_emails").Key("url_base").String()
+	url2 := app.config.Section("password_resets").Key("url_base").String()
+	app.MustSetValue("password_resets", "url_base", strings.TrimSuffix(url1, "/invite"))
+	app.MustSetValue("invite_emails", "url_base", url2)
+
 	messagesEnabled = app.config.Section("messages").Key("enabled").MustBool(false)
 	telegramEnabled = app.config.Section("telegram").Key("enabled").MustBool(false)
 	discordEnabled = app.config.Section("discord").Key("enabled").MustBool(false)
