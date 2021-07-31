@@ -96,11 +96,15 @@
         "notifyEvent": "Meddel den:",
         "notifyInviteExpiry": "Ved udløb",
         "notifyUserCreation": "Ved oprettelse af brugere",
-        "sendPIN": "Bed brugeren om at sende pinkoden nedenfor til boten.",
+        "sendPIN": "Bed brugeren om at sende pinkoden nedenfor til botten.",
         "searchDiscordUser": "Begynd at skrive Discord brugernavnet for at finde brugeren.",
         "findDiscordUser": "Find Discord bruger",
         "linkMatrixDescription": "Indtast brugernavnet og adgangskoden til den bruger der skal bruges som en bot. Når indsendt, genstarter appen.",
-        "matrixHomeServer": "Hjemme server adresse"
+        "matrixHomeServer": "Hjemme server adresse",
+        "saveAsTemplate": "Gem som skabelon",
+        "templates": "Skabeloner",
+        "deleteTemplate": "Slet skabelon",
+        "templateEnterName": "Indtast et navn for at gemme denne skabelon."
     },
     "notifications": {
         "changedEmailAddress": "Ændret e-mail adresse på {n}.",
@@ -140,7 +144,8 @@
         "errorApplyUpdate": "Kunne ikke anvende opdateringen, prøv manuelt.",
         "errorCheckUpdate": "Kunne ikke kontrollere for opdatering.",
         "updateAvailable": "En ny opdatering er tilgængelig, tjek indstillingerne.",
-        "noUpdatesAvailable": "Ingen nye opdateringer tilgængelige."
+        "noUpdatesAvailable": "Ingen nye opdateringer tilgængelige.",
+        "savedAnnouncement": "Meddelelse gemt."
     },
     "quantityStrings": {
         "modifySettingsFor": {
