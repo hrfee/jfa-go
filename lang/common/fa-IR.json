@@ -1,26 +1,26 @@
 {
     "meta": {
-        "name": ""
+        "name": "انگلیسی"
     },
     "strings": {
-        "username": "",
-        "password": "",
-        "emailAddress": "",
-        "name": "",
-        "submit": "",
-        "send": "",
-        "success": "",
-        "error": "",
-        "copy": "",
-        "copied": "",
-        "time24h": "",
-        "time12h": "",
-        "linkTelegram": "",
-        "contactEmail": "",
-        "contactTelegram": "",
-        "linkDiscord": "",
-        "linkMatrix": "",
-        "contactDiscord": "",
-        "theme": ""
+        "username": "نام کاربری",
+        "password": "کلمه عبور",
+        "emailAddress": "پست الکترونیک",
+        "name": "نام",
+        "submit": "تایید",
+        "send": "ارسال",
+        "success": "موفقیت",
+        "error": "خطا",
+        "copy": "کپی",
+        "copied": "کپی شد",
+        "time24h": "ساعت 24 ساعت",
+        "time12h": "ساعت 12 ساعت",
+        "linkTelegram": "لینک تلگرام",
+        "contactEmail": "تماس از طریق ایمیل",
+        "contactTelegram": "تماس از طریق تلگرام",
+        "linkDiscord": "پیوند دیسکورد",
+        "linkMatrix": "پیوند ماتریکس",
+        "contactDiscord": "از طریق دیسکورد تماس بگیرید",
+        "theme": "موضوع"
     }
 }
