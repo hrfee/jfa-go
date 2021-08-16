@@ -10,7 +10,6 @@ import (
 
 	"github.com/getlantern/systray"
 	"github.com/skratchdot/open-golang/open"
-	// "github.com/getlantern/systray"
 )
 
 var TRAY = true
@@ -48,6 +47,7 @@ func onReady() {
 		systray.Quit()
 		os.Exit(1)
 	}()
+
 	defer func() {
 		systray.Quit()
 	}()

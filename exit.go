@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/getlantern/systray"
 	"github.com/pkg/browser"
 )
 
@@ -75,4 +76,9 @@ func Exit(err interface{}) {
 		log.Fatalf("Failed to execute template: %v", err2)
 	}
 	browser.OpenFile(fpath + ".html")
+	if TRAY {
+		systray.Quit()
+	} else {
+		os.Exit(1)
+	}
 }

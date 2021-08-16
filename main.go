@@ -153,6 +153,12 @@ func test(app *appContext) {
 func start(asDaemon, firstCall bool) {
 	RUNNING = true
 	defer func() { RUNNING = false }()
+
+	defer func() {
+		if r := recover(); r != nil {
+			Exit(r)
+		}
+	}()
 	// app encompasses essentially all useful functions.
 	app := new(appContext)
 
@@ -660,11 +666,6 @@ func printVersion() {
 }
 
 func main() {
-	defer func() {
-		if r := recover(); r != nil {
-			Exit(r)
-		}
-	}()
 	f := logOutput()
 	defer f()
 	printVersion()

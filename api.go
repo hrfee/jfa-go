@@ -2619,6 +2619,10 @@ func (app *appContext) restart(gc *gin.Context) {
 
 // no need to syscall.exec anymore!
 func (app *appContext) Restart() error {
-	RESTART <- true
+	if TRAY {
+		TRAYRESTART <- true
+	} else {
+		RESTART <- true
+	}
 	return nil
 }
