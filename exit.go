@@ -11,7 +11,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/getlantern/systray"
 	"github.com/pkg/browser"
 )
 
@@ -77,7 +76,7 @@ func Exit(err interface{}) {
 	}
 	browser.OpenFile(fpath + ".html")
 	if TRAY {
-		systray.Quit()
+		QuitTray()
 	} else {
 		os.Exit(1)
 	}

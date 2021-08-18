@@ -18,6 +18,10 @@ func RunTray() {
 	systray.Run(onReady, onExit)
 }
 
+func QuitTray() {
+	systray.Quit()
+}
+
 func onExit() {
 	if RUNNING {
 		QUIT = true
