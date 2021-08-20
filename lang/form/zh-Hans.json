@@ -1,57 +1,57 @@
 {
     "meta": {
-        "name": ""
+        "name": "简体中文(CN)"
     },
     "strings": {
-        "pageTitle": "",
-        "createAccountHeader": "",
-        "accountDetails": "",
-        "emailAddress": "",
-        "username": "",
-        "password": "",
-        "reEnterPassword": "",
-        "reEnterPasswordInvalid": "",
-        "createAccountButton": "",
-        "passwordRequirementsHeader": "",
-        "successHeader": "",
-        "successContinueButton": "",
-        "confirmationRequired": "",
-        "confirmationRequiredMessage": "",
-        "yourAccountIsValidUntil": "",
-        "sendPIN": "",
-        "sendPINDiscord": "",
-        "matrixEnterUser": ""
+        "pageTitle": "创建Jellyfin账户",
+        "createAccountHeader": "创建账户",
+        "accountDetails": "账户详情",
+        "emailAddress": "电子邮箱",
+        "username": "用户名",
+        "password": "密码",
+        "reEnterPassword": "再次输入密码",
+        "reEnterPasswordInvalid": "两次输入的密码不相同。",
+        "createAccountButton": "创建账户",
+        "passwordRequirementsHeader": "密码格式要求",
+        "successHeader": "成功！",
+        "successContinueButton": "继续",
+        "confirmationRequired": "需要邮件确认",
+        "confirmationRequiredMessage": "请登录您的邮箱收件箱来验证您的地址。",
+        "yourAccountIsValidUntil": "您的账户将在 {date} 之前有效。",
+        "sendPIN": "把PIN码发送给下面的bot，然后回到这里来关联您的账户。",
+        "sendPINDiscord": "在 Discord 上，在 {server_channel} 中输入 {command} 并将下面的 PIN 码作为 DM 发送给机器人。",
+        "matrixEnterUser": "输入您的用户ID并点击提交，将发送给您的PIN码输入到这里并继续。"
     },
     "notifications": {
-        "errorUserExists": "",
-        "errorInvalidCode": "",
-        "errorTelegramVerification": "",
-        "errorDiscordVerification": "",
-        "errorMatrixVerification": "",
-        "errorInvalidPIN": "",
-        "errorUnknown": "",
-        "verified": ""
+        "errorUserExists": "用户已经存在。",
+        "errorInvalidCode": "无效的邀请码",
+        "errorTelegramVerification": "需要Telegram验证",
+        "errorDiscordVerification": "需要Discord验证。",
+        "errorMatrixVerification": "需要Matrix验证。",
+        "errorInvalidPIN": "无效的PIN码",
+        "errorUnknown": "未知错误。",
+        "verified": "账户已验证。"
     },
     "validationStrings": {
         "length": {
-            "singular": "",
-            "plural": ""
+            "singular": "必须至少包含 {n} 个字符",
+            "plural": "必须至少包含 {n} 个字符"
         },
         "uppercase": {
-            "singular": "",
-            "plural": ""
+            "singular": "必须至少包含 {n} 个大写字母",
+            "plural": "必须至少包含 {n} 个大写字母"
         },
         "lowercase": {
-            "singular": "",
-            "plural": ""
+            "singular": "必须至少包含 {n} 个小写字母",
+            "plural": "必须至少包含 {n} 个小写字母"
         },
         "number": {
-            "singular": "",
-            "plural": ""
+            "singular": "必须至少包含 {n} 个数字",
+            "plural": "必须至少包含 {n} 个数字"
         },
         "special": {
-            "singular": "",
-            "plural": ""
+            "singular": "必须至少包含 {n} 个特殊字符",
+            "plural": "必须至少包含 {n} 个特殊字符"
         }
     }
 }
