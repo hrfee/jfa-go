@@ -1,0 +1,147 @@
+{
+    "meta": {
+        "name": ""
+    },
+    "strings": {
+        "pageTitle": "",
+        "next": "",
+        "back": "",
+        "optional": "",
+        "serverType": "",
+        "disabled": "",
+        "enabled": "",
+        "port": "",
+        "message": "",
+        "serverAddress": "",
+        "emailSubject": "",
+        "URL": "",
+        "apiKey": "",
+        "errorInvalidUserPass": "",
+        "errorNotAdmin": "",
+        "errorUserDisabled": "",
+        "error404": ""
+    },
+    "startPage": {
+        "welcome": "",
+        "pressStart": "",
+        "httpsNotice": "",
+        "start": ""
+    },
+    "endPage": {
+        "finished": "",
+        "restartMessage": "",
+        "refreshPage": ""
+    },
+    "language": {
+        "title": "",
+        "description": "",
+        "defaultAdminLang": "",
+        "defaultFormLang": "",
+        "defaultEmailLang": ""
+    },
+    "general": {
+        "title": "",
+        "listenAddress": "",
+        "urlBase": "",
+        "urlBaseNotice": "",
+        "lightTheme": "",
+        "darkTheme": "",
+        "useHTTPS": "",
+        "httpsPort": "",
+        "useHTTPSNotice": "",
+        "pathToCertificate": "",
+        "pathToKeyFile": ""
+    },
+    "updates": {
+        "title": "",
+        "description": "",
+        "updateChannel": "",
+        "stable": "",
+        "unstable": ""
+    },
+    "login": {
+        "title": "",
+        "description": "",
+        "authorizeWithJellyfin": "",
+        "authorizeManual": "",
+        "adminOnly": "",
+        "emailNotice": ""
+    },
+    "jellyfinEmby": {
+        "title": "",
+        "description": "",
+        "embyNotice": "",
+        "internal": "",
+        "external": "",
+        "replaceJellyfin": "",
+        "replaceJellyfinNotice": "",
+        "addressExternalNotice": "",
+        "testConnection": ""
+    },
+    "ombi": {
+        "title": "",
+        "description": "",
+        "apiKeyNotice": ""
+    },
+    "messages": {
+        "title": "",
+        "description": ""
+    },
+    "email": {
+        "title": "",
+        "description": "",
+        "method": "",
+        "useEmailAsUsername": "",
+        "useEmailAsUsernameNotice": "",
+        "fromAddress": "",
+        "senderName": "",
+        "dateFormat": "",
+        "dateFormatNotice": "",
+        "encryption": "",
+        "mailgunApiURL": ""
+    },
+    "notifications": {
+        "title": "",
+        "description": ""
+    },
+    "welcomeEmails": {
+        "title": "",
+        "description": ""
+    },
+    "inviteEmails": {
+        "title": "",
+        "description": ""
+    },
+    "passwordResets": {
+        "title": "",
+        "description": "",
+        "pathToJellyfin": "",
+        "pathToJellyfinNotice": "",
+        "resetLinks": "",
+        "resetLinksNotice": "",
+        "resetLinksLanguage": "",
+        "setPassword": "",
+        "setPasswordNotice": ""
+    },
+    "passwordValidation": {
+        "title": "",
+        "description": "",
+        "length": "",
+        "uppercase": "",
+        "lowercase": "",
+        "numbers": "",
+        "special": ""
+    },
+    "helpMessages": {
+        "title": "",
+        "description": "",
+        "contactMessage": "",
+        "contactMessageNotice": "",
+        "helpMessage": "",
+        "helpMessageNotice": "",
+        "successMessage": "",
+        "successMessageNotice": "",
+        "emailMessage": "",
+        "emailMessageNotice": ""
+    }
+}
