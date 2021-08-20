@@ -1,147 +1,147 @@
 {
     "meta": {
-        "name": ""
+        "name": "简体中文(CN)"
     },
     "strings": {
-        "pageTitle": "",
-        "next": "",
-        "back": "",
-        "optional": "",
-        "serverType": "",
-        "disabled": "",
-        "enabled": "",
-        "port": "",
-        "message": "",
-        "serverAddress": "",
-        "emailSubject": "",
-        "URL": "",
-        "apiKey": "",
-        "errorInvalidUserPass": "",
-        "errorNotAdmin": "",
-        "errorUserDisabled": "",
-        "error404": ""
+        "pageTitle": "设置 - jfa-go",
+        "next": "下一步",
+        "back": "上一步",
+        "optional": "可选的",
+        "serverType": "服务类型",
+        "disabled": "已禁用",
+        "enabled": "已启用",
+        "port": "端口",
+        "message": "信息",
+        "serverAddress": "服务地址",
+        "emailSubject": "邮件主题",
+        "URL": "链接",
+        "apiKey": "API Key",
+        "errorInvalidUserPass": "无效的用户名/密码。",
+        "errorNotAdmin": "此用户不允许管理服务。",
+        "errorUserDisabled": "此永固可能已被禁用。",
+        "error404": "404，请检查内部URL。"
     },
     "startPage": {
-        "welcome": "",
-        "pressStart": "",
-        "httpsNotice": "",
-        "start": ""
+        "welcome": "欢迎！",
+        "pressStart": "您需要完成几个步骤来设置jfa-go。点击开始来继续。",
+        "httpsNotice": "请确保您仅通过HTTPS或者局域网访问本页面。",
+        "start": "开始"
     },
     "endPage": {
-        "finished": "",
-        "restartMessage": "",
-        "refreshPage": ""
+        "finished": "完成！",
+        "restartMessage": "您可以设置Discord/Telegram/Matrix机器人，在 \"设置 \"中自定义你的信息和其他内容。点击下方重新启动，然后刷新页面。",
+        "refreshPage": "刷新"
     },
     "language": {
-        "title": "",
-        "description": "",
-        "defaultAdminLang": "",
-        "defaultFormLang": "",
-        "defaultEmailLang": ""
+        "title": "语言",
+        "description": "jfa-go 的大部分内容都有社区翻译。您可以选择下面的默认语言，但用户仍然可以根据自己的意愿进行更改。如果您想帮助翻译，请在{n}注册并开始贡献您的力量！",
+        "defaultAdminLang": "默认管理语言",
+        "defaultFormLang": "默认帐户创建语言",
+        "defaultEmailLang": "默认电子邮件语言"
     },
     "general": {
-        "title": "",
-        "listenAddress": "",
-        "urlBase": "",
-        "urlBaseNotice": "",
-        "lightTheme": "",
-        "darkTheme": "",
-        "useHTTPS": "",
-        "httpsPort": "",
-        "useHTTPSNotice": "",
-        "pathToCertificate": "",
-        "pathToKeyFile": ""
+        "title": "常规",
+        "listenAddress": "监听端口",
+        "urlBase": "URL Base",
+        "urlBaseNotice": "仅在子域上使用反向代理时才需要（例如“jellyf.in/accounts”）。",
+        "lightTheme": "明亮",
+        "darkTheme": "暗黑",
+        "useHTTPS": "使用HTTPS",
+        "httpsPort": "HTTPS端口",
+        "useHTTPSNotice": "仅在不使用反向代理时推荐使用。",
+        "pathToCertificate": "证书文件路径",
+        "pathToKeyFile": "密钥文件路径"
     },
     "updates": {
-        "title": "",
-        "description": "",
-        "updateChannel": "",
-        "stable": "",
-        "unstable": ""
+        "title": "更新",
+        "description": "fa-go将每隔30分钟检查一次{n}，以便在有新更新时得到通知。不会收集IP或个人身份信息。",
+        "updateChannel": "更新通道",
+        "stable": "稳定版",
+        "unstable": "非稳定版"
     },
     "login": {
-        "title": "",
-        "description": "",
-        "authorizeWithJellyfin": "",
-        "authorizeManual": "",
-        "adminOnly": "",
-        "emailNotice": ""
+        "title": "登录",
+        "description": "要访问管理页面，您需要使用以下方法登录：",
+        "authorizeWithJellyfin": "从Jellyfin/Emby 授权：登录信息与 Jellyfin 同步，允许使用多个用户。",
+        "authorizeManual": "用户名和密码：手动设置用户名和密码。",
+        "adminOnly": "仅允许管理员账户(推荐)",
+        "emailNotice": "您的电子邮件地址可以用来接收通知。"
     },
     "jellyfinEmby": {
-        "title": "",
-        "description": "",
-        "embyNotice": "",
-        "internal": "",
-        "external": "",
-        "replaceJellyfin": "",
-        "replaceJellyfinNotice": "",
-        "addressExternalNotice": "",
-        "testConnection": ""
+        "title": "Jellyfin/Emby",
+        "description": "需要使用管理员帐户，因为 API 不允许使用 API 密钥创建用户。您可以创建一个单独的帐户并选中“允许此用户管理服务器”并禁用其余所有功能。完成后，在此处输入登录信息。",
+        "embyNotice": "对Emby提供有限支持，不支持密码重置功能。",
+        "internal": "内部",
+        "external": "外部",
+        "replaceJellyfin": "服务名称",
+        "replaceJellyfinNotice": "如果填写则将替换应用程序中出现的所有 \"Jellyfin\"字样。",
+        "addressExternalNotice": "留空以使用相同的地址。",
+        "testConnection": "测试连接"
     },
     "ombi": {
-        "title": "",
-        "description": "",
-        "apiKeyNotice": ""
+        "title": "Ombi",
+        "description": "连接到 Ombi，当用户通过 jfa-go 创建账户时，将同时创建 Jellyfin 和 Ombi 帐户。设置完成后，转到设置为新 Ombi 用户设置默认配置文件。",
+        "apiKeyNotice": "在Ombi设置的第一个选项卡中找到这个选项。"
     },
     "messages": {
-        "title": "",
-        "description": ""
+        "title": "信息",
+        "description": "jfa-go 可以通过电子邮件、Discord、Telegram 和/或 Matrix 发送密码重置和各种消息。您可以在下面设置电子邮件，其他的可以稍后在设置中进行配置。说明可以在 {n} 上找到。如果您不需要此功能，可以在此处禁用这些功能。"
     },
     "email": {
-        "title": "",
-        "description": "",
-        "method": "",
-        "useEmailAsUsername": "",
-        "useEmailAsUsernameNotice": "",
-        "fromAddress": "",
-        "senderName": "",
-        "dateFormat": "",
-        "dateFormatNotice": "",
-        "encryption": "",
-        "mailgunApiURL": ""
+        "title": "电子邮箱",
+        "description": "jfa-go 可以通过电子邮件发送密码重置 PIN 和各种通知。您可以连接到 SMTP 服务器，或使用 {n} API。",
+        "method": "发送方式",
+        "useEmailAsUsername": "使用电子邮件地址作为用户名",
+        "useEmailAsUsernameNotice": "如果启用，新用户将使用他们的电子邮件地址而不是用户名登录 Jellyfin/Emby。",
+        "fromAddress": "发件人地址",
+        "senderName": "发件人姓名",
+        "dateFormat": "日期格式",
+        "dateFormatNotice": "日期遵循 strftime 格式。如需更多信息，请访问 {n}。",
+        "encryption": "加密",
+        "mailgunApiURL": "API URL"
     },
     "notifications": {
-        "title": "",
-        "description": ""
+        "title": "管理员通知",
+        "description": "如果启用，您可以选择（每个邀请）在邀请到期或创建用户时收到通知。如果您没有选择 Jellyfin 登录方式，请确保您提供了电子邮件地址，或稍后添加其他联系方式。"
     },
     "welcomeEmails": {
-        "title": "",
-        "description": ""
+        "title": "欢迎信息",
+        "description": "如果启用，将向新用户发送带有 Jellyfin/Emby URL 及其用户名的消息。"
     },
     "inviteEmails": {
-        "title": "",
-        "description": ""
+        "title": "邀请通知",
+        "description": "如果启用，您可以直接向用户的电子邮件地址、Discord 或 Matrix 用户发送邀请。因为您可能正在使用反向代理，所以需要提供访问邀请的 URL。写下您的 URL Base，并附加“/invite”。"
     },
     "passwordResets": {
-        "title": "",
-        "description": "",
-        "pathToJellyfin": "",
-        "pathToJellyfinNotice": "",
-        "resetLinks": "",
-        "resetLinksNotice": "",
-        "resetLinksLanguage": "",
-        "setPassword": "",
-        "setPasswordNotice": ""
+        "title": "重置密码",
+        "description": "当用户尝试重置密码时，Jellyfin 会创建一个名为“passwordreset-*.json”的文件，其中包含一个 PIN码。jfa-go 会读取该文件并将 PIN 码发送给用户。",
+        "pathToJellyfin": "Jellyfin 配置目录的路径",
+        "pathToJellyfinNotice": "如果您找不到它在哪，请尝试在 Jellyfin 中重置您的密码。将出现一个带有 '<path to jellyfin>/passwordreset-*.json' 的弹出窗口。",
+        "resetLinks": "发送链接而不是PIN码",
+        "resetLinksNotice": "如果启用了 Ombi 集成，请使用它与 Ombi 同步 Jellyfin 密码重置。",
+        "resetLinksLanguage": "默认重置链接语言",
+        "setPassword": "通过链接设置密码",
+        "setPasswordNotice": "启用此功能意味着用户无需在重置后通过 PIN 更改其密码。并将强制执行密码验证。"
     },
     "passwordValidation": {
-        "title": "",
-        "description": "",
-        "length": "",
-        "uppercase": "",
-        "lowercase": "",
-        "numbers": "",
-        "special": ""
+        "title": "密码验证",
+        "description": "如果启用，则在创建帐户页面上会显示一组密码要求，例如最小长度、大写/小写字符等。",
+        "length": "长度",
+        "uppercase": "大写字母",
+        "lowercase": "小写字母",
+        "numbers": "数字",
+        "special": "特殊字符 (%, *, etc.)"
     },
     "helpMessages": {
-        "title": "",
-        "description": "",
-        "contactMessage": "",
-        "contactMessageNotice": "",
-        "helpMessage": "",
-        "helpMessageNotice": "",
-        "successMessage": "",
-        "successMessageNotice": "",
-        "emailMessage": "",
-        "emailMessageNotice": ""
+        "title": "帮助信息",
+        "description": "这些消息将显示在帐户创建页面和某些电子邮件中。",
+        "contactMessage": "联系方式",
+        "contactMessageNotice": "显示在除 admin 之外的所有页面的底部。",
+        "helpMessage": "帮助信息",
+        "helpMessageNotice": "显示在帐户创建页面上。",
+        "successMessage": "成功信息",
+        "successMessageNotice": "在用户创建账户时显示。",
+        "emailMessage": "电子邮件",
+        "emailMessageNotice": "显示在电子邮件的底部。"
     }
 }
