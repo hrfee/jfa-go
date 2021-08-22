@@ -1,0 +1,26 @@
+{
+    "meta": {
+        "name": "简体中文(CN)"
+    },
+    "strings": {
+        "username": "用户名",
+        "password": "密码",
+        "emailAddress": "电子邮箱",
+        "name": "名称",
+        "submit": "提交",
+        "send": "发送",
+        "success": "成功",
+        "error": "错误",
+        "copy": "复制",
+        "copied": "已复制",
+        "time24h": "24小时制",
+        "time12h": "12小时制",
+        "linkTelegram": "关联Telegram",
+        "contactEmail": "通过邮件联系",
+        "contactTelegram": "通过Telegram联系",
+        "linkDiscord": "关联Discord",
+        "linkMatrix": "关联Matrix",
+        "contactDiscord": "通过Discord联系",
+        "theme": "主题"
+    }
+}

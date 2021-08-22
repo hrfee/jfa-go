@@ -1,0 +1,12 @@
+{
+    "meta": {
+        "name": "简体中文(CN)"
+    },
+    "strings": {
+        "startMessage": "您好！\n请在这里输入Jellyfin的PIN码来验证您的账户。",
+        "matrixStartMessage": "您好\n请在Jellyfin的注册页面中输入下面的PIN码来验证您的账户。",
+        "invalidPIN": "这个PIN码无效，请重试。",
+        "pinSuccess": "成功！您现在可以返回注册页面。",
+        "languageMessage": "提示：使用 {command} 查看可用语言，并使用 {command} <language code> 来设置语言。"
+    }
+}

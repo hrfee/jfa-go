@@ -99,7 +99,12 @@
         "findDiscordUser": "Encontrar usuário Discord",
         "add": "Adicionar",
         "linkMatrixDescription": "Digite o nome de usuário e a senha para usar como bot. Depois de enviado, o aplicativo será reiniciado.",
-        "select": "Selecionar"
+        "select": "Selecionar",
+        "templates": "Modelos",
+        "matrixHomeServer": "Endereço do servidor local",
+        "saveAsTemplate": "Salvar o modelo",
+        "deleteTemplate": "Deletar modelo",
+        "templateEnterName": "Digite um nome para salvar este modelo."
     },
     "notifications": {
         "changedEmailAddress": "Endereço de e-mail alterado de {n}.",
@@ -139,7 +144,8 @@
         "noUpdatesAvailable": "Nenhuma atualização disponível.",
         "telegramVerified": "Conta do Telegram verificada.",
         "updateAppliedRefresh": "Atualização instalada, atualize.",
-        "accountConnected": "Conta conectada."
+        "accountConnected": "Conta conectada.",
+        "savedAnnouncement": "Anúncio salvo."
     },
     "quantityStrings": {
         "modifySettingsFor": {

@@ -3,7 +3,7 @@
         "name": "Dansk"
     },
     "strings": {
-        "pageTitle": "Installer - jfa-go",
+        "pageTitle": "Opsæt - jfa-go",
         "next": "Næste",
         "back": "Tilbage",
         "optional": "Valgfri",
@@ -15,7 +15,11 @@
         "serverAddress": "Serveradresse",
         "emailSubject": "E-mail emne",
         "URL": "URL",
-        "apiKey": "API Nøgle"
+        "apiKey": "API Nøgle",
+        "errorNotAdmin": "Brugeren har ikke tilladelse til at administrere server.",
+        "errorInvalidUserPass": "Ugyldigt brugernavn/adgangskode.",
+        "errorUserDisabled": "Bruger kan være deaktiveret.",
+        "error404": "404, tjek den interne URL."
     },
     "startPage": {
         "welcome": "Velkommen!",
@@ -25,7 +29,7 @@
     },
     "endPage": {
         "finished": "Færdig!",
-        "restartMessage": "Der er flere indstillinger du kan konfigurere på admin-siden. Klik nedenfor for at genstarte, og opdater derefter siden.",
+        "restartMessage": "Du kan konfigurere Discord/Telegram/Matrix bots, tilpasse dine meddelelser og mere i Indstillinger. Klik herunder for at genstarte, og opdater siden.",
         "refreshPage": "Opdater"
     },
     "language": {
@@ -37,7 +41,7 @@
     },
     "general": {
         "title": "Generel",
-        "listenAddress": "Listen Address",
+        "listenAddress": "Listen Adresse",
         "urlBase": "URL-base",
         "urlBaseNotice": "Kun nødvendigt hvis du bruger en omvendt proxy på et underdomæne (f.eks. 'Jellyf.in/accounts').",
         "lightTheme": "Lys",
@@ -93,16 +97,16 @@
         "mailgunApiURL": "API-URL"
     },
     "notifications": {
-        "title": "Meddelelser",
-        "description": "Hvis aktiveret, kan du vælge (pr. Invitation) at modtage en e-mail når en invitation udløber, eller når en bruger oprettes. Hvis du ikke valgte Jellyfin login metoden, skal du sørge for at angive din e-mail adresse."
+        "title": "Admin Meddelelser",
+        "description": "Hvis aktiveret, kan du vælge (pr. Invitation) at modtage besked når en invitation udløber, eller når en bruger oprettes. Hvis du ikke valgte Jellyfin login metoden, skal du sørge for at angive din e-mail adresse, eller tilføje en anden kontakt metode senere."
     },
     "welcomeEmails": {
-        "title": "Velkomstmails",
-        "description": "Hvis aktiveret, sendes en e-mail til nye brugere med Jellyfin/Emby URL'en og deres brugernavn."
+        "title": "Velkomst beskeder",
+        "description": "Hvis aktiveret, sendes en besked til nye brugere med Jellyfin/Emby URL'en og deres brugernavn."
     },
     "inviteEmails": {
-        "title": "Invitations E-mails",
-        "description": "Hvis aktiveret, kan du sende invitationer direkte til en brugers e-mail adresse. Fordi du muligvis bruger en omvendt proxy, skal du angive en URL, invitationer tilgås fra. Skriv din URL-base, og tilføj '/invite'."
+        "title": "Invitations Beskeder",
+        "description": "Hvis aktiveret, kan du sende invitationer direkte til en brugers e-mail adresse, Discord eller Matrix bruger. Fordi du muligvis bruger en omvendt proxy, skal du angive en URL, invitationer tilgås fra. Skriv din URL-base, og tilføj '/invite'."
     },
     "passwordResets": {
         "title": "Nulstilling af Adgangskoder",
@@ -111,7 +115,9 @@
         "pathToJellyfinNotice": "Hvis du ikke ved hvor dette er, kan du prøve at nulstille din adgangskode i Jellyfin. En popup med '<sti til jellyfin>/passwordreset - *. Json' vises.",
         "resetLinks": "Send et link i stedet for en PIN-kode",
         "resetLinksNotice": "Hvis Ombi integration er aktiveret, skal du bruge denne til at synkronisere nulstilling af Jellyfin's adgangskode med Ombi.",
-        "resetLinksLanguage": "Standard sprog til nulstillings link"
+        "resetLinksLanguage": "Standard sprog til nulstillings link",
+        "setPassword": "Angiv adgangskode gennem link",
+        "setPasswordNotice": "Aktivering af dette betyder at brugeren ikke behøver at ændre sin adgangskode væk fra pinkoden efter nulstillingen. Adgangskodevalidering håndhæves også."
     },
     "passwordValidation": {
         "title": "Validering af adgangskode",
@@ -133,5 +139,9 @@
         "successMessageNotice": "Vises når en bruger opretter sin konto.",
         "emailMessage": "E-mail Meddelelse",
         "emailMessageNotice": "Vises i bunden af e-mails."
+    },
+    "messages": {
+        "title": "Beskeder",
+        "description": "jfa-go kan sende nulstilling af adgangskoder og forskellige meddelelser via E-mail, Discord, Telegram og/eller Matrix. Du kan konfigurere E-mail herunder, og de andre kan konfigureres i Indstillinger senere. Instruktioner kan findes på {n}. Hvis du ikke har brug for dette, kan du deaktivere disse funktioner her."
     }
 }

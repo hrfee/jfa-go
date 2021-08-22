@@ -1,0 +1,15 @@
+{
+    "meta": {
+        "name": "简体中文(CN)"
+    },
+    "strings": {
+        "passwordReset": "重设密码",
+        "reset": "重设",
+        "resetFailed": "重设密码失败",
+        "tryAgain": "请重试。",
+        "youCanLogin": "您现在可以使用下面的代码作为您的密码进行登录。",
+        "youCanLoginOmbi": "您现在可以使用下面的代码作为您的密码登录Jellyfin和Ombi。",
+        "changeYourPassword": "确保在登录状态下修改您的密码。",
+        "enterYourPassword": "在下面输入您的新密码。"
+    }
+}

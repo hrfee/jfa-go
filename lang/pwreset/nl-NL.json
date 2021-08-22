@@ -1,0 +1,15 @@
+{
+    "meta": {
+        "name": "Nederlands (NL)"
+    },
+    "strings": {
+        "passwordReset": "Wachtwoordreset",
+        "reset": "Reset",
+        "resetFailed": "Wachtwoordreset mislukt",
+        "tryAgain": "Probeer het alsjeblieft nog een keer.",
+        "youCanLogin": "Je kunt nu inloggen met onderstaande code als wachtwoord.",
+        "youCanLoginOmbi": "Je kunt nu inloggen bij Jellyfin & Ombi met onderstaande code als wachtwoord.",
+        "changeYourPassword": "Denk eraan je wachtwoord te wijzigen nadat je bent ingelogd.",
+        "enterYourPassword": "Voer hieronder je nieuwe wachtwoord in."
+    }
+}

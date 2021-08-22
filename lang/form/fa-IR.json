@@ -1,0 +1,57 @@
+{
+    "meta": {
+        "name": "انگلیسی"
+    },
+    "strings": {
+        "pageTitle": "ساختن حساب کاربری",
+        "createAccountHeader": "ساخت اکانت",
+        "accountDetails": "جزئیات",
+        "emailAddress": "پست الکترونیک",
+        "username": "نام کاربری",
+        "password": "کلمه عبور",
+        "reEnterPassword": "کلمه عبور را دوباره وارد کنید",
+        "reEnterPasswordInvalid": "کلمه های عبور یکسان نیستند.",
+        "createAccountButton": "ساخت حساب کاربری",
+        "passwordRequirementsHeader": "کلمه عبور لازم است",
+        "successHeader": "موفقیت!",
+        "successContinueButton": "ادامه دادن",
+        "confirmationRequired": "تایید ایمیل لازم است",
+        "confirmationRequiredMessage": "لطفاً برای تأیید آدرس خود ، صندوق پستی ایمیل خود را بررسی کنید.",
+        "yourAccountIsValidUntil": "حساب شما تا {date} معتبر خواهد بود.",
+        "sendPIN": "پین زیر را به ربات ارسال کنید ، سپس برای پیوند حساب خود به اینجا برگردید.",
+        "sendPINDiscord": "در Discord {command} را در {server_channel} تایپ کنید ، سپس پین زیر را از طریق DM به ربات ارسال کنید.",
+        "matrixEnterUser": "شناسه کاربری خود را وارد کرده ، submit را فشار دهید و یک پین برای شما ارسال می شود. برای ادامه آن را اینجا وارد کنید."
+    },
+    "notifications": {
+        "errorUserExists": "کاربر قبلاً وجود دارد.",
+        "errorInvalidCode": "کد دعوت نامعتبر است.",
+        "errorTelegramVerification": "تایید تلگرام الزامی است.",
+        "errorDiscordVerification": "تأیید دیسکورد مورد نیاز است.",
+        "errorMatrixVerification": "تأیید ماتریکس مورد نیاز است.",
+        "errorInvalidPIN": "پین نامعتبر است.",
+        "errorUnknown": "خطای ناشناخته.",
+        "verified": "حساب تأیید شد."
+    },
+    "validationStrings": {
+        "length": {
+            "singular": "باید حداقل {n} نویسه داشته باشد",
+            "plural": "باید حداقل {n} نویسه داشته باشد"
+        },
+        "uppercase": {
+            "singular": "باید حداقل {n} نویسه بزرگ داشته باشد",
+            "plural": "باید حداقل {n} نویسه بزرگ داشته باشد"
+        },
+        "lowercase": {
+            "singular": "باید حداقل {n} نویسه کوچک داشته باشد",
+            "plural": "باید حداقل {n} نویسه کوچک داشته باشد"
+        },
+        "number": {
+            "singular": "باید حداقل {n} شماره داشته باشد",
+            "plural": "باید حداقل {n} شماره داشته باشد"
+        },
+        "special": {
+            "singular": "باید حداقل {n} نویسه خاص داشته باشد",
+            "plural": "باید حداقل {n} نویسه خاص داشته باشد"
+        }
+    }
+}

@@ -72,7 +72,7 @@
         "variables": "Variabelen",
         "customizeMessagesDescription": "Als je de e-mailsjablonen van jfa-go niet wilt gebruiken, kun je met gebruik van Markdown je eigen aanmaken.",
         "preview": "Voorbeeld",
-        "reset": "Resetten",
+        "reset": "Reset",
         "edit": "Bewerken",
         "customizeMessages": "E-mails aanpassen",
         "inviteDuration": "Geldigheidsduur uitnodiging",
@@ -100,7 +100,11 @@
         "linkMatrixDescription": "Vul de gebruikersnaam en wachtwoord in van de gebruiker om als bot te gebruiken. De app start zodra ze zijn verstuurd.",
         "select": "Selecteer",
         "findDiscordUser": "Zoek Discord gebruiker",
-        "matrixHomeServer": "Adres home server"
+        "matrixHomeServer": "Adres home server",
+        "templates": "Sjablonen",
+        "templateEnterName": "Voer een naam in om dit sjabloon op te slaan.",
+        "saveAsTemplate": "Sla op als sjabloon",
+        "deleteTemplate": "Verwijder sjabloon"
     },
     "notifications": {
         "changedEmailAddress": "E-mailadres van {n} gewijzigd.",
@@ -140,7 +144,8 @@
         "noUpdatesAvailable": "Geen nieuwe updates beschikbaar.",
         "telegramVerified": "Telegram-account goedgekeurd.",
         "updateAppliedRefresh": "Update toegepast, ververs alsjeblieft.",
-        "accountConnected": "Account gekoppeld."
+        "accountConnected": "Account gekoppeld.",
+        "savedAnnouncement": "Aankondiging opgeslagen."
     },
     "quantityStrings": {
         "modifySettingsFor": {
