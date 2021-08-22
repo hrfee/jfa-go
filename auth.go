@@ -23,17 +23,16 @@ func CreateToken(userId, jfId string) (string, string, error) {
 	claims := jwt.MapClaims{
 		"valid": true,
 		"id":    userId,
-		"exp":   strconv.FormatInt(time.Now().Add(time.Minute*20).Unix(), 10),
+		"exp":   time.Now().Add(time.Minute * 20).Unix(),
 		"jfid":  jfId,
 		"type":  "bearer",
 	}
-
 	tk := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	token, err := tk.SignedString([]byte(os.Getenv("JFA_SECRET")))
 	if err != nil {
 		return "", "", err
 	}
-	claims["exp"] = strconv.FormatInt(time.Now().Add(time.Hour*24).Unix(), 10)
+	claims["exp"] = time.Now().Add(time.Hour * 24).Unix()
 	claims["type"] = "refresh"
 	tk = jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	refresh, err = tk.SignedString([]byte(os.Getenv("JFA_SECRET")))
@@ -58,7 +57,7 @@ func (app *appContext) authenticate(gc *gin.Context) {
 		return
 	}
 	claims, ok := token.Claims.(jwt.MapClaims)
-	expiryUnix, err := strconv.ParseInt(claims["exp"].(string), 10, 64)
+	expiryUnix := int64(claims["exp"].(float64))
 	if err != nil {
 		app.debug.Printf("Auth denied: %s", err)
 		respond(401, "Unauthorized", gc)
