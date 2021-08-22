@@ -434,7 +434,7 @@ func start(asDaemon, firstCall bool) {
 		if status != 200 || err != nil {
 			app.err.Fatalf("Failed to authenticate with Jellyfin @ \"%s\" (%d): %v", server, status, err)
 		}
-		app.info.Printf("Authenticated with %s", server)
+		app.info.Printf("Authenticated with \"%s\"", server)
 
 		runMigrations(app)
 
