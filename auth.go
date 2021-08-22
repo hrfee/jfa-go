@@ -4,7 +4,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 
@@ -199,7 +198,7 @@ func (app *appContext) getTokenRefresh(gc *gin.Context) {
 		return
 	}
 	claims, ok := token.Claims.(jwt.MapClaims)
-	expiryUnix, err := strconv.ParseInt(claims["exp"].(string), 10, 64)
+	expiryUnix := int64(claims["exp"].(float64))
 	if err != nil {
 		app.debug.Printf("getTokenRefresh: Invalid token expiry: %s", err)
 		respond(401, "Invalid token", gc)
