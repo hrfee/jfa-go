@@ -90,10 +90,26 @@ func migrateEmailStorage(app *appContext) error {
 	}
 	newEmails := map[string]EmailAddress{}
 	for jfID, addr := range emails {
-		newEmails[jfID] = EmailAddress{
-			Addr:    addr.(string),
-			Contact: true,
+		switch addr.(type) {
+		case string:
+			newEmails[jfID] = EmailAddress{
+				Addr:    addr.(string),
+				Contact: true,
+			}
+		// In case email settings still persist after migration has already happened
+		case map[string]interface{}:
+			return nil
+		default:
+			return fmt.Errorf("Email address was type %T, not string: \"%+v\"\n", addr, addr)
 		}
+	}
+	config, err := ini.Load(app.configPath)
+	if err != nil {
+		return err
+	}
+	config.Section("email").Key("use_24h").SetValue("")
+	if err := config.SaveTo(app.configPath); err != nil {
+		return err
 	}
 	err = storeJSON(app.storage.emails_path+".bak", emails)
 	if err != nil {

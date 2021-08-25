@@ -50,6 +50,10 @@ func Exit(err interface{}) {
 		log.Fatalf("Failed to load template: %v", err)
 	}
 	logCache := lineCache.String()
+	if err != nil {
+		fmt.Println(err)
+		logCache += "\n" + fmt.Sprint(err)
+	}
 	logCache += "\n" + string(debug.Stack())
 	sanitized := sanitizeLog(logCache)
 	data := map[string]interface{}{
