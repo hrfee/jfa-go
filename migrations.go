@@ -100,7 +100,7 @@ func migrateEmailStorage(app *appContext) error {
 		case map[string]interface{}:
 			return nil
 		default:
-			return fmt.Errorf("Email address was type %T, not string: \"%+v\"\n", addr, addr)
+			return fmt.Errorf("email address was type %T, not string: \"%+v\"\n", addr, addr)
 		}
 	}
 	config, err := ini.Load(app.configPath)

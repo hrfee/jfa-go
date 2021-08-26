@@ -418,7 +418,7 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 			"username":    req.Username,
 			"password":    req.Password,
 			"telegramPIN": req.TelegramPIN,
-			"exp":         strconv.FormatInt(time.Now().Add(time.Hour*12).Unix(), 10),
+			"exp":         time.Now().Add(time.Hour * 12).Unix(),
 			"type":        "confirmation",
 		}
 		tk := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

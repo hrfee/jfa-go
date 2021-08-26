@@ -4,7 +4,6 @@ import (
 	"html/template"
 	"io/fs"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 
@@ -249,7 +248,7 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 			return
 		}
 		claims, ok := token.Claims.(jwt.MapClaims)
-		expiryUnix, err := strconv.ParseInt(claims["exp"].(string), 10, 64)
+		expiryUnix := int64(claims["exp"].(float64))
 		if err != nil {
 			fail()
 			app.err.Printf("Failed to parse key expiry: %s", err)
