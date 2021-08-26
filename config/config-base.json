@@ -246,7 +246,7 @@
                     "requires_restart": true,
                     "type": "text",
                     "value": "",
-                    "description": "URL base for when running jfa-go with a reverse proxy in a subfolder."
+                    "description": "URL base for when running jfa-go with a reverse proxy in a subfolder. include preceding /, e.g \"/accounts\"."
                 }
             }
         },

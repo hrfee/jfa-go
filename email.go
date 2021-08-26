@@ -181,8 +181,7 @@ func (emailer *Emailer) NewMailgun(url, key string) {
 func (emailer *Emailer) NewSMTP(server string, port int, username, password string, sslTLS bool, certPath string) (err error) {
 	// x509.SystemCertPool is unavailable on windows
 	if PLATFORM == "windows" {
-		emailer.sender = &SMTP{
-			auth:   smtp.PlainAuth("", username, password, server),
+		sender := &SMTP{
 			server: server,
 			port:   port,
 			sslTLS: sslTLS,
@@ -191,6 +190,10 @@ func (emailer *Emailer) NewSMTP(server string, port int, username, password stri
 				ServerName:         server,
 			},
 		}
+		if username != "" || password != "" {
+			sender.auth = smtp.PlainAuth("", username, password, server)
+		}
+		emailer.sender = sender
 		return
 	}
 	rootCAs, err := x509.SystemCertPool()
@@ -204,8 +207,7 @@ func (emailer *Emailer) NewSMTP(server string, port int, username, password stri
 			err = errors.New("Failed to append cert to pool")
 		}
 	}
-	emailer.sender = &SMTP{
-		auth:   smtp.PlainAuth("", username, password, server),
+	sender := &SMTP{
 		server: server,
 		port:   port,
 		sslTLS: sslTLS,
@@ -215,6 +217,10 @@ func (emailer *Emailer) NewSMTP(server string, port int, username, password stri
 			RootCAs:            rootCAs,
 		},
 	}
+	if username != "" || password != "" {
+		sender.auth = smtp.PlainAuth("", username, password, server)
+	}
+	emailer.sender = sender
 	return
 }
 
