@@ -306,6 +306,9 @@ func (emailer *Emailer) confirmationValues(code, username, key string, app *appC
 	} else {
 		message := app.config.Section("messages").Key("message").String()
 		inviteLink := app.config.Section("invite_emails").Key("url_base").String()
+		if !strings.HasSuffix(inviteLink, "/invite") {
+			inviteLink += "/invite"
+		}
 		inviteLink = fmt.Sprintf("%s/%s?key=%s", inviteLink, code, key)
 		template["helloUser"] = emailer.lang.Strings.template("helloUser", tmpl{"username": username})
 		template["confirmationURL"] = inviteLink
