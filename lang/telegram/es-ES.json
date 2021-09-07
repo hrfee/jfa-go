@@ -3,10 +3,10 @@
         "name": ""
     },
     "strings": {
-        "startMessage": "",
-        "matrixStartMessage": "",
-        "invalidPIN": "",
-        "pinSuccess": "",
-        "languageMessage": ""
+        "startMessage": "¡Hola!\nIntroduce tu código PIN de Jellyfin para verificar tu cuenta.",
+        "matrixStartMessage": "Hola,\nIntroduce el PIN de abajo para logarte en la página de Jellyfin y verificar tu cuenta.",
+        "invalidPIN": "El PIN es inváido, inténtalo de nuevo.",
+        "pinSuccess": "Ok! Ya puedes volver a la página de login.",
+        "languageMessage": "Nota: Ver los idiomas disponibles con {command}, y ajusta el idioma con {command} <language code>."
     }
 }
