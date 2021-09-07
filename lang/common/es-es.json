@@ -14,6 +14,10 @@
         "copied": "Copiado",
         "time24h": "24 horas",
         "time12h": "24 horas",
-        "theme": "Tema"
+        "theme": "Tema",
+        "send": "Enviar",
+        "contactDiscord": "Contacta a través de Discord",
+        "contactEmail": "Contacta a través de email",
+        "contactTelegram": "Contacta a través de Telegram"
     }
 }
