@@ -93,7 +93,18 @@
         "notifyUserCreation": "Sobre la creación de usuarios",
         "conditionals": "Condicionales",
         "donate": "Donar",
-        "add": "Añadir"
+        "add": "Añadir",
+        "templates": "Plantillas",
+        "contactThrough": "Contactar a través de:",
+        "select": "Seleccionar",
+        "sendPIN": "Pídale al usuario que envíe el PIN a continuación al bot.",
+        "searchDiscordUser": "Comienza a escribir el nombre de usuario de Discord para encontrar a la usuario.",
+        "findDiscordUser": "Encontrar usuario de Discord",
+        "linkMatrixDescription": "Ingrese el nombre de usuario y la contraseña para usar como bot. Una vez enviada, la aplicación se reiniciará",
+        "matrixHomeServer": "Dirección del servidor de inicio",
+        "saveAsTemplate": "Guardar plantilla",
+        "deleteTemplate": "Eliminar plantilla",
+        "templateEnterName": "Ingrese un nombre para guardar esta plantilla."
     },
     "notifications": {
         "changedEmailAddress": "Se cambió la dirección de correo electrónico de {n}.",
@@ -126,11 +137,15 @@
         "errorFailureCheckLogs": "Fallido (ver consola / registros)",
         "errorPartialFailureCheckLogs": "Fallo parcial (ver consola / registros)",
         "errorUserCreated": "No se pudo crear el usuario {n}.",
-        "errorSendWelcomeEmail": "No se pudo enviar el correo electrónico de bienvenida (verifique la consola / registros)",
+        "errorSendWelcomeEmail": "No se pudo enviar el mensaje de bienvenida (verifique la consola / registros)",
         "errorApplyUpdate": "No se pudo aplicar la actualización, intente manualmente.",
         "errorCheckUpdate": "No se pudo comprobar la actualización.",
         "updateAvailable": "Hay una nueva actualización disponible, verifique la configuración.",
-        "noUpdatesAvailable": "No hay nuevas actualizaciones disponibles."
+        "noUpdatesAvailable": "No hay nuevas actualizaciones disponibles.",
+        "updateAppliedRefresh": "Actualización aplicada, actualice.",
+        "accountConnected": "Cuenta conectada.",
+        "savedAnnouncement": "Anuncio guardado.",
+        "telegramVerified": "Cuenta de Telegram verificada."
     },
     "quantityStrings": {
         "modifySettingsFor": {
