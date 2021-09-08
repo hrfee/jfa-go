@@ -8,6 +8,7 @@
         "tryAgain": "Por favor intente nuevamente.",
         "youCanLogin": "Ahora puedes logearte con el codigo como contraseña.",
         "changeYourPassword": "Recuerda cambiar tu contraseña luego de iniciar sesión.",
-        "youCanLoginOmbi": "Ahora puede iniciar sesión en Jellyfin & Ombi con el siguiente código como contraseña."
+        "youCanLoginOmbi": "Ahora puede iniciar sesión en Jellyfin & Ombi con el siguiente código como contraseña.",
+        "reset": "Reiniciar"
     }
 }
