@@ -17,7 +17,7 @@
         "inviteSendToEmail": "Enviar a",
         "login": "Acceso",
         "logout": "Cerrar sesión",
-        "create": "Cerrar sesión",
+        "create": "Crear",
         "apply": "Aplicar",
         "delete": "Eliminar",
         "name": "Nombre",
@@ -92,7 +92,8 @@
         "notifyInviteExpiry": "Al vencimiento",
         "notifyUserCreation": "Sobre la creación de usuarios",
         "conditionals": "Condicionales",
-        "donate": "Donar"
+        "donate": "Donar",
+        "add": "Añadir"
     },
     "notifications": {
         "changedEmailAddress": "Se cambió la dirección de correo electrónico de {n}.",
