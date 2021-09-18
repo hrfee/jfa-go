@@ -98,7 +98,7 @@ type appContext struct {
 	telegram         *TelegramDaemon
 	discord          *DiscordDaemon
 	matrix           *MatrixDaemon
-	info, debug, err logger.Logger
+	info, debug, err *logger.Logger
 	host             string
 	port             int
 	version          string
@@ -234,7 +234,7 @@ func start(asDaemon, firstCall bool) {
 	if debugMode {
 		app.debug = logger.NewLogger(os.Stdout, "[DEBUG] ", log.Ltime|log.Lshortfile, color.FgYellow)
 	} else {
-		app.debug = logger.EmptyLogger(false)
+		app.debug = logger.NewEmptyLogger()
 	}
 	if *PPROF {
 		app.info.Print(warning("\n\nWARNING: Don't use pprof in production.\n\n"))

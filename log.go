@@ -39,6 +39,7 @@ func logOutput() (closeFunc func()) {
 		}
 	}
 	writer := io.MultiWriter(writers...)
+	// FIXME: Potential cause if last log line doesn't get printed sometimes.
 	os.Stdout, os.Stderr = w, w
 	log.SetOutput(writer)
 	gin.DefaultWriter, gin.DefaultErrorWriter = writer, writer

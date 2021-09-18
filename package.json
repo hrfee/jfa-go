@@ -29,5 +29,8 @@
     "remove-markdown": "^0.3.0",
     "typescript": "^4.0.3",
     "uncss": "^0.17.3"
+  },
+  "devDependencies": {
+    "live-server": "^1.2.1"
   }
 }

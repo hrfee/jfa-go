@@ -11,16 +11,17 @@ import (
 	c "github.com/fatih/color"
 )
 
-type Logger interface {
-	Printf(format string, v ...interface{})
-	Print(v ...interface{})
-	Println(v ...interface{})
-	Fatal(v ...interface{})
-	Fatalf(format string, v ...interface{})
-	SetFatalFunc(f func(err interface{}))
-}
+// type Logger interface {
+// 	Printf(format string, v ...interface{})
+// 	Print(v ...interface{})
+// 	Println(v ...interface{})
+// 	Fatal(v ...interface{})
+// 	Fatalf(format string, v ...interface{})
+// 	SetFatalFunc(f func(err interface{}))
+// }
 
-type logger struct {
+type Logger struct {
+	empty     bool
 	logger    *log.Logger
 	shortfile bool
 	printer   *c.Color
@@ -46,7 +47,8 @@ func Lshortfile() string {
 	return file + ":" + lineString + ":"
 }
 
-func NewLogger(out io.Writer, prefix string, flag int, color c.Attribute) (l logger) {
+func NewLogger(out io.Writer, prefix string, flag int, color c.Attribute) (l *Logger) {
+	l = &Logger{}
 	// Use reimplemented Lshortfile since wrapping the log functions messes them up
 	if flag&log.Lshortfile != 0 {
 		flag -= log.Lshortfile
@@ -58,7 +60,12 @@ func NewLogger(out io.Writer, prefix string, flag int, color c.Attribute) (l log
 	return l
 }
 
-func (l logger) Printf(format string, v ...interface{}) {
+func NewEmptyLogger() (l *Logger) { l.empty = true; return }
+
+func (l *Logger) Printf(format string, v ...interface{}) {
+	if l.empty {
+		return
+	}
 	var out string
 	if l.shortfile {
 		out = Lshortfile()
@@ -67,7 +74,10 @@ func (l logger) Printf(format string, v ...interface{}) {
 	l.logger.Print(out)
 }
 
-func (l logger) Print(v ...interface{}) {
+func (l *Logger) Print(v ...interface{}) {
+	if l.empty {
+		return
+	}
 	var out string
 	if l.shortfile {
 		out = Lshortfile()
@@ -76,7 +86,10 @@ func (l logger) Print(v ...interface{}) {
 	l.logger.Print(out)
 }
 
-func (l logger) Println(v ...interface{}) {
+func (l *Logger) Println(v ...interface{}) {
+	if l.empty {
+		return
+	}
 	var out string
 	if l.shortfile {
 		out = Lshortfile()
@@ -85,7 +98,10 @@ func (l logger) Println(v ...interface{}) {
 	l.logger.Print(out)
 }
 
-func (l logger) Fatal(v ...interface{}) {
+func (l *Logger) Fatal(v ...interface{}) {
+	if l.empty {
+		return
+	}
 	var out string
 	if l.shortfile {
 		out = Lshortfile()
@@ -94,29 +110,22 @@ func (l logger) Fatal(v ...interface{}) {
 	l.logger.Fatal(out)
 }
 
-func (l logger) Fatalf(format string, v ...interface{}) {
+func (l *Logger) Fatalf(format string, v ...interface{}) {
+	if l.empty {
+		return
+	}
 	var out string
 	if l.shortfile {
 		out = Lshortfile()
 	}
 	out += " " + l.printer.Sprintf(format, v...)
 	if l.fatalFunc != nil {
-		l.logger.Print(out)
 		l.fatalFunc(errors.New(out))
 	} else {
 		l.logger.Fatal(out)
 	}
 }
 
-func (l logger) SetFatalFunc(f func(err interface{})) {
+func (l *Logger) SetFatalFunc(f func(err interface{})) {
 	l.fatalFunc = f
 }
-
-type EmptyLogger bool
-
-func (l EmptyLogger) Printf(format string, v ...interface{}) {}
-func (l EmptyLogger) Print(v ...interface{})                 {}
-func (l EmptyLogger) Println(v ...interface{})               {}
-func (l EmptyLogger) Fatal(v ...interface{})                 {}
-func (l EmptyLogger) Fatalf(format string, v ...interface{}) {}
-func (l EmptyLogger) SetFatalFunc(f func(err interface{}))   {}
