@@ -60,7 +60,12 @@ func NewLogger(out io.Writer, prefix string, flag int, color c.Attribute) (l *Lo
 	return l
 }
 
-func NewEmptyLogger() (l *Logger) { l.empty = true; return }
+func NewEmptyLogger() (l *Logger) {
+	l = &Logger{
+		empty: true,
+	}
+	return
+}
 
 func (l *Logger) Printf(format string, v ...interface{}) {
 	if l.empty {
