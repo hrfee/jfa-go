@@ -101,7 +101,11 @@
         "findDiscordUser": "Trouver l'utilisateur Discord",
         "linkMatrixDescription": "Entrez le nom d'utilisateur et le mot de passe de l'utilisateur pour l’utilisateur comme bot. Une fois soumis, l'application va redémarrer.",
         "searchDiscordUser": "Commencez à taper le nom d'utilisateur Discord pour trouver l'utilisateur.",
-        "matrixHomeServer": "Adresse du serveur"
+        "matrixHomeServer": "Adresse du serveur domestique",
+        "saveAsTemplate": "Sauvegarder comme modèle",
+        "templateEnterName": "Entrez un nom pour sauvegarder ce modèle.",
+        "deleteTemplate": "Supprimer le modèle",
+        "templates": "Modèles"
     },
     "notifications": {
         "changedEmailAddress": "Adresse e-mail modifiée de {n}.",
@@ -141,7 +145,8 @@
         "noUpdatesAvailable": "Aucune nouvelle mise à jour disponible.",
         "telegramVerified": "Compte Telegram vérifié.",
         "updateAppliedRefresh": "Mise à jour appliquée, veuillez actualiser.",
-        "accountConnected": "Compte connecté."
+        "accountConnected": "Compte connecté.",
+        "savedAnnouncement": "Annonce enregistrée."
     },
     "quantityStrings": {
         "modifySettingsFor": {
