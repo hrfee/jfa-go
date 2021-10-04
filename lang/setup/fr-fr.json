@@ -15,7 +15,11 @@
         "serverAddress": "Adresse du serveur",
         "emailSubject": "Objet de l'e-mail",
         "URL": "URL",
-        "apiKey": "Clé API"
+        "apiKey": "Clé API",
+        "errorUserDisabled": "L'utilisateur est peut-être désactivé.",
+        "error404": "404, vérifiez l'URL interne.",
+        "errorInvalidUserPass": "Nom d'utilisateur/mot de passe invalide.",
+        "errorNotAdmin": "L'utilisateur n'est pas autorisé à gérer le serveur."
     },
     "startPage": {
         "welcome": "Bienvenue !",
@@ -25,7 +29,7 @@
     },
     "endPage": {
         "finished": "Terminé !",
-        "restartMessage": "Il y a d'autres paramètres que vous pouvez configurer sur la page administrateur. Cliquez en dessous pour redémarrer, rafraichissez ensuite la page.",
+        "restartMessage": "Vous pouvez configurer les bots Discord/Telegram/Matrix, personnaliser vos messages et plus encore dans Paramètres. Cliquez ci-dessous pour redémarrer, puis actualisez la page.",
         "refreshPage": "Rafraichir"
     },
     "language": {
@@ -86,16 +90,16 @@
         "mailgunApiURL": "URL de l'API"
     },
     "notifications": {
-        "title": "Notifications",
-        "description": "Si activé, vous pouvez choisir (par invitation) de recevoir un e-mail lorsque l'invitation expire, ou lorsque l'utilisateur est créé. Si vous ne choisissez pas la méthode de connexion par Jellyfin, assurez-vous d'avoir fourni votre adresse e-mail."
+        "title": "Notifications d'administrateur",
+        "description": "Si activé, vous pouvez choisir (par invitation) de recevoir un message lorsque l'invitation expire, ou lorsque l'utilisateur est créé. Si vous ne choisissez pas la méthode de connexion par Jellyfin, assurez-vous d'avoir fourni votre adresse e-mail ou un autre moyen de contact."
     },
     "welcomeEmails": {
-        "title": "E-mails de bienvenue",
-        "description": "Si activé, un e-mail sera envoyé aux nouveaux utilisateurs avec l'URL de Jellyfin/Emby et leur nom d'utilisateur."
+        "title": "Messages de bienvenue",
+        "description": "Si activé, un message sera envoyé aux nouveaux utilisateurs avec l'URL de Jellyfin/Emby et leur nom d'utilisateur."
     },
     "inviteEmails": {
-        "title": "E-mails d'invitation",
-        "description": "Si activé, vous pouvez envoyer une invitation directement à l'adresse e-mail de l'utilisateur. Parce que vous pourriez utiliser un reverse proxy, vous devez renseigner l'URL d'accès aux invitations. Renseignez votre Base URL et ajoutez '/invite'."
+        "title": "Messages d'invitation",
+        "description": "Si activé, vous pouvez envoyer une invitation directement à l'adresse e-mail, le Discord ou Matrix de l'utilisateur. Parce que vous pourriez utiliser un reverse proxy, vous devez renseigner l'URL d'accès aux invitations. Renseignez votre Base URL et ajoutez '/invite'."
     },
     "passwordResets": {
         "title": "Réinitialisation de mot de passe",
@@ -104,7 +108,9 @@
         "pathToJellyfinNotice": "Si vous ne savez pas où c'est, essayez de réinitialiser votre mot de passe dans Jellyfin. Une popup avec '<path to jellyfin>/passwordreset-*.json' apparaitra.",
         "resetLinks": "Envoyer un lien plutôt qu'un PIN",
         "resetLinksNotice": "Si l'intégration est activée, utilisez ceci pour synchroniser les réinitialisations de mots de passe Jellyfin avec Ombi.",
-        "resetLinksLanguage": "Langue du lien de réinitialisation par défaut"
+        "resetLinksLanguage": "Langue du lien de réinitialisation par défaut",
+        "setPassword": "Définir le mot de passe via le lien",
+        "setPasswordNotice": "L'activation de cette option signifie que l'utilisateur n'a pas à modifier son mot de passe à partir du code PIN après la réinitialisation. La validation du mot de passe sera également appliquée."
     },
     "passwordValidation": {
         "title": "Validation du mot de passe",
@@ -133,5 +139,9 @@
         "updateChannel": "Mettre à jour la chaîne",
         "stable": "Stable",
         "unstable": "Instable"
+    },
+    "messages": {
+        "title": "Messages",
+        "description": "jfa-go peut envoyer des réinitialisations de mot de passe et divers messages par e-mail, Discord, Telegram et/ou Matrix. Vous pouvez configurer l'e-mail ci-dessous, et les autres peuvent être configurés dans les paramètres plus tard. Les instructions se trouvent sur le {n}. Si vous n'en avez pas besoin, vous pouvez désactiver ces fonctionnalités ici."
     }
 }
