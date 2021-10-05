@@ -100,7 +100,8 @@
         "searchDiscordUser": "Gib den Discord-Benutzername ein, um den Benutzer zu finden.",
         "findDiscordUser": "Suche Discord-Benutzer",
         "linkMatrixDescription": "Gib den Benutzernamen und das Passwort des Benutzers ein, der als Bot verwendet werden soll. Nach dem Absenden wird die App neu gestartet.",
-        "matrixHomeServer": "Adresse des Homeservers"
+        "matrixHomeServer": "Adresse des Homeservers",
+        "templates": "Vorlagen"
     },
     "notifications": {
         "changedEmailAddress": "E-Mail-Adresse von {n} geändert.",
@@ -140,7 +141,8 @@
         "noUpdatesAvailable": "Keinen neuen Aktualisierungen verfügbar.",
         "updateAppliedRefresh": "Update angewendet, bitte aktualisieren.",
         "telegramVerified": "Telegram-Konto verifiziert.",
-        "accountConnected": "Konto verbunden."
+        "accountConnected": "Konto verbunden.",
+        "savedAnnouncement": "Ankündigung gespeichert."
     },
     "quantityStrings": {
         "modifySettingsFor": {
