@@ -13,7 +13,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"sync"
 	textTemplate "text/template"
 	"time"
 
@@ -29,84 +28,6 @@ var renderer = html.NewRenderer(html.RendererOptions{Flags: html.Smartypants})
 // EmailClient implements email sending, right now via smtp, mailgun or a dummy client.
 type EmailClient interface {
 	Send(fromName, fromAddr string, message *Message, address ...string) error
-}
-
-type DummyClient struct{}
-
-func (dc *DummyClient) Send(fromName, fromAddr string, email *Message, address ...string) error {
-	fmt.Printf("FROM: %s <%s>\nTO: %s\nTEXT: %s\n", fromName, fromAddr, strings.Join(address, ", "), email.Text)
-	return nil
-}
-
-// Mailgun client implements EmailClient.
-type Mailgun struct {
-	client *mailgun.MailgunImpl
-}
-
-func (mg *Mailgun) Send(fromName, fromAddr string, email *Message, address ...string) error {
-	message := mg.client.NewMessage(
-		fmt.Sprintf("%s <%s>", fromName, fromAddr),
-		email.Subject,
-		email.Text,
-	)
-	for _, a := range address {
-		// Adding variable tells mailgun to do a batch send, so users don't see other recipients.
-		message.AddRecipientAndVariables(a, map[string]interface{}{"unique_id": a})
-	}
-	message.SetHtml(email.HTML)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
-	defer cancel()
-	_, _, err := mg.client.Send(ctx, message)
-	return err
-}
-
-// SMTP supports SSL/TLS and STARTTLS; implements EmailClient.
-type SMTP struct {
-	Client *sMail.SMTPServer
-}
-
-func (sm *SMTP) Send(fromName, fromAddr string, email *Message, address ...string) error {
-	from := fmt.Sprintf("%s <%s>", fromName, fromAddr)
-	var cli *sMail.SMTPClient
-	var err error
-	cli, err = sm.Client.Connect()
-	if err != nil {
-		return err
-	}
-	defer cli.Close()
-	var wg sync.WaitGroup
-	for _, addr := range address {
-		wg.Add(1)
-		go func(addr string) {
-			defer wg.Done()
-			e := sMail.NewMSG()
-			e.SetFrom(from)
-			e.SetSubject(email.Subject)
-			e.AddTo(addr)
-			if email.HTML == "" {
-				e.SetBody(sMail.TextPlain, email.Text)
-			} else {
-				e.SetBody(sMail.TextHTML, email.HTML)
-				e.AddAlternative(sMail.TextPlain, email.Text)
-			}
-			err = e.Send(cli)
-			// e := jEmail.NewEmail()
-			// e.Subject = email.Subject
-			// e.From = from
-			// e.Text = []byte(email.Text)
-			// e.HTML = []byte(email.HTML)
-			// e.To = []string{addr}
-			// err = sm.Pool.Send(e, 15*time.Second)
-			// if sm.sslTLS {
-			// 	err = sm.Pool.S
-			// 	err = e.SendWithTLS(server, sm.auth, sm.tlsConfig)
-			// } else {
-			// 	err = e.SendWithStartTLS(server, sm.auth, sm.tlsConfig)
-			// }
-		}(addr)
-	}
-	wg.Wait()
-	return err
 }
 
 // Emailer contains the email sender, translations, and methods to construct messages.
@@ -175,18 +96,17 @@ func NewEmailer(app *appContext) *Emailer {
 	return emailer
 }
 
-// NewMailgun returns a Mailgun emailClient.
-func (emailer *Emailer) NewMailgun(url, key string) {
-	sender := &Mailgun{
-		client: mailgun.NewMailgun(strings.Split(emailer.fromAddr, "@")[1], key),
-	}
-	// Mailgun client takes the base url, so we need to trim off the end (e.g 'v3/messages')
-	if strings.Contains(url, "messages") {
-		url = url[0:strings.LastIndex(url, "/")]
-		url = url[0:strings.LastIndex(url, "/")]
-	}
-	sender.client.SetAPIBase(url)
-	emailer.sender = sender
+// DummyClient just logs the email to the console for debugging purposes. It can be used by settings [email]/method to "dummy".
+type DummyClient struct{}
+
+func (dc *DummyClient) Send(fromName, fromAddr string, email *Message, address ...string) error {
+	fmt.Printf("FROM: %s <%s>\nTO: %s\nTEXT: %s\n", fromName, fromAddr, strings.Join(address, ", "), email.Text)
+	return nil
+}
+
+// SMTP supports SSL/TLS and STARTTLS; implements EmailClient.
+type SMTP struct {
+	Client *sMail.SMTPServer
 }
 
 // NewSMTP returns an SMTP emailClient.
@@ -235,6 +155,65 @@ func (emailer *Emailer) NewSMTP(server string, port int, username, password stri
 	}
 	emailer.sender = sender
 	return
+}
+
+func (sm *SMTP) Send(fromName, fromAddr string, email *Message, address ...string) error {
+	from := fmt.Sprintf("%s <%s>", fromName, fromAddr)
+	var cli *sMail.SMTPClient
+	var err error
+	cli, err = sm.Client.Connect()
+	if err != nil {
+		return err
+	}
+	defer cli.Close()
+	e := sMail.NewMSG()
+	e.SetFrom(from)
+	e.SetSubject(email.Subject)
+	e.AddTo(address...)
+	if email.HTML == "" {
+		e.SetBody(sMail.TextPlain, email.Text)
+	} else {
+		e.SetBody(sMail.TextHTML, email.HTML)
+		e.AddAlternative(sMail.TextPlain, email.Text)
+	}
+	err = e.Send(cli)
+	return err
+}
+
+// Mailgun client implements EmailClient.
+type Mailgun struct {
+	client *mailgun.MailgunImpl
+}
+
+// NewMailgun returns a Mailgun emailClient.
+func (emailer *Emailer) NewMailgun(url, key string) {
+	sender := &Mailgun{
+		client: mailgun.NewMailgun(strings.Split(emailer.fromAddr, "@")[1], key),
+	}
+	// Mailgun client takes the base url, so we need to trim off the end (e.g 'v3/messages')
+	if strings.Contains(url, "messages") {
+		url = url[0:strings.LastIndex(url, "/")]
+		url = url[0:strings.LastIndex(url, "/")]
+	}
+	sender.client.SetAPIBase(url)
+	emailer.sender = sender
+}
+
+func (mg *Mailgun) Send(fromName, fromAddr string, email *Message, address ...string) error {
+	message := mg.client.NewMessage(
+		fmt.Sprintf("%s <%s>", fromName, fromAddr),
+		email.Subject,
+		email.Text,
+	)
+	for _, a := range address {
+		// Adding variable tells mailgun to do a batch send, so users don't see other recipients.
+		message.AddRecipientAndVariables(a, map[string]interface{}{"unique_id": a})
+	}
+	message.SetHtml(email.HTML)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+	_, _, err := mg.client.Send(ctx, message)
+	return err
 }
 
 type templ interface {
