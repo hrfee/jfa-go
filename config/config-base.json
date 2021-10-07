@@ -535,6 +535,15 @@
                     "type": "password",
                     "value": "smtp password"
                 },
+                "hello_hostname": {
+                    "name": "HELLO Hostname",
+                    "required": false,
+                    "requires_restart": false,
+                    "advanced": true,
+                    "type": "text",
+                    "value": "localhost",
+                    "description": "Hostname sent when sending HELLO to the SMTP server. Some servers don't like the default \"localhost\" value, such as smtp-relay.gmail.com."
+                },
                 "ssl_cert": {
                     "name": "Path to custom SSL certificate",
                     "required": false,

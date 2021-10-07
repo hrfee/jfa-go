@@ -10,7 +10,6 @@ import (
 	"html/template"
 	"io"
 	"io/fs"
-	"net/smtp"
 	"os"
 	"strconv"
 	"strings"
@@ -21,8 +20,8 @@ import (
 	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/html"
 	"github.com/itchyny/timefmt-go"
-	jEmail "github.com/jordan-wright/email"
 	"github.com/mailgun/mailgun-go/v4"
+	sMail "github.com/xhit/go-simple-mail/v2"
 )
 
 var renderer = html.NewRenderer(html.RendererOptions{Flags: html.Smartypants})
@@ -63,33 +62,47 @@ func (mg *Mailgun) Send(fromName, fromAddr string, email *Message, address ...st
 
 // SMTP supports SSL/TLS and STARTTLS; implements EmailClient.
 type SMTP struct {
-	sslTLS    bool
-	server    string
-	port      int
-	auth      smtp.Auth
-	tlsConfig *tls.Config
+	Client *sMail.SMTPServer
 }
 
 func (sm *SMTP) Send(fromName, fromAddr string, email *Message, address ...string) error {
-	server := fmt.Sprintf("%s:%d", sm.server, sm.port)
 	from := fmt.Sprintf("%s <%s>", fromName, fromAddr)
-	var wg sync.WaitGroup
+	var cli *sMail.SMTPClient
 	var err error
+	cli, err = sm.Client.Connect()
+	if err != nil {
+		return err
+	}
+	defer cli.Close()
+	var wg sync.WaitGroup
 	for _, addr := range address {
 		wg.Add(1)
 		go func(addr string) {
 			defer wg.Done()
-			e := jEmail.NewEmail()
-			e.Subject = email.Subject
-			e.From = from
-			e.Text = []byte(email.Text)
-			e.HTML = []byte(email.HTML)
-			e.To = []string{addr}
-			if sm.sslTLS {
-				err = e.SendWithTLS(server, sm.auth, sm.tlsConfig)
+			e := sMail.NewMSG()
+			e.SetFrom(from)
+			e.SetSubject(email.Subject)
+			e.AddTo(addr)
+			if email.HTML == "" {
+				e.SetBody(sMail.TextPlain, email.Text)
 			} else {
-				err = e.SendWithStartTLS(server, sm.auth, sm.tlsConfig)
+				e.SetBody(sMail.TextHTML, email.HTML)
+				e.AddAlternative(sMail.TextPlain, email.Text)
 			}
+			err = e.Send(cli)
+			// e := jEmail.NewEmail()
+			// e.Subject = email.Subject
+			// e.From = from
+			// e.Text = []byte(email.Text)
+			// e.HTML = []byte(email.HTML)
+			// e.To = []string{addr}
+			// err = sm.Pool.Send(e, 15*time.Second)
+			// if sm.sslTLS {
+			// 	err = sm.Pool.S
+			// 	err = e.SendWithTLS(server, sm.auth, sm.tlsConfig)
+			// } else {
+			// 	err = e.SendWithStartTLS(server, sm.auth, sm.tlsConfig)
+			// }
 		}(addr)
 	}
 	wg.Wait()
@@ -145,13 +158,12 @@ func NewEmailer(app *appContext) *Emailer {
 		if app.config.Section("smtp").Key("encryption").String() == "ssl_tls" {
 			sslTLS = true
 		}
-		username := ""
-		if u := app.config.Section("smtp").Key("username").MustString(""); u != "" {
-			username = u
-		} else {
+		username := app.config.Section("smtp").Key("username").MustString("")
+		password := app.config.Section("smtp").Key("password").String()
+		if username == "" && password != "" {
 			username = emailer.fromAddr
 		}
-		err := emailer.NewSMTP(app.config.Section("smtp").Key("server").String(), app.config.Section("smtp").Key("port").MustInt(465), username, app.config.Section("smtp").Key("password").String(), sslTLS, app.config.Section("smtp").Key("ssl_cert").MustString(""))
+		err := emailer.NewSMTP(app.config.Section("smtp").Key("server").String(), app.config.Section("smtp").Key("port").MustInt(465), username, password, sslTLS, app.config.Section("smtp").Key("ssl_cert").MustString(""), app.config.Section("smtp").Key("hello_hostname").String())
 		if err != nil {
 			app.err.Printf("Error while initiating SMTP mailer: %v", err)
 		}
@@ -178,20 +190,29 @@ func (emailer *Emailer) NewMailgun(url, key string) {
 }
 
 // NewSMTP returns an SMTP emailClient.
-func (emailer *Emailer) NewSMTP(server string, port int, username, password string, sslTLS bool, certPath string) (err error) {
+func (emailer *Emailer) NewSMTP(server string, port int, username, password string, sslTLS bool, certPath string, helloHostname string) (err error) {
+	sender := &SMTP{}
+	sender.Client = sMail.NewSMTPClient()
+	if sslTLS {
+		sender.Client.Encryption = sMail.EncryptionSSLTLS
+	} else {
+		sender.Client.Encryption = sMail.EncryptionSTARTTLS
+	}
+	if username != "" || password != "" {
+		sender.Client.Authentication = sMail.AuthLogin
+		sender.Client.Username = username
+		sender.Client.Password = password
+	}
+	sender.Client.Helo = helloHostname
+	sender.Client.ConnectTimeout, sender.Client.SendTimeout = 15*time.Second, 15*time.Second
+	sender.Client.Host = server
+	sender.Client.Port = port
+	sender.Client.KeepAlive = false
 	// x509.SystemCertPool is unavailable on windows
 	if PLATFORM == "windows" {
-		sender := &SMTP{
-			server: server,
-			port:   port,
-			sslTLS: sslTLS,
-			tlsConfig: &tls.Config{
-				InsecureSkipVerify: false,
-				ServerName:         server,
-			},
-		}
-		if username != "" || password != "" {
-			sender.auth = smtp.PlainAuth("", username, password, server)
+		sender.Client.TLSConfig = &tls.Config{
+			InsecureSkipVerify: false,
+			ServerName:         server,
 		}
 		emailer.sender = sender
 		return
@@ -207,18 +228,10 @@ func (emailer *Emailer) NewSMTP(server string, port int, username, password stri
 			err = errors.New("Failed to append cert to pool")
 		}
 	}
-	sender := &SMTP{
-		server: server,
-		port:   port,
-		sslTLS: sslTLS,
-		tlsConfig: &tls.Config{
-			InsecureSkipVerify: false,
-			ServerName:         server,
-			RootCAs:            rootCAs,
-		},
-	}
-	if username != "" || password != "" {
-		sender.auth = smtp.PlainAuth("", username, password, server)
+	sender.Client.TLSConfig = &tls.Config{
+		InsecureSkipVerify: false,
+		ServerName:         server,
+		RootCAs:            rootCAs,
 	}
 	emailer.sender = sender
 	return
