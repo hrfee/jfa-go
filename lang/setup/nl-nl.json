@@ -3,7 +3,7 @@
         "name": "Nederlands (NL)"
     },
     "strings": {
-        "pageTitle": "Insstallatie - jfa-go",
+        "pageTitle": "Installatie - jfa-go",
         "next": "Volgende",
         "back": "Terug",
         "optional": "Optioneel",
@@ -15,7 +15,11 @@
         "serverAddress": "Serveradres",
         "emailSubject": "Onderwerp e-mail",
         "URL": "URL",
-        "apiKey": "API-sleutel"
+        "apiKey": "API-sleutel",
+        "errorInvalidUserPass": "Ongeldige gebruikersnaam/wachtwoord.",
+        "errorUserDisabled": "De gebruiker kan uitgeschakeld zijn.",
+        "error404": "404, controleer de interne URL.",
+        "errorNotAdmin": "Gebruiker heeft geen beheersrechten."
     },
     "startPage": {
         "welcome": "Welkom!",
