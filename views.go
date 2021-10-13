@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
+	"github.com/hrfee/mediabrowser"
 )
 
 var css = []string{"bundle.css", "remixicon.css"}
@@ -155,12 +156,8 @@ func (app *appContext) ResetPassword(gc *gin.Context) {
 		"success":        false,
 		"ombiEnabled":    app.config.Section("ombi").Key("enabled").MustBool(false),
 	}
-	if _, ok := app.internalPWRs[pin]; !ok {
-		app.debug.Printf("Ignoring PWR request due to invalid internal PIN: %s", pin)
-		app.NoRouteHandler(gc)
-		return
-	}
-	if setPassword {
+	pwr, isInternal := app.internalPWRs[pin]
+	if isInternal && setPassword {
 		data["helpMessage"] = app.config.Section("ui").Key("help_message").String()
 		data["successMessage"] = app.config.Section("ui").Key("success_message").String()
 		data["jfLink"] = app.config.Section("jellyfin").Key("public_server").String()
@@ -199,22 +196,43 @@ func (app *appContext) ResetPassword(gc *gin.Context) {
 	// 	data["success"] = true
 	// 	data["pin"] = pin
 	// }
-	resp, status, err := app.jf.ResetPassword(pin)
-	if status == 200 && err == nil && resp.Success {
+	var resp mediabrowser.PasswordResetResponse
+	var status int
+	var err error
+	var username string
+	if !isInternal {
+		resp, status, err = app.jf.ResetPassword(pin)
+	} else if time.Now().After(pwr.Expiry) {
+		app.debug.Printf("Ignoring PWR request due to expired internal PIN: %s", pin)
+		app.NoRouteHandler(gc)
+		return
+	} else {
+		status, err = app.jf.ResetPasswordAdmin(pwr.ID)
+		if !(status == 200 || status == 204) || err != nil {
+			app.err.Printf("Password Reset failed (%d): %v", status, err)
+		} else {
+			status, err = app.jf.SetPassword(pwr.ID, "", pin)
+		}
+		username = pwr.Username
+	}
+	if (status == 200 || status == 204) && err == nil && (isInternal || resp.Success) {
 		data["success"] = true
 		data["pin"] = pin
+		if !isInternal {
+			username = resp.UsersReset[0]
+		}
 	} else {
 		app.err.Printf("Password Reset failed (%d): %v", status, err)
 	}
 	if app.config.Section("ombi").Key("enabled").MustBool(false) {
-		jfUser, status, err := app.jf.UserByName(resp.UsersReset[0], false)
+		jfUser, status, err := app.jf.UserByName(username, false)
 		if status != 200 || err != nil {
-			app.err.Printf("Failed to get user \"%s\" from jellyfin/emby (%d): %v", resp.UsersReset[0], status, err)
+			app.err.Printf("Failed to get user \"%s\" from jellyfin/emby (%d): %v", username, status, err)
 			return
 		}
 		ombiUser, status, err := app.getOmbiUser(jfUser.ID)
 		if status != 200 || err != nil {
-			app.err.Printf("Failed to get user \"%s\" from ombi (%d): %v", resp.UsersReset[0], status, err)
+			app.err.Printf("Failed to get user \"%s\" from ombi (%d): %v", username, status, err)
 			return
 		}
 		ombiUser["password"] = pin
