@@ -514,6 +514,18 @@ func (emailer *Emailer) constructCreated(code, username, address string, invite 
 	return email, nil
 }
 
+// GenResetLink generates and returns a password reset link.
+func (app *appContext) GenResetLink(pin string) (string, error) {
+	url := app.config.Section("password_resets").Key("url_base").String()
+	var pinLink string
+	if url == "" {
+		return pinLink, fmt.Errorf("disabled as no URL Base provided. Set in Settings > Password Resets.")
+	}
+	// Strip /invite from end of this URL, ik it's ugly.
+	pinLink = fmt.Sprintf("%s/reset?pin=%s", url, pin)
+	return pinLink, nil
+}
+
 func (emailer *Emailer) resetValues(pwr PasswordReset, app *appContext, noSub bool) map[string]interface{} {
 	d, t, expiresIn := emailer.formatExpiry(pwr.Expiry, true, app.datePattern, app.timePattern)
 	message := app.config.Section("messages").Key("message").String()
@@ -544,17 +556,16 @@ func (emailer *Emailer) resetValues(pwr PasswordReset, app *appContext, noSub bo
 	} else {
 		template["helloUser"] = emailer.lang.Strings.template("helloUser", tmpl{"username": pwr.Username})
 		template["codeExpiry"] = emailer.lang.PasswordReset.template("codeExpiry", tmpl{"date": d, "time": t, "expiresInMinutes": expiresIn})
-		url := app.config.Section("password_resets").Key("url_base").String()
 		if linkResetEnabled {
-			if url != "" {
+			pinLink, err := app.GenResetLink(pwr.Pin)
+			if err == nil {
 				// Strip /invite form end of this URL, ik its ugly.
 				template["link_reset"] = true
-				pinLink := fmt.Sprintf("%s/reset?pin=%s", url, pwr.Pin)
 				template["pin"] = pinLink
 				// Only used in html email.
 				template["pin_code"] = pwr.Pin
 			} else {
-				app.info.Println("Password Reset link disabled as no URL Base provided. Set in Settings > Password Resets.")
+				app.info.Println("Couldn't generate PWR link: %v", err)
 				template["pin"] = pwr.Pin
 			}
 		} else {

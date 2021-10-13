@@ -108,6 +108,7 @@ type appContext struct {
 	newUpdate        bool // Whether whatever's in update is new.
 	tag              Tag
 	update           Update
+	internalPWRs     map[string]InternalPWR
 }
 
 func generateSecret(length int) (string, error) {

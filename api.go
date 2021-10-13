@@ -918,6 +918,74 @@ func (app *appContext) DeleteAnnounceTemplate(gc *gin.Context) {
 	respondBool(200, false, gc)
 }
 
+// @Summary Generate password reset links for a list of users, sending the links to them if possible.
+// @Produce json
+// @Param AdminPasswordResetDTO body AdminPasswordResetDTO true "List of user IDs"
+// @Success 204 {object} boolResponse
+// @Success 200 {object} AdminPasswordResetRespDTO
+// @Failure 400 {object} boolResponse
+// @Failure 500 {object} boolResponse
+// @Router /users/password-reset [post]
+// @Security Bearer
+// @tags Users
+func (app *appContext) AdminPasswordReset(gc *gin.Context) {
+	var req AdminPasswordResetDTO
+	gc.BindJSON(&req)
+	if req.Users == nil || len(req.Users) == 0 {
+		app.debug.Println("Ignoring empty request for PWR")
+		respondBool(400, false, gc)
+		return
+	}
+	linkCount := 0
+	var pwr InternalPWR
+	var err error
+	resp := AdminPasswordResetRespDTO{}
+	for _, id := range req.Users {
+		pwr, err = app.GenInternalReset(id)
+		if err != nil {
+			app.err.Printf("Failed to get user from Jellyfin: %v", err)
+			respondBool(500, false, gc)
+			return
+		}
+		if app.internalPWRs == nil {
+			app.internalPWRs = map[string]InternalPWR{}
+		}
+		app.internalPWRs[pwr.PIN] = pwr
+		sendAddress := app.getAddressOrName(id)
+		if sendAddress == "" || len(req.Users) == 1 {
+			resp.Link, err = app.GenResetLink(pwr.PIN)
+			linkCount++
+			if sendAddress == "" {
+				resp.Manual = true
+			}
+		}
+		if sendAddress != "" {
+			msg, err := app.email.constructReset(
+				PasswordReset{
+					Pin:      pwr.PIN,
+					Username: pwr.Username,
+					Expiry:   pwr.Expiry,
+					Internal: true,
+				}, app, false,
+			)
+			if err != nil {
+				app.err.Printf("Failed to construct password reset message for \"%s\": %v", pwr.Username, err)
+				respondBool(500, false, gc)
+				return
+			} else if err := app.sendByID(msg, id); err != nil {
+				app.err.Printf("Failed to send password reset message to \"%s\": %v", sendAddress, err)
+			} else {
+				app.info.Printf("Sent password reset message to \"%s\"", sendAddress)
+			}
+		}
+	}
+	if resp.Link != "" && linkCount == 1 {
+		gc.JSON(200, resp)
+		return
+	}
+	respondBool(204, true, gc)
+}
+
 // @Summary Create a new invite.
 // @Produce json
 // @Param generateInviteDTO body generateInviteDTO true "New invite request object"
@@ -1505,38 +1573,70 @@ func (app *appContext) ResetSetPassword(gc *gin.Context) {
 		gc.JSON(400, validation)
 		return
 	}
-	resp, status, err := app.jf.ResetPassword(req.PIN)
-	if status != 200 || err != nil || !resp.Success {
-		app.err.Printf("Password Reset failed (%d): %v", status, err)
-		respondBool(status, false, gc)
-		return
+	isInternal := false
+	var userID, username string
+	if reset, ok := app.internalPWRs[req.PIN]; ok {
+		isInternal = true
+		if time.Now().After(reset.Expiry) {
+			app.info.Printf("Password reset failed: PIN \"%s\" has expired", reset.PIN)
+			respondBool(401, false, gc)
+			delete(app.internalPWRs, req.PIN)
+			return
+		}
+		userID = reset.ID
+		username = reset.Username
+		status, err := app.jf.ResetPasswordAdmin(userID)
+		if !(status == 200 || status == 204) || err != nil {
+			app.err.Printf("Password Reset failed (%d): %v", status, err)
+			respondBool(status, false, gc)
+			return
+		}
+	} else {
+		resp, status, err := app.jf.ResetPassword(req.PIN)
+		if status != 200 || err != nil || !resp.Success {
+			app.err.Printf("Password Reset failed (%d): %v", status, err)
+			respondBool(status, false, gc)
+			return
+		}
+		if req.Password == "" || len(resp.UsersReset) == 0 {
+			respondBool(200, false, gc)
+			return
+		}
+		username = resp.UsersReset[0]
 	}
-	if req.Password == "" || len(resp.UsersReset) == 0 {
-		respondBool(200, false, gc)
-		return
+	var user mediabrowser.User
+	var status int
+	var err error
+	if isInternal {
+		user, status, err = app.jf.UserByID(userID, false)
+	} else {
+		user, status, err = app.jf.UserByName(username, false)
 	}
-	user, status, err := app.jf.UserByName(resp.UsersReset[0], false)
 	if status != 200 || err != nil {
-		app.err.Printf("Failed to get user \"%s\" (%d): %v", resp.UsersReset[0], status, err)
+		app.err.Printf("Failed to get user \"%s\" (%d): %v", username, status, err)
 		respondBool(500, false, gc)
 		return
 	}
-	status, err = app.jf.SetPassword(user.ID, req.PIN, req.Password)
+	prevPassword := req.PIN
+	if isInternal {
+		prevPassword = ""
+	}
+	status, err = app.jf.SetPassword(user.ID, prevPassword, req.Password)
 	if !(status == 200 || status == 204) || err != nil {
-		app.err.Printf("Failed to change password for \"%s\" (%d): %v", resp.UsersReset[0], status, err)
+		app.err.Printf("Failed to change password for \"%s\" (%d): %v", username, status, err)
 		respondBool(500, false, gc)
 		return
 	}
 	if app.config.Section("ombi").Key("enabled").MustBool(false) {
 		// Silently fail for changing ombi passwords
 		if status != 200 || err != nil {
-			app.err.Printf("Failed to get user \"%s\" from jellyfin/emby (%d): %v", resp.UsersReset[0], status, err)
+			app.err.Printf("Failed to get user \"%s\" from jellyfin/emby (%d): %v", username, status, err)
 			respondBool(200, true, gc)
 			return
 		}
 		ombiUser, status, err := app.getOmbiUser(user.ID)
 		if status != 200 || err != nil {
-			app.err.Printf("Failed to get user \"%s\" from ombi (%d): %v", resp.UsersReset[0], status, err)
+			app.err.Printf("Failed to get user \"%s\" from ombi (%d): %v", username, status, err)
 			respondBool(200, true, gc)
 			return
 		}

@@ -1,5 +1,7 @@
 package main
 
+import "time"
+
 type stringResponse struct {
 	Response string `json:"response" example:"message"`
 	Error    string `json:"error" example:"errorDescription"`
@@ -319,4 +321,21 @@ type MatrixLoginDTO struct {
 type ResetPasswordDTO struct {
 	PIN      string `json:"pin"`
 	Password string `json:"password"`
+}
+
+type AdminPasswordResetDTO struct {
+	Users []string `json:"users"` // List of Jellyfin user IDs
+}
+
+type AdminPasswordResetRespDTO struct {
+	Link   string `json:"link"`   // Only returned if one of the given users doesn't have a contact method set, or only one user was requested.
+	Manual bool   `json:"manual"` // Whether or not the admin has to send the link manually or not.
+}
+
+// InternalPWR stores a local version of a password reset PIN used for resets triggered by the admin when reset links are enabled.
+type InternalPWR struct {
+	PIN      string    `json:"pin"`
+	Username string    `json:"username"`
+	ID       string    `json:"id"`
+	Expiry   time.Time `json:"expiry"`
 }

@@ -12,6 +12,7 @@
             window.ombiEnabled = {{ .ombiEnabled }};
             window.usernameEnabled = {{ .username }};
             window.langFile = JSON.parse({{ .language }});
+            window.linkResetEnabled = {{ .linkResetEnabled }};
             window.language = "{{ .langName }}";
         </script>
         {{ template "header.html" . }}
@@ -251,6 +252,13 @@
             <div class="modal-content card ~neutral !normal">
                 <span class="heading">{{ .strings.settingsApplied }}</span>
                 <p class="content">{{ .strings.settingsRefreshPage }}</p>
+            </div>
+        </div>
+        <div id="modal-send-pwr" class="modal">
+            <div class="modal-content card ~neutral !normal">
+                <span class="heading">{{ .strings.sendPWR }}</span>
+                <p class="content" id="send-pwr-note"></p>
+                <span class="button ~urge !normal mt-half" id="send-pwr-link">{{ .strings.copy }}</span>
             </div>
         </div>
         <div id="modal-ombi-defaults" class="modal">
@@ -567,6 +575,7 @@
                             <span class="col sm button ~urge !normal center mb-half" id="accounts-modify-user">{{ .strings.modifySettings }}</span>
                             <span class="col sm button ~warning !normal center mb-half" id="accounts-extend-expiry">{{ .strings.extendExpiry }}</span>
                             <span class="col sm button ~positive !normal center mb-half" id="accounts-disable-enable">{{ .strings.disable }}</span>
+                            <span class="col sm button ~info !normal center mb-half" id="accounts-send-pwr">{{ .strings.sendPWR }}</span>
                             <span class="col sm button ~critical !normal center mb-half" id="accounts-delete-user">{{ .quantityStrings.deleteUser.Singular }}</span>
                         </div>
                     </div>

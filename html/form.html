@@ -14,9 +14,9 @@
     <body class="max-w-full overflow-x-hidden section">
         <div id="modal-success" class="modal">
             <div class="modal-content card">
-                <span class="heading mb-1">{{ .strings.successHeader }}</span>
-                <p class="content mb-1">{{ .successMessage }}</p>
-                <a class="button ~urge !normal full-width center supra submit" href="{{ .jfLink }}" id="create-success-button">{{ .strings.successContinueButton }}</a>
+                <span class="heading mb-1">{{ if .passwordReset }}{{ .strings.passwordReset }}{{ else }}{{ .strings.successHeader }}{{ end }}</span>
+                <p class="content mb-1">{{ if .passwordReset }}{{ .strings.youCanLoginPassword }}{{ else }}{{ .successMessage }}{{ end }}</p>
+                <a class="button ~urge !normal full-width center supra submit" href="{{ .jfLink }}" id="create-success-button">{{ .strings.continue }}</a>
             </div>
         </div>
         <div id="modal-confirmation" class="modal">

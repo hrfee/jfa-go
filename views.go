@@ -116,23 +116,24 @@ func (app *appContext) AdminPage(gc *gin.Context) {
 	}
 	license = string(l)
 	gcHTML(gc, http.StatusOK, "admin.html", gin.H{
-		"urlBase":         app.getURLBase(gc),
-		"cssClass":        app.cssClass,
-		"contactMessage":  "",
-		"emailEnabled":    emailEnabled,
-		"telegramEnabled": telegramEnabled,
-		"discordEnabled":  discordEnabled,
-		"matrixEnabled":   matrixEnabled,
-		"ombiEnabled":     ombiEnabled,
-		"notifications":   notificationsEnabled,
-		"version":         version,
-		"commit":          commit,
-		"username":        !app.config.Section("email").Key("no_username").MustBool(false),
-		"strings":         app.storage.lang.Admin[lang].Strings,
-		"quantityStrings": app.storage.lang.Admin[lang].QuantityStrings,
-		"language":        app.storage.lang.Admin[lang].JSON,
-		"langName":        lang,
-		"license":         license,
+		"urlBase":          app.getURLBase(gc),
+		"cssClass":         app.cssClass,
+		"contactMessage":   "",
+		"emailEnabled":     emailEnabled,
+		"telegramEnabled":  telegramEnabled,
+		"discordEnabled":   discordEnabled,
+		"matrixEnabled":    matrixEnabled,
+		"ombiEnabled":      ombiEnabled,
+		"linkResetEnabled": app.config.Section("password_resets").Key("link_reset").MustBool(false),
+		"notifications":    notificationsEnabled,
+		"version":          version,
+		"commit":           commit,
+		"username":         !app.config.Section("email").Key("no_username").MustBool(false),
+		"strings":          app.storage.lang.Admin[lang].Strings,
+		"quantityStrings":  app.storage.lang.Admin[lang].QuantityStrings,
+		"language":         app.storage.lang.Admin[lang].JSON,
+		"langName":         lang,
+		"license":          license,
 	})
 }
 
@@ -153,6 +154,11 @@ func (app *appContext) ResetPassword(gc *gin.Context) {
 		"strings":        app.storage.lang.PasswordReset[lang].Strings,
 		"success":        false,
 		"ombiEnabled":    app.config.Section("ombi").Key("enabled").MustBool(false),
+	}
+	if _, ok := app.internalPWRs[pin]; !ok {
+		app.debug.Printf("Ignoring PWR request due to invalid internal PIN: %s", pin)
+		app.NoRouteHandler(gc)
+		return
 	}
 	if setPassword {
 		data["helpMessage"] = app.config.Section("ui").Key("help_message").String()
@@ -177,33 +183,47 @@ func (app *appContext) ResetPassword(gc *gin.Context) {
 		app.debug.Println("PWR: Ignoring magic link visit from bot")
 		data["success"] = true
 		data["pin"] = "NO-BO-TS"
+		return
+	}
+	// if reset, ok := app.internalPWRs[pin]; ok {
+	// 	status, err := app.jf.ResetPasswordAdmin(reset.ID)
+	// 	if !(status == 200 || status == 204) || err != nil {
+	// 		app.err.Printf("Password Reset failed (%d): %v", status, err)
+	// 		return
+	// 	}
+	// 	status, err = app.jf.SetPassword(reset.ID, "", pin)
+	// 	if !(status == 200 || status == 204) || err != nil {
+	// 		app.err.Printf("Password Reset failed (%d): %v", status, err)
+	// 		return
+	// 	}
+	// 	data["success"] = true
+	// 	data["pin"] = pin
+	// }
+	resp, status, err := app.jf.ResetPassword(pin)
+	if status == 200 && err == nil && resp.Success {
+		data["success"] = true
+		data["pin"] = pin
 	} else {
-		resp, status, err := app.jf.ResetPassword(pin)
-		if status == 200 && err == nil && resp.Success {
-			data["success"] = true
-			data["pin"] = pin
-		} else {
-			app.err.Printf("Password Reset failed (%d): %v", status, err)
+		app.err.Printf("Password Reset failed (%d): %v", status, err)
+	}
+	if app.config.Section("ombi").Key("enabled").MustBool(false) {
+		jfUser, status, err := app.jf.UserByName(resp.UsersReset[0], false)
+		if status != 200 || err != nil {
+			app.err.Printf("Failed to get user \"%s\" from jellyfin/emby (%d): %v", resp.UsersReset[0], status, err)
+			return
 		}
-		if app.config.Section("ombi").Key("enabled").MustBool(false) {
-			jfUser, status, err := app.jf.UserByName(resp.UsersReset[0], false)
-			if status != 200 || err != nil {
-				app.err.Printf("Failed to get user \"%s\" from jellyfin/emby (%d): %v", resp.UsersReset[0], status, err)
-				return
-			}
-			ombiUser, status, err := app.getOmbiUser(jfUser.ID)
-			if status != 200 || err != nil {
-				app.err.Printf("Failed to get user \"%s\" from ombi (%d): %v", resp.UsersReset[0], status, err)
-				return
-			}
-			ombiUser["password"] = pin
-			status, err = app.ombi.ModifyUser(ombiUser)
-			if status != 200 || err != nil {
-				app.err.Printf("Failed to set password for ombi user \"%s\" (%d): %v", ombiUser["userName"], status, err)
-				return
-			}
-			app.debug.Printf("Reset password for ombi user \"%s\"", ombiUser["userName"])
+		ombiUser, status, err := app.getOmbiUser(jfUser.ID)
+		if status != 200 || err != nil {
+			app.err.Printf("Failed to get user \"%s\" from ombi (%d): %v", resp.UsersReset[0], status, err)
+			return
 		}
+		ombiUser["password"] = pin
+		status, err = app.ombi.ModifyUser(ombiUser)
+		if status != 200 || err != nil {
+			app.err.Printf("Failed to set password for ombi user \"%s\" (%d): %v", ombiUser["userName"], status, err)
+			return
+		}
+		app.debug.Printf("Reset password for ombi user \"%s\"", ombiUser["userName"])
 	}
 }
 

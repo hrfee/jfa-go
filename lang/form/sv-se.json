@@ -14,7 +14,6 @@
         "createAccountButton": "Skapa konto",
         "passwordRequirementsHeader": "Lösenordskrav",
         "successHeader": "Lyckades!",
-        "successContinueButton": "Fortsätt",
         "confirmationRequired": "E-postbekräftelse krävs",
         "confirmationRequiredMessage": "Kontrollera din e-postkorg för att verifiera din adress.",
         "yourAccountIsValidUntil": "Ditt konto är giltigt fram tills {date}.",

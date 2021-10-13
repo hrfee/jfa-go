@@ -14,7 +14,6 @@
         "createAccountButton": "Maak account aan",
         "passwordRequirementsHeader": "Wachtwoordvereisten",
         "successHeader": "Succes!",
-        "successContinueButton": "Doorgaan",
         "confirmationRequired": "Bevestiging van e-mailadres verplicht",
         "confirmationRequiredMessage": "Controleer je e-mail inbox om je adres te bevestigen.",
         "yourAccountIsValidUntil": "Je account zal geldig zijn tot {date}.",

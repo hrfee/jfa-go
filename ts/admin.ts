@@ -72,6 +72,10 @@ window.availableProfiles = window.availableProfiles || [];
     if (window.discordEnabled) {
         window.modals.discord = new Modal(document.getElementById("modal-discord"));
     }
+
+    if (window.linkResetEnabled) {
+        window.modals.sendPWR = new Modal(document.getElementById("modal-send-pwr"));
+    }
 })();
 
 var inviteCreator = new createInvite();

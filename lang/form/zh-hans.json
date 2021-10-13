@@ -14,7 +14,6 @@
         "createAccountButton": "创建账户",
         "passwordRequirementsHeader": "密码格式要求",
         "successHeader": "成功！",
-        "successContinueButton": "继续",
         "confirmationRequired": "需要邮件确认",
         "confirmationRequiredMessage": "请登录您的邮箱收件箱来验证您的地址。",
         "yourAccountIsValidUntil": "您的账户将在 {date} 之前有效。",

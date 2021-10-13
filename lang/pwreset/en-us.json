@@ -9,6 +9,7 @@
         "tryAgain": "Please try again.",
         "youCanLogin": "You can now log in with the below code as your password.",
         "youCanLoginOmbi": "You can now log in to Jellyfin & Ombi with the below code as your password.",
+        "youCanLoginPassword": "You can now login with your new password. Press below to continue to Jellyfin.",
         "changeYourPassword": "Make sure to change your password after you log in.",
         "enterYourPassword": "Enter your new password below."
     }

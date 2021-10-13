@@ -25,6 +25,7 @@ declare interface Window {
     matrixEnabled: boolean;
     ombiEnabled: boolean;
     usernameEnabled: boolean;
+    linkResetEnabled: boolean;
     token: string;
     buttonWidth: number;
     transitionEvent: string;
@@ -105,6 +106,7 @@ declare interface Modals {
     telegram: Modal;
     discord: Modal;
     matrix: Modal;
+    sendPWR?: Modal;
 }
 
 interface Invite {

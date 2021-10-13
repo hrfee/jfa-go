@@ -1,4 +1,4 @@
-import { _get, _post, _delete, toggleLoader, addLoader, removeLoader, toDateString, insertText } from "../modules/common.js";
+import { _get, _post, _delete, toggleLoader, addLoader, removeLoader, toDateString, insertText, toClipboard } from "../modules/common.js";
 import { templateEmail } from "../modules/settings.js";
 import { Marked } from "@ts-stack/markdown";
 import { stripMarkdown } from "../modules/stripmd.js";
@@ -63,7 +63,7 @@ class user implements User {
     id = "";
     private _selected: boolean;
 
-    private _lastNotifyMethod = (): string => {
+    lastNotifyMethod = (): string => {
         // Telegram, Matrix, Discord
         const telegram = window.telegramEnabled && this._telegramUsername && this._telegramUsername != "";
         const discord = window.discordEnabled && this._discordUsername && this._discordUsername != "";
@@ -188,7 +188,7 @@ class user implements User {
             this._notifyDropdown.querySelector(".accounts-area-matrix").classList.add("unfocused");
             return;
         }
-        const lastNotifyMethod = this._lastNotifyMethod() == "matrix";
+        const lastNotifyMethod = this.lastNotifyMethod() == "matrix";
         this._matrixID = u;
         if (!u) {
             this._notifyDropdown.querySelector(".accounts-area-matrix").classList.add("unfocused");
@@ -253,7 +253,7 @@ class user implements User {
             this._notifyDropdown.querySelector(".accounts-area-telegram").classList.add("unfocused");
             return;
         }
-        const lastNotifyMethod = this._lastNotifyMethod() == "telegram";
+        const lastNotifyMethod = this.lastNotifyMethod() == "telegram";
         this._telegramUsername = u;
         if (!u) {
             this._notifyDropdown.querySelector(".accounts-area-telegram").classList.add("unfocused");
@@ -319,7 +319,7 @@ class user implements User {
             this._notifyDropdown.querySelector(".accounts-area-discord").classList.add("unfocused");
             return;
         }
-        const lastNotifyMethod = this._lastNotifyMethod() == "discord";
+        const lastNotifyMethod = this.lastNotifyMethod() == "discord";
         this._discordUsername = u;
         if (!u) {
             this._discord.innerHTML = `<span class="chip btn !low">Add</span>`;
@@ -566,6 +566,7 @@ export class accountsList {
     private _modifySettings = document.getElementById("accounts-modify-user") as HTMLSpanElement;
     private _modifySettingsProfile = document.getElementById("radio-use-profile") as HTMLInputElement;
     private _modifySettingsUser = document.getElementById("radio-use-user") as HTMLInputElement;
+    private _sendPWR = document.getElementById("accounts-send-pwr") as HTMLSpanElement;
     private _profileSelect = document.getElementById("modify-user-profiles") as HTMLSelectElement;
     private _userSelect = document.getElementById("modify-user-users") as HTMLSelectElement;
     private _search = document.getElementById("accounts-search") as HTMLInputElement;
@@ -698,6 +699,7 @@ export class accountsList {
             }
             this._extendExpiry.classList.add("unfocused");
             this._disableEnable.classList.add("unfocused");
+            this._sendPWR.classList.add("unfocused");
         } else {
             let visibleCount = 0;
             for (let id in this._users) {
@@ -719,6 +721,7 @@ export class accountsList {
                 this._announceButton.classList.remove("unfocused");
             }
             let anyNonExpiries = list.length == 0 ? true : false;
+            let noContactCount = 0;
             // Only show enable/disable button if all selected have the same state.
             this._shouldEnable = this._users[list[0]].disabled
             let showDisableEnable = true;
@@ -732,9 +735,18 @@ export class accountsList {
                     this._disableEnable.classList.add("unfocused");
                 }
                 if (!showDisableEnable && anyNonExpiries) { break; }
+                if (!this._users[id].lastNotifyMethod() && !this._users[id].email) {
+                    noContactCount++;
+                }
             }
             if (!anyNonExpiries) {
                 this._extendExpiry.classList.remove("unfocused");
+            }
+            // Only show "Send PWR" if a maximum of 1 user selected doesn't have a contact method
+            if (noContactCount > 1) {
+                this._sendPWR.classList.add("unfocused");
+            } else {
+                this._sendPWR.classList.remove("unfocused");
             }
             if (showDisableEnable) {
                 let message: string;
@@ -1042,6 +1054,58 @@ export class accountsList {
         };
         window.modals.deleteUser.show();
     }
+    
+    sendPWR = () => {
+        addLoader(this._sendPWR);
+        let list = this._collectUsers();
+        let manualUser: user;
+        for (let id of list) {
+            let user = this._users[id];
+            console.log(user, user.notify_email, user.notify_matrix, user.notify_discord, user.notify_telegram);
+            if (!user.lastNotifyMethod() && !user.email) {
+                manualUser  = user;
+                break;
+            }
+        }
+        const messageBox = document.getElementById("send-pwr-note") as HTMLParagraphElement;
+        let message: string;
+        let send = {
+            users: list
+        };
+        _post("/users/password-reset", send, (req: XMLHttpRequest) => {
+            if (req.readyState != 4) return;
+            removeLoader(this._sendPWR);
+            let link: string;
+            if (req.status == 200) {
+                link = req.response["link"];
+                if (req.response["manual"] as boolean) {
+                    message = window.lang.var("strings", "sendPWRManual", manualUser.name);
+                } else {
+                    message = window.lang.strings("sendPWRSuccess") + " " + window.lang.strings("sendPWRSuccessManual");
+                }
+            } else if (req.status == 204) {
+                    message = window.lang.strings("sendPWRSuccess");
+            } else {
+                window.notifications.customError("errorSendPWR", window.lang.strings("errorFailureCheckLogs"));
+                return;
+            }
+            message += " " + window.lang.strings("sendPWRValidFor");
+            messageBox.textContent = message;
+            let linkButton = document.getElementById("send-pwr-link") as HTMLSpanElement;
+            linkButton.onclick = () => {
+                toClipboard(link);
+                linkButton.textContent = window.lang.strings("copied");
+                linkButton.classList.add("~positive");
+                linkButton.classList.remove("~urge");
+                setTimeout(() => {
+                    linkButton.textContent = window.lang.strings("copy");
+                    linkButton.classList.add("~urge");
+                    linkButton.classList.remove("~positive");
+                }, 800);
+            };
+            window.modals.sendPWR.show();
+        }, true);
+    }
 
     modifyUsers = () => {
         const modalHeader = document.getElementById("header-modify-user");
@@ -1202,6 +1266,12 @@ export class accountsList {
         if (!window.usernameEnabled) {
             this._addUserName.classList.add("unfocused");
             this._addUserName = this._addUserEmail;
+        }
+
+        if (!window.linkResetEnabled) {
+            this._sendPWR.classList.add("unfocused");
+        } else {
+            this._sendPWR.onclick = this.sendPWR;
         }
         /*if (!window.emailEnabled) {
             this._deleteNotify.parentElement.classList.add("unfocused");

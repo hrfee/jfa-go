@@ -169,6 +169,8 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 		api.GET(p+"/users/announce/:name", app.GetAnnounceTemplate)
 		api.DELETE(p+"/users/announce/:name", app.DeleteAnnounceTemplate)
 
+		api.POST(p+"/users/password-reset", app.AdminPasswordReset)
+
 		api.GET(p+"/config/update", app.CheckUpdate)
 		api.POST(p+"/config/update", app.ApplyUpdate)
 		api.GET(p+"/config/emails", app.GetCustomEmails)

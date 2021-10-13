@@ -14,7 +14,6 @@
         "createAccountButton": "Crear una cuenta",
         "passwordRequirementsHeader": "Requisitos de contraseña",
         "successHeader": "¡Éxito!",
-        "successContinueButton": "Continuar",
         "confirmationRequired": "Se requiere confirmación por correo electrónico",
         "confirmationRequiredMessage": "Revise la bandeja de entrada de su correo electrónico para verificar su dirección.",
         "yourAccountIsValidUntil": "Su cuenta será válida hasta el {date}."

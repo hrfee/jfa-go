@@ -9,6 +9,22 @@ import (
 	"github.com/fsnotify/fsnotify"
 )
 
+// GenInternalReset generates a local password reset PIN, for use with the PWR option on the Admin page.
+func (app *appContext) GenInternalReset(userID string) (InternalPWR, error) {
+	pin := genAuthToken()
+	user, status, err := app.jf.UserByID(userID, false)
+	if err != nil || status != 200 {
+		return InternalPWR{}, err
+	}
+	pwr := InternalPWR{
+		PIN:      pin,
+		Username: user.Name,
+		ID:       userID,
+		Expiry:   time.Now().Add(30 * time.Minute),
+	}
+	return pwr, nil
+}
+
 func (app *appContext) StartPWR() {
 	app.info.Println("Starting password reset daemon")
 	path := app.config.Section("password_resets").Key("watch_directory").String()
@@ -38,6 +54,7 @@ type PasswordReset struct {
 	Pin      string    `json:"Pin"`
 	Username string    `json:"UserName"`
 	Expiry   time.Time `json:"ExpirationDate"`
+	Internal bool      `json:"Internal,omitempty"`
 }
 
 func pwrMonitor(app *appContext, watcher *fsnotify.Watcher) {
@@ -81,7 +98,7 @@ func pwrMonitor(app *appContext, watcher *fsnotify.Watcher) {
 						msg, err := app.email.constructReset(pwr, app, false)
 
 						if err != nil {
-							app.err.Printf("Failed to construct password reset message for %s", pwr.Username)
+							app.err.Printf("Failed to construct password reset message for \"%s\"", pwr.Username)
 							app.debug.Printf("%s: Error: %s", pwr.Username, err)
 						} else if err := app.sendByID(msg, uid); err != nil {
 							app.err.Printf("Failed to send password reset message to \"%s\"", name)
