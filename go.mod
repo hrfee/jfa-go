@@ -12,8 +12,6 @@ replace github.com/hrfee/jfa-go/logger => ./logger
 
 replace github.com/hrfee/jfa-go/linecache => ./linecache
 
-replace github.com/hrfee/mediabrowser => ../mediabrowser
-
 require (
 	github.com/bwmarrin/discordgo v0.23.2
 	github.com/emersion/go-autostart v0.0.0-20210130080809-00ed301c8e9a
@@ -40,7 +38,7 @@ require (
 	github.com/hrfee/jfa-go/linecache v0.0.0-20211003145958-a220ba8dfb58
 	github.com/hrfee/jfa-go/logger v0.0.0-20211003145958-a220ba8dfb58
 	github.com/hrfee/jfa-go/ombi v0.0.0-20211003145958-a220ba8dfb58
-	github.com/hrfee/mediabrowser v0.0.0-00010101000000-000000000000
+	github.com/hrfee/mediabrowser v0.3.6
 	github.com/itchyny/timefmt-go v0.1.3
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/lib/pq v1.10.3 // indirect
