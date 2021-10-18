@@ -758,7 +758,7 @@ func (app *appContext) DeleteUsers(gc *gin.Context) {
 	respondBool(200, true, gc)
 }
 
-// @Summary Extend time before the user(s) expiry.
+// @Summary Extend time before the user(s) expiry, or create and expiry if it doesn't exist.
 // @Produce json
 // @Param extendExpiryDTO body extendExpiryDTO true "Extend expiry object"
 // @Success 200 {object} boolResponse
@@ -780,6 +780,9 @@ func (app *appContext) ExtendExpiry(gc *gin.Context) {
 		if expiry, ok := app.storage.users[id]; ok {
 			app.storage.users[id] = expiry.AddDate(0, req.Months, req.Days).Add(time.Duration(((60 * req.Hours) + req.Minutes)) * time.Minute)
 			app.debug.Printf("Expiry extended for \"%s\"", id)
+		} else {
+			app.storage.users[id] = time.Now().AddDate(0, req.Months, req.Days).Add(time.Duration(((60 * req.Hours) + req.Minutes)) * time.Minute)
+			app.debug.Printf("Created expiry for \"%s\"", id)
 		}
 	}
 	if err := app.storage.storeUsers(); err != nil {

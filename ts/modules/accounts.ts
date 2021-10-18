@@ -560,9 +560,12 @@ export class accountsList {
     private _announceTextarea = document.getElementById("textarea-announce") as HTMLTextAreaElement;
     private _deleteUser = document.getElementById("accounts-delete-user") as HTMLSpanElement;
     private _disableEnable = document.getElementById("accounts-disable-enable") as HTMLSpanElement;
+    private _enableExpiry = document.getElementById("accounts-enable-expiry") as HTMLSpanElement;
     private _deleteNotify = document.getElementById("delete-user-notify") as HTMLInputElement;
     private _deleteReason = document.getElementById("textarea-delete-user") as HTMLTextAreaElement;
     private _extendExpiry = document.getElementById("accounts-extend-expiry") as HTMLSpanElement;
+    private _enableExpiryNotify = document.getElementById("expiry-extend-enable") as HTMLInputElement;
+    private _enableExpiryReason = document.getElementById("textarea-extend-enable") as HTMLTextAreaElement;
     private _modifySettings = document.getElementById("accounts-modify-user") as HTMLSpanElement;
     private _modifySettingsProfile = document.getElementById("radio-use-profile") as HTMLInputElement;
     private _modifySettingsUser = document.getElementById("radio-use-user") as HTMLInputElement;
@@ -751,10 +754,12 @@ export class accountsList {
             if (showDisableEnable) {
                 let message: string;
                 if (this._shouldEnable) {
+                    this._disableEnable.parentElement.classList.remove("manual");
                     message = window.lang.strings("reEnable");
                     this._disableEnable.classList.add("~positive");
                     this._disableEnable.classList.remove("~warning");
                 } else {
+                    this._disableEnable.parentElement.classList.add("manual");
                     message = window.lang.strings("disable");
                     this._disableEnable.classList.add("~warning");
                     this._disableEnable.classList.remove("~positive");
@@ -964,6 +969,17 @@ export class accountsList {
             }
         }
     });
+
+    private _enableDisableUsers = (users: string[], enable: boolean, notify: boolean, reason: string|null, post: (req: XMLHttpRequest) => void) => {
+        let send = {
+            "users": users,
+            "enabled": enable,
+            "notify": notify
+        };
+        if (reason) send["reason"] = reason;
+        _post("/users/enable", send, post, true);
+    };
+
     enableDisableUsers = () => {
         // We can share the delete modal for this
         const modalHeader = document.getElementById("header-delete-user");
@@ -987,13 +1003,7 @@ export class accountsList {
         form.onsubmit = (event: Event) => {
             event.preventDefault();
             toggleLoader(button);
-            let send = {
-                "users": list,
-                "enabled": this._shouldEnable,
-                "notify": this._deleteNotify.checked,
-                "reason": this._deleteNotify ? this._deleteReason.value : ""
-            };
-            _post("/users/enable", send, (req: XMLHttpRequest) => {
+            this._enableDisableUsers(list, this._shouldEnable, this._deleteNotify.checked, this._deleteNotify ? this._deleteReason.value : null, (req: XMLHttpRequest) => {
                 if (req.readyState == 4) {
                     toggleLoader(button);
                     window.modals.deleteUser.close();
@@ -1010,7 +1020,7 @@ export class accountsList {
                     }
                     this.reload();
                 }
-            }, true);
+            });
         }
         window.modals.deleteUser.show();
     }
@@ -1176,18 +1186,27 @@ export class accountsList {
         window.modals.modifyUser.show();
     }
 
-    extendExpiry = () => {
+    extendExpiry = (enableUser?: boolean) => {
         const list = this._collectUsers();
         let applyList: string[] = [];
         for (let id of list) {
-            if (this._users[id].expiry) {
+            if (this._users[id].expiry || enableUser) {
                 applyList.push(id);
             }
         }
-        document.getElementById("header-extend-expiry").textContent = window.lang.quantity("extendExpiry", applyList.length);
-        const form = document.getElementById("form-extend-expiry") as HTMLFormElement;
-        form.onsubmit = (event: Event) => {
-            event.preventDefault();
+        this._enableExpiryReason.classList.add("unfocused");
+        let header: string;
+        if (enableUser) {
+            header = window.lang.quantity("reEnableUsers", list.length);
+            this._enableExpiryNotify.parentElement.classList.remove("unfocused");
+            this._enableExpiryNotify.checked = false;
+            this._enableExpiryReason.value = "";
+        } else {
+            header = window.lang.quantity("extendExpiry", applyList.length);
+            this._enableExpiryNotify.parentElement.classList.add("unfocused");
+        }
+        document.getElementById("header-extend-expiry").textContent = header;
+        const extend = () => {
             let send = { "users": applyList }
             for (let field of ["months", "days", "hours", "minutes"]) {
                 send[field] = +(document.getElementById("extend-expiry-"+field) as HTMLSelectElement).value;
@@ -1203,6 +1222,28 @@ export class accountsList {
                     this.reload();
                 }
             });
+        };
+        const form = document.getElementById("form-extend-expiry") as HTMLFormElement;
+        form.onsubmit = (event: Event) => {
+            event.preventDefault();
+            if (enableUser) {
+                this._enableDisableUsers(applyList, true, this._enableExpiryNotify.checked, this._enableExpiryNotify ? this._enableExpiryReason.value : null, (req: XMLHttpRequest) => {
+                    if (req.readyState == 4) {
+                        if (req.status != 200 && req.status != 204) {
+                            window.modals.extendExpiry.close();
+                            let errorMsg = window.lang.notif("errorFailureCheckLogs");
+                            if (!("error" in req.response)) {
+                                errorMsg = window.lang.notif("errorPartialFailureCheckLogs");
+                            }
+                            window.notifications.customError("deleteUserError", errorMsg);
+                            return;
+                        }
+                        extend();
+                    }
+                });
+            } else {
+                extend();
+            }
         }
         window.modals.extendExpiry.show();
     }
@@ -1257,11 +1298,20 @@ export class accountsList {
         this._announceButton.onclick = this.announce;
         this._announceButton.classList.add("unfocused");
 
-        this._extendExpiry.onclick = this.extendExpiry;
+        this._extendExpiry.onclick = () => { this.extendExpiry(); };
         this._extendExpiry.classList.add("unfocused");
 
         this._disableEnable.onclick = this.enableDisableUsers;
         this._disableEnable.classList.add("unfocused");
+
+        this._enableExpiry.onclick = () => { this.extendExpiry(true); };
+        this._enableExpiryNotify.onchange = () => {
+            if (this._enableExpiryNotify.checked) {
+                this._enableExpiryReason.classList.remove("unfocused");
+            } else {
+                this._enableExpiryReason.classList.add("unfocused");
+            }
+        };
 
         if (!window.usernameEnabled) {
             this._addUserName.classList.add("unfocused");

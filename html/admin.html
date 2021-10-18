@@ -152,6 +152,11 @@
                             </div>
                         </div>
                     </div>
+                    <label class="switch mb-1">
+                        <input type="checkbox" id="expiry-extend-enable" checked>
+                        <span>{{ .strings.sendDeleteNotificationEmail }}</span>
+                    </label>
+                    <textarea id="textarea-extend-enable" class="textarea full-width ~neutral !normal mb-1" placeholder="{{ .strings.sendDeleteNotificationExample }}"></textarea>
                     <label>
                         <input type="submit" class="unfocused">
                         <span class="button ~critical !normal full-width center supra submit">{{ .strings.submit }}</span>
@@ -574,7 +579,14 @@
                             </div>
                             <span class="col sm button ~urge !normal center mb-half" id="accounts-modify-user">{{ .strings.modifySettings }}</span>
                             <span class="col sm button ~warning !normal center mb-half" id="accounts-extend-expiry">{{ .strings.extendExpiry }}</span>
-                            <span class="col sm button ~positive !normal center mb-half" id="accounts-disable-enable">{{ .strings.disable }}</span>
+                            <div id="accounts-disable-enable-dropdown" class="col sm dropdown manual" tabindex="0">
+                                <span class="h-100 sm button ~positive !normal center mb-half" id="accounts-disable-enable">{{ .strings.disable }}</span>
+                                <div class="dropdown-display">
+                                    <div class="card ~neutral !low">
+                                        <span class="button ~neutral sm full-width accounts-announce-template-button" id="accounts-enable-expiry">{{ .strings.setExpiry }}</span>
+                                    </div>
+                                </div>
+                            </div>
                             <span class="col sm button ~info !normal center mb-half" id="accounts-send-pwr">{{ .strings.sendPWR }}</span>
                             <span class="col sm button ~critical !normal center mb-half" id="accounts-delete-user">{{ .quantityStrings.deleteUser.Singular }}</span>
                         </div>

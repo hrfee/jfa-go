@@ -27,6 +27,7 @@
         "enabled": "Enabled",
         "disabled": "Disabled",
         "reEnable": "Re-enable",
+        "setExpiry": "Set expiry",
         "disable": "Disable",
         "admin": "Admin",
         "updates": "Updates",
