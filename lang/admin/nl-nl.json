@@ -104,7 +104,13 @@
         "templates": "Sjablonen",
         "templateEnterName": "Voer een naam in om dit sjabloon op te slaan.",
         "saveAsTemplate": "Sla op als sjabloon",
-        "deleteTemplate": "Verwijder sjabloon"
+        "deleteTemplate": "Verwijder sjabloon",
+        "setExpiry": "Stel verloop in",
+        "sendPWRManual": "Gebruiker {n} heeft geen contactmogelijkheden, druk op kopiëren om een link te krijgen die je kunt sturen.",
+        "sendPWRSuccessManual": "Als de gebruiker hem niet heeft ontvangen, druk dan op kopiëren om een link te krijgen die je handmatig kunt sturen.",
+        "sendPWR": "Verstuur wachtwoordreset",
+        "sendPWRSuccess": "Wachtwoordreset-link verstuurd.",
+        "sendPWRValidFor": "De link is 30m geldig."
     },
     "notifications": {
         "changedEmailAddress": "E-mailadres van {n} gewijzigd.",
