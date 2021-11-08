@@ -552,6 +552,15 @@
                     "type": "text",
                     "value": "",
                     "description": "Use if your SMTP server's SSL Certificate is not trusted by the system."
+                },
+                "cert_validation": {
+                    "name": "Verify certificate",
+                    "required": false,
+                    "requires_restart": false,
+                    "advanced": true,
+                    "type": "bool",
+                    "value": true,
+                    "description": "Warning, disabling this makes you much more vulnerable to man-in-the-middle attacks"
                 }
             }
         },
