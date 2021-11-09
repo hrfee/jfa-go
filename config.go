@@ -72,6 +72,7 @@ func (app *appContext) loadConfig() error {
 	app.MustSetValue("deletion", "email_text", "jfa-go:"+"deleted.txt")
 
 	app.MustSetValue("smtp", "hello_hostname", "localhost")
+	app.MustSetValue("smtp", "cert_validation", "true")
 
 	jfUrl := app.config.Section("jellyfin").Key("server").String()
 	if !(strings.HasPrefix(jfUrl, "http://") || strings.HasPrefix(jfUrl, "https://")) {

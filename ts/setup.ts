@@ -296,8 +296,7 @@ const settings = {
         "encryption": new Select(get("smtp-encryption")),
         "server": new Input(get("smtp-server")),
         "port": new Input(get("smtp-port")),
-        "password": new Input(get("smtp-password")),
-        "cert-validation": new Input(get("smtp-cert-validation"))
+        "password": new Input(get("smtp-password"))
     },
     "ombi": {
         "enabled": new Checkbox(get("ombi-enabled"), "", false, "ombi", "enabled"),

@@ -84,7 +84,7 @@ func NewEmailer(app *appContext) *Emailer {
 		if username == "" && password != "" {
 			username = emailer.fromAddr
 		}
-		err := emailer.NewSMTP(app.config.Section("smtp").Key("server").String(), app.config.Section("smtp").Key("port").MustInt(465), username, password, sslTLS, app.config.Section("smtp").Key("ssl_cert").MustString(""), app.config.Section("smtp").Key("hello_hostname").String(), app.config.Section("smtp").Key("cert-validation").MustBool(true))
+		err := emailer.NewSMTP(app.config.Section("smtp").Key("server").String(), app.config.Section("smtp").Key("port").MustInt(465), username, password, sslTLS, app.config.Section("smtp").Key("ssl_cert").MustString(""), app.config.Section("smtp").Key("hello_hostname").String(), app.config.Section("smtp").Key("cert_validation").MustBool(true))
 		if err != nil {
 			app.err.Printf("Error while initiating SMTP mailer: %v", err)
 		}
@@ -131,7 +131,7 @@ func (emailer *Emailer) NewSMTP(server string, port int, username, password stri
 	// x509.SystemCertPool is unavailable on windows
 	if PLATFORM == "windows" {
 		sender.Client.TLSConfig = &tls.Config{
-			InsecureSkipVerify: validateCertificate,
+			InsecureSkipVerify: !validateCertificate,
 			ServerName:         server,
 		}
 		emailer.sender = sender
@@ -149,7 +149,7 @@ func (emailer *Emailer) NewSMTP(server string, port int, username, password stri
 		}
 	}
 	sender.Client.TLSConfig = &tls.Config{
-		InsecureSkipVerify: validateCertificate,
+		InsecureSkipVerify: !validateCertificate,
 		ServerName:         server,
 		RootCAs:            rootCAs,
 	}
