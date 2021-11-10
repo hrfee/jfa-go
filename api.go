@@ -1931,6 +1931,8 @@ func (app *appContext) GetCustomEmails(gc *gin.Context) {
 
 func (app *appContext) getCustomEmail(id string) *customEmail {
 	switch id {
+	case "Announcement":
+		return &customEmail{}
 	case "UserCreated":
 		return &app.storage.customEmails.UserCreated
 	case "InviteExpiry":
@@ -2041,6 +2043,7 @@ func (app *appContext) GetCustomEmailTemplate(gc *gin.Context) {
 	emailAddress := app.storage.lang.Email[lang].Strings.get("emailAddress")
 	email := app.getCustomEmail(id)
 	if email == nil {
+		app.err.Printf("Failed to get custom email with ID \"%s\"", id)
 		respondBool(400, false, gc)
 		return
 	}
