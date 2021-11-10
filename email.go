@@ -170,11 +170,9 @@ func (sm *SMTP) Send(fromName, fromAddr string, email *Message, address ...strin
 	e.SetFrom(from)
 	e.SetSubject(email.Subject)
 	e.AddTo(address...)
-	if email.HTML == "" {
-		e.SetBody(sMail.TextPlain, email.Text)
-	} else {
-		e.SetBody(sMail.TextHTML, email.HTML)
-		e.AddAlternative(sMail.TextPlain, email.Text)
+	e.SetBody(sMail.TextPlain, email.Text)
+	if email.HTML != "" {
+		e.AddAlternative(sMail.TextHTML, email.HTML)
 	}
 	err = e.Send(cli)
 	return err
