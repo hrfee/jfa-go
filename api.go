@@ -1715,10 +1715,21 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 		"policy":     map[string]string{},
 		"homescreen": map[string]string{},
 	}
+	/* Jellyfin doesn't seem to like too many of these requests sent in succession
+	and can crash and mess up its database. Issue #160 says this occurs when more
+	than 100 users are modified. A delay totalling 500ms between requests is used
+	if so. */
+	var shouldDelay bool = len(req.ApplyTo) >= 100
+	if shouldDelay {
+		app.debug.Println("Adding delay between requests for large batch")
+	}
 	for _, id := range req.ApplyTo {
 		status, err := app.jf.SetPolicy(id, policy)
 		if !(status == 200 || status == 204) || err != nil {
 			errors["policy"][id] = fmt.Sprintf("%d: %s", status, err)
+		}
+		if shouldDelay {
+			time.Sleep(250 * time.Millisecond)
 		}
 		if req.Homescreen {
 			status, err = app.jf.SetConfiguration(id, configuration)
@@ -1734,6 +1745,9 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 			if errorString != "" {
 				errors["homescreen"][id] = errorString
 			}
+		}
+		if shouldDelay {
+			time.Sleep(250 * time.Millisecond)
 		}
 	}
 	code := 200
