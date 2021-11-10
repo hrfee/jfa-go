@@ -154,3 +154,8 @@ See [CONTRIBUTING.md](https://github.com/hrfee/jfa-go/blob/main/CONTRIBUTING.md)
 [![Translation status](https://weblate.jfa-go.com/widgets/jfa-go/-/multi-auto.svg)](https://weblate.jfa-go.com/engage/jfa-go/)
 
 For translations, use the weblate instance [here](https://weblate.jfa-go.com/engage/jfa-go/). You can login with github.
+
+#### Sponsors
+Big thanks to those who sponsor me. You can see them below:
+
+[<img src="https://sponsors-endpoint.hrfee.pw/sponsor/avatar/0" width="35">](https://sponsors-endpoint.hrfee.pw/sponsor/profile/0)
