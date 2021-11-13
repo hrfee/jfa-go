@@ -615,7 +615,7 @@ export class accountsList {
                 if (word.includes(":")) {
                     const querySplit = word.split(":")
                     let state = false;
-                    if (querySplit[1] == "true") {
+                    if (querySplit[1] == "true" || querySplit[1] == "yes") {
                         state = true;
                     }
                     for (let id in this._users) {
