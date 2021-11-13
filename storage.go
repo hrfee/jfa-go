@@ -85,6 +85,7 @@ type Profile struct {
 	Configuration mediabrowser.Configuration `json:"configuration,omitempty"`
 	Displayprefs  map[string]interface{}     `json:"displayprefs,omitempty"`
 	Default       bool                       `json:"default,omitempty"`
+	Ombi          map[string]interface{}     `json:"ombi,omitempty"`
 }
 
 type Invite struct {

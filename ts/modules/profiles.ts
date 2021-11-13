@@ -1,9 +1,11 @@
 import { _get, _post, _delete, toggleLoader } from "../modules/common.js";
+import { ombiProfiles } from "../modules/settings.js";
 
 interface Profile {
     admin: boolean;
     libraries: string;
     fromUser: string;
+    ombi: boolean;
 }
 
 class profile implements Profile {
@@ -11,8 +13,10 @@ class profile implements Profile {
     private _name: HTMLElement;
     private _adminChip: HTMLSpanElement;
     private _libraries: HTMLTableDataCellElement;
+    private _ombiButton: HTMLSpanElement;
     private _fromUser: HTMLTableDataCellElement;
     private _defaultRadio: HTMLInputElement;
+    private _ombi: boolean;
 
     get name(): string { return this._name.textContent; }
     set name(v: string) { this._name.textContent = v; }
@@ -31,6 +35,21 @@ class profile implements Profile {
     get libraries(): string { return this._libraries.textContent; }
     set libraries(v: string) { this._libraries.textContent = v; }
 
+    get ombi(): boolean { return this._ombi; }
+    set ombi(v: boolean) {
+        if (!window.ombiEnabled) return;
+        this._ombi = v;
+        if (v) {
+            this._ombiButton.textContent = window.lang.strings("delete");
+            this._ombiButton.classList.add("~critical");
+            this._ombiButton.classList.remove("~neutral");
+        } else {
+            this._ombiButton.textContent = window.lang.strings("add");
+            this._ombiButton.classList.add("~neutral");
+            this._ombiButton.classList.remove("~critical");
+        }
+    }
+
     get fromUser(): string { return this._fromUser.textContent; }
     set fromUser(v: string) { this._fromUser.textContent = v; }
     
@@ -39,20 +58,28 @@ class profile implements Profile {
 
     constructor(name: string, p: Profile) {
         this._row = document.createElement("tr") as HTMLTableRowElement;
-        this._row.innerHTML = `
+        let innerHTML = `
             <td><b class="profile-name"></b> <span class="profile-admin"></span></td>
             <td><input type="radio" name="profile-default"></td>
+        `;
+        if (window.ombiEnabled) innerHTML += `
+            <td><span class="button !normal profile-ombi"></span></td>
+        `;
+        innerHTML += `
             <td class="profile-from ellipsis"></td>
             <td class="profile-libraries"></td>
             <td><span class="button ~critical !normal">${window.lang.strings("delete")}</span></td>
         `;
+        this._row.innerHTML = innerHTML;
         this._name = this._row.querySelector("b.profile-name");
         this._adminChip = this._row.querySelector("span.profile-admin") as HTMLSpanElement;
         this._libraries = this._row.querySelector("td.profile-libraries") as HTMLTableDataCellElement;
+        if (window.ombiEnabled)
+            this._ombiButton = this._row.querySelector("span.profile-ombi") as HTMLSpanElement;
         this._fromUser = this._row.querySelector("td.profile-from") as HTMLTableDataCellElement;
         this._defaultRadio = this._row.querySelector("input[type=radio]") as HTMLInputElement;
         this._defaultRadio.onclick = () => document.dispatchEvent(new CustomEvent("profiles-default", { detail: this.name }));
-        (this._row.querySelector("span.button") as HTMLSpanElement).onclick = this.delete;
+        (this._row.querySelector("span.\\~critical") as HTMLSpanElement).onclick = this.delete;
 
         this.update(name, p);
     }
@@ -62,7 +89,10 @@ class profile implements Profile {
         this.admin = p.admin;
         this.fromUser = p.fromUser;
         this.libraries = p.libraries;
+        this.ombi = p.ombi;
     }
+
+    setOmbiFunc = (ombiFunc: (ombi: boolean) => void) => { this._ombiButton.onclick = () => ombiFunc(this._ombi); }
 
     remove = () => { document.dispatchEvent(new CustomEvent("profiles-delete", { detail: this._name })); this._row.remove(); }
 
@@ -89,6 +119,7 @@ export class ProfileEditor {
     private _createButton = document.getElementById("button-profile-create") as HTMLSpanElement;
     private _profiles: { [name: string]: profile } = {};
     private _default: string;
+    private _ombiProfiles: ombiProfiles;
 
     private _createForm = document.getElementById("form-add-profile") as HTMLFormElement;
     private _profileName = document.getElementById("add-profile-name") as HTMLInputElement;
@@ -126,6 +157,23 @@ export class ProfileEditor {
                             this._profiles[name].update(name, resp.profiles[name]);
                         } else {
                             this._profiles[name] = new profile(name, resp.profiles[name]);
+                            if (window.ombiEnabled)
+                                this._profiles[name].setOmbiFunc((ombi: boolean) => {
+                                    if (ombi) {
+                                        this._ombiProfiles.delete(name, (req: XMLHttpRequest) => {
+                                            if (req.readyState == 4) {
+                                                if (req.status != 204) {
+                                                    window.notifications.customError("errorDeleteOmbi", window.lang.notif("errorUnknown"));
+                                                    return;
+                                                }
+                                                this._profiles[name].ombi = false;
+                                            }
+                                        });
+                                    } else {
+                                        window.modals.profiles.close();
+                                        this._ombiProfiles.load(name);
+                                    }
+                                });
                             this._table.appendChild(this._profiles[name].asElement());
                         }
                     }
@@ -158,6 +206,9 @@ export class ProfileEditor {
             delete this._profiles[event.detail];
             this.load();
         });
+
+        if (window.ombiEnabled)
+            this._ombiProfiles = new ombiProfiles();
 
         this._createButton.onclick = () => _get("/users", null, (req: XMLHttpRequest) => {
             if (req.readyState == 4) {

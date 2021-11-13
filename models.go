@@ -71,6 +71,7 @@ type profileDTO struct {
 	Admin         bool   `json:"admin" example:"false"`   // Whether profile has admin rights or not
 	LibraryAccess string `json:"libraries" example:"all"` // Number of libraries profile has access to
 	FromUser      string `json:"fromUser" example:"jeff"` // The user the profile is based on
+	Ombi          bool   `json:"ombi"`                    // Whether or not Ombi settings are stored in this profile.
 }
 
 type getProfilesDTO struct {
@@ -83,9 +84,10 @@ type profileChangeDTO struct {
 }
 
 type newProfileDTO struct {
-	Name       string `json:"name" example:"DefaultProfile" binding:"required"`  // Name of the profile
-	ID         string `json:"id" example:"kasdjlaskjd342342" binding:"required"` // ID of user to source settings from
-	Homescreen bool   `json:"homescreen" example:"true"`                         // Whether to store homescreen layout or not
+	Name       string `json:"name" example:"DefaultProfile" binding:"required"`        // Name of the profile
+	ID         string `json:"id" example:"ZXhhbXBsZTEyMzQ1Njc4OQo" binding:"required"` // ID of user to source settings from
+	Homescreen bool   `json:"homescreen" example:"true"`                               // Whether to store homescreen layout or not
+	OmbiID     string `json:"ombi_id" example:"ZXhhbXBsZTEyMzQ1Njc4OQo"`               // ID of Ombi user to source settings from (optional)
 }
 
 type inviteDTO struct {

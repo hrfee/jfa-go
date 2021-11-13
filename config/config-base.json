@@ -1020,7 +1020,7 @@
             "order": [],
             "meta": {
                 "name": "Ombi Integration",
-                "description": "Connect to Ombi to automatically create both Ombi and Jellyfin accounts for new users. You'll need to create a user template for this to work. Once enabled, refresh to see an option in settings for this. To handle password resets for Ombi & Jellyfin, enable \"Use reset link instead of PIN\"."
+                "description": "Connect to Ombi to automatically create both Ombi and Jellyfin accounts for new users. You'll need to add a ombi template to an existing User Profile for accounts to be created, which you can do by refreshing then checking Settings > User Profiles. To handle password resets for Ombi & Jellyfin, enable \"Use reset link instead of PIN\"."
             },
             "settings": {
                 "enabled": {

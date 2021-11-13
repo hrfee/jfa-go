@@ -503,23 +503,22 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 				app.err.Printf("%s: Failed to set configuration template (%d): %v", req.Code, status, err)
 			}
 		}
+		if app.config.Section("ombi").Key("enabled").MustBool(false) {
+			if profile.Ombi != nil && len(profile.Ombi) != 0 {
+				errors, code, err := app.ombi.NewUser(req.Username, req.Password, req.Email, profile.Ombi)
+				if err != nil || code != 200 {
+					app.info.Printf("Failed to create Ombi user (%d): %s", code, err)
+					app.debug.Printf("Errors reported by Ombi: %s", strings.Join(errors, ", "))
+				} else {
+					app.info.Println("Created Ombi user")
+				}
+			}
+		}
 	}
 	// if app.config.Section("password_resets").Key("enabled").MustBool(false) {
 	if req.Email != "" {
 		app.storage.emails[id] = EmailAddress{Addr: req.Email, Contact: true}
 		app.storage.storeEmails()
-	}
-	if app.config.Section("ombi").Key("enabled").MustBool(false) {
-		app.storage.loadOmbiTemplate()
-		if len(app.storage.ombi_template) != 0 {
-			errors, code, err := app.ombi.NewUser(req.Username, req.Password, req.Email, app.storage.ombi_template)
-			if err != nil || code != 200 {
-				app.info.Printf("Failed to create Ombi user (%d): %s", code, err)
-				app.debug.Printf("Errors reported by Ombi: %s", strings.Join(errors, ", "))
-			} else {
-				app.info.Println("Created Ombi user")
-			}
-		}
 	}
 	expiry := time.Time{}
 	if invite.UserExpiry {
@@ -1221,6 +1220,7 @@ func (app *appContext) GetProfiles(gc *gin.Context) {
 			Admin:         p.Admin,
 			LibraryAccess: p.LibraryAccess,
 			FromUser:      p.FromUser,
+			Ombi:          p.Ombi != nil,
 		}
 	}
 	gc.JSON(200, out)
@@ -1486,26 +1486,65 @@ func (app *appContext) OmbiUsers(gc *gin.Context) {
 	gc.JSON(200, ombiUsersDTO{Users: userlist})
 }
 
-// @Summary Set new user defaults for Ombi accounts.
+// @Summary Store Ombi user template in an existing profile.
 // @Produce json
 // @Param ombiUser body ombiUser true "User to source settings from"
+// @Param profile path string true "Name of profile to store in"
 // @Success 200 {object} boolResponse
+// @Failure 400 {object} boolResponse
 // @Failure 500 {object} stringResponse
-// @Router /ombi/defaults [post]
+// @Router /profiles/ombi/{profile} [post]
 // @Security Bearer
 // @tags Ombi
-func (app *appContext) SetOmbiDefaults(gc *gin.Context) {
+func (app *appContext) SetOmbiProfile(gc *gin.Context) {
 	var req ombiUser
 	gc.BindJSON(&req)
+	profileName := gc.Param("profile")
+	profile, ok := app.storage.profiles[profileName]
+	if !ok {
+		respondBool(400, false, gc)
+		return
+	}
 	template, code, err := app.ombi.TemplateByID(req.ID)
 	if err != nil || code != 200 || len(template) == 0 {
 		app.err.Printf("Couldn't get user from Ombi (%d): %v", code, err)
 		respond(500, "Couldn't get user", gc)
 		return
 	}
-	app.storage.ombi_template = template
-	app.storage.storeOmbiTemplate()
-	respondBool(200, true, gc)
+	profile.Ombi = template
+	app.storage.profiles[profileName] = profile
+	if err := app.storage.storeProfiles(); err != nil {
+		respond(500, "Failed to store profile", gc)
+		app.err.Printf("Failed to store profiles: %v", err)
+		return
+	}
+	respondBool(204, true, gc)
+}
+
+// @Summary Remove ombi user template from a profile.
+// @Produce json
+// @Param profile path string true "Name of profile to store in"
+// @Success 200 {object} boolResponse
+// @Failure 400 {object} boolResponse
+// @Failure 500 {object} stringResponse
+// @Router /profiles/ombi/{profile} [delete]
+// @Security Bearer
+// @tags Ombi
+func (app *appContext) DeleteOmbiProfile(gc *gin.Context) {
+	profileName := gc.Param("profile")
+	profile, ok := app.storage.profiles[profileName]
+	if !ok {
+		respondBool(400, false, gc)
+		return
+	}
+	profile.Ombi = nil
+	app.storage.profiles[profileName] = profile
+	if err := app.storage.storeProfiles(); err != nil {
+		respond(500, "Failed to store profile", gc)
+		app.err.Printf("Failed to store profiles: %v", err)
+		return
+	}
+	respondBool(204, true, gc)
 }
 
 // @Summary Modify user's email addresses.
@@ -1671,6 +1710,7 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 	var policy mediabrowser.Policy
 	var configuration mediabrowser.Configuration
 	var displayprefs map[string]interface{}
+	var ombi map[string]interface{}
 	if req.From == "profile" {
 		app.storage.loadProfiles()
 		// Check profile exists & isn't empty
@@ -1689,6 +1729,13 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 			displayprefs = app.storage.profiles[req.Profile].Displayprefs
 		}
 		policy = app.storage.profiles[req.Profile].Policy
+		if app.config.Section("ombi").Key("enabled").MustBool(false) {
+			profile := app.storage.profiles[req.Profile]
+			if profile.Ombi != nil && len(profile.Ombi) != 0 {
+				ombi = profile.Ombi
+			}
+		}
+
 	} else if req.From == "user" {
 		applyingFrom = "user"
 		app.jf.CacheExpiry = time.Now()
@@ -1714,6 +1761,7 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 	errors := errorListDTO{
 		"policy":     map[string]string{},
 		"homescreen": map[string]string{},
+		"ombi":       map[string]string{},
 	}
 	/* Jellyfin doesn't seem to like too many of these requests sent in succession
 	and can crash and mess up its database. Issue #160 says this occurs when more
@@ -1735,15 +1783,45 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 			status, err = app.jf.SetConfiguration(id, configuration)
 			errorString := ""
 			if !(status == 200 || status == 204) || err != nil {
-				errorString += fmt.Sprintf("Configuration %d: %s ", status, err)
+				errorString += fmt.Sprintf("Configuration %d: %v ", status, err)
 			} else {
 				status, err = app.jf.SetDisplayPreferences(id, displayprefs)
 				if !(status == 200 || status == 204) || err != nil {
-					errorString += fmt.Sprintf("Displayprefs %d: %s ", status, err)
+					errorString += fmt.Sprintf("Displayprefs %d: %v ", status, err)
 				}
 			}
 			if errorString != "" {
 				errors["homescreen"][id] = errorString
+			}
+		}
+		if ombi != nil {
+			errorString := ""
+			user, status, err := app.getOmbiUser(id)
+			if status != 200 || err != nil {
+				errorString += fmt.Sprintf("Ombi GetUser %d: %v ", status, err)
+			} else {
+				// newUser := ombi
+				// newUser["id"] = user["id"]
+				// newUser["userName"] = user["userName"]
+				// newUser["alias"] = user["alias"]
+				// newUser["emailAddress"] = user["emailAddress"]
+				for k, v := range ombi {
+					switch v.(type) {
+					case map[string]interface{}, []interface{}:
+						user[k] = v
+					default:
+						if v != user[k] {
+							user[k] = v
+						}
+					}
+				}
+				status, err = app.ombi.ModifyUser(user)
+				if status != 200 || err != nil {
+					errorString += fmt.Sprintf("Apply %d: %v ", status, err)
+				}
+			}
+			if errorString != "" {
+				errors["ombi"][id] = errorString
 			}
 		}
 		if shouldDelay {

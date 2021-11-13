@@ -266,9 +266,9 @@
                 <span class="button ~urge !normal mt-half" id="send-pwr-link">{{ .strings.copy }}</span>
             </div>
         </div>
-        <div id="modal-ombi-defaults" class="modal">
+        <div id="modal-ombi-profile" class="modal">
             <form class="modal-content card" id="form-ombi-defaults" href="">
-                <span class="heading">{{ .strings.ombiUserDefaults }} <span class="modal-close">&times;</span></span>
+                <span class="heading">{{ .strings.ombiProfile }} <span class="modal-close">&times;</span></span>
                 <p class="content">{{ .strings.ombiUserDefaultsDescription }}</p>
                 <div class="select ~neutral !normal mb-1">
                     <select></select>
@@ -289,6 +289,9 @@
                             <tr>
                                 <th>{{ .strings.name }}</th>
                                 <th>{{ .strings.userProfilesIsDefault }}</th>
+                                {{ if .ombiEnabled }}
+                                <th>Ombi</th>
+                                {{ end }}
                                 <th>{{ .strings.from }}</th>
                                 <th>{{ .strings.userProfilesLibraries }}</th>
                                 <th><span class="button ~neutral !high" id="button-profile-create">{{ .strings.create }}</span></th>

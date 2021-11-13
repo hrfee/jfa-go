@@ -1,4 +1,4 @@
-import { _get, _post, toggleLoader, addLoader, removeLoader, insertText } from "../modules/common.js";
+import { _get, _post, _delete, toggleLoader, addLoader, removeLoader, insertText } from "../modules/common.js";
 import { Marked } from "@ts-stack/markdown";
 import { stripMarkdown } from "../modules/stripmd.js";
 
@@ -659,11 +659,6 @@ export class settingsList {
             }
         };
         advancedEnableToggle.checked = false;
-
-        if (window.ombiEnabled) {
-            let ombi = new ombiDefaults();
-            this._sidebar.appendChild(ombi.button());
-        }
     }
 
     private _addMatrix = () => {
@@ -762,42 +757,40 @@ interface ombiUser {
     name: string;
 }
 
-class ombiDefaults {
+export class ombiProfiles {
     private _form: HTMLFormElement;
-    private _button: HTMLSpanElement;
     private _select: HTMLSelectElement;
     private _users: { [id: string]: string } = {};
+    private _currentProfile: string;
+
     constructor() {
-        this._button = document.createElement("span") as HTMLSpanElement;
-        this._button.classList.add("button", "~neutral", "!low", "settings-section-button", "mb-half");
-        this._button.innerHTML = `<span class="flex">${window.lang.strings("ombiUserDefaults")} <i class="ri-link-unlink-m ml-half"></i></span>`;
-        this._button.onclick = this.load;
         this._form = document.getElementById("form-ombi-defaults") as HTMLFormElement;
         this._form.onsubmit = this.send;
         this._select = this._form.querySelector("select") as HTMLSelectElement;
     }
-    button = (): HTMLSpanElement => { return this._button; }
     send = () => {
         const button = this._form.querySelector("span.submit") as HTMLSpanElement;
         toggleLoader(button);
         let resp = {} as ombiUser;
         resp.id = this._select.value;
         resp.name = this._users[resp.id];
-        _post("/ombi/defaults", resp, (req: XMLHttpRequest) => {
+        _post("/profiles/ombi/" + this._currentProfile, resp, (req: XMLHttpRequest) => {
             if (req.readyState == 4) {
                 toggleLoader(button);
                 if (req.status == 200 || req.status == 204) {
-                    window.notifications.customSuccess("ombiDefaults", window.lang.notif("setOmbiDefaults"));
+                    window.notifications.customSuccess("ombiDefaults", window.lang.notif("setOmbiProfile"));
                 } else {
-                    window.notifications.customError("ombiDefaults", window.lang.notif("errorSetOmbiDefaults"));
+                    window.notifications.customError("ombiDefaults", window.lang.notif("errorSetOmbiProfile"));
                 }
-                window.modals.ombiDefaults.close();
+                window.modals.ombiProfile.close();
             }
         });
     }
 
-    load = () => {
-        toggleLoader(this._button);
+    delete = (profile: string, post?: (req: XMLHttpRequest) => void) => _delete("/profiles/ombi/" + profile, null, post);
+
+    load = (profile: string) => {
+        this._currentProfile = profile;
         _get("/ombi/users", null, (req: XMLHttpRequest) => {
             if (req.readyState == 4) {
                 if (req.status == 200 && "users" in req.response) {
@@ -808,10 +801,8 @@ class ombiDefaults {
                         innerHTML += `<option value="${user.id}">${user.name}</option>`;
                     }
                     this._select.innerHTML = innerHTML;
-                    toggleLoader(this._button);
-                    window.modals.ombiDefaults.show();
+                    window.modals.ombiProfile.show();
                 } else {
-                    toggleLoader(this._button);
                     window.notifications.customError("ombiLoadError", window.lang.notif("errorLoadOmbiUsers"))
                 }
             }

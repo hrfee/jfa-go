@@ -95,7 +95,7 @@ declare interface Modals {
     deleteUser: Modal;
     settingsRestart: Modal;
     settingsRefresh: Modal;
-    ombiDefaults?: Modal;
+    ombiProfile?: Modal;
     profiles: Modal;
     addProfile: Modal;
     announce: Modal;

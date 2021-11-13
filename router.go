@@ -192,7 +192,8 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 		}
 		if app.config.Section("ombi").Key("enabled").MustBool(false) {
 			api.GET(p+"/ombi/users", app.OmbiUsers)
-			api.POST(p+"/ombi/defaults", app.SetOmbiDefaults)
+			api.POST(p+"/profiles/ombi/:profile", app.SetOmbiProfile)
+			api.DELETE(p+"/profiles/ombi/:profile", app.DeleteOmbiProfile)
 		}
 		api.POST(p+"/matrix/login", app.MatrixLogin)
 

@@ -217,5 +217,6 @@ func (ombi *Ombi) NewUser(username, password, email string, template map[string]
 		}
 		return lst, code, err
 	}
+	ombi.cacheExpiry = time.Now()
 	return nil, code, err
 }
