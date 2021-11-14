@@ -28,7 +28,7 @@ before:
     - npx esbuild --bundle ts/crash.ts --outfile=./data/crash.js --minify
     - cp html/crash.html data/
     - npx uncss data/crash.html --csspath web/css --output data/bundle.css
-    - npx inline-source --root data data/crash.html data/crash.html
+    - node scripts/inline.js root data data/crash.html data/crash.html
     - rm data/bundle.css
     - mv data/crash.html data/html/
     - go get -u github.com/swaggo/swag/cmd/swag

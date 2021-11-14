@@ -3,7 +3,7 @@
         "name": "Nederlands (NL)"
     },
     "strings": {
-        "pageTitle": "Maak Jellyfin account aan",
+        "pageTitle": "Maak Jellyfin-account aan",
         "createAccountHeader": "Account aanmaken",
         "accountDetails": "Details",
         "emailAddress": "E-mail",

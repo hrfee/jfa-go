@@ -105,7 +105,13 @@
         "saveAsTemplate": "Sauvegarder comme modèle",
         "templateEnterName": "Entrez un nom pour sauvegarder ce modèle.",
         "deleteTemplate": "Supprimer le modèle",
-        "templates": "Modèles"
+        "templates": "Modèles",
+        "setExpiry": "Paramétrer l'expiration",
+        "sendPWRSuccess": "Réinitialisation du mot de passe envoyée.",
+        "sendPWR": "Envoyer une réinitialisation du mot de passe",
+        "sendPWRValidFor": "Ce lien est valable 30min.",
+        "sendPWRManual": "L'utilisateur {n} n'a pas indiqué de méthode de contact, appuyez sur copier pour recevoir un lien à lui envoyer.",
+        "sendPWRSuccessManual": "Si l'utilisateur ne l'a pas reçu, appuyez sur copier pour recevoir un lien à lui envoyer manuellement."
     },
     "notifications": {
         "changedEmailAddress": "Adresse e-mail modifiée de {n}.",
