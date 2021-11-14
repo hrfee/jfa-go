@@ -22,7 +22,7 @@
     "a17t": "^0.4.0",
     "browserslist": "^4.16.6",
     "esbuild": "^0.8.57",
-    "inline-source-cli": "^2.0.0",
+    "inline-source": "^7.2.0",
     "lodash": "^4.17.21",
     "mjml": "^4.8.0",
     "remixicon": "^2.5.0",

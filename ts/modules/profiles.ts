@@ -1,5 +1,4 @@
 import { _get, _post, _delete, toggleLoader } from "../modules/common.js";
-import { ombiProfiles } from "../modules/settings.js";
 
 interface Profile {
     admin: boolean;
@@ -251,5 +250,63 @@ export class ProfileEditor {
             })
         };
 
+    }
+}
+
+interface ombiUser {
+    id: string;
+    name: string;
+}
+
+export class ombiProfiles {
+    private _form: HTMLFormElement;
+    private _select: HTMLSelectElement;
+    private _users: { [id: string]: string } = {};
+    private _currentProfile: string;
+
+    constructor() {
+        this._form = document.getElementById("form-ombi-defaults") as HTMLFormElement;
+        this._form.onsubmit = this.send;
+        this._select = this._form.querySelector("select") as HTMLSelectElement;
+    }
+    send = () => {
+        const button = this._form.querySelector("span.submit") as HTMLSpanElement;
+        toggleLoader(button);
+        let resp = {} as ombiUser;
+        resp.id = this._select.value;
+        resp.name = this._users[resp.id];
+        _post("/profiles/ombi/" + this._currentProfile, resp, (req: XMLHttpRequest) => {
+            if (req.readyState == 4) {
+                toggleLoader(button);
+                if (req.status == 200 || req.status == 204) {
+                    window.notifications.customSuccess("ombiDefaults", window.lang.notif("setOmbiProfile"));
+                } else {
+                    window.notifications.customError("ombiDefaults", window.lang.notif("errorSetOmbiProfile"));
+                }
+                window.modals.ombiProfile.close();
+            }
+        });
+    }
+
+    delete = (profile: string, post?: (req: XMLHttpRequest) => void) => _delete("/profiles/ombi/" + profile, null, post);
+
+    load = (profile: string) => {
+        this._currentProfile = profile;
+        _get("/ombi/users", null, (req: XMLHttpRequest) => {
+            if (req.readyState == 4) {
+                if (req.status == 200 && "users" in req.response) {
+                    const users = req.response["users"] as ombiUser[]; 
+                    let innerHTML = "";
+                    for (let user of users) {
+                        this._users[user.id] = user.name;
+                        innerHTML += `<option value="${user.id}">${user.name}</option>`;
+                    }
+                    this._select.innerHTML = innerHTML;
+                    window.modals.ombiProfile.show();
+                } else {
+                    window.notifications.customError("ombiLoadError", window.lang.notif("errorLoadOmbiUsers"))
+                }
+            }
+        });
     }
 }

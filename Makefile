@@ -101,7 +101,7 @@ typescript:
 	$(COPYTS)
 
 swagger:
-	$(GOBINARY) get github.com/swaggo/swag/cmd/swag
+	$(GOBINARY) install github.com/swaggo/swag/cmd/swag
 	swag init -g main.go
 
 compile:
@@ -122,7 +122,7 @@ bundle-css:
 inline:
 	cp html/crash.html $(DATA)/crash.html
 	$(UNCSS)
-	npx inline-source --root $(DATA) $(DATA)/crash.html $(DATA)/crash.html
+	node scripts/inline.js root $(DATA) $(DATA)/crash.html $(DATA)/crash.html
 	rm $(DATA)/bundle.css
 
 copy:
