@@ -221,5 +221,3 @@ export function insertText(textarea: HTMLTextAreaElement, text: string) {
         textarea.focus();
     }
 }
-
-

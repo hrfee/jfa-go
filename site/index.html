@@ -59,12 +59,35 @@ sudo apt-get install jfa-go-tray
                 </div>
                 <div class="row col flex center">
                     <p class="content">a better way to manage your Jellyfin users.</p>
+                    <ul class="support">
+                        <li>Send invite links to your users, let them sign up themselves</li>
+                        <li>Create setting profiles to restrict permissions of new users</li>
+                        <li>Handles password resets without your intervention</li>
+                        <li>Enforce password requirements on sign-up</li>
+                        <li>Send messages & notifications to your users (email, discord, telegram, matrix available)</li>
+                        <li>Set accounts to expire after a specified time</li>
+                        <li>Manage your users in bulk</li>
+                        <li><a href="https://github.com/hrfee/jfa-go#features" target="_blank">More</a></li>
+                    </ul>
                 </div>
                 <span class="row col flex center supra">links</span>
                 <div class="row col flex center">
-                    <a class="button ~info mr-half mt-1 mb-1" href="https://github.com/hrfee/jfa-go">github</a>
+                    <a class="button ~neutral mr-half mt-1 mb-1" href="https://github.com/hrfee/jfa-go">github</a>
                     <a class="button ~urge mt-1 mb-1 mr-half" href="https://wiki.jfa-go.com">wiki/docs</a>
                     <a class="button ~positive mt-1 mb-1 mr-half" href="https://weblate.jfa-go.com">translation</a>
+                    <div class="dropdown" tabindex="0">
+                        <a href="https://github.com/sponsors/hrfee" target="_blank" class="button ~info mt-1 mb-1 dropdown-button">
+                            <i class="ri-hand-heart-line mr-half"></i>
+                            donate
+                            <span class="ml-1 chev"></span>
+                        </a>
+                        <div class="dropdown-display">
+                            <div class="card ~info !low">
+                                <a href="https://github.com/sponsors/hrfee" target="_blank" class="button input ~neutral field mb-half lang-link">GitHub</a>
+                                <a href="https://ko-fi.com/hrfee" target="_blank" class="button input ~neutral field mb-half lang-link">Ko-fi</a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <p class="row col flex center supra">downloads</p>
                 <p class="row col flex center support">instructions can be found&nbsp<a target="_blank" href="https://github.com/hrfee/jfa-go#install">here</a></p>
@@ -84,7 +107,7 @@ sudo apt-get install jfa-go-tray
                     </div>
                 </div>
                 <div class="mt-1 unfocused" id="sect-unstable">
-                    <p class="row center">These are built on every commit, so may include incomplete/broken features.</p>
+                    <p class="row center">These are built on every commit, so may include incomplete/broken features. Take care.</p>
                     <div class="row col flex center">
                         <a class="button ~info mr-half mb-half lang-link" target="_blank" href="https://dl.jfa-go.com/view/hrfee/jfa-go">windows/mac/linux</a>
                         <a class="button ~info mr-half mb-half lang-link" id="download-docker-unstable">docker</a>
