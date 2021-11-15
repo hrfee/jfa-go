@@ -80,12 +80,15 @@ steps:
       volumes:
         - name: ssh_key
           path: /id_rsa
+        - name: ssh_key2
+          path: /id_rsa2
       commands:
         - curl -sL https://git.io/goreleaser > goreleaser
         - chmod +x goreleaser
         - ./scripts/version.sh ./goreleaser --snapshot --skip-publish --rm-dist
         - wget https://builds.hrfee.pw/upload.py
         - pip3 install requests
+        - bash -c 'sftp -i /id_rsa2 -o StrictHostKeyChecking=no root@161.97.102.153:/mnt/redoc <<< $"put docs/swagger.json jfa-go.json"'
         - bash -c 'sftp -P 2022 -i /id_rsa -o StrictHostKeyChecking=no root@161.97.102.153:/repo/incoming <<< $"put dist/*.deb"'
           # - bash -c 'ssh -i /id_rsa root@161.97.102.153 -p 2022 "reprepro -Vb /repo remove trusty-unstable jfa-go"'
           # - bash -c 'ssh -i /id_rsa root@161.97.102.153 -p 2022 "reprepro -Vb /repo remove trusty-unstable jfa-go-tray"'
@@ -99,6 +102,9 @@ volumes:
     - name: ssh_key
       host:
           path: /root/.ssh/id_rsa_packaging
+    - name: ssh_key2
+      host:
+          path: /root/.ssh/docker-build
 trigger:
     branch:
         - main

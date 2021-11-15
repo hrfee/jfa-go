@@ -622,7 +622,7 @@ func flagPassed(name string) (found bool) {
 }
 
 // @title jfa-go internal API
-// @version 0.3.6
+// @version 0.3.10
 // @description API for the jfa-go frontend
 // @contact.name Harvey Tindall
 // @contact.email hrfee@hrfee.dev
@@ -638,7 +638,7 @@ func flagPassed(name string) (found bool) {
 // @name getTokenAuth
 
 // @tag.name Auth
-// @tag.description --------Get a token here first!--------
+// @tag.description -Get a token here if running swagger UI locally.-
 
 // @tag.name Users
 // @tag.description Jellyfin user related operations.
