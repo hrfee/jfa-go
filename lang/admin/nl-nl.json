@@ -43,7 +43,7 @@
         "settingsRequiredOrRestartMessage": "Opmerking: {n} is een verplicht veld, {n} geeft aan dat na wijzigen een herstart nodig is.",
         "settingsSave": "Opslaan",
         "ombiUserDefaults": "Ombi gebruiker standaardinstellingen",
-        "ombiUserDefaultsDescription": "Maak een Ombi gebruiker aan met de gewenste instellingen, en selecteer deze hieronder. Deze instellingen/rechten worden opgeslagen en toegepast voor nieuwe Ombi gebruikers die jfa-go aanmaakt",
+        "ombiUserDefaultsDescription": "Maak een Ombi gebruiker aan met de gewenste instellingen, en selecteer deze hieronder. Deze instellingen/rechten worden opgeslagen en toegepast voor nieuwe Ombi gebruikers die jfa-go aanmaakt als dit profiel is geselecteerd.",
         "userProfiles": "Gebruikersprofielen",
         "userProfilesDescription": "Profielen worden toegepast op gebruikers wanneer ze een account aanmaken. Een profiel bevat rechten voor bibliotheken en indeling van de startpagina.",
         "userProfilesIsDefault": "Standaard",
@@ -110,7 +110,8 @@
         "sendPWRSuccessManual": "Als de gebruiker hem niet heeft ontvangen, druk dan op kopiëren om een link te krijgen die je handmatig kunt sturen.",
         "sendPWR": "Verstuur wachtwoordreset",
         "sendPWRSuccess": "Wachtwoordreset-link verstuurd.",
-        "sendPWRValidFor": "De link is 30m geldig."
+        "sendPWRValidFor": "De link is 30m geldig.",
+        "ombiProfile": "Ombi gebruikersprofiel"
     },
     "notifications": {
         "changedEmailAddress": "E-mailadres van {n} gewijzigd.",
@@ -151,7 +152,9 @@
         "telegramVerified": "Telegram-account goedgekeurd.",
         "updateAppliedRefresh": "Update toegepast, ververs alsjeblieft.",
         "accountConnected": "Account gekoppeld.",
-        "savedAnnouncement": "Aankondiging opgeslagen."
+        "savedAnnouncement": "Aankondiging opgeslagen.",
+        "setOmbiProfile": "Opgeslagen ombi-profiel.",
+        "errorSetOmbiProfile": "Opslaan van ombi-profiel mislukt."
     },
     "quantityStrings": {
         "modifySettingsFor": {
