@@ -45,7 +45,7 @@
         "settingsRequiredOrRestartMessage": "Remarque : {n} indique un champ obligatoire, {n} indique que les modifications nécessitent un redémarrage.",
         "settingsSave": "Sauver",
         "ombiUserDefaults": "Paramètres par défaut de l'utilisateur Ombi",
-        "ombiUserDefaultsDescription": "Créez un utilisateur Ombi et configurez-le, puis sélectionnez-le ci-dessous. Ses paramètres/autorisations seront stockés et appliqués aux nouveaux utilisateurs Ombi créés par jfa-go",
+        "ombiUserDefaultsDescription": "Créez un utilisateur Ombi et configurez-le, puis sélectionnez-le ci-dessous. Ses paramètres/autorisations seront stockés et appliqués aux nouveaux utilisateurs Ombi créés par jfa-go lorsque ce profil est sélectionné.",
         "userProfiles": "Profils d'utilisateurs",
         "userProfilesDescription": "Les profils sont appliqués aux utilisateurs lorsqu'ils créent un compte. Un profil inclut les droits d'accès à la bibliothèque et la disposition de l'écran d'accueil.",
         "userProfilesIsDefault": "Défaut",
@@ -111,7 +111,8 @@
         "sendPWR": "Envoyer une réinitialisation du mot de passe",
         "sendPWRValidFor": "Ce lien est valable 30min.",
         "sendPWRManual": "L'utilisateur {n} n'a pas indiqué de méthode de contact, appuyez sur copier pour recevoir un lien à lui envoyer.",
-        "sendPWRSuccessManual": "Si l'utilisateur ne l'a pas reçu, appuyez sur copier pour recevoir un lien à lui envoyer manuellement."
+        "sendPWRSuccessManual": "Si l'utilisateur ne l'a pas reçu, appuyez sur copier pour recevoir un lien à lui envoyer manuellement.",
+        "ombiProfile": "Profil d'utilisateur Ombi"
     },
     "notifications": {
         "changedEmailAddress": "Adresse e-mail modifiée de {n}.",
@@ -152,7 +153,9 @@
         "telegramVerified": "Compte Telegram vérifié.",
         "updateAppliedRefresh": "Mise à jour appliquée, veuillez actualiser.",
         "accountConnected": "Compte connecté.",
-        "savedAnnouncement": "Annonce enregistrée."
+        "savedAnnouncement": "Annonce enregistrée.",
+        "setOmbiProfile": "Profil ombi enregistré.",
+        "errorSetOmbiProfile": "Echec de la sauvegarde du profil ombi."
     },
     "quantityStrings": {
         "modifySettingsFor": {
