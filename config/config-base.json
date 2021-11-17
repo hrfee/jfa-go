@@ -579,10 +579,19 @@
                     "value": false,
                     "description": "Enable signup verification through Discord and the sending of notifications through it.\nSee the jfa-go wiki for setting up a bot."
                 },
+                "show_on_reg": {
+                    "name": "Show on user registration",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "bool",
+                    "depends_true": "enabled",
+                    "value": true,
+                    "description": "Allow users to link their Discord on the registration page."
+                },
                 "required": {
                     "name": "Require on sign-up",
                     "required": false,
-                    "required_restart": true,
+                    "requires_restart": true,
                     "depends_true": "enabled",
                     "type": "bool",
                     "value": false,
@@ -662,6 +671,15 @@
                     "value": false,
                     "description": "Enable signup verification through Telegram and the sending of notifications through it.\nSee the jfa-go wiki for setting up a bot."
                 },
+                "show_on_reg": {
+                    "name": "Show on user registration",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "bool",
+                    "depends_true": "enabled",
+                    "value": true,
+                    "description": "Allow users to link their Telegram on the registration page."
+                },
                 "required": {
                     "name": "Require on sign-up",
                     "required": false,
@@ -708,6 +726,15 @@
                     "type": "bool",
                     "value": false,
                     "description": "Enable signup verification through Matrix and the sending of notifications through it.\nSee the jfa-go wiki for setting up a bot."
+                },
+                "show_on_reg": {
+                    "name": "Show on user registration",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "bool",
+                    "depends_true": "enabled",
+                    "value": true,
+                    "description": "Allow users to link their Matrix on the registration page."
                 },
                 "required": {
                     "name": "Require on sign-up",

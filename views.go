@@ -327,6 +327,10 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 	if strings.Contains(email, "Failed") || !strings.Contains(email, "@") {
 		email = ""
 	}
+	telegram := telegramEnabled && app.config.Section("telegram").Key("show_on_reg").MustBool(true)
+	discord := discordEnabled && app.config.Section("discord").Key("show_on_reg").MustBool(true)
+	matrix := matrixEnabled && app.config.Section("matrix").Key("show_on_reg").MustBool(true)
+
 	data := gin.H{
 		"urlBase":           app.getURLBase(gc),
 		"cssClass":          app.cssClass,
@@ -351,21 +355,21 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 		"userExpiryMessage": app.storage.lang.Form[lang].Strings.get("yourAccountIsValidUntil"),
 		"langName":          lang,
 		"passwordReset":     false,
-		"telegramEnabled":   telegramEnabled,
-		"discordEnabled":    discordEnabled,
-		"matrixEnabled":     matrixEnabled,
+		"telegramEnabled":   telegram,
+		"discordEnabled":    discord,
+		"matrixEnabled":     matrix,
 	}
-	if telegramEnabled {
+	if telegram {
 		data["telegramPIN"] = app.telegram.NewAuthToken()
 		data["telegramUsername"] = app.telegram.username
 		data["telegramURL"] = app.telegram.link
 		data["telegramRequired"] = app.config.Section("telegram").Key("required").MustBool(false)
 	}
-	if matrixEnabled {
+	if matrix {
 		data["matrixRequired"] = app.config.Section("matrix").Key("required").MustBool(false)
 		data["matrixUser"] = app.matrix.userID
 	}
-	if discordEnabled {
+	if discord {
 		data["discordPIN"] = app.discord.NewAuthToken()
 		data["discordUsername"] = app.discord.username
 		data["discordRequired"] = app.config.Section("discord").Key("required").MustBool(false)

@@ -32,7 +32,7 @@ interface Setting {
 const splitDependant = (section: string, dep: string): string[] => {
     let parts = dep.split("|");
     if (parts.length == 1) {
-        parts = [section, parts[0]];
+        parts = [section, dep];
     }
     return parts
 };
