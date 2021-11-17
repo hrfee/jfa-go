@@ -12,14 +12,14 @@
         "title": "Notification : Utilisateur créé",
         "aUserWasCreated": "Un utilisateur a été créé avec ce code {code}.",
         "time": "Date",
-        "notificationNotice": "Note : Les emails de notification peuvent être activés sur le tableau de bord administrateur.",
+        "notificationNotice": "Note : Les messages de notification peuvent être activés sur le tableau de bord administrateur.",
         "name": "Création d'utilisateur"
     },
     "inviteExpiry": {
         "title": "Notification : Invitation expirée",
         "inviteExpired": "Invitation expirée.",
         "expiredAt": "Le code {code} a expiré à {time}.",
-        "notificationNotice": "Note : Les emails de notification peuvent être activés sur le tableau de bord administrateur.",
+        "notificationNotice": "Note : Les messages de notification peuvent être activés sur le tableau de bord administrateur.",
         "name": "Expiration de l'invitation"
     },
     "passwordReset": {
