@@ -13,6 +13,7 @@ func runMigrations(app *appContext) {
 	migrateProfiles(app)
 	migrateBootstrap(app)
 	migrateEmailStorage(app)
+	migrateNotificationMethods(app)
 	// migrateHyphens(app)
 }
 
@@ -120,6 +121,40 @@ func migrateEmailStorage(app *appContext) error {
 		return err
 	}
 	app.info.Println("Migrated to new email format. A backup has also been made.")
+	return nil
+}
+
+// Pre-0.3.10, Admin notifications for invites were indexed by and only sent to email addresses. Now, when Jellyfin Login is enabled, They are indexed by the admin's Jellyfin ID, and send by any method enabled for them. This migrates storage to that format.
+func migrateNotificationMethods(app *appContext) error {
+	if !app.config.Section("ui").Key("jellyfin_login").MustBool(false) {
+		return nil
+	}
+	changes := false
+	for code, invite := range app.storage.invites {
+		if invite.Notify == nil {
+			continue
+		}
+		for address, notifyPrefs := range invite.Notify {
+			if !strings.Contains(address, "@") {
+				continue
+			}
+			for id, email := range app.storage.emails {
+				if email.Addr == address {
+					invite.Notify[id] = notifyPrefs
+					delete(invite.Notify, address)
+					changes = true
+					break
+				}
+			}
+		}
+		if changes {
+			app.storage.invites[code] = invite
+		}
+	}
+	if changes {
+		app.info.Printf("Migrated to modified invite storage format.")
+		return app.storage.storeInvites()
+	}
 	return nil
 }
 

@@ -129,10 +129,18 @@ func (app *appContext) checkInvites() {
 					msg, err := app.email.constructExpiry(code, data, app, false)
 					if err != nil {
 						app.err.Printf("%s: Failed to construct expiry notification: %v", code, err)
-					} else if err := app.email.send(msg, addr); err != nil {
-						app.err.Printf("%s: Failed to send expiry notification: %v", code, err)
 					} else {
-						app.info.Printf("Sent expiry notification to %s", addr)
+						// Check whether notify "address" is an email address of Jellyfin ID
+						if strings.Contains(addr, "@") {
+							err = app.email.send(msg, addr)
+						} else {
+							err = app.sendByID(msg, addr)
+						}
+						if err != nil {
+							app.err.Printf("%s: Failed to send expiry notification: %v", code, err)
+						} else {
+							app.info.Printf("Sent expiry notification to %s", addr)
+						}
 					}
 				}(address)
 			}
@@ -171,10 +179,18 @@ func (app *appContext) checkInvite(code string, used bool, username string) bool
 					msg, err := app.email.constructExpiry(code, inv, app, false)
 					if err != nil {
 						app.err.Printf("%s: Failed to construct expiry notification: %v", code, err)
-					} else if err := app.email.send(msg, addr); err != nil {
-						app.err.Printf("%s: Failed to send expiry notification: %v", code, err)
 					} else {
-						app.info.Printf("Sent expiry notification to %s", addr)
+						// Check whether notify "address" is an email address of Jellyfin ID
+						if strings.Contains(addr, "@") {
+							err = app.email.send(msg, addr)
+						} else {
+							err = app.sendByID(msg, addr)
+						}
+						if err != nil {
+							app.err.Printf("%s: Failed to send expiry notification: %v", code, err)
+						} else {
+							app.info.Printf("Sent expiry notification to %s", addr)
+						}
 					}
 				}(address)
 			}
@@ -470,10 +486,18 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 					msg, err := app.email.constructCreated(req.Code, req.Username, req.Email, invite, app, false)
 					if err != nil {
 						app.err.Printf("%s: Failed to construct user creation notification: %v", req.Code, err)
-					} else if err := app.email.send(msg, address); err != nil {
-						app.err.Printf("%s: Failed to send user creation notification: %v", req.Code, err)
 					} else {
-						app.info.Printf("%s: Sent user creation notification to %v", req.Code, address)
+						// Check whether notify "address" is an email address of Jellyfin ID
+						if strings.Contains(address, "@") {
+							err = app.email.send(msg, address)
+						} else {
+							err = app.sendByID(msg, address)
+						}
+						if err != nil {
+							app.err.Printf("%s: Failed to send user creation notification: %v", req.Code, err)
+						} else {
+							app.info.Printf("Sent user creation notification to %s", address)
+						}
 					}
 				}()
 			}
@@ -1340,15 +1364,16 @@ func (app *appContext) SetNotify(gc *gin.Context) {
 			return
 		}
 		var address string
-		if app.config.Section("ui").Key("jellyfin_login").MustBool(false) {
-			addr, ok := app.storage.emails[gc.GetString("jfId")]
-			if !ok {
-				app.err.Printf("%s: Couldn't find email address. Make sure it's set", code)
+		jellyfinLogin := app.config.Section("ui").Key("jellyfin_login").MustBool(false)
+		if jellyfinLogin {
+			var addressAvailable bool = app.getAddressOrName(gc.GetString("jfId")) != ""
+			if !addressAvailable {
+				app.err.Printf("%s: Couldn't find contact method for admin. Make sure one is set.", code)
 				app.debug.Printf("%s: User ID \"%s\"", code, gc.GetString("jfId"))
-				respond(500, "Missing user email", gc)
+				respond(500, "Missing user contact method", gc)
 				return
 			}
-			address = addr.Addr
+			address = gc.GetString("jfId")
 		} else {
 			address = app.config.Section("ui").Key("email").String()
 		}

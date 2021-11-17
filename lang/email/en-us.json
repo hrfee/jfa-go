@@ -12,14 +12,14 @@
         "title": "Notice: User created",
         "aUserWasCreated": "A user was created using code {code}.",
         "time": "Time",
-        "notificationNotice": "Note: Notification emails can be toggled on the admin dashboard."
+        "notificationNotice": "Note: Notification messages can be toggled on the admin dashboard."
     },
     "inviteExpiry": {
         "name": "Invite expiry",
         "title": "Notice: Invite expired",
         "inviteExpired": "Invite expired.",
         "expiredAt": "Code {code} expired at {time}.",
-        "notificationNotice": "Note: Notification emails can be toggled on the admin dashboard."
+        "notificationNotice": "Note: Notification messages can be toggled on the admin dashboard."
     },
     "passwordReset": {
         "name": "Password reset",
