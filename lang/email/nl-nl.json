@@ -11,14 +11,14 @@
         "title": "Melding: Gebruiker aangemaakt",
         "aUserWasCreated": "Er is een gebruiker aangemaakt door gebruik te maken van code {code}.",
         "time": "Tijdstip",
-        "notificationNotice": "Opmerking: Meldingse-mails kunnen worden aan- of uitgezet via het beheerdersdashboard.",
+        "notificationNotice": "Opmerking: Meldingen kunnen worden aan- of uitgezet via het beheerders-dashboard.",
         "name": "Gebruiker aangemaakt"
     },
     "inviteExpiry": {
         "title": "Melding: Uitnodiging verlopen",
         "inviteExpired": "Uitnodiging verlopen.",
         "expiredAt": "Code {code} is verlopen op {time}.",
-        "notificationNotice": "Opmerking: Meldingse-mails kunnen worden aan- of uitgezet via het beheerdersdashboard.",
+        "notificationNotice": "Opmerking: Meldingen kunnen worden aan- of uitgezet via het beheerders-dashboard.",
         "name": "Uitnodiging verlopen"
     },
     "passwordReset": {
