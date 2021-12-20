@@ -247,6 +247,15 @@
                     "type": "text",
                     "value": "",
                     "description": "URL base for when running jfa-go with a reverse proxy in a subfolder. include preceding /, e.g \"/accounts\"."
+                },
+                "redirect_url": {
+                    "name": "Form success redirect URL",
+                    "required": false,
+                    "requires_restart": false,
+                    "type": "text",
+                    "value": "",
+                    "advanced": true,
+                    "description": "Set a different URL for the sign-up form to redirect the user to when they've signed up. Default to 'Public Server' or 'Server' in the Jellyfin tab."
                 }
             }
         },

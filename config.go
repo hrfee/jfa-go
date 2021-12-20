@@ -39,6 +39,8 @@ func (app *appContext) loadConfig() error {
 
 	app.MustSetValue("jellyfin", "public_server", app.config.Section("jellyfin").Key("server").String())
 
+	app.MustSetValue("ui", "redirect_url", app.config.Section("jellyfin").Key("public_server").String())
+
 	for _, key := range app.config.Section("files").Keys() {
 		if name := key.Name(); name != "html_templates" && name != "lang_files" {
 			key.SetValue(key.MustString(filepath.Join(app.dataPath, (key.Name() + ".json"))))

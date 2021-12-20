@@ -160,7 +160,7 @@ func (app *appContext) ResetPassword(gc *gin.Context) {
 	if isInternal && setPassword {
 		data["helpMessage"] = app.config.Section("ui").Key("help_message").String()
 		data["successMessage"] = app.config.Section("ui").Key("success_message").String()
-		data["jfLink"] = app.config.Section("jellyfin").Key("public_server").String()
+		data["jfLink"] = app.config.Section("ui").Key("redirect_url").String()
 		data["validate"] = app.config.Section("password_validation").Key("enabled").MustBool(false)
 		data["requirements"] = app.validator.getCriteria()
 		data["strings"] = app.storage.lang.PasswordReset[lang].Strings
@@ -313,7 +313,7 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 			"strings":        app.storage.lang.Form[lang].Strings,
 			"successMessage": app.config.Section("ui").Key("success_message").String(),
 			"contactMessage": app.config.Section("ui").Key("contact_message").String(),
-			"jfLink":         app.config.Section("jellyfin").Key("public_server").String(),
+			"jfLink":         app.config.Section("ui").Key("redirect_url").String(),
 		})
 		inv, ok := app.storage.invites[code]
 		if ok {
@@ -337,7 +337,7 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 		"contactMessage":    app.config.Section("ui").Key("contact_message").String(),
 		"helpMessage":       app.config.Section("ui").Key("help_message").String(),
 		"successMessage":    app.config.Section("ui").Key("success_message").String(),
-		"jfLink":            app.config.Section("jellyfin").Key("public_server").String(),
+		"jfLink":            app.config.Section("ui").Key("redirect_url").String(),
 		"validate":          app.config.Section("password_validation").Key("enabled").MustBool(false),
 		"requirements":      app.validator.getCriteria(),
 		"email":             email,
