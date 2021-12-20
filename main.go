@@ -667,7 +667,10 @@ func printVersion() {
 }
 
 func main() {
-	f := logOutput()
+	f, err := logOutput()
+	if err != nil {
+		fmt.Printf("Failed to start logging: %v\n", err)
+	}
 	defer f()
 	printVersion()
 	SOCK = filepath.Join(temp, SOCK)

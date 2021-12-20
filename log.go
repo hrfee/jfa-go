@@ -14,14 +14,15 @@ import (
 var logPath string = filepath.Join(temp, "jfa-go.log")
 var lineCache = linecache.NewLineCache(100)
 
-func logOutput() (closeFunc func()) {
+func logOutput() (closeFunc func(), err error) {
 	old := os.Stdout
 	writers := []io.Writer{old, colorStripper{lineCache}}
 	wExit := make(chan bool)
 	r, w, _ := os.Pipe()
+	var f *os.File
 	if TRAY {
 		log.Printf("Logging to \"%s\"", logPath)
-		f, err := os.OpenFile(logPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
+		f, err = os.OpenFile(logPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
 		if err != nil {
 			closeFunc = func() {}
 			return
