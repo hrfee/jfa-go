@@ -7,7 +7,7 @@ assignees: ''
 
 ---
 
-#### Read the [FAQ](https://github.com/hrfee/jfa-go/wiki/FAQ) first!
+#### Read the [FAQ](https://wiki.jfa-go.com/docs/faq/) first!
 
 **Describe the bug**
 
