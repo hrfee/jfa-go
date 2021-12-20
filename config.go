@@ -157,6 +157,11 @@ func (app *appContext) loadConfig() error {
 
 	substituteStrings = app.config.Section("jellyfin").Key("substitute_jellyfin_strings").MustString("")
 
+	if substituteStrings != "" {
+		v := app.config.Section("ui").Key("success_message")
+		v.SetValue(strings.ReplaceAll(v.String(), "Jellyfin", substituteStrings))
+	}
+
 	oldFormLang := app.config.Section("ui").Key("language").MustString("")
 	if oldFormLang != "" {
 		app.storage.lang.chosenFormLang = oldFormLang
