@@ -458,6 +458,15 @@
                     "type": "bool",
                     "value": false,
                     "description": "Send emails as plain text instead of HTML."
+                },
+                "required": {
+                    "name": "Require on sign-up",
+                    "required": false,
+                    "requires_restart": false,
+                    "depends_true": "method",
+                    "type": "bool",
+                    "value": false,
+                    "description": "Require an email address on sign-up."
                 }
             }
         },

@@ -29,6 +29,7 @@
         "errorMatrixVerification": "Matrix verification required.",
         "errorInvalidPIN": "PIN is invalid.",
         "errorUnknown": "Unknown error.",
+        "errorNoEmail": "Email required.",
         "verified": "Account verified."
     },
     "validationStrings": {

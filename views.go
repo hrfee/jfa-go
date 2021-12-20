@@ -358,6 +358,7 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 		"telegramEnabled":   telegram,
 		"discordEnabled":    discord,
 		"matrixEnabled":     matrix,
+		"emailRequired":     app.config.Section("email").Key("required").MustBool(false),
 	}
 	if telegram {
 		data["telegramPIN"] = app.telegram.NewAuthToken()

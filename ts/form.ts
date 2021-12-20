@@ -29,6 +29,7 @@ interface formWindow extends Window {
     userExpiryHours: number;
     userExpiryMinutes: number;
     userExpiryMessage: string;
+    emailRequired: boolean;
 }
 
 loadLangSelector("form");
@@ -38,6 +39,7 @@ window.notifications = new notificationBox(document.getElementById("notification
 window.animationEvent = whichAnimationEvent();
 
 window.successModal = new Modal(document.getElementById("modal-success"), true);
+
 
 var telegramVerified = false;
 if (window.telegramEnabled) {
@@ -230,6 +232,18 @@ if (!window.usernameEnabled) { usernameField.parentElement.remove(); usernameFie
 const passwordField = document.getElementById("create-password") as HTMLInputElement;
 const rePasswordField = document.getElementById("create-reenter-password") as HTMLInputElement;
 
+if (window.emailRequired) {
+    emailField.addEventListener("keyup", () => {
+        if (emailField.value.includes("@")) {
+            submitButton.disabled = false;
+            submitSpan.removeAttribute("disabled");
+        } else {
+            submitButton.disabled = true;
+            submitSpan.setAttribute("disabled", "");
+        }
+    });
+}
+
 var requirements = initValidator(passwordField, rePasswordField, submitButton, submitSpan)
 
 interface respDTO {
@@ -302,7 +316,7 @@ const create = (event: SubmitEvent) => {
     }, true, (req: XMLHttpRequest) => {
         if (req.readyState == 4) {
             toggleLoader(submitSpan);
-            if (req.status == 401) {
+            if (req.status == 401 || req.status == 400) {
                 if (req.response["error"] as string) {
                     if (req.response["error"] == "confirmEmail") {
                         window.confirmationModal.show();

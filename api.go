@@ -644,6 +644,11 @@ func (app *appContext) NewUser(gc *gin.Context) {
 		gc.JSON(200, validation)
 		return
 	}
+	if emailEnabled && app.config.Section("email").Key("required").MustBool(false) && !strings.Contains(req.Email, "@") {
+		app.info.Printf("%s: New user failed: Email Required", req.Code)
+		respond(400, "errorNoEmail", gc)
+		return
+	}
 	f, success := app.newUser(req, false)
 	if !success {
 		f(gc)
