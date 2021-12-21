@@ -104,7 +104,8 @@
         "matrixHomeServer": "Dirección del servidor de inicio",
         "saveAsTemplate": "Guardar plantilla",
         "deleteTemplate": "Eliminar plantilla",
-        "templateEnterName": "Ingrese un nombre para guardar esta plantilla."
+        "templateEnterName": "Ingrese un nombre para guardar esta plantilla.",
+        "setExpiry": "Ajustar Expiración."
     },
     "notifications": {
         "changedEmailAddress": "Se cambió la dirección de correo electrónico de {n}.",
