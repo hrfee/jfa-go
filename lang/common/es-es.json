@@ -19,6 +19,9 @@
         "send": "Enviar",
         "contactDiscord": "Contacta a través de Discord",
         "contactEmail": "Contacta a través de email",
-        "contactTelegram": "Contacta a través de Telegram"
+        "contactTelegram": "Contacta a través de Telegram",
+        "linkMatrix": "Enlace Matrix",
+        "linkDiscord": "Enlace Discord",
+        "linkTelegram": "Enlace Telegram"
     }
 }
