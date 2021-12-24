@@ -10,7 +10,29 @@ import { _get, _post, notificationBox, whichAnimationEvent, toggleLoader } from 
 import { Updater } from "./modules/update.js";
 
 loadTheme();
-(document.getElementById('button-theme') as HTMLSpanElement).onclick = toggleTheme;
+const themeButton = document.getElementById('button-theme') as HTMLSpanElement;
+const switchThemeIcon = () => {
+    const icon = themeButton.childNodes[0] as HTMLElement;
+    if (document.documentElement.classList.contains("dark-theme")) {
+        icon.classList.add("ri-sun-line");
+        icon.classList.remove("ri-moon-line");
+        themeButton.classList.add("~warning");
+        themeButton.classList.remove("~neutral");
+        themeButton.classList.remove("!high");
+    } else {
+        icon.classList.add("ri-moon-line");
+        icon.classList.remove("ri-sun-line");
+        themeButton.classList.add("!high");
+        themeButton.classList.add("~neutral");
+        themeButton.classList.remove("~warning");
+    }
+};
+ themeButton.onclick = () => {
+    toggleTheme();
+    switchThemeIcon();
+ }
+switchThemeIcon();
+
 
 window.lang = new lang(window.langFile as LangFile);
 loadLangSelector("admin");
