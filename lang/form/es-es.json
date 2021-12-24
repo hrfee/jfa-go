@@ -3,19 +3,19 @@
         "name": "Español (ES)"
     },
     "strings": {
-        "pageTitle": "Crear cuenta en Jellyfin",
+        "pageTitle": "Crear cuenta de Jellyfin",
         "createAccountHeader": "Crear una cuenta",
         "accountDetails": "Detalles",
         "emailAddress": "Correo electrónico",
         "username": "Nombre de usuario",
         "password": "Contraseña",
-        "reEnterPassword": "Rescriba su contraseña",
-        "reEnterPasswordInvalid": "Las contraseñas no son coincidentes.",
+        "reEnterPassword": "Confirme la contraseña",
+        "reEnterPasswordInvalid": "Las contraseñas no son similares.",
         "createAccountButton": "Crear una cuenta",
         "passwordRequirementsHeader": "Requisitos de contraseña",
         "successHeader": "¡Éxito!",
         "confirmationRequired": "Se requiere confirmación por correo electrónico",
-        "confirmationRequiredMessage": "Revise la bandeja de entrada de su correo electrónico para verificar su dirección.",
+        "confirmationRequiredMessage": "Por favor, revise la bandeja de entrada de su correo electrónico para verificar su dirección.",
         "yourAccountIsValidUntil": "Su cuenta será válida hasta el {date}.",
         "sendPINDiscord": "Escribe {command} en {server_channel} en Discord, luego envía el PIN a continuación a través de DM al bot.",
         "sendPIN": "Envíe el PIN a continuación al bot, luego regrese aquí para vincular su cuenta.",
@@ -23,13 +23,14 @@
     },
     "notifications": {
         "errorUserExists": "El usuario ya existe.",
-        "errorInvalidCode": "Código de invitación no es válido.",
+        "errorInvalidCode": "Código de invitación no válido.",
         "errorDiscordVerification": "Se requiere verificación de Discord.",
         "errorUnknown": "Error desconocido.",
         "verified": "Cuenta verificada.",
         "errorTelegramVerification": "Se requiere verificación de Telegram.",
         "errorInvalidPIN": "PIN inválido.",
-        "errorMatrixVerification": "Se requiere verificación de Matrix."
+        "errorMatrixVerification": "Se requiere verificación de Matrix.",
+        "errorNoEmail": "Correo electrónico requerido."
     },
     "validationStrings": {
         "length": {
@@ -37,11 +38,11 @@
             "plural": "Debe tener al menos {n} caracteres"
         },
         "uppercase": {
-            "singular": "Debe tener al menos {n} caracteres en mayúscula",
+            "singular": "Debe tener al menos {n} carácter en mayúscula",
             "plural": "Debe tener al menos {n} caracteres en mayúscula"
         },
         "lowercase": {
-            "singular": "Debe tener al menos {n} caracteres en minúscula",
+            "singular": "Debe tener al menos {n} carácter en minúscula",
             "plural": "Debe tener al menos {n} caracteres en minúscula"
         },
         "number": {
