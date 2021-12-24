@@ -3,7 +3,7 @@
         "name": "Español (ES)"
     },
     "strings": {
-        "ifItWasNotYou": "Si no fue usted, ignore este correo electrónico.",
+        "ifItWasNotYou": "Si no fue usted, ignórelo.",
         "helloUser": "Hola {username},",
         "reason": "Razón"
     },
@@ -12,14 +12,14 @@
         "title": "Noticia: Usuario creado",
         "aUserWasCreated": "Se creó un usuario con el código {code}.",
         "time": "Hora",
-        "notificationNotice": "Nota: los correos electrónicos de notificación se pueden alternar en el panel de administración."
+        "notificationNotice": "Nota: Los mensajes de notificación se pueden alternar en el panel de administración."
     },
     "inviteExpiry": {
         "name": "Vencimiento de la invitación",
         "title": "Aviso: Invitación caducada",
         "inviteExpired": "Invitación caducada.",
         "expiredAt": "El código {code} venció a las {time}.",
-        "notificationNotice": "Nota: Los correos electrónicos de notificación se pueden alternar en el panel de administración."
+        "notificationNotice": "Nota: Los mensajes de notificación se pueden alternar en el panel de administración."
     },
     "passwordReset": {
         "name": "Restablecimiento de contraseña",
@@ -55,7 +55,7 @@
         "linkButton": "Configurar tu cuenta"
     },
     "welcomeEmail": {
-        "name": "Correo de bienvenida",
+        "name": "Bienvenido",
         "title": "Bienvenido a Jellyfin",
         "welcome": "¡Bienvenido a Jellyfin!",
         "youCanLoginWith": "Puede iniciar sesión con los detalles a continuación",
