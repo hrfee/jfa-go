@@ -72,7 +72,7 @@
         "settingsRequiredOrRestartMessage": "Nota: {n} indica un campo obligatorio, {n} indica que los cambios requieren un reinicio.",
         "settingsSave": "Guardar",
         "ombiUserDefaults": "Valores predeterminados de usuario de Ombi",
-        "ombiUserDefaultsDescription": "Cree un usuario Ombi y configúrelo, luego selecciónelo a continuación. Sus configuraciones / permisos se almacenarán y aplicarán a los nuevos usuarios de Ombi creados por jfa-go",
+        "ombiUserDefaultsDescription": "Cree un usuario Ombi y configúrelo, luego selecciónelo a continuación. Sus configuraciones/permisos se almacenarán y aplicarán a los nuevos usuarios de Ombi creados por jfa-go cuando se seleccione este perfil.",
         "userProfiles": "Perfiles de usuario",
         "userProfilesDescription": "Los perfiles se aplican a los usuarios cuando crean una cuenta. Un perfil incluye los derechos de acceso a la biblioteca y el diseño de la pantalla de inicio.",
         "userProfilesIsDefault": "Defecto",
@@ -100,12 +100,18 @@
         "sendPIN": "Pídale al usuario que envíe el PIN a continuación al bot.",
         "searchDiscordUser": "Comienza a escribir el nombre de usuario de Discord para encontrar a la usuario.",
         "findDiscordUser": "Encontrar usuario de Discord",
-        "linkMatrixDescription": "Ingrese el nombre de usuario y la contraseña para usar como bot. Una vez enviada, la aplicación se reiniciará",
+        "linkMatrixDescription": "Ingrese el nombre de usuario y la contraseña del usuario para usar como bot. Una vez enviada, la aplicación se reiniciará.",
         "matrixHomeServer": "Dirección del servidor de inicio",
         "saveAsTemplate": "Guardar plantilla",
         "deleteTemplate": "Eliminar plantilla",
         "templateEnterName": "Ingrese un nombre para guardar esta plantilla.",
-        "setExpiry": "Ajustar Expiración."
+        "setExpiry": "Establecer vencimiento",
+        "sendPWR": "Enviar restablecimiento de contraseña",
+        "sendPWRSuccess": "Se envió el enlace para restablecer la contraseña.",
+        "sendPWRSuccessManual": "Si el usuario no lo ha recibido, presione copiar para obtener un enlace y enviárselo manualmente.",
+        "sendPWRValidFor": "El enlace es válido por 30m.",
+        "sendPWRManual": "El usuario {n} no tiene ningún método de contacto, presione copiar para obtener un enlace para enviarle.",
+        "ombiProfile": "Perfil de usuario de Ombi"
     },
     "notifications": {
         "changedEmailAddress": "Se cambió la dirección de correo electrónico de {n}.",
@@ -146,7 +152,9 @@
         "updateAppliedRefresh": "Actualización aplicada, actualice.",
         "accountConnected": "Cuenta conectada.",
         "savedAnnouncement": "Anuncio guardado.",
-        "telegramVerified": "Cuenta de Telegram verificada."
+        "telegramVerified": "Cuenta de Telegram verificada.",
+        "setOmbiProfile": "Perfil de ombi almacenado.",
+        "errorSetOmbiProfile": "No se pudo almacenar el perfil de ombi."
     },
     "quantityStrings": {
         "modifySettingsFor": {
