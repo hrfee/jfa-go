@@ -15,7 +15,11 @@
         "serverAddress": "Dirección del servidor",
         "emailSubject": "Asunto",
         "URL": "URL",
-        "apiKey": "Llave de autorización (API)"
+        "apiKey": "Llave de autorización (API)",
+        "errorInvalidUserPass": "Usuario/contraseña inválida.",
+        "errorNotAdmin": "El usuario no tiene permitido administrar el servidor.",
+        "errorUserDisabled": "El usuario puede estar deshabilitado.",
+        "error404": "404, verifique la URL interna."
     },
     "startPage": {
         "welcome": "¡Bienvenido!",
@@ -25,7 +29,7 @@
     },
     "endPage": {
         "finished": "¡Terminado!",
-        "restartMessage": "Hay más opciones que puede configurar en la página de administración. Haga clic a continuación para reiniciar, luego actualice la página.",
+        "restartMessage": "Puede configurar los bots de Discord/Telegram/Matrix, personalizar sus mensajes y más en Configuración. Haga clic a continuación para reiniciar, luego actualice la página.",
         "refreshPage": "Actualizar"
     },
     "language": {
@@ -93,16 +97,16 @@
         "mailgunApiURL": "URL de API"
     },
     "notifications": {
-        "title": "Notificaciones",
-        "description": "Si está habilitado, puede elegir (por invitación) recibir un correo electrónico cuando una invitación caduque o se cree un usuario. Si no eligió el método de inicio de sesión de Jellyfin, asegúrese de proporcionar su dirección de correo electrónico."
+        "title": "Notificaciones de administrador",
+        "description": "Si está habilitado, puede elegir (por invitación) recibir un mensaje cuando caduca una invitación o se crea un usuario. Si no eligió el método de inicio de sesión de Jellyfin, asegúrese de proporcionar su dirección de correo electrónico o agregue otro método de contacto más adelante."
     },
     "welcomeEmails": {
-        "title": "Correos de bienvenida",
-        "description": "Si está habilitado, se enviará un correo electrónico a los nuevos usuarios con la URL de Jellyfin/Emby y su nombre de usuario."
+        "title": "Mensajes de bienvenida",
+        "description": "Si está habilitado, se enviará un mensaje a los nuevos usuarios con la URL de Jellyfin/Emby y su nombre de usuario."
     },
     "inviteEmails": {
-        "title": "Correos de invitación",
-        "description": "Si está habilitado, puede enviar invitaciones directamente a la dirección de correo electrónico de un usuario. Debido a que es posible que esté utilizando un proxy inverso, debe proporcionar la URL desde la que se accede a las invitaciones. Escriba su base de URL y agregue '/ invite'."
+        "title": "Mensajes de invitación",
+        "description": "Si está habilitado, puede enviar invitaciones directamente a la dirección de correo electrónico de un usuario, al usuario de Discord o Matrix. Debido a que es posible que esté utilizando un proxy inverso, debe proporcionar la URL desde la que se accede a las invitaciones. Escriba su base de URL y agregue '/ invite'."
     },
     "passwordResets": {
         "title": "Restablecimiento de contraseña",
@@ -111,7 +115,9 @@
         "pathToJellyfinNotice": "Si no sabe dónde está, intente restablecer su contraseña en Jellyfin. Aparecerá una ventana emergente con '<ruta a jellyfin>/passwordreset-. Json'.",
         "resetLinks": "Envía un enlace en lugar de un PIN",
         "resetLinksNotice": "Si la integración de Ombi está habilitada, utilícela para sincronizar los restablecimientos de contraseña de Jellyfin con Ombi.",
-        "resetLinksLanguage": "Enlace de restablecimiento predeterminado"
+        "resetLinksLanguage": "Enlace de restablecimiento predeterminado",
+        "setPassword": "Establecer contraseña a través del enlace",
+        "setPasswordNotice": "Habilitar esto significa que el usuario no tiene que cambiar su contraseña del PIN después del restablecimiento. También se aplicará la validación de la contraseña."
     },
     "passwordValidation": {
         "title": "Validación de contraseña",
@@ -133,5 +139,9 @@
         "successMessageNotice": "Se muestra cuando un usuario crea su cuenta.",
         "emailMessage": "Mensaje de correo electrónico",
         "emailMessageNotice": "Aparece en la parte inferior de los correos electrónicos."
+    },
+    "messages": {
+        "description": "jfa-go puede enviar restablecimientos de contraseña y varios mensajes a través de correo electrónico, Discord, Telegram y/o Matrix. Puede configurar el correo electrónico a continuación y los demás se pueden configurar en Configuración más adelante. Las instrucciones se pueden encontrar en el {n}. Si no lo necesita, puede desactivar estas funciones aquí.",
+        "title": "Mensajes"
     }
 }
