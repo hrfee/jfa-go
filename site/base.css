@@ -11,8 +11,3 @@ body {
     background: #AA5CC3;
     background: linear-gradient(90deg, #AA5CC3 0%, #00A4DC 100%) !important;
 }
-
-.button.discord.\!normal {
-    background-color: rgba(88, 101, 242,60%);
-    color: rgba(38, 51, 192, 90%);
-}

@@ -537,3 +537,11 @@ div.card:contains(section.banner.footer) {
 .card.sectioned .section {
     padding: var(--spacing-4, 1rem);
 }
+
+.button.discord.\!normal {
+    background-color: rgba(88, 101, 242,60%);
+}
+
+.button.discord.\!normal:not(.lang-link) {
+    color: rgba(38, 51, 192, 90%);
+}

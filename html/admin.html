@@ -46,21 +46,26 @@
             <div class="modal-content content card">
                 <img src="{{ .urlBase }}/banner.svg" class="banner header" alt="jfa-go banner">
                 <span class="heading"><span class="modal-close">&times;</span></span>
-                <p><i class="icon ri-github-fill"></i><a href="https://github.com/hrfee/jfa-go">jfa-go</a></p>
                 <p>{{ .strings.version }} <span class="code monospace">{{ .version }}</span></p>
                 <p>{{ .strings.commitNoun }} <span class="code monospace">{{ .commit }}</span></p>
-                <div class="dropdown" tabindex="0">
-                    <span class="button ~info dropdown-button">
-                        <i class="ri-hand-heart-line mr-half"></i>
-                        {{ .strings.donate }}
-                        <span class="ml-1 chev"></span>
-                    </span>
-                    <div class="dropdown-display">
-                        <div class="card ~neutral !low">
-                            <a href="https://github.com/sponsors/hrfee" target="_blank" class="button input ~neutral field mb-half lang-link">GitHub</a>
-                            <a href="https://ko-fi.com/hrfee" target="_blank" class="button input ~neutral field mb-half lang-link">Ko-fi</a>
+                <div class="row col flex">
+                    <a class="button ~neutral mr-half mt-1 mb-1 lang-link" href="https://github.com/hrfee/jfa-go"><i class="ri-github-line mr-half"></i>github</a>
+                    <a class="button ~urge mt-1 mb-1 mr-half lang-link" href="https://wiki.jfa-go.com">wiki/docs</a>
+                    <a class="button ~positive mt-1 mb-1 mr-half lang-link" href="https://weblate.jfa-go.com">translation</a>
+                    <div class="dropdown mr-half" tabindex="0">
+                        <a href="https://github.com/sponsors/hrfee" target="_blank" class="button ~info mt-1 mb-1 dropdown-button lang-link">
+                            <i class="ri-hand-heart-line mr-half"></i>
+                            donate
+                            <span class="ml-1 chev"></span>
+                        </a>
+                        <div class="dropdown-display">
+                            <div class="card ~info !low">
+                                <a href="https://github.com/sponsors/hrfee" target="_blank" class="button input ~neutral field mb-half lang-link">GitHub</a>
+                                <a href="https://ko-fi.com/hrfee" target="_blank" class="button input ~neutral field mb-half lang-link">Ko-fi</a>
+                            </div>
                         </div>
                     </div>
+                    <a class="button ~urge mt-1 mb-1 !normal discord lang-link" href="https://discord.com/invite/MrtvuQmyhP" target="_blank"><i class="ri-discord-line mr-half"></i>discord</a>
                 </div>
                 <p><a href="https://github.com/hrfee/jfa-go/blob/main/LICENSE">Available under the MIT License.</a></p>
                 <pre class="monospace">{{ .license }}</pre>
