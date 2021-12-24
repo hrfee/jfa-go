@@ -748,7 +748,7 @@ export class accountsList {
             // Only show "Send PWR" if a maximum of 1 user selected doesn't have a contact method
             if (noContactCount > 1) {
                 this._sendPWR.classList.add("unfocused");
-            } else {
+            } else if (window.linkResetEnabled) {
                 this._sendPWR.classList.remove("unfocused");
             }
             if (showDisableEnable) {
@@ -1102,17 +1102,22 @@ export class accountsList {
             message += " " + window.lang.strings("sendPWRValidFor");
             messageBox.textContent = message;
             let linkButton = document.getElementById("send-pwr-link") as HTMLSpanElement;
-            linkButton.onclick = () => {
-                toClipboard(link);
-                linkButton.textContent = window.lang.strings("copied");
-                linkButton.classList.add("~positive");
-                linkButton.classList.remove("~urge");
-                setTimeout(() => {
-                    linkButton.textContent = window.lang.strings("copy");
-                    linkButton.classList.add("~urge");
-                    linkButton.classList.remove("~positive");
-                }, 800);
-            };
+            if (link) {
+                linkButton.classList.remove("unfocused");
+                linkButton.onclick = () => {
+                    toClipboard(link);
+                    linkButton.textContent = window.lang.strings("copied");
+                    linkButton.classList.add("~positive");
+                    linkButton.classList.remove("~urge");
+                    setTimeout(() => {
+                        linkButton.textContent = window.lang.strings("copy");
+                        linkButton.classList.add("~urge");
+                        linkButton.classList.remove("~positive");
+                    }, 800);
+                };
+            } else {
+                linkButton.classList.add("unfocused");
+            }
             window.modals.sendPWR.show();
         }, true);
     }

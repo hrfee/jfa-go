@@ -32,12 +32,12 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/gomarkdown/markdown v0.0.0-20211212230626-5af6ad2f47df
 	github.com/google/uuid v1.3.0 // indirect
-	github.com/hrfee/jfa-go/common v0.0.0-20211221140424-942792cdfa98
-	github.com/hrfee/jfa-go/docs v0.0.0-20211221140424-942792cdfa98
-	github.com/hrfee/jfa-go/linecache v0.0.0-20211221140424-942792cdfa98
-	github.com/hrfee/jfa-go/logger v0.0.0-20211221140424-942792cdfa98
-	github.com/hrfee/jfa-go/ombi v0.0.0-20211221140424-942792cdfa98
-	github.com/hrfee/mediabrowser v0.3.7
+	github.com/hrfee/jfa-go/common v0.0.0-20211222231100-d47afe05f49c
+	github.com/hrfee/jfa-go/docs v0.0.0-20211222231100-d47afe05f49c
+	github.com/hrfee/jfa-go/linecache v0.0.0-20211222231100-d47afe05f49c
+	github.com/hrfee/jfa-go/logger v0.0.0-20211222231100-d47afe05f49c
+	github.com/hrfee/jfa-go/ombi v0.0.0-20211222231100-d47afe05f49c
+	github.com/hrfee/mediabrowser v0.3.8
 	github.com/itchyny/timefmt-go v0.1.3
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/lithammer/shortuuid/v3 v3.0.7
