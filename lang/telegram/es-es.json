@@ -1,6 +1,6 @@
 {
     "meta": {
-        "name": ""
+        "name": "Español (ES)"
     },
     "strings": {
         "startMessage": "¡Hola!\nIntroduce tu código PIN de Jellyfin para verificar tu cuenta.",
