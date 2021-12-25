@@ -13,7 +13,7 @@
         "inviteNumberOfUses": "Números de usos",
         "inviteDuration": "Duración de invitación",
         "warning": "Advertencia",
-        "inviteInfiniteUsesWarning": "Las invitaciones con usos infinitos pueden usarse abusivamente",
+        "inviteInfiniteUsesWarning": "Las invitaciones con usos infinitos se pueden usar de forma abusiva",
         "inviteSendToEmail": "Enviar a",
         "login": "Acceso",
         "logout": "Cerrar sesión",
@@ -37,10 +37,10 @@
         "user": "Usuario",
         "expiry": "Expiración",
         "userExpiry": "Caducidad del usuario",
-        "userExpiryDescription": "Una cantidad específica de tiempo después de cada registro, jfa-go eliminará/deshabilitará la cuenta. Puede cambiar este comportamiento en la configuración.",
+        "userExpiryDescription": "Una cantidad de tiempo específica después de cada registro, jfa-go eliminará / deshabilitará la cuenta. Puede cambiar este comportamiento en la configuración.",
         "aboutProgram": "Acerca de",
         "version": "Versión",
-        "commitNoun": "Cometer",
+        "commitNoun": "Revisión",
         "newUser": "Nuevo usuario",
         "profile": "Perfil",
         "unknown": "Desconocido",
@@ -49,24 +49,24 @@
         "subject": "Asunto del email",
         "message": "Mensaje",
         "variables": "Variables",
-        "preview": "Previsualizar",
+        "preview": "Vista previa",
         "reset": "Reiniciar",
         "edit": "Editar",
         "extendExpiry": "Extender el vencimiento",
-        "customizeMessages": "Personalizar emails",
-        "customizeMessagesDescription": "Si no desea utilizar las plantillas de correo electrónico de jfa-go, puede crear las suyas propias con Markdown.",
+        "customizeMessages": "Personalizar mensajes",
+        "customizeMessagesDescription": "Si no desea utilizar las plantillas de mensajes de jfa-go, puede crear las suyas con Markdown.",
         "markdownSupported": "Se admite Markdown.",
         "modifySettings": "Modificar configuración",
         "modifySettingsDescription": "Aplique la configuración de un perfil existente u obténgalos directamente de un usuario.",
         "applyHomescreenLayout": "Aplicar el diseño de la pantalla de inicio",
-        "sendDeleteNotificationEmail": "Enviar notificación a correo",
+        "sendDeleteNotificationEmail": "Enviar mensaje de notificación",
         "sendDeleteNotifiationExample": "Tu cuenta ha sido eliminada.",
         "settingsRestart": "Reiniciar",
         "settingsRestarting": "Reiniciando…",
         "settingsRestartRequired": "Reinicio necesario",
         "settingsRestartRequiredDescription": "Es necesario reiniciar para aplicar algunas configuraciones que cambió. ¿Reiniciar ahora o más tarde?",
         "settingsApplyRestartLater": "Aplicar, reiniciar más tarde",
-        "settingsApplyRestartNow": "Aplicar, reiniciar más tarde",
+        "settingsApplyRestartNow": "Aplicar y reiniciar",
         "settingsApplied": "Se aplicó la configuración.",
         "settingsRefreshPage": "Actualiza la página en unos segundos.",
         "settingsRequiredOrRestartMessage": "Nota: {n} indica un campo obligatorio, {n} indica que los cambios requieren un reinicio.",
@@ -75,12 +75,12 @@
         "ombiUserDefaultsDescription": "Cree un usuario Ombi y configúrelo, luego selecciónelo a continuación. Sus configuraciones/permisos se almacenarán y aplicarán a los nuevos usuarios de Ombi creados por jfa-go cuando se seleccione este perfil.",
         "userProfiles": "Perfiles de usuario",
         "userProfilesDescription": "Los perfiles se aplican a los usuarios cuando crean una cuenta. Un perfil incluye los derechos de acceso a la biblioteca y el diseño de la pantalla de inicio.",
-        "userProfilesIsDefault": "Defecto",
+        "userProfilesIsDefault": "Por defecto",
         "userProfilesLibraries": "Bibliotecas",
-        "addProfile": "Agregar perfil",
+        "addProfile": "Agregar Perfil",
         "addProfileDescription": "Cree un usuario de Jellyfin y configúrelo, luego selecciónelo a continuación. Cuando este perfil se aplica a una invitación, se crearán nuevos usuarios con la configuración.",
         "addProfileNameOf": "Nombre de perfil",
-        "addProfileStoreHomescreenLayout": "Diseño de la pantalla de inicio de la tienda",
+        "addProfileStoreHomescreenLayout": "Guardar el diseño de la pantalla de inicio",
         "inviteNoUsersCreated": "¡Ninguno todavía!",
         "inviteUsersCreated": "Usuarios creados",
         "inviteNoProfile": "Sin perfil",
@@ -93,24 +93,24 @@
         "notifyUserCreation": "Sobre la creación de usuarios",
         "conditionals": "Condicionales",
         "donate": "Donar",
-        "add": "Añadir",
+        "add": "Agregar",
         "templates": "Plantillas",
         "contactThrough": "Contactar a través de:",
         "select": "Seleccionar",
         "sendPIN": "Pídale al usuario que envíe el PIN a continuación al bot.",
-        "searchDiscordUser": "Comienza a escribir el nombre de usuario de Discord para encontrar a la usuario.",
+        "searchDiscordUser": "Comienza a escribir el nombre de usuario de Discord para encontrar al usuario.",
         "findDiscordUser": "Encontrar usuario de Discord",
         "linkMatrixDescription": "Ingrese el nombre de usuario y la contraseña del usuario para usar como bot. Una vez enviada, la aplicación se reiniciará.",
         "matrixHomeServer": "Dirección del servidor de inicio",
-        "saveAsTemplate": "Guardar plantilla",
+        "saveAsTemplate": "Guardar como plantilla",
         "deleteTemplate": "Eliminar plantilla",
         "templateEnterName": "Ingrese un nombre para guardar esta plantilla.",
         "setExpiry": "Establecer vencimiento",
         "sendPWR": "Enviar restablecimiento de contraseña",
         "sendPWRSuccess": "Se envió el enlace para restablecer la contraseña.",
-        "sendPWRSuccessManual": "Si el usuario no lo ha recibido, presione copiar para obtener un enlace y enviárselo manualmente.",
+        "sendPWRSuccessManual": "Si el usuario no lo ha recibido, presione copiar para generar el enlace y enviárselo manualmente.",
         "sendPWRValidFor": "El enlace es válido por 30m.",
-        "sendPWRManual": "El usuario {n} no tiene ningún método de contacto, presione copiar para obtener un enlace para enviarle.",
+        "sendPWRManual": "El usuario {n} no tiene ningún método de contacto, presione copiar para generar el enlace para enviarle.",
         "ombiProfile": "Perfil de usuario de Ombi"
     },
     "notifications": {
@@ -125,7 +125,7 @@
         "errorConnection": "No se pudo conectar a jfa-go.",
         "error401Unauthorized": "No autorizado. Intente actualizar la página.",
         "errorSettingsAppliedNoHomescreenLayout": "Se aplicó la configuración, pero es posible que no se haya aplicado el diseño de la pantalla de inicio.",
-        "errorHomescreenAppliedNoSettings": "Se aplicó el diseño de la pantalla de inicio, pero es posible que no se haya aplicado la configuración.",
+        "errorHomescreenAppliedNoSettings": "Se aplicó el diseño de la pantalla de inicio, pero es posible que la aplicación de la configuración haya fallado.",
         "errorSettingsFailed": "La aplicación falló.",
         "errorLoginBlank": "El nombre de usuario y/o la contraseña se dejaron en blanco.",
         "errorUnknown": "Error desconocido.",
@@ -139,22 +139,22 @@
         "errorSaveSettings": "No se pudo guardar la configuración.",
         "errorLoadSettings": "No se pudo cargar la configuración.",
         "errorSetOmbiDefaults": "No se pudieron almacenar los valores predeterminados de ombi.",
-        "errorLoadOmbiUsers": "No se pudieron cargar los usuarios de ombi.",
+        "errorLoadOmbiUsers": "No se pudieron cargar los usuarios de Ombi.",
         "errorChangedEmailAddress": "No se pudo cambiar la dirección de correo electrónico de {n}.",
-        "errorFailureCheckLogs": "Fallido (ver consola / registros)",
-        "errorPartialFailureCheckLogs": "Fallo parcial (ver consola / registros)",
+        "errorFailureCheckLogs": "Fallido (ver consola/registros)",
+        "errorPartialFailureCheckLogs": "Fallo parcial (ver consola/registros)",
         "errorUserCreated": "No se pudo crear el usuario {n}.",
-        "errorSendWelcomeEmail": "No se pudo enviar el mensaje de bienvenida (verifique la consola / registros)",
+        "errorSendWelcomeEmail": "No se pudo enviar el mensaje de bienvenida (verifique la consola/registros)",
         "errorApplyUpdate": "No se pudo aplicar la actualización, intente manualmente.",
         "errorCheckUpdate": "No se pudo comprobar la actualización.",
         "updateAvailable": "Hay una nueva actualización disponible, verifique la configuración.",
         "noUpdatesAvailable": "No hay nuevas actualizaciones disponibles.",
-        "updateAppliedRefresh": "Actualización aplicada, actualice.",
-        "accountConnected": "Cuenta conectada.",
+        "updateAppliedRefresh": "Actualización aplicada, por favor actualice.",
+        "accountConnected": "Cuenta vinculada.",
         "savedAnnouncement": "Anuncio guardado.",
         "telegramVerified": "Cuenta de Telegram verificada.",
-        "setOmbiProfile": "Perfil de ombi almacenado.",
-        "errorSetOmbiProfile": "No se pudo almacenar el perfil de ombi."
+        "setOmbiProfile": "Perfil de Ombi guardado.",
+        "errorSetOmbiProfile": "No se pudo guardar el perfil de Ombi."
     },
     "quantityStrings": {
         "modifySettingsFor": {
@@ -166,8 +166,8 @@
             "plural": "Eliminar {n} usuarios"
         },
         "disableUsers": {
-            "singular": "Deshabilitar {n} usuario",
-            "plural": "Inhabilitar {n} usuarios"
+            "singular": "Desactivar {n} usuario",
+            "plural": "Desactivar {n} usuarios"
         },
         "reEnableUsers": {
             "singular": "Reactivar {n} usuario",
@@ -182,32 +182,32 @@
             "plural": "Borrar usuarios"
         },
         "deletedUser": {
-            "singular": "Usuario eliminado {n}.",
-            "plural": "Usuarios eliminados {n}."
+            "singular": "{n} usuario eliminado.",
+            "plural": "{n} usuarios eliminados."
         },
         "disabledUser": {
-            "singular": "Usuario deshabilitado {n}.",
-            "plural": "Usuarios deshabilitados {n}."
+            "singular": "{n} usuario desactivado.",
+            "plural": "{n} usuarios desactivados."
         },
         "enabledUser": {
-            "singular": "Usuario {n} habilitado.",
-            "plural": "Usuarios {n} habilitados."
+            "singular": "{n} usuario activado.",
+            "plural": "{n} usuarios activados."
         },
         "announceTo": {
-            "singular": "Anunciar al usuario {n}",
-            "plural": "Anunciar a los usuarios {n}"
+            "singular": "Anunciar a {n} usuario",
+            "plural": "Anunciar a {n} usuarios"
         },
         "appliedSettings": {
-            "singular": "Se aplicó la configuración al usuario {n}.",
-            "plural": "Se aplicó la configuración a los usuarios {n}."
+            "singular": "Se aplicó la configuración a {n} usuario.",
+            "plural": "Se aplicó la configuración a {n} usuarios."
         },
         "extendExpiry": {
-            "singular": "Extender la expiración para el usuario {n}",
-            "plural": "Extender la expiración para los usuarios {n}"
+            "singular": "Extender la expiración para {n} usuario",
+            "plural": "Extender la expiración para {n} usuarios"
         },
         "extendedExpiry": {
-            "singular": "Caducidad extendida para el usuario {n}.",
-            "plural": "Caducidad extendida para los usuarios {n}."
+            "singular": "Caducidad extendida para {n} usuario.",
+            "plural": "Caducidad extendida para {n} usuarios."
         }
     }
 }
