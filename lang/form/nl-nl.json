@@ -52,6 +52,7 @@
         "errorDiscordVerification": "Discord-verificatie vereist.",
         "errorUnknown": "Onbekende fout.",
         "errorMatrixVerification": "Matrix-verificatie vereist.",
-        "verified": "Account geverifieerd."
+        "verified": "Account geverifieerd.",
+        "errorNoEmail": "E-mail vereist."
     }
 }
