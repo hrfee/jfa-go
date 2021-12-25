@@ -9,7 +9,7 @@
     },
     "userCreated": {
         "name": "Creación de usuarios",
-        "title": "Noticia: Usuario creado",
+        "title": "Aviso: Usuario creado",
         "aUserWasCreated": "Se creó un usuario con el código {code}.",
         "time": "Hora",
         "notificationNotice": "Nota: Los mensajes de notificación se pueden alternar en el panel de administración."
@@ -25,9 +25,9 @@
         "name": "Restablecimiento de contraseña",
         "title": "Solicitud de restablecimiento de contraseña - Jellyfin",
         "someoneHasRequestedReset": "Alguien ha solicitado recientemente un restablecimiento de contraseña en Jellyfin.",
-        "ifItWasYou": "Si era usted, ingrese el pin a continuación en el mensaje.",
+        "ifItWasYou": "Si era usted, ingrese el PIN a continuación en el mensaje.",
         "ifItWasYouLink": "Si fue usted, haga clic en el enlace de abajo.",
-        "codeExpiry": "El código vencerá el {date}, a las {time} UTC, que está en {expiresInMinutes}.",
+        "codeExpiry": "El código vencerá el {date}, a las {time} UTC, que es en {expiresInMinutes}.",
         "pin": "PIN"
     },
     "userDeleted": {
@@ -36,23 +36,23 @@
         "yourAccountWasDeleted": "Su cuenta de Jellyfin fue eliminada."
     },
     "userDisabled": {
-        "name": "Usuario deshabilitado",
-        "title": "Su cuenta ha sido deshabilitada - Jellyfin",
-        "yourAccountWasDisabled": "Su cuenta fue inhabilitada."
+        "name": "Usuario desactivado",
+        "title": "Su cuenta ha sido desactivada - Jellyfin",
+        "yourAccountWasDisabled": "Su cuenta fue desactivada."
     },
     "userEnabled": {
-        "name": "Usuario habilitado",
+        "name": "Usuario activado",
         "title": "Su cuenta ha sido reactivada - Jellyfin",
-        "yourAccountWasEnabled": "Su cuenta se volvió a habilitar."
+        "yourAccountWasEnabled": "Su cuenta fue reactivada."
     },
     "inviteEmail": {
-        "name": "Correo electrónico",
-        "title": "Invitar - Jellyfin",
+        "name": "Invitar por correo electrónico",
+        "title": "Invitación - Jellyfin",
         "hello": "Hola",
         "youHaveBeenInvited": "Has sido invitado a Jellyfin.",
         "toJoin": "Para unirse, siga el enlace a continuación.",
-        "inviteExpiry": "Esta invitación vencerá el {date} a las {time}, que está en {expiresInMinutes}, así que regístrese cuanto antes.",
-        "linkButton": "Configurar tu cuenta"
+        "inviteExpiry": "Esta invitación vencerá el {date} a las {time}, que es en {expiresInMinutes}, así que regístrese cuanto antes.",
+        "linkButton": "Configura tu cuenta"
     },
     "welcomeEmail": {
         "name": "Bienvenido",
@@ -66,12 +66,12 @@
         "name": "Email de confirmación",
         "title": "Confirma tu correo electrónico - Jellyfin",
         "clickBelow": "Haga clic en el enlace de abajo para confirmar su dirección de correo electrónico y comenzar a usar Jellyfin.",
-        "confirmEmail": "Confirmar correo electrónico"
+        "confirmEmail": "Confirma el correo electrónico"
     },
     "userExpired": {
         "name": "Caducidad del usuario",
         "title": "Tu cuenta ha caducado - Jellyfin",
         "yourAccountHasExpired": "Tu cuenta ha expirado.",
-        "contactTheAdmin": "Comuníquese con el administrador para obtener más información."
+        "contactTheAdmin": "Póngase en contacto con el administrador para obtener más información."
     }
 }
