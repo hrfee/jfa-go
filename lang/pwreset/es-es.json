@@ -3,11 +3,11 @@
         "name": "Español (ES)"
     },
     "strings": {
-        "passwordReset": "Cambiar contraseña",
-        "resetFailed": "Error al cambiar contraseña",
-        "tryAgain": "Por favor intente nuevamente.",
-        "youCanLogin": "Ahora puedes logearte con el codigo como contraseña.",
-        "changeYourPassword": "Recuerda cambiar tu contraseña luego de iniciar sesión.",
+        "passwordReset": "Restablecimiento de contraseña",
+        "resetFailed": "Error al restablecer la contraseña",
+        "tryAgain": "Por favor, intente de nuevo.",
+        "youCanLogin": "Ahora puede iniciar sesión con el siguiente código como contraseña.",
+        "changeYourPassword": "Asegúrese de cambiar su contraseña después de iniciar sesión.",
         "youCanLoginOmbi": "Ahora puede iniciar sesión en Jellyfin & Ombi con el siguiente código como contraseña.",
         "reset": "Reiniciar",
         "enterYourPassword": "Ingrese su nueva contraseña abajo.",
