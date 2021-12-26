@@ -16,14 +16,14 @@
         "emailSubject": "Asunto",
         "URL": "URL",
         "apiKey": "Llave de autorización (API)",
-        "errorInvalidUserPass": "Usuario/contraseña inválida.",
+        "errorInvalidUserPass": "Usuario/contraseña inválido.",
         "errorNotAdmin": "El usuario no tiene permitido administrar el servidor.",
-        "errorUserDisabled": "El usuario puede estar deshabilitado.",
+        "errorUserDisabled": "El usuario puede estar desactivado.",
         "error404": "404, verifique la URL interna."
     },
     "startPage": {
         "welcome": "¡Bienvenido!",
-        "pressStart": "Deberá hacer algunas cosas para configurar jfa-go. Presione comenzar para continuar.",
+        "pressStart": "Tendrás que hacer algunas cosas para configurar jfa-go. Pulsa el botón de inicio para continuar.",
         "httpsNotice": "Asegúrese de acceder a esta página a través de HTTPS o bien desde una red privada.",
         "start": "Empezar"
     },
@@ -41,8 +41,8 @@
     },
     "general": {
         "title": "General",
-        "listenAddress": "Dirección de recibidor (Listen Address)",
-        "urlBase": "Base de URL",
+        "listenAddress": "Dirección de escucha (Listen Address)",
+        "urlBase": "URL Base",
         "urlBaseNotice": "Solo es necesario si se usa un proxy inverso en un subdominio (por ejemplo, 'jellyf.in/accounts').",
         "lightTheme": "Claro",
         "darkTheme": "Oscuro",
@@ -55,7 +55,7 @@
     "updates": {
         "title": "Actualizaciones",
         "description": "Habilite para recibir notificaciones cuando haya nuevas actualizaciones disponibles. jfa-go comprobará {n} cada 30 minutos. No se recopilan IP ni información de identificación personal.",
-        "updateChannel": "Actualizar canal",
+        "updateChannel": "Canal de actualización",
         "stable": "Estable",
         "unstable": "Inestable"
     },
@@ -79,7 +79,7 @@
         "testConnection": "Probar conexión"
     },
     "ombi": {
-        "title": "Ombi.",
+        "title": "Ombi",
         "description": "Al conectarse a Ombi, se creará una cuenta de Jellyfin y Ombi cuando un usuario se una a través de jfa-go. Una vez finalizada la configuración, vaya a Configuración para establecer un perfil predeterminado para los nuevos usuarios de ombi.",
         "apiKeyNotice": "Encuentra esto en la primera pestaña de la configuración de Ombi."
     },
