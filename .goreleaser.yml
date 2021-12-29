@@ -18,6 +18,7 @@ before:
     - cp -r html data/
     - cp -r lang data/
     - cp LICENSE data/
+    - cp jfa-go.service data/
     - python3 scripts/enumerate_config.py -i config/config-base.json -o data/config-base.json
     - python3 scripts/generate_ini.py -i config/config-base.json -o data/config-default.ini
     - python3 scripts/compile_mjml.py -o data/
