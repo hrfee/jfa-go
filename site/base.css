@@ -11,3 +11,7 @@ body {
     background: #AA5CC3;
     background: linear-gradient(90deg, #AA5CC3 0%, #00A4DC 100%) !important;
 }
+
+.text-center {
+    text-align: center;
+}

@@ -1,5 +1,6 @@
 import { Modal } from "../../ts/modules/modal.js";
 import { whichAnimationEvent } from "../../ts/modules/common.js";
+import { loadBuilds } from "./repo.js";
 
 interface window extends Window {
     animationEvent: string;
@@ -18,7 +19,7 @@ const debUnstableButton = document.getElementById("download-deb-unstable") as HT
 debUnstableButton.onclick = debModal.toggle;
 
 const stableSect = document.getElementById("sect-stable");
-const unstableSect = document.getElementById("sect-unstable");
+export const unstableSect = document.getElementById("sect-unstable");
 
 const stableButton = document.getElementById("download-stable") as HTMLSpanElement;
 const unstableButton = document.getElementById("download-unstable") as HTMLSpanElement;
@@ -51,4 +52,4 @@ const dockerUnstableButton = document.getElementById("download-docker-unstable")
 dockerButton.onclick = dockerModal.toggle;
 dockerUnstableButton.onclick = dockerModal.toggle;
 
-
+loadBuilds();
