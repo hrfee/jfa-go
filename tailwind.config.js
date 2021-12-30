@@ -20,7 +20,7 @@ module.exports = {
               d_info: dark.d_info,
               d_critical: dark.d_critical
           }
-      },
+      }
   },
   plugins: [require("a17t")],
 }

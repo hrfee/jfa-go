@@ -22,7 +22,7 @@
         <div id="modal-login" class="modal">
             <form class="modal-content card" id="form-login" href="">
                 <span class="heading">{{ .strings.login }}</span>
-                <input type="text" class="field input ~neutral @high mt-half mb-1" placeholder="{{ .strings.username }}" id="login-user">
+                <input type="text" class="field input ~neutral @high mt-0.5 mb-1" placeholder="{{ .strings.username }}" id="login-user">
                 <input type="password" class="field input ~neutral @high mb-1" placeholder="{{ .strings.password }}" id="login-password">
                 <label>
                     <input type="submit" class="unfocused">
@@ -33,8 +33,8 @@
         <div id="modal-add-user" class="modal">
             <form class="modal-content card" id="form-add-user" href="">
                 <span class="heading">{{ .strings.newUser }} <span class="modal-close">&times;</span></span>
-                <input type="text" class="field input ~neutral @high mt-half mb-1" placeholder="{{ .strings.username }}" id="add-user-user">
-                <input type="email" class="field input ~neutral @high mt-half mb-1" placeholder="{{ .strings.emailAddress }}">
+                <input type="text" class="field input ~neutral @high mt-0.5 mb-1" placeholder="{{ .strings.username }}" id="add-user-user">
+                <input type="email" class="field input ~neutral @high mt-0.5 mb-1" placeholder="{{ .strings.emailAddress }}">
                 <input type="password" class="field input ~neutral @high mb-1" placeholder="{{ .strings.password }}" id="add-user-password">
                 <label>
                     <input type="submit" class="unfocused">
@@ -49,23 +49,23 @@
                 <p>{{ .strings.version }} <span class="code monospace">{{ .version }}</span></p>
                 <p>{{ .strings.commitNoun }} <span class="code monospace">{{ .commit }}</span></p>
                 <div class="row col flex">
-                    <a class="button ~neutral mr-half mt-1 mb-1 lang-link" href="https://github.com/hrfee/jfa-go"><i class="ri-github-line mr-half"></i>github</a>
-                    <a class="button ~urge mt-1 mb-1 mr-half lang-link" href="https://wiki.jfa-go.com">wiki/docs</a>
-                    <a class="button ~positive mt-1 mb-1 mr-half lang-link" href="https://weblate.jfa-go.com">translation</a>
-                    <div class="dropdown mr-half" tabindex="0">
+                    <a class="button ~neutral mr-0.5 mt-1 mb-1 lang-link" href="https://github.com/hrfee/jfa-go"><i class="ri-github-line mr-0.5"></i>github</a>
+                    <a class="button ~urge mt-1 mb-1 mr-0.5 lang-link" href="https://wiki.jfa-go.com">wiki/docs</a>
+                    <a class="button ~positive mt-1 mb-1 mr-0.5 lang-link" href="https://weblate.jfa-go.com">translation</a>
+                    <div class="dropdown mr-0.5" tabindex="0">
                         <a href="https://github.com/sponsors/hrfee" target="_blank" class="button ~info mt-1 mb-1 dropdown-button lang-link">
-                            <i class="ri-hand-heart-line mr-half"></i>
+                            <i class="ri-hand-heart-line mr-0.5"></i>
                             donate
                             <span class="ml-1 chev"></span>
                         </a>
                         <div class="dropdown-display">
                             <div class="card ~info @low">
-                                <a href="https://github.com/sponsors/hrfee" target="_blank" class="button input ~neutral field mb-half lang-link">GitHub</a>
-                                <a href="https://ko-fi.com/hrfee" target="_blank" class="button input ~neutral field mb-half lang-link">Ko-fi</a>
+                                <a href="https://github.com/sponsors/hrfee" target="_blank" class="button input ~neutral field mb-0.5 lang-link">GitHub</a>
+                                <a href="https://ko-fi.com/hrfee" target="_blank" class="button input ~neutral field mb-0.5 lang-link">Ko-fi</a>
                             </div>
                         </div>
                     </div>
-                    <a class="button ~urge mt-1 mb-1 @low discord lang-link" href="https://discord.com/invite/MrtvuQmyhP" target="_blank"><i class="ri-discord-line mr-half"></i>discord</a>
+                    <a class="button ~urge mt-1 mb-1 @low discord lang-link" href="https://discord.com/invite/MrtvuQmyhP" target="_blank"><i class="ri-discord-line mr-0.5"></i>discord</a>
                 </div>
                 <p><a href="https://github.com/hrfee/jfa-go/blob/main/LICENSE">Available under the MIT License.</a></p>
                 <pre class="monospace">{{ .license }}</pre>
@@ -104,7 +104,7 @@
         <div id="modal-delete-user" class="modal">
             <form class="modal-content card" id="form-delete-user" href="">
                 <span class="heading"><span id="header-delete-user"></span> <span class="modal-close">&times;</span></span>
-                <div class="content mt-half">
+                <div class="content mt-0.5">
                     <label class="switch mb-1">
                         <input type="checkbox" id="delete-user-notify" checked>
                         <span>{{ .strings.sendDeleteNotificationEmail }}</span>
@@ -120,11 +120,11 @@
         <div id="modal-extend-expiry" class="modal">
             <form class="modal-content card" id="form-extend-expiry" href="">
                 <span class="heading"><span id="header-extend-expiry"></span> <span class="modal-close">&times;</span></span>
-                <div class="content mt-half">
+                <div class="content mt-0.5">
                     <div class="row">
                         <div class="col">
                             <label class="label supra" for="extend-expiry-months">{{ .strings.inviteMonths }}</label>
-                            <div class="select ~neutral @low mb-1 mt-half">
+                            <div class="select ~neutral @low mb-1 mt-0.5">
                                 <select id="extend-expiry-months">
                                     <option>0</option>
                                 </select>
@@ -132,7 +132,7 @@
                         </div>
                         <div class="col">
                             <label class="label supra" for="extend-expiry-days">{{ .strings.inviteDays }}</label>
-                            <div class="select ~neutral @low mb-1 mt-half">
+                            <div class="select ~neutral @low mb-1 mt-0.5">
                                 <select id="extend-expiry-days">
                                     <option>0</option>
                                 </select>
@@ -142,7 +142,7 @@
                     <div class="row">
                         <div class="col">
                             <label class="label supra" for="extend-expiry-hours">{{ .strings.inviteHours }}</label>
-                            <div class="select ~neutral @low mb-1 mt-half">
+                            <div class="select ~neutral @low mb-1 mt-0.5">
                                 <select id="extend-expiry-hours">
                                     <option>0</option>
                                 </select>
@@ -150,7 +150,7 @@
                         </div>
                         <div class="col">
                             <label class="label supra" for="extend-expiry-minutes">{{ .strings.inviteMinutes }}</label>
-                            <div class="select ~neutral @low mb-1 mt-half">
+                            <div class="select ~neutral @low mb-1 mt-0.5">
                                 <select id="extend-expiry-minutes">
                                     <option>0</option>
                                 </select>
@@ -173,20 +173,20 @@
             <form class="modal-content wide card" id="form-announce" href="">
                 <span class="heading"><span id="header-announce"></span> <span class="modal-close">&times;</span></span>
                 <div class="row">
-                    <div class="col flex-col content mt-half">
+                    <div class="col flex-col content mt-0.5">
                         <div id="announce-details">
                             <span class="label supra" for="editor-variables" id="label-editor-variables">{{ .strings.variables }}</span>
                             <div id="announce-variables">
-                                <span class="button ~urge @low mb-1 mt-half" id="announce-variables-username" style="margin-left: 0.25rem; margin-right: 0.25rem;"><span class="monospace">{username}</span></span>
+                                <span class="button ~urge @low mb-1 mt-0.5" id="announce-variables-username" style="margin-left: 0.25rem; margin-right: 0.25rem;"><span class="monospace">{username}</span></span>
                             </div>
                             <label class="label supra" for="announce-subject"> {{ .strings.subject }}</label>
-                            <input type="text" id="announce-subject" class="input ~neutral @low mb-1 mt-half">
+                            <input type="text" id="announce-subject" class="input ~neutral @low mb-1 mt-0.5">
                             <label class="label supra" for="textarea-announce">{{ .strings.message }}</label>
-                            <textarea id="textarea-announce" class="textarea full-width ~neutral @low mt-half monospace"></textarea>
-                            <p class="support mt-half mb-1">{{ .strings.markdownSupported }}</p>
+                            <textarea id="textarea-announce" class="textarea full-width ~neutral @low mt-0.5 monospace"></textarea>
+                            <p class="support mt-0.5 mb-1">{{ .strings.markdownSupported }}</p>
                         </div>
                         <label class="label unfocused" id="announce-name"><p class="supra">{{ .strings.name }}</p>
-                            <input type="text" class="input ~neutral @low mb-1 mt-half">
+                            <input type="text" class="input ~neutral @low mb-1 mt-0.5">
                             <p class="support">{{ .strings.templateEnterName }}</p>
                         </label>
                         <div class="row flex-expand">
@@ -199,7 +199,7 @@
                     </div>
                     <div class="col card ~neutral @low">
                         <span class="subheading supra">{{ .strings.preview }}</span>
-                        <div class="mt-half" id="announce-preview"></div>
+                        <div class="mt-0.5" id="announce-preview"></div>
                     </div>
                 </div>
             </form>
@@ -226,16 +226,16 @@
             <form class="modal-content wide card" id="form-editor" href="">
                 <span class="heading"><span id="header-editor"></span> <span class="modal-close">&times;</span></span>
                 <div class="row">
-                    <div class="col flex-col content mt-half">
+                    <div class="col flex-col content mt-0.5">
                         <span class="label supra" for="editor-variables" id="label-editor-variables">{{ .strings.variables }}</span>
                         <div id="editor-variables"></div>
                         <span class="label supra" for="editor-conditionals" id="label-editor-conditionals">{{ .strings.conditionals }}</span>
                         <div id="editor-conditionals"></div>
                         <label class="label supra" for="textarea-editor">{{ .strings.message }}</label>
-                        <textarea id="textarea-editor" class="textarea full-width flex-auto ~neutral @low mt-half monospace"></textarea>
-                        <p class="support mt-half mb-1">{{ .strings.markdownSupported }}</p>
+                        <textarea id="textarea-editor" class="textarea full-width flex-auto ~neutral @low mt-0.5 monospace"></textarea>
+                        <p class="support mt-0.5 mb-1">{{ .strings.markdownSupported }}</p>
                         <div class="flex-row">
-                            <label class="full-width ml-half">
+                            <label class="full-width ml-0.5">
                                 <input type="submit" class="unfocused">
                                 <span class="button ~urge @low full-width center supra submit">{{ .strings.submit }}</span>
                             </label>
@@ -243,7 +243,7 @@
                     </div>
                     <div class="col card ~neutral @low">
                         <span class="subheading supra">{{ .strings.preview }}</span>
-                        <div class="mt-half" id="editor-preview"></div>
+                        <div class="mt-0.5" id="editor-preview"></div>
                     </div>
                 </div>
             </form>
@@ -253,7 +253,7 @@
                 <span class="heading">{{ .strings.settingsRestartRequired }} <span class="modal-close">&times;</span></span>
                 <p class="content pb-1">{{ .strings.settingsRestartRequiredDescription }}</p>
                 <div class="fr">
-                    <span class="button ~info @low mb-half" id="settings-apply-no-restart">{{ .strings.settingsApplyRestartLater }}</span>
+                    <span class="button ~info @low mb-0.5" id="settings-apply-no-restart">{{ .strings.settingsApplyRestartLater }}</span>
                     <span class="button ~critical @low" id="settings-apply-restart">{{ .strings.settingsApplyRestartNow }}</span>
                 </div>
             </div>
@@ -268,7 +268,7 @@
             <div class="modal-content card ~neutral @low">
                 <span class="heading">{{ .strings.sendPWR }}</span>
                 <p class="content" id="send-pwr-note"></p>
-                <span class="button ~urge @low mt-half" id="send-pwr-link">{{ .strings.copy }}</span>
+                <span class="button ~urge @low mt-0.5" id="send-pwr-link">{{ .strings.copy }}</span>
             </div>
         </div>
         <div id="modal-ombi-profile" class="modal">
@@ -313,10 +313,10 @@
                 <p class="content">{{ .strings.addProfileDescription }}</p>
                 <label>
                     <span class="supra">{{ .strings.addProfileNameOf }} </span>
-                    <input type="text" class="field input ~neutral @high mt-half mb-1" placeholder="{{ .strings.name }}" id="add-profile-name">
+                    <input type="text" class="field input ~neutral @high mt-0.5 mb-1" placeholder="{{ .strings.name }}" id="add-profile-name">
                 <label>
                     <span class="supra">{{ .strings.user }}</span>
-                    <div class="select ~neutral @low mt-half mb-1">
+                    <div class="select ~neutral @low mt-0.5 mb-1">
                         <select id="add-profile-user"></select>
                     </div>
                 </label>
@@ -379,9 +379,9 @@
             <form class="modal-content card" id="form-matrix" href="">
                 <span class="heading">{{ .strings.linkMatrix }}</span>
                 <p class="content">{{ .strings.linkMatrixDescription }}</p>
-                <input type="text" class="field input ~neutral @high mt-half mb-1" placeholder="{{ .strings.matrixHomeServer }}" id="matrix-homeserver">
-                <input type="text" class="field input ~neutral @high mt-half mb-1" placeholder="{{ .strings.username }}" id="matrix-user">
-                <input type="password" class="field input ~neutral @high mt-half mb-1" placeholder="{{ .strings.password }}" id="matrix-password">
+                <input type="text" class="field input ~neutral @high mt-0.5 mb-1" placeholder="{{ .strings.matrixHomeServer }}" id="matrix-homeserver">
+                <input type="text" class="field input ~neutral @high mt-0.5 mb-1" placeholder="{{ .strings.username }}" id="matrix-user">
+                <input type="password" class="field input ~neutral @high mt-0.5 mb-1" placeholder="{{ .strings.password }}" id="matrix-password">
                 <label>
                     <input type="submit" class="unfocused">
                     <span class="button ~urge @low full-width center supra submit">{{ .strings.submit }}</span>
@@ -447,7 +447,7 @@
                                 <div class="row">
                                     <div class="col">
                                         <label class="label supra" for="create-months">{{ .strings.inviteMonths }}</label>
-                                        <div class="select ~neutral @low mb-1 mt-half">
+                                        <div class="select ~neutral @low mb-1 mt-0.5">
                                             <select id="create-months">
                                                 <option>0</option>
                                             </select>
@@ -455,7 +455,7 @@
                                     </div>
                                     <div class="col">
                                         <label class="label supra" for="create-days">{{ .strings.inviteDays }}</label>
-                                        <div class="select ~neutral @low mb-1 mt-half">
+                                        <div class="select ~neutral @low mb-1 mt-0.5">
                                             <select id="create-days">
                                                 <option>0</option>
                                             </select>
@@ -465,7 +465,7 @@
                                 <div class="row">
                                     <div class="col">
                                         <label class="label supra" for="create-hours">{{ .strings.inviteHours }}</label>
-                                        <div class="select ~neutral @low mb-1 mt-half">
+                                        <div class="select ~neutral @low mb-1 mt-0.5">
                                             <select id="create-hours">
                                                 <option>0</option>
                                             </select>
@@ -473,7 +473,7 @@
                                     </div>
                                     <div class="col">
                                         <label class="label supra" for="create-minutes">{{ .strings.inviteMinutes }}</label>
-                                        <div class="select ~neutral @low mb-1 mt-half">
+                                        <div class="select ~neutral @low mb-1 mt-0.5">
                                             <select id="create-minutes">
                                                 <option>0</option>
                                             </select>
@@ -483,16 +483,16 @@
                             </div>
                             <div id="user-expiry" class="unfocused">
                                 <p class="support">{{ .strings.userExpiryDescription }}</p>
-                                <div class="mb-half">
+                                <div class="mb-0.5">
                                     <label for="create-user-expiry-enabled" class="button ~neutral @low">
                                         <input type="checkbox" id="create-user-expiry-enabled" aria-label="User duration enabled">
-                                        <span class="ml-half">{{ .strings.enabled }} </span>
+                                        <span class="ml-0.5">{{ .strings.enabled }} </span>
                                     </label>
                                 </div>
                                 <div class="row">
                                     <div class="col">
                                         <label class="label supra" for="user-months">{{ .strings.inviteMonths }}</label>
-                                        <div class="select ~neutral @low mb-1 mt-half">
+                                        <div class="select ~neutral @low mb-1 mt-0.5">
                                             <select id="user-months">
                                                 <option>0</option>
                                             </select>
@@ -500,7 +500,7 @@
                                     </div>
                                     <div class="col">
                                         <label class="label supra" for="user-days">{{ .strings.inviteDays }}</label>
-                                        <div class="select ~neutral @low mb-1 mt-half">
+                                        <div class="select ~neutral @low mb-1 mt-0.5">
                                             <select id="user-days">
                                                 <option>0</option>
                                             </select>
@@ -510,7 +510,7 @@
                                 <div class="row">
                                     <div class="col">
                                         <label class="label supra" for="user-hours">{{ .strings.inviteHours }}</label>
-                                        <div class="select ~neutral @low mb-1 mt-half">
+                                        <div class="select ~neutral @low mb-1 mt-0.5">
                                             <select id="user-hours">
                                                 <option>0</option>
                                             </select>
@@ -518,7 +518,7 @@
                                     </div>
                                     <div class="col">
                                         <label class="label supra" for="user-minutes">{{ .strings.inviteMinutes }}</label>
-                                        <div class="select ~neutral @low mb-1 mt-half">
+                                        <div class="select ~neutral @low mb-1 mt-0.5">
                                             <select id="user-minutes">
                                                 <option>0</option>
                                             </select>
@@ -528,12 +528,12 @@
                             </div>
                             <div class="col">
                                 <label class="label supra" for="create-label"> {{ .strings.label }}</label>
-                                <input type="text" id="create-label" class="input ~neutral @low mb-1 mt-half">
+                                <input type="text" id="create-label" class="input ~neutral @low mb-1 mt-0.5">
                             </div>
                         </div>
                         <div class="card ~neutral @low col">
                             <label class="label supra" for="create-uses">{{ .strings.inviteNumberOfUses }}</label>
-                            <div class="flex-expand mb-1 mt-half">
+                            <div class="flex-expand mb-1 mt-0.5">
                                 <input type="number" min="0" id="create-uses" class="input ~neutral @low mr-1" value=1>
                                 <label for="create-inf-uses" class="button ~neutral @low" title="Set uses to infinite">
                                     <span>∞</span>
@@ -542,13 +542,13 @@
                             </div>
                             <p class="support unfocused" id="create-inf-uses-warning"><span class="badge ~critical">{{ .strings.warning }}</span> {{ .strings.inviteInfiniteUsesWarning }}</p>
                             <label class="label supra">{{ .strings.profile }}</label>
-                            <div class="select ~neutral @low mb-1 mt-half">
+                            <div class="select ~neutral @low mb-1 mt-0.5">
                                 <select id="create-profile">
                                 </select>
                             </div>
                             <div id="create-send-to-container">
                                 <label class="label supra">{{ .strings.inviteSendToEmail }}</label>
-                                <div class="flex-expand mb-1 mt-half">
+                                <div class="flex-expand mb-1 mt-0.5">
                                     {{ if .discordEnabled }}
                                     <input type="text" id="create-send-to" class="input ~neutral @low mr-1" placeholder="example@example.com | user#1234">
                                     <span id="create-send-to-search" class="button ~neutral @low mr-1">
@@ -575,9 +575,9 @@
                             <input type="search" class="col sm field ~neutral @low input search ml-1 mr-1" id="accounts-search" placeholder="{{ .strings.search }}">
                         </div>
                         <div class="row">
-                            <span class="col sm button ~neutral @low center mb-half" id="accounts-add-user">{{ .quantityStrings.addUser.Singular }}</span>
+                            <span class="col sm button ~neutral @low center mb-0.5" id="accounts-add-user">{{ .quantityStrings.addUser.Singular }}</span>
                             <div id="accounts-announce-dropdown" class="col sm dropdown" tabindex="0">
-                                <span class="h-100 sm button ~info @low center mb-half" id="accounts-announce">{{ .strings.announce }}</span>
+                                <span class="h-100 sm button ~info @low center mb-0.5" id="accounts-announce">{{ .strings.announce }}</span>
                                 <div class="dropdown-display">
                                     <div class="card ~neutral @low">
                                         <span class="supra sm">{{ .strings.templates }}</span>
@@ -585,21 +585,21 @@
                                     </div>
                                 </div>
                             </div>
-                            <span class="col sm button ~urge @low center mb-half" id="accounts-modify-user">{{ .strings.modifySettings }}</span>
-                            <span class="col sm button ~warning @low center mb-half" id="accounts-extend-expiry">{{ .strings.extendExpiry }}</span>
+                            <span class="col sm button ~urge @low center mb-0.5" id="accounts-modify-user">{{ .strings.modifySettings }}</span>
+                            <span class="col sm button ~warning @low center mb-0.5" id="accounts-extend-expiry">{{ .strings.extendExpiry }}</span>
                             <div id="accounts-disable-enable-dropdown" class="col sm dropdown manual" tabindex="0">
-                                <span class="h-100 sm button ~positive @low center mb-half" id="accounts-disable-enable">{{ .strings.disable }}</span>
+                                <span class="h-100 sm button ~positive @low center mb-0.5" id="accounts-disable-enable">{{ .strings.disable }}</span>
                                 <div class="dropdown-display">
                                     <div class="card ~neutral @low">
                                         <span class="button ~neutral sm full-width accounts-announce-template-button" id="accounts-enable-expiry">{{ .strings.setExpiry }}</span>
                                     </div>
                                 </div>
                             </div>
-                            <span class="col sm button ~info @low center mb-half unfocused" id="accounts-send-pwr">{{ .strings.sendPWR }}</span>
-                            <span class="col sm button ~critical @low center mb-half" id="accounts-delete-user">{{ .quantityStrings.deleteUser.Singular }}</span>
+                            <span class="col sm button ~info @low center mb-0.5 unfocused" id="accounts-send-pwr">{{ .strings.sendPWR }}</span>
+                            <span class="col sm button ~critical @low center mb-0.5" id="accounts-delete-user">{{ .quantityStrings.deleteUser.Singular }}</span>
                         </div>
                     </div>
-                    <div class="card ~neutral @low accounts-header table-responsive mt-half">
+                    <div class="card ~neutral @low accounts-header table-responsive mt-0.5">
                         <table class="table">
                             <thead>
                                 <tr>
@@ -631,7 +631,7 @@
                             <span class="heading">{{ .strings.settings }}</span>
                             <label for="settings-advanced-enabled" class="button ~neutral @low ml-1">
                                 <input type="checkbox" id="settings-advanced-enabled" aria-label="Advanced settings enabled">
-                                <span class="ml-half">{{ .strings.advancedSettings }} </span>
+                                <span class="ml-0.5">{{ .strings.advancedSettings }} </span>
                             </label>
                         </div>
                         <div>
@@ -641,9 +641,9 @@
                     </div>
                     <div class="row">
                         <div class="card ~neutral @low col" id="settings-sidebar">
-                            <aside class="aside sm ~info mb-half" id="settings-message">Note: <span class="badge ~critical">*</span> indicates a required field, <span class="badge ~info">R</span> indicates changes require a restart.</aside> 
-                            <span class="button ~neutral @low settings-section-button mb-half" id="setting-about"><span class="flex">{{ .strings.aboutProgram }} <i class="ri-information-line ml-half"></i></span></span>
-                            <span class="button ~neutral @low settings-section-button mb-half" id="setting-profiles"><span class="flex">{{ .strings.userProfiles }} <i class="ri-user-line ml-half"></i></span></span>
+                            <aside class="aside sm ~info mb-0.5" id="settings-message">Note: <span class="badge ~critical">*</span> indicates a required field, <span class="badge ~info">R</span> indicates changes require a restart.</aside> 
+                            <span class="button ~neutral @low settings-section-button mb-0.5" id="setting-about"><span class="flex">{{ .strings.aboutProgram }} <i class="ri-information-line ml-0.5"></i></span></span>
+                            <span class="button ~neutral @low settings-section-button mb-0.5" id="setting-profiles"><span class="flex">{{ .strings.userProfiles }} <i class="ri-user-line ml-0.5"></i></span></span>
                         </div>
                         <div class="card ~neutral @low col overflow" id="settings-panel"></div>
                     </div>
