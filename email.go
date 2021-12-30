@@ -191,6 +191,8 @@ func (emailer *Emailer) NewMailgun(url, key string) {
 	// Mailgun client takes the base url, so we need to trim off the end (e.g 'v3/messages')
 	if strings.Contains(url, "messages") {
 		url = url[0:strings.LastIndex(url, "/")]
+	}
+	if strings.Contains(url, "v3") {
 		url = url[0:strings.LastIndex(url, "/")]
 	}
 	sender.client.SetAPIBase(url)
