@@ -118,6 +118,7 @@ bundle-css:
 	-mkdir -p $(DATA)/web/css
 	$(info bundling css)
 	$(ESBUILD) --bundle css/base.css --outfile=$(DATA)/web/css/bundle.css --external:remixicon.css --minify
+	npx tailwindcss -i $(DATA)/web/css/bundle.css -o $(DATA)/web/css/bundle.css
 
 inline:
 	cp html/crash.html $(DATA)/crash.html
@@ -125,11 +126,16 @@ inline:
 	node scripts/inline.js root $(DATA) $(DATA)/crash.html $(DATA)/crash.html
 	rm $(DATA)/bundle.css
 
+variants-html:
+	$(info copying html)
+	cp -r html $(DATA)/
+	$(info adding dark variants to html)
+	scripts/dark-variant.sh $(DATA)/html
+
 copy:
 	$(info copying fonts)
 	cp -r node_modules/remixicon/fonts/remixicon.css node_modules/remixicon/fonts/remixicon.woff2 $(DATA)/web/css/
-	$(info copying html)
-	cp -r html $(DATA)/
+	$(info copying crash page)
 	mv $(DATA)/crash.html $(DATA)/html/
 	$(info copying static data)
 	-mkdir -p $(DATA)/web
@@ -159,4 +165,4 @@ clean:
 	-rm docs/docs.go docs/swagger.json docs/swagger.yaml
 	go clean
 
-all: configuration npm email typescript bundle-css inline swagger copy compile
+all: configuration npm email typescript variants-html bundle-css inline swagger copy compile

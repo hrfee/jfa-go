@@ -29,8 +29,8 @@ const dockerUnstable = document.getElementById("docker-unstable");
 stableButton.onclick = () => {
     debUnstable.classList.add("unfocused");
     dockerUnstable.classList.add("unfocused");
-    stableButton.classList.add("!high");
-    unstableButton.classList.remove("!high");
+    stableButton.classList.add("@high");
+    unstableButton.classList.remove("@high");
     stableSect.classList.remove("unfocused");
     unstableSect.classList.add("unfocused");
 
@@ -39,8 +39,8 @@ stableButton.onclick = () => {
 unstableButton.onclick = () => {
     debUnstable.classList.remove("unfocused");
     dockerUnstable.classList.remove("unfocused");
-    unstableButton.classList.add("!high");
-    stableButton.classList.remove("!high");
+    unstableButton.classList.add("@high");
+    stableButton.classList.remove("@high");
     stableSect.classList.add("unfocused");
     unstableSect.classList.remove("unfocused");
 }

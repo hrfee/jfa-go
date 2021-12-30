@@ -11,17 +11,17 @@ const buttonChange = (type: string) => {
     if (type == "normal") {
         logSanitized.classList.add("unfocused");
         logNormal.classList.remove("unfocused");
-        buttonNormal.classList.add("!high");
-        buttonNormal.classList.remove("!normal");
-        buttonSanitized.classList.add("!normal");
-        buttonSanitized.classList.remove("!high");
+        buttonNormal.classList.add("@high");
+        buttonNormal.classList.remove("@low");
+        buttonSanitized.classList.add("@low");
+        buttonSanitized.classList.remove("@high");
     } else {
         logNormal.classList.add("unfocused");
         logSanitized.classList.remove("unfocused");
-        buttonSanitized.classList.add("!high");
-        buttonSanitized.classList.remove("!normal");
-        buttonNormal.classList.add("!normal");
-        buttonNormal.classList.remove("!high");
+        buttonSanitized.classList.add("@high");
+        buttonSanitized.classList.remove("@low");
+        buttonNormal.classList.add("@low");
+        buttonNormal.classList.remove("@high");
     }
 }
 buttonNormal.onclick = () => buttonChange("normal");

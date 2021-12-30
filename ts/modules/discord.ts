@@ -43,7 +43,7 @@ export function newDiscordSearch(title: string, description: string, buttonText:
                                 <p class="content">${users[i].name}</p>
                             </td>
                             <td class="sm">
-                                <span id="discord-user-${users[i].id}" class="button ~info !high">${buttonText}</span>
+                                <span id="discord-user-${users[i].id}" class="button ~info @high">${buttonText}</span>
                             </td>
                         </tr>
                         `;

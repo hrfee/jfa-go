@@ -1,9 +1,12 @@
-@import "../node_modules/a17t/dist/a17t.css";
 @import "remixicon.css";
 @import "./modal.css";
 @import "./dark.css";
 @import "./tooltip.css";
 @import "./loader.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
     --border-width-default: 2px;
@@ -16,7 +19,7 @@
     --settings-section-button-filter: 90%;
 }
 
-.body {
+.dark body {
     background-color: #101010;
 }
 
@@ -543,10 +546,10 @@ div.card:contains(section.banner.footer) {
     padding: var(--spacing-4, 1rem);
 }
 
-.button.discord.\!normal {
+.button.discord.\@low {
     background-color: rgba(88, 101, 242,60%);
 }
 
-.button.discord.\!normal:not(.lang-link) {
+.button.discord.\@low:not(.lang-link) {
     color: rgba(38, 51, 192, 90%);
 }

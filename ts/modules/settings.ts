@@ -109,7 +109,7 @@ class DOMInput {
                 <i class="icon ri-information-line"></i>
                 <span class="content sm"></span>
             </div>
-            <input type="${inputType}" class="input ~neutral !normal mt-half mb-half">
+            <input type="${inputType}" class="input ~neutral @low mt-half mb-half">
         </label>
         `;
         this._tooltip = this._container.querySelector("div.setting-tooltip") as HTMLDivElement;
@@ -403,7 +403,7 @@ class DOMSelect implements SSelect {
                 <i class="icon ri-information-line"></i>
                 <span class="content sm"></span>
             </div>
-            <div class="select ~neutral !normal mt-half mb-half">
+            <div class="select ~neutral @low mt-half mb-half">
                 <select class="settings-select"></select>
             </div>
         </label>
@@ -549,7 +549,7 @@ export class settingsList {
         this._sections[name] = section;
         this._panel.appendChild(this._sections[name].asElement());
         const button = document.createElement("span") as HTMLSpanElement;
-        button.classList.add("button", "~neutral", "!low", "settings-section-button", "mb-half");
+        button.classList.add("button", "~neutral", "@low", "settings-section-button", "mb-half");
         button.textContent = s.meta.name;
         if (subButton) { button.appendChild(subButton); }
         button.onclick = () => { this._showPanel(name); };
@@ -710,7 +710,7 @@ export class settingsList {
                         const editButton = document.createElement("div");
                         editButton.classList.add("tooltip", "left");
                         editButton.innerHTML = `
-                        <span class="button ~neutral !normal">
+                        <span class="button ~neutral @low">
                             <i class="icon ri-edit-line"></i>
                         </span>
                         <span class="content sm">
@@ -731,7 +731,7 @@ export class settingsList {
                         const addButton = document.createElement("div");
                         addButton.classList.add("tooltip", "left");
                         addButton.innerHTML = `
-                        <span class="button ~neutral !normal">+</span>
+                        <span class="button ~neutral @low">+</span>
                         <span class="content sm">
                         ${window.lang.strings("linkMatrix")}
                         </span>
@@ -808,7 +808,7 @@ class EmailEditor {
                 let innerHTML = '';
                 for (let i = 0; i < this._templ.variables.length; i++) {
                     let ci = i % colors.length;
-                    innerHTML += '<span class="button ~' + colors[ci] +' !normal mb-1" style="margin-left: 0.25rem; margin-right: 0.25rem;"></span>'
+                    innerHTML += '<span class="button ~' + colors[ci] +' @low mb-1" style="margin-left: 0.25rem; margin-right: 0.25rem;"></span>'
                 }
                 if (this._templ.variables.length == 0) {
                     this._variablesLabel.classList.add("unfocused");
@@ -832,7 +832,7 @@ class EmailEditor {
                 } else {
                     for (let i = this._templ.conditionals.length-1; i >= 0; i--) {
                         let ci = i % colors.length;
-                        innerHTML += '<span class="button ~' + colors[ci] +' !normal mb-1" style="margin-left: 0.25rem; margin-right: 0.25rem;"></span>'
+                        innerHTML += '<span class="button ~' + colors[ci] +' @low mb-1" style="margin-left: 0.25rem; margin-right: 0.25rem;"></span>'
                     }
                     this._conditionalsLabel.classList.remove("unfocused");
                     this._conditionals.innerHTML = innerHTML
@@ -896,7 +896,7 @@ class EmailEditor {
                     tr.innerHTML = `
                     <td>${this._names[id].name}</td>
                     <td>${resetButton}</td>
-                    <td><span class="button ~info !normal" title="${window.lang.get("strings", "edit")}"><i class="icon ri-edit-line"></i></span></td>
+                    <td><span class="button ~info @low" title="${window.lang.get("strings", "edit")}"><i class="icon ri-edit-line"></i></span></td>
                     `;
                     (tr.querySelector("span.button") as HTMLSpanElement).onclick = () => {
                         window.modals.customizeEmails.close()

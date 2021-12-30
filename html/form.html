@@ -16,7 +16,7 @@
             <div class="modal-content card">
                 <span class="heading mb-1">{{ if .passwordReset }}{{ .strings.passwordReset }}{{ else }}{{ .strings.successHeader }}{{ end }}</span>
                 <p class="content mb-1">{{ if .passwordReset }}{{ .strings.youCanLoginPassword }}{{ else }}{{ .successMessage }}{{ end }}</p>
-                <a class="button ~urge !normal full-width center supra submit" href="{{ .jfLink }}" id="create-success-button">{{ .strings.continue }}</a>
+                <a class="button ~urge @low full-width center supra submit" href="{{ .jfLink }}" id="create-success-button">{{ .strings.continue }}</a>
             </div>
         </div>
         <div id="modal-confirmation" class="modal">
@@ -39,7 +39,7 @@
                     </span>
                     &#64;{{ .telegramUsername }}
                 </a>
-                <span class="button ~info !normal full-width center mt-1" id="telegram-waiting">{{ .strings.success }}</span>
+                <span class="button ~info @low full-width center mt-1" id="telegram-waiting">{{ .strings.success }}</span>
             </div>
         </div>
         {{ end }}
@@ -50,7 +50,7 @@
                 <p class="content mb-1"> {{ .discordSendPINMessage }}</p>
                 <h1 class="ac">{{ .discordPIN }}</h1>
                 <a id="discord-invite"></a>
-                <span class="button ~info !normal full-width center mt-1" id="discord-waiting">{{ .strings.success }}</span>
+                <span class="button ~info @low full-width center mt-1" id="discord-waiting">{{ .strings.success }}</span>
             </div>
         </div>
         {{ end }}
@@ -59,7 +59,7 @@
             <div class="modal-content card">
                 <span class="heading mb-1">{{ .strings.linkMatrix }}</span>
                 <p class="content mb-1"> {{ .strings.matrixEnterUser }}</p>
-                <input type="text" class="input ~neutral !high" placeholder="@user:riot.im" id="matrix-userid">
+                <input type="text" class="input ~neutral @high" placeholder="@user:riot.im" id="matrix-userid">
                 <div class="subheading link-center mt-1">
                     <span class="shield ~info mr-1">
                         <span class="icon">
@@ -68,7 +68,7 @@
                     </span>
                     {{ .matrixUser }}
                 </div>
-                <span class="button ~info !normal full-width center mt-1" id="matrix-send">{{ .strings.submit }}</span>
+                <span class="button ~info @low full-width center mt-1" id="matrix-send">{{ .strings.submit }}</span>
             </div>
         </div>
         {{ end }}
@@ -78,13 +78,13 @@
                 <span class="ml-1 chev"></span>
             </span>
             <div class="dropdown-display">
-                <div class="card ~neutral !low" id="lang-list">
+                <div class="card ~neutral @low" id="lang-list">
                 </div>
             </div>
         </span>
         <div id="notification-box"></div>
         <div class="page-container">
-            <div class="card ~neutral !low">
+            <div class="card ~neutral @low">
                 <div class="row baseline">
                     <span class="col heading">
                         {{ if .passwordReset }}
@@ -106,23 +106,23 @@
                         {{ if .userExpiry }}
                         <aside class="col aside sm ~warning" id="user-expiry-message"></aside>
                         {{ end }}
-                        <form class="card ~neutral !normal" id="form-create" href="">
+                        <form class="card ~neutral @low" id="form-create" href="">
                             {{ if not .passwordReset }}
                             <label class="label supra">
                                 {{ .strings.username }}
-                                <input type="text" class="input ~neutral !high mt-half mb-1" placeholder="{{ .strings.username }}" id="create-username" aria-label="{{ .strings.username }}">
+                                <input type="text" class="input ~neutral @high mt-half mb-1" placeholder="{{ .strings.username }}" id="create-username" aria-label="{{ .strings.username }}">
                             </label>
                             
                             <label class="label supra" for="create-email">{{ .strings.emailAddress }}</label>
-                            <input type="email" class="input ~neutral !high mt-half mb-1" placeholder="{{ .strings.emailAddress }}" id="create-email" aria-label="{{ .strings.emailAddress }}" value="{{ .email }}">
+                            <input type="email" class="input ~neutral @high mt-half mb-1" placeholder="{{ .strings.emailAddress }}" id="create-email" aria-label="{{ .strings.emailAddress }}" value="{{ .email }}">
                             {{ if .telegramEnabled }}
-                            <span class="button ~info !normal full-width center mb-1" id="link-telegram">{{ .strings.linkTelegram }}</span>
+                            <span class="button ~info @low full-width center mb-1" id="link-telegram">{{ .strings.linkTelegram }}</span>
                             {{ end }}
                             {{ if .discordEnabled }}
-                            <span class="button ~info !normal full-width center mb-1" id="link-discord">{{ .strings.linkDiscord }}</span>
+                            <span class="button ~info @low full-width center mb-1" id="link-discord">{{ .strings.linkDiscord }}</span>
                             {{ end }}
                             {{ if .matrixEnabled }}
-                            <span class="button ~info !normal full-width center mb-1" id="link-matrix">{{ .strings.linkMatrix }}</span>
+                            <span class="button ~info @low full-width center mb-1" id="link-matrix">{{ .strings.linkMatrix }}</span>
                             {{ end }}
                             {{ if or (.telegramEnabled) (or .discordEnabled .matrixEnabled) }}
                             <div id="contact-via" class="unfocused">
@@ -148,13 +148,13 @@
                             {{ end }}
                             {{ end }}
                             <label class="label supra" for="create-password">{{ .strings.password }}</label>
-                            <input type="password" class="input ~neutral !high mt-half mb-1" placeholder="{{ .strings.password }}" id="create-password" aria-label="{{ .strings.password }}">
+                            <input type="password" class="input ~neutral @high mt-half mb-1" placeholder="{{ .strings.password }}" id="create-password" aria-label="{{ .strings.password }}">
                             
                             <label class="label supra" for="create-reenter-password">{{ .strings.reEnterPassword }}</label>
-                            <input type="password" class="input ~neutral !high mt-half mb-1" placeholder="{{ .strings.password }}" id="create-reenter-password" aria-label="{{ .strings.reEnterPassword }}">
+                            <input type="password" class="input ~neutral @high mt-half mb-1" placeholder="{{ .strings.password }}" id="create-reenter-password" aria-label="{{ .strings.reEnterPassword }}">
                             <label>
                                 <input type="submit" class="unfocused">
-                                <span class="button ~urge !normal full-width center supra submit">
+                                <span class="button ~urge @low full-width center supra submit">
                                     {{ if .passwordReset }}
                                     {{ .strings.reset }}
                                     {{ else }}
@@ -165,7 +165,7 @@
                         </form>
                     </div>
                     <div class="col">
-                        <div class="card ~neutral !normal">
+                        <div class="card ~neutral @low">
                             <span class="label supra" for="inv-uses">{{ .strings.passwordRequirementsHeader }}</span>
                             <ul>
                                 {{ range $key, $value := .requirements }}

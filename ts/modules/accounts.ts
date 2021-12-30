@@ -133,7 +133,7 @@ class user implements User {
         <i class="icon ri-settings-2-line ml-half dropdown-button"></i>
         <div class="dropdown manual">
             <div class="dropdown-display lg">
-                <div class="card ~neutral !low">
+                <div class="card ~neutral @low">
                     <span class="supra sm">${window.lang.strings("contactThrough")}</span>
                     <label class="row switch pb-1 mt-half">
                         <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-email">
@@ -193,8 +193,8 @@ class user implements User {
         if (!u) {
             this._notifyDropdown.querySelector(".accounts-area-matrix").classList.add("unfocused");
             this._matrix.innerHTML = `
-            <span class="chip btn !low">${window.lang.strings("add")}</span>
-            <input type="text" class="input ~neutral !normal stealth-input unfocused" placeholder="@user:riot.im">
+            <span class="chip btn @low">${window.lang.strings("add")}</span>
+            <input type="text" class="input ~neutral @low stealth-input unfocused" placeholder="@user:riot.im">
             `;
             (this._matrix.querySelector("span") as HTMLSpanElement).onclick = this._addMatrix;
         } else {
@@ -257,7 +257,7 @@ class user implements User {
         this._telegramUsername = u;
         if (!u) {
             this._notifyDropdown.querySelector(".accounts-area-telegram").classList.add("unfocused");
-            this._telegram.innerHTML = `<span class="chip btn !low">${window.lang.strings("add")}</span>`;
+            this._telegram.innerHTML = `<span class="chip btn @low">${window.lang.strings("add")}</span>`;
             (this._telegram.querySelector("span") as HTMLSpanElement).onclick = this._addTelegram;
         } else {
             this._notifyDropdown.querySelector(".accounts-area-telegram").classList.remove("unfocused");
@@ -322,7 +322,7 @@ class user implements User {
         const lastNotifyMethod = this.lastNotifyMethod() == "discord";
         this._discordUsername = u;
         if (!u) {
-            this._discord.innerHTML = `<span class="chip btn !low">Add</span>`;
+            this._discord.innerHTML = `<span class="chip btn @low">Add</span>`;
             (this._discord.querySelector("span") as HTMLSpanElement).onclick = () => addDiscord(this.id);
             this._notifyDropdown.querySelector(".accounts-area-discord").classList.add("unfocused");
         } else {
@@ -403,7 +403,7 @@ class user implements User {
         <td class="accounts-last-active"></td>
         `;
         this._row.innerHTML = innerHTML;
-        const emailEditor = `<input type="email" class="input ~neutral !normal stealth-input">`;
+        const emailEditor = `<input type="email" class="input ~neutral @low stealth-input">`;
         this._check = this._row.querySelector("input[type=checkbox]") as HTMLInputElement;
         this._username = this._row.querySelector(".accounts-username") as HTMLSpanElement;
         this._admin = this._row.querySelector(".accounts-admin") as HTMLSpanElement;
@@ -1281,17 +1281,17 @@ export class accountsList {
             if (this._modifySettingsProfile.checked) {
                 this._userSelect.parentElement.classList.add("unfocused");
                 this._profileSelect.parentElement.classList.remove("unfocused")
-                profileSpan.classList.add("!high");
-                profileSpan.classList.remove("!normal");
-                userSpan.classList.remove("!high");
-                userSpan.classList.add("!normal");
+                profileSpan.classList.add("@high");
+                profileSpan.classList.remove("@low");
+                userSpan.classList.remove("@high");
+                userSpan.classList.add("@low");
             } else {
                 this._userSelect.parentElement.classList.remove("unfocused");
                 this._profileSelect.parentElement.classList.add("unfocused");
-                userSpan.classList.add("!high");
-                userSpan.classList.remove("!normal");
-                profileSpan.classList.remove("!high");
-                profileSpan.classList.add("!normal");
+                userSpan.classList.add("@high");
+                userSpan.classList.remove("@low");
+                profileSpan.classList.remove("@high");
+                profileSpan.classList.add("@low");
             }
         };
         this._modifySettingsProfile.onchange = checkSource;

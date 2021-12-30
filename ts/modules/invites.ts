@@ -251,14 +251,14 @@ class DOMInvite implements Invite {
 
         this._header = document.createElement('div') as HTMLDivElement;
         this._container.appendChild(this._header);
-        this._header.classList.add("card", "~neutral", "!normal", "inv-header", "elem-pad", "no-pad", "flex-expand", "row", "mt-half", "overflow-y");
+        this._header.classList.add("card", "~neutral", "@low", "inv-header", "elem-pad", "no-pad", "flex-expand", "row", "mt-half", "overflow-y");
 
         this._codeArea = document.createElement('div') as HTMLDivElement;
         this._header.appendChild(this._codeArea);
         this._codeArea.classList.add("inv-codearea");
         this._codeArea.innerHTML = `
         <a class="invite-link code monospace mr-1" href=""></a>
-        <span class="button ~info !normal" title="${window.lang.strings("copy")}"><i class="ri-file-copy-line"></i></span>
+        <span class="button ~info @low" title="${window.lang.strings("copy")}"><i class="ri-file-copy-line"></i></span>
         `;
         const copyButton = this._codeArea.querySelector("span.button") as HTMLSpanElement;
         copyButton.onclick = () => { 
@@ -285,7 +285,7 @@ class DOMInvite implements Invite {
             <span class="content sm"></span>
         </div>
         <span class="inv-duration mr-1"></span>
-        <span class="button ~critical !normal inv-delete">${window.lang.strings("delete")}</span>
+        <span class="button ~critical @low inv-delete">${window.lang.strings("delete")}</span>
         <label>
             <i class="icon clickable ri-arrow-down-s-line not-rotated"></i>
             <input class="inv-toggle-details unfocused" type="checkbox">
@@ -304,7 +304,7 @@ class DOMInvite implements Invite {
 
         this._details = document.createElement('div') as HTMLDivElement;
         this._container.appendChild(this._details);
-        this._details.classList.add("card", "~neutral", "!normal", "mt-half", "no-pad", "inv-details");
+        this._details.classList.add("card", "~neutral", "@low", "mt-half", "no-pad", "inv-details");
         const detailsInner = document.createElement('div') as HTMLDivElement;
         this._details.appendChild(detailsInner);
         detailsInner.classList.add("inv-row", "flex-expand", "row", "elem-pad", "align-top");
@@ -314,7 +314,7 @@ class DOMInvite implements Invite {
         this._left.classList.add("inv-profilearea");
         let innerHTML = `
         <p class="supra mb-1 top">${window.lang.strings("profile")}</p>
-        <div class="select ~neutral !normal inv-profileselect inline-block">
+        <div class="select ~neutral @low inv-profileselect inline-block">
             <select>
                 <option value="noProfile" selected>${window.lang.strings("inviteNoProfile")}</option>
             </select>
@@ -355,7 +355,7 @@ class DOMInvite implements Invite {
 
         this._right = document.createElement('div') as HTMLDivElement;
         detailsInner.appendChild(this._right);
-        this._right.classList.add("card", "~neutral", "!low", "inv-created-users");
+        this._right.classList.add("card", "~neutral", "@low", "inv-created-users");
         this._right.innerHTML = `<strong class="supra table-header">${window.lang.strings("inviteUsersCreated")}</strong>`;
         this._userTable = document.createElement('div') as HTMLDivElement;
         this._right.appendChild(this._userTable);
@@ -425,7 +425,7 @@ export class inviteList implements inviteList {
             this._list.classList.add("empty");
             this._list.innerHTML = `
             <div class="inv inv-empty">
-                <div class="card ~neutral !normal inv-header flex-expand mt-half">
+                <div class="card ~neutral @low inv-header flex-expand mt-half">
                     <div class="inv-codearea">
                         <span class="code monospace">${window.lang.strings("inviteNoInvites")}</span>
                     </div>
@@ -787,17 +787,17 @@ export class createInvite {
             if (this._invDurationButton.checked) {
                 this._invDuration.classList.remove("unfocused");
                 this._userExpiry.classList.add("unfocused");
-                invSpan.classList.add("!high");
-                invSpan.classList.remove("!normal");
-                userSpan.classList.add("!normal");
-                userSpan.classList.remove("!high");
+                invSpan.classList.add("@high");
+                invSpan.classList.remove("@low");
+                userSpan.classList.add("@low");
+                userSpan.classList.remove("@high");
             } else if (this._userExpiryButton.checked) {
                 this._userExpiry.classList.remove("unfocused");
                 this._invDuration.classList.add("unfocused");
-                invSpan.classList.add("!normal");
-                invSpan.classList.remove("!high");
-                userSpan.classList.add("!high");
-                userSpan.classList.remove("!normal");
+                invSpan.classList.add("@low");
+                invSpan.classList.remove("@high");
+                userSpan.classList.add("@high");
+                userSpan.classList.remove("@low");
             }
         };
 

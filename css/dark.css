@@ -1,4 +1,4 @@
-.dark-theme {
+.dark {
 
     --settings-section-button-filter: 110%;
 
@@ -86,6 +86,6 @@
   display: initial;
 }
 
-.dark-theme select option {
+.dark select option {
     background: #202020;
 }
