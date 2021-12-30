@@ -614,7 +614,6 @@ func (emailer *Emailer) deletedValues(reason string, app *appContext, noSub bool
 		template["reason"] = reason
 		template["message"] = app.config.Section("messages").Key("message").String()
 	}
-	fmt.Println("TTTT", template)
 	return template
 }
 

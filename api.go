@@ -536,6 +536,8 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 				} else {
 					app.info.Println("Created Ombi user")
 				}
+			} else {
+				app.debug.Printf("Skipping Ombi: Profile \"%s\" was empty", invite.Profile)
 			}
 		}
 	}
