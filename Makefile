@@ -52,7 +52,7 @@ ifeq ($(DEBUG), on)
 	SOURCEMAP := --sourcemap
 	TYPECHECK := tsc -noEmit --project ts/tsconfig.json
 	# jank
-	COPYTS := rm -r $(DATA)/web/js/ts; cp -r ts $(DATA)/web/js
+	COPYTS := rm -r $(DATA)/web/js/ts; cp -r tempts $(DATA)/web/js
 	UNCSS := cp $(DATA)/web/css/bundle.css $(DATA)/bundle.css
 else
 	LDFLAGS := -s -w $(LDFLAGS)
@@ -91,13 +91,18 @@ email:
 
 typescript:
 	$(TYPECHECK)
+	$(adding dark variants to typescript)
+	-rm -r tempts
+	cp -r ts tempts
+	scripts/dark-variant.sh ts tempts
+	scripts/dark-variant.sh ts tempts/modules
 	$(info compiling typescript)
 	-mkdir -p $(DATA)/web/js
-	-$(ESBUILD) --bundle ts/admin.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/admin.js --minify
-	-$(ESBUILD) --bundle ts/pwr.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/pwr.js --minify
-	-$(ESBUILD) --bundle ts/form.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/form.js --minify
-	-$(ESBUILD) --bundle ts/setup.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/setup.js --minify
-	-$(ESBUILD) --bundle ts/crash.ts --outfile=./$(DATA)/crash.js --minify
+	-$(ESBUILD) --bundle tempts/admin.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/admin.js --minify
+	-$(ESBUILD) --bundle tempts/pwr.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/pwr.js --minify
+	-$(ESBUILD) --bundle tempts/form.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/form.js --minify
+	-$(ESBUILD) --bundle tempts/setup.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/setup.js --minify
+	-$(ESBUILD) --bundle tempts/crash.ts --outfile=./$(DATA)/crash.js --minify
 	$(COPYTS)
 
 swagger:
@@ -130,7 +135,7 @@ variants-html:
 	$(info copying html)
 	cp -r html $(DATA)/
 	$(info adding dark variants to html)
-	scripts/dark-variant.sh $(DATA)/html
+	scripts/dark-variant.sh html $(DATA)/html
 
 copy:
 	$(info copying fonts)
