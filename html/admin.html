@@ -71,6 +71,12 @@
                 <pre class="monospace">{{ .license }}</pre>
             </div>
         </div>
+        <div id="modal-logs" class="modal">
+            <div class="modal-content wide content card">
+                <span class="heading">{{ .strings.logs }}<span class="modal-close">&times;</span></span>
+                <pre class="monospace" id="log-area"></pre>
+            </div>
+        </div>
         <div id="modal-modify-user" class="modal">
             <form class="modal-content card" id="form-modify-user" href="">
                 <span class="heading"><span id="header-modify-user"></span> <span class="modal-close">&times;</span></span>
@@ -635,6 +641,7 @@
                             </label>
                         </div>
                         <div>
+                            <span class="button ~info !normal" id="settings-logs">{{ .strings.logs }}</span>
                             <span class="button ~neutral !normal" id="settings-restart">{{ .strings.settingsRestart }}</span>
                             <span class="button ~urge !normal unfocused" id="settings-save">{{ .strings.settingsSave }}</span>
                         </div>

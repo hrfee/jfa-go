@@ -180,6 +180,7 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 		api.GET(p+"/config", app.GetConfig)
 		api.POST(p+"/config", app.ModifyConfig)
 		api.POST(p+"/restart", app.restart)
+		api.GET(p+"/logs", app.GetLog)
 		if telegramEnabled || discordEnabled || matrixEnabled {
 			api.GET(p+"/telegram/pin", app.TelegramGetPin)
 			api.GET(p+"/telegram/verified/:pin", app.TelegramVerified)

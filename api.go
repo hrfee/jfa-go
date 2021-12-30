@@ -2847,6 +2847,15 @@ func (app *appContext) restart(gc *gin.Context) {
 	}
 }
 
+// @Summary Returns the last 100 lines of the log.
+// @Router /log [get]
+// @Success 200 {object} LogDTO
+// @Security Bearer
+// @tags Other
+func (app *appContext) GetLog(gc *gin.Context) {
+	gc.JSON(200, LogDTO{lineCache.String()})
+}
+
 // no need to syscall.exec anymore!
 func (app *appContext) Restart() error {
 	if TRAY {

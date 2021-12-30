@@ -634,6 +634,13 @@ export class settingsList {
         }
     });
 
+    private _showLogs = () => _get("/logs", null, (req: XMLHttpRequest) => {
+        if (req.readyState == 4 && req.status == 200) {
+            (document.getElementById("log-area") as HTMLPreElement).textContent = req.response["log"] as string;
+            window.modals.logs.show();
+        }
+    });
+
     constructor() {
         this._sections = {};
         this._buttons = {};
@@ -645,7 +652,7 @@ export class settingsList {
         };
         this._saveButton.onclick = this._save;
         document.addEventListener("settings-requires-restart", () => { this._needsRestart = true; });
-        
+        document.getElementById("settings-logs").onclick = this._showLogs;
         const advancedEnableToggle = document.getElementById("settings-advanced-enabled") as HTMLInputElement;
         advancedEnableToggle.onchange = () => {
             document.dispatchEvent(new CustomEvent("settings-advancedState", { detail: advancedEnableToggle.checked }));

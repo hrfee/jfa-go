@@ -341,3 +341,7 @@ type InternalPWR struct {
 	ID       string    `json:"id"`
 	Expiry   time.Time `json:"expiry"`
 }
+
+type LogDTO struct {
+	Log string `json:"log"`
+}
