@@ -24,8 +24,10 @@ elif [[ "$1" == "ts" ]]; then
                     echo "FIX: classList found, but color tag wasn't in it"
                 fi
             else
-                echo "found inline @ " $l ", " $(sed -n "${l}p" $f)
-                sed -i "${l},${l}s/~${color}/~${color} dark:~d_${color}/g" $f
+                echo "found inline in " $f " @ " $l ", " $(sed -n "${l}p" $f)
+                for color in neutral positive urge warning info critical; do
+                    sed -i "${l},${l}s/~${color}/~${color} dark:~d_${color}/g" $f
+                done
             fi
         done
     done
