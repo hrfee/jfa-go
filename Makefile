@@ -54,12 +54,14 @@ ifeq ($(DEBUG), on)
 	# jank
 	COPYTS := rm -r $(DATA)/web/js/ts; cp -r tempts $(DATA)/web/js
 	UNCSS := cp $(DATA)/web/css/bundle.css $(DATA)/bundle.css
+	TAILWIND := --content ""
 else
 	LDFLAGS := -s -w $(LDFLAGS)
 	SOURCEMAP :=
 	COPYTS :=
 	TYPECHECK :=
 	UNCSS := npx uncss $(DATA)/crash.html --csspath web/css --output $(DATA)/bundle.css
+	TAILWIND :=
 endif
 
 RACE ?= off
@@ -123,7 +125,8 @@ bundle-css:
 	-mkdir -p $(DATA)/web/css
 	$(info bundling css)
 	$(ESBUILD) --bundle css/base.css --outfile=$(DATA)/web/css/bundle.css --external:remixicon.css --minify
-	npx tailwindcss -i $(DATA)/web/css/bundle.css -o $(DATA)/web/css/bundle.css
+	npx tailwindcss -i $(DATA)/web/css/bundle.css -o $(DATA)/web/css/bundle.css $(TAILWIND)
+	# npx postcss -o $(DATA)/web/css/bundle.css $(DATA)/web/css/bundle.css
 
 inline:
 	cp html/crash.html $(DATA)/crash.html
@@ -135,7 +138,7 @@ variants-html:
 	$(info copying html)
 	cp -r html $(DATA)/
 	$(info adding dark variants to html)
-	scripts/dark-variant.sh html $(DATA)/html
+	node scripts/missing-colors.js html $(DATA)/html
 
 copy:
 	$(info copying fonts)

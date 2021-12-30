@@ -23,14 +23,17 @@
     "browserslist": "^4.16.6",
     "esbuild": "^0.8.57",
     "inline-source": "^7.2.0",
+    "jsdom": "^19.0.0",
     "lodash": "^4.17.21",
     "mjml": "^4.8.0",
+    "nightwind": "github:yonson2/nightwind",
     "remixicon": "^2.5.0",
     "remove-markdown": "^0.3.0",
     "typescript": "^4.0.3",
     "uncss": "^0.17.3"
   },
   "devDependencies": {
-    "live-server": "^1.2.1"
+    "live-server": "^1.2.1",
+    "tailwindcss": "^3.0.8"
   }
 }

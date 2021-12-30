@@ -1,12 +1,12 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 @import "remixicon.css";
 @import "./modal.css";
 @import "./dark.css";
 @import "./tooltip.css";
 @import "./loader.css";
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
 
 :root {
     --border-width-default: 2px;
@@ -21,6 +21,18 @@
 
 .dark body {
     background-color: #101010;
+}
+
+.dark select, .dark option, .dark input {
+    background: #202020;
+}
+
+.light-only {
+  display: none;
+}
+
+.dark-only {
+  display: initial;
 }
 
 .page-container {
@@ -93,10 +105,6 @@ div.card:contains(section.banner.footer) {
     margin-top: 1rem;
 }
 
-.ml-1 {
-    margin-left: 1rem;
-}
-
 .ml-half {
     margin-left: 0.5rem;
 }
@@ -105,9 +113,6 @@ div.card:contains(section.banner.footer) {
     margin-right: 0.5rem;
 }
 
-.mr-1 {
-    margin-right: 1rem;
-}
 
 .p-1 {
     padding: 1rem;
@@ -427,6 +432,10 @@ select, textarea {
 input {
     color: inherit;
     border: 0 solid var(--color-neutral-300);
+}
+
+table {
+    color: var(--color-content);
 }
 
 p.top {

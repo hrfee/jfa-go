@@ -1,4 +1,4 @@
-import { toggleTheme, loadTheme } from "./modules/theme.js";
+import { nightwind } from "./modules/theme.js";
 import { lang, LangFile, loadLangSelector } from "./modules/lang.js";
 import { Modal } from "./modules/modal.js";
 import { Tabs } from "./modules/tabs.js";
@@ -9,7 +9,8 @@ import { ProfileEditor } from "./modules/profiles.js";
 import { _get, _post, notificationBox, whichAnimationEvent, toggleLoader } from "./modules/common.js";
 import { Updater } from "./modules/update.js";
 
-loadTheme();
+let theme = new nightwind();
+
 const themeButton = document.getElementById('button-theme') as HTMLSpanElement;
 const switchThemeIcon = () => {
     const icon = themeButton.childNodes[0] as HTMLElement;
@@ -28,7 +29,7 @@ const switchThemeIcon = () => {
     }
 };
  themeButton.onclick = () => {
-    toggleTheme();
+    theme.toggle();
     switchThemeIcon();
  }
 switchThemeIcon();

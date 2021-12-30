@@ -1,12 +1,6 @@
 #!/bin/bash
 
-if [[ "$1" == "html" ]]; then
-    for f in $2/*.html; do
-        for color in neutral positive urge warning info critical; do
-            sed -i "s/~${color}/~${color} dark:~d_${color}/g" $f
-        done
-    done
-elif [[ "$1" == "ts" ]]; then
+if [[ "$1" == "ts" ]]; then
     for f in $2/*.ts; do
         # FIXME: inline html
         for l in $(grep -n "~neutral\|~positive\|~urge\|~warning\|~info\|~critical" $f | sed -e 's/:.*//g'); do
