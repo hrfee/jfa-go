@@ -11,7 +11,7 @@
                 <section class="section ~critical">
                     <span class="heading">Crash report for jfa-go</span>
                     {{ if .Err }}
-                    <div class="monospace pre-line mt-4 mb-4">
+                    <div class="font-mono bg-inherit pre-line mt-4 mb-4">
                     Error: {{ .Err }}
                     </div>
                     {{ end }}
@@ -31,11 +31,11 @@
                         </label>
                     </div>
                     <div id="log-normal">
-                        <pre class="monospace pre-line">{{ .Log }}</pre>
+                        <pre class="font-mono bg-inherit pre-line">{{ .Log }}</pre>
                     </div>
                     <div id="log-sanitized" class="unfocused">
                         <p class="subheading">An attempt has been made to remove sensitive info, but make sure to check yourself.</p>
-                        <pre class="monospace pre-line">{{ .SanitizedLog }}</pre>
+                        <pre class="font-mono bg-inherit pre-line">{{ .SanitizedLog }}</pre>
                     </div>
                 </section>
             </div>

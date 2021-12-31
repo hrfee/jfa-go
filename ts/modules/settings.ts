@@ -797,7 +797,7 @@ class EmailEditor {
                 this._templ = req.response as templateEmail;
                 this._textArea.value = this._templ.content;
                 if (this._templ.html == "") {
-                    this._preview.innerHTML = `<pre class="preview-content" class="monospace"></pre>`;
+                    this._preview.innerHTML = `<pre class="preview-content" class="font-mono bg-inherit"></pre>`;
                 } else {
                     this._preview.innerHTML = this._templ.html;
                 }
@@ -818,7 +818,7 @@ class EmailEditor {
                 this._variables.innerHTML = innerHTML
                 let buttons = this._variables.querySelectorAll("span.button") as NodeListOf<HTMLSpanElement>;
                 for (let i = 0; i < this._templ.variables.length; i++) {
-                    buttons[i].innerHTML = `<span class="monospace">` + this._templ.variables[i] + `</span>`;
+                    buttons[i].innerHTML = `<span class="font-mono bg-inherit">` + this._templ.variables[i] + `</span>`;
                     buttons[i].onclick = () => {
                         insertText(this._textArea, this._templ.variables[i]);
                         this.loadPreview();
@@ -838,7 +838,7 @@ class EmailEditor {
                     this._conditionals.innerHTML = innerHTML
                     buttons = this._conditionals.querySelectorAll("span.button") as NodeListOf<HTMLSpanElement>;
                     for (let i = 0; i < this._templ.conditionals.length; i++) {
-                        buttons[i].innerHTML = `<span class="monospace">{if ` + this._templ.conditionals[i].slice(1) + `</span>`;
+                        buttons[i].innerHTML = `<span class="font-mono bg-inherit">{if ` + this._templ.conditionals[i].slice(1) + `</span>`;
                         buttons[i].onclick = () => {
                             insertText(this._textArea, "{if " + this._templ.conditionals[i].slice(1) + "{endif}");
                             this.loadPreview();

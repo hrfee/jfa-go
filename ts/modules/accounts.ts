@@ -904,7 +904,7 @@ export class accountsList {
             if (req.readyState == 4) {
                 const preview = document.getElementById("announce-preview") as HTMLDivElement;
                 if (req.status != 200) {
-                    preview.innerHTML = `<pre class="preview-content" class="monospace"></pre>`;
+                    preview.innerHTML = `<pre class="preview-content" class="font-mono bg-inherit"></pre>`;
                     window.modals.announce.show();
                     this._previewLoaded = false;
                     return;
@@ -912,7 +912,7 @@ export class accountsList {
                     
                 let templ = req.response as templateEmail;
                 if (!templ.html) {
-                    preview.innerHTML = `<pre class="preview-content" class="monospace"></pre>`;
+                    preview.innerHTML = `<pre class="preview-content" class="font-mono bg-inherit"></pre>`;
                     this._previewLoaded = false;
                 } else {
                     preview.innerHTML = templ.html;

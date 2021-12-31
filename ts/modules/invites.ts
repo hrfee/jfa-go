@@ -257,7 +257,7 @@ class DOMInvite implements Invite {
         this._header.appendChild(this._codeArea);
         this._codeArea.classList.add("inv-codearea");
         this._codeArea.innerHTML = `
-        <a class="invite-link code monospace mr-4" href=""></a>
+        <a class="invite-link code font-mono bg-inherit mr-4" href=""></a>
         <span class="button ~info @low" title="${window.lang.strings("copy")}"><i class="ri-file-copy-line"></i></span>
         `;
         const copyButton = this._codeArea.querySelector("span.button") as HTMLSpanElement;
@@ -427,7 +427,7 @@ export class inviteList implements inviteList {
             <div class="inv inv-empty">
                 <div class="card ~info dark:~d_neutral @low inv-header flex-expand mt-2">
                     <div class="inv-codearea">
-                        <span class="code monospace">${window.lang.strings("inviteNoInvites")}</span>
+                        <span class="code font-mono bg-inherit">${window.lang.strings("inviteNoInvites")}</span>
                     </div>
                 </div>
             </div>

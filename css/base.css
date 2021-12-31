@@ -186,11 +186,6 @@ span.sm:not(.heading) {
     }
 }
 
-.monospace {
-    background-color: inherit; /* so we can use a17t code blocks */
-    font-family: Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace;
-}
-
 sup.\~critical, .text-critical {
     color: var(--color-critical-normal-content);
 }
