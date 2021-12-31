@@ -19,6 +19,10 @@
     --settings-section-button-filter: 90%;
 }
 
+.dark {
+    --settings-section-button-filter: 80%;
+}
+
 .dark body {
     background-color: #101010;
 }
@@ -352,10 +356,8 @@ sup.\~critical, .text-critical {
 }
 
 .settings-section-button {
-    box-sizing: border-box;
     width: 100%;
     height: 2.5rem;
-    background-color: rgba(0,0,0,0);
 }
 
 .settings-section-button:hover, .settings-section-button:focus {
@@ -367,8 +369,6 @@ sup.\~critical, .text-critical {
 }
 
 .settings-section-button.selected {
-    background-color: var(--color-neutral-normal-fill);
-    --buton-filter-brightness: var(--settings-section-button-filter);
     filter: brightness(var(--settings-section-button-filter)) !important;
 }
 
