@@ -109,7 +109,7 @@ class DOMInput {
                 <i class="icon ri-information-line"></i>
                 <span class="content sm"></span>
             </div>
-            <input type="${inputType}" class="input ~neutral @low mt-half mb-half">
+            <input type="${inputType}" class="input ~neutral @low mt-2 mb-2">
         </label>
         `;
         this._tooltip = this._container.querySelector("div.setting-tooltip") as HTMLDivElement;
@@ -263,7 +263,7 @@ class DOMBool implements SBool {
         this._container = document.createElement("div");
         this._container.classList.add("setting");
         this._container.innerHTML = `
-        <label class="switch mb-half">
+        <label class="switch mb-2">
             <input type="checkbox">
             <span class="setting-label"></span> <span class="setting-required"></span> <span class="setting-restart"></span>
             <div class="setting-tooltip tooltip right unfocused">
@@ -403,7 +403,7 @@ class DOMSelect implements SSelect {
                 <i class="icon ri-information-line"></i>
                 <span class="content sm"></span>
             </div>
-            <div class="select ~neutral @low mt-half mb-half">
+            <div class="select ~neutral @low mt-2 mb-2">
                 <select class="settings-select"></select>
             </div>
         </label>
@@ -549,7 +549,7 @@ export class settingsList {
         this._sections[name] = section;
         this._panel.appendChild(this._sections[name].asElement());
         const button = document.createElement("span") as HTMLSpanElement;
-        button.classList.add("button", "~neutral", "@low", "settings-section-button", "mb-half");
+        button.classList.add("button", "~neutral", "@low", "settings-section-button", "mb-2");
         button.textContent = s.meta.name;
         if (subButton) { button.appendChild(subButton); }
         button.onclick = () => { this._showPanel(name); };

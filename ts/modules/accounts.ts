@@ -130,12 +130,12 @@ class user implements User {
         const matrix = this._matrixID != "";
         if (!telegram && !discord && !matrix) return;
         let innerHTML = `
-        <i class="icon ri-settings-2-line ml-half dropdown-button"></i>
+        <i class="icon ri-settings-2-line ml-2 dropdown-button"></i>
         <div class="dropdown manual">
             <div class="dropdown-display lg">
                 <div class="card ~neutral @low">
                     <span class="supra sm">${window.lang.strings("contactThrough")}</span>
-                    <label class="row switch pb-4 mt-half">
+                    <label class="row switch pb-4 mt-2">
                         <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-email">
                         </span>Email</span>
                     </label>
@@ -381,7 +381,7 @@ class user implements User {
         let innerHTML = `
             <td><input type="checkbox" value=""></td>
             <td><div class="table-inline"><span class="accounts-username"></span> <span class="accounts-admin"></span> <span class="accounts-disabled"></span></span></td>
-            <td><div class="table-inline"><i class="icon ri-edit-line accounts-email-edit"></i><span class="accounts-email-container ml-half"></span></div></td>
+            <td><div class="table-inline"><i class="icon ri-edit-line accounts-email-edit"></i><span class="accounts-email-container ml-2"></span></div></td>
         `;
         if (window.telegramEnabled) {
             innerHTML += `
@@ -423,10 +423,10 @@ class user implements User {
             if (this._emailEditButton.classList.contains("ri-edit-line")) {
                 this._email.innerHTML = emailEditor;
                 this._email.querySelector("input").value = this._emailAddress;
-                this._email.classList.remove("ml-half");
+                this._email.classList.remove("ml-2");
             } else {
                 this._email.textContent = this._emailAddress;
-                this._email.classList.add("ml-half");
+                this._email.classList.add("ml-2");
             }
             this._emailEditButton.classList.toggle("ri-check-line");
             this._emailEditButton.classList.toggle("ri-edit-line");
@@ -938,7 +938,7 @@ export class accountsList {
             dList.textContent = '';
             for (let name of list) {
                 const el = document.createElement("div") as HTMLDivElement;
-                el.classList.add("flex-expand", "ellipsis", "mt-half");
+                el.classList.add("flex-expand", "ellipsis", "mt-2");
                 el.innerHTML = `
                 <span class="button ~neutral sm full-width accounts-announce-template-button">${name}</span><span class="button ~critical fr ml-4 accounts-announce-template-delete">&times;</span>
                 `;

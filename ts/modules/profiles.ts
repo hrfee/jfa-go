@@ -23,10 +23,10 @@ class profile implements Profile {
     get admin(): boolean { return this._adminChip.classList.contains("chip"); }
     set admin(state: boolean) {
         if (state) {
-            this._adminChip.classList.add("chip", "~info", "ml-half");
+            this._adminChip.classList.add("chip", "~info", "ml-2");
             this._adminChip.textContent = "Admin";
         } else {
-            this._adminChip.classList.remove("chip", "~info", "ml-half");
+            this._adminChip.classList.remove("chip", "~info", "ml-2");
             this._adminChip.textContent = "";
         }
     }

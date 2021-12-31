@@ -251,7 +251,7 @@ class DOMInvite implements Invite {
 
         this._header = document.createElement('div') as HTMLDivElement;
         this._container.appendChild(this._header);
-        this._header.classList.add("card", "~neutral", "@low", "inv-header", "elem-pad", "no-pad", "flex-expand", "row", "mt-half", "overflow-y");
+        this._header.classList.add("card", "~neutral", "@low", "inv-header", "elem-pad", "no-pad", "flex-expand", "row", "mt-2", "overflow-y");
 
         this._codeArea = document.createElement('div') as HTMLDivElement;
         this._header.appendChild(this._codeArea);
@@ -304,7 +304,7 @@ class DOMInvite implements Invite {
 
         this._details = document.createElement('div') as HTMLDivElement;
         this._container.appendChild(this._details);
-        this._details.classList.add("card", "~neutral", "@low", "mt-half", "no-pad", "inv-details");
+        this._details.classList.add("card", "~neutral", "@low", "mt-2", "no-pad", "inv-details");
         const detailsInner = document.createElement('div') as HTMLDivElement;
         this._details.appendChild(detailsInner);
         detailsInner.classList.add("inv-row", "flex-expand", "row", "elem-pad", "align-top");
@@ -425,7 +425,7 @@ export class inviteList implements inviteList {
             this._list.classList.add("empty");
             this._list.innerHTML = `
             <div class="inv inv-empty">
-                <div class="card ~neutral @low inv-header flex-expand mt-half">
+                <div class="card ~neutral @low inv-header flex-expand mt-2">
                     <div class="inv-codearea">
                         <span class="code monospace">${window.lang.strings("inviteNoInvites")}</span>
                     </div>

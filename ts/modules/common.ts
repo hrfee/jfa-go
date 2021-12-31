@@ -104,7 +104,7 @@ export class notificationBox implements NotificationBox {
 
     private _error = (message: string): HTMLElement => {
         const noti = document.createElement('aside');
-        noti.classList.add("aside", "~critical", "@low", "mt-half", "notification-error");
+        noti.classList.add("aside", "~critical", "@low", "mt-2", "notification-error");
         let error = "";
         if (window.lang) {
             error = window.lang.strings("error") + ":"
@@ -120,7 +120,7 @@ export class notificationBox implements NotificationBox {
     
     private _positive = (bold: string, message: string): HTMLElement => {
         const noti = document.createElement('aside');
-        noti.classList.add("aside", "~positive", "@low", "mt-half", "notification-positive");
+        noti.classList.add("aside", "~positive", "@low", "mt-2", "notification-positive");
         noti.innerHTML = `<strong>${bold}</strong> ${message}`;
         const closeButton = document.createElement('span') as HTMLSpanElement;
         closeButton.classList.add("button", "~positive", "@low", "ml-4");
