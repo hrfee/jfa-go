@@ -60,7 +60,8 @@ else
 	SOURCEMAP :=
 	COPYTS :=
 	TYPECHECK :=
-	UNCSS := npx uncss $(DATA)/crash.html --csspath web/css --output $(DATA)/bundle.css
+	UNCSS := npx tailwindcss -i $(DATA)/web/css/bundle.css -o $(DATA)/bundle.css --content "html/crash.html"
+	# UNCSS := npx uncss $(DATA)/crash.html --csspath web/css --output $(DATA)/bundle.css
 	TAILWIND :=
 endif
 
