@@ -2,6 +2,16 @@ let parser = require("jsdom");
 let fs = require("fs");
 let path = require("path");
 
+const hasDark = (item) => {
+    for (let i = 0; i < item.classList.length; i++) {
+        if (item.classList[i].substring(0,5) == "dark:") {
+            return true;
+        }
+    }
+    return false;
+};
+
+
 const fixHTML = (infile, outfile) => {
     console.log(infile, outfile)
     let doc = new parser.JSDOM(fs.readFileSync(infile));
@@ -14,13 +24,17 @@ const fixHTML = (infile, outfile) => {
                 if (items[i].classList.contains("~"+color)) {
                     hasColor = true;
                     // console.log("adding to", items[i].classList)
-                    items[i].classList.add("dark:~d_"+color);
+                    if (!hasDark(items[i])) {
+                        items[i].classList.add("dark:~d_"+color);
+                    }
                     break;
                 }
             }
             if (!hasColor) {
                 items[i].classList.add("~neutral");
-                items[i].classList.add("dark:~d_neutral");
+                if (!hasDark(items[i])) {
+                    items[i].classList.add("dark:~d_neutral");
+                }
             }
             if (!items[i].classList.contains("@low") && !items[i].classList.contains("@high")) {
                 items[i].classList.add("@low");

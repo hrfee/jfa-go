@@ -22,7 +22,7 @@
         <div id="modal-login" class="modal">
             <form class="modal-content card" id="form-login" href="">
                 <span class="heading">{{ .strings.login }}</span>
-                <input type="text" class="field input ~neutral @high mt-8 mb-4" placeholder="{{ .strings.username }}" id="login-user">
+                <input type="text" class="field input ~neutral @high mt-4 mb-2" placeholder="{{ .strings.username }}" id="login-user">
                 <input type="password" class="field input ~neutral @high mb-4" placeholder="{{ .strings.password }}" id="login-password">
                 <label>
                     <input type="submit" class="unfocused">
@@ -33,8 +33,8 @@
         <div id="modal-add-user" class="modal">
             <form class="modal-content card" id="form-add-user" href="">
                 <span class="heading">{{ .strings.newUser }} <span class="modal-close">&times;</span></span>
-                <input type="text" class="field input ~neutral @high mt-8 mb-4" placeholder="{{ .strings.username }}" id="add-user-user">
-                <input type="email" class="field input ~neutral @high mt-8 mb-4" placeholder="{{ .strings.emailAddress }}">
+                <input type="text" class="field input ~neutral @high mt-4 mb-2" placeholder="{{ .strings.username }}" id="add-user-user">
+                <input type="email" class="field input ~neutral @high mt-4 mb-2" placeholder="{{ .strings.emailAddress }}">
                 <input type="password" class="field input ~neutral @high mb-4" placeholder="{{ .strings.password }}" id="add-user-password">
                 <label>
                     <input type="submit" class="unfocused">
@@ -74,7 +74,7 @@
         <div id="modal-modify-user" class="modal">
             <form class="modal-content card" id="form-modify-user" href="">
                 <span class="heading"><span id="header-modify-user"></span> <span class="modal-close">&times;</span></span>
-                <p class="content">{{ .strings.modifySettingsDescription }}</p>
+                <p class="content my-4">{{ .strings.modifySettingsDescription }}</p>
                 <div class="flex-row mb-4">
                     <label class="flex-row-group mr-2">
                         <input type="radio" name="modify-user-source" class="unfocused" id="radio-use-profile" checked>
@@ -183,7 +183,7 @@
                             <input type="text" id="announce-subject" class="input ~neutral @low mb-2 mt-4">
                             <label class="label supra" for="textarea-announce">{{ .strings.message }}</label>
                             <textarea id="textarea-announce" class="textarea full-width ~neutral @low mt-8 monospace"></textarea>
-                            <p class="support mt-8 mb-4">{{ .strings.markdownSupported }}</p>
+                            <p class="support mt-4 mb-2">{{ .strings.markdownSupported }}</p>
                         </div>
                         <label class="label unfocused" id="announce-name"><p class="supra">{{ .strings.name }}</p>
                             <input type="text" class="input ~neutral @low mb-2 mt-4">
@@ -207,7 +207,7 @@
         <div id="modal-customize" class="modal">
             <div class="modal-content card">
                 <span class="heading">{{ .strings.customizeMessages }} <span class="modal-close">&times;</span></span>
-                <p class="content">{{ .strings.customizeMessagesDescription }}</p>
+                <p class="content my-4">{{ .strings.customizeMessagesDescription }}</p>
                 <div class="table-responsive">
                     <table class="table">
                         <thead>
@@ -233,7 +233,7 @@
                         <div id="editor-conditionals"></div>
                         <label class="label supra" for="textarea-editor">{{ .strings.message }}</label>
                         <textarea id="textarea-editor" class="textarea full-width flex-auto ~neutral @low mt-8 monospace"></textarea>
-                        <p class="support mt-8 mb-4">{{ .strings.markdownSupported }}</p>
+                        <p class="support mt-4 mb-2">{{ .strings.markdownSupported }}</p>
                         <div class="flex-row">
                             <label class="full-width ml-2">
                                 <input type="submit" class="unfocused">
@@ -251,7 +251,7 @@
         <div id="modal-restart" class="modal">
             <div class="modal-content card ~critical @low">
                 <span class="heading">{{ .strings.settingsRestartRequired }} <span class="modal-close">&times;</span></span>
-                <p class="content pb-4">{{ .strings.settingsRestartRequiredDescription }}</p>
+                <p class="content my-4">{{ .strings.settingsRestartRequiredDescription }}</p>
                 <div class="float-right">
                     <span class="button ~info @low mb-2" id="settings-apply-no-restart">{{ .strings.settingsApplyRestartLater }}</span>
                     <span class="button ~critical @low" id="settings-apply-restart">{{ .strings.settingsApplyRestartNow }}</span>
@@ -274,7 +274,7 @@
         <div id="modal-ombi-profile" class="modal">
             <form class="modal-content card" id="form-ombi-defaults" href="">
                 <span class="heading">{{ .strings.ombiProfile }} <span class="modal-close">&times;</span></span>
-                <p class="content">{{ .strings.ombiUserDefaultsDescription }}</p>
+                <p class="content my-4">{{ .strings.ombiUserDefaultsDescription }}</p>
                 <div class="select ~neutral @low mb-4">
                     <select></select>
                 </div>
@@ -287,7 +287,7 @@
         <div id="modal-user-profiles" class="modal">
             <div class="modal-content wide card">
                 <span class="heading">{{ .strings.userProfiles }} <span class="modal-close">&times;</span></span>
-                <p class="support lg">{{ .strings.userProfilesDescription }}</p>
+                <p class="content my-4">{{ .strings.userProfilesDescription }}</p>
                 <div class="table-responsive">
                     <table class="table">
                         <thead>
@@ -310,13 +310,13 @@
         <div id="modal-add-profile" class="modal">
             <form class="modal-content card" id="form-add-profile" href="">
                 <span class="heading">{{ .strings.addProfile }} <span class="modal-close">&times;</span></span>
-                <p class="content">{{ .strings.addProfileDescription }}</p>
+                <p class="content my-4">{{ .strings.addProfileDescription }}</p>
                 <label>
                     <span class="supra">{{ .strings.addProfileNameOf }} </span>
-                    <input type="text" class="field input ~neutral @high mt-8 mb-4" placeholder="{{ .strings.name }}" id="add-profile-name">
+                    <input type="text" class="field input ~neutral @high mt-4 mb-2" placeholder="{{ .strings.name }}" id="add-profile-name">
                 <label>
                     <span class="supra">{{ .strings.user }}</span>
-                    <div class="select ~neutral @low mt-8 mb-4">
+                    <div class="select ~neutral @low mt-4 mb-2">
                         <select id="add-profile-user"></select>
                     </div>
                 </label>
@@ -378,10 +378,10 @@
         <div id="modal-matrix" class="modal">
             <form class="modal-content card" id="form-matrix" href="">
                 <span class="heading">{{ .strings.linkMatrix }}</span>
-                <p class="content">{{ .strings.linkMatrixDescription }}</p>
-                <input type="text" class="field input ~neutral @high mt-8 mb-4" placeholder="{{ .strings.matrixHomeServer }}" id="matrix-homeserver">
-                <input type="text" class="field input ~neutral @high mt-8 mb-4" placeholder="{{ .strings.username }}" id="matrix-user">
-                <input type="password" class="field input ~neutral @high mt-8 mb-4" placeholder="{{ .strings.password }}" id="matrix-password">
+                <p class="content my-4">{{ .strings.linkMatrixDescription }}</p>
+                <input type="text" class="field input ~neutral @high mt-4 mb-2" placeholder="{{ .strings.matrixHomeServer }}" id="matrix-homeserver">
+                <input type="text" class="field input ~neutral @high mt-4 mb-2" placeholder="{{ .strings.username }}" id="matrix-user">
+                <input type="password" class="field input ~neutral @high mt-4 mb-2" placeholder="{{ .strings.password }}" id="matrix-password">
                 <label>
                     <input type="submit" class="unfocused">
                     <span class="button ~urge @low full-width center supra submit">{{ .strings.submit }}</span>
