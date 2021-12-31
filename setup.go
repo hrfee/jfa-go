@@ -143,6 +143,7 @@ func (st *Storage) loadLangSetup(filesystems ...fs.FS) error {
 				patchLang(&lang.Login, &english.Login)
 				patchLang(&lang.JellyfinEmby, &english.JellyfinEmby)
 				patchLang(&lang.Email, &english.Email)
+				patchLang(&lang.Messages, &english.Messages)
 				patchLang(&lang.Notifications, &english.Notifications)
 				patchLang(&lang.PasswordResets, &english.PasswordResets)
 				patchLang(&lang.InviteEmails, &english.InviteEmails)
