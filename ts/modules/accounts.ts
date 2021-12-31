@@ -136,24 +136,24 @@ class user implements User {
                 <div class="card ~neutral @low">
                     <span class="supra sm">${window.lang.strings("contactThrough")}</span>
                     <label class="row switch pb-4 mt-2">
-                        <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-email">
+                        <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-email mr-2">
                         </span>Email</span>
                     </label>
                     <div class="accounts-area-telegram">
                         <label class="row switch pb-4">
-                            <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-telegram">
+                            <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-telegram mr-2">
                             <span>Telegram</span>
                         </label>
                     </div>
                     <div class="accounts-area-discord">
                         <label class="row switch pb-4">
-                            <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-discord">
+                            <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-discord mr-2">
                             <span>Discord</span>
                         </label>
                     </div>
                     <div class="accounts-area-matrix">
                         <label class="row switch pb-4">
-                            <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-matrix">
+                            <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-matrix mr-2">
                             <span>Matrix</span>
                         </label>
                     </div>
