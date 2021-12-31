@@ -43,7 +43,7 @@
             </form>
         </div>
         <div id="modal-about" class="modal">
-            <div class="modal-content content card">
+            <div class="modal-content content card wide">
                 <img src="{{ .urlBase }}/banner.svg" class="banner header" alt="jfa-go banner">
                 <span class="heading"><span class="modal-close">&times;</span></span>
                 <p>{{ .strings.version }} <span class="code monospace">{{ .version }}</span></p>
@@ -414,24 +414,24 @@
         <div class="page-container">
             <div class="mb-4">
                 <header class="flex flex-wrap items-center justify-between">
-                    <div class="text-neutral-700">
-                        <span id="button-tab-invites" class="tab-button portal">{{ .strings.invites }}</span>
-                        <span id="button-tab-accounts" class="tab-button portal">{{ .strings.accounts }}</span>
-                        <span id="button-tab-settings" class="tab-button portal">{{ .strings.settings }}</span>
+                    <div>
+                        <span id="button-tab-invites" class="text-3xl button portal ~neutral dark:~d_neutral @low mr-2 px-5">{{ .strings.invites }}</span>
+                        <span id="button-tab-accounts" class="text-3xl button portal ~neutral dark:~d_neutral @low mr-2 px-5">{{ .strings.accounts }}</span>
+                        <span id="button-tab-settings" class="text-3xl button portal ~neutral dark:~d_neutral @low mr-2 px-5">{{ .strings.settings }}</span>
                     </div>
                 </header>
             </div>
             <div class="mb-4">
-                <div class="text-neutral-700">
+                <div>
                     <span class="button ~critical @low mb-4 unfocused" id="logout-button">{{ .strings.logout }}</span>
                 </div>
             </div>
             <div id="tab-invites">
-                <div class="card ~neutral @low invites mb-4">
+                <div class="card @low invites dark:~d_neutral mb-4">
                     <span class="heading">{{ .strings.invites }}</span>
                     <div id="invites"></div>
                 </div>
-                <div class="card ~neutral @low">
+                <div class="card @low dark:~d_neutral">
                     <span class="heading">{{ .strings.create }}</span>
                     <div class="row" id="create-inv">
                         <div class="card ~neutral @low col">
@@ -570,7 +570,7 @@
                 </div>
             </div>
             <div id="tab-accounts" class="unfocused">
-                <div class="card ~neutral @low accounts mb-4">
+                <div class="card @low dark:~d_neutral accounts mb-4">
                     <div class="flex-expand row">
                         <div class="row">
                             <span class="text-3xl font-bold mr-2 col">{{ .strings.accounts }}</span>
@@ -627,7 +627,7 @@
                 </div>
             </div>
             <div id="tab-settings" class="unfocused">
-                <div class="card ~neutral @low settings overflow">
+                <div class="card @low dark:~d_neutral settings overflow">
                     <div class="flex-expand">
                         <div class="flex-row">
                             <span class="heading">{{ .strings.settings }}</span>
@@ -642,7 +642,7 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="card ~neutral @low col" id="settings-sidebar">
+                        <div class="card @low dark:~d_neutral col" id="settings-sidebar">
                             <aside class="aside sm ~info mb-2" id="settings-message">Note: <span class="badge ~critical">*</span> indicates a required field, <span class="badge ~info">R</span> indicates changes require a restart.</aside> 
                             <span class="button ~neutral @low settings-section-button justify-between mb-2" id="setting-about"><span class="flex">{{ .strings.aboutProgram }} <i class="ri-information-line ml-2"></i></span></span>
                             <span class="button ~neutral @low settings-section-button justify-between mb-2" id="setting-profiles"><span class="flex">{{ .strings.userProfiles }} <i class="ri-user-line ml-2"></i></span></span>

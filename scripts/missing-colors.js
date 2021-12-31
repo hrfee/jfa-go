@@ -31,8 +31,9 @@ const fixHTML = (infile, outfile) => {
                 }
             }
             if (!hasColor) {
-                items[i].classList.add("~neutral");
                 if (!hasDark(items[i])) {
+                    // card without ~neutral look different than with.
+                    if (item != "card") items[i].classList.add("~neutral");
                     items[i].classList.add("dark:~d_neutral");
                 }
             }

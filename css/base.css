@@ -15,7 +15,7 @@
     --border-width-8: 8px;
 }
 
-.light-theme {
+.light {
     --settings-section-button-filter: 90%;
 }
 
@@ -25,6 +25,15 @@
 
 .dark select, .dark option, .dark input {
     background: #202020;
+}
+
+html:not(.dark) .card.\@low:not(.\~neutral):not(.\~positive):not(.\~urge):not(.\~warning):not(.\~info):not(.\~critical) {
+    --color-fill: va(--color-fill);
+    --color-content: var(--color-content);
+    --color-accent: var(--color-accent);
+    --color-muted: var(--color-muted);
+    background-color: #fff;
+    color: inherit;
 }
 
 .light-only {

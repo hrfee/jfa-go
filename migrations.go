@@ -40,8 +40,8 @@ func migrateProfiles(app *appContext) {
 // Migrate pre-0.2.5 bootstrap theme choice to a17t version.
 func migrateBootstrap(app *appContext) {
 	themes := map[string]string{
-		"Jellyfin (Dark)": "dark-theme",
-		"Default (Light)": "light-theme",
+		"Jellyfin (Dark)": "dark",
+		"Default (Light)": "light",
 	}
 
 	if app.config.Section("ui").Key("theme").String() == "Bootstrap (Light)" {
