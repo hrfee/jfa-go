@@ -86,10 +86,10 @@ class user implements User {
     get admin(): boolean { return this._admin.classList.contains("chip"); }
     set admin(state: boolean) {
         if (state) {
-            this._admin.classList.add("chip", "~info", "ml-1");
+            this._admin.classList.add("chip", "~info", "ml-4");
             this._admin.textContent = window.lang.strings("admin");
         } else {
-            this._admin.classList.remove("chip", "~info", "ml-1");
+            this._admin.classList.remove("chip", "~info", "ml-4");
             this._admin.textContent = "";
         }
     }
@@ -97,10 +97,10 @@ class user implements User {
     get disabled(): boolean { return this._disabled.classList.contains("chip"); }
     set disabled(state: boolean) {
         if (state) {
-            this._disabled.classList.add("chip", "~warning", "ml-1");
+            this._disabled.classList.add("chip", "~warning", "ml-4");
             this._disabled.textContent = window.lang.strings("disabled");
         } else {
-            this._disabled.classList.remove("chip", "~warning", "ml-1");
+            this._disabled.classList.remove("chip", "~warning", "ml-4");
             this._disabled.textContent = "";
         }
     }
@@ -135,24 +135,24 @@ class user implements User {
             <div class="dropdown-display lg">
                 <div class="card ~neutral @low">
                     <span class="supra sm">${window.lang.strings("contactThrough")}</span>
-                    <label class="row switch pb-1 mt-half">
+                    <label class="row switch pb-4 mt-half">
                         <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-email">
                         </span>Email</span>
                     </label>
                     <div class="accounts-area-telegram">
-                        <label class="row switch pb-1">
+                        <label class="row switch pb-4">
                             <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-telegram">
                             <span>Telegram</span>
                         </label>
                     </div>
                     <div class="accounts-area-discord">
-                        <label class="row switch pb-1">
+                        <label class="row switch pb-4">
                             <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-discord">
                             <span>Discord</span>
                         </label>
                     </div>
                     <div class="accounts-area-matrix">
-                        <label class="row switch pb-1">
+                        <label class="row switch pb-4">
                             <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-matrix">
                             <span>Matrix</span>
                         </label>
@@ -940,7 +940,7 @@ export class accountsList {
                 const el = document.createElement("div") as HTMLDivElement;
                 el.classList.add("flex-expand", "ellipsis", "mt-half");
                 el.innerHTML = `
-                <span class="button ~neutral sm full-width accounts-announce-template-button">${name}</span><span class="button ~critical fr ml-1 accounts-announce-template-delete">&times;</span>
+                <span class="button ~neutral sm full-width accounts-announce-template-button">${name}</span><span class="button ~critical fr ml-4 accounts-announce-template-delete">&times;</span>
                 `;
                 (el.querySelector("span.accounts-announce-template-button") as HTMLSpanElement).onclick = () => {
                     _get("/users/announce/" + name, null, (req: XMLHttpRequest) => {

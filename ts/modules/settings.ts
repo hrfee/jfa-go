@@ -808,7 +808,7 @@ class EmailEditor {
                 let innerHTML = '';
                 for (let i = 0; i < this._templ.variables.length; i++) {
                     let ci = i % colors.length;
-                    innerHTML += '<span class="button ~' + colors[ci] +' @low mb-1" style="margin-left: 0.25rem; margin-right: 0.25rem;"></span>'
+                    innerHTML += '<span class="button ~' + colors[ci] +' @low mb-4" style="margin-left: 0.25rem; margin-right: 0.25rem;"></span>'
                 }
                 if (this._templ.variables.length == 0) {
                     this._variablesLabel.classList.add("unfocused");
@@ -832,7 +832,7 @@ class EmailEditor {
                 } else {
                     for (let i = this._templ.conditionals.length-1; i >= 0; i--) {
                         let ci = i % colors.length;
-                        innerHTML += '<span class="button ~' + colors[ci] +' @low mb-1" style="margin-left: 0.25rem; margin-right: 0.25rem;"></span>'
+                        innerHTML += '<span class="button ~' + colors[ci] +' @low mb-4" style="margin-left: 0.25rem; margin-right: 0.25rem;"></span>'
                     }
                     this._conditionalsLabel.classList.remove("unfocused");
                     this._conditionals.innerHTML = innerHTML

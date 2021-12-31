@@ -22,13 +22,13 @@ export function newDiscordSearch(title: string, description: string, buttonText:
         }
         list.innerHTML = ``;
         addLoader(list);
-        list.parentElement.classList.add("mb-1", "mt-1");
+        list.parentElement.classList.add("mb-4", "mt-4");
         timer = setTimeout(() => {
             _get("/users/discord/" + input.value, null, (req: XMLHttpRequest) => {
                 if (req.readyState == 4) {
                     if (req.status != 200) {
                         removeLoader(list);
-                        list.parentElement.classList.remove("mb-1", "mt-1");
+                        list.parentElement.classList.remove("mb-4", "mt-4");
                         return;
                     }
                     const users = req.response["users"] as Array<DiscordUser>;
@@ -50,7 +50,7 @@ export function newDiscordSearch(title: string, description: string, buttonText:
                     }
                     list.innerHTML = innerHTML;
                     removeLoader(list);
-                    list.parentElement.classList.remove("mb-1", "mt-1");
+                    list.parentElement.classList.remove("mb-4", "mt-4");
                     for (let i = 0; i < users.length; i++) {
                         const button = document.getElementById(`discord-user-${users[i].id}`) as HTMLInputElement;
                         button.onclick = () => buttonFunction(users[i], event.detail);

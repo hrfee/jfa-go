@@ -111,7 +111,7 @@ export class notificationBox implements NotificationBox {
         }
         noti.innerHTML = `<strong>${error}</strong> ${message}`;
         const closeButton = document.createElement('span') as HTMLSpanElement;
-        closeButton.classList.add("button", "~critical", "@low", "ml-1");
+        closeButton.classList.add("button", "~critical", "@low", "ml-4");
         closeButton.innerHTML = `<i class="icon ri-close-line"></i>`;
         closeButton.onclick = () => { this._box.removeChild(noti); };
         noti.appendChild(closeButton);
@@ -123,7 +123,7 @@ export class notificationBox implements NotificationBox {
         noti.classList.add("aside", "~positive", "@low", "mt-half", "notification-positive");
         noti.innerHTML = `<strong>${bold}</strong> ${message}`;
         const closeButton = document.createElement('span') as HTMLSpanElement;
-        closeButton.classList.add("button", "~positive", "@low", "ml-1");
+        closeButton.classList.add("button", "~positive", "@low", "ml-4");
         closeButton.innerHTML = `<i class="icon ri-close-line"></i>`;
         closeButton.onclick = () => { this._box.removeChild(noti); };
         noti.appendChild(closeButton);
