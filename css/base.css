@@ -170,10 +170,6 @@ span.sm:not(.heading) {
     }
 }
 
-.fr {
-    float: right;
-}
-
 .monospace {
     background-color: inherit; /* so we can use a17t code blocks */
     font-family: Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace;
@@ -397,6 +393,8 @@ table {
     color: var(--color-content);
 }
 
+
+
 p.top {
     margin-top: 0px;
 }
@@ -520,4 +518,8 @@ div.card:contains(section.banner.footer) {
 
 .button.discord.\@low:not(.lang-link) {
     color: rgba(38, 51, 192, 90%);
+}
+
+.pb-0i {
+    padding-bottom: 0px !important
 }

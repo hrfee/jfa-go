@@ -193,7 +193,7 @@ class user implements User {
         if (!u) {
             this._notifyDropdown.querySelector(".accounts-area-matrix").classList.add("unfocused");
             this._matrix.innerHTML = `
-            <span class="chip btn @low">${window.lang.strings("add")}</span>
+            <span class="chip btn @high">${window.lang.strings("add")}</span>
             <input type="text" class="input ~neutral @low stealth-input unfocused" placeholder="@user:riot.im">
             `;
             (this._matrix.querySelector("span") as HTMLSpanElement).onclick = this._addMatrix;
@@ -257,7 +257,7 @@ class user implements User {
         this._telegramUsername = u;
         if (!u) {
             this._notifyDropdown.querySelector(".accounts-area-telegram").classList.add("unfocused");
-            this._telegram.innerHTML = `<span class="chip btn @low">${window.lang.strings("add")}</span>`;
+            this._telegram.innerHTML = `<span class="chip btn @high">${window.lang.strings("add")}</span>`;
             (this._telegram.querySelector("span") as HTMLSpanElement).onclick = this._addTelegram;
         } else {
             this._notifyDropdown.querySelector(".accounts-area-telegram").classList.remove("unfocused");
@@ -322,7 +322,7 @@ class user implements User {
         const lastNotifyMethod = this.lastNotifyMethod() == "discord";
         this._discordUsername = u;
         if (!u) {
-            this._discord.innerHTML = `<span class="chip btn @low">Add</span>`;
+            this._discord.innerHTML = `<span class="chip btn @high">Add</span>`;
             (this._discord.querySelector("span") as HTMLSpanElement).onclick = () => addDiscord(this.id);
             this._notifyDropdown.querySelector(".accounts-area-discord").classList.add("unfocused");
         } else {

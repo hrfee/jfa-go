@@ -39,10 +39,10 @@ export function newDiscordSearch(title: string, description: string, buttonText:
                             <td class="img-circle sm">
                                 <img class="img-circle" src="${users[i].avatar_url}" width="32" height="32">
                             </td>
-                            <td class="w-100 sm">
+                            <td class="sm">
                                 <p class="content">${users[i].name}</p>
                             </td>
-                            <td class="sm">
+                            <td class="sm float-right">
                                 <span id="discord-user-${users[i].id}" class="button ~info @high">${buttonText}</span>
                             </td>
                         </tr>

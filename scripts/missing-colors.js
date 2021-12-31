@@ -5,7 +5,7 @@ let path = require("path");
 const fixHTML = (infile, outfile) => {
     console.log(infile, outfile)
     let doc = new parser.JSDOM(fs.readFileSync(infile));
-    for (let item of ["badge", "chip", "shield", "input", "table", "button", "portal", "select", "aside", "card"]) {
+    for (let item of ["badge", "chip", "shield", "input", "table", "button", "portal", "select", "aside", "card", "field"]) {
         let items = doc.window.document.body.querySelectorAll("."+item);
         for (let i = 0; i < items.length; i++) {
             let hasColor = false;

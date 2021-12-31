@@ -252,7 +252,7 @@
             <div class="modal-content card ~critical @low">
                 <span class="heading">{{ .strings.settingsRestartRequired }} <span class="modal-close">&times;</span></span>
                 <p class="content pb-4">{{ .strings.settingsRestartRequiredDescription }}</p>
-                <div class="fr">
+                <div class="float-right">
                     <span class="button ~info @low mb-2" id="settings-apply-no-restart">{{ .strings.settingsApplyRestartLater }}</span>
                     <span class="button ~critical @low" id="settings-apply-restart">{{ .strings.settingsApplyRestartNow }}</span>
                 </div>
@@ -389,26 +389,28 @@
             </form>
         </div>
         <div id="notification-box"></div>
-        <span class="dropdown" tabindex="0" id="lang-dropdown">
-            <span class="button ~urge dropdown-button">
-                <i class="ri-global-line"></i>
-                <span class="ml-2 chev"></span>
-            </span>
-            <div class="dropdown-display">
-                <div class="card ~neutral @low">
-                    <label class="switch pb-4">
-                        <input type="radio" name="lang-time" id="lang-12h">
-                        <span>{{ .strings.time12h }}</span>
-                    </label>
-                    <label class="switch pb-4">
-                        <input type="radio" name="lang-time" id="lang-24h">
-                        <span>{{ .strings.time24h }}</span>
-                    </label>
-                    <div id="lang-list"></div>
+        <div class="top-4 left-4 absolute">
+            <span class="dropdown" tabindex="0" id="lang-dropdown">
+                <span class="button ~urge dropdown-button">
+                    <i class="ri-global-line"></i>
+                    <span class="ml-2 chev"></span>
+                </span>
+                <div class="dropdown-display">
+                    <div class="card ~neutral @low">
+                        <label class="switch pb-4">
+                            <input type="radio" name="lang-time" id="lang-12h">
+                            <span>{{ .strings.time12h }}</span>
+                        </label>
+                        <label class="switch pb-4">
+                            <input type="radio" name="lang-time" id="lang-24h">
+                            <span>{{ .strings.time24h }}</span>
+                        </label>
+                        <div id="lang-list"></div>
+                    </div>
                 </div>
-            </div>
-        </span>
-        <span class="button ~warning" alt="{{ .strings.theme }}" id="button-theme"><i class="ri-sun-line"></i></span>
+            </span>
+            <span class="button ~warning" alt="{{ .strings.theme }}" id="button-theme"><i class="ri-sun-line"></i></span>
+        </div>
         <div class="page-container">
             <div class="mb-4">
                 <header class="flex flex-wrap items-center justify-between">
@@ -576,7 +578,7 @@
                         </div>
                         <div class="row">
                             <span class="col sm button ~neutral @low center mb-2" id="accounts-add-user">{{ .quantityStrings.addUser.Singular }}</span>
-                            <div id="accounts-announce-dropdown" class="col sm dropdown" tabindex="0">
+                            <div id="accounts-announce-dropdown" class="col sm dropdown pb-0i" tabindex="0">
                                 <span class="h-100 sm button ~info @low center mb-2" id="accounts-announce">{{ .strings.announce }}</span>
                                 <div class="dropdown-display">
                                     <div class="card ~neutral @low">
@@ -587,7 +589,7 @@
                             </div>
                             <span class="col sm button ~urge @low center mb-2" id="accounts-modify-user">{{ .strings.modifySettings }}</span>
                             <span class="col sm button ~warning @low center mb-2" id="accounts-extend-expiry">{{ .strings.extendExpiry }}</span>
-                            <div id="accounts-disable-enable-dropdown" class="col sm dropdown manual" tabindex="0">
+                            <div id="accounts-disable-enable-dropdown" class="col sm dropdown manual pb-0i" tabindex="0">
                                 <span class="h-100 sm button ~positive @low center mb-2" id="accounts-disable-enable">{{ .strings.disable }}</span>
                                 <div class="dropdown-display">
                                     <div class="card ~neutral @low">
