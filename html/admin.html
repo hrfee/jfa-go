@@ -538,7 +538,7 @@
                             <div class="flex-expand mb-2 mt-4">
                                 <input type="number" min="0" id="create-uses" class="input ~neutral @low mr-2" value=1>
                                 <label for="create-inf-uses" class="button ~neutral @low" title="Set uses to infinite">
-                                    <span>∞</span>
+                                    <span>&infin;</span>
                                     <input type="checkbox" class="unfocused" id="create-inf-uses" aria-label="Set uses to infinite">
                                 </label>
                             </div>
@@ -644,8 +644,8 @@
                     <div class="row">
                         <div class="card ~neutral @low col" id="settings-sidebar">
                             <aside class="aside sm ~info mb-2" id="settings-message">Note: <span class="badge ~critical">*</span> indicates a required field, <span class="badge ~info">R</span> indicates changes require a restart.</aside> 
-                            <span class="button ~neutral @low settings-section-button mb-2" id="setting-about"><span class="flex">{{ .strings.aboutProgram }} <i class="ri-information-line ml-2"></i></span></span>
-                            <span class="button ~neutral @low settings-section-button mb-2" id="setting-profiles"><span class="flex">{{ .strings.userProfiles }} <i class="ri-user-line ml-2"></i></span></span>
+                            <span class="button ~neutral @low settings-section-button justify-between mb-2" id="setting-about"><span class="flex">{{ .strings.aboutProgram }} <i class="ri-information-line ml-2"></i></span></span>
+                            <span class="button ~neutral @low settings-section-button justify-between mb-2" id="setting-profiles"><span class="flex">{{ .strings.userProfiles }} <i class="ri-user-line ml-2"></i></span></span>
                         </div>
                         <div class="card ~neutral @low col overflow" id="settings-panel"></div>
                     </div>

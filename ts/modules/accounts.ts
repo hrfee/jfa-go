@@ -193,8 +193,10 @@ class user implements User {
         if (!u) {
             this._notifyDropdown.querySelector(".accounts-area-matrix").classList.add("unfocused");
             this._matrix.innerHTML = `
-            <span class="chip btn @high">${window.lang.strings("add")}</span>
-            <input type="text" class="input ~neutral @low stealth-input unfocused" placeholder="@user:riot.im">
+            <div class="table-inline">
+                <span class="chip btn @high">${window.lang.strings("add")}</span>
+                <input type="text" class="input ~neutral @low stealth-input unfocused" placeholder="@user:riot.im">
+            </div>
             `;
             (this._matrix.querySelector("span") as HTMLSpanElement).onclick = this._addMatrix;
         } else {

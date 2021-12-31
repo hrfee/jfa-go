@@ -549,7 +549,7 @@ export class settingsList {
         this._sections[name] = section;
         this._panel.appendChild(this._sections[name].asElement());
         const button = document.createElement("span") as HTMLSpanElement;
-        button.classList.add("button", "~neutral", "@low", "settings-section-button", "mb-2");
+        button.classList.add("button", "~neutral", "@low", "settings-section-button", "justify-between", "mb-2");
         button.textContent = s.meta.name;
         if (subButton) { button.appendChild(subButton); }
         button.onclick = () => { this._showPanel(name); };
