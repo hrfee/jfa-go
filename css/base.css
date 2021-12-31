@@ -75,7 +75,8 @@ html:not(.dark) .card.\@low:not(.\~neutral):not(.\~positive):not(.\~urge):not(.\
 
 .banner.header {
     margin-bottom: var(--spacing-4,1rem);
-    max-width: inherit !important;
+    max-width: calc(100% + 2.2rem); /* no idea why this works */
+    margin-left: -1.1rem;
 }
 
 .banner.footer {
