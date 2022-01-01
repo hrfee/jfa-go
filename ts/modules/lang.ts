@@ -68,6 +68,8 @@ export const loadLangSelector = (page: string) => {
             t12.checked = false;
         }
     }
+    let queryString = new URLSearchParams(window.location.search);
+    if (queryString.has("lang")) queryString.delete("lang");
     _get("/lang/" + page, null, (req: XMLHttpRequest) => {
         if (req.readyState == 4) {
             if (req.status != 200) {
@@ -77,7 +79,9 @@ export const loadLangSelector = (page: string) => {
             const list = document.getElementById("lang-list") as HTMLDivElement;
             let innerHTML = '';
             for (let code in req.response) {
-                innerHTML += `<a href="?lang=${code}" class="button w-100 al justify-start ~neutral mb-2 lang-link">${req.response[code]}</a>`;
+                queryString.set("lang", code);
+                innerHTML += `<a href="?${queryString.toString()}" class="button w-100 al justify-start ~neutral mb-2 lang-link">${req.response[code]}</a>`;
+                queryString.delete("lang");
             }
             list.innerHTML = innerHTML;
         }
