@@ -173,7 +173,7 @@
             <form class="modal-content wide card" id="form-announce" href="">
                 <span class="heading"><span id="header-announce"></span> <span class="modal-close">&times;</span></span>
                 <div class="row">
-                    <div class="col flex-col content mt-8">
+                    <div class="col card ~neutral @low">
                         <div id="announce-details">
                             <span class="label supra" for="editor-variables" id="label-editor-variables">{{ .strings.variables }}</span>
                             <div id="announce-variables">
@@ -182,7 +182,7 @@
                             <label class="label supra" for="announce-subject"> {{ .strings.subject }}</label>
                             <input type="text" id="announce-subject" class="input ~neutral @low mb-2 mt-4">
                             <label class="label supra" for="textarea-announce">{{ .strings.message }}</label>
-                            <textarea id="textarea-announce" class="textarea full-width ~neutral @low mt-8 font-mono bg-inherit"></textarea>
+                            <textarea id="textarea-announce" class="textarea full-width ~neutral @low mt-4 font-mono"></textarea>
                             <p class="support mt-4 mb-2">{{ .strings.markdownSupported }}</p>
                         </div>
                         <label class="label unfocused" id="announce-name"><p class="supra">{{ .strings.name }}</p>
@@ -226,13 +226,13 @@
             <form class="modal-content wide card" id="form-editor" href="">
                 <span class="heading"><span id="header-editor"></span> <span class="modal-close">&times;</span></span>
                 <div class="row">
-                    <div class="col flex-col content mt-8">
+                    <div class="col card ~neutral @low">
                         <span class="label supra" for="editor-variables" id="label-editor-variables">{{ .strings.variables }}</span>
-                        <div id="editor-variables"></div>
+                        <div id="editor-variables" class="mt-4"></div>
                         <span class="label supra" for="editor-conditionals" id="label-editor-conditionals">{{ .strings.conditionals }}</span>
                         <div id="editor-conditionals"></div>
                         <label class="label supra" for="textarea-editor">{{ .strings.message }}</label>
-                        <textarea id="textarea-editor" class="textarea full-width flex-auto ~neutral @low mt-8 font-mono bg-inherit"></textarea>
+                        <textarea id="textarea-editor" class="textarea full-width flex-auto ~neutral @low mt-4 font-mono"></textarea>
                         <p class="support mt-4 mb-2">{{ .strings.markdownSupported }}</p>
                         <div class="flex-row">
                             <label class="full-width ml-2">
@@ -609,13 +609,13 @@
                                     <th>{{ .strings.username }}</th>
                                     <th>{{ .strings.emailAddress }}</th>
                                     {{ if .telegramEnabled }}
-                                    <th>Telegram</th>
+                                    <th class="text-center-i">Telegram</th>
                                     {{ end }}
                                     {{ if .matrixEnabled }}
-                                    <th>Matrix</th>
+                                    <th class="text-center-i">Matrix</th>
                                     {{ end }}
                                     {{ if .discordEnabled }}
-                                    <th>Discord</th>
+                                    <th class="text-center-i">Discord</th>
                                     {{ end }}
                                     <th>{{ .strings.expiry }}</th>
                                     <th>{{ .strings.lastActiveTime }}</th>

@@ -391,6 +391,10 @@ select, textarea {
     -moz-appearance: none;
 }
 
+html.dark textarea {
+    background-color: #202020
+}
+
 input {
     color: inherit;
     border: 0 solid var(--color-neutral-300);
@@ -531,4 +535,8 @@ div.card:contains(section.banner.footer) {
 
 .pb-0i {
     padding-bottom: 0px !important
+}
+
+.text-center-i {
+    text-align: center !important;
 }
