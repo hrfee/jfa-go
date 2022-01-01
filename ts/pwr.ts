@@ -1,6 +1,7 @@
 import { Modal } from "./modules/modal.js";
 import { initValidator } from "./modules/validator.js";
 import { _post, addLoader, removeLoader } from "./modules/common.js";
+import { loadLangSelector } from "./modules/lang.js";
 
 interface formWindow extends Window {
     invalidPassword: string;
@@ -28,6 +29,8 @@ interface formWindow extends Window {
     userExpiryMinutes: number;
     userExpiryMessage: string;
 }
+
+loadLangSelector("pwr");
 
 declare var window: formWindow;
 

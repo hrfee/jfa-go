@@ -7,11 +7,13 @@
     </head>
     <body class="section">
         <div class="page-container">
-            <h1 class="heading">Invalid invite code.</h1>
-            <p class="content">The code above was either incorrect, or has expired.</p>
-            <p class="content">
-            {{ .contactMessage }}
-            </p>
+            <div class="card">
+                <h1 class="text-3xl font-semibold">Invalid invite code.</h1>
+                <p class="content">The code above was either incorrect, or has expired.</p>
+                <p class="content">
+                    {{ .contactMessage }}
+                </p>
+            </div>
         </div>
     </body>
 </html>                            

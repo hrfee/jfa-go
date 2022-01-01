@@ -1,13 +1,5 @@
 {
     "meta": {
-        "name": ""
-    },
-    "strings": {
-        "passwordReset": "",
-        "resetFailed": "",
-        "tryAgain": "",
-        "youCanLogin": "",
-        "youCanLoginOmbi": "",
-        "changeYourPassword": ""
+        "name": "English (GB)"
     }
 }
