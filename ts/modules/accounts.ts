@@ -407,7 +407,7 @@ class user implements User {
         }
         innerHTML += `
         <td class="accounts-expiry"></td>
-        <td class="accounts-last-active"></td>
+        <td class="accounts-last-active whitespace-nowrap"></td>
         `;
         this._row.innerHTML = innerHTML;
         const emailEditor = `<input type="email" class="input ~neutral @low stealth-input">`;
