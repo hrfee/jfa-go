@@ -9,6 +9,7 @@ all:
 	cd out && npx uncss index.html --stylesheets remixicon.css > _remixicon.css; cd ..
 	mv out/_remixicon.css out/remixicon.css
 	cp ../static/* out/
+	node inject.js
 
 debug:
 	-mkdir -p out
