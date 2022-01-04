@@ -19,7 +19,7 @@
     </head>
     <body class="max-w-full overflow-x-hidden section">
         <div id="modal-deb" class="modal">
-            <div class="modal-content wide card ~neutral">
+            <div class="modal-content wide card">
                 <span class="heading"> Debian/Ubuntu (apt)</span>
                 <div class="mt-1">
                     <pre style="margin: 0; line-height: 125%">curl https://apt.hrfee.dev/hrfee.pubkey.gpg | sudo apt-key add -
@@ -38,7 +38,7 @@ sudo apt-get install jfa-go-tray
             </div>
         </div>
         <div id="modal-docker" class="modal">
-            <div class="modal-content wide card ~neutral">
+            <div class="modal-content wide card">
                 <span class="heading"> Docker</span>
                 <div class="mt-1">
                     <pre style="margin: 0; line-height: 125%">docker create <span style="color: #BB6622; font-weight: bold">\</span>
@@ -61,7 +61,7 @@ sudo apt-get install jfa-go-tray
                     <p class="content">a better way to manage your Jellyfin users.</p>
                 </div>
                 <div class="row col flex center">
-                    <ul class="support">
+                    <ul class="support list-disc">
                         <li>Send invite links to your users, let them sign up themselves</li>
                         <li>Create setting profiles to restrict permissions of new users</li>
                         <li>Handles password resets without your intervention</li>
@@ -74,23 +74,23 @@ sudo apt-get install jfa-go-tray
                 </div>
                 <span class="row col flex center supra">links</span>
                 <div class="row col flex center">
-                    <a class="button ~neutral mr-half mt-1 mb-1" href="https://github.com/hrfee/jfa-go">github</a>
-                    <a class="button ~urge mt-1 mb-1 mr-half" href="https://wiki.jfa-go.com">wiki/docs</a>
-                    <a class="button ~positive mt-1 mb-1 mr-half" href="https://weblate.jfa-go.com">translation</a>
-                    <div class="dropdown mr-half" tabindex="0">
+                    <a class="button ~neutral mr-2 mt-1 mb-1" href="https://github.com/hrfee/jfa-go">github</a>
+                    <a class="button ~urge mt-1 mb-1 mr-2" href="https://wiki.jfa-go.com">wiki/docs</a>
+                    <a class="button ~positive mt-1 mb-1 mr-2" href="https://weblate.jfa-go.com">translation</a>
+                    <div class="dropdown mr-2" tabindex="0">
                         <a href="https://github.com/sponsors/hrfee" target="_blank" class="button ~info mt-1 mb-1 dropdown-button">
-                            <i class="ri-hand-heart-line mr-half"></i>
+                            <i class="ri-hand-heart-line mr-2"></i>
                             donate
-                            <span class="ml-1 chev"></span>
+                            <span class="ml-2 chev"></span>
                         </a>
                         <div class="dropdown-display">
-                            <div class="card ~info @low">
-                                <a href="https://github.com/sponsors/hrfee" target="_blank" class="button input ~neutral field mb-half lang-link">GitHub</a>
-                                <a href="https://ko-fi.com/hrfee" target="_blank" class="button input ~neutral field mb-half lang-link">Ko-fi</a>
+                            <div class="card @low">
+                                <a href="https://github.com/sponsors/hrfee" target="_blank" class="button input ~neutral field mb-2 lang-link">GitHub</a>
+                                <a href="https://ko-fi.com/hrfee" target="_blank" class="button input ~neutral field mb-2 lang-link">Ko-fi</a>
                             </div>
                         </div>
                     </div>
-                    <a class="button ~urge mt-1 mb-1 @low discord" href="https://discord.com/invite/MrtvuQmyhP" target="_blank"><i class="ri-discord-line mr-half"></i>discord</a>
+                    <a class="button ~urge mt-1 mb-1 @low discord" href="https://discord.com/invite/MrtvuQmyhP" target="_blank"><i class="ri-discord-line mr-2"></i>discord</a>
                 </div>
                 <p class="row col flex center supra">downloads</p>
                 <p class="row col flex center support">instructions can be found&nbsp<a target="_blank" href="https://github.com/hrfee/jfa-go#install">here</a></p>
@@ -102,19 +102,19 @@ sudo apt-get install jfa-go-tray
                 <div class="mt-1" id="sect-stable">
                     <p class="row center">Usually released once/twice every month, and aren't necessarily super stable.</p>
                     <div class="row col flex center">
-                        <a class="button ~info mr-half mb-half lang-link" target="_blank" href="https://github.com/hrfee/jfa-go/releases">windows/mac/linux</a>
-                        <a class="button ~info mr-half mb-half lang-link" id="download-docker">docker</a>
-                        <a class="button ~info mr-half mb-half lang-link" id="download-deb">debian/ubuntu</a>
-                        <a class="button ~info mr-half mb-half lang-link" target="_blank" href="https://aur.archlinux.org/packages/jfa-go">arch (aur)</a>
-                        <a class="button ~info mr-half mb-half lang-link" target="_blank" href="https://aur.archlinux.org/packages/jfa-go-bin">arch (aur binary)</a>
+                        <a class="button ~info mr-2 mb-2 lang-link" target="_blank" href="https://github.com/hrfee/jfa-go/releases">windows/mac/linux</a>
+                        <a class="button ~info mr-2 mb-2 lang-link" id="download-docker">docker</a>
+                        <a class="button ~info mr-2 mb-2 lang-link" id="download-deb">debian/ubuntu</a>
+                        <a class="button ~info mr-2 mb-2 lang-link" target="_blank" href="https://aur.archlinux.org/packages/jfa-go">arch (aur)</a>
+                        <a class="button ~info mr-2 mb-2 lang-link" target="_blank" href="https://aur.archlinux.org/packages/jfa-go-bin">arch (aur binary)</a>
                     </div>
                 </div>
                 <div class="mt-1 unfocused" id="sect-unstable">
                     <p class="row center">These are built on every commit, so may include incomplete/broken features. Take care.</p>
                     <div class="row col flex center">
-                        <a class="button ~info mr-half mb-half lang-link" id="download-docker-unstable">docker</a>
-                        <a class="button ~info mr-half mb-half lang-link" id="download-deb-unstable">debian/ubuntu</a>
-                        <a class="button ~info mr-half mb-half lang-link" target="_blank" href="https://aur.archlinux.org/packages/jfa-go-git">arch (aur git)</a>
+                        <a class="button ~info mr-2 mb-2 lang-link" id="download-docker-unstable">docker</a>
+                        <a class="button ~info mr-2 mb-2 lang-link" id="download-deb-unstable">debian/ubuntu</a>
+                        <a class="button ~info mr-2 mb-2 lang-link" target="_blank" href="https://aur.archlinux.org/packages/jfa-go-git">arch (aur git)</a>
                     </div>
                 </div>
                 <section class="section ~neutral banner footer flex-expand middle">

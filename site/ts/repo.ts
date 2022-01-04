@@ -24,7 +24,7 @@ export const loadBuilds = () => {
     for (let buildName in categories) {
         if (Object.keys(categories[buildName]).length == 1) {
             const button = document.createElement("a") as HTMLAnchorElement;
-            button.classList.add("button", "~info", "mr-half", "mb-half", "lang-link");
+            button.classList.add("button", "~info", "mr-2", "mb-2", "lang-link");
             button.target = "_blank";
             button.textContent = buildName.toLowerCase();
             button.href = urlBase + categories[buildName][Object.keys(categories[buildName])[0]];
@@ -34,16 +34,16 @@ export const loadBuilds = () => {
             dropdown.tabIndex = 0;
             dropdown.classList.add("dropdown");
             let innerHTML = `
-            <span class="button ~info mr-half mb-half lang-link">
+            <span class="button ~info mr-2 mb-2 lang-link">
                 ${buildName.toLowerCase()}
-                <span class="ml-half chev"></span>
+                <span class="ml-2 chev"></span>
             </span>
             <div class="dropdown-display above">
-                <div class="card ~info @low">
+                <div class="card @low">
             `;
             for (let arch in categories[buildName]) {
                 innerHTML += `
-                <a href="${urlBase + categories[buildName][arch]}" target="_blank" class="button input ~neutral field mb-half lang-link">${arch}</a>
+                <a href="${urlBase + categories[buildName][arch]}" target="_blank" class="button input ~neutral field mb-2 lang-link">${arch}</a>
                 `;
             }
             innerHTML += `

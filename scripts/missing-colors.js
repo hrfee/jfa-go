@@ -48,9 +48,13 @@ const fixHTML = (infile, outfile) => {
 let inpath = process.argv[process.argv.length-2];
 let outpath = process.argv[process.argv.length-1];
 
-let files = fs.readdirSync(inpath);
-for (let i = 0; i < files.length; i++) {
-    if (files[i].indexOf(".html")>=0) {
-        fixHTML(path.join(inpath, files[i]), path.join(outpath, files[i]));
+if (fs.statSync(inpath).isDirectory()) {
+    let files = fs.readdirSync(inpath);
+    for (let i = 0; i < files.length; i++) {
+        if (files[i].indexOf(".html")>=0) {
+            fixHTML(path.join(inpath, files[i]), path.join(outpath, files[i]));
+        }
     }
+} else {
+    fixHTML(inpath, outpath);
 }

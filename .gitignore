@@ -1,6 +1,7 @@
 node_modules/
 site/node_modules/
 site/out/
+site/tempts/
 mail/*.html
 dist/
 build/
