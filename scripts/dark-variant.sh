@@ -2,7 +2,7 @@
 
 # scan all typescript and automatically add dark variants to color tags if they're not already present.
 
-for f in $2/*.ts; do
+for f in $1/*.ts; do
     # FIXME: inline html
     for l in $(grep -n "~neutral\|~positive\|~urge\|~warning\|~info\|~critical" $f | sed -e 's/:.*//g'); do
     # for l in $(sed -n '/classList/=' $f); do
