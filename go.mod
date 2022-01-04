@@ -14,6 +14,7 @@ replace github.com/hrfee/jfa-go/linecache => ./linecache
 
 require (
 	github.com/bwmarrin/discordgo v0.23.2
+	github.com/cpuguy83/go-md2man/v2 v2.0.1 // indirect
 	github.com/emersion/go-autostart v0.0.0-20210130080809-00ed301c8e9a
 	github.com/fatih/color v1.13.0
 	github.com/fsnotify/fsnotify v1.5.1
@@ -49,7 +50,7 @@ require (
 	github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966
 	github.com/swaggo/files v0.0.0-20210815190702-a29dd2bc99b2
 	github.com/swaggo/gin-swagger v1.3.3
-	github.com/swaggo/swag v1.7.6 // indirect
+	github.com/swaggo/swag v1.7.8 // indirect
 	github.com/technoweenie/multipartstreamer v1.0.1 // indirect
 	github.com/tidwall/sjson v1.2.4 // indirect
 	github.com/ugorji/go v1.2.6 // indirect

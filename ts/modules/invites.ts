@@ -93,14 +93,14 @@ class DOMInvite implements Invite {
         const chip = container.querySelector("span.inv-email-chip");
         const tooltip = container.querySelector("span.content") as HTMLSpanElement;
         if (address == "") {
-            container.classList.remove("mr-1");
+            container.classList.remove("mr-4");
             icon.classList.remove("ri-mail-line");
             icon.classList.remove("ri-mail-close-line");
             chip.classList.remove("~neutral");
             chip.classList.remove("~critical");
             chip.classList.remove("chip");
         } else {
-            container.classList.add("mr-1");
+            container.classList.add("mr-4");
             chip.classList.add("chip");
             if (address.includes("Failed")) {
                 icon.classList.remove("ri-mail-line");
@@ -251,14 +251,14 @@ class DOMInvite implements Invite {
 
         this._header = document.createElement('div') as HTMLDivElement;
         this._container.appendChild(this._header);
-        this._header.classList.add("card", "~neutral", "!normal", "inv-header", "elem-pad", "no-pad", "flex-expand", "row", "mt-half", "overflow-y");
+        this._header.classList.add("card", "dark:~d_neutral", "@low", "inv-header", "elem-pad", "no-pad", "flex-expand", "row", "mt-2", "overflow-y");
 
         this._codeArea = document.createElement('div') as HTMLDivElement;
         this._header.appendChild(this._codeArea);
         this._codeArea.classList.add("inv-codearea");
         this._codeArea.innerHTML = `
-        <a class="invite-link code monospace mr-1" href=""></a>
-        <span class="button ~info !normal" title="${window.lang.strings("copy")}"><i class="ri-file-copy-line"></i></span>
+        <a class="invite-link code font-mono bg-inherit mr-4" href=""></a>
+        <span class="button ~info @low" title="${window.lang.strings("copy")}"><i class="ri-file-copy-line"></i></span>
         `;
         const copyButton = this._codeArea.querySelector("span.button") as HTMLSpanElement;
         copyButton.onclick = () => { 
@@ -284,8 +284,8 @@ class DOMInvite implements Invite {
             <span class="inv-email-chip"><i></i></span>
             <span class="content sm"></span>
         </div>
-        <span class="inv-duration mr-1"></span>
-        <span class="button ~critical !normal inv-delete">${window.lang.strings("delete")}</span>
+        <span class="inv-duration mr-4"></span>
+        <span class="button ~critical @low inv-delete">${window.lang.strings("delete")}</span>
         <label>
             <i class="icon clickable ri-arrow-down-s-line not-rotated"></i>
             <input class="inv-toggle-details unfocused" type="checkbox">
@@ -304,7 +304,7 @@ class DOMInvite implements Invite {
 
         this._details = document.createElement('div') as HTMLDivElement;
         this._container.appendChild(this._details);
-        this._details.classList.add("card", "~neutral", "!normal", "mt-half", "no-pad", "inv-details");
+        this._details.classList.add("card", "~neutral", "@low", "mt-2", "no-pad", "inv-details");
         const detailsInner = document.createElement('div') as HTMLDivElement;
         this._details.appendChild(detailsInner);
         detailsInner.classList.add("inv-row", "flex-expand", "row", "elem-pad", "align-top");
@@ -313,8 +313,8 @@ class DOMInvite implements Invite {
         detailsInner.appendChild(this._left);
         this._left.classList.add("inv-profilearea");
         let innerHTML = `
-        <p class="supra mb-1 top">${window.lang.strings("profile")}</p>
-        <div class="select ~neutral !normal inv-profileselect inline-block">
+        <p class="supra mb-2 top">${window.lang.strings("profile")}</p>
+        <div class="select ~neutral @low inv-profileselect inline-block mb-2">
             <select>
                 <option value="noProfile" selected>${window.lang.strings("inviteNoProfile")}</option>
             </select>
@@ -322,7 +322,7 @@ class DOMInvite implements Invite {
         `;
         if (window.notificationsEnabled) {
             innerHTML += `
-            <p class="label supra">${window.lang.strings("notifyEvent")}</p>
+            <p class="label supra mb-2">${window.lang.strings("notifyEvent")}</p>
             <label class="switch block">
                 <input class="inv-notify-expiry" type="checkbox">
                 <span>${window.lang.strings("notifyInviteExpiry")}</span>
@@ -348,14 +348,14 @@ class DOMInvite implements Invite {
         detailsInner.appendChild(this._middle);
         this._middle.classList.add("block");
         this._middle.innerHTML = `
-        <p class="supra mb-1 top">${window.lang.strings("inviteDateCreated")} <strong class="inv-created"></strong></p>
-        <p class="supra mb-1">${window.lang.strings("inviteRemainingUses")} <strong class="inv-remaining"></strong></p>
-        <p class="supra mb-1"><span class="user-expiry"></span> <strong class="user-expiry-time"></strong></p>
+        <p class="supra mb-4 top">${window.lang.strings("inviteDateCreated")} <strong class="inv-created"></strong></p>
+        <p class="supra mb-4">${window.lang.strings("inviteRemainingUses")} <strong class="inv-remaining"></strong></p>
+        <p class="supra mb-4"><span class="user-expiry"></span> <strong class="user-expiry-time"></strong></p>
         `;
 
         this._right = document.createElement('div') as HTMLDivElement;
         detailsInner.appendChild(this._right);
-        this._right.classList.add("card", "~neutral", "!low", "inv-created-users");
+        this._right.classList.add("card", "~neutral", "@low", "inv-created-users");
         this._right.innerHTML = `<strong class="supra table-header">${window.lang.strings("inviteUsersCreated")}</strong>`;
         this._userTable = document.createElement('div') as HTMLDivElement;
         this._right.appendChild(this._userTable);
@@ -425,9 +425,9 @@ export class inviteList implements inviteList {
             this._list.classList.add("empty");
             this._list.innerHTML = `
             <div class="inv inv-empty">
-                <div class="card ~neutral !normal inv-header flex-expand mt-half">
+                <div class="card dark:~d_neutral @low inv-header flex-expand mt-2">
                     <div class="inv-codearea">
-                        <span class="code monospace">${window.lang.strings("inviteNoInvites")}</span>
+                        <span class="code font-mono bg-inherit">${window.lang.strings("inviteNoInvites")}</span>
                     </div>
                 </div>
             </div>
@@ -787,17 +787,17 @@ export class createInvite {
             if (this._invDurationButton.checked) {
                 this._invDuration.classList.remove("unfocused");
                 this._userExpiry.classList.add("unfocused");
-                invSpan.classList.add("!high");
-                invSpan.classList.remove("!normal");
-                userSpan.classList.add("!normal");
-                userSpan.classList.remove("!high");
+                invSpan.classList.add("@high");
+                invSpan.classList.remove("@low");
+                userSpan.classList.add("@low");
+                userSpan.classList.remove("@high");
             } else if (this._userExpiryButton.checked) {
                 this._userExpiry.classList.remove("unfocused");
                 this._invDuration.classList.add("unfocused");
-                invSpan.classList.add("!normal");
-                invSpan.classList.remove("!high");
-                userSpan.classList.add("!high");
-                userSpan.classList.remove("!normal");
+                invSpan.classList.add("@low");
+                invSpan.classList.remove("@high");
+                userSpan.classList.add("@high");
+                userSpan.classList.remove("@low");
             }
         };
 

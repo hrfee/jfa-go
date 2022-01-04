@@ -14,77 +14,79 @@
     <body class="max-w-full overflow-x-hidden section">
         <div id="modal-success" class="modal">
             <div class="modal-content card">
-                <span class="heading mb-1">{{ if .passwordReset }}{{ .strings.passwordReset }}{{ else }}{{ .strings.successHeader }}{{ end }}</span>
-                <p class="content mb-1">{{ if .passwordReset }}{{ .strings.youCanLoginPassword }}{{ else }}{{ .successMessage }}{{ end }}</p>
-                <a class="button ~urge !normal full-width center supra submit" href="{{ .jfLink }}" id="create-success-button">{{ .strings.continue }}</a>
+                <span class="heading mb-4">{{ if .passwordReset }}{{ .strings.passwordReset }}{{ else }}{{ .strings.successHeader }}{{ end }}</span>
+                <p class="content mb-4">{{ if .passwordReset }}{{ .strings.youCanLoginPassword }}{{ else }}{{ .successMessage }}{{ end }}</p>
+                <a class="button ~urge @low full-width center supra submit" href="{{ .jfLink }}" id="create-success-button">{{ .strings.continue }}</a>
             </div>
         </div>
         <div id="modal-confirmation" class="modal">
             <div class="modal-content card">
-                <span class="heading mb-1">{{ .strings.confirmationRequired }}</span>
-                <p class="content mb-1">{{ .strings.confirmationRequiredMessage }}</p>
+                <span class="heading mb-4">{{ .strings.confirmationRequired }}</span>
+                <p class="content mb-4">{{ .strings.confirmationRequiredMessage }}</p>
             </div>
         </div>
         {{ if .telegramEnabled }}
         <div id="modal-telegram" class="modal">
             <div class="modal-content card">
-                <span class="heading mb-1">{{ .strings.linkTelegram }}</span>
-                <p class="content mb-1">{{ .strings.sendPIN }}</p>
-                <h1 class="ac">{{ .telegramPIN }}</h1>
+                <span class="heading mb-4">{{ .strings.linkTelegram }}</span>
+                <p class="content mb-4">{{ .strings.sendPIN }}</p>
+                <p class="text-center text-2xl mb-2">{{ .telegramPIN }}</p>
                 <a class="subheading link-center" href="{{ .telegramURL }}" target="_blank">
-                    <span class="shield ~info mr-1">
+                    <span class="shield ~info mr-4">
                         <span class="icon">
                             <i class="ri-telegram-line"></i>
                         </span>
                     </span>
                     &#64;{{ .telegramUsername }}
                 </a>
-                <span class="button ~info !normal full-width center mt-1" id="telegram-waiting">{{ .strings.success }}</span>
+                <span class="button ~info @low full-width center mt-4" id="telegram-waiting">{{ .strings.success }}</span>
             </div>
         </div>
         {{ end }}
         {{ if .discordEnabled }}
         <div id="modal-discord" class="modal">
             <div class="modal-content card">
-                <span class="heading mb-1">{{ .strings.linkDiscord }}</span>
-                <p class="content mb-1"> {{ .discordSendPINMessage }}</p>
-                <h1 class="ac">{{ .discordPIN }}</h1>
+                <span class="heading mb-4">{{ .strings.linkDiscord }}</span>
+                <p class="content mb-4"> {{ .discordSendPINMessage }}</p>
+                <h1 class="text-center text-2xl mb-2">{{ .discordPIN }}</h1>
                 <a id="discord-invite"></a>
-                <span class="button ~info !normal full-width center mt-1" id="discord-waiting">{{ .strings.success }}</span>
+                <span class="button ~info @low full-width center mt-4" id="discord-waiting">{{ .strings.success }}</span>
             </div>
         </div>
         {{ end }}
         {{ if .matrixEnabled }}
         <div id="modal-matrix" class="modal">
             <div class="modal-content card">
-                <span class="heading mb-1">{{ .strings.linkMatrix }}</span>
-                <p class="content mb-1"> {{ .strings.matrixEnterUser }}</p>
-                <input type="text" class="input ~neutral !high" placeholder="@user:riot.im" id="matrix-userid">
-                <div class="subheading link-center mt-1">
-                    <span class="shield ~info mr-1">
+                <span class="heading mb-4">{{ .strings.linkMatrix }}</span>
+                <p class="content mb-4"> {{ .strings.matrixEnterUser }}</p>
+                <input type="text" class="input ~neutral @high" placeholder="@user:riot.im" id="matrix-userid">
+                <div class="subheading link-center mt-4">
+                    <span class="shield ~info mr-4">
                         <span class="icon">
                             <i class="ri-chat-3-line"></i>
                         </span>
                     </span>
                     {{ .matrixUser }}
                 </div>
-                <span class="button ~info !normal full-width center mt-1" id="matrix-send">{{ .strings.submit }}</span>
+                <span class="button ~info @low full-width center mt-4" id="matrix-send">{{ .strings.submit }}</span>
             </div>
         </div>
         {{ end }}
-        <span class="dropdown" tabindex="0" id="lang-dropdown">
-            <span class="button ~urge dropdown-button">
-                <i class="ri-global-line"></i>
-                <span class="ml-1 chev"></span>
-            </span>
-            <div class="dropdown-display">
-                <div class="card ~neutral !low" id="lang-list">
+        <div class="top-4 left-4 absolute">
+            <span class="dropdown" tabindex="0" id="lang-dropdown">
+                <span class="button ~urge dropdown-button">
+                    <i class="ri-global-line"></i>
+                    <span class="ml-2 chev"></span>
+                </span>
+                <div class="dropdown-display">
+                    <div class="card ~neutral @low" id="lang-list">
+                    </div>
                 </div>
-            </div>
-        </span>
+            </span>
+        </div>    
         <div id="notification-box"></div>
         <div class="page-container">
-            <div class="card ~neutral !low">
+            <div class="card dark:~d_neutral @low">
                 <div class="row baseline">
                     <span class="col heading">
                         {{ if .passwordReset }}
@@ -106,41 +108,41 @@
                         {{ if .userExpiry }}
                         <aside class="col aside sm ~warning" id="user-expiry-message"></aside>
                         {{ end }}
-                        <form class="card ~neutral !normal" id="form-create" href="">
+                        <form class="card dark:~d_neutral @low" id="form-create" href="">
                             {{ if not .passwordReset }}
                             <label class="label supra">
                                 {{ .strings.username }}
-                                <input type="text" class="input ~neutral !high mt-half mb-1" placeholder="{{ .strings.username }}" id="create-username" aria-label="{{ .strings.username }}">
+                                <input type="text" class="input ~neutral @high mt-2 mb-4" placeholder="{{ .strings.username }}" id="create-username" aria-label="{{ .strings.username }}">
                             </label>
                             
                             <label class="label supra" for="create-email">{{ .strings.emailAddress }}</label>
-                            <input type="email" class="input ~neutral !high mt-half mb-1" placeholder="{{ .strings.emailAddress }}" id="create-email" aria-label="{{ .strings.emailAddress }}" value="{{ .email }}">
+                            <input type="email" class="input ~neutral @high mt-2 mb-4" placeholder="{{ .strings.emailAddress }}" id="create-email" aria-label="{{ .strings.emailAddress }}" value="{{ .email }}">
                             {{ if .telegramEnabled }}
-                            <span class="button ~info !normal full-width center mb-1" id="link-telegram">{{ .strings.linkTelegram }}</span>
+                            <span class="button ~info @low full-width center mb-4" id="link-telegram">{{ .strings.linkTelegram }}</span>
                             {{ end }}
                             {{ if .discordEnabled }}
-                            <span class="button ~info !normal full-width center mb-1" id="link-discord">{{ .strings.linkDiscord }}</span>
+                            <span class="button ~info @low full-width center mb-4" id="link-discord">{{ .strings.linkDiscord }}</span>
                             {{ end }}
                             {{ if .matrixEnabled }}
-                            <span class="button ~info !normal full-width center mb-1" id="link-matrix">{{ .strings.linkMatrix }}</span>
+                            <span class="button ~info @low full-width center mb-4" id="link-matrix">{{ .strings.linkMatrix }}</span>
                             {{ end }}
                             {{ if or (.telegramEnabled) (or .discordEnabled .matrixEnabled) }}
                             <div id="contact-via" class="unfocused">
-                                <label class="row switch pb-1">
+                                <label class="row switch pb-4">
                                     <input type="radio" name="contact-via" value="email"><span>Contact through Email</span>
                                 </label>
                                 {{ if .telegramEnabled }}
-                                <label class="row switch pb-1">
+                                <label class="row switch pb-4">
                                     <input type="radio" name="contact-via" value="telegram" id="contact-via-telegram"><span>Contact through Telegram</span>
                                 </label>
                                 {{ end }}
                                 {{ if .discordEnabled }}
-                                <label class="row switch pb-1">
+                                <label class="row switch pb-4">
                                     <input type="radio" name="contact-via" value="discord" id="contact-via-discord"><span>Contact through Discord</span>
                                 </label>
                                 {{ end }}
                                 {{ if .matrixEnabled }}
-                                <label class="row switch pb-1">
+                                <label class="row switch pb-4">
                                     <input type="radio" name="contact-via" value="matrix" id="contact-via-matrix"><span>Contact through Matrix</span>
                                 </label>
                                 {{ end }}
@@ -148,13 +150,13 @@
                             {{ end }}
                             {{ end }}
                             <label class="label supra" for="create-password">{{ .strings.password }}</label>
-                            <input type="password" class="input ~neutral !high mt-half mb-1" placeholder="{{ .strings.password }}" id="create-password" aria-label="{{ .strings.password }}">
+                            <input type="password" class="input ~neutral @high mt-2 mb-4" placeholder="{{ .strings.password }}" id="create-password" aria-label="{{ .strings.password }}">
                             
                             <label class="label supra" for="create-reenter-password">{{ .strings.reEnterPassword }}</label>
-                            <input type="password" class="input ~neutral !high mt-half mb-1" placeholder="{{ .strings.password }}" id="create-reenter-password" aria-label="{{ .strings.reEnterPassword }}">
+                            <input type="password" class="input ~neutral @high mt-2 mb-4" placeholder="{{ .strings.password }}" id="create-reenter-password" aria-label="{{ .strings.reEnterPassword }}">
                             <label>
                                 <input type="submit" class="unfocused">
-                                <span class="button ~urge !normal full-width center supra submit">
+                                <span class="button ~urge @low full-width center supra submit">
                                     {{ if .passwordReset }}
                                     {{ .strings.reset }}
                                     {{ else }}
@@ -165,7 +167,7 @@
                         </form>
                     </div>
                     <div class="col">
-                        <div class="card ~neutral !normal">
+                        <div class="card ~neutral @low mb-4">
                             <span class="label supra" for="inv-uses">{{ .strings.passwordRequirementsHeader }}</span>
                             <ul>
                                 {{ range $key, $value := .requirements }}
@@ -176,7 +178,7 @@
                             </ul>
                         </div>
                         {{ if .contactMessage }}
-                        <aside class="col aside sm ~info">{{ .contactMessage }}</aside>
+                        <aside class="col aside sm ~info mt-4">{{ .contactMessage }}</aside>
                         {{ end }}
                     </div>
                 </div>

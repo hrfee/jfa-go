@@ -101,7 +101,7 @@ if (window.discordEnabled) {
                 link.classList.add("subheading", "link-center");
                 link.href = inv.invite;
                 link.target = "_blank";
-                link.innerHTML = `<span class="img-circle lg mr-1"><img class="img-circle" src="${inv.icon}" width="64" height="64"></span>${window.discordServerName}`;
+                link.innerHTML = `<span class="img-circle lg mr-4"><img class="img-circle" src="${inv.icon}" width="64" height="64"></span>${window.discordServerName}`;
             }
         });
     }

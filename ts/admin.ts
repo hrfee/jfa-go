@@ -1,4 +1,4 @@
-import { toggleTheme, loadTheme } from "./modules/theme.js";
+import { nightwind } from "./modules/theme.js";
 import { lang, LangFile, loadLangSelector } from "./modules/lang.js";
 import { Modal } from "./modules/modal.js";
 import { Tabs } from "./modules/tabs.js";
@@ -9,26 +9,27 @@ import { ProfileEditor } from "./modules/profiles.js";
 import { _get, _post, notificationBox, whichAnimationEvent, toggleLoader } from "./modules/common.js";
 import { Updater } from "./modules/update.js";
 
-loadTheme();
+let theme = new nightwind();
+
 const themeButton = document.getElementById('button-theme') as HTMLSpanElement;
 const switchThemeIcon = () => {
     const icon = themeButton.childNodes[0] as HTMLElement;
-    if (document.documentElement.classList.contains("dark-theme")) {
+    if (document.documentElement.classList.contains("dark")) {
         icon.classList.add("ri-sun-line");
         icon.classList.remove("ri-moon-line");
         themeButton.classList.add("~warning");
         themeButton.classList.remove("~neutral");
-        themeButton.classList.remove("!high");
+        themeButton.classList.remove("@high");
     } else {
         icon.classList.add("ri-moon-line");
         icon.classList.remove("ri-sun-line");
-        themeButton.classList.add("!high");
+        themeButton.classList.add("@high");
         themeButton.classList.add("~neutral");
         themeButton.classList.remove("~warning");
     }
 };
  themeButton.onclick = () => {
-    toggleTheme();
+    theme.toggle();
     switchThemeIcon();
  }
 switchThemeIcon();
@@ -119,10 +120,10 @@ window.notifications = new notificationBox(document.getElementById('notification
     const user = document.getElementById('radio-use-user') as HTMLInputElement;
     const profileSelect = document.getElementById('modify-user-profiles') as HTMLDivElement;
     const userSelect = document.getElementById('modify-user-users') as HTMLDivElement;
-    (user.nextElementSibling as HTMLSpanElement).classList.toggle('!normal');
-    (user.nextElementSibling as HTMLSpanElement).classList.toggle('!high');
-    (profile.nextElementSibling as HTMLSpanElement).classList.toggle('!normal');
-    (profile.nextElementSibling as HTMLSpanElement).classList.toggle('!high');
+    (user.nextElementSibling as HTMLSpanElement).classList.toggle('@low');
+    (user.nextElementSibling as HTMLSpanElement).classList.toggle('@high');
+    (profile.nextElementSibling as HTMLSpanElement).classList.toggle('@low');
+    (profile.nextElementSibling as HTMLSpanElement).classList.toggle('@high');
     profileSelect.classList.toggle('unfocused');
     userSelect.classList.toggle('unfocused');
 }*/

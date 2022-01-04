@@ -7,41 +7,37 @@
     </head>
     <body>
         <div class="page-container">
-            <div class="row">
-                <div class="col">
-                    <div class="card ~critical sectioned">
-                        <section class="section ~critical">
-                            <span class="heading">Crash report for jfa-go</span>
-                            {{ if .Err }}
-                            <div class="monospace pre-line mt-1 mb-1">
-                            Error: {{ .Err }}
-                            </div>
-                            {{ end }}
-                            <a class="button ~critical mb-1" target="_blank" href="https://github.com/hrfee/jfa-go/issues/new/choose">Create an Issue</a>
-                        </section>
-                        <section class="section ~neutral !low">
-                            <div class="flex-expand">
-                                <span class="subheading">Full Log</span>
-                                <span class="button ~urge ml-half" id="copy-log">Copy</span>
-                            </div>
-                            <div class="row mb-1">
-                                <label class="col mr-1">
-                                    <span class="button ~neutral !high supra full-width center" id="button-log-normal">Normal</span>
-                                </label>
-                                <label class="col mr-1">
-                                    <span class="button ~neutral !normal supra full-width center" id="button-log-sanitized">Sanitized</span>
-                                </label>
-                            </div>
-                            <div id="log-normal">
-                                <pre class="monospace pre-line">{{ .Log }}</pre>
-                            </div>
-                            <div id="log-sanitized" class="unfocused">
-                                <p class="subheading">An attempt has been made to remove sensitive info, but make sure to check yourself.</p>
-                                <pre class="monospace pre-line">{{ .SanitizedLog }}</pre>
-                            </div>
-                        </section>
+            <div class="card ~critical sectioned">
+                <section class="section ~critical">
+                    <span class="heading">Crash report for jfa-go</span>
+                    {{ if .Err }}
+                    <div class="font-mono bg-inherit pre-line mt-4 mb-4">
+                    Error: {{ .Err }}
                     </div>
-                </div>
+                    {{ end }}
+                    <a class="button ~critical mb-4" target="_blank" href="https://github.com/hrfee/jfa-go/issues/new/choose">Create an Issue</a>
+                </section>
+                <section class="section ~neutral @low">
+                    <div class="flex-expand">
+                        <span class="subheading">Full Log</span>
+                        <span class="button ~urge ml-4" id="copy-log">Copy</span>
+                    </div>
+                    <div class="row mb-4">
+                        <label class="col mr-4">
+                            <span class="button ~neutral @high supra full-width center" id="button-log-normal">Normal</span>
+                        </label>
+                        <label class="col mr-4">
+                            <span class="button ~neutral @low supra full-width center" id="button-log-sanitized">Sanitized</span>
+                        </label>
+                    </div>
+                    <div id="log-normal">
+                        <pre class="font-mono bg-inherit pre-line">{{ .Log }}</pre>
+                    </div>
+                    <div id="log-sanitized" class="unfocused">
+                        <p class="subheading">An attempt has been made to remove sensitive info, but make sure to check yourself.</p>
+                        <pre class="font-mono bg-inherit pre-line">{{ .SanitizedLog }}</pre>
+                    </div>
+                </section>
             </div>
         </div>
         <script inline src="crash.js"></script>

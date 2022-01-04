@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="light-theme">
+<html lang="en" class="light">
     <head>
         <link rel="stylesheet" type="text/css" href="css/bundle.css">
         {{ template "header.html" . }}
@@ -7,18 +7,20 @@
     </head>
     <body class="max-w-full overflow-x-hidden section">
         <div id="notification-box"></div>
-        <span class="dropdown" tabindex="0" id="lang-dropdown">
-            <span class="button ~urge dropdown-button">
-                <i class="ri-global-line"></i>
-                <span class="ml-1 chev"></span>
-            </span>
-            <div class="dropdown-display">
-                <div class="card ~neutral !low" id="lang-list">
+        <div class="top-4 left-4 absolute">
+            <span class="dropdown" tabindex="0" id="lang-dropdown">
+                <span class="button ~urge dropdown-button">
+                    <i class="ri-global-line"></i>
+                    <span class="ml-2 chev"></span>
+                </span>
+                <div class="dropdown-display">
+                    <div class="card ~neutral @low" id="lang-list">
+                    </div>
                 </div>
-            </div>
-        </span>
+            </span>
+        </div>    
         <div class="page-container" id="page-container">
-            <div class="card ~neutral !low mb-1">
+            <div class="card ~neutral @low mb-2">
                 <div class="row">
                     <img class="banner header" src="banner.svg" alt="jfa-go" />
                 </div>
@@ -26,70 +28,70 @@
                     <span class="heading welcome">{{ .lang.StartPage.welcome }}</span>
                 </div>
                 <div class="row col flex center">
-                    <p class="content">{{ .lang.StartPage.pressStart }}</p>
+                    <p class="content my-2">{{ .lang.StartPage.pressStart }}</p>
                 </div>
                 <section class="section ~neutral banner footer flex-expand middle">
                     <span class="support">{{ .lang.StartPage.httpsNotice }}</span>
-                    <span class="button ~urge !normal next">{{ .lang.StartPage.start }}</span>
+                    <span class="button ~urge @low next">{{ .lang.StartPage.start }}</span>
                 </section>
             </div>
-            <div class="card ~neutral !low mb-1 unfocused">
+            <div class="card ~neutral @low mb-2 unfocused">
                 <span class="heading">{{ .lang.Language.title }}</span>
-                <p class="content" id="language-description"></p>
+                <p class="content my-2" id="language-description"></p>
                 <label class="label">
-                    <span class="mt-half">{{ .lang.Language.defaultAdminLang }}</span>
-                    <div class="select ~neutral !normal mt-half mb-1">
+                    <span class="mt-4">{{ .lang.Language.defaultAdminLang }}</span>
+                    <div class="select ~neutral @low mt-4 mb-2">
                         <select id="ui-language-admin">
                         </select>
                     </div>
                 </label>
                 <label class="label">
-                    <span class="mt-half">{{ .lang.Language.defaultFormLang }}</span>
-                    <div class="select ~neutral !normal mt-half mb-1">
+                    <span class="mt-4">{{ .lang.Language.defaultFormLang }}</span>
+                    <div class="select ~neutral @low mt-4 mb-2">
                         <select id="ui-language-form">
                         </select>
                     </div>
                 </label>
                 <label class="label">
-                    <span class="mt-half">{{ .lang.Language.defaultEmailLang }}</span>
-                    <div class="select ~neutral !normal mt-half mb-1">
+                    <span class="mt-4">{{ .lang.Language.defaultEmailLang }}</span>
+                    <div class="select ~neutral @low mt-4 mb-2">
                         <select id="email-language">
                         </select>
                     </div>
                 </label>
                 <section class="section ~neutral banner footer flex-expand middle">
-                    <span class="button ~neutral !normal back">{{ .lang.Strings.back }}</span>
-                    <span class="button ~urge !normal next">{{ .lang.Strings.next }}</span>
+                    <span class="button ~neutral @low back">{{ .lang.Strings.back }}</span>
+                    <span class="button ~urge @low next">{{ .lang.Strings.next }}</span>
                 </section>
             </div>
-            <div class="card ~neutral !low mb-1 unfocused">
+            <div class="card ~neutral @low mb-2 unfocused">
                 <span class="heading">{{ .lang.General.title }}</span>
                 <div class="row">
                     <div class="col">
                         <label class="label">
-                            <span class="mt-half">{{ .lang.General.listenAddress }}</span>
-                            <input type="url" class="input ~neutral !normal mt-half mb-1" id="ui-host" value="0.0.0.0">
+                            <span class="mt-4">{{ .lang.General.listenAddress }}</span>
+                            <input type="url" class="input ~neutral @low mt-4 mb-2" id="ui-host" value="0.0.0.0">
                         </label>
                         <label class="row switch">
-                            <input type="checkbox" id="advanced-tls"><span>{{ .lang.General.useHTTPS }}</span>
+                            <input type="checkbox" class="mr-2" id="advanced-tls"><span>{{ .lang.General.useHTTPS }}</span>
                         </label>
-                        <p class="support mb-1">{{ .lang.General.useHTTPSNotice }}</p>
+                        <p class="support mb-2 mt-1">{{ .lang.General.useHTTPSNotice }}</p>
                         <label class="label">
-                            <span class="mt-half">{{ .lang.General.pathToCertificate }}</span>
-                            <input type="text" class="input ~neutral !normal mt-half mb-1" id="advanced-tls_cert">
+                            <span class="mt-4">{{ .lang.General.pathToCertificate }}</span>
+                            <input type="text" class="input ~neutral @low mt-4 mb-2" id="advanced-tls_cert">
                         </label>
                         <label class="label">
-                            <span class="mt-half">{{ .lang.General.pathToKeyFile }}</span>
-                            <input type="text" class="input ~neutral !normal mt-half mb-1" id="advanced-tls_key">
+                            <span class="mt-4">{{ .lang.General.pathToKeyFile }}</span>
+                            <input type="text" class="input ~neutral @low mt-4 mb-2" id="advanced-tls_key">
                         </label>
                         <span class="heading">{{ .lang.Updates.title }}</span>
-                        <p class="content" id="updates-description"></p>
-                        <label class="row switch pb-1">
-                            <input type="checkbox" id="updates-enabled" checked><span>{{ .lang.Strings.enabled }}</span>
+                        <p class="content my-2" id="updates-description"></p>
+                        <label class="row switch pb-4">
+                            <input type="checkbox" class="mr-2" id="updates-enabled" checked><span>{{ .lang.Strings.enabled }}</span>
                         </label>
                         <label class="label">
                             <span>{{ .lang.Updates.updateChannel }}</span>
-                            <div class="select ~neutral !normal mt-half mb-1">
+                            <div class="select ~neutral @low mt-4 mb-2">
                                 <select id="updates-channel">
                                     <option value="stable">{{ .lang.Updates.stable }}</option>
                                     <option value="unstable">{{ .lang.Updates.unstable }}</option>
@@ -99,21 +101,21 @@
                     </div>
                     <div class="col">
                         <label class="label">
-                            <span class="mt-half">{{ .lang.Strings.port }}</span>
-                            <input type="number" class="input ~neutral !normal mt-half mb-1" id="ui-port" value="8056">
+                            <span class="mt-4">{{ .lang.Strings.port }}</span>
+                            <input type="number" class="input ~neutral @low mt-4 mb-2" id="ui-port" value="8056">
                         </label>
                         <label class="label">
-                            <span class="mt-half">{{ .lang.General.httpsPort }}</span>
-                            <input type="number" class="input ~neutral !normal mt-half mb-1" id="advanced-tls_port" value="8057">
+                            <span class="mt-4">{{ .lang.General.httpsPort }}</span>
+                            <input type="number" class="input ~neutral @low mt-4 mb-2" id="advanced-tls_port" value="8057">
                         </label>
                         <label class="label">
-                            <span class="mt-half">{{ .lang.General.urlBase }} ({{ .lang.Strings.optional }})</span>
-                            <input type="url" class="input ~neutral !normal mt-half" id="ui-url_base">
-                            <p class="support mb-1">{{ .lang.General.urlBaseNotice }}</p>
+                            <span class="mt-4">{{ .lang.General.urlBase }} ({{ .lang.Strings.optional }})</span>
+                            <input type="url" class="input ~neutral @low mt-4" id="ui-url_base">
+                            <p class="support mb-2 mt-1">{{ .lang.General.urlBaseNotice }}</p>
                         </label>
                         <label class="label">
                             <span>{{ .lang.Strings.theme }}</span>
-                            <div class="select ~neutral !normal mt-half mb-1">
+                            <div class="select ~neutral @low mt-4 mb-2">
                                 <select id="ui-theme">
                                     <option value="Jellyfin (Dark)">{{ .lang.General.darkTheme }}</option>
                                     <option value="Default (Light)">{{ .lang.General.lightTheme }}</option>
@@ -123,142 +125,142 @@
                     </div>
                 </div>
                 <section class="section ~neutral banner footer flex-expand middle">
-                    <span class="button ~neutral !normal back">{{ .lang.Strings.back }}</span>
-                    <span class="button ~urge !normal next">{{ .lang.Strings.next }}</span>
+                    <span class="button ~neutral @low back">{{ .lang.Strings.back }}</span>
+                    <span class="button ~urge @low next">{{ .lang.Strings.next }}</span>
                 </section>
             </div>
-            <div class="card ~neutral !low mb-1 unfocused">
+            <div class="card ~neutral @low mb-2 unfocused">
                 <span class="heading">{{ .lang.Login.title }}</span>
-                <p class="content">{{ .lang.Login.description }}</p>
-                <div class="pl-1">
-                    <label class="row switch pb-1">
-                        <input type="radio" name="ui-jellyfin_login" value="true" checked><span>{{ .lang.Login.authorizeWithJellyfin }}</span>
+                <p class="content my-2">{{ .lang.Login.description }}</p>
+                <div class="pl-4">
+                    <label class="row switch pb-4">
+                        <input type="radio" class="mr-2" name="ui-jellyfin_login" value="true" checked><span>{{ .lang.Login.authorizeWithJellyfin }}</span>
                     </label>
-                    <label class="row switch pl-1 pb-1">
-                        <input type="checkbox" id="ui-admin_only"><span>{{ .lang.Login.adminOnly }}</span>
+                    <label class="row switch pl-4 pb-4">
+                        <input type="checkbox" class="mr-2" id="ui-admin_only"><span>{{ .lang.Login.adminOnly }}</span>
                     </label>
-                    <label class="row switch pb-1">
-                        <input type="radio" name="ui-jellyfin_login" value="false"><span>{{ .lang.Login.authorizeManual }}</span>
+                    <label class="row switch pb-4">
+                        <input type="radio" class="mr-2" name="ui-jellyfin_login" value="false"><span>{{ .lang.Login.authorizeManual }}</span>
                     </label>
                 </div>
                 <div id="login-manual">
                     <label class="label">
-                        <span class="mt-half">{{ .lang.Strings.username }}</span>
-                        <input type="text" id="ui-username" class="input ~neutral !normal mt-half mb-1" placeholder="{{ .lang.Strings.username }}">
+                        <span class="mt-4">{{ .lang.Strings.username }}</span>
+                        <input type="text" id="ui-username" class="input ~neutral @low mt-4 mb-2" placeholder="{{ .lang.Strings.username }}">
                     </label>
                     <label class="label">
                         <span>{{ .lang.Strings.password }}</span>
-                        <input type="password" id="ui-password" class="input ~neutral !normal mt-half mb-1" placeholder="{{ .lang.Strings.password }}">
+                        <input type="password" id="ui-password" class="input ~neutral @low mt-4 mb-2" placeholder="{{ .lang.Strings.password }}">
                     </label>
                     <label class="label">
                         <span>{{ .lang.Strings.emailAddress }} ({{ .lang.Strings.optional }})</span>
-                        <input type="email" id="ui-email" class="input ~neutral !normal mt-half" placeholder="email@address">
-                        <span class="support mb-1">{{ .lang.Login.emailNotice }}</span>
+                        <input type="email" id="ui-email" class="input ~neutral @low mt-4" placeholder="email@address">
+                        <span class="support mb-2 mt-1">{{ .lang.Login.emailNotice }}</span>
                     </label>
                 </div>
                 <section class="section ~neutral banner footer flex-expand middle">
-                    <span class="button ~neutral !normal back">{{ .lang.Strings.back }}</span>
-                    <span class="button ~urge !normal next">{{ .lang.Strings.next }}</span>
+                    <span class="button ~neutral @low back">{{ .lang.Strings.back }}</span>
+                    <span class="button ~urge @low next">{{ .lang.Strings.next }}</span>
                 </section>
             </div>
-            <div class="card ~neutral !low mb-1 unfocused">
+            <div class="card ~neutral @low mb-2 unfocused">
                 <span class="heading">{{ .lang.JellyfinEmby.title }}</span>
-                <p class="content">{{ .lang.JellyfinEmby.description }}</p>
+                <p class="content my-2">{{ .lang.JellyfinEmby.description }}</p>
                 <div class="row">
                     <div class="col">
                         <label class="label">
                             <span>{{ .lang.Strings.serverType }}</span>
-                            <div class="select ~neutral !normal mt-half">
+                            <div class="select ~neutral @low mt-4">
                                 <select id="jellyfin-type">
                                     <option value="jellyfin">Jellyfin</option>
                                     <option value="emby">Emby</option>
                                 </select>
                             </div>
-                            <p class="support mb-1">{{ .lang.JellyfinEmby.embyNotice }}</p>
+                            <p class="support mb-2 mt-1">{{ .lang.JellyfinEmby.embyNotice }}</p>
                         </label>
                         <label class="label">
-                            <span class="mt-half">{{ .lang.JellyfinEmby.replaceJellyfin }} ({{ .lang.Strings.optional }})</span>
-                            <input type="text" class="input ~neutral !normal mt-half" id="jellyfin-substitute_jellyfin_strings">
-                            <p class="support mb-1">{{ .lang.JellyfinEmby.replaceJellyfinNotice }}</p>
+                            <span class="mt-4">{{ .lang.JellyfinEmby.replaceJellyfin }} ({{ .lang.Strings.optional }})</span>
+                            <input type="text" class="input ~neutral @low mt-4" id="jellyfin-substitute_jellyfin_strings">
+                            <p class="support mb-2 mt-1">{{ .lang.JellyfinEmby.replaceJellyfinNotice }}</p>
                         </label>
                         <label class="label">
-                            <span class="mt-half">{{ .lang.Strings.username }}</span>
-                            <input type="text" id="jellyfin-username" class="input ~neutral !normal mt-half mb-1" placeholder="{{ .lang.Strings.username }}">
+                            <span class="mt-4">{{ .lang.Strings.username }}</span>
+                            <input type="text" id="jellyfin-username" class="input ~neutral @low mt-4 mb-2" placeholder="{{ .lang.Strings.username }}">
                         </label>
                         <label class="label">
                             <span>{{ .lang.Strings.password }}</span>
-                            <input type="password" id="jellyfin-password" class="input ~neutral !normal mt-half mb-1" placeholder="{{ .lang.Strings.password }}">
+                            <input type="password" id="jellyfin-password" class="input ~neutral @low mt-4 mb-2" placeholder="{{ .lang.Strings.password }}">
                         </label>
                     </div>
                     <div class="col">
                         <label class="label">
-                            <span class="mt-half">{{ .lang.Strings.serverAddress }} ({{ .lang.JellyfinEmby.internal }})</span>
-                            <input type="url" class="input ~neutral !normal mt-half mb-1" id="jellyfin-server" placeholder="http://jellyf.in:80">
+                            <span class="mt-4">{{ .lang.Strings.serverAddress }} ({{ .lang.JellyfinEmby.internal }})</span>
+                            <input type="url" class="input ~neutral @low mt-4 mb-2" id="jellyfin-server" placeholder="http://jellyf.in:80">
                         </label>
                         <label class="label">
-                            <span class="mt-half">{{ .lang.Strings.serverAddress }} ({{ .lang.JellyfinEmby.external }})</span>
-                            <input type="url" class="input ~neutral !normal mt-half" id="jellyfin-public_server" placeholder="https://jellyf.in">
-                            <p class="support mb-1">{{ .lang.JellyfinEmby.addressExternalNotice }}</p>
+                            <span class="mt-4">{{ .lang.Strings.serverAddress }} ({{ .lang.JellyfinEmby.external }})</span>
+                            <input type="url" class="input ~neutral @low mt-4" id="jellyfin-public_server" placeholder="https://jellyf.in">
+                            <p class="support mb-2 mt-1">{{ .lang.JellyfinEmby.addressExternalNotice }}</p>
                         </label>
                     </div>
                 </div>
                 <section class="section ~neutral banner footer flex-expand middle">
-                    <span class="button ~neutral !normal back">{{ .lang.Strings.back }}</span>
+                    <span class="button ~neutral @low back">{{ .lang.Strings.back }}</span>
                     <div>
-                        <span class="button ~urge !normal" id="jellyfin-test-connection">{{ .lang.JellyfinEmby.testConnection }}</span>
-                        <span class="button ~urge !normal next" disabled>{{ .lang.Strings.next }}</span>
+                        <span class="button ~urge @low" id="jellyfin-test-connection">{{ .lang.JellyfinEmby.testConnection }}</span>
+                        <span class="button ~urge @low next" disabled>{{ .lang.Strings.next }}</span>
                     </div>
                 </section>
             </div>
-            <div class="card ~neutral !low mb-1 unfocused">
+            <div class="card ~neutral @low mb-2 unfocused">
                 <span class="heading">{{ .lang.Ombi.title }}</span>
-                <p class="content">{{ .lang.Ombi.description }}</p>
-                <label class="row switch pb-1">
-                    <input type="checkbox" id="ombi-enabled"><span>{{ .lang.Strings.enabled }}</span>
+                <p class="content my-2">{{ .lang.Ombi.description }}</p>
+                <label class="row switch pb-4">
+                    <input type="checkbox" class="mr-2" id="ombi-enabled"><span>{{ .lang.Strings.enabled }}</span>
                 </label>
                 <label class="label">
-                    <span class="mt-half">{{ .lang.Strings.serverAddress }}</span>
-                    <input type="url" class="input ~neutral !normal mt-half mb-1" id="ombi-server" placeholder="ombi.jellyf.in">
+                    <span class="mt-4">{{ .lang.Strings.serverAddress }}</span>
+                    <input type="url" class="input ~neutral @low mt-4 mb-2" id="ombi-server" placeholder="ombi.jellyf.in">
                 </label>
                 <label class="label">
-                    <span class="mt-half">{{ .lang.Strings.apiKey }}</span>
-                    <input type="text" class="input ~neutral !normal mt-half" id="ombi-api_key">
-                    <p class="support mb-1">{{ .lang.Ombi.apiKeyNotice }}</p>
+                    <span class="mt-4">{{ .lang.Strings.apiKey }}</span>
+                    <input type="text" class="input ~neutral @low mt-4" id="ombi-api_key">
+                    <p class="support mb-2 mt-1">{{ .lang.Ombi.apiKeyNotice }}</p>
                 </label>
                 <section class="section ~neutral banner footer flex-expand middle">
-                    <span class="button ~neutral !normal back">{{ .lang.Strings.back }}</span>
+                    <span class="button ~neutral @low back">{{ .lang.Strings.back }}</span>
                     <div>
-                        <span class="button ~urge !normal next">{{ .lang.Strings.next }}</span>
+                        <span class="button ~urge @low next">{{ .lang.Strings.next }}</span>
                     </div>
                 </section>
             </div>
-            <div class="card ~neutral !low mb-1 unfocused">
+            <div class="card ~neutral @low mb-2 unfocused">
                 <span class="heading">{{ .lang.Messages.title }}</span>
-                <p class="content" id="messages-description"></p>
-                <label class="row switch pb-1">
-                    <input type="checkbox" id="messages-enabled" checked><span>{{ .lang.Strings.enabled }}</span>
+                <p class="content my-2" id="messages-description"></p>
+                <label class="row switch pb-4">
+                    <input type="checkbox" class="mr-2" id="messages-enabled" checked><span>{{ .lang.Strings.enabled }}</span>
                 </label>
                 <label class="label">
-                    <span class="mt-half">{{ .lang.Email.dateFormat }}</span>
-                    <input type="text" class="input ~neutral !normal mt-half" id="email-date_format" value="%d/%m/%y">
-                    <p class="support mb-1" id="email-dateformat-notice"></p>
+                    <span class="mt-4">{{ .lang.Email.dateFormat }}</span>
+                    <input type="text" class="input ~neutral @low mt-4" id="email-date_format" value="%d/%m/%y">
+                    <p class="support mb-2 mt-1" id="email-dateformat-notice"></p>
                 </label>
                 <div>
-                    <label class="row switch pb-1">
-                        <input type="radio" name="email-24h" value="true" checked><span>{{ .lang.Strings.time24h }}</span>
+                    <label class="row switch pb-4">
+                        <input type="radio" class="mr-2" name="email-24h" value="true" checked><span>{{ .lang.Strings.time24h }}</span>
                     </label>
-                    <label class="row switch pb-1">
-                        <input type="radio" name="email-24h" value="false"><span>{{ .lang.Strings.time12h }}</span>
+                    <label class="row switch pb-4">
+                        <input type="radio" class="mr-2" name="email-24h" value="false"><span>{{ .lang.Strings.time12h }}</span>
                     </label>
                 </div>
                 <div id="email-sect">
                     <span class="heading">{{ .lang.Email.title }}</span>
-                    <p class="content" id="email-description"></p>
+                    <p class="content my-2" id="email-description"></p>
                     <div class="row">
                         <div class="col">
                             <label class="label">
                                 <span>{{ .lang.Email.method }}</span>
-                                <div class="select ~neutral !normal mt-half mb-1">
+                                <div class="select ~neutral @low mt-4 mb-2">
                                     <select id="email-method">
                                         <option value="">{{ .lang.Strings.disabled }}</option>
                                         <option value="smtp">SMTP</option>
@@ -267,24 +269,24 @@
                                 </div>
                             </label>
                             <label class="row switch">
-                                <input type="checkbox" id="email-no_username"><span>{{ .lang.Email.useEmailAsUsername }}</span>
-                                <p class="support mb-1">{{ .lang.Email.useEmailAsUsernameNotice }}</p>
+                                <input type="checkbox" class="mr-2" id="email-no_username"><span>{{ .lang.Email.useEmailAsUsername }}</span>
+                                <p class="support mb-2 mt-1">{{ .lang.Email.useEmailAsUsernameNotice }}</p>
                             </label>
                             <label class="label">
-                                <span class="mt-half">{{ .lang.Email.fromAddress }}</span>
-                                <input type="email" class="input ~neutral !normal mt-half mb-1" id="email-address" placeholder="mail@jellyf.in">
+                                <span class="mt-4">{{ .lang.Email.fromAddress }}</span>
+                                <input type="email" class="input ~neutral @low mt-4 mb-2" id="email-address" placeholder="mail@jellyf.in">
                             </label>
                             <label class="label">
-                                <span class="mt-half">{{ .lang.Email.senderName }}</span>
-                                <input type="text" class="input ~neutral !normal mt-half mb-1" id="email-from" value="Jellyfin">
+                                <span class="mt-4">{{ .lang.Email.senderName }}</span>
+                                <input type="text" class="input ~neutral @low mt-4 mb-2" id="email-from" value="Jellyfin">
                             </label>
                         </div>
                         <div class="col">
                             <div id="email-smtp">
-                                <p class="subheading">SMTP</p>
+                                <p class="text-2xl font-semibold mb-2">SMTP</p>
                                 <label class="label">
                                     <span>{{ .lang.Email.encryption }}</span>
-                                    <div class="select ~neutral !normal mt-half mb-1">
+                                    <div class="select ~neutral @low mt-4 mb-2">
                                         <select id="smtp-encryption">
                                             <option value="starttls">STARTTLS ({{ .lang.Strings.port }} 587)</option>
                                             <option value="ssl_tls">SSL/TLS ({{ .lang.Strings.port }} 465)</option>
@@ -292,197 +294,197 @@
                                     </div>
                                 </label>
                                 <label class="label">
-                                    <span class="mt-half">{{ .lang.Strings.serverAddress }}</span>
-                                    <input type="url" class="input ~neutral !normal mt-half mb-1" id="smtp-server" placeholder="smtp.jellyf.in">
+                                    <span class="mt-4">{{ .lang.Strings.serverAddress }}</span>
+                                    <input type="url" class="input ~neutral @low mt-4 mb-2" id="smtp-server" placeholder="smtp.jellyf.in">
                                 </label>
                                 <label class="label">
-                                    <span class="mt-half">{{ .lang.Strings.port }}</span>
-                                    <input type="number" class="input ~neutral !normal mt-half mb-1" id="smtp-port" placeholder="587">
+                                    <span class="mt-4">{{ .lang.Strings.port }}</span>
+                                    <input type="number" class="input ~neutral @low mt-4 mb-2" id="smtp-port" placeholder="587">
                                 </label>
                                 <label class="label">
-                                    <span class="mt-half">{{ .lang.Strings.username }}</span>
-                                    <input type="text" class="input ~neutral !normal mt-half mb-1" id="smtp-username">
+                                    <span class="mt-4">{{ .lang.Strings.username }}</span>
+                                    <input type="text" class="input ~neutral @low mt-4 mb-2" id="smtp-username">
                                 </label>
                                 <label class="label">
-                                    <span class="mt-half">{{ .lang.Strings.password }}</span>
-                                    <input type="password" class="input ~neutral !normal mt-half mb-1" id="smtp-password">
+                                    <span class="mt-4">{{ .lang.Strings.password }}</span>
+                                    <input type="password" class="input ~neutral @low mt-4 mb-2" id="smtp-password">
                                 </label>
                             </div>
                             <div id="email-mailgun">
-                                <p class="subheading">Mailgun</p>
+                                <p class="text-2xl font-semibold mb-2">Mailgun</p>
                                 <label class="label">
-                                    <span class="mt-half">{{ .lang.Email.mailgunApiURL }}</span>
-                                    <input type="url" class="input ~neutral !normal mt-half mb-1" id="mailgun-api_url" placeholder="https://api.eu.mailgun.net/v3/mail.jellyf.in/messages">
+                                    <span class="mt-4">{{ .lang.Email.mailgunApiURL }}</span>
+                                    <input type="url" class="input ~neutral @low mt-4 mb-2" id="mailgun-api_url" placeholder="https://api.eu.mailgun.net/v3/mail.jellyf.in/messages">
                                 </label>
                                 <label class="label">
-                                    <span class="mt-half">{{ .lang.Strings.apiKey }}</span>
-                                    <input type="text" class="input ~neutral !normal mt-half mb-1" id="mailgun-api_key">
+                                    <span class="mt-4">{{ .lang.Strings.apiKey }}</span>
+                                    <input type="text" class="input ~neutral @low mt-4 mb-2" id="mailgun-api_key">
                                 </label>
                             </div>
                         </div>
                     </div>
                 </div>
                 <section class="section ~neutral banner footer flex-expand middle">
-                    <span class="button ~neutral !normal back">{{ .lang.Strings.back }}</span>
+                    <span class="button ~neutral @low back">{{ .lang.Strings.back }}</span>
                     <div>
-                        <span class="button ~urge !normal next">{{ .lang.Strings.next }}</span>
+                        <span class="button ~urge @low next">{{ .lang.Strings.next }}</span>
                     </div>
                 </section>
             </div>
-            <div class="card ~neutral !low mb-1 unfocused related-to-email">
+            <div class="card ~neutral @low mb-2 unfocused related-to-email">
                 <span class="heading">{{ .lang.Notifications.title }}</span>
-                <p class="content">{{ .lang.Notifications.description }}</p>
-                <label class="row switch pb-1">
-                    <input type="checkbox" id="notifications-enabled"><span>{{ .lang.Strings.enabled }}</span>
+                <p class="content my-2">{{ .lang.Notifications.description }}</p>
+                <label class="row switch pb-4">
+                    <input type="checkbox" class="mr-2" id="notifications-enabled"><span>{{ .lang.Strings.enabled }}</span>
                 </label>
                 <span class="heading">{{ .lang.WelcomeEmails.title }}</span>
-                <p class="content">{{ .lang.WelcomeEmails.description }}</p>
-                <label class="row switch pb-1">
-                    <input type="checkbox" id="welcome_email-enabled"><span>{{ .lang.Strings.enabled }}</span>
+                <p class="content my-2">{{ .lang.WelcomeEmails.description }}</p>
+                <label class="row switch pb-4">
+                    <input type="checkbox" class="mr-2" id="welcome_email-enabled"><span>{{ .lang.Strings.enabled }}</span>
                 </label>
                 <label class="label">
-                    <span class="mt-half">{{ .lang.Strings.emailSubject }}</span>
-                    <input type="text" class="input ~neutral !normal mt-half mb-1" id="welcome_email-subject" placeholder="{{ .emailLang.WelcomeEmail.title }}">
+                    <span class="mt-4">{{ .lang.Strings.emailSubject }}</span>
+                    <input type="text" class="input ~neutral @low mt-4 mb-2" id="welcome_email-subject" placeholder="{{ .emailLang.WelcomeEmail.title }}">
                 </label>
                 <section class="section ~neutral banner footer flex-expand middle">
-                    <span class="button ~neutral !normal back">{{ .lang.Strings.back }}</span>
+                    <span class="button ~neutral @low back">{{ .lang.Strings.back }}</span>
                     <div>
-                        <span class="button ~urge !normal next">{{ .lang.Strings.next }}</span>
+                        <span class="button ~urge @low next">{{ .lang.Strings.next }}</span>
                     </div>
                 </section>
             </div>
-            <div class="card ~neutral !low mb-1 unfocused related-to-email">
+            <div class="card ~neutral @low mb-2 unfocused related-to-email">
                 <span class="heading">{{ .lang.InviteEmails.title }}</span>
-                <p class="content">{{ .lang.InviteEmails.description }}</p>
-                <label class="row switch pb-1">
-                    <input type="checkbox" id="invite_emails-enabled"><span>{{ .lang.Strings.enabled }}</span>
+                <p class="content my-2">{{ .lang.InviteEmails.description }}</p>
+                <label class="row switch pb-4">
+                    <input type="checkbox" class="mr-2" id="invite_emails-enabled"><span>{{ .lang.Strings.enabled }}</span>
                 </label>
                 <label class="label">
-                    <span class="mt-half">{{ .lang.Strings.URL }}</span>
-                    <input type="url" class="input ~neutral !normal mt-half mb-1" id="invite_emails-url_base" placeholder="https://accounts.jellyf.in/invite">
+                    <span class="mt-4">{{ .lang.Strings.URL }}</span>
+                    <input type="url" class="input ~neutral @low mt-4 mb-2" id="invite_emails-url_base" placeholder="https://accounts.jellyf.in/invite">
                 </label>
                 <label class="label">
-                    <span class="mt-half">{{ .lang.Strings.emailSubject }}</span>
-                    <input type="text" class="input ~neutral !normal mt-half mb-1" id="invite_emails-subject" placeholder="{{ .emailLang.InviteEmail.title }}">
+                    <span class="mt-4">{{ .lang.Strings.emailSubject }}</span>
+                    <input type="text" class="input ~neutral @low mt-4 mb-2" id="invite_emails-subject" placeholder="{{ .emailLang.InviteEmail.title }}">
                 </label>
                 <section class="section ~neutral banner footer flex-expand middle">
-                    <span class="button ~neutral !normal back">{{ .lang.Strings.back }}</span>
+                    <span class="button ~neutral @low back">{{ .lang.Strings.back }}</span>
                     <div>
-                        <span class="button ~urge !normal next">{{ .lang.Strings.next }}</span>
+                        <span class="button ~urge @low next">{{ .lang.Strings.next }}</span>
                     </div>
                 </section>
             </div>
-            <div id="password-resets" class="card ~neutral !low mb-1 unfocused related-to-email">
+            <div id="password-resets" class="card ~neutral @low mb-2 unfocused related-to-email">
                 <span class="heading">{{ .lang.PasswordResets.title }}</span>
-                <p class="content">{{ .lang.PasswordResets.description }}</p>
-                <label class="row switch pb-1">
-                    <input type="checkbox" id="password_resets-enabled"><span>{{ .lang.Strings.enabled }}</span>
+                <p class="content my-2">{{ .lang.PasswordResets.description }}</p>
+                <label class="row switch pb-4">
+                    <input type="checkbox" class="mr-2" id="password_resets-enabled"><span>{{ .lang.Strings.enabled }}</span>
                 </label>
                 <label class="label">
-                    <span class="mt-half">{{ .lang.PasswordResets.pathToJellyfin }}</span>
-                    <input type="text" class="input ~neutral !normal mt-half" id="password_resets-watch_directory" placeholder="/config/jellyfin">
-                    <p class="support mb-1">{{ .lang.PasswordResets.pathToJellyfinNotice }}</p>
+                    <span class="mt-4">{{ .lang.PasswordResets.pathToJellyfin }}</span>
+                    <input type="text" class="input ~neutral @low mt-4" id="password_resets-watch_directory" placeholder="/config/jellyfin">
+                    <p class="support mb-2 mt-1">{{ .lang.PasswordResets.pathToJellyfinNotice }}</p>
                 </label>
                 <label class="switch">
-                    <input type="checkbox" id="password_resets-link_reset"><span>{{ .lang.PasswordResets.resetLinks }}</span>
-                    <p class="support mb-1">{{ .lang.PasswordResets.resetLinksNotice }}</p>
+                    <input type="checkbox" class="mr-2" id="password_resets-link_reset"><span>{{ .lang.PasswordResets.resetLinks }}</span>
+                    <p class="support mb-2 mt-1">{{ .lang.PasswordResets.resetLinksNotice }}</p>
                 </label>
                 <label class="switch">
-                    <input type="checkbox" id="password_resets-set_password"><span>{{ .lang.PasswordResets.setPassword }}</span>
-                    <p class="support mb-1">{{ .lang.PasswordResets.setPasswordNotice }}</p>
+                    <input type="checkbox" class="mr-2" id="password_resets-set_password"><span>{{ .lang.PasswordResets.setPassword }}</span>
+                    <p class="support mb-2 mt-1">{{ .lang.PasswordResets.setPasswordNotice }}</p>
                 </label>
                 <label class="label">
-                    <p class="mt-half">{{ .lang.PasswordResets.resetLinksLanguage }}</p>
-                    <div class="select ~neutral !normal mt-half mb-1">
+                    <p class="mt-4">{{ .lang.PasswordResets.resetLinksLanguage }}</p>
+                    <div class="select ~neutral @low mt-4 mb-2">
                         <select id="password_resets-language">
                         </select>
                     </div>
                 </label>
                 <label class="row label">
-                    <span class="mt-half">{{ .lang.Strings.emailSubject }}</span>
-                    <input type="text" class="input ~neutral !normal mt-half mb-1" id="password_resets-subject" placeholder="{{ .emailLang.PasswordReset.title }}">
+                    <span class="mt-4">{{ .lang.Strings.emailSubject }}</span>
+                    <input type="text" class="input ~neutral @low mt-4 mb-2" id="password_resets-subject" placeholder="{{ .emailLang.PasswordReset.title }}">
                 </label>
                 <section class="section ~neutral banner footer flex-expand middle">
-                    <span class="button ~neutral !normal back">{{ .lang.Strings.back }}</span>
+                    <span class="button ~neutral @low back">{{ .lang.Strings.back }}</span>
                     <div>
-                        <span class="button ~urge !normal next">{{ .lang.Strings.next }}</span>
+                        <span class="button ~urge @low next">{{ .lang.Strings.next }}</span>
                     </div>
                 </section>
             </div>
-            <div class="card ~neutral !low mb-1 unfocused">
+            <div class="card ~neutral @low mb-2 unfocused">
                 <span class="heading">{{ .lang.PasswordValidation.title }}</span>
-                <p class="content">{{ .lang.PasswordValidation.description }}</p>
-                <label class="row switch pb-1">
-                    <input type="checkbox" id="password_validation-enabled" checked><span>{{ .lang.Strings.enabled }}</span>
+                <p class="content my-2">{{ .lang.PasswordValidation.description }}</p>
+                <label class="row switch pb-4">
+                    <input type="checkbox" class="mr-2" id="password_validation-enabled" checked><span>{{ .lang.Strings.enabled }}</span>
                 </label>
                 <label class="label">
-                    <span class="mt-half">{{ .lang.PasswordValidation.length }}</span>
-                    <input type="number" class="input ~neutral !normal mt-half mb-1" id="password_validation-min_length" value="8">
+                    <span class="mt-4">{{ .lang.PasswordValidation.length }}</span>
+                    <input type="number" class="input ~neutral @low mt-4 mb-2" id="password_validation-min_length" value="8">
                 </label>
                 <label class="label">
-                    <span class="mt-half">{{ .lang.PasswordValidation.uppercase }}</span>
-                    <input type="number" class="input ~neutral !normal mt-half mb-1" id="password_validation-upper" value="1">
+                    <span class="mt-4">{{ .lang.PasswordValidation.uppercase }}</span>
+                    <input type="number" class="input ~neutral @low mt-4 mb-2" id="password_validation-upper" value="1">
                 </label>
                 <label class="label">
-                    <span class="mt-half">{{ .lang.PasswordValidation.lowercase }}</span>
-                    <input type="number" class="input ~neutral !normal mt-half mb-1" id="password_validation-lower" value="0">
+                    <span class="mt-4">{{ .lang.PasswordValidation.lowercase }}</span>
+                    <input type="number" class="input ~neutral @low mt-4 mb-2" id="password_validation-lower" value="0">
                 </label>
                 <label class="label">
-                    <span class="mt-half">{{ .lang.PasswordValidation.numbers }}</span>
-                    <input type="number" class="input ~neutral !normal mt-half mb-1" id="password_validation-number" value="0">
+                    <span class="mt-4">{{ .lang.PasswordValidation.numbers }}</span>
+                    <input type="number" class="input ~neutral @low mt-4 mb-2" id="password_validation-number" value="0">
                 </label>
                 <label class="label">
-                    <span class="mt-half">{{ .lang.PasswordValidation.special }}</span>
-                    <input type="number" class="input ~neutral !normal mt-half mb-1" id="password_validation-special" value="0">
+                    <span class="mt-4">{{ .lang.PasswordValidation.special }}</span>
+                    <input type="number" class="input ~neutral @low mt-4 mb-2" id="password_validation-special" value="0">
                 </label>
                 <section class="section ~neutral banner footer flex-expand middle">
-                    <span class="button ~neutral !normal back">{{ .lang.Strings.back }}</span>
+                    <span class="button ~neutral @low back">{{ .lang.Strings.back }}</span>
                     <div>
-                        <span class="button ~urge !normal next">{{ .lang.Strings.next }}</span>
+                        <span class="button ~urge @low next">{{ .lang.Strings.next }}</span>
                     </div>
                 </section>
             </div>
-            <div class="card ~neutral !low mb-1 unfocused">
+            <div class="card ~neutral @low mb-2 unfocused">
                 <span class="heading">{{ .lang.HelpMessages.title }}</span>
-                <p class="content">{{ .lang.HelpMessages.description }}</p>
+                <p class="content my-2">{{ .lang.HelpMessages.description }}</p>
                 <label class="label">
-                    <span class="mt-half">{{ .lang.HelpMessages.contactMessage }}</span>
-                    <input type="text" class="input ~neutral !normal mt-half" id="ui-contact_message">
-                    <p class="support mb-1">{{ .lang.HelpMessages.contactMessageNotice }}</p>
+                    <span class="mt-4">{{ .lang.HelpMessages.contactMessage }}</span>
+                    <input type="text" class="input ~neutral @low mt-4" id="ui-contact_message">
+                    <p class="support mb-2 mt-1">{{ .lang.HelpMessages.contactMessageNotice }}</p>
                 </label>
                 <label class="label">
-                    <span class="mt-half">{{ .lang.HelpMessages.helpMessage }}</span>
-                    <input type="text" class="input ~neutral !normal mt-half" id="ui-help_message">
-                    <p class="support mb-1">{{ .lang.HelpMessages.helpMessageNotice }}</p>
+                    <span class="mt-4">{{ .lang.HelpMessages.helpMessage }}</span>
+                    <input type="text" class="input ~neutral @low mt-4" id="ui-help_message">
+                    <p class="support mb-2 mt-1">{{ .lang.HelpMessages.helpMessageNotice }}</p>
                 </label>
                 <label class="label">
-                    <span class="mt-half">{{ .lang.HelpMessages.successMessage }}</span>
-                    <input type="text" class="input ~neutral !normal mt-half" id="ui-success_message">
-                    <p class="support mb-1">{{ .lang.HelpMessages.successMessageNotice }}</p>
+                    <span class="mt-4">{{ .lang.HelpMessages.successMessage }}</span>
+                    <input type="text" class="input ~neutral @low mt-4" id="ui-success_message">
+                    <p class="support mb-2 mt-1">{{ .lang.HelpMessages.successMessageNotice }}</p>
                 </label>
                 <label class="label related-to-email">
-                    <span class="mt-half">{{ .lang.HelpMessages.emailMessage }}</span>
-                    <input type="text" class="input ~neutral !normal mt-half" id="email-message">
-                    <p class="support mb-1">{{ .lang.HelpMessages.emailMessageNotice }}</p>
+                    <span class="mt-4">{{ .lang.HelpMessages.emailMessage }}</span>
+                    <input type="text" class="input ~neutral @low mt-4" id="email-message">
+                    <p class="support mb-2 mt-1">{{ .lang.HelpMessages.emailMessageNotice }}</p>
                 </label>
                 <section class="section ~neutral banner footer flex-expand middle">
-                    <span class="button ~neutral !normal back">{{ .lang.Strings.back }}</span>
+                    <span class="button ~neutral @low back">{{ .lang.Strings.back }}</span>
                     <div>
-                        <span class="button ~urge !normal next">{{ .lang.Strings.next }}</span>
+                        <span class="button ~urge @low next">{{ .lang.Strings.next }}</span>
                     </div>
                 </section>
             </div>
-            <div class="card ~neutral !low mb-1 unfocused">
+            <div class="card ~neutral @low mb-2 unfocused">
                 <div class="row col flex center">
                     <span class="heading">{{ .lang.EndPage.finished }}</span>
                 </div>
                 <div class="row col flex center">
-                    <p class="content">{{ .lang.EndPage.restartMessage }}</p>
+                    <p class="content my-2">{{ .lang.EndPage.restartMessage }}</p>
                 </div>
                 <div class="row col flex center">
-                    <span class="button ~neutral !normal back mr-1">{{ .lang.Strings.back }}</span>
-                    <span class="button ~urge !normal" id="restart">{{ .lang.Strings.submit }}</span>
-                    <span class="button ~urge !normal unfocused" id="refresh">{{ .lang.EndPage.refreshPage }}</span>
+                    <span class="button ~neutral @low back mr-4">{{ .lang.Strings.back }}</span>
+                    <span class="button ~urge @low" id="restart">{{ .lang.Strings.submit }}</span>
+                    <span class="button ~urge @low unfocused" id="refresh">{{ .lang.EndPage.refreshPage }}</span>
                 </div>
             </div>
         </div>

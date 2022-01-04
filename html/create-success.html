@@ -3,14 +3,14 @@
     <head>
         <link rel="stylesheet" type="text/css" href="css/bundle.css">
         {{ template "header.html" . }}
-        <title>{{ .strings.successHeader }} -  jfa-go</title>
+        <title>{{ .strings.successHeader }} - jfa-go</title>
     </head>
     <body class="section">
         <div class="page-container">
-            <div class="card ~neutral !normal mb-1">
-                <span class="heading mb-1">{{ .strings.successHeader }}</span>
-                <p class="content mb-1">{{ .successMessage }}</p>
-                <a class="button ~urge !normal full-width center supra submit" href="{{ .jfLink }}" id="create-success-button">{{ .strings.successContinueButton }}</a>
+            <div class="card ~neutral @low mb-4">
+                <span class="heading mb-4">{{ .strings.successHeader }}</span>
+                <p class="content my-4">{{ .successMessage }}</p>
+                <a class="button ~urge @high full-width center supra submit" href="{{ .jfLink }}" id="create-success-button">{{ .strings.continue }}</a>
             </div>
             <i class="content">{{ .contactMessage }}</i>
         </div>

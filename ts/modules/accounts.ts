@@ -86,10 +86,10 @@ class user implements User {
     get admin(): boolean { return this._admin.classList.contains("chip"); }
     set admin(state: boolean) {
         if (state) {
-            this._admin.classList.add("chip", "~info", "ml-1");
+            this._admin.classList.add("chip", "~info", "ml-4");
             this._admin.textContent = window.lang.strings("admin");
         } else {
-            this._admin.classList.remove("chip", "~info", "ml-1");
+            this._admin.classList.remove("chip", "~info", "ml-4");
             this._admin.textContent = "";
         }
     }
@@ -97,10 +97,10 @@ class user implements User {
     get disabled(): boolean { return this._disabled.classList.contains("chip"); }
     set disabled(state: boolean) {
         if (state) {
-            this._disabled.classList.add("chip", "~warning", "ml-1");
+            this._disabled.classList.add("chip", "~warning", "ml-4");
             this._disabled.textContent = window.lang.strings("disabled");
         } else {
-            this._disabled.classList.remove("chip", "~warning", "ml-1");
+            this._disabled.classList.remove("chip", "~warning", "ml-4");
             this._disabled.textContent = "";
         }
     }
@@ -130,30 +130,30 @@ class user implements User {
         const matrix = this._matrixID != "";
         if (!telegram && !discord && !matrix) return;
         let innerHTML = `
-        <i class="icon ri-settings-2-line ml-half dropdown-button"></i>
+        <i class="icon ri-settings-2-line ml-2 dropdown-button"></i>
         <div class="dropdown manual">
             <div class="dropdown-display lg">
-                <div class="card ~neutral !low">
+                <div class="card ~neutral @low">
                     <span class="supra sm">${window.lang.strings("contactThrough")}</span>
-                    <label class="row switch pb-1 mt-half">
-                        <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-email">
+                    <label class="row switch pb-4 mt-2">
+                        <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-email mr-2">
                         </span>Email</span>
                     </label>
                     <div class="accounts-area-telegram">
-                        <label class="row switch pb-1">
-                            <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-telegram">
+                        <label class="row switch pb-4">
+                            <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-telegram mr-2">
                             <span>Telegram</span>
                         </label>
                     </div>
                     <div class="accounts-area-discord">
-                        <label class="row switch pb-1">
-                            <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-discord">
+                        <label class="row switch pb-4">
+                            <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-discord mr-2">
                             <span>Discord</span>
                         </label>
                     </div>
                     <div class="accounts-area-matrix">
-                        <label class="row switch pb-1">
-                            <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-matrix">
+                        <label class="row switch pb-4">
+                            <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-matrix mr-2">
                             <span>Matrix</span>
                         </label>
                     </div>
@@ -193,8 +193,10 @@ class user implements User {
         if (!u) {
             this._notifyDropdown.querySelector(".accounts-area-matrix").classList.add("unfocused");
             this._matrix.innerHTML = `
-            <span class="chip btn !low">${window.lang.strings("add")}</span>
-            <input type="text" class="input ~neutral !normal stealth-input unfocused" placeholder="@user:riot.im">
+            <div class="table-inline justify-center">
+                <span class="chip btn @low"><i class="ri-link" alt="${window.lang.strings("add")}"></i></span>
+                <input type="text" class="input ~neutral @low stealth-input unfocused" placeholder="@user:riot.im">
+            </div>
             `;
             (this._matrix.querySelector("span") as HTMLSpanElement).onclick = this._addMatrix;
         } else {
@@ -212,15 +214,20 @@ class user implements User {
    
     private _addMatrix = () => {
         const addButton = this._matrix.querySelector(".btn") as HTMLSpanElement;
-        const icon = this._matrix.querySelector("i");
         const input = this._matrix.querySelector("input.stealth-input") as HTMLInputElement;
+        const addIcon = addButton.querySelector("i");
         if (addButton.classList.contains("chip")) {
             input.classList.remove("unfocused");
-            addButton.innerHTML = `<i class="ri-check-line"></i>`;
+            addIcon.classList.add("ri-check-line");
+            addIcon.classList.remove("ri-link");
             addButton.classList.remove("chip")
-            if (icon) {
-                icon.classList.add("unfocused");
-            }
+            const outerClickListener = (event: Event) => {
+                if (!(event.target instanceof HTMLElement && (this._matrix.contains(event.target) || addButton.contains(event.target)))) {
+                    document.dispatchEvent(new CustomEvent("accounts-reload"));
+                    document.removeEventListener("click", outerClickListener);
+                }
+            };
+            document.addEventListener("click", outerClickListener);
         } else {
             if (input.value.charAt(0) != "@" || !input.value.includes(":")) return;
             const send = {
@@ -257,7 +264,7 @@ class user implements User {
         this._telegramUsername = u;
         if (!u) {
             this._notifyDropdown.querySelector(".accounts-area-telegram").classList.add("unfocused");
-            this._telegram.innerHTML = `<span class="chip btn !low">${window.lang.strings("add")}</span>`;
+            this._telegram.innerHTML = `<div class="table-inline justify-center"><span class="chip btn @low"><i class="ri-link" alt="${window.lang.strings("add")}"></i></span></div>`;
             (this._telegram.querySelector("span") as HTMLSpanElement).onclick = this._addTelegram;
         } else {
             this._notifyDropdown.querySelector(".accounts-area-telegram").classList.remove("unfocused");
@@ -322,7 +329,7 @@ class user implements User {
         const lastNotifyMethod = this.lastNotifyMethod() == "discord";
         this._discordUsername = u;
         if (!u) {
-            this._discord.innerHTML = `<span class="chip btn !low">Add</span>`;
+            this._discord.innerHTML = `<div class="table-inline justify-center"><span class="chip btn @low"><i class="ri-link" alt="${window.lang.strings("add")}"></i></span></div>`;
             (this._discord.querySelector("span") as HTMLSpanElement).onclick = () => addDiscord(this.id);
             this._notifyDropdown.querySelector(".accounts-area-discord").classList.add("unfocused");
         } else {
@@ -380,8 +387,8 @@ class user implements User {
         this._row = document.createElement("tr") as HTMLTableRowElement;
         let innerHTML = `
             <td><input type="checkbox" value=""></td>
-            <td><div class="table-inline"><span class="accounts-username"></span> <span class="accounts-admin"></span> <span class="accounts-disabled"></span></span></td>
-            <td><div class="table-inline"><i class="icon ri-edit-line accounts-email-edit"></i><span class="accounts-email-container ml-half"></span></div></td>
+            <td><div class="table-inline"><span class="accounts-username py-2"></span> <span class="accounts-admin"></span> <span class="accounts-disabled"></span></span></td>
+            <td><div class="table-inline"><i class="icon ri-edit-line accounts-email-edit"></i><span class="accounts-email-container ml-2"></span></div></td>
         `;
         if (window.telegramEnabled) {
             innerHTML += `
@@ -400,10 +407,10 @@ class user implements User {
         }
         innerHTML += `
         <td class="accounts-expiry"></td>
-        <td class="accounts-last-active"></td>
+        <td class="accounts-last-active whitespace-nowrap"></td>
         `;
         this._row.innerHTML = innerHTML;
-        const emailEditor = `<input type="email" class="input ~neutral !normal stealth-input">`;
+        const emailEditor = `<input type="email" class="input ~neutral @low stealth-input">`;
         this._check = this._row.querySelector("input[type=checkbox]") as HTMLInputElement;
         this._username = this._row.querySelector(".accounts-username") as HTMLSpanElement;
         this._admin = this._row.querySelector(".accounts-admin") as HTMLSpanElement;
@@ -423,10 +430,10 @@ class user implements User {
             if (this._emailEditButton.classList.contains("ri-edit-line")) {
                 this._email.innerHTML = emailEditor;
                 this._email.querySelector("input").value = this._emailAddress;
-                this._email.classList.remove("ml-half");
+                this._email.classList.remove("ml-2");
             } else {
                 this._email.textContent = this._emailAddress;
-                this._email.classList.add("ml-half");
+                this._email.classList.add("ml-2");
             }
             this._emailEditButton.classList.toggle("ri-check-line");
             this._emailEditButton.classList.toggle("ri-edit-line");
@@ -902,7 +909,7 @@ export class accountsList {
             if (req.readyState == 4) {
                 const preview = document.getElementById("announce-preview") as HTMLDivElement;
                 if (req.status != 200) {
-                    preview.innerHTML = `<pre class="preview-content" class="monospace"></pre>`;
+                    preview.innerHTML = `<pre class="preview-content" class="font-mono bg-inherit"></pre>`;
                     window.modals.announce.show();
                     this._previewLoaded = false;
                     return;
@@ -910,7 +917,7 @@ export class accountsList {
                     
                 let templ = req.response as templateEmail;
                 if (!templ.html) {
-                    preview.innerHTML = `<pre class="preview-content" class="monospace"></pre>`;
+                    preview.innerHTML = `<pre class="preview-content" class="font-mono bg-inherit"></pre>`;
                     this._previewLoaded = false;
                 } else {
                     preview.innerHTML = templ.html;
@@ -938,9 +945,9 @@ export class accountsList {
             dList.textContent = '';
             for (let name of list) {
                 const el = document.createElement("div") as HTMLDivElement;
-                el.classList.add("flex-expand", "ellipsis", "mt-half");
+                el.classList.add("flex-expand", "ellipsis", "mt-2");
                 el.innerHTML = `
-                <span class="button ~neutral sm full-width accounts-announce-template-button">${name}</span><span class="button ~critical fr ml-1 accounts-announce-template-delete">&times;</span>
+                <span class="button ~neutral sm full-width accounts-announce-template-button">${name}</span><span class="button ~critical fr ml-4 accounts-announce-template-delete">&times;</span>
                 `;
                 (el.querySelector("span.accounts-announce-template-button") as HTMLSpanElement).onclick = () => {
                     _get("/users/announce/" + name, null, (req: XMLHttpRequest) => {
@@ -1281,17 +1288,17 @@ export class accountsList {
             if (this._modifySettingsProfile.checked) {
                 this._userSelect.parentElement.classList.add("unfocused");
                 this._profileSelect.parentElement.classList.remove("unfocused")
-                profileSpan.classList.add("!high");
-                profileSpan.classList.remove("!normal");
-                userSpan.classList.remove("!high");
-                userSpan.classList.add("!normal");
+                profileSpan.classList.add("@high");
+                profileSpan.classList.remove("@low");
+                userSpan.classList.remove("@high");
+                userSpan.classList.add("@low");
             } else {
                 this._userSelect.parentElement.classList.remove("unfocused");
                 this._profileSelect.parentElement.classList.add("unfocused");
-                userSpan.classList.add("!high");
-                userSpan.classList.remove("!normal");
-                profileSpan.classList.remove("!high");
-                profileSpan.classList.add("!normal");
+                userSpan.classList.add("@high");
+                userSpan.classList.remove("@low");
+                profileSpan.classList.remove("@high");
+                profileSpan.classList.add("@low");
             }
         };
         this._modifySettingsProfile.onchange = checkSource;

@@ -52,14 +52,17 @@ ifeq ($(DEBUG), on)
 	SOURCEMAP := --sourcemap
 	TYPECHECK := tsc -noEmit --project ts/tsconfig.json
 	# jank
-	COPYTS := rm -r $(DATA)/web/js/ts; cp -r ts $(DATA)/web/js
+	COPYTS := rm -r $(DATA)/web/js/ts; cp -r tempts $(DATA)/web/js/ts
 	UNCSS := cp $(DATA)/web/css/bundle.css $(DATA)/bundle.css
+	TAILWIND := --content ""
 else
 	LDFLAGS := -s -w $(LDFLAGS)
 	SOURCEMAP :=
 	COPYTS :=
 	TYPECHECK :=
-	UNCSS := npx uncss $(DATA)/crash.html --csspath web/css --output $(DATA)/bundle.css
+	UNCSS := npx tailwindcss -i $(DATA)/web/css/bundle.css -o $(DATA)/bundle.css --content "html/crash.html"
+	# UNCSS := npx uncss $(DATA)/crash.html --csspath web/css --output $(DATA)/bundle.css
+	TAILWIND :=
 endif
 
 RACE ?= off
@@ -91,13 +94,18 @@ email:
 
 typescript:
 	$(TYPECHECK)
+	$(adding dark variants to typescript)
+	-rm -r tempts
+	cp -r ts tempts
+	scripts/dark-variant.sh tempts
+	scripts/dark-variant.sh tempts/modules
 	$(info compiling typescript)
 	-mkdir -p $(DATA)/web/js
-	-$(ESBUILD) --bundle ts/admin.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/admin.js --minify
-	-$(ESBUILD) --bundle ts/pwr.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/pwr.js --minify
-	-$(ESBUILD) --bundle ts/form.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/form.js --minify
-	-$(ESBUILD) --bundle ts/setup.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/setup.js --minify
-	-$(ESBUILD) --bundle ts/crash.ts --outfile=./$(DATA)/crash.js --minify
+	-$(ESBUILD) --bundle tempts/admin.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/admin.js --minify
+	-$(ESBUILD) --bundle tempts/pwr.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/pwr.js --minify
+	-$(ESBUILD) --bundle tempts/form.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/form.js --minify
+	-$(ESBUILD) --bundle tempts/setup.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/setup.js --minify
+	-$(ESBUILD) --bundle tempts/crash.ts --outfile=./$(DATA)/crash.js --minify
 	$(COPYTS)
 
 swagger:
@@ -118,6 +126,8 @@ bundle-css:
 	-mkdir -p $(DATA)/web/css
 	$(info bundling css)
 	$(ESBUILD) --bundle css/base.css --outfile=$(DATA)/web/css/bundle.css --external:remixicon.css --minify
+	npx tailwindcss -i $(DATA)/web/css/bundle.css -o $(DATA)/web/css/bundle.css $(TAILWIND)
+	# npx postcss -o $(DATA)/web/css/bundle.css $(DATA)/web/css/bundle.css
 
 inline:
 	cp html/crash.html $(DATA)/crash.html
@@ -125,11 +135,16 @@ inline:
 	node scripts/inline.js root $(DATA) $(DATA)/crash.html $(DATA)/crash.html
 	rm $(DATA)/bundle.css
 
+variants-html:
+	$(info copying html)
+	cp -r html $(DATA)/
+	$(info adding dark variants to html)
+	node scripts/missing-colors.js html $(DATA)/html
+
 copy:
 	$(info copying fonts)
 	cp -r node_modules/remixicon/fonts/remixicon.css node_modules/remixicon/fonts/remixicon.woff2 $(DATA)/web/css/
-	$(info copying html)
-	cp -r html $(DATA)/
+	$(info copying crash page)
 	mv $(DATA)/crash.html $(DATA)/html/
 	$(info copying static data)
 	-mkdir -p $(DATA)/web
@@ -159,4 +174,4 @@ clean:
 	-rm docs/docs.go docs/swagger.json docs/swagger.yaml
 	go clean
 
-all: configuration npm email typescript bundle-css inline swagger copy compile
+all: configuration npm email typescript variants-html bundle-css inline swagger copy compile

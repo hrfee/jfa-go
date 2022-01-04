@@ -13,24 +13,31 @@ before:
     - npm install
     - npm install esbuild
     - mkdir -p data/web/css
-    - npx esbuild --bundle css/base.css --outfile=./data/web/css/bundle.css --external:remixicon.css --minify
     - cp node_modules/remixicon/fonts/remixicon.css node_modules/remixicon/fonts/remixicon.woff2 data/web/css/
     - cp -r html data/
+    - node scripts/missing-colors.js html data/html
     - cp -r lang data/
     - cp LICENSE data/
     - cp jfa-go.service data/
     - python3 scripts/enumerate_config.py -i config/config-base.json -o data/config-base.json
     - python3 scripts/generate_ini.py -i config/config-base.json -o data/config-default.ini
     - python3 scripts/compile_mjml.py -o data/
-    - npx esbuild --bundle ts/admin.ts --outfile=./data/web/js/admin.js --minify
-    - npx esbuild --bundle ts/pwr.ts --outfile=./data/web/js/pwr.js --minify
-    - npx esbuild --bundle ts/form.ts --outfile=./data/web/js/form.js --minify
-    - npx esbuild --bundle ts/setup.ts --outfile=./data/web/js/setup.js --minify
-    - npx esbuild --bundle ts/crash.ts --outfile=./data/crash.js --minify
+    - rm -rf tempts
+    - cp -r ts tempts
+    - scripts/dark-variant.sh tempts
+    - scripts/dark-variant.sh tempts/modules
+    - npx esbuild --bundle tempts/admin.ts --outfile=./data/web/js/admin.js --minify
+    - npx esbuild --bundle tempts/pwr.ts --outfile=./data/web/js/pwr.js --minify
+    - npx esbuild --bundle tempts/form.ts --outfile=./data/web/js/form.js --minify
+    - npx esbuild --bundle tempts/setup.ts --outfile=./data/web/js/setup.js --minify
+    - npx esbuild --bundle tempts/crash.ts --outfile=./data/crash.js --minify
+    - rm -r tempts
+    - npx esbuild --bundle css/base.css --outfile=./data/web/css/bundle.css --external:remixicon.css --minify
     - cp html/crash.html data/
     - npx uncss data/crash.html --csspath web/css --output data/bundle.css
     - node scripts/inline.js root data data/crash.html data/crash.html
     - rm data/bundle.css
+    - npx tailwindcss -i data/web/css/bundle.css -o data/web/css/bundle.css
     - mv data/crash.html data/html/
     - go get -u github.com/swaggo/swag/cmd/swag
     - swag init -g main.go

@@ -91,10 +91,10 @@ class DOMInput {
     get requires_restart(): boolean { return this._restart.classList.contains("badge"); }
     set requires_restart(state: boolean) {
         if (state) {
-            this._restart.classList.add("badge", "~info");
+            this._restart.classList.add("badge", "~info", "dark:~d_warning");
             this._restart.textContent = "R";
         } else {
-            this._restart.classList.remove("badge", "~info");
+            this._restart.classList.remove("badge", "~info", "dark:~d_warning");
             this._restart.textContent = "";
         }
     }
@@ -109,7 +109,7 @@ class DOMInput {
                 <i class="icon ri-information-line"></i>
                 <span class="content sm"></span>
             </div>
-            <input type="${inputType}" class="input ~neutral !normal mt-half mb-half">
+            <input type="${inputType}" class="input ~neutral @low mt-2 mb-2">
         </label>
         `;
         this._tooltip = this._container.querySelector("div.setting-tooltip") as HTMLDivElement;
@@ -250,10 +250,10 @@ class DOMBool implements SBool {
     get requires_restart(): boolean { return this._restart.classList.contains("badge"); }
     set requires_restart(state: boolean) {
         if (state) {
-            this._restart.classList.add("badge", "~info");
+            this._restart.classList.add("badge", "~info", "dark:~d_warning");
             this._restart.textContent = "R";
         } else {
-            this._restart.classList.remove("badge", "~info");
+            this._restart.classList.remove("badge", "~info", "dark:~d_warning");
             this._restart.textContent = "";
         }
     }
@@ -263,7 +263,7 @@ class DOMBool implements SBool {
         this._container = document.createElement("div");
         this._container.classList.add("setting");
         this._container.innerHTML = `
-        <label class="switch mb-half">
+        <label class="switch mb-2">
             <input type="checkbox">
             <span class="setting-label"></span> <span class="setting-required"></span> <span class="setting-restart"></span>
             <div class="setting-tooltip tooltip right unfocused">
@@ -372,10 +372,10 @@ class DOMSelect implements SSelect {
     get requires_restart(): boolean { return this._restart.classList.contains("badge"); }
     set requires_restart(state: boolean) {
         if (state) {
-            this._restart.classList.add("badge", "~info");
+            this._restart.classList.add("badge", "~info", "dark:~d_warning");
             this._restart.textContent = "R";
         } else {
-            this._restart.classList.remove("badge", "~info");
+            this._restart.classList.remove("badge", "~info", "dark:~d_warning");
             this._restart.textContent = "";
         }
     }
@@ -403,7 +403,7 @@ class DOMSelect implements SSelect {
                 <i class="icon ri-information-line"></i>
                 <span class="content sm"></span>
             </div>
-            <div class="select ~neutral !normal mt-half mb-half">
+            <div class="select ~neutral @low mt-2 mb-2">
                 <select class="settings-select"></select>
             </div>
         </label>
@@ -436,7 +436,7 @@ class DOMSelect implements SSelect {
         message.innerHTML = window.lang.var("strings",
                                             "settingsRequiredOrRestartMessage",
                                             `<span class="badge ~critical">*</span>`,
-                                            `<span class="badge ~info">R</span>`
+                                            `<span class="badge ~info dark:~d_warning">R</span>`
         );
 
         this.update(setting);
@@ -472,7 +472,7 @@ class sectionPanel {
         this._section.classList.add("settings-section", "unfocused");
         this._section.innerHTML = `
         <span class="heading">${s.meta.name}</span>
-        <p class="support lg">${s.meta.description}</p>
+        <p class="support lg my-2">${s.meta.description}</p>
         `;
 
         this.update(s);
@@ -549,7 +549,7 @@ export class settingsList {
         this._sections[name] = section;
         this._panel.appendChild(this._sections[name].asElement());
         const button = document.createElement("span") as HTMLSpanElement;
-        button.classList.add("button", "~neutral", "!low", "settings-section-button", "mb-half");
+        button.classList.add("button", "~neutral", "@low", "settings-section-button", "justify-between", "mb-2");
         button.textContent = s.meta.name;
         if (subButton) { button.appendChild(subButton); }
         button.onclick = () => { this._showPanel(name); };
@@ -717,7 +717,7 @@ export class settingsList {
                         const editButton = document.createElement("div");
                         editButton.classList.add("tooltip", "left");
                         editButton.innerHTML = `
-                        <span class="button ~neutral !normal">
+                        <span class="button ~neutral @low">
                             <i class="icon ri-edit-line"></i>
                         </span>
                         <span class="content sm">
@@ -738,7 +738,7 @@ export class settingsList {
                         const addButton = document.createElement("div");
                         addButton.classList.add("tooltip", "left");
                         addButton.innerHTML = `
-                        <span class="button ~neutral !normal">+</span>
+                        <span class="button ~neutral @low">+</span>
                         <span class="content sm">
                         ${window.lang.strings("linkMatrix")}
                         </span>
@@ -804,7 +804,7 @@ class EmailEditor {
                 this._templ = req.response as templateEmail;
                 this._textArea.value = this._templ.content;
                 if (this._templ.html == "") {
-                    this._preview.innerHTML = `<pre class="preview-content" class="monospace"></pre>`;
+                    this._preview.innerHTML = `<pre class="preview-content" class="font-mono bg-inherit"></pre>`;
                 } else {
                     this._preview.innerHTML = this._templ.html;
                 }
@@ -815,7 +815,7 @@ class EmailEditor {
                 let innerHTML = '';
                 for (let i = 0; i < this._templ.variables.length; i++) {
                     let ci = i % colors.length;
-                    innerHTML += '<span class="button ~' + colors[ci] +' !normal mb-1" style="margin-left: 0.25rem; margin-right: 0.25rem;"></span>'
+                    innerHTML += '<span class="button ~' + colors[ci] +' @low mb-4" style="margin-left: 0.25rem; margin-right: 0.25rem;"></span>'
                 }
                 if (this._templ.variables.length == 0) {
                     this._variablesLabel.classList.add("unfocused");
@@ -825,7 +825,7 @@ class EmailEditor {
                 this._variables.innerHTML = innerHTML
                 let buttons = this._variables.querySelectorAll("span.button") as NodeListOf<HTMLSpanElement>;
                 for (let i = 0; i < this._templ.variables.length; i++) {
-                    buttons[i].innerHTML = `<span class="monospace">` + this._templ.variables[i] + `</span>`;
+                    buttons[i].innerHTML = `<span class="font-mono bg-inherit">` + this._templ.variables[i] + `</span>`;
                     buttons[i].onclick = () => {
                         insertText(this._textArea, this._templ.variables[i]);
                         this.loadPreview();
@@ -839,13 +839,13 @@ class EmailEditor {
                 } else {
                     for (let i = this._templ.conditionals.length-1; i >= 0; i--) {
                         let ci = i % colors.length;
-                        innerHTML += '<span class="button ~' + colors[ci] +' !normal mb-1" style="margin-left: 0.25rem; margin-right: 0.25rem;"></span>'
+                        innerHTML += '<span class="button ~' + colors[ci] +' @low mb-4" style="margin-left: 0.25rem; margin-right: 0.25rem;"></span>'
                     }
                     this._conditionalsLabel.classList.remove("unfocused");
                     this._conditionals.innerHTML = innerHTML
                     buttons = this._conditionals.querySelectorAll("span.button") as NodeListOf<HTMLSpanElement>;
                     for (let i = 0; i < this._templ.conditionals.length; i++) {
-                        buttons[i].innerHTML = `<span class="monospace">{if ` + this._templ.conditionals[i].slice(1) + `</span>`;
+                        buttons[i].innerHTML = `<span class="font-mono bg-inherit">{if ` + this._templ.conditionals[i].slice(1) + `</span>`;
                         buttons[i].onclick = () => {
                             insertText(this._textArea, "{if " + this._templ.conditionals[i].slice(1) + "{endif}");
                             this.loadPreview();
@@ -902,15 +902,16 @@ class EmailEditor {
                     }
                     tr.innerHTML = `
                     <td>${this._names[id].name}</td>
-                    <td>${resetButton}</td>
-                    <td><span class="button ~info !normal" title="${window.lang.get("strings", "edit")}"><i class="icon ri-edit-line"></i></span></td>
+                    <td class="table-inline justify-center"><span class="customize-reset">${resetButton}</span></td>
+                    <td><span class="button ~info @low" title="${window.lang.get("strings", "edit")}"><i class="icon ri-edit-line"></i></span></td>
                     `;
                     (tr.querySelector("span.button") as HTMLSpanElement).onclick = () => {
                         window.modals.customizeEmails.close()
                         this.loadEditor(id);
                     };
                     if (this._names[id].enabled) {
-                        const rb = tr.querySelector("i.ri-restart-line") as HTMLElement;
+                        const rb = tr.querySelector("span.customize-reset") as HTMLElement;
+                        rb.classList.add("button");
                         rb.onclick = () => _post("/config/emails/" + id + "/state/disable", null, (req: XMLHttpRequest) => {
                             if (req.readyState == 4) {
                                 if (req.status != 200 && req.status != 204) {

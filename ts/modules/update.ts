@@ -38,9 +38,9 @@ export class Updater implements updater {
         const el = document.getElementById("update-description") as HTMLParagraphElement;
         el.textContent = description;
         if (this.version == "git") {
-            el.classList.add("monospace");
+            el.classList.add("font-mono", "bg-inherit");
         } else {
-            el.classList.remove("monospace");
+            el.classList.remove("font-mono", "bg-inherit");
         }
     }
 

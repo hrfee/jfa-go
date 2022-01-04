@@ -1,4 +1,7 @@
-@import "../node_modules/a17t/dist/a17t.css";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 @import "remixicon.css";
 @import "./modal.css";
 @import "./dark.css";
@@ -12,12 +15,37 @@
     --border-width-8: 8px;
 }
 
-.light-theme {
+.light {
     --settings-section-button-filter: 90%;
 }
 
-.body {
+.dark {
+    --settings-section-button-filter: 80%;
+}
+
+.dark body {
     background-color: #101010;
+}
+
+.dark select, .dark option, .dark input {
+    background: #202020;
+}
+
+html:not(.dark) .card.\@low:not(.\~neutral):not(.\~positive):not(.\~urge):not(.\~warning):not(.\~info):not(.\~critical) {
+    --color-fill: va(--color-fill);
+    --color-content: var(--color-content);
+    --color-accent: var(--color-accent);
+    --color-muted: var(--color-muted);
+    background-color: #fff;
+    color: inherit;
+}
+
+.light-only {
+  display: none;
+}
+
+.dark-only {
+  display: initial;
 }
 
 .page-container {
@@ -27,6 +55,7 @@
 @media (max-width: 1100px) {
     .page-container {
         margin: 2%;
+        margin-top: 5rem;
     }
 }
 
@@ -50,6 +79,8 @@
 
 .banner.header {
     margin-bottom: var(--spacing-4,1rem);
+    max-width: calc(100% + 2.2rem); /* no idea why this works */
+    margin-left: -1.1rem;
 }
 
 .banner.footer {
@@ -68,54 +99,6 @@ div.card:contains(section.banner.footer) {
 
 .tab-button {
     font-size: 2rem;
-}
-
-.mb-half {
-    margin-bottom: 0.5rem;
-}
-
-.mb-1 {
-    margin-bottom: 1rem;
-}
-
-.mb-2 {
-    margin-bottom: 2rem;
-}
-
-.mt-half {
-    margin-top: 0.5rem;
-}
-
-.mt-1 {
-    margin-top: 1rem;
-}
-
-.ml-1 {
-    margin-left: 1rem;
-}
-
-.ml-half {
-    margin-left: 0.5rem;
-}
-
-.mr-half {
-    margin-right: 0.5rem;
-}
-
-.mr-1 {
-    margin-right: 1rem;
-}
-
-.p-1 {
-    padding: 1rem;
-}
-
-.pb-1 {
-    padding-bottom: 1rem;
-}
-
-.pl-1 {
-    padding-left: 1rem;
 }
 
 .al {
@@ -201,15 +184,6 @@ span.sm:not(.heading) {
     .col {
         flex: 45%;
     }
-}
-
-.fr {
-    float: right;
-}
-
-.monospace {
-    background-color: inherit; /* so we can use a17t code blocks */
-    font-family: Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace;
 }
 
 sup.\~critical, .text-critical {
@@ -377,10 +351,8 @@ sup.\~critical, .text-critical {
 }
 
 .settings-section-button {
-    box-sizing: border-box;
     width: 100%;
     height: 2.5rem;
-    background-color: rgba(0,0,0,0);
 }
 
 .settings-section-button:hover, .settings-section-button:focus {
@@ -392,8 +364,6 @@ sup.\~critical, .text-critical {
 }
 
 .settings-section-button.selected {
-    background-color: var(--color-neutral-normal-fill);
-    --buton-filter-brightness: var(--settings-section-button-filter);
     filter: brightness(var(--settings-section-button-filter)) !important;
 }
 
@@ -421,10 +391,20 @@ select, textarea {
     -moz-appearance: none;
 }
 
+html.dark textarea {
+    background-color: #202020
+}
+
 input {
     color: inherit;
     border: 0 solid var(--color-neutral-300);
 }
+
+table {
+    color: var(--color-content);
+}
+
+
 
 p.top {
     margin-top: 0px;
@@ -462,6 +442,8 @@ pre {
     white-space: -pre-wrap;      /* Opera 4-6 */
     white-space: -o-pre-wrap;    /* Opera 7 */
     word-wrap: break-word;       /* Internet Explorer 5.5+ */
+    background-color: var(--color-content-high) !important;
+    overflow-x: scroll;
 }
 
 .circle {
@@ -543,10 +525,18 @@ div.card:contains(section.banner.footer) {
     padding: var(--spacing-4, 1rem);
 }
 
-.button.discord.\!normal {
+.button.discord.\@low {
     background-color: rgba(88, 101, 242,60%);
 }
 
-.button.discord.\!normal:not(.lang-link) {
+.button.discord.\@low:not(.lang-link) {
     color: rgba(38, 51, 192, 90%);
+}
+
+.pb-0i {
+    padding-bottom: 0px !important
+}
+
+.text-center-i {
+    text-align: center !important;
 }

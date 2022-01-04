@@ -39,7 +39,7 @@ export const loadBuilds = () => {
                 <span class="ml-half chev"></span>
             </span>
             <div class="dropdown-display above">
-                <div class="card ~info !low">
+                <div class="card ~info @low">
             `;
             for (let arch in categories[buildName]) {
                 innerHTML += `
