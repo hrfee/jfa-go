@@ -91,10 +91,10 @@ class DOMInput {
     get requires_restart(): boolean { return this._restart.classList.contains("badge"); }
     set requires_restart(state: boolean) {
         if (state) {
-            this._restart.classList.add("badge", "~info");
+            this._restart.classList.add("badge", "~info", "dark:~d_warning");
             this._restart.textContent = "R";
         } else {
-            this._restart.classList.remove("badge", "~info");
+            this._restart.classList.remove("badge", "~info", "dark:~d_warning");
             this._restart.textContent = "";
         }
     }
@@ -250,10 +250,10 @@ class DOMBool implements SBool {
     get requires_restart(): boolean { return this._restart.classList.contains("badge"); }
     set requires_restart(state: boolean) {
         if (state) {
-            this._restart.classList.add("badge", "~info");
+            this._restart.classList.add("badge", "~info", "dark:~d_warning");
             this._restart.textContent = "R";
         } else {
-            this._restart.classList.remove("badge", "~info");
+            this._restart.classList.remove("badge", "~info", "dark:~d_warning");
             this._restart.textContent = "";
         }
     }
@@ -372,10 +372,10 @@ class DOMSelect implements SSelect {
     get requires_restart(): boolean { return this._restart.classList.contains("badge"); }
     set requires_restart(state: boolean) {
         if (state) {
-            this._restart.classList.add("badge", "~info");
+            this._restart.classList.add("badge", "~info", "dark:~d_warning");
             this._restart.textContent = "R";
         } else {
-            this._restart.classList.remove("badge", "~info");
+            this._restart.classList.remove("badge", "~info", "dark:~d_warning");
             this._restart.textContent = "";
         }
     }
@@ -436,7 +436,7 @@ class DOMSelect implements SSelect {
         message.innerHTML = window.lang.var("strings",
                                             "settingsRequiredOrRestartMessage",
                                             `<span class="badge ~critical">*</span>`,
-                                            `<span class="badge ~info">R</span>`
+                                            `<span class="badge ~info dark:~d_warning">R</span>`
         );
 
         this.update(setting);
@@ -895,7 +895,7 @@ class EmailEditor {
                     }
                     tr.innerHTML = `
                     <td>${this._names[id].name}</td>
-                    <td>${resetButton}</td>
+                    <td class="table-inline justify-center"><span class="customize-reset">${resetButton}</span></td>
                     <td><span class="button ~info @low" title="${window.lang.get("strings", "edit")}"><i class="icon ri-edit-line"></i></span></td>
                     `;
                     (tr.querySelector("span.button") as HTMLSpanElement).onclick = () => {
@@ -903,7 +903,8 @@ class EmailEditor {
                         this.loadEditor(id);
                     };
                     if (this._names[id].enabled) {
-                        const rb = tr.querySelector("i.ri-restart-line") as HTMLElement;
+                        const rb = tr.querySelector("span.customize-reset") as HTMLElement;
+                        rb.classList.add("button");
                         rb.onclick = () => _post("/config/emails/" + id + "/state/disable", null, (req: XMLHttpRequest) => {
                             if (req.readyState == 4) {
                                 if (req.status != 200 && req.status != 204) {

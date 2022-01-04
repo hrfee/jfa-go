@@ -213,7 +213,7 @@
                         <thead>
                             <tr>
                                 <th>{{ .strings.name }}</th>
-                                <th>{{ .strings.reset }}</th>
+                                <th class="table-inline justify-center">{{ .strings.reset }}</th>
                                 <th>{{ .strings.edit }}</th>
                             </tr>
                         </thead>
@@ -542,7 +542,7 @@
                                     <input type="checkbox" class="unfocused" id="create-inf-uses" aria-label="Set uses to infinite">
                                 </label>
                             </div>
-                            <p class="support unfocused" id="create-inf-uses-warning"><span class="badge ~critical">{{ .strings.warning }}</span> {{ .strings.inviteInfiniteUsesWarning }}</p>
+                            <p class="support unfocused my-2" id="create-inf-uses-warning"><span class="badge ~critical">{{ .strings.warning }}</span> {{ .strings.inviteInfiniteUsesWarning }}</p>
                             <label class="label supra">{{ .strings.profile }}</label>
                             <div class="select ~neutral @low mb-2 mt-4">
                                 <select id="create-profile">
@@ -602,11 +602,11 @@
                         </div>
                     </div>
                     <div class="card @low accounts-header table-responsive mt-8">
-                        <table class="table">
+                        <table class="table text-base leading-4">
                             <thead>
                                 <tr>
                                     <th><input type="checkbox" value="" id="accounts-select-all"></th>
-                                    <th>{{ .strings.username }}</th>
+                                    <th class="table-inline my-2">{{ .strings.username }}</th>
                                     <th>{{ .strings.emailAddress }}</th>
                                     {{ if .telegramEnabled }}
                                     <th class="text-center-i">Telegram</th>
@@ -643,7 +643,7 @@
                     </div>
                     <div class="row">
                         <div class="card @low dark:~d_neutral col" id="settings-sidebar">
-                            <aside class="aside sm ~info mb-2 @high" id="settings-message">Note: <span class="badge ~critical">*</span> indicates a required field, <span class="badge ~info">R</span> indicates changes require a restart.</aside> 
+                            <aside class="aside sm ~urge dark:~d_info mb-2 @low" id="settings-message">Note: <span class="badge ~critical">*</span> indicates a required field, <span class="badge ~info dark:~d_warning">R</span> indicates changes require a restart.</aside> 
                             <span class="button ~neutral @low settings-section-button justify-between mb-2" id="setting-about"><span class="flex">{{ .strings.aboutProgram }} <i class="ri-information-line ml-2"></i></span></span>
                             <span class="button ~neutral @low settings-section-button justify-between mb-2" id="setting-profiles"><span class="flex">{{ .strings.userProfiles }} <i class="ri-user-line ml-2"></i></span></span>
                         </div>

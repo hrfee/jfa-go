@@ -251,7 +251,7 @@ class DOMInvite implements Invite {
 
         this._header = document.createElement('div') as HTMLDivElement;
         this._container.appendChild(this._header);
-        this._header.classList.add("card", "~info", "dark:~d_neutral", "@low", "inv-header", "elem-pad", "no-pad", "flex-expand", "row", "mt-2", "overflow-y");
+        this._header.classList.add("card", "dark:~d_neutral", "@low", "inv-header", "elem-pad", "no-pad", "flex-expand", "row", "mt-2", "overflow-y");
 
         this._codeArea = document.createElement('div') as HTMLDivElement;
         this._header.appendChild(this._codeArea);
@@ -322,7 +322,7 @@ class DOMInvite implements Invite {
         `;
         if (window.notificationsEnabled) {
             innerHTML += `
-            <p class="label supra">${window.lang.strings("notifyEvent")}</p>
+            <p class="label supra mb-2">${window.lang.strings("notifyEvent")}</p>
             <label class="switch block">
                 <input class="inv-notify-expiry" type="checkbox">
                 <span>${window.lang.strings("notifyInviteExpiry")}</span>
@@ -425,7 +425,7 @@ export class inviteList implements inviteList {
             this._list.classList.add("empty");
             this._list.innerHTML = `
             <div class="inv inv-empty">
-                <div class="card ~info dark:~d_neutral @low inv-header flex-expand mt-2">
+                <div class="card dark:~d_neutral @low inv-header flex-expand mt-2">
                     <div class="inv-codearea">
                         <span class="code font-mono bg-inherit">${window.lang.strings("inviteNoInvites")}</span>
                     </div>

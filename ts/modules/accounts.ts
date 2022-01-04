@@ -387,7 +387,7 @@ class user implements User {
         this._row = document.createElement("tr") as HTMLTableRowElement;
         let innerHTML = `
             <td><input type="checkbox" value=""></td>
-            <td><div class="table-inline"><span class="accounts-username"></span> <span class="accounts-admin"></span> <span class="accounts-disabled"></span></span></td>
+            <td><div class="table-inline"><span class="accounts-username py-2"></span> <span class="accounts-admin"></span> <span class="accounts-disabled"></span></span></td>
             <td><div class="table-inline"><i class="icon ri-edit-line accounts-email-edit"></i><span class="accounts-email-container ml-2"></span></div></td>
         `;
         if (window.telegramEnabled) {
