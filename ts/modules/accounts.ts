@@ -193,8 +193,8 @@ class user implements User {
         if (!u) {
             this._notifyDropdown.querySelector(".accounts-area-matrix").classList.add("unfocused");
             this._matrix.innerHTML = `
-            <div class="table-inline">
-                <span class="chip btn @low w-100"><i class="ri-link" alt="${window.lang.strings("add")}"></i></span>
+            <div class="table-inline justify-center">
+                <span class="chip btn @low"><i class="ri-link" alt="${window.lang.strings("add")}"></i></span>
                 <input type="text" class="input ~neutral @low stealth-input unfocused" placeholder="@user:riot.im">
             </div>
             `;
@@ -220,7 +220,7 @@ class user implements User {
             input.classList.remove("unfocused");
             addIcon.classList.add("ri-check-line");
             addIcon.classList.remove("ri-link");
-            addButton.classList.remove("chip", "w-100")
+            addButton.classList.remove("chip")
             const outerClickListener = (event: Event) => {
                 if (!(event.target instanceof HTMLElement && (this._matrix.contains(event.target) || addButton.contains(event.target)))) {
                     document.dispatchEvent(new CustomEvent("accounts-reload"));
@@ -264,7 +264,7 @@ class user implements User {
         this._telegramUsername = u;
         if (!u) {
             this._notifyDropdown.querySelector(".accounts-area-telegram").classList.add("unfocused");
-            this._telegram.innerHTML = `<span class="chip btn @low w-100"><i class="ri-link" alt="${window.lang.strings("add")}"></i></span>`;
+            this._telegram.innerHTML = `<div class="table-inline justify-center"><span class="chip btn @low"><i class="ri-link" alt="${window.lang.strings("add")}"></i></span></div>`;
             (this._telegram.querySelector("span") as HTMLSpanElement).onclick = this._addTelegram;
         } else {
             this._notifyDropdown.querySelector(".accounts-area-telegram").classList.remove("unfocused");
@@ -329,7 +329,7 @@ class user implements User {
         const lastNotifyMethod = this.lastNotifyMethod() == "discord";
         this._discordUsername = u;
         if (!u) {
-            this._discord.innerHTML = `<span class="chip btn @low w-100"><i class="ri-link" alt="${window.lang.strings("add")}"></i></span>`;
+            this._discord.innerHTML = `<div class="table-inline justify-center"><span class="chip btn @low"><i class="ri-link" alt="${window.lang.strings("add")}"></i></span></div>`;
             (this._discord.querySelector("span") as HTMLSpanElement).onclick = () => addDiscord(this.id);
             this._notifyDropdown.querySelector(".accounts-area-discord").classList.add("unfocused");
         } else {
