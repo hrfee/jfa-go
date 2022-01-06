@@ -111,7 +111,8 @@
         "sendPWR": "Verstuur wachtwoordreset",
         "sendPWRSuccess": "Wachtwoordreset-link verstuurd.",
         "sendPWRValidFor": "De link is 30m geldig.",
-        "ombiProfile": "Ombi gebruikersprofiel"
+        "ombiProfile": "Ombi gebruikersprofiel",
+        "logs": "Logs"
     },
     "notifications": {
         "changedEmailAddress": "E-mailadres van {n} gewijzigd.",
