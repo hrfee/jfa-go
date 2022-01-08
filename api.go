@@ -1469,6 +1469,7 @@ func (app *appContext) GetUsers(gc *gin.Context) {
 		if email, ok := app.storage.emails[jfUser.ID]; ok {
 			user.Email = email.Addr
 			user.NotifyThroughEmail = email.Contact
+			user.Label = email.Label
 		}
 		expiry, ok := app.storage.users[jfUser.ID]
 		if ok {
@@ -1576,6 +1577,44 @@ func (app *appContext) DeleteOmbiProfile(gc *gin.Context) {
 		app.err.Printf("Failed to store profiles: %v", err)
 		return
 	}
+	respondBool(204, true, gc)
+}
+
+// @Summary Modify user's labels, which show next to their name in the accounts tab.
+// @Produce json
+// @Param modifyEmailsDTO body modifyEmailsDTO true "Map of userIDs to labels"
+// @Success 204 {object} boolResponse
+// @Failure 500 {object} boolResponse
+// @Router /users/labels [post]
+// @Security Bearer
+// @tags Users
+func (app *appContext) ModifyLabels(gc *gin.Context) {
+	var req modifyEmailsDTO
+	gc.BindJSON(&req)
+	app.debug.Println("Label modification requested")
+	users, status, err := app.jf.GetUsers(false)
+	if !(status == 200 || status == 204) || err != nil {
+		app.err.Printf("Failed to get users from Jellyfin (%d): %v", status, err)
+		respond(500, "Couldn't get users", gc)
+		return
+	}
+	for _, jfUser := range users {
+		id := jfUser.ID
+		if label, ok := req[id]; ok {
+			addr := ""
+			contact := true
+			if oldEmail, ok := app.storage.emails[id]; ok {
+				addr = oldEmail.Addr
+				contact = oldEmail.Contact
+			}
+			app.storage.emails[id] = EmailAddress{Addr: addr, Contact: contact, Label: label}
+		}
+	}
+	if err := app.storage.storeEmails(); err != nil {
+		app.err.Printf("Failed to store email list: %v", err)
+		respondBool(500, false, gc)
+	}
+	app.info.Println("Email list modified")
 	respondBool(204, true, gc)
 }
 

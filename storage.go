@@ -52,6 +52,7 @@ type DiscordUser struct {
 
 type EmailAddress struct {
 	Addr    string
+	Label   string // User Label.
 	Contact bool
 }
 

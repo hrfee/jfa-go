@@ -20,6 +20,7 @@ interface User {
     discord_id: string;
     matrix: string;
     notify_matrix: boolean;
+    label: string;
 }
 
 interface getPinResponse {
@@ -60,6 +61,9 @@ class user implements User {
     private _lastActive: HTMLTableDataCellElement;
     private _lastActiveUnix: number;
     private _notifyDropdown: HTMLDivElement;
+    private _label: HTMLInputElement;
+    private _userLabel: string;
+    private _labelEditButton: HTMLElement;
     id = "";
     private _selected: boolean;
 
@@ -380,6 +384,19 @@ class user implements User {
         }
     }
 
+    get label(): string { return this._userLabel; }
+    set label(l: string) {
+        console.log(l);
+        this._userLabel = l ? l : "";
+        this._label.innerHTML = l ? l : "";
+        this._labelEditButton.classList.add("ri-edit-line");
+        this._labelEditButton.classList.remove("ri-check-line");
+        if (!l) {
+            this._label.classList.remove("chip", "~gray");
+        } else {
+            this._label.classList.add("chip", "~gray", "mr-2");
+        }
+    }
     private _checkEvent = new CustomEvent("accountCheckEvent");
     private _uncheckEvent = new CustomEvent("accountUncheckEvent");
 
@@ -387,7 +404,7 @@ class user implements User {
         this._row = document.createElement("tr") as HTMLTableRowElement;
         let innerHTML = `
             <td><input type="checkbox" value=""></td>
-            <td><div class="table-inline"><span class="accounts-username py-2"></span> <span class="accounts-admin"></span> <span class="accounts-disabled"></span></span></td>
+            <td><div class="table-inline"><span class="accounts-username py-2 mr-2"></span><span class="accounts-label-container ml-2"></span> <i class="icon ri-edit-line accounts-label-edit"></i> <span class="accounts-admin"></span> <span class="accounts-disabled"></span></span></div></td>
             <td><div class="table-inline"><i class="icon ri-edit-line accounts-email-edit"></i><span class="accounts-email-container ml-2"></span></div></td>
         `;
         if (window.telegramEnabled) {
@@ -411,6 +428,7 @@ class user implements User {
         `;
         this._row.innerHTML = innerHTML;
         const emailEditor = `<input type="email" class="input ~neutral @low stealth-input">`;
+        const labelEditor = `<input type="text" class="field ~neutral @low stealth-input">`;
         this._check = this._row.querySelector("input[type=checkbox]") as HTMLInputElement;
         this._username = this._row.querySelector(".accounts-username") as HTMLSpanElement;
         this._admin = this._row.querySelector(".accounts-admin") as HTMLSpanElement;
@@ -422,11 +440,13 @@ class user implements User {
         this._matrix = this._row.querySelector(".accounts-matrix") as HTMLTableDataCellElement;
         this._expiry = this._row.querySelector(".accounts-expiry") as HTMLTableDataCellElement;
         this._lastActive = this._row.querySelector(".accounts-last-active") as HTMLTableDataCellElement;
+        this._label = this._row.querySelector(".accounts-label-container") as HTMLInputElement;
+        this._labelEditButton = this._row.querySelector(".accounts-label-edit") as HTMLElement;
         this._check.onchange = () => { this.selected = this._check.checked; }
 
         this._notifyDropdown = this._constructDropdown();
 
-        const toggleStealthInput = () => {
+        const toggleEmailInput = () => {
             if (this._emailEditButton.classList.contains("ri-edit-line")) {
                 this._email.innerHTML = emailEditor;
                 this._email.querySelector("input").value = this._emailAddress;
@@ -438,21 +458,52 @@ class user implements User {
             this._emailEditButton.classList.toggle("ri-check-line");
             this._emailEditButton.classList.toggle("ri-edit-line");
         };
-        const outerClickListener = (event: Event) => {
+        const emailClickListener = (event: Event) => {
             if (!(event.target instanceof HTMLElement && (this._email.contains(event.target) || this._emailEditButton.contains(event.target)))) {
-                toggleStealthInput();
+                toggleEmailInput();
                 this.email = this.email;
-                document.removeEventListener("click", outerClickListener);
+                document.removeEventListener("click", emailClickListener);
             }
         };
         this._emailEditButton.onclick = () => {
             if (this._emailEditButton.classList.contains("ri-edit-line")) {
-                document.addEventListener('click', outerClickListener);
+                document.addEventListener('click', emailClickListener);
             } else {
                 this._updateEmail();
-                document.removeEventListener('click', outerClickListener);
+                document.removeEventListener('click', emailClickListener);
             }
-            toggleStealthInput();
+            toggleEmailInput();
+        };
+        
+        const toggleLabelInput = () => {
+            if (this._labelEditButton.classList.contains("ri-edit-line")) {
+                this._label.innerHTML = labelEditor;
+                const input = this._label.querySelector("input");
+                input.value = this._userLabel;
+                input.placeholder = window.lang.strings("label");
+                this._label.classList.remove("ml-2");
+                this._labelEditButton.classList.add("ri-check-line");
+                this._labelEditButton.classList.remove("ri-edit-line");
+            } else {
+                this._updateLabel();
+                this._email.classList.add("ml-2");
+            }
+        };
+        
+        const labelClickListener = (event: Event) => {
+            if (!(event.target instanceof HTMLElement && (this._label.contains(event.target) || this._labelEditButton.contains(event.target)))) {
+                toggleLabelInput();
+                document.removeEventListener("click", labelClickListener);
+            }
+        };
+
+        this._labelEditButton.onclick = () => {
+            if (this._labelEditButton.classList.contains("ri-edit-line")) {
+                document.addEventListener('click', labelClickListener);
+            } else {
+                document.removeEventListener('click', labelClickListener);
+            }
+            toggleLabelInput();
         };
 
         this.update(user);
@@ -462,6 +513,21 @@ class user implements User {
             this.last_active = this.last_active;
         });
     }
+    
+    private _updateLabel = () => {
+        let oldLabel = this.label;
+        this.label = this._label.querySelector("input").value;
+        let send = {};
+        send[this.id] = this.label;
+        _post("/users/labels", send, (req: XMLHttpRequest) => {
+            if (req.readyState == 4) {
+                if (req.status != 204) {
+                    this.label = oldLabel;
+                    window.notifications.customError("labelChanged", window.lang.notif("errorUnknown"));
+                }
+            }
+        });
+    };
 
     private _updateEmail = () => {
         let oldEmail = this.email;
@@ -544,6 +610,7 @@ class user implements User {
         this.notify_matrix = user.notify_matrix;
         this.notify_email = user.notify_email;
         this.discord_id = user.discord_id;
+        this.label = user.label;
     }
 
     asElement = (): HTMLTableRowElement => { return this._row; }

@@ -340,15 +340,15 @@
             <div class="modal-content wide card">
                 <span class="heading">{{ .strings.updates }} <span class="modal-close">&times;</span></span>
                 <p class="content">
-                    <h2>
+                    <h2 class="mt-2">
                         <a id="update-version"></a> (<span class="font-mono bg-inherit" id="update-commit"></span>)
                     </h2>
-                    <p class="content" id="update-description"></p>
-                    <p class="support" id="update-date"></p>
-                    <div class="content markdown-box" id="update-changelog"></div>
+                    <p class="content mt-2" id="update-description"></p>
+                    <p class="support mt-2" id="update-date"></p>
+                    <div class="content markdown-box mt-2" id="update-changelog"></div>
                 </p>
-                <span class="button ~info @low full-width center" id="update-download">{{ .strings.download }}</span>
-                <span class="button ~urge @low full-width center" id="update-update">{{ .strings.update }}</span>
+                <span class="button ~info @low full-width center mt-2" id="update-download">{{ .strings.download }}</span>
+                <span class="button ~urge @low full-width center mt-2" id="update-update">{{ .strings.update }}</span>
             </div>
         </div>
         {{ if .telegramEnabled }}
