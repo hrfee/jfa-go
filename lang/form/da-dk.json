@@ -1,9 +1,9 @@
 {
     "meta": {
-        "name": "Dansk"
+        "name": "Dansk (DK)"
     },
     "strings": {
-        "pageTitle": "Opret Jellyfin Konto",
+        "pageTitle": "Opret en Jellyfin Konto",
         "createAccountHeader": "Opret Konto",
         "accountDetails": "Detaljer",
         "emailAddress": "E-mail",

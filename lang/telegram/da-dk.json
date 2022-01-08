@@ -1,6 +1,6 @@
 {
     "meta": {
-        "name": "Dansk"
+        "name": "Dansk (DK)"
     },
     "strings": {
         "startMessage": "Hej!\nIndtast din Jellyfin PIN-kode her for at verificere din konto.",
