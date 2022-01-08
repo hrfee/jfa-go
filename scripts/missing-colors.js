@@ -1,10 +1,12 @@
-let parser = require("jsdom");
+let parser = require("cheerio");
 let fs = require("fs");
 let path = require("path");
+let pre = require("perl-regex");
 
 const hasDark = (item) => {
-    for (let i = 0; i < item.classList.length; i++) {
-        if (item.classList[i].substring(0,5) == "dark:") {
+    let list = item.attr("class").split(/\s+/);
+    for (let i = 0; i < list.length; i++) {
+        if (list[i].substring(0,5) == "dark:") {
             return true;
         }
     }
@@ -12,37 +14,51 @@ const hasDark = (item) => {
 };
 
 
-const fixHTML = (infile, outfile) => {
-    console.log(infile, outfile)
-    let doc = new parser.JSDOM(fs.readFileSync(infile));
+function fixHTML(infile, outfile) {
+    let f = fs.readFileSync(infile).toString();
+    // Find all go template strings ({{ example }})
+    let templateStrings = pre.exec(f, "(?s){{(?:(?!{{).)*?}}", "gi");
+    for (let i = 0; i < templateStrings.length; i++) {
+        let s = templateStrings[i].replace(/\\/g, '');
+        // let s = templateStrings[i];
+        f = f.replaceAll(s, "<!--" + s.slice(3).slice(0, -3) + "-->");
+    }
+    let doc = new parser.load(f);
     for (let item of ["badge", "chip", "shield", "input", "table", "button", "portal", "select", "aside", "card", "field", "textarea"]) {
-        let items = doc.window.document.body.querySelectorAll("."+item);
-        for (let i = 0; i < items.length; i++) {
+        let items = doc("."+item);
+        items.each((i, elem) => {
             let hasColor = false;
             for (let color of ["neutral", "positive", "urge", "warning", "info", "critical"]) {
                 //console.log(color);
-                if (items[i].classList.contains("~"+color)) {
+                if (doc(elem).hasClass("~"+color)) {
                     hasColor = true;
                     // console.log("adding to", items[i].classList)
-                    if (!hasDark(items[i])) {
-                        items[i].classList.add("dark:~d_"+color);
+                    if (!hasDark(doc(elem))) {
+                        doc(elem).addClass("dark:~d_"+color);
                     }
                     break;
                 }
             }
             if (!hasColor) {
-                if (!hasDark(items[i])) {
+                if (!hasDark(doc(elem))) {
                     // card without ~neutral look different than with.
-                    if (item != "card") items[i].classList.add("~neutral");
-                    items[i].classList.add("dark:~d_neutral");
+                    if (item != "card") doc(elem).addClass("~neutral");
+                    doc(elem).addClass("dark:~d_neutral");
                 }
             }
-            if (!items[i].classList.contains("@low") && !items[i].classList.contains("@high")) {
-                items[i].classList.add("@low");
+            if (!doc(elem).hasClass("@low") && !doc(elem).hasClass("@high")) {
+                doc(elem).addClass("@low");
             }
-        }
+        });
     }
-    fs.writeFileSync(outfile, doc.window.document.documentElement.outerHTML); 
+    let out = doc.html();
+    // let out = f
+    for (let i = 0; i < templateStrings.length; i++) {
+        let s = templateStrings[i].replace(/\\/g, '');
+        out = out.replaceAll("<!--" + s.slice(3).slice(0, -3) + "-->", s);
+    }
+    fs.writeFileSync(outfile, out);
+    console.log(infile, outfile);
 };
 
 let inpath = process.argv[process.argv.length-2];
