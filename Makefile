@@ -6,12 +6,14 @@ else
 endif
 GOBINARY ?= go
 
+CSSVERSION ?= v3
+
 VERSION ?= $(shell git describe --exact-match HEAD 2> /dev/null || echo vgit)
 VERSION := $(shell echo $(VERSION) | sed 's/v//g')
 COMMIT ?= $(shell git rev-parse --short HEAD || echo unknown)
 
 UPDATER ?= off
-LDFLAGS := -X main.version=$(VERSION) -X main.commit=$(COMMIT)
+LDFLAGS := -X main.version=$(VERSION) -X main.commit=$(COMMIT) -X main.cssVersion=$(CSSVERSION)
 ifeq ($(UPDATER), on)
 	LDFLAGS := $(LDFLAGS) -X main.updater=binary
 else ifneq ($(UPDATER), off)
@@ -154,6 +156,7 @@ copy:
 	$(info copying language files)
 	cp -r lang $(DATA)/
 	cp LICENSE $(DATA)/
+	mv $(DATA)/web/css/bundle.css $(DATA)/web/css/$(CSSVERSION)bundle.css
 
 # internal-files:
 # 	python3 scripts/embed.py internal

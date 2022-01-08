@@ -12,7 +12,8 @@ import (
 	"github.com/hrfee/mediabrowser"
 )
 
-var css = []string{"bundle.css", "remixicon.css"}
+var cssVersion string
+var css = []string{cssVersion + "bundle.css", "remixicon.css"}
 var cssHeader string
 
 func (app *appContext) loadCSSHeader() string {
@@ -119,6 +120,7 @@ func (app *appContext) AdminPage(gc *gin.Context) {
 	gcHTML(gc, http.StatusOK, "admin.html", gin.H{
 		"urlBase":          app.getURLBase(gc),
 		"cssClass":         app.cssClass,
+		"cssVersion":       cssVersion,
 		"contactMessage":   "",
 		"emailEnabled":     emailEnabled,
 		"telegramEnabled":  telegramEnabled,
@@ -151,6 +153,7 @@ func (app *appContext) ResetPassword(gc *gin.Context) {
 	data := gin.H{
 		"urlBase":        app.getURLBase(gc),
 		"cssClass":       app.cssClass,
+		"cssVersion":     cssVersion,
 		"contactMessage": app.config.Section("ui").Key("contact_message").String(),
 		"strings":        app.storage.lang.PasswordReset[lang].Strings,
 		"success":        false,
@@ -255,6 +258,7 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 	if !ok {
 		gcHTML(gc, 404, "invalidCode.html", gin.H{
 			"cssClass":       app.cssClass,
+			"cssVersion":     cssVersion,
 			"contactMessage": app.config.Section("ui").Key("contact_message").String(),
 		})
 		return
@@ -272,6 +276,7 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 		fail := func() {
 			gcHTML(gc, 404, "404.html", gin.H{
 				"cssClass":       app.cssClass,
+				"cssVersion":     cssVersion,
 				"contactMessage": app.config.Section("ui").Key("contact_message").String(),
 			})
 		}
@@ -334,6 +339,7 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 	data := gin.H{
 		"urlBase":           app.getURLBase(gc),
 		"cssClass":          app.cssClass,
+		"cssVersion":        cssVersion,
 		"contactMessage":    app.config.Section("ui").Key("contact_message").String(),
 		"helpMessage":       app.config.Section("ui").Key("help_message").String(),
 		"successMessage":    app.config.Section("ui").Key("success_message").String(),
@@ -393,6 +399,7 @@ func (app *appContext) NoRouteHandler(gc *gin.Context) {
 	app.pushResources(gc, false)
 	gcHTML(gc, 404, "404.html", gin.H{
 		"cssClass":       app.cssClass,
+		"cssVersion":     cssVersion,
 		"contactMessage": app.config.Section("ui").Key("contact_message").String(),
 	})
 }

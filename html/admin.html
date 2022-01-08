@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" class="{{ .cssClass }}">
     <head>
-        <link rel="stylesheet" type="text/css" href="{{ .urlBase }}/css/bundle.css">
+        <link rel="stylesheet" type="text/css" href="{{ .urlBase }}/css/{{ .cssVersion }}bundle.css">
         <script>
             window.URLBase = "{{ .urlBase }}";
             window.notificationsEnabled = {{ .notifications }};

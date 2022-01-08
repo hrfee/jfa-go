@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" class="{{ .cssClass }}">
     <head>
-        <link rel="stylesheet" type="text/css" href="css/bundle.css">
+        <link rel="stylesheet" type="text/css" href="css/{{ .cssVersion }}bundle.css">
         {{ template "header.html" . }}
         <title>{{ .strings.successHeader }} - jfa-go</title>
     </head>

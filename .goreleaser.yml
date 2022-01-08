@@ -41,13 +41,14 @@ before:
     - mv data/crash.html data/html/
     - go get -u github.com/swaggo/swag/cmd/swag
     - swag init -g main.go
+    - mv data/web/css/bundle.css data/web/css/{{.Env.JFA_GO_CSS_VERSION}}bundle.css
 builds:
     - id: notray
       dir: ./
       env:
         - CGO_ENABLED=0
       ldflags:
-        - -s -w -X main.version={{.Env.JFA_GO_VERSION}} -X main.commit={{.ShortCommit}} -X main.updater=binary
+        - -s -w -X main.version={{.Env.JFA_GO_VERSION}} -X main.commit={{.ShortCommit}} -X main.updater=binary -X main.cssVersion={{.Env.JFA_GO_CSS_VERSION}}
       goos:
         - linux
         - darwin
