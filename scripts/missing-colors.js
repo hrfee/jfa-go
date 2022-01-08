@@ -13,6 +13,11 @@ const hasDark = (item) => {
     return false;
 };
 
+if (typeof String.prototype.replaceAll === "undefined") {
+    String.prototype.replaceAll = function(match, replace) {
+       return this.replace(new RegExp(match, 'g'), () => replace);
+    }
+}
 
 function fixHTML(infile, outfile) {
     let f = fs.readFileSync(infile).toString();
