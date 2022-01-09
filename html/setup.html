@@ -139,6 +139,10 @@
                     <label class="row switch pl-4 pb-4">
                         <input type="checkbox" class="mr-2" id="ui-admin_only"><span>{{ .lang.Login.adminOnly }}</span>
                     </label>
+                    <label class="row switch pl-4 pb-2">
+                        <input type="checkbox" class="mr-2" id="ui-allow_all"><span>{{ .lang.Login.allowAll }}</span>
+                    </label>
+                    <p class="support pb-4 pl-4 mt-1" id="description-ui-allow_all">{{ .lang.Login.allowAllDescription }}</p>
                     <label class="row switch pb-4">
                         <input type="radio" class="mr-2" name="ui-jellyfin_login" value="false"><span>{{ .lang.Login.authorizeManual }}</span>
                     </label>

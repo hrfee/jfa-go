@@ -54,6 +54,7 @@ type EmailAddress struct {
 	Addr    string
 	Label   string // User Label.
 	Contact bool
+	Admin   bool // Whether or not user is jfa-go admin.
 }
 
 type customEmails struct {

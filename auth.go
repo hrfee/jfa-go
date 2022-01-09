@@ -145,8 +145,14 @@ func (app *appContext) getTokenLogin(gc *gin.Context) {
 			return
 		}
 		jfID = user.ID
-		if app.config.Section("ui").Key("admin_only").MustBool(true) {
-			if !user.Policy.IsAdministrator {
+		if !app.config.Section("ui").Key("allow_all").MustBool(false) {
+			accountsAdmin := false
+			adminOnly := app.config.Section("ui").Key("admin_only").MustBool(true)
+			if emailStore, ok := app.storage.emails[jfID]; ok {
+				accountsAdmin = emailStore.Admin
+			}
+			accountsAdmin = accountsAdmin || (adminOnly && user.Policy.IsAdministrator)
+			if !accountsAdmin {
 				app.debug.Printf("Auth denied: Users \"%s\" isn't admin", creds[0])
 				respond(401, "Unauthorized", gc)
 				return

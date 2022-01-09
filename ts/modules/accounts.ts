@@ -21,6 +21,7 @@ interface User {
     matrix: string;
     notify_matrix: boolean;
     label: string;
+    accounts_admin: boolean;
 }
 
 interface getPinResponse {
@@ -64,6 +65,7 @@ class user implements User {
     private _label: HTMLInputElement;
     private _userLabel: string;
     private _labelEditButton: HTMLElement;
+    private _accounts_admin: HTMLInputElement
     id = "";
     private _selected: boolean;
 
@@ -95,6 +97,18 @@ class user implements User {
         } else {
             this._admin.classList.remove("chip", "~info", "ml-4");
             this._admin.textContent = "";
+        }
+    }
+
+    get accounts_admin(): boolean { return this._accounts_admin.checked; }
+    set accounts_admin(a: boolean) {
+        if (!window.jellyfinLogin) return;
+        this._accounts_admin.checked = a;
+        this._accounts_admin.disabled = (window.jfAllowAll || (a && this.admin && window.jfAdminOnly));
+        if (this._accounts_admin.disabled) {
+            this._accounts_admin.title = window.lang.strings("accessJFASettings");
+        } else {
+            this._accounts_admin.title = "";
         }
     }
 
@@ -386,7 +400,6 @@ class user implements User {
 
     get label(): string { return this._userLabel; }
     set label(l: string) {
-        console.log(l);
         this._userLabel = l ? l : "";
         this._label.innerHTML = l ? l : "";
         this._labelEditButton.classList.add("ri-edit-line");
@@ -403,8 +416,15 @@ class user implements User {
     constructor(user: User) {
         this._row = document.createElement("tr") as HTMLTableRowElement;
         let innerHTML = `
-            <td><input type="checkbox" value=""></td>
+            <td><input type="checkbox" class="accounts-select-user" value=""></td>
             <td><div class="table-inline"><span class="accounts-username py-2 mr-2"></span><span class="accounts-label-container ml-2"></span> <i class="icon ri-edit-line accounts-label-edit"></i> <span class="accounts-admin"></span> <span class="accounts-disabled"></span></span></div></td>
+        `;
+        if (window.jellyfinLogin) {
+            innerHTML += `
+            <td><div class="table-inline justify-center"><input type="checkbox" class="accounts-access-jfa" value=""></div></td>
+            `;
+        }
+        innerHTML += `
             <td><div class="table-inline"><i class="icon ri-edit-line accounts-email-edit"></i><span class="accounts-email-container ml-2"></span></div></td>
         `;
         if (window.telegramEnabled) {
@@ -429,7 +449,8 @@ class user implements User {
         this._row.innerHTML = innerHTML;
         const emailEditor = `<input type="email" class="input ~neutral @low stealth-input">`;
         const labelEditor = `<input type="text" class="field ~neutral @low stealth-input">`;
-        this._check = this._row.querySelector("input[type=checkbox]") as HTMLInputElement;
+        this._check = this._row.querySelector("input[type=checkbox].accounts-select-user") as HTMLInputElement;
+        this._accounts_admin = this._row.querySelector("input[type=checkbox].accounts-access-jfa") as HTMLInputElement;
         this._username = this._row.querySelector(".accounts-username") as HTMLSpanElement;
         this._admin = this._row.querySelector(".accounts-admin") as HTMLSpanElement;
         this._disabled = this._row.querySelector(".accounts-disabled") as HTMLSpanElement;
@@ -443,6 +464,22 @@ class user implements User {
         this._label = this._row.querySelector(".accounts-label-container") as HTMLInputElement;
         this._labelEditButton = this._row.querySelector(".accounts-label-edit") as HTMLElement;
         this._check.onchange = () => { this.selected = this._check.checked; }
+        
+        if (window.jellyfinLogin) {
+            this._accounts_admin.onchange = () => {
+                this.accounts_admin = this._accounts_admin.checked;
+                let send = {};
+                send[this.id] = this.accounts_admin;
+                _post("/users/accounts-admin", send, (req: XMLHttpRequest) => {
+                    if (req.readyState == 4) {
+                        if (req.status != 204) {
+                            this.accounts_admin = !this.accounts_admin;
+                            window.notifications.customError("accountsAdminChanged", window.lang.notif("errorUnknown"));
+                        }
+                    }
+                });
+            };
+        }
 
         this._notifyDropdown = this._constructDropdown();
 
@@ -611,6 +648,7 @@ class user implements User {
         this.notify_email = user.notify_email;
         this.discord_id = user.discord_id;
         this.label = user.label;
+        this.accounts_admin = user.accounts_admin;
     }
 
     asElement = (): HTMLTableRowElement => { return this._row; }
@@ -1145,7 +1183,6 @@ export class accountsList {
         let manualUser: user;
         for (let id of list) {
             let user = this._users[id];
-            console.log(user, user.notify_email, user.notify_matrix, user.notify_discord, user.notify_telegram);
             if (!user.lastNotifyMethod() && !user.email) {
                 manualUser  = user;
                 break;

@@ -110,6 +110,8 @@ func (app *appContext) AdminPage(gc *gin.Context) {
 	emailEnabled, _ := app.config.Section("invite_emails").Key("enabled").Bool()
 	notificationsEnabled, _ := app.config.Section("notifications").Key("enabled").Bool()
 	ombiEnabled := app.config.Section("ombi").Key("enabled").MustBool(false)
+	jfAdminOnly := app.config.Section("ui").Key("admin_only").MustBool(true)
+	jfAllowAll := app.config.Section("ui").Key("allow_all").MustBool(false)
 	var license string
 	l, err := fs.ReadFile(localFS, "LICENSE")
 	if err != nil {
@@ -137,6 +139,9 @@ func (app *appContext) AdminPage(gc *gin.Context) {
 		"language":         app.storage.lang.Admin[lang].JSON,
 		"langName":         lang,
 		"license":          license,
+		"jellyfinLogin":    app.jellyfinLogin,
+		"jfAdminOnly":      jfAdminOnly,
+		"jfAllowAll":       jfAllowAll,
 	})
 }
 

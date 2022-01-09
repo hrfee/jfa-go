@@ -181,6 +181,15 @@
                     "value": true,
                     "description": "Allows only admin users on Jellyfin to access the admin page."
                 },
+                "allow_all": {
+                    "name": "Allow all users to login",
+                    "required": false,
+                    "requires_restart": true,
+                    "depends_true": "jellyfin_login",
+                    "type": "bool",
+                    "value": false,
+                    "description": "Allow all Jellyfin users to access jfa-go. Not recommended, add individual users in the Accounts tab instead."
+                },
                 "username": {
                     "name": "Web Username",
                     "required": true,

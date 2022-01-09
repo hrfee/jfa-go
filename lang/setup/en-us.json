@@ -65,6 +65,8 @@
         "authorizeWithJellyfin": "Authorize with Jellyfin/Emby: Login details are shared with Jellyfin, which allows for multiple users.",
         "authorizeManual": "Username and Password: Manually set the username and password.",
         "adminOnly": "Admin users only (recommended)",
+        "allowAll": "Allow all Jellyfin users to login",
+        "allowAllDescription": "Not recommended, you should allow individual users to login once setup.",
         "emailNotice": "Your email address can be used to receive notifications."
     },
     "jellyfinEmby": {

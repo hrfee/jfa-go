@@ -145,7 +145,8 @@ type respUser struct {
 	NotifyThroughDiscord  bool   `json:"notify_discord"`
 	Matrix                string `json:"matrix"` // Matrix ID (if known)
 	NotifyThroughMatrix   bool   `json:"notify_matrix"`
-	Label                 string `json:"label"` // Label of user, shown next to their name.
+	Label                 string `json:"label"`          // Label of user, shown next to their name.
+	AccountsAdmin         bool   `json:"accounts_admin"` // Whether or not the user is a jfa-go admin.
 }
 
 type getUsersDTO struct {
@@ -346,3 +347,5 @@ type InternalPWR struct {
 type LogDTO struct {
 	Log string `json:"log"`
 }
+
+type setAccountsAdminDTO map[string]bool

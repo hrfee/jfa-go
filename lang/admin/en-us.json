@@ -111,7 +111,9 @@
         "matrixHomeServer": "Home server address",
         "saveAsTemplate": "Save as template",
         "deleteTemplate": "Delete template",
-        "templateEnterName": "Enter a name to save this template."
+        "templateEnterName": "Enter a name to save this template.",
+        "accessJFA": "Access jfa-go",
+        "accessJFASettings": "Cannot be changed as this either \"Admin Only\" or \"Allow All\" has been set in Settings > General."
     },
     "notifications": {
         "changedEmailAddress": "Changed email address of {n}.",

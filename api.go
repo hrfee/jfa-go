@@ -1453,6 +1453,8 @@ func (app *appContext) GetUsers(gc *gin.Context) {
 		respond(500, "Couldn't get users", gc)
 		return
 	}
+	adminOnly := app.config.Section("ui").Key("admin_only").MustBool(true)
+	allowAll := app.config.Section("ui").Key("allow_all").MustBool(false)
 	i := 0
 	app.storage.usersLock.Lock()
 	defer app.storage.usersLock.Unlock()
@@ -1470,6 +1472,7 @@ func (app *appContext) GetUsers(gc *gin.Context) {
 			user.Email = email.Addr
 			user.NotifyThroughEmail = email.Contact
 			user.Label = email.Label
+			user.AccountsAdmin = (app.jellyfinLogin) && (email.Admin || (adminOnly && jfUser.Policy.IsAdministrator) || allowAll)
 		}
 		expiry, ok := app.storage.users[jfUser.ID]
 		if ok {
@@ -1580,6 +1583,43 @@ func (app *appContext) DeleteOmbiProfile(gc *gin.Context) {
 	respondBool(204, true, gc)
 }
 
+// @Summary Set whether or not a user can access jfa-go. Redundant if the user is a Jellyfin admin.
+// @Produce json
+// @Param setAccountsAdminDTO body setAccountsAdminDTO true "Map of userIDs whether or not they have access."
+// @Success 204 {object} boolResponse
+// @Failure 500 {object} boolResponse
+// @Router /users/accounts-admin [post]
+// @Security Bearer
+// @tags Users
+func (app *appContext) SetAccountsAdmin(gc *gin.Context) {
+	var req setAccountsAdminDTO
+	gc.BindJSON(&req)
+	app.debug.Println("Admin modification requested")
+	users, status, err := app.jf.GetUsers(false)
+	if !(status == 200 || status == 204) || err != nil {
+		app.err.Printf("Failed to get users from Jellyfin (%d): %v", status, err)
+		respond(500, "Couldn't get users", gc)
+		return
+	}
+	for _, jfUser := range users {
+		id := jfUser.ID
+		if admin, ok := req[id]; ok {
+			var emailStore = EmailAddress{}
+			if oldEmail, ok := app.storage.emails[id]; ok {
+				emailStore = oldEmail
+			}
+			emailStore.Admin = admin
+			app.storage.emails[id] = emailStore
+		}
+	}
+	if err := app.storage.storeEmails(); err != nil {
+		app.err.Printf("Failed to store email list: %v", err)
+		respondBool(500, false, gc)
+	}
+	app.info.Println("Email list modified")
+	respondBool(204, true, gc)
+}
+
 // @Summary Modify user's labels, which show next to their name in the accounts tab.
 // @Produce json
 // @Param modifyEmailsDTO body modifyEmailsDTO true "Map of userIDs to labels"
@@ -1601,13 +1641,12 @@ func (app *appContext) ModifyLabels(gc *gin.Context) {
 	for _, jfUser := range users {
 		id := jfUser.ID
 		if label, ok := req[id]; ok {
-			addr := ""
-			contact := true
+			var emailStore = EmailAddress{}
 			if oldEmail, ok := app.storage.emails[id]; ok {
-				addr = oldEmail.Addr
-				contact = oldEmail.Contact
+				emailStore = oldEmail
 			}
-			app.storage.emails[id] = EmailAddress{Addr: addr, Contact: contact, Label: label}
+			emailStore.Label = label
+			app.storage.emails[id] = emailStore
 		}
 	}
 	if err := app.storage.storeEmails(); err != nil {
@@ -1640,11 +1679,12 @@ func (app *appContext) ModifyEmails(gc *gin.Context) {
 	for _, jfUser := range users {
 		id := jfUser.ID
 		if address, ok := req[id]; ok {
-			contact := true
-			if oldAddr, ok := app.storage.emails[id]; ok {
-				contact = oldAddr.Contact
+			var emailStore = EmailAddress{}
+			if oldEmail, ok := app.storage.emails[id]; ok {
+				emailStore = oldEmail
 			}
-			app.storage.emails[id] = EmailAddress{Addr: address, Contact: contact}
+			emailStore.Addr = address
+			app.storage.emails[id] = emailStore
 			if ombiEnabled {
 				ombiUser, code, err := app.getOmbiUser(id)
 				if code == 200 && err == nil {

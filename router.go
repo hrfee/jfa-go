@@ -161,6 +161,7 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 		api.POST(p+"/invites/notify", app.SetNotify)
 		api.POST(p+"/users/emails", app.ModifyEmails)
 		api.POST(p+"/users/labels", app.ModifyLabels)
+		api.POST(p+"/users/accounts-admin", app.SetAccountsAdmin)
 		// api.POST(p + "/setDefaults", app.SetDefaults)
 		api.POST(p+"/users/settings", app.ApplySettings)
 		api.POST(p+"/users/announce", app.Announce)

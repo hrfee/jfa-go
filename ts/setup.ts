@@ -239,6 +239,7 @@ const settings = {
         "language-admin": new LangSelect("admin", get("ui-language-admin")),
         "jellyfin_login": new BoolRadios("ui-jellyfin_login", "", false, "ui", "jellyfin_login"),
         "admin_only": new Checkbox(get("ui-admin_only"), "jellyfin_login", true, "ui"),
+        "allow_all": new Checkbox(get("ui-allow_all"), "jellyfin_login", true, "ui"),
         "username": new Input(get("ui-username"), "", "", "jellyfin_login", false, "ui"),
         "password": new Input(get("ui-password"), "", "", "jellyfin_login", false, "ui"),
         "email": new Input(get("ui-email"), "", "", "jellyfin_login", false, "ui"),
@@ -388,6 +389,31 @@ const emailMethodChange = () => {
 settings["email"]["method"].onchange = emailMethodChange;
 settings["messages"]["enabled"].onchange = emailMethodChange;
 emailMethodChange();
+
+const jellyfinLoginAccessChange = () => {
+    const adminOnly = settings["ui"]["admin_only"].value == "true";
+    const allowAll  = settings["ui"]["allow_all"].value == "true";
+    const adminOnlyEl = document.getElementById("ui-admin_only") as HTMLInputElement;
+    const allowAllEls = [document.getElementById("ui-allow_all"), document.getElementById("description-ui-allow_all")];
+    const nextButton = adminOnlyEl.parentElement.parentElement.parentElement.querySelector("span.next") as HTMLSpanElement;
+    if (adminOnly && !allowAll) {
+        (allowAllEls[0] as HTMLInputElement).disabled = true;
+        adminOnlyEl.disabled = false;
+        nextButton.removeAttribute("disabled");
+    } else if (!adminOnly && allowAll) {
+        adminOnlyEl.disabled = true;
+        (allowAllEls[0] as HTMLInputElement).disabled = false;
+        nextButton.removeAttribute("disabled");
+    } else { 
+        adminOnlyEl.disabled = false;
+        (allowAllEls[0] as HTMLInputElement).disabled = false;
+        nextButton.setAttribute("disabled", "true")
+    }
+};
+
+settings["ui"]["admin_only"].onchange = jellyfinLoginAccessChange;
+settings["ui"]["allow_all"].onchange = jellyfinLoginAccessChange;
+jellyfinLoginAccessChange();
 
 const embyHidePWR = () => {
     const pwr = document.getElementById("password-resets");

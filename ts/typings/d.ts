@@ -37,6 +37,9 @@ declare interface Window {
     lang: Lang;
     langFile: {};
     updater: updater;
+    jellyfinLogin: boolean;
+    jfAdminOnly: boolean;
+    jfAllowAll: boolean;
 }
 
 declare interface Update {

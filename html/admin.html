@@ -14,6 +14,9 @@
             window.langFile = JSON.parse({{ .language }});
             window.linkResetEnabled = {{ .linkResetEnabled }};
             window.language = "{{ .langName }}";
+            window.jellyfinLogin = {{ .jellyfinLogin }};
+            window.jfAdminOnly = {{ .jfAdminOnly }};
+            window.jfAllowAll = {{ .jfAllowAll }};
         </script>
         <title>Admin - jfa-go</title>
         {{ template "header.html" . }}
@@ -613,6 +616,9 @@
                                 <tr>
                                     <th><input type="checkbox" value="" id="accounts-select-all"></th>
                                     <th class="table-inline my-2">{{ .strings.username }}</th>
+                                    {{ if .jellyfinLogin }}
+                                    <th class="text-center-i">{{ .strings.accessJFA }}</th>
+                                    {{ end }}
                                     <th>{{ .strings.emailAddress }}</th>
                                     {{ if .telegramEnabled }}
                                     <th class="text-center-i">Telegram</th>
