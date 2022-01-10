@@ -30,6 +30,7 @@ interface formWindow extends Window {
     userExpiryMinutes: number;
     userExpiryMessage: string;
     emailRequired: boolean;
+    captcha: boolean;
 }
 
 loadLangSelector("form");
@@ -262,10 +263,52 @@ interface sendDTO {
     discord_contact?: boolean;
     matrix_pin?: string;
     matrix_contact?: boolean;
+    captcha?: string;
+}
+
+let captchaVerified = false;
+let captchaID = "";
+let captchaInput = document.getElementById("captcha-input") as HTMLInputElement;
+
+if (window.captcha) {
+    _get("/captcha/gen/"+window.code, null, (req: XMLHttpRequest) => {
+        if (req.readyState == 4) {
+            if (req.status == 200) {
+                captchaID = req.response["id"];
+                document.getElementById("captcha-img").innerHTML = `
+                <img class="w-100" src="${window.location.toString().substring(0, window.location.toString().lastIndexOf("/invite"))}/captcha/img/${window.code}/${captchaID}"></img>
+                `;
+            }
+        }
+    });
+    const input = document.querySelector("input[type=submit]") as HTMLInputElement;
+    const checkbox = document.getElementById("captcha-success") as HTMLSpanElement;
+    captchaInput.onkeyup = () => _post("/captcha/verify/" + window.code + "/" + captchaID + "/" + captchaInput.value, null, (req: XMLHttpRequest) => {
+        if (req.readyState == 4) {
+            if (req.status == 204) {
+                input.disabled = false;
+                input.nextElementSibling.removeAttribute("disabled");
+                checkbox.innerHTML = `<i class="ri-check-line"></i>`;
+                checkbox.classList.add("~positive");
+                checkbox.classList.remove("~critical");
+            } else {
+                input.disabled = true;
+                input.nextElementSibling.setAttribute("disabled", "true");
+                checkbox.innerHTML = `<i class="ri-close-line"></i>`;
+                checkbox.classList.add("~critical");
+                checkbox.classList.remove("~positive");
+            }
+        }
+    }, );
+    input.disabled = true;
+    input.nextElementSibling.setAttribute("disabled", "true");
 }
 
 const create = (event: SubmitEvent) => {
     event.preventDefault();
+    if (window.captcha && !captchaVerified) {
+        
+    }
     toggleLoader(submitSpan);
     let send: sendDTO = {
         code: window.code,
@@ -293,6 +336,9 @@ const create = (event: SubmitEvent) => {
         if (radio.checked) {
             send.matrix_contact = true;
         }
+    }
+    if (window.captcha) {
+        send.captcha = captchaInput.value;
     }
     _post("/newUser", send, (req: XMLHttpRequest) => {
         if (req.readyState == 4) {

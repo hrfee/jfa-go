@@ -48,6 +48,7 @@ require (
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966
+	github.com/steambap/captcha v1.4.1 // indirect
 	github.com/swaggo/files v0.0.0-20210815190702-a29dd2bc99b2
 	github.com/swaggo/gin-swagger v1.3.3
 	github.com/swaggo/swag v1.7.8 // indirect

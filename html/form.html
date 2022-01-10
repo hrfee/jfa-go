@@ -3,13 +3,11 @@
     <head>
         <link rel="stylesheet" type="text/css" href="css/{{ .cssVersion }}bundle.css">
         {{ template "header.html" . }}
-        <title>
-            {{ if .passwordReset }}
-            {{ .strings.passwordReset }}
-            {{ else }}
-            {{ .strings.pageTitle }}
-            {{ end }}
-        </title>
+        {{ if .passwordReset }}
+        <title>{{ .strings.passwordReset }}</title>
+        {{ else }}
+        <title>{{ .strings.pageTitle }}</title>
+        {{ end }}
     </head>
     <body class="max-w-full overflow-x-hidden section">
         <div id="modal-success" class="modal">
@@ -177,6 +175,13 @@
                                 {{ end }}
                             </ul>
                         </div>
+                        {{ if .captcha }}
+                        <div class="card ~neutral @low mb-4">
+                            <span class="label supra mb-2">CAPTCHA <span id="captcha-success" class="badge lg @low ~critical ml-2 float-right"><i class="ri-close-line"></i></span></span>
+                            <div id="captcha-img" class="mt-2 mb-2"></div>
+                            <input class="field ~neutral @low" id="captcha-input" class="mt-2" placeholder="CAPTCHA">
+                        </div>
+                        {{ end }}
                         {{ if .contactMessage }}
                         <aside class="col aside sm ~info mt-4">{{ .contactMessage }}</aside>
                         {{ end }}

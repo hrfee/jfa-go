@@ -30,6 +30,7 @@
         "errorInvalidPIN": "PIN is invalid.",
         "errorUnknown": "Unknown error.",
         "errorNoEmail": "Email required.",
+        "errorCaptcha": "Captcha incorrect.",
         "verified": "Account verified."
     },
     "validationStrings": {

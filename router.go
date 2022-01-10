@@ -121,6 +121,11 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 		router.POST(p+"/newUser", app.NewUser)
 		router.Use(static.Serve(p+"/invite/", app.webFS))
 		router.GET(p+"/invite/:invCode", app.InviteProxy)
+		if app.config.Section("captcha").Key("enabled").MustBool(false) {
+			router.GET(p+"/captcha/gen/:invCode", app.GenCaptcha)
+			router.GET(p+"/captcha/img/:invCode/:captchaID", app.GetCaptcha)
+			router.POST(p+"/captcha/verify/:invCode/:captchaID/:text", app.VerifyCaptcha)
+		}
 		if telegramEnabled {
 			router.GET(p+"/invite/:invCode/telegram/verified/:pin", app.TelegramVerifiedInvite)
 		}

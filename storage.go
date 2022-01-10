@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/hrfee/mediabrowser"
+	"github.com/steambap/captcha"
 )
 
 type Storage struct {
@@ -102,11 +103,12 @@ type Invite struct {
 	UserMinutes   int       `json:"user-minutes,omitempty"`
 	SendTo        string    `json:"email"`
 	// Used to be stored as formatted time, now as Unix.
-	UsedBy  [][]string                 `json:"used-by"`
-	Notify  map[string]map[string]bool `json:"notify"`
-	Profile string                     `json:"profile"`
-	Label   string                     `json:"label,omitempty"`
-	Keys    []string                   `json:"keys,omitempty"`
+	UsedBy   [][]string                 `json:"used-by"`
+	Notify   map[string]map[string]bool `json:"notify"`
+	Profile  string                     `json:"profile"`
+	Label    string                     `json:"label,omitempty"`
+	Keys     []string                   `json:"keys,omitempty"`
+	Captchas map[string]*captcha.Data   // Map of Captcha IDs to answers
 }
 
 type Lang struct {

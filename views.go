@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 	"github.com/hrfee/mediabrowser"
+	"github.com/steambap/captcha"
 )
 
 var cssVersion string
@@ -253,6 +254,120 @@ func (app *appContext) ResetPassword(gc *gin.Context) {
 	}
 }
 
+// @Summary returns the captcha image corresponding to the given ID.
+// @Param code path string true "invite code"
+// @Param captchaID path string true "captcha ID"
+// @Tags Other
+// @Router /captcha/img/{code}/{captchaID} [get]
+func (app *appContext) GetCaptcha(gc *gin.Context) {
+	code := gc.Param("invCode")
+	captchaID := gc.Param("captchaID")
+	inv, ok := app.storage.invites[code]
+	if !ok {
+		gcHTML(gc, 404, "invalidCode.html", gin.H{
+			"cssClass":       app.cssClass,
+			"cssVersion":     cssVersion,
+			"contactMessage": app.config.Section("ui").Key("contact_message").String(),
+		})
+	}
+	var capt *captcha.Data
+	if inv.Captchas != nil {
+		capt = inv.Captchas[captchaID]
+	}
+	if capt == nil {
+		respondBool(400, false, gc)
+		return
+	}
+	if err := capt.WriteImage(gc.Writer); err != nil {
+		app.err.Printf("Failed to write CAPTCHA image: %v", err)
+		respondBool(500, false, gc)
+		return
+	}
+	gc.Status(200)
+	return
+}
+
+// @Summary Generates a new captcha and returns it's ID. This can then be included in a request to /captcha/img/{id} to get an image.
+// @Produce json
+// @Param code path string true "invite code"
+// @Success 200 {object} genCaptchaDTO
+// @Router /captcha/gen/{code} [get]
+// @Security Bearer
+// @tags Users
+func (app *appContext) GenCaptcha(gc *gin.Context) {
+	code := gc.Param("invCode")
+	inv, ok := app.storage.invites[code]
+	if !ok {
+		gcHTML(gc, 404, "invalidCode.html", gin.H{
+			"cssClass":       app.cssClass,
+			"cssVersion":     cssVersion,
+			"contactMessage": app.config.Section("ui").Key("contact_message").String(),
+		})
+	}
+	capt, err := captcha.New(300, 100)
+	if err != nil {
+		app.err.Printf("Failed to generate captcha: %v", err)
+		respondBool(500, false, gc)
+		return
+	}
+	if inv.Captchas == nil {
+		inv.Captchas = map[string]*captcha.Data{}
+	}
+	captchaID := genAuthToken()
+	inv.Captchas[captchaID] = capt
+	app.storage.invites[code] = inv
+	gc.JSON(200, genCaptchaDTO{captchaID})
+	return
+}
+
+func (app *appContext) verifyCaptcha(code, id, text string) bool {
+	inv, ok := app.storage.invites[code]
+	if !ok || inv.Captchas == nil {
+		return false
+	}
+	c, ok := inv.Captchas[id]
+	if !ok {
+		return false
+	}
+	return strings.ToLower(c.Text) == strings.ToLower(text)
+}
+
+// @Summary returns 204 if the given Captcha contents is correct for the corresponding captcha ID and invite code.
+// @Param code path string true "invite code"
+// @Param captchaID path string true "captcha ID"
+// @Param text path string true "Captcha text"
+// @Success 204
+// @Tags Other
+// @Router /captcha/verify/{code}/{captchaID}/{text} [get]
+func (app *appContext) VerifyCaptcha(gc *gin.Context) {
+	code := gc.Param("invCode")
+	captchaID := gc.Param("captchaID")
+	text := gc.Param("text")
+	inv, ok := app.storage.invites[code]
+	if !ok {
+		gcHTML(gc, 404, "invalidCode.html", gin.H{
+			"cssClass":       app.cssClass,
+			"cssVersion":     cssVersion,
+			"contactMessage": app.config.Section("ui").Key("contact_message").String(),
+		})
+		return
+	}
+	var capt *captcha.Data
+	if inv.Captchas != nil {
+		capt = inv.Captchas[captchaID]
+	}
+	if capt == nil {
+		respondBool(400, false, gc)
+		return
+	}
+	if strings.ToLower(capt.Text) != strings.ToLower(text) {
+		respondBool(400, false, gc)
+		return
+	}
+	respondBool(204, true, gc)
+	return
+}
+
 func (app *appContext) InviteProxy(gc *gin.Context) {
 	app.pushResources(gc, false)
 	code := gc.Param("invCode")
@@ -370,6 +485,7 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 		"discordEnabled":    discord,
 		"matrixEnabled":     matrix,
 		"emailRequired":     app.config.Section("email").Key("required").MustBool(false),
+		"captcha":           app.config.Section("captcha").Key("enabled").MustBool(false),
 	}
 	if telegram {
 		data["telegramPIN"] = app.telegram.NewAuthToken()

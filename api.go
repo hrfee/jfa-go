@@ -651,6 +651,11 @@ func (app *appContext) NewUser(gc *gin.Context) {
 		respond(400, "errorNoEmail", gc)
 		return
 	}
+	if app.config.Section("captcha").Key("enabled").MustBool(false) && !verifyCaptcha(req.Captcha) {
+		app.info.Printf("%s: New user failed: Captcha Incorrect", req.Code)
+		respond(400, "errorCaptcha", gc)
+		return
+	}
 	f, success := app.newUser(req, false)
 	if !success {
 		f(gc)
@@ -1585,7 +1590,7 @@ func (app *appContext) DeleteOmbiProfile(gc *gin.Context) {
 
 // @Summary Set whether or not a user can access jfa-go. Redundant if the user is a Jellyfin admin.
 // @Produce json
-// @Param setAccountsAdminDTO body setAccountsAdminDTO true "Map of userIDs whether or not they have access."
+// @Param setAccountsAdminDTO body setAccountsAdminDTO true "Map of userIDs to whether or not they have access."
 // @Success 204 {object} boolResponse
 // @Failure 500 {object} boolResponse
 // @Router /users/accounts-admin [post]

@@ -312,6 +312,23 @@
                 }
             }
         },
+        "captcha": {
+            "order": [],
+            "meta": {
+                "name": "Captcha",
+                "description": "Settings related to user creation CAPTCHAs."
+            },
+            "settings": {
+                "enabled": {
+                    "name": "Enabled",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "bool",
+                    "value": false,
+                    "description": "Enable a CAPTCHA on the account creation form."
+                }
+            }
+        },
         "password_validation": {
             "order": [],
             "meta": {
