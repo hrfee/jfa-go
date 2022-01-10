@@ -62,6 +62,8 @@ function fixHTML(infile, outfile) {
         let s = templateStrings[i].replace(/\\/g, '');
         out = out.replaceAll("<!--" + s.slice(3).slice(0, -3) + "-->", s);
     }
+    out = out.replaceAll("&lt;!--", "{{");
+    out = out.replaceAll("--&gt;", "}}");
     fs.writeFileSync(outfile, out);
     console.log(infile, outfile);
 };
