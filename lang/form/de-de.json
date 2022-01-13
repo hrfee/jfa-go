@@ -52,6 +52,7 @@
         "errorDiscordVerification": "Discord-Verifizierung erforderlich.",
         "errorMatrixVerification": "Matrix-Verifizierung erforderlich.",
         "errorUnknown": "Unbekannter Fehler.",
-        "verified": "Konto verifiziert."
+        "verified": "Konto verifiziert.",
+        "errorNoEmail": "E-Mail Adresse erforderlich."
     }
 }
