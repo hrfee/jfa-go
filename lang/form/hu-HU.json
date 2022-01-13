@@ -1,49 +1,49 @@
 {
     "meta": {
-        "name": ""
+        "name": "Magyar"
     },
     "strings": {
-        "pageTitle": "",
-        "createAccountHeader": "",
-        "accountDetails": "",
-        "emailAddress": "",
-        "username": "",
-        "password": "",
-        "reEnterPassword": "",
-        "reEnterPasswordInvalid": "",
-        "createAccountButton": "",
-        "passwordRequirementsHeader": "",
-        "successHeader": "",
-        "confirmationRequired": "",
-        "confirmationRequiredMessage": "",
-        "yourAccountIsValidUntil": "",
-        "sendPIN": "",
-        "sendPINDiscord": "",
-        "matrixEnterUser": ""
+        "pageTitle": "Jellyfin fiók létrehozása",
+        "createAccountHeader": "Fiók létrehozása",
+        "accountDetails": "Részletek",
+        "emailAddress": "E-mail",
+        "username": "Felhasználónév",
+        "password": "Jelszó",
+        "reEnterPassword": "Jelszó megerősítése",
+        "reEnterPasswordInvalid": "A jelszók nem egyeznek",
+        "createAccountButton": "Fiók létrehozása",
+        "passwordRequirementsHeader": "Jelszó követelmények",
+        "successHeader": "Siker!",
+        "confirmationRequired": "E-mail megerősítés szükséges",
+        "confirmationRequiredMessage": "Kérjük ellenőrizze az e-mail címére küldött üzenetet, a fiók ellenőrzéséhez.",
+        "yourAccountIsValidUntil": "A fiókja eddig lesz érvényes: {date}.",
+        "sendPIN": "Az alábbi kódot küldje el a botnak, majd itt csatolja össze a fiókját.",
+        "sendPINDiscord": "Discordon haszánlja a {command} parancsot, a {server_channel} csatornában, majd küldje el a kódot a botnak privát üzenetben.",
+        "matrixEnterUser": "Írja be a felhasználója azonosítóját majd nyomja meg a beküldés gombot. A kapott kódot ide írja be."
     },
     "notifications": {
-        "errorUserExists": "",
-        "errorInvalidCode": "",
-        "errorTelegramVerification": "",
-        "errorDiscordVerification": "",
-        "errorMatrixVerification": "",
-        "errorInvalidPIN": "",
-        "errorUnknown": "",
-        "errorNoEmail": "",
-        "verified": ""
+        "errorUserExists": "A felhasználó már létezik.",
+        "errorInvalidCode": "Érvénytelen meghívó kód.",
+        "errorTelegramVerification": "Telegram ellenőrzés szükséges.",
+        "errorDiscordVerification": "Discord ellenőrzés szükséges.",
+        "errorMatrixVerification": "Matrix ellenőrzés szükséges.",
+        "errorInvalidPIN": "A PIN-kód érvénytelen.",
+        "errorUnknown": "Ismeretlen hiba.",
+        "errorNoEmail": "E-mail szükséges.",
+        "verified": "Fiók ellenőrizve."
     },
     "validationStrings": {
         "length": {
-            "singular": "",
-            "plural": ""
+            "singular": "Legalább {n} karakter",
+            "plural": "Legalább {n} karakter."
         },
         "uppercase": {
-            "singular": "",
-            "plural": ""
+            "singular": "Legalább {n} nagybetűs karakter",
+            "plural": "Legalább {n} nagybetűs karakter"
         },
         "lowercase": {
-            "singular": "",
-            "plural": ""
+            "singular": "Legalább {n} kisbetüs karakter",
+            "plural": "Legalább {n} kisbetüs karakter"
         },
         "number": {
             "singular": "",
