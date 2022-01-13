@@ -263,7 +263,8 @@ interface sendDTO {
     discord_contact?: boolean;
     matrix_pin?: string;
     matrix_contact?: boolean;
-    captcha?: string;
+    captcha_id?: string;
+    captcha_text?: string;
 }
 
 let captchaVerified = false;
@@ -338,7 +339,8 @@ const create = (event: SubmitEvent) => {
         }
     }
     if (window.captcha) {
-        send.captcha = captchaInput.value;
+        send.captcha_id = captchaID;
+        send.captcha_text = captchaInput.value;
     }
     _post("/newUser", send, (req: XMLHttpRequest) => {
         if (req.readyState == 4) {

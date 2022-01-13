@@ -628,6 +628,11 @@ func (app *appContext) NewUser(gc *gin.Context) {
 	var req newUserDTO
 	gc.BindJSON(&req)
 	app.debug.Printf("%s: New user attempt", req.Code)
+	if app.config.Section("captcha").Key("enabled").MustBool(false) && !app.verifyCaptcha(req.Code, req.CaptchaID, req.CaptchaText) {
+		app.info.Printf("%s: New user failed: Captcha Incorrect", req.Code)
+		respond(400, "errorCaptcha", gc)
+		return
+	}
 	if !app.checkInvite(req.Code, false, "") {
 		app.info.Printf("%s New user failed: invalid code", req.Code)
 		respond(401, "errorInvalidCode", gc)
@@ -649,11 +654,6 @@ func (app *appContext) NewUser(gc *gin.Context) {
 	if emailEnabled && app.config.Section("email").Key("required").MustBool(false) && !strings.Contains(req.Email, "@") {
 		app.info.Printf("%s: New user failed: Email Required", req.Code)
 		respond(400, "errorNoEmail", gc)
-		return
-	}
-	if app.config.Section("captcha").Key("enabled").MustBool(false) && !verifyCaptcha(req.Captcha) {
-		app.info.Printf("%s: New user failed: Captcha Incorrect", req.Code)
-		respond(400, "errorCaptcha", gc)
 		return
 	}
 	f, success := app.newUser(req, false)

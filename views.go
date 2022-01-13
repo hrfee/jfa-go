@@ -323,10 +323,12 @@ func (app *appContext) GenCaptcha(gc *gin.Context) {
 func (app *appContext) verifyCaptcha(code, id, text string) bool {
 	inv, ok := app.storage.invites[code]
 	if !ok || inv.Captchas == nil {
+		app.debug.Printf("Couldn't find invite \"%s\"", code)
 		return false
 	}
 	c, ok := inv.Captchas[id]
 	if !ok {
+		app.debug.Printf("Couldn't find Captcha \"%s\"", id)
 		return false
 	}
 	return strings.ToLower(c.Text) == strings.ToLower(text)

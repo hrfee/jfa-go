@@ -23,7 +23,8 @@ type newUserDTO struct {
 	DiscordContact  bool   `json:"discord_contact"`                             // Whether or not to use discord for notifications/pwrs
 	MatrixPIN       string `json:"matrix_pin" example:"A1-B2-3C"`               // Matrix verification PIN (if used)
 	MatrixContact   bool   `json:"matrix_contact"`                              // Whether or not to use matrix for notifications/pwrs
-	Captcha         string `json:"captcha"`                                     // Captcha text (if enabled)
+	CaptchaID       string `json:"captcha_id"`                                  // Captcha ID (if enabled)
+	CaptchaText     string `json:"captcha_text"`                                // Captcha text (if enabled)
 }
 
 type newUserResponse struct {
