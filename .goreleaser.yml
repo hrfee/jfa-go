@@ -65,7 +65,7 @@ builds:
       flags:
         - -tags=tray
       ldflags:
-        - -s -w -X main.version={{.Env.JFA_GO_VERSION}} -X main.commit={{.ShortCommit}} -X main.updater=binary -H=windowsgui
+        - -s -w -X main.version={{.Env.JFA_GO_VERSION}} -X main.commit={{.ShortCommit}} -X main.updater=binary -X main.cssVersion={{.Env.JFA_GO_CSS_VERSION}} -H=windowsgui
       goos:
         - windows
       goarch:
@@ -77,7 +77,7 @@ builds:
       flags:
         - -tags=tray
       ldflags:
-        - -s -w -X main.version={{.Env.JFA_GO_VERSION}} -X main.commit={{.ShortCommit}} -X main.updater=binary
+        - -s -w -X main.version={{.Env.JFA_GO_VERSION}} -X main.commit={{.ShortCommit}} -X main.updater=binary -X main.cssVersion={{.Env.JFA_GO_CSS_VERSION}}
       goos:
         - linux
       goarch:
