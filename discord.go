@@ -18,6 +18,7 @@ type DiscordDaemon struct {
 	guildID                                                    string
 	serverChannelName, serverName                              string
 	users                                                      map[string]DiscordUser // Map of user IDs to users. Added to on first interaction, and loaded from app.storage.discord on start.
+	roleID                                                     string
 	app                                                        *appContext
 }
 
@@ -38,6 +39,7 @@ func newDiscordDaemon(app *appContext) (*DiscordDaemon, error) {
 		verifiedTokens:  map[string]DiscordUser{},
 		users:           map[string]DiscordUser{},
 		app:             app,
+		roleID:          app.config.Section("discord").Key("apply_role").String(),
 	}
 	for _, user := range app.storage.discord {
 		dd.users[user.ID] = user
@@ -109,6 +111,35 @@ func (d *DiscordDaemon) run() {
 	<-d.ShutdownChannel
 	d.ShutdownChannel <- "Down"
 	return
+}
+
+// ListRoles returns a list of available (excluding bot and @everyone) roles in a guild as a list of containing an array of the guild ID and its name.
+func (d *DiscordDaemon) ListRoles() (roles [][2]string, err error) {
+	var r []*dg.Role
+	r, err = d.bot.GuildRoles(d.guildID)
+	if err != nil {
+		d.app.err.Printf("Discord: Failed to get roles: %v", err)
+		return
+	}
+	for _, role := range r {
+		fmt.Println(d.username)
+		if role.Name != d.username && role.Name != "@everyone" {
+			roles = append(roles, [2]string{role.ID, role.Name})
+		}
+	}
+	// roles = make([][2]string, len(r))
+	// for i, role := range r {
+	// 	roles[i] = [2]string{role.ID, role.Name}
+	// }
+	return
+}
+
+// ApplyRole applies the member role to the given user if set.
+func (d *DiscordDaemon) ApplyRole(userID string) error {
+	if d.roleID == "" {
+		return nil
+	}
+	return d.bot.GuildMemberRoleAdd(d.guildID, userID, d.roleID)
 }
 
 // NewTempInvite creates an invite link, and returns the invite URL, as well as the URL for the server icon.

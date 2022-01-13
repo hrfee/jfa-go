@@ -686,6 +686,18 @@
                     "value": "",
                     "description": "Channel to invite new users to."
                 },
+                "apply_role": {
+                    "name": "Apply Role on connection",
+                    "required": false,
+                    "requires_restart": true,
+                    "depends_true": "enabled",
+                    "type": "select",
+                    "options": [
+                        ["", "None"]
+                    ],
+                    "value": "",
+                    "description": "Add the selected role to a user when they sign up."
+                },
                 "language": {
                     "name": "Language",
                     "required": false,

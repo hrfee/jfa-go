@@ -368,6 +368,15 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 				success = false
 				return
 			}
+			err := app.discord.ApplyRole(discordUser.ID)
+			if err != nil {
+				f = func(gc *gin.Context) {
+					app.err.Printf("%s: New user failed: Failed to set member role: %v", req.Code, err)
+					respond(401, "error", gc)
+				}
+				success = false
+				return
+			}
 		}
 	}
 	var matrixUser MatrixUser
@@ -2025,6 +2034,20 @@ func (app *appContext) GetConfig(gc *gin.Context) {
 			resp.Sections[sectName].Settings[settingName] = s
 		}
 	}
+	if discordEnabled {
+		r, err := app.discord.ListRoles()
+		if err == nil {
+			roles := make([][2]string, len(r)+1)
+			roles[0] = [2]string{"", "None"}
+			for i, role := range r {
+				roles[i+1] = role
+			}
+			s := resp.Sections["discord"].Settings["apply_role"]
+			s.Options = roles
+			resp.Sections["discord"].Settings["apply_role"] = s
+		}
+	}
+
 	resp.Sections["ui"].Settings["language-form"] = fl
 	resp.Sections["ui"].Settings["language-admin"] = al
 	resp.Sections["email"].Settings["language"] = el
