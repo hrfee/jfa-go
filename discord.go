@@ -122,7 +122,6 @@ func (d *DiscordDaemon) ListRoles() (roles [][2]string, err error) {
 		return
 	}
 	for _, role := range r {
-		fmt.Println(d.username)
 		if role.Name != d.username && role.Name != "@everyone" {
 			roles = append(roles, [2]string{role.ID, role.Name})
 		}

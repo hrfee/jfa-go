@@ -2092,7 +2092,9 @@ func (app *appContext) ModifyConfig(gc *gin.Context) {
 				if section == "email" && setting == "method" && value == "disabled" {
 					value = ""
 				}
-				if value.(string) != app.config.Section(section).Key(setting).MustString("") {
+				if (section == "discord" || section == "matrix") && setting == "language" {
+					tempConfig.Section("telegram").Key("language").SetValue(value.(string))
+				} else if value.(string) != app.config.Section(section).Key(setting).MustString("") {
 					tempConfig.Section(section).Key(setting).SetValue(value.(string))
 				}
 			}
