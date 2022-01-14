@@ -250,7 +250,7 @@
                     "description": "Displayed when a user creates an account"
                 },
                 "url_base": {
-                    "name": "URL Base",
+                    "name": "Reverse Proxy subfolder",
                     "required": false,
                     "requires_restart": true,
                     "type": "text",
