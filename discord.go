@@ -302,6 +302,13 @@ func (d *DiscordDaemon) commandStart(s *dg.Session, m *dg.MessageCreate, lang st
 	}
 	user := d.MustGetUser(channel.ID, m.Author.ID, m.Author.Discriminator, m.Author.Username)
 	d.users[m.Author.ID] = user
+
+	_, err = d.bot.ChannelMessageSendReply(m.ChannelID, d.app.storage.lang.Telegram[lang].Strings.get("discordDMs"), m.MessageReference)
+	if err != nil {
+		d.app.err.Printf("Discord: Failed to send reply to \"%s\": %v", m.Author.Username, err)
+		return
+	}
+
 	content := d.app.storage.lang.Telegram[lang].Strings.get("startMessage") + "\n"
 	content += d.app.storage.lang.Telegram[lang].Strings.template("languageMessage", tmpl{"command": "!lang"})
 	_, err = s.ChannelMessageSend(channel.ID, content)
