@@ -513,9 +513,11 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 		}
 	}
 	id := user.ID
+	var profile Profile
 	if invite.Profile != "" {
 		app.debug.Printf("Applying settings from profile \"%s\"", invite.Profile)
-		profile, ok := app.storage.profiles[invite.Profile]
+		var ok bool
+		profile, ok = app.storage.profiles[invite.Profile]
 		if !ok {
 			profile = app.storage.profiles["Default"]
 		}
@@ -534,19 +536,6 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 			}
 			if !((status == 200 || status == 204) && err == nil) {
 				app.err.Printf("%s: Failed to set configuration template (%d): %v", req.Code, status, err)
-			}
-		}
-		if app.config.Section("ombi").Key("enabled").MustBool(false) {
-			if profile.Ombi != nil && len(profile.Ombi) != 0 {
-				errors, code, err := app.ombi.NewUser(req.Username, req.Password, req.Email, profile.Ombi)
-				if err != nil || code != 200 {
-					app.info.Printf("Failed to create Ombi user (%d): %s", code, err)
-					app.debug.Printf("Errors reported by Ombi: %s", strings.Join(errors, ", "))
-				} else {
-					app.info.Println("Created Ombi user")
-				}
-			} else {
-				app.debug.Printf("Skipping Ombi: Profile \"%s\" was empty", invite.Profile)
 			}
 		}
 	}
@@ -596,6 +585,40 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 		} else {
 			app.telegram.verifiedTokens[len(app.telegram.verifiedTokens)-1], app.telegram.verifiedTokens[telegramTokenIndex] = app.telegram.verifiedTokens[telegramTokenIndex], app.telegram.verifiedTokens[len(app.telegram.verifiedTokens)-1]
 			app.telegram.verifiedTokens = app.telegram.verifiedTokens[:len(app.telegram.verifiedTokens)-1]
+		}
+	}
+	if invite.Profile != "" && app.config.Section("ombi").Key("enabled").MustBool(false) {
+		if profile.Ombi != nil && len(profile.Ombi) != 0 {
+			template := profile.Ombi
+			errors, code, err := app.ombi.NewUser(req.Username, req.Password, req.Email, template)
+			if err != nil || code != 200 {
+				app.info.Printf("Failed to create Ombi user (%d): %s", code, err)
+				app.debug.Printf("Errors reported by Ombi: %s", strings.Join(errors, ", "))
+			} else {
+				app.info.Println("Created Ombi user")
+				if (discordEnabled && discordVerified) || (telegramEnabled && telegramTokenIndex != -1) {
+					ombiUser, status, err := app.getOmbiUser(id)
+					if status != 200 || err != nil {
+						app.err.Printf("Failed to get Ombi user (%d): %v", status, err)
+					} else {
+						dID := ""
+						tUser := ""
+						if discordEnabled && discordVerified {
+							dID = discordUser.ID
+						}
+						if telegramEnabled && telegramTokenIndex != -1 {
+							tUser = app.storage.telegram[user.ID].Username
+						}
+						resp, status, err := app.ombi.SetNotificationPrefs(ombiUser, dID, tUser)
+						if !(status == 200 || status == 204) || err != nil {
+							app.err.Printf("Failed to link Telegram/Discord to Ombi (%d): %v", status, err)
+							app.debug.Printf("Response: %v", resp)
+						}
+					}
+				}
+			}
+		} else {
+			app.debug.Printf("Skipping Ombi: Profile \"%s\" was empty", invite.Profile)
 		}
 	}
 	if matrixVerified {

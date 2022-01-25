@@ -13,6 +13,11 @@ import (
 	"github.com/hrfee/jfa-go/common"
 )
 
+const (
+	NotifAgentDiscord  = 1
+	NotifAgentTelegram = 4
+)
+
 // Ombi represents a running Ombi instance.
 type Ombi struct {
 	server, key    string
@@ -81,7 +86,7 @@ func (ombi *Ombi) getJSON(url string, params map[string]string) (string, int, er
 }
 
 // does a POST and optionally returns response as string. Returns a string instead of an io.reader bcs i couldn't get it working otherwise.
-func (ombi *Ombi) send(mode string, url string, data map[string]interface{}, response bool) (string, int, error) {
+func (ombi *Ombi) send(mode string, url string, data interface{}, response bool) (string, int, error) {
 	responseText := ""
 	params, _ := json.Marshal(data)
 	req, _ := http.NewRequest(mode, url, bytes.NewBuffer(params))
@@ -219,4 +224,30 @@ func (ombi *Ombi) NewUser(username, password, email string, template map[string]
 	}
 	ombi.cacheExpiry = time.Now()
 	return nil, code, err
+}
+
+type NotificationPref struct {
+	Agent   int    `json:"agent"`
+	UserID  string `json:"userId"`
+	Value   string `json:"value"`
+	Enabled bool   `json:"enabled"`
+}
+
+func (ombi *Ombi) SetNotificationPrefs(user map[string]interface{}, discordID, telegramUser string) (result string, code int, err error) {
+	fmt.Printf("%+v\n", user)
+	url := fmt.Sprintf("%s/api/v1/Identity", ombi.server)
+	id := user["id"].(string)
+	var data []NotificationPref
+	if discordID != "" {
+		data = []NotificationPref{NotificationPref{NotifAgentDiscord, id, discordID, true}}
+	}
+	if telegramUser != "" {
+		data = append(data, NotificationPref{NotifAgentTelegram, id, telegramUser, true})
+	}
+	if _, ok := user["user"]; !ok {
+		user["user"] = map[string]interface{}{}
+	}
+	user["user"].(map[string]interface{})["userNotificationPreferences"] = data
+	result, code, err = ombi.send("PUT", url, user, true)
+	return
 }
