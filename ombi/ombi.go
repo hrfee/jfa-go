@@ -86,12 +86,15 @@ func (ombi *Ombi) getJSON(url string, params map[string]string) (string, int, er
 }
 
 // does a POST and optionally returns response as string. Returns a string instead of an io.reader bcs i couldn't get it working otherwise.
-func (ombi *Ombi) send(mode string, url string, data interface{}, response bool) (string, int, error) {
+func (ombi *Ombi) send(mode string, url string, data interface{}, response bool, headers map[string]string) (string, int, error) {
 	responseText := ""
 	params, _ := json.Marshal(data)
 	req, _ := http.NewRequest(mode, url, bytes.NewBuffer(params))
 	req.Header.Add("Content-Type", "application/json")
 	for name, value := range ombi.header {
+		req.Header.Add(name, value)
+	}
+	for name, value := range headers {
 		req.Header.Add(name, value)
 	}
 	resp, err := ombi.httpClient.Do(req)
@@ -122,11 +125,11 @@ func (ombi *Ombi) send(mode string, url string, data interface{}, response bool)
 }
 
 func (ombi *Ombi) post(url string, data map[string]interface{}, response bool) (string, int, error) {
-	return ombi.send("POST", url, data, response)
+	return ombi.send("POST", url, data, response, nil)
 }
 
 func (ombi *Ombi) put(url string, data map[string]interface{}, response bool) (string, int, error) {
-	return ombi.send("PUT", url, data, response)
+	return ombi.send("PUT", url, data, response, nil)
 }
 
 // ModifyUser applies the given modified user object to the corresponding user.
@@ -234,9 +237,8 @@ type NotificationPref struct {
 }
 
 func (ombi *Ombi) SetNotificationPrefs(user map[string]interface{}, discordID, telegramUser string) (result string, code int, err error) {
-	fmt.Printf("%+v\n", user)
-	url := fmt.Sprintf("%s/api/v1/Identity", ombi.server)
 	id := user["id"].(string)
+	url := fmt.Sprintf("%s/api/v1/Identity/NotificationPreferences", ombi.server)
 	var data []NotificationPref
 	if discordID != "" {
 		data = []NotificationPref{NotificationPref{NotifAgentDiscord, id, discordID, true}}
@@ -244,10 +246,6 @@ func (ombi *Ombi) SetNotificationPrefs(user map[string]interface{}, discordID, t
 	if telegramUser != "" {
 		data = append(data, NotificationPref{NotifAgentTelegram, id, telegramUser, true})
 	}
-	if _, ok := user["user"]; !ok {
-		user["user"] = map[string]interface{}{}
-	}
-	user["user"].(map[string]interface{})["userNotificationPreferences"] = data
-	result, code, err = ombi.send("PUT", url, user, true)
+	result, code, err = ombi.send("POST", url, data, true, map[string]string{"UserName": user["userName"].(string)})
 	return
 }
