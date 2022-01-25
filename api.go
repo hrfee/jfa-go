@@ -2586,6 +2586,7 @@ func (app *appContext) TelegramAddUser(gc *gin.Context) {
 		app.telegram.verifiedTokens[len(app.telegram.verifiedTokens)-1], app.telegram.verifiedTokens[tokenIndex] = app.telegram.verifiedTokens[tokenIndex], app.telegram.verifiedTokens[len(app.telegram.verifiedTokens)-1]
 		app.telegram.verifiedTokens = app.telegram.verifiedTokens[:len(app.telegram.verifiedTokens)-1]
 	}
+	linkExistingOmbiDiscordTelegram(app)
 	respondBool(200, true, gc)
 }
 
@@ -2964,6 +2965,7 @@ func (app *appContext) DiscordConnect(gc *gin.Context) {
 		respondBool(500, false, gc)
 		return
 	}
+	linkExistingOmbiDiscordTelegram(app)
 	respondBool(200, true, gc)
 }
 
