@@ -14,6 +14,7 @@ func runMigrations(app *appContext) {
 	migrateBootstrap(app)
 	migrateEmailStorage(app)
 	migrateNotificationMethods(app)
+	linkExistingOmbiDiscordTelegram(app)
 	// migrateHyphens(app)
 }
 
@@ -154,6 +155,41 @@ func migrateNotificationMethods(app *appContext) error {
 	if changes {
 		app.info.Printf("Migrated to modified invite storage format.")
 		return app.storage.storeInvites()
+	}
+	return nil
+}
+
+// Pre-0.3.10, Ombi users were created without linking their Discord & Telegram accounts. This will add them.
+func linkExistingOmbiDiscordTelegram(app *appContext) error {
+	if !discordEnabled && !telegramEnabled {
+		return nil
+	}
+	if !app.config.Section("ombi").Key("enabled").MustBool(false) {
+		return nil
+	}
+	idList := map[string][2]string{}
+	for jfID, user := range app.storage.discord {
+		idList[jfID] = [2]string{user.ID, ""}
+	}
+	for jfID, user := range app.storage.telegram {
+		vals, ok := idList[jfID]
+		if !ok {
+			vals = [2]string{"", ""}
+		}
+		vals[1] = user.Username
+		idList[jfID] = vals
+	}
+	for jfID, ids := range idList {
+		ombiUser, status, err := app.getOmbiUser(jfID)
+		if status != 200 || err != nil {
+			app.debug.Printf("Failed to get Ombi user with Discord/Telegram \"%s\"/\"%s\" (%d): %v", ids[0], ids[1], status, err)
+			continue
+		}
+		_, status, err = app.ombi.SetNotificationPrefs(ombiUser, ids[0], ids[1])
+		if status != 200 || err != nil {
+			app.debug.Printf("Failed to set prefs for Ombi user \"%s\" (%d): %v", ombiUser["userName"].(string), status, err)
+			continue
+		}
 	}
 	return nil
 }
