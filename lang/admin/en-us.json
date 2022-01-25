@@ -205,6 +205,10 @@
             "singular": "Extend expiry for {n} user",
             "plural": "Extend expiry for {n} users"
         },
+        "setExpiry": {
+            "singular": "Set expiry for {n} user",
+            "plural": "Set expiry for {n} users"
+        },
         "extendedExpiry": {
             "singular": "Extended expiry for {n} user.",
             "plural": "Extended expiry for {n} users."

@@ -699,6 +699,9 @@ export class accountsList {
     private _addUserEmail = this._addUserForm.querySelector("input[type=email]") as HTMLInputElement;
     private _addUserPassword = this._addUserForm.querySelector("input[type=password]") as HTMLInputElement;
     
+    // Whether the "Extend expiry" is extending or setting an expiry.
+    private _settingExpiry = false;
+
     private _count = 30;
     private _populateNumbers = () => {
         const fieldIDs = ["months", "days", "hours", "minutes"];
@@ -836,6 +839,7 @@ export class accountsList {
                 this._announceButton.classList.remove("unfocused");
             }
             let anyNonExpiries = list.length == 0 ? true : false;
+            let allNonExpiries = true;
             let noContactCount = 0;
             // Only show enable/disable button if all selected have the same state.
             this._shouldEnable = this._users[list[0]].disabled
@@ -844,6 +848,9 @@ export class accountsList {
                 if (!anyNonExpiries && !this._users[id].expiry) {
                     anyNonExpiries = true;
                     this._extendExpiry.classList.add("unfocused");
+                }
+                if (this._users[id].expiry) {
+                    allNonExpiries = false;
                 }
                 if (showDisableEnable && this._users[id].disabled != this._shouldEnable) {
                     showDisableEnable = false;
@@ -854,8 +861,15 @@ export class accountsList {
                     noContactCount++;
                 }
             }
-            if (!anyNonExpiries) {
+            this._settingExpiry = false;
+            if (!anyNonExpiries && !allNonExpiries) {
                 this._extendExpiry.classList.remove("unfocused");
+                this._extendExpiry.textContent = window.lang.strings("extendExpiry");
+            }
+            if (allNonExpiries) {
+                this._extendExpiry.classList.remove("unfocused");
+                this._extendExpiry.textContent = window.lang.strings("setExpiry");
+                this._settingExpiry = true;
             }
             // Only show "Send PWR" if a maximum of 1 user selected doesn't have a contact method
             if (noContactCount > 1) {
@@ -1317,6 +1331,9 @@ export class accountsList {
             this._enableExpiryNotify.parentElement.classList.remove("unfocused");
             this._enableExpiryNotify.checked = false;
             this._enableExpiryReason.value = "";
+        } else if (this._settingExpiry) {
+            header = window.lang.quantity("setExpiry", list.length);
+            this._enableExpiryNotify.parentElement.classList.add("unfocused");
         } else {
             header = window.lang.quantity("extendExpiry", applyList.length);
             this._enableExpiryNotify.parentElement.classList.add("unfocused");
