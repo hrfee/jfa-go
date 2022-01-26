@@ -76,6 +76,9 @@ func (app *appContext) loadConfig() error {
 	app.MustSetValue("smtp", "hello_hostname", "localhost")
 	app.MustSetValue("smtp", "cert_validation", "true")
 
+	sc := app.config.Section("discord").Key("start_command").MustString("start")
+	app.config.Section("discord").Key("start_command").SetValue(strings.TrimPrefix(strings.TrimPrefix(sc, "/"), "!"))
+
 	jfUrl := app.config.Section("jellyfin").Key("server").String()
 	if !(strings.HasPrefix(jfUrl, "http://") || strings.HasPrefix(jfUrl, "https://")) {
 		app.config.Section("jellyfin").Key("server").SetValue("http://" + jfUrl)

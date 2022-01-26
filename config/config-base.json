@@ -656,7 +656,7 @@
                     "requires_restart": true,
                     "depends_true": "enabled",
                     "type": "text",
-                    "value": "!start",
+                    "value": "start",
                     "description": "Command to start the user verification process."
                 },
                 "channel": {

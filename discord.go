@@ -20,6 +20,8 @@ type DiscordDaemon struct {
 	users                                                      map[string]DiscordUser // Map of user IDs to users. Added to on first interaction, and loaded from app.storage.discord on start.
 	roleID                                                     string
 	app                                                        *appContext
+	commandHandlers                                            map[string]func(s *dg.Session, i *dg.InteractionCreate, lang string)
+	commandIDs                                                 []string
 }
 
 func newDiscordDaemon(app *appContext) (*DiscordDaemon, error) {
@@ -40,7 +42,12 @@ func newDiscordDaemon(app *appContext) (*DiscordDaemon, error) {
 		users:           map[string]DiscordUser{},
 		app:             app,
 		roleID:          app.config.Section("discord").Key("apply_role").String(),
+		commandHandlers: map[string]func(s *dg.Session, i *dg.InteractionCreate, lang string){},
+		commandIDs:      []string{},
 	}
+	dd.commandHandlers[app.config.Section("discord").Key("start_command").MustString("start")] = dd.cmdStart
+	dd.commandHandlers["lang"] = dd.cmdLang
+	dd.commandHandlers["pin"] = dd.cmdPIN
 	for _, user := range app.storage.discord {
 		dd.users[user.ID] = user
 	}
@@ -74,6 +81,9 @@ func (d *DiscordDaemon) MustGetUser(channelID, userID, discrim, username string)
 
 func (d *DiscordDaemon) run() {
 	d.bot.AddHandler(d.messageHandler)
+
+	d.bot.AddHandler(d.commandHandler)
+
 	d.bot.Identify.Intents = dg.IntentsGuildMessages | dg.IntentsDirectMessages | dg.IntentsGuildMembers | dg.IntentsGuildInvites
 	if err := d.bot.Open(); err != nil {
 		d.app.err.Printf("Discord: Failed to start daemon: %v", err)
@@ -107,7 +117,11 @@ func (d *DiscordDaemon) run() {
 			d.inviteChannelName = invChannel
 		}
 	}
+	defer d.deregisterCommands()
 	defer d.bot.Close()
+
+	d.registerCommands()
+
 	<-d.ShutdownChannel
 	d.ShutdownChannel <- "Down"
 	return
@@ -254,6 +268,206 @@ func (d *DiscordDaemon) Shutdown() {
 	close(d.ShutdownChannel)
 }
 
+func (d *DiscordDaemon) registerCommands() {
+	commands := []*dg.ApplicationCommand{
+		{
+			Name:        d.app.config.Section("discord").Key("start_command").MustString("start"),
+			Description: "Start the Discord linking process. The bot will send further instructions.",
+		},
+		{
+			Name:        "lang",
+			Description: "Set the language for the bot.",
+			Options: []*dg.ApplicationCommandOption{
+				{
+					Type:        dg.ApplicationCommandOptionString,
+					Name:        "language",
+					Description: "Language Name",
+					Required:    true,
+					Choices:     []*dg.ApplicationCommandOptionChoice{},
+				},
+			},
+		},
+		{
+			Name:        "pin",
+			Description: "Send PIN for Discord verification.",
+			Options: []*dg.ApplicationCommandOption{
+				{
+					Type:        dg.ApplicationCommandOptionString,
+					Name:        "pin",
+					Description: "Verification PIN (e.g AB-CD-EF)",
+					Required:    true,
+				},
+			},
+		},
+	}
+	commands[1].Options[0].Choices = make([]*dg.ApplicationCommandOptionChoice, len(d.app.storage.lang.Telegram))
+	i := 0
+	for code := range d.app.storage.lang.Telegram {
+		commands[1].Options[0].Choices[i] = &dg.ApplicationCommandOptionChoice{
+			Name:  d.app.storage.lang.Telegram[code].Meta.Name,
+			Value: code,
+		}
+		i++
+	}
+
+	d.deregisterCommands()
+
+	d.commandIDs = make([]string, len(commands))
+	cCommands, err := d.bot.ApplicationCommandBulkOverwrite(d.bot.State.User.ID, d.guildID, commands)
+	if err != nil {
+		d.app.err.Printf("Discord: Cannot create commands: %v", err)
+	}
+	for i, cmd := range cCommands {
+		// command, err := d.bot.ApplicationCommandCreate(d.bot.State.User.ID, d.guildID, cmd)
+		// if err != nil {
+		// 	d.app.err.Printf("Discord: Cannot create command \"%s\": %v", cmd.Name, err)
+		// }
+		d.commandIDs[i] = cmd.ID
+	}
+}
+
+func (d *DiscordDaemon) deregisterCommands() {
+	existingCommands, err := d.bot.ApplicationCommands(d.bot.State.User.ID, d.guildID)
+	if err != nil {
+		d.app.err.Printf("Discord: Failed to get commands: %v", err)
+		return
+	}
+	for _, cmd := range existingCommands {
+		if err := d.bot.ApplicationCommandDelete(d.bot.State.User.ID, "", cmd.ID); err != nil {
+			d.app.err.Printf("Failed to deregister command: %v", err)
+		}
+	}
+}
+
+func (d *DiscordDaemon) commandHandler(s *dg.Session, i *dg.InteractionCreate) {
+	if h, ok := d.commandHandlers[i.ApplicationCommandData().Name]; ok {
+		if i.GuildID != "" && d.channelName != "" {
+			if d.channelID == "" {
+				channel, err := s.Channel(i.ChannelID)
+				if err != nil {
+					d.app.err.Printf("Discord: Couldn't get channel, will monitor all: %v", err)
+					d.channelName = ""
+				}
+				if channel.Name == d.channelName {
+					d.channelID = channel.ID
+				}
+			}
+			if d.channelID != i.ChannelID {
+				d.app.debug.Printf("Discord: Ignoring message as not in specified channel")
+				return
+			}
+		}
+		if i.Interaction.Member.User.ID == s.State.User.ID {
+			return
+		}
+		lang := d.app.storage.lang.chosenTelegramLang
+		if user, ok := d.users[i.Interaction.Member.User.ID]; ok {
+			if _, ok := d.app.storage.lang.Telegram[user.Lang]; ok {
+				lang = user.Lang
+			}
+		}
+		h(s, i, lang)
+	}
+}
+
+// cmd* methods handle slash-commands, msg* methods handle ! commands.
+
+func (d *DiscordDaemon) cmdStart(s *dg.Session, i *dg.InteractionCreate, lang string) {
+	channel, err := s.UserChannelCreate(i.Interaction.Member.User.ID)
+	if err != nil {
+		d.app.err.Printf("Discord: Failed to create private channel with \"%s\": %v", i.Interaction.Member.User.Username, err)
+		return
+	}
+	user := d.MustGetUser(channel.ID, i.Interaction.Member.User.ID, i.Interaction.Member.User.Discriminator, i.Interaction.Member.User.Username)
+	d.users[i.Interaction.Member.User.ID] = user
+
+	content := d.app.storage.lang.Telegram[lang].Strings.get("discordStartMessage") + "\n"
+	content += d.app.storage.lang.Telegram[lang].Strings.template("languageMessageDiscord", tmpl{"command": "/lang"})
+	err = s.InteractionRespond(i.Interaction, &dg.InteractionResponse{
+		//	Type: dg.InteractionResponseChannelMessageWithSource,
+		Type: dg.InteractionResponseChannelMessageWithSource,
+		Data: &dg.InteractionResponseData{
+			Content: content,
+			Flags:   64, // Ephemeral
+		},
+	})
+	if err != nil {
+		d.app.err.Printf("Discord: Failed to send reply: %v", err)
+		return
+	}
+}
+
+func (d *DiscordDaemon) cmdPIN(s *dg.Session, i *dg.InteractionCreate, lang string) {
+	pin := i.ApplicationCommandData().Options[0].StringValue()
+	tokenIndex := -1
+	for i, token := range d.tokens {
+		if pin == token {
+			tokenIndex = i
+			break
+		}
+	}
+	if tokenIndex == -1 {
+		err := s.InteractionRespond(i.Interaction, &dg.InteractionResponse{
+			//	Type: dg.InteractionResponseChannelMessageWithSource,
+			Type: dg.InteractionResponseChannelMessageWithSource,
+			Data: &dg.InteractionResponseData{
+				Content: d.app.storage.lang.Telegram[lang].Strings.get("invalidPIN"),
+				Flags:   64, // Ephemeral
+			},
+		})
+		if err != nil {
+			d.app.err.Printf("Discord: Failed to send message to \"%s\": %v", i.Interaction.Member.User.Username, err)
+		}
+		return
+	}
+	err := s.InteractionRespond(i.Interaction, &dg.InteractionResponse{
+		//	Type: dg.InteractionResponseChannelMessageWithSource,
+		Type: dg.InteractionResponseChannelMessageWithSource,
+		Data: &dg.InteractionResponseData{
+			Content: d.app.storage.lang.Telegram[lang].Strings.get("pinSuccess"),
+			Flags:   64, // Ephemeral
+		},
+	})
+	if err != nil {
+		d.app.err.Printf("Discord: Failed to send message to \"%s\": %v", i.Interaction.Member.User.Username, err)
+	}
+	d.verifiedTokens[pin] = d.users[i.Interaction.Member.User.ID]
+	d.tokens[len(d.tokens)-1], d.tokens[tokenIndex] = d.tokens[tokenIndex], d.tokens[len(d.tokens)-1]
+	d.tokens = d.tokens[:len(d.tokens)-1]
+}
+
+func (d *DiscordDaemon) cmdLang(s *dg.Session, i *dg.InteractionCreate, lang string) {
+	code := i.ApplicationCommandData().Options[0].StringValue()
+	if _, ok := d.app.storage.lang.Telegram[code]; ok {
+		var user DiscordUser
+		for jfID, u := range d.app.storage.discord {
+			if u.ID == i.Interaction.Member.User.ID {
+				u.Lang = code
+				lang = code
+				d.app.storage.discord[jfID] = u
+				if err := d.app.storage.storeDiscordUsers(); err != nil {
+					d.app.err.Printf("Failed to store Discord users: %v", err)
+				}
+				user = u
+				break
+			}
+		}
+		d.users[i.Interaction.Member.User.ID] = user
+		err := s.InteractionRespond(i.Interaction, &dg.InteractionResponse{
+			//	Type: dg.InteractionResponseChannelMessageWithSource,
+			Type: dg.InteractionResponseChannelMessageWithSource,
+			Data: &dg.InteractionResponseData{
+				Content: d.app.storage.lang.Telegram[lang].Strings.template("languageSet", tmpl{"language": d.app.storage.lang.Telegram[lang].Meta.Name}),
+				Flags:   64, // Ephemeral
+			},
+		})
+		if err != nil {
+			d.app.err.Printf("Discord: Failed to send reply: %v", err)
+			return
+		}
+	}
+}
+
 func (d *DiscordDaemon) messageHandler(s *dg.Session, m *dg.MessageCreate) {
 	if m.GuildID != "" && d.channelName != "" {
 		if d.channelID == "" {
@@ -285,16 +499,16 @@ func (d *DiscordDaemon) messageHandler(s *dg.Session, m *dg.MessageCreate) {
 		}
 	}
 	switch msg := sects[0]; msg {
-	case d.app.config.Section("discord").Key("start_command").MustString("!start"):
-		d.commandStart(s, m, lang)
+	case "!" + d.app.config.Section("discord").Key("start_command").MustString("start"):
+		d.msgStart(s, m, lang)
 	case "!lang":
-		d.commandLang(s, m, sects, lang)
+		d.msgLang(s, m, sects, lang)
 	default:
-		d.commandPIN(s, m, sects, lang)
+		d.msgPIN(s, m, sects, lang)
 	}
 }
 
-func (d *DiscordDaemon) commandStart(s *dg.Session, m *dg.MessageCreate, lang string) {
+func (d *DiscordDaemon) msgStart(s *dg.Session, m *dg.MessageCreate, lang string) {
 	channel, err := s.UserChannelCreate(m.Author.ID)
 	if err != nil {
 		d.app.err.Printf("Discord: Failed to create private channel with \"%s\": %v", m.Author.Username, err)
@@ -303,7 +517,7 @@ func (d *DiscordDaemon) commandStart(s *dg.Session, m *dg.MessageCreate, lang st
 	user := d.MustGetUser(channel.ID, m.Author.ID, m.Author.Discriminator, m.Author.Username)
 	d.users[m.Author.ID] = user
 
-	_, err = d.bot.ChannelMessageSendReply(m.ChannelID, d.app.storage.lang.Telegram[lang].Strings.get("discordDMs"), m.MessageReference)
+	_, err = d.bot.ChannelMessageSendReply(m.ChannelID, d.app.storage.lang.Telegram[lang].Strings.get("discordDMs"), m.Reference())
 	if err != nil {
 		d.app.err.Printf("Discord: Failed to send reply to \"%s\": %v", m.Author.Username, err)
 		return
@@ -318,7 +532,7 @@ func (d *DiscordDaemon) commandStart(s *dg.Session, m *dg.MessageCreate, lang st
 	}
 }
 
-func (d *DiscordDaemon) commandLang(s *dg.Session, m *dg.MessageCreate, sects []string, lang string) {
+func (d *DiscordDaemon) msgLang(s *dg.Session, m *dg.MessageCreate, sects []string, lang string) {
 	if len(sects) == 1 {
 		list := "!lang <lang>\n"
 		for code := range d.app.storage.lang.Telegram {
@@ -336,13 +550,14 @@ func (d *DiscordDaemon) commandLang(s *dg.Session, m *dg.MessageCreate, sects []
 	}
 	if _, ok := d.app.storage.lang.Telegram[sects[1]]; ok {
 		var user DiscordUser
-		for jfID, user := range d.app.storage.discord {
-			if user.ID == m.Author.ID {
-				user.Lang = sects[1]
-				d.app.storage.discord[jfID] = user
+		for jfID, u := range d.app.storage.discord {
+			if u.ID == m.Author.ID {
+				u.Lang = sects[1]
+				d.app.storage.discord[jfID] = u
 				if err := d.app.storage.storeDiscordUsers(); err != nil {
 					d.app.err.Printf("Failed to store Discord users: %v", err)
 				}
+				user = u
 				break
 			}
 		}
@@ -350,7 +565,7 @@ func (d *DiscordDaemon) commandLang(s *dg.Session, m *dg.MessageCreate, sects []
 	}
 }
 
-func (d *DiscordDaemon) commandPIN(s *dg.Session, m *dg.MessageCreate, sects []string, lang string) {
+func (d *DiscordDaemon) msgPIN(s *dg.Session, m *dg.MessageCreate, sects []string, lang string) {
 	if _, ok := d.users[m.Author.ID]; ok {
 		channel, err := s.Channel(m.ChannelID)
 		if err != nil {
