@@ -31,6 +31,10 @@
     background: #202020;
 }
 
+.dark .code {
+    color: var(--color-content-high);
+}
+
 html:not(.dark) .card.\@low:not(.\~neutral):not(.\~positive):not(.\~urge):not(.\~warning):not(.\~info):not(.\~critical) {
     --color-fill: va(--color-fill);
     --color-content: var(--color-content);
