@@ -34,7 +34,7 @@ before:
     - rm -r tempts
     - npx esbuild --bundle css/base.css --outfile=./data/web/css/bundle.css --external:remixicon.css --minify
     - cp html/crash.html data/
-    - npx uncss data/crash.html --csspath web/css --output data/bundle.css
+    - npx tailwindcss -i data/web/css/bundle.css -o data/bundle.css --content "html/crash.html"
     - node scripts/inline.js root data data/crash.html data/crash.html
     - rm data/bundle.css
     - npx tailwindcss -i data/web/css/bundle.css -o data/web/css/bundle.css
