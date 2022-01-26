@@ -271,7 +271,7 @@ let captchaVerified = false;
 let captchaID = "";
 let captchaInput = document.getElementById("captcha-input") as HTMLInputElement;
 
-if (window.captcha) {
+const genCaptcha = () => {
     _get("/captcha/gen/"+window.code, null, (req: XMLHttpRequest) => {
         if (req.readyState == 4) {
             if (req.status == 200) {
@@ -279,9 +279,15 @@ if (window.captcha) {
                 document.getElementById("captcha-img").innerHTML = `
                 <img class="w-100" src="${window.location.toString().substring(0, window.location.toString().lastIndexOf("/invite"))}/captcha/img/${window.code}/${captchaID}"></img>
                 `;
+                captchaInput.value = "";
             }
         }
     });
+};
+
+if (window.captcha) {
+    genCaptcha();
+    (document.getElementById("captcha-regen") as HTMLSpanElement).onclick = genCaptcha;
     const input = document.querySelector("input[type=submit]") as HTMLInputElement;
     const checkbox = document.getElementById("captcha-success") as HTMLSpanElement;
     captchaInput.onkeyup = () => _post("/captcha/verify/" + window.code + "/" + captchaID + "/" + captchaInput.value, null, (req: XMLHttpRequest) => {

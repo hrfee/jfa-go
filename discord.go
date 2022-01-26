@@ -310,19 +310,21 @@ func (d *DiscordDaemon) registerCommands() {
 		i++
 	}
 
-	d.deregisterCommands()
+	// d.deregisterCommands()
 
 	d.commandIDs = make([]string, len(commands))
-	cCommands, err := d.bot.ApplicationCommandBulkOverwrite(d.bot.State.User.ID, d.guildID, commands)
-	if err != nil {
-		d.app.err.Printf("Discord: Cannot create commands: %v", err)
-	}
-	for i, cmd := range cCommands {
-		// command, err := d.bot.ApplicationCommandCreate(d.bot.State.User.ID, d.guildID, cmd)
-		// if err != nil {
-		// 	d.app.err.Printf("Discord: Cannot create command \"%s\": %v", cmd.Name, err)
-		// }
-		d.commandIDs[i] = cmd.ID
+	// cCommands, err := d.bot.ApplicationCommandBulkOverwrite(d.bot.State.User.ID, d.guildID, commands)
+	// if err != nil {
+	// 	d.app.err.Printf("Discord: Cannot create commands: %v", err)
+	// }
+	for i, cmd := range commands {
+		command, err := d.bot.ApplicationCommandCreate(d.bot.State.User.ID, d.guildID, cmd)
+		if err != nil {
+			d.app.err.Printf("Discord: Cannot create command \"%s\": %v", cmd.Name, err)
+		} else {
+			d.app.debug.Printf("Discord: registered command \"%s\"", cmd.Name)
+			d.commandIDs[i] = command.ID
+		}
 	}
 }
 
