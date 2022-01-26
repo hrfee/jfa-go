@@ -131,7 +131,7 @@ bundle-css:
 	npx tailwindcss -i $(DATA)/web/css/bundle.css -o $(DATA)/web/css/bundle.css $(TAILWIND)
 	# npx postcss -o $(DATA)/web/css/bundle.css $(DATA)/web/css/bundle.css
 
-inline:
+inline-css:
 	cp html/crash.html $(DATA)/crash.html
 	$(UNCSS)
 	node scripts/inline.js root $(DATA) $(DATA)/crash.html $(DATA)/crash.html
@@ -177,4 +177,4 @@ clean:
 	-rm docs/docs.go docs/swagger.json docs/swagger.yaml
 	go clean
 
-all: configuration npm email typescript variants-html bundle-css inline swagger copy compile
+all: configuration npm email typescript variants-html bundle-css inline-css swagger copy compile

@@ -16,6 +16,7 @@ require (
 	github.com/bwmarrin/discordgo v0.23.2
 	github.com/cpuguy83/go-md2man/v2 v2.0.1 // indirect
 	github.com/emersion/go-autostart v0.0.0-20210130080809-00ed301c8e9a
+	github.com/evanw/esbuild v0.14.14 // indirect
 	github.com/fatih/color v1.13.0
 	github.com/fsnotify/fsnotify v1.5.1
 	github.com/getlantern/golog v0.0.0-20210606115803-bce9f9fe5a5f // indirect
@@ -59,7 +60,7 @@ require (
 	github.com/xhit/go-simple-mail/v2 v2.10.0
 	golang.org/x/crypto v0.0.0-20211215153901-e495a2d5b3d3 // indirect
 	golang.org/x/net v0.0.0-20220107192237-5cfca573fb4d // indirect
-	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e // indirect
+	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9 // indirect
 	golang.org/x/tools v0.1.8 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/ini.v1 v1.66.2
