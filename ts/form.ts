@@ -70,7 +70,9 @@ if (window.telegramEnabled) {
                         setTimeout(window.telegramModal.close, 2000);
                         telegramButton.classList.add("unfocused");
                         document.getElementById("contact-via").classList.remove("unfocused");
+                        document.getElementById("contact-via-email").parentElement.classList.remove("unfocused");
                         const radio = document.getElementById("contact-via-telegram") as HTMLInputElement;
+                        radio.parentElement.classList.remove("unfocused");
                         radio.checked = true;
                         validatorFunc();
                     } else if (!modalClosed) {
@@ -131,7 +133,9 @@ if (window.discordEnabled) {
                         setTimeout(window.discordModal.close, 2000);
                         discordButton.classList.add("unfocused");
                         document.getElementById("contact-via").classList.remove("unfocused");
+                        document.getElementById("contact-via-email").parentElement.classList.remove("unfocused");
                         const radio = document.getElementById("contact-via-discord") as HTMLInputElement;
+                        radio.parentElement.classList.remove("unfocused")
                         radio.checked = true;
                         validatorFunc();
                     } else if (!modalClosed) {
@@ -190,7 +194,9 @@ if (window.matrixEnabled) {
                         matrixPIN = input.value;
                         matrixButton.classList.add("unfocused");
                         document.getElementById("contact-via").classList.remove("unfocused");
-                        const radio = document.getElementById("contact-via-discord") as HTMLInputElement;
+                        document.getElementById("contact-via-email").parentElement.classList.remove("unfocused");
+                        const radio = document.getElementById("contact-via-matrix") as HTMLInputElement;
+                        radio.parentElement.classList.remove("unfocused");
                         radio.checked = true;
                         validatorFunc();
                     } else {

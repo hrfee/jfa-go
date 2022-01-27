@@ -126,21 +126,21 @@
                             {{ end }}
                             {{ if or (.telegramEnabled) (or .discordEnabled .matrixEnabled) }}
                             <div id="contact-via" class="unfocused">
-                                <label class="row switch pb-4">
-                                    <input type="radio" name="contact-via" value="email" class="mr-2"><span>Contact through Email</span>
+                                <label class="row switch pb-4 unfocused">
+                                    <input type="radio" name="contact-via" value="email" id="contact-via-email" class="mr-2"><span>Contact through Email</span>
                                 </label>
                                 {{ if .telegramEnabled }}
-                                <label class="row switch pb-4">
+                                <label class="row switch pb-4 unfocused">
                                     <input type="radio" name="contact-via" value="telegram" id="contact-via-telegram" class="mr-2"><span>Contact through Telegram</span>
                                 </label>
                                 {{ end }}
                                 {{ if .discordEnabled }}
-                                <label class="row switch pb-4">
+                                <label class="row switch pb-4 unfocused">
                                     <input type="radio" name="contact-via" value="discord" id="contact-via-discord" class="mr-2"><span>Contact through Discord</span>
                                 </label>
                                 {{ end }}
                                 {{ if .matrixEnabled }}
-                                <label class="row switch pb-4">
+                                <label class="row switch pb-4 unfocused">
                                     <input type="radio" name="contact-via" value="matrix" id="contact-via-matrix" class="mr-2"><span>Contact through Matrix</span>
                                 </label>
                                 {{ end }}
