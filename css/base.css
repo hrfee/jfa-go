@@ -181,6 +181,18 @@ span.sm:not(.heading) {
     flex-direction: column;
 }
 
+.flex-form {
+    display: flex;
+    flex-direction: column;
+}
+
+@media screen and (min-width: 768px) {
+    .flex-form {
+        flex: 1;
+        margin: 0.5rem;
+    }
+}
+
 @media screen and (max-width: 400px) {
     .row {
         flex-direction: column;
@@ -308,7 +320,7 @@ sup.\~critical, .text-critical {
     padding-left: 0px;
 }
 
-.block { 
+.block {
     display: block;
 }
 
