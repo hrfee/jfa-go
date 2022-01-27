@@ -4,9 +4,9 @@
     },
     "strings": {
         "startMessage": "Hej!\nIndtast din Jellyfin PIN-kode her for at verificere din konto.",
-        "matrixStartMessage": "Hej!\nIndtast PIN-koden under ind i Jellyfin tilmeldingssiden for at verificere din konto.",
+        "matrixStartMessage": "Hej!\nIndtast PIN-koden på Jellyfin tilmeldingssiden for at verificere din konto.",
         "invalidPIN": "Den PIN-kode var ugyldig, prøv igen.",
         "pinSuccess": "Sådan! Du kan nu gå tilbage til tilmeldingssiden.",
-        "languageMessage": "Meddelelse: Se tilgængelige sprog med {command}, og vælg sprog med {command} <sprog kode>."
+        "languageMessage": "Note: Se tilgængelige sprog med {command}, og vælg sprog med {command} <sprog kode>."
     }
 }
