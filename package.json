@@ -37,6 +37,6 @@
   },
   "devDependencies": {
     "live-server": "^1.2.1",
-    "tailwindcss": "^3.0.8"
+    "tailwindcss": "^3.0.16"
   }
 }
