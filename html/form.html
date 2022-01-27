@@ -81,19 +81,19 @@
                     </div>
                 </div>
             </span>
-        </div>    
+        </div>
         <div id="notification-box"></div>
         <div class="page-container">
             <div class="card dark:~d_neutral @low">
                 <div class="row baseline">
-                    <span class="col heading">
+                    <span class="flex-form heading mr-5">
                         {{ if .passwordReset }}
                         {{ .strings.passwordReset }}
                         {{ else }}
                         {{ .strings.createAccountHeader }}
                         {{ end }}
                     </span>
-                    <span class="col subheading"> 
+                    <span class="flex-form subheading">
                         {{ if .passwordReset }}
                         {{ .strings.enterYourPassword }}
                         {{ else }}
@@ -102,7 +102,7 @@
                     </span>
                 </div>
                 <div class="row">
-                    <div class="col">
+                    <div class="flex-form">
                         {{ if .userExpiry }}
                         <aside class="col aside sm ~warning" id="user-expiry-message"></aside>
                         {{ end }}
@@ -112,7 +112,7 @@
                                 {{ .strings.username }}
                                 <input type="text" class="input ~neutral @high mt-2 mb-4" placeholder="{{ .strings.username }}" id="create-username" aria-label="{{ .strings.username }}">
                             </label>
-                            
+
                             <label class="label supra" for="create-email">{{ .strings.emailAddress }}</label>
                             <input type="email" class="input ~neutral @high mt-2 mb-4" placeholder="{{ .strings.emailAddress }}" id="create-email" aria-label="{{ .strings.emailAddress }}" value="{{ .email }}">
                             {{ if .telegramEnabled }}
@@ -149,7 +149,7 @@
                             {{ end }}
                             <label class="label supra" for="create-password">{{ .strings.password }}</label>
                             <input type="password" class="input ~neutral @high mt-2 mb-4" placeholder="{{ .strings.password }}" id="create-password" aria-label="{{ .strings.password }}">
-                            
+
                             <label class="label supra" for="create-reenter-password">{{ .strings.reEnterPassword }}</label>
                             <input type="password" class="input ~neutral @high mt-2 mb-4" placeholder="{{ .strings.password }}" id="create-reenter-password" aria-label="{{ .strings.reEnterPassword }}">
                             <label>
