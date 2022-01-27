@@ -12,14 +12,14 @@
         "title": "Meddelelse: Bruger oprettet",
         "aUserWasCreated": "En bruger blev oprettet med koden {code}.",
         "time": "Tid",
-        "notificationNotice": "Meddelelse: Notifikations e-mails kan blive ændret på admin-siden."
+        "notificationNotice": "Bemærk: Notifikations beskeder kan blive ændret på admin-siden."
     },
     "inviteExpiry": {
         "name": "Invitationens udløb",
         "title": "Meddelelse: Invitation udløbet",
         "inviteExpired": "Invitation udløbet.",
         "expiredAt": "Koden {code} udløber om {time}.",
-        "notificationNotice": "Meddelelse: Notifikations e-mails kan blive ændret på admin-siden."
+        "notificationNotice": "Bemærk: Notifikations beskeder kan blive ændret på admin-siden."
     },
     "passwordReset": {
         "name": "Nulstil Adgangskode",
