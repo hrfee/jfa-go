@@ -77,7 +77,7 @@
         "settingsRequiredOrRestartMessage": "Bemærk: {n} angiver et obligatorisk felt, {n} angiver at ændringer kræver genstart.",
         "settingsSave": "Gem",
         "ombiUserDefaults": "Ombi bruger standarder",
-        "ombiUserDefaultsDescription": "Opret en Ombi bruger og konfigurer den, vælg den derefter nedenfor. Brugerens indstillinger/tilladelser gemmes og anvendes på nye Ombi brugere oprettet af jfa-go",
+        "ombiUserDefaultsDescription": "Opret en Ombi bruger og konfigurer den, vælg den derefter nedenfor. Brugerens indstillinger/tilladelser gemmes og anvendes på nye Ombi brugere oprettet af jfa-go når denne profil er valgt.",
         "userProfiles": "Bruger Profiler",
         "userProfilesDescription": "Profiler anvendes på brugere når de opretter en konto. En profil inkluderer adgangsrettigheder til biblioteket og layout på startskærmen.",
         "userProfilesIsDefault": "Standard",
@@ -104,7 +104,15 @@
         "saveAsTemplate": "Gem som skabelon",
         "templates": "Skabeloner",
         "deleteTemplate": "Slet skabelon",
-        "templateEnterName": "Indtast et navn for at gemme denne skabelon."
+        "templateEnterName": "Indtast et navn for at gemme denne skabelon.",
+        "ombiProfile": "Ombi bruger profil",
+        "setExpiry": "Sæt udløb",
+        "logs": "Log",
+        "sendPWR": "Send Nulstilling af Adgangskode",
+        "sendPWRManual": "Brugeren {n} har ingen kontaktinformation, tryk kopier for at få et link du kan sende til dem.",
+        "sendPWRSuccess": "Link til nulstilling af adgangskode sendt.",
+        "sendPWRSuccessManual": "Hvis brugeren ikke er modtaget den, så tryk på kopier for manuelt at sende et link til dem.",
+        "sendPWRValidFor": "Dette link er gyldigt i 30m."
     },
     "notifications": {
         "changedEmailAddress": "Ændret e-mail adresse på {n}.",
@@ -145,7 +153,9 @@
         "errorCheckUpdate": "Kunne ikke kontrollere for opdatering.",
         "updateAvailable": "En ny opdatering er tilgængelig, tjek indstillingerne.",
         "noUpdatesAvailable": "Ingen nye opdateringer tilgængelige.",
-        "savedAnnouncement": "Meddelelse gemt."
+        "savedAnnouncement": "Meddelelse gemt.",
+        "setOmbiProfile": "Gemt i ombi profilen.",
+        "errorSetOmbiProfile": "Ombi profilen kunne ikke gemmes."
     },
     "quantityStrings": {
         "modifySettingsFor": {
