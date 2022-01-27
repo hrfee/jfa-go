@@ -10,6 +10,7 @@
         "youCanLogin": "Du kan nu logge ind med koden nedenfor som din adgangskode.",
         "youCanLoginOmbi": "Du kan nu logge ind på Jellyfin & Ombi med koden nedenfor som din adgangskode.",
         "changeYourPassword": "Sørg for at ændre din adgangskode, når du har logget ind.",
-        "enterYourPassword": "Indtast din nye adgangskode nedenfor."
+        "enterYourPassword": "Indtast din nye adgangskode nedenfor.",
+        "youCanLoginPassword": "Du kan nu logge ind med din nye adgangskode. Tryk nedenfor for at fortsætte til Jellyfin."
     }
 }
