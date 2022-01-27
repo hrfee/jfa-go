@@ -23,6 +23,7 @@
         "linkMatrix": "Link Matrix",
         "contactDiscord": "Contact through Discord",
         "theme": "Theme",
-        "refresh": "Refresh"
+        "refresh": "Refresh",
+        "required": "Required"
     }
 }

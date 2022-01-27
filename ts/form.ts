@@ -72,6 +72,7 @@ if (window.telegramEnabled) {
                         document.getElementById("contact-via").classList.remove("unfocused");
                         const radio = document.getElementById("contact-via-telegram") as HTMLInputElement;
                         radio.checked = true;
+                        validatorFunc();
                     } else if (!modalClosed) {
                         setTimeout(checkVerified, 1500);
                     }
@@ -132,6 +133,7 @@ if (window.discordEnabled) {
                         document.getElementById("contact-via").classList.remove("unfocused");
                         const radio = document.getElementById("contact-via-discord") as HTMLInputElement;
                         radio.checked = true;
+                        validatorFunc();
                     } else if (!modalClosed) {
                         setTimeout(checkVerified, 1500);
                     }
@@ -190,6 +192,7 @@ if (window.matrixEnabled) {
                         document.getElementById("contact-via").classList.remove("unfocused");
                         const radio = document.getElementById("contact-via-discord") as HTMLInputElement;
                         radio.checked = true;
+                        validatorFunc();
                     } else {
                         window.notifications.customError("errorInvalidPIN", window.messages["errorInvalidPIN"]);
                         submitButton.classList.add("~critical");
@@ -227,25 +230,85 @@ if (window.userExpiryEnabled) {
 const form = document.getElementById("form-create") as HTMLFormElement;
 const submitButton = form.querySelector("input[type=submit]") as HTMLInputElement;
 const submitSpan = form.querySelector("span.submit") as HTMLSpanElement;
+const submitText = submitSpan.textContent;
 let usernameField = document.getElementById("create-username") as HTMLInputElement;
 const emailField = document.getElementById("create-email") as HTMLInputElement;
 if (!window.usernameEnabled) { usernameField.parentElement.remove(); usernameField = emailField; }
 const passwordField = document.getElementById("create-password") as HTMLInputElement;
 const rePasswordField = document.getElementById("create-reenter-password") as HTMLInputElement;
 
-if (window.emailRequired) {
-    emailField.addEventListener("keyup", () => {
-        if (emailField.value.includes("@")) {
-            submitButton.disabled = false;
-            submitSpan.removeAttribute("disabled");
-        } else {
-            submitButton.disabled = true;
-            submitSpan.setAttribute("disabled", "");
+let captchaVerified = false;
+let captchaID = "";
+let captchaInput = document.getElementById("captcha-input") as HTMLInputElement;
+const captchaCheckbox = document.getElementById("captcha-success") as HTMLSpanElement;
+let prevCaptcha = "";
+
+function baseValidator(oncomplete: (valid: boolean) => void): void {
+    let captchaChecked = false;
+    let captchaChange = false;
+    if (window.captcha) {
+        captchaChange = captchaInput.value != prevCaptcha;
+        if (captchaChange) {
+            prevCaptcha = captchaInput.value;
+            _post("/captcha/verify/" + window.code + "/" + captchaID + "/" + captchaInput.value, null, (req: XMLHttpRequest) => {
+                if (req.readyState == 4) {
+                    if (req.status == 204) {
+                        captchaCheckbox.innerHTML = `<i class="ri-check-line"></i>`;
+                        captchaCheckbox.classList.add("~positive");
+                        captchaCheckbox.classList.remove("~critical");
+                        captchaVerified = true;
+                        captchaChecked = true;
+                    } else {
+                        captchaCheckbox.innerHTML = `<i class="ri-close-line"></i>`;
+                        captchaCheckbox.classList.add("~critical");
+                        captchaCheckbox.classList.remove("~positive");
+                        captchaVerified = false;
+                        captchaChecked = true;
+                        return;
+                    }
+                }
+            });
         }
-    });
+    }
+    if (window.emailRequired) {
+        if (!emailField.value.includes("@")) {
+            oncomplete(false);
+            return;
+        }
+    }
+    if (window.discordEnabled && window.discordRequired && !discordVerified) {
+        oncomplete(false);
+        return;
+    }
+    if (window.telegramEnabled && window.telegramRequired && !telegramVerified) {
+        oncomplete(false);
+        return;
+    }
+    if (window.matrixEnabled && window.matrixRequired && !matrixVerified) {
+        oncomplete(false);
+        return;
+    }
+    if (window.captcha) {
+        if (!captchaChange) {
+            oncomplete(captchaVerified);
+            return;
+        }
+        while (!captchaChecked) {
+            continue;
+        }
+        oncomplete(captchaVerified);
+    } else {
+        oncomplete(true);
+    }
 }
 
-var requirements = initValidator(passwordField, rePasswordField, submitButton, submitSpan)
+let r = initValidator(passwordField, rePasswordField, submitButton, submitSpan, baseValidator);
+var requirements = r[0];
+var validatorFunc = r[1] as () => void;
+
+if (window.emailRequired) {
+    emailField.addEventListener("keyup", validatorFunc)
+}
 
 interface respDTO {
     response: boolean;
@@ -267,10 +330,6 @@ interface sendDTO {
     captcha_text?: string;
 }
 
-let captchaVerified = false;
-let captchaID = "";
-let captchaInput = document.getElementById("captcha-input") as HTMLInputElement;
-
 const genCaptcha = () => {
     _get("/captcha/gen/"+window.code, null, (req: XMLHttpRequest) => {
         if (req.readyState == 4) {
@@ -288,27 +347,7 @@ const genCaptcha = () => {
 if (window.captcha) {
     genCaptcha();
     (document.getElementById("captcha-regen") as HTMLSpanElement).onclick = genCaptcha;
-    const input = document.querySelector("input[type=submit]") as HTMLInputElement;
-    const checkbox = document.getElementById("captcha-success") as HTMLSpanElement;
-    captchaInput.onkeyup = () => _post("/captcha/verify/" + window.code + "/" + captchaID + "/" + captchaInput.value, null, (req: XMLHttpRequest) => {
-        if (req.readyState == 4) {
-            if (req.status == 204) {
-                input.disabled = false;
-                input.nextElementSibling.removeAttribute("disabled");
-                checkbox.innerHTML = `<i class="ri-check-line"></i>`;
-                checkbox.classList.add("~positive");
-                checkbox.classList.remove("~critical");
-            } else {
-                input.disabled = true;
-                input.nextElementSibling.setAttribute("disabled", "true");
-                checkbox.innerHTML = `<i class="ri-close-line"></i>`;
-                checkbox.classList.add("~critical");
-                checkbox.classList.remove("~positive");
-            }
-        }
-    }, );
-    input.disabled = true;
-    input.nextElementSibling.setAttribute("disabled", "true");
+    captchaInput.onkeyup = validatorFunc;
 }
 
 const create = (event: SubmitEvent) => {
@@ -361,9 +400,15 @@ const create = (event: SubmitEvent) => {
             } else {
                 submitSpan.classList.add("~critical");
                 submitSpan.classList.remove("~urge");
+                if (req.response["error"] as string) {
+                    submitSpan.textContent = window.messages[req.response["error"]];
+                } else {
+                    submitSpan.textContent = window.messages["errorPassword"];
+                }
                 setTimeout(() => {
                     submitSpan.classList.add("~urge");
                     submitSpan.classList.remove("~critical");
+                    submitSpan.textContent = submitText;
                 }, 1000);
             }
         }
@@ -376,17 +421,18 @@ const create = (event: SubmitEvent) => {
                         window.confirmationModal.show();
                         return;
                     }
-                    const old = submitSpan.textContent;
                     if (req.response["error"] in window.messages) {
                         submitSpan.textContent = window.messages[req.response["error"]];
                     } else {
                         submitSpan.textContent = req.response["error"];
                     }
-                    setTimeout(() => { submitSpan.textContent = old; }, 1000);
+                    setTimeout(() => { submitSpan.textContent = submitText; }, 1000);
                 }
             }
         }
     });
 };
+
+validatorFunc();
 
 form.onsubmit = create;

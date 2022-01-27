@@ -1,6 +1,7 @@
 interface valWindow extends Window {
     validationStrings: pwValStrings;
     invalidPassword: string;
+    messages: { [key: string]: string };
 }
 
 interface pwValString {
@@ -59,7 +60,7 @@ class Requirement {
     validate = (count: number) => { this.valid = (count >= this._minCount); }
 }
 
-export function initValidator(passwordField: HTMLInputElement, rePasswordField: HTMLInputElement, submitButton: HTMLInputElement, submitSpan: HTMLSpanElement):  { [category: string]: Requirement } {
+export function initValidator(passwordField: HTMLInputElement, rePasswordField: HTMLInputElement, submitButton: HTMLInputElement, submitSpan: HTMLSpanElement, validatorFunc?: (oncomplete: (valid: boolean) => void) => void):  ({ [category: string]: Requirement }|(() => void))[] {
     var defaultPwValStrings: pwValStrings = {
         length: {
             singular: "Must have at least {n} character",
@@ -84,18 +85,30 @@ export function initValidator(passwordField: HTMLInputElement, rePasswordField: 
     }
 
     const checkPasswords = () => {
-        if (passwordField.value != rePasswordField.value) {
-            rePasswordField.setCustomValidity(window.invalidPassword);
-            submitButton.disabled = true;
-            submitSpan.setAttribute("disabled", "");
-        } else {
-            rePasswordField.setCustomValidity("");
-            submitButton.disabled = false;
-            submitSpan.removeAttribute("disabled");
-        }
+        return passwordField.value == rePasswordField.value;
+    }
+
+    const checkValidity = () => {
+        const pw = checkPasswords();
+        validatorFunc((valid: boolean) => {
+            if (pw && valid) {
+                rePasswordField.setCustomValidity("");
+                submitButton.disabled = false;
+                submitSpan.removeAttribute("disabled");
+            } else if (!pw) {
+                rePasswordField.setCustomValidity(window.invalidPassword);
+                submitButton.disabled = true;
+                submitSpan.setAttribute("disabled", "");
+            } else {
+                rePasswordField.setCustomValidity("");
+                submitButton.disabled = true;
+                submitSpan.setAttribute("disabled", "");
+            }
+        });
     };
-    rePasswordField.addEventListener("keyup", checkPasswords);
-    passwordField.addEventListener("keyup", checkPasswords);
+
+    rePasswordField.addEventListener("keyup", checkValidity);
+    passwordField.addEventListener("keyup", checkValidity);
 
 
     // Incredible code right here
@@ -150,5 +163,5 @@ export function initValidator(passwordField: HTMLInputElement, rePasswordField: 
             }
         }
     }
-    return requirements
+    return [requirements, checkValidity]
 }

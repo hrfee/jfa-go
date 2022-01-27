@@ -31,6 +31,8 @@
         "errorUnknown": "Unknown error.",
         "errorNoEmail": "Email required.",
         "errorCaptcha": "Captcha incorrect.",
+        "errorPassword": "Check password requirements.",
+        "errorNoMatch": "Passwords don't match.",
         "verified": "Account verified."
     },
     "validationStrings": {

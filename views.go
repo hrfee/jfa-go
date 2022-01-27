@@ -316,6 +316,7 @@ func (app *appContext) GenCaptcha(gc *gin.Context) {
 	captchaID := genAuthToken()
 	inv.Captchas[captchaID] = capt
 	app.storage.invites[code] = inv
+	app.storage.storeInvites()
 	gc.JSON(200, genCaptchaDTO{captchaID})
 	return
 }
