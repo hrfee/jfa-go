@@ -23,43 +23,6 @@
     animation: modal-hide 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-@keyframes modal-content-show {
-    from {
-        opacity: 0;
-        top: -6rem;
-    }
-    to {
-        opacity: 1;
-        top: 0;
-    }
-}
-
-.modal-content {
-    position: relative;
-    margin: 10% auto;
-    width: 30%;
-}
-
-.modal-content.wide {
-    width: 60%;
-}
-
-.modal-shown .modal-content {
-    animation: modal-content-show 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-@media screen and (max-width: 1000px) {
-    .modal-content.wide {
-        width: 75%;
-    }
-}
-
-@media screen and (max-width: 400px) {
-    .modal-content, .modal-content.wide {
-        width: 90%;
-    }
-}
-
 .modal-close {
     float: right;
     color: #aaa;
