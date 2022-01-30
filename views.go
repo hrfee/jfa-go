@@ -505,7 +505,7 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 		data["discordUsername"] = app.discord.username
 		data["discordRequired"] = app.config.Section("discord").Key("required").MustBool(false)
 		data["discordSendPINMessage"] = template.HTML(app.storage.lang.Form[lang].Strings.template("sendPINDiscord", tmpl{
-			"command":        `<span class="code font-mono">/` + app.config.Section("discord").Key("start_command").MustString("start") + `</span>`,
+			"command":        `<span class="text-black dark:text-white font-mono">/` + app.config.Section("discord").Key("start_command").MustString("start") + `</span>`,
 			"server_channel": app.discord.serverChannelName,
 		}))
 		data["discordServerName"] = app.discord.serverName
