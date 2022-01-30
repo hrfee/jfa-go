@@ -1,7 +1,7 @@
 all:
 	-mkdir -p out
 	cp ../css/modal.css out/
-	node ../scripts/missing-colors.js index.html out/index.html
+	NOTEMPLATE=1 node ../scripts/missing-colors.js index.html out/index.html
 	cp -r node_modules/remixicon/fonts/remixicon.css node_modules/remixicon/fonts/remixicon.woff2 out/
 	-rm -r tempts
 	cp -r ts tempts
@@ -19,7 +19,7 @@ all:
 debug:
 	-mkdir -p out
 	cp ../css/modal.css out/
-	node ../scripts/missing-colors.js index.html out/index.html
+	NOTEMPLATE=1 node ../scripts/missing-colors.js index.html out/index.html
 	cp -r node_modules/remixicon/fonts/remixicon.css node_modules/remixicon/fonts/remixicon.woff2 out/
 	-rm -r tempts
 	cp -r ts tempts
