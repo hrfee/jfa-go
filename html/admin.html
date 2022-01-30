@@ -23,7 +23,7 @@
     </head>
     <body class="max-w-full overflow-x-hidden section">
         <div id="modal-login" class="modal">
-            <form class="modal-content card" id="form-login" href="">
+            <form class="card relative mx-auto my-[10%] w-4/5 lg:w-1/3" id="form-login" href="">
                 <span class="heading">{{ .strings.login }}</span>
                 <input type="text" class="field input ~neutral @high mt-4 mb-2" placeholder="{{ .strings.username }}" id="login-user">
                 <input type="password" class="field input ~neutral @high mb-4" placeholder="{{ .strings.password }}" id="login-password">
@@ -34,7 +34,7 @@
             </form>
         </div>
         <div id="modal-add-user" class="modal">
-            <form class="modal-content card" id="form-add-user" href="">
+            <form class="card relative mx-auto my-[10%] w-4/5 lg:w-1/3" id="form-add-user" href="">
                 <span class="heading">{{ .strings.newUser }} <span class="modal-close">&times;</span></span>
                 <input type="text" class="field input ~neutral @high mt-4 mb-2" placeholder="{{ .strings.username }}" id="add-user-user">
                 <input type="email" class="field input ~neutral @high mt-4 mb-2" placeholder="{{ .strings.emailAddress }}">
@@ -46,11 +46,11 @@
             </form>
         </div>
         <div id="modal-about" class="modal">
-            <div class="modal-content content card">
+            <div class="relative mx-auto my-[10%] w-4/5 lg:w-1/3 content card">
                 <img src="{{ .urlBase }}/banner.svg" class="banner header" alt="jfa-go banner">
                 <span class="heading"><span class="modal-close">&times;</span></span>
-                <p>{{ .strings.version }} <span class="code font-mono bg-inherit">{{ .version }}</span></p>
-                <p>{{ .strings.commitNoun }} <span class="code font-mono bg-inherit">{{ .commit }}</span></p>
+                <p>{{ .strings.version }} <span class="text-black dark:text-white font-mono bg-inherit">{{ .version }}</span></p>
+                <p>{{ .strings.commitNoun }} <span class="text-black dark:text-white font-mono bg-inherit">{{ .commit }}</span></p>
                 <div class="row col flex">
                     <a class="button ~neutral mr-2 mt-4 mb-4 lang-link" href="https://github.com/hrfee/jfa-go"><i class="ri-github-line mr-2"></i>github</a>
                     <a class="button ~urge mt-4 mb-4 mr-2 lang-link" href="https://wiki.jfa-go.com">wiki/docs</a>
@@ -75,13 +75,13 @@
             </div>
         </div>
         <div id="modal-logs" class="modal">
-            <div class="modal-content wide content card">
+            <div class="relative mx-auto my-[10%] w-4/5 lg:w-2/3 content content card">
                 <span class="heading">{{ .strings.logs }}<span class="modal-close">&times;</span></span>
                 <pre class="monospace" id="log-area"></pre>
             </div>
         </div>
         <div id="modal-modify-user" class="modal">
-            <form class="modal-content card" id="form-modify-user" href="">
+            <form class="card relative mx-auto my-[10%] w-4/5 lg:w-1/3" id="form-modify-user" href="">
                 <span class="heading"><span id="header-modify-user"></span> <span class="modal-close">&times;</span></span>
                 <p class="content my-4">{{ .strings.modifySettingsDescription }}</p>
                 <div class="flex-row mb-4">
@@ -111,7 +111,7 @@
             </form>
         </div>
         <div id="modal-delete-user" class="modal">
-            <form class="modal-content card" id="form-delete-user" href="">
+            <form class="card relative mx-auto my-[10%] w-4/5 lg:w-1/3" id="form-delete-user" href="">
                 <span class="heading"><span id="header-delete-user"></span> <span class="modal-close">&times;</span></span>
                 <div class="content mt-8">
                     <label class="switch mb-4">
@@ -127,7 +127,7 @@
             </form>
         </div>
         <div id="modal-extend-expiry" class="modal">
-            <form class="modal-content card" id="form-extend-expiry" href="">
+            <form class="card relative mx-auto my-[10%] w-4/5 lg:w-1/3" id="form-extend-expiry" href="">
                 <span class="heading"><span id="header-extend-expiry"></span> <span class="modal-close">&times;</span></span>
                 <div class="content mt-8">
                     <div class="row">
@@ -179,7 +179,7 @@
             </form>
         </div>
         <div id="modal-announce" class="modal">
-            <form class="modal-content wide card" id="form-announce" href="">
+            <form class="relative mx-auto my-[10%] w-4/5 lg:w-2/3 content card" id="form-announce" href="">
                 <span class="heading"><span id="header-announce"></span> <span class="modal-close">&times;</span></span>
                 <div class="row">
                     <div class="col card ~neutral @low">
@@ -214,7 +214,7 @@
             </form>
         </div>
         <div id="modal-customize" class="modal">
-            <div class="modal-content card">
+            <div class="card relative mx-auto my-[10%] w-4/5 lg:w-1/3">
                 <span class="heading">{{ .strings.customizeMessages }} <span class="modal-close">&times;</span></span>
                 <p class="content my-4">{{ .strings.customizeMessagesDescription }}</p>
                 <div class="table-responsive">
@@ -232,7 +232,7 @@
             </div>
         </div>
         <div id="modal-editor" class="modal">
-            <form class="modal-content wide card" id="form-editor" href="">
+            <form class="relative mx-auto my-[10%] w-4/5 lg:w-2/3 content card" id="form-editor" href="">
                 <span class="heading"><span id="header-editor"></span> <span class="modal-close">&times;</span></span>
                 <div class="row">
                     <div class="col card ~neutral @low">
@@ -258,7 +258,7 @@
             </form>
         </div>
         <div id="modal-restart" class="modal">
-            <div class="modal-content card ~critical @low">
+            <div class="card relative mx-auto my-[10%] w-4/5 lg:w-1/3 ~critical @low">
                 <span class="heading">{{ .strings.settingsRestartRequired }} <span class="modal-close">&times;</span></span>
                 <p class="content my-4">{{ .strings.settingsRestartRequiredDescription }}</p>
                 <div class="float-right">
@@ -268,20 +268,20 @@
             </div>
         </div>
         <div id="modal-refresh" class="modal">
-            <div class="modal-content card ~neutral @low">
+            <div class="card relative mx-auto my-[10%] w-4/5 lg:w-1/3 ~neutral @low">
                 <span class="heading">{{ .strings.settingsApplied }}</span>
                 <p class="content">{{ .strings.settingsRefreshPage }}</p>
             </div>
         </div>
         <div id="modal-send-pwr" class="modal">
-            <div class="modal-content card ~neutral @low">
+            <div class="card relative mx-auto my-[10%] w-4/5 lg:w-1/3 ~neutral @low">
                 <span class="heading">{{ .strings.sendPWR }}</span>
                 <p class="content my-2" id="send-pwr-note"></p>
                 <span class="button ~urge @low mt-2" id="send-pwr-link">{{ .strings.copy }}</span>
             </div>
         </div>
         <div id="modal-ombi-profile" class="modal">
-            <form class="modal-content card" id="form-ombi-defaults" href="">
+            <form class="card relative mx-auto my-[10%] w-4/5 lg:w-1/3" id="form-ombi-defaults" href="">
                 <span class="heading">{{ .strings.ombiProfile }} <span class="modal-close">&times;</span></span>
                 <p class="content my-4">{{ .strings.ombiUserDefaultsDescription }}</p>
                 <div class="select ~neutral @low mb-4">
@@ -294,7 +294,7 @@
             </form>
         </div>
         <div id="modal-user-profiles" class="modal">
-            <div class="modal-content wide card">
+            <div class="relative mx-auto my-[10%] w-4/5 lg:w-2/3 content card">
                 <span class="heading">{{ .strings.userProfiles }} <span class="modal-close">&times;</span></span>
                 <p class="content my-4">{{ .strings.userProfilesDescription }}</p>
                 <div class="table-responsive">
@@ -317,7 +317,7 @@
             </div>
         </div>
         <div id="modal-add-profile" class="modal">
-            <form class="modal-content card" id="form-add-profile" href="">
+            <form class="card relative mx-auto my-[10%] w-4/5 lg:w-1/3" id="form-add-profile" href="">
                 <span class="heading">{{ .strings.addProfile }} <span class="modal-close">&times;</span></span>
                 <p class="content my-4">{{ .strings.addProfileDescription }}</p>
                 <label>
@@ -340,7 +340,7 @@
             </form>
         </div>
         <div id="modal-update" class="modal">
-            <div class="modal-content wide card">
+            <div class="relative mx-auto my-[10%] w-4/5 lg:w-2/3 content card">
                 <span class="heading">{{ .strings.updates }} <span class="modal-close">&times;</span></span>
                 <p class="content">
                     <h2 class="mt-2">
@@ -356,7 +356,7 @@
         </div>
         {{ if .telegramEnabled }}
         <div id="modal-telegram" class="modal">
-            <div class="modal-content card">
+            <div class="card relative mx-auto my-[10%] w-4/5 lg:w-1/3">
                 <span class="heading mb-4">{{ .strings.linkTelegram }}</span>
                 <p class="content mb-4">{{ .strings.sendPIN }}</p>
                 <h1 class="ac" id="telegram-pin"></h1>
@@ -374,7 +374,7 @@
         {{ end }}
         {{ if .discordEnabled }}
         <div id="modal-discord" class="modal">
-            <div class="modal-content card">
+            <div class="card relative mx-auto my-[10%] w-4/5 lg:w-1/3">
                 <span class="heading mb-4"><span id="discord-header"></span><span class="modal-close">&times;</span></span>
                 <p class="content mb-4" id="discord-description"></p>
                 <div class="row">
@@ -385,7 +385,7 @@
         </div>
         {{ end }}
         <div id="modal-matrix" class="modal">
-            <form class="modal-content card" id="form-matrix" href="">
+            <form class="card relative mx-auto my-[10%] w-4/5 lg:w-1/3" id="form-matrix" href="">
                 <span class="heading">{{ .strings.linkMatrix }}</span>
                 <p class="content my-4">{{ .strings.linkMatrixDescription }}</p>
                 <input type="text" class="field input ~neutral @high mt-4 mb-2" placeholder="{{ .strings.matrixHomeServer }}" id="matrix-homeserver">
@@ -442,7 +442,7 @@
                 </div>
                 <div class="card @low dark:~d_neutral">
                     <span class="heading">{{ .strings.create }}</span>
-                    <div class="row" id="create-inv">
+                    <div class="flex flex-col md:flex-row gap-3" id="create-inv">
                         <div class="card ~neutral @low col">
                             <div class="row mb-2">
                                 <label class="col mr-2">
@@ -654,7 +654,7 @@
                             <span class="button ~urge @low unfocused" id="settings-save">{{ .strings.settingsSave }}</span>
                         </div>
                     </div>
-                    <div class="row">
+                    <div class="flex flex-col md:flex-row gap-3">
                         <div class="card @low dark:~d_neutral col" id="settings-sidebar">
                             <aside class="aside sm ~urge dark:~d_info mb-2 @low" id="settings-message">Note: <span class="badge ~critical">*</span> indicates a required field, <span class="badge ~info dark:~d_warning">R</span> indicates changes require a restart.</aside> 
                             <span class="button ~neutral @low settings-section-button justify-between mb-2" id="setting-about"><span class="flex">{{ .strings.aboutProgram }} <i class="ri-information-line ml-2"></i></span></span>

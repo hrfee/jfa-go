@@ -31,10 +31,6 @@
     background: #202020;
 }
 
-.dark .code {
-    color: var(--color-content-high);
-}
-
 html:not(.dark) .card.\@low:not(.\~neutral):not(.\~positive):not(.\~urge):not(.\~warning):not(.\~info):not(.\~critical) {
     --color-fill: va(--color-fill);
     --color-content: var(--color-content);
@@ -92,11 +88,6 @@ html:not(.dark) .card.\@low:not(.\~neutral):not(.\~positive):not(.\~urge):not(.\
     padding: var(--spacing-4,1rem);
 }
 
-.modal-content .banner {
-    margin-left: calc(-1 * var(--spacing-4,1rem) - 0.5%); /* Not sure why this is necessary */
-    margin-right: calc(-1 * var(--spacing-4,1rem) - 0.5%);
-}
-
 div.card:contains(section.banner.footer) {
     padding-bottom: 0px;
 }
@@ -133,18 +124,9 @@ div.card:contains(section.banner.footer) {
     align-items: top;
 }
 
-.flex {
-    display: flex;
-}
-
 .flex-expand {
     display: flex;
     justify-content: space-between;
-}
-
-.flex-row {
-    display: flex;
-    flex-direction: row;
 }
 
 .flex-row-group {

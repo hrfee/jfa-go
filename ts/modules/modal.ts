@@ -24,11 +24,12 @@ export class Modal implements Modal {
         if (event) {
             event.preventDefault();
         }
-        this.modal.classList.add('modal-hiding');
+        this.modal.classList.add('animate-fade-out');
+        this.modal.classList.remove("animate-fade-in");
         const modal = this.modal;
         const listenerFunc = () => {
-            modal.classList.remove('modal-shown');
-            modal.classList.remove('modal-hiding');
+            modal.classList.remove('block');
+            modal.classList.remove('animate-fade-out');
             modal.removeEventListener(window.animationEvent, listenerFunc);
             document.dispatchEvent(this.closeEvent);
         };
@@ -43,11 +44,11 @@ export class Modal implements Modal {
     }
 
     show = () => {
-        this.modal.classList.add('modal-shown');
+        this.modal.classList.add('block', 'animate-fade-in');
         document.dispatchEvent(this.openEvent);
     }
     toggle = () => {
-        if (this.modal.classList.contains('modal-shown')) {
+        if (this.modal.classList.contains('animate-fade-in')) {
             this.close();
         } else {
             this.show();
