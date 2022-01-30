@@ -125,7 +125,7 @@ func migrateEmailStorage(app *appContext) error {
 	return nil
 }
 
-// Pre-0.3.10, Admin notifications for invites were indexed by and only sent to email addresses. Now, when Jellyfin Login is enabled, They are indexed by the admin's Jellyfin ID, and send by any method enabled for them. This migrates storage to that format.
+// Pre-0.4.0, Admin notifications for invites were indexed by and only sent to email addresses. Now, when Jellyfin Login is enabled, They are indexed by the admin's Jellyfin ID, and send by any method enabled for them. This migrates storage to that format.
 func migrateNotificationMethods(app *appContext) error {
 	if !app.config.Section("ui").Key("jellyfin_login").MustBool(false) {
 		return nil
@@ -159,7 +159,7 @@ func migrateNotificationMethods(app *appContext) error {
 	return nil
 }
 
-// Pre-0.3.10, Ombi users were created without linking their Discord & Telegram accounts. This will add them.
+// Pre-0.4.0, Ombi users were created without linking their Discord & Telegram accounts. This will add them.
 func linkExistingOmbiDiscordTelegram(app *appContext) error {
 	if !discordEnabled && !telegramEnabled {
 		return nil
