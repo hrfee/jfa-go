@@ -556,3 +556,7 @@ div.card:contains(section.banner.footer) {
 .text-center-i {
     text-align: center !important;
 }
+
+input[type="checkbox" i], [class^="ri-"], [class*=" ri-"], .ri-refresh-line:before, .modal-close {
+    cursor: pointer;
+}
