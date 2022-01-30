@@ -10,19 +10,6 @@
     background-color: rgba(0,0,0,40%);
 }
 
-.modal-shown {
-    display: block;
-}
-
-@keyframes modal-hide {
-    from { opacity: 1; }
-    to { opacity: 0; }
-}
-
-.modal-hiding {
-    animation: modal-hide 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
 .modal-close {
     float: right;
     color: #aaa;
