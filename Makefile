@@ -97,12 +97,12 @@ email:
 typescript:
 	$(TYPECHECK)
 	$(adding dark variants to typescript)
-	-rm -r tempts
+	rm -rf tempts
 	cp -r ts tempts
 	scripts/dark-variant.sh tempts
 	scripts/dark-variant.sh tempts/modules
 	$(info compiling typescript)
-	-mkdir -p $(DATA)/web/js
+	mkdir -p $(DATA)/web/js
 	$(ESBUILD) --bundle tempts/admin.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/admin.js --minify
 	$(ESBUILD) --bundle tempts/pwr.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/pwr.js --minify
 	$(ESBUILD) --bundle tempts/form.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/form.js --minify
@@ -125,7 +125,7 @@ compress:
 	upx --lzma build/jfa-go
 
 bundle-css:
-	-mkdir -p $(DATA)/web/css
+	mkdir -p $(DATA)/web/css
 	$(info bundling css)
 	$(ESBUILD) --bundle css/base.css --outfile=$(DATA)/web/css/bundle.css --external:remixicon.css --minify
 	npx tailwindcss -i $(DATA)/web/css/bundle.css -o $(DATA)/web/css/bundle.css $(TAILWIND)
@@ -149,7 +149,7 @@ copy:
 	$(info copying crash page)
 	mv $(DATA)/crash.html $(DATA)/html/
 	$(info copying static data)
-	-mkdir -p $(DATA)/web
+	mkdir -p $(DATA)/web
 	cp -r static/* $(DATA)/web/
 	$(info copying systemd service)
 	cp jfa-go.service $(DATA)/
