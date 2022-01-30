@@ -103,11 +103,11 @@ typescript:
 	scripts/dark-variant.sh tempts/modules
 	$(info compiling typescript)
 	-mkdir -p $(DATA)/web/js
-	-$(ESBUILD) --bundle tempts/admin.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/admin.js --minify
-	-$(ESBUILD) --bundle tempts/pwr.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/pwr.js --minify
-	-$(ESBUILD) --bundle tempts/form.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/form.js --minify
-	-$(ESBUILD) --bundle tempts/setup.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/setup.js --minify
-	-$(ESBUILD) --bundle tempts/crash.ts --outfile=./$(DATA)/crash.js --minify
+	$(ESBUILD) --bundle tempts/admin.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/admin.js --minify
+	$(ESBUILD) --bundle tempts/pwr.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/pwr.js --minify
+	$(ESBUILD) --bundle tempts/form.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/form.js --minify
+	$(ESBUILD) --bundle tempts/setup.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/setup.js --minify
+	$(ESBUILD) --bundle tempts/crash.ts --outfile=./$(DATA)/crash.js --minify
 	$(COPYTS)
 
 swagger:
