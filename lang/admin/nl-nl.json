@@ -112,7 +112,9 @@
         "sendPWRSuccess": "Wachtwoordreset-link verstuurd.",
         "sendPWRValidFor": "De link is 30m geldig.",
         "ombiProfile": "Ombi gebruikersprofiel",
-        "logs": "Logs"
+        "logs": "Logs",
+        "accessJFA": "Toegang tot jfa-go",
+        "accessJFASettings": "Kan niet worden aangepast, omdat \"Alleen beheerders\" of \"Laat alle Jellyfin-gebruikers inloggen\" is aangevinkt in Instellingen > Algemeen."
     },
     "notifications": {
         "changedEmailAddress": "E-mailadres van {n} gewijzigd.",
@@ -209,6 +211,10 @@
         "enabledUser": {
             "singular": "{n} gebruiker ingeschakeld.",
             "plural": "{n} gebruikers ingeschakeld."
+        },
+        "setExpiry": {
+            "singular": "Stel verloop in voor {n} gebruiker",
+            "plural": "Stel verloop in voor {n} gebruikers"
         }
     }
 }
