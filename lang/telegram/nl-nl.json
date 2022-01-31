@@ -7,6 +7,10 @@
         "matrixStartMessage": "Hallo\nVoer onderstaande pincode in op de Jellyfin aanmeldpagina om je account te verifiëren.",
         "invalidPIN": "Die pincode was ongeldig, probeer het nogmaals.",
         "pinSuccess": "Succes! Je kunt nu teruggaan naar de aanmeldpagina.",
-        "languageMessage": "Opmerking: Bekijk beschikbare talen met {command}, en stel de taal in met {command} <taalcode>."
+        "languageMessage": "Opmerking: Bekijk beschikbare talen met {command}, en stel de taal in met {command} <taalcode>.",
+        "discordStartMessage": "Hallo!\nVoer je pincode in met `/pin <PINCODE>` om je account te verifiëren.",
+        "languageMessageDiscord": "Opmerking: stel je taal in met /lang <taal>.",
+        "languageSet": "Taal ingesteld als {language}.",
+        "discordDMs": "Bekijk alsjeblieft je DMs voor een antwoord."
     }
 }
