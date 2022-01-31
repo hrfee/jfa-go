@@ -22,6 +22,8 @@
         "send": "Verstuur",
         "linkDiscord": "Koppel Discord",
         "linkMatrix": "Koppel Matrix",
-        "contactDiscord": "Stuur Discord bericht"
+        "contactDiscord": "Stuur Discord bericht",
+        "refresh": "Ververs",
+        "required": "Verplicht"
     }
 }
