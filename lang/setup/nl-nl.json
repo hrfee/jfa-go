@@ -58,7 +58,9 @@
         "authorizeWithJellyfin": "Jellyfin/Emby authorisatie: Inloggegevens worden gedeeld met Jellyfin, meerdere gebruikers mogelijk.",
         "authorizeManual": "Gebruikersnaam en wachtwoord: Stel handmatig een gebruikersnaam en wachtwoord in.",
         "adminOnly": "Alleen beheerders (aanbevolen)",
-        "emailNotice": "Je e-mailadres kan gebruikt worden om meldingen te ontvangen."
+        "emailNotice": "Je e-mailadres kan gebruikt worden om meldingen te ontvangen.",
+        "allowAll": "Laat alle Jellyfin-gebruikers inloggen",
+        "allowAllDescription": "Afgeraden, je kunt beter individuele gebruikers toegang geven na de setup."
     },
     "jellyfinEmby": {
         "title": "Jellyfin/Emby",
