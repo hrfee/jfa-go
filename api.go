@@ -2095,7 +2095,7 @@ func (app *appContext) GetConfig(gc *gin.Context) {
 // @Produce json
 // @Param appConfig body configDTO true "Config split into sections as in config.ini, all values as strings."
 // @Success 200 {object} boolResponse
-// @Failure 500 {object} boolResponse
+// @Failure 500 {object} stringResponse
 // @Router /config [post]
 // @Security Bearer
 // @tags Configuration
@@ -2126,7 +2126,7 @@ func (app *appContext) ModifyConfig(gc *gin.Context) {
 	tempConfig.Section("").Key("first_run").SetValue("false")
 	if err := tempConfig.SaveTo(app.configPath); err != nil {
 		app.err.Printf("Failed to save config to \"%s\": %v", app.configPath, err)
-		respondBool(500, false, gc)
+		respond(500, err.Error(), gc)
 		return
 	}
 	app.debug.Println("Config saved")

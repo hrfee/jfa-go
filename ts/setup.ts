@@ -340,6 +340,20 @@ const serialize = () => {
     _post("/config", config, (req: XMLHttpRequest) => {
         if (req.readyState == 4) {
             toggleLoader(restartButton);
+            if (req.status == 500) {
+                if (req.response["error"] as string) {
+                    const old = restartButton.textContent;
+                    restartButton.classList.add("~critical");
+                    restartButton.classList.remove("~urge");
+                    restartButton.textContent = req.response["error"];
+                    setTimeout(() => {
+                        restartButton.classList.add("~urge");
+                        restartButton.classList.remove("~critical");
+                        restartButton.textContent = old;
+                    }, 5000);
+                    return;
+                }
+            }
             restartButton.parentElement.querySelector("span.back").classList.add("unfocused");
             restartButton.classList.add("unfocused");
             const refresh = document.getElementById("refresh") as HTMLSpanElement;
