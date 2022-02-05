@@ -1,16 +1,16 @@
 {
     "meta": {
-        "name": ""
+        "name": "Angleščina (ZDA)"
     },
     "strings": {
-        "startMessage": "",
-        "discordStartMessage": "",
-        "matrixStartMessage": "",
-        "invalidPIN": "",
-        "pinSuccess": "",
-        "languageMessage": "",
-        "languageMessageDiscord": "",
-        "languageSet": "",
-        "discordDMs": ""
+        "startMessage": "Pozdravljeni!\nVnesite svoj Jellyfin PIN da potrdite svoj račun.",
+        "discordStartMessage": "Pozdravljeni!\n Vnesite svoj PIN v formatu `/pin <PIN>` da potrdite svoj račun.",
+        "matrixStartMessage": "Pozdravljeni\nVnesite spodnji PIN na Jellyfin stran za registracijo da potrdite svoj račun.",
+        "invalidPIN": "Ta PIN je neveljaven, prosimo poskusite ponovno.",
+        "pinSuccess": "Uspeh! Sedaj se lahko vrnete na stran za registracijo.",
+        "languageMessage": "Opomin: Druge jezike lahko vidite s pomočjo {command}, in ga nastavite s pomočjo {command} <language code>.",
+        "languageMessageDiscord": "Opomin: nastavite jezik z ukazom /lang <language name>.",
+        "languageSet": "Jezik nastavljen na {language}.",
+        "discordDMs": "Prosimo preverite svoja zasebna sporočila za odziv."
     }
 }
