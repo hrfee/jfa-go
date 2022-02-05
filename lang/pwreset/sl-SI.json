@@ -1,16 +1,16 @@
 {
     "meta": {
-        "name": ""
+        "name": "Angleščina (ZDA)"
     },
     "strings": {
-        "passwordReset": "",
-        "reset": "",
-        "resetFailed": "",
-        "tryAgain": "",
-        "youCanLogin": "",
-        "youCanLoginOmbi": "",
-        "youCanLoginPassword": "",
-        "changeYourPassword": "",
-        "enterYourPassword": ""
+        "passwordReset": "Ponastavitev gesla",
+        "reset": "Ponastavi",
+        "resetFailed": "Ponastavitev gesla neuspešna",
+        "tryAgain": "Prosimo poskusite ponovno.",
+        "youCanLogin": "Sedaj se lahko prijavite s spodnjo kodo kot svojim geslom.",
+        "youCanLoginOmbi": "Sedaj se lahko prijavite v Jellyfin in Ombi s spodnjo kodo kot svojim geslom.",
+        "youCanLoginPassword": "Sedaj se lahko prijavite s svojim novim geslom. Pritisnite spodnji gumb da nadaljujete na Jellyfin.",
+        "changeYourPassword": "Spremenite svoje geslo po prijavi.",
+        "enterYourPassword": "Vnesite svoje novo geslo spodaj."
     }
 }
