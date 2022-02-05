@@ -1,29 +1,29 @@
 {
     "meta": {
-        "name": ""
+        "name": "Angleščina (ZDA)"
     },
     "strings": {
-        "username": "",
-        "password": "",
-        "emailAddress": "",
-        "name": "",
-        "submit": "",
-        "send": "",
-        "success": "",
-        "continue": "",
-        "error": "",
-        "copy": "",
-        "copied": "",
-        "time24h": "",
-        "time12h": "",
-        "linkTelegram": "",
-        "contactEmail": "",
-        "contactTelegram": "",
-        "linkDiscord": "",
-        "linkMatrix": "",
-        "contactDiscord": "",
-        "theme": "",
-        "refresh": "",
-        "required": ""
+        "username": "Uporabniško ime",
+        "password": "Geslo",
+        "emailAddress": "E-poštni naslov",
+        "name": "Ime",
+        "submit": "Potrdi",
+        "send": "Pošlji",
+        "success": "Uspeh",
+        "continue": "Nadaljuj",
+        "error": "Napaka",
+        "copy": "Kopiraj",
+        "copied": "Kopirano",
+        "time24h": "24ur format čas",
+        "time12h": "12ur format časa",
+        "linkTelegram": "Poveži Telegram",
+        "contactEmail": "Kontakt preko e-pošte",
+        "contactTelegram": "Kontakt preko Telegrama",
+        "linkDiscord": "Poveži Discord",
+        "linkMatrix": "Poveži Matrix",
+        "contactDiscord": "Kontakt preko Discorda",
+        "theme": "Tema",
+        "refresh": "Osveži",
+        "required": "Obvezno"
     }
 }
