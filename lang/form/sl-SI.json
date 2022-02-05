@@ -1,60 +1,60 @@
 {
     "meta": {
-        "name": ""
+        "name": "Angleščina (ZDA)"
     },
     "strings": {
-        "pageTitle": "",
-        "createAccountHeader": "",
-        "accountDetails": "",
-        "emailAddress": "",
-        "username": "",
-        "password": "",
-        "reEnterPassword": "",
-        "reEnterPasswordInvalid": "",
-        "createAccountButton": "",
-        "passwordRequirementsHeader": "",
-        "successHeader": "",
-        "confirmationRequired": "",
-        "confirmationRequiredMessage": "",
-        "yourAccountIsValidUntil": "",
-        "sendPIN": "",
-        "sendPINDiscord": "",
-        "matrixEnterUser": ""
+        "pageTitle": "Ustvari Jellyfin Račun",
+        "createAccountHeader": "Ustvari Račun",
+        "accountDetails": "Podrobnosti",
+        "emailAddress": "E-pošta",
+        "username": "Uporabniško ime",
+        "password": "Geslo",
+        "reEnterPassword": "Ponovno vnesi Geslo",
+        "reEnterPasswordInvalid": "Gesli se ne ujemata.",
+        "createAccountButton": "Ustvari Račun",
+        "passwordRequirementsHeader": "Zahteve za geslo",
+        "successHeader": "Uspeh!",
+        "confirmationRequired": "Potrebna potrditev e-pošte",
+        "confirmationRequiredMessage": "Prosimo preverite svojo e-pošto da potrdite račun.",
+        "yourAccountIsValidUntil": "Vaš račun bo veljaven do {date}.",
+        "sendPIN": "Pošljite spodnji PIN botu, nato pa pridite nazaj da povežete svoj račun.",
+        "sendPINDiscord": "Napišite {command} v {server_channel} na Discordu, nato pa vnesite PIN spodaj.",
+        "matrixEnterUser": "Vnesite svoj uporabniški ID, pritisnite potrdi, in poslan vam bo PIN. Tega vnesite tu, da nadaljujete."
     },
     "notifications": {
-        "errorUserExists": "",
-        "errorInvalidCode": "",
-        "errorTelegramVerification": "",
-        "errorDiscordVerification": "",
-        "errorMatrixVerification": "",
-        "errorInvalidPIN": "",
-        "errorUnknown": "",
-        "errorNoEmail": "",
-        "errorCaptcha": "",
-        "errorPassword": "",
-        "errorNoMatch": "",
-        "verified": ""
+        "errorUserExists": "Uporabnik že obstaja.",
+        "errorInvalidCode": "Neveljavna koda povabila.",
+        "errorTelegramVerification": "Potrebna je potrditev preko telegrama.",
+        "errorDiscordVerification": "Potrebna je potrditev preko Discorda.",
+        "errorMatrixVerification": "Potrebna je potrditev preko Matrix.",
+        "errorInvalidPIN": "PIN ni veljaven.",
+        "errorUnknown": "Neznana napaka.",
+        "errorNoEmail": "E-pošta obvezna.",
+        "errorCaptcha": "Captcha je nepravilna.",
+        "errorPassword": "Prosimo preverite zahteve za geslo.",
+        "errorNoMatch": "Gesli se ne ujemata.",
+        "verified": "Račun potrjen."
     },
     "validationStrings": {
         "length": {
-            "singular": "",
-            "plural": ""
+            "singular": "Potrebnih je vsaj {n} znakov",
+            "plural": "Potrebnih je vsaj {n} znakov"
         },
         "uppercase": {
-            "singular": "",
-            "plural": ""
+            "singular": "Potreben je vsaj {n} velik znak",
+            "plural": "Potrebnih je vsaj {n} velikih znakov"
         },
         "lowercase": {
-            "singular": "",
-            "plural": ""
+            "singular": "Potreben je vsaj {n} majhen znak",
+            "plural": "Potrebnih je vsaj {n} majhnih znakov"
         },
         "number": {
-            "singular": "",
-            "plural": ""
+            "singular": "Potrebna je vsaj {n} števka",
+            "plural": "Potrebnih je vsaj {n} števk"
         },
         "special": {
-            "singular": "",
-            "plural": ""
+            "singular": "Poteben je vsaj {n} poseben znak",
+            "plural": "Potrebnih je vsaj {n} posebnih znakov"
         }
     }
 }
