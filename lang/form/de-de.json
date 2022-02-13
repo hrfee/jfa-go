@@ -18,7 +18,7 @@
         "confirmationRequiredMessage": "Bitte überprüfe dein Posteingang und bestätige deine E-Mail-Adresse.",
         "yourAccountIsValidUntil": "Dein Konto wird bis zum {date} gültig sein.",
         "sendPIN": "Sende die untenstehende PIN an den Bot und komm dann hierher zurück, um dein Konto zu verbinden.",
-        "sendPINDiscord": "Gib auf Discord {command} in {server_channel} ein und sende die untenstehende PIN als DM an den Bot.",
+        "sendPINDiscord": "Gib auf Discord {command} in {server_channel} ein und sende die untenstehende PIN.",
         "matrixEnterUser": "Gib deine Benutzer-ID ein und drücke auf Absenden. Anschließend erhälst du ein PIN, die hier eingegeben wird um fortzufahren."
     },
     "validationStrings": {
@@ -53,6 +53,7 @@
         "errorMatrixVerification": "Matrix-Verifizierung erforderlich.",
         "errorUnknown": "Unbekannter Fehler.",
         "verified": "Konto verifiziert.",
-        "errorNoEmail": "E-Mail Adresse erforderlich."
+        "errorNoEmail": "E-Mail Adresse erforderlich.",
+        "errorCaptcha": "Captcha falsch."
     }
 }
