@@ -54,6 +54,8 @@
         "errorUnknown": "Unbekannter Fehler.",
         "verified": "Konto verifiziert.",
         "errorNoEmail": "E-Mail Adresse erforderlich.",
-        "errorCaptcha": "Captcha falsch."
+        "errorCaptcha": "Captcha falsch.",
+        "errorPassword": "Prüfe die Passwortanforderungen.",
+        "errorNoMatch": "Passwörter stimmen nicht überein."
     }
 }
