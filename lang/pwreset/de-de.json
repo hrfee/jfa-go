@@ -8,6 +8,9 @@
         "tryAgain": "Bitte versuche es erneut.",
         "youCanLogin": "Du kannst dich nun mit dem unten stehenden Code als Passwort anmelden.",
         "youCanLoginOmbi": "Du kannst dich jetzt bei Jellyfin und Ombi mit dem unten stehenden Code als Passwort anmelden.",
-        "changeYourPassword": "Achte darauf, dass du dein Passwort nach der Anmeldung änderst."
+        "changeYourPassword": "Achte darauf, dass du dein Passwort nach der Anmeldung änderst.",
+        "youCanLoginPassword": "Du kannst dich nun mit deinem neuen Passwort anmelden. Klicke unten um zu Jellyfin zu gehen.",
+        "reset": "Zurücksetzen",
+        "enterYourPassword": "Gib unten dein neues Passwort ein."
     }
 }
