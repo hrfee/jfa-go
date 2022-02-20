@@ -11,14 +11,14 @@
         "title": "Mitteilung: Benutzer erstellt",
         "aUserWasCreated": "Ein Benutzer wurde unter Verwendung des Codes {code} erstellt.",
         "time": "Zeit",
-        "notificationNotice": "Hinweis: Benachrichtigungs-E-Mails können auf dem Administrator-Dashboard umgeschalten werden.",
+        "notificationNotice": "Hinweis: Benachrichtigungen können auf dem Administrator-Dashboard umgeschalten werden.",
         "name": "Benutzererstellung"
     },
     "inviteExpiry": {
         "title": "Mitteilung: Invite abgelaufen",
         "inviteExpired": "Invite abgelaufen.",
         "expiredAt": "Code {code} lief um {time} ab.",
-        "notificationNotice": "Hinweis: Benachrichtigungs-E-Mails können auf dem Administrator-Dashboard umgeschalten werden.",
+        "notificationNotice": "Hinweis: Benachrichtigungen können auf dem Administrator-Dashboard umgeschalten werden.",
         "name": "Invite Ablaufdatum"
     },
     "passwordReset": {
