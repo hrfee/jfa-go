@@ -7,6 +7,10 @@
         "matrixStartMessage": "Hallo,\ngib den untenstehenden PIN auf der Anmeldeseite von Jellyfin ein, um dein Konto zu verifizieren.",
         "invalidPIN": "Diese PIN war ungültig, versuche es erneut.",
         "pinSuccess": "Erfolg! Du kannst nun zur Anmeldeseite zurückkehren.",
-        "languageMessage": "Hinweis: Zeige verfügbare Sprachen mit {command} an und stelle mit {command} <Sprachcode> die gewünschte ein."
+        "languageMessage": "Hinweis: Zeige verfügbare Sprachen mit {command} an und stelle mit {command} <Sprachcode> die Gewünschte ein.",
+        "discordStartMessage": "Hallo\n gib \"/pin\" gefolgt von deiner PIN ein, um dein Konto zu verifizieren.",
+        "languageMessageDiscord": "Hinweis: Du kannst deine Sprache mit \"/lang <Sprache>\" ändern.",
+        "languageSet": "Sprache auf {language} geändert.",
+        "discordDMs": "Schaue in deinen DMs nach einer Antwort."
     }
 }
