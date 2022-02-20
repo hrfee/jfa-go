@@ -15,7 +15,7 @@
         "passwordRequirementsHeader": "Passwortanforderungen",
         "successHeader": "Erfolgreich!",
         "confirmationRequired": "E-Mail-Bestätigung erforderlich",
-        "confirmationRequiredMessage": "Bitte überprüfe dein Posteingang und bestätige deine E-Mail-Adresse.",
+        "confirmationRequiredMessage": "Bitte überprüfe deinen Posteingang und bestätige deine E-Mail-Adresse.",
         "yourAccountIsValidUntil": "Dein Konto wird bis zum {date} gültig sein.",
         "sendPIN": "Sende die untenstehende PIN an den Bot und komm dann hierher zurück, um dein Konto zu verbinden.",
         "sendPINDiscord": "Gib auf Discord {command} in {server_channel} ein und sende die untenstehende PIN.",
