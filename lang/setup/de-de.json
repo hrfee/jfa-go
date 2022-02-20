@@ -15,7 +15,11 @@
         "serverAddress": "Serveradresse",
         "emailSubject": "E-Mail-Betreff",
         "URL": "URL",
-        "apiKey": "API-Schlüssel"
+        "apiKey": "API-Schlüssel",
+        "errorInvalidUserPass": "Benutzername/Passwort ungültig.",
+        "errorNotAdmin": "Dieser Benutzer darf den Server nicht verwalten.",
+        "errorUserDisabled": "Konto ist eventuell deaktiviert.",
+        "error404": "404, prüfe die interne URL."
     },
     "startPage": {
         "welcome": "Willkommen!",
@@ -25,7 +29,7 @@
     },
     "endPage": {
         "finished": "Fertig!",
-        "restartMessage": "Es gibt weitere Einstellungen, die du auf der Admin-Seite konfigurieren kannst. Klicke unten, um neu zu starten, dann aktualisiere die Seite.",
+        "restartMessage": "In den Einstellungen kannst du Discord/Telegram/Matrix Bots konfigurieren, Benachrichtigungen anpassen und vieles mehr. Klicke unten, um neu zu starten, aktualisiere dann die Seite.",
         "refreshPage": "Aktualisieren"
     },
     "language": {
@@ -54,7 +58,9 @@
         "authorizeWithJellyfin": "Mit Jellyfin/Emby autorisieren: Anmeldedaten werden mit Jellyfin geteilt, was mehrere Benutzer ermöglicht.",
         "authorizeManual": "Benutzername und Passwort: Lege Benutzername und Passwort manuell fest.",
         "adminOnly": "Nur Admin-Benutzer (empfohlen)",
-        "emailNotice": "Deine E-Mail-Adresse kann verwendet werden, um Benachrichtigungen zu erhalten."
+        "emailNotice": "Deine E-Mail-Adresse kann verwendet werden, um Benachrichtigungen zu erhalten.",
+        "allowAll": "Erlaube allen Jellyfin-Nutzern sich anzumelden",
+        "allowAllDescription": "Nicht empfohlen. Nach der Einrichtung solltest du einzelnen Benutzern erlauben, sich anzumelden."
     },
     "jellyfinEmby": {
         "title": "Jellyfin/Emby",
@@ -86,16 +92,16 @@
         "mailgunApiURL": "API-URL"
     },
     "notifications": {
-        "title": "Benachrichtigungen",
-        "description": "Wenn aktiviert, kannst du (pro Invite) wählen, eine E-Mail zu erhalten, wenn ein Invite abläuft oder ein Benutzer erstellt wird. Wenn du nicht die Jellyfin-Login-Methode gewählt hast, stelle sicher, dass du deine E-Mail-Adresse angegeben hast."
+        "title": "Admin-Benachrichtigungen",
+        "description": "Wenn aktiviert, kannst du (pro Invite) wählen, eine Benachrichtigung zu erhalten, wenn ein Invite abläuft oder ein Benutzer erstellt wird. Wenn du nicht die Jellyfin-Login-Methode gewählt hast, stelle sicher, dass du deine E-Mail-Adresse angegeben hast, oder füge später eine andere Kontaktmöglichkeit hinzu."
     },
     "welcomeEmails": {
-        "title": "Willkommens-E-Mails",
-        "description": "Wenn aktiviert, wird eine E-Mail an neue Benutzer gesendet mit der Jellyfin-/Emby-URL und ihrem Benutzername."
+        "title": "Willkommens-Benachrichtigungen",
+        "description": "Wenn aktiviert, wird eine Benachrichtigung mit der Jellyfin-/Emby-URL und dem Benutzernamen an neue Benutzer gesendet."
     },
     "inviteEmails": {
-        "title": "Einladungs-E-Mails",
-        "description": "Wenn aktiviert, kannst du Invites direkt an die E-Mail-Adresse eines Benutzers schicken. Weil du möglicherweise einen Reverse-Proxy verwendest, musst du die URL angeben, von welcher auf Invites zugegriffen wird. Schreibe deine URL-Basis, und füge '/invite' hinzu."
+        "title": "Einladungs-Benachrichtigungen",
+        "description": "Wenn aktiviert, kannst du Invites direkt an die E-Mail-Adresse oder das Discord-/Matrix-Konto eines Benutzers schicken. Weil du möglicherweise einen Reverse-Proxy verwendest, musst du die URL angeben, von welcher auf Invites zugegriffen wird. Schreibe deine URL-Basis, und füge '/invite' hinzu."
     },
     "passwordResets": {
         "title": "Passwortzurücksetzungen",
@@ -104,7 +110,9 @@
         "pathToJellyfinNotice": "Wenn du nicht weißt, wo das ist, versuche dein Passwort in Jellyfin zurückzusetzen. Ein Popup mit '<Pfad zu Jellyfin>/passwordreset-*.json' wird angezeigt werden.",
         "resetLinks": "Einen Link statt einer PIN senden",
         "resetLinksNotice": "Wenn die Ombi-Integration aktiviert ist, verwende dies, um zurückgesetzte Passwörter von Jellyfin mit Ombi zu synchronisieren.",
-        "resetLinksLanguage": "Standardsprache für den Link zum Zurücksetzen des Passworts"
+        "resetLinksLanguage": "Standardsprache für den Link zum Zurücksetzen des Passworts",
+        "setPassword": "Setze Password durch Link",
+        "setPasswordNotice": "Wenn aktiviert muss der Benutzer sein Passwort nicht über eine PIN ändern. So wird ebenfalls die Passwortvalidierung erzwungen."
     },
     "passwordValidation": {
         "title": "Passwortüberprüfung",
@@ -133,5 +141,9 @@
         "stable": "Stable",
         "title": "Aktualisierungen",
         "description": "Aktiviere, um informiert zu werden, wenn neue Aktualisierungen verfügbar sind. jfa-go wird {n} alle 30 Minuten überprüfen. Keine IP-Adressen oder personenbezogene Daten werden gesammelt."
+    },
+    "messages": {
+        "title": "Mitteilungen",
+        "description": "jfa-go kann Passwortrücksetzungen und verschiedene Benachrichtigungen per E-Mail, Discord, Telegram und/oder Matrix verschicken. E-Mail kannst du unten einrichten, die Anderen später in den Einstellungen. Anweisungen findest du im {n}. Falls nicht benötigt, kannst du diese Funktionen hier deaktivieren."
     }
 }
