@@ -22,6 +22,8 @@
         "linkDiscord": "Link Discord",
         "linkMatrix": "Link Matrix",
         "send": "Senden",
-        "contactDiscord": "Kontakt über Discord"
+        "contactDiscord": "Kontakt über Discord",
+        "refresh": "Aktualisieren",
+        "required": "Erforderlich"
     }
 }
