@@ -43,7 +43,7 @@
         "settingsRequiredOrRestartMessage": "Hinweis: {n} zeigt ein erforderliches Feld an, {n} zeigt an, dass Änderungen einen Neustart erfordern.",
         "settingsSave": "Speichern",
         "ombiUserDefaults": "Ombi-Benutzerstandardeinstellungen",
-        "ombiUserDefaultsDescription": "Erstelle einen Ombi-Benutzer und konfiguriere ihn, dann wähle ihn unten aus. Seine Einstellungen/Berechtigungen werden gespeichert und auf neue Ombi-Benutzer, erstellt von jfa-go, angewendet",
+        "ombiUserDefaultsDescription": "Erstelle einen Ombi-Benutzer, konfiguriere ihn und wähle ihn dann unten aus. Seine Einstellungen/Berechtigungen werden gespeichert und auf neue Ombi-Benutzer, welche von jfa-go erstellt werden, angewendet, sofern dieses Profil ausgewählt ist.",
         "userProfiles": "Benutzerprofile",
         "userProfilesDescription": "Profile werden auf Benutzer angewendet, wenn sie ein Konto erstellen. Ein Profil beinhaltet Bibliothekszugriffsrechte und das Startbildschirmlayout.",
         "userProfilesIsDefault": "Standard",
@@ -69,7 +69,7 @@
         "preview": "Vorschau",
         "reset": "Zurücksetzen",
         "edit": "Bearbeiten",
-        "customizeMessages": "E-Mails anpassen",
+        "customizeMessages": "Benachrichtigungen anpassen",
         "customizeMessagesDescription": "Wenn du jfa-go's E-Mail-Vorlagen nicht benutzen willst, kannst du deinen eigenen unter Verwendung von Markdown erstellen.",
         "announce": "Ankündigen",
         "subject": "Betreff",
@@ -101,7 +101,17 @@
         "findDiscordUser": "Suche Discord-Benutzer",
         "linkMatrixDescription": "Gib den Benutzernamen und das Passwort des Benutzers ein, der als Bot verwendet werden soll. Nach dem Absenden wird die App neu gestartet.",
         "matrixHomeServer": "Adresse des Homeservers",
-        "templates": "Vorlagen"
+        "templates": "Vorlagen",
+        "ombiProfile": "Ombi-Benutzerprofil",
+        "accessJFA": "jfa-go Zugriff",
+        "sendPWRValidFor": "Der Link ist 30m gültig.",
+        "logs": "Logdaten",
+        "setExpiry": "Ablauf setzen",
+        "sendPWRSuccess": "Link zur Passwortrücksetzung versandt.",
+        "sendPWRSuccessManual": "Falls der Benutzer ihn nicht erhalten hat, klicke \"Kopieren\" und sende ihm den Link manuell.",
+        "sendPWR": "Sende Passwortrücksetzung",
+        "sendPWRManual": "Benutzer {n} hat keine Kontaktmöglichkeit hinterlegt. Klicke \"Kopieren\" um einen Link zu erhalten, den du dem Benutzer manuell senden kannst.",
+        "accessJFASettings": "Kann nicht geändert werden, da entweder \"Nur Admin-Benutzer\" oder \"Erlaube allen Jellyfin-Nutzern sich anzumelden\" in Einstellungen > Allgemein aktiviert ist."
     },
     "notifications": {
         "changedEmailAddress": "E-Mail-Adresse von {n} geändert.",
@@ -142,7 +152,9 @@
         "updateAppliedRefresh": "Update angewendet, bitte aktualisieren.",
         "telegramVerified": "Telegram-Konto verifiziert.",
         "accountConnected": "Konto verbunden.",
-        "savedAnnouncement": "Ankündigung gespeichert."
+        "savedAnnouncement": "Ankündigung gespeichert.",
+        "errorSetOmbiProfile": "Ombi-Profil konnte nicht gespeichert werden.",
+        "setOmbiProfile": "Ombi-Profil gespeichert."
     },
     "quantityStrings": {
         "modifySettingsFor": {
@@ -196,6 +208,10 @@
         "reEnableUsers": {
             "singular": "Benutzer {n} wieder aktivieren",
             "plural": "Benutzer {n} wieder aktivieren"
+        },
+        "setExpiry": {
+            "singular": "Ablauf für {n} Benutzer setzen",
+            "plural": "Ablauf für {n} Benutzer setzen"
         }
     }
 }
