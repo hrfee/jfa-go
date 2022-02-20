@@ -111,7 +111,10 @@
         "sendPWRSuccessManual": "Falls der Benutzer ihn nicht erhalten hat, klicke \"Kopieren\" und sende ihm den Link manuell.",
         "sendPWR": "Sende Passwortrücksetzung",
         "sendPWRManual": "Benutzer {n} hat keine Kontaktmöglichkeit hinterlegt. Klicke \"Kopieren\" um einen Link zu erhalten, den du dem Benutzer manuell senden kannst.",
-        "accessJFASettings": "Kann nicht geändert werden, da entweder \"Nur Admin-Benutzer\" oder \"Erlaube allen Jellyfin-Nutzern sich anzumelden\" in Einstellungen > Allgemein aktiviert ist."
+        "accessJFASettings": "Kann nicht geändert werden, da entweder \"Nur Admin-Benutzer\" oder \"Erlaube allen Jellyfin-Nutzern sich anzumelden\" in Einstellungen > Allgemein aktiviert ist.",
+        "saveAsTemplate": "Als Vorlage speichern",
+        "deleteTemplate": "Vorlage löschen",
+        "templateEnterName": "Einen Namen Eingeben um diese Vorlage zu speichern."
     },
     "notifications": {
         "changedEmailAddress": "E-Mail-Adresse von {n} geändert.",
