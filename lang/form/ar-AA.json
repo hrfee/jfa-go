@@ -1,60 +1,60 @@
 {
     "meta": {
-        "name": ""
+        "name": "العربية (AR)"
     },
     "strings": {
-        "pageTitle": "",
-        "createAccountHeader": "",
-        "accountDetails": "",
-        "emailAddress": "",
-        "username": "",
-        "password": "",
-        "reEnterPassword": "",
-        "reEnterPasswordInvalid": "",
-        "createAccountButton": "",
-        "passwordRequirementsHeader": "",
-        "successHeader": "",
-        "confirmationRequired": "",
-        "confirmationRequiredMessage": "",
-        "yourAccountIsValidUntil": "",
-        "sendPIN": "",
-        "sendPINDiscord": "",
-        "matrixEnterUser": ""
+        "pageTitle": "أنشاء حساب",
+        "createAccountHeader": "أنشاء حساب",
+        "accountDetails": "التفاصيل",
+        "emailAddress": "البريد الالكتروني",
+        "username": "اسم المستخدم",
+        "password": "كلمة المرور",
+        "reEnterPassword": "تأكيد كلمة المرور",
+        "reEnterPasswordInvalid": "كلمة المرور غير مطابقة.",
+        "createAccountButton": "أنشاء حساب",
+        "passwordRequirementsHeader": "متطلبات كلمة المرور",
+        "successHeader": "تم!",
+        "confirmationRequired": "مطلوب تأكيد البريد الإلكتروني",
+        "confirmationRequiredMessage": "يرجى التحقق من صندوق البريد الإلكتروني الخاص بك للتحقق من عنوانك.",
+        "yourAccountIsValidUntil": "سيكون حسابك ساري المفعول حتى {date}.",
+        "sendPIN": "أرسل رقم التعريف الشخصي أدناه إلى الروبوت ، ثم ارجع إلى هنا لربط حسابك.",
+        "sendPINDiscord": "اكتب {command} في {server_channel} على Discord ، ثم أرسل رقم التعريف الشخصي أدناه.",
+        "matrixEnterUser": "أدخل معرف المستخدم الخاص بك ، واضغط على إرسال ، وسيتم إرسال رمز PIN إليك. أدخله هنا للمتابعة."
     },
     "notifications": {
-        "errorUserExists": "",
-        "errorInvalidCode": "",
-        "errorTelegramVerification": "",
-        "errorDiscordVerification": "",
-        "errorMatrixVerification": "",
-        "errorInvalidPIN": "",
-        "errorUnknown": "",
-        "errorNoEmail": "",
-        "errorCaptcha": "",
-        "errorPassword": "",
-        "errorNoMatch": "",
-        "verified": ""
+        "errorUserExists": "المستخدم موجود مسبقا.",
+        "errorInvalidCode": "رمز دعوة غير صالح.",
+        "errorTelegramVerification": "مطلوب التحقق من Telegram.",
+        "errorDiscordVerification": "مطلوب التحقق من الخلاف.",
+        "errorMatrixVerification": "مطلوب التحقق من المصفوفة.",
+        "errorInvalidPIN": "رقم التعريف الشخصي غير صالح.",
+        "errorUnknown": "خطأ غير معروف.",
+        "errorNoEmail": "البريد الإلكتروني مطلوب.",
+        "errorCaptcha": "كلمة التحقق غير صحيحة.",
+        "errorPassword": "تحقق من متطلبات كلمة المرور.",
+        "errorNoMatch": "كلمات المرور غير متطابقة.",
+        "verified": "تم التحقق من الحساب."
     },
     "validationStrings": {
         "length": {
-            "singular": "",
-            "plural": ""
+            "singular": "يجب أن يتألف من {n} حرف على الأقل",
+            "plural": "يجب ألا يقل عدد الأحرف عن {n}"
         },
         "uppercase": {
-            "singular": "",
-            "plural": ""
+            "singular": "يجب أن تحتوي على {n} حرف كبير على الأقل",
+            "plural": "يجب ألا يقل عدد الأحرف الكبيرة عن {n}"
         },
         "lowercase": {
-            "singular": "",
-            "plural": ""
+            "singular": "يجب أن يتألف من {n} حرف صغير على الأقل",
+            "plural": "يجب ألا يقل عدد الأحرف الصغيرة عن {n}"
         },
         "number": {
-            "singular": "",
-            "plural": ""
+            "singular": "يجب أن يحتوي على {n} رقم على الأقل",
+            "plural": "يجب أن يحتوي على {n} رقم على الأقل"
         },
         "special": {
-            "singular": "",
-            "plural": ""
+            "singular": "يجب أن يتألف من {n} حرف خاص على الأقل",
+            "plural": "يجب أن يتألف من {n} حرف خاص على الأقل"
         }
     }
 }
