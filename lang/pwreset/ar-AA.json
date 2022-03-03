@@ -1,16 +1,16 @@
 {
     "meta": {
-        "name": ""
+        "name": "العربية (AR)"
     },
     "strings": {
-        "passwordReset": "",
-        "reset": "",
-        "resetFailed": "",
-        "tryAgain": "",
-        "youCanLogin": "",
-        "youCanLoginOmbi": "",
-        "youCanLoginPassword": "",
-        "changeYourPassword": "",
-        "enterYourPassword": ""
+        "passwordReset": "إعادة تعيين كلمة المرور",
+        "reset": "إعادة تعيين",
+        "resetFailed": "فشل إعادة تعيين كلمة المرور",
+        "tryAgain": "حاول مرة اخرى.",
+        "youCanLogin": "يمكنك الآن تسجيل الدخول باستخدام الرمز أدناه ككلمة المرور الخاصة بك.",
+        "youCanLoginOmbi": "يمكنك الآن تسجيل الدخول باستخدام الرمز أدناه ككلمة المرور الخاصة بك.",
+        "youCanLoginPassword": "يمكنك الآن تسجيل الدخول باستخدام الرمز أدناه ككلمة المرور الخاصة بك.",
+        "changeYourPassword": "تأكد من تغيير كلمة المرور الخاصة بك بعد تسجيل الدخول.",
+        "enterYourPassword": "أدخل كلمة المرور الجديدة أدناه."
     }
 }
