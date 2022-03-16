@@ -114,7 +114,7 @@
         "accessJFASettings": "Kann nicht geändert werden, da entweder \"Nur Admin-Benutzer\" oder \"Erlaube allen Jellyfin-Nutzern sich anzumelden\" in Einstellungen > Allgemein aktiviert ist.",
         "saveAsTemplate": "Als Vorlage speichern",
         "deleteTemplate": "Vorlage löschen",
-        "templateEnterName": "Einen Namen Eingeben um diese Vorlage zu speichern."
+        "templateEnterName": "Gebe einen Namen ein, um diese Vorlage zu speichern."
     },
     "notifications": {
         "changedEmailAddress": "E-Mail-Adresse von {n} geändert.",
