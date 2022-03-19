@@ -112,7 +112,7 @@
         "resetLinksNotice": "Wenn die Ombi-Integration aktiviert ist, verwende dies, um zurückgesetzte Passwörter von Jellyfin mit Ombi zu synchronisieren.",
         "resetLinksLanguage": "Standardsprache für den Link zum Zurücksetzen des Passworts",
         "setPassword": "Setze Password durch Link",
-        "setPasswordNotice": "Wenn aktiviert muss der Benutzer sein Passwort nicht über eine PIN ändern. So wird ebenfalls die Passwortvalidierung erzwungen."
+        "setPasswordNotice": "Wenn aktiviert, muss der Benutzer sein Passwort nicht über eine PIN ändern. So wird ebenfalls die Passwortvalidierung erzwungen."
     },
     "passwordValidation": {
         "title": "Passwortüberprüfung",
