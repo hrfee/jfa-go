@@ -39,7 +39,7 @@ before:
     - rm data/bundle.css
     - npx tailwindcss -i data/web/css/bundle.css -o data/web/css/bundle.css
     - mv data/crash.html data/html/
-    - go get -u github.com/swaggo/swag/cmd/swag
+    - go install github.com/swaggo/swag/cmd/swag@latest
     - swag init -g main.go
     - mv data/web/css/bundle.css data/web/css/{{.Env.JFA_GO_CSS_VERSION}}bundle.css
 builds:

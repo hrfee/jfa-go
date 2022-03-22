@@ -26,6 +26,7 @@ require (
 	github.com/gin-contrib/pprof v1.3.0
 	github.com/gin-contrib/static v0.0.1
 	github.com/gin-gonic/gin v1.7.7
+	github.com/go-openapi/swag v0.21.1 // indirect
 	github.com/go-playground/validator/v10 v10.9.0 // indirect
 	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible
@@ -51,16 +52,17 @@ require (
 	github.com/steambap/captcha v1.4.1
 	github.com/swaggo/files v0.0.0-20210815190702-a29dd2bc99b2
 	github.com/swaggo/gin-swagger v1.3.3
-	github.com/swaggo/swag v1.7.8 // indirect
+	github.com/swaggo/swag v1.8.0 // indirect
 	github.com/technoweenie/multipartstreamer v1.0.1 // indirect
 	github.com/tidwall/sjson v1.2.4 // indirect
 	github.com/ugorji/go v1.2.6 // indirect
+	github.com/urfave/cli/v2 v2.4.0 // indirect
 	github.com/writeas/go-strip-markdown v2.0.1+incompatible
 	github.com/xhit/go-simple-mail/v2 v2.10.0
 	golang.org/x/crypto v0.0.0-20220112180741-5e0467b6c7ce // indirect
-	golang.org/x/net v0.0.0-20220121210141-e204ce36a2ba // indirect
-	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9 // indirect
-	golang.org/x/tools v0.1.8 // indirect
+	golang.org/x/net v0.0.0-20220225172249-27dd8689420f // indirect
+	golang.org/x/sys v0.0.0-20220319134239-a9b59b0215f8 // indirect
+	golang.org/x/tools v0.1.10 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/ini.v1 v1.66.2
 	maunium.net/go/mautrix v0.10.7

@@ -111,7 +111,7 @@ typescript:
 	$(COPYTS)
 
 swagger:
-	$(GOBINARY) install github.com/swaggo/swag/cmd/swag
+	$(GOBINARY) install github.com/swaggo/swag/cmd/swag@latest
 	swag init -g main.go
 
 compile:
