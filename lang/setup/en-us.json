@@ -19,7 +19,8 @@
         "errorInvalidUserPass": "Invalid username/password.",
         "errorNotAdmin": "User is not allowed to manage server.",
         "errorUserDisabled": "User may be disabled.",
-        "error404": "404, check the internal URL."
+        "error404": "404, check the internal URL.",
+        "errorConnectionRefused": "Connection refused."
     },
     "startPage": {
         "welcome": "Welcome!",

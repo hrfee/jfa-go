@@ -68,6 +68,9 @@ func (app *appContext) TestJF(gc *gin.Context) {
 	if !(status == 200 || status == 204) || err != nil {
 		msg := ""
 		switch status {
+		case 0:
+			msg = "errorConnectionRefused"
+			status = 500
 		case 401:
 			msg = "errorInvalidUserPass"
 		case 403:

@@ -12,6 +12,8 @@ replace github.com/hrfee/jfa-go/logger => ./logger
 
 replace github.com/hrfee/jfa-go/linecache => ./linecache
 
+replace github.com/hrfee/jfa-go/api => ./api
+
 require (
 	github.com/bwmarrin/discordgo v0.23.3-0.20211228023845-29269347e820
 	github.com/emersion/go-autostart v0.0.0-20210130080809-00ed301c8e9a
