@@ -112,7 +112,9 @@
         "sendPWRManual": "Brugeren {n} har ingen kontaktinformation, tryk kopier for at få et link du kan sende til dem.",
         "sendPWRSuccess": "Link til nulstilling af adgangskode sendt.",
         "sendPWRSuccessManual": "Hvis brugeren ikke er modtaget den, så tryk på kopier for manuelt at sende et link til dem.",
-        "sendPWRValidFor": "Dette link er gyldigt i 30m."
+        "sendPWRValidFor": "Dette link er gyldigt i 30m.",
+        "accessJFA": "Få adgang til jfa-go",
+        "accessJFASettings": "Kan ikke ændres, da enten \"Kun administrator\" eller \"Tillad alle\" er blevet indstillet i Indstillinger > Generelt."
     },
     "notifications": {
         "changedEmailAddress": "Ændret e-mail adresse på {n}.",
@@ -209,6 +211,10 @@
         "extendedExpiry": {
             "singular": "Forlængede udløb for {n} bruger.",
             "plural": "Forlængede udløb for {n} brugere."
+        },
+        "setExpiry": {
+            "singular": "Indstil udløb for {n} bruger",
+            "plural": "Indstil udløb for {n} brugere"
         }
     }
 }
