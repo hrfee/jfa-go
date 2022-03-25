@@ -3,10 +3,14 @@
         "name": "Dansk (DK)"
     },
     "strings": {
-        "startMessage": "Hej!\nIndtast din Jellyfin PIN-kode her for at verificere din konto.",
-        "matrixStartMessage": "Hej!\nIndtast PIN-koden på Jellyfin tilmeldingssiden for at verificere din konto.",
+        "startMessage": "Hej!\nIndtast din Jellyfin PIN-kode her for at bekræfte din konto.",
+        "matrixStartMessage": "Hej!\nIndtast PIN-koden på Jellyfin tilmeldingssiden for at bekræfte din konto.",
         "invalidPIN": "Den PIN-kode var ugyldig, prøv igen.",
         "pinSuccess": "Sådan! Du kan nu gå tilbage til tilmeldingssiden.",
-        "languageMessage": "Note: Se tilgængelige sprog med {command}, og vælg sprog med {command} <sprog kode>."
+        "languageMessage": "Note: Se tilgængelige sprog med {command}, og vælg sprog med {command} <sprog kode>.",
+        "discordStartMessage": "Hej!\n Indtast din pinkode med `/pin <PIN>` for at bekræfte din konto.",
+        "languageMessageDiscord": "Bemærk: Indstil dit sprog med /lang <sprognavn>.",
+        "languageSet": "Sprog indstillet til {language}.",
+        "discordDMs": "Tjek venligst dine DM's for et svar."
     }
 }
