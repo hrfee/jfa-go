@@ -22,6 +22,8 @@
         "linkDiscord": "Link Discord",
         "linkMatrix": "Link Matrix",
         "contactDiscord": "Kontakt gennem Discord",
-        "theme": "Tema"
+        "theme": "Tema",
+        "refresh": "Opdater",
+        "required": "Påkrævet"
     }
 }
