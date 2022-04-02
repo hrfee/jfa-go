@@ -18,7 +18,7 @@
         "confirmationRequiredMessage": "Verifique sua caixa de email para finalizar o cadastro.",
         "yourAccountIsValidUntil": "Sua conta é válida até {date}.",
         "sendPIN": "Envie o PIN abaixo para o bot e volte aqui para vincular sua conta.",
-        "sendPINDiscord": "Digite {command} em {server_channel} no Discord e envie o PIN abaixo via DM para o bot.",
+        "sendPINDiscord": "Digite {command} em {server_channel} no Discord e envie o PIN abaixo.",
         "matrixEnterUser": "Digite sua ID de usuário, pressione enviar e um PIN será enviado. E digite aqui para continuar."
     },
     "notifications": {
@@ -30,7 +30,8 @@
         "errorDiscordVerification": "Necessária verificação pelo Discord.",
         "errorMatrixVerification": "Necessária verificação Matrix.",
         "errorUnknown": "Erro desconhecido.",
-        "verified": "Conta verificada."
+        "verified": "Conta verificada.",
+        "errorNoEmail": "Email necessário"
     },
     "validationStrings": {
         "length": {
