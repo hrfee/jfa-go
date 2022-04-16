@@ -15,11 +15,12 @@
         "serverAddress": "服务地址",
         "emailSubject": "邮件主题",
         "URL": "链接",
-        "apiKey": "API Key",
+        "apiKey": "API 密钥",
         "errorInvalidUserPass": "无效的用户名/密码。",
         "errorNotAdmin": "此用户不允许管理服务。",
         "errorUserDisabled": "此永固可能已被禁用。",
-        "error404": "404，请检查内部URL。"
+        "error404": "404，请检查内部URL。",
+        "errorConnectionRefused": "连接被拒绝。"
     },
     "startPage": {
         "welcome": "欢迎！",
