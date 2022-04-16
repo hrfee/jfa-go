@@ -22,6 +22,8 @@
         "linkDiscord": "关联Discord",
         "linkMatrix": "关联Matrix",
         "contactDiscord": "通过Discord联系",
-        "theme": "主题"
+        "theme": "主题",
+        "refresh": "刷新",
+        "required": "必需的"
     }
 }
