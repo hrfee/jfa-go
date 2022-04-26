@@ -12,7 +12,7 @@
         "title": "注意：用户已创建",
         "aUserWasCreated": "使用代码{code}创建了一个用户。",
         "time": "时间",
-        "notificationNotice": "注意：通知邮件可以在管理仪表板上进行切换。"
+        "notificationNotice": "注意：管理仪表板里可以切换通知信息。"
     },
     "inviteExpiry": {
         "name": "邀请到期",
