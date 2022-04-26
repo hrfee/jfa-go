@@ -104,7 +104,14 @@
         "matrixHomeServer": "主服务器地址",
         "saveAsTemplate": "保存为模板",
         "deleteTemplate": "删除模板",
-        "templateEnterName": "输入名称以保存此模板。"
+        "templateEnterName": "输入名称以保存此模板。",
+        "sendPWRManual": "用户 {n} 没有联系方式，请按下钮复制能发给用户的链接。",
+        "sendPWRSuccess": "密码重置链接已发了。",
+        "sendPWR": "发送密码重置",
+        "sendPWRSuccessManual": "如果用户没收到，请按下钮复制链接，手动发给用户。",
+        "setExpiry": "设置到期",
+        "logs": "记录",
+        "sendPWRValidFor": "此链接有效30分钟。"
     },
     "notifications": {
         "changedEmailAddress": "更改了 {n} 的电子邮件地址。",
