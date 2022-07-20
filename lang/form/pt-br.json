@@ -6,7 +6,7 @@
         "pageTitle": "Criar Conta Jellyfin",
         "createAccountHeader": "Criar Conta",
         "accountDetails": "Detalhes",
-        "emailAddress": "Email",
+        "emailAddress": "E-mail",
         "username": "Nome do Usuário",
         "password": "Senha",
         "reEnterPassword": "Digite a Senha Novamente",
@@ -31,7 +31,10 @@
         "errorMatrixVerification": "Necessária verificação Matrix.",
         "errorUnknown": "Erro desconhecido.",
         "verified": "Conta verificada.",
-        "errorNoEmail": "Email necessário"
+        "errorNoEmail": "Email necessário.",
+        "errorCaptcha": "Captcha incorreto.",
+        "errorPassword": "Verifique os requisitos de senha.",
+        "errorNoMatch": "As senhas não coincidem."
     },
     "validationStrings": {
         "length": {
