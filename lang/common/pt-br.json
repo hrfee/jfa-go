@@ -6,7 +6,7 @@
         "username": "Nome do Usuário",
         "name": "Nome",
         "password": "Senha",
-        "emailAddress": "Endereço de Email",
+        "emailAddress": "Endereço de e-mail",
         "submit": "Enviar",
         "success": "Sucesso",
         "continue": "Continuar",
@@ -22,6 +22,8 @@
         "send": "Enviar",
         "linkDiscord": "Link do Discord",
         "linkMatrix": "Link do Matrix",
-        "contactDiscord": "Contato através do Discord"
+        "contactDiscord": "Contato através do Discord",
+        "refresh": "Atualizar",
+        "required": "Requeridos"
     }
 }
