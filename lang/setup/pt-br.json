@@ -15,7 +15,12 @@
         "serverAddress": "Endereço do Servidor",
         "emailSubject": "Assunto do Email",
         "URL": "URL",
-        "apiKey": "Chave API"
+        "apiKey": "Chave API",
+        "errorNotAdmin": "O usuário não tem permissão para gerenciar o servidor.",
+        "errorUserDisabled": "O usuário pode estar desabilitado.",
+        "error404": "404, verifique a URL interna.",
+        "errorInvalidUserPass": "Usuário ou Senha Inválidos.",
+        "errorConnectionRefused": "Conexão recusada."
     },
     "startPage": {
         "welcome": "Bem Vindo!",
@@ -38,7 +43,7 @@
     "general": {
         "title": "Geral",
         "listenAddress": "Endereço de Escuta",
-        "urlBase": "URL Base",
+        "urlBase": "local URL",
         "urlBaseNotice": "Necessário apenas se estiver usando um proxy reverso em um subdomínio (por exemplo, 'jellyf.in/accounts').",
         "lightTheme": "Claro",
         "darkTheme": "Escuro",
@@ -54,7 +59,9 @@
         "authorizeWithJellyfin": "Autorizar com Jellyfin/Emby: Os detalhes de login são compartilhados com Jellyfin, o que permite vários usuários.",
         "authorizeManual": "Nome de usuário e senha: Defina manualmente o nome de usuário e a senha.",
         "adminOnly": "Apenas usuários administradores (recomendado)",
-        "emailNotice": "Seu endereço de email pode ser usado para receber notificações."
+        "emailNotice": "Seu endereço de email pode ser usado para receber notificações.",
+        "allowAll": "Permitir que todos os usuários do Jellyfin façam login",
+        "allowAllDescription": "Não recomendado, você deve permitir que usuários individuais façam login após a configuração."
     },
     "jellyfinEmby": {
         "title": "Jellyfin/Emby",
