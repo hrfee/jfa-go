@@ -4,46 +4,46 @@
     },
     "strings": {
         "ifItWasNotYou": "如果这不是您，请忽略本邮件。",
-        "helloUser": "你好{username}，",
+        "helloUser": "你好 {username}，",
         "reason": "原因"
     },
     "userCreated": {
-        "name": "创建用户",
-        "title": "注意：用户已创建",
-        "aUserWasCreated": "使用代码{code}创建了一个用户。",
+        "name": "用户创建",
+        "title": "通知：用户已创建",
+        "aUserWasCreated": "使用邀请码 {code} 创建了一个用户。",
         "time": "时间",
-        "notificationNotice": "注意：通知邮件可以在管理仪表板上进行切换。"
+        "notificationNotice": "提示：您可以在管理面板上开关邮件通知。"
     },
     "inviteExpiry": {
         "name": "邀请到期",
-        "title": "注意：邀请已过期",
+        "title": "通知：邀请已过期",
         "inviteExpired": "邀请已过期。",
-        "expiredAt": "代码 {code} 已于 {time} 过期。",
-        "notificationNotice": "注意：通知邮件可以在管理仪表板上进行切换。"
+        "expiredAt": "邀请码 {code} 已于 {time} 过期。",
+        "notificationNotice": "提示：您可以在管理面板上开关邮件通知。"
     },
     "passwordReset": {
-        "name": "重设密码",
-        "title": "要求重设密码 - Jellyfin",
-        "someoneHasRequestedReset": "最近在Jellyfin上有一个重设密码的请求。",
-        "ifItWasYou": "如果这是您，请在提示中输入下面的PIN。",
-        "ifItWasYouLink": "如果这是您，请单击下面的链接。",
-        "codeExpiry": "该代码将在UTC时间{日期} {时间}到期，也就是{expires In Minutes}。",
-        "pin": "PIN"
+        "name": "密码重置",
+        "title": "忘记密码 - Jellyfin",
+        "someoneHasRequestedReset": "刚刚在 Jellyfin 上有一个密码重置请求。",
+        "ifItWasYou": "如果是您本人，请在密码重置提示框中输入下面的 PIN 码。",
+        "ifItWasYouLink": "如果是您本人，请单击下面的链接。",
+        "codeExpiry": "该 PIN 码将在 {expiresInMinutes} 内到期（UTC 时间 {date} {time}）。",
+        "pin": "PIN 码"
     },
     "userDeleted": {
-        "name": "删除用户",
-        "title": "您的账户已被删除 - Jellyfin",
-        "yourAccountWasDeleted": "您的 Jellyfin 帐户已被删除。"
+        "name": "用户删除",
+        "title": "您的账号已被删除 - Jellyfin",
+        "yourAccountWasDeleted": "您的 Jellyfin 账号已被删除。"
     },
     "userDisabled": {
         "name": "用户禁用",
-        "title": "您的帐户已被禁用 - Jellyfin",
-        "yourAccountWasDisabled": "您的帐户已被禁用。"
+        "title": "您的账号已被禁用 - Jellyfin",
+        "yourAccountWasDisabled": "您的账号已被禁用。"
     },
     "userEnabled": {
-        "name": "用户已启用",
-        "title": "您的帐户已重新启用 - Jellyfin",
-        "yourAccountWasEnabled": "您的帐户已重新启用。"
+        "name": "用户重新启用",
+        "title": "您的账号已被重新启用 - Jellyfin",
+        "yourAccountWasEnabled": "您的账号已被重新启用。"
     },
     "inviteEmail": {
         "name": "邀请邮件",
@@ -51,15 +51,15 @@
         "hello": "您好",
         "youHaveBeenInvited": "您已受邀注册 Jellyfin。",
         "toJoin": "若要加入，请点击以下链接。",
-        "inviteExpiry": "此邀请将于 {date} 的 {time} 到期，即 {expires In Minutes}，因此请迅速行动。",
-        "linkButton": "设置您的帐户"
+        "inviteExpiry": "此邀请将于 {date} {time} 到期，即 {expires In Minutes} 内，请尽快注册。",
+        "linkButton": "设置您的账号"
     },
     "welcomeEmail": {
         "name": "欢迎",
-        "title": "欢迎使用Jellyfin",
-        "welcome": "欢迎使用Jellyfin！",
+        "title": "欢迎使用 Jellyfin",
+        "welcome": "欢迎使用 Jellyfin！",
         "youCanLoginWith": "您可以使用以下信息登录",
-        "yourAccountWillExpire": "您的帐户将于 {date}到期。",
+        "yourAccountWillExpire": "您的账号将于 {date} 到期。",
         "jellyfinURL": "链接"
     },
     "emailConfirmation": {
@@ -70,8 +70,8 @@
     },
     "userExpired": {
         "name": "用户到期",
-        "title": "您的帐户已过期 - Jellyfin",
-        "yourAccountHasExpired": "您的帐户已过期。",
+        "title": "您的账号已过期 - Jellyfin",
+        "yourAccountHasExpired": "您的账号已过期。",
         "contactTheAdmin": "请联系管理员了解更多信息。"
     }
 }
