@@ -1,0 +1,29 @@
+{
+    "meta": {
+        "name": "Polski (PL)"
+    },
+    "strings": {
+        "username": "Nazwa Użytkownika",
+        "password": "Hasło",
+        "emailAddress": "E-mail",
+        "name": "Imię",
+        "submit": "Akceptuj",
+        "send": "Wyślij",
+        "success": "Sukces",
+        "continue": "Kontynuuj",
+        "error": "Błąd",
+        "copy": "Kopiuj",
+        "copied": "Skopiowano",
+        "time24h": "24 godziny",
+        "time12h": "12 godzin",
+        "linkTelegram": "Link Telegram",
+        "contactEmail": "Kontakt drogą mailową",
+        "contactTelegram": "Kontakt przez Telegram",
+        "linkDiscord": "Link do Discord",
+        "linkMatrix": "Link Matrix",
+        "contactDiscord": "Kontakt przez Discord",
+        "theme": "Motyw",
+        "refresh": "Odśwież",
+        "required": "Wymagane"
+    }
+}

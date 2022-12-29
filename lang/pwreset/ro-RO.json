@@ -1,0 +1,16 @@
+{
+    "meta": {
+        "name": "Română (ROU)"
+    },
+    "strings": {
+        "passwordReset": "Resetare parolă",
+        "reset": "Resetare",
+        "resetFailed": "Resetarea parolei a eșuat",
+        "tryAgain": "Te rugăm să încerci din nou.",
+        "youCanLogin": "Acum vă puteți autentifica cu codul de mai jos ca parolă.",
+        "youCanLoginOmbi": "Vă puteți conecta acum la Jellyfin & Ombi cu codul de mai jos ca parolă.",
+        "youCanLoginPassword": "Acum vă puteți autentifica cu noua parolă. Apăsați mai jos pentru a continua spre Jellyfin.",
+        "changeYourPassword": "Asigurați-vă că vă schimbați parola după ce vă conectați.",
+        "enterYourPassword": "Introduceți noua parolă mai jos."
+    }
+}

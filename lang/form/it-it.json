@@ -1,13 +1,13 @@
 {
     "meta": {
-        "name": "Italiano (IT)"
+        "name": "Inglese (US)"
     },
     "strings": {
         "pageTitle": "Crea Un Account Jellyfin",
         "createAccountHeader": "Crea Un Account",
         "accountDetails": "Dettagli",
         "emailAddress": "Email",
-        "username": "Nome utente",
+        "username": "Username",
         "password": "Password",
         "reEnterPassword": "Riscrivi La Password",
         "reEnterPasswordInvalid": "Le password non sono uguali.",
@@ -15,16 +15,21 @@
         "passwordRequirementsHeader": "Requisiti Password",
         "successHeader": "Successo!",
         "confirmationRequired": "Richiesta la conferma Email",
-        "confirmationRequiredMessage": "Controlla la tua casella email per verificare il tuo indirizzo."
+        "confirmationRequiredMessage": "Controlla la tua casella email per verificare il tuo indirizzo.",
+        "yourAccountIsValidUntil": "Il tuo account sarà valido fino al {date}.",
+        "sendPIN": "Scrivi il PIN qui sotto al bot, poi torna qui per connettere il tuo account.",
+        "sendPINDiscord": "Scrivi {command} in {server_channel} su Discord, poi invia il PIN qui sotto.",
+        "matrixEnterUser": "Inserisci il tuo ID utente, premi invia e ti verrò inviato un PIN. Inseriscilo qui per continuare."
     },
     "notifications": {
         "errorUserExists": "L'utente è già esistente.",
-        "errorInvalidCode": "Codice di invito non valido."
+        "errorInvalidCode": "Codice di invito non valido.",
+        "errorTelegramVerification": "Verifica Telegram richiesta."
     },
     "validationStrings": {
         "length": {
             "singular": "Deve avere almeno {n} caratteri",
-            "plural": "Deve aveere almeno {n} caratteri"
+            "plural": "Deve avere almeno {n} caratteri"
         },
         "uppercase": {
             "singular": "Deve avere almeno {n} carattere maiuscolo",

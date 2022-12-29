@@ -1,0 +1,60 @@
+{
+    "meta": {
+        "name": "Polski (PL)"
+    },
+    "strings": {
+        "pageTitle": "Ustawienia - jfa-go",
+        "createAccountHeader": "Utwórz Konto",
+        "accountDetails": "Szczegóły",
+        "emailAddress": "E-mail",
+        "username": "Nazwa Użytkownika",
+        "password": "Hasło",
+        "reEnterPassword": "Powtórz Haslo",
+        "reEnterPasswordInvalid": "Hasła się różnią.",
+        "createAccountButton": "Utwórz Konto",
+        "passwordRequirementsHeader": "Wymagane Hasło",
+        "successHeader": "Sukces!",
+        "confirmationRequired": "Potwierdź email",
+        "confirmationRequiredMessage": "Sprawdź swoją skrzynkę pocztową aby zweryfikować adres.",
+        "yourAccountIsValidUntil": "Twoje konto pozostanie aktywne do {date}.",
+        "sendPIN": "Wyślij poniższy kod PIN do bota, a następnie wróć tutaj, aby połączyć swoje konto.",
+        "sendPINDiscord": "Wpisz {command} w {server_channel} na Discordzie, a następnie wpisz kod PIN poniżej.",
+        "matrixEnterUser": "Wprowadź swój identyfikator użytkownika, naciśnij Prześlij, a kod PIN zostanie wysłany do Ciebie. Wpisz go tutaj, aby kontynuować."
+    },
+    "notifications": {
+        "errorUserExists": "Nazwa użytkownika zajęta.",
+        "errorInvalidCode": "Błędny kod zaproszenia.",
+        "errorTelegramVerification": "Wymagana weryfikacja Telegram.",
+        "errorDiscordVerification": "Wymagana weryfikacja Discord.",
+        "errorMatrixVerification": "Wymagana weryfikacja Matrix.",
+        "errorInvalidPIN": "Błędny kod PIN.",
+        "errorUnknown": "Nieznany błąd.",
+        "errorNoEmail": "Wymagany adres email.",
+        "errorCaptcha": "Błędnie rozwiązana captcha.",
+        "errorPassword": "Sprawdź wymagania dotyczące hasła.",
+        "errorNoMatch": "Hasła się różnią.",
+        "verified": "Konto zweryfikowane."
+    },
+    "validationStrings": {
+        "length": {
+            "singular": "Musisz użyć przynajmniej {n} znaków",
+            "plural": "Musisz użyć przynajmniej {n} znak"
+        },
+        "uppercase": {
+            "singular": "Musisz użyć co najmniej {n} wielkich liter",
+            "plural": "Musisz użyć co najmniej {n} wielkich liter"
+        },
+        "lowercase": {
+            "singular": "Musisz użyć co najmniej {n} małych liter",
+            "plural": "Musisz użyć co najmniej {n} małych liter"
+        },
+        "number": {
+            "singular": "Musisz użyć co najmniej {n} liczbę",
+            "plural": "Musisz użyć co najmniej {n} liczb"
+        },
+        "special": {
+            "singular": "Musisz użyć co najmniej {n} znak specjalny",
+            "plural": "Musisz użyć co najmniej {n} znaków specjalnych"
+        }
+    }
+}

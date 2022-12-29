@@ -19,7 +19,8 @@
         "errorInvalidUserPass": "Benutzername/Passwort ungültig.",
         "errorNotAdmin": "Dieser Benutzer darf den Server nicht verwalten.",
         "errorUserDisabled": "Konto ist eventuell deaktiviert.",
-        "error404": "404, prüfe die interne URL."
+        "error404": "404, prüfe die interne URL.",
+        "errorConnectionRefused": "Verbindung abgelehnt."
     },
     "startPage": {
         "welcome": "Willkommen!",

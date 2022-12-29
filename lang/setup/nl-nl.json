@@ -19,7 +19,8 @@
         "errorInvalidUserPass": "Ongeldige gebruikersnaam/wachtwoord.",
         "errorUserDisabled": "De gebruiker kan uitgeschakeld zijn.",
         "error404": "404, controleer de interne URL.",
-        "errorNotAdmin": "Gebruiker heeft geen beheersrechten."
+        "errorNotAdmin": "Gebruiker heeft geen beheersrechten.",
+        "errorConnectionRefused": "Verbinding geweigerd."
     },
     "startPage": {
         "welcome": "Welkom!",

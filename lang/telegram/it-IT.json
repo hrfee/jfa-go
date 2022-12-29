@@ -1,0 +1,16 @@
+{
+    "meta": {
+        "name": "Inglese (US)"
+    },
+    "strings": {
+        "startMessage": "",
+        "discordStartMessage": "",
+        "matrixStartMessage": "",
+        "invalidPIN": "",
+        "pinSuccess": "",
+        "languageMessage": "",
+        "languageMessageDiscord": "",
+        "languageSet": "",
+        "discordDMs": ""
+    }
+}

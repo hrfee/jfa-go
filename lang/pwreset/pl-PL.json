@@ -1,0 +1,16 @@
+{
+    "meta": {
+        "name": "Polski (PL)"
+    },
+    "strings": {
+        "passwordReset": "Zresetuj hasło",
+        "reset": "Zresetuj",
+        "resetFailed": "Hasło nie zostało zrestartowane",
+        "tryAgain": "Spróbuj ponownie.",
+        "youCanLogin": "Możesz się teraz zalogować używając kodu jako hasła.",
+        "youCanLoginOmbi": "Możesz się teraz zalogować do Jellyfin & Ombi używając poniższego kodu jako swojego hasła.",
+        "youCanLoginPassword": "Możesz się teraz zalogować przy użyciu swojego nowego hasła. Naciśnij poniżej aby przejść do Jellyfin.",
+        "changeYourPassword": "Upewnij się, że zmieniłeś swoje hasło po zalogowaniu.",
+        "enterYourPassword": "Podaj swoje hasło poniżej."
+    }
+}

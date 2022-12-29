@@ -1,0 +1,77 @@
+{
+    "meta": {
+        "name": "Română (ROU)"
+    },
+    "strings": {
+        "ifItWasNotYou": "Dacă nu ați fost dvs., vă rugăm să ignorați asta.",
+        "helloUser": "Salut {username},",
+        "reason": "Motiv"
+    },
+    "userCreated": {
+        "name": "Crearea utilizatorului",
+        "title": "Notă: Utilizator creat",
+        "aUserWasCreated": "Un utilizator a fost creat folosind codul {code}.",
+        "time": "Oră",
+        "notificationNotice": "Notă: Mesajele de notificare pot fi comutate în Tabloul de Bord."
+    },
+    "inviteExpiry": {
+        "name": "Expirare invitație",
+        "title": "Notă: Invitația a expirat",
+        "inviteExpired": "Invitația a expirat.",
+        "expiredAt": "Codul {code} a expirat la {time}.",
+        "notificationNotice": "Notă: Mesajele de notificare pot fi comutate în Tabloul de Bord."
+    },
+    "passwordReset": {
+        "name": "Resetare parolă",
+        "title": "Solicitată resetarea parolei - Jellyfin",
+        "someoneHasRequestedReset": "Cineva a cerut recent o resetare a parolei pe Jellyfin.",
+        "ifItWasYou": "Dacă acesta ați fost dvs., introduceți codul de mai jos în solicitare.",
+        "ifItWasYouLink": "Dacă acesta ați fost dvs., faceți clic pe linkul de mai jos.",
+        "codeExpiry": "Codul va expira pe {date}, la {time} UTC, adică în {expiresInMinutes}.",
+        "pin": "PIN"
+    },
+    "userDeleted": {
+        "name": "Ștergere utilizator",
+        "title": "Contul dvs. a fost șters - Jellyfin",
+        "yourAccountWasDeleted": "Contul dvs. Jellyfin a fost șters."
+    },
+    "userDisabled": {
+        "name": "Utilizator dezactivat",
+        "title": "Contul dvs. a fost dezactivat - Jellyfin",
+        "yourAccountWasDisabled": "Contul dvs. a fost dezactivat."
+    },
+    "userEnabled": {
+        "name": "Utilizator activat",
+        "title": "Contul dvs. a fost reactivat - Jellyfin",
+        "yourAccountWasEnabled": "Contul dvs. a fost reactivat."
+    },
+    "inviteEmail": {
+        "name": "E-mail de invitație",
+        "title": "Invitație - Jellyfin",
+        "hello": "Salut",
+        "youHaveBeenInvited": "Ai fost invitat la Jellyfin.",
+        "toJoin": "Pentru a vă alătura, urmați linkul de mai jos.",
+        "inviteExpiry": "Această invitație va expira pe {date} la {time}, care este în {expiresInMinutes}, așa că acționați rapid.",
+        "linkButton": "Configurați-vă contul"
+    },
+    "welcomeEmail": {
+        "name": "Bun venit",
+        "title": "Bun venit la Jellyfin",
+        "welcome": "Bun venit la Jellyfin!",
+        "youCanLoginWith": "Vă puteți autentifica cu detaliile de mai jos",
+        "yourAccountWillExpire": "Contul dvs. va expira pe {date}.",
+        "jellyfinURL": "URL"
+    },
+    "emailConfirmation": {
+        "name": "E-mail de confirmare",
+        "title": "Confirmați e-mailul dvs. - Jellyfin",
+        "clickBelow": "Faceți clic pe linkul de mai jos pentru a vă confirma adresa de e-mail și pentru a începe să utilizați Jellyfin.",
+        "confirmEmail": "Confirmați adresa de e-mail"
+    },
+    "userExpired": {
+        "name": "Expirarea utilizatorului",
+        "title": "Contul dvs. a expirat - Jellyfin",
+        "yourAccountHasExpired": "Contul dvs. a expirat.",
+        "contactTheAdmin": "Contactați administratorul pentru mai multe informații."
+    }
+}

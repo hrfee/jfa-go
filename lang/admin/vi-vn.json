@@ -1,6 +1,6 @@
 {
     "meta": {
-        "name": "Vietnamese (VN)"
+        "name": "Tiếng Anh (Mỹ)"
     },
     "strings": {
         "invites": "Lời mời",
@@ -110,7 +110,9 @@
         "matrixHomeServer": "Địa chỉ máy chủ",
         "saveAsTemplate": "Lưu thành mẫu",
         "deleteTemplate": "Xóa mẫu",
-        "templateEnterName": "Nhập tên mẫu để lưu mẫu này."
+        "templateEnterName": "Nhập tên mẫu để lưu mẫu này.",
+        "logs": "Nhật ký",
+        "accessJFA": "Truy cập jfa-go"
     },
     "notifications": {
         "changedEmailAddress": "Đã đổi địa chỉ email của {n}.",

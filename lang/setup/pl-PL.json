@@ -1,0 +1,150 @@
+{
+    "meta": {
+        "name": "Polski (PL)"
+    },
+    "strings": {
+        "pageTitle": "Ustawienia - jfa-go",
+        "next": "Dalej",
+        "back": "Cofnij",
+        "optional": "Opcjonalne",
+        "serverType": "Typ Serwera",
+        "disabled": "Wyłączone",
+        "enabled": "Włączone",
+        "port": "Port",
+        "message": "Wiadomość",
+        "serverAddress": "Adres Serwera",
+        "emailSubject": "Tytuł wiadomości email",
+        "URL": "URL",
+        "apiKey": "API Key",
+        "errorInvalidUserPass": "Niepoprawna nazwa użytkownika/hasło.",
+        "errorNotAdmin": "Użytkownik nie jest upoważniony do zarządzania serwerem.",
+        "errorUserDisabled": "Użytkownik może być wyłączony.",
+        "error404": "404, nie znaleziono URL.",
+        "errorConnectionRefused": "Brak dostępu."
+    },
+    "startPage": {
+        "welcome": "Witaj!",
+        "pressStart": "Musisz wykonać kilka czynności aby skonfigurować jfa-go. Wciśnij start aby kontynuować.",
+        "httpsNotice": "Upewnij się , że masz dostęp do strony przy użyciu HTTPS lub sieci LAN.",
+        "start": "Start"
+    },
+    "endPage": {
+        "finished": "Ukończono!",
+        "restartMessage": "Możesz skonfigurować boty Discord/Telegram/Matrix, dostosować wiadomości i nie tylko w Ustawieniach. Kliknij poniżej, aby ponownie uruchomić, a następnie odśwież stronę.",
+        "refreshPage": "Odśwież"
+    },
+    "language": {
+        "title": "Język",
+        "description": "Tłumaczenia społeczności są dostępne dla większości jfa-go. Poniżej możesz wybrać języki domyślne, ale użytkownicy mogą je zmienić, jeśli chcą. Jeśli chcesz pomóc w tłumaczeniu, zarejestruj się do {n}, aby zacząć współtworzyć!",
+        "defaultAdminLang": "Domyślny język administratora",
+        "defaultFormLang": "Domyślny język tworzenia konta",
+        "defaultEmailLang": "Domyślny język email"
+    },
+    "general": {
+        "title": "Ogólne",
+        "listenAddress": "",
+        "urlBase": "",
+        "urlBaseNotice": "Wymagane tylko jeśli używasz reverse proxy na subdomenie np. jellyf.in/accounts.",
+        "lightTheme": "Jasny",
+        "darkTheme": "Ciemny",
+        "useHTTPS": "Użyj HTTPS",
+        "httpsPort": "Port HTTPS",
+        "useHTTPSNotice": "Zalecane tylko jeśli nie używasz reverse proxy.",
+        "pathToCertificate": "Ścieżka do certyfikatu",
+        "pathToKeyFile": "Ścieżka do .key"
+    },
+    "updates": {
+        "title": "Aktualizacje",
+        "description": "",
+        "updateChannel": "",
+        "stable": "Stabilny",
+        "unstable": "Niestabilne"
+    },
+    "login": {
+        "title": "Zaloguj",
+        "description": "",
+        "authorizeWithJellyfin": "",
+        "authorizeManual": "",
+        "adminOnly": "Tylko administratorzy (zalecane)",
+        "allowAll": "Zezwój wszystkim użytkownikom na logowanie do Jellyfin",
+        "allowAllDescription": "",
+        "emailNotice": ""
+    },
+    "jellyfinEmby": {
+        "title": "",
+        "description": "",
+        "embyNotice": "",
+        "internal": "",
+        "external": "",
+        "replaceJellyfin": "Nazwa serwera",
+        "replaceJellyfinNotice": "",
+        "addressExternalNotice": "",
+        "testConnection": ""
+    },
+    "ombi": {
+        "title": "",
+        "description": "",
+        "apiKeyNotice": ""
+    },
+    "messages": {
+        "title": "",
+        "description": ""
+    },
+    "email": {
+        "title": "E-mail",
+        "description": "",
+        "method": "",
+        "useEmailAsUsername": "",
+        "useEmailAsUsernameNotice": "",
+        "fromAddress": "",
+        "senderName": "",
+        "dateFormat": "",
+        "dateFormatNotice": "",
+        "encryption": "",
+        "mailgunApiURL": ""
+    },
+    "notifications": {
+        "title": "",
+        "description": ""
+    },
+    "welcomeEmails": {
+        "title": "",
+        "description": ""
+    },
+    "inviteEmails": {
+        "title": "",
+        "description": ""
+    },
+    "passwordResets": {
+        "title": "",
+        "description": "",
+        "pathToJellyfin": "",
+        "pathToJellyfinNotice": "",
+        "resetLinks": "",
+        "resetLinksNotice": "",
+        "resetLinksLanguage": "",
+        "setPassword": "",
+        "setPasswordNotice": ""
+    },
+    "passwordValidation": {
+        "title": "",
+        "description": "",
+        "length": "",
+        "uppercase": "",
+        "lowercase": "",
+        "numbers": "",
+        "special": ""
+    },
+    "helpMessages": {
+        "title": "",
+        "description": "",
+        "contactMessage": "",
+        "contactMessageNotice": "",
+        "helpMessage": "",
+        "helpMessageNotice": "",
+        "successMessage": "",
+        "successMessageNotice": "",
+        "emailMessage": "",
+        "emailMessageNotice": ""
+    }
+}

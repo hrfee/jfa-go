@@ -1,0 +1,60 @@
+{
+    "meta": {
+        "name": "Tiếng Anh (Mỹ)"
+    },
+    "strings": {
+        "pageTitle": "Tạo tài khoản Jellyfin",
+        "createAccountHeader": "Tạo tài khoản",
+        "accountDetails": "Chi tiết",
+        "emailAddress": "Email",
+        "username": "Tên đăng nhập",
+        "password": "Mật khẩu",
+        "reEnterPassword": "Nhập lại mật khẩu",
+        "reEnterPasswordInvalid": "Mật khẩu không giống nhau.",
+        "createAccountButton": "Tạo tài khoản",
+        "passwordRequirementsHeader": "Yêu cầu mật khẩu",
+        "successHeader": "Thành công!",
+        "confirmationRequired": "Cần xác nhận email",
+        "confirmationRequiredMessage": "Hãy kiểm tra email của bạn để xác minh địa chỉ email.",
+        "yourAccountIsValidUntil": "",
+        "sendPIN": "",
+        "sendPINDiscord": "",
+        "matrixEnterUser": ""
+    },
+    "notifications": {
+        "errorUserExists": "",
+        "errorInvalidCode": "",
+        "errorTelegramVerification": "",
+        "errorDiscordVerification": "",
+        "errorMatrixVerification": "",
+        "errorInvalidPIN": "",
+        "errorUnknown": "",
+        "errorNoEmail": "",
+        "errorCaptcha": "",
+        "errorPassword": "",
+        "errorNoMatch": "",
+        "verified": ""
+    },
+    "validationStrings": {
+        "length": {
+            "singular": "",
+            "plural": ""
+        },
+        "uppercase": {
+            "singular": "",
+            "plural": ""
+        },
+        "lowercase": {
+            "singular": "",
+            "plural": ""
+        },
+        "number": {
+            "singular": "",
+            "plural": ""
+        },
+        "special": {
+            "singular": "",
+            "plural": ""
+        }
+    }
+}

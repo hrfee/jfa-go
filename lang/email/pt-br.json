@@ -11,14 +11,14 @@
         "title": "Aviso: Usuário criado",
         "aUserWasCreated": "Um usuário foi criado usando o código {code}.",
         "time": "Tempo",
-        "notificationNotice": "Nota: Os emails de notificação podem ser alternados no painel do administrador.",
+        "notificationNotice": "Nota: As mensagens de notificação podem ser alternadas no painel do administrador.",
         "name": "Criação de usuário"
     },
     "inviteExpiry": {
         "title": "Aviso: Convite expirado",
         "inviteExpired": "Convite expirado.",
         "expiredAt": "O código {code} expirou em {time}.",
-        "notificationNotice": "Nota: Os emails de notificação podem ser alternados no painel do administrador.",
+        "notificationNotice": "Nota: As mensagens de notificação podem ser alternadas no painel do administrador.",
         "name": "Convite Expirado"
     },
     "passwordReset": {

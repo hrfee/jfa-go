@@ -111,7 +111,10 @@
         "sendPWRSuccessManual": "Si el usuario no lo ha recibido, presione copiar para generar el enlace y enviárselo manualmente.",
         "sendPWRValidFor": "El enlace es válido por 30m.",
         "sendPWRManual": "El usuario {n} no tiene ningún método de contacto, presione copiar para generar el enlace para enviarle.",
-        "ombiProfile": "Perfil de usuario de Ombi"
+        "ombiProfile": "Perfil de usuario de Ombi",
+        "logs": "Registros",
+        "accessJFA": "Acceso",
+        "accessJFASettings": "No se puede cambia, ya que se ha establecido \"Solo administradores\" o \"Permitir a todos\" en Configuración > General."
     },
     "notifications": {
         "changedEmailAddress": "Se cambió la dirección de correo electrónico de {n}.",
@@ -208,6 +211,10 @@
         "extendedExpiry": {
             "singular": "Caducidad extendida para {n} usuario.",
             "plural": "Caducidad extendida para {n} usuarios."
+        },
+        "setExpiry": {
+            "singular": "Fijar la caducidad del usuario {n}",
+            "plural": "Establecer la caducidad para {n} usuarios"
         }
     }
 }

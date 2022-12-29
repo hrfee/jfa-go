@@ -1,0 +1,77 @@
+{
+    "meta": {
+        "name": "Polski (PL)"
+    },
+    "strings": {
+        "ifItWasNotYou": "Jeśli to nie ty, zignoruj tą wiadomość.",
+        "helloUser": "Hi {username},",
+        "reason": "Przyczyna"
+    },
+    "userCreated": {
+        "name": "Tworzenie użytkownika",
+        "title": "Uwaga: Użytkownik utworzony",
+        "aUserWasCreated": "Użytkownik został utworzony przy użyciu kodu {code}.",
+        "time": "Czas",
+        "notificationNotice": "Uwaga: Powiadomienia mogą być włączone z panelu administratora."
+    },
+    "inviteExpiry": {
+        "name": "Zaproszenie wygaśnie",
+        "title": "Uwaga: Zaproszenie wygasło",
+        "inviteExpired": "Zaproszenie wygasło.",
+        "expiredAt": "Kod {code} wygaśnie za {time}.",
+        "notificationNotice": "Uwaga: Powiadomienia mogą zostać włączone w panelu administratora."
+    },
+    "passwordReset": {
+        "name": "Resetowanie hasła",
+        "title": "Prośba o reset hasła -Jellyfin",
+        "someoneHasRequestedReset": "Ktoś niedawno poprosił o zresetowanie hasła w Jellyfin.",
+        "ifItWasYou": "Jeśli to byłeś ty, wprowadź PIN poniżej.",
+        "ifItWasYouLink": "Jeśli to byłeś ty, kliknij link poniżej.",
+        "codeExpiry": "Ten kod wygaśnie {date}, o {time} UTC, dokładnie za {expiresInMinutes}.",
+        "pin": "PIN"
+    },
+    "userDeleted": {
+        "name": "Usuwanie użytownika",
+        "title": "Twoje konto zostało usunięte - Jellyfin",
+        "yourAccountWasDeleted": "Twoje konto Jellyfin zostało usunięte."
+    },
+    "userDisabled": {
+        "name": "Użytkownik wyłączony",
+        "title": "Twoje konto zostało wyłączone - Jellyfin",
+        "yourAccountWasDisabled": "Twoje konto zostało wyłączone."
+    },
+    "userEnabled": {
+        "name": "Użytkownik włączony",
+        "title": "Twoje konto zostało ponownie włączony - Jellyfin",
+        "yourAccountWasEnabled": "Twoje konto zostało włączone ponownie."
+    },
+    "inviteEmail": {
+        "name": "Email z zaproszeniem",
+        "title": "Zaproszenie - Jellyfin",
+        "hello": "Cześć",
+        "youHaveBeenInvited": "Zostałeś zaproszony na Jellyfin.",
+        "toJoin": "Aby dołączyć, przejdź używając linku poniżej.",
+        "inviteExpiry": "To zaproszenie wygaśnie {date} o {time}, czyli za {expiresInMinutes}, więc się pośpiesz.",
+        "linkButton": "Skonfiguruj swoje konto"
+    },
+    "welcomeEmail": {
+        "name": "Witaj",
+        "title": "Witaj w Jellyfin",
+        "welcome": "Witaj w Jellyfin!",
+        "youCanLoginWith": "Możesz się teraz zalogować używając poniższych danych",
+        "yourAccountWillExpire": "Twoje konto wygaśnie {date}.",
+        "jellyfinURL": "URL"
+    },
+    "emailConfirmation": {
+        "name": "Potwierdź adres email",
+        "title": "Potwierdź adres email - Jellyfin",
+        "clickBelow": "Naciśnij link poniżej aby potwierdzić adres email.",
+        "confirmEmail": "Potwierdź adres email"
+    },
+    "userExpired": {
+        "name": "Użytkownik wygasł",
+        "title": "Twoje konto wygasło - Jellyfin",
+        "yourAccountHasExpired": "Twoje konto wygasło.",
+        "contactTheAdmin": "Skontaktuj się z administratorem aby uzyskać więcej szczegółów."
+    }
+}

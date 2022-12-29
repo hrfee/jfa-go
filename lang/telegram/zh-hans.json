@@ -7,6 +7,10 @@
         "matrixStartMessage": "您好\n请在Jellyfin的注册页面中输入下面的PIN码来验证您的账户。",
         "invalidPIN": "这个PIN码无效，请重试。",
         "pinSuccess": "成功！您现在可以返回注册页面。",
-        "languageMessage": "提示：使用 {command} 查看可用语言，并使用 {command} <language code> 来设置语言。"
+        "languageMessage": "提示：使用 {command} 查看可用语言，并使用 {command} <language code> 来设置语言。",
+        "discordStartMessage": "您好！\n请输入 `/pin <PIN码>`以验证您的账户。",
+        "languageMessageDiscord": "提示：使用 `/lang <语言>` 设置语言。",
+        "languageSet": "语言改成 {language}。",
+        "discordDMs": "请检查您的DM找回答。"
     }
 }

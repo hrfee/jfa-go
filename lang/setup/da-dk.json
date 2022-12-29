@@ -19,7 +19,8 @@
         "errorNotAdmin": "Brugeren har ikke tilladelse til at administrere server.",
         "errorInvalidUserPass": "Ugyldigt brugernavn/adgangskode.",
         "errorUserDisabled": "Bruger kan være deaktiveret.",
-        "error404": "404, tjek den interne URL."
+        "error404": "404, tjek den interne URL.",
+        "errorConnectionRefused": "Tilslutning afvist."
     },
     "startPage": {
         "welcome": "Velkommen!",
@@ -65,7 +66,9 @@
         "authorizeWithJellyfin": "Autoriser med Jellyfin/Emby: Loginoplysninger deles med Jellyfin, hvilket giver mulighed for flere brugere.",
         "authorizeManual": "Brugernavn og adgangskode: indtast brugernavn og adgangskode manuelt.",
         "adminOnly": "Kun administratorbrugere (anbefalet)",
-        "emailNotice": "Din e-mail adresse kan bruges til at modtage underretninger."
+        "emailNotice": "Din e-mail adresse kan bruges til at modtage underretninger.",
+        "allowAll": "Tillad alle Jellyfin brugere at logge ind",
+        "allowAllDescription": "Det anbefales ikke, du bør tillade individuelle brugere at logge ind, når de er konfigureret."
     },
     "jellyfinEmby": {
         "title": "Jellyfin/Emby",

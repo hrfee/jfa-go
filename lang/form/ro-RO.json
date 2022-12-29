@@ -1,0 +1,60 @@
+{
+    "meta": {
+        "name": "Română (ROU)"
+    },
+    "strings": {
+        "pageTitle": "Crează un Cont Jellyfin",
+        "createAccountHeader": "Înregistrare",
+        "accountDetails": "Detalii",
+        "emailAddress": "Email",
+        "username": "Utilizator",
+        "password": "Parolă",
+        "reEnterPassword": "Reintroduce Parola",
+        "reEnterPasswordInvalid": "Parolele nu sunt la fel.",
+        "createAccountButton": "Înregistrare",
+        "passwordRequirementsHeader": "Cerințe Parolă",
+        "successHeader": "Succes!",
+        "confirmationRequired": "Necesară confirmarea emailului",
+        "confirmationRequiredMessage": "Vă rugăm să vă verificați căsuța de e-mail pentru a vă verifica adresa.",
+        "yourAccountIsValidUntil": "Contul dvs. va fi valabil până la {date}.",
+        "sendPIN": "Trimiteți codul PIN de mai jos botului, apoi reveniți aici pentru a vă conecta contul.",
+        "sendPINDiscord": "Scrie {command} în {server_channel} pe Discord, apoi trimite codul PIN de mai jos.",
+        "matrixEnterUser": "Introduceți ID-ul dvs. de utilizator, apăsați pe trimitere și vi se va trimite un PIN. Introduceți-l aici pentru a continua."
+    },
+    "notifications": {
+        "errorUserExists": "Utilizatorul deja există.",
+        "errorInvalidCode": "Cod de invitație nevalid.",
+        "errorTelegramVerification": "Este necesară verificarea pe Telegram.",
+        "errorDiscordVerification": "Este necesară verificarea pe Discord.",
+        "errorMatrixVerification": "Este necesară verificarea pe Matrix.",
+        "errorInvalidPIN": "PIN-ul este invalid.",
+        "errorUnknown": "Eroare necunoscută.",
+        "errorNoEmail": "E-mail necesar.",
+        "errorCaptcha": "Captcha incorect.",
+        "errorPassword": "Verificați cerințele privind parola.",
+        "errorNoMatch": "Parolele nu se potrivesc.",
+        "verified": "Cont verificat."
+    },
+    "validationStrings": {
+        "length": {
+            "singular": "Trebuie să aibă cel puțin {n} caracter",
+            "plural": "Trebuie să aibă cel puțin {n} caractere"
+        },
+        "uppercase": {
+            "singular": "Trebuie să aibă cel puțin {n} literă mare",
+            "plural": "Trebuie să aibă cel puțin {n} litere mari"
+        },
+        "lowercase": {
+            "singular": "Trebuie să aibă cel puțin {n} literă mică",
+            "plural": "Trebuie să aibă cel puțin {n} litere mici"
+        },
+        "number": {
+            "singular": "Trebuie să aibă cel puțin {n} număr",
+            "plural": "Trebuie să aibă cel puțin {n} numere"
+        },
+        "special": {
+            "singular": "Trebuie să aibă cel puțin {n} caracter special",
+            "plural": "Trebuie să aibă cel puțin {n} caractere speciale"
+        }
+    }
+}

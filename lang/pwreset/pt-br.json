@@ -8,6 +8,9 @@
         "tryAgain": "Tente novamente.",
         "youCanLogin": "Agora você pode fazer login com o código abaixo como senha.",
         "youCanLoginOmbi": "Agora você pode fazer login no Jellyfin & Ombi com o código abaixo como senha.",
-        "changeYourPassword": "Certifique-se de alterar sua senha depois de fazer o login."
+        "changeYourPassword": "Certifique-se de alterar sua senha depois de fazer o login.",
+        "reset": "Redefinir",
+        "enterYourPassword": "Digite sua nova senha abaixo.",
+        "youCanLoginPassword": "Agora você pode fazer login com sua nova senha. Pressione abaixo para continuar até Jellyfin."
     }
 }

@@ -3,7 +3,7 @@
         "name": "Deutsch (DE)"
     },
     "strings": {
-        "pageTitle": "Jellyfin-Konto erstellen",
+        "pageTitle": "Jellyfin Konto erstellen",
         "createAccountHeader": "Konto erstellen",
         "accountDetails": "Kontodaten",
         "emailAddress": "E-Mail",
@@ -14,7 +14,7 @@
         "createAccountButton": "Konto erstellen",
         "passwordRequirementsHeader": "Passwortanforderungen",
         "successHeader": "Erfolgreich!",
-        "confirmationRequired": "E-Mail-Bestätigung erforderlich",
+        "confirmationRequired": "E-Mail Bestätigung erforderlich",
         "confirmationRequiredMessage": "Bitte überprüfe deinen Posteingang und bestätige deine E-Mail-Adresse.",
         "yourAccountIsValidUntil": "Dein Konto wird bis zum {date} gültig sein.",
         "sendPIN": "Sende die untenstehende PIN an den Bot und komm dann hierher zurück, um dein Konto zu verbinden.",

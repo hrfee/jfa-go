@@ -1,0 +1,16 @@
+{
+    "meta": {
+        "name": "Română (ROU)"
+    },
+    "strings": {
+        "startMessage": "Salut!\nIntroduceți aici codul PIN Jellyfin pentru a vă verifica contul.",
+        "discordStartMessage": "Salut!\nIntroduceți codul PIN cu '/pin <PIN>' pentru a vă verifica contul.",
+        "matrixStartMessage": "Salut!\nIntroduceți codul PIN de mai jos în pagina de înscriere Jellyfin pentru a vă verifica contul.",
+        "invalidPIN": "Codul PIN nu era valid, încercați din nou.",
+        "pinSuccess": "Succes! Acum puteți reveni la pagina de înscriere.",
+        "languageMessage": "Notă: vedeți limbile disponibile cu {command} și setați limba cu {command} <cod limbă>.",
+        "languageMessageDiscord": "Notă: setați limba cu /lang <numele limbii>.",
+        "languageSet": "Limba setată la {language}.",
+        "discordDMs": "Vă rugăm să verificați DM-urile pentru un răspuns."
+    }
+}

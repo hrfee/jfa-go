@@ -1,0 +1,16 @@
+{
+    "meta": {
+        "name": "Polski (PL)"
+    },
+    "strings": {
+        "startMessage": "Hej!\nWprowadź swój kod PIN tutaj aby zweryfikować konto.",
+        "discordStartMessage": "Cześć!\n Wprowadź kod PIN za pomocą `/pin <PIN>`, aby zweryfikować swoje konto.",
+        "matrixStartMessage": "Cześć\nWprowadź poniższy kod PIN na stronie rejestracji Jellyfin, aby zweryfikować swoje konto.",
+        "invalidPIN": "Kod PIN błędny, spróbuj ponownie.",
+        "pinSuccess": "Udało się! Moeższ teraz wrócić do rejestracji.",
+        "languageMessage": "Uwaga: Zobacz dostępne języki za pomocą {command} i ustaw język za pomocą {command} <language code>.",
+        "languageMessageDiscord": "Uwaga: Ustaw swój język używając /lang <language name>.",
+        "languageSet": "Język ustawiony jako {language}.",
+        "discordDMs": "Sprawdź swoje wiadomości, aby uzyskać odpowiedź."
+    }
+}

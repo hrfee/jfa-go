@@ -15,10 +15,10 @@
         "passwordRequirementsHeader": "Adgangskodekrav",
         "successHeader": "Succes!",
         "confirmationRequired": "E-mail bekræftelse er påkrævet",
-        "confirmationRequiredMessage": "Tjek venligst din e-mail indbakke for at verificere din adresse.",
+        "confirmationRequiredMessage": "Tjek venligst din e-mail indbakke for at bekræfte din adresse.",
         "yourAccountIsValidUntil": "Din konto er gyldig indtil {date}.",
         "sendPIN": "Send nedenstående pinkode til botten, og kom derefter tilbage her for at sammenkoble din konto.",
-        "sendPINDiscord": "Skriv {command} i {server_channel} på Discord, og send PIN-koden nedenfor via. DM til botten.",
+        "sendPINDiscord": "Skriv {command} i {server_channel} på Discord, og send PIN-koden nedenfor.",
         "matrixEnterUser": "Skriv dit Bruger ID, tryk Indsend, og en PIN-kode vil blive sendt til dig. Skriv den her efter, for at fortsætte."
     },
     "notifications": {
@@ -29,8 +29,11 @@
         "errorMatrixVerification": "Matrix verifikation påkrævet.",
         "errorInvalidPIN": "PIN-koden er ugyldig.",
         "errorUnknown": "Ukendt fejl.",
-        "verified": "Konto verificeret.",
-        "errorNoEmail": "E-mail er påkrævet."
+        "verified": "Konto bekræftet.",
+        "errorNoEmail": "E-mail er påkrævet.",
+        "errorCaptcha": "Forkert Captcha.",
+        "errorPassword": "Tjek krav til adgangskode.",
+        "errorNoMatch": "Adgangskoder stemmer ikke overens."
     },
     "validationStrings": {
         "length": {

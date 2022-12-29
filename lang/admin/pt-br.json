@@ -44,7 +44,7 @@
         "settingsRequiredOrRestartMessage": "Nota: {n} indica campo obrigatório, {n} indica que as alterações requer um reinício.",
         "settingsSave": "Salve",
         "ombiUserDefaults": "Padrões do usuário Ombi",
-        "ombiUserDefaultsDescription": "Crie um usuário Ombi, configure-o e selecione-o abaixo. Suas configurações/permissões serão armazenadas e aplicadas aos novos usuários Ombi criados pelo jfa-go",
+        "ombiUserDefaultsDescription": "Crie um usuário Ombi e configure-o, depois selecione-o abaixo. Suas configurações/permissões serão armazenadas e aplicadas a novos usuários Ombi criados pelo jfa-go quando este perfil for selecionado.",
         "userProfiles": "Perfil de usuário",
         "userProfilesDescription": "Os perfis são aplicados aos usuários quando eles criam uma conta. Um perfil inclui direitos de acesso à biblioteca e layout da tela inicial.",
         "userProfilesIsDefault": "Padrão",
@@ -72,7 +72,7 @@
         "customizeMessagesDescription": "Se não quiser usar os modelos de email do jfa-go, você pode criar o seu próprio usando o Markdown.",
         "variables": "Variáveis",
         "preview": "Pre-visualizar",
-        "reset": "Reiniciar",
+        "reset": "Redefinir",
         "edit": "Editar",
         "customizeMessages": "Customizar Emails",
         "disabled": "Desativado",
@@ -94,7 +94,7 @@
         "conditionals": "Condicionais",
         "donate": "Doar",
         "contactThrough": "Contato através:",
-        "sendPIN": "Peça ao usuário para enviar o PIN abaixo para o bot.",
+        "sendPIN": "Peça que o usuário envie o PIN abaixo para o bot.",
         "searchDiscordUser": "Digite o nome de usuário do Discord.",
         "findDiscordUser": "Encontrar usuário Discord",
         "add": "Adicionar",
@@ -104,7 +104,17 @@
         "matrixHomeServer": "Endereço do servidor local",
         "saveAsTemplate": "Salvar o modelo",
         "deleteTemplate": "Deletar modelo",
-        "templateEnterName": "Digite um nome para salvar este modelo."
+        "templateEnterName": "Digite um nome para salvar este modelo.",
+        "ombiProfile": "Ombi perfil de usuário",
+        "setExpiry": "Definir vencimento",
+        "logs": "Histórico",
+        "sendPWRManual": "O usuário {a} não tem método de contato, pressione copiar para obter um link para enviar a ele.",
+        "accessJFA": "Acessar o jfa-go",
+        "sendPWR": "Enviar redefinição de senha",
+        "sendPWRSuccess": "Link de redefinição de senha enviado.",
+        "sendPWRSuccessManual": "Se o usuário não o recebeu, pressione copiar para obter um link para enviar manualmente a ele.",
+        "sendPWRValidFor": "O link é válido por 30m.",
+        "accessJFASettings": "Não pode ser alterado porque \"Só Administrador\" ou \"Permitir todos\" foi definido em Configurações> Geral."
     },
     "notifications": {
         "changedEmailAddress": "Endereço de e-mail alterado de {n}.",
@@ -145,7 +155,9 @@
         "telegramVerified": "Conta do Telegram verificada.",
         "updateAppliedRefresh": "Atualização instalada, atualize.",
         "accountConnected": "Conta conectada.",
-        "savedAnnouncement": "Anúncio salvo."
+        "savedAnnouncement": "Anúncio salvo.",
+        "setOmbiProfile": "Perfil ombi armazenado.",
+        "errorSetOmbiProfile": "Falha ao armazenar o perfil ombi."
     },
     "quantityStrings": {
         "modifySettingsFor": {
@@ -199,6 +211,10 @@
         "enabledUser": {
             "singular": "{n} Usuário habilitado.",
             "plural": "{n} Usuários habilitado."
+        },
+        "setExpiry": {
+            "singular": "Definir expiração para {a} usuário",
+            "plural": "Definir expiração para {a} usuários"
         }
     }
 }
