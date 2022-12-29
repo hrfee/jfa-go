@@ -27,17 +27,26 @@
     background-color: #101010;
 }
 
+html:not(.dark) body {
+    background-color: #fff;
+}
+
 .dark select, .dark option, .dark input {
     background: #202020;
 }
 
-html:not(.dark) .card.\@low:not(.\~neutral):not(.\~positive):not(.\~urge):not(.\~warning):not(.\~info):not(.\~critical) {
-    --color-fill: va(--color-fill);
-    --color-content: var(--color-content);
-    --color-accent: var(--color-accent);
-    --color-muted: var(--color-muted);
+html:not(.dark) .card.\@low:not(.\~neutral):not(.\~positive):not(.\~urge):not(.\~warning):not(.\~info):not(.\~critical),
+html:not(.dark) .card.\@low:not(.\~neutral):not(.\~positive):not(.\~urge):not(.\~warning):not(.\~info):not(.\~critical) > * {
+    /* Colors from ~neutral */
+    --color-fill-high: #64748b;
+    --color-fill-low: #e2e8f0;
+    --color-content-high: #f8fafc;
+    --color-content-low: #1e293b;
+    --color-accent-high: #475569;
+    --color-accent-low: #cbd5e1;
+    --color-muted-high: #475569;
+    --color-muted-low: #f1f5f9;
     background-color: #fff;
-    color: inherit;
 }
 
 .light-only {

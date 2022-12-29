@@ -28,6 +28,7 @@
     "jsdom": "^19.0.0",
     "lodash": "^4.17.21",
     "mjml": "^4.12.0",
+    "nightwind": "github:yonson2/nightwind",
     "perl-regex": "^1.0.4",
     "postcss": "^8.4.5",
     "remixicon": "^2.5.0",
