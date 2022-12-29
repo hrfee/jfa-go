@@ -2,8 +2,9 @@ let colors = require("tailwindcss/colors")
 let dark = require("../css/dark");
 
 module.exports = {
-  content: ["./index.html", "./out/main.js"],
+  content: ["./safelist.html", "./index.html", "./out/main.js"],
   darkMode: 'class',
+  important: true,
   theme: {
       extend: {
           keyframes: {
@@ -44,5 +45,6 @@ module.exports = {
           }
       }
   },
+  safelist: ["block", "animate-fade-in", "animate-fade-out"],
   plugins: [require("a17t")],
 }

@@ -8,9 +8,7 @@ all:
 	../scripts/dark-variant.sh tempts
 	npx esbuild --bundle tempts/main.ts --outfile=out/main.js --minify
 	npx esbuild --bundle base.css --outfile=out/bundle.css --external:remixicon.css --external:modal.css --minify
-	npx tailwindcss -i out/bundle.css -o out/bundle.css
-	cd out && npx uncss index.html --stylesheets bundle.css > _bundle.css; cd ..
-	mv out/_bundle.css out/bundle.css
+	npx tailwindcss -c tailwind.config.js -i out/bundle.css -o out/bundle.css
 	cd out && npx uncss index.html --stylesheets remixicon.css > _remixicon.css; cd ..
 	mv out/_remixicon.css out/remixicon.css
 	cp ../static/* out/
@@ -26,7 +24,7 @@ debug:
 	../scripts/dark-variant.sh tempts
 	npx esbuild --bundle base.css --outfile=out/bundle.css --external:remixicon.css --minify
 	npx esbuild --bundle ts/main.ts --sourcemap --outfile=out/main.js --minify
-	npx tailwindcss -i out/bundle.css -o out/bundle.css
+	npx tailwindcss -c tailwind.config.js -i out/bundle.css -o out/bundle.css
 	cp ../static/* out/
 
 monitor:
