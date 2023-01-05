@@ -1,29 +1,29 @@
 {
     "meta": {
-        "name": ""
+        "name": "繁體中文 (TW)"
     },
     "strings": {
-        "username": "",
-        "password": "",
-        "emailAddress": "",
-        "name": "",
-        "submit": "",
-        "send": "",
-        "success": "",
-        "continue": "",
-        "error": "",
-        "copy": "",
-        "copied": "",
-        "time24h": "",
-        "time12h": "",
-        "linkTelegram": "",
-        "contactEmail": "",
-        "contactTelegram": "",
-        "linkDiscord": "",
-        "linkMatrix": "",
-        "contactDiscord": "",
-        "theme": "",
-        "refresh": "",
-        "required": ""
+        "username": "帳戶名稱",
+        "password": "密碼",
+        "emailAddress": "電子郵件",
+        "name": "帳戶名稱",
+        "submit": "提交",
+        "send": "發送",
+        "success": "成功",
+        "continue": "繼續",
+        "error": "錯誤",
+        "copy": "複製",
+        "copied": "已複製",
+        "time24h": "24小時制",
+        "time12h": "12小時制",
+        "linkTelegram": "連結 Telegram",
+        "contactEmail": "通過電子郵件聯繫",
+        "contactTelegram": "通過 Telegram 聯繫",
+        "linkDiscord": "連結 Discord",
+        "linkMatrix": "連結 Matrix",
+        "contactDiscord": "通過 Discord 聯繫",
+        "theme": "主題",
+        "refresh": "重新整理",
+        "required": "必填"
     }
 }
