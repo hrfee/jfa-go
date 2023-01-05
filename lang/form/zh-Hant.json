@@ -1,60 +1,60 @@
 {
     "meta": {
-        "name": ""
+        "name": "繁體中文 (TW)"
     },
     "strings": {
-        "pageTitle": "",
-        "createAccountHeader": "",
-        "accountDetails": "",
-        "emailAddress": "",
-        "username": "",
-        "password": "",
-        "reEnterPassword": "",
-        "reEnterPasswordInvalid": "",
-        "createAccountButton": "",
-        "passwordRequirementsHeader": "",
-        "successHeader": "",
-        "confirmationRequired": "",
-        "confirmationRequiredMessage": "",
-        "yourAccountIsValidUntil": "",
-        "sendPIN": "",
-        "sendPINDiscord": "",
-        "matrixEnterUser": ""
+        "pageTitle": "創建 Jellfin 帳戶",
+        "createAccountHeader": "創建帳戶",
+        "accountDetails": "詳細資訊",
+        "emailAddress": "電子郵件",
+        "username": "帳戶名稱",
+        "password": "密碼",
+        "reEnterPassword": "重新輸入密碼",
+        "reEnterPasswordInvalid": "密碼不一樣。",
+        "createAccountButton": "創建帳戶",
+        "passwordRequirementsHeader": "密碼格式要求",
+        "successHeader": "成功！",
+        "confirmationRequired": "需要電子郵件確認",
+        "confirmationRequiredMessage": "請檢查您的電子郵件收件匣以驗證您的地址。",
+        "yourAccountIsValidUntil": "您的帳戶有效期至 {date}。",
+        "sendPIN": "將下面的 PIN 碼發送給機器人，然後返回此處連結您的帳戶。",
+        "sendPINDiscord": "在 Discord 上的 {server_channel} 中輸入 {command}，然後發送下方的 PIN 碼。",
+        "matrixEnterUser": "輸入您的帳戶 ID 並點擊提交。在此處輸入發送給您的PIN 碼以繼續。"
     },
     "notifications": {
-        "errorUserExists": "",
-        "errorInvalidCode": "",
-        "errorTelegramVerification": "",
-        "errorDiscordVerification": "",
-        "errorMatrixVerification": "",
-        "errorInvalidPIN": "",
-        "errorUnknown": "",
-        "errorNoEmail": "",
-        "errorCaptcha": "",
-        "errorPassword": "",
-        "errorNoMatch": "",
-        "verified": ""
+        "errorUserExists": "帳戶已存在。",
+        "errorInvalidCode": "邀請碼無效。",
+        "errorTelegramVerification": "需要 Telegram 驗證。",
+        "errorDiscordVerification": "需要 Discord 驗證。",
+        "errorMatrixVerification": "需要 Matrix 驗證。",
+        "errorInvalidPIN": "無效的PIN碼。",
+        "errorUnknown": "未知的錯誤。",
+        "errorNoEmail": "電子郵件必填。",
+        "errorCaptcha": "CAPTCHA 驗證碼不正確。",
+        "errorPassword": "請您檢查密碼要求後再試。",
+        "errorNoMatch": "密碼不匹配。",
+        "verified": "帳戶已驗證。"
     },
     "validationStrings": {
         "length": {
-            "singular": "",
-            "plural": ""
+            "singular": "必須至少包含 {n} 個字元",
+            "plural": "必須至少包含 {n} 個字元"
         },
         "uppercase": {
-            "singular": "",
-            "plural": ""
+            "singular": "必須至少包含 {n} 個大寫字母",
+            "plural": "必須至少包含 {n} 個大寫字母"
         },
         "lowercase": {
-            "singular": "",
-            "plural": ""
+            "singular": "必須至少包含 {n} 個小寫字母",
+            "plural": "必須至少包含 {n} 個小寫字母"
         },
         "number": {
-            "singular": "",
-            "plural": ""
+            "singular": "必須至少包含 {n} 個數字",
+            "plural": "必須至少包含 {n} 個數字"
         },
         "special": {
-            "singular": "",
-            "plural": ""
+            "singular": "必須至少包含 {n} 個特殊字元",
+            "plural": "必須至少包含 {n} 個特殊字元"
         }
     }
 }
