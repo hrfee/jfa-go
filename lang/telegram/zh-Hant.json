@@ -1,16 +1,16 @@
 {
     "meta": {
-        "name": ""
+        "name": "繁體中文 (TW)"
     },
     "strings": {
-        "startMessage": "",
-        "discordStartMessage": "",
-        "matrixStartMessage": "",
-        "invalidPIN": "",
-        "pinSuccess": "",
-        "languageMessage": "",
-        "languageMessageDiscord": "",
-        "languageSet": "",
-        "discordDMs": ""
+        "startMessage": "您好！\n請在這裡輸入 Jellyfin 的 PIN 碼來驗證您的帳戶。",
+        "discordStartMessage": "您好！\n請輸入 “/PIN＜PIN 碼＞” 來驗證您的帳戶。",
+        "matrixStartMessage": "您好\n在 Jellyfin 註冊頁面中輸入以下 PIN 碼以驗證您的帳戶。",
+        "invalidPIN": "該 PIN 碼無效，請重試。",
+        "pinSuccess": "成功！ 您現在可以返回註冊頁面。",
+        "languageMessage": "提示：使用 {command} 查看可用語言，並使用 {command} <language code> 來設置語言。",
+        "languageMessageDiscord": "提示：使用 “/lang <語言>” 設置語言。",
+        "languageSet": "語言設置為｛Language｝。",
+        "discordDMs": "請檢查您的私人通信以獲取回復。"
     }
 }
