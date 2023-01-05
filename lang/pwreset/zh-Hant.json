@@ -1,16 +1,16 @@
 {
     "meta": {
-        "name": ""
+        "name": "繁體中文 (TW)"
     },
     "strings": {
-        "passwordReset": "",
-        "reset": "",
-        "resetFailed": "",
-        "tryAgain": "",
-        "youCanLogin": "",
-        "youCanLoginOmbi": "",
-        "youCanLoginPassword": "",
-        "changeYourPassword": "",
-        "enterYourPassword": ""
+        "passwordReset": "重設密碼",
+        "reset": "重設",
+        "resetFailed": "重設密碼失敗",
+        "tryAgain": "請重試。",
+        "youCanLogin": "您現在可以使用下方的代碼作為您的密碼登錄。",
+        "youCanLoginOmbi": "您現在可以使用下方的代碼作為您的密碼登錄 Jellyfin和Ombi。",
+        "youCanLoginPassword": "您現在可以使用新密碼登錄。 請按下方按鈕跳轉至 Jellyfin。",
+        "changeYourPassword": "請務必在登錄后更改密碼。",
+        "enterYourPassword": "在下方輸入您的新密碼。"
     }
 }
