@@ -1,77 +1,77 @@
 {
     "meta": {
-        "name": ""
+        "name": "繁體中文 (TW)"
     },
     "strings": {
-        "ifItWasNotYou": "",
-        "helloUser": "",
-        "reason": ""
+        "ifItWasNotYou": "如果這不是您，請忽略本信件。",
+        "helloUser": "你好 {username},",
+        "reason": "原因"
     },
     "userCreated": {
-        "name": "",
-        "title": "",
-        "aUserWasCreated": "",
-        "time": "",
-        "notificationNotice": ""
+        "name": "帳戶創建",
+        "title": "注意：帳戶已創建",
+        "aUserWasCreated": "已使用邀請碼 {code} 創建了一個帳戶。",
+        "time": "時間",
+        "notificationNotice": "注意：可以在管理儀錶板上切換通知訊息。"
     },
     "inviteExpiry": {
-        "name": "",
-        "title": "",
-        "inviteExpired": "",
-        "expiredAt": "",
-        "notificationNotice": ""
+        "name": "邀請到期",
+        "title": "通知：邀請已過期",
+        "inviteExpired": "邀請已過期。",
+        "expiredAt": "邀請碼 {code} 在 {time} 過期。",
+        "notificationNotice": "注意：可以在管理儀錶板上切換通知訊息。"
     },
     "passwordReset": {
-        "name": "",
-        "title": "",
-        "someoneHasRequestedReset": "",
-        "ifItWasYou": "",
-        "ifItWasYouLink": "",
-        "codeExpiry": "",
-        "pin": ""
+        "name": "重置密碼",
+        "title": "忘記密碼 - Jellfin",
+        "someoneHasRequestedReset": "最近在 Jellyfin 上有一個您的密碼重置申請。",
+        "ifItWasYou": "如果是您本人，請在密碼重置提示框中輸入下方的 PIN 碼。",
+        "ifItWasYouLink": "如果是您本人，請點選下方的連結。",
+        "codeExpiry": "該 PIN 碼將在 {expiresInMinutes} 内到期（UTC 時間 {date} {time}）。",
+        "pin": "PIN 碼"
     },
     "userDeleted": {
-        "name": "",
-        "title": "",
-        "yourAccountWasDeleted": ""
+        "name": "帳戶刪除",
+        "title": "您的帳戶已被刪除 - Jellyfin",
+        "yourAccountWasDeleted": "您的 Jellyfin 帳戶已被刪除。"
     },
     "userDisabled": {
-        "name": "",
-        "title": "",
-        "yourAccountWasDisabled": ""
+        "name": "帳戶已被禁用",
+        "title": "您的帳戶已被禁用 - Jellyfin",
+        "yourAccountWasDisabled": "您的帳戶已被禁用。"
     },
     "userEnabled": {
-        "name": "",
-        "title": "",
-        "yourAccountWasEnabled": ""
+        "name": "帳戶已被重新啟用",
+        "title": "您的帳戶已被重新啟用 - Jellyfin",
+        "yourAccountWasEnabled": "您的帳戶已被重新啟用。"
     },
     "inviteEmail": {
-        "name": "",
-        "title": "",
-        "hello": "",
-        "youHaveBeenInvited": "",
-        "toJoin": "",
-        "inviteExpiry": "",
-        "linkButton": ""
+        "name": "邀請電子郵件",
+        "title": "邀請 - Jellyfin",
+        "hello": "您好",
+        "youHaveBeenInvited": "您已受邀註冊 Jellyfin。",
+        "toJoin": "請點選以下連結來加入。",
+        "inviteExpiry": "此邀請將於 {date} {time} 到期，即 {expiresInMinutes} 內，請儘快註冊。",
+        "linkButton": "設置您的帳戶"
     },
     "welcomeEmail": {
-        "name": "",
-        "title": "",
-        "welcome": "",
-        "youCanLoginWith": "",
-        "yourAccountWillExpire": "",
-        "jellyfinURL": ""
+        "name": "歡迎",
+        "title": "歡迎使用 Jellyfin",
+        "welcome": "歡迎使用 Jellyfin！",
+        "youCanLoginWith": "您可以使用以下資訊登錄",
+        "yourAccountWillExpire": "您的帳戶將在 {date} 到期。",
+        "jellyfinURL": "網址"
     },
     "emailConfirmation": {
-        "name": "",
-        "title": "",
-        "clickBelow": "",
-        "confirmEmail": ""
+        "name": "確認電子郵件",
+        "title": "確認您的電子郵件 - Jellyfin",
+        "clickBelow": "點選下面的連結以確認您的電子郵件地址並開始使用 Jellyfin。",
+        "confirmEmail": "確認電子郵件"
     },
     "userExpired": {
-        "name": "",
-        "title": "",
-        "yourAccountHasExpired": "",
-        "contactTheAdmin": ""
+        "name": "帳戶到期",
+        "title": "您的帳號已過期 - Jellyfin",
+        "yourAccountHasExpired": "您的帳號已過期。",
+        "contactTheAdmin": "請聯繫管理員瞭解更多資訊。"
     }
 }
