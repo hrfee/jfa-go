@@ -43,7 +43,7 @@
     "general": {
         "title": "常规",
         "listenAddress": "监听端口",
-        "urlBase": "URL Base",
+        "urlBase": "URL地址",
         "urlBaseNotice": "仅在子域上使用反向代理时才需要（例如“jellyf.in/accounts”）。",
         "lightTheme": "明亮",
         "darkTheme": "暗黑",
@@ -66,7 +66,9 @@
         "authorizeWithJellyfin": "从Jellyfin/Emby 授权：登录信息与 Jellyfin 同步，允许使用多个用户。",
         "authorizeManual": "用户名和密码：手动设置用户名和密码。",
         "adminOnly": "仅允许管理员账户(推荐)",
-        "emailNotice": "您的电子邮件地址可以用来接收通知。"
+        "emailNotice": "您的电子邮件地址可以用来接收通知。",
+        "allowAllDescription": "不建议，您应该允许单个用户在设置后登录。",
+        "allowAll": "允许所有Jellyfin用户登录"
     },
     "jellyfinEmby": {
         "title": "Jellyfin/Emby",
@@ -99,7 +101,7 @@
         "dateFormat": "日期格式",
         "dateFormatNotice": "日期遵循 strftime 格式。如需更多信息，请访问 {n}。",
         "encryption": "加密",
-        "mailgunApiURL": "API URL"
+        "mailgunApiURL": "API地址"
     },
     "notifications": {
         "title": "管理员通知",
