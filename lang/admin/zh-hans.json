@@ -78,7 +78,7 @@
         "settingsRequiredOrRestartMessage": "注意：{n} 表示必填字段，{n} 表示更改需要重新启动。",
         "settingsSave": "保存",
         "ombiUserDefaults": "Ombi 用户默认值",
-        "ombiUserDefaultsDescription": "创建并配置 Ombi 用户，然后在下面选择它。它的设置/权限将被存储并应用于由 jfa-go 创建的新 Ombi 用户",
+        "ombiUserDefaultsDescription": "创建并配置 Ombi 用户，然后在下面选择它。它的设置/权限将被存储并应用于由 jfa-go 创建的新 Ombi 用户。",
         "userProfiles": "用户档案",
         "userProfilesDescription": "配置文件在用户创建帐户时应用于用户。配置文件包括库访问权限和主屏幕布局。",
         "userProfilesIsDefault": "默认",
@@ -97,7 +97,7 @@
         "notifyEvent": "通知：",
         "notifyInviteExpiry": "在到期时",
         "notifyUserCreation": "在创建用户时",
-        "sendPIN": "要求用户将下面的 PIN 发送给机器人。",
+        "sendPIN": "需要用户将下面的 PIN 发送给机器人。",
         "searchDiscordUser": "开始输入 Discord 用户名以查找用户。",
         "findDiscordUser": "查找 Discord 用户",
         "linkMatrixDescription": "输入要用作机器人的用户的用户名和密码。一旦提交，应用程序将重新启动。",
@@ -111,7 +111,10 @@
         "sendPWRSuccessManual": "如果用户没收到，请按下钮复制链接，手动发给用户。",
         "setExpiry": "设置到期",
         "logs": "记录",
-        "sendPWRValidFor": "此链接有效30分钟。"
+        "sendPWRValidFor": "此链接有效30分钟。",
+        "ombiProfile": "Ombi 用户配置文件",
+        "accessJFASettings": "无法更改，因为“仅限管理员”或“允许所有”已在“设置”>“常规”中设置。",
+        "accessJFA": "访问jfa-go"
     },
     "notifications": {
         "changedEmailAddress": "更改了 {n} 的电子邮件地址。",
@@ -152,7 +155,9 @@
         "errorApplyUpdate": "无法应用更新，请手动尝试。",
         "errorCheckUpdate": "检查更新失败。",
         "updateAvailable": "有新更新可用，请检查设置。",
-        "noUpdatesAvailable": "没有可用的更新。"
+        "noUpdatesAvailable": "没有可用的更新。",
+        "setOmbiProfile": "保存ombi配置文件。",
+        "errorSetOmbiProfile": "无法保存ombi配置文件。"
     },
     "quantityStrings": {
         "modifySettingsFor": {
@@ -206,6 +211,10 @@
         "extendedExpiry": {
             "singular": "延长了 {n} 个用户的有效期。",
             "plural": "延长了 {n} 个用户的有效期。"
+        },
+        "setExpiry": {
+            "plural": "为{n}用户设置到期时间",
+            "singular": "为{n}用户设置到期时间"
         }
     }
 }
