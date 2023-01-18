@@ -1,29 +1,29 @@
 {
     "meta": {
-        "name": ""
+        "name": "English (US)"
     },
     "strings": {
-        "pageTitle": "",
-        "next": "",
-        "back": "",
-        "optional": "",
-        "serverType": "",
-        "disabled": "",
-        "enabled": "",
-        "port": "",
-        "message": "",
-        "serverAddress": "",
-        "emailSubject": "",
-        "URL": "",
-        "apiKey": "",
-        "errorInvalidUserPass": "",
-        "errorNotAdmin": "",
-        "errorUserDisabled": "",
-        "error404": "",
+        "pageTitle": "Telepítés - jfa-go",
+        "next": "Következő",
+        "back": "Vissza",
+        "optional": "Opcionális",
+        "serverType": "Szerver típus",
+        "disabled": "Letiltva",
+        "enabled": "Engedélyezve",
+        "port": "Port",
+        "message": "Üzenet",
+        "serverAddress": "Szerver cím",
+        "emailSubject": "E-mail tárgy",
+        "URL": "URL",
+        "apiKey": "API kulcs",
+        "errorInvalidUserPass": "Érvénytelen felhasználónév / jelszó.",
+        "errorNotAdmin": "A felhasználó számára nincs engedélyezve a szerver kezelése.",
+        "errorUserDisabled": "Lehetséges, hogy a felhasználó le lett tiltva.",
+        "error404": "404, ellenőrizze a belső URL-t.",
         "errorConnectionRefused": ""
     },
     "startPage": {
-        "welcome": "",
+        "welcome": "Üdv!",
         "pressStart": "",
         "httpsNotice": "",
         "start": ""
