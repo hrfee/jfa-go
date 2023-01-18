@@ -1,6 +1,6 @@
 {
     "meta": {
-        "name": "Magyar (HU)"
+        "name": "English (US)"
     },
     "strings": {
         "pageTitle": "Jellyfin fiók létrehozása",
@@ -18,7 +18,7 @@
         "confirmationRequiredMessage": "Kérjük ellenőrizze az e-mail címére küldött üzenetet, a fiók ellenőrzéséhez.",
         "yourAccountIsValidUntil": "A fiókja eddig lesz érvényes: {date}.",
         "sendPIN": "Az alábbi kódot küldje el a botnak, majd itt csatolja össze a fiókját.",
-        "sendPINDiscord": "Discordon haszánlja a {command} parancsot, a {server_channel} csatornában, majd küldje el a kódot a botnak privát üzenetben.",
+        "sendPINDiscord": "Discordon haszánlja a {command} parancsot, a {server_channel} csatornában, majd írja be a PIN-t.",
         "matrixEnterUser": "Írja be a felhasználója azonosítóját majd nyomja meg a beküldés gombot. A kapott kódot ide írja be."
     },
     "notifications": {
@@ -30,7 +30,10 @@
         "errorInvalidPIN": "A PIN-kód érvénytelen.",
         "errorUnknown": "Ismeretlen hiba.",
         "errorNoEmail": "E-mail szükséges.",
-        "verified": "Fiók ellenőrizve."
+        "verified": "Fiók ellenőrizve.",
+        "errorPassword": "Ellenőrizze a jelszó követelményeket.",
+        "errorCaptcha": "Hibás Captcha.",
+        "errorNoMatch": "A jelszavak nem egyeznek."
     },
     "validationStrings": {
         "length": {
@@ -46,12 +49,12 @@
             "plural": "Legalább {n} kisbetüs karakter"
         },
         "number": {
-            "singular": "",
-            "plural": ""
+            "singular": "Tartalmaznia kell legalább {n} számot",
+            "plural": "Legalább {n} számot kell tartalmazzon"
         },
         "special": {
-            "singular": "",
-            "plural": ""
+            "singular": "Legalább {n} speciális karaktert kell tartalmazzon",
+            "plural": "Legalább {n} speciális karaktert kell tartalmazzon"
         }
     }
 }
