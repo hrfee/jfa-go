@@ -18,7 +18,7 @@
         "confirmationRequiredMessage": "Por favor, revise la bandeja de entrada de su correo electrónico para verificar su dirección.",
         "yourAccountIsValidUntil": "Su cuenta será válida hasta el {date}.",
         "sendPINDiscord": "Escribe {command} en {server_channel} en Discord, luego envía el PIN a través de DM al bot.",
-        "sendPIN": "A continuacion envia el PIN al BOT, despues regresa y vincula tu cuenta.",
+        "sendPIN": "Envíe el PIN a continuación al bot, luego regrese aquí para vincular su cuenta.",
         "matrixEnterUser": "Ingrese su ID de usuario, presione enviar y se le enviará un PIN. Ingrese aquí para continuar."
     },
     "notifications": {
