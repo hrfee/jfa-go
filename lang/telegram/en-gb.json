@@ -1,5 +1,16 @@
 {
     "meta": {
         "name": "English (GB)"
+    },
+    "strings": {
+        "startMessage": "Hi!\nEnter your Jellyfin PIN code here to verify your account.",
+        "languageMessage": "Note: See available languages with {command}, and set language with {command} <language code>.",
+        "discordDMs": "Please check your DMs for a response.",
+        "matrixStartMessage": "Hi\nEnter the below PIN in the Jellyfin sign-up page to verify your account.",
+        "discordStartMessage": "Hi!\n Enter your PIN with `/pin <PIN>` to verify your account.",
+        "invalidPIN": "That PIN was invalid, try again.",
+        "pinSuccess": "Success! You can now return to the sign-up page.",
+        "languageMessageDiscord": "Note: set your language with /lang <language name>.",
+        "languageSet": "Language set to {language}."
     }
 }
