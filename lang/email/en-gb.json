@@ -1,5 +1,77 @@
 {
     "meta": {
         "name": "English (GB)"
+    },
+    "emailConfirmation": {
+        "title": "Confirm your email - Jellyfin",
+        "confirmEmail": "Confirm Email",
+        "name": "Confirmation email",
+        "clickBelow": "Click the link below to confirm your email address and start using Jellyfin."
+    },
+    "welcomeEmail": {
+        "name": "Welcome",
+        "title": "Welcome to Jellyfin",
+        "welcome": "Welcome to Jellyfin!",
+        "yourAccountWillExpire": "Your account will expire on {date}.",
+        "jellyfinURL": "URL",
+        "youCanLoginWith": "You can login with the details below"
+    },
+    "strings": {
+        "helloUser": "Hi {username},",
+        "ifItWasNotYou": "If this wasn't you, please ignore this.",
+        "reason": "Reason"
+    },
+    "userCreated": {
+        "name": "User creation",
+        "title": "Notice: User created",
+        "time": "Time",
+        "aUserWasCreated": "A user was created using code {code}.",
+        "notificationNotice": "Note: Notification messages can be toggled on the admin dashboard."
+    },
+    "inviteExpiry": {
+        "expiredAt": "Code {code} expired at {time}.",
+        "notificationNotice": "Note: Notification messages can be toggled on the admin dashboard.",
+        "name": "Invite expiry",
+        "title": "Notice: Invite expired",
+        "inviteExpired": "Invite expired."
+    },
+    "passwordReset": {
+        "name": "Password reset",
+        "title": "Password reset requested - Jellyfin",
+        "ifItWasYou": "If this was you, enter the pin below into the prompt.",
+        "ifItWasYouLink": "If this was you, click the link below.",
+        "pin": "PIN",
+        "someoneHasRequestedReset": "Someone has recently requested a password reset on Jellyfin.",
+        "codeExpiry": "The code will expire on {date}, at {time} UTC, which is in {expiresInMinutes}."
+    },
+    "userDeleted": {
+        "title": "Your account was deleted - Jellyfin",
+        "yourAccountWasDeleted": "Your Jellyfin account was deleted.",
+        "name": "User deletion"
+    },
+    "inviteEmail": {
+        "name": "Invite email",
+        "hello": "Hi",
+        "toJoin": "To join, follow the below link.",
+        "inviteExpiry": "This invite will expire on {date} at {time}, which is in {expiresInMinutes}, so act quick.",
+        "linkButton": "Setup your account",
+        "title": "Invite - Jellyfin",
+        "youHaveBeenInvited": "You've been invited to Jellyfin."
+    },
+    "userExpired": {
+        "name": "User expiry",
+        "title": "Your account has expired - Jellyfin",
+        "yourAccountHasExpired": "Your account has expired.",
+        "contactTheAdmin": "Contact the administrator for more info."
+    },
+    "userDisabled": {
+        "name": "User disabled",
+        "title": "Your account has been disabled - Jellyfin",
+        "yourAccountWasDisabled": "Your account was disabled."
+    },
+    "userEnabled": {
+        "name": "User enabled",
+        "title": "Your account has been re-enabled - Jellyfin",
+        "yourAccountWasEnabled": "Your account was re-enabled."
     }
 }
