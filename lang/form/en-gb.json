@@ -1,5 +1,60 @@
 {
     "meta": {
         "name": "English (GB)"
+    },
+    "strings": {
+        "confirmationRequired": "Email confirmation required",
+        "createAccountHeader": "Create Account",
+        "accountDetails": "Details",
+        "emailAddress": "Email",
+        "username": "Username",
+        "password": "Password",
+        "reEnterPassword": "Re-enter Password",
+        "createAccountButton": "Create Account",
+        "passwordRequirementsHeader": "Password Requirements",
+        "successHeader": "Success!",
+        "pageTitle": "Create Jellyfin Account",
+        "reEnterPasswordInvalid": "Passwords are not the same.",
+        "confirmationRequiredMessage": "Please check your email inbox to verify your address.",
+        "yourAccountIsValidUntil": "Your account will be valid until {date}.",
+        "sendPIN": "Send the PIN below to the bot, then come back here to link your account.",
+        "sendPINDiscord": "Type {command} in {server_channel} on Discord, then send the PIN below.",
+        "matrixEnterUser": "Enter your User ID, press submit, and a PIN will be sent to you. Enter it here to continue."
+    },
+    "notifications": {
+        "errorUnknown": "Unknown error.",
+        "verified": "Account verified.",
+        "errorCaptcha": "Captcha incorrect.",
+        "errorPassword": "Check password requirements.",
+        "errorNoMatch": "Passwords don't match.",
+        "errorTelegramVerification": "Telegram verification required.",
+        "errorInvalidPIN": "PIN is invalid.",
+        "errorUserExists": "User already exists.",
+        "errorInvalidCode": "Invalid invite code.",
+        "errorMatrixVerification": "Matrix verification required.",
+        "errorDiscordVerification": "Discord verification required.",
+        "errorNoEmail": "Email required."
+    },
+    "validationStrings": {
+        "length": {
+            "singular": "Must have at least {n} character",
+            "plural": "Must have at least {n} characters"
+        },
+        "number": {
+            "plural": "Must have at least {n} numbers",
+            "singular": "Must have at least {n} number"
+        },
+        "special": {
+            "plural": "Must have at least {n} special characters",
+            "singular": "Must have at least {n} special character"
+        },
+        "uppercase": {
+            "singular": "Must have at least {n} uppercase character",
+            "plural": "Must have at least {n} uppercase characters"
+        },
+        "lowercase": {
+            "singular": "Must have at least {n} lowercase character",
+            "plural": "Must have at least {n} lowercase characters"
+        }
     }
 }
