@@ -1,5 +1,16 @@
 {
     "meta": {
         "name": "English (GB)"
+    },
+    "strings": {
+        "youCanLoginOmbi": "You can now log in to Jellyfin & Ombi with the below code as your password.",
+        "passwordReset": "Password reset",
+        "resetFailed": "Password reset failed",
+        "tryAgain": "Please try again.",
+        "youCanLogin": "You can now log in with the below code as your password.",
+        "changeYourPassword": "Make sure to change your password after you log in.",
+        "reset": "Reset",
+        "enterYourPassword": "Enter your new password below.",
+        "youCanLoginPassword": "You can now login with your new password. Press below to continue to Jellyfin."
     }
 }
