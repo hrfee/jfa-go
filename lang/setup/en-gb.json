@@ -1,5 +1,150 @@
 {
     "meta": {
         "name": "English (GB)"
+    },
+    "passwordValidation": {
+        "special": "Special characters (%, *, etc.)",
+        "numbers": "Numbers",
+        "title": "Password Validation",
+        "lowercase": "Lowercase characters",
+        "length": "Length",
+        "uppercase": "Uppercase characters",
+        "description": "If enabled, a set of password requirements will show on the account creation page, such as minimum length, uppercase/lowercase characters, etc."
+    },
+    "email": {
+        "method": "Sending method",
+        "dateFormat": "Date Format",
+        "useEmailAsUsername": "Use email addresses as username",
+        "useEmailAsUsernameNotice": "If enabled, new users will login to Jellyfin/Emby with their email address instead of a username.",
+        "title": "Email",
+        "fromAddress": "From Address",
+        "senderName": "Sender Name",
+        "encryption": "Encryption",
+        "mailgunApiURL": "API URL",
+        "description": "jfa-go can send password reset PINs and various notifications through email. You can connect to an SMTP server, or use the {n} API.",
+        "dateFormatNotice": "Date follows the strftime format. For more info, visit {n}."
+    },
+    "passwordResets": {
+        "resetLinks": "Send a link instead of a PIN",
+        "setPassword": "Set password through link",
+        "resetLinksNotice": "If Ombi integration is enabled, use this to sync Jellyfin password resets with Ombi.",
+        "title": "Password Resets",
+        "description": "When a user tries to reset their password, Jellyfin creates a file named 'passwordreset-*.json' which contains a PIN. jfa-go reads the file and sends the PIN to the user.",
+        "pathToJellyfin": "Path to Jellyfin configuration directory",
+        "pathToJellyfinNotice": "If you don't know where this is, try resetting your password in Jellyfin. A popup with '<path to jellyfin>/passwordreset-*.json' will appear.",
+        "resetLinksLanguage": "Default reset link language",
+        "setPasswordNotice": "Enabling this means the user doesn't have to change their password from the PIN after the reset. Password validation will also be enforced."
+    },
+    "helpMessages": {
+        "title": "Help Messages",
+        "description": "These messages will display in the account creation page and in some emails.",
+        "contactMessage": "Contact Message",
+        "contactMessageNotice": "Displays at the bottom of all pages except admin.",
+        "helpMessage": "Help Message",
+        "helpMessageNotice": "Displays on the account creation page.",
+        "successMessage": "Success Message",
+        "successMessageNotice": "Displays when a user creates their account.",
+        "emailMessage": "Email Message",
+        "emailMessageNotice": "Displays at the bottom of emails."
+    },
+    "strings": {
+        "enabled": "Enabled",
+        "disabled": "Disabled",
+        "next": "Next",
+        "back": "Back",
+        "optional": "Optional",
+        "serverType": "Server Type",
+        "port": "Port",
+        "serverAddress": "Server Address",
+        "emailSubject": "Email Subject",
+        "URL": "URL",
+        "apiKey": "API Key",
+        "errorUserDisabled": "User may be disabled.",
+        "error404": "404, check the internal URL.",
+        "message": "Message",
+        "pageTitle": "Setup - jfa-go",
+        "errorInvalidUserPass": "Invalid username/password.",
+        "errorNotAdmin": "User is not allowed to manage server.",
+        "errorConnectionRefused": "Connection refused."
+    },
+    "startPage": {
+        "welcome": "Welcome!",
+        "httpsNotice": "Make sure you're accessing this page via HTTPS or on a private network.",
+        "start": "Start",
+        "pressStart": "You'll need to do a few things to set up jfa-go. Press start to continue."
+    },
+    "jellyfinEmby": {
+        "title": "Jellyfin/Emby",
+        "embyNotice": "Emby support is limited and does not support password resets.",
+        "internal": "Internal",
+        "external": "External",
+        "description": "An admin account is needed because the API does not allow user creation using an API key. You should create a separate account and check 'Allow this user to manage the server'. You can disable everything else. Once done, enter the login details here.",
+        "replaceJellyfin": "Server name",
+        "replaceJellyfinNotice": "If given, this will replace any occurrence of 'Jellyfin' in the app.",
+        "addressExternalNotice": "Leave blank to use the same address.",
+        "testConnection": "Test Connection"
+    },
+    "endPage": {
+        "refreshPage": "Refresh",
+        "finished": "Finished!",
+        "restartMessage": "You can configure Discord/Telegram/Matrix bots, customise your messages and more in Settings. Click below to restart, then refresh the page."
+    },
+    "language": {
+        "title": "Language",
+        "defaultAdminLang": "Default admin language",
+        "defaultFormLang": "Default account creation language",
+        "defaultEmailLang": "Default email language",
+        "description": "Community translations are available for most parts of jfa-go. You can choose the default languages below, but users can still change it if they wish. If you want to help translate, sign up to {n} to start contributing!"
+    },
+    "general": {
+        "lightTheme": "Light",
+        "title": "General",
+        "listenAddress": "Listen Address",
+        "darkTheme": "Dark",
+        "useHTTPS": "Use HTTPS",
+        "httpsPort": "HTTPS Port",
+        "pathToCertificate": "Path to certificate",
+        "pathToKeyFile": "Path to key file",
+        "urlBase": "URL Base",
+        "urlBaseNotice": "Only needed if using a reverse proxy on a subdomain (e.g 'jellyf.in/accounts').",
+        "useHTTPSNotice": "Only recommended if you aren't using a reverse proxy."
+    },
+    "updates": {
+        "title": "Updates",
+        "updateChannel": "Update Channel",
+        "stable": "Stable",
+        "unstable": "Unstable",
+        "description": "Enable to be notified when new updates are available. jfa-go will check {n} every 30 minutes. No IPs or personally identifiable information are collected."
+    },
+    "login": {
+        "title": "Login",
+        "description": "To access the admin page, you need to login with a method below:",
+        "authorizeManual": "Username and Password: Manually set the username and password.",
+        "adminOnly": "Admin users only (recommended)",
+        "authorizeWithJellyfin": "Authorise with Jellyfin/Emby: Login details are shared with Jellyfin, which allows for multiple users.",
+        "allowAll": "Allow all Jellyfin users to login",
+        "allowAllDescription": "Not recommended, you should allow individual users to login once setup.",
+        "emailNotice": "Your email address can be used to receive notifications."
+    },
+    "welcomeEmails": {
+        "title": "Welcome messages",
+        "description": "If enabled, a message will be sent to new users with the Jellyfin/Emby URL and their username."
+    },
+    "ombi": {
+        "title": "Ombi",
+        "description": "By connecting to Ombi, both a Jellyfin and Ombi account will be created when a user joins through jfa-go. After setup is finished, go to Settings to set a default profile for new ombi users.",
+        "apiKeyNotice": "Find this in the first tab of Ombi settings."
+    },
+    "messages": {
+        "description": "jfa-go can send password resets and various messages through Email, Discord, Telegram, and/or Matrix. You can set up email below, and the others can be configured in Settings later. Instructions can be found on the {n}. If you don't need this, you can disable these features here.",
+        "title": "Messages"
+    },
+    "notifications": {
+        "title": "Admin Notifications",
+        "description": "If enabled, you can choose (per invite) to receive an message when an invite expires, or a user is created. If you didn't choose the Jellyfin login method, make sure you provided your email address, or add another contact method later."
+    },
+    "inviteEmails": {
+        "title": "Invite Messages",
+        "description": "If enabled, you can send invites directly to a user's email address, Discord or Matrix user. Because you might be using a reverse proxy, you need to provide the URL invites are accessed from. Write your URL Base, and append '/invite'."
     }
 }
