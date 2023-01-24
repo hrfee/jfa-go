@@ -1,5 +1,29 @@
 {
     "meta": {
         "name": "English (GB)"
+    },
+    "strings": {
+        "continue": "Continue",
+        "time24h": "24h Time",
+        "linkTelegram": "Link Telegram",
+        "send": "Send",
+        "linkDiscord": "Link Discord",
+        "linkMatrix": "Link Matrix",
+        "contactDiscord": "Contact through Discord",
+        "username": "Username",
+        "password": "Password",
+        "emailAddress": "Email Address",
+        "copy": "Copy",
+        "copied": "Copied",
+        "submit": "Submit",
+        "success": "Success",
+        "error": "Error",
+        "time12h": "12h Time",
+        "theme": "Theme",
+        "contactEmail": "Contact through Email",
+        "contactTelegram": "Contact through Telegram",
+        "name": "Name",
+        "refresh": "Refresh",
+        "required": "Required"
     }
 }
