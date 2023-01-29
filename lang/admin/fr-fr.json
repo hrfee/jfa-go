@@ -55,7 +55,7 @@
         "addProfileNameOf": "Nom de profil",
         "addProfileStoreHomescreenLayout": "Enregistrer la disposition de l'écran d'accueil",
         "inviteNoUsersCreated": "Aucun pour l'instant !",
-        "inviteUsersCreated": "Utilisateurs créer",
+        "inviteUsersCreated": "Utilisateurs créés",
         "inviteNoProfile": "Aucun profil",
         "inviteDateCreated": "Créer",
         "inviteRemainingUses": "Utilisations restantes",
@@ -64,7 +64,7 @@
         "notifyEvent": "Notifier sur :",
         "notifyInviteExpiry": "À l'expiration",
         "notifyUserCreation": "à la création de l'utilisateur",
-        "label": "Etiquette",
+        "label": "Nom",
         "settingsRestarting": "Redémarrage…",
         "settingsRestart": "Redémarrer",
         "announce": "Annoncer",
@@ -112,7 +112,10 @@
         "sendPWRValidFor": "Ce lien est valable 30min.",
         "sendPWRManual": "L'utilisateur {n} n'a pas indiqué de méthode de contact, appuyez sur copier pour recevoir un lien à lui envoyer.",
         "sendPWRSuccessManual": "Si l'utilisateur ne l'a pas reçu, appuyez sur copier pour recevoir un lien à lui envoyer manuellement.",
-        "ombiProfile": "Profil d'utilisateur Ombi"
+        "ombiProfile": "Profil d'utilisateur Ombi",
+        "logs": "Logs",
+        "accessJFA": "Accès à jfa-go",
+        "accessJFASettings": "Ne peut pas être changé car \"Admin Only\" ou \"Allow All\" a été défini dans Paramètres > Général."
     },
     "notifications": {
         "changedEmailAddress": "Adresse e-mail modifiée de {n}.",
@@ -209,6 +212,10 @@
         "disabledUser": {
             "singular": "{n} utilisateur désactivé.",
             "plural": "{n} utilisateurs désactivés."
+        },
+        "setExpiry": {
+            "singular": "Définir l'expiration pour {n} utilisateur",
+            "plural": "Définir l'expiration pour {n} utilisateurs"
         }
     }
 }
