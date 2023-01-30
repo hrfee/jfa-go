@@ -1,4 +1,4 @@
-module github.com/hrfee/jfa-go/logger
+module github.com/aleksasiriski/jfa-go/logger
 
 go 1.16
 

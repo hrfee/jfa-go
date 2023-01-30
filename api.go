@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/hrfee/mediabrowser"
+	"github.com/aleksasiriski/mediabrowser"
 	"github.com/itchyny/timefmt-go"
 	"gopkg.in/ini.v1"
 )

@@ -1,5 +1,5 @@
-module github.com/hrfee/jfa-go/ombi
+module github.com/aleksasiriski/jfa-go/ombi
 
-replace github.com/hrfee/jfa-go/common => ../common
+replace github.com/aleksasiriski/jfa-go/common => ../common
 
 go 1.15

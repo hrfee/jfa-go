@@ -3,7 +3,7 @@ package main
 import (
 	"time"
 
-	"github.com/hrfee/mediabrowser"
+	"github.com/aleksasiriski/mediabrowser"
 )
 
 type userDaemon struct {

@@ -11,7 +11,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/hrfee/mediabrowser"
+	"github.com/aleksasiriski/mediabrowser"
 	"github.com/steambap/captcha"
 )
 

@@ -20,11 +20,11 @@ import (
 	"time"
 
 	"github.com/fatih/color"
-	"github.com/hrfee/jfa-go/common"
-	_ "github.com/hrfee/jfa-go/docs"
-	"github.com/hrfee/jfa-go/logger"
-	"github.com/hrfee/jfa-go/ombi"
-	"github.com/hrfee/mediabrowser"
+	"github.com/aleksasiriski/jfa-go/common"
+	_ "github.com/aleksasiriski/jfa-go/docs"
+	"github.com/aleksasiriski/jfa-go/logger"
+	"github.com/aleksasiriski/jfa-go/ombi"
+	"github.com/aleksasiriski/mediabrowser"
 	"github.com/lithammer/shortuuid/v3"
 	"gopkg.in/ini.v1"
 )

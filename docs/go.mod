@@ -1,4 +1,4 @@
-module github.com/hrfee/jfa-go/docs
+module github.com/aleksasiriski/jfa-go/docs
 
 go 1.15
 
