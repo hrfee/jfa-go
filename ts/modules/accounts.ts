@@ -74,9 +74,11 @@ class user implements User {
         const telegram = window.telegramEnabled && this._telegramUsername && this._telegramUsername != "";
         const discord = window.discordEnabled && this._discordUsername && this._discordUsername != "";
         const matrix = window.matrixEnabled && this._matrixID && this._matrixID != "";
+        const email = window.emailEnabled && this.email != "";
         if (discord) return "discord";
         if (matrix) return "matrix";
         if (telegram) return "telegram";
+        if (email) return "email";
     }
 
     get selected(): boolean { return this._selected; }
@@ -132,6 +134,15 @@ class user implements User {
         } else {
             this._email.textContent = value;
         }
+        const lastNotifyMethod = this.lastNotifyMethod() == "email";
+        if (!value) {
+            this._notifyDropdown.querySelector(".accounts-area-email").classList.add("unfocused");
+        } else {
+            this._notifyDropdown.querySelector(".accounts-area-email").classList.remove("unfocused");
+            if (lastNotifyMethod) {
+                (this._email.parentElement as HTMLDivElement).appendChild(this._notifyDropdown);
+            }
+        }
     }
 
     get notify_email(): boolean { return this._notifyEmail; }
@@ -146,17 +157,20 @@ class user implements User {
         const telegram = this._telegramUsername != "";
         const discord = this._discordUsername != "";
         const matrix = this._matrixID != "";
-        if (!telegram && !discord && !matrix) return;
+        const email = this._emailAddress != "";
+        if (!telegram && !discord && !matrix && !email) return;
         let innerHTML = `
         <i class="icon ri-settings-2-line ml-2 dropdown-button"></i>
         <div class="dropdown manual">
             <div class="dropdown-display lg">
                 <div class="card ~neutral @low">
                     <span class="supra sm">${window.lang.strings("contactThrough")}</span>
-                    <label class="row switch pb-4 mt-2">
-                        <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-email mr-2">
-                        </span>Email</span>
-                    </label>
+                    <div class="accounts-area-email">
+                        <label class="row switch pb-4 mt-2">
+                            <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-email mr-2">
+                            </span>Email</span>
+                        </label>
+                    </div>
                     <div class="accounts-area-telegram">
                         <label class="row switch pb-4">
                             <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-telegram mr-2">
@@ -857,7 +871,7 @@ export class accountsList {
                     this._disableEnable.classList.add("unfocused");
                 }
                 if (!showDisableEnable && anyNonExpiries) { break; }
-                if (!this._users[id].lastNotifyMethod() && !this._users[id].email) {
+                if (!this._users[id].lastNotifyMethod()) {
                     noContactCount++;
                 }
             }

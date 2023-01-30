@@ -192,6 +192,8 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 			api.GET(p+"/telegram/pin", app.TelegramGetPin)
 			api.GET(p+"/telegram/verified/:pin", app.TelegramVerified)
 			api.POST(p+"/users/telegram", app.TelegramAddUser)
+		}
+		if emailEnabled {
 			api.POST(p+"/users/contact", app.SetContactMethods)
 		}
 		if discordEnabled {
