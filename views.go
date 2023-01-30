@@ -9,7 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
-	"github.com/hrfee/mediabrowser"
+	"github.com/aleksasiriski/mediabrowser"
 	"github.com/steambap/captcha"
 )
 

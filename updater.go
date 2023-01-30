@@ -16,7 +16,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hrfee/jfa-go/common"
+	"github.com/aleksasiriski/jfa-go/common"
 )
 
 const (

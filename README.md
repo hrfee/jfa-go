@@ -10,7 +10,7 @@
 ---
 jfa-go is a user management app for [Jellyfin](https://github.com/jellyfin/jellyfin) (and now [Emby](https://emby.media/)) that provides invite-based account creation as well as other features that make one's instance much easier to manage.
 
-a rewrite of [jellyfin-accounts](https://github.com/hrfee/jellyfin-accounts) (original naming for both, ik 
+a rewrite of [jellyfin-accounts](https://github.com/aleksasiriski/jellyfin-accounts) (original naming for both, ik 
 😂).
 
 #### Features
@@ -92,7 +92,7 @@ Available on the AUR as:
 
 ##### Other platforms
 Download precompiled binaries from:
- * [The releases section](https://github.com/hrfee/jfa-go/releases) (stable)
+ * [The releases section](https://github.com/aleksasiriski/jfa-go/releases) (stable)
  * [Buildrone](https://builds.hrfee.dev/view/hrfee/jfa-go) (nightly)
 
 unzip the `jfa-go`/`jfa-go.exe` executable to somewhere useful.
@@ -150,7 +150,7 @@ If you're switching from jellyfin-accounts, copy your existing `~/.jf-accounts` 
 (or specify config/data path  with `-config/-data` respectively.)
 
 #### Contributing
-See [CONTRIBUTING.md](https://github.com/hrfee/jfa-go/blob/main/CONTRIBUTING.md).
+See [CONTRIBUTING.md](https://github.com/aleksasiriski/jfa-go/blob/main/CONTRIBUTING.md).
 ##### Translation
 [![Translation status](https://weblate.jfa-go.com/widgets/jfa-go/-/multi-auto.svg)](https://weblate.jfa-go.com/engage/jfa-go/)
 

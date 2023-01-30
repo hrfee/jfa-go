@@ -1,3 +1,3 @@
-module github.com/hrfee/jfa-go/linecache
+module github.com/aleksasiriski/jfa-go/linecache
 
 go 1.16

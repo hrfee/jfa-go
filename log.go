@@ -8,7 +8,7 @@ import (
 	"regexp"
 
 	"github.com/gin-gonic/gin"
-	"github.com/hrfee/jfa-go/linecache"
+	"github.com/aleksasiriski/jfa-go/linecache"
 )
 
 var logPath string = filepath.Join(temp, "jfa-go.log")

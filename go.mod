@@ -1,18 +1,18 @@
-module github.com/hrfee/jfa-go
+module github.com/aleksasiriski/jfa-go
 
 go 1.16
 
-replace github.com/hrfee/jfa-go/docs => ./docs
+replace github.com/aleksasiriski/jfa-go/docs => ./docs
 
-replace github.com/hrfee/jfa-go/common => ./common
+replace github.com/aleksasiriski/jfa-go/common => ./common
 
-replace github.com/hrfee/jfa-go/ombi => ./ombi
+replace github.com/aleksasiriski/jfa-go/ombi => ./ombi
 
-replace github.com/hrfee/jfa-go/logger => ./logger
+replace github.com/aleksasiriski/jfa-go/logger => ./logger
 
-replace github.com/hrfee/jfa-go/linecache => ./linecache
+replace github.com/aleksasiriski/jfa-go/linecache => ./linecache
 
-replace github.com/hrfee/jfa-go/api => ./api
+replace github.com/aleksasiriski/jfa-go/api => ./api
 
 require (
 	github.com/bwmarrin/discordgo v0.23.3-0.20211228023845-29269347e820
@@ -34,12 +34,12 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/gomarkdown/markdown v0.0.0-20211212230626-5af6ad2f47df
 	github.com/google/uuid v1.3.0 // indirect
-	github.com/hrfee/jfa-go/common v0.0.0-20211222231100-d47afe05f49c
-	github.com/hrfee/jfa-go/docs v0.0.0-20211222231100-d47afe05f49c
-	github.com/hrfee/jfa-go/linecache v0.0.0-20211222231100-d47afe05f49c
-	github.com/hrfee/jfa-go/logger v0.0.0-20211222231100-d47afe05f49c
-	github.com/hrfee/jfa-go/ombi v0.0.0-20211222231100-d47afe05f49c
-	github.com/hrfee/mediabrowser v0.3.8
+	github.com/aleksasiriski/jfa-go/common v0.0.0-20211222231100-d47afe05f49c
+	github.com/aleksasiriski/jfa-go/docs v0.0.0-20211222231100-d47afe05f49c
+	github.com/aleksasiriski/jfa-go/linecache v0.0.0-20211222231100-d47afe05f49c
+	github.com/aleksasiriski/jfa-go/logger v0.0.0-20211222231100-d47afe05f49c
+	github.com/aleksasiriski/jfa-go/ombi v0.0.0-20211222231100-d47afe05f49c
+	github.com/aleksasiriski/mediabrowser v0.3.8
 	github.com/itchyny/timefmt-go v0.1.3
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/lithammer/shortuuid/v3 v3.0.7
