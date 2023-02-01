@@ -3,7 +3,7 @@
         "name": "Bahasa Indonesia (ID)"
     },
     "strings": {
-        "ifItWasNotYou": "Jika ini bukan kamu, silahkan mengabaikan email ini.",
+        "ifItWasNotYou": "Jika ini bukan kamu, silahkan abaikan email ini.",
         "reason": "Alasan",
         "helloUser": "Halo {username},"
     },
