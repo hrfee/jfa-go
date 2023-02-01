@@ -438,6 +438,7 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 			return
 		}
 		gcHTML(gc, http.StatusOK, "create-success.html", gin.H{
+			"cssClass":       app.cssClass,
 			"strings":        app.storage.lang.Form[lang].Strings,
 			"successMessage": app.config.Section("ui").Key("success_message").String(),
 			"contactMessage": app.config.Section("ui").Key("contact_message").String(),
