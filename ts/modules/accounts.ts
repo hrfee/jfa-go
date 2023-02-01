@@ -1334,9 +1334,7 @@ export class accountsList {
         const list = this._collectUsers();
         let applyList: string[] = [];
         for (let id of list) {
-            if (this._users[id].expiry || enableUser) {
-                applyList.push(id);
-            }
+            applyList.push(id);
         }
         this._enableExpiryReason.classList.add("unfocused");
         let header: string;
