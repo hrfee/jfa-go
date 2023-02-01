@@ -15,11 +15,25 @@
         "passwordRequirementsHeader": "Persyaratan Kata Sandi",
         "successHeader": "Sukses!",
         "confirmationRequired": "Konfirmasi email diperlukan",
-        "confirmationRequiredMessage": "Silakan periksa kotak masuk email Anda untuk memverifikasi alamat Anda."
+        "confirmationRequiredMessage": "Silakan periksa kotak masuk email Anda untuk memverifikasi alamat Anda.",
+        "sendPINDiscord": "Ketik {command} di {server_channel} pada Discord, lalu kirim PIN di bawah ini.",
+        "yourAccountIsValidUntil": "Akun kamu berlaku hingga {date}.",
+        "sendPIN": "Kirim PIN di bawah ini ke bot, lalu kembali kesini untuk menerima link ke akun kamu.",
+        "matrixEnterUser": "Masukkan User ID kamu, tekan submit, nomor PIN akan dikirimkan ke kamu. Masukkan untuk melanjutkan."
     },
     "notifications": {
         "errorUserExists": "Pengguna sudah ada.",
-        "errorInvalidCode": "Kode undangan tidak valid."
+        "errorInvalidCode": "Kode undangan tidak valid.",
+        "errorDiscordVerification": "Butuh verifikasi pada Discord.",
+        "errorUnknown": "Terjadi kesalahan.",
+        "errorTelegramVerification": "Butuh verifikasi pada Telegram.",
+        "errorInvalidPIN": "Kode PIN salah.",
+        "errorCaptcha": "Captcha salah.",
+        "errorPassword": "Perhatikan persyaratan password.",
+        "errorNoMatch": "Password tidak sama.",
+        "verified": "Akun terverifikasi.",
+        "errorNoEmail": "Butuh Email.",
+        "errorMatrixVerification": "Butuh verifikasi pada Matrix."
     },
     "validationStrings": {
         "length": {
