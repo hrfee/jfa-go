@@ -326,7 +326,7 @@ func (app *appContext) TelegramAddUser(gc *gin.Context) {
 // @Success 200 {object} boolResponse
 // @Success 400 {object} boolResponse
 // @Success 500 {object} boolResponse
-// @Router /users/telegram/notify [post]
+// @Router /users/contact [post]
 // @Security Bearer
 // @tags Other
 func (app *appContext) SetContactMethods(gc *gin.Context) {

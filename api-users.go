@@ -1023,9 +1023,16 @@ func (app *appContext) ModifyEmails(gc *gin.Context) {
 		id := jfUser.ID
 		if address, ok := req[id]; ok {
 			var emailStore = EmailAddress{}
-			if oldEmail, ok := app.storage.emails[id]; ok {
+			oldEmail, ok := app.storage.emails[id]
+			if ok {
 				emailStore = oldEmail
 			}
+			// Auto enable contact by email for newly added addresses
+			if !ok || oldEmail.Addr == "" {
+				emailStore.Contact = true
+				app.storage.storeEmails()
+			}
+
 			emailStore.Addr = address
 			app.storage.emails[id] = emailStore
 			if ombiEnabled {
