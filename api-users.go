@@ -130,6 +130,18 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 				success = false
 				return
 			}
+			if app.config.Section("discord").Key("require_unique").MustBool(false) {
+				for _, u := range app.storage.discord {
+					if discordUser.ID == u.ID {
+						f = func(gc *gin.Context) {
+							app.debug.Printf("%s: New user failed: Discord user already linked", req.Code)
+							respond(400, "errorAccountLinked", gc)
+						}
+						success = false
+						return
+					}
+				}
+			}
 			err := app.discord.ApplyRole(discordUser.ID)
 			if err != nil {
 				f = func(gc *gin.Context) {
@@ -164,6 +176,18 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 				success = false
 				return
 			}
+			if app.config.Section("matrix").Key("require_unique").MustBool(false) {
+				for _, u := range app.storage.matrix {
+					if user.User.UserID == u.UserID {
+						f = func(gc *gin.Context) {
+							app.debug.Printf("%s: New user failed: Matrix user already linked", req.Code)
+							respond(400, "errorAccountLinked", gc)
+						}
+						success = false
+						return
+					}
+				}
+			}
 			matrixVerified = user.Verified
 			matrixUser = *user.User
 
@@ -194,6 +218,18 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 				}
 				success = false
 				return
+			}
+			if app.config.Section("telegram").Key("require_unique").MustBool(false) {
+				for _, u := range app.storage.telegram {
+					if app.telegram.verifiedTokens[telegramTokenIndex].Username == u.Username {
+						f = func(gc *gin.Context) {
+							app.debug.Printf("%s: New user failed: Telegram user already linked", req.Code)
+							respond(400, "errorAccountLinked", gc)
+						}
+						success = false
+						return
+					}
+				}
 			}
 		}
 	}
@@ -445,10 +481,21 @@ func (app *appContext) NewUser(gc *gin.Context) {
 		gc.JSON(200, validation)
 		return
 	}
-	if emailEnabled && app.config.Section("email").Key("required").MustBool(false) && !strings.Contains(req.Email, "@") {
-		app.info.Printf("%s: New user failed: Email Required", req.Code)
-		respond(400, "errorNoEmail", gc)
-		return
+	if emailEnabled {
+		if app.config.Section("email").Key("required").MustBool(false) && !strings.Contains(req.Email, "@") {
+			app.info.Printf("%s: New user failed: Email Required", req.Code)
+			respond(400, "errorNoEmail", gc)
+			return
+		}
+		if app.config.Section("email").Key("require_unique").MustBool(false) && req.Email != "" {
+			for _, email := range app.storage.emails {
+				if req.Email == email.Addr {
+					app.info.Printf("%s: New user failed: Email already in use", req.Code)
+					respond(400, "errorEmailLinked", gc)
+					return
+				}
+			}
+		}
 	}
 	f, success := app.newUser(req, false)
 	if !success {

@@ -453,6 +453,14 @@ func (app *appContext) TelegramVerifiedInvite(gc *gin.Context) {
 			break
 		}
 	}
+	if app.config.Section("telegram").Key("require_unique").MustBool(false) {
+		for _, u := range app.storage.telegram {
+			if app.telegram.verifiedTokens[tokenIndex].Username == u.Username {
+				respondBool(400, false, gc)
+				return
+			}
+		}
+	}
 	// if tokenIndex != -1 {
 	// 	length := len(app.telegram.verifiedTokens)
 	// 	app.telegram.verifiedTokens[length-1], app.telegram.verifiedTokens[tokenIndex] = app.telegram.verifiedTokens[tokenIndex], app.telegram.verifiedTokens[length-1]
@@ -477,6 +485,15 @@ func (app *appContext) DiscordVerifiedInvite(gc *gin.Context) {
 	}
 	pin := gc.Param("pin")
 	_, ok := app.discord.verifiedTokens[pin]
+	if app.config.Section("discord").Key("require_unique").MustBool(false) {
+		for _, u := range app.storage.discord {
+			if app.discord.verifiedTokens[pin].ID == u.ID {
+				delete(app.discord.verifiedTokens, pin)
+				respondBool(400, false, gc)
+				return
+			}
+		}
+	}
 	respondBool(200, ok, gc)
 }
 
@@ -510,7 +527,7 @@ func (app *appContext) DiscordServerInvite(gc *gin.Context) {
 // @Summary Generate and send a new PIN to a specified Matrix user.
 // @Produce json
 // @Success 200 {object} boolResponse
-// @Failure 400 {object} boolResponse
+// @Failure 400 {object} stringResponse
 // @Failure 401 {object} boolResponse
 // @Failure 500 {object} boolResponse
 // @Param invCode path string true "invite Code"
@@ -526,9 +543,18 @@ func (app *appContext) MatrixSendPIN(gc *gin.Context) {
 	var req MatrixSendPINDTO
 	gc.BindJSON(&req)
 	if req.UserID == "" {
-		respondBool(400, false, gc)
+		respond(400, "errorNoUserID", gc)
 		return
 	}
+	if app.config.Section("matrix").Key("require_unique").MustBool(false) {
+		for _, u := range app.storage.matrix {
+			if req.UserID == u.UserID {
+				respondBool(400, false, gc)
+				return
+			}
+		}
+	}
+
 	ok := app.matrix.SendStart(req.UserID)
 	if !ok {
 		respondBool(500, false, gc)

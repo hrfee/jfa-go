@@ -61,6 +61,9 @@ if (window.telegramEnabled) {
                     window.telegramModal.close();
                     window.notifications.customError("invalidCodeError", window.messages["errorInvalidCode"]);
                     return;
+                } else if (req.status == 400) {
+                    window.telegramModal.close();
+                    window.notifications.customError("accountLinkedError", window.messages["errorAccountLinked"]);
                 } else if (req.status == 200) {
                     if (req.response["success"] as boolean) {
                         telegramVerified = true;
@@ -124,6 +127,9 @@ if (window.discordEnabled) {
                     window.discordModal.close();
                     window.notifications.customError("invalidCodeError", window.messages["errorInvalidCode"]);
                     return;
+                } else if (req.status == 400) {
+                    window.discordModal.close();
+                    window.notifications.customError("accountLinkedError", window.messages["errorAccountLinked"]);
                 } else if (req.status == 200) {
                     if (req.response["success"] as boolean) {
                         discordVerified = true;
@@ -165,6 +171,10 @@ if (window.matrixEnabled) {
             };
             _post("/invite/" + window.code + "/matrix/user", send, (req: XMLHttpRequest) => {
                 if (req.readyState == 4) {
+                    if (req.status == 400 && req.response["error"] == "errorAccountLinked") {
+                        window.matrixModal.close();
+                        window.notifications.customError("accountLinkedError", window.messages["errorAccountLinked"]);
+                    }
                     removeLoader(submitButton);
                     userID = input.value;
                     if (req.status != 200) {

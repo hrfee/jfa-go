@@ -18,7 +18,7 @@ import (
 type Storage struct {
 	timePattern                                                                                                                                                                                                          string
 	invite_path, emails_path, policy_path, configuration_path, displayprefs_path, ombi_path, profiles_path, customEmails_path, users_path, telegram_path, discord_path, matrix_path, announcements_path, matrix_sql_path string
-	users                                                                                                                                                                                                                map[string]time.Time
+	users                                                                                                                                                                                                                map[string]time.Time // Map of Jellyfin User IDs to their expiry times.
 	invites                                                                                                                                                                                                              Invites
 	profiles                                                                                                                                                                                                             map[string]Profile
 	defaultProfile                                                                                                                                                                                                       string

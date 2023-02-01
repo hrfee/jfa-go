@@ -502,6 +502,14 @@
                     "type": "bool",
                     "value": false,
                     "description": "Require an email address on sign-up."
+                },
+                "require_unique": {
+                    "name": "Require unique address",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "bool",
+                    "value": false,
+                    "description": "Disables using the same address on multiple accounts."
                 }
             }
         },
@@ -641,6 +649,14 @@
                     "value": false,
                     "description": "Require Discord connection on sign-up. See the jfa-go wiki for info on setting this up."
                 },
+                "require_unique": {
+                    "name": "Require unique user",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "bool",
+                    "value": false,
+                    "description": "Disables using the same user on multiple Jellyfin accounts."
+                },
                 "token": {
                     "name": "API Token",
                     "required": false,
@@ -745,6 +761,14 @@
                     "value": false,
                     "description": "Require telegram connection on sign-up."
                 },
+                "require_unique": {
+                    "name": "Require unique user",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "bool",
+                    "value": false,
+                    "description": "Disables using the same user on multiple Jellyfin accounts."
+                },
                 "token": {
                     "name": "API Token",
                     "required": false,
@@ -800,6 +824,14 @@
                     "type": "bool",
                     "value": false,
                     "description": "Require Matrix connection on sign-up."
+                },
+                "require_unique": {
+                    "name": "Require unique user",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "bool",
+                    "value": false,
+                    "description": "Disables using the same user on multiple Jellyfin accounts."
                 },
                 "homeserver": {
                     "name": "Home Server URL",

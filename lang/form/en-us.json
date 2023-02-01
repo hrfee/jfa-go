@@ -24,6 +24,8 @@
     "notifications": {
         "errorUserExists": "User already exists.",
         "errorInvalidCode": "Invalid invite code.",
+        "errorAccountLinked": "Account already in use.",
+        "errorEmailLinked": "Email already in use.",
         "errorTelegramVerification": "Telegram verification required.",
         "errorDiscordVerification": "Discord verification required.",
         "errorMatrixVerification": "Matrix verification required.",
