@@ -8,6 +8,9 @@
         {{ else }}
         <title>{{ .strings.pageTitle }}</title>
         {{ end }}
+        <script>
+            window.redirectToJellyfin = {{ .redirectToJellyfin }};
+        </script>
     </head>
     <body class="max-w-full overflow-x-hidden section">
         <div id="modal-success" class="modal">

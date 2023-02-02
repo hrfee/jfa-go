@@ -10,7 +10,8 @@ interface formWindow extends Window {
     telegramModal: Modal;
     discordModal: Modal;
     matrixModal: Modal;
-    confirmationModal: Modal
+    confirmationModal: Modal;
+    redirectToJellyfin: boolean;
     code: string;
     messages: { [key: string]: string };
     confirmation: boolean;
@@ -412,7 +413,12 @@ const create = (event: SubmitEvent) => {
                 if (!vals[type]) { valid = false; }
             }
             if (req.status == 200 && valid) {
-                window.successModal.show();
+                if (window.redirectToJellyfin == true) {
+                    const url = ((document.getElementById("modal-success") as HTMLDivElement).querySelector("a.submit") as HTMLAnchorElement).href;
+                    window.location.href = url;
+                } else {
+                    window.successModal.show();
+                }
             } else {
                 submitSpan.classList.add("~critical");
                 submitSpan.classList.remove("~urge");

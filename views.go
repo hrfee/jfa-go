@@ -170,6 +170,7 @@ func (app *appContext) ResetPassword(gc *gin.Context) {
 		data["helpMessage"] = app.config.Section("ui").Key("help_message").String()
 		data["successMessage"] = app.config.Section("ui").Key("success_message").String()
 		data["jfLink"] = app.config.Section("ui").Key("redirect_url").String()
+		data["redirectToJellyfin"] = app.config.Section("ui").Key("auto_redirect").MustBool(false)
 		data["validate"] = app.config.Section("password_validation").Key("enabled").MustBool(false)
 		data["requirements"] = app.validator.getCriteria()
 		data["strings"] = app.storage.lang.PasswordReset[lang].Strings
@@ -437,13 +438,18 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 			fail()
 			return
 		}
-		gcHTML(gc, http.StatusOK, "create-success.html", gin.H{
-			"cssClass":       app.cssClass,
-			"strings":        app.storage.lang.Form[lang].Strings,
-			"successMessage": app.config.Section("ui").Key("success_message").String(),
-			"contactMessage": app.config.Section("ui").Key("contact_message").String(),
-			"jfLink":         app.config.Section("ui").Key("redirect_url").String(),
-		})
+		jfLink := app.config.Section("ui").Key("redirect_url").String()
+		if app.config.Section("ui").Key("auto_redirect").MustBool(false) {
+			gc.Redirect(301, jfLink)
+		} else {
+			gcHTML(gc, http.StatusOK, "create-success.html", gin.H{
+				"cssClass":       app.cssClass,
+				"strings":        app.storage.lang.Form[lang].Strings,
+				"successMessage": app.config.Section("ui").Key("success_message").String(),
+				"contactMessage": app.config.Section("ui").Key("contact_message").String(),
+				"jfLink":         jfLink,
+			})
+		}
 		inv, ok := app.storage.invites[code]
 		if ok {
 			l := len(inv.Keys)
@@ -461,35 +467,36 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 	matrix := matrixEnabled && app.config.Section("matrix").Key("show_on_reg").MustBool(true)
 
 	data := gin.H{
-		"urlBase":           app.getURLBase(gc),
-		"cssClass":          app.cssClass,
-		"cssVersion":        cssVersion,
-		"contactMessage":    app.config.Section("ui").Key("contact_message").String(),
-		"helpMessage":       app.config.Section("ui").Key("help_message").String(),
-		"successMessage":    app.config.Section("ui").Key("success_message").String(),
-		"jfLink":            app.config.Section("ui").Key("redirect_url").String(),
-		"validate":          app.config.Section("password_validation").Key("enabled").MustBool(false),
-		"requirements":      app.validator.getCriteria(),
-		"email":             email,
-		"username":          !app.config.Section("email").Key("no_username").MustBool(false),
-		"strings":           app.storage.lang.Form[lang].Strings,
-		"validationStrings": app.storage.lang.Form[lang].validationStringsJSON,
-		"notifications":     app.storage.lang.Form[lang].notificationsJSON,
-		"code":              code,
-		"confirmation":      app.config.Section("email_confirmation").Key("enabled").MustBool(false),
-		"userExpiry":        inv.UserExpiry,
-		"userExpiryMonths":  inv.UserMonths,
-		"userExpiryDays":    inv.UserDays,
-		"userExpiryHours":   inv.UserHours,
-		"userExpiryMinutes": inv.UserMinutes,
-		"userExpiryMessage": app.storage.lang.Form[lang].Strings.get("yourAccountIsValidUntil"),
-		"langName":          lang,
-		"passwordReset":     false,
-		"telegramEnabled":   telegram,
-		"discordEnabled":    discord,
-		"matrixEnabled":     matrix,
-		"emailRequired":     app.config.Section("email").Key("required").MustBool(false),
-		"captcha":           app.config.Section("captcha").Key("enabled").MustBool(false),
+		"urlBase":            app.getURLBase(gc),
+		"cssClass":           app.cssClass,
+		"cssVersion":         cssVersion,
+		"contactMessage":     app.config.Section("ui").Key("contact_message").String(),
+		"helpMessage":        app.config.Section("ui").Key("help_message").String(),
+		"successMessage":     app.config.Section("ui").Key("success_message").String(),
+		"jfLink":             app.config.Section("ui").Key("redirect_url").String(),
+		"redirectToJellyfin": app.config.Section("ui").Key("auto_redirect").MustBool(false),
+		"validate":           app.config.Section("password_validation").Key("enabled").MustBool(false),
+		"requirements":       app.validator.getCriteria(),
+		"email":              email,
+		"username":           !app.config.Section("email").Key("no_username").MustBool(false),
+		"strings":            app.storage.lang.Form[lang].Strings,
+		"validationStrings":  app.storage.lang.Form[lang].validationStringsJSON,
+		"notifications":      app.storage.lang.Form[lang].notificationsJSON,
+		"code":               code,
+		"confirmation":       app.config.Section("email_confirmation").Key("enabled").MustBool(false),
+		"userExpiry":         inv.UserExpiry,
+		"userExpiryMonths":   inv.UserMonths,
+		"userExpiryDays":     inv.UserDays,
+		"userExpiryHours":    inv.UserHours,
+		"userExpiryMinutes":  inv.UserMinutes,
+		"userExpiryMessage":  app.storage.lang.Form[lang].Strings.get("yourAccountIsValidUntil"),
+		"langName":           lang,
+		"passwordReset":      false,
+		"telegramEnabled":    telegram,
+		"discordEnabled":     discord,
+		"matrixEnabled":      matrix,
+		"emailRequired":      app.config.Section("email").Key("required").MustBool(false),
+		"captcha":            app.config.Section("captcha").Key("enabled").MustBool(false),
 	}
 	if telegram {
 		data["telegramPIN"] = app.telegram.NewAuthToken()

@@ -272,6 +272,7 @@
                     "requires_restart": true,
                     "type": "bool",
                     "value": false,
+                    "advanced": true,
                     "description": "Navigate directly to the above URL instead of needing the user to click \"Continue\"."
                 }
             }
