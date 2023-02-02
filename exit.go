@@ -5,13 +5,12 @@ import (
 	"html/template"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"runtime/debug"
 	"strings"
 	"time"
-
-	"github.com/pkg/browser"
 )
 
 // https://gist.github.com/swdunlop/9629168
@@ -43,6 +42,21 @@ func identifyPanic() string {
 	return fmt.Sprintf("pc:%x", pc)
 }
 
+// OpenFile attempts to open a given file in the appropriate GUI application.
+func OpenFile(fpath string) (err error) {
+	switch PLATFORM {
+	case "linux":
+		err = exec.Command("xdg-open", fpath).Start()
+	case "windows":
+		err = exec.Command("rundll32", "url.dll,FileProtocolHandler", fpath).Start()
+	case "darwin":
+		err = exec.Command("open", fpath).Start()
+	default:
+		err = fmt.Errorf("unknown os")
+	}
+	return
+}
+
 // Exit dumps the last 100 lines of output to a crash file in /tmp (or equivalent), and generates a prettier HTML file containing it that is opened in the browser if possible.
 func Exit(err interface{}) {
 	tmpl, err2 := template.ParseFS(localFS, "html/crash.html", "html/header.html")
@@ -63,7 +77,8 @@ func Exit(err interface{}) {
 	if err != nil {
 		data["Err"] = fmt.Sprintf("%s %v", identifyPanic(), err)
 	}
-	fpath := filepath.Join(temp, "jfa-go-crash-"+time.Now().Local().Format("2006-01-02T15:04:05"))
+	// Use dashes for time rather than colons for Windows
+	fpath := filepath.Join(temp, "jfa-go-crash-"+time.Now().Local().Format("2006-01-02T15-04-05"))
 	err2 = os.WriteFile(fpath+".txt", []byte(logCache), 0666)
 	if err2 != nil {
 		log.Fatalf("Failed to write crash dump file: %v", err2)
@@ -78,7 +93,10 @@ func Exit(err interface{}) {
 	if err2 != nil {
 		log.Fatalf("Failed to execute template: %v", err2)
 	}
-	browser.OpenFile(fpath + ".html")
+	if err := OpenFile(fpath + ".html"); err != nil {
+		log.Printf("Failed to open browser, trying text file...")
+		OpenFile(fpath + ".txt")
+	}
 	if TRAY {
 		QuitTray()
 	} else {

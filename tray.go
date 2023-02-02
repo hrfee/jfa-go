@@ -1,3 +1,4 @@
+//go:build tray
 // +build tray
 
 package main
@@ -9,7 +10,6 @@ import (
 	"syscall"
 
 	"github.com/getlantern/systray"
-	"github.com/skratchdot/open-golang/open"
 )
 
 var TRAY = true
@@ -101,7 +101,8 @@ func onReady() {
 		case <-mRestart.ClickedCh:
 			trayRestart()
 		case <-mOpenLogs.ClickedCh:
-			open.Start(logPath)
+			log.Printf("Opening %s\n", logPath)
+			OpenFile(logPath)
 		case <-mQuit.ClickedCh:
 			systray.Quit()
 		}

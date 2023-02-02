@@ -27,7 +27,11 @@ func logOutput() (closeFunc func(), err error) {
 			closeFunc = func() {}
 			return
 		}
-		writers = append(writers, colorStripper{f})
+		if PLATFORM == "windows" {
+			writers = []io.Writer{colorStripper{lineCache}, colorStripper{f}}
+		} else {
+			writers = append(writers, colorStripper{f})
+		}
 		closeFunc = func() {
 			w.Close()
 			<-wExit
