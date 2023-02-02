@@ -265,6 +265,14 @@
                     "value": "",
                     "advanced": true,
                     "description": "Set a different URL for the sign-up form to redirect the user to when they've signed up. Default to 'Public Server' or 'Server' in the Jellyfin tab."
+                },
+                "auto_redirect": {
+                    "name": "Auto redirect on success",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "bool",
+                    "value": false,
+                    "description": "Navigate directly to the above URL instead of needing the user to click \"Continue\"."
                 }
             }
         },

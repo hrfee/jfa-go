@@ -80,7 +80,7 @@ npm:
 	@if [ "$(GOESBUILD)" = "off" ]; then\
 		npm install esbuild;\
 	else\
-		go get -u github.com/evanw/esbuild/cmd/esbuild;\
+		go install github.com/evanw/esbuild/cmd/esbuild@latest;\
 	fi
 
 configuration:
