@@ -45,7 +45,7 @@ sudo apt-get install jfa-go-tray
      -p 8056:8056 <span style="color: #BB6622; font-weight: bold">\</span>
    <span style="color: #408080; font-style: italic"># -p 8057:8057 if using tls</span>
      -v /path/to/.config/jfa-go:/data <span style="color: #BB6622; font-weight: bold">\ </span><span style="color: #408080; font-style: italic"># Path to wherever you want to store the config file and other data</span>
-     -v /path/to/jellyfin:/jf <span style="color: #BB6622; font-weight: bold">\ </span><span style="color: #408080; font-style: italic"># Path to Jellyfin config directory, ignore if using Emby</span>
+     -v /path/to/jellyfin:/jf <span style="color: #BB6622; font-weight: bold">\ </span><span style="color: #408080; font-style: italic"># Optional path to Jellyfin config directory for auto password resets, ignore if using Emby</span>
      -v /etc/localtime:/etc/localtime:ro <span style="color: #BB6622; font-weight: bold">\ </span><span style="color: #408080; font-style: italic"># Makes sure time is correct</span>
      hrfee/jfa-go<span id="docker-unstable" class="unfocused">:unstable</span></pre>
                 </div>
@@ -64,7 +64,14 @@ sudo apt-get install jfa-go-tray
                         <li>Send invite links to your users, let them sign up themselves</li>
                         <li>Create setting profiles to restrict permissions of new users</li>
                         <li>Handles password resets without your intervention</li>
-                        <li>Enforce password requirements on sign-up</li>
+                        <li>
+                            Enforce sign-up requirements:
+                            <ul>
+                                <li>Password strength</li>
+                                <li>Contact method verification</li>
+                                <li>CAPTCHA</li>
+                            </ul>
+                        </li>
                         <li>Send messages & notifications to your users (email, discord, telegram, matrix available)</li>
                         <li>Set accounts to expire after a specified time</li>
                         <li>Manage your users in bulk</li>
@@ -95,11 +102,11 @@ sudo apt-get install jfa-go-tray
                 <p class="row col flex center support">instructions can be found&nbsp<a target="_blank" href="https://github.com/hrfee/jfa-go#install">here</a></p>
                 <p class="row col flex center text-center support">note: tray icon builds should only be used on systems with a Desktop Interface, and require extra dependencies on linux, see the github README for more info.</p>
                 <div class="row col flex center">
-                    <span class="button ~neutral @high mr-1 mt-1" id="download-stable">Stable</span>
+                    <span class="button ~neutral @high mr-1 mt-1" id="download-stable">Stable (-ish)</span>
                     <span class="button ~neutral mt-1 mr-1" id="download-unstable">Unstable</span>
                 </div>
                 <div class="mt-1" id="sect-stable">
-                    <p class="row center">Usually released once/twice every month, and aren't necessarily super stable.</p>
+                    <p class="row center">Released sporadically, not necessarily super stable.</p>
                     <div class="row col flex center">
                         <a class="button ~info mr-2 mb-2 lang-link" target="_blank" href="https://github.com/hrfee/jfa-go/releases">windows/mac/linux</a>
                         <a class="button ~info mr-2 mb-2 lang-link" id="download-docker">docker</a>
@@ -109,7 +116,7 @@ sudo apt-get install jfa-go-tray
                     </div>
                 </div>
                 <div class="mt-1 unfocused" id="sect-unstable">
-                    <p class="row center">These are built on every commit, so may include incomplete/broken features. Take care.</p>
+                    <p class="row center">Built on every commit, so may include incomplete/broken features. Take care.</p>
                     <div class="row col flex center">
                         <a class="button ~info mr-2 mb-2 lang-link" id="download-docker-unstable">docker</a>
                         <a class="button ~info mr-2 mb-2 lang-link" id="download-deb-unstable">debian/ubuntu</a>
@@ -117,7 +124,7 @@ sudo apt-get install jfa-go-tray
                     </div>
                 </div>
                 <section class="section ~neutral banner footer flex-expand middle">
-                    <a href="https://github.com/hrfee/jfa-go/blob/main/LICENSE" class="support">© 2021 Harvey Tindall</a>
+                    <a href="https://github.com/hrfee/jfa-go/blob/main/LICENSE" class="support">© 2023 Harvey Tindall</a>
                 </section>
             </div>
         </div>
