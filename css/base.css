@@ -432,6 +432,9 @@ p.top {
 .dropdown {
     padding-bottom: 0.5rem;
     margin-bottom: -0.5rem;
+}
+
+.dropdown.over-top {
     position: absolute;
 }
 
