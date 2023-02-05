@@ -59,6 +59,7 @@
         "reset": "Reset",
         "edit": "Edit",
         "donate": "Donate",
+        "unlink": "Unlink Account",
         "sendPWR": "Send Password Reset",
         "contactThrough": "Contact through:",
         "extendExpiry": "Extend expiry",

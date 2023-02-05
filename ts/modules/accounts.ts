@@ -81,6 +81,15 @@ class user implements User {
         if (email) return "email";
     }
 
+    private _checkUnlinkArea = () => {
+        const unlinkHeader = this._notifyDropdown.querySelector(".accounts-unlink-header") as HTMLSpanElement;
+        if (this.lastNotifyMethod() == "email" || !this.lastNotifyMethod()) {
+            unlinkHeader.classList.add("unfocused");
+        } else {
+            unlinkHeader.classList.remove("unfocused");
+        }
+    }
+
     get selected(): boolean { return this._selected; }
     set selected(state: boolean) {
         this._selected = state;
@@ -164,30 +173,40 @@ class user implements User {
         <div class="dropdown manual">
             <div class="dropdown-display lg">
                 <div class="card ~neutral @low">
-                    <span class="supra sm">${window.lang.strings("contactThrough")}</span>
+                    <div class="supra sm mb-2">${window.lang.strings("contactThrough")}</div>
                     <div class="accounts-area-email">
-                        <label class="row switch pb-4 mt-2">
+                        <label class="row switch pb-2">
                             <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-email mr-2">
                             </span>Email</span>
                         </label>
                     </div>
                     <div class="accounts-area-telegram">
-                        <label class="row switch pb-4">
+                        <label class="row switch pb-2">
                             <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-telegram mr-2">
                             <span>Telegram</span>
                         </label>
                     </div>
                     <div class="accounts-area-discord">
-                        <label class="row switch pb-4">
+                        <label class="row switch pb-2">
                             <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-discord mr-2">
                             <span>Discord</span>
                         </label>
                     </div>
                     <div class="accounts-area-matrix">
-                        <label class="row switch pb-4">
+                        <label class="row switch pb-2">
                             <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-matrix mr-2">
                             <span>Matrix</span>
                         </label>
+                    </div>
+                    <div class="supra sm mb-2 accounts-unlink-header">${window.lang.strings("unlink")}:</div>
+                    <div class="accounts-unlink-telegram"> 
+                        <button class="button ~critical mb-2 w-100">Telegram</button>
+                    </div>
+                    <div class="accounts-unlink-discord"> 
+                        <button class="button ~critical mb-2 w-100">Discord</button>
+                    </div>
+                    <div class="accounts-unlink-matrix"> 
+                        <button class="button ~critical mb-2 w-100">Matrix</button>
                     </div>
                 </div>
             </div>
@@ -199,6 +218,10 @@ class user implements User {
         const checks = el.querySelectorAll("input") as NodeListOf<HTMLInputElement>;
         for (let i = 0; i < checks.length; i++) {
             checks[i].onclick = () => this._setNotifyMethod();
+        }
+        
+        for (let service of ["telegram", "discord", "matrix"]) {
+            el.querySelector(".accounts-unlink-"+service).addEventListener("click", () => _delete(`/users/${service}`, {"id": this.id}, () => document.dispatchEvent(new CustomEvent("accounts-reload"))));
         }
 
         button.onclick = () => {
@@ -218,12 +241,14 @@ class user implements User {
     set matrix(u: string) {
         if (!window.matrixEnabled) {
             this._notifyDropdown.querySelector(".accounts-area-matrix").classList.add("unfocused");
+            this._notifyDropdown.querySelector(".accounts-unlink-matrix").classList.add("unfocused");
             return;
         }
         const lastNotifyMethod = this.lastNotifyMethod() == "matrix";
         this._matrixID = u;
         if (!u) {
             this._notifyDropdown.querySelector(".accounts-area-matrix").classList.add("unfocused");
+            this._notifyDropdown.querySelector(".accounts-unlink-matrix").classList.add("unfocused");
             this._matrix.innerHTML = `
             <div class="table-inline justify-center">
                 <span class="chip btn @low"><i class="ri-link" alt="${window.lang.strings("add")}"></i></span>
@@ -233,6 +258,7 @@ class user implements User {
             (this._matrix.querySelector("span") as HTMLSpanElement).onclick = this._addMatrix;
         } else {
             this._notifyDropdown.querySelector(".accounts-area-matrix").classList.remove("unfocused");
+            this._notifyDropdown.querySelector(".accounts-unlink-matrix").classList.remove("unfocused");
             this._matrix.innerHTML = `
             <div class="table-inline">
                 ${u}
@@ -242,6 +268,7 @@ class user implements User {
                 (this._matrix.querySelector(".table-inline") as HTMLDivElement).appendChild(this._notifyDropdown);
             }
         }
+        this._checkUnlinkArea();
     }
    
     private _addMatrix = () => {
@@ -290,16 +317,19 @@ class user implements User {
     set telegram(u: string) {
         if (!window.telegramEnabled) {
             this._notifyDropdown.querySelector(".accounts-area-telegram").classList.add("unfocused");
+            this._notifyDropdown.querySelector(".accounts-unlink-telegram").classList.add("unfocused");
             return;
         }
         const lastNotifyMethod = this.lastNotifyMethod() == "telegram";
         this._telegramUsername = u;
         if (!u) {
             this._notifyDropdown.querySelector(".accounts-area-telegram").classList.add("unfocused");
+            this._notifyDropdown.querySelector(".accounts-unlink-telegram").classList.add("unfocused");
             this._telegram.innerHTML = `<div class="table-inline justify-center"><span class="chip btn @low"><i class="ri-link" alt="${window.lang.strings("add")}"></i></span></div>`;
             (this._telegram.querySelector("span") as HTMLSpanElement).onclick = this._addTelegram;
         } else {
             this._notifyDropdown.querySelector(".accounts-area-telegram").classList.remove("unfocused");
+            this._notifyDropdown.querySelector(".accounts-unlink-telegram").classList.remove("unfocused");
             this._telegram.innerHTML = `
             <div class="table-inline">
                 <a href="https://t.me/${u}" target="_blank">@${u}</a>
@@ -309,6 +339,7 @@ class user implements User {
                 (this._telegram.querySelector(".table-inline") as HTMLDivElement).appendChild(this._notifyDropdown);
             }
         }
+        this._checkUnlinkArea();
     }
     
     get notify_telegram(): boolean { return this._notifyTelegram; }
@@ -356,6 +387,7 @@ class user implements User {
     set discord(u: string) {
         if (!window.discordEnabled) {
             this._notifyDropdown.querySelector(".accounts-area-discord").classList.add("unfocused");
+            this._notifyDropdown.querySelector(".accounts-unlink-discord").classList.add("unfocused");
             return;
         }
         const lastNotifyMethod = this.lastNotifyMethod() == "discord";
@@ -364,8 +396,10 @@ class user implements User {
             this._discord.innerHTML = `<div class="table-inline justify-center"><span class="chip btn @low"><i class="ri-link" alt="${window.lang.strings("add")}"></i></span></div>`;
             (this._discord.querySelector("span") as HTMLSpanElement).onclick = () => addDiscord(this.id);
             this._notifyDropdown.querySelector(".accounts-area-discord").classList.add("unfocused");
+            this._notifyDropdown.querySelector(".accounts-unlink-discord").classList.add("unfocused");
         } else {
             this._notifyDropdown.querySelector(".accounts-area-discord").classList.remove("unfocused");
+            this._notifyDropdown.querySelector(".accounts-unlink-discord").classList.remove("unfocused");
             this._discord.innerHTML = `
             <div class="table-inline">
                 <a href="https://discord.com/users/${this._discordID}" class="discord-link" target="_blank">${u}</a>
@@ -375,6 +409,7 @@ class user implements User {
                 (this._discord.querySelector(".table-inline") as HTMLDivElement).appendChild(this._notifyDropdown);
             }
         }
+        this._checkUnlinkArea();
     }
 
     get discord_id(): string { return this._discordID; }

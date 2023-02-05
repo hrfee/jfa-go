@@ -355,3 +355,7 @@ type setAccountsAdminDTO map[string]bool
 type genCaptchaDTO struct {
 	ID string `json:"id"`
 }
+
+type forUserDTO struct {
+	ID string `json:"id"` // Jellyfin ID
+}

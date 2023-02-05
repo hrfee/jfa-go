@@ -724,3 +724,60 @@ func (app *appContext) DiscordConnect(gc *gin.Context) {
 	linkExistingOmbiDiscordTelegram(app)
 	respondBool(200, true, gc)
 }
+
+// @Summary unlink a Discord account from a Jellyfin user. Always succeeds.
+// @Produce json
+// @Success 200 {object} boolResponse
+// @Param forUserDTO body forUserDTO true "User's Jellyfin ID."
+// @Router /users/discord [delete]
+// @Tags Users
+func (app *appContext) UnlinkDiscord(gc *gin.Context) {
+	var req forUserDTO
+	gc.BindJSON(&req)
+	/* user, status, err := app.jf.UserByID(req.ID, false)
+	if req.ID == "" || status != 200 || err != nil {
+		respond(400, "User not found", gc)
+		return
+	} */
+	delete(app.storage.discord, req.ID)
+	app.storage.storeDiscordUsers()
+	respondBool(200, true, gc)
+}
+
+// @Summary unlink a Telegram account from a Jellyfin user. Always succeeds.
+// @Produce json
+// @Success 200 {object} boolResponse
+// @Param forUserDTO body forUserDTO true "User's Jellyfin ID."
+// @Router /users/telegram [delete]
+// @Tags Users
+func (app *appContext) UnlinkTelegram(gc *gin.Context) {
+	var req forUserDTO
+	gc.BindJSON(&req)
+	/* user, status, err := app.jf.UserByID(req.ID, false)
+	if req.ID == "" || status != 200 || err != nil {
+		respond(400, "User not found", gc)
+		return
+	} */
+	delete(app.storage.telegram, req.ID)
+	app.storage.storeTelegramUsers()
+	respondBool(200, true, gc)
+}
+
+// @Summary unlink a Matrix account from a Jellyfin user. Always succeeds.
+// @Produce json
+// @Success 200 {object} boolResponse
+// @Param forUserDTO body forUserDTO true "User's Jellyfin ID."
+// @Router /users/matrix [delete]
+// @Tags Users
+func (app *appContext) UnlinkMatrix(gc *gin.Context) {
+	var req forUserDTO
+	gc.BindJSON(&req)
+	/* user, status, err := app.jf.UserByID(req.ID, false)
+	if req.ID == "" || status != 200 || err != nil {
+		respond(400, "User not found", gc)
+		return
+	} */
+	delete(app.storage.matrix, req.ID)
+	app.storage.storeMatrixUsers()
+	respondBool(200, true, gc)
+}
