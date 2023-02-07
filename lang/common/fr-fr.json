@@ -7,7 +7,7 @@
         "username": "Nom d'utilisateur",
         "name": "Nom",
         "password": "Mot de passe",
-        "emailAddress": "Addresse Email",
+        "emailAddress": "Adresse e-mail",
         "submit": "Soumettre",
         "success": "Succès",
         "continue": "Continuer",
@@ -23,6 +23,8 @@
         "linkDiscord": "Lier Discord",
         "linkMatrix": "Lier Matrix",
         "send": "Envoyer",
-        "contactDiscord": "Contacter par Discord"
+        "contactDiscord": "Contacter par Discord",
+        "refresh": "Actualiser",
+        "required": "Requis"
     }
 }
