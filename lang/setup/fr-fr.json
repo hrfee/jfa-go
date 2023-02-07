@@ -19,7 +19,8 @@
         "errorUserDisabled": "L'utilisateur est peut-être désactivé.",
         "error404": "404, vérifiez l'URL interne.",
         "errorInvalidUserPass": "Nom d'utilisateur/mot de passe invalide.",
-        "errorNotAdmin": "L'utilisateur n'est pas autorisé à gérer le serveur."
+        "errorNotAdmin": "L'utilisateur n'est pas autorisé à gérer le serveur.",
+        "errorConnectionRefused": "Connexion refusée."
     },
     "startPage": {
         "welcome": "Bienvenue !",
@@ -58,7 +59,9 @@
         "authorizeWithJellyfin": "Autoriser avec Jellyfin/Emby : Les Informations de connexion sont partagées avec Jellyfin, ce qui permet plusieurs utilisateurs.",
         "authorizeManual": "Utilisateur et Mot de passe : Renseignez manuellement le nom d'utilisateur et le mot de passe.",
         "adminOnly": "Administrateurs seulement (recommandé)",
-        "emailNotice": "Votre adresse e-mail peut être utilisée pour recevoir des notifications."
+        "emailNotice": "Votre adresse e-mail peut être utilisée pour recevoir des notifications.",
+        "allowAll": "Autoriser tous les utilisateurs de Jellyfin à se connecter",
+        "allowAllDescription": "Non recommandé, vous devez autoriser individuellement les utilisateurs à se connecter une fois la configuration effectuée."
     },
     "jellyfinEmby": {
         "title": "Jellyfin/Emby",
