@@ -210,7 +210,7 @@ func (d *DiscordDaemon) NewTempInvite(ageSeconds, maxUses int) (inviteURL, iconU
 		d.app.err.Printf("Discord: Failed to get guild: %v", err)
 		return
 	}
-	iconURL = guild.IconURL()
+	iconURL = guild.IconURL("256")
 	return
 }
 
