@@ -10,15 +10,15 @@
         "username": "Felhasználónév",
         "password": "Jelszó",
         "reEnterPassword": "Jelszó megerősítése",
-        "reEnterPasswordInvalid": "A jelszók nem egyeznek",
+        "reEnterPasswordInvalid": "A jelszavak nem egyeznek",
         "createAccountButton": "Fiók létrehozása",
         "passwordRequirementsHeader": "Jelszó követelmények",
         "successHeader": "Siker!",
         "confirmationRequired": "E-mail megerősítés szükséges",
         "confirmationRequiredMessage": "Kérjük ellenőrizze az e-mail címére küldött üzenetet, a fiók ellenőrzéséhez.",
         "yourAccountIsValidUntil": "A fiókja eddig lesz érvényes: {date}.",
-        "sendPIN": "Az alábbi kódot küldje el a botnak, majd itt csatolja össze a fiókját.",
-        "sendPINDiscord": "Discordon haszánlja a {command} parancsot, a {server_channel} csatornában, majd írja be a PIN-t.",
+        "sendPIN": "Az alábbi PIN-t küldje el a botnak, majd itt csatolja össze a fiókját.",
+        "sendPINDiscord": "Írja be a {command} parancsot a {server_channel} Discord csatornába, adja meg a PIN-t.",
         "matrixEnterUser": "Írja be a felhasználója azonosítóját majd nyomja meg a beküldés gombot. A kapott kódot ide írja be."
     },
     "notifications": {
@@ -33,12 +33,14 @@
         "verified": "Fiók ellenőrizve.",
         "errorPassword": "Ellenőrizze a jelszó követelményeket.",
         "errorCaptcha": "Hibás Captcha.",
-        "errorNoMatch": "A jelszavak nem egyeznek."
+        "errorNoMatch": "A jelszavak nem egyeznek.",
+        "errorEmailLinked": "Az e-mail cím már használatban van.",
+        "errorAccountLinked": "A fiók már használatban van."
     },
     "validationStrings": {
         "length": {
             "singular": "Legalább {n} karakter",
-            "plural": "Legalább {n} karakter."
+            "plural": "Legalább {n} karakter szükséges."
         },
         "uppercase": {
             "singular": "Legalább {n} nagybetűs karakter",
