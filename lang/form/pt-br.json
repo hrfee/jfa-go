@@ -34,7 +34,9 @@
         "errorNoEmail": "Email necessário.",
         "errorCaptcha": "Captcha incorreto.",
         "errorPassword": "Verifique os requisitos de senha.",
-        "errorNoMatch": "As senhas não coincidem."
+        "errorNoMatch": "As senhas não coincidem.",
+        "errorEmailLinked": "Este E-mail já está sendo utilizado.",
+        "errorAccountLinked": "Esta conta já está sendo utilizada."
     },
     "validationStrings": {
         "length": {
