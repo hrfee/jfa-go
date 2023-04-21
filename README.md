@@ -7,6 +7,21 @@
 
 ##### Downloads:
 ##### [docker](#docker) | [debian/ubuntu](#debian) | [arch (aur)](#aur) | [other platforms](#other-platforms)
+
+---
+
+## Project Status
+Due to studies and general lack of enthusiasm for work on this project, new features are unlikely, and while occasionally I might fix a bug or two, I won't be supporting the project a lot. 
+
+#### Does it still work?
+jfa-go still appears to work on the latest version of Jellyfin (10.8.9), and unless any large architectural changes occur to it, functionality should still remain. 
+
+#### Alternatives
+None of these have been tested by myself, but I have seen them mentioned quite frequently.
+
+* [Wizarr](https://github.com/Wizarrrr/wizarr) focuses on invites, and also includes some Discord & Ombi integration.
+* [Jellyseerr](https://github.com/Fallenbagel/jellyseerr) is a fork of Overseerr, which can manage users and mainly acts as an Ombi alternative.
+* [Organizr](https://github.com/causefx/Organizr) doesn't focus on Jellyfin, but allows putting self-hosted services into "tabs" on a central page, and allows creating users, which lets one control who can access what.
 ---
 jfa-go is a user management app for [Jellyfin](https://github.com/jellyfin/jellyfin) (and now [Emby](https://emby.media/)) that provides invite-based account creation as well as other features that make one's instance much easier to manage.
 
