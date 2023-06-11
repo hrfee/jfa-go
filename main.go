@@ -586,11 +586,13 @@ func start(asDaemon, firstCall bool) {
 		}
 	}()
 	for range RESTART {
+		println("got it too!")
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
 		if err := SRV.Shutdown(ctx); err != nil {
 			app.err.Fatalf("Server shutdown error: %s", err)
 		}
+		app.info.Println("Server shut down.")
 		return
 	}
 }
@@ -608,6 +610,7 @@ func (app *appContext) shutdown() {
 		if err := SRV.Shutdown(cntx); err != nil {
 			app.err.Fatalf("Server shutdown error: %s", err)
 		}
+
 		os.Exit(1)
 	}
 }
