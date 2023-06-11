@@ -14,6 +14,8 @@ import (
 var logPath string = filepath.Join(temp, "jfa-go.log")
 var lineCache = linecache.NewLineCache(100)
 
+var stderr = os.Stderr
+
 func logOutput() (closeFunc func(), err error) {
 	old := os.Stdout
 	writers := []io.Writer{old, colorStripper{lineCache}}

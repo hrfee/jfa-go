@@ -75,18 +75,23 @@ func (app *appContext) loadArgs(firstCall bool) {
 	os.Setenv("JFA_DATAPATH", app.dataPath)
 }
 
-/* Adds start/stop/systemd to help message, and
+/*
+	Adds start/stop/systemd to help message, and
+
 also gets rid of usage for shorthand flags, and merge them with the full-length one.
 implementation is 🤢, will clean this up eventually.
+
 	-h SHORTHAND
 	-help
 		prints this message.
+
 becomes:
+
 	-help, -h
 		prints this message.
 */
 func helpFunc() {
-	fmt.Fprint(os.Stderr, `Usage of jfa-go:
+	fmt.Fprint(stderr, `Usage of jfa-go:
   start
 	start jfa-go as a daemon and run in the background.
   stop
@@ -99,7 +104,7 @@ func helpFunc() {
 	// Write defaults into buffer then remove any shorthands
 	flag.CommandLine.SetOutput(&b)
 	flag.PrintDefaults()
-	flag.CommandLine.SetOutput(os.Stderr)
+	flag.CommandLine.SetOutput(stderr)
 	scanner := bufio.NewScanner(&b)
 	out := ""
 	line := scanner.Text()
@@ -150,5 +155,5 @@ func helpFunc() {
 			lastLine = true
 		}
 	}
-	fmt.Fprint(os.Stderr, out)
+	fmt.Fprint(stderr, out)
 }
