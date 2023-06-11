@@ -120,7 +120,7 @@ func (d *DiscordDaemon) run() {
 	defer d.deregisterCommands()
 	defer d.bot.Close()
 
-	d.registerCommands()
+	go d.registerCommands()
 
 	<-d.ShutdownChannel
 	d.ShutdownChannel <- "Down"

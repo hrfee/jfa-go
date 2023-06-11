@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/getlantern/systray"
 )
@@ -26,6 +27,8 @@ func onExit() {
 	if RUNNING {
 		QUIT = true
 		RESTART <- true
+		// Safety Sleep (Ensure shutdown tasks get done)
+		time.Sleep(time.Second)
 	}
 	os.Remove(SOCK)
 }

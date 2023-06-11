@@ -1,4 +1,4 @@
-// +build !windows
+//go:build !windows
 
 package main
 
@@ -11,9 +11,10 @@ import (
 
 func (app *appContext) HardRestart() error {
 	defer func() {
+		quit := make(chan os.Signal, 0)
 		if r := recover(); r != nil {
-			signal.Notify(app.quit, os.Interrupt)
-			<-app.quit
+			signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
+			<-quit
 		}
 	}()
 	args := os.Args

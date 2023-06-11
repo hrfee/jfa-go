@@ -17,6 +17,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/fatih/color"
@@ -43,12 +44,14 @@ var (
 	SWAGGER            *bool
 	QUIT               = false
 	RUNNING            = false
-	warning            = color.New(color.FgYellow).SprintfFunc()
-	info               = color.New(color.FgMagenta).SprintfFunc()
-	hiwhite            = color.New(color.FgHiWhite).SprintfFunc()
-	white              = color.New(color.FgWhite).SprintfFunc()
-	version            string
-	commit             string
+	// Used to know how many times to re-broadcast restart signal.
+	RESTARTLISTENERCOUNT = 0
+	warning              = color.New(color.FgYellow).SprintfFunc()
+	info                 = color.New(color.FgMagenta).SprintfFunc()
+	hiwhite              = color.New(color.FgHiWhite).SprintfFunc()
+	white                = color.New(color.FgWhite).SprintfFunc()
+	version              string
+	commit               string
 )
 
 var temp = func() string {
@@ -102,7 +105,6 @@ type appContext struct {
 	host             string
 	port             int
 	version          string
-	quit             chan os.Signal
 	URLBase          string
 	updater          *Updater
 	newUpdate        bool // Whether whatever's in update is new.
@@ -152,6 +154,7 @@ func test(app *appContext) {
 }
 
 func start(asDaemon, firstCall bool) {
+	RESTARTLISTENERCOUNT = 0
 	RUNNING = true
 	defer func() { RUNNING = false }()
 
@@ -250,7 +253,7 @@ func start(asDaemon, firstCall bool) {
 				app.err.Fatalf("Couldn't establish socket connection at %s\n", SOCK)
 			}
 			c := make(chan os.Signal, 1)
-			signal.Notify(c, os.Interrupt)
+			signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 			go func() {
 				<-c
 				os.Remove(SOCK)
@@ -578,40 +581,38 @@ func start(asDaemon, firstCall bool) {
 	} else {
 		app.info.Printf("Loaded @ %s", address)
 	}
-	app.quit = make(chan os.Signal)
-	signal.Notify(app.quit, os.Interrupt)
-	go func() {
-		for range app.quit {
-			app.shutdown()
-		}
-	}()
-	for range RESTART {
-		println("got it too!")
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
-		defer cancel()
-		if err := SRV.Shutdown(ctx); err != nil {
-			app.err.Fatalf("Server shutdown error: %s", err)
-		}
-		app.info.Println("Server shut down.")
-		return
+
+	waitForRestart()
+
+	app.info.Printf("Restart/Quit signal received, give me a second!")
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+	if err := SRV.Shutdown(ctx); err != nil {
+		app.err.Fatalf("Server shutdown error: %s", err)
 	}
+	app.info.Println("Server shut down.")
+	return
+}
+
+func shutdown() {
+	QUIT = true
+	RESTART <- true
+	// Safety Sleep (Ensure shutdown tasks get done)
+	time.Sleep(time.Second)
 }
 
 func (app *appContext) shutdown() {
 	app.info.Println("Shutting down...")
-	QUIT = true
-	RESTART <- true
-	for {
-		if RUNNING {
-			continue
-		}
-		cntx, cancel := context.WithTimeout(context.Background(), time.Second*5)
-		defer cancel()
-		if err := SRV.Shutdown(cntx); err != nil {
-			app.err.Fatalf("Server shutdown error: %s", err)
-		}
+	shutdown()
+}
 
-		os.Exit(1)
+// Receives a restart signal and re-broadcasts it for other components.
+func waitForRestart() {
+	RESTARTLISTENERCOUNT++
+	<-RESTART
+	RESTARTLISTENERCOUNT--
+	if RESTARTLISTENERCOUNT > 0 {
+		RESTART <- true
 	}
 }
 
@@ -686,6 +687,15 @@ func main() {
 		TEST = true
 	}
 	loadFilesystems()
+
+	quit := make(chan os.Signal, 0)
+	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
+	// defer close(quit)
+	go func() {
+		<-quit
+		shutdown()
+	}()
+
 	if flagPassed("start") {
 		args := []string{}
 		for i, f := range os.Args {
@@ -760,7 +770,7 @@ You can then run:
 		start(false, true)
 		for {
 			if QUIT {
-				continue
+				break
 			}
 			printVersion()
 			start(false, false)

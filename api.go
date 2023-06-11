@@ -359,6 +359,8 @@ func (app *appContext) ModifyConfig(gc *gin.Context) {
 		} else {
 			RESTART <- true
 		}
+		// Safety Sleep (Ensure shutdown tasks get done)
+		time.Sleep(time.Second)
 	}
 	app.loadConfig()
 	// Reinitialize password validator on config change, as opposed to every applicable request like in python.
@@ -527,5 +529,7 @@ func (app *appContext) Restart() error {
 	} else {
 		RESTART <- true
 	}
+	// Safety Sleep (Ensure shutdown tasks get done)
+	time.Sleep(time.Second)
 	return nil
 }
