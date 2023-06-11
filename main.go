@@ -613,9 +613,13 @@ func (app *appContext) shutdown() {
 }
 
 func flagPassed(name string) (found bool) {
-	for _, f := range os.Args {
+	for i, f := range os.Args {
 		if f == name {
 			found = true
+			// Remove the flag, to avoid issues wit the flag library.
+			os.Args = append(os.Args[:i], os.Args[i+1:]...)
+			return
+
 		}
 	}
 	return
