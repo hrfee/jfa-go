@@ -16,11 +16,13 @@
         "emailSubject": "Email Subject",
         "URL": "URL",
         "apiKey": "API Key",
+        "error": "Error",
         "errorInvalidUserPass": "Invalid username/password.",
         "errorNotAdmin": "User is not allowed to manage server.",
         "errorUserDisabled": "User may be disabled.",
         "error404": "404, check the internal URL.",
-        "errorConnectionRefused": "Connection refused."
+        "errorConnectionRefused": "Connection refused.",
+        "errorUnknown": "Unknown error, check app logs."
     },
     "startPage": {
         "welcome": "Welcome!",

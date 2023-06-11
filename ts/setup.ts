@@ -1,4 +1,4 @@
-import { _get, _post, toggleLoader } from "./modules/common.js";
+import { _get, _post, toggleLoader, notificationBox } from "./modules/common.js";
 import { lang, LangFile, loadLangSelector } from "./modules/lang.js";
 
 interface sWindow extends Window {
@@ -7,6 +7,10 @@ interface sWindow extends Window {
 
 declare var window: sWindow;
 window.URLBase = "";
+
+
+window.notifications = new notificationBox(document.getElementById('notification-box') as HTMLDivElement, 5);
+
 
 const get = (id: string): HTMLElement => document.getElementById(id);
 const text = (id: string, val: string) => { document.getElementById(id).textContent = val; };
@@ -341,6 +345,18 @@ const serialize = () => {
         if (req.readyState == 4) {
             toggleLoader(restartButton);
             if (req.status == 500) {
+                if (req.response == null) {
+                    const old = restartButton.textContent;
+                    restartButton.classList.add("~critical");
+                    restartButton.classList.remove("~urge");
+                    restartButton.textContent = window.lang.strings("errorUnknown");
+                    setTimeout(() => {
+                        restartButton.classList.add("~urge");
+                        restartButton.classList.remove("~critical");
+                        restartButton.textContent = old;
+                    }, 5000);
+                    return;
+                }
                 if (req.response["error"] as string) {
                     const old = restartButton.textContent;
                     restartButton.classList.add("~critical");
@@ -363,7 +379,11 @@ const serialize = () => {
                 window.location.href = host;
             };
         }
-    }, true, () => {});
+    }, true, (req: XMLHttpRequest) => {
+        if (req.status == 0) {
+            window.notifications.customError("connectionError", window.lang.strings("errorConnectionRefused"));
+        }
+    });
 }
 restartButton.onclick = serialize;
 
@@ -562,7 +582,11 @@ window.onpopstate = (event: PopStateEvent) => {
                     button.classList.remove("~positive");
                 }, 5000);
             }
-        }, true, () => {});
+        }, true, (req: XMLHttpRequest) => {
+            if (req.status == 0) {
+                window.notifications.customError("connectionError", window.lang.strings("errorConnectionRefused"));
+            }
+        });
     };
 })();
 

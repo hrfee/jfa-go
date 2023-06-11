@@ -5,7 +5,7 @@ export function toDateString(date: Date): string {
     const t12 = document.getElementById("lang-12h") as HTMLInputElement;
     const t24 = document.getElementById("lang-24h") as HTMLInputElement;
     let args1 = {};
-    let args2 = {
+    let args2: Intl.DateTimeFormatOptions = {
         hour: "2-digit",
         minute: "2-digit"
     };

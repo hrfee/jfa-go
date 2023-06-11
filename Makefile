@@ -52,7 +52,7 @@ endif
 DEBUG ?= off
 ifeq ($(DEBUG), on)
 	SOURCEMAP := --sourcemap
-	TYPECHECK := tsc -noEmit --project ts/tsconfig.json
+	TYPECHECK := npx tsc -noEmit --project ts/tsconfig.json
 	# jank
 	COPYTS := rm -r $(DATA)/web/js/ts; cp -r tempts $(DATA)/web/js/ts
 	UNCSS := cp $(DATA)/web/css/bundle.css $(DATA)/bundle.css
