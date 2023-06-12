@@ -916,7 +916,8 @@ func (app *appContext) GetUsers(gc *gin.Context) {
 			user.NotifyThroughMatrix = mxUser.Contact
 		}
 		if dcUser, ok := app.storage.discord[jfUser.ID]; ok {
-			user.Discord = dcUser.Username + "#" + dcUser.Discriminator
+			user.Discord = RenderDiscordUsername(dcUser)
+			// user.Discord = dcUser.Username + "#" + dcUser.Discriminator
 			user.DiscordID = dcUser.ID
 			user.NotifyThroughDiscord = dcUser.Contact
 		}

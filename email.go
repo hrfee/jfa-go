@@ -863,7 +863,7 @@ func (app *appContext) sendByID(email *Message, ID ...string) error {
 
 func (app *appContext) getAddressOrName(jfID string) string {
 	if dcChat, ok := app.storage.discord[jfID]; ok && dcChat.Contact && discordEnabled {
-		return dcChat.Username + "#" + dcChat.Discriminator
+		return RenderDiscordUsername(dcChat)
 	}
 	if tgChat, ok := app.storage.telegram[jfID]; ok && tgChat.Contact && telegramEnabled {
 		return "@" + tgChat.Username

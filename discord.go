@@ -214,6 +214,25 @@ func (d *DiscordDaemon) NewTempInvite(ageSeconds, maxUses int) (inviteURL, iconU
 	return
 }
 
+// RenderDiscordUsername returns String of discord username, with support for new discriminator-less versions.
+func RenderDiscordUsername[DcUser *dg.User | DiscordUser](user DcUser) string {
+	u, ok := interface{}(user).(*dg.User)
+	var discriminator, username string
+	if ok {
+		discriminator = u.Discriminator
+		username = u.Username
+	} else {
+		u2 := interface{}(user).(DiscordUser)
+		discriminator = u2.Discriminator
+		username = u2.Username
+	}
+
+	if discriminator == "0" {
+		return "@" + username
+	}
+	return username + "#" + discriminator
+}
+
 // Returns the user(s) roughly corresponding to the username (if they are in the guild).
 // if no discriminator (#xxxx) is given in the username and there are multiple corresponding users, a list of all matching users is returned.
 func (d *DiscordDaemon) GetUsers(username string) []*dg.Member {
@@ -227,10 +246,19 @@ func (d *DiscordDaemon) GetUsers(username string) []*dg.Member {
 		return nil
 	}
 	hasDiscriminator := strings.Contains(username, "#")
+	hasAt := strings.HasPrefix(username, "@")
+	if hasAt {
+		username = username[1:]
+	}
 	var users []*dg.Member
 	for _, member := range members {
 		if hasDiscriminator {
 			if member.User.Username+"#"+member.User.Discriminator == username {
+				return []*dg.Member{member}
+			}
+		}
+		if hasAt {
+			if member.User.Username == username && member.User.Discriminator == "0" {
 				return []*dg.Member{member}
 			}
 		}

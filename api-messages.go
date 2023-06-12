@@ -687,7 +687,7 @@ func (app *appContext) DiscordGetUsers(gc *gin.Context) {
 	resp := DiscordUsersDTO{Users: make([]DiscordUserDTO, len(users))}
 	for i, u := range users {
 		resp.Users[i] = DiscordUserDTO{
-			Name:      u.User.Username + "#" + u.User.Discriminator,
+			Name:      RenderDiscordUsername(u.User),
 			ID:        u.User.ID,
 			AvatarURL: u.User.AvatarURL("32"),
 		}
