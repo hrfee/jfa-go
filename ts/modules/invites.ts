@@ -551,7 +551,7 @@ export class createInvite {
     private _newInviteEvent = new CustomEvent("newInviteEvent");
     private _firstLoad = true;
 
-    private _count: Number = 30;
+    private _count: number = 30;
     private _populateNumbers = () => {
         const fieldIDs = ["months", "days", "hours", "minutes"];
         const prefixes = ["create-", "user-"];

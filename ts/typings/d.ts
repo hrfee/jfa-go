@@ -135,9 +135,10 @@ interface inviteList {
     reload: () => void;
 }
 
-declare interface SubmitEvent extends Event {
-    submitter: HTMLInputElement;
-}
+// Finally added to typescript, dont need this anymore.
+// declare interface SubmitEvent extends Event {
+//     submitter: HTMLInputElement;
+// }
 
 declare var config: Object;
 declare var modifiedConfig: Object;

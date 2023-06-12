@@ -56,7 +56,7 @@ ifeq ($(DEBUG), on)
 	# jank
 	COPYTS := rm -r $(DATA)/web/js/ts; cp -r tempts $(DATA)/web/js/ts
 	UNCSS := cp $(DATA)/web/css/bundle.css $(DATA)/bundle.css
-	TAILWIND := --content ""
+	# TAILWIND := --content ""
 else
 	LDFLAGS := -s -w $(LDFLAGS)
 	SOURCEMAP :=
@@ -103,11 +103,11 @@ typescript:
 	scripts/dark-variant.sh tempts/modules
 	$(info compiling typescript)
 	mkdir -p $(DATA)/web/js
-	$(ESBUILD) --bundle tempts/admin.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/admin.js --minify
-	$(ESBUILD) --bundle tempts/pwr.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/pwr.js --minify
-	$(ESBUILD) --bundle tempts/form.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/form.js --minify
-	$(ESBUILD) --bundle tempts/setup.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/setup.js --minify
-	$(ESBUILD) --bundle tempts/crash.ts --outfile=./$(DATA)/crash.js --minify
+	$(ESBUILD) --target=es6 --bundle tempts/admin.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/admin.js --minify
+	$(ESBUILD) --target=es6 --bundle tempts/pwr.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/pwr.js --minify
+	$(ESBUILD) --target=es6 --bundle tempts/form.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/form.js --minify
+	$(ESBUILD) --target=es6 --bundle tempts/setup.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/setup.js --minify
+	$(ESBUILD) --target=es6 --bundle tempts/crash.ts --outfile=./$(DATA)/crash.js --minify
 	$(COPYTS)
 
 swagger:
@@ -126,6 +126,8 @@ compress:
 
 bundle-css:
 	mkdir -p $(DATA)/web/css
+	$(info copying fonts)
+	cp -r node_modules/remixicon/fonts/remixicon.css node_modules/remixicon/fonts/remixicon.woff2 $(DATA)/web/css/
 	$(info bundling css)
 	$(ESBUILD) --bundle css/base.css --outfile=$(DATA)/web/css/bundle.css --external:remixicon.css --minify
 	npx tailwindcss -i $(DATA)/web/css/bundle.css -o $(DATA)/web/css/bundle.css $(TAILWIND)
@@ -144,8 +146,6 @@ variants-html:
 	node scripts/missing-colors.js html $(DATA)/html
 
 copy:
-	$(info copying fonts)
-	cp -r node_modules/remixicon/fonts/remixicon.css node_modules/remixicon/fonts/remixicon.woff2 $(DATA)/web/css/
 	$(info copying crash page)
 	mv $(DATA)/crash.html $(DATA)/html/
 	$(info copying static data)
