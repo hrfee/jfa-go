@@ -10,12 +10,12 @@
   "license": "MIT",
   "dependencies": {
     "a17t": "^0.10.1",
-    "esbuild": "^0.12.12",
-    "remixicon": "^2.5.0",
-    "tailwindcss": "^3.0.10",
+    "esbuild": "^0.18.1 ",
+    "remixicon": "^3.3.0",
+    "tailwindcss": "^3.3.2",
     "uncss": "^0.17.3"
   },
   "devDependencies": {
-    "live-server": "^1.1.0"
+    "live-server": "^1.2.2"
   }
 }
