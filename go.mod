@@ -51,7 +51,9 @@ require (
 	github.com/mailgun/mailgun-go/v4 v4.9.0
 	github.com/mattn/go-isatty v0.0.19 // indirect
 	github.com/otiai10/copy v1.7.0 // indirect
+	github.com/pborman/ansi v1.0.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.8 // indirect
+	github.com/robert-nix/ansihtml v1.0.1 // indirect
 	github.com/steambap/captcha v1.4.1
 	github.com/swaggo/files v1.0.1
 	github.com/swaggo/gin-swagger v1.6.0

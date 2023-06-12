@@ -11,6 +11,8 @@ import (
 	"runtime/debug"
 	"strings"
 	"time"
+
+	"github.com/robert-nix/ansihtml"
 )
 
 // https://gist.github.com/swdunlop/9629168
@@ -84,6 +86,12 @@ func Exit(err interface{}) {
 		log.Fatalf("Failed to write crash dump file: %v", err2)
 	}
 	log.Printf("\n------\nA crash report has been saved to \"%s\".\n------", fpath+".txt")
+
+	// Render ANSI colors to HTML
+	data["Log"] = template.HTML(string(ansihtml.ConvertToHTML([]byte(data["Log"].(string)))))
+	data["SanitizedLog"] = template.HTML(string(ansihtml.ConvertToHTML([]byte(data["SanitizedLog"].(string)))))
+	data["Err"] = template.HTML(string(ansihtml.ConvertToHTML([]byte(data["Err"].(string)))))
+
 	f, err2 := os.OpenFile(fpath+".html", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
 	if err2 != nil {
 		log.Fatalf("Failed to open crash dump file: %v", err2)
