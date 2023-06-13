@@ -737,7 +737,7 @@ export class accountsList {
 
     private _selectAll = document.getElementById("accounts-select-all") as HTMLInputElement;
     private _users: { [id: string]: user };
-    private _sortedByName: string[] = [];
+    private _ordering: string[] = [];
     private _checkCount: number = 0;
     private _inSearch = false;
     // Whether the enable/disable button should enable or not.
@@ -748,6 +748,11 @@ export class accountsList {
     private _addUserEmail = this._addUserForm.querySelector("input[type=email]") as HTMLInputElement;
     private _addUserPassword = this._addUserForm.querySelector("input[type=password]") as HTMLInputElement;
     
+    // Columns for sorting.
+    private _columns: { [className: string]: Column } = {};
+    private _activeSortColumn: string;
+
+
     // Whether the "Extend expiry" is extending or setting an expiry.
     private _settingExpiry = false;
 
@@ -782,7 +787,7 @@ export class accountsList {
                     if (querySplit[1] == "true" || querySplit[1] == "yes") {
                         state = true;
                     }
-                    for (let id in this._users) {
+                    for (let id of this._ordering) {
                         const user = this._users[id];
                         let attrib: boolean;
                         if (querySplit[0] == "admin") { attrib = user.admin; }
@@ -793,7 +798,7 @@ export class accountsList {
             }
         }
         if (query == "") { return result; }
-        for (let id in this._users) {
+        for (let id of this._ordering) {
             const user = this._users[id];
             if (user.name.toLowerCase().includes(query)) {
                 result.push(id);
@@ -821,36 +826,6 @@ export class accountsList {
     add = (u: User) => {
         let domAccount = new user(u);
         this._users[u.id] = domAccount;
-        this.unhide(u.id);
-    }
-
-    unhide = (id: string) => {
-        const keys = Object.keys(this._users);
-        if (keys.length == 0) {
-            this._table.appendChild(this._users[id].asElement());
-            return;
-        }
-        this._sortedByName = keys.sort((a, b) => this._users[a].name.localeCompare(this._users[b].name));
-        let index = this._sortedByName.indexOf(id)+1;
-        if (index == this._sortedByName.length-1) {
-            this._table.appendChild(this._users[id].asElement());
-            return;
-        }
-        while (index < this._sortedByName.length) {
-            if (this._table.contains(this._users[this._sortedByName[index]].asElement())) {
-                this._table.insertBefore(this._users[id].asElement(), this._users[this._sortedByName[index]].asElement());
-                return;
-            }
-            index++;
-        }
-        this._table.appendChild(this._users[id].asElement());
-    }
-
-    hide = (id: string) => {
-        const el = this._users[id].asElement();
-        if (this._table.contains(el)) {
-            this._table.removeChild(this._users[id].asElement());
-        }
     }
 
     private _checkCheckCount = () => {
@@ -1427,6 +1402,18 @@ export class accountsList {
         }
         window.modals.extendExpiry.show();
     }
+    
+
+    setVisibility = (users: string[], visible: boolean) => {
+        this._table.textContent = "";
+        for (let id of this._ordering) {
+            if (visible && users.indexOf(id) != -1) {
+                this._table.appendChild(this._users[id].asElement());
+            } else if (!visible && users.indexOf(id) == -1) {
+                this._table.appendChild(this._users[id].asElement());
+            }
+        }
+    }
 
     constructor() {
         this._populateNumbers();
@@ -1508,32 +1495,14 @@ export class accountsList {
             this._deleteNotify.checked = false;
         }*/
 
-        const setVisibility = (users: string[], visible: boolean) => {
-            for (let id in this._users) {
-                if (users.indexOf(id) != -1) {
-                    if (visible) {
-                        this.unhide(id);
-                    } else {
-                        this.hide(id);
-                    }
-                } else {
-                    if (visible) {
-                        this.hide(id);
-                    } else {
-                        this.unhide(id);
-                    }
-                }
-            }
-        }
-
         this._search.oninput = () => {
             const query = this._search.value;
             if (!query) {
-                setVisibility(Object.keys(this._users), true);
+                this.setVisibility(this._ordering, true);
                 this._inSearch = false;
             } else {
                 this._inSearch = true;
-                setVisibility(this.search(query), true);
+                this.setVisibility(this.search(query), true);
             }
             this._checkCheckCount();
         };
@@ -1559,6 +1528,30 @@ export class accountsList {
             insertText(this._announceTextarea, announceVarUsername.children[0].textContent);
             this.loadPreview();
         };
+
+        const headerNames: string[] = ["username", "access-jfa", "email", "telegram", "matrix", "discord", "expiry", "last-active"];
+        const headerGetters: string[] = ["name", "accounts_admin", "email", "telegram", "matrix", "discord", "expiry", "last_active"];
+        for (let i = 0; i < headerNames.length; i++) {
+            const header: HTMLTableHeaderCellElement = document.getElementsByClassName("accounts-header-" + headerNames[i])[0] as HTMLTableHeaderCellElement;
+            if (header !== null) {
+                this._columns[header.className] = new Column(header, Object.getOwnPropertyDescriptor(user.prototype, headerGetters[i]).get);
+            }
+        }
+
+        document.addEventListener("header-click", (event: CustomEvent) => {
+            this._ordering = this._columns[event.detail].sort(this._users);
+            this._activeSortColumn = event.detail;
+            // console.log("ordering by", event.detail, ": ", this._ordering);
+            if (!(this._inSearch)) {
+                this.setVisibility(this._ordering, true);
+            } else {
+                this.setVisibility(this.search(this._search.value), true);
+            }
+        });
+
+        // Start off sorting by Name
+        this._activeSortColumn = document.getElementsByClassName("accounts-header-" + headerNames[0])[0].className;
+        document.dispatchEvent(new CustomEvent("header-click", { detail: this._activeSortColumn }));
     }
 
     reload = () => {
@@ -1579,9 +1572,83 @@ export class accountsList {
                     this._users[id].remove();
                     delete this._users[id];
                 }
+                // console.log("reload, so sorting by", this._activeSortColumn);
+                this._ordering = this._columns[this._activeSortColumn].sort(this._users);
+                if (!(this._inSearch)) {
+                    this.setVisibility(this._ordering, true);
+                } else {
+                    this.setVisibility(this.search(this._search.value), true);
+                }
                 this._checkCheckCount();
             }
         });
         this.loadTemplates();
+    }
+}
+
+type GetterReturnType = Boolean | boolean | String | Number | number;
+type Getter = () => GetterReturnType;
+
+// When a column is clicked, it broadcasts it's name and ordering to be picked up and stored by accountsList
+// When list is refreshed, accountList calls method of the specific Column and re-orders accordingly.
+// Listen for broadcast event from others, check its not us by comparing the header className in the message, then hide the arrow icon
+class Column {
+    private _header: HTMLTableHeaderCellElement;
+    private _headerContent: string;
+    private _getter: Getter;
+    private _ascending: boolean;
+    private _active: boolean;
+
+    constructor(header: HTMLTableHeaderCellElement, getter: Getter) {
+        this._header = header;
+        this._headerContent = this._header.textContent;
+        this._getter = getter;
+        this._ascending = true;
+        this._active = false;
+
+        this._header.addEventListener("click", () => {
+            // If we are the active sort column, a click means to switch between ascending/descending.
+            if (this._active) {
+                this._ascending = !this._ascending;
+                console.log("was already active, switching direction to", this._ascending ? "ascending" : "descending");
+            } else {
+                console.log("wasn't active keeping direction as", this._ascending ? "ascending" : "descending");
+            }
+            this._active = true;
+            this.updateHeader();
+            document.dispatchEvent(new CustomEvent("header-click", { detail: this._header.className }));
+        });
+        document.addEventListener("header-click", (event: CustomEvent) => {
+            if (event.detail != this._header.className) {
+                this._active = false;
+                this.hideIcon();
+            }
+        });
+    }
+
+    hideIcon = () => {
+        this._header.textContent = this._headerContent;
+    }
+
+    updateHeader = () => {
+        this._header.innerHTML = `
+        ${this._headerContent}
+        <i class="ri-arrow-${this._ascending? "up" : "down"}-s-line ml-2"></i>
+        `;
+    }
+
+
+    // Sorts the user list. previouslyActive is whether this column was previously sorted by, indicating that the direction should change.
+    sort = (users: { [id: string]: user }): string[] => {
+        let userIDs = Object.keys(users);
+        userIDs.sort((a: string, b: string): number => {
+            const av: GetterReturnType = this._getter.call(users[a]);
+            const bv: GetterReturnType = this._getter.call(users[b]);
+            if (av < bv) return this._ascending ? -1 : 1;
+            if (av > bv) return this._ascending ? 1 : -1;
+            return 0;
+        });
+
+        return userIDs;
     }
 }

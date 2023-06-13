@@ -22,7 +22,7 @@
     "a17t": "^0.10.1",
     "browserslist": "^4.21.7",
     "cheerio": "^1.0.0-rc.12",
-    "esbuild": "^0.18.1",
+    "esbuild": "^0.18.2",
     "fs-cheerio": "^3.0.0",
     "inline-source": "^8.0.2",
     "jsdom": "^22.1.0",
