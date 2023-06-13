@@ -459,6 +459,20 @@ class user implements User {
             this._label.classList.add("chip", "~gray", "mr-2");
         }
     }
+
+    matchesSearch = (query: string): boolean => {
+        return (
+            this.name.includes(query) ||
+            this.label.includes(query) ||
+            this.discord.includes(query) ||
+            this.email.includes(query) ||
+            this.id.includes(query) ||
+            this.label.includes(query) ||
+            this.matrix.includes(query) ||
+            this.telegram.includes(query)
+        );
+    }
+
     private _checkEvent = new CustomEvent("accountCheckEvent");
     private _uncheckEvent = new CustomEvent("accountUncheckEvent");
 
@@ -778,6 +792,20 @@ export class accountsList {
     search = (query: String): string[] => {
         console.log("called!");
         const queries: { [field: string]: { name: string, getter: string, bool: boolean, string: boolean, date: boolean }} = {
+            "id": {
+                name: "Jellyfin ID",
+                getter: "id",
+                bool: false,
+                string: true,
+                date: false
+            },
+            "label": {
+                name: "Label",
+                getter: "label",
+                bool: true,
+                string: true,
+                date: false
+            },
             "admin": {
                 name: "Admin",
                 getter: "admin",
@@ -846,7 +874,16 @@ export class accountsList {
         query = query.toLowerCase();
         let result: string[] = [...this._ordering];
         console.log("initial:", result);
-        if (!(query.includes(":"))) return result;
+        if (!(query.includes(":"))) {
+            let cachedResult = [...result];
+            for (let id of cachedResult) {
+                const u = this._users[id];
+                if (!u.matchesSearch(query as string)) {
+                    result.splice(result.indexOf(id), 1);
+                }
+            }
+            return result;
+        }
 
         // const words = query.split(" ");
         let words: string[] = [];
@@ -915,9 +952,14 @@ export class accountsList {
                 }
             }
             if (queryFormat.string) {
-                
-                // FIXME: STRING SEARCH FOR FIELD
-                // FIXME: SUBTRACT FROM RESULT
+                let cachedResult = [...result];
+                for (let id of cachedResult) {
+                    const u = this._users[id];
+                    const value = Object.getOwnPropertyDescriptor(user.prototype, queryFormat.getter).get.call(u);
+                    if (!(value.includes(split[1]))) {
+                        result.splice(result.indexOf(id), 1);
+                    }
+                }
                 continue;
             }
             if (queryFormat.date) {
