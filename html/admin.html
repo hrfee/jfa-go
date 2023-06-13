@@ -584,7 +584,6 @@
                         <div class="row">
                             <span class="text-3xl font-bold mr-2 col">{{ .strings.accounts }}</span>
                             <input type="search" class="col sm field ~neutral @low input search ml-2 mr-2" id="accounts-search" placeholder="{{ .strings.search }}">
-                            <button type="button" class="button ~neutral @low center ml-2 mr-2 hidden"><span id="accounts-sort-by-field"></span> <span class="ml-2">&times;</span></button>
                         </div>
                         <div class="row">
                             <span class="col sm button ~neutral @low center mb-2" id="accounts-add-user">{{ .quantityStrings.addUser.Singular }}</span>
@@ -610,6 +609,10 @@
                             <span class="col sm button ~info @low center mb-2 unfocused" id="accounts-send-pwr">{{ .strings.sendPWR }}</span>
                             <span class="col sm button ~critical @low center mb-2" id="accounts-delete-user">{{ .quantityStrings.deleteUser.Singular }}</span>
                         </div>
+                    </div>
+                    <div class="row">
+                        <button type="button" class="button ~neutral @low center ml-2 mr-2 hidden"><span id="accounts-sort-by-field"></span> <span class="ml-2">&times;</span></button>
+                        <span id="accounts-filter-area"></span>
                     </div>
                     <div class="card @low accounts-header table-responsive mt-8">
                         <table class="table text-base leading-4">

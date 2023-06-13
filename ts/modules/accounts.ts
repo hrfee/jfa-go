@@ -806,6 +806,20 @@ export class accountsList {
                 string: true,
                 date: false
             },
+            "username": {
+                name: "Username",
+                getter: "name",
+                bool: false,
+                string: true,
+                date: false
+            },
+            "name": {
+                name: "Username",
+                getter: "name",
+                bool: false,
+                string: true,
+                date: false
+            },
             "admin": {
                 name: "Admin",
                 getter: "admin",
@@ -871,19 +885,12 @@ export class accountsList {
             }
         }
 
+        const filterArea = document.getElementById("accounts-filter-area");
+        filterArea.textContent = "";
+
         query = query.toLowerCase();
         let result: string[] = [...this._ordering];
         // console.log("initial:", result);
-        if (!(query.includes(":"))) {
-            let cachedResult = [...result];
-            for (let id of cachedResult) {
-                const u = this._users[id];
-                if (!u.matchesSearch(query as string)) {
-                    result.splice(result.indexOf(id), 1);
-                }
-            }
-            return result;
-        }
 
         // const words = query.split(" ");
         let words: string[] = [];
@@ -910,7 +917,15 @@ export class accountsList {
                 if (lastQuote != -1) {
                     continue;
                 } else {
-                    words.push(query.substring(queryStart, i+1).replace(/['"]/g, ""));
+                    let end = i+1;
+                    if (query[i] == " ") {
+                        end = i;
+                        while (i+1 < query.length && query[i+1] == " ") {
+                            i += 1;
+                        }
+                    }
+                    words.push(query.substring(queryStart, end).replace(/['"]/g, ""));
+                    console.log("pushed", words);
                     queryStart = -1;
                 }
             }
@@ -918,6 +933,16 @@ export class accountsList {
 
         query = "";
         for (let word of words) {
+            if (!word.includes(":")) {
+                let cachedResult = [...result];
+                for (let id of cachedResult) {
+                    const u = this._users[id];
+                    if (!u.matchesSearch(word)) {
+                        result.splice(result.indexOf(id), 1);
+                    }
+                }
+                continue;
+            }
             const split = [word.substring(0, word.indexOf(":")), word.substring(word.indexOf(":")+1)];
             
             if (!(split[0] in queries)) continue;
@@ -935,6 +960,24 @@ export class accountsList {
                     boolState = false;
                 }
                 if (isBool) {
+                    // FIXME: Generate filter card for each filter class
+                    const filterCard = document.createElement("span");
+                    filterCard.ariaLabel = window.lang.strings("clickToRemoveFilter");
+                    filterCard.classList.add("button", "~" + (boolState ? "positive" : "critical"), "@high", "center", "ml-2", "mr-2");
+                    filterCard.innerHTML = `
+                    <span class="font-bold mr-2">${queryFormat.name}</span>
+                    <i class="text-2xl ri-${boolState? "checkbox" : "close"}-circle-fill"></i>
+                    `;
+
+                    filterCard.addEventListener("click", () => {
+                        for (let quote of [`"`, `'`, ``]) {
+                            this._search.value = this._search.value.replace(split[0] + ":" + quote + split[1] + quote, "");
+                        }
+                        this._search.oninput((null as Event));
+                    })
+
+                    filterArea.appendChild(filterCard);
+
                     // console.log("is bool, state", boolState);
                     // So removing elements doesn't affect us
                     let cachedResult = [...result];
@@ -952,6 +995,22 @@ export class accountsList {
                 }
             }
             if (queryFormat.string) {
+                const filterCard = document.createElement("span");
+                filterCard.ariaLabel = window.lang.strings("clickToRemoveFilter");
+                filterCard.classList.add("button", "~neutral", "@low", "center", "ml-2", "mr-2", "h-full");
+                filterCard.innerHTML = `
+                <span class="font-bold mr-2">${queryFormat.name}:</span> "${split[1]}"
+                `;
+
+                filterCard.addEventListener("click", () => {
+                    for (let quote of [`"`, `'`, ``]) {
+                        this._search.value = this._search.value.replace(split[0] + ":" + quote + split[1] + quote, "");
+                    }
+                    this._search.oninput((null as Event));
+                })
+
+                filterArea.appendChild(filterCard);
+
                 let cachedResult = [...result];
                 for (let id of cachedResult) {
                     const u = this._users[id];
@@ -977,6 +1036,24 @@ export class accountsList {
                 let date: Date = (Date as any).fromString(split[1]) as Date;
                 console.log("Read", attempt, "and", date);
                 if ("invalid" in (date as any)) continue;
+
+                const filterCard = document.createElement("span");
+                filterCard.ariaLabel = window.lang.strings("clickToRemoveFilter");
+                filterCard.classList.add("button", "~neutral", "@low", "center", "ml-2", "mr-2", "h-full");
+                filterCard.innerHTML = `
+                <span class="font-bold mr-2">${queryFormat.name}:</span> ${(compareType == 1) ? window.lang.strings("after")+" " : ((compareType == -1) ? window.lang.strings("before")+" " : "")}${split[1]}
+                `;
+                
+                filterCard.addEventListener("click", () => {
+                    for (let quote of [`"`, `'`, ``]) {
+                        this._search.value = this._search.value.replace(split[0] + ":" + quote + split[1] + quote, "");
+                    }
+                    
+                    this._search.oninput((null as Event));
+                })
+                
+                filterArea.appendChild(filterCard);
+
                 let cachedResult = [...result];
                 for (let id of cachedResult) {
                     const u = this._users[id];

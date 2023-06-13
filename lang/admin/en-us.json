@@ -37,6 +37,8 @@
         "advancedSettings": "Advanced Settings",
         "lastActiveTime": "Last Active",
         "from": "From",
+        "after": "After",
+        "before": "Before",
         "user": "User",
         "expiry": "Expiry",
         "userExpiry": "User Expiry",
@@ -115,7 +117,8 @@
         "templateEnterName": "Enter a name to save this template.",
         "accessJFA": "Access jfa-go",
         "accessJFASettings": "Cannot be changed as either \"Admin Only\" or \"Allow All\" has been set in Settings > General.",
-        "sortingBy": "Sorting By"
+        "sortingBy": "Sorting By",
+        "clickToRemoveFilter": "Click to remove this filter."
     },
     "notifications": {
         "changedEmailAddress": "Changed email address of {n}.",
