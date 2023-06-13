@@ -752,6 +752,7 @@ export class accountsList {
     private _columns: { [className: string]: Column } = {};
     private _activeSortColumn: string;
 
+    private _sortingByButton = document.getElementById("accounts-sort-by-field") as HTMLButtonElement;
 
     // Whether the "Extend expiry" is extending or setting an expiry.
     private _settingExpiry = false;
@@ -1538,9 +1539,22 @@ export class accountsList {
             }
         }
 
+        // Start off sorting by Name
+        const defaultSort = () => {
+            this._activeSortColumn = document.getElementsByClassName("accounts-header-" + headerNames[0])[0].className;
+            document.dispatchEvent(new CustomEvent("header-click", { detail: this._activeSortColumn }));
+            this._columns[this._activeSortColumn].ascending = true;
+            this._columns[this._activeSortColumn].hideIcon();
+            this._sortingByButton.parentElement.classList.add("hidden");
+        };
+
+        this._sortingByButton.parentElement.addEventListener("click", defaultSort);
+
         document.addEventListener("header-click", (event: CustomEvent) => {
             this._ordering = this._columns[event.detail].sort(this._users);
             this._activeSortColumn = event.detail;
+            this._sortingByButton.innerHTML = this._columns[event.detail].buttonContent;
+            this._sortingByButton.parentElement.classList.remove("hidden");
             // console.log("ordering by", event.detail, ": ", this._ordering);
             if (!(this._inSearch)) {
                 this.setVisibility(this._ordering, true);
@@ -1549,9 +1563,7 @@ export class accountsList {
             }
         });
 
-        // Start off sorting by Name
-        this._activeSortColumn = document.getElementsByClassName("accounts-header-" + headerNames[0])[0].className;
-        document.dispatchEvent(new CustomEvent("header-click", { detail: this._activeSortColumn }));
+        defaultSort();
     }
 
     reload = () => {
@@ -1615,12 +1627,14 @@ class Column {
                 console.log("wasn't active keeping direction as", this._ascending ? "ascending" : "descending");
             }
             this._active = true;
+            this._header.setAttribute("aria-sort", this._headerContent);
             this.updateHeader();
             document.dispatchEvent(new CustomEvent("header-click", { detail: this._header.className }));
         });
         document.addEventListener("header-click", (event: CustomEvent) => {
             if (event.detail != this._header.className) {
                 this._active = false;
+                this._header.removeAttribute("aria-sort");
                 this.hideIcon();
             }
         });
@@ -1632,11 +1646,24 @@ class Column {
 
     updateHeader = () => {
         this._header.innerHTML = `
-        ${this._headerContent}
-        <i class="ri-arrow-${this._ascending? "up" : "down"}-s-line ml-2"></i>
+        <span class="">${this._headerContent}</span>
+        <i class="ri-arrow-${this._ascending? "up" : "down"}-s-line" aria-hidden="true"></i>
         `;
     }
 
+    // Returns the inner HTML to show in the "Sorting By" button.
+    get buttonContent() {
+        return `<span class="font-bold">` + window.lang.strings("sortingBy") + ": " + `</span>` + this._headerContent;
+    }
+
+    get ascending() { return this._ascending; }
+    set ascending(v: boolean) {
+        this._ascending = v;
+        if (!this._active) return;
+        this.updateHeader();
+        this._header.setAttribute("aria-sort", this._headerContent);
+        document.dispatchEvent(new CustomEvent("header-click", { detail: this._header.className }));
+    }
 
     // Sorts the user list. previouslyActive is whether this column was previously sorted by, indicating that the direction should change.
     sort = (users: { [id: string]: user }): string[] => {
