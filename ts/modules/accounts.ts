@@ -3,6 +3,7 @@ import { templateEmail } from "../modules/settings.js";
 import { Marked } from "@ts-stack/markdown";
 import { stripMarkdown } from "../modules/stripmd.js";
 import { DiscordUser, newDiscordSearch } from "../modules/discord.js";
+const dateParser = require("any-date-parser");
 
 interface User {
     id: string;
@@ -790,7 +791,6 @@ export class accountsList {
     }
   
     search = (query: String): string[] => {
-        console.log("called!");
         const queries: { [field: string]: { name: string, getter: string, bool: boolean, string: boolean, date: boolean }} = {
             "id": {
                 name: "Jellyfin ID",
@@ -873,7 +873,7 @@ export class accountsList {
 
         query = query.toLowerCase();
         let result: string[] = [...this._ordering];
-        console.log("initial:", result);
+        // console.log("initial:", result);
         if (!(query.includes(":"))) {
             let cachedResult = [...result];
             for (let id of cachedResult) {
@@ -918,7 +918,7 @@ export class accountsList {
 
         query = "";
         for (let word of words) {
-            const split = word.split(":");
+            const split = [word.substring(0, word.indexOf(":")), word.substring(word.indexOf(":")+1)];
             
             if (!(split[0] in queries)) continue;
 
@@ -963,7 +963,60 @@ export class accountsList {
                 continue;
             }
             if (queryFormat.date) {
-                
+                // -1 = Before, 0 = On, 1 = After, 2 = No symbol, assume 0
+                let compareType = (split[1][0] == ">") ? 1 : ((split[1][0] == "<") ? -1 : ((split[1][0] == "=") ? 0 : 2));
+                if (compareType != 2) {
+                    split[1] = split[1].substring(1);
+                }
+                if (compareType == 2) compareType = 0;
+
+                let attempt: { year?: number, month?: number, day?: number, hour?: number, minute?: number } = dateParser.attempt(split[1]);
+                // Month in Date objects is 0-based, so make our parsed date that way too
+                if ("month" in attempt) attempt["month"] -= 1;
+
+                let date: Date = (Date as any).fromString(split[1]) as Date;
+                console.log("Read", attempt, "and", date);
+                if ("invalid" in (date as any)) continue;
+                let cachedResult = [...result];
+                for (let id of cachedResult) {
+                    const u = this._users[id];
+                    const unixValue = Object.getOwnPropertyDescriptor(user.prototype, queryFormat.getter).get.call(u);
+                    if (unixValue == 0) {
+                        result.splice(result.indexOf(id), 1);
+                        continue;
+                    }
+                    let value = new Date(unixValue*1000);
+                    
+                    const getterPairs: [string, () => number][] = [["year", Date.prototype.getFullYear], ["month", Date.prototype.getMonth], ["day", Date.prototype.getDate], ["hour", Date.prototype.getHours], ["minute", Date.prototype.getMinutes]];
+
+                    // When doing > or < <time> with no date, we need to ignore the rest of the Date object
+                    if (compareType != 0 && Object.keys(attempt).length == 2 && "hour" in attempt && "minute" in attempt) { 
+                        const temp = new Date(date.valueOf());
+                        temp.setHours(value.getHours(), value.getMinutes());
+                        value = temp;
+                        console.log("just hours/minutes workaround, value set to", value);
+                    }
+
+
+                    let match = true;
+                    if (compareType == 0) {
+                        for (let pair of getterPairs) {
+                            if (pair[0] in attempt) {
+                                if (compareType == 0 && attempt[pair[0]] != pair[1].call(value)) {
+                                    match = false;
+                                    break;
+                                }
+                            }
+                        }
+                    } else if (compareType == -1) {
+                        match = (value < date);
+                    } else if (compareType == 1) {
+                        match = (value > date);
+                    }
+                    if (!match) {
+                        result.splice(result.indexOf(id), 1);
+                    }
+                }
             }
         }
         return result
