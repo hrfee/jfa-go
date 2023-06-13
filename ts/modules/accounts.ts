@@ -774,41 +774,159 @@ export class accountsList {
             }
         }
     }
-    
-    search = (query: string): string[] => {
-        query = query.toLowerCase()
-        let result: string[] = [];
-        if (query.includes(":")) {  // Support admin:<true/false> and disabled:<true/false>
-            const words = query.split(" ");
-            query = "";
-            for (let word of words) {
-                if (word.includes(":")) {
-                    const querySplit = word.split(":")
-                    let state = false;
-                    if (querySplit[1] == "true" || querySplit[1] == "yes") {
-                        state = true;
-                    }
-                    for (let id of this._ordering) {
-                        const user = this._users[id];
-                        let attrib: boolean;
-                        if (querySplit[0] == "admin") { attrib = user.admin; }
-                        else if (querySplit[0] == "disabled") { attrib = user.disabled; }
-                        if (attrib == state) { result.push(id); }
-                    }
-                } else { query += word + " "; }
+  
+    search = (query: String): string[] => {
+        console.log("called!");
+        const queries: { [field: string]: { name: string, getter: string, bool: boolean, string: boolean, date: boolean }} = {
+            "admin": {
+                name: "Admin",
+                getter: "admin",
+                bool: true,
+                string: false,
+                date: false
+            },
+            "disabled": {
+                name: "Disabled",
+                getter: "disabled",
+                bool: true,
+                string: false,
+                date: false
+            },
+            "access-jfa": {
+                name: "Access jfa-go",
+                getter: "accounts_admin",
+                bool: true,
+                string: false,
+                date: false
+            },
+            "email": {
+                name: "Email",
+                getter: "email",
+                bool: true,
+                string: true,
+                date: false
+            },
+            "telegram": {
+                name: "Telegram",
+                getter: "telegram",
+                bool: true,
+                string: true,
+                date: false
+            },
+            "matrix": {
+                name: "Matrix",
+                getter: "matrix",
+                bool: true,
+                string: true,
+                date: false
+            },
+            "discord": {
+                name: "Discord",
+                getter: "discord",
+                bool: true,
+                string: true,
+                date: false
+            },
+            "expiry": {
+                name: "Expiry",
+                getter: "expiry",
+                bool: true,
+                string: false,
+                date: true
+            },
+            "last-active": {
+                name: "Last Active",
+                getter: "last_active",
+                bool: true,
+                string: false,
+                date: true
             }
         }
-        if (query == "") { return result; }
-        for (let id of this._ordering) {
-            const user = this._users[id];
-            if (user.name.toLowerCase().includes(query)) {
-                result.push(id);
-            } else if (user.email.toLowerCase().includes(query)) {
-                result.push(id);
+
+        query = query.toLowerCase();
+        let result: string[] = [...this._ordering];
+        console.log("initial:", result);
+        if (!(query.includes(":"))) return result;
+
+        // const words = query.split(" ");
+        let words: string[] = [];
+        // FIXME: SPLIT BY SPACE, UNLESS IN QUOTES
+        
+        let quoteSymbol = ``;
+        let queryStart = -1;
+        let lastQuote = -1;
+        for (let i = 0; i < query.length; i++) {
+            if (queryStart == -1 && query[i] != " " && query[i] != `"` && query[i] != `'`) {
+                queryStart = i;
+            }
+            if ((query[i] == `"` || query[i] == `'`) && (quoteSymbol == `` || query[i] == quoteSymbol)) {
+                if (lastQuote != -1) {
+                    lastQuote = -1;
+                    quoteSymbol = ``;
+                } else {
+                    lastQuote = i;
+                    quoteSymbol = query[i];
+                }
+            }
+
+            if (query[i] == " " || i == query.length-1) {
+                if (lastQuote != -1) {
+                    continue;
+                } else {
+                    words.push(query.substring(queryStart, i+1).replace(/['"]/g, ""));
+                    queryStart = -1;
+                }
             }
         }
-        return result;
-    }
+
+        query = "";
+        for (let word of words) {
+            const split = word.split(":");
+            
+            if (!(split[0] in queries)) continue;
+
+            const queryFormat = queries[split[0]];
+
+            if (queryFormat.bool) {
+                let isBool = false;
+                let boolState = false;
+                if (split[1] == "true" || split[1] == "yes" || split[1] == "t" || split[1] == "y") {
+                    isBool = true;
+                    boolState = true;
+                } else if (split[1] == "false" || split[1] == "no" || split[1] == "f" || split[1] == "n") {
+                    isBool = true;
+                    boolState = false;
+                }
+                if (isBool) {
+                    // console.log("is bool, state", boolState);
+                    // So removing elements doesn't affect us
+                    let cachedResult = [...result];
+                    for (let id of cachedResult) {
+                        const u = this._users[id];
+                        const value = Object.getOwnPropertyDescriptor(user.prototype, queryFormat.getter).get.call(u);
+                        // console.log("got", queryFormat.getter + ":", value);
+                        // Remove from result if not matching query
+                        if (!((value && boolState) || (!value && !boolState))) {
+                            // console.log("not matching, result is", result);
+                            result.splice(result.indexOf(id), 1);
+                        }
+                    }
+                    continue
+                }
+            }
+            if (queryFormat.string) {
+                
+                // FIXME: STRING SEARCH FOR FIELD
+                // FIXME: SUBTRACT FROM RESULT
+                continue;
+            }
+            if (queryFormat.date) {
+                
+            }
+        }
+        return result
+    };
+
 
     get selectAll(): boolean { return this._selectAll.checked; }
     set selectAll(state: boolean) {
