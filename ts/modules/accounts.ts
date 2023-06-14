@@ -39,6 +39,7 @@ interface announcementTemplate {
 var addDiscord: (passData: string) => void;
 
 class user implements User {
+    private _id = "";
     private _row: HTMLTableRowElement;
     private _check: HTMLInputElement;
     private _username: HTMLSpanElement;
@@ -67,7 +68,6 @@ class user implements User {
     private _userLabel: string;
     private _labelEditButton: HTMLElement;
     private _accounts_admin: HTMLInputElement
-    id = "";
     private _selected: boolean;
 
     lastNotifyMethod = (): string => {
@@ -689,6 +689,9 @@ class user implements User {
             checkVerified();
         }
     });
+
+    get id() { return this._id; }
+    set id(v: string) { this._id = v; }
 
 
     update = (user: User) => {
@@ -1934,7 +1937,7 @@ export class accountsList {
                 const button = document.createElement("button") as HTMLButtonElement;
                 button.type = "button";
                 button.classList.add("button", "~urge", "ml-2");
-                button.innerHTML = `<i class="ri-equal-line mr-2"></i>Match Text`;
+                button.innerHTML = `<i class="ri-equal-line mr-2"></i>${window.lang.strings("matchText")}`;
 
                 // Position cursor between quotes
                 button.addEventListener("click", () => fillInFilter(queryName, `""`, -1));

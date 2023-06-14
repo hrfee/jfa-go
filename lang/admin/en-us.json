@@ -122,7 +122,8 @@
         "clickToRemoveFilter": "Click to remove this filter.",
         "clearSearch": "Clear search",
         "actions": "Actions",
-        "searchOptions": "Search Options"
+        "searchOptions": "Search Options",
+        "matchText": "Match Text"
     },
     "notifications": {
         "changedEmailAddress": "Changed email address of {n}.",
