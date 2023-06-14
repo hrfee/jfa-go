@@ -118,6 +118,7 @@
         "accessJFA": "Access jfa-go",
         "accessJFASettings": "Cannot be changed as either \"Admin Only\" or \"Allow All\" has been set in Settings > General.",
         "sortingBy": "Sorting By",
+        "filters": "Filters",
         "clickToRemoveFilter": "Click to remove this filter."
     },
     "notifications": {

@@ -789,102 +789,109 @@ export class accountsList {
             }
         }
     }
-  
-    search = (query: String): string[] => {
-        const queries: { [field: string]: { name: string, getter: string, bool: boolean, string: boolean, date: boolean }} = {
-            "id": {
-                name: "Jellyfin ID",
-                getter: "id",
-                bool: false,
-                string: true,
-                date: false
-            },
-            "label": {
-                name: "Label",
-                getter: "label",
-                bool: true,
-                string: true,
-                date: false
-            },
-            "username": {
-                name: "Username",
-                getter: "name",
-                bool: false,
-                string: true,
-                date: false
-            },
-            "name": {
-                name: "Username",
-                getter: "name",
-                bool: false,
-                string: true,
-                date: false
-            },
-            "admin": {
-                name: "Admin",
-                getter: "admin",
-                bool: true,
-                string: false,
-                date: false
-            },
-            "disabled": {
-                name: "Disabled",
-                getter: "disabled",
-                bool: true,
-                string: false,
-                date: false
-            },
-            "access-jfa": {
-                name: "Access jfa-go",
-                getter: "accounts_admin",
-                bool: true,
-                string: false,
-                date: false
-            },
-            "email": {
-                name: "Email",
-                getter: "email",
-                bool: true,
-                string: true,
-                date: false
-            },
-            "telegram": {
-                name: "Telegram",
-                getter: "telegram",
-                bool: true,
-                string: true,
-                date: false
-            },
-            "matrix": {
-                name: "Matrix",
-                getter: "matrix",
-                bool: true,
-                string: true,
-                date: false
-            },
-            "discord": {
-                name: "Discord",
-                getter: "discord",
-                bool: true,
-                string: true,
-                date: false
-            },
-            "expiry": {
-                name: "Expiry",
-                getter: "expiry",
-                bool: true,
-                string: false,
-                date: true
-            },
-            "last-active": {
-                name: "Last Active",
-                getter: "last_active",
-                bool: true,
-                string: false,
-                date: true
-            }
-        }
 
+    private _queries: { [field: string]: { name: string, getter: string, bool: boolean, string: boolean, date: boolean, dependsOnTableHeader?: string, show?: boolean }} = {
+        "id": {
+            name: "Jellyfin ID",
+            getter: "id",
+            bool: false,
+            string: true,
+            date: false
+        },
+        "label": {
+            name: "Label",
+            getter: "label",
+            bool: true,
+            string: true,
+            date: false
+        },
+        "username": {
+            name: "Username",
+            getter: "name",
+            bool: false,
+            string: true,
+            date: false
+        },
+        "name": {
+            name: "Username",
+            getter: "name",
+            bool: false,
+            string: true,
+            date: false,
+            show: false
+        },
+        "admin": {
+            name: "Admin",
+            getter: "admin",
+            bool: true,
+            string: false,
+            date: false
+        },
+        "disabled": {
+            name: "Disabled",
+            getter: "disabled",
+            bool: true,
+            string: false,
+            date: false
+        },
+        "access-jfa": {
+            name: "Access jfa-go",
+            getter: "accounts_admin",
+            bool: true,
+            string: false,
+            date: false,
+            dependsOnTableHeader: "accounts-header-access-jfa"
+        },
+        "email": {
+            name: "Email",
+            getter: "email",
+            bool: true,
+            string: true,
+            date: false,
+            dependsOnTableHeader: "accounts-header-email"
+        },
+        "telegram": {
+            name: "Telegram",
+            getter: "telegram",
+            bool: true,
+            string: true,
+            date: false,
+            dependsOnTableHeader: "accounts-header-telegram"
+        },
+        "matrix": {
+            name: "Matrix",
+            getter: "matrix",
+            bool: true,
+            string: true,
+            date: false,
+            dependsOnTableHeader: "accounts-header-matrix"
+        },
+        "discord": {
+            name: "Discord",
+            getter: "discord",
+            bool: true,
+            string: true,
+            date: false,
+            dependsOnTableHeader: "accounts-header-discord"
+        },
+        "expiry": {
+            name: "Expiry",
+            getter: "expiry",
+            bool: true,
+            string: false,
+            date: true,
+            dependsOnTableHeader: "accounts-header-expiry"
+        },
+        "last-active": {
+            name: "Last Active",
+            getter: "last_active",
+            bool: true,
+            string: false,
+            date: true
+        }
+    }
+
+    search = (query: String): string[] => {
         const filterArea = document.getElementById("accounts-filter-area");
         filterArea.textContent = "";
 
@@ -945,9 +952,9 @@ export class accountsList {
             }
             const split = [word.substring(0, word.indexOf(":")), word.substring(word.indexOf(":")+1)];
             
-            if (!(split[0] in queries)) continue;
+            if (!(split[0] in this._queries)) continue;
 
-            const queryFormat = queries[split[0]];
+            const queryFormat = this._queries[split[0]];
 
             if (queryFormat.bool) {
                 let isBool = false;
@@ -1004,7 +1011,8 @@ export class accountsList {
 
                 filterCard.addEventListener("click", () => {
                     for (let quote of [`"`, `'`, ``]) {
-                        this._search.value = this._search.value.replace(split[0] + ":" + quote + split[1] + quote, "");
+                        let regex = new RegExp(split[0] + ":" + quote + split[1] + quote, "ig");
+                        this._search.value = this._search.value.replace(regex, "");
                     }
                     this._search.oninput((null as Event));
                 })
@@ -1024,6 +1032,7 @@ export class accountsList {
             if (queryFormat.date) {
                 // -1 = Before, 0 = On, 1 = After, 2 = No symbol, assume 0
                 let compareType = (split[1][0] == ">") ? 1 : ((split[1][0] == "<") ? -1 : ((split[1][0] == "=") ? 0 : 2));
+                let unmodifiedValue = split[1];
                 if (compareType != 2) {
                     split[1] = split[1].substring(1);
                 }
@@ -1046,7 +1055,8 @@ export class accountsList {
                 
                 filterCard.addEventListener("click", () => {
                     for (let quote of [`"`, `'`, ``]) {
-                        this._search.value = this._search.value.replace(split[0] + ":" + quote + split[1] + quote, "");
+                        let regex = new RegExp(split[0] + ":" + quote + unmodifiedValue + quote, "ig");
+                        this._search.value = this._search.value.replace(regex, "");
                     }
                     
                     this._search.oninput((null as Event));
@@ -1823,7 +1833,7 @@ export class accountsList {
         const headerNames: string[] = ["username", "access-jfa", "email", "telegram", "matrix", "discord", "expiry", "last-active"];
         const headerGetters: string[] = ["name", "accounts_admin", "email", "telegram", "matrix", "discord", "expiry", "last_active"];
         for (let i = 0; i < headerNames.length; i++) {
-            const header: HTMLTableHeaderCellElement = document.getElementsByClassName("accounts-header-" + headerNames[i])[0] as HTMLTableHeaderCellElement;
+            const header: HTMLTableHeaderCellElement = document.querySelector(".accounts-header-" + headerNames[i]) as HTMLTableHeaderCellElement;
             if (header !== null) {
                 this._columns[header.className] = new Column(header, Object.getOwnPropertyDescriptor(user.prototype, headerGetters[i]).get);
             }
@@ -1854,6 +1864,85 @@ export class accountsList {
         });
 
         defaultSort();
+
+        const filterList = document.getElementById("accounts-filter-list");
+
+        const fillInFilter = (name: string, value: string, offset?: number) => {
+            this._search.value = name + ":" + value + " " + this._search.value;
+            this._search.focus();
+            let newPos = name.length + 1 + value.length;
+            if (typeof offset !== 'undefined')
+                newPos += offset;
+            this._search.setSelectionRange(newPos, newPos);
+            this._search.oninput(null as any);
+        };
+
+        // Generate filter buttons
+        for (let queryName of Object.keys(this._queries)) {
+            const query = this._queries[queryName];
+            if ("show" in query && !query.show) continue;
+            if ("dependsOnTableHeader" in query && query.dependsOnTableHeader) {
+                const el = document.querySelector("."+query.dependsOnTableHeader);
+                if (el === null) continue;
+            }
+
+            const container = document.createElement("span") as HTMLSpanElement;
+            container.classList.add("button", "button-xl", "~neutral", "@low", "mb-1", "mr-2");
+            container.innerHTML = `<span class="mr-2">${query.name}</span>`;
+            if (query.bool) {
+                const pos = document.createElement("button") as HTMLButtonElement;
+                pos.type = "button";
+                pos.ariaLabel = `Filter by "${query.name}": True`;
+                pos.classList.add("button", "~positive", "ml-2");
+                pos.innerHTML = `<i class="ri-checkbox-circle-fill"></i>`;
+                pos.addEventListener("click", () => fillInFilter(queryName, "true"));
+                const neg = document.createElement("button") as HTMLButtonElement;
+                neg.type = "button";
+                neg.ariaLabel = `Filter by "${query.name}": False`;
+                neg.classList.add("button", "~critical", "ml-2");
+                neg.innerHTML = `<i class="ri-close-circle-fill"></i>`;
+                neg.addEventListener("click", () => fillInFilter(queryName, "false"));
+
+                container.appendChild(pos);
+                container.appendChild(neg);
+            }
+            if (query.string) {
+                const button = document.createElement("button") as HTMLButtonElement;
+                button.type = "button";
+                button.classList.add("button", "~urge", "ml-2");
+                button.innerHTML = `<i class="ri-equal-line mr-2"></i>Match Text`;
+
+                // Position cursor between quotes
+                button.addEventListener("click", () => fillInFilter(queryName, `""`, -1));
+                
+                container.appendChild(button);
+            }
+            if (query.date) {
+                const onDate = document.createElement("button") as HTMLButtonElement;
+                onDate.type = "button";
+                onDate.classList.add("button", "~urge", "ml-2");
+                onDate.innerHTML = `<i class="ri-calendar-check-line mr-2"></i>On Date`;
+                onDate.addEventListener("click", () => fillInFilter(queryName, `"="`, -1));
+
+                const beforeDate = document.createElement("button") as HTMLButtonElement;
+                beforeDate.type = "button";
+                beforeDate.classList.add("button", "~urge", "ml-2");
+                beforeDate.innerHTML = `<i class="ri-calendar-check-line mr-2"></i>Before Date`;
+                beforeDate.addEventListener("click", () => fillInFilter(queryName, `"<"`, -1));
+
+                const afterDate = document.createElement("button") as HTMLButtonElement;
+                afterDate.type = "button";
+                afterDate.classList.add("button", "~urge", "ml-2");
+                afterDate.innerHTML = `<i class="ri-calendar-check-line mr-2"></i>After Date`;
+                afterDate.addEventListener("click", () => fillInFilter(queryName, `">"`, -1));
+                
+                container.appendChild(onDate);
+                container.appendChild(beforeDate);
+                container.appendChild(afterDate);
+            }
+
+            filterList.appendChild(container);
+        }
     }
 
     reload = () => {
