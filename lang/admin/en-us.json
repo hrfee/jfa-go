@@ -119,7 +119,8 @@
         "accessJFASettings": "Cannot be changed as either \"Admin Only\" or \"Allow All\" has been set in Settings > General.",
         "sortingBy": "Sorting By",
         "filters": "Filters",
-        "clickToRemoveFilter": "Click to remove this filter."
+        "clickToRemoveFilter": "Click to remove this filter.",
+        "clearSearch": "Clear search"
     },
     "notifications": {
         "changedEmailAddress": "Changed email address of {n}.",

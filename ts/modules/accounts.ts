@@ -1810,6 +1810,12 @@ export class accountsList {
         };
         this._search.oninput = onchange;
 
+        const clearSearchButton = document.getElementById("accounts-search-clear") as HTMLSpanElement;
+        clearSearchButton.addEventListener("click", () => {
+            this._search.value = "";
+            onchange();
+        });
+
         this._announceTextarea.onkeyup = this.loadPreview;
         addDiscord = newDiscordSearch(window.lang.strings("linkDiscord"), window.lang.strings("searchDiscordUser"), window.lang.strings("add"), (user: DiscordUser, id: string) => { 
             _post("/users/discord", {jf_id: id, discord_id: user.id}, (req: XMLHttpRequest) => {

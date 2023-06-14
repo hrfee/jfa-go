@@ -582,15 +582,16 @@
                 <div class="card @low dark:~d_neutral accounts mb-4 overflow-visible">
                     <div class="flex-expand align-middle">
                         <span class="text-3xl font-bold mr-4">{{ .strings.accounts }}</span>
-                        <input type="search" class="field ~neutral @low input search ml-2 mr-2" id="accounts-search" placeholder="{{ .strings.search }}">
                         <div id="accounts-filter-dropdown" class="dropdown" tabindex="0">
-                            <span class="h-100 button ~neutral @low center ml-4" id="accounts-filter-button">{{ .strings.filters }}</span>
+                            <span class="h-100 button ~neutral @low center" id="accounts-filter-button">{{ .strings.filters }}</span>
                             <div class="dropdown-display">
                                 <div class="card ~neutral @low mt-2" id="accounts-filter-list">
                                     <p class="supra pb-2">{{ .strings.filters }}</p>
                                 </div>
                             </div>
                         </div>
+                        <input type="search" class="field ~neutral @low input search ml-2 mr-2" id="accounts-search" placeholder="{{ .strings.search }}">
+                        <span class="button ~neutral @low center -ml-8" id="accounts-search-clear" aria-label="{{ .strings.clearSearch }}" text="{{ .strings.clearSearch }}"><i class="ri-close-line"></i></span>
                     </div>
                     <div class="row -mx-2">
                         <span class="col button ~neutral @low center max-w-[20%]" id="accounts-add-user">{{ .quantityStrings.addUser.Singular }}</span>
