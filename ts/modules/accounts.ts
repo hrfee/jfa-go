@@ -808,28 +808,29 @@ export class accountsList {
 
     private _queries: { [field: string]: { name: string, getter: string, bool: boolean, string: boolean, date: boolean, dependsOnTableHeader?: string, show?: boolean }} = {
         "id": {
-            name: "Jellyfin ID",
+            // We don't use a translation here to circumvent the name substitution feature.
+            name: "Jellyfin/Emby ID",
             getter: "id",
             bool: false,
             string: true,
             date: false
         },
         "label": {
-            name: "Label",
+            name: window.lang.strings("label"),
             getter: "label",
             bool: true,
             string: true,
             date: false
         },
         "username": {
-            name: "Username",
+            name: window.lang.strings("username"),
             getter: "name",
             bool: false,
             string: true,
             date: false
         },
         "name": {
-            name: "Username",
+            name: window.lang.strings("username"),
             getter: "name",
             bool: false,
             string: true,
@@ -837,21 +838,21 @@ export class accountsList {
             show: false
         },
         "admin": {
-            name: "Admin",
+            name: window.lang.strings("admin"),
             getter: "admin",
             bool: true,
             string: false,
             date: false
         },
         "disabled": {
-            name: "Disabled",
+            name: window.lang.strings("disabled"),
             getter: "disabled",
             bool: true,
             string: false,
             date: false
         },
         "access-jfa": {
-            name: "Access jfa-go",
+            name: window.lang.strings("accessJFA"),
             getter: "accounts_admin",
             bool: true,
             string: false,
@@ -859,7 +860,7 @@ export class accountsList {
             dependsOnTableHeader: "accounts-header-access-jfa"
         },
         "email": {
-            name: "Email",
+            name: window.lang.strings("emailAddress"),
             getter: "email",
             bool: true,
             string: true,
@@ -891,7 +892,7 @@ export class accountsList {
             dependsOnTableHeader: "accounts-header-discord"
         },
         "expiry": {
-            name: "Expiry",
+            name: window.lang.strings("expiry"),
             getter: "expiry",
             bool: true,
             string: false,
@@ -899,7 +900,7 @@ export class accountsList {
             dependsOnTableHeader: "accounts-header-expiry"
         },
         "last-active": {
-            name: "Last Active",
+            name: window.lang.strings("lastActiveTime"),
             getter: "last_active",
             bool: true,
             string: false,
@@ -908,6 +909,7 @@ export class accountsList {
     }
 
     search = (query: String): string[] => {
+        console.log(this._queries);
         this._filterArea.textContent = "";
 
         query = query.toLowerCase();

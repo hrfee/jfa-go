@@ -123,7 +123,8 @@
         "clearSearch": "Clear search",
         "actions": "Actions",
         "searchOptions": "Search Options",
-        "matchText": "Match Text"
+        "matchText": "Match Text",
+        "jellyfinID": "Jellyfin ID"
     },
     "notifications": {
         "changedEmailAddress": "Changed email address of {n}.",
