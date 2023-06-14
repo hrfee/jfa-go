@@ -1867,6 +1867,7 @@ export class accountsList {
             this._columns[this._activeSortColumn].ascending = true;
             this._columns[this._activeSortColumn].hideIcon();
             this._sortingByButton.parentElement.classList.add("hidden");
+            this.showHideSearchOptionsHeader();
         };
 
         this._sortingByButton.parentElement.addEventListener("click", defaultSort);
