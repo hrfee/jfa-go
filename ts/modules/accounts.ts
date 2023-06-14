@@ -3,6 +3,7 @@ import { templateEmail } from "../modules/settings.js";
 import { Marked } from "@ts-stack/markdown";
 import { stripMarkdown } from "../modules/stripmd.js";
 import { DiscordUser, newDiscordSearch } from "../modules/discord.js";
+const dateParser = require("any-date-parser");
 
 interface User {
     id: string;
@@ -38,6 +39,7 @@ interface announcementTemplate {
 var addDiscord: (passData: string) => void;
 
 class user implements User {
+    private _id = "";
     private _row: HTMLTableRowElement;
     private _check: HTMLInputElement;
     private _username: HTMLSpanElement;
@@ -66,7 +68,6 @@ class user implements User {
     private _userLabel: string;
     private _labelEditButton: HTMLElement;
     private _accounts_admin: HTMLInputElement
-    id = "";
     private _selected: boolean;
 
     lastNotifyMethod = (): string => {
@@ -459,6 +460,20 @@ class user implements User {
             this._label.classList.add("chip", "~gray", "mr-2");
         }
     }
+
+    matchesSearch = (query: string): boolean => {
+        return (
+            this.name.includes(query) ||
+            this.label.includes(query) ||
+            this.discord.includes(query) ||
+            this.email.includes(query) ||
+            this.id.includes(query) ||
+            this.label.includes(query) ||
+            this.matrix.includes(query) ||
+            this.telegram.includes(query)
+        );
+    }
+
     private _checkEvent = new CustomEvent("accountCheckEvent");
     private _uncheckEvent = new CustomEvent("accountUncheckEvent");
 
@@ -675,6 +690,9 @@ class user implements User {
         }
     });
 
+    get id() { return this._id; }
+    set id(v: string) { this._id = v; }
+
 
     update = (user: User) => {
         this.id = user.id;
@@ -737,7 +755,7 @@ export class accountsList {
 
     private _selectAll = document.getElementById("accounts-select-all") as HTMLInputElement;
     private _users: { [id: string]: user };
-    private _sortedByName: string[] = [];
+    private _ordering: string[] = [];
     private _checkCount: number = 0;
     private _inSearch = false;
     // Whether the enable/disable button should enable or not.
@@ -748,6 +766,14 @@ export class accountsList {
     private _addUserEmail = this._addUserForm.querySelector("input[type=email]") as HTMLInputElement;
     private _addUserPassword = this._addUserForm.querySelector("input[type=password]") as HTMLInputElement;
     
+    // Columns for sorting.
+    private _columns: { [className: string]: Column } = {};
+    private _activeSortColumn: string;
+
+    private _sortingByButton = document.getElementById("accounts-sort-by-field") as HTMLButtonElement;
+    private _filterArea = document.getElementById("accounts-filter-area");
+    private _searchOptionsHeader = document.getElementById("accounts-search-options-header");
+
     // Whether the "Extend expiry" is extending or setting an expiry.
     private _settingExpiry = false;
 
@@ -768,41 +794,338 @@ export class accountsList {
             }
         }
     }
-    
-    search = (query: string): string[] => {
-        query = query.toLowerCase()
-        let result: string[] = [];
-        if (query.includes(":")) {  // Support admin:<true/false> and disabled:<true/false>
-            const words = query.split(" ");
-            query = "";
-            for (let word of words) {
-                if (word.includes(":")) {
-                    const querySplit = word.split(":")
-                    let state = false;
-                    if (querySplit[1] == "true" || querySplit[1] == "yes") {
-                        state = true;
-                    }
-                    for (let id in this._users) {
-                        const user = this._users[id];
-                        let attrib: boolean;
-                        if (querySplit[0] == "admin") { attrib = user.admin; }
-                        else if (querySplit[0] == "disabled") { attrib = user.disabled; }
-                        if (attrib == state) { result.push(id); }
-                    }
-                } else { query += word + " "; }
-            }
+
+    showHideSearchOptionsHeader = () => {
+        const sortingBy = !(this._sortingByButton.parentElement.classList.contains("hidden"));
+        const hasFilters = this._filterArea.textContent != "";
+        console.log("sortingBy", sortingBy, "hasFilters", hasFilters);
+        if (sortingBy || hasFilters) {
+            this._searchOptionsHeader.classList.remove("hidden");
+        } else {
+            this._searchOptionsHeader.classList.add("hidden");
         }
-        if (query == "") { return result; }
-        for (let id in this._users) {
-            const user = this._users[id];
-            if (user.name.toLowerCase().includes(query)) {
-                result.push(id);
-            } else if (user.email.toLowerCase().includes(query)) {
-                result.push(id);
-            }
-        }
-        return result;
     }
+
+    private _queries: { [field: string]: { name: string, getter: string, bool: boolean, string: boolean, date: boolean, dependsOnTableHeader?: string, show?: boolean }} = {
+        "id": {
+            // We don't use a translation here to circumvent the name substitution feature.
+            name: "Jellyfin/Emby ID",
+            getter: "id",
+            bool: false,
+            string: true,
+            date: false
+        },
+        "label": {
+            name: window.lang.strings("label"),
+            getter: "label",
+            bool: true,
+            string: true,
+            date: false
+        },
+        "username": {
+            name: window.lang.strings("username"),
+            getter: "name",
+            bool: false,
+            string: true,
+            date: false
+        },
+        "name": {
+            name: window.lang.strings("username"),
+            getter: "name",
+            bool: false,
+            string: true,
+            date: false,
+            show: false
+        },
+        "admin": {
+            name: window.lang.strings("admin"),
+            getter: "admin",
+            bool: true,
+            string: false,
+            date: false
+        },
+        "disabled": {
+            name: window.lang.strings("disabled"),
+            getter: "disabled",
+            bool: true,
+            string: false,
+            date: false
+        },
+        "access-jfa": {
+            name: window.lang.strings("accessJFA"),
+            getter: "accounts_admin",
+            bool: true,
+            string: false,
+            date: false,
+            dependsOnTableHeader: "accounts-header-access-jfa"
+        },
+        "email": {
+            name: window.lang.strings("emailAddress"),
+            getter: "email",
+            bool: true,
+            string: true,
+            date: false,
+            dependsOnTableHeader: "accounts-header-email"
+        },
+        "telegram": {
+            name: "Telegram",
+            getter: "telegram",
+            bool: true,
+            string: true,
+            date: false,
+            dependsOnTableHeader: "accounts-header-telegram"
+        },
+        "matrix": {
+            name: "Matrix",
+            getter: "matrix",
+            bool: true,
+            string: true,
+            date: false,
+            dependsOnTableHeader: "accounts-header-matrix"
+        },
+        "discord": {
+            name: "Discord",
+            getter: "discord",
+            bool: true,
+            string: true,
+            date: false,
+            dependsOnTableHeader: "accounts-header-discord"
+        },
+        "expiry": {
+            name: window.lang.strings("expiry"),
+            getter: "expiry",
+            bool: true,
+            string: false,
+            date: true,
+            dependsOnTableHeader: "accounts-header-expiry"
+        },
+        "last-active": {
+            name: window.lang.strings("lastActiveTime"),
+            getter: "last_active",
+            bool: true,
+            string: false,
+            date: true
+        }
+    }
+
+    search = (query: String): string[] => {
+        console.log(this._queries);
+        this._filterArea.textContent = "";
+
+        query = query.toLowerCase();
+        let result: string[] = [...this._ordering];
+        // console.log("initial:", result);
+
+        // const words = query.split(" ");
+        let words: string[] = [];
+        // FIXME: SPLIT BY SPACE, UNLESS IN QUOTES
+        
+        let quoteSymbol = ``;
+        let queryStart = -1;
+        let lastQuote = -1;
+        for (let i = 0; i < query.length; i++) {
+            if (queryStart == -1 && query[i] != " " && query[i] != `"` && query[i] != `'`) {
+                queryStart = i;
+            }
+            if ((query[i] == `"` || query[i] == `'`) && (quoteSymbol == `` || query[i] == quoteSymbol)) {
+                if (lastQuote != -1) {
+                    lastQuote = -1;
+                    quoteSymbol = ``;
+                } else {
+                    lastQuote = i;
+                    quoteSymbol = query[i];
+                }
+            }
+
+            if (query[i] == " " || i == query.length-1) {
+                if (lastQuote != -1) {
+                    continue;
+                } else {
+                    let end = i+1;
+                    if (query[i] == " ") {
+                        end = i;
+                        while (i+1 < query.length && query[i+1] == " ") {
+                            i += 1;
+                        }
+                    }
+                    words.push(query.substring(queryStart, end).replace(/['"]/g, ""));
+                    console.log("pushed", words);
+                    queryStart = -1;
+                }
+            }
+        }
+
+        query = "";
+        for (let word of words) {
+            if (!word.includes(":")) {
+                let cachedResult = [...result];
+                for (let id of cachedResult) {
+                    const u = this._users[id];
+                    if (!u.matchesSearch(word)) {
+                        result.splice(result.indexOf(id), 1);
+                    }
+                }
+                continue;
+            }
+            const split = [word.substring(0, word.indexOf(":")), word.substring(word.indexOf(":")+1)];
+            
+            if (!(split[0] in this._queries)) continue;
+
+            const queryFormat = this._queries[split[0]];
+
+            if (queryFormat.bool) {
+                let isBool = false;
+                let boolState = false;
+                if (split[1] == "true" || split[1] == "yes" || split[1] == "t" || split[1] == "y") {
+                    isBool = true;
+                    boolState = true;
+                } else if (split[1] == "false" || split[1] == "no" || split[1] == "f" || split[1] == "n") {
+                    isBool = true;
+                    boolState = false;
+                }
+                if (isBool) {
+                    // FIXME: Generate filter card for each filter class
+                    const filterCard = document.createElement("span");
+                    filterCard.ariaLabel = window.lang.strings("clickToRemoveFilter");
+                    filterCard.classList.add("button", "~" + (boolState ? "positive" : "critical"), "@high", "center", "m-2");
+                    filterCard.innerHTML = `
+                    <span class="font-bold mr-2">${queryFormat.name}</span>
+                    <i class="text-2xl ri-${boolState? "checkbox" : "close"}-circle-fill"></i>
+                    `;
+
+                    filterCard.addEventListener("click", () => {
+                        for (let quote of [`"`, `'`, ``]) {
+                            this._search.value = this._search.value.replace(split[0] + ":" + quote + split[1] + quote, "");
+                        }
+                        this._search.oninput((null as Event));
+                    })
+
+                    this._filterArea.appendChild(filterCard);
+
+                    // console.log("is bool, state", boolState);
+                    // So removing elements doesn't affect us
+                    let cachedResult = [...result];
+                    for (let id of cachedResult) {
+                        const u = this._users[id];
+                        const value = Object.getOwnPropertyDescriptor(user.prototype, queryFormat.getter).get.call(u);
+                        // console.log("got", queryFormat.getter + ":", value);
+                        // Remove from result if not matching query
+                        if (!((value && boolState) || (!value && !boolState))) {
+                            // console.log("not matching, result is", result);
+                            result.splice(result.indexOf(id), 1);
+                        }
+                    }
+                    continue
+                }
+            }
+            if (queryFormat.string) {
+                const filterCard = document.createElement("span");
+                filterCard.ariaLabel = window.lang.strings("clickToRemoveFilter");
+                filterCard.classList.add("button", "~neutral", "@low", "center", "m-2", "h-full");
+                filterCard.innerHTML = `
+                <span class="font-bold mr-2">${queryFormat.name}:</span> "${split[1]}"
+                `;
+
+                filterCard.addEventListener("click", () => {
+                    for (let quote of [`"`, `'`, ``]) {
+                        let regex = new RegExp(split[0] + ":" + quote + split[1] + quote, "ig");
+                        this._search.value = this._search.value.replace(regex, "");
+                    }
+                    this._search.oninput((null as Event));
+                })
+
+                this._filterArea.appendChild(filterCard);
+
+                let cachedResult = [...result];
+                for (let id of cachedResult) {
+                    const u = this._users[id];
+                    const value = Object.getOwnPropertyDescriptor(user.prototype, queryFormat.getter).get.call(u);
+                    if (!(value.includes(split[1]))) {
+                        result.splice(result.indexOf(id), 1);
+                    }
+                }
+                continue;
+            }
+            if (queryFormat.date) {
+                // -1 = Before, 0 = On, 1 = After, 2 = No symbol, assume 0
+                let compareType = (split[1][0] == ">") ? 1 : ((split[1][0] == "<") ? -1 : ((split[1][0] == "=") ? 0 : 2));
+                let unmodifiedValue = split[1];
+                if (compareType != 2) {
+                    split[1] = split[1].substring(1);
+                }
+                if (compareType == 2) compareType = 0;
+
+                let attempt: { year?: number, month?: number, day?: number, hour?: number, minute?: number } = dateParser.attempt(split[1]);
+                // Month in Date objects is 0-based, so make our parsed date that way too
+                if ("month" in attempt) attempt["month"] -= 1;
+
+                let date: Date = (Date as any).fromString(split[1]) as Date;
+                console.log("Read", attempt, "and", date);
+                if ("invalid" in (date as any)) continue;
+
+                const filterCard = document.createElement("span");
+                filterCard.ariaLabel = window.lang.strings("clickToRemoveFilter");
+                filterCard.classList.add("button", "~neutral", "@low", "center", "m-2", "h-full");
+                filterCard.innerHTML = `
+                <span class="font-bold mr-2">${queryFormat.name}:</span> ${(compareType == 1) ? window.lang.strings("after")+" " : ((compareType == -1) ? window.lang.strings("before")+" " : "")}${split[1]}
+                `;
+                
+                filterCard.addEventListener("click", () => {
+                    for (let quote of [`"`, `'`, ``]) {
+                        let regex = new RegExp(split[0] + ":" + quote + unmodifiedValue + quote, "ig");
+                        this._search.value = this._search.value.replace(regex, "");
+                    }
+                    
+                    this._search.oninput((null as Event));
+                })
+                
+                this._filterArea.appendChild(filterCard);
+
+                let cachedResult = [...result];
+                for (let id of cachedResult) {
+                    const u = this._users[id];
+                    const unixValue = Object.getOwnPropertyDescriptor(user.prototype, queryFormat.getter).get.call(u);
+                    if (unixValue == 0) {
+                        result.splice(result.indexOf(id), 1);
+                        continue;
+                    }
+                    let value = new Date(unixValue*1000);
+                    
+                    const getterPairs: [string, () => number][] = [["year", Date.prototype.getFullYear], ["month", Date.prototype.getMonth], ["day", Date.prototype.getDate], ["hour", Date.prototype.getHours], ["minute", Date.prototype.getMinutes]];
+
+                    // When doing > or < <time> with no date, we need to ignore the rest of the Date object
+                    if (compareType != 0 && Object.keys(attempt).length == 2 && "hour" in attempt && "minute" in attempt) { 
+                        const temp = new Date(date.valueOf());
+                        temp.setHours(value.getHours(), value.getMinutes());
+                        value = temp;
+                        console.log("just hours/minutes workaround, value set to", value);
+                    }
+
+
+                    let match = true;
+                    if (compareType == 0) {
+                        for (let pair of getterPairs) {
+                            if (pair[0] in attempt) {
+                                if (compareType == 0 && attempt[pair[0]] != pair[1].call(value)) {
+                                    match = false;
+                                    break;
+                                }
+                            }
+                        }
+                    } else if (compareType == -1) {
+                        match = (value < date);
+                    } else if (compareType == 1) {
+                        match = (value > date);
+                    }
+                    if (!match) {
+                        result.splice(result.indexOf(id), 1);
+                    }
+                }
+            }
+        }
+        return result
+    };
+
 
     get selectAll(): boolean { return this._selectAll.checked; }
     set selectAll(state: boolean) {
@@ -821,36 +1144,6 @@ export class accountsList {
     add = (u: User) => {
         let domAccount = new user(u);
         this._users[u.id] = domAccount;
-        this.unhide(u.id);
-    }
-
-    unhide = (id: string) => {
-        const keys = Object.keys(this._users);
-        if (keys.length == 0) {
-            this._table.appendChild(this._users[id].asElement());
-            return;
-        }
-        this._sortedByName = keys.sort((a, b) => this._users[a].name.localeCompare(this._users[b].name));
-        let index = this._sortedByName.indexOf(id)+1;
-        if (index == this._sortedByName.length-1) {
-            this._table.appendChild(this._users[id].asElement());
-            return;
-        }
-        while (index < this._sortedByName.length) {
-            if (this._table.contains(this._users[this._sortedByName[index]].asElement())) {
-                this._table.insertBefore(this._users[id].asElement(), this._users[this._sortedByName[index]].asElement());
-                return;
-            }
-            index++;
-        }
-        this._table.appendChild(this._users[id].asElement());
-    }
-
-    hide = (id: string) => {
-        const el = this._users[id].asElement();
-        if (this._table.contains(el)) {
-            this._table.removeChild(this._users[id].asElement());
-        }
     }
 
     private _checkCheckCount = () => {
@@ -862,10 +1155,10 @@ export class accountsList {
             this._modifySettings.classList.add("unfocused");
             this._deleteUser.classList.add("unfocused");
             if (window.emailEnabled || window.telegramEnabled) {
-                this._announceButton.classList.add("unfocused");
+                this._announceButton.parentElement.classList.add("unfocused");
             }
             this._extendExpiry.classList.add("unfocused");
-            this._disableEnable.classList.add("unfocused");
+            this._disableEnable.parentElement.classList.add("unfocused");
             this._sendPWR.classList.add("unfocused");
         } else {
             let visibleCount = 0;
@@ -885,7 +1178,7 @@ export class accountsList {
             this._deleteUser.classList.remove("unfocused");
             this._deleteUser.textContent = window.lang.quantity("deleteUser", list.length);
             if (window.emailEnabled || window.telegramEnabled) {
-                this._announceButton.classList.remove("unfocused");
+                this._announceButton.parentElement.classList.remove("unfocused");
             }
             let anyNonExpiries = list.length == 0 ? true : false;
             let allNonExpiries = true;
@@ -903,7 +1196,7 @@ export class accountsList {
                 }
                 if (showDisableEnable && this._users[id].disabled != this._shouldEnable) {
                     showDisableEnable = false;
-                    this._disableEnable.classList.add("unfocused");
+                    this._disableEnable.parentElement.classList.add("unfocused");
                 }
                 if (!showDisableEnable && anyNonExpiries) { break; }
                 if (!this._users[id].lastNotifyMethod()) {
@@ -939,7 +1232,7 @@ export class accountsList {
                     this._disableEnable.classList.add("~warning");
                     this._disableEnable.classList.remove("~positive");
                 }
-                this._disableEnable.classList.remove("unfocused");
+                this._disableEnable.parentElement.classList.remove("unfocused");
                 this._disableEnable.textContent = message;
             }
         }
@@ -1427,6 +1720,18 @@ export class accountsList {
         }
         window.modals.extendExpiry.show();
     }
+    
+
+    setVisibility = (users: string[], visible: boolean) => {
+        this._table.textContent = "";
+        for (let id of this._ordering) {
+            if (visible && users.indexOf(id) != -1) {
+                this._table.appendChild(this._users[id].asElement());
+            } else if (!visible && users.indexOf(id) == -1) {
+                this._table.appendChild(this._users[id].asElement());
+            }
+        }
+    }
 
     constructor() {
         this._populateNumbers();
@@ -1476,13 +1781,13 @@ export class accountsList {
         this._deleteUser.classList.add("unfocused");
 
         this._announceButton.onclick = this.announce;
-        this._announceButton.classList.add("unfocused");
+        this._announceButton.parentElement.classList.add("unfocused");
 
         this._extendExpiry.onclick = () => { this.extendExpiry(); };
         this._extendExpiry.classList.add("unfocused");
 
         this._disableEnable.onclick = this.enableDisableUsers;
-        this._disableEnable.classList.add("unfocused");
+        this._disableEnable.parentElement.classList.add("unfocused");
 
         this._enableExpiry.onclick = () => { this.extendExpiry(true); };
         this._enableExpiryNotify.onchange = () => {
@@ -1508,35 +1813,26 @@ export class accountsList {
             this._deleteNotify.checked = false;
         }*/
 
-        const setVisibility = (users: string[], visible: boolean) => {
-            for (let id in this._users) {
-                if (users.indexOf(id) != -1) {
-                    if (visible) {
-                        this.unhide(id);
-                    } else {
-                        this.hide(id);
-                    }
-                } else {
-                    if (visible) {
-                        this.hide(id);
-                    } else {
-                        this.unhide(id);
-                    }
-                }
-            }
-        }
-
-        this._search.oninput = () => {
+        const onchange = () => {
             const query = this._search.value;
             if (!query) {
-                setVisibility(Object.keys(this._users), true);
+                // this.setVisibility(this._ordering, true);
                 this._inSearch = false;
             } else {
                 this._inSearch = true;
-                setVisibility(this.search(query), true);
+                // this.setVisibility(this.search(query), true);
             }
+            this.setVisibility(this.search(query), true);
             this._checkCheckCount();
+            this.showHideSearchOptionsHeader();
         };
+        this._search.oninput = onchange;
+
+        const clearSearchButton = document.getElementById("accounts-search-clear") as HTMLSpanElement;
+        clearSearchButton.addEventListener("click", () => {
+            this._search.value = "";
+            onchange();
+        });
 
         this._announceTextarea.onkeyup = this.loadPreview;
         addDiscord = newDiscordSearch(window.lang.strings("linkDiscord"), window.lang.strings("searchDiscordUser"), window.lang.strings("add"), (user: DiscordUser, id: string) => { 
@@ -1559,6 +1855,123 @@ export class accountsList {
             insertText(this._announceTextarea, announceVarUsername.children[0].textContent);
             this.loadPreview();
         };
+
+        const headerNames: string[] = ["username", "access-jfa", "email", "telegram", "matrix", "discord", "expiry", "last-active"];
+        const headerGetters: string[] = ["name", "accounts_admin", "email", "telegram", "matrix", "discord", "expiry", "last_active"];
+        for (let i = 0; i < headerNames.length; i++) {
+            const header: HTMLTableHeaderCellElement = document.querySelector(".accounts-header-" + headerNames[i]) as HTMLTableHeaderCellElement;
+            if (header !== null) {
+                this._columns[header.className] = new Column(header, Object.getOwnPropertyDescriptor(user.prototype, headerGetters[i]).get);
+            }
+        }
+
+        // Start off sorting by Name
+        const defaultSort = () => {
+            this._activeSortColumn = document.getElementsByClassName("accounts-header-" + headerNames[0])[0].className;
+            document.dispatchEvent(new CustomEvent("header-click", { detail: this._activeSortColumn }));
+            this._columns[this._activeSortColumn].ascending = true;
+            this._columns[this._activeSortColumn].hideIcon();
+            this._sortingByButton.parentElement.classList.add("hidden");
+            this.showHideSearchOptionsHeader();
+        };
+
+        this._sortingByButton.parentElement.addEventListener("click", defaultSort);
+
+        document.addEventListener("header-click", (event: CustomEvent) => {
+            this._ordering = this._columns[event.detail].sort(this._users);
+            this._activeSortColumn = event.detail;
+            this._sortingByButton.innerHTML = this._columns[event.detail].buttonContent;
+            this._sortingByButton.parentElement.classList.remove("hidden");
+            // console.log("ordering by", event.detail, ": ", this._ordering);
+            if (!(this._inSearch)) {
+                this.setVisibility(this._ordering, true);
+            } else {
+                this.setVisibility(this.search(this._search.value), true);
+            }
+            this.showHideSearchOptionsHeader();
+        });
+
+        defaultSort();
+        this.showHideSearchOptionsHeader();
+
+        const filterList = document.getElementById("accounts-filter-list");
+
+        const fillInFilter = (name: string, value: string, offset?: number) => {
+            this._search.value = name + ":" + value + " " + this._search.value;
+            this._search.focus();
+            let newPos = name.length + 1 + value.length;
+            if (typeof offset !== 'undefined')
+                newPos += offset;
+            this._search.setSelectionRange(newPos, newPos);
+            this._search.oninput(null as any);
+        };
+
+        // Generate filter buttons
+        for (let queryName of Object.keys(this._queries)) {
+            const query = this._queries[queryName];
+            if ("show" in query && !query.show) continue;
+            if ("dependsOnTableHeader" in query && query.dependsOnTableHeader) {
+                const el = document.querySelector("."+query.dependsOnTableHeader);
+                if (el === null) continue;
+            }
+
+            const container = document.createElement("span") as HTMLSpanElement;
+            container.classList.add("button", "button-xl", "~neutral", "@low", "mb-1", "mr-2");
+            container.innerHTML = `<span class="mr-2">${query.name}</span>`;
+            if (query.bool) {
+                const pos = document.createElement("button") as HTMLButtonElement;
+                pos.type = "button";
+                pos.ariaLabel = `Filter by "${query.name}": True`;
+                pos.classList.add("button", "~positive", "ml-2");
+                pos.innerHTML = `<i class="ri-checkbox-circle-fill"></i>`;
+                pos.addEventListener("click", () => fillInFilter(queryName, "true"));
+                const neg = document.createElement("button") as HTMLButtonElement;
+                neg.type = "button";
+                neg.ariaLabel = `Filter by "${query.name}": False`;
+                neg.classList.add("button", "~critical", "ml-2");
+                neg.innerHTML = `<i class="ri-close-circle-fill"></i>`;
+                neg.addEventListener("click", () => fillInFilter(queryName, "false"));
+
+                container.appendChild(pos);
+                container.appendChild(neg);
+            }
+            if (query.string) {
+                const button = document.createElement("button") as HTMLButtonElement;
+                button.type = "button";
+                button.classList.add("button", "~urge", "ml-2");
+                button.innerHTML = `<i class="ri-equal-line mr-2"></i>${window.lang.strings("matchText")}`;
+
+                // Position cursor between quotes
+                button.addEventListener("click", () => fillInFilter(queryName, `""`, -1));
+                
+                container.appendChild(button);
+            }
+            if (query.date) {
+                const onDate = document.createElement("button") as HTMLButtonElement;
+                onDate.type = "button";
+                onDate.classList.add("button", "~urge", "ml-2");
+                onDate.innerHTML = `<i class="ri-calendar-check-line mr-2"></i>On Date`;
+                onDate.addEventListener("click", () => fillInFilter(queryName, `"="`, -1));
+
+                const beforeDate = document.createElement("button") as HTMLButtonElement;
+                beforeDate.type = "button";
+                beforeDate.classList.add("button", "~urge", "ml-2");
+                beforeDate.innerHTML = `<i class="ri-calendar-check-line mr-2"></i>Before Date`;
+                beforeDate.addEventListener("click", () => fillInFilter(queryName, `"<"`, -1));
+
+                const afterDate = document.createElement("button") as HTMLButtonElement;
+                afterDate.type = "button";
+                afterDate.classList.add("button", "~urge", "ml-2");
+                afterDate.innerHTML = `<i class="ri-calendar-check-line mr-2"></i>After Date`;
+                afterDate.addEventListener("click", () => fillInFilter(queryName, `">"`, -1));
+                
+                container.appendChild(onDate);
+                container.appendChild(beforeDate);
+                container.appendChild(afterDate);
+            }
+
+            filterList.appendChild(container);
+        }
     }
 
     reload = () => {
@@ -1579,9 +1992,98 @@ export class accountsList {
                     this._users[id].remove();
                     delete this._users[id];
                 }
+                // console.log("reload, so sorting by", this._activeSortColumn);
+                this._ordering = this._columns[this._activeSortColumn].sort(this._users);
+                if (!(this._inSearch)) {
+                    this.setVisibility(this._ordering, true);
+                } else {
+                    this.setVisibility(this.search(this._search.value), true);
+                }
                 this._checkCheckCount();
             }
         });
         this.loadTemplates();
+    }
+}
+
+type GetterReturnType = Boolean | boolean | String | Number | number;
+type Getter = () => GetterReturnType;
+
+// When a column is clicked, it broadcasts it's name and ordering to be picked up and stored by accountsList
+// When list is refreshed, accountList calls method of the specific Column and re-orders accordingly.
+// Listen for broadcast event from others, check its not us by comparing the header className in the message, then hide the arrow icon
+class Column {
+    private _header: HTMLTableHeaderCellElement;
+    private _headerContent: string;
+    private _getter: Getter;
+    private _ascending: boolean;
+    private _active: boolean;
+
+    constructor(header: HTMLTableHeaderCellElement, getter: Getter) {
+        this._header = header;
+        this._headerContent = this._header.textContent;
+        this._getter = getter;
+        this._ascending = true;
+        this._active = false;
+
+        this._header.addEventListener("click", () => {
+            // If we are the active sort column, a click means to switch between ascending/descending.
+            if (this._active) {
+                this._ascending = !this._ascending;
+                console.log("was already active, switching direction to", this._ascending ? "ascending" : "descending");
+            } else {
+                console.log("wasn't active keeping direction as", this._ascending ? "ascending" : "descending");
+            }
+            this._active = true;
+            this._header.setAttribute("aria-sort", this._headerContent);
+            this.updateHeader();
+            document.dispatchEvent(new CustomEvent("header-click", { detail: this._header.className }));
+        });
+        document.addEventListener("header-click", (event: CustomEvent) => {
+            if (event.detail != this._header.className) {
+                this._active = false;
+                this._header.removeAttribute("aria-sort");
+                this.hideIcon();
+            }
+        });
+    }
+
+    hideIcon = () => {
+        this._header.textContent = this._headerContent;
+    }
+
+    updateHeader = () => {
+        this._header.innerHTML = `
+        <span class="">${this._headerContent}</span>
+        <i class="ri-arrow-${this._ascending? "up" : "down"}-s-line" aria-hidden="true"></i>
+        `;
+    }
+
+    // Returns the inner HTML to show in the "Sorting By" button.
+    get buttonContent() {
+        return `<span class="font-bold">` + window.lang.strings("sortingBy") + ": " + `</span>` + this._headerContent;
+    }
+
+    get ascending() { return this._ascending; }
+    set ascending(v: boolean) {
+        this._ascending = v;
+        if (!this._active) return;
+        this.updateHeader();
+        this._header.setAttribute("aria-sort", this._headerContent);
+        document.dispatchEvent(new CustomEvent("header-click", { detail: this._header.className }));
+    }
+
+    // Sorts the user list. previouslyActive is whether this column was previously sorted by, indicating that the direction should change.
+    sort = (users: { [id: string]: user }): string[] => {
+        let userIDs = Object.keys(users);
+        userIDs.sort((a: string, b: string): number => {
+            const av: GetterReturnType = this._getter.call(users[a]);
+            const bv: GetterReturnType = this._getter.call(users[b]);
+            if (av < bv) return this._ascending ? -1 : 1;
+            if (av > bv) return this._ascending ? 1 : -1;
+            return 0;
+        });
+
+        return userIDs;
     }
 }

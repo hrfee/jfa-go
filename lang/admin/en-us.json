@@ -37,6 +37,8 @@
         "advancedSettings": "Advanced Settings",
         "lastActiveTime": "Last Active",
         "from": "From",
+        "after": "After",
+        "before": "Before",
         "user": "User",
         "expiry": "Expiry",
         "userExpiry": "User Expiry",
@@ -114,7 +116,15 @@
         "deleteTemplate": "Delete template",
         "templateEnterName": "Enter a name to save this template.",
         "accessJFA": "Access jfa-go",
-        "accessJFASettings": "Cannot be changed as either \"Admin Only\" or \"Allow All\" has been set in Settings > General."
+        "accessJFASettings": "Cannot be changed as either \"Admin Only\" or \"Allow All\" has been set in Settings > General.",
+        "sortingBy": "Sorting By",
+        "filters": "Filters",
+        "clickToRemoveFilter": "Click to remove this filter.",
+        "clearSearch": "Clear search",
+        "actions": "Actions",
+        "searchOptions": "Search Options",
+        "matchText": "Match Text",
+        "jellyfinID": "Jellyfin ID"
     },
     "notifications": {
         "changedEmailAddress": "Changed email address of {n}.",
