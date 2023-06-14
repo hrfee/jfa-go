@@ -768,6 +768,8 @@ export class accountsList {
     private _activeSortColumn: string;
 
     private _sortingByButton = document.getElementById("accounts-sort-by-field") as HTMLButtonElement;
+    private _filterArea = document.getElementById("accounts-filter-area");
+    private _searchOptionsHeader = document.getElementById("accounts-search-options-header");
 
     // Whether the "Extend expiry" is extending or setting an expiry.
     private _settingExpiry = false;
@@ -787,6 +789,17 @@ export class accountsList {
                    field.appendChild(opt);
                 }
             }
+        }
+    }
+
+    showHideSearchOptionsHeader = () => {
+        const sortingBy = !(this._sortingByButton.parentElement.classList.contains("hidden"));
+        const hasFilters = this._filterArea.textContent != "";
+        console.log("sortingBy", sortingBy, "hasFilters", hasFilters);
+        if (sortingBy || hasFilters) {
+            this._searchOptionsHeader.classList.remove("hidden");
+        } else {
+            this._searchOptionsHeader.classList.add("hidden");
         }
     }
 
@@ -892,8 +905,7 @@ export class accountsList {
     }
 
     search = (query: String): string[] => {
-        const filterArea = document.getElementById("accounts-filter-area");
-        filterArea.textContent = "";
+        this._filterArea.textContent = "";
 
         query = query.toLowerCase();
         let result: string[] = [...this._ordering];
@@ -970,7 +982,7 @@ export class accountsList {
                     // FIXME: Generate filter card for each filter class
                     const filterCard = document.createElement("span");
                     filterCard.ariaLabel = window.lang.strings("clickToRemoveFilter");
-                    filterCard.classList.add("button", "~" + (boolState ? "positive" : "critical"), "@high", "center", "ml-2", "mr-2", "mt-2");
+                    filterCard.classList.add("button", "~" + (boolState ? "positive" : "critical"), "@high", "center", "m-2");
                     filterCard.innerHTML = `
                     <span class="font-bold mr-2">${queryFormat.name}</span>
                     <i class="text-2xl ri-${boolState? "checkbox" : "close"}-circle-fill"></i>
@@ -983,7 +995,7 @@ export class accountsList {
                         this._search.oninput((null as Event));
                     })
 
-                    filterArea.appendChild(filterCard);
+                    this._filterArea.appendChild(filterCard);
 
                     // console.log("is bool, state", boolState);
                     // So removing elements doesn't affect us
@@ -1004,7 +1016,7 @@ export class accountsList {
             if (queryFormat.string) {
                 const filterCard = document.createElement("span");
                 filterCard.ariaLabel = window.lang.strings("clickToRemoveFilter");
-                filterCard.classList.add("button", "~neutral", "@low", "center", "ml-2", "mr-2", "mt-2", "h-full");
+                filterCard.classList.add("button", "~neutral", "@low", "center", "m-2", "h-full");
                 filterCard.innerHTML = `
                 <span class="font-bold mr-2">${queryFormat.name}:</span> "${split[1]}"
                 `;
@@ -1017,7 +1029,7 @@ export class accountsList {
                     this._search.oninput((null as Event));
                 })
 
-                filterArea.appendChild(filterCard);
+                this._filterArea.appendChild(filterCard);
 
                 let cachedResult = [...result];
                 for (let id of cachedResult) {
@@ -1048,7 +1060,7 @@ export class accountsList {
 
                 const filterCard = document.createElement("span");
                 filterCard.ariaLabel = window.lang.strings("clickToRemoveFilter");
-                filterCard.classList.add("button", "~neutral", "@low", "center", "ml-2", "mr-2", "mt-2", "h-full");
+                filterCard.classList.add("button", "~neutral", "@low", "center", "m-2", "h-full");
                 filterCard.innerHTML = `
                 <span class="font-bold mr-2">${queryFormat.name}:</span> ${(compareType == 1) ? window.lang.strings("after")+" " : ((compareType == -1) ? window.lang.strings("before")+" " : "")}${split[1]}
                 `;
@@ -1062,7 +1074,7 @@ export class accountsList {
                     this._search.oninput((null as Event));
                 })
                 
-                filterArea.appendChild(filterCard);
+                this._filterArea.appendChild(filterCard);
 
                 let cachedResult = [...result];
                 for (let id of cachedResult) {
@@ -1807,6 +1819,7 @@ export class accountsList {
             }
             this.setVisibility(this.search(query), true);
             this._checkCheckCount();
+            this.showHideSearchOptionsHeader();
         };
         this._search.oninput = onchange;
 
@@ -1869,9 +1882,11 @@ export class accountsList {
             } else {
                 this.setVisibility(this.search(this._search.value), true);
             }
+            this.showHideSearchOptionsHeader();
         });
 
         defaultSort();
+        this.showHideSearchOptionsHeader();
 
         const filterList = document.getElementById("accounts-filter-list");
 
