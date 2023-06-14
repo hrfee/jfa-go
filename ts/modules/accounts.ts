@@ -970,7 +970,7 @@ export class accountsList {
                     // FIXME: Generate filter card for each filter class
                     const filterCard = document.createElement("span");
                     filterCard.ariaLabel = window.lang.strings("clickToRemoveFilter");
-                    filterCard.classList.add("button", "~" + (boolState ? "positive" : "critical"), "@high", "center", "ml-2", "mr-2");
+                    filterCard.classList.add("button", "~" + (boolState ? "positive" : "critical"), "@high", "center", "ml-2", "mr-2", "mt-2");
                     filterCard.innerHTML = `
                     <span class="font-bold mr-2">${queryFormat.name}</span>
                     <i class="text-2xl ri-${boolState? "checkbox" : "close"}-circle-fill"></i>
@@ -1004,7 +1004,7 @@ export class accountsList {
             if (queryFormat.string) {
                 const filterCard = document.createElement("span");
                 filterCard.ariaLabel = window.lang.strings("clickToRemoveFilter");
-                filterCard.classList.add("button", "~neutral", "@low", "center", "ml-2", "mr-2", "h-full");
+                filterCard.classList.add("button", "~neutral", "@low", "center", "ml-2", "mr-2", "mt-2", "h-full");
                 filterCard.innerHTML = `
                 <span class="font-bold mr-2">${queryFormat.name}:</span> "${split[1]}"
                 `;
@@ -1048,7 +1048,7 @@ export class accountsList {
 
                 const filterCard = document.createElement("span");
                 filterCard.ariaLabel = window.lang.strings("clickToRemoveFilter");
-                filterCard.classList.add("button", "~neutral", "@low", "center", "ml-2", "mr-2", "h-full");
+                filterCard.classList.add("button", "~neutral", "@low", "center", "ml-2", "mr-2", "mt-2", "h-full");
                 filterCard.innerHTML = `
                 <span class="font-bold mr-2">${queryFormat.name}:</span> ${(compareType == 1) ? window.lang.strings("after")+" " : ((compareType == -1) ? window.lang.strings("before")+" " : "")}${split[1]}
                 `;
@@ -1138,10 +1138,10 @@ export class accountsList {
             this._modifySettings.classList.add("unfocused");
             this._deleteUser.classList.add("unfocused");
             if (window.emailEnabled || window.telegramEnabled) {
-                this._announceButton.classList.add("unfocused");
+                this._announceButton.parentElement.classList.add("unfocused");
             }
             this._extendExpiry.classList.add("unfocused");
-            this._disableEnable.classList.add("unfocused");
+            this._disableEnable.parentElement.classList.add("unfocused");
             this._sendPWR.classList.add("unfocused");
         } else {
             let visibleCount = 0;
@@ -1161,7 +1161,7 @@ export class accountsList {
             this._deleteUser.classList.remove("unfocused");
             this._deleteUser.textContent = window.lang.quantity("deleteUser", list.length);
             if (window.emailEnabled || window.telegramEnabled) {
-                this._announceButton.classList.remove("unfocused");
+                this._announceButton.parentElement.classList.remove("unfocused");
             }
             let anyNonExpiries = list.length == 0 ? true : false;
             let allNonExpiries = true;
@@ -1179,7 +1179,7 @@ export class accountsList {
                 }
                 if (showDisableEnable && this._users[id].disabled != this._shouldEnable) {
                     showDisableEnable = false;
-                    this._disableEnable.classList.add("unfocused");
+                    this._disableEnable.parentElement.classList.add("unfocused");
                 }
                 if (!showDisableEnable && anyNonExpiries) { break; }
                 if (!this._users[id].lastNotifyMethod()) {
@@ -1215,7 +1215,7 @@ export class accountsList {
                     this._disableEnable.classList.add("~warning");
                     this._disableEnable.classList.remove("~positive");
                 }
-                this._disableEnable.classList.remove("unfocused");
+                this._disableEnable.parentElement.classList.remove("unfocused");
                 this._disableEnable.textContent = message;
             }
         }
@@ -1764,13 +1764,13 @@ export class accountsList {
         this._deleteUser.classList.add("unfocused");
 
         this._announceButton.onclick = this.announce;
-        this._announceButton.classList.add("unfocused");
+        this._announceButton.parentElement.classList.add("unfocused");
 
         this._extendExpiry.onclick = () => { this.extendExpiry(); };
         this._extendExpiry.classList.add("unfocused");
 
         this._disableEnable.onclick = this.enableDisableUsers;
-        this._disableEnable.classList.add("unfocused");
+        this._disableEnable.parentElement.classList.add("unfocused");
 
         this._enableExpiry.onclick = () => { this.extendExpiry(true); };
         this._enableExpiryNotify.onchange = () => {
@@ -1796,17 +1796,19 @@ export class accountsList {
             this._deleteNotify.checked = false;
         }*/
 
-        this._search.oninput = () => {
+        const onchange = () => {
             const query = this._search.value;
             if (!query) {
-                this.setVisibility(this._ordering, true);
+                // this.setVisibility(this._ordering, true);
                 this._inSearch = false;
             } else {
                 this._inSearch = true;
-                this.setVisibility(this.search(query), true);
+                // this.setVisibility(this.search(query), true);
             }
+            this.setVisibility(this.search(query), true);
             this._checkCheckCount();
         };
+        this._search.oninput = onchange;
 
         this._announceTextarea.onkeyup = this.loadPreview;
         addDiscord = newDiscordSearch(window.lang.strings("linkDiscord"), window.lang.strings("searchDiscordUser"), window.lang.strings("add"), (user: DiscordUser, id: string) => { 

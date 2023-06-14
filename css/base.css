@@ -490,10 +490,10 @@ a:hover:not(.lang-link):not(.\~urge), a:active:not(.lang-link):not(.\~urge) {
     text-align: center;
 }
 
-.search {
+/* .search {
     max-width: 15rem;
     min-width: 10rem;
-}
+} */
 
 td.img-circle {
     width: 32px;
@@ -546,6 +546,11 @@ div.card:contains(section.banner.footer) {
 
 .pb-0i {
     padding-bottom: 0px !important
+}
+
+.mx-0i {
+    margin-left: 0px !important;
+    margin-right: 0px !important
 }
 
 .text-center-i {
