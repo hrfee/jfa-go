@@ -87,7 +87,7 @@ type appContext struct {
 	webFS          httpFS
 	cssClass       string // Default theme, "light"|"dark".
 	jellyfinLogin  bool
-	users          []User
+	adminUsers     []User
 	invalidTokens  []string
 	// Keeping jf name because I can't think of a better one
 	jf               *mediabrowser.MediaBrowser
@@ -450,7 +450,7 @@ func start(asDaemon, firstCall bool) {
 			user.UserID = shortuuid.New()
 			user.Username = app.config.Section("ui").Key("username").String()
 			user.Password = app.config.Section("ui").Key("password").String()
-			app.users = append(app.users, user)
+			app.adminUsers = append(app.adminUsers, user)
 		} else {
 			app.debug.Println("Using Jellyfin for authentication")
 			app.authJf, _ = mediabrowser.NewServer(serverType, server, "jfa-go", app.version, "auth", "auth", timeoutHandler, cacheTimeout)
@@ -644,6 +644,9 @@ func flagPassed(name string) (found bool) {
 
 // @securityDefinitions.basic getTokenAuth
 // @name getTokenAuth
+
+// @securityDefinitions.basic getUserTokenAuth
+// @name getUserTokenAuth
 
 // @tag.name Auth
 // @tag.description -Get a token here if running swagger UI locally.-
