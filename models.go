@@ -359,3 +359,17 @@ type genCaptchaDTO struct {
 type forUserDTO struct {
 	ID string `json:"id"` // Jellyfin ID
 }
+
+// ReCaptchaRequestDTO is sent to /api/siteverify, and includes the identifier of the CAPTCHA data is requested for.
+type ReCaptchaRequestDTO struct {
+	Secret   string `json:"secret"`
+	Response string `json:"response"`
+}
+
+// ReCaptchaResponseDTO is returned upon POST to reCAPTCHA /api/siteverify, and gives details upon the use of a CAPTCHA.
+type ReCaptchaResponseDTO struct {
+	Success            bool     `json:"success"`
+	ChallengeTimestamp string   `json:"challenge_ts"` // ISO yyyy-MM-dd'T'HH:mm:ssZZ
+	Hostname           string   `json:"hostname"`
+	ErrorCodes         []string `json:"error-codes"`
+}

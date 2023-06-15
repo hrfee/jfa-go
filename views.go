@@ -1,9 +1,12 @@
 package main
 
 import (
+	"encoding/json"
 	"html/template"
+	"io"
 	"io/fs"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -323,17 +326,63 @@ func (app *appContext) GenCaptcha(gc *gin.Context) {
 }
 
 func (app *appContext) verifyCaptcha(code, id, text string) bool {
-	inv, ok := app.storage.invites[code]
-	if !ok || inv.Captchas == nil {
-		app.debug.Printf("Couldn't find invite \"%s\"", code)
+	reCAPTCHA := app.config.Section("captcha").Key("recaptcha").MustBool(false)
+	if !reCAPTCHA {
+		// internal CAPTCHA
+		inv, ok := app.storage.invites[code]
+		if !ok || inv.Captchas == nil {
+			app.debug.Printf("Couldn't find invite \"%s\"", code)
+			return false
+		}
+		c, ok := inv.Captchas[id]
+		if !ok {
+			app.debug.Printf("Couldn't find Captcha \"%s\"", id)
+			return false
+		}
+		return strings.ToLower(c.Text) == strings.ToLower(text)
+	}
+
+	// reCAPTCHA
+
+	msg := ReCaptchaRequestDTO{
+		Secret:   app.config.Section("captcha").Key("recaptcha_secret_key").MustString(""),
+		Response: text,
+	}
+	// Why doesn't this endpoint accept JSON???
+	urlencode := url.Values{}
+	urlencode.Set("secret", msg.Secret)
+	urlencode.Set("response", msg.Response)
+
+	req, _ := http.NewRequest("POST", "https://www.google.com/recaptcha/api/siteverify", strings.NewReader(urlencode.Encode()))
+
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil || resp.StatusCode != 200 {
+		app.err.Printf("Failed to read reCAPTCHA status (%d): %+v\n", resp.Status, err)
 		return false
 	}
-	c, ok := inv.Captchas[id]
-	if !ok {
-		app.debug.Printf("Couldn't find Captcha \"%s\"", id)
+	defer resp.Body.Close()
+	var data ReCaptchaResponseDTO
+	body, err := io.ReadAll(resp.Body)
+	err = json.Unmarshal(body, &data)
+	if err != nil {
+		app.err.Printf("Failed to unmarshal reCAPTCHA response: %+v\n", err)
 		return false
 	}
-	return strings.ToLower(c.Text) == strings.ToLower(text)
+
+	hostname := app.config.Section("captcha").Key("recaptcha_hostname").MustString("")
+	if strings.ToLower(data.Hostname) != strings.ToLower(hostname) && data.Hostname != "" {
+		app.debug.Printf("Invalidating reCAPTCHA request: Hostnames didn't match (Wanted \"%s\", got \"%s\"\n", hostname, data.Hostname)
+		return false
+	}
+
+	if len(data.ErrorCodes) > 0 {
+		app.err.Printf("reCAPTCHA returned errors: %+v\n", data.ErrorCodes)
+		return false
+	}
+
+	return data.Success
 }
 
 // @Summary returns 204 if the given Captcha contents is correct for the corresponding captcha ID and invite code.
@@ -497,6 +546,8 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 		"matrixEnabled":      matrix,
 		"emailRequired":      app.config.Section("email").Key("required").MustBool(false),
 		"captcha":            app.config.Section("captcha").Key("enabled").MustBool(false),
+		"reCAPTCHA":          app.config.Section("captcha").Key("recaptcha").MustBool(false),
+		"reCAPTCHASiteKey":   app.config.Section("captcha").Key("recaptcha_site_key").MustString(""),
 	}
 	if telegram {
 		data["telegramPIN"] = app.telegram.NewAuthToken()

@@ -27,10 +27,23 @@
     window.matrixRequired = {{ .matrixRequired }};
     window.matrixUserID = "{{ .matrixUser }}";
     window.captcha = {{ .captcha }};
+    window.reCAPTCHA = {{ .reCAPTCHA }};
+    window.reCAPTCHASiteKey = "{{ .reCAPTCHASiteKey }}";
 </script>
 {{ if .passwordReset }}
 <script src="js/pwr.js" type="module"></script>
 {{ else }}
 <script src="js/form.js" type="module"></script>
+{{ if .reCAPTCHA }}
+<script>
+    var reCAPTCHACallback = () => {
+        const el = document.getElementsByClassName("g-recaptcha")[0];
+        grecaptcha.render(el, {
+            "sitekey": window.reCAPTCHASiteKey
+        });
+    }
+</script>
+<script src="https://www.google.com/recaptcha/api.js?onload=reCAPTCHACallback&render=explicit" async defer></script>
+{{ end }}
 {{ end }}
 {{ end }}

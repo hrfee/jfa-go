@@ -335,6 +335,41 @@
                     "type": "bool",
                     "value": false,
                     "description": "Enable a CAPTCHA on the account creation form."
+                },
+                "recaptcha": {
+                    "name": "Use Google reCAPTCHA",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "bool",
+                    "value": false,
+                    "description": "More reliable, but requires some setup. See jfa-go wiki for more info."
+                },
+                "recaptcha_site_key": {
+                    "name": "reCAPTCHA Site Key",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "text",
+                    "depends_true": "recaptcha",
+                    "value": "",
+                    "description": "Site Key, see jfa-go wiki for how to acquire one."
+                },
+                "recaptcha_secret_key": {
+                    "name": "reCAPTCHA Secret Key",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "text",
+                    "depends_true": "recaptcha",
+                    "value": "",
+                    "description": "Secret Key, see jfa-go wiki for how to acquire one."
+                },
+                "recaptcha_hostname": {
+                    "name": "Hostname",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "text",
+                    "depends_true": "recaptcha",
+                    "value": "",
+                    "description": "Public host-name of jfa-go, e.g. \"site.com\". Don't include any subpaths."
                 }
             }
         },

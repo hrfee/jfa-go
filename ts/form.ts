@@ -32,6 +32,8 @@ interface formWindow extends Window {
     userExpiryMessage: string;
     emailRequired: boolean;
     captcha: boolean;
+    reCAPTCHA: boolean;
+    reCAPTCHASiteKey: string;
 }
 
 loadLangSelector("form");
@@ -263,7 +265,7 @@ let prevCaptcha = "";
 function baseValidator(oncomplete: (valid: boolean) => void): void {
     let captchaChecked = false;
     let captchaChange = false;
-    if (window.captcha) {
+    if (window.captcha && !window.reCAPTCHA) {
         captchaChange = captchaInput.value != prevCaptcha;
         if (captchaChange) {
             prevCaptcha = captchaInput.value;
@@ -305,7 +307,7 @@ function baseValidator(oncomplete: (valid: boolean) => void): void {
         oncomplete(false);
         return;
     }
-    if (window.captcha) {
+    if (window.captcha && !window.reCAPTCHA) {
         if (!captchaChange) {
             oncomplete(captchaVerified);
             return;
@@ -318,6 +320,21 @@ function baseValidator(oncomplete: (valid: boolean) => void): void {
         oncomplete(true);
     }
 }
+
+interface GreCAPTCHA {
+    render: (container: HTMLDivElement, parameters: {
+        sitekey?: string,
+        theme?: string,
+        size?: string,
+        tabindex?: number,
+        "callback"?: () => void,
+        "expired-callback"?: () => void,
+        "error-callback"?: () => void
+    }) => void;
+    getResponse: (opt_widget_id?: HTMLDivElement) => string;
+}
+
+declare var grecaptcha: GreCAPTCHA
 
 let r = initValidator(passwordField, rePasswordField, submitButton, submitSpan, baseValidator);
 var requirements = r[0];
@@ -361,7 +378,7 @@ const genCaptcha = () => {
     });
 };
 
-if (window.captcha) {
+if (window.captcha && !window.reCAPTCHA) {
     genCaptcha();
     (document.getElementById("captcha-regen") as HTMLSpanElement).onclick = genCaptcha;
     captchaInput.onkeyup = validatorFunc;
@@ -369,7 +386,7 @@ if (window.captcha) {
 
 const create = (event: SubmitEvent) => {
     event.preventDefault();
-    if (window.captcha && !captchaVerified) {
+    if (window.captcha && !window.reCAPTCHA && !captchaVerified) {
         
     }
     toggleLoader(submitSpan);
@@ -401,8 +418,12 @@ const create = (event: SubmitEvent) => {
         }
     }
     if (window.captcha) {
-        send.captcha_id = captchaID;
-        send.captcha_text = captchaInput.value;
+        if (window.reCAPTCHA) {
+            send.captcha_text = grecaptcha.getResponse();
+        } else {
+            send.captcha_id = captchaID;
+            send.captcha_text = captchaInput.value;
+        }
     }
     _post("/newUser", send, (req: XMLHttpRequest) => {
         if (req.readyState == 4) {
