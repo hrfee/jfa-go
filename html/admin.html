@@ -22,17 +22,7 @@
         {{ template "header.html" . }}
     </head>
     <body class="max-w-full overflow-x-hidden section">
-        <div id="modal-login" class="modal">
-            <form class="card relative mx-auto my-[10%] w-4/5 lg:w-1/3" id="form-login" href="">
-                <span class="heading">{{ .strings.login }}</span>
-                <input type="text" class="field input ~neutral @high mt-4 mb-2" placeholder="{{ .strings.username }}" id="login-user">
-                <input type="password" class="field input ~neutral @high mb-4" placeholder="{{ .strings.password }}" id="login-password">
-                <label>
-                    <input type="submit" class="unfocused">
-                    <span class="button ~urge @low full-width center supra submit">{{ .strings.login }}</span>
-                </label>
-            </form>
-        </div>
+        {{ template "login-modal.html" . }}
         <div id="modal-add-user" class="modal">
             <form class="card relative mx-auto my-[10%] w-4/5 lg:w-1/3" id="form-add-user" href="">
                 <span class="heading">{{ .strings.newUser }} <span class="modal-close">&times;</span></span>
