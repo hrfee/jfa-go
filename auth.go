@@ -69,17 +69,19 @@ func (app *appContext) decodeValidateAuthHeader(gc *gin.Context) (claims jwt.Map
 		respond(401, "Unauthorized", gc)
 		return
 	}
-	ok = false
 	expiryUnix := int64(claims["exp"].(float64))
 	if err != nil {
 		app.debug.Printf("Auth denied: %s", err)
 		respond(401, "Unauthorized", gc)
+		ok = false
 		return
 	}
 	expiry := time.Unix(expiryUnix, 0)
 	if !(ok && token.Valid && claims["type"].(string) == "bearer" && expiry.After(time.Now())) {
 		app.debug.Printf("Auth denied: Invalid token")
+		// app.debug.Printf("Expiry: %+v, OK: %t, Valid: %t, ClaimType: %s\n", expiry, ok, token.Valid, claims["type"].(string))
 		respond(401, "Unauthorized", gc)
+		ok = false
 		return
 	}
 	ok = true
@@ -256,13 +258,14 @@ func (app *appContext) decodeValidateRefreshCookie(gc *gin.Context) (claims jwt.
 	if err != nil {
 		app.debug.Printf("getTokenRefresh: Invalid token expiry: %s", err)
 		respond(401, "Invalid token", gc)
+		ok = false
 		return
 	}
-	ok = false
 	expiry := time.Unix(expiryUnix, 0)
 	if !(ok && token.Valid && claims["type"].(string) == "refresh" && expiry.After(time.Now())) {
-		app.debug.Printf("getTokenRefresh: Invalid token: %s", err)
+		app.debug.Printf("getTokenRefresh: Invalid token: %+v", err)
 		respond(401, "Invalid token", gc)
+		ok = false
 		return
 	}
 	ok = true
