@@ -167,7 +167,7 @@
                             </label>
                         </form>
                     </div>
-                    <div class="flex-1">
+                    <div class="flex-initial">
                         <div class="card ~neutral @low mb-4">
                             <span class="label supra" for="inv-uses">{{ .strings.passwordRequirementsHeader }}</span>
                             <ul>
@@ -180,7 +180,7 @@
                         </div>
                         {{ if .captcha }}
                         <div class="card ~neutral @low mb-4">
-                            <span class="label supra mb-2">CAPTCHA {{ if not .reCAPTCHA }}<span id="captcha-regen" title="{{ .strings.refresh }}" class="badge lg @low ~info ml-2 float-right"><i class="ri-refresh-line"></i></span>{{ end }}<span id="captcha-success" class="badge lg @low ~critical ml-2 float-right"><i class="ri-close-line"></i></span></span>
+                            <span class="label supra mb-2">CAPTCHA {{ if not .reCAPTCHA }}<span id="captcha-regen" title="{{ .strings.refresh }}" class="badge lg @low ~info ml-2 float-right"><i class="ri-refresh-line"></i></span><span id="captcha-success" class="badge lg @low ~critical ml-2 float-right"><i class="ri-close-line"></i></span>{{ end }}</span>
                             <div id="captcha-img" class="mt-2 mb-2 {{ if .reCAPTCHA }}g-recaptcha{{ end }}"></div>
                             {{ if not .reCAPTCHA }}
                             <input class="field ~neutral @low" id="captcha-input" class="mt-2" placeholder="CAPTCHA">

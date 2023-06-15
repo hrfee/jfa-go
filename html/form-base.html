@@ -39,7 +39,8 @@
     var reCAPTCHACallback = () => {
         const el = document.getElementsByClassName("g-recaptcha")[0];
         grecaptcha.render(el, {
-            "sitekey": window.reCAPTCHASiteKey
+            "sitekey": window.reCAPTCHASiteKey,
+            "theme": document.documentElement.classList.contains("dark") ? "dark" : "light"
         });
     }
 </script>

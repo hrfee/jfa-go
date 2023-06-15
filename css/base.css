@@ -560,3 +560,16 @@ div.card:contains(section.banner.footer) {
 input[type="checkbox" i], [class^="ri-"], [class*=" ri-"], .ri-refresh-line:before, .modal-close {
     cursor: pointer;
 }
+
+
+.g-recaptcha {
+    overflow: hidden;
+    width: 296px;
+    height: 72px;
+    transform: scale(1.1);
+    transform-origin: top left;
+}
+
+.g-recaptcha iframe {
+    margin: -2px 0px 0px -4px;
+}
