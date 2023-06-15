@@ -54,4 +54,6 @@ export class Modal implements Modal {
             this.show();
         }
     }
+
+    asElement = () => { return this.modal; }
 }
