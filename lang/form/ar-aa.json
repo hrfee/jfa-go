@@ -33,7 +33,9 @@
         "errorCaptcha": "كلمة التحقق غير صحيحة.",
         "errorPassword": "تحقق من متطلبات كلمة المرور.",
         "errorNoMatch": "كلمات المرور غير متطابقة.",
-        "verified": "تم التحقق من الحساب."
+        "verified": "تم التحقق من الحساب.",
+        "errorAccountLinked": "الحساب موجود مسبقا.",
+        "errorEmailLinked": "الايميل مستعمل مسبقا."
     },
     "validationStrings": {
         "length": {

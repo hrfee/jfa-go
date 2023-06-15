@@ -53,6 +53,12 @@
         "errorDiscordVerification": "Vérification Discord requise.",
         "errorMatrixVerification": "Vérification Matrix requise.",
         "errorUnknown": "Erreur inconnue.",
-        "verified": "Compte vérifié."
+        "verified": "Compte vérifié.",
+        "errorEmailLinked": "E-mail déjà utilisé.",
+        "errorNoEmail": "E-mail requis.",
+        "errorCaptcha": "Captcha incorrect.",
+        "errorPassword": "Vérifiez les exigences relatives au mot de passe.",
+        "errorNoMatch": "Les mots de passe ne correspondent pas.",
+        "errorAccountLinked": "Compte déjà utilisé."
     }
 }
