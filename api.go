@@ -214,7 +214,7 @@ func (app *appContext) GetConfig(gc *gin.Context) {
 	app.info.Println("Config requested")
 	resp := app.configBase
 	// Load language options
-	formOptions := app.storage.lang.Form.getOptions()
+	formOptions := app.storage.lang.User.getOptions()
 	fl := resp.Sections["ui"].Settings["language-form"]
 	fl.Options = formOptions
 	fl.Value = app.config.Section("ui").Key("language-form").MustString("en-us")
@@ -452,8 +452,8 @@ func (app *appContext) GetLanguages(gc *gin.Context) {
 	page := gc.Param("page")
 	resp := langDTO{}
 	switch page {
-	case "form":
-		for key, lang := range app.storage.lang.Form {
+	case "form", "user":
+		for key, lang := range app.storage.lang.User {
 			resp[key] = lang.Meta.Name
 		}
 	case "admin":
@@ -494,8 +494,8 @@ func (app *appContext) ServeLang(gc *gin.Context) {
 	if page == "admin" {
 		gc.JSON(200, app.storage.lang.Admin[lang])
 		return
-	} else if page == "form" {
-		gc.JSON(200, app.storage.lang.Form[lang])
+	} else if page == "form" || page == "user" {
+		gc.JSON(200, app.storage.lang.User[lang])
 		return
 	}
 	respondBool(400, false, gc)

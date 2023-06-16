@@ -169,11 +169,11 @@ func (app *appContext) loadConfig() error {
 
 	oldFormLang := app.config.Section("ui").Key("language").MustString("")
 	if oldFormLang != "" {
-		app.storage.lang.chosenFormLang = oldFormLang
+		app.storage.lang.chosenUserLang = oldFormLang
 	}
 	newFormLang := app.config.Section("ui").Key("language-form").MustString("")
 	if newFormLang != "" {
-		app.storage.lang.chosenFormLang = newFormLang
+		app.storage.lang.chosenUserLang = newFormLang
 	}
 	app.storage.lang.chosenAdminLang = app.config.Section("ui").Key("language-admin").MustString("en-us")
 	app.storage.lang.chosenEmailLang = app.config.Section("email").Key("language").MustString("en-us")

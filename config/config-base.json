@@ -373,6 +373,23 @@
                 }
             }
         },
+        "user_page": {
+            "order": [],
+            "meta": {
+                "name": "User Page",
+                "description": "Settings for the user page, which provides useful info and tools to users directly. NOTE: Jellyfin Login must be enabled to use this feature.",
+                "depends_true": "ui|jellyfin_login"
+            },
+            "settings": {
+                "enabled": {
+                    "name": "Enabled",
+                    "required": false,
+                    "requires_restart": false,
+                    "type": "bool",
+                    "value": true
+                }
+            }
+        },
         "password_validation": {
             "order": [],
             "meta": {

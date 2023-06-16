@@ -284,7 +284,7 @@ func start(asDaemon, firstCall bool) {
 	}
 
 	app.storage.lang.CommonPath = "common"
-	app.storage.lang.FormPath = "form"
+	app.storage.lang.UserPath = "form"
 	app.storage.lang.AdminPath = "admin"
 	app.storage.lang.EmailPath = "email"
 	app.storage.lang.TelegramPath = "telegram"

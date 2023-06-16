@@ -116,9 +116,9 @@ type Lang struct {
 	chosenAdminLang   string
 	Admin             adminLangs
 	AdminJSON         map[string]string
-	FormPath          string
-	chosenFormLang    string
-	Form              formLangs
+	UserPath          string
+	chosenUserLang    string
+	User              userLangs
 	PasswordResetPath string
 	chosenPWRLang     string
 	PasswordReset     pwrLangs
@@ -144,7 +144,7 @@ func (st *Storage) loadLang(filesystems ...fs.FS) (err error) {
 	if err != nil {
 		return
 	}
-	err = st.loadLangForm(filesystems...)
+	err = st.loadLangUser(filesystems...)
 	if err != nil {
 		return
 	}
@@ -395,16 +395,16 @@ func (st *Storage) loadLangAdmin(filesystems ...fs.FS) error {
 	return nil
 }
 
-func (st *Storage) loadLangForm(filesystems ...fs.FS) error {
-	st.lang.Form = map[string]formLang{}
-	var english formLang
+func (st *Storage) loadLangUser(filesystems ...fs.FS) error {
+	st.lang.User = map[string]userLang{}
+	var english userLang
 	loadedLangs := make([]map[string]bool, len(filesystems))
 	var load loadLangFunc
 	load = func(fsIndex int, fname string) error {
 		filesystem := filesystems[fsIndex]
 		index := strings.TrimSuffix(fname, filepath.Ext(fname))
-		lang := formLang{}
-		f, err := fs.ReadFile(filesystem, FSJoin(st.lang.FormPath, fname))
+		lang := userLang{}
+		f, err := fs.ReadFile(filesystem, FSJoin(st.lang.UserPath, fname))
 		if err != nil {
 			return err
 		}
@@ -418,11 +418,11 @@ func (st *Storage) loadLangForm(filesystems ...fs.FS) error {
 		st.lang.Common.patchCommon(&lang.Strings, index)
 		if fname != "en-us.json" {
 			if lang.Meta.Fallback != "" {
-				fallback, ok := st.lang.Form[lang.Meta.Fallback]
+				fallback, ok := st.lang.User[lang.Meta.Fallback]
 				err = nil
 				if !ok {
 					err = load(fsIndex, lang.Meta.Fallback+".json")
-					fallback = st.lang.Form[lang.Meta.Fallback]
+					fallback = st.lang.User[lang.Meta.Fallback]
 				}
 				if err == nil {
 					loadedLangs[fsIndex][lang.Meta.Fallback+".json"] = true
@@ -447,7 +447,7 @@ func (st *Storage) loadLangForm(filesystems ...fs.FS) error {
 		}
 		lang.notificationsJSON = string(notifications)
 		lang.validationStringsJSON = string(validationStrings)
-		st.lang.Form[index] = lang
+		st.lang.User[index] = lang
 		return nil
 	}
 	engFound := false
@@ -463,10 +463,10 @@ func (st *Storage) loadLangForm(filesystems ...fs.FS) error {
 	if !engFound {
 		return err
 	}
-	english = st.lang.Form["en-us"]
-	formLoaded := false
+	english = st.lang.User["en-us"]
+	userLoaded := false
 	for i := range filesystems {
-		files, err := fs.ReadDir(filesystems[i], st.lang.FormPath)
+		files, err := fs.ReadDir(filesystems[i], st.lang.UserPath)
 		if err != nil {
 			continue
 		}
@@ -474,13 +474,13 @@ func (st *Storage) loadLangForm(filesystems ...fs.FS) error {
 			if !loadedLangs[i][f.Name()] {
 				err = load(i, f.Name())
 				if err == nil {
-					formLoaded = true
+					userLoaded = true
 					loadedLangs[i][f.Name()] = true
 				}
 			}
 		}
 	}
-	if !formLoaded {
+	if !userLoaded {
 		return err
 	}
 	return nil
@@ -540,7 +540,7 @@ func (st *Storage) loadLangPWR(filesystems ...fs.FS) error {
 		return err
 	}
 	english = st.lang.PasswordReset["en-us"]
-	formLoaded := false
+	userLoaded := false
 	for i := range filesystems {
 		files, err := fs.ReadDir(filesystems[i], st.lang.PasswordResetPath)
 		if err != nil {
@@ -550,13 +550,13 @@ func (st *Storage) loadLangPWR(filesystems ...fs.FS) error {
 			if !loadedLangs[i][f.Name()] {
 				err = load(i, f.Name())
 				if err == nil {
-					formLoaded = true
+					userLoaded = true
 					loadedLangs[i][f.Name()] = true
 				}
 			}
 		}
 	}
-	if !formLoaded {
+	if !userLoaded {
 		return err
 	}
 	return nil

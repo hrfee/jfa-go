@@ -160,6 +160,7 @@ window.onpopstate = (event: PopStateEvent) => {
 
 const login = new Login(window.modals.login as Modal, "/");
 login.onLogin = () => {
+    console.log("Logged in.");
     window.updater = new Updater();
     setInterval(() => { window.invites.reload(); accounts.reload(); }, 30*1000);
     const currentTab = window.tabs.current;

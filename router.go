@@ -101,6 +101,9 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 	if app.URLBase != "" {
 		routePrefixes = append(routePrefixes, "")
 	}
+
+	userPageEnabled := app.config.Section("user_page").Key("enabled").MustBool(true) && app.config.Section("ui").Key("jellyfin_login").MustBool(true)
+
 	for _, p := range routePrefixes {
 		router.GET(p+"/lang/:page", app.GetLanguages)
 		router.Use(static.Serve(p+"/", app.webFS))
@@ -140,6 +143,11 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 			router.POST(p+"/invite/:invCode/matrix/user", app.MatrixSendPIN)
 			router.POST(p+"/users/matrix", app.MatrixConnect)
 		}
+		if userPageEnabled {
+			router.GET(p+"/my/account", app.MyUserPage)
+			router.GET(p+"/my/token/login", app.getUserTokenLogin)
+			router.GET(p+"/my/token/refresh", app.getUserTokenRefresh)
+		}
 	}
 	if *SWAGGER {
 		app.info.Print(warning("\n\nWARNING: Swagger should not be used on a public instance.\n\n"))
@@ -147,7 +155,14 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 			router.GET(p+"/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 		}
 	}
+
 	api := router.Group("/", app.webAuth())
+
+	var user *gin.RouterGroup
+	if userPageEnabled {
+		user = router.Group("/my", app.userAuth())
+	}
+
 	for _, p := range routePrefixes {
 		router.POST(p+"/logout", app.Logout)
 		api.DELETE(p+"/users", app.DeleteUsers)
@@ -210,6 +225,9 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 		}
 		api.POST(p+"/matrix/login", app.MatrixLogin)
 
+		if userPageEnabled {
+			user.GET(p+"/hello", app.HelloWorld)
+		}
 	}
 }
 
