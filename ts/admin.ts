@@ -1,4 +1,4 @@
-import { nightwind } from "./modules/theme.js";
+import { ThemeManager } from "./modules/theme.js";
 import { lang, LangFile, loadLangSelector } from "./modules/lang.js";
 import { Modal } from "./modules/modal.js";
 import { Tabs } from "./modules/tabs.js";
@@ -10,31 +10,7 @@ import { _get, _post, notificationBox, whichAnimationEvent } from "./modules/com
 import { Updater } from "./modules/update.js";
 import { Login } from "./modules/login.js";
 
-let theme = new nightwind();
-
-const themeButton = document.getElementById('button-theme') as HTMLSpanElement;
-const switchThemeIcon = () => {
-    const icon = themeButton.childNodes[0] as HTMLElement;
-    if (document.documentElement.classList.contains("dark")) {
-        icon.classList.add("ri-sun-line");
-        icon.classList.remove("ri-moon-line");
-        themeButton.classList.add("~warning");
-        themeButton.classList.remove("~neutral");
-        themeButton.classList.remove("@high");
-    } else {
-        icon.classList.add("ri-moon-line");
-        icon.classList.remove("ri-sun-line");
-        themeButton.classList.add("@high");
-        themeButton.classList.add("~neutral");
-        themeButton.classList.remove("~warning");
-    }
-};
- themeButton.onclick = () => {
-    theme.toggle();
-    switchThemeIcon();
- }
-switchThemeIcon();
-
+const theme = new ThemeManager(document.getElementById("button-theme"));
 
 window.lang = new lang(window.langFile as LangFile);
 loadLangSelector("admin");
@@ -130,19 +106,35 @@ window.notifications = new notificationBox(document.getElementById('notification
 }*/
 
 // load tabs
-window.tabs = new Tabs();
-window.tabs.addTab("invites", null, window.invites.reload);
-window.tabs.addTab("accounts", null, accounts.reload);
-window.tabs.addTab("settings", null, settings.reload);
+const tabs: { url: string, reloader: () => void }[] = [
+    {
+        url: "invites",
+        reloader: window.invites.reload
+    },
+    {
+        url: "accounts",
+        reloader: accounts.reload
+    },
+    {
+        url: "settings",
+        reloader: settings.reload
+    }
+];
 
-for (let tab of ["invites", "accounts", "settings"]) {
-    if (window.location.pathname == window.URLBase + "/" + tab) {
-        window.tabs.switch(tab, true);
+const defaultTab = tabs[0];
+
+window.tabs = new Tabs();
+
+for (let tab of tabs) {
+    window.tabs.addTab(tab.url, null, tab.reloader);
+    if (window.location.pathname == window.URLBase + "/" + tab.url) {
+        window.tabs.switch(tab.url, true);
     }
 }
 
+// Default tab
 if ((window.URLBase + "/").includes(window.location.pathname)) {
-    window.tabs.switch("invites", true);
+    window.tabs.switch(defaultTab.url, true);
 }
 
 document.addEventListener("tab-change", (event: CustomEvent) => {
