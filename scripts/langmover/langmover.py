@@ -102,10 +102,10 @@ def generate(templ: Path, source: Path, output: Path, extract: bool, tree):
             
             if extract and val != "":
                 with open(source / folder / lang, "w") as f:
-                    json.dump(modifiedTree[folder], f, indent=4)
+                    json.dump(modifiedTree[folder], f, indent=4, ensure_ascii=False)
 
         with open(output / Path(lang), "w") as f:
-            json.dump(out, f, indent=4)
+            json.dump(out, f, indent=4, ensure_ascii=False)
 
 
 

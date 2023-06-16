@@ -1,0 +1,33 @@
+{
+    "meta": {},
+    "strings": {
+        "username": "common",
+        "password": "common",
+        "emailAddress": "common",
+        "name": "common",
+        "submit": "common",
+        "send": "common",
+        "success": "common",
+        "continue": "common",
+        "error": "common",
+        "copy": "common",
+        "copied": "common",
+        "time24h": "common",
+        "time12h": "common",
+        "linkTelegram": "common",
+        "contactEmail": "common",
+        "contactTelegram": "common",
+        "linkDiscord": "common",
+        "linkMatrix": "common",
+        "contactDiscord": "common",
+        "theme": "common",
+        "refresh": "common",
+        "required": "common"
+    },
+    "notifications": {
+        "errorLoginBlank": "admin",
+        "errorConnection": "admin",
+        "errorUnknown": "admin",
+        "error401Unauthorized": "admin"
+    }
+}
