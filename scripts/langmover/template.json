@@ -1,0 +1,15 @@
+{
+    "meta": {
+        "explanation": "values here can either be folder, folder:section, or folder:section:subkey, and then either nothing, or /keyname. It all depends on whether the sections and keys match up, or if you want to pull a plural/singular only or not."
+    },
+    "strings": {
+        "inviteInfiniteUsesWarning": "admin",
+        "emailAddress": "form:strings/emailAddress",
+        "modifySettingsFor": "admin:quantityStrings:plural/",
+        "deleteNUsers": "admin:quantityStrings:singular/deleteNUsers"
+    },
+    "quantityStrings": {
+        "reEnableUsers": "admin"
+    }
+
+}
