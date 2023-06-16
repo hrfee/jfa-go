@@ -164,7 +164,7 @@ func (st *Storage) loadLang(filesystems ...fs.FS) (err error) {
 // from a list of other sources in a preferred order.
 // languages to patch from should be in decreasing priority,
 // E.g: If to = fr-be, from = [fr-fr, en-us].
-func (common *commonLangs) patchCommon(to *langSection, from ...string) {
+func (common *commonLangs) patchCommonStrings(to *langSection, from ...string) {
 	if *to == nil {
 		*to = langSection{}
 	}
@@ -173,6 +173,25 @@ func (common *commonLangs) patchCommon(to *langSection, from ...string) {
 			i := 0
 			for i < len(from)-1 {
 				ev, ok = (*common)[from[i]].Strings[n]
+				if ok && ev != "" {
+					break
+				}
+				i++
+			}
+			(*to)[n] = ev
+		}
+	}
+}
+
+func (common *commonLangs) patchCommonNotifications(to *langSection, from ...string) {
+	if *to == nil {
+		*to = langSection{}
+	}
+	for n, ev := range (*common)[from[len(from)-1]].Notifications {
+		if v, ok := (*to)[n]; !ok || v == "" {
+			i := 0
+			for i < len(from)-1 {
+				ev, ok = (*common)[from[i]].Notifications[n]
 				if ok && ev != "" {
 					break
 				}
@@ -329,7 +348,8 @@ func (st *Storage) loadLangAdmin(filesystems ...fs.FS) error {
 		if err != nil {
 			return err
 		}
-		st.lang.Common.patchCommon(&lang.Strings, index)
+		st.lang.Common.patchCommonStrings(&lang.Strings, index)
+		st.lang.Common.patchCommonNotifications(&lang.Notifications, index)
 		if fname != "en-us.json" {
 			if lang.Meta.Fallback != "" {
 				fallback, ok := st.lang.Admin[lang.Meta.Fallback]
@@ -415,7 +435,8 @@ func (st *Storage) loadLangUser(filesystems ...fs.FS) error {
 		if err != nil {
 			return err
 		}
-		st.lang.Common.patchCommon(&lang.Strings, index)
+		st.lang.Common.patchCommonStrings(&lang.Strings, index)
+		st.lang.Common.patchCommonNotifications(&lang.Notifications, index)
 		if fname != "en-us.json" {
 			if lang.Meta.Fallback != "" {
 				fallback, ok := st.lang.User[lang.Meta.Fallback]
@@ -445,8 +466,13 @@ func (st *Storage) loadLangUser(filesystems ...fs.FS) error {
 		if err != nil {
 			return err
 		}
+		userJSON, err := json.Marshal(lang)
+		if err != nil {
+			return err
+		}
 		lang.notificationsJSON = string(notifications)
 		lang.validationStringsJSON = string(validationStrings)
+		lang.JSON = string(userJSON)
 		st.lang.User[index] = lang
 		return nil
 	}
@@ -506,7 +532,7 @@ func (st *Storage) loadLangPWR(filesystems ...fs.FS) error {
 		if err != nil {
 			return err
 		}
-		st.lang.Common.patchCommon(&lang.Strings, index)
+		st.lang.Common.patchCommonStrings(&lang.Strings, index)
 		if fname != "en-us.json" {
 			if lang.Meta.Fallback != "" {
 				fallback, ok := st.lang.PasswordReset[lang.Meta.Fallback]
@@ -582,7 +608,7 @@ func (st *Storage) loadLangEmail(filesystems ...fs.FS) error {
 		if err != nil {
 			return err
 		}
-		st.lang.Common.patchCommon(&lang.Strings, index)
+		st.lang.Common.patchCommonStrings(&lang.Strings, index)
 		if fname != "en-us.json" {
 			if lang.Meta.Fallback != "" {
 				fallback, ok := st.lang.Email[lang.Meta.Fallback]
@@ -679,7 +705,7 @@ func (st *Storage) loadLangTelegram(filesystems ...fs.FS) error {
 		if err != nil {
 			return err
 		}
-		st.lang.Common.patchCommon(&lang.Strings, index)
+		st.lang.Common.patchCommonStrings(&lang.Strings, index)
 		if fname != "en-us.json" {
 			if lang.Meta.Fallback != "" {
 				fallback, ok := st.lang.Telegram[lang.Meta.Fallback]

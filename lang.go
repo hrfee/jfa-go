@@ -26,8 +26,9 @@ func (ls *adminLangs) getOptions() [][2]string {
 type commonLangs map[string]commonLang
 
 type commonLang struct {
-	Meta    langMeta    `json:"meta"`
-	Strings langSection `json:"strings"`
+	Meta          langMeta    `json:"meta"`
+	Strings       langSection `json:"strings"`
+	Notifications langSection `json:"notifications"`
 }
 
 type adminLang struct {
@@ -57,6 +58,7 @@ type userLang struct {
 	notificationsJSON     string
 	ValidationStrings     map[string]quantityString `json:"validationStrings"`
 	validationStringsJSON string
+	JSON                  string
 }
 
 type pwrLangs map[string]pwrLang
