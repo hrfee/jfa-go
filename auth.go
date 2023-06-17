@@ -158,6 +158,11 @@ func (app *appContext) validateJellyfinCredentials(username, password string, gc
 			respond(401, "Unauthorized", gc)
 			return
 		}
+		if status == 403 {
+			app.info.Println("Auth denied: Jellyfin account disabled")
+			respond(403, "yourAccountWasDisabled", gc)
+			return
+		}
 		app.err.Printf("Auth failed: Couldn't authenticate with Jellyfin (%d/%s)", status, err)
 		respond(500, "Jellyfin error", gc)
 		return
