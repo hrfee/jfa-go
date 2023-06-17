@@ -1,0 +1,13 @@
+{
+    "meta": {
+        "name": "Tiếng Anh (Mỹ)"
+    },
+    "strings": {
+        "login": "Đăng nhập",
+        "logout": "Đăng xuất"
+    },
+    "notifications": {
+        "errorConnection": "Không thể kết nối với jfa-go.",
+        "error401Unauthorized": "Không được phép. Hãy thử làm mới trang."
+    }
+}

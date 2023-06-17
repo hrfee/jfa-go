@@ -226,7 +226,7 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 		api.POST(p+"/matrix/login", app.MatrixLogin)
 
 		if userPageEnabled {
-			user.GET(p+"/hello", app.HelloWorld)
+			user.GET(p+"/details", app.MyDetails)
 		}
 	}
 }

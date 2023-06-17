@@ -25,5 +25,6 @@
         "theme": "Tema",
         "refresh": "Osveži",
         "required": "Obvezno"
-    }
+    },
+    "notifications": {}
 }

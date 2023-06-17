@@ -373,3 +373,9 @@ type ReCaptchaResponseDTO struct {
 	Hostname           string   `json:"hostname"`
 	ErrorCodes         []string `json:"error-codes"`
 }
+
+// MyDetailsDTO is sent to the user page to personalize it for the user.
+type MyDetailsDTO struct {
+	Id       string `json:"id"`
+	Username string `json:"username"`
+}

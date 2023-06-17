@@ -166,22 +166,22 @@ func (app *appContext) MyUserPage(gc *gin.Context) {
 	notificationsEnabled, _ := app.config.Section("notifications").Key("enabled").Bool()
 	ombiEnabled := app.config.Section("ombi").Key("enabled").MustBool(false)
 	gcHTML(gc, http.StatusOK, "user.html", gin.H{
-		"urlBase":          app.getURLBase(gc),
-		"cssClass":         app.cssClass,
-		"cssVersion":       cssVersion,
-		"contactMessage":   app.config.Section("ui").Key("contact_message").String(),
-		"emailEnabled":     emailEnabled,
-		"telegramEnabled":  telegramEnabled,
-		"discordEnabled":   discordEnabled,
-		"matrixEnabled":    matrixEnabled,
-		"ombiEnabled":      ombiEnabled,
-		"linkResetEnabled": app.config.Section("password_resets").Key("link_reset").MustBool(false),
-		"notifications":    notificationsEnabled,
-		"username":         !app.config.Section("email").Key("no_username").MustBool(false),
-		"strings":          app.storage.lang.Admin[lang].Strings,
-		"quantityStrings":  app.storage.lang.Admin[lang].QuantityStrings,
-		"language":         app.storage.lang.Admin[lang].JSON,
-		"langName":         lang,
+		"urlBase":           app.getURLBase(gc),
+		"cssClass":          app.cssClass,
+		"cssVersion":        cssVersion,
+		"contactMessage":    app.config.Section("ui").Key("contact_message").String(),
+		"emailEnabled":      emailEnabled,
+		"telegramEnabled":   telegramEnabled,
+		"discordEnabled":    discordEnabled,
+		"matrixEnabled":     matrixEnabled,
+		"ombiEnabled":       ombiEnabled,
+		"linkResetEnabled":  app.config.Section("password_resets").Key("link_reset").MustBool(false),
+		"notifications":     notificationsEnabled,
+		"username":          !app.config.Section("email").Key("no_username").MustBool(false),
+		"strings":           app.storage.lang.User[lang].Strings,
+		"validationStrings": app.storage.lang.User[lang].ValidationStrings,
+		"language":          app.storage.lang.User[lang].JSON,
+		"langName":          lang,
 	})
 }
 

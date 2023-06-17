@@ -651,6 +651,9 @@ func flagPassed(name string) (found bool) {
 // @tag.name Auth
 // @tag.description -Get a token here if running swagger UI locally.-
 
+// @tag.name User Page
+// @tag.description User-page related routes.
+
 // @tag.name Users
 // @tag.description Jellyfin user related operations.
 

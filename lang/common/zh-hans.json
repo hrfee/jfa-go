@@ -24,6 +24,14 @@
         "contactDiscord": "通过Discord联系",
         "theme": "主题",
         "refresh": "刷新",
-        "required": "必需的"
+        "required": "必需的",
+        "login": "登录",
+        "logout": "登出"
+    },
+    "notifications": {
+        "errorLoginBlank": "用户名/密码留空。",
+        "errorConnection": "无法连接到 jfa-go。",
+        "errorUnknown": "未知错误。",
+        "error401Unauthorized": "无授权。尝试刷新页面。"
     }
 }

@@ -8,6 +8,7 @@
         "emailAddress": "Alamat Email",
         "name": "Nama",
         "submit": "Submit",
+        "send": "Kirim",
         "success": "Sukses",
         "continue": "Lanjut",
         "error": "Error",
@@ -15,6 +16,13 @@
         "time24h": "Waktu 24 jam",
         "time12h": "Waktu 12 jam",
         "theme": "Tema",
-        "send": "Kirim"
+        "login": "Masuk",
+        "logout": "Keluar"
+    },
+    "notifications": {
+        "errorLoginBlank": "Nama pengguna dan / atau sandi kosong.",
+        "errorConnection": "Tidak dapat terhubung ke jfa-go.",
+        "errorUnknown": "Kesalahan yang tidak diketahui.",
+        "error401Unauthorized": "Tidak ter-otorisasi. Coba segarkan halaman."
     }
 }

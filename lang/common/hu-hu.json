@@ -1,0 +1,10 @@
+{
+    "meta": {
+        "name": "English (US)"
+    },
+    "strings": {
+        "login": "Belépés",
+        "logout": "Kijelentkezés"
+    },
+    "notifications": {}
+}

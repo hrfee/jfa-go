@@ -4,26 +4,34 @@
     },
     "strings": {
         "username": "Benutzername",
-        "name": "Name",
         "password": "Passwort",
         "emailAddress": "E-Mail Adresse",
+        "name": "Name",
         "submit": "Absenden",
+        "send": "Senden",
         "success": "Erfolgreich",
         "continue": "Weiter",
         "error": "Fehler",
         "copy": "Kopieren",
-        "theme": "Thema",
+        "copied": "Kopiert",
         "time24h": "24h-Format",
         "time12h": "12h-Format",
-        "copied": "Kopiert",
         "linkTelegram": "Link Telegram",
         "contactEmail": "Kontakt über E-Mail",
         "contactTelegram": "Kontakt über Telegram",
         "linkDiscord": "Link Discord",
         "linkMatrix": "Link Matrix",
-        "send": "Senden",
         "contactDiscord": "Kontakt über Discord",
+        "theme": "Thema",
         "refresh": "Aktualisieren",
-        "required": "Erforderlich"
+        "required": "Erforderlich",
+        "login": "Anmelden",
+        "logout": "Abmelden"
+    },
+    "notifications": {
+        "errorLoginBlank": "Der Benutzername und/oder das Passwort wurden nicht ausgefüllt.",
+        "errorConnection": "Konnte keine Verbindung zu jfa-go herstellen.",
+        "errorUnknown": "Unbekannter Fehler.",
+        "error401Unauthorized": "Unberechtigt. Versuch, die Seite zu aktualisieren."
     }
 }

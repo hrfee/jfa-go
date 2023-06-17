@@ -14,6 +14,14 @@
         "copy": "Kopiera",
         "time24h": "24 timmarsklocka",
         "time12h": "12 timmarsklocka",
-        "theme": "Tema"
+        "theme": "Tema",
+        "login": "Logga in",
+        "logout": "Logga ut"
+    },
+    "notifications": {
+        "errorLoginBlank": "Användarnamnet och/eller lösenordet lämnades tomt.",
+        "errorConnection": "Det gick inte att ansluta till jfa-go.",
+        "errorUnknown": "Okänt fel.",
+        "error401Unauthorized": "Obehörig. Prova att uppdatera sidan."
     }
 }

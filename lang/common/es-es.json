@@ -8,6 +8,7 @@
         "emailAddress": "Correo electrónico",
         "name": "Nombre",
         "submit": "Enviar",
+        "send": "Enviar",
         "success": "Éxito",
         "continue": "Continuar",
         "error": "Error",
@@ -15,15 +16,22 @@
         "copied": "Copiado",
         "time24h": "Formato de 24 horas",
         "time12h": "Formato de 12 horas",
-        "theme": "Tema",
-        "send": "Enviar",
-        "contactDiscord": "Contactar por Discord",
+        "linkTelegram": "Enlace Telegram",
         "contactEmail": "Contactar por correo electrónico",
         "contactTelegram": "Contactar por Telegram",
-        "linkMatrix": "Enlace Matrix",
         "linkDiscord": "Enlace Discord",
-        "linkTelegram": "Enlace Telegram",
+        "linkMatrix": "Enlace Matrix",
+        "contactDiscord": "Contactar por Discord",
+        "theme": "Tema",
         "refresh": "Refrescar",
-        "required": "Requerido"
+        "required": "Requerido",
+        "login": "Acceso",
+        "logout": "Cerrar sesión"
+    },
+    "notifications": {
+        "errorLoginBlank": "El nombre de usuario y/o la contraseña se dejaron en blanco.",
+        "errorConnection": "No se pudo conectar a jfa-go.",
+        "errorUnknown": "Error desconocido.",
+        "error401Unauthorized": "No autorizado. Intente actualizar la página."
     }
 }

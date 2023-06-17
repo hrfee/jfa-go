@@ -4,26 +4,34 @@
     },
     "strings": {
         "username": "Gebruikersnaam",
-        "name": "Naam",
         "password": "Wachtwoord",
         "emailAddress": "E-mailadres",
+        "name": "Naam",
         "submit": "Verstuur",
+        "send": "Verstuur",
         "success": "Succes",
         "continue": "Doorgaan",
         "error": "Fout",
         "copy": "Kopiëer",
-        "theme": "Thema",
+        "copied": "Gekopieerd",
         "time24h": "24u-formaat",
         "time12h": "12u-formaat",
-        "copied": "Gekopieerd",
         "linkTelegram": "Koppel Telegram",
         "contactEmail": "Stuur e-mailbericht",
         "contactTelegram": "Stuur Telegram-bericht",
-        "send": "Verstuur",
         "linkDiscord": "Koppel Discord",
         "linkMatrix": "Koppel Matrix",
         "contactDiscord": "Stuur Discord bericht",
+        "theme": "Thema",
         "refresh": "Ververs",
-        "required": "Verplicht"
+        "required": "Verplicht",
+        "login": "Inloggen",
+        "logout": "Uitloggen"
+    },
+    "notifications": {
+        "errorLoginBlank": "De gebruikersnaam en/of wachtwoord is leeg.",
+        "errorConnection": "Kon geen verbinding maken met jfa-go.",
+        "errorUnknown": "Onbekende fout.",
+        "error401Unauthorized": "Geen toegang. Probeer de pagina te vernieuwen."
     }
 }
