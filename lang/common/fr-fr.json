@@ -26,12 +26,18 @@
         "refresh": "Actualiser",
         "required": "Requis",
         "login": "S'identifier",
-        "logout": "Se déconnecter"
+        "logout": "Se déconnecter",
+        "admin": "Administrateur",
+        "enabled": "Activé",
+        "disabled": "Désactivé",
+        "reEnable": "Ré-activé",
+        "disable": "Désactivé"
     },
     "notifications": {
         "errorLoginBlank": "Le nom d'utilisateur et/ou le mot de passe sont vides.",
         "errorConnection": "Impossible de se connecter à jfa-go.",
         "errorUnknown": "Erreur inconnue.",
-        "error401Unauthorized": "Non autorisé. Essayez d'actualiser la page."
+        "error401Unauthorized": "Non autorisé. Essayez d'actualiser la page.",
+        "errorSaveSettings": "Impossible d'enregistrer les paramètres."
     }
 }

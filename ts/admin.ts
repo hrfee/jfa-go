@@ -177,12 +177,6 @@ login.onLogin = () => {
     }
 }
 
-login.login("", "");
+login.bindLogout(document.getElementById("logout-button"));
 
-(document.getElementById('logout-button') as HTMLButtonElement).onclick = () => _post("/logout", null, (req: XMLHttpRequest): boolean => {
-    if (req.readyState == 4 && req.status == 200) {
-        window.token = "";
-        location.reload();
-        return false;
-    }
-});
+login.login("", "");

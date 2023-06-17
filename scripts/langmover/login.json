@@ -23,13 +23,19 @@
         "theme": "common",
         "refresh": "common",
         "required": "common",
-        "login": "admin",
-        "logout": "admin"
+        "login": "common",
+        "logout": "common",
+        "admin": "common",
+        "enabled": "common",
+        "disabled": "common",
+        "reEnable": "common",
+        "disable": "common"
     },
     "notifications": {
-        "errorLoginBlank": "admin",
-        "errorConnection": "admin",
-        "errorUnknown": "admin",
-        "error401Unauthorized": "admin"
+        "errorLoginBlank": "common",
+        "errorConnection": "common",
+        "errorUnknown": "common",
+        "error401Unauthorized": "common",
+        "errorSaveSettings": "admin"
     }
 }

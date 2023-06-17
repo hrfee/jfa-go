@@ -336,6 +336,10 @@ func (app *appContext) SetContactMethods(gc *gin.Context) {
 		respondBool(400, false, gc)
 		return
 	}
+	app.setContactMethods(req, gc)
+}
+
+func (app *appContext) setContactMethods(req SetContactMethodsDTO, gc *gin.Context) {
 	if tgUser, ok := app.storage.telegram[req.ID]; ok {
 		change := tgUser.Contact != req.Telegram
 		tgUser.Contact = req.Telegram

@@ -26,12 +26,18 @@
         "refresh": "重新整理",
         "required": "必填",
         "login": "登錄",
-        "logout": "登出"
+        "logout": "登出",
+        "admin": "管理員",
+        "enabled": "已啟用",
+        "disabled": "已禁用",
+        "reEnable": "重新啟用",
+        "disable": "禁用"
     },
     "notifications": {
         "errorLoginBlank": "帳戶名稱和/或密碼留空。",
         "errorConnection": "無法連接到 jfa-go。",
         "errorUnknown": "未知的錯誤。",
-        "error401Unauthorized": "未經授權。嘗試重新整理頁面。"
+        "error401Unauthorized": "未經授權。嘗試重新整理頁面。",
+        "errorSaveSettings": "無法儲存設置。"
     }
 }

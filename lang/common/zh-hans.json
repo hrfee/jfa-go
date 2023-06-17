@@ -26,12 +26,18 @@
         "refresh": "刷新",
         "required": "必需的",
         "login": "登录",
-        "logout": "登出"
+        "logout": "登出",
+        "admin": "管理员",
+        "enabled": "已启用",
+        "disabled": "已禁用",
+        "reEnable": "重新启用",
+        "disable": "禁用"
     },
     "notifications": {
         "errorLoginBlank": "用户名/密码留空。",
         "errorConnection": "无法连接到 jfa-go。",
         "errorUnknown": "未知错误。",
-        "error401Unauthorized": "无授权。尝试刷新页面。"
+        "error401Unauthorized": "无授权。尝试刷新页面。",
+        "errorSaveSettings": "无法保存设置。"
     }
 }

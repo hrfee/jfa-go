@@ -26,12 +26,18 @@
         "refresh": "Aktualisieren",
         "required": "Erforderlich",
         "login": "Anmelden",
-        "logout": "Abmelden"
+        "logout": "Abmelden",
+        "admin": "Admin",
+        "enabled": "Aktiviert",
+        "disabled": "Deaktiviert",
+        "reEnable": "Wieder aktivieren",
+        "disable": "Deaktivieren"
     },
     "notifications": {
         "errorLoginBlank": "Der Benutzername und/oder das Passwort wurden nicht ausgefüllt.",
         "errorConnection": "Konnte keine Verbindung zu jfa-go herstellen.",
         "errorUnknown": "Unbekannter Fehler.",
-        "error401Unauthorized": "Unberechtigt. Versuch, die Seite zu aktualisieren."
+        "error401Unauthorized": "Unberechtigt. Versuch, die Seite zu aktualisieren.",
+        "errorSaveSettings": "Einstellungen konnten nicht gespeichert werden."
     }
 }

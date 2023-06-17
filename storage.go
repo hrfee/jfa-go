@@ -144,15 +144,15 @@ func (st *Storage) loadLang(filesystems ...fs.FS) (err error) {
 	if err != nil {
 		return
 	}
+	err = st.loadLangEmail(filesystems...)
+	if err != nil {
+		return
+	}
 	err = st.loadLangUser(filesystems...)
 	if err != nil {
 		return
 	}
 	err = st.loadLangPWR(filesystems...)
-	if err != nil {
-		return
-	}
-	err = st.loadLangEmail(filesystems...)
 	if err != nil {
 		return
 	}
@@ -437,6 +437,11 @@ func (st *Storage) loadLangUser(filesystems ...fs.FS) error {
 		}
 		st.lang.Common.patchCommonStrings(&lang.Strings, index)
 		st.lang.Common.patchCommonNotifications(&lang.Notifications, index)
+		// turns out, a lot of email strings are useful on the user page.
+		emailLang := []langSection{st.lang.Email[index].WelcomeEmail, st.lang.Email[index].UserDisabled, st.lang.Email[index].UserExpired}
+		for _, v := range emailLang {
+			patchLang(&lang.Strings, &v)
+		}
 		if fname != "en-us.json" {
 			if lang.Meta.Fallback != "" {
 				fallback, ok := st.lang.User[lang.Meta.Fallback]

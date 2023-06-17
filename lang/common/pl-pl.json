@@ -24,7 +24,11 @@
         "contactDiscord": "Kontakt przez Discord",
         "theme": "Motyw",
         "refresh": "Odśwież",
-        "required": "Wymagane"
+        "required": "Wymagane",
+        "admin": "Admin",
+        "enabled": "Włączone",
+        "disabled": "Wyłączone",
+        "disable": "Wyłączone"
     },
     "notifications": {
         "errorConnection": "Nie udało się połączyć z jfa-go.",

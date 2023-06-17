@@ -16,12 +16,16 @@
         "time12h": "12 timmarsklocka",
         "theme": "Tema",
         "login": "Logga in",
-        "logout": "Logga ut"
+        "logout": "Logga ut",
+        "admin": "Admin",
+        "enabled": "Aktiverad",
+        "disabled": "Inaktiverad"
     },
     "notifications": {
         "errorLoginBlank": "Användarnamnet och/eller lösenordet lämnades tomt.",
         "errorConnection": "Det gick inte att ansluta till jfa-go.",
         "errorUnknown": "Okänt fel.",
-        "error401Unauthorized": "Obehörig. Prova att uppdatera sidan."
+        "error401Unauthorized": "Obehörig. Prova att uppdatera sidan.",
+        "errorSaveSettings": "Det gick inte att spara inställningarna."
     }
 }

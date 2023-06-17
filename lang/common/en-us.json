@@ -26,12 +26,19 @@
         "refresh": "Refresh",
         "required": "Required",
         "login": "Login",
-        "logout": "Logout"
+        "logout": "Logout",
+        "admin": "Admin",
+        "enabled": "Enabled",
+        "disabled": "Disabled",
+        "reEnable": "Re-enable",
+        "disable": "Disable",
+        "contactMethods": "Contact Methods"
     },
     "notifications": {
         "errorLoginBlank": "The username and/or password were left blank.",
         "errorConnection": "Couldn't connect to jfa-go.",
         "errorUnknown": "Unknown error.",
-        "error401Unauthorized": "Unauthorized. Try refreshing the page."
+        "error401Unauthorized": "Unauthorized. Try refreshing the page.",
+        "errorSaveSettings": "Couldn't save settings."
     }
 }

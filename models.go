@@ -376,6 +376,18 @@ type ReCaptchaResponseDTO struct {
 
 // MyDetailsDTO is sent to the user page to personalize it for the user.
 type MyDetailsDTO struct {
-	Id       string `json:"id"`
-	Username string `json:"username"`
+	Id       string                      `json:"id"`
+	Username string                      `json:"username"`
+	Expiry   int64                       `json:"expiry"`
+	Admin    bool                        `json:"admin"`
+	Disabled bool                        `json:"disabled"`
+	Email    *MyDetailsContactMethodsDTO `json:"email,omitempty"`
+	Discord  *MyDetailsContactMethodsDTO `json:"discord,omitempty"`
+	Telegram *MyDetailsContactMethodsDTO `json:"telegram,omitempty"`
+	Matrix   *MyDetailsContactMethodsDTO `json:"matrix,omitempty"`
+}
+
+type MyDetailsContactMethodsDTO struct {
+	Value   string `json:"value"`
+	Enabled bool   `json:"enabled"`
 }

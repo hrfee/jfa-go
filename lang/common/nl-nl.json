@@ -26,12 +26,18 @@
         "refresh": "Ververs",
         "required": "Verplicht",
         "login": "Inloggen",
-        "logout": "Uitloggen"
+        "logout": "Uitloggen",
+        "admin": "Beheerder",
+        "enabled": "Ingeschakeld",
+        "disabled": "Uitgeschakeld",
+        "reEnable": "Opnieuw inschakelen",
+        "disable": "Uitschakelen"
     },
     "notifications": {
         "errorLoginBlank": "De gebruikersnaam en/of wachtwoord is leeg.",
         "errorConnection": "Kon geen verbinding maken met jfa-go.",
         "errorUnknown": "Onbekende fout.",
-        "error401Unauthorized": "Geen toegang. Probeer de pagina te vernieuwen."
+        "error401Unauthorized": "Geen toegang. Probeer de pagina te vernieuwen.",
+        "errorSaveSettings": "Opslaan van instellingen mislukt."
     }
 }

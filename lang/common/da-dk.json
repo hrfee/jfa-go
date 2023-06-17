@@ -26,12 +26,18 @@
         "refresh": "Opdater",
         "required": "Påkrævet",
         "login": "Log på",
-        "logout": "Log ud"
+        "logout": "Log ud",
+        "admin": "Administrator",
+        "enabled": "Aktiveret",
+        "disabled": "Deaktiveret",
+        "reEnable": "Genaktiver",
+        "disable": "Deaktiver"
     },
     "notifications": {
         "errorLoginBlank": "Brugernavnet og/eller adgangskoden blev efterladt tomme.",
         "errorConnection": "Kunne ikke oprette forbindelse til jfa-go.",
         "errorUnknown": "Ukendt fejl.",
-        "error401Unauthorized": "Adgang nægtet. Prøv at genindlæse siden."
+        "error401Unauthorized": "Adgang nægtet. Prøv at genindlæse siden.",
+        "errorSaveSettings": "Kunne ikke gemme indstillingerne."
     }
 }

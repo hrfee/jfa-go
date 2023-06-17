@@ -26,12 +26,18 @@
         "refresh": "Atualizar",
         "required": "Requeridos",
         "login": "Login",
-        "logout": "Sair"
+        "logout": "Sair",
+        "admin": "Admin",
+        "enabled": "Habilitado",
+        "disabled": "Desativado",
+        "reEnable": "Reativar",
+        "disable": "Desativar"
     },
     "notifications": {
         "errorLoginBlank": "O nome de usuário e/ou senha foram deixados em branco.",
         "errorConnection": "Não foi possível conectar ao jfa-go.",
         "errorUnknown": "Erro desconhecido.",
-        "error401Unauthorized": "Não autorizado. Tente atualizar a página."
+        "error401Unauthorized": "Não autorizado. Tente atualizar a página.",
+        "errorSaveSettings": "Não foi possível salvar as configurações."
     }
 }

@@ -75,9 +75,6 @@
         "download": "Λήψη",
         "search": "Αναζήτηση",
         "inviteDuration": "Διάρκεια Πρόσκλησης",
-        "enabled": "Ενεργοποιημένο",
-        "disabled": "Απενεργοποιημένο",
-        "admin": "Διαχειριστής",
         "expiry": "Λήξη",
         "userExpiry": "Λήξη Χρήστη",
         "userExpiryDescription": "Μετά απο ένα καθορισμένο χρόνο μετά απο κάθε εγγραφή, το jfa-go θα διαγράφει/απενεργοποιεί τον λογαριασμό. Μπορείτε να αλλάξετε αυτή την συμπεριφορά στις ρυθμίσεις.",
@@ -86,8 +83,6 @@
         "message": "Μήνυμα",
         "extendExpiry": "Παράταση λήξης",
         "markdownSupported": "Το Markdown υποστυρίζεται.",
-        "reEnable": "Επανα-ενεργοποίηση",
-        "disable": "Απενεργοποίηση",
         "inviteMonths": "Μήνες"
     },
     "notifications": {
@@ -105,7 +100,6 @@
         "errorCreateProfile": "Αποτυχία δημιουργίας του προφίλ {n}",
         "errorSetDefaultProfile": "Αποτυχία ορισμού του προκαθορισμένου προφίλ.",
         "errorLoadUsers": "Αποτυχία φόρτωσης χρηστών.",
-        "errorSaveSettings": "Αποτυχία αποθήκευσης ρυθμίσεων.",
         "errorLoadSettings": "Αποτυχία φόρτωσης ρυθμίσεων.",
         "errorSetOmbiDefaults": "Αποτυχία αποθήκευσης προκαθορισμένων ρυθμίσεων για το Ombi.",
         "errorLoadOmbiUsers": "Αποτυχία φόρτωσης χρηστών Ombi.",

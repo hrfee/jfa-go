@@ -227,6 +227,8 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 
 		if userPageEnabled {
 			user.GET(p+"/details", app.MyDetails)
+			user.POST(p+"/contact", app.SetMyContactMethods)
+			user.POST(p+"/logout", app.LogoutUser)
 		}
 	}
 }

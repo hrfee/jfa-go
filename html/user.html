@@ -46,6 +46,14 @@
             <div class="card @low dark:~d_neutral mb-4" id="card-user">
                 <span class="heading"></span>
             </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="card @low dark:~d_neutral" id="card-times">
+                </div>
+                <div class="card @low dark:~d_neutral" id="card-contact">
+                    <span class="heading">{{ .strings.contactMethods }}</span>
+                    <div class="content"></div>
+                </div>
+            </div>
         </div>
         <script src="{{ .urlBase }}/js/user.js" type="module"></script>
     </body>

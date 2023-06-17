@@ -4,7 +4,12 @@
     },
     "strings": {
         "login": "Belépés",
-        "logout": "Kijelentkezés"
+        "logout": "Kijelentkezés",
+        "admin": "Adminisztrátor",
+        "enabled": "Engedélyezve",
+        "disabled": "Tiltva",
+        "reEnable": "Újra engedélyezés",
+        "disable": "Letiltás"
     },
     "notifications": {}
 }

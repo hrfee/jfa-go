@@ -89,7 +89,6 @@
         "errorCreateProfile": "Gagal membuat profil {n}",
         "errorSetDefaultProfile": "Gagal menyetel profil default.",
         "errorLoadUsers": "Gagal memuat pengguna.",
-        "errorSaveSettings": "Tidak dapat menyimpan pengaturan.",
         "errorLoadSettings": "Gagal memuat pengaturan.",
         "errorSetOmbiDefaults": "Gagal menyimpan default ombi.",
         "errorLoadOmbiUsers": "Gagal memuat pengguna ombi.",
