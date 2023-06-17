@@ -22,7 +22,9 @@
         "contactDiscord": "common",
         "theme": "common",
         "refresh": "common",
-        "required": "common"
+        "required": "common",
+        "login": "admin",
+        "logout": "admin"
     },
     "notifications": {
         "errorLoginBlank": "admin",

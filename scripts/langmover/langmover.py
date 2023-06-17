@@ -74,7 +74,7 @@ def parseKey(langTree, currentSection: str, fieldName: str, key: str, extract=Fa
     return (langTree, folder, value)
 
 
-def generate(templ: Path, source: Path, output: Path, extract: bool, tree):
+def generate(templ: Path, source: Path, output: Path, extract: str, tree):
     with open(templ, "r") as f:
         template = json.load(f)
 
@@ -92,20 +92,31 @@ def generate(templ: Path, source: Path, output: Path, extract: bool, tree):
 
                 continue
 
-            modifiedTree = {}
             folder = ""
             out[section] = {}
             for key in template[section]:
-                (modifiedTree, folder, val) = parseKey(tree[lang], section, key, template[section][key], extract)
+                (tree[lang], folder, val) = parseKey(tree[lang], section, key, template[section][key], extract)
                 if val != "":
                     out[section][key] = val
             
-            if extract and val != "":
-                with open(source / folder / lang, "w") as f:
-                    json.dump(modifiedTree[folder], f, indent=4, ensure_ascii=False)
+            # if extract and val != "":
+            #     with open(source / folder / lang, "w") as f:
+            #         json.dump(modifiedTree[folder], f, indent=4, ensure_ascii=False)
 
         with open(output / Path(lang), "w") as f:
             json.dump(out, f, indent=4, ensure_ascii=False)
+
+    if extract and extract != "":
+        ex = Path(extract)
+        if not ex.exists():
+            ex.mkdir()
+
+        for lang in tree:
+            for folder in tree[lang]:
+                if not (ex / folder).exists():
+                    (ex / folder).mkdir()
+                with open(ex / folder / lang, "w") as f:
+                    json.dump(tree[lang][folder], f, indent=4, ensure_ascii=False)
 
 
 
@@ -114,7 +125,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--source", help="source \"lang/\" folder.")
 parser.add_argument("--template", help="template file. see template.json for an example of how it works.")
 parser.add_argument("--output", help="output directory for new files.")
-parser.add_argument("--extract", help="remove strings from original file as they are copied.", action="store_true")
+parser.add_argument("--extract", help="put copies of original files with strings removed in this directory")
 
 args = parser.parse_args()
 
