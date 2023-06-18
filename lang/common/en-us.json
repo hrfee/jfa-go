@@ -33,9 +33,13 @@
         "reEnable": "Re-enable",
         "disable": "Disable",
         "contactMethods": "Contact Methods",
+        "addContactMethod": "Add Contact Method",
+        "editContactMethod": "Edit Contact Method",
         "accountStatus": "Account Status",
         "notSet": "Not set",
-        "expiry": "Expiry"
+        "expiry": "Expiry",
+        "add": "Add",
+        "edit": "Edit"
     },
     "notifications": {
         "errorLoginBlank": "The username and/or password were left blank.",

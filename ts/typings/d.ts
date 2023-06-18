@@ -111,6 +111,7 @@ declare interface Modals {
     matrix: Modal;
     sendPWR?: Modal;
     logs: Modal;
+    email?: Modal;
 }
 
 interface Invite {

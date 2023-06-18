@@ -10,7 +10,9 @@
         "disabled": "Tiltva",
         "reEnable": "Újra engedélyezés",
         "disable": "Letiltás",
-        "expiry": "Lejárat"
+        "expiry": "Lejárat",
+        "add": "Hozzáadás",
+        "edit": "Szerkesztés"
     },
     "notifications": {},
     "quantityStrings": {}

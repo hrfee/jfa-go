@@ -32,7 +32,9 @@
         "disabled": "Uitgeschakeld",
         "reEnable": "Opnieuw inschakelen",
         "disable": "Uitschakelen",
-        "expiry": "Verloop"
+        "expiry": "Verloop",
+        "add": "Voeg toe",
+        "edit": "Bewerken"
     },
     "notifications": {
         "errorLoginBlank": "De gebruikersnaam en/of wachtwoord is leeg.",

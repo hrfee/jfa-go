@@ -391,3 +391,14 @@ type MyDetailsContactMethodsDTO struct {
 	Value   string `json:"value"`
 	Enabled bool   `json:"enabled"`
 }
+
+type ModifyMyEmailDTO struct {
+	Email string `json:"email"`
+}
+
+type ConfirmationTarget int
+
+const (
+	UserEmailChange ConfirmationTarget = iota
+	NoOp
+)

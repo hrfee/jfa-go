@@ -32,7 +32,9 @@
         "disabled": "已禁用",
         "reEnable": "重新启用",
         "disable": "禁用",
-        "expiry": "到期"
+        "expiry": "到期",
+        "add": "添加",
+        "edit": "编辑"
     },
     "notifications": {
         "errorLoginBlank": "用户名/密码留空。",

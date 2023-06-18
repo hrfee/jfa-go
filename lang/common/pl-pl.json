@@ -29,7 +29,8 @@
         "enabled": "Włączone",
         "disabled": "Wyłączone",
         "disable": "Wyłączone",
-        "expiry": "Wygasa"
+        "expiry": "Wygasa",
+        "edit": "Edytuj"
     },
     "notifications": {
         "errorConnection": "Nie udało się połączyć z jfa-go.",

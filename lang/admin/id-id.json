@@ -66,7 +66,6 @@
         "variables": "Variabel",
         "preview": "Pratinjau",
         "reset": "Setel ulang",
-        "edit": "Edit",
         "customizeMessages": "Sesuaikan Email",
         "customizeMessagesDescription": "Jika Anda tidak ingin menggunakan templat email jfa-go, Anda dapat membuatnya sendiri menggunakan Markdown.",
         "announce": "Mengumumkan",

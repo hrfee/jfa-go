@@ -32,7 +32,9 @@
         "disabled": "Desactivado",
         "reEnable": "Reactivar",
         "disable": "Desactivar",
-        "expiry": "Expiración"
+        "expiry": "Expiración",
+        "add": "Agregar",
+        "edit": "Editar"
     },
     "notifications": {
         "errorLoginBlank": "El nombre de usuario y/o la contraseña se dejaron en blanco.",

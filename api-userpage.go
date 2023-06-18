@@ -1,6 +1,14 @@
 package main
 
-import "github.com/gin-gonic/gin"
+import (
+	"net/http"
+	"os"
+	"strings"
+	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt"
+)
 
 // @Summary Returns the logged-in user's Jellyfin ID & Username.
 // @Produce json
@@ -103,4 +111,150 @@ func (app *appContext) LogoutUser(gc *gin.Context) {
 	app.invalidTokens = append(app.invalidTokens, cookie)
 	gc.SetCookie("refresh", "invalid", -1, "/my", gc.Request.URL.Hostname(), true, true)
 	respondBool(200, true, gc)
+}
+
+// @Summary confirm an action (e.g. changing an email address.)
+// @Produce json
+// @Param jwt path string true "jwt confirmation code"
+// @Router /my/confirm/{jwt} [post]
+// @Success 200 {object} boolResponse
+// @Failure 400 {object} stringResponse
+// @Failure 404
+// @Success 303
+// @Failure 500 {object} stringResponse
+// @tags User Page
+func (app *appContext) ConfirmMyAction(gc *gin.Context) {
+	app.confirmMyAction(gc, "")
+}
+
+func (app *appContext) confirmMyAction(gc *gin.Context, key string) {
+	var claims jwt.MapClaims
+	var target ConfirmationTarget
+	var id string
+	fail := func() {
+		gcHTML(gc, 404, "404.html", gin.H{
+			"cssClass":       app.cssClass,
+			"cssVersion":     cssVersion,
+			"contactMessage": app.config.Section("ui").Key("contact_message").String(),
+		})
+	}
+
+	// Validate key
+	if key == "" {
+		key = gc.Param("jwt")
+	}
+	token, err := jwt.Parse(key, checkToken)
+	if err != nil {
+		app.err.Printf("Failed to parse key: %s", err)
+		fail()
+		// respond(500, "unknownError", gc)
+		return
+	}
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		app.err.Printf("Failed to parse key: %s", err)
+		fail()
+		// respond(500, "unknownError", gc)
+		return
+	}
+	expiry := time.Unix(int64(claims["exp"].(float64)), 0)
+	if !(ok && token.Valid && claims["type"].(string) == "confirmation" && expiry.After(time.Now())) {
+		app.err.Printf("Invalid key")
+		fail()
+		// respond(400, "invalidKey", gc)
+		return
+	}
+	target = ConfirmationTarget(int(claims["target"].(float64)))
+	id = claims["id"].(string)
+
+	// Perform an Action
+	if target == NoOp {
+		gc.Redirect(http.StatusSeeOther, "/my/account")
+		return
+	} else if target == UserEmailChange {
+		emailStore, ok := app.storage.emails[id]
+		if !ok {
+			emailStore = EmailAddress{
+				Contact: true,
+			}
+		}
+		emailStore.Addr = claims["email"].(string)
+		app.storage.emails[id] = emailStore
+		if app.config.Section("ombi").Key("enabled").MustBool(false) {
+			ombiUser, code, err := app.getOmbiUser(id)
+			if code == 200 && err == nil {
+				ombiUser["emailAddress"] = claims["email"].(string)
+				code, err = app.ombi.ModifyUser(ombiUser)
+				if code != 200 || err != nil {
+					app.err.Printf("%s: Failed to change ombi email address (%d): %v", ombiUser["userName"].(string), code, err)
+				}
+			}
+		}
+
+		app.storage.storeEmails()
+		app.info.Println("Email list modified")
+		gc.Redirect(http.StatusSeeOther, "/my/account")
+		return
+	}
+}
+
+// @Summary Modify your email address.
+// @Produce json
+// @Param ModifyMyEmailDTO body ModifyMyEmailDTO true "New email address."
+// @Success 200 {object} boolResponse
+// @Failure 400 {object} stringResponse
+// @Failure 401 {object} stringResponse
+// @Failure 500 {object} stringResponse
+// @Router /my/email [post]
+// @Security Bearer
+// @tags Users
+func (app *appContext) ModifyMyEmail(gc *gin.Context) {
+	var req ModifyMyEmailDTO
+	gc.BindJSON(&req)
+	app.debug.Println("Email modification requested")
+	if !strings.ContainsRune(req.Email, '@') {
+		respond(400, "Invalid Email Address", gc)
+		return
+	}
+	id := gc.GetString("jfId")
+
+	// We'll use the ConfirmMyAction route to do the work, even if we don't need to confirm the address.
+	claims := jwt.MapClaims{
+		"valid":  true,
+		"id":     id,
+		"email":  req.Email,
+		"type":   "confirmation",
+		"target": UserEmailChange,
+		"exp":    time.Now().Add(time.Hour).Unix(),
+	}
+	tk := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	key, err := tk.SignedString([]byte(os.Getenv("JFA_SECRET")))
+
+	if err != nil {
+		app.err.Printf("Failed to generate confirmation token: %v", err)
+		respond(500, "errorUnknown", gc)
+		return
+	}
+
+	if emailEnabled && app.config.Section("email_confirmation").Key("enabled").MustBool(false) {
+		user, status, err := app.jf.UserByID(id, false)
+		name := ""
+		if status == 200 && err == nil {
+			name = user.Name
+		}
+		app.debug.Printf("%s: Email confirmation required", id)
+		respond(401, "confirmEmail", gc)
+		msg, err := app.email.constructConfirmation("", name, key, app, false)
+		if err != nil {
+			app.err.Printf("%s: Failed to construct confirmation email: %v", name, err)
+		} else if err := app.email.send(msg, req.Email); err != nil {
+			app.err.Printf("%s: Failed to send user confirmation email: %v", name, err)
+		} else {
+			app.info.Printf("%s: Sent user confirmation email to \"%s\"", name, req.Email)
+		}
+		return
+	}
+
+	app.confirmMyAction(gc, key)
+	return
 }

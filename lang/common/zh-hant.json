@@ -32,7 +32,9 @@
         "disabled": "已禁用",
         "reEnable": "重新啟用",
         "disable": "禁用",
-        "expiry": "到期"
+        "expiry": "到期",
+        "add": "添加",
+        "edit": "編輯"
     },
     "notifications": {
         "errorLoginBlank": "帳戶名稱和/或密碼留空。",

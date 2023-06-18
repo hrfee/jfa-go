@@ -20,7 +20,8 @@
         "admin": "Admin",
         "enabled": "Aktiverad",
         "disabled": "Inaktiverad",
-        "expiry": "Löper ut"
+        "expiry": "Löper ut",
+        "edit": "Redigera"
     },
     "notifications": {
         "errorLoginBlank": "Användarnamnet och/eller lösenordet lämnades tomt.",

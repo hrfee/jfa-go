@@ -32,7 +32,9 @@
         "disabled": "Disabled",
         "reEnable": "Re-enable",
         "disable": "Disable",
-        "expiry": "Expiry"
+        "expiry": "Expiry",
+        "add": "Add",
+        "edit": "Edit"
     },
     "notifications": {
         "errorLoginBlank": "The username and/or password was left blank.",

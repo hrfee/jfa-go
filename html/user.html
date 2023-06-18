@@ -17,6 +17,22 @@
         <title>{{ .lang.Strings.pageTitle }}</title>
     </head>
     <body class="max-w-full overflow-x-hidden section">
+        <div id="modal-email" class="modal">
+            <div class="card relative mx-auto my-[10%] w-4/5 lg:w-1/3">
+                <div class="content">
+                    <span class="heading mb-4 my-2"></span>
+                    <label class="label supra row m-1" for="modal-email-input">{{ .strings.emailAddress }}</label>
+                    <div class="row">
+                        <input type="email" class="col sm field ~neutral @low input" id="modal-email-input" placeholder="{{ .strings.emailAddress }}">
+                    </div>
+                    <button class="button ~urge @low supra full-width center lg my-2 modal-submit">{{ .strings.submit }}</button>
+                </div>
+                <div class="confirmation-required unfocused">
+                    <span class="heading mb-4">{{ .strings.confirmationRequired }} <span class="modal-close">&times;</span></span>
+                    <p class="content mb-4">{{ .strings.confirmationRequiredMessage }}</p>
+                </div>
+            </div>
+        </div>
         <div id="notification-box"></div>
         <div class="top-4 left-4 absolute">
             <span class="dropdown" tabindex="0" id="lang-dropdown">
@@ -54,7 +70,7 @@
                 </div>
                 <div class="card @low dark:~d_neutral flex-col" id="card-contact">
                     <span class="heading mb-2">{{ .strings.contactMethods }}</span>
-                    <div class="content flex justify-between flex-col"></div>
+                    <div class="content flex justify-between flex-col h-100"></div>
                 </div>
             </div>
         </div>

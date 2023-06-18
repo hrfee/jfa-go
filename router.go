@@ -147,6 +147,7 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 			router.GET(p+"/my/account", app.MyUserPage)
 			router.GET(p+"/my/token/login", app.getUserTokenLogin)
 			router.GET(p+"/my/token/refresh", app.getUserTokenRefresh)
+			router.GET(p+"/my/confirm/:jwt", app.ConfirmMyAction)
 		}
 	}
 	if *SWAGGER {
@@ -229,6 +230,7 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 			user.GET(p+"/details", app.MyDetails)
 			user.POST(p+"/contact", app.SetMyContactMethods)
 			user.POST(p+"/logout", app.LogoutUser)
+			user.POST(p+"/email", app.ModifyMyEmail)
 		}
 	}
 }

@@ -10,6 +10,7 @@ import (
 	"html/template"
 	"io"
 	"io/fs"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -304,10 +305,17 @@ func (emailer *Emailer) confirmationValues(code, username, key string, app *appC
 	} else {
 		message := app.config.Section("messages").Key("message").String()
 		inviteLink := app.config.Section("invite_emails").Key("url_base").String()
-		if !strings.HasSuffix(inviteLink, "/invite") {
-			inviteLink += "/invite"
+		if code == "" { // Personal email change
+			if strings.HasSuffix(inviteLink, "/invite") {
+				inviteLink = strings.TrimSuffix(inviteLink, "/invite")
+			}
+			inviteLink = fmt.Sprintf("%s/my/confirm/%s", inviteLink, url.PathEscape(key))
+		} else { // Invite email confirmation
+			if !strings.HasSuffix(inviteLink, "/invite") {
+				inviteLink += "/invite"
+			}
+			inviteLink = fmt.Sprintf("%s/%s?key=%s", inviteLink, code, url.PathEscape(key))
 		}
-		inviteLink = fmt.Sprintf("%s/%s?key=%s", inviteLink, code, key)
 		template["helloUser"] = emailer.lang.Strings.template("helloUser", tmpl{"username": username})
 		template["confirmationURL"] = inviteLink
 		template["message"] = message

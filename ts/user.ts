@@ -1,7 +1,7 @@
 import { ThemeManager } from "./modules/theme.js";
 import { lang, LangFile, loadLangSelector } from "./modules/lang.js";
 import { Modal } from "./modules/modal.js";
-import { _get, _post, notificationBox, whichAnimationEvent, toDateString } from "./modules/common.js";
+import { _get, _post, notificationBox, whichAnimationEvent, toDateString, toggleLoader } from "./modules/common.js";
 import { Login } from "./modules/login.js";
 
 interface userWindow extends Window {
@@ -25,6 +25,7 @@ window.modals = {} as Modals;
 
 (() => {
     window.modals.login = new Modal(document.getElementById("modal-login"), true);
+    window.modals.email = new Modal(document.getElementById("modal-email"), false);
 })();
 
 window.notifications = new notificationBox(document.getElementById('notification-box') as HTMLDivElement, 5);
@@ -73,12 +74,12 @@ class ContactMethods {
         this._buttons = {};
     }
 
-    append = (name: string, details: MyDetailsContactMethod, icon: string) => {
+    append = (name: string, details: MyDetailsContactMethod, icon: string, addEditFunc?: (add: boolean) => void) => {
         const row = document.createElement("div");
         row.classList.add("row", "flex-expand", "my-2");
-        row.innerHTML = `
+        let innerHTML = `
             <div class="inline align-middle">
-                <span class="shield ~info" alt="${name}">
+                <span class="shield ~urge" alt="${name}">
                     <span class="icon">
                         ${icon}
                     </span>
@@ -86,12 +87,24 @@ class ContactMethods {
                 <span class="ml-2 font-bold">${(details.value == "") ? window.lang.strings("notSet") : details.value}</span>
             </div>
             <div class="flex items-center">
-                <button class="user-contact-enabled-disabled button ~neutral">
+                <button class="user-contact-enabled-disabled button ~neutral" ${details.value =="" ? "disabled" : ""}>
                     <input type="checkbox" class="mr-2">
                     <span>${window.lang.strings("enabled")}</span>
                 </button>
+        `;
+        if (addEditFunc) {
+            innerHTML += `
+                <button class="user-contact-edit button ~info ml-2">
+                    <i class="ri-${details.value == "" ? "add" : "edit"}-fill mr-2"></i>
+                    <span>${details.value == "" ? window.lang.strings("add") : window.lang.strings("edit")}</span>
+                </button>
+            `;
+        }
+        innerHTML += `
             </div>
         `;
+
+        row.innerHTML = innerHTML;
         
         this._buttons[name] = {
             element: row,
@@ -102,11 +115,11 @@ class ContactMethods {
         const checkbox = button.querySelector("input[type=checkbox]") as HTMLInputElement;
         const setButtonAppearance = () => {
             if (checkbox.checked) {
-                button.classList.add("~info");
+                button.classList.add("~urge");
                 button.classList.remove("~neutral");
             } else {
                 button.classList.add("~neutral");
-                button.classList.remove("~info");
+                button.classList.remove("~urge");
             }
         };
         const onPress = () => {
@@ -123,6 +136,11 @@ class ContactMethods {
 
         checkbox.checked = details.enabled;
         setButtonAppearance();
+
+        if (addEditFunc) {
+            const addEditButton = row.querySelector(".user-contact-edit") as HTMLButtonElement;
+            addEditButton.onclick = () => addEditFunc(details.value == "");
+        }
 
         this._content.appendChild(row);
     };
@@ -220,6 +238,36 @@ var expiryCard = new ExpiryCard(statusCard);
 
 var contactMethodList = new ContactMethods(contactCard);
 
+const addEditEmail = (add: boolean): void => {
+    console.log("call");
+    const heading = window.modals.email.modal.querySelector(".heading");
+    heading.innerHTML = (add ? window.lang.strings("addContactMethod") : window.lang.strings("editContactMethod")) + `<span class="modal-close">&times;</span>`;
+    const input = document.getElementById("modal-email-input") as HTMLInputElement;
+    input.value = "";
+    const confirmationRequired = window.modals.email.modal.querySelector(".confirmation-required");
+    confirmationRequired.classList.add("unfocused");
+   
+    const content = window.modals.email.modal.querySelector(".content");
+    content.classList.remove("unfocused");
+
+    const submit = window.modals.email.modal.querySelector(".modal-submit") as HTMLButtonElement;
+    submit.onclick = () => {
+        toggleLoader(submit);
+        _post("/my/email", {"email": input.value}, (req: XMLHttpRequest) => {
+            if (req.readyState == 4 && (req.status == 303 || req.status == 200)) {
+                window.location.reload();
+            }
+        }, true, (req: XMLHttpRequest) => {
+            if (req.readyState == 4 && req.status == 401) {
+                content.classList.add("unfocused");
+                confirmationRequired.classList.remove("unfocused");
+            }
+        });
+    }
+
+    window.modals.email.show();
+}
+
 document.addEventListener("details-reload", () => {
     _get("/my/details", null, (req: XMLHttpRequest) => {
         if (req.readyState == 4) {
@@ -244,16 +292,16 @@ document.addEventListener("details-reload", () => {
 
             contactMethodList.clear(); 
 
-            const contactMethods = [
-                ["email", `<i class="ri-mail-fill"></i>`],
-                ["discord", `<i class="ri-discord-fill"></i>`],
-                ["telegram", `<i class="ri-telegram-fill"></i>`],
-                ["matrix", `[m]`]
+            const contactMethods: { name: string, icon: string, f: (add: boolean) => void }[] = [
+                {name: "email", icon: `<i class="ri-mail-fill ri-lg"></i>`, f: addEditEmail},
+                {name: "discord", icon: `<i class="ri-discord-fill ri-lg"></i>`, f: null},
+                {name: "telegram", icon: `<i class="ri-telegram-fill ri-lg"></i>`, f: null},
+                {name: "matrix", icon: `<span class="font-bold">[m]</span>`, f: null}
             ];
             
             for (let method of contactMethods) {
-                if (method[0] in details) {
-                    contactMethodList.append(method[0], details[method[0]], method[1]);
+                if (method.name in details) {
+                    contactMethodList.append(method.name, details[method.name], method.icon, method.f);
                 }
             }
 

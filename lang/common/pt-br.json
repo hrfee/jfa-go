@@ -32,7 +32,9 @@
         "disabled": "Desativado",
         "reEnable": "Reativar",
         "disable": "Desativar",
-        "expiry": "Expira"
+        "expiry": "Expira",
+        "add": "Adicionar",
+        "edit": "Editar"
     },
     "notifications": {
         "errorLoginBlank": "O nome de usuário e/ou senha foram deixados em branco.",

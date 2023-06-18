@@ -35,7 +35,9 @@
         "contactMethods": "common",
         "accountStatus": "common",
         "notSet": "common",
-        "expiry": "admin"
+        "expiry": "common",
+        "add": "admin",
+        "edit": "admin"
     },
     "notifications": {
         "errorLoginBlank": "common",

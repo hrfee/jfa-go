@@ -34,7 +34,6 @@
         "variables": "Variabler",
         "preview": "Förhandsvisning",
         "reset": "Återställ",
-        "edit": "Redigera",
         "customizeMessages": "Anpassa e-post",
         "customizeMessagesDescription": "Om du inte vill använda jfa-go's e-postmallar, så kan du skapa dina egna med Markdown.",
         "markdownSupported": "Markdown stöds.",

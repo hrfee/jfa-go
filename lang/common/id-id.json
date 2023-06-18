@@ -17,7 +17,8 @@
         "time12h": "Waktu 12 jam",
         "theme": "Tema",
         "login": "Masuk",
-        "logout": "Keluar"
+        "logout": "Keluar",
+        "edit": "Edit"
     },
     "notifications": {
         "errorLoginBlank": "Nama pengguna dan / atau sandi kosong.",
