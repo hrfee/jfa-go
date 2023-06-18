@@ -402,3 +402,7 @@ const (
 	UserEmailChange ConfirmationTarget = iota
 	NoOp
 )
+
+type GetMyPINDTO struct {
+	PIN string `json:"pin"`
+}

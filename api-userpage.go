@@ -207,7 +207,7 @@ func (app *appContext) confirmMyAction(gc *gin.Context, key string) {
 // @Failure 500 {object} stringResponse
 // @Router /my/email [post]
 // @Security Bearer
-// @tags Users
+// @tags User Page
 func (app *appContext) ModifyMyEmail(gc *gin.Context) {
 	var req ModifyMyEmailDTO
 	gc.BindJSON(&req)
@@ -257,4 +257,80 @@ func (app *appContext) ModifyMyEmail(gc *gin.Context) {
 
 	app.confirmMyAction(gc, key)
 	return
+}
+
+// @Summary Returns a 10-minute, one-use Discord server invite
+// @Produce json
+// @Success 200 {object} DiscordInviteDTO
+// @Failure 400 {object} boolResponse
+// @Failure 401 {object} boolResponse
+// @Failure 500 {object} boolResponse
+// @Param invCode path string true "invite Code"
+// @Router /my/discord/invite [get]
+// @tags User Page
+func (app *appContext) MyDiscordServerInvite(gc *gin.Context) {
+	if app.discord.inviteChannelName == "" {
+		respondBool(400, false, gc)
+		return
+	}
+	invURL, iconURL := app.discord.NewTempInvite(10*60, 1)
+	if invURL == "" {
+		respondBool(500, false, gc)
+		return
+	}
+	gc.JSON(200, DiscordInviteDTO{invURL, iconURL})
+}
+
+// @Summary Returns a linking PIN for discord/telegram
+// @Produce json
+// @Success 200 {object} GetMyPINDTO
+// @Failure 400 {object} stringResponse
+// Param service path string true "discord/telegram"
+// @Router /my/pin/{service} [get]
+// @tags User Page
+func (app *appContext) GetMyPIN(gc *gin.Context) {
+	service := gc.Param("service")
+	resp := GetMyPINDTO{}
+	switch service {
+	case "discord":
+		resp.PIN = app.discord.NewAuthToken()
+		break
+	case "telegram":
+		resp.PIN = app.telegram.NewAuthToken()
+		break
+	default:
+		respond(400, "invalid service", gc)
+		return
+	}
+	gc.JSON(200, resp)
+}
+
+// @Summary Returns true/false on whether or not your discord PIN was verified, and assigns the discord user to you.
+// @Produce json
+// @Success 200 {object} boolResponse
+// @Failure 401 {object} boolResponse
+// @Param pin path string true "PIN code to check"
+// @Router /my/discord/verified/{pin} [get]
+// @tags User Page
+func (app *appContext) MyDiscordVerifiedInvite(gc *gin.Context) {
+	pin := gc.Param("pin")
+	dcUser, ok := app.discord.verifiedTokens[pin]
+	if !ok {
+		respondBool(200, false, gc)
+		return
+	}
+	if app.config.Section("discord").Key("require_unique").MustBool(false) {
+		for _, u := range app.storage.discord {
+			if app.discord.verifiedTokens[pin].ID == u.ID {
+				delete(app.discord.verifiedTokens, pin)
+				respondBool(400, false, gc)
+				return
+			}
+		}
+	}
+	dc := app.storage.discord
+	dc[gc.GetString("jfId")] = dcUser
+	app.storage.discord = dc
+	app.storage.storeDiscordUsers()
+	respondBool(200, true, gc)
 }

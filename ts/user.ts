@@ -1,12 +1,20 @@
 import { ThemeManager } from "./modules/theme.js";
 import { lang, LangFile, loadLangSelector } from "./modules/lang.js";
 import { Modal } from "./modules/modal.js";
-import { _get, _post, notificationBox, whichAnimationEvent, toDateString, toggleLoader } from "./modules/common.js";
+import { _get, _post, notificationBox, whichAnimationEvent, toDateString, toggleLoader, DiscordInvite } from "./modules/common.js";
 import { Login } from "./modules/login.js";
 
 interface userWindow extends Window {
     jellyfinID: string;
     username: string;
+    emailRequired: boolean;
+    discordRequired: boolean;
+    telegramRequired: boolean;
+    matrixRequired: boolean;
+    discordServerName: string;
+    discordInviteLink: boolean;
+    matrixUserID: string;
+    discordSendPINMessage: string;
 }
 
 declare var window: userWindow;
@@ -26,6 +34,9 @@ window.modals = {} as Modals;
 (() => {
     window.modals.login = new Modal(document.getElementById("modal-login"), true);
     window.modals.email = new Modal(document.getElementById("modal-email"), false);
+    window.modals.discord = new Modal(document.getElementById("modal-discord"), false);
+    window.modals.telegram = new Modal(document.getElementById("modal-telegram"), false);
+    window.modals.matrix = new Modal(document.getElementById("modal-matrix"), false);
 })();
 
 window.notifications = new notificationBox(document.getElementById('notification-box') as HTMLDivElement, 5);
@@ -87,8 +98,8 @@ class ContactMethods {
                 <span class="ml-2 font-bold">${(details.value == "") ? window.lang.strings("notSet") : details.value}</span>
             </div>
             <div class="flex items-center">
-                <button class="user-contact-enabled-disabled button ~neutral" ${details.value =="" ? "disabled" : ""}>
-                    <input type="checkbox" class="mr-2">
+                <button class="user-contact-enabled-disabled button ~neutral" ${details.value == "" ? "disabled" : ""}>
+                    <input type="checkbox" class="mr-2" ${details.value == "" ? "disabled" : ""}>
                     <span>${window.lang.strings("enabled")}</span>
                 </button>
         `;
@@ -239,7 +250,6 @@ var expiryCard = new ExpiryCard(statusCard);
 var contactMethodList = new ContactMethods(contactCard);
 
 const addEditEmail = (add: boolean): void => {
-    console.log("call");
     const heading = window.modals.email.modal.querySelector(".heading");
     heading.innerHTML = (add ? window.lang.strings("addContactMethod") : window.lang.strings("editContactMethod")) + `<span class="modal-close">&times;</span>`;
     const input = document.getElementById("modal-email-input") as HTMLInputElement;
@@ -268,6 +278,70 @@ const addEditEmail = (add: boolean): void => {
     window.modals.email.show();
 }
 
+let discordModalClosed = false;
+let discordPIN = "";
+const addEditDiscord = (add: boolean): void => {
+    if (window.discordInviteLink) {
+        _get("/my/discord/invite", null, (req: XMLHttpRequest) => {
+            if (req.readyState == 4) {
+                if (req.status != 200) return;
+                const inv = req.response as DiscordInvite;
+                const link = document.getElementById("discord-invite") as HTMLAnchorElement;
+                link.href = inv.invite;
+                link.target = "_blank";
+                link.innerHTML = `<span class="img-circle lg mr-4"><img class="img-circle" src="${inv.icon}" width="64" height="64"></span>${window.discordServerName}`;
+            }
+        });
+    }
+
+    _get("/my/pin/discord", null, (req: XMLHttpRequest) => {
+        if (req.readyState == 4 && req.status == 200) {
+            discordPIN = req.response["pin"];
+            window.modals.discord.modal.querySelector(".pin").textContent = discordPIN;
+        }
+    });
+    
+    const waiting = document.getElementById("discord-waiting") as HTMLSpanElement;
+    toggleLoader(waiting);
+    window.modals.discord.show();
+    discordModalClosed = false;
+    window.modals.discord.onclose = () => {
+        discordModalClosed = true;
+        toggleLoader(waiting);
+    }
+    const checkVerified = () => {
+        if (discordPIN == "") {
+            setTimeout(checkVerified, 1500);
+        }
+        if (discordModalClosed) return;
+        _get("/my/discord/verified/" + discordPIN, null, (req: XMLHttpRequest) => {
+            if (req.readyState != 4) return;
+            if (req.status == 401) {
+                window.modals.discord.close();
+                window.notifications.customError("invalidCodeError", window.lang.notif("errorInvalidCode"));
+                return;
+            } else if (req.status == 400) {
+                window.modals.discord.close();
+                window.notifications.customError("accountLinkedError", window.lang.notif("errorAccountLinked"));
+            } else if (req.status == 200) {
+                if (req.response["success"] as boolean) {
+                    waiting.classList.add("~positive");
+                    waiting.classList.remove("~info");
+                    window.notifications.customPositive("discordVerified", "", window.lang.notif("verified")); 
+                    setTimeout(() => {
+                        window.modals.discord.close;
+                        window.location.reload();
+                    }, 2000);
+                } else if (!discordModalClosed) {
+                    setTimeout(checkVerified, 1500);
+                }
+            }
+        });
+    };
+      
+    checkVerified();
+};
+
 document.addEventListener("details-reload", () => {
     _get("/my/details", null, (req: XMLHttpRequest) => {
         if (req.readyState == 4) {
@@ -294,7 +368,7 @@ document.addEventListener("details-reload", () => {
 
             const contactMethods: { name: string, icon: string, f: (add: boolean) => void }[] = [
                 {name: "email", icon: `<i class="ri-mail-fill ri-lg"></i>`, f: addEditEmail},
-                {name: "discord", icon: `<i class="ri-discord-fill ri-lg"></i>`, f: null},
+                {name: "discord", icon: `<i class="ri-discord-fill ri-lg"></i>`, f: addEditDiscord},
                 {name: "telegram", icon: `<i class="ri-telegram-fill ri-lg"></i>`, f: null},
                 {name: "matrix", icon: `<span class="font-bold">[m]</span>`, f: null}
             ];

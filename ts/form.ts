@@ -1,6 +1,6 @@
 import { Modal } from "./modules/modal.js";
 import { notificationBox, whichAnimationEvent } from "./modules/common.js";
-import { _get, _post, toggleLoader, addLoader, removeLoader, toDateString } from "./modules/common.js";
+import { _get, _post, toggleLoader, addLoader, removeLoader, toDateString, DiscordInvite } from "./modules/common.js";
 import { loadLangSelector } from "./modules/lang.js";
 import { initValidator } from "./modules/validator.js";
 
@@ -89,11 +89,6 @@ if (window.telegramEnabled) {
         });
         checkVerified();
     };
-}
-
-interface DiscordInvite {
-    invite: string;
-    icon: string;
 }
 
 var discordVerified = false;

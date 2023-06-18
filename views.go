@@ -165,12 +165,13 @@ func (app *appContext) MyUserPage(gc *gin.Context) {
 	emailEnabled, _ := app.config.Section("invite_emails").Key("enabled").Bool()
 	notificationsEnabled, _ := app.config.Section("notifications").Key("enabled").Bool()
 	ombiEnabled := app.config.Section("ombi").Key("enabled").MustBool(false)
-	gcHTML(gc, http.StatusOK, "user.html", gin.H{
+	data := gin.H{
 		"urlBase":           app.getURLBase(gc),
 		"cssClass":          app.cssClass,
 		"cssVersion":        cssVersion,
 		"contactMessage":    app.config.Section("ui").Key("contact_message").String(),
 		"emailEnabled":      emailEnabled,
+		"emailRequired":     app.config.Section("email").Key("required").MustBool(false),
 		"telegramEnabled":   telegramEnabled,
 		"discordEnabled":    discordEnabled,
 		"matrixEnabled":     matrixEnabled,
@@ -182,7 +183,27 @@ func (app *appContext) MyUserPage(gc *gin.Context) {
 		"validationStrings": app.storage.lang.User[lang].ValidationStrings,
 		"language":          app.storage.lang.User[lang].JSON,
 		"langName":          lang,
-	})
+	}
+	if telegramEnabled {
+		data["telegramUser"] = app.telegram.username
+		data["telegramURL"] = app.telegram.link
+		data["telegramRequired"] = app.config.Section("telegram").Key("required").MustBool(false)
+	}
+	if matrixEnabled {
+		data["matrixRequired"] = app.config.Section("matrix").Key("required").MustBool(false)
+		data["matrixUser"] = app.matrix.userID
+	}
+	if discordEnabled {
+		data["discordUsername"] = app.discord.username
+		data["discordRequired"] = app.config.Section("discord").Key("required").MustBool(false)
+		data["discordSendPINMessage"] = template.HTML(app.storage.lang.User[lang].Strings.template("sendPINDiscord", tmpl{
+			"command":        `<span class="text-black dark:text-white font-mono">/` + app.config.Section("discord").Key("start_command").MustString("start") + `</span>`,
+			"server_channel": app.discord.serverChannelName,
+		}))
+		data["discordServerName"] = app.discord.serverName
+		data["discordInviteLink"] = app.discord.inviteChannelName != ""
+	}
+	gcHTML(gc, http.StatusOK, "user.html", data)
 }
 
 func (app *appContext) ResetPassword(gc *gin.Context) {

@@ -231,6 +231,9 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 			user.POST(p+"/contact", app.SetMyContactMethods)
 			user.POST(p+"/logout", app.LogoutUser)
 			user.POST(p+"/email", app.ModifyMyEmail)
+			user.GET(p+"/discord/invite", app.MyDiscordServerInvite)
+			user.GET(p+"/pin/:service", app.GetMyPIN)
+			user.GET(p+"/discord/verified/:pin", app.MyDiscordVerifiedInvite)
 		}
 	}
 }
