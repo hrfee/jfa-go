@@ -237,9 +237,9 @@ func (app *appContext) getTokenLogin(gc *gin.Context) {
 	gc.JSON(200, getTokenDTO{token})
 }
 
-func (app *appContext) decodeValidateRefreshCookie(gc *gin.Context) (claims jwt.MapClaims, ok bool) {
+func (app *appContext) decodeValidateRefreshCookie(gc *gin.Context, cookieName string) (claims jwt.MapClaims, ok bool) {
 	ok = false
-	cookie, err := gc.Cookie("refresh")
+	cookie, err := gc.Cookie(cookieName)
 	if err != nil || cookie == "" {
 		app.debug.Printf("getTokenRefresh denied: Couldn't get token: %s", err)
 		respond(400, "Couldn't get token", gc)
@@ -285,7 +285,7 @@ func (app *appContext) decodeValidateRefreshCookie(gc *gin.Context) (claims jwt.
 // @tags Auth
 func (app *appContext) getTokenRefresh(gc *gin.Context) {
 	app.debug.Println("Token requested (refresh token)")
-	claims, ok := app.decodeValidateRefreshCookie(gc)
+	claims, ok := app.decodeValidateRefreshCookie(gc, "refresh")
 	if !ok {
 		return
 	}

@@ -60,7 +60,7 @@ func (app *appContext) getUserTokenLogin(gc *gin.Context) {
 	}
 
 	app.debug.Printf("Token generated for non-admin user \"%s\"", username)
-	gc.SetCookie("refresh", refresh, REFRESH_TOKEN_VALIDITY_SEC, "/my", gc.Request.URL.Hostname(), true, true)
+	gc.SetCookie("user-refresh", refresh, REFRESH_TOKEN_VALIDITY_SEC, "/my", gc.Request.URL.Hostname(), true, true)
 	gc.JSON(200, getTokenDTO{token})
 }
 
@@ -79,7 +79,7 @@ func (app *appContext) getUserTokenRefresh(gc *gin.Context) {
 	}
 
 	app.info.Println("UserToken request (refresh token)")
-	claims, ok := app.decodeValidateRefreshCookie(gc)
+	claims, ok := app.decodeValidateRefreshCookie(gc, "user-refresh")
 	if !ok {
 		return
 	}
@@ -93,6 +93,6 @@ func (app *appContext) getUserTokenRefresh(gc *gin.Context) {
 		return
 	}
 
-	gc.SetCookie("refresh", refresh, REFRESH_TOKEN_VALIDITY_SEC, "/my", gc.Request.URL.Hostname(), true, true)
+	gc.SetCookie("user-refresh", refresh, REFRESH_TOKEN_VALIDITY_SEC, "/my", gc.Request.URL.Hostname(), true, true)
 	gc.JSON(200, getTokenDTO{jwt})
 }

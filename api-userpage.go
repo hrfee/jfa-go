@@ -94,7 +94,7 @@ func (app *appContext) SetMyContactMethods(gc *gin.Context) {
 // @Security Bearer
 // @tags User Page
 func (app *appContext) LogoutUser(gc *gin.Context) {
-	cookie, err := gc.Cookie("refresh")
+	cookie, err := gc.Cookie("user-refresh")
 	if err != nil {
 		app.debug.Printf("Couldn't get cookies: %s", err)
 		respond(500, "Couldn't fetch cookies", gc)
