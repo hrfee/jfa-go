@@ -9,7 +9,9 @@
         "enabled": "Engedélyezve",
         "disabled": "Tiltva",
         "reEnable": "Újra engedélyezés",
-        "disable": "Letiltás"
+        "disable": "Letiltás",
+        "expiry": "Lejárat"
     },
-    "notifications": {}
+    "notifications": {},
+    "quantityStrings": {}
 }

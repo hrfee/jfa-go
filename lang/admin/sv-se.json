@@ -74,7 +74,6 @@
         "notifyInviteExpiry": "Vid utgång",
         "notifyUserCreation": "Vid användarskapande",
         "inviteDuration": "Varaktighet för inbjudan",
-        "expiry": "Löper ut",
         "userExpiry": "Användarutgång",
         "userExpiryDescription": "Efter en angiven tid efter varje registrering så tar jfa-go bort/inaktiverar kontot. Du kan ändra detta beteende i inställningarna.",
         "extendExpiry": "Förläng utgång"

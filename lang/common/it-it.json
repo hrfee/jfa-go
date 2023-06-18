@@ -26,5 +26,6 @@
         "refresh": "Aggiorna",
         "required": "Richiesto"
     },
-    "notifications": {}
+    "notifications": {},
+    "quantityStrings": {}
 }

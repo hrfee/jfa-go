@@ -31,7 +31,8 @@
         "enabled": "已啟用",
         "disabled": "已禁用",
         "reEnable": "重新啟用",
-        "disable": "禁用"
+        "disable": "禁用",
+        "expiry": "到期"
     },
     "notifications": {
         "errorLoginBlank": "帳戶名稱和/或密碼留空。",
@@ -39,5 +40,6 @@
         "errorUnknown": "未知的錯誤。",
         "error401Unauthorized": "未經授權。嘗試重新整理頁面。",
         "errorSaveSettings": "無法儲存設置。"
-    }
+    },
+    "quantityStrings": {}
 }

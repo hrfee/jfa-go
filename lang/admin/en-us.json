@@ -33,7 +33,6 @@
         "after": "After",
         "before": "Before",
         "user": "User",
-        "expiry": "Expiry",
         "userExpiry": "User Expiry",
         "userExpiryDescription": "A specified amount of time after each signup, jfa-go will delete/disable the account. You can change this behaviour in settings.",
         "aboutProgram": "About",

@@ -75,7 +75,6 @@
         "customizeMessages": "E-mails aanpassen",
         "inviteDuration": "Geldigheidsduur uitnodiging",
         "userExpiryDescription": "Een bepaalde tijd na elke aanmelding, wordt de account verwijderd/uitgeschakeld door jfa-go. Dit kan aangepast worden in de instellingen.",
-        "expiry": "Verloop",
         "userExpiry": "Gebruikersverloop",
         "extendExpiry": "Verleng verloop",
         "updates": "Updates",

@@ -25,5 +25,6 @@
         "errorUnknown": "Kesalahan yang tidak diketahui.",
         "error401Unauthorized": "Tidak ter-otorisasi. Coba segarkan halaman.",
         "errorSaveSettings": "Tidak dapat menyimpan pengaturan."
-    }
+    },
+    "quantityStrings": {}
 }

@@ -31,7 +31,8 @@
         "enabled": "Ingeschakeld",
         "disabled": "Uitgeschakeld",
         "reEnable": "Opnieuw inschakelen",
-        "disable": "Uitschakelen"
+        "disable": "Uitschakelen",
+        "expiry": "Verloop"
     },
     "notifications": {
         "errorLoginBlank": "De gebruikersnaam en/of wachtwoord is leeg.",
@@ -39,5 +40,6 @@
         "errorUnknown": "Onbekende fout.",
         "error401Unauthorized": "Geen toegang. Probeer de pagina te vernieuwen.",
         "errorSaveSettings": "Opslaan van instellingen mislukt."
-    }
+    },
+    "quantityStrings": {}
 }

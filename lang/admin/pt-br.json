@@ -75,7 +75,6 @@
         "customizeMessages": "Customizar Emails",
         "userExpiryDescription": "Após um determinado período de tempo de cada inscrição, o jfa-go apagará/desabilitará a conta. Você pode alterar essa opção nas configurações.",
         "inviteDuration": "Duração do Convite",
-        "expiry": "Expira",
         "userExpiry": "Vencimento do Usuário",
         "extendExpiry": "Extender o vencimento",
         "updates": "Atualizações",

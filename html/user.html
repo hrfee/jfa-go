@@ -44,13 +44,16 @@
         {{ template "login-modal.html" . }}
         <div class="page-container">
             <div class="card @low dark:~d_neutral mb-4" id="card-user">
-                <span class="heading"></span>
+                <span class="heading mb-2"></span>
             </div>
             <div class="grid grid-cols-2 gap-4">
-                <div class="card @low dark:~d_neutral" id="card-times">
+                <div class="card @low dark:~d_neutral unfocused" id="card-status">
+                    <span class="heading mb-2">{{ .strings.expiry }}</span>
+                    <aside class="aside ~warning user-expiry my-4"></aside>
+                    <div class="user-expiry-countdown"></div>
                 </div>
                 <div class="card @low dark:~d_neutral" id="card-contact">
-                    <span class="heading">{{ .strings.contactMethods }}</span>
+                    <span class="heading mb-2">{{ .strings.contactMethods }}</span>
                     <div class="content"></div>
                 </div>
             </div>

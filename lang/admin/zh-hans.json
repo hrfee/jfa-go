@@ -30,7 +30,6 @@
         "lastActiveTime": "上次活动",
         "from": "从",
         "user": "用户",
-        "expiry": "到期",
         "userExpiry": "用户到期",
         "userExpiryDescription": "每次注册后的指定时间，jfa-go 将删除/禁用该帐户。您可以在设置中更改此行为。",
         "aboutProgram": "关于",

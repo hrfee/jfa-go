@@ -31,7 +31,6 @@
         "lastActiveTime": "Lần cuối Hoạt động",
         "from": "Từ",
         "user": "Người dùng",
-        "expiry": "Hết hạn",
         "userExpiry": "Hết hạn Người dùng",
         "userExpiryDescription": "Sau một khoảng thời gian nhất định sau khi mỗi đăng ký, jfa-go sẽ xóa/vô hiệu hóa tài khoản. Bạn có thể chỉnh sửa chế độ này trong cài đặt.",
         "aboutProgram": "Thông tin",

@@ -19,7 +19,8 @@
         "logout": "Logga ut",
         "admin": "Admin",
         "enabled": "Aktiverad",
-        "disabled": "Inaktiverad"
+        "disabled": "Inaktiverad",
+        "expiry": "Löper ut"
     },
     "notifications": {
         "errorLoginBlank": "Användarnamnet och/eller lösenordet lämnades tomt.",
@@ -27,5 +28,6 @@
         "errorUnknown": "Okänt fel.",
         "error401Unauthorized": "Obehörig. Prova att uppdatera sidan.",
         "errorSaveSettings": "Det gick inte att spara inställningarna."
-    }
+    },
+    "quantityStrings": {}
 }

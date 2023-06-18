@@ -31,7 +31,8 @@
         "enabled": "Activé",
         "disabled": "Désactivé",
         "reEnable": "Ré-activé",
-        "disable": "Désactivé"
+        "disable": "Désactivé",
+        "expiry": "Expiration"
     },
     "notifications": {
         "errorLoginBlank": "Le nom d'utilisateur et/ou le mot de passe sont vides.",
@@ -39,5 +40,6 @@
         "errorUnknown": "Erreur inconnue.",
         "error401Unauthorized": "Non autorisé. Essayez d'actualiser la page.",
         "errorSaveSettings": "Impossible d'enregistrer les paramètres."
-    }
+    },
+    "quantityStrings": {}
 }

@@ -33,7 +33,7 @@ func (app *appContext) MyDetails(gc *gin.Context) {
 
 	if emailEnabled {
 		resp.Email = &MyDetailsContactMethodsDTO{}
-		if email, ok := app.storage.emails[user.ID]; ok {
+		if email, ok := app.storage.emails[user.ID]; ok && email.Addr != "" {
 			resp.Email.Value = email.Addr
 			resp.Email.Enabled = email.Contact
 		}

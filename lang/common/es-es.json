@@ -31,7 +31,8 @@
         "enabled": "Activado",
         "disabled": "Desactivado",
         "reEnable": "Reactivar",
-        "disable": "Desactivar"
+        "disable": "Desactivar",
+        "expiry": "Expiración"
     },
     "notifications": {
         "errorLoginBlank": "El nombre de usuario y/o la contraseña se dejaron en blanco.",
@@ -39,5 +40,6 @@
         "errorUnknown": "Error desconocido.",
         "error401Unauthorized": "No autorizado. Intente actualizar la página.",
         "errorSaveSettings": "No se pudo guardar la configuración."
-    }
+    },
+    "quantityStrings": {}
 }

@@ -26,5 +26,6 @@
         "refresh": "Osveži",
         "required": "Obvezno"
     },
-    "notifications": {}
+    "notifications": {},
+    "quantityStrings": {}
 }

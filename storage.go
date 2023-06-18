@@ -202,6 +202,25 @@ func (common *commonLangs) patchCommonNotifications(to *langSection, from ...str
 	}
 }
 
+func (common *commonLangs) patchCommonQuantityStrings(to *map[string]quantityString, from ...string) {
+	if *to == nil {
+		*to = map[string]quantityString{}
+	}
+	for n, ev := range (*common)[from[len(from)-1]].QuantityStrings {
+		if v, ok := (*to)[n]; !ok || (v.Singular == "" && v.Plural == "") {
+			i := 0
+			for i < len(from)-1 {
+				ev, ok = (*common)[from[i]].QuantityStrings[n]
+				if ok && ev.Singular != "" && ev.Plural != "" {
+					break
+				}
+				i++
+			}
+			(*to)[n] = ev
+		}
+	}
+}
+
 func patchLang(to *langSection, from ...*langSection) {
 	if *to == nil {
 		*to = langSection{}
@@ -283,10 +302,14 @@ func (st *Storage) loadLangCommon(filesystems ...fs.FS) error {
 				if err == nil {
 					loadedLangs[fsIndex][lang.Meta.Fallback+".json"] = true
 					patchLang(&lang.Strings, &fallback.Strings, &english.Strings)
+					patchLang(&lang.Notifications, &fallback.Notifications, &english.Notifications)
+					patchQuantityStrings(&lang.QuantityStrings, &fallback.QuantityStrings, &english.QuantityStrings)
 				}
 			}
 			if (lang.Meta.Fallback != "" && err != nil) || lang.Meta.Fallback == "" {
 				patchLang(&lang.Strings, &english.Strings)
+				patchLang(&lang.Notifications, &english.Notifications)
+				patchQuantityStrings(&lang.QuantityStrings, &english.QuantityStrings)
 			}
 		}
 		st.lang.Common[index] = lang
@@ -437,6 +460,7 @@ func (st *Storage) loadLangUser(filesystems ...fs.FS) error {
 		}
 		st.lang.Common.patchCommonStrings(&lang.Strings, index)
 		st.lang.Common.patchCommonNotifications(&lang.Notifications, index)
+		st.lang.Common.patchCommonQuantityStrings(&lang.QuantityStrings, index)
 		// turns out, a lot of email strings are useful on the user page.
 		emailLang := []langSection{st.lang.Email[index].WelcomeEmail, st.lang.Email[index].UserDisabled, st.lang.Email[index].UserExpired}
 		for _, v := range emailLang {

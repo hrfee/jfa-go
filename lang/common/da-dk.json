@@ -31,7 +31,8 @@
         "enabled": "Aktiveret",
         "disabled": "Deaktiveret",
         "reEnable": "Genaktiver",
-        "disable": "Deaktiver"
+        "disable": "Deaktiver",
+        "expiry": "Udløb"
     },
     "notifications": {
         "errorLoginBlank": "Brugernavnet og/eller adgangskoden blev efterladt tomme.",
@@ -39,5 +40,6 @@
         "errorUnknown": "Ukendt fejl.",
         "error401Unauthorized": "Adgang nægtet. Prøv at genindlæse siden.",
         "errorSaveSettings": "Kunne ikke gemme indstillingerne."
-    }
+    },
+    "quantityStrings": {}
 }

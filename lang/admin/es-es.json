@@ -28,7 +28,6 @@
         "lastActiveTime": "Último activo",
         "from": "De",
         "user": "Usuario",
-        "expiry": "Expiración",
         "userExpiry": "Caducidad del usuario",
         "userExpiryDescription": "Una cantidad de tiempo específica después de cada registro, jfa-go eliminará / deshabilitará la cuenta. Puede cambiar este comportamiento en la configuración.",
         "aboutProgram": "Acerca de",

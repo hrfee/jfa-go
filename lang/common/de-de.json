@@ -31,7 +31,8 @@
         "enabled": "Aktiviert",
         "disabled": "Deaktiviert",
         "reEnable": "Wieder aktivieren",
-        "disable": "Deaktivieren"
+        "disable": "Deaktivieren",
+        "expiry": "Ablaufdatum"
     },
     "notifications": {
         "errorLoginBlank": "Der Benutzername und/oder das Passwort wurden nicht ausgefüllt.",
@@ -39,5 +40,6 @@
         "errorUnknown": "Unbekannter Fehler.",
         "error401Unauthorized": "Unberechtigt. Versuch, die Seite zu aktualisieren.",
         "errorSaveSettings": "Einstellungen konnten nicht gespeichert werden."
-    }
+    },
+    "quantityStrings": {}
 }

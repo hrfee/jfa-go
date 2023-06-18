@@ -24,5 +24,6 @@
         "contactDiscord": "از طریق دیسکورد تماس بگیرید",
         "theme": "موضوع"
     },
-    "notifications": {}
+    "notifications": {},
+    "quantityStrings": {}
 }

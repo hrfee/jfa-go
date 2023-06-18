@@ -30,7 +30,6 @@
         "lastActiveTime": "Sidst Aktiv",
         "from": "Fra",
         "user": "Bruger",
-        "expiry": "Udløb",
         "userExpiry": "Brugerens Udløb",
         "userExpiryDescription": "En specificeret tid efter hver tilmelding, sletter/deaktiverer jfa-go kontoen. Du kan ændre denne adfærd i indstillingerne.",
         "aboutProgram": "Om",

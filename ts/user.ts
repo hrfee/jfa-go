@@ -1,7 +1,7 @@
 import { ThemeManager } from "./modules/theme.js";
 import { lang, LangFile, loadLangSelector } from "./modules/lang.js";
 import { Modal } from "./modules/modal.js";
-import { _get, _post, notificationBox, whichAnimationEvent } from "./modules/common.js";
+import { _get, _post, notificationBox, whichAnimationEvent, toDateString } from "./modules/common.js";
 import { Login } from "./modules/login.js";
 
 interface userWindow extends Window {
@@ -31,6 +31,7 @@ window.notifications = new notificationBox(document.getElementById('notification
 
 var rootCard = document.getElementById("card-user");
 var contactCard = document.getElementById("card-contact");
+var statusCard = document.getElementById("card-status");
 
 interface MyDetailsContactMethod {
     value: string;
@@ -58,15 +59,17 @@ interface ContactDTO {
 
 class ContactMethods {
     private _card: HTMLElement;
+    private _content: HTMLElement;
     private _buttons: { [name: string]: { element: HTMLElement, details: MyDetailsContactMethod } };
 
     constructor (card: HTMLElement) {
         this._card = card;
+        this._content = this._card.querySelector(".content");
         this._buttons = {};
     }
 
     clear = () => {
-        this._card.textContent = "";
+        this._content.textContent = "";
         this._buttons = {};
     }
 
@@ -80,7 +83,7 @@ class ContactMethods {
                         ${icon}
                     </span>
                 </span>
-                <span class="ml-2 font-bold">${details.value}</span>
+                <span class="ml-2 font-bold">${(details.value == "") ? window.lang.strings("notSet") : details.value}</span>
             </div>
             <div class="flex items-center">
                 <button class="user-contact-enabled-disabled button ~neutral">
@@ -121,7 +124,7 @@ class ContactMethods {
         checkbox.checked = details.enabled;
         setButtonAppearance();
 
-        this._card.appendChild(row);
+        this._content.appendChild(row);
     };
 
     private _save = () => {
@@ -140,6 +143,80 @@ class ContactMethods {
         });
     };
 }
+
+class ExpiryCard {
+    private _card: HTMLElement;
+    private _expiry: Date;
+    private _aside: HTMLElement;
+    private _countdown: HTMLElement;
+    private _interval: number = null;
+
+    constructor(card: HTMLElement) {
+        this._card = card;
+        this._aside = this._card.querySelector(".user-expiry") as HTMLElement;
+        this._countdown = this._card.querySelector(".user-expiry-countdown") as HTMLElement;
+    }
+
+    private _drawCountdown = () => {
+        let now = new Date();
+        // Years, Months, Days
+        let ymd = [0, 0, 0];
+        while (now.getFullYear() != this._expiry.getFullYear()) {
+            ymd[0] += 1;
+            now.setFullYear(now.getFullYear()+1);
+        }
+        if (now.getMonth() > this._expiry.getMonth()) {
+            ymd[0] -=1;
+            now.setFullYear(now.getFullYear()-1);
+        }
+        while (now.getMonth() != this._expiry.getMonth()) {
+            ymd[1] += 1;
+            now.setMonth(now.getMonth() + 1);
+        }
+        if (now.getDate() > this._expiry.getDate()) {
+            ymd[1] -=1;
+            now.setMonth(now.getMonth()-1);
+        }
+        while (now.getDate() != this._expiry.getDate()) {
+            ymd[2] += 1;
+            now.setDate(now.getDate() + 1);
+        }
+        
+        const langKeys = ["year", "month", "day"];
+        let innerHTML = ``;
+        for (let i = 0; i < langKeys.length; i++) {
+            if (ymd[i] == 0) continue;
+            const words = window.lang.quantity(langKeys[i], ymd[i]).split(" ");
+            innerHTML += `
+            <div class="row my-3">
+                <div class="inline baseline">
+                    <span class="text-2xl">${words[0]}</span> <span class="text-gray-400 text-lg">${words[1]}</span>
+                </div>
+            </div>
+            `;
+        }
+        this._countdown.innerHTML = innerHTML;
+    };
+
+    get expiry(): Date { return this._expiry; };
+    set expiry(expiryUnix: number) {
+        if (this._interval !== null) {
+            window.clearInterval(this._interval);
+            this._interval = null;
+        }
+        if (expiryUnix == 0) return;
+        this._expiry = new Date(expiryUnix * 1000);
+        this._aside.textContent = window.lang.strings("yourAccountIsValidUntil").replace("{date}", toDateString(this._expiry));
+        this._card.classList.remove("unfocused");
+
+        this._interval = window.setInterval(this._drawCountdown, 60*1000);
+        this._drawCountdown();
+    }
+
+
+}
+
+var expiryCard = new ExpiryCard(statusCard);
 
 var contactMethodList = new ContactMethods(contactCard);
 
@@ -179,6 +256,8 @@ document.addEventListener("details-reload", () => {
                     contactMethodList.append(method[0], details[method[0]], method[1]);
                 }
             }
+
+            expiryCard.expiry = details.expiry;
         }
     });
 });

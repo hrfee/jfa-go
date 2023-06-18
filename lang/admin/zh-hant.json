@@ -31,7 +31,6 @@
         "lastActiveTime": "上次啟用時間",
         "from": "從",
         "user": "帳戶",
-        "expiry": "到期",
         "userExpiry": "帳戶到期",
         "userExpiryDescription": "每次註冊后指定的時間，jfa-go 將刪除/禁用該帳戶。您可以在設定中更改此行為。",
         "aboutProgram": "關於",

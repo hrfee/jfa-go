@@ -31,7 +31,6 @@
         "lastActiveTime": "Utoljára aktív",
         "from": "Feladó",
         "user": "Felhasználó",
-        "expiry": "Lejárat",
         "userExpiry": "Felhasználói lejárat",
         "userExpiryDescription": "Egy meghatározott idő után minden regisztrációt töröl, vagy felfüggeszt a jfa-go. Ezt a működést megváltoztathatod a beállításokban.",
         "aboutProgram": "Névjegy",

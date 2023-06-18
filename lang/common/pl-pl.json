@@ -28,11 +28,13 @@
         "admin": "Admin",
         "enabled": "Włączone",
         "disabled": "Wyłączone",
-        "disable": "Wyłączone"
+        "disable": "Wyłączone",
+        "expiry": "Wygasa"
     },
     "notifications": {
         "errorConnection": "Nie udało się połączyć z jfa-go.",
         "errorUnknown": "Nieznany błąd.",
         "error401Unauthorized": "Nieautoryzowany. Spróbuj odświeżyć stronę."
-    }
+    },
+    "quantityStrings": {}
 }
