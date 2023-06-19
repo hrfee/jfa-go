@@ -1,8 +1,9 @@
 import { Modal } from "./modules/modal.js";
 import { notificationBox, whichAnimationEvent } from "./modules/common.js";
-import { _get, _post, toggleLoader, addLoader, removeLoader, toDateString, DiscordInvite } from "./modules/common.js";
+import { _get, _post, toggleLoader, addLoader, removeLoader, toDateString } from "./modules/common.js";
 import { loadLangSelector } from "./modules/lang.js";
 import { initValidator } from "./modules/validator.js";
+import { Discord, DiscordConfiguration } from "./modules/account-linking.js";
 
 interface formWindow extends Window {
     invalidPassword: string;
@@ -95,61 +96,32 @@ var discordVerified = false;
 if (window.discordEnabled) {
     window.discordModal = new Modal(document.getElementById("modal-discord"), window.discordRequired);
     const discordButton = document.getElementById("link-discord") as HTMLSpanElement;
-    if (window.discordInviteLink) {
-        _get("/invite/" + window.code + "/discord/invite", null, (req: XMLHttpRequest) => {
-            if (req.readyState == 4) {
-                if (req.status != 200) {
-                    return;
-                }
-                const inv = req.response as DiscordInvite;
-                const link = document.getElementById("discord-invite") as HTMLAnchorElement;
-                link.classList.add("subheading", "link-center");
-                link.href = inv.invite;
-                link.target = "_blank";
-                link.innerHTML = `<span class="img-circle lg mr-4"><img class="img-circle" src="${inv.icon}" width="64" height="64"></span>${window.discordServerName}`;
+    
+    const discordConf: DiscordConfiguration = {
+        modal: window.discordModal as Modal,
+        pin: window.discordPIN,
+        inviteURL: window.discordInviteLink ? ("/invite/" + window.code + "/discord/invite") : "",
+        pinURL: "",
+        verifiedURL: "/invite/" + window.code + "/discord/verified/",
+        invalidCodeError: window.messages["errorInvalidCode"],
+        accountLinkedError: window.messages["errorAccountLinked"],
+        successError: window.messages["verified"],
+        successFunc: (modalClosed: boolean) => {
+            if (!modalClosed) {
+                discordButton.classList.add("unfocused");
+                document.getElementById("contact-via").classList.remove("unfocused");
+                document.getElementById("contact-via-email").parentElement.classList.remove("unfocused");
+                const radio = document.getElementById("contact-via-discord") as HTMLInputElement;
+                radio.parentElement.classList.remove("unfocused")
+                radio.checked = true;
+                validatorFunc();
             }
-        });
-    }
-    discordButton.onclick = () => {
-        const waiting = document.getElementById("discord-waiting") as HTMLSpanElement;
-        toggleLoader(waiting);
-        window.discordModal.show();
-        let modalClosed = false;
-        window.discordModal.onclose = () => {
-            modalClosed = true;
-            toggleLoader(waiting);
         }
-        const checkVerified = () => _get("/invite/" + window.code + "/discord/verified/" + window.discordPIN, null, (req: XMLHttpRequest) => {
-            if (req.readyState == 4) {
-                if (req.status == 401) {
-                    window.discordModal.close();
-                    window.notifications.customError("invalidCodeError", window.messages["errorInvalidCode"]);
-                    return;
-                } else if (req.status == 400) {
-                    window.discordModal.close();
-                    window.notifications.customError("accountLinkedError", window.messages["errorAccountLinked"]);
-                } else if (req.status == 200) {
-                    if (req.response["success"] as boolean) {
-                        discordVerified = true;
-                        waiting.classList.add("~positive");
-                        waiting.classList.remove("~info");
-                        window.notifications.customPositive("discordVerified", "", window.messages["verified"]); 
-                        setTimeout(window.discordModal.close, 2000);
-                        discordButton.classList.add("unfocused");
-                        document.getElementById("contact-via").classList.remove("unfocused");
-                        document.getElementById("contact-via-email").parentElement.classList.remove("unfocused");
-                        const radio = document.getElementById("contact-via-discord") as HTMLInputElement;
-                        radio.parentElement.classList.remove("unfocused")
-                        radio.checked = true;
-                        validatorFunc();
-                    } else if (!modalClosed) {
-                        setTimeout(checkVerified, 1500);
-                    }
-                }
-            }
-        });
-        checkVerified();
     };
+
+    const discord = new Discord(discordConf);
+
+    discordButton.onclick = discord.onclick;
 }
 
 var matrixVerified = false;
