@@ -75,7 +75,13 @@ export class Discord {
         const link = document.getElementById("discord-invite") as HTMLAnchorElement;
         link.href = inv.invite;
         link.target = "_blank";
-        link.innerHTML = `<span class="img-circle lg mr-4"><img class="img-circle" src="${inv.icon}" width="64" height="64"></span>${window.discordServerName}`;
+        if (inv.icon != "") {
+            link.innerHTML = `<span class="img-circle lg mr-4"><img class="img-circle" src="${inv.icon}" width="64" height="64"></span>${window.discordServerName}`;
+        } else {
+            link.innerHTML = `
+            <span class="shield mr-4 bg-discord"><i class="ri-discord-fill ri-xl text-white"></i></span>${window.discordServerName}
+            `;
+        }
     });
 
     private _checkVerified = () => {

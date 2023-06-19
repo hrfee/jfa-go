@@ -40,7 +40,8 @@ module.exports = {
               d_urge: dark.d_urge,
               d_warning: dark.d_warning,
               d_info: dark.d_info,
-              d_critical: dark.d_critical
+              d_critical: dark.d_critical,
+              discord: "#5865F2"
           }
       }
   },
