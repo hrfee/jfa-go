@@ -35,9 +35,15 @@ window.modals = {} as Modals;
 (() => {
     window.modals.login = new Modal(document.getElementById("modal-login"), true);
     window.modals.email = new Modal(document.getElementById("modal-email"), false);
-    window.modals.discord = new Modal(document.getElementById("modal-discord"), false);
-    window.modals.telegram = new Modal(document.getElementById("modal-telegram"), false);
-    window.modals.matrix = new Modal(document.getElementById("modal-matrix"), false);
+    if (window.discordEnabled) {
+        window.modals.discord = new Modal(document.getElementById("modal-discord"), false);
+    }
+    if (window.telegramEnabled) {
+        window.modals.telegram = new Modal(document.getElementById("modal-telegram"), false);
+    }
+    if (window.matrixEnabled) {
+        window.modals.matrix = new Modal(document.getElementById("modal-matrix"), false);
+    }
 })();
 
 window.notifications = new notificationBox(document.getElementById('notification-box') as HTMLDivElement, 5);
