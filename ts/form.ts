@@ -3,7 +3,7 @@ import { notificationBox, whichAnimationEvent } from "./modules/common.js";
 import { _get, _post, toggleLoader, addLoader, removeLoader, toDateString } from "./modules/common.js";
 import { loadLangSelector } from "./modules/lang.js";
 import { initValidator } from "./modules/validator.js";
-import { Discord, DiscordConfiguration } from "./modules/account-linking.js";
+import { Discord, Telegram, ServiceConfiguration } from "./modules/account-linking.js";
 
 interface formWindow extends Window {
     invalidPassword: string;
@@ -50,46 +50,31 @@ var telegramVerified = false;
 if (window.telegramEnabled) {
     window.telegramModal = new Modal(document.getElementById("modal-telegram"), window.telegramRequired);
     const telegramButton = document.getElementById("link-telegram") as HTMLSpanElement;
-    telegramButton.onclick = () => {
-        const waiting = document.getElementById("telegram-waiting") as HTMLSpanElement;
-        toggleLoader(waiting);
-        window.telegramModal.show();
-        let modalClosed = false;
-        window.telegramModal.onclose = () => {
-            modalClosed = true;
-            toggleLoader(waiting);
+
+    const telegramConf: ServiceConfiguration = {
+        modal: window.telegramModal as Modal,
+        pin: window.telegramPIN,
+        pinURL: "",
+        verifiedURL: "/invite/" + window.code + "/telegram/verified/",
+        invalidCodeError: window.messages["errorInvalidCode"],
+        accountLinkedError: window.messages["errorAccountLinked"],
+        successError: window.messages["verified"],
+        successFunc: (modalClosed: boolean) => {
+            if (modalClosed) return;
+            telegramVerified = true;
+            telegramButton.classList.add("unfocused");
+            document.getElementById("contact-via").classList.remove("unfocused");
+            document.getElementById("contact-via-email").parentElement.classList.remove("unfocused");
+            const radio = document.getElementById("contact-via-telegram") as HTMLInputElement;
+            radio.parentElement.classList.remove("unfocused");
+            radio.checked = true;
+            validatorFunc();
         }
-        const checkVerified = () => _get("/invite/" + window.code + "/telegram/verified/" + window.telegramPIN, null, (req: XMLHttpRequest) => {
-            if (req.readyState == 4) {
-                if (req.status == 401) {
-                    window.telegramModal.close();
-                    window.notifications.customError("invalidCodeError", window.messages["errorInvalidCode"]);
-                    return;
-                } else if (req.status == 400) {
-                    window.telegramModal.close();
-                    window.notifications.customError("accountLinkedError", window.messages["errorAccountLinked"]);
-                } else if (req.status == 200) {
-                    if (req.response["success"] as boolean) {
-                        telegramVerified = true;
-                        waiting.classList.add("~positive");
-                        waiting.classList.remove("~info");
-                        window.notifications.customPositive("telegramVerified", "", window.messages["verified"]); 
-                        setTimeout(window.telegramModal.close, 2000);
-                        telegramButton.classList.add("unfocused");
-                        document.getElementById("contact-via").classList.remove("unfocused");
-                        document.getElementById("contact-via-email").parentElement.classList.remove("unfocused");
-                        const radio = document.getElementById("contact-via-telegram") as HTMLInputElement;
-                        radio.parentElement.classList.remove("unfocused");
-                        radio.checked = true;
-                        validatorFunc();
-                    } else if (!modalClosed) {
-                        setTimeout(checkVerified, 1500);
-                    }
-                }
-            }
-        });
-        checkVerified();
     };
+
+    const telegram = new Telegram(telegramConf);
+
+    telegramButton.onclick = () => { telegram.onclick(); };
 }
 
 var discordVerified = false;
@@ -97,7 +82,7 @@ if (window.discordEnabled) {
     window.discordModal = new Modal(document.getElementById("modal-discord"), window.discordRequired);
     const discordButton = document.getElementById("link-discord") as HTMLSpanElement;
     
-    const discordConf: DiscordConfiguration = {
+    const discordConf: ServiceConfiguration = {
         modal: window.discordModal as Modal,
         pin: window.discordPIN,
         inviteURL: window.discordInviteLink ? ("/invite/" + window.code + "/discord/invite") : "",
@@ -107,21 +92,21 @@ if (window.discordEnabled) {
         accountLinkedError: window.messages["errorAccountLinked"],
         successError: window.messages["verified"],
         successFunc: (modalClosed: boolean) => {
-            if (!modalClosed) {
-                discordButton.classList.add("unfocused");
-                document.getElementById("contact-via").classList.remove("unfocused");
-                document.getElementById("contact-via-email").parentElement.classList.remove("unfocused");
-                const radio = document.getElementById("contact-via-discord") as HTMLInputElement;
-                radio.parentElement.classList.remove("unfocused")
-                radio.checked = true;
-                validatorFunc();
-            }
+            if (modalClosed) return;
+            discordVerified = true;
+            discordButton.classList.add("unfocused");
+            document.getElementById("contact-via").classList.remove("unfocused");
+            document.getElementById("contact-via-email").parentElement.classList.remove("unfocused");
+            const radio = document.getElementById("contact-via-discord") as HTMLInputElement;
+            radio.parentElement.classList.remove("unfocused")
+            radio.checked = true;
+            validatorFunc();
         }
     };
 
     const discord = new Discord(discordConf);
 
-    discordButton.onclick = discord.onclick;
+    discordButton.onclick = () => { discord.onclick(); };
 }
 
 var matrixVerified = false;

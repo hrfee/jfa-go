@@ -329,8 +329,58 @@ func (app *appContext) MyDiscordVerifiedInvite(gc *gin.Context) {
 		}
 	}
 	dc := app.storage.discord
+	existingUser, ok := app.storage.discord[gc.GetString("jfId")]
+	if ok {
+		dcUser.Lang = existingUser.Lang
+		dcUser.Contact = existingUser.Contact
+	}
 	dc[gc.GetString("jfId")] = dcUser
 	app.storage.discord = dc
 	app.storage.storeDiscordUsers()
+	respondBool(200, true, gc)
+}
+
+// @Summary Returns true/false on whether or not your telegram PIN was verified, and assigns the telegram user to you.
+// @Produce json
+// @Success 200 {object} boolResponse
+// @Failure 401 {object} boolResponse
+// @Param pin path string true "PIN code to check"
+// @Router /my/telegram/verified/{pin} [get]
+// @tags User Page
+func (app *appContext) MyTelegramVerifiedInvite(gc *gin.Context) {
+	pin := gc.Param("pin")
+	tokenIndex := -1
+	for i, v := range app.telegram.verifiedTokens {
+		if v.Token == pin {
+			tokenIndex = i
+			break
+		}
+	}
+	if tokenIndex == -1 {
+		respondBool(200, false, gc)
+		return
+	}
+	if app.config.Section("telegram").Key("require_unique").MustBool(false) {
+		for _, u := range app.storage.telegram {
+			if app.telegram.verifiedTokens[tokenIndex].Username == u.Username {
+				respondBool(400, false, gc)
+				return
+			}
+		}
+	}
+	tgUser := TelegramUser{
+		ChatID:   app.telegram.verifiedTokens[tokenIndex].ChatID,
+		Username: app.telegram.verifiedTokens[tokenIndex].Username,
+		Contact:  true,
+	}
+
+	tg := app.storage.telegram
+	existingUser, ok := app.storage.telegram[gc.GetString("jfId")]
+	if ok {
+		tgUser.Lang = existingUser.Lang
+		tgUser.Contact = existingUser.Contact
+	}
+	tg[gc.GetString("jfId")] = tgUser
+	app.storage.storeTelegramUsers()
 	respondBool(200, true, gc)
 }

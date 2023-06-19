@@ -185,7 +185,7 @@ func (app *appContext) MyUserPage(gc *gin.Context) {
 		"langName":          lang,
 	}
 	if telegramEnabled {
-		data["telegramUser"] = app.telegram.username
+		data["telegramUsername"] = app.telegram.username
 		data["telegramURL"] = app.telegram.link
 		data["telegramRequired"] = app.config.Section("telegram").Key("required").MustBool(false)
 	}

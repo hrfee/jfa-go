@@ -3,7 +3,7 @@ import { lang, LangFile, loadLangSelector } from "./modules/lang.js";
 import { Modal } from "./modules/modal.js";
 import { _get, _post, notificationBox, whichAnimationEvent, toDateString, toggleLoader } from "./modules/common.js";
 import { Login } from "./modules/login.js";
-import { Discord, DiscordConfiguration } from "./modules/account-linking.js";
+import { Discord, Telegram, ServiceConfiguration } from "./modules/account-linking.js";
 
 interface userWindow extends Window {
     jellyfinID: string;
@@ -285,7 +285,7 @@ const addEditEmail = (add: boolean): void => {
     window.modals.email.show();
 }
 
-const discordConf: DiscordConfiguration = {
+const discordConf: ServiceConfiguration = {
     modal: window.modals.discord as Modal,
     pin: "",
     inviteURL: window.discordInviteLink ? "/my/discord/invite" : "",
@@ -300,6 +300,21 @@ const discordConf: DiscordConfiguration = {
 };
 
 let discord = new Discord(discordConf);
+
+const telegramConf: ServiceConfiguration = {
+    modal: window.modals.telegram as Modal,
+    pin: "",
+    pinURL: "/my/pin/telegram",
+    verifiedURL: "/my/telegram/verified/",
+    invalidCodeError: window.lang.notif("errorInvalidCode"),
+    accountLinkedError: window.lang.notif("errorAccountLinked"),
+    successError: window.lang.notif("verified"),
+    successFunc: (modalClosed: boolean) => {
+        if (modalClosed) window.location.reload();
+    }
+};
+
+let telegram = new Telegram(telegramConf);
 
 document.addEventListener("details-reload", () => {
     _get("/my/details", null, (req: XMLHttpRequest) => {
@@ -325,10 +340,13 @@ document.addEventListener("details-reload", () => {
 
             contactMethodList.clear(); 
 
+            // Note the weird format of the functions for discord/telegram:
+            // "this" was being redefined within the onclick() method, so
+            // they had to be wrapped in an anonymous function.
             const contactMethods: { name: string, icon: string, f: (add: boolean) => void }[] = [
                 {name: "email", icon: `<i class="ri-mail-fill ri-lg"></i>`, f: addEditEmail},
-                {name: "discord", icon: `<i class="ri-discord-fill ri-lg"></i>`, f: discord.onclick},
-                {name: "telegram", icon: `<i class="ri-telegram-fill ri-lg"></i>`, f: null},
+                {name: "discord", icon: `<i class="ri-discord-fill ri-lg"></i>`, f: (add: boolean) => { discord.onclick(); }},
+                {name: "telegram", icon: `<i class="ri-telegram-fill ri-lg"></i>`, f: (add: boolean) => { telegram.onclick() }},
                 {name: "matrix", icon: `<span class="font-bold">[m]</span>`, f: null}
             ];
             
