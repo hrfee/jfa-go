@@ -63,6 +63,7 @@ func (st *Storage) SetEmailsKey(k string, v EmailAddress) {
 func (st *Storage) DeleteEmailsKey(k string) {
 	st.emailsLock.Lock()
 	delete(st.emails, k)
+	st.storeEmails()
 	st.emailsLock.Unlock()
 }
 
@@ -89,6 +90,7 @@ func (st *Storage) SetDiscordKey(k string, v DiscordUser) {
 func (st *Storage) DeleteDiscordKey(k string) {
 	st.discordLock.Lock()
 	delete(st.discord, k)
+	st.storeDiscordUsers()
 	st.discordLock.Unlock()
 }
 
@@ -115,6 +117,7 @@ func (st *Storage) SetTelegramKey(k string, v TelegramUser) {
 func (st *Storage) DeleteTelegramKey(k string) {
 	st.telegramLock.Lock()
 	delete(st.telegram, k)
+	st.storeTelegramUsers()
 	st.telegramLock.Unlock()
 }
 
@@ -141,6 +144,7 @@ func (st *Storage) SetMatrixKey(k string, v MatrixUser) {
 func (st *Storage) DeleteMatrixKey(k string) {
 	st.matrixLock.Lock()
 	delete(st.matrix, k)
+	st.storeMatrixUsers()
 	st.matrixLock.Unlock()
 }
 

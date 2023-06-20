@@ -10,7 +10,7 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
-// @Summary Returns the logged-in user's Jellyfin ID & Username.
+// @Summary Returns the logged-in user's Jellyfin ID & Username, and other details.
 // @Produce json
 // @Success 200 {object} MyDetailsDTO
 // @Router /my/details [get]
@@ -377,5 +377,75 @@ func (app *appContext) MyTelegramVerifiedInvite(gc *gin.Context) {
 		tgUser.Contact = existingUser.Contact
 	}
 	app.storage.SetTelegramKey(gc.GetString("jfId"), tgUser)
+	respondBool(200, true, gc)
+}
+
+// @Summary Generate and send a new PIN to your given matrix user.
+// @Produce json
+// @Success 200 {object} boolResponse
+// @Failure 400 {object} stringResponse
+// @Failure 401 {object} boolResponse
+// @Failure 500 {object} boolResponse
+// @Param MatrixSendPINDTO body MatrixSendPINDTO true "User's Matrix ID."
+// @Router /my/matrix/user [post]
+// @tags User Page
+func (app *appContext) MatrixSendMyPIN(gc *gin.Context) {
+	var req MatrixSendPINDTO
+	gc.BindJSON(&req)
+	if req.UserID == "" {
+		respond(400, "errorNoUserID", gc)
+		return
+	}
+	if app.config.Section("matrix").Key("require_unique").MustBool(false) {
+		for _, u := range app.storage.GetMatrix() {
+			if req.UserID == u.UserID {
+				respondBool(400, false, gc)
+				return
+			}
+		}
+	}
+
+	ok := app.matrix.SendStart(req.UserID)
+	if !ok {
+		respondBool(500, false, gc)
+		return
+	}
+	respondBool(200, true, gc)
+}
+
+// @Summary Check whether your matrix PIN is valid, and link the account to yours if so.
+// @Produce json
+// @Success 200 {object} boolResponse
+// @Failure 401 {object} boolResponse
+// @Param pin path string true "PIN code to check"
+// @Param invCode path string true "invite Code"
+// @Param userID path string true "Matrix User ID"
+// @Router /my/matrix/verified/{userID}/{pin} [get]
+// @tags User Page
+func (app *appContext) MatrixCheckMyPIN(gc *gin.Context) {
+	userID := gc.Param("userID")
+	pin := gc.Param("pin")
+	user, ok := app.matrix.tokens[pin]
+	if !ok {
+		app.debug.Println("Matrix: PIN not found")
+		respondBool(200, false, gc)
+		return
+	}
+	if user.User.UserID != userID {
+		app.debug.Println("Matrix: User ID of PIN didn't match")
+		respondBool(200, false, gc)
+		return
+	}
+
+	mxUser := *user.User
+	mxUser.Contact = true
+	existingUser, ok := app.storage.GetMatrixKey(gc.GetString("jfId"))
+	if ok {
+		mxUser.Lang = existingUser.Lang
+		mxUser.Contact = existingUser.Contact
+	}
+
+	app.storage.SetMatrixKey(gc.GetString("jfId"), mxUser)
+	delete(app.matrix.tokens, pin)
 	respondBool(200, true, gc)
 }

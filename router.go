@@ -235,6 +235,8 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 			user.GET(p+"/pin/:service", app.GetMyPIN)
 			user.GET(p+"/discord/verified/:pin", app.MyDiscordVerifiedInvite)
 			user.GET(p+"/telegram/verified/:pin", app.MyTelegramVerifiedInvite)
+			user.POST(p+"/matrix/user", app.MatrixSendMyPIN)
+			user.POST(p+"/matrix/verified/:userID/:pin", app.MatrixCheckMyPIN)
 		}
 	}
 }

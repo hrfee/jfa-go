@@ -3,7 +3,7 @@ import { lang, LangFile, loadLangSelector } from "./modules/lang.js";
 import { Modal } from "./modules/modal.js";
 import { _get, _post, notificationBox, whichAnimationEvent, toDateString, toggleLoader } from "./modules/common.js";
 import { Login } from "./modules/login.js";
-import { Discord, Telegram, ServiceConfiguration } from "./modules/account-linking.js";
+import { Discord, Telegram, Matrix, ServiceConfiguration, MatrixConfiguration } from "./modules/account-linking.js";
 
 interface userWindow extends Window {
     jellyfinID: string;
@@ -316,6 +316,22 @@ const telegramConf: ServiceConfiguration = {
 
 let telegram = new Telegram(telegramConf);
 
+const matrixConf: MatrixConfiguration = {
+    modal: window.modals.matrix as Modal,
+    sendMessageURL: "/my/matrix/user",
+    verifiedURL: "/my/matrix/verified/",
+    invalidCodeError: window.lang.notif("errorInvalidPIN"),
+    accountLinkedError: window.lang.notif("errorAccountLinked"),
+    unknownError: window.lang.notif("errorUnknown"),
+    successError: window.lang.notif("verified"),
+    successFunc: () => {
+        setTimeout(() => window.location.reload(), 1200);
+    }
+};
+
+let matrix = new Matrix(matrixConf);
+    
+
 document.addEventListener("details-reload", () => {
     _get("/my/details", null, (req: XMLHttpRequest) => {
         if (req.readyState == 4) {
@@ -347,7 +363,7 @@ document.addEventListener("details-reload", () => {
                 {name: "email", icon: `<i class="ri-mail-fill ri-lg"></i>`, f: addEditEmail},
                 {name: "discord", icon: `<i class="ri-discord-fill ri-lg"></i>`, f: (add: boolean) => { discord.onclick(); }},
                 {name: "telegram", icon: `<i class="ri-telegram-fill ri-lg"></i>`, f: (add: boolean) => { telegram.onclick() }},
-                {name: "matrix", icon: `<span class="font-bold">[m]</span>`, f: null}
+                {name: "matrix", icon: `<span class="font-bold">[m]</span>`, f: (add: boolean) => { matrix.show(); }}
             ];
             
             for (let method of contactMethods) {

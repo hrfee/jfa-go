@@ -188,7 +188,7 @@ export class Matrix {
     private _conf: MatrixConfiguration;
     private _verified = false;
     private _name: string = "matrix";
-    private _userID: string;
+    private _userID: string = "";
     private _pin: string = "";
     private _input: HTMLInputElement;
     private _submit: HTMLSpanElement;
@@ -212,7 +212,10 @@ export class Matrix {
         }
     };
 
-    show = () => { this._conf.modal.show(); }
+    show = () => {
+        this._input.value = "";
+        this._conf.modal.show();
+    }
 
     private _sendMessage = () => _post(this._conf.sendMessageURL, { "user_id": this._input.value }, (req: XMLHttpRequest) => {
         if (req.readyState != 4) return;
@@ -258,6 +261,6 @@ export class Matrix {
                 this._submit.classList.remove("~critical");
             }, 800);
         }
-    });
+    }, true);
 }
 

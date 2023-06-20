@@ -121,6 +121,7 @@ if (window.matrixEnabled) {
         verifiedURL: "/invite/" + window.code + "/matrix/verified/",
         invalidCodeError: window.messages["errorInvalidPIN"],
         accountLinkedError: window.messages["errorAccountLinked"],
+        unknownError: window.messages["errorUnknown"],
         successError: window.messages["verified"],
         successFunc: () => {
             matrixVerified = true;
