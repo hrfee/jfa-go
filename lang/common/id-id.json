@@ -18,7 +18,8 @@
         "theme": "Tema",
         "login": "Masuk",
         "logout": "Keluar",
-        "edit": "Edit"
+        "edit": "Edit",
+        "delete": "Hapus"
     },
     "notifications": {
         "errorLoginBlank": "Nama pengguna dan / atau sandi kosong.",

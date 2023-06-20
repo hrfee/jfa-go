@@ -36,8 +36,9 @@
         "accountStatus": "common",
         "notSet": "common",
         "expiry": "common",
-        "add": "admin",
-        "edit": "admin"
+        "add": "common",
+        "edit": "common",
+        "delete": "admin"
     },
     "notifications": {
         "errorLoginBlank": "common",

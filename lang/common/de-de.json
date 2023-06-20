@@ -34,7 +34,8 @@
         "disable": "Deaktivieren",
         "expiry": "Ablaufdatum",
         "add": "Hinzufügen",
-        "edit": "Bearbeiten"
+        "edit": "Bearbeiten",
+        "delete": "Löschen"
     },
     "notifications": {
         "errorLoginBlank": "Der Benutzername und/oder das Passwort wurden nicht ausgefüllt.",

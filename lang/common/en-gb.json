@@ -34,7 +34,8 @@
         "disable": "Disable",
         "expiry": "Expiry",
         "add": "Add",
-        "edit": "Edit"
+        "edit": "Edit",
+        "delete": "Delete"
     },
     "notifications": {
         "errorLoginBlank": "The username and/or password was left blank.",

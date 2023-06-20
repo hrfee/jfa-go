@@ -34,7 +34,8 @@
         "disable": "禁用",
         "expiry": "到期",
         "add": "添加",
-        "edit": "編輯"
+        "edit": "編輯",
+        "delete": "刪除"
     },
     "notifications": {
         "errorLoginBlank": "帳戶名稱和/或密碼留空。",

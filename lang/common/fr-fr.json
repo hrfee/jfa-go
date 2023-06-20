@@ -34,7 +34,8 @@
         "disable": "Désactivé",
         "expiry": "Expiration",
         "add": "Ajouter",
-        "edit": "Éditer"
+        "edit": "Éditer",
+        "delete": "Effacer"
     },
     "notifications": {
         "errorLoginBlank": "Le nom d'utilisateur et/ou le mot de passe sont vides.",

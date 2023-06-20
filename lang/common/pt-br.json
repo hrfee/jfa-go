@@ -34,7 +34,8 @@
         "disable": "Desativar",
         "expiry": "Expira",
         "add": "Adicionar",
-        "edit": "Editar"
+        "edit": "Editar",
+        "delete": "Deletar"
     },
     "notifications": {
         "errorLoginBlank": "O nome de usuário e/ou senha foram deixados em branco.",

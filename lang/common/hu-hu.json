@@ -12,7 +12,8 @@
         "disable": "Letiltás",
         "expiry": "Lejárat",
         "add": "Hozzáadás",
-        "edit": "Szerkesztés"
+        "edit": "Szerkesztés",
+        "delete": "Törlés"
     },
     "notifications": {},
     "quantityStrings": {}

@@ -21,7 +21,8 @@
         "enabled": "Aktiverad",
         "disabled": "Inaktiverad",
         "expiry": "Löper ut",
-        "edit": "Redigera"
+        "edit": "Redigera",
+        "delete": "Radera"
     },
     "notifications": {
         "errorLoginBlank": "Användarnamnet och/eller lösenordet lämnades tomt.",

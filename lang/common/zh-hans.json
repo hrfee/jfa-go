@@ -34,7 +34,8 @@
         "disable": "禁用",
         "expiry": "到期",
         "add": "添加",
-        "edit": "编辑"
+        "edit": "编辑",
+        "delete": "删除"
     },
     "notifications": {
         "errorLoginBlank": "用户名/密码留空。",

@@ -34,7 +34,8 @@
         "disable": "Deaktiver",
         "expiry": "Udløb",
         "add": "Tilføj",
-        "edit": "Rediger"
+        "edit": "Rediger",
+        "delete": "Slet"
     },
     "notifications": {
         "errorLoginBlank": "Brugernavnet og/eller adgangskoden blev efterladt tomme.",

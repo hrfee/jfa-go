@@ -449,3 +449,33 @@ func (app *appContext) MatrixCheckMyPIN(gc *gin.Context) {
 	delete(app.matrix.tokens, pin)
 	respondBool(200, true, gc)
 }
+
+// @Summary unlink the Discord account from your Jellyfin user. Always succeeds.
+// @Produce json
+// @Success 200 {object} boolResponse
+// @Router /my/discord [delete]
+// @Tags Users
+func (app *appContext) UnlinkMyDiscord(gc *gin.Context) {
+	app.storage.DeleteDiscordKey(gc.GetString("jfId"))
+	respondBool(200, true, gc)
+}
+
+// @Summary unlink the Telegram account from your Jellyfin user. Always succeeds.
+// @Produce json
+// @Success 200 {object} boolResponse
+// @Router /my/telegram [delete]
+// @Tags Users
+func (app *appContext) UnlinkMyTelegram(gc *gin.Context) {
+	app.storage.DeleteTelegramKey(gc.GetString("jfId"))
+	respondBool(200, true, gc)
+}
+
+// @Summary unlink the Matrix account from your Jellyfin user. Always succeeds.
+// @Produce json
+// @Success 200 {object} boolResponse
+// @Router /my/matrix [delete]
+// @Tags Users
+func (app *appContext) UnlinkMyMatrix(gc *gin.Context) {
+	app.storage.DeleteMatrixKey(gc.GetString("jfId"))
+	respondBool(200, true, gc)
+}

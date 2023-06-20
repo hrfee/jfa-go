@@ -34,7 +34,8 @@
         "disable": "Uitschakelen",
         "expiry": "Verloop",
         "add": "Voeg toe",
-        "edit": "Bewerken"
+        "edit": "Bewerken",
+        "delete": "Verwijderen"
     },
     "notifications": {
         "errorLoginBlank": "De gebruikersnaam en/of wachtwoord is leeg.",

@@ -1,7 +1,7 @@
 import { ThemeManager } from "./modules/theme.js";
 import { lang, LangFile, loadLangSelector } from "./modules/lang.js";
 import { Modal } from "./modules/modal.js";
-import { _get, _post, notificationBox, whichAnimationEvent, toDateString, toggleLoader } from "./modules/common.js";
+import { _get, _post, _delete, notificationBox, whichAnimationEvent, toDateString, toggleLoader } from "./modules/common.js";
 import { Login } from "./modules/login.js";
 import { Discord, Telegram, Matrix, ServiceConfiguration, MatrixConfiguration } from "./modules/account-linking.js";
 
@@ -92,7 +92,7 @@ class ContactMethods {
         this._buttons = {};
     }
 
-    append = (name: string, details: MyDetailsContactMethod, icon: string, addEditFunc?: (add: boolean) => void) => {
+    append = (name: string, details: MyDetailsContactMethod, icon: string, addEditFunc?: (add: boolean) => void, required?: boolean) => {
         const row = document.createElement("div");
         row.classList.add("row", "flex-expand", "my-2");
         let innerHTML = `
@@ -118,6 +118,15 @@ class ContactMethods {
                 </button>
             `;
         }
+
+        if (!required && details.value != "") {
+            innerHTML += `
+                <button class="user-contact-delete button ~critical ml-2" alt="${window.lang.strings("delete")}" text="${window.lang.strings("delete")}">
+                    &times;
+                </button>
+            `;
+        }
+
         innerHTML += `
             </div>
         `;
@@ -158,6 +167,14 @@ class ContactMethods {
         if (addEditFunc) {
             const addEditButton = row.querySelector(".user-contact-edit") as HTMLButtonElement;
             addEditButton.onclick = () => addEditFunc(details.value == "");
+        }
+        
+        if (!required && details.value != "") {
+            const deleteButton = row.querySelector(".user-contact-delete") as HTMLButtonElement;
+            deleteButton.onclick = () => _delete("/my/" + name, null, (req: XMLHttpRequest) => {
+                if (req.readyState != 4) return;
+                window.location.reload();
+            });
         }
 
         this._content.appendChild(row);
@@ -248,8 +265,6 @@ class ExpiryCard {
         this._interval = window.setInterval(this._drawCountdown, 60*1000);
         this._drawCountdown();
     }
-
-
 }
 
 var expiryCard = new ExpiryCard(statusCard);
@@ -359,16 +374,16 @@ document.addEventListener("details-reload", () => {
             // Note the weird format of the functions for discord/telegram:
             // "this" was being redefined within the onclick() method, so
             // they had to be wrapped in an anonymous function.
-            const contactMethods: { name: string, icon: string, f: (add: boolean) => void }[] = [
-                {name: "email", icon: `<i class="ri-mail-fill ri-lg"></i>`, f: addEditEmail},
-                {name: "discord", icon: `<i class="ri-discord-fill ri-lg"></i>`, f: (add: boolean) => { discord.onclick(); }},
-                {name: "telegram", icon: `<i class="ri-telegram-fill ri-lg"></i>`, f: (add: boolean) => { telegram.onclick() }},
-                {name: "matrix", icon: `<span class="font-bold">[m]</span>`, f: (add: boolean) => { matrix.show(); }}
+            const contactMethods: { name: string, icon: string, f: (add: boolean) => void, required: boolean }[] = [
+                {name: "email", icon: `<i class="ri-mail-fill ri-lg"></i>`, f: addEditEmail, required: true},
+                {name: "discord", icon: `<i class="ri-discord-fill ri-lg"></i>`, f: (add: boolean) => { discord.onclick(); }, required: window.discordRequired},
+                {name: "telegram", icon: `<i class="ri-telegram-fill ri-lg"></i>`, f: (add: boolean) => { telegram.onclick() }, required: window.telegramRequired},
+                {name: "matrix", icon: `<span class="font-bold">[m]</span>`, f: (add: boolean) => { matrix.show(); }, required: window.matrixRequired}
             ];
             
             for (let method of contactMethods) {
                 if (method.name in details) {
-                    contactMethodList.append(method.name, details[method.name], method.icon, method.f);
+                    contactMethodList.append(method.name, details[method.name], method.icon, method.f, method.required);
                 }
             }
 
