@@ -94,17 +94,17 @@ class ContactMethods {
 
     append = (name: string, details: MyDetailsContactMethod, icon: string, addEditFunc?: (add: boolean) => void, required?: boolean) => {
         const row = document.createElement("div");
-        row.classList.add("row", "flex-expand", "my-2");
+        row.classList.add("flex", "flex-expand", "my-2", "flex-nowrap");
         let innerHTML = `
-            <div class="inline align-middle">
+            <div class="flex items-baseline flex-nowrap ellipsis">
                 <span class="shield ~urge" alt="${name}">
                     <span class="icon">
                         ${icon}
                     </span>
                 </span>
-                <span class="ml-2 font-bold">${(details.value == "") ? window.lang.strings("notSet") : details.value}</span>
+                <span class="ml-2 font-bold text-ellipsis overflow-hidden">${(details.value == "") ? window.lang.strings("notSet") : details.value}</span>
             </div>
-            <div class="flex items-center">
+            <div class="flex items-center ml-2">
                 <button class="user-contact-enabled-disabled button ~neutral" ${details.value == "" ? "disabled" : ""}>
                     <input type="checkbox" class="mr-2" ${details.value == "" ? "disabled" : ""}>
                     <span>${window.lang.strings("enabled")}</span>
