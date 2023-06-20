@@ -291,7 +291,7 @@ const discordConf: ServiceConfiguration = {
     inviteURL: window.discordInviteLink ? "/my/discord/invite" : "",
     pinURL: "/my/pin/discord",
     verifiedURL: "/my/discord/verified/",
-    invalidCodeError: window.lang.notif("errorInvalidCode"),
+    invalidCodeError: window.lang.notif("errorInvalidPIN"),
     accountLinkedError: window.lang.notif("errorAccountLinked"),
     successError: window.lang.notif("verified"),
     successFunc: (modalClosed: boolean) => {
@@ -306,7 +306,7 @@ const telegramConf: ServiceConfiguration = {
     pin: "",
     pinURL: "/my/pin/telegram",
     verifiedURL: "/my/telegram/verified/",
-    invalidCodeError: window.lang.notif("errorInvalidCode"),
+    invalidCodeError: window.lang.notif("errorInvalidPIN"),
     accountLinkedError: window.lang.notif("errorAccountLinked"),
     successError: window.lang.notif("verified"),
     successFunc: (modalClosed: boolean) => {

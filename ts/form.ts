@@ -3,7 +3,7 @@ import { notificationBox, whichAnimationEvent } from "./modules/common.js";
 import { _get, _post, toggleLoader, addLoader, removeLoader, toDateString } from "./modules/common.js";
 import { loadLangSelector } from "./modules/lang.js";
 import { initValidator } from "./modules/validator.js";
-import { Discord, Telegram, ServiceConfiguration } from "./modules/account-linking.js";
+import { Discord, Telegram, Matrix, ServiceConfiguration, MatrixConfiguration } from "./modules/account-linking.js";
 
 interface formWindow extends Window {
     invalidPassword: string;
@@ -56,7 +56,7 @@ if (window.telegramEnabled) {
         pin: window.telegramPIN,
         pinURL: "",
         verifiedURL: "/invite/" + window.code + "/telegram/verified/",
-        invalidCodeError: window.messages["errorInvalidCode"],
+        invalidCodeError: window.messages["errorInvalidPIN"],
         accountLinkedError: window.messages["errorAccountLinked"],
         successError: window.messages["verified"],
         successFunc: (modalClosed: boolean) => {
@@ -88,7 +88,7 @@ if (window.discordEnabled) {
         inviteURL: window.discordInviteLink ? ("/invite/" + window.code + "/discord/invite") : "",
         pinURL: "",
         verifiedURL: "/invite/" + window.code + "/discord/verified/",
-        invalidCodeError: window.messages["errorInvalidCode"],
+        invalidCodeError: window.messages["errorInvalidPIN"],
         accountLinkedError: window.messages["errorAccountLinked"],
         successError: window.messages["verified"],
         successFunc: (modalClosed: boolean) => {
@@ -114,69 +114,30 @@ var matrixPIN = "";
 if (window.matrixEnabled) {
     window.matrixModal = new Modal(document.getElementById("modal-matrix"), window.matrixRequired);
     const matrixButton = document.getElementById("link-matrix") as HTMLSpanElement;
-    matrixButton.onclick = window.matrixModal.show;
-    const submitButton = document.getElementById("matrix-send") as HTMLSpanElement;
-    const input = document.getElementById("matrix-userid") as HTMLInputElement;
-    let userID = "";
-    submitButton.onclick = () => {
-        addLoader(submitButton);
-        if (userID == "") {
-            const send = {
-                user_id: input.value
-            };
-            _post("/invite/" + window.code + "/matrix/user", send, (req: XMLHttpRequest) => {
-                if (req.readyState == 4) {
-                    if (req.status == 400 && req.response["error"] == "errorAccountLinked") {
-                        window.matrixModal.close();
-                        window.notifications.customError("accountLinkedError", window.messages["errorAccountLinked"]);
-                    }
-                    removeLoader(submitButton);
-                    userID = input.value;
-                    if (req.status != 200) {
-                        window.notifications.customError("errorUnknown", window.messages["errorUnknown"]);
-                        window.matrixModal.close();
-                        return;
-                    }
-                    submitButton.classList.add("~positive");
-                    submitButton.classList.remove("~info");
-                    setTimeout(() => {
-                        submitButton.classList.add("~info");
-                        submitButton.classList.remove("~positive");
-                    }, 2000);
-                    input.placeholder = "PIN";
-                    input.value = "";
-                }
-            });
-        } else {
-            _get("/invite/" + window.code + "/matrix/verified/" + userID + "/" + input.value, null, (req: XMLHttpRequest) => {
-                if (req.readyState == 4) {
-                    removeLoader(submitButton)
-                    const valid = req.response["success"] as boolean;
-                    if (valid) {
-                        window.matrixModal.close();
-                        window.notifications.customPositive("successVerified", "", window.messages["verified"]);
-                        matrixVerified = true;
-                        matrixPIN = input.value;
-                        matrixButton.classList.add("unfocused");
-                        document.getElementById("contact-via").classList.remove("unfocused");
-                        document.getElementById("contact-via-email").parentElement.classList.remove("unfocused");
-                        const radio = document.getElementById("contact-via-matrix") as HTMLInputElement;
-                        radio.parentElement.classList.remove("unfocused");
-                        radio.checked = true;
-                        validatorFunc();
-                    } else {
-                        window.notifications.customError("errorInvalidPIN", window.messages["errorInvalidPIN"]);
-                        submitButton.classList.add("~critical");
-                        submitButton.classList.remove("~info");
-                        setTimeout(() => {
-                            submitButton.classList.add("~info");
-                            submitButton.classList.remove("~critical");
-                        }, 800);
-                    }
-                }
-            },);
+    
+    const matrixConf: MatrixConfiguration = {
+        modal: window.matrixModal as Modal,
+        sendMessageURL: "/invite/" + window.code + "/matrix/user",
+        verifiedURL: "/invite/" + window.code + "/matrix/verified/",
+        invalidCodeError: window.messages["errorInvalidPIN"],
+        accountLinkedError: window.messages["errorAccountLinked"],
+        successError: window.messages["verified"],
+        successFunc: () => {
+            matrixVerified = true;
+            matrixPIN = matrix.pin;
+            matrixButton.classList.add("unfocused");
+            document.getElementById("contact-via").classList.remove("unfocused");
+            document.getElementById("contact-via-email").parentElement.classList.remove("unfocused");
+            const radio = document.getElementById("contact-via-matrix") as HTMLInputElement;
+            radio.parentElement.classList.remove("unfocused");
+            radio.checked = true;
+            validatorFunc();
         }
     };
+
+    const matrix = new Matrix(matrixConf);
+
+    matrixButton.onclick = () => { matrix.show(); };
 }
 
 if (window.confirmation) {

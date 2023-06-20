@@ -1,5 +1,5 @@
 import { Modal } from "../modules/modal.js";
-import { _get, _post, toggleLoader } from "../modules/common.js";
+import { _get, _post, toggleLoader, addLoader, removeLoader } from "../modules/common.js";
 
 interface formWindow extends Window {
     invalidPassword: string;
@@ -172,3 +172,92 @@ export class Telegram extends ServiceLinker {
         this._waiting = document.getElementById("telegram-waiting") as HTMLSpanElement;
     }
 };
+
+export interface MatrixConfiguration {
+    modal: Modal;
+    sendMessageURL: string;
+    verifiedURL: string;
+    invalidCodeError: string;
+    accountLinkedError: string;
+    unknownError: string;
+    successError: string;
+    successFunc: () => void;
+}
+
+export class Matrix {
+    private _conf: MatrixConfiguration;
+    private _verified = false;
+    private _name: string = "matrix";
+    private _userID: string;
+    private _pin: string = "";
+    private _input: HTMLInputElement;
+    private _submit: HTMLSpanElement;
+
+    get verified(): boolean { return this._verified; }
+    get pin(): string { return this._pin; }
+
+    constructor(conf: MatrixConfiguration) {
+        this._conf = conf;
+        this._input = document.getElementById("matrix-userid") as HTMLInputElement;
+        this._submit = document.getElementById("matrix-send") as HTMLSpanElement;
+        this._submit.onclick = () => { this._onclick(); };
+    }
+
+    private _onclick = () => {
+        addLoader(this._submit);
+        if (this._userID == "") {
+            this._sendMessage();
+        } else {
+            this._verifyCode();
+        }
+    };
+
+    show = () => { this._conf.modal.show(); }
+
+    private _sendMessage = () => _post(this._conf.sendMessageURL, { "user_id": this._input.value }, (req: XMLHttpRequest) => {
+        if (req.readyState != 4) return;
+        removeLoader(this._submit);
+        if (req.status == 400 && req.response["error"] == "errorAccountLinked") {
+            this._conf.modal.close();
+            window.notifications.customError("accountLinkedError", this._conf.accountLinkedError);
+            return;
+        } else if (req.status != 200) {
+            this._conf.modal.close();
+            window.notifications.customError("unknownError", this._conf.unknownError);
+            return;
+        }
+        this._userID = this._input.value;
+        this._submit.classList.add("~positive");
+        this._submit.classList.remove("~info");
+        setTimeout(() => {
+            this._submit.classList.add("~info");
+            this._submit.classList.remove("~positive");
+        }, 2000);
+        this._input.placeholder = "PIN";
+        this._input.value = "";
+    });
+
+    private _verifyCode = () => _post(this._conf.verifiedURL + this._userID + "/" + this._input.value, null, (req: XMLHttpRequest) => {
+        if (req.readyState != 4) return;
+        removeLoader(this._submit);
+        const valid = req.response["success"] as boolean;
+        if (valid) {
+            this._conf.modal.close();
+            window.notifications.customPositive(this._name + "Verified", "", this._conf.successError); 
+            this._verified = true;
+            this._pin = this._input.value;
+            if (this._conf.successFunc) {
+                this._conf.successFunc();
+            }
+        } else {
+            window.notifications.customError("invalidCodeError", this._conf.invalidCodeError);
+            this._submit.classList.add("~critical");
+            this._submit.classList.remove("~info");
+            setTimeout(() => {
+                this._submit.classList.add("~info");
+                this._submit.classList.remove("~critical");
+            }, 800);
+        }
+    });
+}
+
