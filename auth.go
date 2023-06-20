@@ -209,7 +209,7 @@ func (app *appContext) getTokenLogin(gc *gin.Context) {
 		if !app.config.Section("ui").Key("allow_all").MustBool(false) {
 			accountsAdmin := false
 			adminOnly := app.config.Section("ui").Key("admin_only").MustBool(true)
-			if emailStore, ok := app.storage.emails[jfID]; ok {
+			if emailStore, ok := app.storage.GetEmailsKey(jfID); ok {
 				accountsAdmin = emailStore.Admin
 			}
 			accountsAdmin = accountsAdmin || (adminOnly && user.Policy.IsAdministrator)

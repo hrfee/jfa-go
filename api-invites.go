@@ -280,7 +280,7 @@ func (app *appContext) GetInvites(gc *gin.Context) {
 			var address string
 			if app.config.Section("ui").Key("jellyfin_login").MustBool(false) {
 				app.storage.loadEmails()
-				if addr, ok := app.storage.emails[gc.GetString("jfId")]; ok && addr.Addr != "" {
+				if addr, ok := app.storage.GetEmailsKey(gc.GetString("jfId")); ok && addr.Addr != "" {
 					address = addr.Addr
 				}
 			} else {

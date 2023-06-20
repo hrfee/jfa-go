@@ -838,25 +838,25 @@ func (emailer *Emailer) send(email *Message, address ...string) error {
 func (app *appContext) sendByID(email *Message, ID ...string) error {
 	for _, id := range ID {
 		var err error
-		if tgChat, ok := app.storage.telegram[id]; ok && tgChat.Contact && telegramEnabled {
+		if tgChat, ok := app.storage.GetTelegramKey(id); ok && tgChat.Contact && telegramEnabled {
 			err = app.telegram.Send(email, tgChat.ChatID)
 			if err != nil {
 				return err
 			}
 		}
-		if dcChat, ok := app.storage.discord[id]; ok && dcChat.Contact && discordEnabled {
+		if dcChat, ok := app.storage.GetDiscordKey(id); ok && dcChat.Contact && discordEnabled {
 			err = app.discord.Send(email, dcChat.ChannelID)
 			if err != nil {
 				return err
 			}
 		}
-		if mxChat, ok := app.storage.matrix[id]; ok && mxChat.Contact && matrixEnabled {
+		if mxChat, ok := app.storage.GetMatrixKey(id); ok && mxChat.Contact && matrixEnabled {
 			err = app.matrix.Send(email, mxChat)
 			if err != nil {
 				return err
 			}
 		}
-		if address, ok := app.storage.emails[id]; ok && address.Contact && emailEnabled {
+		if address, ok := app.storage.GetEmailsKey(id); ok && address.Contact && emailEnabled {
 			err = app.email.send(email, address.Addr)
 			if err != nil {
 				return err
@@ -870,13 +870,13 @@ func (app *appContext) sendByID(email *Message, ID ...string) error {
 }
 
 func (app *appContext) getAddressOrName(jfID string) string {
-	if dcChat, ok := app.storage.discord[jfID]; ok && dcChat.Contact && discordEnabled {
+	if dcChat, ok := app.storage.GetDiscordKey(jfID); ok && dcChat.Contact && discordEnabled {
 		return RenderDiscordUsername(dcChat)
 	}
-	if tgChat, ok := app.storage.telegram[jfID]; ok && tgChat.Contact && telegramEnabled {
+	if tgChat, ok := app.storage.GetTelegramKey(jfID); ok && tgChat.Contact && telegramEnabled {
 		return "@" + tgChat.Username
 	}
-	if addr, ok := app.storage.emails[jfID]; ok {
+	if addr, ok := app.storage.GetEmailsKey(jfID); ok {
 		return addr.Addr
 	}
 	return ""

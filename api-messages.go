@@ -305,10 +305,10 @@ func (app *appContext) TelegramAddUser(gc *gin.Context) {
 	if lang, ok := app.telegram.languages[tgToken.ChatID]; ok {
 		tgUser.Lang = lang
 	}
-	if app.storage.telegram == nil {
-		app.storage.telegram = map[string]TelegramUser{}
+	if app.storage.GetTelegram() == nil {
+		app.storage.telegram = telegramStore{}
 	}
-	app.storage.telegram[req.ID] = tgUser
+	app.storage.SetTelegramKey(req.ID, tgUser)
 	err := app.storage.storeTelegramUsers()
 	if err != nil {
 		app.err.Printf("Failed to store Telegram users: %v", err)
@@ -340,15 +340,10 @@ func (app *appContext) SetContactMethods(gc *gin.Context) {
 }
 
 func (app *appContext) setContactMethods(req SetContactMethodsDTO, gc *gin.Context) {
-	if tgUser, ok := app.storage.telegram[req.ID]; ok {
+	if tgUser, ok := app.storage.GetTelegramKey(req.ID); ok {
 		change := tgUser.Contact != req.Telegram
 		tgUser.Contact = req.Telegram
-		app.storage.telegram[req.ID] = tgUser
-		if err := app.storage.storeTelegramUsers(); err != nil {
-			respondBool(500, false, gc)
-			app.err.Printf("Telegram: Failed to store users: %v", err)
-			return
-		}
+		app.storage.SetTelegramKey(req.ID, tgUser)
 		if change {
 			msg := ""
 			if !req.Telegram {
@@ -357,10 +352,10 @@ func (app *appContext) setContactMethods(req SetContactMethodsDTO, gc *gin.Conte
 			app.debug.Printf("Telegram: User \"%s\" will%s be notified through Telegram.", tgUser.Username, msg)
 		}
 	}
-	if dcUser, ok := app.storage.discord[req.ID]; ok {
+	if dcUser, ok := app.storage.GetDiscordKey(req.ID); ok {
 		change := dcUser.Contact != req.Discord
 		dcUser.Contact = req.Discord
-		app.storage.discord[req.ID] = dcUser
+		app.storage.SetDiscordKey(req.ID, dcUser)
 		if err := app.storage.storeDiscordUsers(); err != nil {
 			respondBool(500, false, gc)
 			app.err.Printf("Discord: Failed to store users: %v", err)
@@ -374,10 +369,10 @@ func (app *appContext) setContactMethods(req SetContactMethodsDTO, gc *gin.Conte
 			app.debug.Printf("Discord: User \"%s\" will%s be notified through Discord.", dcUser.Username, msg)
 		}
 	}
-	if mxUser, ok := app.storage.matrix[req.ID]; ok {
+	if mxUser, ok := app.storage.GetMatrixKey(req.ID); ok {
 		change := mxUser.Contact != req.Matrix
 		mxUser.Contact = req.Matrix
-		app.storage.matrix[req.ID] = mxUser
+		app.storage.SetMatrixKey(req.ID, mxUser)
 		if err := app.storage.storeMatrixUsers(); err != nil {
 			respondBool(500, false, gc)
 			app.err.Printf("Matrix: Failed to store users: %v", err)
@@ -391,10 +386,10 @@ func (app *appContext) setContactMethods(req SetContactMethodsDTO, gc *gin.Conte
 			app.debug.Printf("Matrix: User \"%s\" will%s be notified through Matrix.", mxUser.UserID, msg)
 		}
 	}
-	if email, ok := app.storage.emails[req.ID]; ok {
+	if email, ok := app.storage.GetEmailsKey(req.ID); ok {
 		change := email.Contact != req.Email
 		email.Contact = req.Email
-		app.storage.emails[req.ID] = email
+		app.storage.SetEmailsKey(req.ID, email)
 		if err := app.storage.storeEmails(); err != nil {
 			respondBool(500, false, gc)
 			app.err.Printf("Failed to store emails: %v", err)
@@ -458,7 +453,7 @@ func (app *appContext) TelegramVerifiedInvite(gc *gin.Context) {
 		}
 	}
 	if app.config.Section("telegram").Key("require_unique").MustBool(false) {
-		for _, u := range app.storage.telegram {
+		for _, u := range app.storage.GetTelegram() {
 			if app.telegram.verifiedTokens[tokenIndex].Username == u.Username {
 				respondBool(400, false, gc)
 				return
@@ -490,7 +485,7 @@ func (app *appContext) DiscordVerifiedInvite(gc *gin.Context) {
 	pin := gc.Param("pin")
 	_, ok := app.discord.verifiedTokens[pin]
 	if app.config.Section("discord").Key("require_unique").MustBool(false) {
-		for _, u := range app.storage.discord {
+		for _, u := range app.storage.GetDiscord() {
 			if app.discord.verifiedTokens[pin].ID == u.ID {
 				delete(app.discord.verifiedTokens, pin)
 				respondBool(400, false, gc)
@@ -551,7 +546,7 @@ func (app *appContext) MatrixSendPIN(gc *gin.Context) {
 		return
 	}
 	if app.config.Section("matrix").Key("require_unique").MustBool(false) {
-		for _, u := range app.storage.matrix {
+		for _, u := range app.storage.GetMatrix() {
 			if req.UserID == u.UserID {
 				respondBool(400, false, gc)
 				return
@@ -648,8 +643,8 @@ func (app *appContext) MatrixLogin(gc *gin.Context) {
 func (app *appContext) MatrixConnect(gc *gin.Context) {
 	var req MatrixConnectUserDTO
 	gc.BindJSON(&req)
-	if app.storage.matrix == nil {
-		app.storage.matrix = map[string]MatrixUser{}
+	if app.storage.GetMatrix() == nil {
+		app.storage.matrix = matrixStore{}
 	}
 	roomID, encrypted, err := app.matrix.CreateRoom(req.UserID)
 	if err != nil {
@@ -657,13 +652,13 @@ func (app *appContext) MatrixConnect(gc *gin.Context) {
 		respondBool(500, false, gc)
 		return
 	}
-	app.storage.matrix[req.JellyfinID] = MatrixUser{
+	app.storage.SetMatrixKey(req.JellyfinID, MatrixUser{
 		UserID:    req.UserID,
 		RoomID:    string(roomID),
 		Lang:      "en-us",
 		Contact:   true,
 		Encrypted: encrypted,
-	}
+	})
 	app.matrix.isEncrypted[roomID] = encrypted
 	if err := app.storage.storeMatrixUsers(); err != nil {
 		app.err.Printf("Failed to store Matrix users: %v", err)
@@ -719,7 +714,7 @@ func (app *appContext) DiscordConnect(gc *gin.Context) {
 		respondBool(500, false, gc)
 		return
 	}
-	app.storage.discord[req.JellyfinID] = user
+	app.storage.SetDiscordKey(req.JellyfinID, user)
 	if err := app.storage.storeDiscordUsers(); err != nil {
 		app.err.Printf("Failed to store Discord users: %v", err)
 		respondBool(500, false, gc)
@@ -743,8 +738,7 @@ func (app *appContext) UnlinkDiscord(gc *gin.Context) {
 		respond(400, "User not found", gc)
 		return
 	} */
-	delete(app.storage.discord, req.ID)
-	app.storage.storeDiscordUsers()
+	app.storage.DeleteDiscordKey(req.ID)
 	respondBool(200, true, gc)
 }
 
@@ -762,8 +756,7 @@ func (app *appContext) UnlinkTelegram(gc *gin.Context) {
 		respond(400, "User not found", gc)
 		return
 	} */
-	delete(app.storage.telegram, req.ID)
-	app.storage.storeTelegramUsers()
+	app.storage.DeleteTelegramKey(req.ID)
 	respondBool(200, true, gc)
 }
 
@@ -781,7 +774,6 @@ func (app *appContext) UnlinkMatrix(gc *gin.Context) {
 		respond(400, "User not found", gc)
 		return
 	} */
-	delete(app.storage.matrix, req.ID)
-	app.storage.storeMatrixUsers()
+	app.storage.DeleteMatrixKey(req.ID)
 	respondBool(200, true, gc)
 }

@@ -61,7 +61,7 @@ func (app *appContext) NewUserAdmin(gc *gin.Context) {
 	}
 	app.jf.CacheExpiry = time.Now()
 	if emailEnabled {
-		app.storage.emails[id] = EmailAddress{Addr: req.Email, Contact: true}
+		app.storage.SetEmailsKey(id, EmailAddress{Addr: req.Email, Contact: true})
 		app.storage.storeEmails()
 	}
 	if app.config.Section("ombi").Key("enabled").MustBool(false) {
@@ -131,7 +131,7 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 				return
 			}
 			if app.config.Section("discord").Key("require_unique").MustBool(false) {
-				for _, u := range app.storage.discord {
+				for _, u := range app.storage.GetDiscord() {
 					if discordUser.ID == u.ID {
 						f = func(gc *gin.Context) {
 							app.debug.Printf("%s: New user failed: Discord user already linked", req.Code)
@@ -177,7 +177,7 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 				return
 			}
 			if app.config.Section("matrix").Key("require_unique").MustBool(false) {
-				for _, u := range app.storage.matrix {
+				for _, u := range app.storage.GetMatrix() {
 					if user.User.UserID == u.UserID {
 						f = func(gc *gin.Context) {
 							app.debug.Printf("%s: New user failed: Matrix user already linked", req.Code)
@@ -220,7 +220,7 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 				return
 			}
 			if app.config.Section("telegram").Key("require_unique").MustBool(false) {
-				for _, u := range app.storage.telegram {
+				for _, u := range app.storage.GetTelegram() {
 					if app.telegram.verifiedTokens[telegramTokenIndex].Username == u.Username {
 						f = func(gc *gin.Context) {
 							app.debug.Printf("%s: New user failed: Telegram user already linked", req.Code)
@@ -339,7 +339,7 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 	}
 	// if app.config.Section("password_resets").Key("enabled").MustBool(false) {
 	if req.Email != "" {
-		app.storage.emails[id] = EmailAddress{Addr: req.Email, Contact: true}
+		app.storage.SetEmailsKey(id, EmailAddress{Addr: req.Email, Contact: true})
 		app.storage.storeEmails()
 	}
 	expiry := time.Time{}
@@ -355,9 +355,9 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 	if discordEnabled && discordVerified {
 		discordUser.Contact = req.DiscordContact
 		if app.storage.discord == nil {
-			app.storage.discord = map[string]DiscordUser{}
+			app.storage.discord = discordStore{}
 		}
-		app.storage.discord[user.ID] = discordUser
+		app.storage.SetDiscordKey(user.ID, discordUser)
 		if err := app.storage.storeDiscordUsers(); err != nil {
 			app.err.Printf("Failed to store Discord users: %v", err)
 		} else {
@@ -375,9 +375,9 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 			tgUser.Lang = lang
 		}
 		if app.storage.telegram == nil {
-			app.storage.telegram = map[string]TelegramUser{}
+			app.storage.telegram = telegramStore{}
 		}
-		app.storage.telegram[user.ID] = tgUser
+		app.storage.SetTelegramKey(user.ID, tgUser)
 		if err := app.storage.storeTelegramUsers(); err != nil {
 			app.err.Printf("Failed to store Telegram users: %v", err)
 		} else {
@@ -405,7 +405,8 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 							dID = discordUser.ID
 						}
 						if telegramEnabled && telegramTokenIndex != -1 {
-							tUser = app.storage.telegram[user.ID].Username
+							u, _ := app.storage.GetTelegramKey(user.ID)
+							tUser = u.Username
 						}
 						resp, status, err := app.ombi.SetNotificationPrefs(ombiUser, dID, tUser)
 						if !(status == 200 || status == 204) || err != nil {
@@ -423,9 +424,9 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 		matrixUser.Contact = req.MatrixContact
 		delete(app.matrix.tokens, req.MatrixPIN)
 		if app.storage.matrix == nil {
-			app.storage.matrix = map[string]MatrixUser{}
+			app.storage.matrix = matrixStore{}
 		}
-		app.storage.matrix[user.ID] = matrixUser
+		app.storage.SetMatrixKey(user.ID, matrixUser)
 		if err := app.storage.storeMatrixUsers(); err != nil {
 			app.err.Printf("Failed to store Matrix users: %v", err)
 		}
@@ -488,7 +489,7 @@ func (app *appContext) NewUser(gc *gin.Context) {
 			return
 		}
 		if app.config.Section("email").Key("require_unique").MustBool(false) && req.Email != "" {
-			for _, email := range app.storage.emails {
+			for _, email := range app.storage.GetEmails() {
 				if req.Email == email.Addr {
 					app.info.Printf("%s: New user failed: Email already in use", req.Code)
 					respond(400, "errorEmailLinked", gc)
@@ -897,7 +898,7 @@ func (app *appContext) GetUsers(gc *gin.Context) {
 		if !jfUser.LastActivityDate.IsZero() {
 			user.LastActive = jfUser.LastActivityDate.Unix()
 		}
-		if email, ok := app.storage.emails[jfUser.ID]; ok {
+		if email, ok := app.storage.GetEmailsKey(jfUser.ID); ok {
 			user.Email = email.Addr
 			user.NotifyThroughEmail = email.Contact
 			user.Label = email.Label
@@ -907,15 +908,15 @@ func (app *appContext) GetUsers(gc *gin.Context) {
 		if ok {
 			user.Expiry = expiry.Unix()
 		}
-		if tgUser, ok := app.storage.telegram[jfUser.ID]; ok {
+		if tgUser, ok := app.storage.GetTelegramKey(jfUser.ID); ok {
 			user.Telegram = tgUser.Username
 			user.NotifyThroughTelegram = tgUser.Contact
 		}
-		if mxUser, ok := app.storage.matrix[jfUser.ID]; ok {
+		if mxUser, ok := app.storage.GetMatrixKey(jfUser.ID); ok {
 			user.Matrix = mxUser.UserID
 			user.NotifyThroughMatrix = mxUser.Contact
 		}
-		if dcUser, ok := app.storage.discord[jfUser.ID]; ok {
+		if dcUser, ok := app.storage.GetDiscordKey(jfUser.ID); ok {
 			user.Discord = RenderDiscordUsername(dcUser)
 			// user.Discord = dcUser.Username + "#" + dcUser.Discriminator
 			user.DiscordID = dcUser.ID
@@ -949,11 +950,11 @@ func (app *appContext) SetAccountsAdmin(gc *gin.Context) {
 		id := jfUser.ID
 		if admin, ok := req[id]; ok {
 			var emailStore = EmailAddress{}
-			if oldEmail, ok := app.storage.emails[id]; ok {
+			if oldEmail, ok := app.storage.GetEmailsKey(id); ok {
 				emailStore = oldEmail
 			}
 			emailStore.Admin = admin
-			app.storage.emails[id] = emailStore
+			app.storage.SetEmailsKey(id, emailStore)
 		}
 	}
 	if err := app.storage.storeEmails(); err != nil {
@@ -986,11 +987,11 @@ func (app *appContext) ModifyLabels(gc *gin.Context) {
 		id := jfUser.ID
 		if label, ok := req[id]; ok {
 			var emailStore = EmailAddress{}
-			if oldEmail, ok := app.storage.emails[id]; ok {
+			if oldEmail, ok := app.storage.GetEmailsKey(id); ok {
 				emailStore = oldEmail
 			}
 			emailStore.Label = label
-			app.storage.emails[id] = emailStore
+			app.storage.SetEmailsKey(id, emailStore)
 		}
 	}
 	if err := app.storage.storeEmails(); err != nil {
@@ -1024,7 +1025,7 @@ func (app *appContext) ModifyEmails(gc *gin.Context) {
 		id := jfUser.ID
 		if address, ok := req[id]; ok {
 			var emailStore = EmailAddress{}
-			oldEmail, ok := app.storage.emails[id]
+			oldEmail, ok := app.storage.GetEmailsKey(id)
 			if ok {
 				emailStore = oldEmail
 			}
@@ -1035,7 +1036,7 @@ func (app *appContext) ModifyEmails(gc *gin.Context) {
 			}
 
 			emailStore.Addr = address
-			app.storage.emails[id] = emailStore
+			app.storage.SetEmailsKey(id, emailStore)
 			if ombiEnabled {
 				ombiUser, code, err := app.getOmbiUser(id)
 				if code == 200 && err == nil {

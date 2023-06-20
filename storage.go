@@ -15,6 +15,11 @@ import (
 	"github.com/steambap/captcha"
 )
 
+type discordStore map[string]DiscordUser
+type telegramStore map[string]TelegramUser
+type matrixStore map[string]MatrixUser
+type emailStore map[string]EmailAddress
+
 type Storage struct {
 	timePattern                                                                                                                                                                                                          string
 	invite_path, emails_path, policy_path, configuration_path, displayprefs_path, ombi_path, profiles_path, customEmails_path, users_path, telegram_path, discord_path, matrix_path, announcements_path, matrix_sql_path string
@@ -23,16 +28,120 @@ type Storage struct {
 	profiles                                                                                                                                                                                                             map[string]Profile
 	defaultProfile                                                                                                                                                                                                       string
 	displayprefs, ombi_template                                                                                                                                                                                          map[string]interface{}
-	emails                                                                                                                                                                                                               map[string]EmailAddress
-	telegram                                                                                                                                                                                                             map[string]TelegramUser // Map of Jellyfin User IDs to telegram users.
-	discord                                                                                                                                                                                                              map[string]DiscordUser  // Map of Jellyfin user IDs to discord users.
-	matrix                                                                                                                                                                                                               map[string]MatrixUser   // Map of Jellyfin user IDs to Matrix users.
+	emails                                                                                                                                                                                                               emailStore
+	telegram                                                                                                                                                                                                             telegramStore // Map of Jellyfin User IDs to telegram users.
+	discord                                                                                                                                                                                                              discordStore  // Map of Jellyfin user IDs to discord users.
+	matrix                                                                                                                                                                                                               matrixStore   // Map of Jellyfin user IDs to Matrix users.
 	customEmails                                                                                                                                                                                                         customEmails
 	policy                                                                                                                                                                                                               mediabrowser.Policy
 	configuration                                                                                                                                                                                                        mediabrowser.Configuration
 	lang                                                                                                                                                                                                                 Lang
 	announcements                                                                                                                                                                                                        map[string]announcementTemplate
-	invitesLock, usersLock                                                                                                                                                                                               sync.Mutex
+	invitesLock, usersLock, discordLock, telegramLock, matrixLock, emailsLock                                                                                                                                            sync.Mutex
+}
+
+// GetEmails returns a copy of the store.
+func (st *Storage) GetEmails() emailStore {
+	return st.emails
+}
+
+// GetEmailsKey returns the value stored in the store's key.
+func (st *Storage) GetEmailsKey(k string) (EmailAddress, bool) {
+	v, ok := st.emails[k]
+	return v, ok
+}
+
+// SetEmailsKey stores value v in key k.
+func (st *Storage) SetEmailsKey(k string, v EmailAddress) {
+	st.emailsLock.Lock()
+	st.emails[k] = v
+	st.storeEmails()
+	st.emailsLock.Unlock()
+}
+
+// DeleteEmailKey deletes value at key k.
+func (st *Storage) DeleteEmailsKey(k string) {
+	st.emailsLock.Lock()
+	delete(st.emails, k)
+	st.emailsLock.Unlock()
+}
+
+// GetDiscord returns a copy of the store.
+func (st *Storage) GetDiscord() discordStore {
+	return st.discord
+}
+
+// GetDiscordKey returns the value stored in the store's key.
+func (st *Storage) GetDiscordKey(k string) (DiscordUser, bool) {
+	v, ok := st.discord[k]
+	return v, ok
+}
+
+// SetDiscordKey stores value v in key k.
+func (st *Storage) SetDiscordKey(k string, v DiscordUser) {
+	st.discordLock.Lock()
+	st.discord[k] = v
+	st.storeDiscordUsers()
+	st.discordLock.Unlock()
+}
+
+// DeleteDiscordKey deletes value at key k.
+func (st *Storage) DeleteDiscordKey(k string) {
+	st.discordLock.Lock()
+	delete(st.discord, k)
+	st.discordLock.Unlock()
+}
+
+// GetTelegram returns a copy of the store.
+func (st *Storage) GetTelegram() telegramStore {
+	return st.telegram
+}
+
+// GetTelegramKey returns the value stored in the store's key.
+func (st *Storage) GetTelegramKey(k string) (TelegramUser, bool) {
+	v, ok := st.telegram[k]
+	return v, ok
+}
+
+// SetTelegramKey stores value v in key k.
+func (st *Storage) SetTelegramKey(k string, v TelegramUser) {
+	st.telegramLock.Lock()
+	st.telegram[k] = v
+	st.storeTelegramUsers()
+	st.telegramLock.Unlock()
+}
+
+// DeleteTelegramKey deletes value at key k.
+func (st *Storage) DeleteTelegramKey(k string) {
+	st.telegramLock.Lock()
+	delete(st.telegram, k)
+	st.telegramLock.Unlock()
+}
+
+// GetMatrix returns a copy of the store.
+func (st *Storage) GetMatrix() matrixStore {
+	return st.matrix
+}
+
+// GetMatrixKey returns the value stored in the store's key.
+func (st *Storage) GetMatrixKey(k string) (MatrixUser, bool) {
+	v, ok := st.matrix[k]
+	return v, ok
+}
+
+// SetMatrixKey stores value v in key k.
+func (st *Storage) SetMatrixKey(k string, v MatrixUser) {
+	st.matrixLock.Lock()
+	st.matrix[k] = v
+	st.storeMatrixUsers()
+	st.matrixLock.Unlock()
+}
+
+// DeleteMatrixKey deletes value at key k.
+func (st *Storage) DeleteMatrixKey(k string) {
+	st.matrixLock.Lock()
+	delete(st.matrix, k)
+	st.matrixLock.Unlock()
 }
 
 type TelegramUser struct {

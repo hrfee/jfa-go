@@ -41,7 +41,7 @@ func (app *appContext) MyDetails(gc *gin.Context) {
 
 	if emailEnabled {
 		resp.Email = &MyDetailsContactMethodsDTO{}
-		if email, ok := app.storage.emails[user.ID]; ok && email.Addr != "" {
+		if email, ok := app.storage.GetEmailsKey(user.ID); ok && email.Addr != "" {
 			resp.Email.Value = email.Addr
 			resp.Email.Enabled = email.Contact
 		}
@@ -49,7 +49,7 @@ func (app *appContext) MyDetails(gc *gin.Context) {
 
 	if discordEnabled {
 		resp.Discord = &MyDetailsContactMethodsDTO{}
-		if discord, ok := app.storage.discord[user.ID]; ok {
+		if discord, ok := app.storage.GetDiscordKey(user.ID); ok {
 			resp.Discord.Value = RenderDiscordUsername(discord)
 			resp.Discord.Enabled = discord.Contact
 		}
@@ -57,7 +57,7 @@ func (app *appContext) MyDetails(gc *gin.Context) {
 
 	if telegramEnabled {
 		resp.Telegram = &MyDetailsContactMethodsDTO{}
-		if telegram, ok := app.storage.telegram[user.ID]; ok {
+		if telegram, ok := app.storage.GetTelegramKey(user.ID); ok {
 			resp.Telegram.Value = telegram.Username
 			resp.Telegram.Enabled = telegram.Contact
 		}
@@ -65,7 +65,7 @@ func (app *appContext) MyDetails(gc *gin.Context) {
 
 	if matrixEnabled {
 		resp.Matrix = &MyDetailsContactMethodsDTO{}
-		if matrix, ok := app.storage.matrix[user.ID]; ok {
+		if matrix, ok := app.storage.GetMatrixKey(user.ID); ok {
 			resp.Matrix.Value = matrix.UserID
 			resp.Matrix.Enabled = matrix.Contact
 		}
@@ -172,14 +172,14 @@ func (app *appContext) confirmMyAction(gc *gin.Context, key string) {
 		gc.Redirect(http.StatusSeeOther, "/my/account")
 		return
 	} else if target == UserEmailChange {
-		emailStore, ok := app.storage.emails[id]
+		emailStore, ok := app.storage.GetEmailsKey(id)
 		if !ok {
 			emailStore = EmailAddress{
 				Contact: true,
 			}
 		}
 		emailStore.Addr = claims["email"].(string)
-		app.storage.emails[id] = emailStore
+		app.storage.SetEmailsKey(id, emailStore)
 		if app.config.Section("ombi").Key("enabled").MustBool(false) {
 			ombiUser, code, err := app.getOmbiUser(id)
 			if code == 200 && err == nil {
@@ -320,7 +320,7 @@ func (app *appContext) MyDiscordVerifiedInvite(gc *gin.Context) {
 		return
 	}
 	if app.config.Section("discord").Key("require_unique").MustBool(false) {
-		for _, u := range app.storage.discord {
+		for _, u := range app.storage.GetDiscord() {
 			if app.discord.verifiedTokens[pin].ID == u.ID {
 				delete(app.discord.verifiedTokens, pin)
 				respondBool(400, false, gc)
@@ -328,15 +328,12 @@ func (app *appContext) MyDiscordVerifiedInvite(gc *gin.Context) {
 			}
 		}
 	}
-	dc := app.storage.discord
-	existingUser, ok := app.storage.discord[gc.GetString("jfId")]
+	existingUser, ok := app.storage.GetDiscordKey(gc.GetString("jfId"))
 	if ok {
 		dcUser.Lang = existingUser.Lang
 		dcUser.Contact = existingUser.Contact
 	}
-	dc[gc.GetString("jfId")] = dcUser
-	app.storage.discord = dc
-	app.storage.storeDiscordUsers()
+	app.storage.SetDiscordKey(gc.GetString("jfId"), dcUser)
 	respondBool(200, true, gc)
 }
 
@@ -361,7 +358,7 @@ func (app *appContext) MyTelegramVerifiedInvite(gc *gin.Context) {
 		return
 	}
 	if app.config.Section("telegram").Key("require_unique").MustBool(false) {
-		for _, u := range app.storage.telegram {
+		for _, u := range app.storage.GetTelegram() {
 			if app.telegram.verifiedTokens[tokenIndex].Username == u.Username {
 				respondBool(400, false, gc)
 				return
@@ -374,13 +371,11 @@ func (app *appContext) MyTelegramVerifiedInvite(gc *gin.Context) {
 		Contact:  true,
 	}
 
-	tg := app.storage.telegram
-	existingUser, ok := app.storage.telegram[gc.GetString("jfId")]
+	existingUser, ok := app.storage.GetTelegramKey(gc.GetString("jfId"))
 	if ok {
 		tgUser.Lang = existingUser.Lang
 		tgUser.Contact = existingUser.Contact
 	}
-	tg[gc.GetString("jfId")] = tgUser
-	app.storage.storeTelegramUsers()
+	app.storage.SetTelegramKey(gc.GetString("jfId"), tgUser)
 	respondBool(200, true, gc)
 }

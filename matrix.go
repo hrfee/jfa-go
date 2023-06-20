@@ -83,7 +83,7 @@ func newMatrixDaemon(app *appContext) (d *MatrixDaemon, err error) {
 	// 	return
 	// }
 	// d.bot.Store.SaveFilterID(d.userID, resp.FilterID)
-	for _, user := range app.storage.matrix {
+	for _, user := range app.storage.GetMatrix() {
 		if user.Lang != "" {
 			d.languages[id.RoomID(user.RoomID)] = user.Lang
 		}
@@ -176,12 +176,9 @@ func (d *MatrixDaemon) commandLang(evt *event.Event, code, lang string) {
 		return
 	}
 	d.languages[evt.RoomID] = code
-	if u, ok := d.app.storage.matrix[string(evt.RoomID)]; ok {
+	if u, ok := d.app.storage.GetMatrixKey(string(evt.RoomID)); ok {
 		u.Lang = code
-		d.app.storage.matrix[string(evt.RoomID)] = u
-		if err := d.app.storage.storeMatrixUsers(); err != nil {
-			d.app.err.Printf("Matrix: Failed to store Matrix users: %v", err)
-		}
+		d.app.storage.SetMatrixKey(string(evt.RoomID), u)
 	}
 }
 

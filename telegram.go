@@ -46,7 +46,7 @@ func newTelegramDaemon(app *appContext) (*TelegramDaemon, error) {
 		link:            "https://t.me/" + bot.Self.UserName,
 		app:             app,
 	}
-	for _, user := range app.storage.telegram {
+	for _, user := range app.storage.GetTelegram() {
 		if user.Lang != "" {
 			td.languages[user.ChatID] = user.Lang
 		}
@@ -198,10 +198,10 @@ func (t *TelegramDaemon) commandLang(upd *tg.Update, sects []string, lang string
 	}
 	if _, ok := t.app.storage.lang.Telegram[sects[1]]; ok {
 		t.languages[upd.Message.Chat.ID] = sects[1]
-		for jfID, user := range t.app.storage.telegram {
+		for jfID, user := range t.app.storage.GetTelegram() {
 			if user.ChatID == upd.Message.Chat.ID {
 				user.Lang = sects[1]
-				t.app.storage.telegram[jfID] = user
+				t.app.storage.SetTelegramKey(jfID, user)
 				if err := t.app.storage.storeTelegramUsers(); err != nil {
 					t.app.err.Printf("Failed to store Telegram users: %v", err)
 				}

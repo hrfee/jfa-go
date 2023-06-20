@@ -48,7 +48,7 @@ func newDiscordDaemon(app *appContext) (*DiscordDaemon, error) {
 	dd.commandHandlers[app.config.Section("discord").Key("start_command").MustString("start")] = dd.cmdStart
 	dd.commandHandlers["lang"] = dd.cmdLang
 	dd.commandHandlers["pin"] = dd.cmdPIN
-	for _, user := range app.storage.discord {
+	for _, user := range app.storage.GetDiscord() {
 		dd.users[user.ID] = user
 	}
 
@@ -472,14 +472,11 @@ func (d *DiscordDaemon) cmdLang(s *dg.Session, i *dg.InteractionCreate, lang str
 	code := i.ApplicationCommandData().Options[0].StringValue()
 	if _, ok := d.app.storage.lang.Telegram[code]; ok {
 		var user DiscordUser
-		for jfID, u := range d.app.storage.discord {
+		for jfID, u := range d.app.storage.GetDiscord() {
 			if u.ID == i.Interaction.Member.User.ID {
 				u.Lang = code
 				lang = code
-				d.app.storage.discord[jfID] = u
-				if err := d.app.storage.storeDiscordUsers(); err != nil {
-					d.app.err.Printf("Failed to store Discord users: %v", err)
-				}
+				d.app.storage.SetDiscordKey(jfID, u)
 				user = u
 				break
 			}
@@ -582,13 +579,10 @@ func (d *DiscordDaemon) msgLang(s *dg.Session, m *dg.MessageCreate, sects []stri
 	}
 	if _, ok := d.app.storage.lang.Telegram[sects[1]]; ok {
 		var user DiscordUser
-		for jfID, u := range d.app.storage.discord {
+		for jfID, u := range d.app.storage.GetDiscord() {
 			if u.ID == m.Author.ID {
 				u.Lang = sects[1]
-				d.app.storage.discord[jfID] = u
-				if err := d.app.storage.storeDiscordUsers(); err != nil {
-					d.app.err.Printf("Failed to store Discord users: %v", err)
-				}
+				d.app.storage.SetDiscordKey(jfID, u)
 				user = u
 				break
 			}
