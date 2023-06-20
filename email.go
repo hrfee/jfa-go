@@ -24,7 +24,7 @@ import (
 	sMail "github.com/xhit/go-simple-mail/v2"
 )
 
-var renderer = html.NewRenderer(html.RendererOptions{Flags: html.Smartypants})
+var markdownRenderer = html.NewRenderer(html.RendererOptions{Flags: html.Smartypants})
 
 // EmailClient implements email sending, right now via smtp, mailgun or a dummy client.
 type EmailClient interface {
@@ -353,7 +353,7 @@ func (emailer *Emailer) constructTemplate(subject, md string, app *appContext, u
 		subject = templateEmail(subject, []string{"{username}"}, nil, map[string]interface{}{"username": username[0]})
 	}
 	email := &Message{Subject: subject}
-	html := markdown.ToHTML([]byte(md), nil, renderer)
+	html := markdown.ToHTML([]byte(md), nil, markdownRenderer)
 	text := stripMarkdown(md)
 	message := app.config.Section("messages").Key("message").String()
 	var err error

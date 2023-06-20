@@ -12,6 +12,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
+	"github.com/gomarkdown/markdown"
 	"github.com/hrfee/mediabrowser"
 	"github.com/steambap/captcha"
 )
@@ -203,6 +204,24 @@ func (app *appContext) MyUserPage(gc *gin.Context) {
 		data["discordServerName"] = app.discord.serverName
 		data["discordInviteLink"] = app.discord.inviteChannelName != ""
 	}
+
+	pageMessages := map[string]*customContent{
+		"Login": app.getCustomMessage("UserLogin"),
+		"Page":  app.getCustomMessage("UserPage"),
+	}
+
+	for name, msg := range pageMessages {
+		if msg == nil {
+			continue
+		}
+		data[name+"MessageEnabled"] = msg.Enabled
+		if !msg.Enabled {
+			continue
+		}
+		// We don't template here, since the username is only known after login.
+		data[name+"MessageContent"] = template.HTML(markdown.ToHTML([]byte(msg.Content), nil, markdownRenderer))
+	}
+
 	gcHTML(gc, http.StatusOK, "user.html", data)
 }
 

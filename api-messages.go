@@ -15,12 +15,16 @@ import (
 // @Router /config/emails [get]
 // @Security Bearer
 // @tags Configuration
-func (app *appContext) GetCustomEmails(gc *gin.Context) {
+func (app *appContext) GetCustomContent(gc *gin.Context) {
 	lang := gc.Query("lang")
 	if _, ok := app.storage.lang.Email[lang]; !ok {
 		lang = app.storage.lang.chosenEmailLang
 	}
-	gc.JSON(200, emailListDTO{
+	adminLang := lang
+	if _, ok := app.storage.lang.Admin[lang]; !ok {
+		adminLang = app.storage.lang.chosenAdminLang
+	}
+	list := emailListDTO{
 		"UserCreated":       {Name: app.storage.lang.Email[lang].UserCreated["name"], Enabled: app.storage.customEmails.UserCreated.Enabled},
 		"InviteExpiry":      {Name: app.storage.lang.Email[lang].InviteExpiry["name"], Enabled: app.storage.customEmails.InviteExpiry.Enabled},
 		"PasswordReset":     {Name: app.storage.lang.Email[lang].PasswordReset["name"], Enabled: app.storage.customEmails.PasswordReset.Enabled},
@@ -31,13 +35,25 @@ func (app *appContext) GetCustomEmails(gc *gin.Context) {
 		"WelcomeEmail":      {Name: app.storage.lang.Email[lang].WelcomeEmail["name"], Enabled: app.storage.customEmails.WelcomeEmail.Enabled},
 		"EmailConfirmation": {Name: app.storage.lang.Email[lang].EmailConfirmation["name"], Enabled: app.storage.customEmails.EmailConfirmation.Enabled},
 		"UserExpired":       {Name: app.storage.lang.Email[lang].UserExpired["name"], Enabled: app.storage.customEmails.UserExpired.Enabled},
-	})
+		"UserLogin":         {Name: app.storage.lang.Admin[adminLang].Strings["userPageLogin"], Enabled: app.storage.userPage.Login.Enabled},
+		"UserPage":          {Name: app.storage.lang.Admin[adminLang].Strings["userPagePage"], Enabled: app.storage.userPage.Page.Enabled},
+	}
+
+	filter := gc.Query("filter")
+	if filter == "user" {
+		list = emailListDTO{"UserLogin": list["UserLogin"], "UserPage": list["UserPage"]}
+	} else {
+		delete(list, "UserLogin")
+		delete(list, "UserPage")
+	}
+
+	gc.JSON(200, list)
 }
 
-func (app *appContext) getCustomEmail(id string) *customEmail {
+func (app *appContext) getCustomMessage(id string) *customContent {
 	switch id {
 	case "Announcement":
-		return &customEmail{}
+		return &customContent{}
 	case "UserCreated":
 		return &app.storage.customEmails.UserCreated
 	case "InviteExpiry":
@@ -58,13 +74,17 @@ func (app *appContext) getCustomEmail(id string) *customEmail {
 		return &app.storage.customEmails.EmailConfirmation
 	case "UserExpired":
 		return &app.storage.customEmails.UserExpired
+	case "UserLogin":
+		return &app.storage.userPage.Login
+	case "UserPage":
+		return &app.storage.userPage.Page
 	}
 	return nil
 }
 
 // @Summary Sets the corresponding custom email.
 // @Produce json
-// @Param customEmail body customEmail true "Content = email (in markdown)."
+// @Param customEmails body customEmails true "Content = email (in markdown)."
 // @Success 200 {object} boolResponse
 // @Failure 400 {object} boolResponse
 // @Failure 500 {object} boolResponse
@@ -72,22 +92,26 @@ func (app *appContext) getCustomEmail(id string) *customEmail {
 // @Router /config/emails/{id} [post]
 // @Security Bearer
 // @tags Configuration
-func (app *appContext) SetCustomEmail(gc *gin.Context) {
-	var req customEmail
+func (app *appContext) SetCustomMessage(gc *gin.Context) {
+	var req customContent
 	gc.BindJSON(&req)
 	id := gc.Param("id")
 	if req.Content == "" {
 		respondBool(400, false, gc)
 		return
 	}
-	email := app.getCustomEmail(id)
-	if email == nil {
+	message := app.getCustomMessage(id)
+	if message == nil {
 		respondBool(400, false, gc)
 		return
 	}
-	email.Content = req.Content
-	email.Enabled = true
+	message.Content = req.Content
+	message.Enabled = true
 	if app.storage.storeCustomEmails() != nil {
+		respondBool(500, false, gc)
+		return
+	}
+	if app.storage.storeUserPageContent() != nil {
 		respondBool(500, false, gc)
 		return
 	}
@@ -104,7 +128,7 @@ func (app *appContext) SetCustomEmail(gc *gin.Context) {
 // @Router /config/emails/{id}/state/{enable/disable} [post]
 // @Security Bearer
 // @tags Configuration
-func (app *appContext) SetCustomEmailState(gc *gin.Context) {
+func (app *appContext) SetCustomMessageState(gc *gin.Context) {
 	id := gc.Param("id")
 	s := gc.Param("state")
 	enabled := false
@@ -113,20 +137,24 @@ func (app *appContext) SetCustomEmailState(gc *gin.Context) {
 	} else if s != "disable" {
 		respondBool(400, false, gc)
 	}
-	email := app.getCustomEmail(id)
-	if email == nil {
+	message := app.getCustomMessage(id)
+	if message == nil {
 		respondBool(400, false, gc)
 		return
 	}
-	email.Enabled = enabled
+	message.Enabled = enabled
 	if app.storage.storeCustomEmails() != nil {
+		respondBool(500, false, gc)
+		return
+	}
+	if app.storage.storeUserPageContent() != nil {
 		respondBool(500, false, gc)
 		return
 	}
 	respondBool(200, true, gc)
 }
 
-// @Summary Returns the custom email (generating it if not set) and list of used variables in it.
+// @Summary Returns the custom email/message (generating it if not set) and list of used variables in it.
 // @Produce json
 // @Success 200 {object} customEmailDTO
 // @Failure 400 {object} boolResponse
@@ -135,7 +163,7 @@ func (app *appContext) SetCustomEmailState(gc *gin.Context) {
 // @Router /config/emails/{id} [get]
 // @Security Bearer
 // @tags Configuration
-func (app *appContext) GetCustomEmailTemplate(gc *gin.Context) {
+func (app *appContext) GetCustomMessageTemplate(gc *gin.Context) {
 	lang := app.storage.lang.chosenEmailLang
 	id := gc.Param("id")
 	var content string
@@ -146,20 +174,26 @@ func (app *appContext) GetCustomEmailTemplate(gc *gin.Context) {
 	var values map[string]interface{}
 	username := app.storage.lang.Email[lang].Strings.get("username")
 	emailAddress := app.storage.lang.Email[lang].Strings.get("emailAddress")
-	email := app.getCustomEmail(id)
-	if email == nil {
-		app.err.Printf("Failed to get custom email with ID \"%s\"", id)
+	customMessage := app.getCustomMessage(id)
+	if customMessage == nil {
+		app.err.Printf("Failed to get custom message with ID \"%s\"", id)
 		respondBool(400, false, gc)
 		return
 	}
 	if id == "WelcomeEmail" {
 		conditionals = []string{"{yourAccountWillExpire}"}
-		email.Conditionals = conditionals
+		customMessage.Conditionals = conditionals
+	} else if id == "UserPage" {
+		variables = []string{"{username}"}
+		customMessage.Variables = variables
+	} else if id == "UserLogin" {
+		variables = []string{}
+		customMessage.Variables = variables
 	}
-	content = email.Content
+	content = customMessage.Content
 	noContent := content == ""
 	if !noContent {
-		variables = email.Variables
+		variables = customMessage.Variables
 	}
 	switch id {
 	case "Announcement":
@@ -215,12 +249,14 @@ func (app *appContext) GetCustomEmailTemplate(gc *gin.Context) {
 			msg, err = app.email.constructUserExpired(app, true)
 		}
 		values = app.email.userExpiredValues(app, false)
+	case "UserLogin", "UserPage":
+		values = map[string]interface{}{}
 	}
 	if err != nil {
 		respondBool(500, false, gc)
 		return
 	}
-	if noContent && id != "Announcement" {
+	if noContent && id != "Announcement" && id != "UserPage" && id != "UserLogin" {
 		content = msg.Text
 		variables = make([]string, strings.Count(content, "{"))
 		i := 0
@@ -239,7 +275,7 @@ func (app *appContext) GetCustomEmailTemplate(gc *gin.Context) {
 				i++
 			}
 		}
-		email.Variables = variables
+		customMessage.Variables = variables
 	}
 	if variables == nil {
 		variables = []string{}
@@ -248,10 +284,21 @@ func (app *appContext) GetCustomEmailTemplate(gc *gin.Context) {
 		respondBool(500, false, gc)
 		return
 	}
-	mail, err := app.email.constructTemplate("", "<div class=\"preview-content\"></div>", app)
-	if err != nil {
+	if app.storage.storeUserPageContent() != nil {
 		respondBool(500, false, gc)
-		return
+	}
+	var mail *Message
+	if id != "UserLogin" && id != "UserPage" {
+		mail, err = app.email.constructTemplate("", "<div class=\"preview-content\"></div>", app)
+		if err != nil {
+			respondBool(500, false, gc)
+			return
+		}
+	} else {
+		mail = &Message{
+			HTML:     "<div class=\"card ~neutral dark:~d_neutral @low preview-content\"></div>",
+			Markdown: "<div class=\"card ~neutral dark:~d_neutral @low preview-content\"></div>",
+		}
 	}
 	gc.JSON(200, customEmailDTO{Content: content, Variables: variables, Conditionals: conditionals, Values: values, HTML: mail.HTML, Plaintext: mail.Text})
 }

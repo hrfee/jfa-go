@@ -21,23 +21,24 @@ type matrixStore map[string]MatrixUser
 type emailStore map[string]EmailAddress
 
 type Storage struct {
-	timePattern                                                                                                                                                                                                          string
-	invite_path, emails_path, policy_path, configuration_path, displayprefs_path, ombi_path, profiles_path, customEmails_path, users_path, telegram_path, discord_path, matrix_path, announcements_path, matrix_sql_path string
-	users                                                                                                                                                                                                                map[string]time.Time // Map of Jellyfin User IDs to their expiry times.
-	invites                                                                                                                                                                                                              Invites
-	profiles                                                                                                                                                                                                             map[string]Profile
-	defaultProfile                                                                                                                                                                                                       string
-	displayprefs, ombi_template                                                                                                                                                                                          map[string]interface{}
-	emails                                                                                                                                                                                                               emailStore
-	telegram                                                                                                                                                                                                             telegramStore // Map of Jellyfin User IDs to telegram users.
-	discord                                                                                                                                                                                                              discordStore  // Map of Jellyfin user IDs to discord users.
-	matrix                                                                                                                                                                                                               matrixStore   // Map of Jellyfin user IDs to Matrix users.
-	customEmails                                                                                                                                                                                                         customEmails
-	policy                                                                                                                                                                                                               mediabrowser.Policy
-	configuration                                                                                                                                                                                                        mediabrowser.Configuration
-	lang                                                                                                                                                                                                                 Lang
-	announcements                                                                                                                                                                                                        map[string]announcementTemplate
-	invitesLock, usersLock, discordLock, telegramLock, matrixLock, emailsLock                                                                                                                                            sync.Mutex
+	timePattern                                                                                                                                                                                                                         string
+	invite_path, emails_path, policy_path, configuration_path, displayprefs_path, ombi_path, profiles_path, customEmails_path, users_path, telegram_path, discord_path, matrix_path, announcements_path, matrix_sql_path, userPage_path string
+	users                                                                                                                                                                                                                               map[string]time.Time // Map of Jellyfin User IDs to their expiry times.
+	invites                                                                                                                                                                                                                             Invites
+	profiles                                                                                                                                                                                                                            map[string]Profile
+	defaultProfile                                                                                                                                                                                                                      string
+	displayprefs, ombi_template                                                                                                                                                                                                         map[string]interface{}
+	emails                                                                                                                                                                                                                              emailStore
+	telegram                                                                                                                                                                                                                            telegramStore // Map of Jellyfin User IDs to telegram users.
+	discord                                                                                                                                                                                                                             discordStore  // Map of Jellyfin user IDs to discord users.
+	matrix                                                                                                                                                                                                                              matrixStore   // Map of Jellyfin user IDs to Matrix users.
+	customEmails                                                                                                                                                                                                                        customEmails
+	userPage                                                                                                                                                                                                                            userPageContent
+	policy                                                                                                                                                                                                                              mediabrowser.Policy
+	configuration                                                                                                                                                                                                                       mediabrowser.Configuration
+	lang                                                                                                                                                                                                                                Lang
+	announcements                                                                                                                                                                                                                       map[string]announcementTemplate
+	invitesLock, usersLock, discordLock, telegramLock, matrixLock, emailsLock                                                                                                                                                           sync.Mutex
 }
 
 // GetEmails returns a copy of the store.
@@ -172,23 +173,28 @@ type EmailAddress struct {
 }
 
 type customEmails struct {
-	UserCreated       customEmail `json:"userCreated"`
-	InviteExpiry      customEmail `json:"inviteExpiry"`
-	PasswordReset     customEmail `json:"passwordReset"`
-	UserDeleted       customEmail `json:"userDeleted"`
-	UserDisabled      customEmail `json:"userDisabled"`
-	UserEnabled       customEmail `json:"userEnabled"`
-	InviteEmail       customEmail `json:"inviteEmail"`
-	WelcomeEmail      customEmail `json:"welcomeEmail"`
-	EmailConfirmation customEmail `json:"emailConfirmation"`
-	UserExpired       customEmail `json:"userExpired"`
+	UserCreated       customContent `json:"userCreated"`
+	InviteExpiry      customContent `json:"inviteExpiry"`
+	PasswordReset     customContent `json:"passwordReset"`
+	UserDeleted       customContent `json:"userDeleted"`
+	UserDisabled      customContent `json:"userDisabled"`
+	UserEnabled       customContent `json:"userEnabled"`
+	InviteEmail       customContent `json:"inviteEmail"`
+	WelcomeEmail      customContent `json:"welcomeEmail"`
+	EmailConfirmation customContent `json:"emailConfirmation"`
+	UserExpired       customContent `json:"userExpired"`
 }
 
-type customEmail struct {
+type customContent struct {
 	Enabled      bool     `json:"enabled,omitempty"`
 	Content      string   `json:"content"`
 	Variables    []string `json:"variables,omitempty"`
 	Conditionals []string `json:"conditionals,omitempty"`
+}
+
+type userPageContent struct {
+	Login customContent `json:"login"`
+	Page  customContent `json:"page"`
 }
 
 // timePattern: %Y-%m-%dT%H:%M:%S.%f
@@ -979,6 +985,14 @@ func (st *Storage) loadCustomEmails() error {
 
 func (st *Storage) storeCustomEmails() error {
 	return storeJSON(st.customEmails_path, st.customEmails)
+}
+
+func (st *Storage) loadUserPageContent() error {
+	return loadJSON(st.userPage_path, &st.userPage)
+}
+
+func (st *Storage) storeUserPageContent() error {
+	return storeJSON(st.userPage_path, st.userPage)
 }
 
 func (st *Storage) loadPolicy() error {

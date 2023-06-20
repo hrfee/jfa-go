@@ -43,6 +43,7 @@
                 </div>
             </div>
         </div>
+        {{ template "login-modal.html" . }}
         {{ template "account-linking.html" . }}
         <div id="notification-box"></div>
         <div class="top-4 left-4 absolute">
@@ -68,7 +69,6 @@
             <span class="button ~warning" alt="{{ .strings.theme }}" id="button-theme"><i class="ri-sun-line"></i></span>
             <span class="button ~critical @low mb-4 unfocused" id="logout-button">{{ .strings.logout }}</span>
         </div>
-        {{ template "login-modal.html" . }}
         <div class="page-container">
             <div class="card @low dark:~d_neutral mb-4" id="card-user">
                 <span class="heading mb-2"></span>

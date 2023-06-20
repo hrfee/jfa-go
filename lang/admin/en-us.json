@@ -113,7 +113,9 @@
         "actions": "Actions",
         "searchOptions": "Search Options",
         "matchText": "Match Text",
-        "jellyfinID": "Jellyfin ID"
+        "jellyfinID": "Jellyfin ID",
+        "userPageLogin": "User Page: Login",
+        "userPagePage": "User Page: Page"
     },
     "notifications": {
         "changedEmailAddress": "Changed email address of {n}.",

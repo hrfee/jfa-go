@@ -542,7 +542,7 @@ export class settingsList {
     private _sections: { [name: string]: sectionPanel }
     private _buttons: { [name: string]: HTMLSpanElement }
     private _needsRestart: boolean = false;
-    private _emailEditor = new EmailEditor();
+    private _messageEditor = new MessageEditor();
 
     addSection = (name: string, s: Section, subButton?: HTMLElement) => {
         const section = new sectionPanel(s, name);
@@ -713,7 +713,7 @@ export class settingsList {
                 if (name in this._sections) {
                     this._sections[name].update(settings.sections[name]);
                 } else {
-                    if (name == "messages") {
+                    if (name == "messages" || name == "user_page") {
                         const editButton = document.createElement("div");
                         editButton.classList.add("tooltip", "left");
                         editButton.innerHTML = `
@@ -724,7 +724,9 @@ export class settingsList {
                         ${window.lang.get("strings", "customizeMessages")}
                         </span>
                         `;
-                        (editButton.querySelector("span.button") as HTMLSpanElement).onclick = this._emailEditor.showList;
+                        (editButton.querySelector("span.button") as HTMLSpanElement).onclick = () => {
+                            this._messageEditor.showList(name == "messages" ? "email" : "user");
+                        };
                         this.addSection(name, settings.sections[name], editButton);
                     } else if (name == "updates") {
                         const icon = document.createElement("span") as HTMLSpanElement;
@@ -773,7 +775,7 @@ interface emailListEl {
     enabled: boolean;
 }
 
-class EmailEditor {
+class MessageEditor {
     private _currentID: string;
     private _names: { [id: string]: emailListEl };
     private _content: string;
@@ -884,8 +886,8 @@ class EmailEditor {
         // }, true);
     }
 
-    showList = () => {
-        _get("/config/emails?lang=" + window.language, null, (req: XMLHttpRequest) => {
+    showList = (filter?: string) => {
+        _get("/config/emails?lang=" + window.language + (filter ? "&filter=" + filter : ""), null, (req: XMLHttpRequest) => {
             if (req.readyState == 4) {
                 if (req.status != 200) {
                     window.notifications.customError("loadTemplateError", window.lang.notif("errorFailureCheckLogs"));

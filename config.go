@@ -46,7 +46,7 @@ func (app *appContext) loadConfig() error {
 			key.SetValue(key.MustString(filepath.Join(app.dataPath, (key.Name() + ".json"))))
 		}
 	}
-	for _, key := range []string{"user_configuration", "user_displayprefs", "user_profiles", "ombi_template", "invites", "emails", "user_template", "custom_emails", "users", "telegram_users", "discord_users", "matrix_users", "announcements"} {
+	for _, key := range []string{"user_configuration", "user_displayprefs", "user_profiles", "ombi_template", "invites", "emails", "user_template", "custom_emails", "users", "telegram_users", "discord_users", "matrix_users", "announcements", "custom_user_page_content"} {
 		app.config.Section("files").Key(key).SetValue(app.config.Section("files").Key(key).MustString(filepath.Join(app.dataPath, (key + ".json"))))
 	}
 	for _, key := range []string{"matrix_sql"} {
@@ -159,6 +159,12 @@ func (app *appContext) loadConfig() error {
 
 	app.storage.customEmails_path = app.config.Section("files").Key("custom_emails").String()
 	app.storage.loadCustomEmails()
+
+	app.MustSetValue("user_page", "enabled", "true")
+	if app.config.Section("user_page").Key("enabled").MustBool(false) {
+		app.storage.userPage_path = app.config.Section("files").Key("custom_user_page_content").String()
+		app.storage.loadUserPageContent()
+	}
 
 	substituteStrings = app.config.Section("jellyfin").Key("substitute_jellyfin_strings").MustString("")
 

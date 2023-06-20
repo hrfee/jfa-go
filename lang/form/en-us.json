@@ -21,6 +21,8 @@
         "sendPINDiscord": "Type {command} in {server_channel} on Discord, then send the PIN below.",
         "matrixEnterUser": "Enter your User ID, press submit, and a PIN will be sent to you. Enter it here to continue.",
         "welcomeUser": "Welcome, {user}!",
+        "addContactMethod": "Add Contact Method",
+        "editContactMethod": "Edit Contact Method",
         "joinTheServer": "Join the server:"
     },
     "notifications": {

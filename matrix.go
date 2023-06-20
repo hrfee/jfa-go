@@ -249,7 +249,7 @@ func (d *MatrixDaemon) Send(message *Message, users ...MatrixUser) (err error) {
 	md := ""
 	if message.Markdown != "" {
 		// Convert images to links
-		md = string(markdown.ToHTML([]byte(strings.ReplaceAll(message.Markdown, "![", "[")), nil, renderer))
+		md = string(markdown.ToHTML([]byte(strings.ReplaceAll(message.Markdown, "![", "[")), nil, markdownRenderer))
 	}
 	content := &event.MessageEventContent{
 		MsgType: "m.text",
