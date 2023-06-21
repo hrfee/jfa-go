@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	dg "github.com/bwmarrin/discordgo"
 )
@@ -12,7 +13,7 @@ type DiscordDaemon struct {
 	ShutdownChannel                                            chan string
 	bot                                                        *dg.Session
 	username                                                   string
-	tokens                                                     []string
+	tokens                                                     map[string]time.Time   // Map of tokens to expiry times.
 	verifiedTokens                                             map[string]DiscordUser // Map of tokens to discord users.
 	channelID, channelName, inviteChannelID, inviteChannelName string
 	guildID                                                    string
@@ -37,7 +38,7 @@ func newDiscordDaemon(app *appContext) (*DiscordDaemon, error) {
 		Stopped:         false,
 		ShutdownChannel: make(chan string),
 		bot:             bot,
-		tokens:          []string{},
+		tokens:          map[string]time.Time{},
 		verifiedTokens:  map[string]DiscordUser{},
 		users:           map[string]DiscordUser{},
 		app:             app,
@@ -58,7 +59,7 @@ func newDiscordDaemon(app *appContext) (*DiscordDaemon, error) {
 // NewAuthToken generates an 8-character pin in the form "A1-2B-CD".
 func (d *DiscordDaemon) NewAuthToken() string {
 	pin := genAuthToken()
-	d.tokens = append(d.tokens, pin)
+	d.tokens[pin] = time.Now().Add(VERIF_TOKEN_EXPIRY_SEC * time.Second)
 	return pin
 }
 
@@ -431,14 +432,8 @@ func (d *DiscordDaemon) cmdStart(s *dg.Session, i *dg.InteractionCreate, lang st
 
 func (d *DiscordDaemon) cmdPIN(s *dg.Session, i *dg.InteractionCreate, lang string) {
 	pin := i.ApplicationCommandData().Options[0].StringValue()
-	tokenIndex := -1
-	for i, token := range d.tokens {
-		if pin == token {
-			tokenIndex = i
-			break
-		}
-	}
-	if tokenIndex == -1 {
+	expiry, ok := d.tokens[pin]
+	if !ok || time.Now().After(expiry) {
 		err := s.InteractionRespond(i.Interaction, &dg.InteractionResponse{
 			//	Type: dg.InteractionResponseChannelMessageWithSource,
 			Type: dg.InteractionResponseChannelMessageWithSource,
@@ -450,6 +445,7 @@ func (d *DiscordDaemon) cmdPIN(s *dg.Session, i *dg.InteractionCreate, lang stri
 		if err != nil {
 			d.app.err.Printf("Discord: Failed to send message to \"%s\": %v", i.Interaction.Member.User.Username, err)
 		}
+		delete(d.tokens, pin)
 		return
 	}
 	err := s.InteractionRespond(i.Interaction, &dg.InteractionResponse{
@@ -464,8 +460,7 @@ func (d *DiscordDaemon) cmdPIN(s *dg.Session, i *dg.InteractionCreate, lang stri
 		d.app.err.Printf("Discord: Failed to send message to \"%s\": %v", i.Interaction.Member.User.Username, err)
 	}
 	d.verifiedTokens[pin] = d.users[i.Interaction.Member.User.ID]
-	d.tokens[len(d.tokens)-1], d.tokens[tokenIndex] = d.tokens[tokenIndex], d.tokens[len(d.tokens)-1]
-	d.tokens = d.tokens[:len(d.tokens)-1]
+	delete(d.tokens, pin)
 }
 
 func (d *DiscordDaemon) cmdLang(s *dg.Session, i *dg.InteractionCreate, lang string) {
@@ -606,14 +601,8 @@ func (d *DiscordDaemon) msgPIN(s *dg.Session, m *dg.MessageCreate, sects []strin
 		d.app.debug.Println("Discord: Ignoring message as user was not found")
 		return
 	}
-	tokenIndex := -1
-	for i, token := range d.tokens {
-		if sects[0] == token {
-			tokenIndex = i
-			break
-		}
-	}
-	if tokenIndex == -1 {
+	expiry, ok := d.tokens[sects[0]]
+	if !ok || time.Now().After(expiry) {
 		_, err := s.ChannelMessageSend(
 			m.ChannelID,
 			d.app.storage.lang.Telegram[lang].Strings.get("invalidPIN"),
@@ -621,6 +610,7 @@ func (d *DiscordDaemon) msgPIN(s *dg.Session, m *dg.MessageCreate, sects []strin
 		if err != nil {
 			d.app.err.Printf("Discord: Failed to send message to \"%s\": %v", m.Author.Username, err)
 		}
+		delete(d.tokens, sects[0])
 		return
 	}
 	_, err := s.ChannelMessageSend(
@@ -631,8 +621,7 @@ func (d *DiscordDaemon) msgPIN(s *dg.Session, m *dg.MessageCreate, sects []strin
 		d.app.err.Printf("Discord: Failed to send message to \"%s\": %v", m.Author.Username, err)
 	}
 	d.verifiedTokens[sects[0]] = d.users[m.Author.ID]
-	d.tokens[len(d.tokens)-1], d.tokens[tokenIndex] = d.tokens[tokenIndex], d.tokens[len(d.tokens)-1]
-	d.tokens = d.tokens[:len(d.tokens)-1]
+	delete(d.tokens, sects[0])
 }
 
 func (d *DiscordDaemon) SendDM(message *Message, userID ...string) error {
@@ -685,4 +674,28 @@ func (d *DiscordDaemon) Send(message *Message, channelID ...string) error {
 		}
 	}
 	return nil
+}
+
+// UserVerified returns whether or not a token with the given PIN has been verified, and the user itself.
+func (d *DiscordDaemon) UserVerified(pin string) (user DiscordUser, ok bool) {
+	user, ok = d.verifiedTokens[pin]
+	// delete(d.verifiedTokens, pin)
+	return
+}
+
+// UserExists returns whether or not a user with the given ID exists.
+func (d *DiscordDaemon) UserExists(id string) (ok bool) {
+	ok = false
+	for _, u := range d.app.storage.GetDiscord() {
+		if u.ID == id {
+			ok = true
+			break
+		}
+	}
+	return
+}
+
+// DeleteVerifiedUser removes the token with the given PIN.
+func (d *DiscordDaemon) DeleteVerifiedUser(pin string) {
+	delete(d.verifiedTokens, pin)
 }

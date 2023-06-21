@@ -332,18 +332,12 @@ func (app *appContext) TelegramAddUser(gc *gin.Context) {
 		respondBool(400, false, gc)
 		return
 	}
-	tokenIndex := -1
-	for i, v := range app.telegram.verifiedTokens {
-		if v.Token == req.Token {
-			tokenIndex = i
-			break
-		}
-	}
-	if tokenIndex == -1 {
+	tgToken, ok := app.telegram.TokenVerified(req.Token)
+	app.telegram.DeleteVerifiedToken(req.Token)
+	if !ok {
 		respondBool(500, false, gc)
 		return
 	}
-	tgToken := app.telegram.verifiedTokens[tokenIndex]
 	tgUser := TelegramUser{
 		ChatID:   tgToken.ChatID,
 		Username: tgToken.Username,
@@ -352,17 +346,7 @@ func (app *appContext) TelegramAddUser(gc *gin.Context) {
 	if lang, ok := app.telegram.languages[tgToken.ChatID]; ok {
 		tgUser.Lang = lang
 	}
-	if app.storage.GetTelegram() == nil {
-		app.storage.telegram = telegramStore{}
-	}
 	app.storage.SetTelegramKey(req.ID, tgUser)
-	err := app.storage.storeTelegramUsers()
-	if err != nil {
-		app.err.Printf("Failed to store Telegram users: %v", err)
-	} else {
-		app.telegram.verifiedTokens[len(app.telegram.verifiedTokens)-1], app.telegram.verifiedTokens[tokenIndex] = app.telegram.verifiedTokens[tokenIndex], app.telegram.verifiedTokens[len(app.telegram.verifiedTokens)-1]
-		app.telegram.verifiedTokens = app.telegram.verifiedTokens[:len(app.telegram.verifiedTokens)-1]
-	}
 	linkExistingOmbiDiscordTelegram(app)
 	respondBool(200, true, gc)
 }
@@ -462,19 +446,8 @@ func (app *appContext) setContactMethods(req SetContactMethodsDTO, gc *gin.Conte
 // @tags Other
 func (app *appContext) TelegramVerified(gc *gin.Context) {
 	pin := gc.Param("pin")
-	tokenIndex := -1
-	for i, v := range app.telegram.verifiedTokens {
-		if v.Token == pin {
-			tokenIndex = i
-			break
-		}
-	}
-	// if tokenIndex != -1 {
-	// 	length := len(app.telegram.verifiedTokens)
-	// 	app.telegram.verifiedTokens[length-1], app.telegram.verifiedTokens[tokenIndex] = app.telegram.verifiedTokens[tokenIndex], app.telegram.verifiedTokens[length-1]
-	// 	app.telegram.verifiedTokens = app.telegram.verifiedTokens[:length-1]
-	// }
-	respondBool(200, tokenIndex != -1, gc)
+	_, ok := app.telegram.TokenVerified(pin)
+	respondBool(200, ok, gc)
 }
 
 // @Summary Returns true/false on whether or not a telegram PIN was verified. Requires invite code.
@@ -492,27 +465,13 @@ func (app *appContext) TelegramVerifiedInvite(gc *gin.Context) {
 		return
 	}
 	pin := gc.Param("pin")
-	tokenIndex := -1
-	for i, v := range app.telegram.verifiedTokens {
-		if v.Token == pin {
-			tokenIndex = i
-			break
-		}
+	token, ok := app.telegram.TokenVerified(pin)
+	if ok && app.config.Section("telegram").Key("require_unique").MustBool(false) && app.telegram.UserExists(token.Username) {
+		app.discord.DeleteVerifiedUser(pin)
+		respondBool(400, false, gc)
+		return
 	}
-	if app.config.Section("telegram").Key("require_unique").MustBool(false) {
-		for _, u := range app.storage.GetTelegram() {
-			if app.telegram.verifiedTokens[tokenIndex].Username == u.Username {
-				respondBool(400, false, gc)
-				return
-			}
-		}
-	}
-	// if tokenIndex != -1 {
-	// 	length := len(app.telegram.verifiedTokens)
-	// 	app.telegram.verifiedTokens[length-1], app.telegram.verifiedTokens[tokenIndex] = app.telegram.verifiedTokens[tokenIndex], app.telegram.verifiedTokens[length-1]
-	// 	app.telegram.verifiedTokens = app.telegram.verifiedTokens[:length-1]
-	// }
-	respondBool(200, tokenIndex != -1, gc)
+	respondBool(200, ok, gc)
 }
 
 // @Summary Returns true/false on whether or not a discord PIN was verified. Requires invite code.
@@ -530,15 +489,11 @@ func (app *appContext) DiscordVerifiedInvite(gc *gin.Context) {
 		return
 	}
 	pin := gc.Param("pin")
-	_, ok := app.discord.verifiedTokens[pin]
-	if app.config.Section("discord").Key("require_unique").MustBool(false) {
-		for _, u := range app.storage.GetDiscord() {
-			if app.discord.verifiedTokens[pin].ID == u.ID {
-				delete(app.discord.verifiedTokens, pin)
-				respondBool(400, false, gc)
-				return
-			}
-		}
+	user, ok := app.discord.UserVerified(pin)
+	if ok && app.config.Section("discord").Key("require_unique").MustBool(false) && app.discord.UserExists(user.ID) {
+		delete(app.discord.verifiedTokens, pin)
+		respondBool(400, false, gc)
+		return
 	}
 	respondBool(200, ok, gc)
 }

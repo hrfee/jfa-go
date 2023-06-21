@@ -70,6 +70,9 @@ func (st *Storage) DeleteEmailsKey(k string) {
 
 // GetDiscord returns a copy of the store.
 func (st *Storage) GetDiscord() discordStore {
+	if st.discord == nil {
+		st.discord = discordStore{}
+	}
 	return st.discord
 }
 
@@ -82,6 +85,9 @@ func (st *Storage) GetDiscordKey(k string) (DiscordUser, bool) {
 // SetDiscordKey stores value v in key k.
 func (st *Storage) SetDiscordKey(k string, v DiscordUser) {
 	st.discordLock.Lock()
+	if st.discord == nil {
+		st.discord = discordStore{}
+	}
 	st.discord[k] = v
 	st.storeDiscordUsers()
 	st.discordLock.Unlock()
@@ -97,6 +103,9 @@ func (st *Storage) DeleteDiscordKey(k string) {
 
 // GetTelegram returns a copy of the store.
 func (st *Storage) GetTelegram() telegramStore {
+	if st.telegram == nil {
+		st.telegram = telegramStore{}
+	}
 	return st.telegram
 }
 
@@ -109,6 +118,9 @@ func (st *Storage) GetTelegramKey(k string) (TelegramUser, bool) {
 // SetTelegramKey stores value v in key k.
 func (st *Storage) SetTelegramKey(k string, v TelegramUser) {
 	st.telegramLock.Lock()
+	if st.telegram == nil {
+		st.telegram = telegramStore{}
+	}
 	st.telegram[k] = v
 	st.storeTelegramUsers()
 	st.telegramLock.Unlock()
@@ -124,6 +136,9 @@ func (st *Storage) DeleteTelegramKey(k string) {
 
 // GetMatrix returns a copy of the store.
 func (st *Storage) GetMatrix() matrixStore {
+	if st.matrix == nil {
+		st.matrix = matrixStore{}
+	}
 	return st.matrix
 }
 
@@ -136,6 +151,9 @@ func (st *Storage) GetMatrixKey(k string) (MatrixUser, bool) {
 // SetMatrixKey stores value v in key k.
 func (st *Storage) SetMatrixKey(k string, v MatrixUser) {
 	st.matrixLock.Lock()
+	if st.matrix == nil {
+		st.matrix = matrixStore{}
+	}
 	st.matrix[k] = v
 	st.storeMatrixUsers()
 	st.matrixLock.Unlock()

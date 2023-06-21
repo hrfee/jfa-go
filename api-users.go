@@ -193,7 +193,8 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 
 		}
 	}
-	telegramTokenIndex := -1
+	var tgToken TelegramVerifiedToken
+	telegramVerified := false
 	if telegramEnabled {
 		if req.TelegramPIN == "" {
 			if app.config.Section("telegram").Key("required").MustBool(false) {
@@ -205,13 +206,8 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 				return
 			}
 		} else {
-			for i, v := range app.telegram.verifiedTokens {
-				if v.Token == req.TelegramPIN {
-					telegramTokenIndex = i
-					break
-				}
-			}
-			if telegramTokenIndex == -1 {
+			tgToken, telegramVerified = app.telegram.TokenVerified(req.TelegramPIN)
+			if telegramVerified {
 				f = func(gc *gin.Context) {
 					app.debug.Printf("%s: New user failed: Telegram PIN was invalid", req.Code)
 					respond(401, "errorInvalidPIN", gc)
@@ -219,17 +215,13 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 				success = false
 				return
 			}
-			if app.config.Section("telegram").Key("require_unique").MustBool(false) {
-				for _, u := range app.storage.GetTelegram() {
-					if app.telegram.verifiedTokens[telegramTokenIndex].Username == u.Username {
-						f = func(gc *gin.Context) {
-							app.debug.Printf("%s: New user failed: Telegram user already linked", req.Code)
-							respond(400, "errorAccountLinked", gc)
-						}
-						success = false
-						return
-					}
+			if app.config.Section("telegram").Key("require_unique").MustBool(false) && app.telegram.UserExists(tgToken.Username) {
+				f = func(gc *gin.Context) {
+					app.debug.Printf("%s: New user failed: Telegram user already linked", req.Code)
+					respond(400, "errorAccountLinked", gc)
 				}
+				success = false
+				return
 			}
 		}
 	}
@@ -352,7 +344,7 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 			app.err.Printf("Failed to store user duration: %v", err)
 		}
 	}
-	if discordEnabled && discordVerified {
+	if discordVerified {
 		discordUser.Contact = req.DiscordContact
 		if app.storage.discord == nil {
 			app.storage.discord = discordStore{}
@@ -364,8 +356,7 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 			delete(app.discord.verifiedTokens, req.DiscordPIN)
 		}
 	}
-	if telegramEnabled && telegramTokenIndex != -1 {
-		tgToken := app.telegram.verifiedTokens[telegramTokenIndex]
+	if telegramVerified {
 		tgUser := TelegramUser{
 			ChatID:   tgToken.ChatID,
 			Username: tgToken.Username,
@@ -377,13 +368,8 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 		if app.storage.telegram == nil {
 			app.storage.telegram = telegramStore{}
 		}
+		app.telegram.DeleteVerifiedToken(req.TelegramPIN)
 		app.storage.SetTelegramKey(user.ID, tgUser)
-		if err := app.storage.storeTelegramUsers(); err != nil {
-			app.err.Printf("Failed to store Telegram users: %v", err)
-		} else {
-			app.telegram.verifiedTokens[len(app.telegram.verifiedTokens)-1], app.telegram.verifiedTokens[telegramTokenIndex] = app.telegram.verifiedTokens[telegramTokenIndex], app.telegram.verifiedTokens[len(app.telegram.verifiedTokens)-1]
-			app.telegram.verifiedTokens = app.telegram.verifiedTokens[:len(app.telegram.verifiedTokens)-1]
-		}
 	}
 	if invite.Profile != "" && app.config.Section("ombi").Key("enabled").MustBool(false) {
 		if profile.Ombi != nil && len(profile.Ombi) != 0 {
@@ -394,17 +380,17 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 				app.debug.Printf("Errors reported by Ombi: %s", strings.Join(errors, ", "))
 			} else {
 				app.info.Println("Created Ombi user")
-				if (discordEnabled && discordVerified) || (telegramEnabled && telegramTokenIndex != -1) {
+				if discordVerified || telegramVerified {
 					ombiUser, status, err := app.getOmbiUser(id)
 					if status != 200 || err != nil {
 						app.err.Printf("Failed to get Ombi user (%d): %v", status, err)
 					} else {
 						dID := ""
 						tUser := ""
-						if discordEnabled && discordVerified {
+						if discordVerified {
 							dID = discordUser.ID
 						}
-						if telegramEnabled && telegramTokenIndex != -1 {
+						if telegramVerified {
 							u, _ := app.storage.GetTelegramKey(user.ID)
 							tUser = u.Username
 						}
@@ -431,7 +417,7 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 			app.err.Printf("Failed to store Matrix users: %v", err)
 		}
 	}
-	if (emailEnabled && app.config.Section("welcome_email").Key("enabled").MustBool(false) && req.Email != "") || telegramTokenIndex != -1 || discordVerified {
+	if (emailEnabled && app.config.Section("welcome_email").Key("enabled").MustBool(false) && req.Email != "") || telegramVerified || discordVerified || matrixVerified {
 		name := app.getAddressOrName(user.ID)
 		app.debug.Printf("%s: Sending welcome message to %s", req.Username, name)
 		msg, err := app.email.constructWelcome(req.Username, expiry, app, false)

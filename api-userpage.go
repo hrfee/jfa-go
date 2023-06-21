@@ -322,19 +322,15 @@ func (app *appContext) GetMyPIN(gc *gin.Context) {
 // @tags User Page
 func (app *appContext) MyDiscordVerifiedInvite(gc *gin.Context) {
 	pin := gc.Param("pin")
-	dcUser, ok := app.discord.verifiedTokens[pin]
+	dcUser, ok := app.discord.UserVerified(pin)
+	app.discord.DeleteVerifiedUser(pin)
 	if !ok {
 		respondBool(200, false, gc)
 		return
 	}
-	if app.config.Section("discord").Key("require_unique").MustBool(false) {
-		for _, u := range app.storage.GetDiscord() {
-			if app.discord.verifiedTokens[pin].ID == u.ID {
-				delete(app.discord.verifiedTokens, pin)
-				respondBool(400, false, gc)
-				return
-			}
-		}
+	if app.config.Section("discord").Key("require_unique").MustBool(false) && app.discord.UserExists(dcUser.ID) {
+		respondBool(400, false, gc)
+		return
 	}
 	existingUser, ok := app.storage.GetDiscordKey(gc.GetString("jfId"))
 	if ok {
@@ -354,29 +350,23 @@ func (app *appContext) MyDiscordVerifiedInvite(gc *gin.Context) {
 // @tags User Page
 func (app *appContext) MyTelegramVerifiedInvite(gc *gin.Context) {
 	pin := gc.Param("pin")
-	tokenIndex := -1
-	for i, v := range app.telegram.verifiedTokens {
-		if v.Token == pin {
-			tokenIndex = i
-			break
-		}
-	}
-	if tokenIndex == -1 {
+	token, ok := app.telegram.TokenVerified(pin)
+	app.telegram.DeleteVerifiedToken(pin)
+	if !ok {
 		respondBool(200, false, gc)
 		return
 	}
-	if app.config.Section("telegram").Key("require_unique").MustBool(false) {
-		for _, u := range app.storage.GetTelegram() {
-			if app.telegram.verifiedTokens[tokenIndex].Username == u.Username {
-				respondBool(400, false, gc)
-				return
-			}
-		}
+	if app.config.Section("telegram").Key("require_unique").MustBool(false) && app.telegram.UserExists(token.Username) {
+		respondBool(400, false, gc)
+		return
 	}
 	tgUser := TelegramUser{
-		ChatID:   app.telegram.verifiedTokens[tokenIndex].ChatID,
-		Username: app.telegram.verifiedTokens[tokenIndex].Username,
+		ChatID:   token.ChatID,
+		Username: token.Username,
 		Contact:  true,
+	}
+	if lang, ok := app.telegram.languages[tgUser.ChatID]; ok {
+		tgUser.Lang = lang
 	}
 
 	existingUser, ok := app.storage.GetTelegramKey(gc.GetString("jfId"))
