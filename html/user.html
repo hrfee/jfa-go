@@ -74,6 +74,13 @@
                 <span class="heading mb-2"></span>
             </div>
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {{ if index . "PageMessageEnabled" }}
+                    {{ if .PageMessageEnabled }}
+                        <div class="card @low dark:~d_neutral content" id="card-message">
+                            {{ .PageMessageContent }}
+                        </div>
+                    {{ end }}
+                {{ end }}
                 <div class="card @low dark:~d_neutral unfocused" id="card-status">
                     <span class="heading mb-2">{{ .strings.expiry }}</span>
                     <aside class="aside ~warning user-expiry my-4"></aside>
@@ -83,13 +90,6 @@
                     <span class="heading mb-2">{{ .strings.contactMethods }}</span>
                     <div class="content flex justify-between flex-col h-100"></div>
                 </div>
-                {{ if index . "PageMessageEnabled" }}
-                    {{ if .PageMessageEnabled }}
-                        <div class="card @low dark:~d_neutral content" id="card-message">
-                            {{ .PageMessageContent }}
-                        </div>
-                    {{ end }}
-                {{ end }}
             </div>
         </div>
         <script src="{{ .urlBase }}/js/user.js" type="module"></script>

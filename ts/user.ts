@@ -48,6 +48,7 @@ window.modals = {} as Modals;
 
 window.notifications = new notificationBox(document.getElementById('notification-box') as HTMLDivElement, 5);
 
+const grid = document.querySelector(".grid");
 var rootCard = document.getElementById("card-user");
 var contactCard = document.getElementById("card-contact");
 var statusCard = document.getElementById("card-status");
@@ -391,13 +392,13 @@ document.addEventListener("details-reload", () => {
             expiryCard.expiry = details.expiry;
 
 
+            let messageCard = document.getElementById("card-message");
             if (details.accounts_admin) {
-                let messageCard = document.getElementById("card-message")
                 if (typeof(messageCard) == "undefined" || messageCard == null) {
                     messageCard = document.createElement("div");
                     messageCard.classList.add("card", "@low", "dark:~d_neutral", "content");
                     messageCard.id = "card-message";
-                    contactCard.parentElement.appendChild(messageCard);
+                    contactCard.parentElement.insertBefore(messageCard, contactCard);
                 }
                 if (!messageCard.textContent) {
                     messageCard.innerHTML = `
@@ -405,6 +406,23 @@ document.addEventListener("details-reload", () => {
                     <span class="block">${window.lang.strings("customMessagePlaceholderContent")}</span>
                     `;
                 }
+            }
+
+            if (typeof(messageCard) != "undefined" && messageCard != null) {
+                let largestNonMessageCardHeight = 0;
+                const cards = grid.querySelectorAll(".card") as NodeListOf<HTMLElement>;
+                for (let i = 0; i < cards.length; i++) {
+                    if (cards[i].id == "card-message") continue;
+                    if (computeRealHeight(cards[i]) > largestNonMessageCardHeight) {
+                        largestNonMessageCardHeight = computeRealHeight(cards[i]);
+                    }
+                }
+                
+
+                let rowSpan = Math.ceil(computeRealHeight(messageCard) / largestNonMessageCardHeight);
+
+                if (rowSpan > 0)
+                    messageCard.style.gridRow = `span ${rowSpan}`;
             }
         }
     });
@@ -416,7 +434,14 @@ login.onLogin = () => {
     document.dispatchEvent(new CustomEvent("details-reload"));
 };
 
-
+const computeRealHeight = (el: HTMLElement): number => {
+    let children = el.children as HTMLCollectionOf<HTMLElement>;
+    let total = 0;
+    for (let i = 0; i < children.length; i++) {
+        total += children[i].offsetHeight;
+    }
+    return total;
+}
 
 login.bindLogout(document.getElementById("logout-button"));
 
