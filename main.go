@@ -17,6 +17,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
@@ -90,27 +91,29 @@ type appContext struct {
 	adminUsers     []User
 	invalidTokens  []string
 	// Keeping jf name because I can't think of a better one
-	jf               *mediabrowser.MediaBrowser
-	authJf           *mediabrowser.MediaBrowser
-	ombi             *ombi.Ombi
-	datePattern      string
-	timePattern      string
-	storage          Storage
-	validator        Validator
-	email            *Emailer
-	telegram         *TelegramDaemon
-	discord          *DiscordDaemon
-	matrix           *MatrixDaemon
-	info, debug, err *logger.Logger
-	host             string
-	port             int
-	version          string
-	URLBase          string
-	updater          *Updater
-	newUpdate        bool // Whether whatever's in update is new.
-	tag              Tag
-	update           Update
-	internalPWRs     map[string]InternalPWR
+	jf                   *mediabrowser.MediaBrowser
+	authJf               *mediabrowser.MediaBrowser
+	ombi                 *ombi.Ombi
+	datePattern          string
+	timePattern          string
+	storage              Storage
+	validator            Validator
+	email                *Emailer
+	telegram             *TelegramDaemon
+	discord              *DiscordDaemon
+	matrix               *MatrixDaemon
+	info, debug, err     *logger.Logger
+	host                 string
+	port                 int
+	version              string
+	URLBase              string
+	updater              *Updater
+	newUpdate            bool // Whether whatever's in update is new.
+	tag                  Tag
+	update               Update
+	internalPWRs         map[string]InternalPWR
+	ConfirmationKeys     map[string]map[string]newUserDTO // Map of invite code to jwt to request
+	confirmationKeysLock sync.Mutex
 }
 
 func generateSecret(length int) (string, error) {

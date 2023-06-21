@@ -274,12 +274,11 @@ type Invite struct {
 	UserMinutes   int       `json:"user-minutes,omitempty"`
 	SendTo        string    `json:"email"`
 	// Used to be stored as formatted time, now as Unix.
-	UsedBy           [][]string                 `json:"used-by"`
-	Notify           map[string]map[string]bool `json:"notify"`
-	Profile          string                     `json:"profile"`
-	Label            string                     `json:"label,omitempty"`
-	ConfirmationKeys map[string]newUserDTO      `json:"-"` // map of JWT confirmation keys to their original requests
-	Captchas         map[string]*captcha.Data   // Map of Captcha IDs to answers
+	UsedBy   [][]string                 `json:"used-by"`
+	Notify   map[string]map[string]bool `json:"notify"`
+	Profile  string                     `json:"profile"`
+	Label    string                     `json:"label,omitempty"`
+	Captchas map[string]*captcha.Data   // Map of Captcha IDs to answers
 }
 
 type Lang struct {

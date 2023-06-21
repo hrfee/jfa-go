@@ -512,7 +512,6 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 		return
 	}
 	if key := gc.Query("key"); key != "" && app.config.Section("email_confirmation").Key("enabled").MustBool(false) {
-		req, ok := inv.ConfirmationKeys[key]
 		fail := func() {
 			gcHTML(gc, 404, "404.html", gin.H{
 				"cssClass":       app.cssClass,
@@ -520,6 +519,18 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 				"contactMessage": app.config.Section("ui").Key("contact_message").String(),
 			})
 		}
+		var req newUserDTO
+		if app.ConfirmationKeys == nil {
+			fail()
+			return
+		}
+
+		invKeys, ok := app.ConfirmationKeys[code]
+		if !ok {
+			fail()
+			return
+		}
+		req, ok = invKeys[key]
 		if !ok {
 			fail()
 			return
@@ -537,8 +548,11 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 			app.debug.Printf("Invalid key")
 			return
 		}
-		_, success := app.newUser(req, true)
+		f, success := app.newUser(req, true)
 		if !success {
+			app.err.Printf("Failed to create new user")
+			// Not meant for us. Calling this will be a mess, but at least it might give us some information.
+			f(gc)
 			fail()
 			return
 		}
@@ -554,11 +568,10 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 				"jfLink":         jfLink,
 			})
 		}
-		inv, ok := app.storage.GetInvitesKey(code)
-		if ok {
-			delete(inv.ConfirmationKeys, key)
-			app.storage.SetInvitesKey(code, inv)
-		}
+		delete(invKeys, key)
+		app.confirmationKeysLock.Lock()
+		app.ConfirmationKeys[code] = invKeys
+		app.confirmationKeysLock.Unlock()
 		return
 	}
 	email := ""

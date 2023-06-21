@@ -242,12 +242,17 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 			success = false
 			return
 		}
-		inv, _ := app.storage.GetInvitesKey(req.Code)
-		if inv.ConfirmationKeys == nil {
-			inv.ConfirmationKeys = map[string]newUserDTO{}
+		if app.ConfirmationKeys == nil {
+			app.ConfirmationKeys = map[string]map[string]newUserDTO{}
 		}
-		inv.ConfirmationKeys[key] = req
-		app.storage.SetInvitesKey(req.Code, inv)
+		cKeys, ok := app.ConfirmationKeys[req.Code]
+		if !ok {
+			cKeys = map[string]newUserDTO{}
+		}
+		cKeys[key] = req
+		app.confirmationKeysLock.Lock()
+		app.ConfirmationKeys[req.Code] = cKeys
+		app.confirmationKeysLock.Unlock()
 		f = func(gc *gin.Context) {
 			app.debug.Printf("%s: Email confirmation required", req.Code)
 			respond(401, "confirmEmail", gc)
