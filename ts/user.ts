@@ -175,7 +175,7 @@ class ContactMethods {
             const deleteButton = row.querySelector(".user-contact-delete") as HTMLButtonElement;
             deleteButton.onclick = () => _delete("/my/" + name, null, (req: XMLHttpRequest) => {
                 if (req.readyState != 4) return;
-                window.location.reload();
+                document.dispatchEvent(new CustomEvent("details-reload"));
             });
         }
 
@@ -289,7 +289,7 @@ const addEditEmail = (add: boolean): void => {
         toggleLoader(submit);
         _post("/my/email", {"email": input.value}, (req: XMLHttpRequest) => {
             if (req.readyState == 4 && (req.status == 303 || req.status == 200)) {
-                window.location.reload();
+                document.dispatchEvent(new CustomEvent("details-reload"));
             }
         }, true, (req: XMLHttpRequest) => {
             if (req.readyState == 4 && req.status == 401) {
@@ -312,7 +312,7 @@ const discordConf: ServiceConfiguration = {
     accountLinkedError: window.lang.notif("errorAccountLinked"),
     successError: window.lang.notif("verified"),
     successFunc: (modalClosed: boolean) => {
-        if (modalClosed) window.location.reload();
+        if (modalClosed) document.dispatchEvent(new CustomEvent("details-reload"));
     }
 };
 
@@ -327,7 +327,7 @@ const telegramConf: ServiceConfiguration = {
     accountLinkedError: window.lang.notif("errorAccountLinked"),
     successError: window.lang.notif("verified"),
     successFunc: (modalClosed: boolean) => {
-        if (modalClosed) window.location.reload();
+        if (modalClosed) document.dispatchEvent(new CustomEvent("details-reload"));
     }
 };
 
@@ -342,7 +342,7 @@ const matrixConf: MatrixConfiguration = {
     unknownError: window.lang.notif("errorUnknown"),
     successError: window.lang.notif("verified"),
     successFunc: () => {
-        setTimeout(() => window.location.reload(), 1200);
+        setTimeout(() => document.dispatchEvent(new CustomEvent("details-reload")), 1200);
     }
 };
 
@@ -431,6 +431,7 @@ document.addEventListener("details-reload", () => {
 const login = new Login(window.modals.login as Modal, "/my/");
 login.onLogin = () => {
     console.log("Logged in.");
+    document.querySelector(".page-container").classList.remove("unfocused");
     document.dispatchEvent(new CustomEvent("details-reload"));
 };
 
