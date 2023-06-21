@@ -81,14 +81,14 @@
                         </div>
                     {{ end }}
                 {{ end }}
+                <div class="card @low dark:~d_neutral flex-col" id="card-contact">
+                    <span class="heading mb-2">{{ .strings.contactMethods }}</span>
+                    <div class="content flex justify-between flex-col h-100"></div>
+                </div>
                 <div class="card @low dark:~d_neutral unfocused" id="card-status">
                     <span class="heading mb-2">{{ .strings.expiry }}</span>
                     <aside class="aside ~warning user-expiry my-4"></aside>
                     <div class="user-expiry-countdown"></div>
-                </div>
-                <div class="card @low dark:~d_neutral flex-col" id="card-contact">
-                    <span class="heading mb-2">{{ .strings.contactMethods }}</span>
-                    <div class="content flex justify-between flex-col h-100"></div>
                 </div>
             </div>
         </div>
