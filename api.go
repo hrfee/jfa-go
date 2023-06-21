@@ -268,7 +268,7 @@ func (app *appContext) GetConfig(gc *gin.Context) {
 			val := app.config.Section(sectName).Key(settingName)
 			s := resp.Sections[sectName].Settings[settingName]
 			switch setting.Type {
-			case "text", "email", "select", "password":
+			case "text", "email", "select", "password", "note":
 				s.Value = val.MustString("")
 			case "number":
 				s.Value = val.MustInt(0)

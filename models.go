@@ -215,6 +215,7 @@ type setting struct {
 	Options         [][2]string `json:"options,omitempty"`
 	DependsTrue     string      `json:"depends_true,omitempty"`  // If specified, this field is enabled when the specified bool setting is enabled.
 	DependsFalse    string      `json:"depends_false,omitempty"` // If specified, opposite behaviour of DependsTrue.
+	Style           string      `json:"style,omitempty"`
 }
 
 type section struct {

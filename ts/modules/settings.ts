@@ -453,6 +453,78 @@ class DOMSelect implements SSelect {
     asElement = (): HTMLDivElement => { return this._container; }
 }
 
+interface SNote extends Setting {
+    value: string;
+    style?: string;
+}
+class DOMNote implements SNote {
+    private _container: HTMLDivElement;
+    private _aside: HTMLElement;
+    private _name: HTMLElement;
+    private _description: HTMLElement;
+    type: string = "note";
+    private _style: string;
+
+    get name(): string { return this._name.textContent; }
+    set name(n: string) { this._name.textContent = n; }
+
+    get description(): string { return this._description.textContent; }
+    set description(d: string) { this._description.textContent = d; }
+
+    get value(): string { return ""; }
+    set value(v: string) { return; }
+    
+    get required(): boolean { return false; }
+    set required(v: boolean) { return; }
+    
+    get requires_restart(): boolean { return false; }
+    set requires_restart(v: boolean) { return; }
+
+    get style(): string { return this._style; }
+    set style(s: string) {
+        this._aside.classList.remove("~" + this._style);
+        this._style = s;
+        this._aside.classList.add("~" + this._style);
+    }
+    
+    constructor(setting: SNote, section: string) {
+        this._container = document.createElement("div");
+        this._container.classList.add("setting");
+        this._container.innerHTML = `
+        <aside class="aside my-2">
+            <span class="font-bold setting-name"></span>
+            <span class="content setting-description">
+        </aside>
+        `;
+        this._name = this._container.querySelector(".setting-name");
+        this._description = this._container.querySelector(".setting-description");
+        this._aside = this._container.querySelector("aside");
+
+        if (setting.depends_false || setting.depends_true) {
+            let dependant = splitDependant(section, setting.depends_true || setting.depends_false);
+            let state = true;
+            if (setting.depends_false) { state = false; }
+            document.addEventListener(`settings-${dependant[0]}-${dependant[1]}`, (event: settingsBoolEvent) => {
+                if (Boolean(event.detail) !== state) {
+                    this._container.classList.add("unfocused");
+                } else {
+                    this._container.classList.remove("unfocused");
+                }
+            });
+        }
+
+        this.update(setting);
+    }
+
+    update = (s: SNote) => {
+        this.name = s.name;
+        this.description = s.description;
+        this.style = ("style" in s && s.style) ? s.style : "info";
+    };
+    
+    asElement = (): HTMLDivElement => { return this._container; }
+}
+
 interface Section {
     meta: Meta;
     order: string[];
@@ -502,13 +574,18 @@ class sectionPanel {
                     case "select":
                         setting = new DOMSelect(setting as SSelect, this._sectionName, name);
                         break;
+                    case "note":
+                        setting = new DOMNote(setting as SNote, this._sectionName);
+                        break;
                 }
-                this.values[name] = ""+setting.value;
-                document.addEventListener(`settings-${this._sectionName}-${name}`, (event: CustomEvent) => {
-                    // const oldValue = this.values[name];
-                    this.values[name] = ""+event.detail;
-                    document.dispatchEvent(new CustomEvent("settings-section-changed"));
-                });
+                if (setting.type != "note") {
+                    this.values[name] = ""+setting.value;
+                    document.addEventListener(`settings-${this._sectionName}-${name}`, (event: CustomEvent) => {
+                        // const oldValue = this.values[name];
+                        this.values[name] = ""+event.detail;
+                        document.dispatchEvent(new CustomEvent("settings-section-changed"));
+                    });
+                }
                 this._section.appendChild(setting.asElement());
                 this._settings[name] = setting;
             }

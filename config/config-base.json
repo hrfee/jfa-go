@@ -377,7 +377,7 @@
             "order": [],
             "meta": {
                 "name": "User Page",
-                "description": "Settings for the user page, which provides useful info and tools to users directly. NOTE: Jellyfin Login must be enabled to use this feature.",
+                "description": "Settings for the user page, which provides useful info and tools to users directly.",
                 "depends_true": "ui|jellyfin_login"
             },
             "settings": {
@@ -387,6 +387,23 @@
                     "requires_restart": false,
                     "type": "bool",
                     "value": true
+                },
+                "jellyfin_login_note": {
+                    "name": "Note:",
+                    "type": "note",
+                    "value": "",
+                    "depends_true": "enabled",
+                    "required": "false",
+                    "description": "Jellyfin Login must be enabled to use this feature.",
+                    "style": "critical"
+                },
+                "edit_note": {
+                    "name": "Message Cards:",
+                    "type": "note",
+                    "value": "",
+                    "depends_true": "enabled",
+                    "required": "false",
+                    "description": "Click the edit icon next to the \"User Page\" Setting to add custom Markdown messages that will be shown to the user."
                 }
             }
         },
@@ -482,6 +499,14 @@
                     "type": "text",
                     "value": "Need help? contact me.",
                     "description": "Message displayed at bottom of emails."
+                },
+                "edit_note": {
+                    "name": "Customize Messages:",
+                    "type": "note",
+                    "value": "",
+                    "depends_true": "enabled",
+                    "required": "false",
+                    "description": "Click the edit icon next to the \"Messages/Notifications\" Setting to customize the messages sent to users with Markdown."
                 }
             }
         },

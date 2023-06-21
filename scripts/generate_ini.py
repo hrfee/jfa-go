@@ -21,6 +21,8 @@ def generate_ini(base_file, ini_file):
         if "meta" in config_base["sections"][section]:
             ini.set(section, fix_description(config_base["sections"][section]["meta"]["description"]))
         for entry in config_base["sections"][section]["settings"]:
+            if config_base["sections"][section]["settings"][entry]["type"] == "note":
+                continue
             if "description" in config_base["sections"][section]["settings"][entry]:
                 ini.set(section, fix_description(config_base["sections"][section]["settings"][entry]["description"]))
             value = config_base["sections"][section]["settings"][entry]["value"]
