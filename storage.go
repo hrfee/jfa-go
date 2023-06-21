@@ -167,6 +167,39 @@ func (st *Storage) DeleteMatrixKey(k string) {
 	st.matrixLock.Unlock()
 }
 
+// GetInvites returns a copy of the store.
+func (st *Storage) GetInvites() Invites {
+	if st.invites == nil {
+		st.invites = Invites{}
+	}
+	return st.invites
+}
+
+// GetInvitesKey returns the value stored in the store's key.
+func (st *Storage) GetInvitesKey(k string) (Invite, bool) {
+	v, ok := st.invites[k]
+	return v, ok
+}
+
+// SetInvitesKey stores value v in key k.
+func (st *Storage) SetInvitesKey(k string, v Invite) {
+	st.invitesLock.Lock()
+	if st.invites == nil {
+		st.invites = Invites{}
+	}
+	st.invites[k] = v
+	st.storeInvites()
+	st.invitesLock.Unlock()
+}
+
+// DeleteInvitesKey deletes value at key k.
+func (st *Storage) DeleteInvitesKey(k string) {
+	st.invitesLock.Lock()
+	delete(st.invites, k)
+	st.storeInvites()
+	st.invitesLock.Unlock()
+}
+
 type TelegramUser struct {
 	ChatID   int64
 	Username string
@@ -241,12 +274,12 @@ type Invite struct {
 	UserMinutes   int       `json:"user-minutes,omitempty"`
 	SendTo        string    `json:"email"`
 	// Used to be stored as formatted time, now as Unix.
-	UsedBy   [][]string                 `json:"used-by"`
-	Notify   map[string]map[string]bool `json:"notify"`
-	Profile  string                     `json:"profile"`
-	Label    string                     `json:"label,omitempty"`
-	Keys     []string                   `json:"keys,omitempty"`
-	Captchas map[string]*captcha.Data   // Map of Captcha IDs to answers
+	UsedBy           [][]string                 `json:"used-by"`
+	Notify           map[string]map[string]bool `json:"notify"`
+	Profile          string                     `json:"profile"`
+	Label            string                     `json:"label,omitempty"`
+	ConfirmationKeys map[string]newUserDTO      `json:"-"` // map of JWT confirmation keys to their original requests
+	Captchas         map[string]*captcha.Data   // Map of Captcha IDs to answers
 }
 
 type Lang struct {
@@ -932,14 +965,10 @@ func (st *Storage) loadLangTelegram(filesystems ...fs.FS) error {
 type Invites map[string]Invite
 
 func (st *Storage) loadInvites() error {
-	st.invitesLock.Lock()
-	defer st.invitesLock.Unlock()
 	return loadJSON(st.invite_path, &st.invites)
 }
 
 func (st *Storage) storeInvites() error {
-	st.invitesLock.Lock()
-	defer st.invitesLock.Unlock()
 	return storeJSON(st.invite_path, st.invites)
 }
 

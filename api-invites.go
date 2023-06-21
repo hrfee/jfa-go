@@ -16,7 +16,7 @@ func (app *appContext) checkInvites() {
 	currentTime := time.Now()
 	app.storage.loadInvites()
 	changed := false
-	for code, data := range app.storage.invites {
+	for code, data := range app.storage.GetInvites() {
 		expiry := data.ValidTill
 		if !currentTime.After(expiry) {
 			continue
@@ -54,7 +54,7 @@ func (app *appContext) checkInvites() {
 			wait.Wait()
 		}
 		changed = true
-		delete(app.storage.invites, code)
+		app.storage.DeleteInvitesKey(code)
 	}
 	if changed {
 		app.storage.storeInvites()
@@ -65,7 +65,7 @@ func (app *appContext) checkInvite(code string, used bool, username string) bool
 	currentTime := time.Now()
 	app.storage.loadInvites()
 	changed := false
-	inv, match := app.storage.invites[code]
+	inv, match := app.storage.GetInvitesKey(code)
 	if !match {
 		return false
 	}
@@ -105,21 +105,21 @@ func (app *appContext) checkInvite(code string, used bool, username string) bool
 		}
 		changed = true
 		match = false
-		delete(app.storage.invites, code)
+		app.storage.DeleteInvitesKey(code)
 	} else if used {
 		changed = true
 		del := false
 		newInv := inv
 		if newInv.RemainingUses == 1 {
 			del = true
-			delete(app.storage.invites, code)
+			app.storage.DeleteInvitesKey(code)
 		} else if newInv.RemainingUses != 0 {
 			// 0 means infinite i guess?
 			newInv.RemainingUses--
 		}
 		newInv.UsedBy = append(newInv.UsedBy, []string{username, strconv.FormatInt(currentTime.Unix(), 10)})
 		if !del {
-			app.storage.invites[code] = newInv
+			app.storage.SetInvitesKey(code, newInv)
 		}
 	}
 	if changed {
@@ -219,7 +219,7 @@ func (app *appContext) GenerateInvite(gc *gin.Context) {
 			invite.Profile = "Default"
 		}
 	}
-	app.storage.invites[inviteCode] = invite
+	app.storage.SetInvitesKey(inviteCode, invite)
 	app.storage.storeInvites()
 	respondBool(200, true, gc)
 }
@@ -236,7 +236,7 @@ func (app *appContext) GetInvites(gc *gin.Context) {
 	app.storage.loadInvites()
 	app.checkInvites()
 	var invites []inviteDTO
-	for code, inv := range app.storage.invites {
+	for code, inv := range app.storage.GetInvites() {
 		_, months, days, hours, minutes, _ := timeDiff(inv.ValidTill, currentTime)
 		invite := inviteDTO{
 			Code:        code,
@@ -335,9 +335,9 @@ func (app *appContext) SetProfile(gc *gin.Context) {
 		respond(500, "Profile not found", gc)
 		return
 	}
-	inv := app.storage.invites[req.Invite]
+	inv, _ := app.storage.GetInvitesKey(req.Invite)
 	inv.Profile = req.Profile
-	app.storage.invites[req.Invite] = inv
+	app.storage.SetInvitesKey(req.Invite, inv)
 	app.storage.storeInvites()
 	respondBool(200, true, gc)
 }
@@ -359,7 +359,7 @@ func (app *appContext) SetNotify(gc *gin.Context) {
 		app.debug.Printf("%s: Notification settings change requested", code)
 		app.storage.loadInvites()
 		app.storage.loadEmails()
-		invite, ok := app.storage.invites[code]
+		invite, ok := app.storage.GetInvitesKey(code)
 		if !ok {
 			app.err.Printf("%s Notification setting change failed: Invalid code", code)
 			respond(400, "Invalid invite code", gc)
@@ -398,7 +398,7 @@ func (app *appContext) SetNotify(gc *gin.Context) {
 			changed = true
 		}
 		if changed {
-			app.storage.invites[code] = invite
+			app.storage.SetInvitesKey(code, invite)
 		}
 	}
 	if changed {
@@ -419,9 +419,9 @@ func (app *appContext) DeleteInvite(gc *gin.Context) {
 	gc.BindJSON(&req)
 	app.debug.Printf("%s: Deletion requested", req.Code)
 	var ok bool
-	_, ok = app.storage.invites[req.Code]
+	_, ok = app.storage.GetInvitesKey(req.Code)
 	if ok {
-		delete(app.storage.invites, req.Code)
+		app.storage.DeleteInvitesKey(req.Code)
 		app.storage.storeInvites()
 		app.info.Printf("%s: Invite deleted", req.Code)
 		respondBool(200, true, gc)

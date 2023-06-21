@@ -227,14 +227,10 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 	}
 	if emailEnabled && app.config.Section("email_confirmation").Key("enabled").MustBool(false) && !confirmed {
 		claims := jwt.MapClaims{
-			"valid":       true,
-			"invite":      req.Code,
-			"email":       req.Email,
-			"username":    req.Username,
-			"password":    req.Password,
-			"telegramPIN": req.TelegramPIN,
-			"exp":         time.Now().Add(time.Hour * 12).Unix(),
-			"type":        "confirmation",
+			"valid":  true,
+			"invite": req.Code,
+			"exp":    time.Now().Add(30 * time.Minute).Unix(),
+			"type":   "confirmation",
 		}
 		tk := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 		key, err := tk.SignedString([]byte(os.Getenv("JFA_SECRET")))
@@ -246,10 +242,12 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 			success = false
 			return
 		}
-		inv := app.storage.invites[req.Code]
-		inv.Keys = append(inv.Keys, key)
-		app.storage.invites[req.Code] = inv
-		app.storage.storeInvites()
+		inv, _ := app.storage.GetInvitesKey(req.Code)
+		if inv.ConfirmationKeys == nil {
+			inv.ConfirmationKeys = map[string]newUserDTO{}
+		}
+		inv.ConfirmationKeys[key] = req
+		app.storage.SetInvitesKey(req.Code, inv)
 		f = func(gc *gin.Context) {
 			app.debug.Printf("%s: Email confirmation required", req.Code)
 			respond(401, "confirmEmail", gc)
@@ -276,7 +274,7 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 		return
 	}
 	app.storage.loadProfiles()
-	invite := app.storage.invites[req.Code]
+	invite, _ := app.storage.GetInvitesKey(req.Code)
 	app.checkInvite(req.Code, true, req.Username)
 	if emailEnabled && app.config.Section("notifications").Key("enabled").MustBool(false) {
 		for address, settings := range invite.Notify {

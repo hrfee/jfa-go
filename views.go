@@ -342,7 +342,7 @@ func (app *appContext) ResetPassword(gc *gin.Context) {
 func (app *appContext) GetCaptcha(gc *gin.Context) {
 	code := gc.Param("invCode")
 	captchaID := gc.Param("captchaID")
-	inv, ok := app.storage.invites[code]
+	inv, ok := app.storage.GetInvitesKey(code)
 	if !ok {
 		gcHTML(gc, 404, "invalidCode.html", gin.H{
 			"cssClass":       app.cssClass,
@@ -376,7 +376,7 @@ func (app *appContext) GetCaptcha(gc *gin.Context) {
 // @tags Users
 func (app *appContext) GenCaptcha(gc *gin.Context) {
 	code := gc.Param("invCode")
-	inv, ok := app.storage.invites[code]
+	inv, ok := app.storage.GetInvitesKey(code)
 	if !ok {
 		gcHTML(gc, 404, "invalidCode.html", gin.H{
 			"cssClass":       app.cssClass,
@@ -395,8 +395,7 @@ func (app *appContext) GenCaptcha(gc *gin.Context) {
 	}
 	captchaID := genAuthToken()
 	inv.Captchas[captchaID] = capt
-	app.storage.invites[code] = inv
-	app.storage.storeInvites()
+	app.storage.SetInvitesKey(code, inv)
 	gc.JSON(200, genCaptchaDTO{captchaID})
 	return
 }
@@ -405,7 +404,7 @@ func (app *appContext) verifyCaptcha(code, id, text string) bool {
 	reCAPTCHA := app.config.Section("captcha").Key("recaptcha").MustBool(false)
 	if !reCAPTCHA {
 		// internal CAPTCHA
-		inv, ok := app.storage.invites[code]
+		inv, ok := app.storage.GetInvitesKey(code)
 		if !ok || inv.Captchas == nil {
 			app.debug.Printf("Couldn't find invite \"%s\"", code)
 			return false
@@ -472,7 +471,7 @@ func (app *appContext) VerifyCaptcha(gc *gin.Context) {
 	code := gc.Param("invCode")
 	captchaID := gc.Param("captchaID")
 	text := gc.Param("text")
-	inv, ok := app.storage.invites[code]
+	inv, ok := app.storage.GetInvitesKey(code)
 	if !ok {
 		gcHTML(gc, 404, "invalidCode.html", gin.H{
 			"cssClass":       app.cssClass,
@@ -503,7 +502,7 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 	lang := app.getLang(gc, FormPage, app.storage.lang.chosenUserLang)
 	/* Don't actually check if the invite is valid, just if it exists, just so the page loads quicker. Invite is actually checked on submit anyway. */
 	// if app.checkInvite(code, false, "") {
-	inv, ok := app.storage.invites[code]
+	inv, ok := app.storage.GetInvitesKey(code)
 	if !ok {
 		gcHTML(gc, 404, "invalidCode.html", gin.H{
 			"cssClass":       app.cssClass,
@@ -513,15 +512,7 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 		return
 	}
 	if key := gc.Query("key"); key != "" && app.config.Section("email_confirmation").Key("enabled").MustBool(false) {
-		validKey := false
-		keyIndex := -1
-		for i, k := range inv.Keys {
-			if k == key {
-				validKey = true
-				keyIndex = i
-				break
-			}
-		}
+		req, ok := inv.ConfirmationKeys[key]
 		fail := func() {
 			gcHTML(gc, 404, "404.html", gin.H{
 				"cssClass":       app.cssClass,
@@ -529,7 +520,7 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 				"contactMessage": app.config.Section("ui").Key("contact_message").String(),
 			})
 		}
-		if !validKey {
+		if !ok {
 			fail()
 			return
 		}
@@ -540,23 +531,11 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 			return
 		}
 		claims, ok := token.Claims.(jwt.MapClaims)
-		expiryUnix := int64(claims["exp"].(float64))
-		if err != nil {
-			fail()
-			app.err.Printf("Failed to parse key expiry: %s", err)
-			return
-		}
-		expiry := time.Unix(expiryUnix, 0)
+		expiry := time.Unix(int64(claims["exp"].(float64)), 0)
 		if !(ok && token.Valid && claims["invite"].(string) == code && claims["type"].(string) == "confirmation" && expiry.After(time.Now())) {
 			fail()
 			app.debug.Printf("Invalid key")
 			return
-		}
-		req := newUserDTO{
-			Email:    claims["email"].(string),
-			Username: claims["username"].(string),
-			Password: claims["password"].(string),
-			Code:     claims["invite"].(string),
 		}
 		_, success := app.newUser(req, true)
 		if !success {
@@ -575,15 +554,17 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 				"jfLink":         jfLink,
 			})
 		}
-		inv, ok := app.storage.invites[code]
+		inv, ok := app.storage.GetInvitesKey(code)
 		if ok {
-			l := len(inv.Keys)
-			inv.Keys[l-1], inv.Keys[keyIndex] = inv.Keys[keyIndex], inv.Keys[l-1]
-			app.storage.invites[code] = inv
+			delete(inv.ConfirmationKeys, key)
+			app.storage.SetInvitesKey(code, inv)
 		}
 		return
 	}
-	email := app.storage.invites[code].SendTo
+	email := ""
+	if invite, ok := app.storage.GetInvitesKey(code); ok {
+		email = invite.SendTo
+	}
 	if strings.Contains(email, "Failed") || !strings.Contains(email, "@") {
 		email = ""
 	}

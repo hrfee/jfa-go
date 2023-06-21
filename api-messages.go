@@ -460,7 +460,7 @@ func (app *appContext) TelegramVerified(gc *gin.Context) {
 // @tags Other
 func (app *appContext) TelegramVerifiedInvite(gc *gin.Context) {
 	code := gc.Param("invCode")
-	if _, ok := app.storage.invites[code]; !ok {
+	if _, ok := app.storage.GetInvitesKey(code); !ok {
 		respondBool(401, false, gc)
 		return
 	}
@@ -484,7 +484,7 @@ func (app *appContext) TelegramVerifiedInvite(gc *gin.Context) {
 // @tags Other
 func (app *appContext) DiscordVerifiedInvite(gc *gin.Context) {
 	code := gc.Param("invCode")
-	if _, ok := app.storage.invites[code]; !ok {
+	if _, ok := app.storage.GetInvitesKey(code); !ok {
 		respondBool(401, false, gc)
 		return
 	}
@@ -513,7 +513,7 @@ func (app *appContext) DiscordServerInvite(gc *gin.Context) {
 		return
 	}
 	code := gc.Param("invCode")
-	if _, ok := app.storage.invites[code]; !ok {
+	if _, ok := app.storage.GetInvitesKey(code); !ok {
 		respondBool(401, false, gc)
 		return
 	}
@@ -537,7 +537,7 @@ func (app *appContext) DiscordServerInvite(gc *gin.Context) {
 // @tags Other
 func (app *appContext) MatrixSendPIN(gc *gin.Context) {
 	code := gc.Param("invCode")
-	if _, ok := app.storage.invites[code]; !ok {
+	if _, ok := app.storage.GetInvitesKey(code); !ok {
 		respondBool(401, false, gc)
 		return
 	}
@@ -575,7 +575,7 @@ func (app *appContext) MatrixSendPIN(gc *gin.Context) {
 // @tags Other
 func (app *appContext) MatrixCheckPIN(gc *gin.Context) {
 	code := gc.Param("invCode")
-	if _, ok := app.storage.invites[code]; !ok {
+	if _, ok := app.storage.GetInvitesKey(code); !ok {
 		app.debug.Println("Matrix: Invite code was invalid")
 		respondBool(401, false, gc)
 		return
