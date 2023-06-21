@@ -28,6 +28,14 @@ func (app *appContext) MyDetails(gc *gin.Context) {
 	}
 	resp.Username = user.Name
 	resp.Admin = user.Policy.IsAdministrator
+	resp.AccountsAdmin = false
+	if !app.config.Section("ui").Key("allow_all").MustBool(false) {
+		adminOnly := app.config.Section("ui").Key("admin_only").MustBool(true)
+		if emailStore, ok := app.storage.GetEmailsKey(resp.Id); ok {
+			resp.AccountsAdmin = emailStore.Admin
+		}
+		resp.AccountsAdmin = resp.AccountsAdmin || (adminOnly && resp.Admin)
+	}
 	resp.Disabled = user.Policy.IsDisabled
 
 	if exp, ok := app.storage.users[user.ID]; ok {

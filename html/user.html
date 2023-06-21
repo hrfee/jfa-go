@@ -85,7 +85,7 @@
                 </div>
                 {{ if index . "PageMessageEnabled" }}
                     {{ if .PageMessageEnabled }}
-                        <div class="card @low dark:~d_neutral content">
+                        <div class="card @low dark:~d_neutral content" id="card-message">
                             {{ .PageMessageContent }}
                         </div>
                     {{ end }}

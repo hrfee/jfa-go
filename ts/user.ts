@@ -62,6 +62,7 @@ interface MyDetails {
     username: string;
     expiry: number;
     admin: boolean;
+    accounts_admin: boolean;
     disabled: boolean;
     email?: MyDetailsContactMethod;
     discord?: MyDetailsContactMethod;
@@ -388,6 +389,23 @@ document.addEventListener("details-reload", () => {
             }
 
             expiryCard.expiry = details.expiry;
+
+
+            if (details.accounts_admin) {
+                let messageCard = document.getElementById("card-message")
+                if (typeof(messageCard) == "undefined" || messageCard == null) {
+                    messageCard = document.createElement("div");
+                    messageCard.classList.add("card", "@low", "dark:~d_neutral", "content");
+                    messageCard.id = "card-message";
+                    contactCard.parentElement.appendChild(messageCard);
+                }
+                if (!messageCard.textContent) {
+                    messageCard.innerHTML = `
+                    <span class="heading mb-2">${window.lang.strings("customMessagePlaceholderHeader")} ✏️ </span>
+                    <span class="block">${window.lang.strings("customMessagePlaceholderContent")}</span>
+                    `;
+                }
+            }
         }
     });
 });
