@@ -13,8 +13,8 @@ type DiscordDaemon struct {
 	ShutdownChannel                                            chan string
 	bot                                                        *dg.Session
 	username                                                   string
-	tokens                                                     map[string]time.Time   // Map of tokens to expiry times.
-	verifiedTokens                                             map[string]DiscordUser // Map of tokens to discord users.
+	tokens                                                     map[string]VerifToken  // Map of pins to tokens.
+	verifiedTokens                                             map[string]DiscordUser // Map of token pins to discord users.
 	channelID, channelName, inviteChannelID, inviteChannelName string
 	guildID                                                    string
 	serverChannelName, serverName                              string
@@ -38,7 +38,7 @@ func newDiscordDaemon(app *appContext) (*DiscordDaemon, error) {
 		Stopped:         false,
 		ShutdownChannel: make(chan string),
 		bot:             bot,
-		tokens:          map[string]time.Time{},
+		tokens:          map[string]VerifToken{},
 		verifiedTokens:  map[string]DiscordUser{},
 		users:           map[string]DiscordUser{},
 		app:             app,
@@ -59,7 +59,15 @@ func newDiscordDaemon(app *appContext) (*DiscordDaemon, error) {
 // NewAuthToken generates an 8-character pin in the form "A1-2B-CD".
 func (d *DiscordDaemon) NewAuthToken() string {
 	pin := genAuthToken()
-	d.tokens[pin] = time.Now().Add(VERIF_TOKEN_EXPIRY_SEC * time.Second)
+	d.tokens[pin] = VerifToken{Expiry: time.Now().Add(VERIF_TOKEN_EXPIRY_SEC * time.Second), JellyfinID: ""}
+	return pin
+}
+
+// NewAssignedAuthToken generates an 8-character pin in the form "A1-2B-CD",
+// and assigns it for access only with the given Jellyfin ID.
+func (d *DiscordDaemon) NewAssignedAuthToken(id string) string {
+	pin := genAuthToken()
+	d.tokens[pin] = VerifToken{Expiry: time.Now().Add(VERIF_TOKEN_EXPIRY_SEC * time.Second), JellyfinID: id}
 	return pin
 }
 
@@ -432,8 +440,8 @@ func (d *DiscordDaemon) cmdStart(s *dg.Session, i *dg.InteractionCreate, lang st
 
 func (d *DiscordDaemon) cmdPIN(s *dg.Session, i *dg.InteractionCreate, lang string) {
 	pin := i.ApplicationCommandData().Options[0].StringValue()
-	expiry, ok := d.tokens[pin]
-	if !ok || time.Now().After(expiry) {
+	user, ok := d.tokens[pin]
+	if !ok || time.Now().After(user.Expiry) {
 		err := s.InteractionRespond(i.Interaction, &dg.InteractionResponse{
 			//	Type: dg.InteractionResponseChannelMessageWithSource,
 			Type: dg.InteractionResponseChannelMessageWithSource,
@@ -459,7 +467,9 @@ func (d *DiscordDaemon) cmdPIN(s *dg.Session, i *dg.InteractionCreate, lang stri
 	if err != nil {
 		d.app.err.Printf("Discord: Failed to send message to \"%s\": %v", i.Interaction.Member.User.Username, err)
 	}
-	d.verifiedTokens[pin] = d.users[i.Interaction.Member.User.ID]
+	dcUser := d.users[i.Interaction.Member.User.ID]
+	dcUser.JellyfinID = user.JellyfinID
+	d.verifiedTokens[pin] = dcUser
 	delete(d.tokens, pin)
 }
 
@@ -601,8 +611,8 @@ func (d *DiscordDaemon) msgPIN(s *dg.Session, m *dg.MessageCreate, sects []strin
 		d.app.debug.Println("Discord: Ignoring message as user was not found")
 		return
 	}
-	expiry, ok := d.tokens[sects[0]]
-	if !ok || time.Now().After(expiry) {
+	user, ok := d.tokens[sects[0]]
+	if !ok || time.Now().After(user.Expiry) {
 		_, err := s.ChannelMessageSend(
 			m.ChannelID,
 			d.app.storage.lang.Telegram[lang].Strings.get("invalidPIN"),
@@ -620,7 +630,9 @@ func (d *DiscordDaemon) msgPIN(s *dg.Session, m *dg.MessageCreate, sects []strin
 	if err != nil {
 		d.app.err.Printf("Discord: Failed to send message to \"%s\": %v", m.Author.Username, err)
 	}
-	d.verifiedTokens[sects[0]] = d.users[m.Author.ID]
+	dcUser := d.users[m.Author.ID]
+	dcUser.JellyfinID = user.JellyfinID
+	d.verifiedTokens[sects[0]] = dcUser
 	delete(d.tokens, sects[0])
 }
 
@@ -680,6 +692,17 @@ func (d *DiscordDaemon) Send(message *Message, channelID ...string) error {
 func (d *DiscordDaemon) UserVerified(pin string) (user DiscordUser, ok bool) {
 	user, ok = d.verifiedTokens[pin]
 	// delete(d.verifiedTokens, pin)
+	return
+}
+
+// AssignedUserVerified returns whether or not a user with the given PIN has been verified, and the token itself.
+// Returns false if the given Jellyfin ID does not match the one in the user.
+func (d *DiscordDaemon) AssignedUserVerified(pin string, jfID string) (user DiscordUser, ok bool) {
+	user, ok = d.verifiedTokens[pin]
+	if ok && user.JellyfinID != jfID {
+		ok = false
+	}
+	// delete(d.verifiedUsers, pin)
 	return
 }
 

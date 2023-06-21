@@ -14,8 +14,15 @@ const (
 )
 
 type TelegramVerifiedToken struct {
-	ChatID   int64
-	Username string
+	ChatID     int64
+	Username   string
+	JellyfinID string // optional, for ensuring a user-requested change is only accessed by them.
+}
+
+// VerifToken stores details about a pending user verification token.
+type VerifToken struct {
+	Expiry     time.Time
+	JellyfinID string // optional, for ensuring a user-requested change is only accessed by them.
 }
 
 type TelegramDaemon struct {
@@ -23,8 +30,8 @@ type TelegramDaemon struct {
 	ShutdownChannel chan string
 	bot             *tg.BotAPI
 	username        string
-	tokens          map[string]time.Time             // Map of tokens to their expiry time.
-	verifiedTokens  map[string]TelegramVerifiedToken // Map of tokens to the responsible ChatID+Username.
+	tokens          map[string]VerifToken            // Map of pins to tokens.
+	verifiedTokens  map[string]TelegramVerifiedToken // Map of token pins to the responsible ChatID+Username.
 	languages       map[int64]string                 // Store of languages for chatIDs. Added to on first interaction, and loaded from app.storage.telegram on start.
 	link            string
 	app             *appContext
@@ -43,7 +50,7 @@ func newTelegramDaemon(app *appContext) (*TelegramDaemon, error) {
 		ShutdownChannel: make(chan string),
 		bot:             bot,
 		username:        bot.Self.UserName,
-		tokens:          map[string]time.Time{},
+		tokens:          map[string]VerifToken{},
 		verifiedTokens:  map[string]TelegramVerifiedToken{},
 		languages:       map[int64]string{},
 		link:            "https://t.me/" + bot.Self.UserName,
@@ -75,7 +82,15 @@ var runes = []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
 // NewAuthToken generates an 8-character pin in the form "A1-2B-CD".
 func (t *TelegramDaemon) NewAuthToken() string {
 	pin := genAuthToken()
-	t.tokens[pin] = time.Now().Add(VERIF_TOKEN_EXPIRY_SEC * time.Second)
+	t.tokens[pin] = VerifToken{Expiry: time.Now().Add(VERIF_TOKEN_EXPIRY_SEC * time.Second), JellyfinID: ""}
+	return pin
+}
+
+// NewAssignedAuthToken generates an 8-character pin in the form "A1-2B-CD",
+// and assigns it for access only with the given Jellyfin ID.
+func (t *TelegramDaemon) NewAssignedAuthToken(id string) string {
+	pin := genAuthToken()
+	t.tokens[pin] = VerifToken{Expiry: time.Now().Add(VERIF_TOKEN_EXPIRY_SEC * time.Second), JellyfinID: id}
 	return pin
 }
 
@@ -215,8 +230,8 @@ func (t *TelegramDaemon) commandLang(upd *tg.Update, sects []string, lang string
 }
 
 func (t *TelegramDaemon) commandPIN(upd *tg.Update, sects []string, lang string) {
-	expiry, ok := t.tokens[upd.Message.Text]
-	if !ok || time.Now().After(expiry) {
+	token, ok := t.tokens[upd.Message.Text]
+	if !ok || time.Now().After(token.Expiry) {
 		err := t.QuoteReply(upd, t.app.storage.lang.Telegram[lang].Strings.get("invalidPIN"))
 		if err != nil {
 			t.app.err.Printf("Telegram: Failed to send message to \"%s\": %v", upd.Message.From.UserName, err)
@@ -229,8 +244,9 @@ func (t *TelegramDaemon) commandPIN(upd *tg.Update, sects []string, lang string)
 		t.app.err.Printf("Telegram: Failed to send message to \"%s\": %v", upd.Message.From.UserName, err)
 	}
 	t.verifiedTokens[upd.Message.Text] = TelegramVerifiedToken{
-		ChatID:   upd.Message.Chat.ID,
-		Username: upd.Message.Chat.UserName,
+		ChatID:     upd.Message.Chat.ID,
+		Username:   upd.Message.Chat.UserName,
+		JellyfinID: token.JellyfinID,
 	}
 	delete(t.tokens, upd.Message.Text)
 }
@@ -238,6 +254,17 @@ func (t *TelegramDaemon) commandPIN(upd *tg.Update, sects []string, lang string)
 // TokenVerified returns whether or not a token with the given PIN has been verified, and the token itself.
 func (t *TelegramDaemon) TokenVerified(pin string) (token TelegramVerifiedToken, ok bool) {
 	token, ok = t.verifiedTokens[pin]
+	// delete(t.verifiedTokens, pin)
+	return
+}
+
+// AssignedTokenVerified returns whether or not a token with the given PIN has been verified, and the token itself.
+// Returns false if the given Jellyfin ID does not match the one in the token.
+func (t *TelegramDaemon) AssignedTokenVerified(pin string, jfID string) (token TelegramVerifiedToken, ok bool) {
+	token, ok = t.verifiedTokens[pin]
+	if ok && token.JellyfinID != jfID {
+		ok = false
+	}
 	// delete(t.verifiedTokens, pin)
 	return
 }

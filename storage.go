@@ -181,6 +181,7 @@ type DiscordUser struct {
 	Discriminator string
 	Lang          string
 	Contact       bool
+	JellyfinID    string `json:"-"` // Used internally in discord.go
 }
 
 type EmailAddress struct {

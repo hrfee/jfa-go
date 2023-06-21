@@ -301,10 +301,10 @@ func (app *appContext) GetMyPIN(gc *gin.Context) {
 	resp := GetMyPINDTO{}
 	switch service {
 	case "discord":
-		resp.PIN = app.discord.NewAuthToken()
+		resp.PIN = app.discord.NewAssignedAuthToken(gc.GetString("jfId"))
 		break
 	case "telegram":
-		resp.PIN = app.telegram.NewAuthToken()
+		resp.PIN = app.telegram.NewAssignedAuthToken(gc.GetString("jfId"))
 		break
 	default:
 		respond(400, "invalid service", gc)
@@ -322,7 +322,7 @@ func (app *appContext) GetMyPIN(gc *gin.Context) {
 // @tags User Page
 func (app *appContext) MyDiscordVerifiedInvite(gc *gin.Context) {
 	pin := gc.Param("pin")
-	dcUser, ok := app.discord.UserVerified(pin)
+	dcUser, ok := app.discord.AssignedUserVerified(pin, gc.GetString("jfId"))
 	app.discord.DeleteVerifiedUser(pin)
 	if !ok {
 		respondBool(200, false, gc)
@@ -350,7 +350,7 @@ func (app *appContext) MyDiscordVerifiedInvite(gc *gin.Context) {
 // @tags User Page
 func (app *appContext) MyTelegramVerifiedInvite(gc *gin.Context) {
 	pin := gc.Param("pin")
-	token, ok := app.telegram.TokenVerified(pin)
+	token, ok := app.telegram.AssignedTokenVerified(pin, gc.GetString("jfId"))
 	app.telegram.DeleteVerifiedToken(pin)
 	if !ok {
 		respondBool(200, false, gc)
