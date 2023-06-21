@@ -176,33 +176,31 @@ let captchaInput = document.getElementById("captcha-input") as HTMLInputElement;
 const captchaCheckbox = document.getElementById("captcha-success") as HTMLSpanElement;
 let prevCaptcha = "";
 
-function baseValidator(oncomplete: (valid: boolean) => void): void {
-    let captchaChecked = false;
-    let captchaChange = false;
-    if (window.captcha && !window.reCAPTCHA) {
-        captchaChange = captchaInput.value != prevCaptcha;
-        if (captchaChange) {
-            prevCaptcha = captchaInput.value;
-            _post("/captcha/verify/" + window.code + "/" + captchaID + "/" + captchaInput.value, null, (req: XMLHttpRequest) => {
-                if (req.readyState == 4) {
-                    if (req.status == 204) {
-                        captchaCheckbox.innerHTML = `<i class="ri-check-line"></i>`;
-                        captchaCheckbox.classList.add("~positive");
-                        captchaCheckbox.classList.remove("~critical");
-                        captchaVerified = true;
-                        captchaChecked = true;
-                    } else {
-                        captchaCheckbox.innerHTML = `<i class="ri-close-line"></i>`;
-                        captchaCheckbox.classList.add("~critical");
-                        captchaCheckbox.classList.remove("~positive");
-                        captchaVerified = false;
-                        captchaChecked = true;
-                        return;
-                    }
+let baseValidator = (oncomplete: (valid: boolean) => void): void => {
+    if (window.captcha && !window.reCAPTCHA && (captchaInput.value != prevCaptcha)) {
+        prevCaptcha = captchaInput.value;
+        _post("/captcha/verify/" + window.code + "/" + captchaID + "/" + captchaInput.value, null, (req: XMLHttpRequest) => {
+            if (req.readyState == 4) {
+                if (req.status == 204) {
+                    captchaCheckbox.innerHTML = `<i class="ri-check-line"></i>`;
+                    captchaCheckbox.classList.add("~positive");
+                    captchaCheckbox.classList.remove("~critical");
+                    captchaVerified = true;
+                } else {
+                    captchaCheckbox.innerHTML = `<i class="ri-close-line"></i>`;
+                    captchaCheckbox.classList.add("~critical");
+                    captchaCheckbox.classList.remove("~positive");
+                    captchaVerified = false;
                 }
-            });
-        }
+                _baseValidator(oncomplete, captchaVerified);
+            }
+        });
+    } else {
+        _baseValidator(oncomplete, captchaVerified);
     }
+}
+
+function _baseValidator(oncomplete: (valid: boolean) => void, captchaValid: boolean): void {
     if (window.emailRequired) {
         if (!emailField.value.includes("@")) {
             oncomplete(false);
@@ -221,18 +219,11 @@ function baseValidator(oncomplete: (valid: boolean) => void): void {
         oncomplete(false);
         return;
     }
-    if (window.captcha && !window.reCAPTCHA) {
-        if (!captchaChange) {
-            oncomplete(captchaVerified);
-            return;
-        }
-        while (!captchaChecked) {
-            continue;
-        }
-        oncomplete(captchaVerified);
-    } else {
-        oncomplete(true);
+    if (window.captcha && !window.reCAPTCHA && !captchaValid) {
+        oncomplete(false);
+        return;
     }
+    oncomplete(true);
 }
 
 interface GreCAPTCHA {

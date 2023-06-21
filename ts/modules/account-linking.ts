@@ -243,7 +243,7 @@ export class Matrix {
         this._input.value = "";
     });
 
-    private _verifyCode = () => _post(this._conf.verifiedURL + this._userID + "/" + this._input.value, null, (req: XMLHttpRequest) => {
+    private _verifyCode = () => _get(this._conf.verifiedURL + this._userID + "/" + this._input.value, null, (req: XMLHttpRequest) => {
         if (req.readyState != 4) return;
         removeLoader(this._submit);
         const valid = req.response["success"] as boolean;
@@ -264,6 +264,6 @@ export class Matrix {
                 this._submit.classList.remove("~critical");
             }, 800);
         }
-    }, true);
+    });
 }
 

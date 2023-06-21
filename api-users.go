@@ -121,7 +121,7 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 				return
 			}
 		} else {
-			discordUser, discordVerified = app.discord.verifiedTokens[req.DiscordPIN]
+			discordUser, discordVerified = app.discord.UserVerified(req.DiscordPIN)
 			if !discordVerified {
 				f = func(gc *gin.Context) {
 					app.debug.Printf("%s: New user failed: Discord PIN was invalid", req.Code)
@@ -207,7 +207,7 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 			}
 		} else {
 			tgToken, telegramVerified = app.telegram.TokenVerified(req.TelegramPIN)
-			if telegramVerified {
+			if !telegramVerified {
 				f = func(gc *gin.Context) {
 					app.debug.Printf("%s: New user failed: Telegram PIN was invalid", req.Code)
 					respond(401, "errorInvalidPIN", gc)
