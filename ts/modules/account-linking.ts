@@ -59,6 +59,7 @@ export class ServiceLinker {
     protected _waiting: HTMLSpanElement;
     protected _verified = false;
     protected _name: string;
+    protected _pin: string;
 
     get verified(): boolean { return this._verified; }
 
@@ -76,7 +77,7 @@ export class ServiceLinker {
             setTimeout(this._checkVerified, 1500);
             return;
         }
-        _get(this._conf.verifiedURL + this._conf.pin, null, (req: XMLHttpRequest) => {
+        _get(this._conf.verifiedURL + this._pin, null, (req: XMLHttpRequest) => {
             if (req.readyState != 4) return;
             if (req.status == 401) {
                 this._conf.modal.close();
@@ -111,14 +112,16 @@ export class ServiceLinker {
         toggleLoader(this._waiting);
 
         this._pinAcquired = false;
+        this._pin = "";
         if (this._conf.pin) {
             this._pinAcquired = true;
-            this._conf.modal.modal.querySelector(".pin").textContent = this._conf.pin;
+            this._pin = this._conf.pin;
+            this._conf.modal.modal.querySelector(".pin").textContent = this._pin;
         } else if (this._conf.pinURL) {
             _get(this._conf.pinURL, null, (req: XMLHttpRequest) => {
                 if (req.readyState == 4 && req.status == 200) {
-                    this._conf.pin = req.response["pin"];
-                    this._conf.modal.modal.querySelector(".pin").textContent = this._conf.pin;
+                    this._pin = req.response["pin"];
+                    this._conf.modal.modal.querySelector(".pin").textContent = this._pin;
                     this._pinAcquired = true;
                 }
             });
