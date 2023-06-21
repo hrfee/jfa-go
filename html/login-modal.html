@@ -2,7 +2,7 @@
     <div class="my-[10%] row items-stretch relative mx-auto w-[40%] lg:w-[60%]">
         {{ if index . "LoginMessageEnabled" }}
             {{ if .LoginMessageEnabled }}
-                <div class="card mx-2 flex-initial w-[100%] xl:w-[35%] mb-4 xl:mb-0 ~neutral @low content">
+                <div class="card mx-2 flex-initial w-[100%] xl:w-[35%] mb-4 xl:mb-0 dark:~d_neutral @low content">
                     {{ .LoginMessageContent }}
                 </div>
             {{ end }}
