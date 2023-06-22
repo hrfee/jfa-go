@@ -625,6 +625,7 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 		"captcha":            app.config.Section("captcha").Key("enabled").MustBool(false),
 		"reCAPTCHA":          app.config.Section("captcha").Key("recaptcha").MustBool(false),
 		"reCAPTCHASiteKey":   app.config.Section("captcha").Key("recaptcha_site_key").MustString(""),
+		"userPageEnabled":    app.config.Section("user_page").Key("enabled").MustBool(false),
 	}
 	if telegram {
 		data["telegramPIN"] = app.telegram.NewAuthToken()

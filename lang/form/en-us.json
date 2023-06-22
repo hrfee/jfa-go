@@ -25,7 +25,9 @@
         "editContactMethod": "Edit Contact Method",
         "joinTheServer": "Join the server:",
         "customMessagePlaceholderHeader": "Customize this card",
-        "customMessagePlaceholderContent": "Click the user page edit button in settings to customize this card, or show one on the login screen, and don't worry, the user can't see this."
+        "customMessagePlaceholderContent": "Click the user page edit button in settings to customize this card, or show one on the login screen, and don't worry, the user can't see this.",
+        "userPageSuccessMessage": "You can see and change details about your account later on the {myAccount} page.",
+        "myAccount": "My Account"
     },
     "notifications": {
         "errorUserExists": "User already exists.",
