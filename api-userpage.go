@@ -603,20 +603,27 @@ func (app *appContext) ChangeMyPassword(gc *gin.Context) {
 		return
 	}
 	if app.config.Section("ombi").Key("enabled").MustBool(false) {
-		ombiUser, status, err := app.getOmbiUser(gc.GetString("jfId"))
-		if status != 200 || err != nil {
-			app.err.Printf("Failed to get user \"%s\" from ombi (%d): %v", user.Name, status, err)
-			respondBool(204, true, gc)
-			return
-		}
-		ombiUser["password"] = req.New
-		status, err = app.ombi.ModifyUser(ombiUser)
-		if status != 200 || err != nil {
-			app.err.Printf("Failed to set password for ombi user \"%s\" (%d): %v", ombiUser["userName"], status, err)
-			respondBool(204, true, gc)
-			return
-		}
-		app.debug.Printf("Reset password for ombi user \"%s\"", ombiUser["userName"])
+		func() {
+			ombiUser, status, err := app.getOmbiUser(gc.GetString("jfId"))
+			if status != 200 || err != nil {
+				app.err.Printf("Failed to get user \"%s\" from ombi (%d): %v", user.Name, status, err)
+				return
+			}
+			ombiUser["password"] = req.New
+			status, err = app.ombi.ModifyUser(ombiUser)
+			if status != 200 || err != nil {
+				app.err.Printf("Failed to set password for ombi user \"%s\" (%d): %v", ombiUser["userName"], status, err)
+				return
+			}
+			app.debug.Printf("Reset password for ombi user \"%s\"", ombiUser["userName"])
+		}()
+	}
+	cookie, err := gc.Cookie("user-refresh")
+	if err == nil {
+		app.invalidTokens = append(app.invalidTokens, cookie)
+		gc.SetCookie("refresh", "invalid", -1, "/my", gc.Request.URL.Hostname(), true, true)
+	} else {
+		app.debug.Printf("Couldn't get cookies: %s", err)
 	}
 	respondBool(204, true, gc)
 }
