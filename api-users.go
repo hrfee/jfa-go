@@ -463,6 +463,7 @@ func (app *appContext) NewUser(gc *gin.Context) {
 	for _, val := range validation {
 		if !val {
 			valid = false
+			break
 		}
 	}
 	if !valid {

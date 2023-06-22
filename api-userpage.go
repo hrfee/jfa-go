@@ -275,6 +275,7 @@ func (app *appContext) ModifyMyEmail(gc *gin.Context) {
 // @Failure 500 {object} boolResponse
 // @Param invCode path string true "invite Code"
 // @Router /my/discord/invite [get]
+// @Security Bearer
 // @tags User Page
 func (app *appContext) MyDiscordServerInvite(gc *gin.Context) {
 	if app.discord.inviteChannelName == "" {
@@ -295,6 +296,7 @@ func (app *appContext) MyDiscordServerInvite(gc *gin.Context) {
 // @Failure 400 {object} stringResponse
 // Param service path string true "discord/telegram"
 // @Router /my/pin/{service} [get]
+// @Security Bearer
 // @tags User Page
 func (app *appContext) GetMyPIN(gc *gin.Context) {
 	service := gc.Param("service")
@@ -319,6 +321,7 @@ func (app *appContext) GetMyPIN(gc *gin.Context) {
 // @Failure 401 {object} boolResponse
 // @Param pin path string true "PIN code to check"
 // @Router /my/discord/verified/{pin} [get]
+// @Security Bearer
 // @tags User Page
 func (app *appContext) MyDiscordVerifiedInvite(gc *gin.Context) {
 	pin := gc.Param("pin")
@@ -347,6 +350,7 @@ func (app *appContext) MyDiscordVerifiedInvite(gc *gin.Context) {
 // @Failure 401 {object} boolResponse
 // @Param pin path string true "PIN code to check"
 // @Router /my/telegram/verified/{pin} [get]
+// @Security Bearer
 // @tags User Page
 func (app *appContext) MyTelegramVerifiedInvite(gc *gin.Context) {
 	pin := gc.Param("pin")
@@ -386,6 +390,7 @@ func (app *appContext) MyTelegramVerifiedInvite(gc *gin.Context) {
 // @Failure 500 {object} boolResponse
 // @Param MatrixSendPINDTO body MatrixSendPINDTO true "User's Matrix ID."
 // @Router /my/matrix/user [post]
+// @Security Bearer
 // @tags User Page
 func (app *appContext) MatrixSendMyPIN(gc *gin.Context) {
 	var req MatrixSendPINDTO
@@ -419,6 +424,7 @@ func (app *appContext) MatrixSendMyPIN(gc *gin.Context) {
 // @Param invCode path string true "invite Code"
 // @Param userID path string true "Matrix User ID"
 // @Router /my/matrix/verified/{userID}/{pin} [get]
+// @Security Bearer
 // @tags User Page
 func (app *appContext) MatrixCheckMyPIN(gc *gin.Context) {
 	userID := gc.Param("userID")
@@ -452,7 +458,8 @@ func (app *appContext) MatrixCheckMyPIN(gc *gin.Context) {
 // @Produce json
 // @Success 200 {object} boolResponse
 // @Router /my/discord [delete]
-// @Tags Users
+// @Security Bearer
+// @Tags User Page
 func (app *appContext) UnlinkMyDiscord(gc *gin.Context) {
 	app.storage.DeleteDiscordKey(gc.GetString("jfId"))
 	respondBool(200, true, gc)
@@ -462,7 +469,8 @@ func (app *appContext) UnlinkMyDiscord(gc *gin.Context) {
 // @Produce json
 // @Success 200 {object} boolResponse
 // @Router /my/telegram [delete]
-// @Tags Users
+// @Security Bearer
+// @Tags User Page
 func (app *appContext) UnlinkMyTelegram(gc *gin.Context) {
 	app.storage.DeleteTelegramKey(gc.GetString("jfId"))
 	respondBool(200, true, gc)
@@ -472,7 +480,8 @@ func (app *appContext) UnlinkMyTelegram(gc *gin.Context) {
 // @Produce json
 // @Success 200 {object} boolResponse
 // @Router /my/matrix [delete]
-// @Tags Users
+// @Security Bearer
+// @Tags User Page
 func (app *appContext) UnlinkMyMatrix(gc *gin.Context) {
 	app.storage.DeleteMatrixKey(gc.GetString("jfId"))
 	respondBool(200, true, gc)
@@ -485,7 +494,7 @@ func (app *appContext) UnlinkMyMatrix(gc *gin.Context) {
 // @Failure 400 {object} boolResponse
 // @Failure 500 {object} boolResponse
 // @Router /my/password/reset/{address} [post]
-// @tags Users
+// @Tags User Page
 func (app *appContext) ResetMyPassword(gc *gin.Context) {
 	// All requests should take 1 second, to make it harder to tell if a success occured or not.
 	timerWait := make(chan bool)
@@ -550,4 +559,64 @@ func (app *appContext) ResetMyPassword(gc *gin.Context) {
 		respondBool(204, true, gc)
 		return
 	}
+}
+
+// @Summary Change your password, given the old one and the new one.
+// @Produce json
+// @Param ChangeMyPasswordDTO body ChangeMyPasswordDTO true "User's old & new passwords."
+// @Success 204 {object} boolResponse
+// @Failure 400 {object} PasswordValidation
+// @Failure 401 {object} boolResponse
+// @Failure 500 {object} boolResponse
+// @Router /my/password [post]
+// @Security Bearer
+// @Tags User Page
+func (app *appContext) ChangeMyPassword(gc *gin.Context) {
+	var req ChangeMyPasswordDTO
+	gc.BindJSON(&req)
+	if req.Old == "" || req.New == "" {
+		respondBool(400, false, gc)
+	}
+	validation := app.validator.validate(req.New)
+	for _, val := range validation {
+		if !val {
+			app.debug.Printf("%s: Change password failed: Invalid password", gc.GetString("jfId"))
+			gc.JSON(400, validation)
+			return
+		}
+	}
+	user, status, err := app.jf.UserByID(gc.GetString("jfId"), false)
+	if status != 200 || err != nil {
+		app.err.Printf("Failed to change password: couldn't find user (%d): %+v", status, err)
+		respondBool(500, false, gc)
+		return
+	}
+	// Authenticate as user to confirm old password.
+	user, status, err = app.authJf.Authenticate(user.Name, req.Old)
+	if status != 200 || err != nil {
+		respondBool(401, false, gc)
+		return
+	}
+	status, err = app.jf.SetPassword(gc.GetString("jfId"), req.Old, req.New)
+	if (status != 200 && status != 204) || err != nil {
+		respondBool(500, false, gc)
+		return
+	}
+	if app.config.Section("ombi").Key("enabled").MustBool(false) {
+		ombiUser, status, err := app.getOmbiUser(gc.GetString("jfId"))
+		if status != 200 || err != nil {
+			app.err.Printf("Failed to get user \"%s\" from ombi (%d): %v", user.Name, status, err)
+			respondBool(204, true, gc)
+			return
+		}
+		ombiUser["password"] = req.New
+		status, err = app.ombi.ModifyUser(ombiUser)
+		if status != 200 || err != nil {
+			app.err.Printf("Failed to set password for ombi user \"%s\" (%d): %v", ombiUser["userName"], status, err)
+			respondBool(204, true, gc)
+			return
+		}
+		app.debug.Printf("Reset password for ombi user \"%s\"", ombiUser["userName"])
+	}
+	respondBool(204, true, gc)
 }

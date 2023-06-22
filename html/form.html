@@ -124,7 +124,7 @@
                     </div>
                     <div class="flex-initial">
                         <div class="card ~neutral @low mb-4">
-                            <span class="label supra" for="inv-uses">{{ .strings.passwordRequirementsHeader }}</span>
+                            <span class="label supra">{{ .strings.passwordRequirementsHeader }}</span>
                             <ul>
                                 {{ range $key, $value := .requirements }}
                                 <li class="" id="requirement-{{ $key }}" min="{{ $value }}">

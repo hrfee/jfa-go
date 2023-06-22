@@ -408,3 +408,8 @@ const (
 type GetMyPINDTO struct {
 	PIN string `json:"pin"`
 }
+
+type ChangeMyPasswordDTO struct {
+	Old string `json:"old"`
+	New string `json:"new"`
+}

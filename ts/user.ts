@@ -1,10 +1,10 @@
 import { ThemeManager } from "./modules/theme.js";
 import { lang, LangFile, loadLangSelector } from "./modules/lang.js";
 import { Modal } from "./modules/modal.js";
-import { _get, _post, _delete, notificationBox, whichAnimationEvent, toDateString, toggleLoader } from "./modules/common.js";
+import { _get, _post, _delete, notificationBox, whichAnimationEvent, toDateString, toggleLoader, addLoader, removeLoader } from "./modules/common.js";
 import { Login } from "./modules/login.js";
 import { Discord, Telegram, Matrix, ServiceConfiguration, MatrixConfiguration } from "./modules/account-linking.js";
-import { Validator, ValidatorConf } from "./modules/validator.js";
+import { Validator, ValidatorConf, ValidatorRespDTO } from "./modules/validator.js";
 
 interface userWindow extends Window {
     jellyfinID: string;
@@ -385,7 +385,7 @@ const matrixConf: MatrixConfiguration = {
 };
 
 let matrix = new Matrix(matrixConf);
-    
+
 
 const oldPasswordField = document.getElementById("user-old-password") as HTMLInputElement;
 const newPasswordField = document.getElementById("user-new-password") as HTMLInputElement;
@@ -405,9 +405,31 @@ let validatorConf: ValidatorConf = {
 };
 
 let validator = new Validator(validatorConf);
-let requirements = validator.requirements;
+// let requirements = validator.requirements;
 
 oldPasswordField.addEventListener("keyup", validator.validate);
+changePasswordButton.addEventListener("click", () => {
+    addLoader(changePasswordButton);
+    _post("/my/password", { old: oldPasswordField.value, new: newPasswordField.value }, (req: XMLHttpRequest) => {
+        if (req.readyState != 4) return;
+        removeLoader(changePasswordButton);
+        if (req.status == 400) {
+            window.notifications.customError("errorPassword", window.lang.notif("errorPassword"));
+        } else if (req.status == 500) {
+            window.notifications.customError("errorUnknown", window.lang.notif("errorUnknown"));
+        } else if (req.status == 204) {
+            window.notifications.customSuccess("passwordChanged", window.lang.notif("passwordChanged"));
+            setTimeout(() => { window.location.reload() }, 2000);
+        }
+    }, true, (req: XMLHttpRequest) => {
+        if (req.readyState != 4) return;
+        if (req.status == 401) {
+            removeLoader(changePasswordButton);
+            window.notifications.customError("oldPasswordError", window.lang.notif("errorOldPassword"));
+            return;
+        }
+    });
+});
 // FIXME: Submit & Validate
 
 document.addEventListener("details-reload", () => {

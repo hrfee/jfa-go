@@ -50,6 +50,8 @@
         "errorCaptcha": "Captcha incorrect.",
         "errorPassword": "Check password requirements.",
         "errorNoMatch": "Passwords don't match.",
+        "errorOldPassword": "Old password incorrect.",
+        "passwordChanged": "Password Changed.",
         "verified": "Account verified."
     },
     "validationStrings": {

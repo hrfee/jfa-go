@@ -2,7 +2,7 @@ import { Modal } from "./modules/modal.js";
 import { notificationBox, whichAnimationEvent } from "./modules/common.js";
 import { _get, _post, toggleLoader, addLoader, removeLoader, toDateString } from "./modules/common.js";
 import { loadLangSelector } from "./modules/lang.js";
-import { Validator, ValidatorConf } from "./modules/validator.js";
+import { Validator, ValidatorConf, ValidatorRespDTO } from "./modules/validator.js";
 import { Discord, Telegram, Matrix, ServiceConfiguration, MatrixConfiguration } from "./modules/account-linking.js";
 
 interface formWindow extends Window {
@@ -257,11 +257,6 @@ if (window.emailRequired) {
     emailField.addEventListener("keyup", validator.validate)
 }
 
-interface respDTO {
-    response: boolean;
-    error: string;
-}
-
 interface sendDTO {
     code: string;
     email: string;
@@ -340,11 +335,11 @@ const create = (event: SubmitEvent) => {
     }
     _post("/newUser", send, (req: XMLHttpRequest) => {
         if (req.readyState == 4) {
-            let vals = req.response as respDTO;
+            let vals = req.response as ValidatorRespDTO;
             let valid = true;
             for (let type in vals) {
-                if (requirements[type]) { requirements[type].valid = vals[type]; }
-                if (!vals[type]) { valid = false; }
+                if (requirements[type]) requirements[type].valid = vals[type];
+                if (!vals[type]) valid = false;
             }
             if (req.status == 200 && valid) {
                 if (window.redirectToJellyfin == true) {

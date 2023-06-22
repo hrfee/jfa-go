@@ -9,6 +9,11 @@ interface pwValString {
     plural: string;
 }
 
+export interface ValidatorRespDTO {
+    response: boolean;
+    error: string;
+}
+
 interface pwValStrings {
     length: pwValString;
     uppercase: pwValString;

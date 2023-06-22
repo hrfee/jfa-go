@@ -241,6 +241,7 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 			user.DELETE(p+"/discord", app.UnlinkMyDiscord)
 			user.DELETE(p+"/telegram", app.UnlinkMyTelegram)
 			user.DELETE(p+"/matrix", app.UnlinkMyMatrix)
+			user.POST(p+"/password", app.ChangeMyPassword)
 		}
 	}
 }
