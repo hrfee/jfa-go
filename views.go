@@ -596,6 +596,12 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 	discord := discordEnabled && app.config.Section("discord").Key("show_on_reg").MustBool(true)
 	matrix := matrixEnabled && app.config.Section("matrix").Key("show_on_reg").MustBool(true)
 
+	userPageAddress := app.config.Section("invite_emails").Key("url_base").String()
+	if userPageAddress == "" {
+		userPageAddress = app.config.Section("password_resets").Key("url_base").String()
+	}
+	userPageAddress += "/my/account"
+
 	data := gin.H{
 		"urlBase":            app.getURLBase(gc),
 		"cssClass":           app.cssClass,
@@ -630,6 +636,7 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 		"reCAPTCHA":          app.config.Section("captcha").Key("recaptcha").MustBool(false),
 		"reCAPTCHASiteKey":   app.config.Section("captcha").Key("recaptcha_site_key").MustString(""),
 		"userPageEnabled":    app.config.Section("user_page").Key("enabled").MustBool(false),
+		"userPageAddress":    userPageAddress,
 	}
 	if telegram {
 		data["telegramPIN"] = app.telegram.NewAuthToken()

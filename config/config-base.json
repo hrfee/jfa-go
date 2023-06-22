@@ -403,7 +403,7 @@
                     "value": "",
                     "depends_true": "enabled",
                     "required": "false",
-                    "description": "Click the edit icon next to the \"User Page\" Setting to add custom Markdown messages that will be shown to the user."
+                    "description": "Click the edit icon next to the \"User Page\" Setting to add custom Markdown messages that will be shown to the user. Note message cards are not private, little effort is required for anyone to view them."
                 }
             }
         },

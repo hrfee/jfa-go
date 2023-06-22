@@ -36,6 +36,7 @@ interface formWindow extends Window {
     reCAPTCHA: boolean;
     reCAPTCHASiteKey: string;
     userPageEnabled: boolean;
+    userPageAddress: string;
 }
 
 loadLangSelector("form");
@@ -348,7 +349,8 @@ const create = (event: SubmitEvent) => {
                 } else {
                     if (window.userPageEnabled) {
                         const userPageNoticeArea = document.getElementById("modal-success-user-page-area");
-                        userPageNoticeArea.textContent = userPageNoticeArea.textContent.replace("{myAccount}", userPageNoticeArea.getAttribute("my-account-term"));
+                        const link = `<a href="${window.userPageAddress}" target="_blank">${userPageNoticeArea.getAttribute("my-account-term")}</a>`;
+                        userPageNoticeArea.innerHTML = userPageNoticeArea.textContent.replace("{myAccount}", link);
                     }
                     window.successModal.show();
                 }
