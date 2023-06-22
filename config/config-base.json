@@ -394,7 +394,7 @@
                     "value": "",
                     "depends_true": "enabled",
                     "required": "false",
-                    "description": "Jellyfin Login must be enabled to use this feature.",
+                    "description": "Jellyfin Login must be enabled to use this feature, and password resets with a link must be enabled for self-service.",
                     "style": "critical"
                 },
                 "edit_note": {
