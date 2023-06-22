@@ -2,7 +2,7 @@ import { Modal } from "./modules/modal.js";
 import { notificationBox, whichAnimationEvent } from "./modules/common.js";
 import { _get, _post, toggleLoader, addLoader, removeLoader, toDateString } from "./modules/common.js";
 import { loadLangSelector } from "./modules/lang.js";
-import { initValidator } from "./modules/validator.js";
+import { Validator, ValidatorConf } from "./modules/validator.js";
 import { Discord, Telegram, Matrix, ServiceConfiguration, MatrixConfiguration } from "./modules/account-linking.js";
 
 interface formWindow extends Window {
@@ -69,7 +69,7 @@ if (window.telegramEnabled) {
             const radio = document.getElementById("contact-via-telegram") as HTMLInputElement;
             radio.parentElement.classList.remove("unfocused");
             radio.checked = true;
-            validatorFunc();
+            validator.validate();
         }
     };
 
@@ -101,7 +101,7 @@ if (window.discordEnabled) {
             const radio = document.getElementById("contact-via-discord") as HTMLInputElement;
             radio.parentElement.classList.remove("unfocused")
             radio.checked = true;
-            validatorFunc();
+            validator.validate();
         }
     };
 
@@ -133,7 +133,7 @@ if (window.matrixEnabled) {
             const radio = document.getElementById("contact-via-matrix") as HTMLInputElement;
             radio.parentElement.classList.remove("unfocused");
             radio.checked = true;
-            validatorFunc();
+            validator.validate();
         }
     };
 
@@ -162,7 +162,7 @@ if (window.userExpiryEnabled) {
 }
 
 const form = document.getElementById("form-create") as HTMLFormElement;
-const submitButton = form.querySelector("input[type=submit]") as HTMLInputElement;
+const submitInput = form.querySelector("input[type=submit]") as HTMLInputElement;
 const submitSpan = form.querySelector("span.submit") as HTMLSpanElement;
 const submitText = submitSpan.textContent;
 let usernameField = document.getElementById("create-username") as HTMLInputElement;
@@ -242,12 +242,19 @@ interface GreCAPTCHA {
 
 declare var grecaptcha: GreCAPTCHA
 
-let r = initValidator(passwordField, rePasswordField, submitButton, submitSpan, baseValidator);
-var requirements = r[0];
-var validatorFunc = r[1] as () => void;
+let validatorConf: ValidatorConf = {
+    passwordField: passwordField,
+    rePasswordField: rePasswordField,
+    submitInput: submitInput,
+    submitButton: submitSpan,
+    validatorFunc: baseValidator
+};
+
+let validator = new Validator(validatorConf);
+var requirements = validator.requirements;
 
 if (window.emailRequired) {
-    emailField.addEventListener("keyup", validatorFunc)
+    emailField.addEventListener("keyup", validator.validate)
 }
 
 interface respDTO {
@@ -287,7 +294,7 @@ const genCaptcha = () => {
 if (window.captcha && !window.reCAPTCHA) {
     genCaptcha();
     (document.getElementById("captcha-regen") as HTMLSpanElement).onclick = genCaptcha;
-    captchaInput.onkeyup = validatorFunc;
+    captchaInput.onkeyup = validator.validate;
 }
 
 const create = (event: SubmitEvent) => {
@@ -386,6 +393,6 @@ const create = (event: SubmitEvent) => {
     });
 };
 
-validatorFunc();
+validator.validate();
 
 form.onsubmit = create;

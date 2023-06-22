@@ -1,5 +1,5 @@
 import { Modal } from "./modules/modal.js";
-import { initValidator } from "./modules/validator.js";
+import { Validator, ValidatorConf } from "./modules/validator.js";
 import { _post, addLoader, removeLoader } from "./modules/common.js";
 import { loadLangSelector } from "./modules/lang.js";
 
@@ -35,14 +35,22 @@ loadLangSelector("pwr");
 declare var window: formWindow;
 
 const form = document.getElementById("form-create") as HTMLFormElement;
-const submitButton = form.querySelector("input[type=submit]") as HTMLInputElement;
+const submitInput = form.querySelector("input[type=submit]") as HTMLInputElement;
 const submitSpan = form.querySelector("span.submit") as HTMLSpanElement;
 const passwordField = document.getElementById("create-password") as HTMLInputElement;
 const rePasswordField = document.getElementById("create-reenter-password") as HTMLInputElement;
 
 window.successModal = new Modal(document.getElementById("modal-success"), true);
 
-var requirements = initValidator(passwordField, rePasswordField, submitButton, submitSpan)
+let validatorConf: ValidatorConf = {
+    passwordField: passwordField,
+    rePasswordField: rePasswordField,
+    submitInput: submitInput,
+    submitButton: submitSpan
+};
+
+var validator = new Validator(validatorConf);
+var requirements = validator.requirements;
 
 interface sendDTO {
     pin: string;
@@ -81,3 +89,5 @@ form.onsubmit = (event: Event) => {
         }
     }, true);
 };
+
+validator.validate();

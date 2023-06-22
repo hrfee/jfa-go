@@ -183,10 +183,11 @@ func (app *appContext) MyUserPage(gc *gin.Context) {
 		"notifications":     notificationsEnabled,
 		"username":          !app.config.Section("email").Key("no_username").MustBool(false),
 		"strings":           app.storage.lang.User[lang].Strings,
-		"validationStrings": app.storage.lang.User[lang].ValidationStrings,
+		"validationStrings": app.storage.lang.User[lang].validationStringsJSON,
 		"language":          app.storage.lang.User[lang].JSON,
 		"langName":          lang,
 		"jfLink":            app.config.Section("ui").Key("redirect_url").String(),
+		"requirements":      app.validator.getCriteria(),
 	}
 	if telegramEnabled {
 		data["telegramUsername"] = app.telegram.username

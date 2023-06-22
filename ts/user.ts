@@ -4,6 +4,7 @@ import { Modal } from "./modules/modal.js";
 import { _get, _post, _delete, notificationBox, whichAnimationEvent, toDateString, toggleLoader } from "./modules/common.js";
 import { Login } from "./modules/login.js";
 import { Discord, Telegram, Matrix, ServiceConfiguration, MatrixConfiguration } from "./modules/account-linking.js";
+import { Validator, ValidatorConf } from "./modules/validator.js";
 
 interface userWindow extends Window {
     jellyfinID: string;
@@ -88,6 +89,7 @@ const grid = document.querySelector(".grid");
 var rootCard = document.getElementById("card-user");
 var contactCard = document.getElementById("card-contact");
 var statusCard = document.getElementById("card-status");
+var passwordCard = document.getElementById("card-password");
 
 interface MyDetailsContactMethod {
     value: string;
@@ -385,6 +387,29 @@ const matrixConf: MatrixConfiguration = {
 let matrix = new Matrix(matrixConf);
     
 
+const oldPasswordField = document.getElementById("user-old-password") as HTMLInputElement;
+const newPasswordField = document.getElementById("user-new-password") as HTMLInputElement;
+const rePasswordField = document.getElementById("user-reenter-new-password") as HTMLInputElement;
+const changePasswordButton = document.getElementById("user-password-submit") as HTMLSpanElement;
+
+let baseValidator = (oncomplete: (valid: boolean) => void): void => {
+    if (oldPasswordField.value.length == 0) return oncomplete(false);
+    oncomplete(true);
+};
+
+let validatorConf: ValidatorConf = {
+    passwordField: newPasswordField,
+    rePasswordField: rePasswordField,
+    submitButton: changePasswordButton,
+    validatorFunc: baseValidator
+};
+
+let validator = new Validator(validatorConf);
+let requirements = validator.requirements;
+
+oldPasswordField.addEventListener("keyup", validator.validate);
+// FIXME: Submit & Validate
+
 document.addEventListener("details-reload", () => {
     _get("/my/details", null, (req: XMLHttpRequest) => {
         if (req.readyState == 4) {
@@ -448,20 +473,10 @@ document.addEventListener("details-reload", () => {
             }
 
             if (typeof(messageCard) != "undefined" && messageCard != null) {
-                let largestNonMessageCardHeight = 0;
-                const cards = grid.querySelectorAll(".card") as NodeListOf<HTMLElement>;
-                for (let i = 0; i < cards.length; i++) {
-                    if (cards[i].id == "card-message") continue;
-                    if (computeRealHeight(cards[i]) > largestNonMessageCardHeight) {
-                        largestNonMessageCardHeight = computeRealHeight(cards[i]);
-                    }
-                }
-                
-
-                let rowSpan = Math.ceil(computeRealHeight(messageCard) / largestNonMessageCardHeight);
-
-                if (rowSpan > 0)
-                    messageCard.style.gridRow = `span ${rowSpan}`;
+                setBestRowSpan(messageCard, false);
+                // contactCard.querySelector(".content").classList.add("h-100");
+            } else if (!statusCard.classList.contains("unfocused")) {
+                setBestRowSpan(passwordCard, true);
             }
         }
     });
@@ -474,11 +489,36 @@ login.onLogin = () => {
     document.dispatchEvent(new CustomEvent("details-reload"));
 };
 
+const setBestRowSpan = (el: HTMLElement, setOnParent: boolean) => {
+    let largestNonMessageCardHeight = 0;
+    const cards = grid.querySelectorAll(".card") as NodeListOf<HTMLElement>;
+    for (let i = 0; i < cards.length; i++) {
+        if (cards[i].id == el.id) continue;
+        if (computeRealHeight(cards[i]) > largestNonMessageCardHeight) {
+            largestNonMessageCardHeight = computeRealHeight(cards[i]);
+        }
+    }
+
+    let rowSpan = Math.ceil(computeRealHeight(el) / largestNonMessageCardHeight);
+
+    if (rowSpan > 0)
+        (setOnParent ? el.parentElement : el).style.gridRow = `span ${rowSpan}`;
+};
+
 const computeRealHeight = (el: HTMLElement): number => {
     let children = el.children as HTMLCollectionOf<HTMLElement>;
     let total = 0;
     for (let i = 0; i < children.length; i++) {
-        total += children[i].offsetHeight;
+        // Cope with the contact method card expanding to fill, by counting each contact method individually
+        if (el.id == "card-contact" && children[i].classList.contains("content")) {
+            // console.log("FOUND CARD_CONTACT, OG:", total + children[i].offsetHeight);
+            for (let j = 0; j < children[i].children.length; j++) {
+                total += (children[i].children[j] as HTMLElement).offsetHeight;
+            }
+            // console.log("NEW:", total);
+        } else {
+            total += children[i].offsetHeight;
+        }
     }
     return total;
 }

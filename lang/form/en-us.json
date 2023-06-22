@@ -8,6 +8,8 @@
         "accountDetails": "Details",
         "emailAddress": "Email",
         "username": "Username",
+        "oldPassword": "Old Password",
+        "newPassword": "New Password",
         "password": "Password",
         "reEnterPassword": "Re-enter Password",
         "reEnterPasswordInvalid": "Passwords are not the same.",
@@ -31,7 +33,8 @@
         "resetPasswordThroughJellyfin": "To reset your password, visit {jfLink} and press the \"Forgot Password\" button.",
         "resetPasswordThroughLink": "To reset your password, enter your username, email address or a linked contact method username, and submit. A link will be sent to reset your password.",
         "resetSent": "Reset Sent.",
-        "resetSentDescription": "If an account with the given username/contact method exists, a password reset link has been sent via all contact methods available. The code will expire in 30 minutes."
+        "resetSentDescription": "If an account with the given username/contact method exists, a password reset link has been sent via all contact methods available. The code will expire in 30 minutes.",
+        "changePassword": "Change Password"
     },
     "notifications": {
         "errorUserExists": "User already exists.",

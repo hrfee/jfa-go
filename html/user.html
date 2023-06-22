@@ -23,6 +23,7 @@
             window.matrixEnabled = {{ .matrixEnabled }};
             window.matrixRequired = {{ .matrixRequired }};
             window.matrixUserID = "{{ .matrixUser }}";
+            window.validationStrings = JSON.parse({{ .validationStrings }});
         </script>
         {{ template "header.html" . }}
         <title>{{ .lang.Strings.myAccount }}</title>
@@ -113,10 +114,41 @@
                     <span class="heading mb-2">{{ .strings.contactMethods }}</span>
                     <div class="content flex justify-between flex-col h-100"></div>
                 </div>
-                <div class="card @low dark:~d_neutral unfocused" id="card-status">
-                    <span class="heading mb-2">{{ .strings.expiry }}</span>
-                    <aside class="aside ~warning user-expiry my-4"></aside>
-                    <div class="user-expiry-countdown"></div>
+                <div>
+                    <div class="card @low dark:~d_neutral content" id="card-password">
+                        <span class="heading row mb-2">{{ .strings.changePassword }}</span>
+                        <div class="">
+                            <div class="my-2">
+                                <span class="label supra row">{{ .strings.passwordRequirementsHeader }}</span>
+                                <ul>
+                                    {{ range $key, $value := .requirements }}
+                                        <li class="" id="requirement-{{ $key }}" min="{{ $value }}">
+                                            <span class="badge lg ~positive requirement-valid"></span> <span class="content requirement-content"></span>
+                                        </li>
+                                    {{ end }}
+                                </ul>
+                            </div>
+                            <div class="my-2">
+                                <label class="label supra" for="user-old-password">{{ .strings.oldPassword }}</label>
+                                <input type="password" class="input ~neutral @low mt-2 mb-4" placeholder="{{ .strings.password }}" id="user-old-password" aria-label="{{ .strings.oldPassword }}">
+                                <label class="label supra" for="user-new-password">{{ .strings.newPassword }}</label>
+                                <input type="password" class="input ~neutral @low mt-2 mb-4" placeholder="{{ .strings.password }}" id="user-new-password" aria-label="{{ .strings.newPassword }}">
+
+                                <label class="label supra" for="user-reenter-password">{{ .strings.reEnterPassword }}</label>
+                                <input type="password" class="input ~neutral @low mt-2 mb-4" placeholder="{{ .strings.password }}" id="user-reenter-new-password" aria-label="{{ .strings.reEnterPassword }}">
+                                <span class="button ~info @low full-width center mt-4" id="user-password-submit">
+                                    {{ .strings.changePassword }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="card @low dark:~d_neutral unfocused" id="card-status">
+                        <span class="heading mb-2">{{ .strings.expiry }}</span>
+                        <aside class="aside ~warning user-expiry my-4"></aside>
+                        <div class="user-expiry-countdown"></div>
+                    </div>
                 </div>
             </div>
         </div>
