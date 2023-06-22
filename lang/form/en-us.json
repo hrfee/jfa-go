@@ -29,9 +29,9 @@
         "userPageSuccessMessage": "You can see and change details about your account later on the {myAccount} page.",
         "resetPassword": "Reset Password",
         "resetPasswordThroughJellyfin": "To reset your password, visit {jfLink} and press the \"Forgot Password\" button.",
-        "resetPasswordThroughLink": "To reset your password, enter your email address or a linked contact method username, and submit. A link will be sent to reset your password.",
+        "resetPasswordThroughLink": "To reset your password, enter your username, email address or a linked contact method username, and submit. A link will be sent to reset your password.",
         "resetSent": "Reset Sent.",
-        "resetSentDescription": "If an account with the given contact method exists, a password reset link has been sent to all contact methods available. The code will expire in 30 minutes."
+        "resetSentDescription": "If an account with the given username/contact method exists, a password reset link has been sent via all contact methods available. The code will expire in 30 minutes."
     },
     "notifications": {
         "errorUserExists": "User already exists.",

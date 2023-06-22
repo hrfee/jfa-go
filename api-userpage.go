@@ -478,7 +478,7 @@ func (app *appContext) UnlinkMyMatrix(gc *gin.Context) {
 	respondBool(200, true, gc)
 }
 
-// @Summary Generate & send a password reset link if the given email/contact method exists. Doesn't give you any info about it's success.
+// @Summary Generate & send a password reset link if the given username/email/contact method exists. Doesn't give you any info about it's success.
 // @Produce json
 // @Param address path string true "address/contact method associated w/ your account."
 // @Success 204 {object} boolResponse
@@ -502,7 +502,7 @@ func (app *appContext) ResetMyPassword(gc *gin.Context) {
 	var pwr InternalPWR
 	var err error
 
-	jfID := app.reverseUserSearch(address)
+	jfID := app.ReverseUserSearch(address)
 	if jfID == "" {
 		app.debug.Printf("Ignoring PWR request: User not found")
 

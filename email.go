@@ -872,7 +872,13 @@ func (app *appContext) getAddressOrName(jfID string) string {
 	return ""
 }
 
-func (app *appContext) reverseUserSearch(address string) string {
+// ReverseUserSearch returns the jellyfin ID of the user with the given username, email, or contact method username.
+// returns "" if none found. returns only the first match, might be an issue if there are users with the same contact method usernames.
+func (app *appContext) ReverseUserSearch(address string) string {
+	user, status, err := app.jf.UserByName(address, false)
+	if status == 200 && err == nil {
+		return user.ID
+	}
 	for id, email := range app.storage.GetEmails() {
 		if strings.ToLower(address) == strings.ToLower(email.Addr) {
 			return id
