@@ -143,6 +143,7 @@ func (app *appContext) ResetSetPassword(gc *gin.Context) {
 			respondBool(status, false, gc)
 			return
 		}
+		delete(app.internalPWRs, req.PIN)
 	} else {
 		resp, status, err := app.jf.ResetPassword(req.PIN)
 		if status != 200 || err != nil || !resp.Success {
