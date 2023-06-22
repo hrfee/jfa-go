@@ -477,3 +477,58 @@ func (app *appContext) UnlinkMyMatrix(gc *gin.Context) {
 	app.storage.DeleteMatrixKey(gc.GetString("jfId"))
 	respondBool(200, true, gc)
 }
+
+// @Summary Generate & send a password reset link if the given email/contact method exists. Doesn't give you any info about it's success.
+// @Produce json
+// @Param address path string true "address/contact method associated w/ your account."
+// @Success 204 {object} boolResponse
+// @Failure 400 {object} boolResponse
+// @Failure 500 {object} boolResponse
+// @Router /my/password/reset/{address} [post]
+// @tags Users
+func (app *appContext) ResetMyPassword(gc *gin.Context) {
+	address := gc.Param("address")
+	if address == "" {
+		app.debug.Println("Ignoring empty request for PWR")
+		respondBool(400, false, gc)
+		return
+	}
+	var pwr InternalPWR
+	var err error
+
+	jfID := app.reverseUserSearch(address)
+	if jfID == "" {
+		app.debug.Printf("Ignoring PWR request: User not found")
+		respondBool(204, true, gc)
+		return
+	}
+	pwr, err = app.GenInternalReset(jfID)
+	if err != nil {
+		app.err.Printf("Failed to get user from Jellyfin: %v", err)
+		respondBool(500, false, gc)
+		return
+	}
+	if app.internalPWRs == nil {
+		app.internalPWRs = map[string]InternalPWR{}
+	}
+	app.internalPWRs[pwr.PIN] = pwr
+	// FIXME: Send to all contact methods
+	msg, err := app.email.constructReset(
+		PasswordReset{
+			Pin:      pwr.PIN,
+			Username: pwr.Username,
+			Expiry:   pwr.Expiry,
+			Internal: true,
+		}, app, false,
+	)
+	if err != nil {
+		app.err.Printf("Failed to construct password reset message for \"%s\": %v", pwr.Username, err)
+		respondBool(500, false, gc)
+		return
+	} else if err := app.sendByID(msg, jfID); err != nil {
+		app.err.Printf("Failed to send password reset message to \"%s\": %v", address, err)
+	} else {
+		app.info.Printf("Sent password reset message to \"%s\"", address)
+	}
+	respondBool(204, true, gc)
+}

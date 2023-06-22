@@ -14,6 +14,11 @@
             <label>
                 <input type="submit" class="unfocused">
                 <span class="button ~urge @low full-width center supra submit">{{ .strings.login }}</span>
+                {{ if index . "pwrEnabled" }}
+                    {{ if .pwrEnabled }}
+                        <span class="button ~info @low full-width center supra submit my-2" id="modal-login-pwr">{{ .strings.resetPassword }}</span>
+                    {{ end }}
+                {{ end }}
             </label>
         </form>
     </div>

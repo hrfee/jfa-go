@@ -6,6 +6,7 @@
             window.notificationsEnabled = {{ .notifications }};
             window.ombiEnabled = {{ .ombiEnabled }};
             window.langFile = JSON.parse({{ .language }});
+            window.pwrEnabled = {{ .pwrEnabled }};
             window.linkResetEnabled = {{ .linkResetEnabled }};
             window.language = "{{ .langName }}";
             window.telegramEnabled = {{ .telegramEnabled }};
@@ -43,6 +44,30 @@
                 </div>
             </div>
         </div>
+        {{ if .pwrEnabled }}
+        <div id="modal-pwr" class="modal">
+            <div class="card relative mx-auto my-[10%] w-4/5 lg:w-1/3 ~neutral @low">
+                <span class="heading">{{ .strings.resetPassword }}</span>
+                <p class="content my-2">
+                {{ if .linkResetEnabled }}
+                    {{ .strings.resetPasswordThroughLink }}
+                {{ else }}
+                    {{ .strings.resetPasswordThroughJellyfin }}
+                {{ end }}
+                </p>
+                <div class="row">
+                    <input type="text" class="col sm field ~neutral @low input" id="pwr-address" placeholder="example@example.com | user#1234 | @user:host | @username">
+                </div>
+                {{ if .linkResetEnabled }}
+                    <span class="button ~info @low full-width center mt-4" id="pwr-submit">
+                        {{ .strings.submit }}
+                    </span>
+                {{ else }}
+                    <a class="button ~info @low full-width center mt-4" href="{{ .jfLink }}" target="_blank">{{ .strings.continue }}</a>
+                {{ end }}
+            </div>
+        </div>
+        {{ end }}
         {{ template "login-modal.html" . }}
         {{ template "account-linking.html" . }}
         <div id="notification-box"></div>
@@ -68,6 +93,8 @@
             </span>
             <span class="button ~warning" alt="{{ .strings.theme }}" id="button-theme"><i class="ri-sun-line"></i></span>
             <span class="button ~critical @low mb-4 unfocused" id="logout-button">{{ .strings.logout }}</span>
+        </div>
+        <div class="top-4 right-4 absolute">
             <a class="button ~info unfocused" href="/" id="admin-back-button"><i class="ri-arrow-left-fill mr-2"></i>{{ .strings.admin }}</a>
         </div>
         <div class="page-container unfocused">

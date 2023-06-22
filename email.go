@@ -522,18 +522,6 @@ func (emailer *Emailer) constructCreated(code, username, address string, invite 
 	return email, nil
 }
 
-// GenResetLink generates and returns a password reset link.
-func (app *appContext) GenResetLink(pin string) (string, error) {
-	url := app.config.Section("password_resets").Key("url_base").String()
-	var pinLink string
-	if url == "" {
-		return pinLink, fmt.Errorf("disabled as no URL Base provided. Set in Settings > Password Resets.")
-	}
-	// Strip /invite from end of this URL, ik it's ugly.
-	pinLink = fmt.Sprintf("%s/reset?pin=%s", url, pin)
-	return pinLink, nil
-}
-
 func (emailer *Emailer) resetValues(pwr PasswordReset, app *appContext, noSub bool) map[string]interface{} {
 	d, t, expiresIn := emailer.formatExpiry(pwr.Expiry, true, app.datePattern, app.timePattern)
 	message := app.config.Section("messages").Key("message").String()
@@ -835,38 +823,37 @@ func (emailer *Emailer) send(email *Message, address ...string) error {
 	return emailer.sender.Send(emailer.fromName, emailer.fromAddr, email, address...)
 }
 
-func (app *appContext) sendByID(email *Message, ID ...string) error {
+func (app *appContext) sendByID(email *Message, ID ...string) (err error) {
 	for _, id := range ID {
-		var err error
 		if tgChat, ok := app.storage.GetTelegramKey(id); ok && tgChat.Contact && telegramEnabled {
 			err = app.telegram.Send(email, tgChat.ChatID)
-			if err != nil {
-				return err
-			}
+			// if err != nil {
+			// 	return err
+			// }
 		}
 		if dcChat, ok := app.storage.GetDiscordKey(id); ok && dcChat.Contact && discordEnabled {
 			err = app.discord.Send(email, dcChat.ChannelID)
-			if err != nil {
-				return err
-			}
+			// if err != nil {
+			// 	return err
+			// }
 		}
 		if mxChat, ok := app.storage.GetMatrixKey(id); ok && mxChat.Contact && matrixEnabled {
 			err = app.matrix.Send(email, mxChat)
-			if err != nil {
-				return err
-			}
+			// if err != nil {
+			// 	return err
+			// }
 		}
 		if address, ok := app.storage.GetEmailsKey(id); ok && address.Contact && emailEnabled {
 			err = app.email.send(email, address.Addr)
-			if err != nil {
-				return err
-			}
+			// if err != nil {
+			// 	return err
+			// }
 		}
-		if err != nil {
-			return err
-		}
+		// if err != nil {
+		// 	return err
+		// }
 	}
-	return nil
+	return
 }
 
 func (app *appContext) getAddressOrName(jfID string) string {
@@ -878,6 +865,34 @@ func (app *appContext) getAddressOrName(jfID string) string {
 	}
 	if addr, ok := app.storage.GetEmailsKey(jfID); ok {
 		return addr.Addr
+	}
+	if mxChat, ok := app.storage.GetMatrixKey(jfID); ok && mxChat.Contact && matrixEnabled {
+		return mxChat.UserID
+	}
+	return ""
+}
+
+func (app *appContext) reverseUserSearch(address string) string {
+	for id, email := range app.storage.GetEmails() {
+		if strings.ToLower(address) == strings.ToLower(email.Addr) {
+			return id
+		}
+	}
+	for id, dcUser := range app.storage.GetDiscord() {
+		if RenderDiscordUsername(dcUser) == strings.ToLower(address) {
+			return id
+		}
+	}
+	tgUsername := strings.TrimPrefix(address, "@")
+	for id, tgUser := range app.storage.GetTelegram() {
+		if tgUsername == tgUser.Username {
+			return id
+		}
+	}
+	for id, mxUser := range app.storage.GetMatrix() {
+		if address == mxUser.UserID {
+			return id
+		}
 	}
 	return ""
 }

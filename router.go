@@ -148,6 +148,7 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 			router.GET(p+"/my/token/login", app.getUserTokenLogin)
 			router.GET(p+"/my/token/refresh", app.getUserTokenRefresh)
 			router.GET(p+"/my/confirm/:jwt", app.ConfirmMyAction)
+			router.POST(p+"/my/password/reset/:address", app.ResetMyPassword)
 		}
 	}
 	if *SWAGGER {

@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"strings"
 	"time"
@@ -23,6 +24,18 @@ func (app *appContext) GenInternalReset(userID string) (InternalPWR, error) {
 		Expiry:   time.Now().Add(30 * time.Minute),
 	}
 	return pwr, nil
+}
+
+// GenResetLink generates and returns a password reset link.
+func (app *appContext) GenResetLink(pin string) (string, error) {
+	url := app.config.Section("password_resets").Key("url_base").String()
+	var pinLink string
+	if url == "" {
+		return pinLink, fmt.Errorf("disabled as no URL Base provided. Set in Settings > Password Resets.")
+	}
+	// Strip /invite from end of this URL, ik it's ugly.
+	pinLink = fmt.Sprintf("%s/reset?pin=%s", url, pin)
+	return pinLink, nil
 }
 
 func (app *appContext) StartPWR() {

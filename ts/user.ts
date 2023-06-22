@@ -16,6 +16,7 @@ interface userWindow extends Window {
     discordInviteLink: boolean;
     matrixUserID: string;
     discordSendPINMessage: string;
+    pwrEnabled: string;
 }
 
 declare var window: userWindow;
@@ -44,9 +45,37 @@ window.modals = {} as Modals;
     if (window.matrixEnabled) {
         window.modals.matrix = new Modal(document.getElementById("modal-matrix"), false);
     }
+    if (window.pwrEnabled) {
+        window.modals.pwr = new Modal(document.getElementById("modal-pwr"), false);
+        window.modals.pwr.onclose = () => {
+            window.modals.login.show();
+        };
+        const resetButton = document.getElementById("modal-login-pwr");
+        resetButton.onclick = () => {
+            window.modals.login.close();
+            window.modals.pwr.show();
+        }
+    }
 })();
 
 window.notifications = new notificationBox(document.getElementById('notification-box') as HTMLDivElement, 5);
+
+if (window.pwrEnabled && window.linkResetEnabled) {
+    const submitButton = document.getElementById("pwr-submit");
+    const input = document.getElementById("pwr-address") as HTMLInputElement;
+    submitButton.onclick = () => _post("/my/password/reset/" + input.value, null, (req: XMLHttpRequest) => {
+        if (req.readyState != 4) return;
+        if (req.status != 204) {
+            window.notifications.customError("unkownError", window.lang.notif("errorUnknown"));;
+            window.modals.pwr.close();
+            return;
+        }
+        window.modals.pwr.modal.querySelector(".heading").textContent = window.lang.strings("resetSent");
+        window.modals.pwr.modal.querySelector(".content").textContent = window.lang.strings("resetSentDescription");
+        submitButton.classList.add("unfocused");
+        input.classList.add("unfocused");
+    });
+}
 
 const grid = document.querySelector(".grid");
 var rootCard = document.getElementById("card-user");

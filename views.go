@@ -157,6 +157,7 @@ func (app *appContext) AdminPage(gc *gin.Context) {
 		"jellyfinLogin":    app.jellyfinLogin,
 		"jfAdminOnly":      jfAdminOnly,
 		"jfAllowAll":       jfAllowAll,
+		"userPageEnabled":  app.config.Section("user_page").Key("enabled").MustBool(false),
 	})
 }
 
@@ -177,6 +178,7 @@ func (app *appContext) MyUserPage(gc *gin.Context) {
 		"discordEnabled":    discordEnabled,
 		"matrixEnabled":     matrixEnabled,
 		"ombiEnabled":       ombiEnabled,
+		"pwrEnabled":        app.config.Section("password_resets").Key("enabled").MustBool(false),
 		"linkResetEnabled":  app.config.Section("password_resets").Key("link_reset").MustBool(false),
 		"notifications":     notificationsEnabled,
 		"username":          !app.config.Section("email").Key("no_username").MustBool(false),
@@ -184,6 +186,7 @@ func (app *appContext) MyUserPage(gc *gin.Context) {
 		"validationStrings": app.storage.lang.User[lang].ValidationStrings,
 		"language":          app.storage.lang.User[lang].JSON,
 		"langName":          lang,
+		"jfLink":            app.config.Section("ui").Key("redirect_url").String(),
 	}
 	if telegramEnabled {
 		data["telegramUsername"] = app.telegram.username
