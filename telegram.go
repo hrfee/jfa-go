@@ -9,10 +9,20 @@ import (
 	tg "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
+const (
+	VERIF_TOKEN_EXPIRY_SEC = 10 * 60
+)
+
 type TelegramVerifiedToken struct {
-	Token    string
-	ChatID   int64
-	Username string
+	ChatID     int64
+	Username   string
+	JellyfinID string // optional, for ensuring a user-requested change is only accessed by them.
+}
+
+// VerifToken stores details about a pending user verification token.
+type VerifToken struct {
+	Expiry     time.Time
+	JellyfinID string // optional, for ensuring a user-requested change is only accessed by them.
 }
 
 type TelegramDaemon struct {
@@ -20,9 +30,9 @@ type TelegramDaemon struct {
 	ShutdownChannel chan string
 	bot             *tg.BotAPI
 	username        string
-	tokens          []string
-	verifiedTokens  []TelegramVerifiedToken
-	languages       map[int64]string // Store of languages for chatIDs. Added to on first interaction, and loaded from app.storage.telegram on start.
+	tokens          map[string]VerifToken            // Map of pins to tokens.
+	verifiedTokens  map[string]TelegramVerifiedToken // Map of token pins to the responsible ChatID+Username.
+	languages       map[int64]string                 // Store of languages for chatIDs. Added to on first interaction, and loaded from app.storage.telegram on start.
 	link            string
 	app             *appContext
 }
@@ -40,13 +50,13 @@ func newTelegramDaemon(app *appContext) (*TelegramDaemon, error) {
 		ShutdownChannel: make(chan string),
 		bot:             bot,
 		username:        bot.Self.UserName,
-		tokens:          []string{},
-		verifiedTokens:  []TelegramVerifiedToken{},
+		tokens:          map[string]VerifToken{},
+		verifiedTokens:  map[string]TelegramVerifiedToken{},
 		languages:       map[int64]string{},
 		link:            "https://t.me/" + bot.Self.UserName,
 		app:             app,
 	}
-	for _, user := range app.storage.telegram {
+	for _, user := range app.storage.GetTelegram() {
 		if user.Lang != "" {
 			td.languages[user.ChatID] = user.Lang
 		}
@@ -72,7 +82,15 @@ var runes = []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
 // NewAuthToken generates an 8-character pin in the form "A1-2B-CD".
 func (t *TelegramDaemon) NewAuthToken() string {
 	pin := genAuthToken()
-	t.tokens = append(t.tokens, pin)
+	t.tokens[pin] = VerifToken{Expiry: time.Now().Add(VERIF_TOKEN_EXPIRY_SEC * time.Second), JellyfinID: ""}
+	return pin
+}
+
+// NewAssignedAuthToken generates an 8-character pin in the form "A1-2B-CD",
+// and assigns it for access only with the given Jellyfin ID.
+func (t *TelegramDaemon) NewAssignedAuthToken(id string) string {
+	pin := genAuthToken()
+	t.tokens[pin] = VerifToken{Expiry: time.Now().Add(VERIF_TOKEN_EXPIRY_SEC * time.Second), JellyfinID: id}
 	return pin
 }
 
@@ -198,10 +216,10 @@ func (t *TelegramDaemon) commandLang(upd *tg.Update, sects []string, lang string
 	}
 	if _, ok := t.app.storage.lang.Telegram[sects[1]]; ok {
 		t.languages[upd.Message.Chat.ID] = sects[1]
-		for jfID, user := range t.app.storage.telegram {
+		for jfID, user := range t.app.storage.GetTelegram() {
 			if user.ChatID == upd.Message.Chat.ID {
 				user.Lang = sects[1]
-				t.app.storage.telegram[jfID] = user
+				t.app.storage.SetTelegramKey(jfID, user)
 				if err := t.app.storage.storeTelegramUsers(); err != nil {
 					t.app.err.Printf("Failed to store Telegram users: %v", err)
 				}
@@ -212,29 +230,58 @@ func (t *TelegramDaemon) commandLang(upd *tg.Update, sects []string, lang string
 }
 
 func (t *TelegramDaemon) commandPIN(upd *tg.Update, sects []string, lang string) {
-	tokenIndex := -1
-	for i, token := range t.tokens {
-		if upd.Message.Text == token {
-			tokenIndex = i
-			break
-		}
-	}
-	if tokenIndex == -1 {
+	token, ok := t.tokens[upd.Message.Text]
+	if !ok || time.Now().After(token.Expiry) {
 		err := t.QuoteReply(upd, t.app.storage.lang.Telegram[lang].Strings.get("invalidPIN"))
 		if err != nil {
 			t.app.err.Printf("Telegram: Failed to send message to \"%s\": %v", upd.Message.From.UserName, err)
 		}
+		delete(t.tokens, upd.Message.Text)
 		return
 	}
 	err := t.QuoteReply(upd, t.app.storage.lang.Telegram[lang].Strings.get("pinSuccess"))
 	if err != nil {
 		t.app.err.Printf("Telegram: Failed to send message to \"%s\": %v", upd.Message.From.UserName, err)
 	}
-	t.verifiedTokens = append(t.verifiedTokens, TelegramVerifiedToken{
-		Token:    upd.Message.Text,
-		ChatID:   upd.Message.Chat.ID,
-		Username: upd.Message.Chat.UserName,
-	})
-	t.tokens[len(t.tokens)-1], t.tokens[tokenIndex] = t.tokens[tokenIndex], t.tokens[len(t.tokens)-1]
-	t.tokens = t.tokens[:len(t.tokens)-1]
+	t.verifiedTokens[upd.Message.Text] = TelegramVerifiedToken{
+		ChatID:     upd.Message.Chat.ID,
+		Username:   upd.Message.Chat.UserName,
+		JellyfinID: token.JellyfinID,
+	}
+	delete(t.tokens, upd.Message.Text)
+}
+
+// TokenVerified returns whether or not a token with the given PIN has been verified, and the token itself.
+func (t *TelegramDaemon) TokenVerified(pin string) (token TelegramVerifiedToken, ok bool) {
+	token, ok = t.verifiedTokens[pin]
+	// delete(t.verifiedTokens, pin)
+	return
+}
+
+// AssignedTokenVerified returns whether or not a token with the given PIN has been verified, and the token itself.
+// Returns false if the given Jellyfin ID does not match the one in the token.
+func (t *TelegramDaemon) AssignedTokenVerified(pin string, jfID string) (token TelegramVerifiedToken, ok bool) {
+	token, ok = t.verifiedTokens[pin]
+	if ok && token.JellyfinID != jfID {
+		ok = false
+	}
+	// delete(t.verifiedTokens, pin)
+	return
+}
+
+// UserExists returns whether or not a user with the given username exists.
+func (t *TelegramDaemon) UserExists(username string) (ok bool) {
+	ok = false
+	for _, u := range t.app.storage.GetTelegram() {
+		if u.Username == username {
+			ok = true
+			break
+		}
+	}
+	return
+}
+
+// DeleteVerifiedToken removes the token with the given PIN.
+func (t *TelegramDaemon) DeleteVerifiedToken(pin string) {
+	delete(t.verifiedTokens, pin)
 }

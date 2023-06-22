@@ -1,4 +1,4 @@
-import { nightwind } from "./modules/theme.js";
+import { ThemeManager } from "./modules/theme.js";
 import { lang, LangFile, loadLangSelector } from "./modules/lang.js";
 import { Modal } from "./modules/modal.js";
 import { Tabs } from "./modules/tabs.js";
@@ -6,34 +6,11 @@ import { inviteList, createInvite } from "./modules/invites.js";
 import { accountsList } from "./modules/accounts.js";
 import { settingsList } from "./modules/settings.js";
 import { ProfileEditor } from "./modules/profiles.js";
-import { _get, _post, notificationBox, whichAnimationEvent, toggleLoader } from "./modules/common.js";
+import { _get, _post, notificationBox, whichAnimationEvent } from "./modules/common.js";
 import { Updater } from "./modules/update.js";
+import { Login } from "./modules/login.js";
 
-let theme = new nightwind();
-
-const themeButton = document.getElementById('button-theme') as HTMLSpanElement;
-const switchThemeIcon = () => {
-    const icon = themeButton.childNodes[0] as HTMLElement;
-    if (document.documentElement.classList.contains("dark")) {
-        icon.classList.add("ri-sun-line");
-        icon.classList.remove("ri-moon-line");
-        themeButton.classList.add("~warning");
-        themeButton.classList.remove("~neutral");
-        themeButton.classList.remove("@high");
-    } else {
-        icon.classList.add("ri-moon-line");
-        icon.classList.remove("ri-sun-line");
-        themeButton.classList.add("@high");
-        themeButton.classList.add("~neutral");
-        themeButton.classList.remove("~warning");
-    }
-};
- themeButton.onclick = () => {
-    theme.toggle();
-    switchThemeIcon();
- }
-switchThemeIcon();
-
+const theme = new ThemeManager(document.getElementById("button-theme"));
 
 window.lang = new lang(window.langFile as LangFile);
 loadLangSelector("admin");
@@ -129,19 +106,35 @@ window.notifications = new notificationBox(document.getElementById('notification
 }*/
 
 // load tabs
-window.tabs = new Tabs();
-window.tabs.addTab("invites", null, window.invites.reload);
-window.tabs.addTab("accounts", null, accounts.reload);
-window.tabs.addTab("settings", null, settings.reload);
+const tabs: { url: string, reloader: () => void }[] = [
+    {
+        url: "invites",
+        reloader: window.invites.reload
+    },
+    {
+        url: "accounts",
+        reloader: accounts.reload
+    },
+    {
+        url: "settings",
+        reloader: settings.reload
+    }
+];
 
-for (let tab of ["invites", "accounts", "settings"]) {
-    if (window.location.pathname == window.URLBase + "/" + tab) {
-        window.tabs.switch(tab, true);
+const defaultTab = tabs[0];
+
+window.tabs = new Tabs();
+
+for (let tab of tabs) {
+    window.tabs.addTab(tab.url, null, tab.reloader);
+    if (window.location.pathname == window.URLBase + "/" + tab.url) {
+        window.tabs.switch(tab.url, true);
     }
 }
 
+// Default tab
 if ((window.URLBase + "/").includes(window.location.pathname)) {
-    window.tabs.switch("invites", true);
+    window.tabs.switch(defaultTab.url, true);
 }
 
 document.addEventListener("tab-change", (event: CustomEvent) => {
@@ -165,80 +158,25 @@ window.onpopstate = (event: PopStateEvent) => {
     window.tabs.switch(event.state);
 }
 
-function login(username: string, password: string, run?: (state?: number) => void) {
-    const req = new XMLHttpRequest();
-    req.responseType = 'json';
-    let url = window.URLBase;
-    const refresh = (username == "" && password == "");
-    if (refresh) {
-        url += "/token/refresh";
-    } else {
-        url += "/token/login";
+const login = new Login(window.modals.login as Modal, "/");
+login.onLogin = () => {
+    console.log("Logged in.");
+    window.updater = new Updater();
+    setInterval(() => { window.invites.reload(); accounts.reload(); }, 30*1000);
+    const currentTab = window.tabs.current;
+    switch (currentTab) {
+        case "invites":
+            window.invites.reload();
+            break;
+        case "accounts":
+            accounts.reload();
+            break;
+        case "settings":
+            settings.reload();
+            break;
     }
-    req.open("GET", url, true);
-    if (!refresh) {
-        req.setRequestHeader("Authorization", "Basic " + btoa(username + ":" + password));
-    }
-    req.onreadystatechange = function (): void {
-        if (this.readyState == 4) {
-            if (this.status != 200) {
-                let errorMsg = window.lang.notif("errorConnection");
-                if (this.response) {
-                    errorMsg = this.response["error"];
-                }
-                if (!errorMsg) {
-                    errorMsg = window.lang.notif("errorUnknown");
-                }
-                if (!refresh) {
-                    window.notifications.customError("loginError", errorMsg);
-                } else {
-                    window.modals.login.show();
-                }
-            } else {
-                const data = this.response;
-                window.token = data["token"];
-                window.updater = new Updater(); // mmm, a race condition
-                window.modals.login.close();
-                setInterval(() => { window.invites.reload(); accounts.reload(); }, 30*1000);
-                const currentTab = window.tabs.current;
-                switch (currentTab) {
-                    case "invites":
-                        window.invites.reload();
-                        break;
-                    case "accounts":
-                        accounts.reload();
-                        break;
-                    case "settings":
-                        settings.reload();
-                        break;
-                }
-                document.getElementById("logout-button").classList.remove("unfocused");
-            }
-            if (run) { run(+this.status); }
-        }
-    };
-    req.send();
 }
 
-(document.getElementById('form-login') as HTMLFormElement).onsubmit = (event: SubmitEvent) => {
-    event.preventDefault();
-    const button = (event.target as HTMLElement).querySelector(".submit") as HTMLSpanElement;
-    const username = (document.getElementById("login-user") as HTMLInputElement).value;
-    const password = (document.getElementById("login-password") as HTMLInputElement).value;
-    if (!username || !password) {
-        window.notifications.customError("loginError", window.lang.notif("errorLoginBlank"));
-        return;
-    }
-    toggleLoader(button);
-    login(username, password, () => toggleLoader(button));
-};
+login.bindLogout(document.getElementById("logout-button"));
 
-login("", "");
-
-(document.getElementById('logout-button') as HTMLButtonElement).onclick = () => _post("/logout", null, (req: XMLHttpRequest): boolean => {
-    if (req.readyState == 4 && req.status == 200) {
-        window.token = "";
-        location.reload();
-        return false;
-    }
-});
+login.login("", "");

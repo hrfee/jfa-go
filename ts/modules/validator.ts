@@ -9,6 +9,11 @@ interface pwValString {
     plural: string;
 }
 
+export interface ValidatorRespDTO {
+    response: boolean;
+    error: string;
+}
+
 interface pwValStrings {
     length: pwValString;
     uppercase: pwValString;
@@ -60,8 +65,21 @@ class Requirement {
     validate = (count: number) => { this.valid = (count >= this._minCount); }
 }
 
-export function initValidator(passwordField: HTMLInputElement, rePasswordField: HTMLInputElement, submitButton: HTMLInputElement, submitSpan: HTMLSpanElement, validatorFunc?: (oncomplete: (valid: boolean) => void) => void):  ({ [category: string]: Requirement }|(() => void))[] {
-    var defaultPwValStrings: pwValStrings = {
+export interface ValidatorConf {
+    passwordField: HTMLInputElement;
+    rePasswordField: HTMLInputElement;
+    submitInput?: HTMLInputElement;
+    submitButton: HTMLSpanElement;
+    validatorFunc?: (oncomplete: (valid: boolean) => void) => void;
+}
+
+export interface Validation { [name: string]: number }
+export interface Requirements { [category: string]: Requirement };
+
+export class Validator {
+    private _conf: ValidatorConf;
+    private _requirements: Requirements = {};
+    private _defaultPwValStrings: pwValStrings = {
         length: {
             singular: "Must have at least {n} character",
             plural: "Must have at least {n} characters"
@@ -82,39 +100,34 @@ export function initValidator(passwordField: HTMLInputElement, rePasswordField: 
             singular: "Must have at least {n} special character",
             plural: "Must have at least {n} special characters"
         }
+    };
+
+    private _checkPasswords = () => {
+        return this._conf.passwordField.value == this._conf.rePasswordField.value;
     }
 
-    const checkPasswords = () => {
-        return passwordField.value == rePasswordField.value;
-    }
-
-    const checkValidity = () => {
-        const pw = checkPasswords();
-        validatorFunc((valid: boolean) => {
+    validate = () => {
+        const pw = this._checkPasswords();
+        this._conf.validatorFunc((valid: boolean) => {
             if (pw && valid) {
-                rePasswordField.setCustomValidity("");
-                submitButton.disabled = false;
-                submitSpan.removeAttribute("disabled");
+                this._conf.rePasswordField.setCustomValidity("");
+                if (this._conf.submitInput) this._conf.submitInput.disabled = false;
+                this._conf.submitButton.removeAttribute("disabled");
             } else if (!pw) {
-                rePasswordField.setCustomValidity(window.invalidPassword);
-                submitButton.disabled = true;
-                submitSpan.setAttribute("disabled", "");
+                this._conf.rePasswordField.setCustomValidity(window.invalidPassword);
+                if (this._conf.submitInput) this._conf.submitInput.disabled = true;
+                this._conf.submitButton.setAttribute("disabled", "");
             } else {
-                rePasswordField.setCustomValidity("");
-                submitButton.disabled = true;
-                submitSpan.setAttribute("disabled", "");
+                this._conf.rePasswordField.setCustomValidity("");
+                if (this._conf.submitInput) this._conf.submitInput.disabled = true;
+                this._conf.submitButton.setAttribute("disabled", "");
             }
         });
     };
 
-    rePasswordField.addEventListener("keyup", checkValidity);
-    passwordField.addEventListener("keyup", checkValidity);
-
-
-    // Incredible code right here
-    const isInt = (s: string): boolean => { return (s in ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]); }
-
-    const testStrings = (f: pwValString): boolean => {
+    private _isInt = (s: string): boolean => { return (s >= '0' && s <= '9'); }
+    
+    private _testStrings = (f: pwValString): boolean => {
         const testString = (s: string): boolean => {
             if (s == "" || !s.includes("{n}")) { return false; }
             return true;
@@ -122,14 +135,12 @@ export function initValidator(passwordField: HTMLInputElement, rePasswordField: 
         return testString(f.singular) && testString(f.plural);
     }
 
-    interface Validation { [name: string]: number }
-
-    const validate = (s: string): Validation => {
+    private _validate = (s: string): Validation => {
         let v: Validation = {};
         for (let criteria of ["length", "lowercase", "uppercase", "number", "special"]) { v[criteria] = 0; }
         v["length"] = s.length;
         for (let c of s) {
-            if (isInt(c)) { v["number"]++; }
+            if (this._isInt(c)) { v["number"]++; }
             else {
                 const upper = c.toUpperCase();
                 if (upper == c.toLowerCase()) { v["special"]++; }
@@ -141,27 +152,37 @@ export function initValidator(passwordField: HTMLInputElement, rePasswordField: 
         }
         return v
     }
-    passwordField.addEventListener("keyup", () => {
-        const v = validate(passwordField.value);
-        for (let criteria in requirements) {
-            requirements[criteria].validate(v[criteria]);
-        }
-    });
-
-    var requirements: { [category: string]: Requirement } = {};
-
-    if (!window.validationStrings) {
-        window.validationStrings = defaultPwValStrings;
-    } else {
+    
+    private _bindRequirements = () => {
         for (let category in window.validationStrings) {
-            if (!testStrings(window.validationStrings[category])) {
-                window.validationStrings[category] = defaultPwValStrings[category];
+            if (!this._testStrings(window.validationStrings[category])) {
+                window.validationStrings[category] = this._defaultPwValStrings[category];
             }
             const el = document.getElementById("requirement-" + category);
-            if (el) {
-                requirements[category] = new Requirement(category, el as HTMLLIElement);
+            if (typeof(el) === 'undefined' || el == null) continue;
+            this._requirements[category] = new Requirement(category, el as HTMLLIElement);
+        }
+    };
+
+    get requirements(): Requirements { return this._requirements }; 
+
+    constructor(conf: ValidatorConf) {
+        this._conf = conf;
+        if (!(this._conf.validatorFunc)) {
+            this._conf.validatorFunc = (oncomplete: (valid: boolean) => void) => { oncomplete(true); };
+        }
+        this._conf.rePasswordField.addEventListener("keyup", this.validate);
+        this._conf.passwordField.addEventListener("keyup", this.validate);
+        this._conf.passwordField.addEventListener("keyup", () => {
+            const v = this._validate(this._conf.passwordField.value);
+            for (let criteria in this._requirements) {
+                this._requirements[criteria].validate(v[criteria]);
             }
+        });
+        if (!window.validationStrings) {
+            window.validationStrings = this._defaultPwValStrings;
+        } else {
+            this._bindRequirements();
         }
     }
-    return [requirements, checkValidity]
 }

@@ -110,7 +110,9 @@ declare interface Modals {
     discord: Modal;
     matrix: Modal;
     sendPWR?: Modal;
+    pwr?: Modal;
     logs: Modal;
+    email?: Modal;
 }
 
 interface Invite {

@@ -29,6 +29,8 @@
     window.captcha = {{ .captcha }};
     window.reCAPTCHA = {{ .reCAPTCHA }};
     window.reCAPTCHASiteKey = "{{ .reCAPTCHASiteKey }}";
+    window.userPageEnabled = {{ .userPageEnabled }};
+    window.userPageAddress = "{{ .userPageAddress }}";
 </script>
 {{ if .passwordReset }}
 <script src="js/pwr.js" type="module"></script>

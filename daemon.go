@@ -13,14 +13,16 @@ func (app *appContext) clearEmails() {
 		return
 	}
 	// Rebuild email storage to from existing users to reduce time complexity
-	emails := map[string]EmailAddress{}
+	emails := emailStore{}
+	app.storage.emailsLock.Lock()
 	for _, user := range users {
-		if email, ok := app.storage.emails[user.ID]; ok {
+		if email, ok := app.storage.GetEmailsKey(user.ID); ok {
 			emails[user.ID] = email
 		}
 	}
 	app.storage.emails = emails
 	app.storage.storeEmails()
+	app.storage.emailsLock.Unlock()
 }
 
 // clearDiscord does the same as clearEmails, but for Discord Users.
@@ -32,14 +34,16 @@ func (app *appContext) clearDiscord() {
 		return
 	}
 	// Rebuild discord storage to from existing users to reduce time complexity
-	dcUsers := map[string]DiscordUser{}
+	dcUsers := discordStore{}
+	app.storage.discordLock.Lock()
 	for _, user := range users {
-		if dcUser, ok := app.storage.discord[user.ID]; ok {
+		if dcUser, ok := app.storage.GetDiscordKey(user.ID); ok {
 			dcUsers[user.ID] = dcUser
 		}
 	}
 	app.storage.discord = dcUsers
 	app.storage.storeDiscordUsers()
+	app.storage.discordLock.Unlock()
 }
 
 // clearMatrix does the same as clearEmails, but for Matrix Users.
@@ -51,14 +55,16 @@ func (app *appContext) clearMatrix() {
 		return
 	}
 	// Rebuild matrix storage to from existing users to reduce time complexity
-	mxUsers := map[string]MatrixUser{}
+	mxUsers := matrixStore{}
+	app.storage.matrixLock.Lock()
 	for _, user := range users {
-		if mxUser, ok := app.storage.matrix[user.ID]; ok {
+		if mxUser, ok := app.storage.GetMatrixKey(user.ID); ok {
 			mxUsers[user.ID] = mxUser
 		}
 	}
 	app.storage.matrix = mxUsers
 	app.storage.storeMatrixUsers()
+	app.storage.matrixLock.Unlock()
 }
 
 // clearTelegram does the same as clearEmails, but for Telegram Users.
@@ -70,14 +76,16 @@ func (app *appContext) clearTelegram() {
 		return
 	}
 	// Rebuild telegram storage to from existing users to reduce time complexity
-	tgUsers := map[string]TelegramUser{}
+	tgUsers := telegramStore{}
+	app.storage.telegramLock.Lock()
 	for _, user := range users {
-		if tgUser, ok := app.storage.telegram[user.ID]; ok {
+		if tgUser, ok := app.storage.GetTelegramKey(user.ID); ok {
 			tgUsers[user.ID] = tgUser
 		}
 	}
 	app.storage.telegram = tgUsers
 	app.storage.storeTelegramUsers()
+	app.storage.telegramLock.Unlock()
 }
 
 // https://bbengfort.github.io/snippets/2016/06/26/background-work-goroutines-timer.html THANKS

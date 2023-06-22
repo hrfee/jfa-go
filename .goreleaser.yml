@@ -26,11 +26,11 @@ before:
     - cp -r ts tempts
     - scripts/dark-variant.sh tempts
     - scripts/dark-variant.sh tempts/modules
-    - npx esbuild --bundle tempts/admin.ts --outfile=./data/web/js/admin.js --minify
-    - npx esbuild --bundle tempts/pwr.ts --outfile=./data/web/js/pwr.js --minify
-    - npx esbuild --bundle tempts/form.ts --outfile=./data/web/js/form.js --minify
-    - npx esbuild --bundle tempts/setup.ts --outfile=./data/web/js/setup.js --minify
-    - npx esbuild --bundle tempts/crash.ts --outfile=./data/crash.js --minify
+    - npx esbuild --target=es6 --format=esm --bundle tempts/admin.ts --outfile=./data/web/js/admin.js --minify
+    - npx esbuild --target=es6 --format=esm --bundle tempts/pwr.ts --outfile=./data/web/js/pwr.js --minify
+    - npx esbuild --target=es6 --format=esm --bundle tempts/form.ts --outfile=./data/web/js/form.js --minify
+    - npx esbuild --target=es6 --format=esm --bundle tempts/setup.ts --outfile=./data/web/js/setup.js --minify
+    - npx esbuild --target=es6 --format=esm --bundle tempts/crash.ts --outfile=./data/crash.js --minify
     - rm -r tempts
     - npx esbuild --bundle css/base.css --outfile=./data/web/css/bundle.css --external:remixicon.css --minify
     - cp html/crash.html data/

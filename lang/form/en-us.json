@@ -8,6 +8,8 @@
         "accountDetails": "Details",
         "emailAddress": "Email",
         "username": "Username",
+        "oldPassword": "Old Password",
+        "newPassword": "New Password",
         "password": "Password",
         "reEnterPassword": "Re-enter Password",
         "reEnterPasswordInvalid": "Passwords are not the same.",
@@ -19,7 +21,20 @@
         "yourAccountIsValidUntil": "Your account will be valid until {date}.",
         "sendPIN": "Send the PIN below to the bot, then come back here to link your account.",
         "sendPINDiscord": "Type {command} in {server_channel} on Discord, then send the PIN below.",
-        "matrixEnterUser": "Enter your User ID, press submit, and a PIN will be sent to you. Enter it here to continue."
+        "matrixEnterUser": "Enter your User ID, press submit, and a PIN will be sent to you. Enter it here to continue.",
+        "welcomeUser": "Welcome, {user}!",
+        "addContactMethod": "Add Contact Method",
+        "editContactMethod": "Edit Contact Method",
+        "joinTheServer": "Join the server:",
+        "customMessagePlaceholderHeader": "Customize this card",
+        "customMessagePlaceholderContent": "Click the user page edit button in settings to customize this card, or show one on the login screen, and don't worry, the user can't see this.",
+        "userPageSuccessMessage": "You can see and change details about your account later on the {myAccount} page.",
+        "resetPassword": "Reset Password",
+        "resetPasswordThroughJellyfin": "To reset your password, visit {jfLink} and press the \"Forgot Password\" button.",
+        "resetPasswordThroughLink": "To reset your password, enter your username, email address or a linked contact method username, and submit. A link will be sent to reset your password.",
+        "resetSent": "Reset Sent.",
+        "resetSentDescription": "If an account with the given username/contact method exists, a password reset link has been sent via all contact methods available. The code will expire in 30 minutes.",
+        "changePassword": "Change Password"
     },
     "notifications": {
         "errorUserExists": "User already exists.",
@@ -35,6 +50,8 @@
         "errorCaptcha": "Captcha incorrect.",
         "errorPassword": "Check password requirements.",
         "errorNoMatch": "Passwords don't match.",
+        "errorOldPassword": "Old password incorrect.",
+        "passwordChanged": "Password Changed.",
         "verified": "Account verified."
     },
     "validationStrings": {

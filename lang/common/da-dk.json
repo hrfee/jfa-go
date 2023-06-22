@@ -24,6 +24,25 @@
         "contactDiscord": "Kontakt gennem Discord",
         "theme": "Tema",
         "refresh": "Opdater",
-        "required": "Påkrævet"
-    }
+        "required": "Påkrævet",
+        "login": "Log på",
+        "logout": "Log ud",
+        "admin": "Administrator",
+        "enabled": "Aktiveret",
+        "disabled": "Deaktiveret",
+        "reEnable": "Genaktiver",
+        "disable": "Deaktiver",
+        "expiry": "Udløb",
+        "add": "Tilføj",
+        "edit": "Rediger",
+        "delete": "Slet"
+    },
+    "notifications": {
+        "errorLoginBlank": "Brugernavnet og/eller adgangskoden blev efterladt tomme.",
+        "errorConnection": "Kunne ikke oprette forbindelse til jfa-go.",
+        "errorUnknown": "Ukendt fejl.",
+        "error401Unauthorized": "Adgang nægtet. Prøv at genindlæse siden.",
+        "errorSaveSettings": "Kunne ikke gemme indstillingerne."
+    },
+    "quantityStrings": {}
 }

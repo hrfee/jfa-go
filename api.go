@@ -143,6 +143,7 @@ func (app *appContext) ResetSetPassword(gc *gin.Context) {
 			respondBool(status, false, gc)
 			return
 		}
+		delete(app.internalPWRs, req.PIN)
 	} else {
 		resp, status, err := app.jf.ResetPassword(req.PIN)
 		if status != 200 || err != nil || !resp.Success {
@@ -214,7 +215,7 @@ func (app *appContext) GetConfig(gc *gin.Context) {
 	app.info.Println("Config requested")
 	resp := app.configBase
 	// Load language options
-	formOptions := app.storage.lang.Form.getOptions()
+	formOptions := app.storage.lang.User.getOptions()
 	fl := resp.Sections["ui"].Settings["language-form"]
 	fl.Options = formOptions
 	fl.Value = app.config.Section("ui").Key("language-form").MustString("en-us")
@@ -268,7 +269,7 @@ func (app *appContext) GetConfig(gc *gin.Context) {
 			val := app.config.Section(sectName).Key(settingName)
 			s := resp.Sections[sectName].Settings[settingName]
 			switch setting.Type {
-			case "text", "email", "select", "password":
+			case "text", "email", "select", "password", "note":
 				s.Value = val.MustString("")
 			case "number":
 				s.Value = val.MustInt(0)
@@ -452,8 +453,8 @@ func (app *appContext) GetLanguages(gc *gin.Context) {
 	page := gc.Param("page")
 	resp := langDTO{}
 	switch page {
-	case "form":
-		for key, lang := range app.storage.lang.Form {
+	case "form", "user":
+		for key, lang := range app.storage.lang.User {
 			resp[key] = lang.Meta.Name
 		}
 	case "admin":
@@ -494,8 +495,8 @@ func (app *appContext) ServeLang(gc *gin.Context) {
 	if page == "admin" {
 		gc.JSON(200, app.storage.lang.Admin[lang])
 		return
-	} else if page == "form" {
-		gc.JSON(200, app.storage.lang.Form[lang])
+	} else if page == "form" || page == "user" {
+		gc.JSON(200, app.storage.lang.User[lang])
 		return
 	}
 	respondBool(400, false, gc)

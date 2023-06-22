@@ -1,0 +1,25 @@
+<div id="modal-login" class="modal">
+    <div class="my-[10%] row items-stretch relative mx-auto w-[40%] lg:w-[60%]">
+        {{ if index . "LoginMessageEnabled" }}
+            {{ if .LoginMessageEnabled }}
+                <div class="card mx-2 flex-initial w-[100%] xl:w-[35%] mb-4 xl:mb-0 dark:~d_neutral @low content">
+                    {{ .LoginMessageContent }}
+                </div>
+            {{ end }}
+        {{ end }}
+        <form class="card mx-2 flex-auto form-login w-[100%] xl:w-[55%] mb-0" href="">
+            <span class="heading">{{ .strings.login }}</span>
+            <input type="text" class="field input ~neutral @high mt-4 mb-2" placeholder="{{ .strings.username }}" id="login-user">
+            <input type="password" class="field input ~neutral @high mb-4" placeholder="{{ .strings.password }}" id="login-password">
+            <label>
+                <input type="submit" class="unfocused">
+                <span class="button ~urge @low full-width center supra submit">{{ .strings.login }}</span>
+                {{ if index . "pwrEnabled" }}
+                    {{ if .pwrEnabled }}
+                        <span class="button ~info @low full-width center supra submit my-2" id="modal-login-pwr">{{ .strings.resetPassword }}</span>
+                    {{ end }}
+                {{ end }}
+            </label>
+        </form>
+    </div>
+</div>

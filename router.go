@@ -101,6 +101,9 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 	if app.URLBase != "" {
 		routePrefixes = append(routePrefixes, "")
 	}
+
+	userPageEnabled := app.config.Section("user_page").Key("enabled").MustBool(true) && app.config.Section("ui").Key("jellyfin_login").MustBool(true)
+
 	for _, p := range routePrefixes {
 		router.GET(p+"/lang/:page", app.GetLanguages)
 		router.Use(static.Serve(p+"/", app.webFS))
@@ -140,6 +143,13 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 			router.POST(p+"/invite/:invCode/matrix/user", app.MatrixSendPIN)
 			router.POST(p+"/users/matrix", app.MatrixConnect)
 		}
+		if userPageEnabled {
+			router.GET(p+"/my/account", app.MyUserPage)
+			router.GET(p+"/my/token/login", app.getUserTokenLogin)
+			router.GET(p+"/my/token/refresh", app.getUserTokenRefresh)
+			router.GET(p+"/my/confirm/:jwt", app.ConfirmMyAction)
+			router.POST(p+"/my/password/reset/:address", app.ResetMyPassword)
+		}
 	}
 	if *SWAGGER {
 		app.info.Print(warning("\n\nWARNING: Swagger should not be used on a public instance.\n\n"))
@@ -147,7 +157,14 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 			router.GET(p+"/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 		}
 	}
+
 	api := router.Group("/", app.webAuth())
+
+	var user *gin.RouterGroup
+	if userPageEnabled {
+		user = router.Group("/my", app.userAuth())
+	}
+
 	for _, p := range routePrefixes {
 		router.POST(p+"/logout", app.Logout)
 		api.DELETE(p+"/users", app.DeleteUsers)
@@ -180,10 +197,10 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 
 		api.GET(p+"/config/update", app.CheckUpdate)
 		api.POST(p+"/config/update", app.ApplyUpdate)
-		api.GET(p+"/config/emails", app.GetCustomEmails)
-		api.GET(p+"/config/emails/:id", app.GetCustomEmailTemplate)
-		api.POST(p+"/config/emails/:id", app.SetCustomEmail)
-		api.POST(p+"/config/emails/:id/state/:state", app.SetCustomEmailState)
+		api.GET(p+"/config/emails", app.GetCustomContent)
+		api.GET(p+"/config/emails/:id", app.GetCustomMessageTemplate)
+		api.POST(p+"/config/emails/:id", app.SetCustomMessage)
+		api.POST(p+"/config/emails/:id/state/:state", app.SetCustomMessageState)
 		api.GET(p+"/config", app.GetConfig)
 		api.POST(p+"/config", app.ModifyConfig)
 		api.POST(p+"/restart", app.restart)
@@ -210,6 +227,22 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 		}
 		api.POST(p+"/matrix/login", app.MatrixLogin)
 
+		if userPageEnabled {
+			user.GET(p+"/details", app.MyDetails)
+			user.POST(p+"/contact", app.SetMyContactMethods)
+			user.POST(p+"/logout", app.LogoutUser)
+			user.POST(p+"/email", app.ModifyMyEmail)
+			user.GET(p+"/discord/invite", app.MyDiscordServerInvite)
+			user.GET(p+"/pin/:service", app.GetMyPIN)
+			user.GET(p+"/discord/verified/:pin", app.MyDiscordVerifiedInvite)
+			user.GET(p+"/telegram/verified/:pin", app.MyTelegramVerifiedInvite)
+			user.POST(p+"/matrix/user", app.MatrixSendMyPIN)
+			user.GET(p+"/matrix/verified/:userID/:pin", app.MatrixCheckMyPIN)
+			user.DELETE(p+"/discord", app.UnlinkMyDiscord)
+			user.DELETE(p+"/telegram", app.UnlinkMyTelegram)
+			user.DELETE(p+"/matrix", app.UnlinkMyMatrix)
+			user.POST(p+"/password", app.ChangeMyPassword)
+		}
 	}
 }
 

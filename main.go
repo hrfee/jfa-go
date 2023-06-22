@@ -17,6 +17,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
@@ -87,30 +88,32 @@ type appContext struct {
 	webFS          httpFS
 	cssClass       string // Default theme, "light"|"dark".
 	jellyfinLogin  bool
-	users          []User
+	adminUsers     []User
 	invalidTokens  []string
 	// Keeping jf name because I can't think of a better one
-	jf               *mediabrowser.MediaBrowser
-	authJf           *mediabrowser.MediaBrowser
-	ombi             *ombi.Ombi
-	datePattern      string
-	timePattern      string
-	storage          Storage
-	validator        Validator
-	email            *Emailer
-	telegram         *TelegramDaemon
-	discord          *DiscordDaemon
-	matrix           *MatrixDaemon
-	info, debug, err *logger.Logger
-	host             string
-	port             int
-	version          string
-	URLBase          string
-	updater          *Updater
-	newUpdate        bool // Whether whatever's in update is new.
-	tag              Tag
-	update           Update
-	internalPWRs     map[string]InternalPWR
+	jf                   *mediabrowser.MediaBrowser
+	authJf               *mediabrowser.MediaBrowser
+	ombi                 *ombi.Ombi
+	datePattern          string
+	timePattern          string
+	storage              Storage
+	validator            Validator
+	email                *Emailer
+	telegram             *TelegramDaemon
+	discord              *DiscordDaemon
+	matrix               *MatrixDaemon
+	info, debug, err     *logger.Logger
+	host                 string
+	port                 int
+	version              string
+	URLBase              string
+	updater              *Updater
+	newUpdate            bool // Whether whatever's in update is new.
+	tag                  Tag
+	update               Update
+	internalPWRs         map[string]InternalPWR
+	ConfirmationKeys     map[string]map[string]newUserDTO // Map of invite code to jwt to request
+	confirmationKeysLock sync.Mutex
 }
 
 func generateSecret(length int) (string, error) {
@@ -284,7 +287,7 @@ func start(asDaemon, firstCall bool) {
 	}
 
 	app.storage.lang.CommonPath = "common"
-	app.storage.lang.FormPath = "form"
+	app.storage.lang.UserPath = "form"
 	app.storage.lang.AdminPath = "admin"
 	app.storage.lang.EmailPath = "email"
 	app.storage.lang.TelegramPath = "telegram"
@@ -450,7 +453,7 @@ func start(asDaemon, firstCall bool) {
 			user.UserID = shortuuid.New()
 			user.Username = app.config.Section("ui").Key("username").String()
 			user.Password = app.config.Section("ui").Key("password").String()
-			app.users = append(app.users, user)
+			app.adminUsers = append(app.adminUsers, user)
 		} else {
 			app.debug.Println("Using Jellyfin for authentication")
 			app.authJf, _ = mediabrowser.NewServer(serverType, server, "jfa-go", app.version, "auth", "auth", timeoutHandler, cacheTimeout)
@@ -645,8 +648,14 @@ func flagPassed(name string) (found bool) {
 // @securityDefinitions.basic getTokenAuth
 // @name getTokenAuth
 
+// @securityDefinitions.basic getUserTokenAuth
+// @name getUserTokenAuth
+
 // @tag.name Auth
 // @tag.description -Get a token here if running swagger UI locally.-
+
+// @tag.name User Page
+// @tag.description User-page related routes.
 
 // @tag.name Users
 // @tag.description Jellyfin user related operations.

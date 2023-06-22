@@ -10,6 +10,7 @@ import (
 	"html/template"
 	"io"
 	"io/fs"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -23,7 +24,7 @@ import (
 	sMail "github.com/xhit/go-simple-mail/v2"
 )
 
-var renderer = html.NewRenderer(html.RendererOptions{Flags: html.Smartypants})
+var markdownRenderer = html.NewRenderer(html.RendererOptions{Flags: html.Smartypants})
 
 // EmailClient implements email sending, right now via smtp, mailgun or a dummy client.
 type EmailClient interface {
@@ -304,10 +305,17 @@ func (emailer *Emailer) confirmationValues(code, username, key string, app *appC
 	} else {
 		message := app.config.Section("messages").Key("message").String()
 		inviteLink := app.config.Section("invite_emails").Key("url_base").String()
-		if !strings.HasSuffix(inviteLink, "/invite") {
-			inviteLink += "/invite"
+		if code == "" { // Personal email change
+			if strings.HasSuffix(inviteLink, "/invite") {
+				inviteLink = strings.TrimSuffix(inviteLink, "/invite")
+			}
+			inviteLink = fmt.Sprintf("%s/my/confirm/%s", inviteLink, url.PathEscape(key))
+		} else { // Invite email confirmation
+			if !strings.HasSuffix(inviteLink, "/invite") {
+				inviteLink += "/invite"
+			}
+			inviteLink = fmt.Sprintf("%s/%s?key=%s", inviteLink, code, url.PathEscape(key))
 		}
-		inviteLink = fmt.Sprintf("%s/%s?key=%s", inviteLink, code, key)
 		template["helloUser"] = emailer.lang.Strings.template("helloUser", tmpl{"username": username})
 		template["confirmationURL"] = inviteLink
 		template["message"] = message
@@ -345,7 +353,7 @@ func (emailer *Emailer) constructTemplate(subject, md string, app *appContext, u
 		subject = templateEmail(subject, []string{"{username}"}, nil, map[string]interface{}{"username": username[0]})
 	}
 	email := &Message{Subject: subject}
-	html := markdown.ToHTML([]byte(md), nil, renderer)
+	html := markdown.ToHTML([]byte(md), nil, markdownRenderer)
 	text := stripMarkdown(md)
 	message := app.config.Section("messages").Key("message").String()
 	var err error
@@ -512,18 +520,6 @@ func (emailer *Emailer) constructCreated(code, username, address string, invite 
 		return nil, err
 	}
 	return email, nil
-}
-
-// GenResetLink generates and returns a password reset link.
-func (app *appContext) GenResetLink(pin string) (string, error) {
-	url := app.config.Section("password_resets").Key("url_base").String()
-	var pinLink string
-	if url == "" {
-		return pinLink, fmt.Errorf("disabled as no URL Base provided. Set in Settings > Password Resets.")
-	}
-	// Strip /invite from end of this URL, ik it's ugly.
-	pinLink = fmt.Sprintf("%s/reset?pin=%s", url, pin)
-	return pinLink, nil
 }
 
 func (emailer *Emailer) resetValues(pwr PasswordReset, app *appContext, noSub bool) map[string]interface{} {
@@ -827,49 +823,82 @@ func (emailer *Emailer) send(email *Message, address ...string) error {
 	return emailer.sender.Send(emailer.fromName, emailer.fromAddr, email, address...)
 }
 
-func (app *appContext) sendByID(email *Message, ID ...string) error {
+func (app *appContext) sendByID(email *Message, ID ...string) (err error) {
 	for _, id := range ID {
-		var err error
-		if tgChat, ok := app.storage.telegram[id]; ok && tgChat.Contact && telegramEnabled {
+		if tgChat, ok := app.storage.GetTelegramKey(id); ok && tgChat.Contact && telegramEnabled {
 			err = app.telegram.Send(email, tgChat.ChatID)
-			if err != nil {
-				return err
-			}
+			// if err != nil {
+			// 	return err
+			// }
 		}
-		if dcChat, ok := app.storage.discord[id]; ok && dcChat.Contact && discordEnabled {
+		if dcChat, ok := app.storage.GetDiscordKey(id); ok && dcChat.Contact && discordEnabled {
 			err = app.discord.Send(email, dcChat.ChannelID)
-			if err != nil {
-				return err
-			}
+			// if err != nil {
+			// 	return err
+			// }
 		}
-		if mxChat, ok := app.storage.matrix[id]; ok && mxChat.Contact && matrixEnabled {
+		if mxChat, ok := app.storage.GetMatrixKey(id); ok && mxChat.Contact && matrixEnabled {
 			err = app.matrix.Send(email, mxChat)
-			if err != nil {
-				return err
-			}
+			// if err != nil {
+			// 	return err
+			// }
 		}
-		if address, ok := app.storage.emails[id]; ok && address.Contact && emailEnabled {
+		if address, ok := app.storage.GetEmailsKey(id); ok && address.Contact && emailEnabled {
 			err = app.email.send(email, address.Addr)
-			if err != nil {
-				return err
-			}
+			// if err != nil {
+			// 	return err
+			// }
 		}
-		if err != nil {
-			return err
-		}
+		// if err != nil {
+		// 	return err
+		// }
 	}
-	return nil
+	return
 }
 
 func (app *appContext) getAddressOrName(jfID string) string {
-	if dcChat, ok := app.storage.discord[jfID]; ok && dcChat.Contact && discordEnabled {
+	if dcChat, ok := app.storage.GetDiscordKey(jfID); ok && dcChat.Contact && discordEnabled {
 		return RenderDiscordUsername(dcChat)
 	}
-	if tgChat, ok := app.storage.telegram[jfID]; ok && tgChat.Contact && telegramEnabled {
+	if tgChat, ok := app.storage.GetTelegramKey(jfID); ok && tgChat.Contact && telegramEnabled {
 		return "@" + tgChat.Username
 	}
-	if addr, ok := app.storage.emails[jfID]; ok {
+	if addr, ok := app.storage.GetEmailsKey(jfID); ok {
 		return addr.Addr
+	}
+	if mxChat, ok := app.storage.GetMatrixKey(jfID); ok && mxChat.Contact && matrixEnabled {
+		return mxChat.UserID
+	}
+	return ""
+}
+
+// ReverseUserSearch returns the jellyfin ID of the user with the given username, email, or contact method username.
+// returns "" if none found. returns only the first match, might be an issue if there are users with the same contact method usernames.
+func (app *appContext) ReverseUserSearch(address string) string {
+	user, status, err := app.jf.UserByName(address, false)
+	if status == 200 && err == nil {
+		return user.ID
+	}
+	for id, email := range app.storage.GetEmails() {
+		if strings.ToLower(address) == strings.ToLower(email.Addr) {
+			return id
+		}
+	}
+	for id, dcUser := range app.storage.GetDiscord() {
+		if RenderDiscordUsername(dcUser) == strings.ToLower(address) {
+			return id
+		}
+	}
+	tgUsername := strings.TrimPrefix(address, "@")
+	for id, tgUser := range app.storage.GetTelegram() {
+		if tgUsername == tgUser.Username {
+			return id
+		}
+	}
+	for id, mxUser := range app.storage.GetMatrix() {
+		if address == mxUser.UserID {
+			return id
+		}
 	}
 	return ""
 }

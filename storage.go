@@ -15,24 +15,189 @@ import (
 	"github.com/steambap/captcha"
 )
 
+type discordStore map[string]DiscordUser
+type telegramStore map[string]TelegramUser
+type matrixStore map[string]MatrixUser
+type emailStore map[string]EmailAddress
+
 type Storage struct {
-	timePattern                                                                                                                                                                                                          string
-	invite_path, emails_path, policy_path, configuration_path, displayprefs_path, ombi_path, profiles_path, customEmails_path, users_path, telegram_path, discord_path, matrix_path, announcements_path, matrix_sql_path string
-	users                                                                                                                                                                                                                map[string]time.Time // Map of Jellyfin User IDs to their expiry times.
-	invites                                                                                                                                                                                                              Invites
-	profiles                                                                                                                                                                                                             map[string]Profile
-	defaultProfile                                                                                                                                                                                                       string
-	displayprefs, ombi_template                                                                                                                                                                                          map[string]interface{}
-	emails                                                                                                                                                                                                               map[string]EmailAddress
-	telegram                                                                                                                                                                                                             map[string]TelegramUser // Map of Jellyfin User IDs to telegram users.
-	discord                                                                                                                                                                                                              map[string]DiscordUser  // Map of Jellyfin user IDs to discord users.
-	matrix                                                                                                                                                                                                               map[string]MatrixUser   // Map of Jellyfin user IDs to Matrix users.
-	customEmails                                                                                                                                                                                                         customEmails
-	policy                                                                                                                                                                                                               mediabrowser.Policy
-	configuration                                                                                                                                                                                                        mediabrowser.Configuration
-	lang                                                                                                                                                                                                                 Lang
-	announcements                                                                                                                                                                                                        map[string]announcementTemplate
-	invitesLock, usersLock                                                                                                                                                                                               sync.Mutex
+	timePattern                                                                                                                                                                                                                         string
+	invite_path, emails_path, policy_path, configuration_path, displayprefs_path, ombi_path, profiles_path, customEmails_path, users_path, telegram_path, discord_path, matrix_path, announcements_path, matrix_sql_path, userPage_path string
+	users                                                                                                                                                                                                                               map[string]time.Time // Map of Jellyfin User IDs to their expiry times.
+	invites                                                                                                                                                                                                                             Invites
+	profiles                                                                                                                                                                                                                            map[string]Profile
+	defaultProfile                                                                                                                                                                                                                      string
+	displayprefs, ombi_template                                                                                                                                                                                                         map[string]interface{}
+	emails                                                                                                                                                                                                                              emailStore
+	telegram                                                                                                                                                                                                                            telegramStore // Map of Jellyfin User IDs to telegram users.
+	discord                                                                                                                                                                                                                             discordStore  // Map of Jellyfin user IDs to discord users.
+	matrix                                                                                                                                                                                                                              matrixStore   // Map of Jellyfin user IDs to Matrix users.
+	customEmails                                                                                                                                                                                                                        customEmails
+	userPage                                                                                                                                                                                                                            userPageContent
+	policy                                                                                                                                                                                                                              mediabrowser.Policy
+	configuration                                                                                                                                                                                                                       mediabrowser.Configuration
+	lang                                                                                                                                                                                                                                Lang
+	announcements                                                                                                                                                                                                                       map[string]announcementTemplate
+	invitesLock, usersLock, discordLock, telegramLock, matrixLock, emailsLock                                                                                                                                                           sync.Mutex
+}
+
+// GetEmails returns a copy of the store.
+func (st *Storage) GetEmails() emailStore {
+	return st.emails
+}
+
+// GetEmailsKey returns the value stored in the store's key.
+func (st *Storage) GetEmailsKey(k string) (EmailAddress, bool) {
+	v, ok := st.emails[k]
+	return v, ok
+}
+
+// SetEmailsKey stores value v in key k.
+func (st *Storage) SetEmailsKey(k string, v EmailAddress) {
+	st.emailsLock.Lock()
+	st.emails[k] = v
+	st.storeEmails()
+	st.emailsLock.Unlock()
+}
+
+// DeleteEmailKey deletes value at key k.
+func (st *Storage) DeleteEmailsKey(k string) {
+	st.emailsLock.Lock()
+	delete(st.emails, k)
+	st.storeEmails()
+	st.emailsLock.Unlock()
+}
+
+// GetDiscord returns a copy of the store.
+func (st *Storage) GetDiscord() discordStore {
+	if st.discord == nil {
+		st.discord = discordStore{}
+	}
+	return st.discord
+}
+
+// GetDiscordKey returns the value stored in the store's key.
+func (st *Storage) GetDiscordKey(k string) (DiscordUser, bool) {
+	v, ok := st.discord[k]
+	return v, ok
+}
+
+// SetDiscordKey stores value v in key k.
+func (st *Storage) SetDiscordKey(k string, v DiscordUser) {
+	st.discordLock.Lock()
+	if st.discord == nil {
+		st.discord = discordStore{}
+	}
+	st.discord[k] = v
+	st.storeDiscordUsers()
+	st.discordLock.Unlock()
+}
+
+// DeleteDiscordKey deletes value at key k.
+func (st *Storage) DeleteDiscordKey(k string) {
+	st.discordLock.Lock()
+	delete(st.discord, k)
+	st.storeDiscordUsers()
+	st.discordLock.Unlock()
+}
+
+// GetTelegram returns a copy of the store.
+func (st *Storage) GetTelegram() telegramStore {
+	if st.telegram == nil {
+		st.telegram = telegramStore{}
+	}
+	return st.telegram
+}
+
+// GetTelegramKey returns the value stored in the store's key.
+func (st *Storage) GetTelegramKey(k string) (TelegramUser, bool) {
+	v, ok := st.telegram[k]
+	return v, ok
+}
+
+// SetTelegramKey stores value v in key k.
+func (st *Storage) SetTelegramKey(k string, v TelegramUser) {
+	st.telegramLock.Lock()
+	if st.telegram == nil {
+		st.telegram = telegramStore{}
+	}
+	st.telegram[k] = v
+	st.storeTelegramUsers()
+	st.telegramLock.Unlock()
+}
+
+// DeleteTelegramKey deletes value at key k.
+func (st *Storage) DeleteTelegramKey(k string) {
+	st.telegramLock.Lock()
+	delete(st.telegram, k)
+	st.storeTelegramUsers()
+	st.telegramLock.Unlock()
+}
+
+// GetMatrix returns a copy of the store.
+func (st *Storage) GetMatrix() matrixStore {
+	if st.matrix == nil {
+		st.matrix = matrixStore{}
+	}
+	return st.matrix
+}
+
+// GetMatrixKey returns the value stored in the store's key.
+func (st *Storage) GetMatrixKey(k string) (MatrixUser, bool) {
+	v, ok := st.matrix[k]
+	return v, ok
+}
+
+// SetMatrixKey stores value v in key k.
+func (st *Storage) SetMatrixKey(k string, v MatrixUser) {
+	st.matrixLock.Lock()
+	if st.matrix == nil {
+		st.matrix = matrixStore{}
+	}
+	st.matrix[k] = v
+	st.storeMatrixUsers()
+	st.matrixLock.Unlock()
+}
+
+// DeleteMatrixKey deletes value at key k.
+func (st *Storage) DeleteMatrixKey(k string) {
+	st.matrixLock.Lock()
+	delete(st.matrix, k)
+	st.storeMatrixUsers()
+	st.matrixLock.Unlock()
+}
+
+// GetInvites returns a copy of the store.
+func (st *Storage) GetInvites() Invites {
+	if st.invites == nil {
+		st.invites = Invites{}
+	}
+	return st.invites
+}
+
+// GetInvitesKey returns the value stored in the store's key.
+func (st *Storage) GetInvitesKey(k string) (Invite, bool) {
+	v, ok := st.invites[k]
+	return v, ok
+}
+
+// SetInvitesKey stores value v in key k.
+func (st *Storage) SetInvitesKey(k string, v Invite) {
+	st.invitesLock.Lock()
+	if st.invites == nil {
+		st.invites = Invites{}
+	}
+	st.invites[k] = v
+	st.storeInvites()
+	st.invitesLock.Unlock()
+}
+
+// DeleteInvitesKey deletes value at key k.
+func (st *Storage) DeleteInvitesKey(k string) {
+	st.invitesLock.Lock()
+	delete(st.invites, k)
+	st.storeInvites()
+	st.invitesLock.Unlock()
 }
 
 type TelegramUser struct {
@@ -49,6 +214,7 @@ type DiscordUser struct {
 	Discriminator string
 	Lang          string
 	Contact       bool
+	JellyfinID    string `json:"-"` // Used internally in discord.go
 }
 
 type EmailAddress struct {
@@ -59,23 +225,28 @@ type EmailAddress struct {
 }
 
 type customEmails struct {
-	UserCreated       customEmail `json:"userCreated"`
-	InviteExpiry      customEmail `json:"inviteExpiry"`
-	PasswordReset     customEmail `json:"passwordReset"`
-	UserDeleted       customEmail `json:"userDeleted"`
-	UserDisabled      customEmail `json:"userDisabled"`
-	UserEnabled       customEmail `json:"userEnabled"`
-	InviteEmail       customEmail `json:"inviteEmail"`
-	WelcomeEmail      customEmail `json:"welcomeEmail"`
-	EmailConfirmation customEmail `json:"emailConfirmation"`
-	UserExpired       customEmail `json:"userExpired"`
+	UserCreated       customContent `json:"userCreated"`
+	InviteExpiry      customContent `json:"inviteExpiry"`
+	PasswordReset     customContent `json:"passwordReset"`
+	UserDeleted       customContent `json:"userDeleted"`
+	UserDisabled      customContent `json:"userDisabled"`
+	UserEnabled       customContent `json:"userEnabled"`
+	InviteEmail       customContent `json:"inviteEmail"`
+	WelcomeEmail      customContent `json:"welcomeEmail"`
+	EmailConfirmation customContent `json:"emailConfirmation"`
+	UserExpired       customContent `json:"userExpired"`
 }
 
-type customEmail struct {
+type customContent struct {
 	Enabled      bool     `json:"enabled,omitempty"`
 	Content      string   `json:"content"`
 	Variables    []string `json:"variables,omitempty"`
 	Conditionals []string `json:"conditionals,omitempty"`
+}
+
+type userPageContent struct {
+	Login customContent `json:"login"`
+	Page  customContent `json:"page"`
 }
 
 // timePattern: %Y-%m-%dT%H:%M:%S.%f
@@ -107,7 +278,6 @@ type Invite struct {
 	Notify   map[string]map[string]bool `json:"notify"`
 	Profile  string                     `json:"profile"`
 	Label    string                     `json:"label,omitempty"`
-	Keys     []string                   `json:"keys,omitempty"`
 	Captchas map[string]*captcha.Data   // Map of Captcha IDs to answers
 }
 
@@ -116,9 +286,9 @@ type Lang struct {
 	chosenAdminLang   string
 	Admin             adminLangs
 	AdminJSON         map[string]string
-	FormPath          string
-	chosenFormLang    string
-	Form              formLangs
+	UserPath          string
+	chosenUserLang    string
+	User              userLangs
 	PasswordResetPath string
 	chosenPWRLang     string
 	PasswordReset     pwrLangs
@@ -144,15 +314,15 @@ func (st *Storage) loadLang(filesystems ...fs.FS) (err error) {
 	if err != nil {
 		return
 	}
-	err = st.loadLangForm(filesystems...)
+	err = st.loadLangEmail(filesystems...)
+	if err != nil {
+		return
+	}
+	err = st.loadLangUser(filesystems...)
 	if err != nil {
 		return
 	}
 	err = st.loadLangPWR(filesystems...)
-	if err != nil {
-		return
-	}
-	err = st.loadLangEmail(filesystems...)
 	if err != nil {
 		return
 	}
@@ -164,7 +334,7 @@ func (st *Storage) loadLang(filesystems ...fs.FS) (err error) {
 // from a list of other sources in a preferred order.
 // languages to patch from should be in decreasing priority,
 // E.g: If to = fr-be, from = [fr-fr, en-us].
-func (common *commonLangs) patchCommon(to *langSection, from ...string) {
+func (common *commonLangs) patchCommonStrings(to *langSection, from ...string) {
 	if *to == nil {
 		*to = langSection{}
 	}
@@ -174,6 +344,44 @@ func (common *commonLangs) patchCommon(to *langSection, from ...string) {
 			for i < len(from)-1 {
 				ev, ok = (*common)[from[i]].Strings[n]
 				if ok && ev != "" {
+					break
+				}
+				i++
+			}
+			(*to)[n] = ev
+		}
+	}
+}
+
+func (common *commonLangs) patchCommonNotifications(to *langSection, from ...string) {
+	if *to == nil {
+		*to = langSection{}
+	}
+	for n, ev := range (*common)[from[len(from)-1]].Notifications {
+		if v, ok := (*to)[n]; !ok || v == "" {
+			i := 0
+			for i < len(from)-1 {
+				ev, ok = (*common)[from[i]].Notifications[n]
+				if ok && ev != "" {
+					break
+				}
+				i++
+			}
+			(*to)[n] = ev
+		}
+	}
+}
+
+func (common *commonLangs) patchCommonQuantityStrings(to *map[string]quantityString, from ...string) {
+	if *to == nil {
+		*to = map[string]quantityString{}
+	}
+	for n, ev := range (*common)[from[len(from)-1]].QuantityStrings {
+		if v, ok := (*to)[n]; !ok || (v.Singular == "" && v.Plural == "") {
+			i := 0
+			for i < len(from)-1 {
+				ev, ok = (*common)[from[i]].QuantityStrings[n]
+				if ok && ev.Singular != "" && ev.Plural != "" {
 					break
 				}
 				i++
@@ -264,10 +472,14 @@ func (st *Storage) loadLangCommon(filesystems ...fs.FS) error {
 				if err == nil {
 					loadedLangs[fsIndex][lang.Meta.Fallback+".json"] = true
 					patchLang(&lang.Strings, &fallback.Strings, &english.Strings)
+					patchLang(&lang.Notifications, &fallback.Notifications, &english.Notifications)
+					patchQuantityStrings(&lang.QuantityStrings, &fallback.QuantityStrings, &english.QuantityStrings)
 				}
 			}
 			if (lang.Meta.Fallback != "" && err != nil) || lang.Meta.Fallback == "" {
 				patchLang(&lang.Strings, &english.Strings)
+				patchLang(&lang.Notifications, &english.Notifications)
+				patchQuantityStrings(&lang.QuantityStrings, &english.QuantityStrings)
 			}
 		}
 		st.lang.Common[index] = lang
@@ -329,7 +541,8 @@ func (st *Storage) loadLangAdmin(filesystems ...fs.FS) error {
 		if err != nil {
 			return err
 		}
-		st.lang.Common.patchCommon(&lang.Strings, index)
+		st.lang.Common.patchCommonStrings(&lang.Strings, index)
+		st.lang.Common.patchCommonNotifications(&lang.Notifications, index)
 		if fname != "en-us.json" {
 			if lang.Meta.Fallback != "" {
 				fallback, ok := st.lang.Admin[lang.Meta.Fallback]
@@ -395,16 +608,16 @@ func (st *Storage) loadLangAdmin(filesystems ...fs.FS) error {
 	return nil
 }
 
-func (st *Storage) loadLangForm(filesystems ...fs.FS) error {
-	st.lang.Form = map[string]formLang{}
-	var english formLang
+func (st *Storage) loadLangUser(filesystems ...fs.FS) error {
+	st.lang.User = map[string]userLang{}
+	var english userLang
 	loadedLangs := make([]map[string]bool, len(filesystems))
 	var load loadLangFunc
 	load = func(fsIndex int, fname string) error {
 		filesystem := filesystems[fsIndex]
 		index := strings.TrimSuffix(fname, filepath.Ext(fname))
-		lang := formLang{}
-		f, err := fs.ReadFile(filesystem, FSJoin(st.lang.FormPath, fname))
+		lang := userLang{}
+		f, err := fs.ReadFile(filesystem, FSJoin(st.lang.UserPath, fname))
 		if err != nil {
 			return err
 		}
@@ -415,14 +628,21 @@ func (st *Storage) loadLangForm(filesystems ...fs.FS) error {
 		if err != nil {
 			return err
 		}
-		st.lang.Common.patchCommon(&lang.Strings, index)
+		st.lang.Common.patchCommonStrings(&lang.Strings, index)
+		st.lang.Common.patchCommonNotifications(&lang.Notifications, index)
+		st.lang.Common.patchCommonQuantityStrings(&lang.QuantityStrings, index)
+		// turns out, a lot of email strings are useful on the user page.
+		emailLang := []langSection{st.lang.Email[index].WelcomeEmail, st.lang.Email[index].UserDisabled, st.lang.Email[index].UserExpired}
+		for _, v := range emailLang {
+			patchLang(&lang.Strings, &v)
+		}
 		if fname != "en-us.json" {
 			if lang.Meta.Fallback != "" {
-				fallback, ok := st.lang.Form[lang.Meta.Fallback]
+				fallback, ok := st.lang.User[lang.Meta.Fallback]
 				err = nil
 				if !ok {
 					err = load(fsIndex, lang.Meta.Fallback+".json")
-					fallback = st.lang.Form[lang.Meta.Fallback]
+					fallback = st.lang.User[lang.Meta.Fallback]
 				}
 				if err == nil {
 					loadedLangs[fsIndex][lang.Meta.Fallback+".json"] = true
@@ -445,9 +665,14 @@ func (st *Storage) loadLangForm(filesystems ...fs.FS) error {
 		if err != nil {
 			return err
 		}
+		userJSON, err := json.Marshal(lang)
+		if err != nil {
+			return err
+		}
 		lang.notificationsJSON = string(notifications)
 		lang.validationStringsJSON = string(validationStrings)
-		st.lang.Form[index] = lang
+		lang.JSON = string(userJSON)
+		st.lang.User[index] = lang
 		return nil
 	}
 	engFound := false
@@ -463,10 +688,10 @@ func (st *Storage) loadLangForm(filesystems ...fs.FS) error {
 	if !engFound {
 		return err
 	}
-	english = st.lang.Form["en-us"]
-	formLoaded := false
+	english = st.lang.User["en-us"]
+	userLoaded := false
 	for i := range filesystems {
-		files, err := fs.ReadDir(filesystems[i], st.lang.FormPath)
+		files, err := fs.ReadDir(filesystems[i], st.lang.UserPath)
 		if err != nil {
 			continue
 		}
@@ -474,13 +699,13 @@ func (st *Storage) loadLangForm(filesystems ...fs.FS) error {
 			if !loadedLangs[i][f.Name()] {
 				err = load(i, f.Name())
 				if err == nil {
-					formLoaded = true
+					userLoaded = true
 					loadedLangs[i][f.Name()] = true
 				}
 			}
 		}
 	}
-	if !formLoaded {
+	if !userLoaded {
 		return err
 	}
 	return nil
@@ -506,7 +731,7 @@ func (st *Storage) loadLangPWR(filesystems ...fs.FS) error {
 		if err != nil {
 			return err
 		}
-		st.lang.Common.patchCommon(&lang.Strings, index)
+		st.lang.Common.patchCommonStrings(&lang.Strings, index)
 		if fname != "en-us.json" {
 			if lang.Meta.Fallback != "" {
 				fallback, ok := st.lang.PasswordReset[lang.Meta.Fallback]
@@ -540,7 +765,7 @@ func (st *Storage) loadLangPWR(filesystems ...fs.FS) error {
 		return err
 	}
 	english = st.lang.PasswordReset["en-us"]
-	formLoaded := false
+	userLoaded := false
 	for i := range filesystems {
 		files, err := fs.ReadDir(filesystems[i], st.lang.PasswordResetPath)
 		if err != nil {
@@ -550,13 +775,13 @@ func (st *Storage) loadLangPWR(filesystems ...fs.FS) error {
 			if !loadedLangs[i][f.Name()] {
 				err = load(i, f.Name())
 				if err == nil {
-					formLoaded = true
+					userLoaded = true
 					loadedLangs[i][f.Name()] = true
 				}
 			}
 		}
 	}
-	if !formLoaded {
+	if !userLoaded {
 		return err
 	}
 	return nil
@@ -582,7 +807,7 @@ func (st *Storage) loadLangEmail(filesystems ...fs.FS) error {
 		if err != nil {
 			return err
 		}
-		st.lang.Common.patchCommon(&lang.Strings, index)
+		st.lang.Common.patchCommonStrings(&lang.Strings, index)
 		if fname != "en-us.json" {
 			if lang.Meta.Fallback != "" {
 				fallback, ok := st.lang.Email[lang.Meta.Fallback]
@@ -679,7 +904,7 @@ func (st *Storage) loadLangTelegram(filesystems ...fs.FS) error {
 		if err != nil {
 			return err
 		}
-		st.lang.Common.patchCommon(&lang.Strings, index)
+		st.lang.Common.patchCommonStrings(&lang.Strings, index)
 		if fname != "en-us.json" {
 			if lang.Meta.Fallback != "" {
 				fallback, ok := st.lang.Telegram[lang.Meta.Fallback]
@@ -739,14 +964,10 @@ func (st *Storage) loadLangTelegram(filesystems ...fs.FS) error {
 type Invites map[string]Invite
 
 func (st *Storage) loadInvites() error {
-	st.invitesLock.Lock()
-	defer st.invitesLock.Unlock()
 	return loadJSON(st.invite_path, &st.invites)
 }
 
 func (st *Storage) storeInvites() error {
-	st.invitesLock.Lock()
-	defer st.invitesLock.Unlock()
 	return storeJSON(st.invite_path, st.invites)
 }
 
@@ -811,6 +1032,14 @@ func (st *Storage) loadCustomEmails() error {
 
 func (st *Storage) storeCustomEmails() error {
 	return storeJSON(st.customEmails_path, st.customEmails)
+}
+
+func (st *Storage) loadUserPageContent() error {
+	return loadJSON(st.userPage_path, &st.userPage)
+}
+
+func (st *Storage) storeUserPageContent() error {
+	return storeJSON(st.userPage_path, st.userPage)
 }
 
 func (st *Storage) loadPolicy() error {

@@ -12,6 +12,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
+	"github.com/gomarkdown/markdown"
 	"github.com/hrfee/mediabrowser"
 	"github.com/steambap/captcha"
 )
@@ -44,15 +45,23 @@ func gcHTML(gc *gin.Context, code int, file string, templ gin.H) {
 	gc.HTML(code, file, templ)
 }
 
-func (app *appContext) pushResources(gc *gin.Context, admin bool) {
+func (app *appContext) pushResources(gc *gin.Context, page Page) {
+	var toPush []string
+	switch page {
+	case AdminPage:
+		toPush = []string{"/js/admin.js", "/js/theme.js", "/js/lang.js", "/js/modal.js", "/js/tabs.js", "/js/invites.js", "/js/accounts.js", "/js/settings.js", "/js/profiles.js", "/js/common.js"}
+		break
+	case UserPage:
+		toPush = []string{"/js/user.js", "/js/theme.js", "/js/lang.js", "/js/modal.js", "/js/common.js"}
+		break
+	default:
+		toPush = []string{}
+	}
 	if pusher := gc.Writer.Pusher(); pusher != nil {
 		app.debug.Println("Using HTTP2 Server push")
-		if admin {
-			toPush := []string{"/js/admin.js", "/js/theme.js", "/js/lang.js", "/js/modal.js", "/js/tabs.js", "/js/invites.js", "/js/accounts.js", "/js/settings.js", "/js/profiles.js", "/js/common.js"}
-			for _, f := range toPush {
-				if err := pusher.Push(app.URLBase+f, nil); err != nil {
-					app.debug.Printf("Failed HTTP2 ServerPush of \"%s\": %+v", f, err)
-				}
+		for _, f := range toPush {
+			if err := pusher.Push(app.URLBase+f, nil); err != nil {
+				app.debug.Printf("Failed HTTP2 ServerPush of \"%s\": %+v", f, err)
 			}
 		}
 	}
@@ -65,6 +74,8 @@ const (
 	AdminPage Page = iota + 1
 	FormPage
 	PWRPage
+	UserPage
+	OtherPage
 )
 
 func (app *appContext) getLang(gc *gin.Context, page Page, chosen string) string {
@@ -77,8 +88,8 @@ func (app *appContext) getLang(gc *gin.Context, page Page, chosen string) string
 				gc.SetCookie("lang", lang, (365 * 3600), "/", gc.Request.URL.Hostname(), true, true)
 				return lang
 			}
-		case FormPage:
-			if _, ok := app.storage.lang.Form[lang]; ok {
+		case FormPage, UserPage:
+			if _, ok := app.storage.lang.User[lang]; ok {
 				gc.SetCookie("lang", lang, (365 * 3600), "/", gc.Request.URL.Hostname(), true, true)
 				return lang
 			}
@@ -95,8 +106,8 @@ func (app *appContext) getLang(gc *gin.Context, page Page, chosen string) string
 			if _, ok := app.storage.lang.Admin[cookie]; ok {
 				return cookie
 			}
-		case FormPage:
-			if _, ok := app.storage.lang.Form[cookie]; ok {
+		case FormPage, UserPage:
+			if _, ok := app.storage.lang.User[cookie]; ok {
 				return cookie
 			}
 		case PWRPage:
@@ -109,7 +120,7 @@ func (app *appContext) getLang(gc *gin.Context, page Page, chosen string) string
 }
 
 func (app *appContext) AdminPage(gc *gin.Context) {
-	app.pushResources(gc, true)
+	app.pushResources(gc, AdminPage)
 	lang := app.getLang(gc, AdminPage, app.storage.lang.chosenAdminLang)
 	emailEnabled, _ := app.config.Section("invite_emails").Key("enabled").Bool()
 	notificationsEnabled, _ := app.config.Section("notifications").Key("enabled").Bool()
@@ -146,7 +157,76 @@ func (app *appContext) AdminPage(gc *gin.Context) {
 		"jellyfinLogin":    app.jellyfinLogin,
 		"jfAdminOnly":      jfAdminOnly,
 		"jfAllowAll":       jfAllowAll,
+		"userPageEnabled":  app.config.Section("user_page").Key("enabled").MustBool(false),
 	})
+}
+
+func (app *appContext) MyUserPage(gc *gin.Context) {
+	app.pushResources(gc, UserPage)
+	lang := app.getLang(gc, UserPage, app.storage.lang.chosenUserLang)
+	emailEnabled, _ := app.config.Section("invite_emails").Key("enabled").Bool()
+	notificationsEnabled, _ := app.config.Section("notifications").Key("enabled").Bool()
+	ombiEnabled := app.config.Section("ombi").Key("enabled").MustBool(false)
+	data := gin.H{
+		"urlBase":           app.getURLBase(gc),
+		"cssClass":          app.cssClass,
+		"cssVersion":        cssVersion,
+		"contactMessage":    app.config.Section("ui").Key("contact_message").String(),
+		"emailEnabled":      emailEnabled,
+		"emailRequired":     app.config.Section("email").Key("required").MustBool(false),
+		"telegramEnabled":   telegramEnabled,
+		"discordEnabled":    discordEnabled,
+		"matrixEnabled":     matrixEnabled,
+		"ombiEnabled":       ombiEnabled,
+		"pwrEnabled":        app.config.Section("password_resets").Key("enabled").MustBool(false),
+		"linkResetEnabled":  app.config.Section("password_resets").Key("link_reset").MustBool(false),
+		"notifications":     notificationsEnabled,
+		"username":          !app.config.Section("email").Key("no_username").MustBool(false),
+		"strings":           app.storage.lang.User[lang].Strings,
+		"validationStrings": app.storage.lang.User[lang].validationStringsJSON,
+		"language":          app.storage.lang.User[lang].JSON,
+		"langName":          lang,
+		"jfLink":            app.config.Section("ui").Key("redirect_url").String(),
+		"requirements":      app.validator.getCriteria(),
+	}
+	if telegramEnabled {
+		data["telegramUsername"] = app.telegram.username
+		data["telegramURL"] = app.telegram.link
+		data["telegramRequired"] = app.config.Section("telegram").Key("required").MustBool(false)
+	}
+	if matrixEnabled {
+		data["matrixRequired"] = app.config.Section("matrix").Key("required").MustBool(false)
+		data["matrixUser"] = app.matrix.userID
+	}
+	if discordEnabled {
+		data["discordUsername"] = app.discord.username
+		data["discordRequired"] = app.config.Section("discord").Key("required").MustBool(false)
+		data["discordSendPINMessage"] = template.HTML(app.storage.lang.User[lang].Strings.template("sendPINDiscord", tmpl{
+			"command":        `<span class="text-black dark:text-white font-mono">/` + app.config.Section("discord").Key("start_command").MustString("start") + `</span>`,
+			"server_channel": app.discord.serverChannelName,
+		}))
+		data["discordServerName"] = app.discord.serverName
+		data["discordInviteLink"] = app.discord.inviteChannelName != ""
+	}
+
+	pageMessages := map[string]*customContent{
+		"Login": app.getCustomMessage("UserLogin"),
+		"Page":  app.getCustomMessage("UserPage"),
+	}
+
+	for name, msg := range pageMessages {
+		if msg == nil {
+			continue
+		}
+		data[name+"MessageEnabled"] = msg.Enabled
+		if !msg.Enabled {
+			continue
+		}
+		// We don't template here, since the username is only known after login.
+		data[name+"MessageContent"] = template.HTML(markdown.ToHTML([]byte(msg.Content), nil, markdownRenderer))
+	}
+
+	gcHTML(gc, http.StatusOK, "user.html", data)
 }
 
 func (app *appContext) ResetPassword(gc *gin.Context) {
@@ -157,7 +237,7 @@ func (app *appContext) ResetPassword(gc *gin.Context) {
 		app.NoRouteHandler(gc)
 		return
 	}
-	app.pushResources(gc, false)
+	app.pushResources(gc, PWRPage)
 	lang := app.getLang(gc, PWRPage, app.storage.lang.chosenPWRLang)
 	data := gin.H{
 		"urlBase":        app.getURLBase(gc),
@@ -177,8 +257,8 @@ func (app *appContext) ResetPassword(gc *gin.Context) {
 		data["validate"] = app.config.Section("password_validation").Key("enabled").MustBool(false)
 		data["requirements"] = app.validator.getCriteria()
 		data["strings"] = app.storage.lang.PasswordReset[lang].Strings
-		data["validationStrings"] = app.storage.lang.Form[lang].validationStringsJSON
-		data["notifications"] = app.storage.lang.Form[lang].notificationsJSON
+		data["validationStrings"] = app.storage.lang.User[lang].validationStringsJSON
+		data["notifications"] = app.storage.lang.User[lang].notificationsJSON
 		data["langName"] = lang
 		data["passwordReset"] = true
 		data["telegramEnabled"] = false
@@ -266,9 +346,10 @@ func (app *appContext) ResetPassword(gc *gin.Context) {
 func (app *appContext) GetCaptcha(gc *gin.Context) {
 	code := gc.Param("invCode")
 	captchaID := gc.Param("captchaID")
-	inv, ok := app.storage.invites[code]
+	inv, ok := app.storage.GetInvitesKey(code)
 	if !ok {
 		gcHTML(gc, 404, "invalidCode.html", gin.H{
+			"urlBase":        app.getURLBase(gc),
 			"cssClass":       app.cssClass,
 			"cssVersion":     cssVersion,
 			"contactMessage": app.config.Section("ui").Key("contact_message").String(),
@@ -300,9 +381,10 @@ func (app *appContext) GetCaptcha(gc *gin.Context) {
 // @tags Users
 func (app *appContext) GenCaptcha(gc *gin.Context) {
 	code := gc.Param("invCode")
-	inv, ok := app.storage.invites[code]
+	inv, ok := app.storage.GetInvitesKey(code)
 	if !ok {
 		gcHTML(gc, 404, "invalidCode.html", gin.H{
+			"urlBase":        app.getURLBase(gc),
 			"cssClass":       app.cssClass,
 			"cssVersion":     cssVersion,
 			"contactMessage": app.config.Section("ui").Key("contact_message").String(),
@@ -319,8 +401,7 @@ func (app *appContext) GenCaptcha(gc *gin.Context) {
 	}
 	captchaID := genAuthToken()
 	inv.Captchas[captchaID] = capt
-	app.storage.invites[code] = inv
-	app.storage.storeInvites()
+	app.storage.SetInvitesKey(code, inv)
 	gc.JSON(200, genCaptchaDTO{captchaID})
 	return
 }
@@ -329,7 +410,7 @@ func (app *appContext) verifyCaptcha(code, id, text string) bool {
 	reCAPTCHA := app.config.Section("captcha").Key("recaptcha").MustBool(false)
 	if !reCAPTCHA {
 		// internal CAPTCHA
-		inv, ok := app.storage.invites[code]
+		inv, ok := app.storage.GetInvitesKey(code)
 		if !ok || inv.Captchas == nil {
 			app.debug.Printf("Couldn't find invite \"%s\"", code)
 			return false
@@ -396,9 +477,10 @@ func (app *appContext) VerifyCaptcha(gc *gin.Context) {
 	code := gc.Param("invCode")
 	captchaID := gc.Param("captchaID")
 	text := gc.Param("text")
-	inv, ok := app.storage.invites[code]
+	inv, ok := app.storage.GetInvitesKey(code)
 	if !ok {
 		gcHTML(gc, 404, "invalidCode.html", gin.H{
+			"urlBase":        app.getURLBase(gc),
 			"cssClass":       app.cssClass,
 			"cssVersion":     cssVersion,
 			"contactMessage": app.config.Section("ui").Key("contact_message").String(),
@@ -422,14 +504,15 @@ func (app *appContext) VerifyCaptcha(gc *gin.Context) {
 }
 
 func (app *appContext) InviteProxy(gc *gin.Context) {
-	app.pushResources(gc, false)
+	app.pushResources(gc, FormPage)
 	code := gc.Param("invCode")
-	lang := app.getLang(gc, FormPage, app.storage.lang.chosenFormLang)
+	lang := app.getLang(gc, FormPage, app.storage.lang.chosenUserLang)
 	/* Don't actually check if the invite is valid, just if it exists, just so the page loads quicker. Invite is actually checked on submit anyway. */
 	// if app.checkInvite(code, false, "") {
-	inv, ok := app.storage.invites[code]
+	inv, ok := app.storage.GetInvitesKey(code)
 	if !ok {
 		gcHTML(gc, 404, "invalidCode.html", gin.H{
+			"urlBase":        app.getURLBase(gc),
 			"cssClass":       app.cssClass,
 			"cssVersion":     cssVersion,
 			"contactMessage": app.config.Section("ui").Key("contact_message").String(),
@@ -437,23 +520,27 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 		return
 	}
 	if key := gc.Query("key"); key != "" && app.config.Section("email_confirmation").Key("enabled").MustBool(false) {
-		validKey := false
-		keyIndex := -1
-		for i, k := range inv.Keys {
-			if k == key {
-				validKey = true
-				keyIndex = i
-				break
-			}
-		}
 		fail := func() {
 			gcHTML(gc, 404, "404.html", gin.H{
+				"urlBase":        app.getURLBase(gc),
 				"cssClass":       app.cssClass,
 				"cssVersion":     cssVersion,
 				"contactMessage": app.config.Section("ui").Key("contact_message").String(),
 			})
 		}
-		if !validKey {
+		var req newUserDTO
+		if app.ConfirmationKeys == nil {
+			fail()
+			return
+		}
+
+		invKeys, ok := app.ConfirmationKeys[code]
+		if !ok {
+			fail()
+			return
+		}
+		req, ok = invKeys[key]
+		if !ok {
 			fail()
 			return
 		}
@@ -464,26 +551,17 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 			return
 		}
 		claims, ok := token.Claims.(jwt.MapClaims)
-		expiryUnix := int64(claims["exp"].(float64))
-		if err != nil {
-			fail()
-			app.err.Printf("Failed to parse key expiry: %s", err)
-			return
-		}
-		expiry := time.Unix(expiryUnix, 0)
+		expiry := time.Unix(int64(claims["exp"].(float64)), 0)
 		if !(ok && token.Valid && claims["invite"].(string) == code && claims["type"].(string) == "confirmation" && expiry.After(time.Now())) {
 			fail()
 			app.debug.Printf("Invalid key")
 			return
 		}
-		req := newUserDTO{
-			Email:    claims["email"].(string),
-			Username: claims["username"].(string),
-			Password: claims["password"].(string),
-			Code:     claims["invite"].(string),
-		}
-		_, success := app.newUser(req, true)
+		f, success := app.newUser(req, true)
 		if !success {
+			app.err.Printf("Failed to create new user")
+			// Not meant for us. Calling this will be a mess, but at least it might give us some information.
+			f(gc)
 			fail()
 			return
 		}
@@ -492,28 +570,37 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 			gc.Redirect(301, jfLink)
 		} else {
 			gcHTML(gc, http.StatusOK, "create-success.html", gin.H{
+				"urlBase":        app.getURLBase(gc),
 				"cssClass":       app.cssClass,
-				"strings":        app.storage.lang.Form[lang].Strings,
+				"cssVersion":     cssVersion,
+				"strings":        app.storage.lang.User[lang].Strings,
 				"successMessage": app.config.Section("ui").Key("success_message").String(),
 				"contactMessage": app.config.Section("ui").Key("contact_message").String(),
 				"jfLink":         jfLink,
 			})
 		}
-		inv, ok := app.storage.invites[code]
-		if ok {
-			l := len(inv.Keys)
-			inv.Keys[l-1], inv.Keys[keyIndex] = inv.Keys[keyIndex], inv.Keys[l-1]
-			app.storage.invites[code] = inv
-		}
+		delete(invKeys, key)
+		app.confirmationKeysLock.Lock()
+		app.ConfirmationKeys[code] = invKeys
+		app.confirmationKeysLock.Unlock()
 		return
 	}
-	email := app.storage.invites[code].SendTo
+	email := ""
+	if invite, ok := app.storage.GetInvitesKey(code); ok {
+		email = invite.SendTo
+	}
 	if strings.Contains(email, "Failed") || !strings.Contains(email, "@") {
 		email = ""
 	}
 	telegram := telegramEnabled && app.config.Section("telegram").Key("show_on_reg").MustBool(true)
 	discord := discordEnabled && app.config.Section("discord").Key("show_on_reg").MustBool(true)
 	matrix := matrixEnabled && app.config.Section("matrix").Key("show_on_reg").MustBool(true)
+
+	userPageAddress := app.config.Section("invite_emails").Key("url_base").String()
+	if userPageAddress == "" {
+		userPageAddress = app.config.Section("password_resets").Key("url_base").String()
+	}
+	userPageAddress += "/my/account"
 
 	data := gin.H{
 		"urlBase":            app.getURLBase(gc),
@@ -528,9 +615,9 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 		"requirements":       app.validator.getCriteria(),
 		"email":              email,
 		"username":           !app.config.Section("email").Key("no_username").MustBool(false),
-		"strings":            app.storage.lang.Form[lang].Strings,
-		"validationStrings":  app.storage.lang.Form[lang].validationStringsJSON,
-		"notifications":      app.storage.lang.Form[lang].notificationsJSON,
+		"strings":            app.storage.lang.User[lang].Strings,
+		"validationStrings":  app.storage.lang.User[lang].validationStringsJSON,
+		"notifications":      app.storage.lang.User[lang].notificationsJSON,
 		"code":               code,
 		"confirmation":       app.config.Section("email_confirmation").Key("enabled").MustBool(false),
 		"userExpiry":         inv.UserExpiry,
@@ -538,7 +625,7 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 		"userExpiryDays":     inv.UserDays,
 		"userExpiryHours":    inv.UserHours,
 		"userExpiryMinutes":  inv.UserMinutes,
-		"userExpiryMessage":  app.storage.lang.Form[lang].Strings.get("yourAccountIsValidUntil"),
+		"userExpiryMessage":  app.storage.lang.User[lang].Strings.get("yourAccountIsValidUntil"),
 		"langName":           lang,
 		"passwordReset":      false,
 		"telegramEnabled":    telegram,
@@ -548,6 +635,8 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 		"captcha":            app.config.Section("captcha").Key("enabled").MustBool(false),
 		"reCAPTCHA":          app.config.Section("captcha").Key("recaptcha").MustBool(false),
 		"reCAPTCHASiteKey":   app.config.Section("captcha").Key("recaptcha_site_key").MustString(""),
+		"userPageEnabled":    app.config.Section("user_page").Key("enabled").MustBool(false),
+		"userPageAddress":    userPageAddress,
 	}
 	if telegram {
 		data["telegramPIN"] = app.telegram.NewAuthToken()
@@ -563,7 +652,7 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 		data["discordPIN"] = app.discord.NewAuthToken()
 		data["discordUsername"] = app.discord.username
 		data["discordRequired"] = app.config.Section("discord").Key("required").MustBool(false)
-		data["discordSendPINMessage"] = template.HTML(app.storage.lang.Form[lang].Strings.template("sendPINDiscord", tmpl{
+		data["discordSendPINMessage"] = template.HTML(app.storage.lang.User[lang].Strings.template("sendPINDiscord", tmpl{
 			"command":        `<span class="text-black dark:text-white font-mono">/` + app.config.Section("discord").Key("start_command").MustString("start") + `</span>`,
 			"server_channel": app.discord.serverChannelName,
 		}))
@@ -579,8 +668,9 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 }
 
 func (app *appContext) NoRouteHandler(gc *gin.Context) {
-	app.pushResources(gc, false)
+	app.pushResources(gc, OtherPage)
 	gcHTML(gc, 404, "404.html", gin.H{
+		"urlBase":        app.getURLBase(gc),
 		"cssClass":       app.cssClass,
 		"cssVersion":     cssVersion,
 		"contactMessage": app.config.Section("ui").Key("contact_message").String(),

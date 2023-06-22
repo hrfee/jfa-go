@@ -25,5 +25,7 @@
         "theme": "Tema",
         "refresh": "Aggiorna",
         "required": "Richiesto"
-    }
+    },
+    "notifications": {},
+    "quantityStrings": {}
 }

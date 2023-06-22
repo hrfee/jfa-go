@@ -2,7 +2,8 @@ import { Modal } from "./modules/modal.js";
 import { notificationBox, whichAnimationEvent } from "./modules/common.js";
 import { _get, _post, toggleLoader, addLoader, removeLoader, toDateString } from "./modules/common.js";
 import { loadLangSelector } from "./modules/lang.js";
-import { initValidator } from "./modules/validator.js";
+import { Validator, ValidatorConf, ValidatorRespDTO } from "./modules/validator.js";
+import { Discord, Telegram, Matrix, ServiceConfiguration, MatrixConfiguration } from "./modules/account-linking.js";
 
 interface formWindow extends Window {
     invalidPassword: string;
@@ -34,6 +35,8 @@ interface formWindow extends Window {
     captcha: boolean;
     reCAPTCHA: boolean;
     reCAPTCHASiteKey: string;
+    userPageEnabled: boolean;
+    userPageAddress: string;
 }
 
 loadLangSelector("form");
@@ -49,112 +52,63 @@ var telegramVerified = false;
 if (window.telegramEnabled) {
     window.telegramModal = new Modal(document.getElementById("modal-telegram"), window.telegramRequired);
     const telegramButton = document.getElementById("link-telegram") as HTMLSpanElement;
-    telegramButton.onclick = () => {
-        const waiting = document.getElementById("telegram-waiting") as HTMLSpanElement;
-        toggleLoader(waiting);
-        window.telegramModal.show();
-        let modalClosed = false;
-        window.telegramModal.onclose = () => {
-            modalClosed = true;
-            toggleLoader(waiting);
-        }
-        const checkVerified = () => _get("/invite/" + window.code + "/telegram/verified/" + window.telegramPIN, null, (req: XMLHttpRequest) => {
-            if (req.readyState == 4) {
-                if (req.status == 401) {
-                    window.telegramModal.close();
-                    window.notifications.customError("invalidCodeError", window.messages["errorInvalidCode"]);
-                    return;
-                } else if (req.status == 400) {
-                    window.telegramModal.close();
-                    window.notifications.customError("accountLinkedError", window.messages["errorAccountLinked"]);
-                } else if (req.status == 200) {
-                    if (req.response["success"] as boolean) {
-                        telegramVerified = true;
-                        waiting.classList.add("~positive");
-                        waiting.classList.remove("~info");
-                        window.notifications.customPositive("telegramVerified", "", window.messages["verified"]); 
-                        setTimeout(window.telegramModal.close, 2000);
-                        telegramButton.classList.add("unfocused");
-                        document.getElementById("contact-via").classList.remove("unfocused");
-                        document.getElementById("contact-via-email").parentElement.classList.remove("unfocused");
-                        const radio = document.getElementById("contact-via-telegram") as HTMLInputElement;
-                        radio.parentElement.classList.remove("unfocused");
-                        radio.checked = true;
-                        validatorFunc();
-                    } else if (!modalClosed) {
-                        setTimeout(checkVerified, 1500);
-                    }
-                }
-            }
-        });
-        checkVerified();
-    };
-}
 
-interface DiscordInvite {
-    invite: string;
-    icon: string;
+    const telegramConf: ServiceConfiguration = {
+        modal: window.telegramModal as Modal,
+        pin: window.telegramPIN,
+        pinURL: "",
+        verifiedURL: "/invite/" + window.code + "/telegram/verified/",
+        invalidCodeError: window.messages["errorInvalidPIN"],
+        accountLinkedError: window.messages["errorAccountLinked"],
+        successError: window.messages["verified"],
+        successFunc: (modalClosed: boolean) => {
+            if (modalClosed) return;
+            telegramVerified = true;
+            telegramButton.classList.add("unfocused");
+            document.getElementById("contact-via").classList.remove("unfocused");
+            document.getElementById("contact-via-email").parentElement.classList.remove("unfocused");
+            const radio = document.getElementById("contact-via-telegram") as HTMLInputElement;
+            radio.parentElement.classList.remove("unfocused");
+            radio.checked = true;
+            validator.validate();
+        }
+    };
+
+    const telegram = new Telegram(telegramConf);
+
+    telegramButton.onclick = () => { telegram.onclick(); };
 }
 
 var discordVerified = false;
 if (window.discordEnabled) {
     window.discordModal = new Modal(document.getElementById("modal-discord"), window.discordRequired);
     const discordButton = document.getElementById("link-discord") as HTMLSpanElement;
-    if (window.discordInviteLink) {
-        _get("/invite/" + window.code + "/discord/invite", null, (req: XMLHttpRequest) => {
-            if (req.readyState == 4) {
-                if (req.status != 200) {
-                    return;
-                }
-                const inv = req.response as DiscordInvite;
-                const link = document.getElementById("discord-invite") as HTMLAnchorElement;
-                link.classList.add("subheading", "link-center");
-                link.href = inv.invite;
-                link.target = "_blank";
-                link.innerHTML = `<span class="img-circle lg mr-4"><img class="img-circle" src="${inv.icon}" width="64" height="64"></span>${window.discordServerName}`;
-            }
-        });
-    }
-    discordButton.onclick = () => {
-        const waiting = document.getElementById("discord-waiting") as HTMLSpanElement;
-        toggleLoader(waiting);
-        window.discordModal.show();
-        let modalClosed = false;
-        window.discordModal.onclose = () => {
-            modalClosed = true;
-            toggleLoader(waiting);
+    
+    const discordConf: ServiceConfiguration = {
+        modal: window.discordModal as Modal,
+        pin: window.discordPIN,
+        inviteURL: window.discordInviteLink ? ("/invite/" + window.code + "/discord/invite") : "",
+        pinURL: "",
+        verifiedURL: "/invite/" + window.code + "/discord/verified/",
+        invalidCodeError: window.messages["errorInvalidPIN"],
+        accountLinkedError: window.messages["errorAccountLinked"],
+        successError: window.messages["verified"],
+        successFunc: (modalClosed: boolean) => {
+            if (modalClosed) return;
+            discordVerified = true;
+            discordButton.classList.add("unfocused");
+            document.getElementById("contact-via").classList.remove("unfocused");
+            document.getElementById("contact-via-email").parentElement.classList.remove("unfocused");
+            const radio = document.getElementById("contact-via-discord") as HTMLInputElement;
+            radio.parentElement.classList.remove("unfocused")
+            radio.checked = true;
+            validator.validate();
         }
-        const checkVerified = () => _get("/invite/" + window.code + "/discord/verified/" + window.discordPIN, null, (req: XMLHttpRequest) => {
-            if (req.readyState == 4) {
-                if (req.status == 401) {
-                    window.discordModal.close();
-                    window.notifications.customError("invalidCodeError", window.messages["errorInvalidCode"]);
-                    return;
-                } else if (req.status == 400) {
-                    window.discordModal.close();
-                    window.notifications.customError("accountLinkedError", window.messages["errorAccountLinked"]);
-                } else if (req.status == 200) {
-                    if (req.response["success"] as boolean) {
-                        discordVerified = true;
-                        waiting.classList.add("~positive");
-                        waiting.classList.remove("~info");
-                        window.notifications.customPositive("discordVerified", "", window.messages["verified"]); 
-                        setTimeout(window.discordModal.close, 2000);
-                        discordButton.classList.add("unfocused");
-                        document.getElementById("contact-via").classList.remove("unfocused");
-                        document.getElementById("contact-via-email").parentElement.classList.remove("unfocused");
-                        const radio = document.getElementById("contact-via-discord") as HTMLInputElement;
-                        radio.parentElement.classList.remove("unfocused")
-                        radio.checked = true;
-                        validatorFunc();
-                    } else if (!modalClosed) {
-                        setTimeout(checkVerified, 1500);
-                    }
-                }
-            }
-        });
-        checkVerified();
     };
+
+    const discord = new Discord(discordConf);
+
+    discordButton.onclick = () => { discord.onclick(); };
 }
 
 var matrixVerified = false;
@@ -162,69 +116,31 @@ var matrixPIN = "";
 if (window.matrixEnabled) {
     window.matrixModal = new Modal(document.getElementById("modal-matrix"), window.matrixRequired);
     const matrixButton = document.getElementById("link-matrix") as HTMLSpanElement;
-    matrixButton.onclick = window.matrixModal.show;
-    const submitButton = document.getElementById("matrix-send") as HTMLSpanElement;
-    const input = document.getElementById("matrix-userid") as HTMLInputElement;
-    let userID = "";
-    submitButton.onclick = () => {
-        addLoader(submitButton);
-        if (userID == "") {
-            const send = {
-                user_id: input.value
-            };
-            _post("/invite/" + window.code + "/matrix/user", send, (req: XMLHttpRequest) => {
-                if (req.readyState == 4) {
-                    if (req.status == 400 && req.response["error"] == "errorAccountLinked") {
-                        window.matrixModal.close();
-                        window.notifications.customError("accountLinkedError", window.messages["errorAccountLinked"]);
-                    }
-                    removeLoader(submitButton);
-                    userID = input.value;
-                    if (req.status != 200) {
-                        window.notifications.customError("errorUnknown", window.messages["errorUnknown"]);
-                        window.matrixModal.close();
-                        return;
-                    }
-                    submitButton.classList.add("~positive");
-                    submitButton.classList.remove("~info");
-                    setTimeout(() => {
-                        submitButton.classList.add("~info");
-                        submitButton.classList.remove("~positive");
-                    }, 2000);
-                    input.placeholder = "PIN";
-                    input.value = "";
-                }
-            });
-        } else {
-            _get("/invite/" + window.code + "/matrix/verified/" + userID + "/" + input.value, null, (req: XMLHttpRequest) => {
-                if (req.readyState == 4) {
-                    removeLoader(submitButton)
-                    const valid = req.response["success"] as boolean;
-                    if (valid) {
-                        window.matrixModal.close();
-                        window.notifications.customPositive("successVerified", "", window.messages["verified"]);
-                        matrixVerified = true;
-                        matrixPIN = input.value;
-                        matrixButton.classList.add("unfocused");
-                        document.getElementById("contact-via").classList.remove("unfocused");
-                        document.getElementById("contact-via-email").parentElement.classList.remove("unfocused");
-                        const radio = document.getElementById("contact-via-matrix") as HTMLInputElement;
-                        radio.parentElement.classList.remove("unfocused");
-                        radio.checked = true;
-                        validatorFunc();
-                    } else {
-                        window.notifications.customError("errorInvalidPIN", window.messages["errorInvalidPIN"]);
-                        submitButton.classList.add("~critical");
-                        submitButton.classList.remove("~info");
-                        setTimeout(() => {
-                            submitButton.classList.add("~info");
-                            submitButton.classList.remove("~critical");
-                        }, 800);
-                    }
-                }
-            },);
+    
+    const matrixConf: MatrixConfiguration = {
+        modal: window.matrixModal as Modal,
+        sendMessageURL: "/invite/" + window.code + "/matrix/user",
+        verifiedURL: "/invite/" + window.code + "/matrix/verified/",
+        invalidCodeError: window.messages["errorInvalidPIN"],
+        accountLinkedError: window.messages["errorAccountLinked"],
+        unknownError: window.messages["errorUnknown"],
+        successError: window.messages["verified"],
+        successFunc: () => {
+            matrixVerified = true;
+            matrixPIN = matrix.pin;
+            matrixButton.classList.add("unfocused");
+            document.getElementById("contact-via").classList.remove("unfocused");
+            document.getElementById("contact-via-email").parentElement.classList.remove("unfocused");
+            const radio = document.getElementById("contact-via-matrix") as HTMLInputElement;
+            radio.parentElement.classList.remove("unfocused");
+            radio.checked = true;
+            validator.validate();
         }
     };
+
+    const matrix = new Matrix(matrixConf);
+
+    matrixButton.onclick = () => { matrix.show(); };
 }
 
 if (window.confirmation) {
@@ -247,7 +163,7 @@ if (window.userExpiryEnabled) {
 }
 
 const form = document.getElementById("form-create") as HTMLFormElement;
-const submitButton = form.querySelector("input[type=submit]") as HTMLInputElement;
+const submitInput = form.querySelector("input[type=submit]") as HTMLInputElement;
 const submitSpan = form.querySelector("span.submit") as HTMLSpanElement;
 const submitText = submitSpan.textContent;
 let usernameField = document.getElementById("create-username") as HTMLInputElement;
@@ -262,33 +178,31 @@ let captchaInput = document.getElementById("captcha-input") as HTMLInputElement;
 const captchaCheckbox = document.getElementById("captcha-success") as HTMLSpanElement;
 let prevCaptcha = "";
 
-function baseValidator(oncomplete: (valid: boolean) => void): void {
-    let captchaChecked = false;
-    let captchaChange = false;
-    if (window.captcha && !window.reCAPTCHA) {
-        captchaChange = captchaInput.value != prevCaptcha;
-        if (captchaChange) {
-            prevCaptcha = captchaInput.value;
-            _post("/captcha/verify/" + window.code + "/" + captchaID + "/" + captchaInput.value, null, (req: XMLHttpRequest) => {
-                if (req.readyState == 4) {
-                    if (req.status == 204) {
-                        captchaCheckbox.innerHTML = `<i class="ri-check-line"></i>`;
-                        captchaCheckbox.classList.add("~positive");
-                        captchaCheckbox.classList.remove("~critical");
-                        captchaVerified = true;
-                        captchaChecked = true;
-                    } else {
-                        captchaCheckbox.innerHTML = `<i class="ri-close-line"></i>`;
-                        captchaCheckbox.classList.add("~critical");
-                        captchaCheckbox.classList.remove("~positive");
-                        captchaVerified = false;
-                        captchaChecked = true;
-                        return;
-                    }
+let baseValidator = (oncomplete: (valid: boolean) => void): void => {
+    if (window.captcha && !window.reCAPTCHA && (captchaInput.value != prevCaptcha)) {
+        prevCaptcha = captchaInput.value;
+        _post("/captcha/verify/" + window.code + "/" + captchaID + "/" + captchaInput.value, null, (req: XMLHttpRequest) => {
+            if (req.readyState == 4) {
+                if (req.status == 204) {
+                    captchaCheckbox.innerHTML = `<i class="ri-check-line"></i>`;
+                    captchaCheckbox.classList.add("~positive");
+                    captchaCheckbox.classList.remove("~critical");
+                    captchaVerified = true;
+                } else {
+                    captchaCheckbox.innerHTML = `<i class="ri-close-line"></i>`;
+                    captchaCheckbox.classList.add("~critical");
+                    captchaCheckbox.classList.remove("~positive");
+                    captchaVerified = false;
                 }
-            });
-        }
+                _baseValidator(oncomplete, captchaVerified);
+            }
+        });
+    } else {
+        _baseValidator(oncomplete, captchaVerified);
     }
+}
+
+function _baseValidator(oncomplete: (valid: boolean) => void, captchaValid: boolean): void {
     if (window.emailRequired) {
         if (!emailField.value.includes("@")) {
             oncomplete(false);
@@ -307,18 +221,11 @@ function baseValidator(oncomplete: (valid: boolean) => void): void {
         oncomplete(false);
         return;
     }
-    if (window.captcha && !window.reCAPTCHA) {
-        if (!captchaChange) {
-            oncomplete(captchaVerified);
-            return;
-        }
-        while (!captchaChecked) {
-            continue;
-        }
-        oncomplete(captchaVerified);
-    } else {
-        oncomplete(true);
+    if (window.captcha && !window.reCAPTCHA && !captchaValid) {
+        oncomplete(false);
+        return;
     }
+    oncomplete(true);
 }
 
 interface GreCAPTCHA {
@@ -336,17 +243,19 @@ interface GreCAPTCHA {
 
 declare var grecaptcha: GreCAPTCHA
 
-let r = initValidator(passwordField, rePasswordField, submitButton, submitSpan, baseValidator);
-var requirements = r[0];
-var validatorFunc = r[1] as () => void;
+let validatorConf: ValidatorConf = {
+    passwordField: passwordField,
+    rePasswordField: rePasswordField,
+    submitInput: submitInput,
+    submitButton: submitSpan,
+    validatorFunc: baseValidator
+};
+
+let validator = new Validator(validatorConf);
+var requirements = validator.requirements;
 
 if (window.emailRequired) {
-    emailField.addEventListener("keyup", validatorFunc)
-}
-
-interface respDTO {
-    response: boolean;
-    error: string;
+    emailField.addEventListener("keyup", validator.validate)
 }
 
 interface sendDTO {
@@ -381,7 +290,7 @@ const genCaptcha = () => {
 if (window.captcha && !window.reCAPTCHA) {
     genCaptcha();
     (document.getElementById("captcha-regen") as HTMLSpanElement).onclick = genCaptcha;
-    captchaInput.onkeyup = validatorFunc;
+    captchaInput.onkeyup = validator.validate;
 }
 
 const create = (event: SubmitEvent) => {
@@ -427,17 +336,22 @@ const create = (event: SubmitEvent) => {
     }
     _post("/newUser", send, (req: XMLHttpRequest) => {
         if (req.readyState == 4) {
-            let vals = req.response as respDTO;
+            let vals = req.response as ValidatorRespDTO;
             let valid = true;
             for (let type in vals) {
-                if (requirements[type]) { requirements[type].valid = vals[type]; }
-                if (!vals[type]) { valid = false; }
+                if (requirements[type]) requirements[type].valid = vals[type];
+                if (!vals[type]) valid = false;
             }
             if (req.status == 200 && valid) {
                 if (window.redirectToJellyfin == true) {
                     const url = ((document.getElementById("modal-success") as HTMLDivElement).querySelector("a.submit") as HTMLAnchorElement).href;
                     window.location.href = url;
                 } else {
+                    if (window.userPageEnabled) {
+                        const userPageNoticeArea = document.getElementById("modal-success-user-page-area");
+                        const link = `<a href="${window.userPageAddress}" target="_blank">${userPageNoticeArea.getAttribute("my-account-term")}</a>`;
+                        userPageNoticeArea.innerHTML = userPageNoticeArea.textContent.replace("{myAccount}", link);
+                    }
                     window.successModal.show();
                 }
             } else {
@@ -476,6 +390,6 @@ const create = (event: SubmitEvent) => {
     });
 };
 
-validatorFunc();
+validator.validate();
 
 form.onsubmit = create;

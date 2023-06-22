@@ -111,7 +111,8 @@ func (st *Storage) loadLangSetup(filesystems ...fs.FS) error {
 		if err != nil {
 			return err
 		}
-		st.lang.Common.patchCommon(&lang.Strings, index)
+		st.lang.Common.patchCommonStrings(&lang.Strings, index)
+		st.lang.Common.patchCommonNotifications(&lang.Notifications, index)
 		if fname != "en-us.json" {
 			if lang.Meta.Fallback != "" {
 				fallback, ok := st.lang.Setup[lang.Meta.Fallback]

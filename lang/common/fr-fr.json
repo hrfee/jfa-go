@@ -1,30 +1,48 @@
 {
     "meta": {
-        "name": "Français (FR)",
-        "author": "https://github.com/Killianbe"
+        "name": "Français (FR)"
     },
     "strings": {
         "username": "Nom d'utilisateur",
-        "name": "Nom",
         "password": "Mot de passe",
         "emailAddress": "Adresse e-mail",
+        "name": "Nom",
         "submit": "Soumettre",
+        "send": "Envoyer",
         "success": "Succès",
         "continue": "Continuer",
         "error": "Erreur",
         "copy": "Copier",
+        "copied": "Copié",
         "time24h": "Temps 24h",
         "time12h": "Temps 12h",
-        "theme": "Thème",
-        "copied": "Copié",
         "linkTelegram": "Lien Telegram",
         "contactEmail": "Contact par e-mail",
         "contactTelegram": "Contact par Telegram",
         "linkDiscord": "Lier Discord",
         "linkMatrix": "Lier Matrix",
-        "send": "Envoyer",
         "contactDiscord": "Contacter par Discord",
+        "theme": "Thème",
         "refresh": "Actualiser",
-        "required": "Requis"
-    }
+        "required": "Requis",
+        "login": "S'identifier",
+        "logout": "Se déconnecter",
+        "admin": "Administrateur",
+        "enabled": "Activé",
+        "disabled": "Désactivé",
+        "reEnable": "Ré-activé",
+        "disable": "Désactivé",
+        "expiry": "Expiration",
+        "add": "Ajouter",
+        "edit": "Éditer",
+        "delete": "Effacer"
+    },
+    "notifications": {
+        "errorLoginBlank": "Le nom d'utilisateur et/ou le mot de passe sont vides.",
+        "errorConnection": "Impossible de se connecter à jfa-go.",
+        "errorUnknown": "Erreur inconnue.",
+        "error401Unauthorized": "Non autorisé. Essayez d'actualiser la page.",
+        "errorSaveSettings": "Impossible d'enregistrer les paramètres."
+    },
+    "quantityStrings": {}
 }

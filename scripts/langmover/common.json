@@ -1,0 +1,55 @@
+{
+    "meta": {
+        "name": "English (US)"
+    },
+    "strings": {
+        "username": "common",
+        "password": "common",
+        "emailAddress": "common",
+        "name": "common",
+        "submit": "common",
+        "send": "common",
+        "success": "common",
+        "continue": "common",
+        "error": "common",
+        "copy": "common",
+        "copied": "common",
+        "time24h": "common",
+        "time12h": "common",
+        "linkTelegram": "common",
+        "contactEmail": "common",
+        "contactTelegram": "common",
+        "linkDiscord": "common",
+        "linkMatrix": "common",
+        "contactDiscord": "common",
+        "theme": "common",
+        "refresh": "common",
+        "required": "common",
+        "login": "common",
+        "logout": "common",
+        "admin": "common",
+        "enabled": "common",
+        "disabled": "common",
+        "reEnable": "common",
+        "disable": "common",
+        "contactMethods": "common",
+        "accountStatus": "common",
+        "notSet": "common",
+        "expiry": "common",
+        "add": "common",
+        "edit": "common",
+        "delete": "admin"
+    },
+    "notifications": {
+        "errorLoginBlank": "common",
+        "errorConnection": "common",
+        "errorUnknown": "common",
+        "error401Unauthorized": "common",
+        "errorSaveSettings": "common"
+    },
+    "quantityStrings": {
+        "year": "common",
+        "month": "common",
+        "day": "common"
+    }
+}

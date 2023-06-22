@@ -215,6 +215,7 @@ type setting struct {
 	Options         [][2]string `json:"options,omitempty"`
 	DependsTrue     string      `json:"depends_true,omitempty"`  // If specified, this field is enabled when the specified bool setting is enabled.
 	DependsFalse    string      `json:"depends_false,omitempty"` // If specified, opposite behaviour of DependsTrue.
+	Style           string      `json:"style,omitempty"`
 }
 
 type section struct {
@@ -372,4 +373,43 @@ type ReCaptchaResponseDTO struct {
 	ChallengeTimestamp string   `json:"challenge_ts"` // ISO yyyy-MM-dd'T'HH:mm:ssZZ
 	Hostname           string   `json:"hostname"`
 	ErrorCodes         []string `json:"error-codes"`
+}
+
+// MyDetailsDTO is sent to the user page to personalize it for the user.
+type MyDetailsDTO struct {
+	Id            string                      `json:"id"`
+	Username      string                      `json:"username"`
+	Expiry        int64                       `json:"expiry"`
+	Admin         bool                        `json:"admin"`
+	AccountsAdmin bool                        `json:"accounts_admin"`
+	Disabled      bool                        `json:"disabled"`
+	Email         *MyDetailsContactMethodsDTO `json:"email,omitempty"`
+	Discord       *MyDetailsContactMethodsDTO `json:"discord,omitempty"`
+	Telegram      *MyDetailsContactMethodsDTO `json:"telegram,omitempty"`
+	Matrix        *MyDetailsContactMethodsDTO `json:"matrix,omitempty"`
+}
+
+type MyDetailsContactMethodsDTO struct {
+	Value   string `json:"value"`
+	Enabled bool   `json:"enabled"`
+}
+
+type ModifyMyEmailDTO struct {
+	Email string `json:"email"`
+}
+
+type ConfirmationTarget int
+
+const (
+	UserEmailChange ConfirmationTarget = iota
+	NoOp
+)
+
+type GetMyPINDTO struct {
+	PIN string `json:"pin"`
+}
+
+type ChangeMyPasswordDTO struct {
+	Old string `json:"old"`
+	New string `json:"new"`
 }

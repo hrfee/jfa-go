@@ -26,8 +26,10 @@ func (ls *adminLangs) getOptions() [][2]string {
 type commonLangs map[string]commonLang
 
 type commonLang struct {
-	Meta    langMeta    `json:"meta"`
-	Strings langSection `json:"strings"`
+	Meta            langMeta                  `json:"meta"`
+	Strings         langSection               `json:"strings"`
+	Notifications   langSection               `json:"notifications"`
+	QuantityStrings map[string]quantityString `json:"quantityStrings"`
 }
 
 type adminLang struct {
@@ -38,9 +40,9 @@ type adminLang struct {
 	JSON            string
 }
 
-type formLangs map[string]formLang
+type userLangs map[string]userLang
 
-func (ls *formLangs) getOptions() [][2]string {
+func (ls *userLangs) getOptions() [][2]string {
 	opts := make([][2]string, len(*ls))
 	i := 0
 	for key, lang := range *ls {
@@ -50,13 +52,15 @@ func (ls *formLangs) getOptions() [][2]string {
 	return opts
 }
 
-type formLang struct {
+type userLang struct {
 	Meta                  langMeta    `json:"meta"`
 	Strings               langSection `json:"strings"`
 	Notifications         langSection `json:"notifications"`
 	notificationsJSON     string
 	ValidationStrings     map[string]quantityString `json:"validationStrings"`
 	validationStringsJSON string
+	QuantityStrings       map[string]quantityString `json:"quantityStrings"`
+	JSON                  string
 }
 
 type pwrLangs map[string]pwrLang

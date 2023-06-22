@@ -1,0 +1,20 @@
+{
+    "meta": {
+        "name": "English (US)"
+    },
+    "strings": {
+        "login": "Belépés",
+        "logout": "Kijelentkezés",
+        "admin": "Adminisztrátor",
+        "enabled": "Engedélyezve",
+        "disabled": "Tiltva",
+        "reEnable": "Újra engedélyezés",
+        "disable": "Letiltás",
+        "expiry": "Lejárat",
+        "add": "Hozzáadás",
+        "edit": "Szerkesztés",
+        "delete": "Törlés"
+    },
+    "notifications": {},
+    "quantityStrings": {}
+}

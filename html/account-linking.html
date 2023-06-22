@@ -1,0 +1,52 @@
+{{ if .discordEnabled }}
+<div id="modal-discord" class="modal">
+    <div class="card relative mx-auto my-[10%] w-4/5 lg:w-1/3">
+        <span class="heading mb-4">{{ .strings.linkDiscord }}</span>
+        <p class="content mb-4"> {{ .discordSendPINMessage }}</p>
+        <h1 class="text-center text-2xl mb-2 pin"></h1>
+        <div class="row center">
+            <a class="my-5 hover:underline">
+                <span class="mr-2">{{ .strings.joinTheServer }}</span>
+                <span id="discord-invite"></span>
+            </a>
+        </div>
+        <span class="button ~info @low full-width center mt-4" id="discord-waiting">{{ .strings.success }}</span>
+    </div>
+</div>
+{{ end }}
+{{ if .telegramEnabled }}
+<div id="modal-telegram" class="modal">
+    <div class="card relative mx-auto my-[10%] w-4/5 lg:w-1/3">
+        <span class="heading mb-4">{{ .strings.linkTelegram }}</span>
+        <p class="content mb-4">{{ .strings.sendPIN }}</p>
+        <p class="text-center text-2xl mb-2 pin"></p>
+        <a class="subheading link-center" href="{{ .telegramURL }}" target="_blank">
+            <span class="shield ~info mr-4">
+                <span class="icon">
+                    <i class="ri-telegram-line"></i>
+                </span>
+            </span>
+            &#64;{{ .telegramUsername }}
+        </a>
+        <span class="button ~info @low full-width center mt-4" id="telegram-waiting">{{ .strings.success }}</span>
+    </div>
+</div>
+{{ end }}
+{{ if .matrixEnabled }}
+<div id="modal-matrix" class="modal">
+    <div class="card relative mx-auto my-[10%] w-4/5 lg:w-1/3">
+        <span class="heading mb-4">{{ .strings.linkMatrix }}</span>
+        <p class="content mb-4"> {{ .strings.matrixEnterUser }}</p>
+        <input type="text" class="input ~neutral @high" placeholder="@user:riot.im" id="matrix-userid">
+        <div class="subheading link-center mt-4">
+            <span class="shield ~info mr-4">
+                <span class="icon">
+                    <i class="ri-chat-3-line"></i>
+                </span>
+            </span>
+            {{ .matrixUser }}
+        </div>
+        <span class="button ~info @low full-width center mt-4" id="matrix-send">{{ .strings.submit }}</span>
+    </div>
+</div>
+{{ end }}

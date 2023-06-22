@@ -104,6 +104,7 @@ typescript:
 	$(info compiling typescript)
 	mkdir -p $(DATA)/web/js
 	$(ESBUILD) --target=es6 --bundle tempts/admin.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/admin.js --minify
+	$(ESBUILD) --target=es6 --bundle tempts/user.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/user.js --minify
 	$(ESBUILD) --target=es6 --bundle tempts/pwr.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/pwr.js --minify
 	$(ESBUILD) --target=es6 --bundle tempts/form.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/form.js --minify
 	$(ESBUILD) --target=es6 --bundle tempts/setup.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/setup.js --minify
@@ -176,5 +177,7 @@ clean:
 	-rm mail/*.html
 	-rm docs/docs.go docs/swagger.json docs/swagger.yaml
 	go clean
+
+quick: configuration typescript variants-html bundle-css inline-css copy compile
 
 all: configuration npm email typescript variants-html bundle-css inline-css swagger copy compile

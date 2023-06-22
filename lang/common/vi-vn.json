@@ -1,0 +1,23 @@
+{
+    "meta": {
+        "name": "Tiếng Anh (Mỹ)"
+    },
+    "strings": {
+        "login": "Đăng nhập",
+        "logout": "Đăng xuất",
+        "admin": "Admin",
+        "enabled": "Mở",
+        "disabled": "Tắt",
+        "reEnable": "Mở lại",
+        "disable": "Tắt",
+        "expiry": "Hết hạn",
+        "add": "Thêm",
+        "edit": "Chỉnh sửa",
+        "delete": "Xóa"
+    },
+    "notifications": {
+        "errorConnection": "Không thể kết nối với jfa-go.",
+        "error401Unauthorized": "Không được phép. Hãy thử làm mới trang."
+    },
+    "quantityStrings": {}
+}

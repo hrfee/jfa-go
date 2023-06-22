@@ -139,7 +139,7 @@ func migrateNotificationMethods(app *appContext) error {
 			if !strings.Contains(address, "@") {
 				continue
 			}
-			for id, email := range app.storage.emails {
+			for id, email := range app.storage.GetEmails() {
 				if email.Addr == address {
 					invite.Notify[id] = notifyPrefs
 					delete(invite.Notify, address)
@@ -168,10 +168,10 @@ func linkExistingOmbiDiscordTelegram(app *appContext) error {
 		return nil
 	}
 	idList := map[string][2]string{}
-	for jfID, user := range app.storage.discord {
+	for jfID, user := range app.storage.GetDiscord() {
 		idList[jfID] = [2]string{user.ID, ""}
 	}
-	for jfID, user := range app.storage.telegram {
+	for jfID, user := range app.storage.GetTelegram() {
 		vals, ok := idList[jfID]
 		if !ok {
 			vals = [2]string{"", ""}
@@ -212,7 +212,7 @@ func linkExistingOmbiDiscordTelegram(app *appContext) error {
 // 		app.jf.GetUsers(false)
 //
 // 		noHyphens := true
-// 		for id := range app.storage.emails {
+// 		for id := range app.storage.GetEmails() {
 // 			if strings.Contains(id, "-") {
 // 				noHyphens = false
 // 				break

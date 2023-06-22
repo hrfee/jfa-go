@@ -13,6 +13,8 @@
     --border-width-2: 3px;
     --border-width-4: 5px;
     --border-width-8: 8px;
+
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
 }
 
 .light {
@@ -484,6 +486,15 @@ a:visited:not(.lang-link):not(.\~urge) {
 a:hover:not(.lang-link):not(.\~urge), a:active:not(.lang-link):not(.\~urge) {
     color: var(--color-urge-200);
 }
+
+a.button,
+a.button:link,
+a.button:visited,
+a.button:focus,
+a.buton:hover {
+    color: var(--color-content) !important;
+}
+
 
 .link-center {
     display: block;
