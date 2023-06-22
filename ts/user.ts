@@ -52,6 +52,9 @@ window.modals = {} as Modals;
         };
         const resetButton = document.getElementById("modal-login-pwr");
         resetButton.onclick = () => {
+            const usernameInput = document.getElementById("login-user") as HTMLInputElement;
+            const input = document.getElementById("pwr-address") as HTMLInputElement;
+            input.value = usernameInput.value;
             window.modals.login.close();
             window.modals.pwr.show();
         }
