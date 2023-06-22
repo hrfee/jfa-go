@@ -487,9 +487,15 @@ func (app *appContext) UnlinkMyMatrix(gc *gin.Context) {
 // @Router /my/password/reset/{address} [post]
 // @tags Users
 func (app *appContext) ResetMyPassword(gc *gin.Context) {
+	// All requests should take 1 second, to make it harder to tell if a success occured or not.
+	timerWait := make(chan bool)
+	cancel := time.AfterFunc(1*time.Second, func() {
+		timerWait <- true
+	})
 	address := gc.Param("address")
 	if address == "" {
 		app.debug.Println("Ignoring empty request for PWR")
+		cancel.Stop()
 		respondBool(400, false, gc)
 		return
 	}
@@ -499,13 +505,20 @@ func (app *appContext) ResetMyPassword(gc *gin.Context) {
 	jfID := app.reverseUserSearch(address)
 	if jfID == "" {
 		app.debug.Printf("Ignoring PWR request: User not found")
-		respondBool(204, true, gc)
+
+		for range timerWait {
+			respondBool(204, true, gc)
+			return
+		}
 		return
 	}
 	pwr, err = app.GenInternalReset(jfID)
 	if err != nil {
 		app.err.Printf("Failed to get user from Jellyfin: %v", err)
-		respondBool(500, false, gc)
+		for range timerWait {
+			respondBool(204, true, gc)
+			return
+		}
 		return
 	}
 	if app.internalPWRs == nil {
@@ -523,12 +536,18 @@ func (app *appContext) ResetMyPassword(gc *gin.Context) {
 	)
 	if err != nil {
 		app.err.Printf("Failed to construct password reset message for \"%s\": %v", pwr.Username, err)
-		respondBool(500, false, gc)
+		for range timerWait {
+			respondBool(204, true, gc)
+			return
+		}
 		return
 	} else if err := app.sendByID(msg, jfID); err != nil {
 		app.err.Printf("Failed to send password reset message to \"%s\": %v", address, err)
 	} else {
 		app.info.Printf("Sent password reset message to \"%s\"", address)
 	}
-	respondBool(204, true, gc)
+	for range timerWait {
+		respondBool(204, true, gc)
+		return
+	}
 }
