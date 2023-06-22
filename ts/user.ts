@@ -391,9 +391,12 @@ document.addEventListener("details-reload", () => {
 
             expiryCard.expiry = details.expiry;
 
+            const adminBackButton = document.getElementById("admin-back-button") as HTMLAnchorElement;
+            adminBackButton.href = window.location.href.replace("my/account", "");
 
             let messageCard = document.getElementById("card-message");
             if (details.accounts_admin) {
+                adminBackButton.classList.remove("unfocused");
                 if (typeof(messageCard) == "undefined" || messageCard == null) {
                     messageCard = document.createElement("div");
                     messageCard.classList.add("card", "@low", "dark:~d_neutral", "content");

@@ -487,6 +487,15 @@ a:hover:not(.lang-link):not(.\~urge), a:active:not(.lang-link):not(.\~urge) {
     color: var(--color-urge-200);
 }
 
+a.button,
+a.button:link,
+a.button:visited,
+a.button:focus,
+a.buton:hover {
+    color: var(--color-content) !important;
+}
+
+
 .link-center {
     display: block;
     text-align: center;
