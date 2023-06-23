@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"net/http"
 	"net/url"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -134,6 +135,14 @@ func (app *appContext) AdminPage(gc *gin.Context) {
 		license = ""
 	}
 	license = string(l)
+	fontLicense, err := fs.ReadFile(localFS, filepath.Join("web", "fonts", "OFL.txt"))
+	if err != nil {
+		app.debug.Printf("Failed to load OFL.txt: %s", err)
+	}
+
+	license += "---Hanken Grotesk---\n\n"
+	license += string(fontLicense)
+
 	gcHTML(gc, http.StatusOK, "admin.html", gin.H{
 		"urlBase":          app.getURLBase(gc),
 		"cssClass":         app.cssClass,

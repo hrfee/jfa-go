@@ -130,7 +130,7 @@ bundle-css:
 	$(info copying fonts)
 	cp -r node_modules/remixicon/fonts/remixicon.css node_modules/remixicon/fonts/remixicon.woff2 $(DATA)/web/css/
 	$(info bundling css)
-	$(ESBUILD) --bundle css/base.css --outfile=$(DATA)/web/css/bundle.css --external:remixicon.css --minify
+	$(ESBUILD) --bundle css/base.css --outfile=$(DATA)/web/css/bundle.css --external:remixicon.css --external:../fonts/hanken* --minify
 	npx tailwindcss -i $(DATA)/web/css/bundle.css -o $(DATA)/web/css/bundle.css $(TAILWIND)
 	# npx postcss -o $(DATA)/web/css/bundle.css $(DATA)/web/css/bundle.css
 

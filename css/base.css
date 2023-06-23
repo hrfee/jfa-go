@@ -3,6 +3,7 @@
 @import "./dark.css";
 @import "./tooltip.css";
 @import "./loader.css";
+@import "./fonts.css";
 
 @tailwind base;
 @tailwind components;
@@ -13,8 +14,7 @@
     --border-width-2: 3px;
     --border-width-4: 5px;
     --border-width-8: 8px;
-
-    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    font-family: 'Hanken Grotesk', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
 }
 
 .light {
