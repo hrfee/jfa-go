@@ -11,9 +11,10 @@ CSSVERSION ?= v3
 VERSION ?= $(shell git describe --exact-match HEAD 2> /dev/null || echo vgit)
 VERSION := $(shell echo $(VERSION) | sed 's/v//g')
 COMMIT ?= $(shell git rev-parse --short HEAD || echo unknown)
+BUILDTIME ?= $(shell date +%s)
 
 UPDATER ?= off
-LDFLAGS := -X main.version=$(VERSION) -X main.commit=$(COMMIT) -X main.cssVersion=$(CSSVERSION)
+LDFLAGS := -X main.version=$(VERSION) -X main.commit=$(COMMIT) -X main.cssVersion=$(CSSVERSION) -X main.buildTimeUnix=$(BUILDTIME)
 ifeq ($(UPDATER), on)
 	LDFLAGS := $(LDFLAGS) -X main.updater=binary
 else ifneq ($(UPDATER), off)

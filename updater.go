@@ -25,6 +25,12 @@ const (
 	repo      = "jfa-go"
 )
 
+var buildTimeUnix string
+var buildTime time.Time = func() time.Time {
+	i, _ := strconv.ParseInt(buildTimeUnix, 10, 64)
+	return time.Unix(i, 0)
+}()
+
 type GHRelease struct {
 	HTMLURL     string    `json:"html_url"`
 	ID          int       `json:"id"`
@@ -106,14 +112,14 @@ var goarch = map[string]string{
 	"arm":   "armv6",
 }
 
-// func newDockerBuild() Update {
-// 	var tag string
-// 	if version == "git" {
-// 		tag = "docker-unstable"
-// 	} else {
-// 		tag = "docker-latest"
-// 	}
-// }
+//	func newDockerBuild() Update {
+//		var tag string
+//		if version == "git" {
+//			tag = "docker-unstable"
+//		} else {
+//			tag = "docker-latest"
+//		}
+//	}
 type Updater struct {
 	version, commit, tag, url, namespace, name string
 	stable                                     bool
@@ -124,6 +130,7 @@ type Updater struct {
 }
 
 func newUpdater(buildroneURL, namespace, repo, version, commit, buildType string) *Updater {
+	// fmt.Printf(`Updater intializing with "%s", "%s", "%s", "%s", "%s", "%s"\n`, buildroneURL, namespace, repo, version, commit, buildType)
 	bType := off
 	tag := ""
 	switch buildType {
@@ -184,6 +191,7 @@ func (ud *Updater) GetTag() (Tag, int, error) {
 		return Tag{}, -1, nil
 	}
 	url := fmt.Sprintf("%s/repo/%s/%s/tag/latest/%s", ud.url, ud.namespace, ud.name, ud.tag)
+	// fmt.Printf("Pinging URL \"%s\" for updates\n", url)
 	req, _ := http.NewRequest("GET", url, nil)
 	resp, err := ud.httpClient.Do(req)
 	defer ud.timeoutHandler()
@@ -205,7 +213,8 @@ func (ud *Updater) GetTag() (Tag, int, error) {
 }
 
 func (t *Tag) IsNew() bool {
-	return t.Version[:7] != commit && t.Ready
+	// fmt.Printf("Build Time: %+v, Release Date: %+v", buildTime, t.ReleaseDate)
+	return t.Version[:7] != commit && t.Ready && t.ReleaseDate.After(buildTime)
 }
 
 func (ud *Updater) getRelease() (release GHRelease, status int, err error) {
@@ -526,18 +535,18 @@ func (ud *Updater) pullInternal(url string) (applyUpdate ApplyUpdate, status int
 // func newInternalBuild() Update {
 // 	tag := "internal"
 
-// func update(path string) err {
-// 	if
-// 	fp, err := os.Executable()
-// 	if err != nil {
-// 		return err
-// 	}
-// 	fullPath, err := filepath.EvalSymlinks(fp)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	newBinary,
-// }
+//	func update(path string) err {
+//		if
+//		fp, err := os.Executable()
+//		if err != nil {
+//			return err
+//		}
+//		fullPath, err := filepath.EvalSymlinks(fp)
+//		if err != nil {
+//			return err
+//		}
+//		newBinary,
+//	}
 func (app *appContext) checkForUpdates() {
 	for {
 		go func() {

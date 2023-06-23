@@ -49,7 +49,7 @@ builds:
       env:
         - CGO_ENABLED=0
       ldflags:
-        - -s -w -X main.version={{.Env.JFA_GO_VERSION}} -X main.commit={{.ShortCommit}} -X main.updater=binary -X main.cssVersion={{.Env.JFA_GO_CSS_VERSION}}
+        - -s -w -X main.version={{.Env.JFA_GO_VERSION}} -X main.commit={{.ShortCommit}} -X main.updater=binary -X main.cssVersion={{.Env.JFA_GO_CSS_VERSION}} -X main.buildTimeUnix={{.Env.JFA_GO_BUILD_TIME}}
       goos:
         - linux
         - darwin
