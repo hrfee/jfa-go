@@ -67,9 +67,9 @@ if (window.telegramEnabled) {
             telegramButton.classList.add("unfocused");
             document.getElementById("contact-via").classList.remove("unfocused");
             document.getElementById("contact-via-email").parentElement.classList.remove("unfocused");
-            const radio = document.getElementById("contact-via-telegram") as HTMLInputElement;
-            radio.parentElement.classList.remove("unfocused");
-            radio.checked = true;
+            const checkbox = document.getElementById("contact-via-telegram") as HTMLInputElement;
+            checkbox.parentElement.classList.remove("unfocused");
+            checkbox.checked = true;
             validator.validate();
         }
     };
@@ -99,9 +99,9 @@ if (window.discordEnabled) {
             discordButton.classList.add("unfocused");
             document.getElementById("contact-via").classList.remove("unfocused");
             document.getElementById("contact-via-email").parentElement.classList.remove("unfocused");
-            const radio = document.getElementById("contact-via-discord") as HTMLInputElement;
-            radio.parentElement.classList.remove("unfocused")
-            radio.checked = true;
+            const checkbox = document.getElementById("contact-via-discord") as HTMLInputElement;
+            checkbox.parentElement.classList.remove("unfocused")
+            checkbox.checked = true;
             validator.validate();
         }
     };
@@ -131,9 +131,9 @@ if (window.matrixEnabled) {
             matrixButton.classList.add("unfocused");
             document.getElementById("contact-via").classList.remove("unfocused");
             document.getElementById("contact-via-email").parentElement.classList.remove("unfocused");
-            const radio = document.getElementById("contact-via-matrix") as HTMLInputElement;
-            radio.parentElement.classList.remove("unfocused");
-            radio.checked = true;
+            const checkbox = document.getElementById("contact-via-matrix") as HTMLInputElement;
+            checkbox.parentElement.classList.remove("unfocused");
+            checkbox.checked = true;
             validator.validate();
         }
     };
@@ -298,7 +298,7 @@ const create = (event: SubmitEvent) => {
     if (window.captcha && !window.reCAPTCHA && !captchaVerified) {
         
     }
-    toggleLoader(submitSpan);
+    addLoader(submitSpan);
     let send: sendDTO = {
         code: window.code,
         username: usernameField.value,
@@ -307,22 +307,22 @@ const create = (event: SubmitEvent) => {
     };
     if (telegramVerified) {
         send.telegram_pin = window.telegramPIN;
-        const radio = document.getElementById("contact-via-telegram") as HTMLInputElement;
-        if (radio.checked) {
+        const checkbox = document.getElementById("contact-via-telegram") as HTMLInputElement;
+        if (checkbox.checked) {
             send.telegram_contact = true;
         }
     }
     if (discordVerified) {
         send.discord_pin = window.discordPIN;
-        const radio = document.getElementById("contact-via-discord") as HTMLInputElement;
-        if (radio.checked) {
+        const checkbox = document.getElementById("contact-via-discord") as HTMLInputElement;
+        if (checkbox.checked) {
             send.discord_contact = true;
         }
     }
     if (matrixVerified) {
         send.matrix_pin = matrixPIN;
-        const radio = document.getElementById("contact-via-matrix") as HTMLInputElement;
-        if (radio.checked) {
+        const checkbox = document.getElementById("contact-via-matrix") as HTMLInputElement;
+        if (checkbox.checked) {
             send.matrix_contact = true;
         }
     }
@@ -335,56 +335,55 @@ const create = (event: SubmitEvent) => {
         }
     }
     _post("/newUser", send, (req: XMLHttpRequest) => {
-        if (req.readyState == 4) {
-            let vals = req.response as ValidatorRespDTO;
-            let valid = true;
-            for (let type in vals) {
-                if (requirements[type]) requirements[type].valid = vals[type];
-                if (!vals[type]) valid = false;
-            }
-            if (req.status == 200 && valid) {
-                if (window.redirectToJellyfin == true) {
-                    const url = ((document.getElementById("modal-success") as HTMLDivElement).querySelector("a.submit") as HTMLAnchorElement).href;
-                    window.location.href = url;
-                } else {
-                    if (window.userPageEnabled) {
-                        const userPageNoticeArea = document.getElementById("modal-success-user-page-area");
-                        const link = `<a href="${window.userPageAddress}" target="_blank">${userPageNoticeArea.getAttribute("my-account-term")}</a>`;
-                        userPageNoticeArea.innerHTML = userPageNoticeArea.textContent.replace("{myAccount}", link);
-                    }
-                    window.successModal.show();
-                }
+        if (req.readyState != 4) return;
+        removeLoader(submitSpan);
+        let vals = req.response as ValidatorRespDTO;
+        let valid = true;
+        for (let type in vals) {
+            if (requirements[type]) requirements[type].valid = vals[type];
+            if (!vals[type]) valid = false;
+        }
+        if (req.status == 200 && valid) {
+            if (window.redirectToJellyfin == true) {
+                const url = ((document.getElementById("modal-success") as HTMLDivElement).querySelector("a.submit") as HTMLAnchorElement).href;
+                window.location.href = url;
             } else {
-                submitSpan.classList.add("~critical");
-                submitSpan.classList.remove("~urge");
-                if (req.response["error"] as string) {
-                    submitSpan.textContent = window.messages[req.response["error"]];
-                } else {
-                    submitSpan.textContent = window.messages["errorPassword"];
+                if (window.userPageEnabled) {
+                    const userPageNoticeArea = document.getElementById("modal-success-user-page-area");
+                    const link = `<a href="${window.userPageAddress}" target="_blank">${userPageNoticeArea.getAttribute("my-account-term")}</a>`;
+                    userPageNoticeArea.innerHTML = userPageNoticeArea.textContent.replace("{myAccount}", link);
                 }
-                setTimeout(() => {
-                    submitSpan.classList.add("~urge");
-                    submitSpan.classList.remove("~critical");
-                    submitSpan.textContent = submitText;
-                }, 1000);
+                window.successModal.show();
             }
+        } else if (req.status != 401 && req.status != 400){
+            submitSpan.classList.add("~critical");
+            submitSpan.classList.remove("~urge");
+            if (req.response["error"] as string) {
+                submitSpan.textContent = window.messages[req.response["error"]];
+            } else {
+                submitSpan.textContent = window.messages["errorPassword"];
+            }
+            setTimeout(() => {
+                submitSpan.classList.add("~urge");
+                submitSpan.classList.remove("~critical");
+                submitSpan.textContent = submitText;
+            }, 1000);
         }
     }, true, (req: XMLHttpRequest) => {
-        if (req.readyState == 4) {
-            toggleLoader(submitSpan);
-            if (req.status == 401 || req.status == 400) {
-                if (req.response["error"] as string) {
-                    if (req.response["error"] == "confirmEmail") {
-                        window.confirmationModal.show();
-                        return;
-                    }
-                    if (req.response["error"] in window.messages) {
-                        submitSpan.textContent = window.messages[req.response["error"]];
-                    } else {
-                        submitSpan.textContent = req.response["error"];
-                    }
-                    setTimeout(() => { submitSpan.textContent = submitText; }, 1000);
+        if (req.readyState != 4) return;
+        removeLoader(submitSpan);
+        if (req.status == 401 || req.status == 400) {
+            if (req.response["error"] as string) {
+                if (req.response["error"] == "confirmEmail") {
+                    window.confirmationModal.show();
+                    return;
                 }
+                if (req.response["error"] in window.messages) {
+                    submitSpan.textContent = window.messages[req.response["error"]];
+                } else {
+                    submitSpan.textContent = req.response["error"];
+                }
+                setTimeout(() => { submitSpan.textContent = submitText; }, 1000);
             }
         }
     });
