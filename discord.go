@@ -342,6 +342,7 @@ func (d *DiscordDaemon) registerCommands() {
 	commands[1].Options[0].Choices = make([]*dg.ApplicationCommandOptionChoice, len(d.app.storage.lang.Telegram))
 	i := 0
 	for code := range d.app.storage.lang.Telegram {
+		d.app.debug.Printf("Registering choice \"%s\":\"%s\"\n", d.app.storage.lang.Telegram[code].Meta.Name, code)
 		commands[1].Options[0].Choices[i] = &dg.ApplicationCommandOptionChoice{
 			Name:  d.app.storage.lang.Telegram[code].Meta.Name,
 			Value: code,
