@@ -23,7 +23,6 @@
     "any-date-parser": "^1.5.4",
     "browserslist": "^4.21.7",
     "cheerio": "^1.0.0-rc.12",
-    "esbuild": "^0.18.6",
     "fs-cheerio": "^3.0.0",
     "inline-source": "^8.0.2",
     "jsdom": "^22.1.0",
@@ -40,5 +39,8 @@
   },
   "devDependencies": {
     "live-server": "^1.2.2"
+  },
+  "optionalDependencies": {
+    "esbuild": "^0.18.6"
   }
 }

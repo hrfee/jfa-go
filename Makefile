@@ -14,7 +14,7 @@ COMMIT ?= $(shell git rev-parse --short HEAD || echo unknown)
 BUILDTIME ?= $(shell date +%s)
 
 UPDATER ?= off
-LDFLAGS := -X main.version=$(VERSION) -X main.commit=$(COMMIT) -X main.cssVersion=$(CSSVERSION) -X main.buildTimeUnix=$(BUILDTIME)
+LDFLAGS := -X main.version=$(VERSION) -X main.commit=$(COMMIT) -X main.cssVersion=$(CSSVERSION) -X main.buildTimeUnix=$(BUILDTIME) $(if $(BUILTBY),-X 'main.builtBy=$(BUILTBY)',)
 ifeq ($(UPDATER), on)
 	LDFLAGS := $(LDFLAGS) -X main.updater=binary
 else ifneq ($(UPDATER), off)
@@ -75,14 +75,23 @@ else
 	RACEDETECTOR :=
 endif
 
+ifeq (, $(shell which esbuild))
+	ESBUILDINSTALL := go install github.com/evanw/esbuild/cmd/esbuild@latest
+else
+	ESBUILDINSTALL :=
+endif
+
+ifeq ($(GOESBUILD), on)
+	NPMIGNOREOPTIONAL := --no-optional
+	NPMOPTS := $(NPMIGNOREOPTIONAL); $(ESBUILDINSTALL)
+else
+	NPMOPTS :=
+endif
+
+
 npm:
 	$(info installing npm dependencies)
-	npm install
-	@if [ "$(GOESBUILD)" = "off" ]; then\
-		npm install esbuild;\
-	else\
-		go install github.com/evanw/esbuild/cmd/esbuild@latest;\
-	fi
+	npm install $(NPMOPTS)
 
 configuration:
 	$(info Fixing config-base)

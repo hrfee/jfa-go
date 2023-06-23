@@ -13,8 +13,8 @@ args = parser.parse_args()
 def runcmd(cmd):
     if os.name == "nt":
         return subprocess.check_output(cmd, shell=True)
-    proc = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE)
-    return proc.communicate()
+    with subprocess.Popen(cmd.split(), stdout=subprocess.PIPE) as proc:
+        return proc.communicate()
 
 def compile(mjml: Path):
     fname = mjml.with_suffix(".html")
