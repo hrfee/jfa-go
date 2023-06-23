@@ -33,7 +33,7 @@ before:
     - npx esbuild --target=es6 --bundle tempts/setup.ts --outfile=./data/web/js/setup.js --minify
     - npx esbuild --target=es6 --bundle tempts/crash.ts --outfile=./data/crash.js --minify
     - rm -r tempts
-    - npx esbuild --bundle css/base.css --outfile=./data/web/css/bundle.css --external:remixicon.css --minify
+    - npx esbuild --bundle css/base.css --outfile=./data/web/css/bundle.css --external:remixicon.css --external:../fonts/hanken* --minify
     - cp html/crash.html data/
     - npx tailwindcss -i data/web/css/bundle.css -o data/bundle.css --content "html/crash.html"
     - node scripts/inline.js root data data/crash.html data/crash.html
@@ -49,7 +49,7 @@ builds:
       env:
         - CGO_ENABLED=0
       ldflags:
-        - -s -w -X main.version={{.Env.JFA_GO_VERSION}} -X main.commit={{.ShortCommit}} -X main.updater=binary -X main.cssVersion={{.Env.JFA_GO_CSS_VERSION}} -X main.buildTimeUnix={{.Env.JFA_GO_BUILD_TIME}}
+        - -s -w -X main.version={{.Env.JFA_GO_VERSION}} -X main.commit={{.ShortCommit}} -X main.updater=binary -X main.cssVersion={{.Env.JFA_GO_CSS_VERSION}} -X main.buildTimeUnix={{.Env.JFA_GO_BUILD_TIME}} -X main.builtBy="{{.Env.JFA_GO_BUILT_BY}}"
       goos:
         - linux
         - darwin
@@ -66,7 +66,7 @@ builds:
       flags:
         - -tags=tray
       ldflags:
-        - -s -w -X main.version={{.Env.JFA_GO_VERSION}} -X main.commit={{.ShortCommit}} -X main.updater=binary -X main.cssVersion={{.Env.JFA_GO_CSS_VERSION}} -H=windowsgui
+        - -s -w -X main.version={{.Env.JFA_GO_VERSION}} -X main.commit={{.ShortCommit}} -X main.updater=binary -X main.cssVersion={{.Env.JFA_GO_CSS_VERSION}} -X main.buildTimeUnix={{.Env.JFA_GO_BUILD_TIME}} -X main.builtBy="{{.Env.JFA_GO_BUILT_BY}}" -H=windowsgui
       goos:
         - windows
       goarch:
@@ -78,7 +78,7 @@ builds:
       flags:
         - -tags=tray
       ldflags:
-        - -s -w -X main.version={{.Env.JFA_GO_VERSION}} -X main.commit={{.ShortCommit}} -X main.updater=binary -X main.cssVersion={{.Env.JFA_GO_CSS_VERSION}}
+        - -s -w -X main.version={{.Env.JFA_GO_VERSION}} -X main.commit={{.ShortCommit}} -X main.updater=binary -X main.cssVersion={{.Env.JFA_GO_CSS_VERSION}} -X main.buildTimeUnix={{.Env.JFA_GO_BUILD_TIME}} -X main.builtBy="{{.Env.JFA_GO_BUILT_BY}}"
       goos:
         - linux
       goarch:

@@ -25,7 +25,6 @@ const (
 	repo      = "jfa-go"
 )
 
-var buildTimeUnix string
 var buildTime time.Time = func() time.Time {
 	i, _ := strconv.ParseInt(buildTimeUnix, 10, 64)
 	return time.Unix(i, 0)

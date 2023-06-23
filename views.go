@@ -143,6 +143,10 @@ func (app *appContext) AdminPage(gc *gin.Context) {
 	license += "---Hanken Grotesk---\n\n"
 	license += string(fontLicense)
 
+	if builtBy == "" {
+		builtBy = "???"
+	}
+
 	gcHTML(gc, http.StatusOK, "admin.html", gin.H{
 		"urlBase":          app.getURLBase(gc),
 		"cssClass":         app.cssClass,
@@ -157,6 +161,8 @@ func (app *appContext) AdminPage(gc *gin.Context) {
 		"notifications":    notificationsEnabled,
 		"version":          version,
 		"commit":           commit,
+		"buildTime":        buildTime,
+		"builtBy":          builtBy,
 		"username":         !app.config.Section("email").Key("no_username").MustBool(false),
 		"strings":          app.storage.lang.Admin[lang].Strings,
 		"quantityStrings":  app.storage.lang.Admin[lang].QuantityStrings,

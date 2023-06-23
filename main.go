@@ -53,6 +53,8 @@ var (
 	white                = color.New(color.FgWhite).SprintfFunc()
 	version              string
 	commit               string
+	buildTimeUnix        string
+	builtBy              string
 )
 
 var temp = func() string {

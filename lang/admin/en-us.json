@@ -115,7 +115,9 @@
         "matchText": "Match Text",
         "jellyfinID": "Jellyfin ID",
         "userPageLogin": "User Page: Login",
-        "userPagePage": "User Page: Page"
+        "userPagePage": "User Page: Page",
+        "buildTime": "Build Time",
+        "builtBy": "Built By"
     },
     "notifications": {
         "changedEmailAddress": "Changed email address of {n}.",

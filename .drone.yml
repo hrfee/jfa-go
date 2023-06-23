@@ -18,6 +18,8 @@ steps:
               from_secret: BUILDRONE_KEY
           GITHUB_TOKEN:
               from_secret: github_token
+          JFA_GO_BUILT_BY:
+              from_secret: BUILT_BY
       commands:
         - curl -sL https://git.io/goreleaser > ../goreleaser
         - chmod +x ../goreleaser
