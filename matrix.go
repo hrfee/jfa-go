@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/gomarkdown/markdown"
+	"github.com/timshannon/badgerhold/v4"
 	"maunium.net/go/mautrix"
 	"maunium.net/go/mautrix/event"
 	"maunium.net/go/mautrix/id"
@@ -31,11 +32,12 @@ type UnverifiedUser struct {
 }
 
 type MatrixUser struct {
-	RoomID    string
-	Encrypted bool
-	UserID    string
-	Lang      string
-	Contact   bool
+	RoomID     string
+	Encrypted  bool
+	UserID     string
+	Lang       string
+	Contact    bool
+	JellyfinID string `badgerhold:"key"`
 }
 
 var matrixFilter = mautrix.Filter{
@@ -266,6 +268,12 @@ func (d *MatrixDaemon) Send(message *Message, users ...MatrixUser) (err error) {
 		}
 	}
 	return
+}
+
+// UserExists returns whether or not a user with the given User ID exists.
+func (d *MatrixDaemon) UserExists(userID string) bool {
+	c, err := d.app.storage.db.Count(&MatrixUser{}, badgerhold.Where("UserID").Eq(userID))
+	return err != nil || c > 0
 }
 
 // User enters ID on sign-up, a PIN is sent to them. They enter it on sign-up.

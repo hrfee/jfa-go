@@ -511,8 +511,8 @@ func (app *appContext) ResetMyPassword(gc *gin.Context) {
 	var pwr InternalPWR
 	var err error
 
-	jfID := app.ReverseUserSearch(address)
-	if jfID == "" {
+	jfUser, ok := app.ReverseUserSearch(address)
+	if !ok {
 		app.debug.Printf("Ignoring PWR request: User not found")
 
 		for range timerWait {
@@ -521,7 +521,7 @@ func (app *appContext) ResetMyPassword(gc *gin.Context) {
 		}
 		return
 	}
-	pwr, err = app.GenInternalReset(jfID)
+	pwr, err = app.GenInternalReset(jfUser.ID)
 	if err != nil {
 		app.err.Printf("Failed to get user from Jellyfin: %v", err)
 		for range timerWait {
@@ -550,7 +550,7 @@ func (app *appContext) ResetMyPassword(gc *gin.Context) {
 			return
 		}
 		return
-	} else if err := app.sendByID(msg, jfID); err != nil {
+	} else if err := app.sendByID(msg, jfUser.ID); err != nil {
 		app.err.Printf("Failed to send password reset message to \"%s\": %v", address, err)
 	} else {
 		app.info.Printf("Sent password reset message to \"%s\"", address)

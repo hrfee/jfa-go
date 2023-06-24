@@ -397,6 +397,14 @@ func start(asDaemon, firstCall bool) {
 
 		}
 
+		app.storage.db_path = filepath.Join(app.dataPath, "db")
+		app.ConnectDB()
+		defer app.storage.db.Close()
+		if !app.config.Section("").Key("migrated_to_db").MustBool(false) {
+			// FIXME: Mark as done at some point
+			migrateToBadger(app)
+		}
+
 		// Read config-base for settings on web.
 		app.configBasePath = "config-base.json"
 		configBase, _ := fs.ReadFile(localFS, app.configBasePath)

@@ -130,17 +130,13 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 				success = false
 				return
 			}
-			if app.config.Section("discord").Key("require_unique").MustBool(false) {
-				for _, u := range app.storage.GetDiscord() {
-					if discordUser.ID == u.ID {
-						f = func(gc *gin.Context) {
-							app.debug.Printf("%s: New user failed: Discord user already linked", req.Code)
-							respond(400, "errorAccountLinked", gc)
-						}
-						success = false
-						return
-					}
+			if app.config.Section("discord").Key("require_unique").MustBool(false) && app.discord.UserExists(discordUser.ID) {
+				f = func(gc *gin.Context) {
+					app.debug.Printf("%s: New user failed: Discord user already linked", req.Code)
+					respond(400, "errorAccountLinked", gc)
 				}
+				success = false
+				return
 			}
 			err := app.discord.ApplyRole(discordUser.ID)
 			if err != nil {
@@ -176,17 +172,13 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 				success = false
 				return
 			}
-			if app.config.Section("matrix").Key("require_unique").MustBool(false) {
-				for _, u := range app.storage.GetMatrix() {
-					if user.User.UserID == u.UserID {
-						f = func(gc *gin.Context) {
-							app.debug.Printf("%s: New user failed: Matrix user already linked", req.Code)
-							respond(400, "errorAccountLinked", gc)
-						}
-						success = false
-						return
-					}
+			if app.config.Section("matrix").Key("require_unique").MustBool(false) && app.matrix.UserExists(user.User.UserID) {
+				f = func(gc *gin.Context) {
+					app.debug.Printf("%s: New user failed: Matrix user already linked", req.Code)
+					respond(400, "errorAccountLinked", gc)
 				}
+				success = false
+				return
 			}
 			matrixVerified = user.Verified
 			matrixUser = *user.User
@@ -478,14 +470,10 @@ func (app *appContext) NewUser(gc *gin.Context) {
 			respond(400, "errorNoEmail", gc)
 			return
 		}
-		if app.config.Section("email").Key("require_unique").MustBool(false) && req.Email != "" {
-			for _, email := range app.storage.GetEmails() {
-				if req.Email == email.Addr {
-					app.info.Printf("%s: New user failed: Email already in use", req.Code)
-					respond(400, "errorEmailLinked", gc)
-					return
-				}
-			}
+		if app.config.Section("email").Key("require_unique").MustBool(false) && req.Email != "" && app.EmailAddressExists(req.Email) {
+			app.info.Printf("%s: New user failed: Email already in use", req.Code)
+			respond(400, "errorEmailLinked", gc)
+			return
 		}
 	}
 	f, success := app.newUser(req, false)
@@ -727,27 +715,21 @@ func (app *appContext) SaveAnnounceTemplate(gc *gin.Context) {
 		respondBool(400, false, gc)
 		return
 	}
-	app.storage.announcements[req.Name] = req
-	if err := app.storage.storeAnnouncements(); err != nil {
-		respondBool(500, false, gc)
-		app.err.Printf("Failed to store announcement templates: %v", err)
-		return
-	}
+
+	app.storage.SetAnnouncementsKey(req.Name, req)
 	respondBool(200, true, gc)
 }
 
 // @Summary Save an announcement as a template for use or editing later.
 // @Produce json
 // @Success 200 {object} getAnnouncementsDTO
-// @Router /users/announce/template [get]
+// @Router /users/announce [get]
 // @Security Bearer
 // @tags Users
 func (app *appContext) GetAnnounceTemplates(gc *gin.Context) {
-	resp := &getAnnouncementsDTO{make([]string, len(app.storage.announcements))}
-	i := 0
-	for name := range app.storage.announcements {
-		resp.Announcements[i] = name
-		i++
+	resp := &getAnnouncementsDTO{make([]string, len(app.storage.GetAnnouncements()))}
+	for i, a := range app.storage.GetAnnouncements() {
+		resp.Announcements[i] = a.Name
 	}
 	gc.JSON(200, resp)
 }
@@ -762,7 +744,7 @@ func (app *appContext) GetAnnounceTemplates(gc *gin.Context) {
 // @tags Users
 func (app *appContext) GetAnnounceTemplate(gc *gin.Context) {
 	name := gc.Param("name")
-	if announcement, ok := app.storage.announcements[name]; ok {
+	if announcement, ok := app.storage.GetAnnouncementsKey(name); ok {
 		gc.JSON(200, announcement)
 		return
 	}
@@ -779,12 +761,7 @@ func (app *appContext) GetAnnounceTemplate(gc *gin.Context) {
 // @tags Users
 func (app *appContext) DeleteAnnounceTemplate(gc *gin.Context) {
 	name := gc.Param("name")
-	delete(app.storage.announcements, name)
-	if err := app.storage.storeAnnouncements(); err != nil {
-		respondBool(500, false, gc)
-		app.err.Printf("Failed to store announcement templates: %v", err)
-		return
-	}
+	app.storage.DeleteAnnouncementsKey(name)
 	respondBool(200, false, gc)
 }
 

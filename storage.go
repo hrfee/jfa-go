@@ -13,6 +13,7 @@ import (
 
 	"github.com/hrfee/mediabrowser"
 	"github.com/steambap/captcha"
+	"github.com/timshannon/badgerhold/v4"
 )
 
 type discordStore map[string]DiscordUser
@@ -21,14 +22,18 @@ type matrixStore map[string]MatrixUser
 type emailStore map[string]EmailAddress
 
 type Storage struct {
-	timePattern                                                                                                                                                                                                                         string
+	timePattern string
+
+	db_path string
+	db      *badgerhold.Store
+
 	invite_path, emails_path, policy_path, configuration_path, displayprefs_path, ombi_path, profiles_path, customEmails_path, users_path, telegram_path, discord_path, matrix_path, announcements_path, matrix_sql_path, userPage_path string
 	users                                                                                                                                                                                                                               map[string]time.Time // Map of Jellyfin User IDs to their expiry times.
 	invites                                                                                                                                                                                                                             Invites
 	profiles                                                                                                                                                                                                                            map[string]Profile
 	defaultProfile                                                                                                                                                                                                                      string
 	displayprefs, ombi_template                                                                                                                                                                                                         map[string]interface{}
-	emails                                                                                                                                                                                                                              emailStore
+	emails                                                                                                                                                                                                                              emailStore    // Map of Jellyfin User IDs to Email addresses.
 	telegram                                                                                                                                                                                                                            telegramStore // Map of Jellyfin User IDs to telegram users.
 	discord                                                                                                                                                                                                                             discordStore  // Map of Jellyfin user IDs to discord users.
 	matrix                                                                                                                                                                                                                              matrixStore   // Map of Jellyfin user IDs to Matrix users.
@@ -41,130 +46,160 @@ type Storage struct {
 	invitesLock, usersLock, discordLock, telegramLock, matrixLock, emailsLock                                                                                                                                                           sync.Mutex
 }
 
+func (app *appContext) ConnectDB() {
+	opts := badgerhold.DefaultOptions
+	opts.Dir = app.storage.db_path
+	opts.ValueDir = app.storage.db_path
+	db, err := badgerhold.Open(opts)
+	if err != nil {
+		app.err.Fatalf("Failed to open db \"%s\": %v", app.storage.db_path, err)
+	}
+	app.storage.db = db
+	app.info.Printf("Connected to DB \"%s\"", app.storage.db_path)
+}
+
 // GetEmails returns a copy of the store.
-func (st *Storage) GetEmails() emailStore {
-	return st.emails
+func (st *Storage) GetEmails() []EmailAddress {
+	result := []EmailAddress{}
+	err := st.db.Find(&result, &badgerhold.Query{})
+	if err != nil {
+		// fmt.Printf("Failed to find emails: %v\n", err)
+	}
+	return result
 }
 
 // GetEmailsKey returns the value stored in the store's key.
 func (st *Storage) GetEmailsKey(k string) (EmailAddress, bool) {
-	v, ok := st.emails[k]
-	return v, ok
+	result := EmailAddress{}
+	err := st.db.Get(k, &result)
+	ok := true
+	if err != nil {
+		// fmt.Printf("Failed to find email: %v\n", err)
+		ok = false
+	}
+	return result, ok
 }
 
 // SetEmailsKey stores value v in key k.
 func (st *Storage) SetEmailsKey(k string, v EmailAddress) {
-	st.emailsLock.Lock()
-	st.emails[k] = v
-	st.storeEmails()
-	st.emailsLock.Unlock()
+	v.JellyfinID = k
+	err := st.db.Upsert(k, v)
+	if err != nil {
+		// fmt.Printf("Failed to set email: %v\n", err)
+	}
 }
 
 // DeleteEmailKey deletes value at key k.
 func (st *Storage) DeleteEmailsKey(k string) {
-	st.emailsLock.Lock()
-	delete(st.emails, k)
-	st.storeEmails()
-	st.emailsLock.Unlock()
+	st.db.Delete(k, EmailAddress{})
 }
 
 // GetDiscord returns a copy of the store.
-func (st *Storage) GetDiscord() discordStore {
-	if st.discord == nil {
-		st.discord = discordStore{}
+func (st *Storage) GetDiscord() []DiscordUser {
+	result := []DiscordUser{}
+	err := st.db.Find(&result, &badgerhold.Query{})
+	if err != nil {
+		// fmt.Printf("Failed to find users: %v\n", err)
 	}
-	return st.discord
+	return result
 }
 
 // GetDiscordKey returns the value stored in the store's key.
 func (st *Storage) GetDiscordKey(k string) (DiscordUser, bool) {
-	v, ok := st.discord[k]
-	return v, ok
+	result := DiscordUser{}
+	err := st.db.Get(k, &result)
+	ok := true
+	if err != nil {
+		// fmt.Printf("Failed to find user: %v\n", err)
+		ok = false
+	}
+	return result, ok
 }
 
 // SetDiscordKey stores value v in key k.
 func (st *Storage) SetDiscordKey(k string, v DiscordUser) {
-	st.discordLock.Lock()
-	if st.discord == nil {
-		st.discord = discordStore{}
+	v.JellyfinID = k
+	err := st.db.Upsert(k, v)
+	if err != nil {
+		// fmt.Printf("Failed to set user: %v\n", err)
 	}
-	st.discord[k] = v
-	st.storeDiscordUsers()
-	st.discordLock.Unlock()
 }
 
 // DeleteDiscordKey deletes value at key k.
 func (st *Storage) DeleteDiscordKey(k string) {
-	st.discordLock.Lock()
-	delete(st.discord, k)
-	st.storeDiscordUsers()
-	st.discordLock.Unlock()
+	st.db.Delete(k, DiscordUser{})
 }
 
 // GetTelegram returns a copy of the store.
-func (st *Storage) GetTelegram() telegramStore {
-	if st.telegram == nil {
-		st.telegram = telegramStore{}
+func (st *Storage) GetTelegram() []TelegramUser {
+	result := []TelegramUser{}
+	err := st.db.Find(&result, &badgerhold.Query{})
+	if err != nil {
+		// fmt.Printf("Failed to find users: %v\n", err)
 	}
-	return st.telegram
+	return result
 }
 
 // GetTelegramKey returns the value stored in the store's key.
 func (st *Storage) GetTelegramKey(k string) (TelegramUser, bool) {
-	v, ok := st.telegram[k]
-	return v, ok
+	result := TelegramUser{}
+	err := st.db.Get(k, &result)
+	ok := true
+	if err != nil {
+		// fmt.Printf("Failed to find user: %v\n", err)
+		ok = false
+	}
+	return result, ok
 }
 
 // SetTelegramKey stores value v in key k.
 func (st *Storage) SetTelegramKey(k string, v TelegramUser) {
-	st.telegramLock.Lock()
-	if st.telegram == nil {
-		st.telegram = telegramStore{}
+	v.JellyfinID = k
+	err := st.db.Upsert(k, v)
+	if err != nil {
+		// fmt.Printf("Failed to set user: %v\n", err)
 	}
-	st.telegram[k] = v
-	st.storeTelegramUsers()
-	st.telegramLock.Unlock()
 }
 
 // DeleteTelegramKey deletes value at key k.
 func (st *Storage) DeleteTelegramKey(k string) {
-	st.telegramLock.Lock()
-	delete(st.telegram, k)
-	st.storeTelegramUsers()
-	st.telegramLock.Unlock()
+	st.db.Delete(k, TelegramUser{})
 }
 
 // GetMatrix returns a copy of the store.
-func (st *Storage) GetMatrix() matrixStore {
-	if st.matrix == nil {
-		st.matrix = matrixStore{}
+func (st *Storage) GetMatrix() []MatrixUser {
+	result := []MatrixUser{}
+	err := st.db.Find(&result, &badgerhold.Query{})
+	if err != nil {
+		// fmt.Printf("Failed to find users: %v\n", err)
 	}
-	return st.matrix
+	return result
 }
 
 // GetMatrixKey returns the value stored in the store's key.
 func (st *Storage) GetMatrixKey(k string) (MatrixUser, bool) {
-	v, ok := st.matrix[k]
-	return v, ok
+	result := MatrixUser{}
+	err := st.db.Get(k, &result)
+	ok := true
+	if err != nil {
+		// fmt.Printf("Failed to find user: %v\n", err)
+		ok = false
+	}
+	return result, ok
 }
 
 // SetMatrixKey stores value v in key k.
 func (st *Storage) SetMatrixKey(k string, v MatrixUser) {
-	st.matrixLock.Lock()
-	if st.matrix == nil {
-		st.matrix = matrixStore{}
+	v.JellyfinID = k
+	err := st.db.Upsert(k, v)
+	if err != nil {
+		// fmt.Printf("Failed to set user: %v\n", err)
 	}
-	st.matrix[k] = v
-	st.storeMatrixUsers()
-	st.matrixLock.Unlock()
 }
 
 // DeleteMatrixKey deletes value at key k.
 func (st *Storage) DeleteMatrixKey(k string) {
-	st.matrixLock.Lock()
-	delete(st.matrix, k)
-	st.storeMatrixUsers()
-	st.matrixLock.Unlock()
+	st.db.Delete(k, MatrixUser{})
 }
 
 // GetInvites returns a copy of the store.
@@ -200,28 +235,65 @@ func (st *Storage) DeleteInvitesKey(k string) {
 	st.invitesLock.Unlock()
 }
 
+// GetAnnouncements returns a copy of the store.
+func (st *Storage) GetAnnouncements() []announcementTemplate {
+	result := []announcementTemplate{}
+	err := st.db.Find(&result, &badgerhold.Query{})
+	if err != nil {
+		// fmt.Printf("Failed to find announcements: %v\n", err)
+	}
+	return result
+}
+
+// GetAnnouncementsKey returns the value stored in the store's key.
+func (st *Storage) GetAnnouncementsKey(k string) (announcementTemplate, bool) {
+	result := announcementTemplate{}
+	err := st.db.Get(k, &result)
+	ok := true
+	if err != nil {
+		// fmt.Printf("Failed to find announcement: %v\n", err)
+		ok = false
+	}
+	return result, ok
+}
+
+// SetAnnouncementsKey stores value v in key k.
+func (st *Storage) SetAnnouncementsKey(k string, v announcementTemplate) {
+	err := st.db.Upsert(k, v)
+	if err != nil {
+		// fmt.Printf("Failed to set announcement: %v\n", err)
+	}
+}
+
+// DeleteAnnouncementsKey deletes value at key k.
+func (st *Storage) DeleteAnnouncementsKey(k string) {
+	st.db.Delete(k, announcementTemplate{})
+}
+
 type TelegramUser struct {
-	ChatID   int64
-	Username string
-	Lang     string
-	Contact  bool // Whether to contact through telegram or not
+	JellyfinID string `badgerhold:"key"`
+	ChatID     int64  `badgerhold:"index"`
+	Username   string `badgerhold:"index"`
+	Lang       string
+	Contact    bool // Whether to contact through telegram or not
 }
 
 type DiscordUser struct {
 	ChannelID     string
-	ID            string
-	Username      string
+	ID            string `badgerhold:"index"`
+	Username      string `badgerhold:"index"`
 	Discriminator string
 	Lang          string
 	Contact       bool
-	JellyfinID    string `json:"-"` // Used internally in discord.go
+	JellyfinID    string `json:"-" badgerhold:"key"` // Used internally in discord.go
 }
 
 type EmailAddress struct {
-	Addr    string
-	Label   string // User Label.
-	Contact bool
-	Admin   bool // Whether or not user is jfa-go admin.
+	Addr       string `badgerhold:"index"`
+	Label      string // User Label.
+	Contact    bool
+	Admin      bool   // Whether or not user is jfa-go admin.
+	JellyfinID string `badgerhold:"key"`
 }
 
 type customEmails struct {

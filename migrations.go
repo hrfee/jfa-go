@@ -139,9 +139,9 @@ func migrateNotificationMethods(app *appContext) error {
 			if !strings.Contains(address, "@") {
 				continue
 			}
-			for id, email := range app.storage.GetEmails() {
+			for _, email := range app.storage.GetEmails() {
 				if email.Addr == address {
-					invite.Notify[id] = notifyPrefs
+					invite.Notify[email.JellyfinID] = notifyPrefs
 					delete(invite.Notify, address)
 					changes = true
 					break
@@ -168,16 +168,16 @@ func linkExistingOmbiDiscordTelegram(app *appContext) error {
 		return nil
 	}
 	idList := map[string][2]string{}
-	for jfID, user := range app.storage.GetDiscord() {
-		idList[jfID] = [2]string{user.ID, ""}
+	for _, user := range app.storage.GetDiscord() {
+		idList[user.JellyfinID] = [2]string{user.ID, ""}
 	}
-	for jfID, user := range app.storage.GetTelegram() {
-		vals, ok := idList[jfID]
+	for _, user := range app.storage.GetTelegram() {
+		vals, ok := idList[user.JellyfinID]
 		if !ok {
 			vals = [2]string{"", ""}
 		}
 		vals[1] = user.Username
-		idList[jfID] = vals
+		idList[user.JellyfinID] = vals
 	}
 	for jfID, ids := range idList {
 		ombiUser, status, err := app.getOmbiUser(jfID)
@@ -192,6 +192,34 @@ func linkExistingOmbiDiscordTelegram(app *appContext) error {
 		}
 	}
 	return nil
+}
+
+func migrateToBadger(app *appContext) {
+	app.info.Println("Migrating to Badger(hold)")
+	app.storage.loadAnnouncements()
+	for k, v := range app.storage.announcements {
+		app.storage.SetAnnouncementsKey(k, v)
+	}
+
+	app.storage.loadDiscordUsers()
+	for jfID, v := range app.storage.discord {
+		app.storage.SetDiscordKey(jfID, v)
+	}
+
+	app.storage.loadTelegramUsers()
+	for jfID, v := range app.storage.telegram {
+		app.storage.SetTelegramKey(jfID, v)
+	}
+
+	app.storage.loadMatrixUsers()
+	for jfID, v := range app.storage.matrix {
+		app.storage.SetMatrixKey(jfID, v)
+	}
+
+	app.storage.loadEmails()
+	for jfID, v := range app.storage.emails {
+		app.storage.SetEmailsKey(jfID, v)
+	}
 }
 
 // Migrate between hyphenated & non-hyphenated user IDs. Doesn't seem to happen anymore, so disabled.
@@ -212,8 +240,8 @@ func linkExistingOmbiDiscordTelegram(app *appContext) error {
 // 		app.jf.GetUsers(false)
 //
 // 		noHyphens := true
-// 		for id := range app.storage.GetEmails() {
-// 			if strings.Contains(id, "-") {
+// 		for _, e := range app.storage.GetEmails() {
+// 			if strings.Contains(e.JellyfinID, "-") {
 // 				noHyphens = false
 // 				break
 // 			}

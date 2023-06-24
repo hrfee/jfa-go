@@ -7,6 +7,7 @@ import (
 	"time"
 
 	tg "github.com/go-telegram-bot-api/telegram-bot-api"
+	"github.com/timshannon/badgerhold/v4"
 )
 
 const (
@@ -216,10 +217,10 @@ func (t *TelegramDaemon) commandLang(upd *tg.Update, sects []string, lang string
 	}
 	if _, ok := t.app.storage.lang.Telegram[sects[1]]; ok {
 		t.languages[upd.Message.Chat.ID] = sects[1]
-		for jfID, user := range t.app.storage.GetTelegram() {
+		for _, user := range t.app.storage.GetTelegram() {
 			if user.ChatID == upd.Message.Chat.ID {
 				user.Lang = sects[1]
-				t.app.storage.SetTelegramKey(jfID, user)
+				t.app.storage.SetTelegramKey(user.JellyfinID, user)
 				if err := t.app.storage.storeTelegramUsers(); err != nil {
 					t.app.err.Printf("Failed to store Telegram users: %v", err)
 				}
@@ -270,15 +271,9 @@ func (t *TelegramDaemon) AssignedTokenVerified(pin string, jfID string) (token T
 }
 
 // UserExists returns whether or not a user with the given username exists.
-func (t *TelegramDaemon) UserExists(username string) (ok bool) {
-	ok = false
-	for _, u := range t.app.storage.GetTelegram() {
-		if u.Username == username {
-			ok = true
-			break
-		}
-	}
-	return
+func (t *TelegramDaemon) UserExists(username string) bool {
+	c, err := t.app.storage.db.Count(&TelegramUser{}, badgerhold.Where("Username").Eq(username))
+	return err != nil || c > 0
 }
 
 // DeleteVerifiedToken removes the token with the given PIN.

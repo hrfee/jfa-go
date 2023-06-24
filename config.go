@@ -37,6 +37,8 @@ func (app *appContext) loadConfig() error {
 		return err
 	}
 
+	app.MustSetValue("", "migrated_to_db", "false")
+
 	app.MustSetValue("jellyfin", "public_server", app.config.Section("jellyfin").Key("server").String())
 
 	app.MustSetValue("ui", "redirect_url", app.config.Section("jellyfin").Key("public_server").String())

@@ -19,8 +19,10 @@ import (
 
 	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/html"
+	"github.com/hrfee/mediabrowser"
 	"github.com/itchyny/timefmt-go"
 	"github.com/mailgun/mailgun-go/v4"
+	"github.com/timshannon/badgerhold/v4"
 	sMail "github.com/xhit/go-simple-mail/v2"
 )
 
@@ -874,31 +876,63 @@ func (app *appContext) getAddressOrName(jfID string) string {
 
 // ReverseUserSearch returns the jellyfin ID of the user with the given username, email, or contact method username.
 // returns "" if none found. returns only the first match, might be an issue if there are users with the same contact method usernames.
-func (app *appContext) ReverseUserSearch(address string) string {
+func (app *appContext) ReverseUserSearch(address string) (user mediabrowser.User, ok bool) {
+	ok = false
 	user, status, err := app.jf.UserByName(address, false)
 	if status == 200 && err == nil {
-		return user.ID
+		ok = true
+		return
 	}
-	for id, email := range app.storage.GetEmails() {
-		if strings.ToLower(address) == strings.ToLower(email.Addr) {
-			return id
+	emailAddresses := []EmailAddress{}
+	err = app.storage.db.Find(&emailAddresses, badgerhold.Where("Addr").Eq(address))
+	if err == nil && len(emailAddresses) > 0 {
+		for _, emailUser := range emailAddresses {
+			user, status, err = app.jf.UserByID(emailUser.JellyfinID, false)
+			if status == 200 && err == nil {
+				ok = true
+				return
+			}
 		}
 	}
-	for id, dcUser := range app.storage.GetDiscord() {
+	// Dont know how we'd use badgerhold when we need to render each username,
+	// Apart from storing the rendered name in the db.
+	for _, dcUser := range app.storage.GetDiscord() {
 		if RenderDiscordUsername(dcUser) == strings.ToLower(address) {
-			return id
+			user, status, err = app.jf.UserByID(dcUser.JellyfinID, false)
+			if status == 200 && err == nil {
+				ok = true
+				return
+			}
 		}
 	}
 	tgUsername := strings.TrimPrefix(address, "@")
-	for id, tgUser := range app.storage.GetTelegram() {
-		if tgUsername == tgUser.Username {
-			return id
+	telegramUsers := []TelegramUser{}
+	err = app.storage.db.Find(&telegramUsers, badgerhold.Where("Username").Eq(tgUsername))
+	if err == nil && len(telegramUsers) > 0 {
+		for _, telegramUser := range telegramUsers {
+			user, status, err = app.jf.UserByID(telegramUser.JellyfinID, false)
+			if status == 200 && err == nil {
+				ok = true
+				return
+			}
 		}
 	}
-	for id, mxUser := range app.storage.GetMatrix() {
-		if address == mxUser.UserID {
-			return id
+	matrixUsers := []MatrixUser{}
+	err = app.storage.db.Find(&matrixUsers, badgerhold.Where("UserID").Eq(address))
+	if err == nil && len(matrixUsers) > 0 {
+		for _, matrixUser := range matrixUsers {
+			user, status, err = app.jf.UserByID(matrixUser.JellyfinID, false)
+			if status == 200 && err == nil {
+				ok = true
+				return
+			}
 		}
 	}
-	return ""
+	return
+}
+
+// EmailAddressExists returns whether or not a user with the given email address exists.
+func (app *appContext) EmailAddressExists(address string) bool {
+	c, err := app.storage.db.Count(&EmailAddress{}, badgerhold.Where("Addr").Eq(address))
+	return err != nil || c > 0
 }
