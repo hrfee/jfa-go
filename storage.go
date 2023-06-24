@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/hrfee/mediabrowser"
@@ -21,6 +20,11 @@ type telegramStore map[string]TelegramUser
 type matrixStore map[string]MatrixUser
 type emailStore map[string]EmailAddress
 
+type UserExpiry struct {
+	JellyfinID string `badgerhold:"key"`
+	Expiry     time.Time
+}
+
 type Storage struct {
 	timePattern string
 
@@ -28,22 +32,21 @@ type Storage struct {
 	db      *badgerhold.Store
 
 	invite_path, emails_path, policy_path, configuration_path, displayprefs_path, ombi_path, profiles_path, customEmails_path, users_path, telegram_path, discord_path, matrix_path, announcements_path, matrix_sql_path, userPage_path string
-	users                                                                                                                                                                                                                               map[string]time.Time // Map of Jellyfin User IDs to their expiry times.
-	invites                                                                                                                                                                                                                             Invites
+	deprecatedUserExpiries                                                                                                                                                                                                              map[string]time.Time // Map of Jellyfin User IDs to their expiry times.
+	deprecatedInvites                                                                                                                                                                                                                   Invites
 	profiles                                                                                                                                                                                                                            map[string]Profile
 	defaultProfile                                                                                                                                                                                                                      string
 	displayprefs, ombi_template                                                                                                                                                                                                         map[string]interface{}
-	emails                                                                                                                                                                                                                              emailStore    // Map of Jellyfin User IDs to Email addresses.
-	telegram                                                                                                                                                                                                                            telegramStore // Map of Jellyfin User IDs to telegram users.
-	discord                                                                                                                                                                                                                             discordStore  // Map of Jellyfin user IDs to discord users.
-	matrix                                                                                                                                                                                                                              matrixStore   // Map of Jellyfin user IDs to Matrix users.
+	deprecatedEmails                                                                                                                                                                                                                    emailStore    // Map of Jellyfin User IDs to Email addresses.
+	deprecatedTelegram                                                                                                                                                                                                                  telegramStore // Map of Jellyfin User IDs to telegram users.
+	deprecatedDiscord                                                                                                                                                                                                                   discordStore  // Map of Jellyfin user IDs to discord users.
+	deprecatedMatrix                                                                                                                                                                                                                    matrixStore   // Map of Jellyfin user IDs to Matrix users.
 	customEmails                                                                                                                                                                                                                        customEmails
 	userPage                                                                                                                                                                                                                            userPageContent
 	policy                                                                                                                                                                                                                              mediabrowser.Policy
 	configuration                                                                                                                                                                                                                       mediabrowser.Configuration
 	lang                                                                                                                                                                                                                                Lang
-	announcements                                                                                                                                                                                                                       map[string]announcementTemplate
-	invitesLock, usersLock, discordLock, telegramLock, matrixLock, emailsLock                                                                                                                                                           sync.Mutex
+	deprecatedAnnouncements                                                                                                                                                                                                             map[string]announcementTemplate
 }
 
 func (app *appContext) ConnectDB() {
@@ -203,36 +206,39 @@ func (st *Storage) DeleteMatrixKey(k string) {
 }
 
 // GetInvites returns a copy of the store.
-func (st *Storage) GetInvites() Invites {
-	if st.invites == nil {
-		st.invites = Invites{}
+func (st *Storage) GetInvites() []Invite {
+	result := []Invite{}
+	err := st.db.Find(&result, &badgerhold.Query{})
+	if err != nil {
+		// fmt.Printf("Failed to find invites: %v\n", err)
 	}
-	return st.invites
+	return result
 }
 
 // GetInvitesKey returns the value stored in the store's key.
 func (st *Storage) GetInvitesKey(k string) (Invite, bool) {
-	v, ok := st.invites[k]
-	return v, ok
+	result := Invite{}
+	err := st.db.Get(k, &result)
+	ok := true
+	if err != nil {
+		// fmt.Printf("Failed to find invite: %v\n", err)
+		ok = false
+	}
+	return result, ok
 }
 
 // SetInvitesKey stores value v in key k.
 func (st *Storage) SetInvitesKey(k string, v Invite) {
-	st.invitesLock.Lock()
-	if st.invites == nil {
-		st.invites = Invites{}
+	v.Code = k
+	err := st.db.Upsert(k, v)
+	if err != nil {
+		// fmt.Printf("Failed to set invite: %v\n", err)
 	}
-	st.invites[k] = v
-	st.storeInvites()
-	st.invitesLock.Unlock()
 }
 
 // DeleteInvitesKey deletes value at key k.
 func (st *Storage) DeleteInvitesKey(k string) {
-	st.invitesLock.Lock()
-	delete(st.invites, k)
-	st.storeInvites()
-	st.invitesLock.Unlock()
+	st.db.Delete(k, Invite{})
 }
 
 // GetAnnouncements returns a copy of the store.
@@ -268,6 +274,42 @@ func (st *Storage) SetAnnouncementsKey(k string, v announcementTemplate) {
 // DeleteAnnouncementsKey deletes value at key k.
 func (st *Storage) DeleteAnnouncementsKey(k string) {
 	st.db.Delete(k, announcementTemplate{})
+}
+
+// GetUserExpiries returns a copy of the store.
+func (st *Storage) GetUserExpiries() []UserExpiry {
+	result := []UserExpiry{}
+	err := st.db.Find(&result, &badgerhold.Query{})
+	if err != nil {
+		// fmt.Printf("Failed to find expiries: %v\n", err)
+	}
+	return result
+}
+
+// GetUserExpiryKey returns the value stored in the store's key.
+func (st *Storage) GetUserExpiryKey(k string) (UserExpiry, bool) {
+	result := UserExpiry{}
+	err := st.db.Get(k, &result)
+	ok := true
+	if err != nil {
+		// fmt.Printf("Failed to find expiry: %v\n", err)
+		ok = false
+	}
+	return result, ok
+}
+
+// SetUserExpiryKey stores value v in key k.
+func (st *Storage) SetUserExpiryKey(k string, v UserExpiry) {
+	v.JellyfinID = k
+	err := st.db.Upsert(k, v)
+	if err != nil {
+		// fmt.Printf("Failed to set expiry: %v\n", err)
+	}
+}
+
+// DeleteUserExpiryKey deletes value at key k.
+func (st *Storage) DeleteUserExpiryKey(k string) {
+	st.db.Delete(k, UserExpiry{})
 }
 
 type TelegramUser struct {
@@ -335,6 +377,7 @@ type Profile struct {
 }
 
 type Invite struct {
+	Code          string    `badgerhold:"key"`
 	Created       time.Time `json:"created"`
 	NoLimit       bool      `json:"no-limit"`
 	RemainingUses int       `json:"remaining-uses"`
@@ -1036,18 +1079,16 @@ func (st *Storage) loadLangTelegram(filesystems ...fs.FS) error {
 type Invites map[string]Invite
 
 func (st *Storage) loadInvites() error {
-	return loadJSON(st.invite_path, &st.invites)
+	return loadJSON(st.invite_path, &st.deprecatedInvites)
 }
 
 func (st *Storage) storeInvites() error {
-	return storeJSON(st.invite_path, st.invites)
+	return storeJSON(st.invite_path, st.deprecatedInvites)
 }
 
-func (st *Storage) loadUsers() error {
-	st.usersLock.Lock()
-	defer st.usersLock.Unlock()
-	if st.users == nil {
-		st.users = map[string]time.Time{}
+func (st *Storage) loadUserExpiries() error {
+	if st.deprecatedUserExpiries == nil {
+		st.deprecatedUserExpiries = map[string]time.Time{}
 	}
 	temp := map[string]time.Time{}
 	err := loadJSON(st.users_path, &temp)
@@ -1055,47 +1096,47 @@ func (st *Storage) loadUsers() error {
 		return err
 	}
 	for id, t1 := range temp {
-		if _, ok := st.users[id]; !ok {
-			st.users[id] = t1
+		if _, ok := st.deprecatedUserExpiries[id]; !ok {
+			st.deprecatedUserExpiries[id] = t1
 		}
 	}
 	return nil
 }
 
-func (st *Storage) storeUsers() error {
-	return storeJSON(st.users_path, st.users)
+func (st *Storage) storeUserExpiries() error {
+	return storeJSON(st.users_path, st.deprecatedUserExpiries)
 }
 
 func (st *Storage) loadEmails() error {
-	return loadJSON(st.emails_path, &st.emails)
+	return loadJSON(st.emails_path, &st.deprecatedEmails)
 }
 
 func (st *Storage) storeEmails() error {
-	return storeJSON(st.emails_path, st.emails)
+	return storeJSON(st.emails_path, st.deprecatedEmails)
 }
 
 func (st *Storage) loadTelegramUsers() error {
-	return loadJSON(st.telegram_path, &st.telegram)
+	return loadJSON(st.telegram_path, &st.deprecatedTelegram)
 }
 
 func (st *Storage) storeTelegramUsers() error {
-	return storeJSON(st.telegram_path, st.telegram)
+	return storeJSON(st.telegram_path, st.deprecatedTelegram)
 }
 
 func (st *Storage) loadDiscordUsers() error {
-	return loadJSON(st.discord_path, &st.discord)
+	return loadJSON(st.discord_path, &st.deprecatedDiscord)
 }
 
 func (st *Storage) storeDiscordUsers() error {
-	return storeJSON(st.discord_path, st.discord)
+	return storeJSON(st.discord_path, st.deprecatedDiscord)
 }
 
 func (st *Storage) loadMatrixUsers() error {
-	return loadJSON(st.matrix_path, &st.matrix)
+	return loadJSON(st.matrix_path, &st.deprecatedMatrix)
 }
 
 func (st *Storage) storeMatrixUsers() error {
-	return storeJSON(st.matrix_path, st.matrix)
+	return storeJSON(st.matrix_path, st.deprecatedMatrix)
 }
 
 func (st *Storage) loadCustomEmails() error {
@@ -1147,11 +1188,11 @@ func (st *Storage) storeOmbiTemplate() error {
 }
 
 func (st *Storage) loadAnnouncements() error {
-	return loadJSON(st.announcements_path, &st.announcements)
+	return loadJSON(st.announcements_path, &st.deprecatedAnnouncements)
 }
 
 func (st *Storage) storeAnnouncements() error {
-	return storeJSON(st.announcements_path, st.announcements)
+	return storeJSON(st.announcements_path, st.deprecatedAnnouncements)
 }
 
 func (st *Storage) loadProfiles() error {

@@ -50,13 +50,7 @@ func (rt *userDaemon) shutdown() {
 }
 
 func (app *appContext) checkUsers() {
-	if err := app.storage.loadUsers(); err != nil {
-		app.err.Printf("Failed to load user expiries: %v", err)
-		return
-	}
-	app.storage.usersLock.Lock()
-	defer app.storage.usersLock.Unlock()
-	if len(app.storage.users) == 0 {
+	if len(app.storage.GetUserExpiries()) == 0 {
 		return
 	}
 	app.info.Println("Daemon: Checking for user expiry")
@@ -80,11 +74,12 @@ func (app *appContext) checkUsers() {
 	for _, user := range users {
 		userExists[user.ID] = true
 	}
-	for id, expiry := range app.storage.users {
+	for _, expiry := range app.storage.GetUserExpiries() {
+		id := expiry.JellyfinID
 		if _, ok := userExists[id]; !ok {
 			app.info.Printf("Deleting expiry for non-existent user \"%s\"", id)
-			delete(app.storage.users, id)
-		} else if time.Now().After(expiry) {
+			app.storage.DeleteUserExpiryKey(expiry.JellyfinID)
+		} else if time.Now().After(expiry.Expiry) {
 			found := false
 			var user mediabrowser.User
 			for _, u := range users {
@@ -96,7 +91,7 @@ func (app *appContext) checkUsers() {
 			}
 			if !found {
 				app.info.Printf("Expired user already deleted, ignoring.")
-				delete(app.storage.users, id)
+				app.storage.DeleteUserExpiryKey(expiry.JellyfinID)
 				continue
 			}
 			app.info.Printf("%s expired user \"%s\"", termPlural, user.Name)
@@ -112,7 +107,7 @@ func (app *appContext) checkUsers() {
 				app.err.Printf("Failed to %s \"%s\" (%d): %s", mode, user.Name, status, err)
 				continue
 			}
-			delete(app.storage.users, id)
+			app.storage.DeleteUserExpiryKey(expiry.JellyfinID)
 			app.jf.CacheExpiry = time.Now()
 			if contact {
 				if !ok {
@@ -129,9 +124,5 @@ func (app *appContext) checkUsers() {
 				}
 			}
 		}
-	}
-	err = app.storage.storeUsers()
-	if err != nil {
-		app.err.Printf("Failed to store user expiries: %s", err)
 	}
 }

@@ -38,8 +38,8 @@ func (app *appContext) MyDetails(gc *gin.Context) {
 	}
 	resp.Disabled = user.Policy.IsDisabled
 
-	if exp, ok := app.storage.users[user.ID]; ok {
-		resp.Expiry = exp.Unix()
+	if exp, ok := app.storage.GetUserExpiryKey(user.ID); ok {
+		resp.Expiry = exp.Expiry.Unix()
 	}
 
 	app.storage.loadEmails()
@@ -199,7 +199,6 @@ func (app *appContext) confirmMyAction(gc *gin.Context, key string) {
 			}
 		}
 
-		app.storage.storeEmails()
 		app.info.Println("Email list modified")
 		gc.Redirect(http.StatusSeeOther, "/my/account")
 		return

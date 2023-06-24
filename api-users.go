@@ -62,7 +62,6 @@ func (app *appContext) NewUserAdmin(gc *gin.Context) {
 	app.jf.CacheExpiry = time.Now()
 	if emailEnabled {
 		app.storage.SetEmailsKey(id, EmailAddress{Addr: req.Email, Contact: true})
-		app.storage.storeEmails()
 	}
 	if app.config.Section("ombi").Key("enabled").MustBool(false) {
 		app.storage.loadOmbiTemplate()
@@ -327,29 +326,19 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 	// if app.config.Section("password_resets").Key("enabled").MustBool(false) {
 	if req.Email != "" {
 		app.storage.SetEmailsKey(id, EmailAddress{Addr: req.Email, Contact: true})
-		app.storage.storeEmails()
 	}
 	expiry := time.Time{}
 	if invite.UserExpiry {
-		app.storage.usersLock.Lock()
-		defer app.storage.usersLock.Unlock()
 		expiry = time.Now().AddDate(0, invite.UserMonths, invite.UserDays).Add(time.Duration((60*invite.UserHours)+invite.UserMinutes) * time.Minute)
-		app.storage.users[id] = expiry
-		if err := app.storage.storeUsers(); err != nil {
-			app.err.Printf("Failed to store user duration: %v", err)
-		}
+		app.storage.SetUserExpiryKey(id, UserExpiry{Expiry: expiry})
 	}
 	if discordVerified {
 		discordUser.Contact = req.DiscordContact
-		if app.storage.discord == nil {
-			app.storage.discord = discordStore{}
+		if app.storage.deprecatedDiscord == nil {
+			app.storage.deprecatedDiscord = discordStore{}
 		}
 		app.storage.SetDiscordKey(user.ID, discordUser)
-		if err := app.storage.storeDiscordUsers(); err != nil {
-			app.err.Printf("Failed to store Discord users: %v", err)
-		} else {
-			delete(app.discord.verifiedTokens, req.DiscordPIN)
-		}
+		delete(app.discord.verifiedTokens, req.DiscordPIN)
 	}
 	if telegramVerified {
 		tgUser := TelegramUser{
@@ -360,8 +349,8 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 		if lang, ok := app.telegram.languages[tgToken.ChatID]; ok {
 			tgUser.Lang = lang
 		}
-		if app.storage.telegram == nil {
-			app.storage.telegram = telegramStore{}
+		if app.storage.deprecatedTelegram == nil {
+			app.storage.deprecatedTelegram = telegramStore{}
 		}
 		app.telegram.DeleteVerifiedToken(req.TelegramPIN)
 		app.storage.SetTelegramKey(user.ID, tgUser)
@@ -404,13 +393,10 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 	if matrixVerified {
 		matrixUser.Contact = req.MatrixContact
 		delete(app.matrix.tokens, req.MatrixPIN)
-		if app.storage.matrix == nil {
-			app.storage.matrix = matrixStore{}
+		if app.storage.deprecatedMatrix == nil {
+			app.storage.deprecatedMatrix = matrixStore{}
 		}
 		app.storage.SetMatrixKey(user.ID, matrixUser)
-		if err := app.storage.storeMatrixUsers(); err != nil {
-			app.err.Printf("Failed to store Matrix users: %v", err)
-		}
 	}
 	if (emailEnabled && app.config.Section("welcome_email").Key("enabled").MustBool(false) && req.Email != "") || telegramVerified || discordVerified || matrixVerified {
 		name := app.getAddressOrName(user.ID)
@@ -629,21 +615,16 @@ func (app *appContext) ExtendExpiry(gc *gin.Context) {
 		respondBool(400, false, gc)
 		return
 	}
-	app.storage.usersLock.Lock()
-	defer app.storage.usersLock.Unlock()
 	for _, id := range req.Users {
-		if expiry, ok := app.storage.users[id]; ok {
-			app.storage.users[id] = expiry.AddDate(0, req.Months, req.Days).Add(time.Duration(((60 * req.Hours) + req.Minutes)) * time.Minute)
+		base := time.Now()
+		if expiry, ok := app.storage.GetUserExpiryKey(id); ok {
+			base = expiry.Expiry
 			app.debug.Printf("Expiry extended for \"%s\"", id)
 		} else {
-			app.storage.users[id] = time.Now().AddDate(0, req.Months, req.Days).Add(time.Duration(((60 * req.Hours) + req.Minutes)) * time.Minute)
 			app.debug.Printf("Created expiry for \"%s\"", id)
 		}
-	}
-	if err := app.storage.storeUsers(); err != nil {
-		app.err.Printf("Failed to store user duration: %v", err)
-		respondBool(500, false, gc)
-		return
+		expiry := UserExpiry{Expiry: base.AddDate(0, req.Months, req.Days).Add(time.Duration(((60 * req.Hours) + req.Minutes)) * time.Minute)}
+		app.storage.SetUserExpiryKey(id, expiry)
 	}
 	respondBool(204, true, gc)
 }
@@ -853,8 +834,6 @@ func (app *appContext) GetUsers(gc *gin.Context) {
 	adminOnly := app.config.Section("ui").Key("admin_only").MustBool(true)
 	allowAll := app.config.Section("ui").Key("allow_all").MustBool(false)
 	i := 0
-	app.storage.usersLock.Lock()
-	defer app.storage.usersLock.Unlock()
 	for _, jfUser := range users {
 		user := respUser{
 			ID:       jfUser.ID,
@@ -871,9 +850,9 @@ func (app *appContext) GetUsers(gc *gin.Context) {
 			user.Label = email.Label
 			user.AccountsAdmin = (app.jellyfinLogin) && (email.Admin || (adminOnly && jfUser.Policy.IsAdministrator) || allowAll)
 		}
-		expiry, ok := app.storage.users[jfUser.ID]
+		expiry, ok := app.storage.GetUserExpiryKey(jfUser.ID)
 		if ok {
-			user.Expiry = expiry.Unix()
+			user.Expiry = expiry.Expiry.Unix()
 		}
 		if tgUser, ok := app.storage.GetTelegramKey(jfUser.ID); ok {
 			user.Telegram = tgUser.Username
@@ -924,10 +903,6 @@ func (app *appContext) SetAccountsAdmin(gc *gin.Context) {
 			app.storage.SetEmailsKey(id, emailStore)
 		}
 	}
-	if err := app.storage.storeEmails(); err != nil {
-		app.err.Printf("Failed to store email list: %v", err)
-		respondBool(500, false, gc)
-	}
 	app.info.Println("Email list modified")
 	respondBool(204, true, gc)
 }
@@ -960,10 +935,6 @@ func (app *appContext) ModifyLabels(gc *gin.Context) {
 			emailStore.Label = label
 			app.storage.SetEmailsKey(id, emailStore)
 		}
-	}
-	if err := app.storage.storeEmails(); err != nil {
-		app.err.Printf("Failed to store email list: %v", err)
-		respondBool(500, false, gc)
 	}
 	app.info.Println("Email list modified")
 	respondBool(204, true, gc)
@@ -999,7 +970,6 @@ func (app *appContext) ModifyEmails(gc *gin.Context) {
 			// Auto enable contact by email for newly added addresses
 			if !ok || oldEmail.Addr == "" {
 				emailStore.Contact = true
-				app.storage.storeEmails()
 			}
 
 			emailStore.Addr = address
@@ -1016,7 +986,6 @@ func (app *appContext) ModifyEmails(gc *gin.Context) {
 			}
 		}
 	}
-	app.storage.storeEmails()
 	app.info.Println("Email list modified")
 	respondBool(200, true, gc)
 }

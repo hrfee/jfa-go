@@ -362,7 +362,7 @@ func start(asDaemon, firstCall bool) {
 			app.err.Printf("Failed to load Displayprefs: %v", err)
 		}
 		app.storage.users_path = app.config.Section("files").Key("users").String()
-		if err := app.storage.loadUsers(); err != nil {
+		if err := app.storage.loadUserExpiries(); err != nil {
 			app.err.Printf("Failed to load Users: %v", err)
 		}
 		app.storage.telegram_path = app.config.Section("files").Key("telegram_users").String()
@@ -400,11 +400,6 @@ func start(asDaemon, firstCall bool) {
 		app.storage.db_path = filepath.Join(app.dataPath, "db")
 		app.ConnectDB()
 		defer app.storage.db.Close()
-		if !app.config.Section("").Key("migrated_to_db").MustBool(false) {
-			// FIXME: Mark as done at some point
-			migrateToBadger(app)
-		}
-
 		// Read config-base for settings on web.
 		app.configBasePath = "config-base.json"
 		configBase, _ := fs.ReadFile(localFS, app.configBasePath)

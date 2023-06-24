@@ -221,9 +221,6 @@ func (t *TelegramDaemon) commandLang(upd *tg.Update, sects []string, lang string
 			if user.ChatID == upd.Message.Chat.ID {
 				user.Lang = sects[1]
 				t.app.storage.SetTelegramKey(user.JellyfinID, user)
-				if err := t.app.storage.storeTelegramUsers(); err != nil {
-					t.app.err.Printf("Failed to store Telegram users: %v", err)
-				}
 				break
 			}
 		}

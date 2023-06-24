@@ -15,16 +15,15 @@ import (
 func (app *appContext) checkInvites() {
 	currentTime := time.Now()
 	app.storage.loadInvites()
-	changed := false
-	for code, data := range app.storage.GetInvites() {
+	for _, data := range app.storage.GetInvites() {
 		expiry := data.ValidTill
 		if !currentTime.After(expiry) {
 			continue
 		}
-		app.debug.Printf("Housekeeping: Deleting old invite %s", code)
+		app.debug.Printf("Housekeeping: Deleting old invite %s", data.Code)
 		notify := data.Notify
 		if emailEnabled && app.config.Section("notifications").Key("enabled").MustBool(false) && len(notify) != 0 {
-			app.debug.Printf("%s: Expiry notification", code)
+			app.debug.Printf("%s: Expiry notification", data.Code)
 			var wait sync.WaitGroup
 			for address, settings := range notify {
 				if !settings["notify-expiry"] {
@@ -33,9 +32,9 @@ func (app *appContext) checkInvites() {
 				wait.Add(1)
 				go func(addr string) {
 					defer wait.Done()
-					msg, err := app.email.constructExpiry(code, data, app, false)
+					msg, err := app.email.constructExpiry(data.Code, data, app, false)
 					if err != nil {
-						app.err.Printf("%s: Failed to construct expiry notification: %v", code, err)
+						app.err.Printf("%s: Failed to construct expiry notification: %v", data.Code, err)
 					} else {
 						// Check whether notify "address" is an email address of Jellyfin ID
 						if strings.Contains(addr, "@") {
@@ -44,7 +43,7 @@ func (app *appContext) checkInvites() {
 							err = app.sendByID(msg, addr)
 						}
 						if err != nil {
-							app.err.Printf("%s: Failed to send expiry notification: %v", code, err)
+							app.err.Printf("%s: Failed to send expiry notification: %v", data.Code, err)
 						} else {
 							app.info.Printf("Sent expiry notification to %s", addr)
 						}
@@ -53,18 +52,13 @@ func (app *appContext) checkInvites() {
 			}
 			wait.Wait()
 		}
-		changed = true
-		app.storage.DeleteInvitesKey(code)
-	}
-	if changed {
-		app.storage.storeInvites()
+		app.storage.DeleteInvitesKey(data.Code)
 	}
 }
 
 func (app *appContext) checkInvite(code string, used bool, username string) bool {
 	currentTime := time.Now()
 	app.storage.loadInvites()
-	changed := false
 	inv, match := app.storage.GetInvitesKey(code)
 	if !match {
 		return false
@@ -103,11 +97,9 @@ func (app *appContext) checkInvite(code string, used bool, username string) bool
 			}
 			wait.Wait()
 		}
-		changed = true
 		match = false
 		app.storage.DeleteInvitesKey(code)
 	} else if used {
-		changed = true
 		del := false
 		newInv := inv
 		if newInv.RemainingUses == 1 {
@@ -121,9 +113,6 @@ func (app *appContext) checkInvite(code string, used bool, username string) bool
 		if !del {
 			app.storage.SetInvitesKey(code, newInv)
 		}
-	}
-	if changed {
-		app.storage.storeInvites()
 	}
 	return match
 }
@@ -220,7 +209,6 @@ func (app *appContext) GenerateInvite(gc *gin.Context) {
 		}
 	}
 	app.storage.SetInvitesKey(inviteCode, invite)
-	app.storage.storeInvites()
 	respondBool(200, true, gc)
 }
 
@@ -236,10 +224,10 @@ func (app *appContext) GetInvites(gc *gin.Context) {
 	app.storage.loadInvites()
 	app.checkInvites()
 	var invites []inviteDTO
-	for code, inv := range app.storage.GetInvites() {
+	for _, inv := range app.storage.GetInvites() {
 		_, months, days, hours, minutes, _ := timeDiff(inv.ValidTill, currentTime)
 		invite := inviteDTO{
-			Code:        code,
+			Code:        inv.Code,
 			Months:      months,
 			Days:        days,
 			Hours:       hours,
@@ -277,21 +265,19 @@ func (app *appContext) GetInvites(gc *gin.Context) {
 			invite.SendTo = inv.SendTo
 		}
 		if len(inv.Notify) != 0 {
-			var address string
+			// app.err.Printf("%s has notify section: %+v, you are %s\n", inv.Code, inv.Notify, gc.GetString("jfId"))
+			var addressOrID string
 			if app.config.Section("ui").Key("jellyfin_login").MustBool(false) {
-				app.storage.loadEmails()
-				if addr, ok := app.storage.GetEmailsKey(gc.GetString("jfId")); ok && addr.Addr != "" {
-					address = addr.Addr
-				}
+				addressOrID = gc.GetString("jfId")
 			} else {
-				address = app.config.Section("ui").Key("email").String()
+				addressOrID = app.config.Section("ui").Key("email").String()
 			}
-			if _, ok := inv.Notify[address]; ok {
-				if _, ok = inv.Notify[address]["notify-expiry"]; ok {
-					invite.NotifyExpiry = inv.Notify[address]["notify-expiry"]
+			if _, ok := inv.Notify[addressOrID]; ok {
+				if _, ok = inv.Notify[addressOrID]["notify-expiry"]; ok {
+					invite.NotifyExpiry = inv.Notify[addressOrID]["notify-expiry"]
 				}
-				if _, ok = inv.Notify[address]["notify-creation"]; ok {
-					invite.NotifyCreation = inv.Notify[address]["notify-creation"]
+				if _, ok = inv.Notify[addressOrID]["notify-creation"]; ok {
+					invite.NotifyCreation = inv.Notify[addressOrID]["notify-creation"]
 				}
 			}
 		}
@@ -338,7 +324,6 @@ func (app *appContext) SetProfile(gc *gin.Context) {
 	inv, _ := app.storage.GetInvitesKey(req.Invite)
 	inv.Profile = req.Profile
 	app.storage.SetInvitesKey(req.Invite, inv)
-	app.storage.storeInvites()
 	respondBool(200, true, gc)
 }
 
@@ -401,9 +386,6 @@ func (app *appContext) SetNotify(gc *gin.Context) {
 			app.storage.SetInvitesKey(code, invite)
 		}
 	}
-	if changed {
-		app.storage.storeInvites()
-	}
 }
 
 // @Summary Delete an invite.
@@ -422,7 +404,6 @@ func (app *appContext) DeleteInvite(gc *gin.Context) {
 	_, ok = app.storage.GetInvitesKey(req.Code)
 	if ok {
 		app.storage.DeleteInvitesKey(req.Code)
-		app.storage.storeInvites()
 		app.info.Printf("%s: Invite deleted", req.Code)
 		respondBool(200, true, gc)
 		return

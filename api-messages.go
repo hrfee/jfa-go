@@ -387,11 +387,6 @@ func (app *appContext) setContactMethods(req SetContactMethodsDTO, gc *gin.Conte
 		change := dcUser.Contact != req.Discord
 		dcUser.Contact = req.Discord
 		app.storage.SetDiscordKey(req.ID, dcUser)
-		if err := app.storage.storeDiscordUsers(); err != nil {
-			respondBool(500, false, gc)
-			app.err.Printf("Discord: Failed to store users: %v", err)
-			return
-		}
 		if change {
 			msg := ""
 			if !req.Discord {
@@ -404,11 +399,6 @@ func (app *appContext) setContactMethods(req SetContactMethodsDTO, gc *gin.Conte
 		change := mxUser.Contact != req.Matrix
 		mxUser.Contact = req.Matrix
 		app.storage.SetMatrixKey(req.ID, mxUser)
-		if err := app.storage.storeMatrixUsers(); err != nil {
-			respondBool(500, false, gc)
-			app.err.Printf("Matrix: Failed to store users: %v", err)
-			return
-		}
 		if change {
 			msg := ""
 			if !req.Matrix {
@@ -421,11 +411,6 @@ func (app *appContext) setContactMethods(req SetContactMethodsDTO, gc *gin.Conte
 		change := email.Contact != req.Email
 		email.Contact = req.Email
 		app.storage.SetEmailsKey(req.ID, email)
-		if err := app.storage.storeEmails(); err != nil {
-			respondBool(500, false, gc)
-			app.err.Printf("Failed to store emails: %v", err)
-			return
-		}
 		if change {
 			msg := ""
 			if !req.Email {
@@ -646,7 +631,7 @@ func (app *appContext) MatrixConnect(gc *gin.Context) {
 	var req MatrixConnectUserDTO
 	gc.BindJSON(&req)
 	if app.storage.GetMatrix() == nil {
-		app.storage.matrix = matrixStore{}
+		app.storage.deprecatedMatrix = matrixStore{}
 	}
 	roomID, encrypted, err := app.matrix.CreateRoom(req.UserID)
 	if err != nil {
@@ -662,11 +647,6 @@ func (app *appContext) MatrixConnect(gc *gin.Context) {
 		Encrypted: encrypted,
 	})
 	app.matrix.isEncrypted[roomID] = encrypted
-	if err := app.storage.storeMatrixUsers(); err != nil {
-		app.err.Printf("Failed to store Matrix users: %v", err)
-		respondBool(500, false, gc)
-		return
-	}
 	respondBool(200, true, gc)
 }
 
@@ -717,11 +697,6 @@ func (app *appContext) DiscordConnect(gc *gin.Context) {
 		return
 	}
 	app.storage.SetDiscordKey(req.JellyfinID, user)
-	if err := app.storage.storeDiscordUsers(); err != nil {
-		app.err.Printf("Failed to store Discord users: %v", err)
-		respondBool(500, false, gc)
-		return
-	}
 	linkExistingOmbiDiscordTelegram(app)
 	respondBool(200, true, gc)
 }
