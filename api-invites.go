@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/itchyny/timefmt-go"
 	"github.com/lithammer/shortuuid/v3"
+	"github.com/timshannon/badgerhold/v4"
 )
 
 func (app *appContext) checkInvites() {
@@ -202,7 +203,7 @@ func (app *appContext) GenerateInvite(gc *gin.Context) {
 		}
 	}
 	if req.Profile != "" {
-		if _, ok := app.storage.profiles[req.Profile]; ok {
+		if _, ok := app.storage.GetProfileKey(req.Profile); ok {
 			invite.Profile = req.Profile
 		} else {
 			invite.Profile = "Default"
@@ -283,17 +284,18 @@ func (app *appContext) GetInvites(gc *gin.Context) {
 		}
 		invites = append(invites, invite)
 	}
-	profiles := make([]string, len(app.storage.profiles))
-	if len(app.storage.profiles) != 0 {
-		profiles[0] = app.storage.defaultProfile
+	fullProfileList := app.storage.GetProfiles()
+	profiles := make([]string, len(fullProfileList))
+	if len(profiles) != 0 {
+		defaultProfile := app.storage.GetDefaultProfile()
+		profiles[0] = defaultProfile.Name
 		i := 1
-		if len(app.storage.profiles) > 1 {
-			for p := range app.storage.profiles {
-				if p != app.storage.defaultProfile {
-					profiles[i] = p
-					i++
-				}
-			}
+		if len(fullProfileList) > 1 {
+			app.storage.db.ForEach(badgerhold.Where("Name").Ne(profiles[0]), func(p *Profile) error {
+				profiles[i] = p.Name
+				i++
+				return nil
+			})
 		}
 	}
 	resp := getInvitesDTO{
@@ -316,7 +318,7 @@ func (app *appContext) SetProfile(gc *gin.Context) {
 	gc.BindJSON(&req)
 	app.debug.Printf("%s: Setting profile to \"%s\"", req.Invite, req.Profile)
 	// "" means "Don't apply profile"
-	if _, ok := app.storage.profiles[req.Profile]; !ok && req.Profile != "" {
+	if _, ok := app.storage.GetProfileKey(req.Profile); !ok && req.Profile != "" {
 		app.err.Printf("%s: Profile \"%s\" not found", req.Invite, req.Profile)
 		respond(500, "Profile not found", gc)
 		return

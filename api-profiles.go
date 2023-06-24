@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/timshannon/badgerhold/v4"
 )
 
 // @Summary Get a list of profiles
@@ -13,14 +14,13 @@ import (
 // @Security Bearer
 // @tags Profiles & Settings
 func (app *appContext) GetProfiles(gc *gin.Context) {
-	app.storage.loadProfiles()
 	app.debug.Println("Profiles requested")
 	out := getProfilesDTO{
-		DefaultProfile: app.storage.defaultProfile,
+		DefaultProfile: app.storage.GetDefaultProfile().Name,
 		Profiles:       map[string]profileDTO{},
 	}
-	for name, p := range app.storage.profiles {
-		out.Profiles[name] = profileDTO{
+	for _, p := range app.storage.GetProfiles() {
+		out.Profiles[p.Name] = profileDTO{
 			Admin:         p.Admin,
 			LibraryAccess: p.LibraryAccess,
 			FromUser:      p.FromUser,
@@ -42,20 +42,20 @@ func (app *appContext) SetDefaultProfile(gc *gin.Context) {
 	req := profileChangeDTO{}
 	gc.BindJSON(&req)
 	app.info.Printf("Setting default profile to \"%s\"", req.Name)
-	if _, ok := app.storage.profiles[req.Name]; !ok {
+	if _, ok := app.storage.GetProfileKey(req.Name); !ok {
 		app.err.Printf("Profile not found: \"%s\"", req.Name)
 		respond(500, "Profile not found", gc)
 		return
 	}
-	for name, profile := range app.storage.profiles {
-		if name == req.Name {
-			profile.Admin = true
-			app.storage.profiles[name] = profile
+	app.storage.db.ForEach(&badgerhold.Query{}, func(profile *Profile) error {
+		if profile.Name == req.Name {
+			profile.Default = true
 		} else {
-			profile.Admin = false
+			profile.Default = false
 		}
-	}
-	app.storage.defaultProfile = req.Name
+		app.storage.SetProfileKey(profile.Name, *profile)
+		return nil
+	})
 	respondBool(200, true, gc)
 }
 
@@ -92,10 +92,7 @@ func (app *appContext) CreateProfile(gc *gin.Context) {
 			return
 		}
 	}
-	app.storage.loadProfiles()
-	app.storage.profiles[req.Name] = profile
-	app.storage.storeProfiles()
-	app.storage.loadProfiles()
+	app.storage.SetProfileKey(req.Name, profile)
 	respondBool(200, true, gc)
 }
 
@@ -110,12 +107,6 @@ func (app *appContext) DeleteProfile(gc *gin.Context) {
 	req := profileChangeDTO{}
 	gc.BindJSON(&req)
 	name := req.Name
-	if _, ok := app.storage.profiles[name]; ok {
-		if app.storage.defaultProfile == name {
-			app.storage.defaultProfile = ""
-		}
-		delete(app.storage.profiles, name)
-	}
-	app.storage.storeProfiles()
+	app.storage.DeleteProfileKey(name)
 	respondBool(200, true, gc)
 }

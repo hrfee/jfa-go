@@ -269,7 +269,6 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 		success = false
 		return
 	}
-	app.storage.loadProfiles()
 	invite, _ := app.storage.GetInvitesKey(req.Code)
 	app.checkInvite(req.Code, true, req.Username)
 	if emailEnabled && app.config.Section("notifications").Key("enabled").MustBool(false) {
@@ -301,9 +300,9 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 	if invite.Profile != "" {
 		app.debug.Printf("Applying settings from profile \"%s\"", invite.Profile)
 		var ok bool
-		profile, ok = app.storage.profiles[invite.Profile]
+		profile, ok = app.storage.GetProfileKey(invite.Profile)
 		if !ok {
-			profile = app.storage.profiles["Default"]
+			profile = app.storage.GetDefaultProfile()
 		}
 		if profile.Policy.BlockedTags != nil {
 			app.debug.Printf("Applying policy from profile \"%s\"", invite.Profile)
@@ -1008,25 +1007,24 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 	var displayprefs map[string]interface{}
 	var ombi map[string]interface{}
 	if req.From == "profile" {
-		app.storage.loadProfiles()
 		// Check profile exists & isn't empty
-		if _, ok := app.storage.profiles[req.Profile]; !ok || app.storage.profiles[req.Profile].Policy.BlockedTags == nil {
+		profile, ok := app.storage.GetProfileKey(req.Profile)
+		if !ok || profile.Policy.BlockedTags == nil {
 			app.err.Printf("Couldn't find profile \"%s\" or profile was empty", req.Profile)
 			respond(500, "Couldn't find profile", gc)
 			return
 		}
 		if req.Homescreen {
-			if app.storage.profiles[req.Profile].Configuration.GroupedFolders == nil || len(app.storage.profiles[req.Profile].Displayprefs) == 0 {
+			if profile.Configuration.GroupedFolders == nil || len(profile.Displayprefs) == 0 {
 				app.err.Printf("No homescreen saved in profile \"%s\"", req.Profile)
 				respond(500, "No homescreen template available", gc)
 				return
 			}
-			configuration = app.storage.profiles[req.Profile].Configuration
-			displayprefs = app.storage.profiles[req.Profile].Displayprefs
+			configuration = profile.Configuration
+			displayprefs = profile.Displayprefs
 		}
-		policy = app.storage.profiles[req.Profile].Policy
+		policy = profile.Policy
 		if app.config.Section("ombi").Key("enabled").MustBool(false) {
-			profile := app.storage.profiles[req.Profile]
 			if profile.Ombi != nil && len(profile.Ombi) != 0 {
 				ombi = profile.Ombi
 			}

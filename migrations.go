@@ -236,6 +236,11 @@ func migrateToBadger(app *appContext) {
 	for k, v := range app.storage.deprecatedUserExpiries {
 		app.storage.SetUserExpiryKey(k, UserExpiry{Expiry: v})
 	}
+
+	app.storage.loadProfiles()
+	for k, v := range app.storage.profiles {
+		app.storage.SetProfileKey(k, v)
+	}
 }
 
 // Migrate between hyphenated & non-hyphenated user IDs. Doesn't seem to happen anymore, so disabled.

@@ -312,6 +312,63 @@ func (st *Storage) DeleteUserExpiryKey(k string) {
 	st.db.Delete(k, UserExpiry{})
 }
 
+// GetProfiles returns a copy of the store.
+func (st *Storage) GetProfiles() []Profile {
+	result := []Profile{}
+	err := st.db.Find(&result, &badgerhold.Query{})
+	if err != nil {
+		// fmt.Printf("Failed to find profiles: %v\n", err)
+	}
+	return result
+}
+
+// GetProfileKey returns the value stored in the store's key.
+func (st *Storage) GetProfileKey(k string) (Profile, bool) {
+	result := Profile{}
+	err := st.db.Get(k, &result)
+	ok := true
+	if err != nil {
+		// fmt.Printf("Failed to find profile: %v\n", err)
+		ok = false
+	}
+	return result, ok
+}
+
+// SetProfileKey stores value v in key k.
+func (st *Storage) SetProfileKey(k string, v Profile) {
+	v.Name = k
+	v.Admin = v.Policy.IsAdministrator
+	if v.Policy.EnabledFolders != nil {
+		if len(v.Policy.EnabledFolders) == 0 {
+			v.LibraryAccess = "All"
+		} else {
+			v.LibraryAccess = strconv.Itoa(len(v.Policy.EnabledFolders))
+		}
+	}
+	if v.FromUser == "" {
+		v.FromUser = "Unknown"
+	}
+	err := st.db.Upsert(k, v)
+	if err != nil {
+		// fmt.Printf("Failed to set profile: %v\n", err)
+	}
+}
+
+// DeleteProfileKey deletes value at key k.
+func (st *Storage) DeleteProfileKey(k string) {
+	st.db.Delete(k, Profile{})
+}
+
+// GetDefaultProfile returns the first profile set as default, or anything available if there isn't one.
+func (st *Storage) GetDefaultProfile() Profile {
+	defaultProfile := Profile{}
+	err := st.db.FindOne(&defaultProfile, badgerhold.Where("Default").Eq(true))
+	if err != nil {
+		st.db.FindOne(&defaultProfile, &badgerhold.Query{})
+	}
+	return defaultProfile
+}
+
 type TelegramUser struct {
 	JellyfinID string `badgerhold:"key"`
 	ChatID     int64  `badgerhold:"index"`
@@ -366,7 +423,8 @@ type userPageContent struct {
 // timePattern: %Y-%m-%dT%H:%M:%S.%f
 
 type Profile struct {
-	Admin         bool                       `json:"admin,omitempty"`
+	Name          string                     `badgerhold:"key"`
+	Admin         bool                       `json:"admin,omitempty" badgerhold:"index"`
 	LibraryAccess string                     `json:"libraries,omitempty"`
 	FromUser      string                     `json:"fromUser,omitempty"`
 	Policy        mediabrowser.Policy        `json:"policy,omitempty"`
