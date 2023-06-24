@@ -47,11 +47,12 @@ export class lang implements Lang {
     }
 }
 
+export var TimeFmtChange = new CustomEvent("timefmt-change");
+
 export const loadLangSelector = (page: string) => {
-    if (page == "admin") {
-        const ev = new CustomEvent("timefmt-change");
+    if (page == "admin" || "user") {
         const setTimefmt = (fmt: string) => {
-            document.dispatchEvent(ev);
+            document.dispatchEvent(TimeFmtChange);
             localStorage.setItem("timefmt", fmt);
         };
         const t12 = document.getElementById("lang-12h") as HTMLInputElement;

@@ -243,11 +243,16 @@ class ExpiryCard {
     private _aside: HTMLElement;
     private _countdown: HTMLElement;
     private _interval: number = null;
+    private _expiryUnix: number = 0;
 
     constructor(card: HTMLElement) {
         this._card = card;
         this._aside = this._card.querySelector(".user-expiry") as HTMLElement;
         this._countdown = this._card.querySelector(".user-expiry-countdown") as HTMLElement;
+
+        document.addEventListener("timefmt-change", () => {
+            this.expiry = this._expiryUnix;
+        });
     }
 
     private _drawCountdown = () => {
@@ -297,7 +302,11 @@ class ExpiryCard {
             window.clearInterval(this._interval);
             this._interval = null;
         }
-        if (expiryUnix == 0) return;
+        this._expiryUnix = expiryUnix;
+        if (expiryUnix == 0) {
+            this._card.classList.add("unfocused");
+            return;
+        }
         this._expiry = new Date(expiryUnix * 1000);
         this._aside.textContent = window.lang.strings("yourAccountIsValidUntil").replace("{date}", toDateString(this._expiry));
         this._card.classList.remove("unfocused");
