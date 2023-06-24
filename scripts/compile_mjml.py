@@ -3,7 +3,7 @@ import shutil
 import os
 import argparse
 from pathlib import Path
-from threading import Thread
+from multiprocessing import Process
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-o", "--output", help="output directory for .html and .txt files")
@@ -27,10 +27,10 @@ local_path = Path("mail")
 threads = []
 
 for mjml in [f for f in local_path.iterdir() if f.is_file() and "mjml" in f.suffix]:
-    threads.append(Thread(target=compile, args=(mjml,)))
+    p = Process(target=compile, args=(mjml,))
+    p.start()
+    threads.append(p)
 
-for thread in threads:
-    thread.start()
 for thread in threads:
     thread.join()
 
