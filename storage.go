@@ -34,8 +34,7 @@ type Storage struct {
 	invite_path, emails_path, policy_path, configuration_path, displayprefs_path, ombi_path, profiles_path, customEmails_path, users_path, telegram_path, discord_path, matrix_path, announcements_path, matrix_sql_path, userPage_path string
 	deprecatedUserExpiries                                                                                                                                                                                                              map[string]time.Time // Map of Jellyfin User IDs to their expiry times.
 	deprecatedInvites                                                                                                                                                                                                                   Invites
-	profiles                                                                                                                                                                                                                            map[string]Profile
-	defaultProfile                                                                                                                                                                                                                      string
+	deprecatedProfiles                                                                                                                                                                                                                  map[string]Profile
 	displayprefs, ombi_template                                                                                                                                                                                                         map[string]interface{}
 	deprecatedEmails                                                                                                                                                                                                                    emailStore    // Map of Jellyfin User IDs to Email addresses.
 	deprecatedTelegram                                                                                                                                                                                                                  telegramStore // Map of Jellyfin User IDs to telegram users.
@@ -1254,11 +1253,11 @@ func (st *Storage) storeAnnouncements() error {
 }
 
 func (st *Storage) loadProfiles() error {
-	err := loadJSON(st.profiles_path, &st.profiles)
-	for name, profile := range st.profiles {
-		if profile.Default {
-			st.defaultProfile = name
-		}
+	err := loadJSON(st.profiles_path, &st.deprecatedProfiles)
+	for name, profile := range st.deprecatedProfiles {
+		// if profile.Default {
+		// 	st.defaultProfile = name
+		// }
 		change := false
 		if profile.Policy.IsAdministrator != profile.Admin {
 			change = true
@@ -1278,19 +1277,19 @@ func (st *Storage) loadProfiles() error {
 			change = true
 		}
 		if change {
-			st.profiles[name] = profile
+			st.deprecatedProfiles[name] = profile
 		}
 	}
-	if st.defaultProfile == "" {
-		for n := range st.profiles {
-			st.defaultProfile = n
-		}
-	}
+	// if st.defaultProfile == "" {
+	// 	for n := range st.deprecatedProfiles {
+	// 		st.defaultProfile = n
+	// 	}
+	// }
 	return err
 }
 
 func (st *Storage) storeProfiles() error {
-	return storeJSON(st.profiles_path, st.profiles)
+	return storeJSON(st.profiles_path, st.deprecatedProfiles)
 }
 
 func (st *Storage) migrateToProfile() error {
@@ -1298,7 +1297,7 @@ func (st *Storage) migrateToProfile() error {
 	st.loadConfiguration()
 	st.loadDisplayprefs()
 	st.loadProfiles()
-	st.profiles["Default"] = Profile{
+	st.deprecatedProfiles["Default"] = Profile{
 		Policy:        st.policy,
 		Configuration: st.configuration,
 		Displayprefs:  st.displayprefs,

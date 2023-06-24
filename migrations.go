@@ -238,7 +238,7 @@ func migrateToBadger(app *appContext) {
 	}
 
 	app.storage.loadProfiles()
-	for k, v := range app.storage.profiles {
+	for k, v := range app.storage.deprecatedProfiles {
 		app.storage.SetProfileKey(k, v)
 	}
 }
