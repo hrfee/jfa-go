@@ -21,7 +21,7 @@ func runMigrations(app *appContext) {
 
 // Migrate pre-0.2.0 user templates to profiles
 func migrateProfiles(app *appContext) {
-	if app.storage.policy.BlockedTags == nil && app.storage.configuration.GroupedFolders == nil && len(app.storage.displayprefs) == 0 {
+	if app.storage.deprecatedPolicy.BlockedTags == nil && app.storage.deprecatedConfiguration.GroupedFolders == nil && len(app.storage.deprecatedDisplayprefs) == 0 {
 		return
 	}
 	app.info.Println("Migrating user template files to new profile format")

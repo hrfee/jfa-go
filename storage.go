@@ -35,15 +35,15 @@ type Storage struct {
 	deprecatedUserExpiries                                                                                                                                                                                                              map[string]time.Time // Map of Jellyfin User IDs to their expiry times.
 	deprecatedInvites                                                                                                                                                                                                                   Invites
 	deprecatedProfiles                                                                                                                                                                                                                  map[string]Profile
-	displayprefs, ombi_template                                                                                                                                                                                                         map[string]interface{}
+	deprecatedDisplayprefs, deprecatedOmbiTemplate                                                                                                                                                                                      map[string]interface{}
 	deprecatedEmails                                                                                                                                                                                                                    emailStore    // Map of Jellyfin User IDs to Email addresses.
 	deprecatedTelegram                                                                                                                                                                                                                  telegramStore // Map of Jellyfin User IDs to telegram users.
 	deprecatedDiscord                                                                                                                                                                                                                   discordStore  // Map of Jellyfin user IDs to discord users.
 	deprecatedMatrix                                                                                                                                                                                                                    matrixStore   // Map of Jellyfin user IDs to Matrix users.
 	customEmails                                                                                                                                                                                                                        customEmails
 	userPage                                                                                                                                                                                                                            userPageContent
-	policy                                                                                                                                                                                                                              mediabrowser.Policy
-	configuration                                                                                                                                                                                                                       mediabrowser.Configuration
+	deprecatedPolicy                                                                                                                                                                                                                    mediabrowser.Policy
+	deprecatedConfiguration                                                                                                                                                                                                             mediabrowser.Configuration
 	lang                                                                                                                                                                                                                                Lang
 	deprecatedAnnouncements                                                                                                                                                                                                             map[string]announcementTemplate
 }
@@ -1213,35 +1213,35 @@ func (st *Storage) storeUserPageContent() error {
 }
 
 func (st *Storage) loadPolicy() error {
-	return loadJSON(st.policy_path, &st.policy)
+	return loadJSON(st.policy_path, &st.deprecatedPolicy)
 }
 
 func (st *Storage) storePolicy() error {
-	return storeJSON(st.policy_path, st.policy)
+	return storeJSON(st.policy_path, st.deprecatedPolicy)
 }
 
 func (st *Storage) loadConfiguration() error {
-	return loadJSON(st.configuration_path, &st.configuration)
+	return loadJSON(st.configuration_path, &st.deprecatedConfiguration)
 }
 
 func (st *Storage) storeConfiguration() error {
-	return storeJSON(st.configuration_path, st.configuration)
+	return storeJSON(st.configuration_path, st.deprecatedConfiguration)
 }
 
 func (st *Storage) loadDisplayprefs() error {
-	return loadJSON(st.displayprefs_path, &st.displayprefs)
+	return loadJSON(st.displayprefs_path, &st.deprecatedDisplayprefs)
 }
 
 func (st *Storage) storeDisplayprefs() error {
-	return storeJSON(st.displayprefs_path, st.displayprefs)
+	return storeJSON(st.displayprefs_path, st.deprecatedDisplayprefs)
 }
 
 func (st *Storage) loadOmbiTemplate() error {
-	return loadJSON(st.ombi_path, &st.ombi_template)
+	return loadJSON(st.ombi_path, &st.deprecatedOmbiTemplate)
 }
 
 func (st *Storage) storeOmbiTemplate() error {
-	return storeJSON(st.ombi_path, st.ombi_template)
+	return storeJSON(st.ombi_path, st.deprecatedOmbiTemplate)
 }
 
 func (st *Storage) loadAnnouncements() error {
@@ -1298,9 +1298,9 @@ func (st *Storage) migrateToProfile() error {
 	st.loadDisplayprefs()
 	st.loadProfiles()
 	st.deprecatedProfiles["Default"] = Profile{
-		Policy:        st.policy,
-		Configuration: st.configuration,
-		Displayprefs:  st.displayprefs,
+		Policy:        st.deprecatedPolicy,
+		Configuration: st.deprecatedConfiguration,
+		Displayprefs:  st.deprecatedDisplayprefs,
 	}
 	return st.storeProfiles()
 }

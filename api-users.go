@@ -44,16 +44,16 @@ func (app *appContext) NewUserAdmin(gc *gin.Context) {
 		return
 	}
 	id := user.ID
-	if app.storage.policy.BlockedTags != nil {
-		status, err = app.jf.SetPolicy(id, app.storage.policy)
+	profile := app.storage.GetDefaultProfile()
+	// Check profile isn't empty
+	if profile.Policy.BlockedTags != nil {
+		status, err = app.jf.SetPolicy(id, profile.Policy)
 		if !(status == 200 || status == 204 || err == nil) {
 			app.err.Printf("%s: Failed to set user policy (%d): %v", req.Username, status, err)
 		}
-	}
-	if app.storage.configuration.GroupedFolders != nil && len(app.storage.displayprefs) != 0 {
-		status, err = app.jf.SetConfiguration(id, app.storage.configuration)
+		status, err = app.jf.SetConfiguration(id, profile.Configuration)
 		if (status == 200 || status == 204) && err == nil {
-			status, err = app.jf.SetDisplayPreferences(id, app.storage.displayprefs)
+			status, err = app.jf.SetDisplayPreferences(id, profile.Displayprefs)
 		}
 		if !((status == 200 || status == 204) && err == nil) {
 			app.err.Printf("%s: Failed to set configuration template (%d): %v", req.Username, status, err)
@@ -64,15 +64,16 @@ func (app *appContext) NewUserAdmin(gc *gin.Context) {
 		app.storage.SetEmailsKey(id, EmailAddress{Addr: req.Email, Contact: true})
 	}
 	if app.config.Section("ombi").Key("enabled").MustBool(false) {
-		app.storage.loadOmbiTemplate()
-		if len(app.storage.ombi_template) != 0 {
-			errors, code, err := app.ombi.NewUser(req.Username, req.Password, req.Email, app.storage.ombi_template)
-			if err != nil || code != 200 {
-				app.err.Printf("Failed to create Ombi user (%d): %v", code, err)
-				app.debug.Printf("Errors reported by Ombi: %s", strings.Join(errors, ", "))
-			} else {
-				app.info.Println("Created Ombi user")
-			}
+		profile := app.storage.GetDefaultProfile()
+		if profile.Ombi == nil {
+			profile.Ombi = map[string]interface{}{}
+		}
+		errors, code, err := app.ombi.NewUser(req.Username, req.Password, req.Email, profile.Ombi)
+		if err != nil || code != 200 {
+			app.err.Printf("Failed to create Ombi user (%d): %v", code, err)
+			app.debug.Printf("Errors reported by Ombi: %s", strings.Join(errors, ", "))
+		} else {
+			app.info.Println("Created Ombi user")
 		}
 	}
 	if emailEnabled && app.config.Section("welcome_email").Key("enabled").MustBool(false) && req.Email != "" {
