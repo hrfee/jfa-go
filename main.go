@@ -335,59 +335,8 @@ func start(asDaemon, firstCall bool) {
 
 		app.debug.Printf("Loaded config file \"%s\"", app.configPath)
 
-		app.debug.Println("Loading storage")
-
-		app.storage.invite_path = app.config.Section("files").Key("invites").String()
-		if err := app.storage.loadInvites(); err != nil {
-			app.err.Printf("Failed to load Invites: %v", err)
-		}
-		app.storage.emails_path = app.config.Section("files").Key("emails").String()
-		if err := app.storage.loadEmails(); err != nil {
-			app.err.Printf("Failed to load Emails: %v", err)
-			err := migrateEmailStorage(app)
-			if err != nil {
-				app.err.Printf("Failed to migrate Email storage: %v", err)
-			}
-		}
-		app.storage.policy_path = app.config.Section("files").Key("user_template").String()
-		if err := app.storage.loadPolicy(); err != nil {
-			app.err.Printf("Failed to load Policy: %v", err)
-		}
-		app.storage.configuration_path = app.config.Section("files").Key("user_configuration").String()
-		if err := app.storage.loadConfiguration(); err != nil {
-			app.err.Printf("Failed to load Configuration: %v", err)
-		}
-		app.storage.displayprefs_path = app.config.Section("files").Key("user_displayprefs").String()
-		if err := app.storage.loadDisplayprefs(); err != nil {
-			app.err.Printf("Failed to load Displayprefs: %v", err)
-		}
-		app.storage.users_path = app.config.Section("files").Key("users").String()
-		if err := app.storage.loadUsers(); err != nil {
-			app.err.Printf("Failed to load Users: %v", err)
-		}
-		app.storage.telegram_path = app.config.Section("files").Key("telegram_users").String()
-		if err := app.storage.loadTelegramUsers(); err != nil {
-			app.err.Printf("Failed to load Telegram users: %v", err)
-		}
-		app.storage.discord_path = app.config.Section("files").Key("discord_users").String()
-		if err := app.storage.loadDiscordUsers(); err != nil {
-			app.err.Printf("Failed to load Discord users: %v", err)
-		}
-		app.storage.matrix_path = app.config.Section("files").Key("matrix_users").String()
-		if err := app.storage.loadMatrixUsers(); err != nil {
-			app.err.Printf("Failed to load Matrix users: %v", err)
-		}
-		app.storage.announcements_path = app.config.Section("files").Key("announcements").String()
-		if err := app.storage.loadAnnouncements(); err != nil {
-			app.err.Printf("Failed to load announcement templates: %v", err)
-		}
-
-		app.storage.profiles_path = app.config.Section("files").Key("user_profiles").String()
-		app.storage.loadProfiles()
-
 		if app.config.Section("ombi").Key("enabled").MustBool(false) {
-			app.storage.ombi_path = app.config.Section("files").Key("ombi_template").String()
-			app.storage.loadOmbiTemplate()
+			app.debug.Printf("Connecting to Ombi")
 			ombiServer := app.config.Section("ombi").Key("server").String()
 			app.ombi = ombi.NewOmbi(
 				ombiServer,
@@ -397,6 +346,9 @@ func start(asDaemon, firstCall bool) {
 
 		}
 
+		app.storage.db_path = filepath.Join(app.dataPath, "db")
+		app.ConnectDB()
+		defer app.storage.db.Close()
 		// Read config-base for settings on web.
 		app.configBasePath = "config-base.json"
 		configBase, _ := fs.ReadFile(localFS, app.configBasePath)

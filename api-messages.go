@@ -25,18 +25,18 @@ func (app *appContext) GetCustomContent(gc *gin.Context) {
 		adminLang = app.storage.lang.chosenAdminLang
 	}
 	list := emailListDTO{
-		"UserCreated":       {Name: app.storage.lang.Email[lang].UserCreated["name"], Enabled: app.storage.customEmails.UserCreated.Enabled},
-		"InviteExpiry":      {Name: app.storage.lang.Email[lang].InviteExpiry["name"], Enabled: app.storage.customEmails.InviteExpiry.Enabled},
-		"PasswordReset":     {Name: app.storage.lang.Email[lang].PasswordReset["name"], Enabled: app.storage.customEmails.PasswordReset.Enabled},
-		"UserDeleted":       {Name: app.storage.lang.Email[lang].UserDeleted["name"], Enabled: app.storage.customEmails.UserDeleted.Enabled},
-		"UserDisabled":      {Name: app.storage.lang.Email[lang].UserDisabled["name"], Enabled: app.storage.customEmails.UserDisabled.Enabled},
-		"UserEnabled":       {Name: app.storage.lang.Email[lang].UserEnabled["name"], Enabled: app.storage.customEmails.UserEnabled.Enabled},
-		"InviteEmail":       {Name: app.storage.lang.Email[lang].InviteEmail["name"], Enabled: app.storage.customEmails.InviteEmail.Enabled},
-		"WelcomeEmail":      {Name: app.storage.lang.Email[lang].WelcomeEmail["name"], Enabled: app.storage.customEmails.WelcomeEmail.Enabled},
-		"EmailConfirmation": {Name: app.storage.lang.Email[lang].EmailConfirmation["name"], Enabled: app.storage.customEmails.EmailConfirmation.Enabled},
-		"UserExpired":       {Name: app.storage.lang.Email[lang].UserExpired["name"], Enabled: app.storage.customEmails.UserExpired.Enabled},
-		"UserLogin":         {Name: app.storage.lang.Admin[adminLang].Strings["userPageLogin"], Enabled: app.storage.userPage.Login.Enabled},
-		"UserPage":          {Name: app.storage.lang.Admin[adminLang].Strings["userPagePage"], Enabled: app.storage.userPage.Page.Enabled},
+		"UserCreated":       {Name: app.storage.lang.Email[lang].UserCreated["name"], Enabled: app.storage.MustGetCustomContentKey("UserCreated").Enabled},
+		"InviteExpiry":      {Name: app.storage.lang.Email[lang].InviteExpiry["name"], Enabled: app.storage.MustGetCustomContentKey("InviteExpiry").Enabled},
+		"PasswordReset":     {Name: app.storage.lang.Email[lang].PasswordReset["name"], Enabled: app.storage.MustGetCustomContentKey("PasswordReset").Enabled},
+		"UserDeleted":       {Name: app.storage.lang.Email[lang].UserDeleted["name"], Enabled: app.storage.MustGetCustomContentKey("UserDeleted").Enabled},
+		"UserDisabled":      {Name: app.storage.lang.Email[lang].UserDisabled["name"], Enabled: app.storage.MustGetCustomContentKey("UserDisabled").Enabled},
+		"UserEnabled":       {Name: app.storage.lang.Email[lang].UserEnabled["name"], Enabled: app.storage.MustGetCustomContentKey("UserEnabled").Enabled},
+		"InviteEmail":       {Name: app.storage.lang.Email[lang].InviteEmail["name"], Enabled: app.storage.MustGetCustomContentKey("InviteEmail").Enabled},
+		"WelcomeEmail":      {Name: app.storage.lang.Email[lang].WelcomeEmail["name"], Enabled: app.storage.MustGetCustomContentKey("WelcomeEmail").Enabled},
+		"EmailConfirmation": {Name: app.storage.lang.Email[lang].EmailConfirmation["name"], Enabled: app.storage.MustGetCustomContentKey("EmailConfirmation").Enabled},
+		"UserExpired":       {Name: app.storage.lang.Email[lang].UserExpired["name"], Enabled: app.storage.MustGetCustomContentKey("UserExpired").Enabled},
+		"UserLogin":         {Name: app.storage.lang.Admin[adminLang].Strings["userPageLogin"], Enabled: app.storage.MustGetCustomContentKey("Login").Enabled},
+		"UserPage":          {Name: app.storage.lang.Admin[adminLang].Strings["userPagePage"], Enabled: app.storage.MustGetCustomContentKey("Page").Enabled},
 	}
 
 	filter := gc.Query("filter")
@@ -50,10 +50,11 @@ func (app *appContext) GetCustomContent(gc *gin.Context) {
 	gc.JSON(200, list)
 }
 
-func (app *appContext) getCustomMessage(id string) *customContent {
+// No longer needed, these are stored by string keys in the database now.
+/* func (app *appContext) getCustomMessage(id string) *CustomContent {
 	switch id {
 	case "Announcement":
-		return &customContent{}
+		return &CustomContent{}
 	case "UserCreated":
 		return &app.storage.customEmails.UserCreated
 	case "InviteExpiry":
@@ -80,45 +81,38 @@ func (app *appContext) getCustomMessage(id string) *customContent {
 		return &app.storage.userPage.Page
 	}
 	return nil
-}
+} */
 
-// @Summary Sets the corresponding custom email.
+// @Summary Sets the corresponding custom content.
 // @Produce json
-// @Param customEmails body customEmails true "Content = email (in markdown)."
+// @Param CustomContent body CustomContent true "Content = email (in markdown)."
 // @Success 200 {object} boolResponse
 // @Failure 400 {object} boolResponse
 // @Failure 500 {object} boolResponse
-// @Param id path string true "ID of email"
+// @Param id path string true "ID of content"
 // @Router /config/emails/{id} [post]
 // @Security Bearer
 // @tags Configuration
 func (app *appContext) SetCustomMessage(gc *gin.Context) {
-	var req customContent
+	var req CustomContent
 	gc.BindJSON(&req)
 	id := gc.Param("id")
 	if req.Content == "" {
 		respondBool(400, false, gc)
 		return
 	}
-	message := app.getCustomMessage(id)
-	if message == nil {
+	message, ok := app.storage.GetCustomContentKey(id)
+	if !ok {
 		respondBool(400, false, gc)
 		return
 	}
 	message.Content = req.Content
 	message.Enabled = true
-	if app.storage.storeCustomEmails() != nil {
-		respondBool(500, false, gc)
-		return
-	}
-	if app.storage.storeUserPageContent() != nil {
-		respondBool(500, false, gc)
-		return
-	}
+	app.storage.SetCustomContentKey(id, message)
 	respondBool(200, true, gc)
 }
 
-// @Summary Enable/Disable custom email.
+// @Summary Enable/Disable custom content.
 // @Produce json
 // @Success 200 {object} boolResponse
 // @Failure 400 {object} boolResponse
@@ -137,24 +131,17 @@ func (app *appContext) SetCustomMessageState(gc *gin.Context) {
 	} else if s != "disable" {
 		respondBool(400, false, gc)
 	}
-	message := app.getCustomMessage(id)
-	if message == nil {
+	message, ok := app.storage.GetCustomContentKey(id)
+	if !ok {
 		respondBool(400, false, gc)
 		return
 	}
 	message.Enabled = enabled
-	if app.storage.storeCustomEmails() != nil {
-		respondBool(500, false, gc)
-		return
-	}
-	if app.storage.storeUserPageContent() != nil {
-		respondBool(500, false, gc)
-		return
-	}
+	app.storage.SetCustomContentKey(id, message)
 	respondBool(200, true, gc)
 }
 
-// @Summary Returns the custom email/message (generating it if not set) and list of used variables in it.
+// @Summary Returns the custom content/message (generating it if not set) and list of used variables in it.
 // @Produce json
 // @Success 200 {object} customEmailDTO
 // @Failure 400 {object} boolResponse
@@ -174,8 +161,8 @@ func (app *appContext) GetCustomMessageTemplate(gc *gin.Context) {
 	var values map[string]interface{}
 	username := app.storage.lang.Email[lang].Strings.get("username")
 	emailAddress := app.storage.lang.Email[lang].Strings.get("emailAddress")
-	customMessage := app.getCustomMessage(id)
-	if customMessage == nil {
+	customMessage, ok := app.storage.GetCustomContentKey(id)
+	if !ok {
 		app.err.Printf("Failed to get custom message with ID \"%s\"", id)
 		respondBool(400, false, gc)
 		return
@@ -280,13 +267,7 @@ func (app *appContext) GetCustomMessageTemplate(gc *gin.Context) {
 	if variables == nil {
 		variables = []string{}
 	}
-	if app.storage.storeCustomEmails() != nil {
-		respondBool(500, false, gc)
-		return
-	}
-	if app.storage.storeUserPageContent() != nil {
-		respondBool(500, false, gc)
-	}
+	app.storage.SetCustomContentKey(id, customMessage)
 	var mail *Message
 	if id != "UserLogin" && id != "UserPage" {
 		mail, err = app.email.constructTemplate("", "<div class=\"preview-content\"></div>", app)
@@ -387,11 +368,6 @@ func (app *appContext) setContactMethods(req SetContactMethodsDTO, gc *gin.Conte
 		change := dcUser.Contact != req.Discord
 		dcUser.Contact = req.Discord
 		app.storage.SetDiscordKey(req.ID, dcUser)
-		if err := app.storage.storeDiscordUsers(); err != nil {
-			respondBool(500, false, gc)
-			app.err.Printf("Discord: Failed to store users: %v", err)
-			return
-		}
 		if change {
 			msg := ""
 			if !req.Discord {
@@ -404,11 +380,6 @@ func (app *appContext) setContactMethods(req SetContactMethodsDTO, gc *gin.Conte
 		change := mxUser.Contact != req.Matrix
 		mxUser.Contact = req.Matrix
 		app.storage.SetMatrixKey(req.ID, mxUser)
-		if err := app.storage.storeMatrixUsers(); err != nil {
-			respondBool(500, false, gc)
-			app.err.Printf("Matrix: Failed to store users: %v", err)
-			return
-		}
 		if change {
 			msg := ""
 			if !req.Matrix {
@@ -421,11 +392,6 @@ func (app *appContext) setContactMethods(req SetContactMethodsDTO, gc *gin.Conte
 		change := email.Contact != req.Email
 		email.Contact = req.Email
 		app.storage.SetEmailsKey(req.ID, email)
-		if err := app.storage.storeEmails(); err != nil {
-			respondBool(500, false, gc)
-			app.err.Printf("Failed to store emails: %v", err)
-			return
-		}
 		if change {
 			msg := ""
 			if !req.Email {
@@ -646,7 +612,7 @@ func (app *appContext) MatrixConnect(gc *gin.Context) {
 	var req MatrixConnectUserDTO
 	gc.BindJSON(&req)
 	if app.storage.GetMatrix() == nil {
-		app.storage.matrix = matrixStore{}
+		app.storage.deprecatedMatrix = matrixStore{}
 	}
 	roomID, encrypted, err := app.matrix.CreateRoom(req.UserID)
 	if err != nil {
@@ -662,11 +628,6 @@ func (app *appContext) MatrixConnect(gc *gin.Context) {
 		Encrypted: encrypted,
 	})
 	app.matrix.isEncrypted[roomID] = encrypted
-	if err := app.storage.storeMatrixUsers(); err != nil {
-		app.err.Printf("Failed to store Matrix users: %v", err)
-		respondBool(500, false, gc)
-		return
-	}
 	respondBool(200, true, gc)
 }
 
@@ -717,11 +678,6 @@ func (app *appContext) DiscordConnect(gc *gin.Context) {
 		return
 	}
 	app.storage.SetDiscordKey(req.JellyfinID, user)
-	if err := app.storage.storeDiscordUsers(); err != nil {
-		app.err.Printf("Failed to store Discord users: %v", err)
-		respondBool(500, false, gc)
-		return
-	}
 	linkExistingOmbiDiscordTelegram(app)
 	respondBool(200, true, gc)
 }

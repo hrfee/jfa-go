@@ -79,7 +79,7 @@
         "ombiProfile": "Ombi user profile",
         "ombiUserDefaultsDescription": "Create an Ombi user and configure it, then select it below. It's settings/permissions will be stored and applied to new Ombi users created by jfa-go when this profile is selected.",
         "userProfiles": "User Profiles",
-        "userProfilesDescription": "Profiles are applied to users when they create an account. A profile include library access rights and homescreen layout.",
+        "userProfilesDescription": "Profiles are applied to users when they create an account. A profile includes library access rights and homescreen layout.",
         "userProfilesIsDefault": "Default",
         "userProfilesLibraries": "Libraries",
         "addProfile": "Add Profile",

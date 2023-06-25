@@ -71,7 +71,7 @@ func (app *appContext) SetOmbiProfile(gc *gin.Context) {
 	var req ombiUser
 	gc.BindJSON(&req)
 	profileName := gc.Param("profile")
-	profile, ok := app.storage.profiles[profileName]
+	profile, ok := app.storage.GetProfileKey(profileName)
 	if !ok {
 		respondBool(400, false, gc)
 		return
@@ -83,12 +83,7 @@ func (app *appContext) SetOmbiProfile(gc *gin.Context) {
 		return
 	}
 	profile.Ombi = template
-	app.storage.profiles[profileName] = profile
-	if err := app.storage.storeProfiles(); err != nil {
-		respond(500, "Failed to store profile", gc)
-		app.err.Printf("Failed to store profiles: %v", err)
-		return
-	}
+	app.storage.SetProfileKey(profileName, profile)
 	respondBool(204, true, gc)
 }
 
@@ -103,17 +98,12 @@ func (app *appContext) SetOmbiProfile(gc *gin.Context) {
 // @tags Ombi
 func (app *appContext) DeleteOmbiProfile(gc *gin.Context) {
 	profileName := gc.Param("profile")
-	profile, ok := app.storage.profiles[profileName]
+	profile, ok := app.storage.GetProfileKey(profileName)
 	if !ok {
 		respondBool(400, false, gc)
 		return
 	}
 	profile.Ombi = nil
-	app.storage.profiles[profileName] = profile
-	if err := app.storage.storeProfiles(); err != nil {
-		respond(500, "Failed to store profile", gc)
-		app.err.Printf("Failed to store profiles: %v", err)
-		return
-	}
+	app.storage.SetProfileKey(profileName, profile)
 	respondBool(204, true, gc)
 }

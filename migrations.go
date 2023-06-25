@@ -16,26 +16,28 @@ func runMigrations(app *appContext) {
 	migrateNotificationMethods(app)
 	linkExistingOmbiDiscordTelegram(app)
 	// migrateHyphens(app)
+	migrateToBadger(app)
 }
 
 // Migrate pre-0.2.0 user templates to profiles
 func migrateProfiles(app *appContext) {
-	if !(app.storage.policy.BlockedTags == nil && app.storage.configuration.GroupedFolders == nil && len(app.storage.displayprefs) == 0) {
-		app.info.Println("Migrating user template files to new profile format")
-		app.storage.migrateToProfile()
-		for _, path := range [3]string{app.storage.policy_path, app.storage.configuration_path, app.storage.displayprefs_path} {
-			if _, err := os.Stat(path); !os.IsNotExist(err) {
-				dir, fname := filepath.Split(path)
-				newFname := strings.Replace(fname, ".json", ".old.json", 1)
-				err := os.Rename(path, filepath.Join(dir, newFname))
-				if err != nil {
-					app.err.Fatalf("Failed to rename %s: %s", fname, err)
-				}
+	if app.storage.deprecatedPolicy.BlockedTags == nil && app.storage.deprecatedConfiguration.GroupedFolders == nil && len(app.storage.deprecatedDisplayprefs) == 0 {
+		return
+	}
+	app.info.Println("Migrating user template files to new profile format")
+	app.storage.migrateToProfile()
+	for _, path := range [3]string{app.storage.policy_path, app.storage.configuration_path, app.storage.displayprefs_path} {
+		if _, err := os.Stat(path); !os.IsNotExist(err) {
+			dir, fname := filepath.Split(path)
+			newFname := strings.Replace(fname, ".json", ".old.json", 1)
+			err := os.Rename(path, filepath.Join(dir, newFname))
+			if err != nil {
+				app.err.Fatalf("Failed to rename %s: %s", fname, err)
 			}
 		}
-		app.info.Println("In case of a problem, your original files have been renamed to <file>.old.json")
-		app.storage.storeProfiles()
 	}
+	app.info.Println("In case of a problem, your original files have been renamed to <file>.old.json")
+	app.storage.storeProfiles()
 }
 
 // Migrate pre-0.2.5 bootstrap theme choice to a17t version.
@@ -131,7 +133,7 @@ func migrateNotificationMethods(app *appContext) error {
 		return nil
 	}
 	changes := false
-	for code, invite := range app.storage.invites {
+	for code, invite := range app.storage.deprecatedInvites {
 		if invite.Notify == nil {
 			continue
 		}
@@ -139,9 +141,9 @@ func migrateNotificationMethods(app *appContext) error {
 			if !strings.Contains(address, "@") {
 				continue
 			}
-			for id, email := range app.storage.GetEmails() {
+			for _, email := range app.storage.GetEmails() {
 				if email.Addr == address {
-					invite.Notify[id] = notifyPrefs
+					invite.Notify[email.JellyfinID] = notifyPrefs
 					delete(invite.Notify, address)
 					changes = true
 					break
@@ -149,7 +151,7 @@ func migrateNotificationMethods(app *appContext) error {
 			}
 		}
 		if changes {
-			app.storage.invites[code] = invite
+			app.storage.deprecatedInvites[code] = invite
 		}
 	}
 	if changes {
@@ -168,16 +170,16 @@ func linkExistingOmbiDiscordTelegram(app *appContext) error {
 		return nil
 	}
 	idList := map[string][2]string{}
-	for jfID, user := range app.storage.GetDiscord() {
-		idList[jfID] = [2]string{user.ID, ""}
+	for _, user := range app.storage.GetDiscord() {
+		idList[user.JellyfinID] = [2]string{user.ID, ""}
 	}
-	for jfID, user := range app.storage.GetTelegram() {
-		vals, ok := idList[jfID]
+	for _, user := range app.storage.GetTelegram() {
+		vals, ok := idList[user.JellyfinID]
 		if !ok {
 			vals = [2]string{"", ""}
 		}
 		vals[1] = user.Username
-		idList[jfID] = vals
+		idList[user.JellyfinID] = vals
 	}
 	for jfID, ids := range idList {
 		ombiUser, status, err := app.getOmbiUser(jfID)
@@ -192,6 +194,143 @@ func linkExistingOmbiDiscordTelegram(app *appContext) error {
 		}
 	}
 	return nil
+}
+
+// MigrationStatus is just used to store whether data from JSON files has been migrated to the DB.
+type MigrationStatus struct {
+	Done bool
+}
+
+func loadLegacyData(app *appContext) {
+	app.storage.invite_path = app.config.Section("files").Key("invites").String()
+	if err := app.storage.loadInvites(); err != nil {
+		app.err.Printf("LegacyData: Failed to load Invites: %v", err)
+	}
+	app.storage.emails_path = app.config.Section("files").Key("emails").String()
+	if err := app.storage.loadEmails(); err != nil {
+		app.err.Printf("LegacyData: Failed to load Emails: %v", err)
+		err := migrateEmailStorage(app)
+		if err != nil {
+			app.err.Printf("LegacyData: Failed to migrate Email storage: %v", err)
+		}
+	}
+	app.storage.users_path = app.config.Section("files").Key("users").String()
+	if err := app.storage.loadUserExpiries(); err != nil {
+		app.err.Printf("LegacyData: Failed to load Users: %v", err)
+	}
+	app.storage.telegram_path = app.config.Section("files").Key("telegram_users").String()
+	if err := app.storage.loadTelegramUsers(); err != nil {
+		app.err.Printf("LegacyData: Failed to load Telegram users: %v", err)
+	}
+	app.storage.discord_path = app.config.Section("files").Key("discord_users").String()
+	if err := app.storage.loadDiscordUsers(); err != nil {
+		app.err.Printf("LegacyData: Failed to load Discord users: %v", err)
+	}
+	app.storage.matrix_path = app.config.Section("files").Key("matrix_users").String()
+	if err := app.storage.loadMatrixUsers(); err != nil {
+		app.err.Printf("LegacyData: Failed to load Matrix users: %v", err)
+	}
+	app.storage.announcements_path = app.config.Section("files").Key("announcements").String()
+	if err := app.storage.loadAnnouncements(); err != nil {
+		app.err.Printf("LegacyData: Failed to load announcement templates: %v", err)
+	}
+
+	app.storage.profiles_path = app.config.Section("files").Key("user_profiles").String()
+	app.storage.loadProfiles()
+
+	app.storage.customEmails_path = app.config.Section("files").Key("custom_emails").String()
+	app.storage.loadCustomEmails()
+
+	app.MustSetValue("user_page", "enabled", "true")
+	if app.config.Section("user_page").Key("enabled").MustBool(false) {
+		app.storage.userPage_path = app.config.Section("files").Key("custom_user_page_content").String()
+		app.storage.loadUserPageContent()
+	}
+}
+
+func migrateToBadger(app *appContext) {
+	// Check the DB to see if we've already migrated
+	migrated := MigrationStatus{}
+	app.storage.db.Get("migrated_to_db", &migrated)
+	if migrated.Done {
+		return
+	}
+	app.info.Println("Migrating to Badger(hold)")
+	loadLegacyData(app)
+	for k, v := range app.storage.deprecatedAnnouncements {
+		app.storage.SetAnnouncementsKey(k, v)
+	}
+
+	for jfID, v := range app.storage.deprecatedDiscord {
+		app.storage.SetDiscordKey(jfID, v)
+	}
+
+	for jfID, v := range app.storage.deprecatedTelegram {
+		app.storage.SetTelegramKey(jfID, v)
+	}
+
+	for jfID, v := range app.storage.deprecatedMatrix {
+		app.storage.SetMatrixKey(jfID, v)
+	}
+
+	for jfID, v := range app.storage.deprecatedEmails {
+		app.storage.SetEmailsKey(jfID, v)
+	}
+
+	for k, v := range app.storage.deprecatedInvites {
+		app.storage.SetInvitesKey(k, v)
+	}
+
+	for k, v := range app.storage.deprecatedUserExpiries {
+		app.storage.SetUserExpiryKey(k, UserExpiry{Expiry: v})
+	}
+
+	for k, v := range app.storage.deprecatedProfiles {
+		app.storage.SetProfileKey(k, v)
+	}
+
+	if _, ok := app.storage.GetCustomContentKey("UserCreated"); !ok {
+		app.storage.SetCustomContentKey("UserCreated", app.storage.deprecatedCustomEmails.UserCreated)
+	}
+	if _, ok := app.storage.GetCustomContentKey("InviteExpiry"); !ok {
+		app.storage.SetCustomContentKey("InviteExpiry", app.storage.deprecatedCustomEmails.InviteExpiry)
+	}
+	if _, ok := app.storage.GetCustomContentKey("PasswordReset"); !ok {
+		app.storage.SetCustomContentKey("PasswordReset", app.storage.deprecatedCustomEmails.PasswordReset)
+	}
+	if _, ok := app.storage.GetCustomContentKey("UserDeleted"); !ok {
+		app.storage.SetCustomContentKey("UserDeleted", app.storage.deprecatedCustomEmails.UserDeleted)
+	}
+	if _, ok := app.storage.GetCustomContentKey("UserDisabled"); !ok {
+		app.storage.SetCustomContentKey("UserDisabled", app.storage.deprecatedCustomEmails.UserDisabled)
+	}
+	if _, ok := app.storage.GetCustomContentKey("UserEnabled"); !ok {
+		app.storage.SetCustomContentKey("UserEnabled", app.storage.deprecatedCustomEmails.UserEnabled)
+	}
+	if _, ok := app.storage.GetCustomContentKey("InviteEmail"); !ok {
+		app.storage.SetCustomContentKey("InviteEmail", app.storage.deprecatedCustomEmails.InviteEmail)
+	}
+	if _, ok := app.storage.GetCustomContentKey("WelcomeEmail"); !ok {
+		app.storage.SetCustomContentKey("WelcomeEmail", app.storage.deprecatedCustomEmails.WelcomeEmail)
+	}
+	if _, ok := app.storage.GetCustomContentKey("EmailConfirmation"); !ok {
+		app.storage.SetCustomContentKey("EmailConfirmation", app.storage.deprecatedCustomEmails.EmailConfirmation)
+	}
+	if _, ok := app.storage.GetCustomContentKey("UserExpired"); !ok {
+		app.storage.SetCustomContentKey("UserExpired", app.storage.deprecatedCustomEmails.UserExpired)
+	}
+	if _, ok := app.storage.GetCustomContentKey("UserLogin"); !ok {
+		app.storage.SetCustomContentKey("UserLogin", app.storage.deprecatedUserPageContent.Login)
+	}
+	if _, ok := app.storage.GetCustomContentKey("UserPage"); !ok {
+		app.storage.SetCustomContentKey("UserPage", app.storage.deprecatedUserPageContent.Page)
+	}
+
+	err := app.storage.db.Upsert("migrated_to_db", MigrationStatus{true})
+	if err != nil {
+		app.err.Fatalf("Failed to migrate to DB: %v\n", err)
+	}
+	app.info.Println("All data migrated to database. JSON files in the config folder can be deleted if you are sure all data is correct in the app. Create an issue if you have problems.")
 }
 
 // Migrate between hyphenated & non-hyphenated user IDs. Doesn't seem to happen anymore, so disabled.
@@ -212,8 +351,8 @@ func linkExistingOmbiDiscordTelegram(app *appContext) error {
 // 		app.jf.GetUsers(false)
 //
 // 		noHyphens := true
-// 		for id := range app.storage.GetEmails() {
-// 			if strings.Contains(id, "-") {
+// 		for _, e := range app.storage.GetEmails() {
+// 			if strings.Contains(e.JellyfinID, "-") {
 // 				noHyphens = false
 // 				break
 // 			}
@@ -255,7 +394,7 @@ func linkExistingOmbiDiscordTelegram(app *appContext) error {
 // 			app.storage.emails = newEmails
 // 			app.storage.users = newUsers
 // 			err = app.storage.storeEmails()
-// 			err2 = app.storage.storeUsers()
+// 			err2 = app.storage.storeUserExpiries()
 // 			if err != nil {
 // 				app.err.Fatalf("couldn't store emails.json: %v", err)
 // 			}

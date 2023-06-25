@@ -44,16 +44,16 @@ func (app *appContext) NewUserAdmin(gc *gin.Context) {
 		return
 	}
 	id := user.ID
-	if app.storage.policy.BlockedTags != nil {
-		status, err = app.jf.SetPolicy(id, app.storage.policy)
+	profile := app.storage.GetDefaultProfile()
+	// Check profile isn't empty
+	if profile.Policy.BlockedTags != nil {
+		status, err = app.jf.SetPolicy(id, profile.Policy)
 		if !(status == 200 || status == 204 || err == nil) {
 			app.err.Printf("%s: Failed to set user policy (%d): %v", req.Username, status, err)
 		}
-	}
-	if app.storage.configuration.GroupedFolders != nil && len(app.storage.displayprefs) != 0 {
-		status, err = app.jf.SetConfiguration(id, app.storage.configuration)
+		status, err = app.jf.SetConfiguration(id, profile.Configuration)
 		if (status == 200 || status == 204) && err == nil {
-			status, err = app.jf.SetDisplayPreferences(id, app.storage.displayprefs)
+			status, err = app.jf.SetDisplayPreferences(id, profile.Displayprefs)
 		}
 		if !((status == 200 || status == 204) && err == nil) {
 			app.err.Printf("%s: Failed to set configuration template (%d): %v", req.Username, status, err)
@@ -62,18 +62,18 @@ func (app *appContext) NewUserAdmin(gc *gin.Context) {
 	app.jf.CacheExpiry = time.Now()
 	if emailEnabled {
 		app.storage.SetEmailsKey(id, EmailAddress{Addr: req.Email, Contact: true})
-		app.storage.storeEmails()
 	}
 	if app.config.Section("ombi").Key("enabled").MustBool(false) {
-		app.storage.loadOmbiTemplate()
-		if len(app.storage.ombi_template) != 0 {
-			errors, code, err := app.ombi.NewUser(req.Username, req.Password, req.Email, app.storage.ombi_template)
-			if err != nil || code != 200 {
-				app.err.Printf("Failed to create Ombi user (%d): %v", code, err)
-				app.debug.Printf("Errors reported by Ombi: %s", strings.Join(errors, ", "))
-			} else {
-				app.info.Println("Created Ombi user")
-			}
+		profile := app.storage.GetDefaultProfile()
+		if profile.Ombi == nil {
+			profile.Ombi = map[string]interface{}{}
+		}
+		errors, code, err := app.ombi.NewUser(req.Username, req.Password, req.Email, profile.Ombi)
+		if err != nil || code != 200 {
+			app.err.Printf("Failed to create Ombi user (%d): %v", code, err)
+			app.debug.Printf("Errors reported by Ombi: %s", strings.Join(errors, ", "))
+		} else {
+			app.info.Println("Created Ombi user")
 		}
 	}
 	if emailEnabled && app.config.Section("welcome_email").Key("enabled").MustBool(false) && req.Email != "" {
@@ -130,17 +130,13 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 				success = false
 				return
 			}
-			if app.config.Section("discord").Key("require_unique").MustBool(false) {
-				for _, u := range app.storage.GetDiscord() {
-					if discordUser.ID == u.ID {
-						f = func(gc *gin.Context) {
-							app.debug.Printf("%s: New user failed: Discord user already linked", req.Code)
-							respond(400, "errorAccountLinked", gc)
-						}
-						success = false
-						return
-					}
+			if app.config.Section("discord").Key("require_unique").MustBool(false) && app.discord.UserExists(discordUser.ID) {
+				f = func(gc *gin.Context) {
+					app.debug.Printf("%s: New user failed: Discord user already linked", req.Code)
+					respond(400, "errorAccountLinked", gc)
 				}
+				success = false
+				return
 			}
 			err := app.discord.ApplyRole(discordUser.ID)
 			if err != nil {
@@ -176,17 +172,13 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 				success = false
 				return
 			}
-			if app.config.Section("matrix").Key("require_unique").MustBool(false) {
-				for _, u := range app.storage.GetMatrix() {
-					if user.User.UserID == u.UserID {
-						f = func(gc *gin.Context) {
-							app.debug.Printf("%s: New user failed: Matrix user already linked", req.Code)
-							respond(400, "errorAccountLinked", gc)
-						}
-						success = false
-						return
-					}
+			if app.config.Section("matrix").Key("require_unique").MustBool(false) && app.matrix.UserExists(user.User.UserID) {
+				f = func(gc *gin.Context) {
+					app.debug.Printf("%s: New user failed: Matrix user already linked", req.Code)
+					respond(400, "errorAccountLinked", gc)
 				}
+				success = false
+				return
 			}
 			matrixVerified = user.Verified
 			matrixUser = *user.User
@@ -278,7 +270,6 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 		success = false
 		return
 	}
-	app.storage.loadProfiles()
 	invite, _ := app.storage.GetInvitesKey(req.Code)
 	app.checkInvite(req.Code, true, req.Username)
 	if emailEnabled && app.config.Section("notifications").Key("enabled").MustBool(false) {
@@ -310,9 +301,9 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 	if invite.Profile != "" {
 		app.debug.Printf("Applying settings from profile \"%s\"", invite.Profile)
 		var ok bool
-		profile, ok = app.storage.profiles[invite.Profile]
+		profile, ok = app.storage.GetProfileKey(invite.Profile)
 		if !ok {
-			profile = app.storage.profiles["Default"]
+			profile = app.storage.GetDefaultProfile()
 		}
 		if profile.Policy.BlockedTags != nil {
 			app.debug.Printf("Applying policy from profile \"%s\"", invite.Profile)
@@ -335,29 +326,19 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 	// if app.config.Section("password_resets").Key("enabled").MustBool(false) {
 	if req.Email != "" {
 		app.storage.SetEmailsKey(id, EmailAddress{Addr: req.Email, Contact: true})
-		app.storage.storeEmails()
 	}
 	expiry := time.Time{}
 	if invite.UserExpiry {
-		app.storage.usersLock.Lock()
-		defer app.storage.usersLock.Unlock()
 		expiry = time.Now().AddDate(0, invite.UserMonths, invite.UserDays).Add(time.Duration((60*invite.UserHours)+invite.UserMinutes) * time.Minute)
-		app.storage.users[id] = expiry
-		if err := app.storage.storeUsers(); err != nil {
-			app.err.Printf("Failed to store user duration: %v", err)
-		}
+		app.storage.SetUserExpiryKey(id, UserExpiry{Expiry: expiry})
 	}
 	if discordVerified {
 		discordUser.Contact = req.DiscordContact
-		if app.storage.discord == nil {
-			app.storage.discord = discordStore{}
+		if app.storage.deprecatedDiscord == nil {
+			app.storage.deprecatedDiscord = discordStore{}
 		}
 		app.storage.SetDiscordKey(user.ID, discordUser)
-		if err := app.storage.storeDiscordUsers(); err != nil {
-			app.err.Printf("Failed to store Discord users: %v", err)
-		} else {
-			delete(app.discord.verifiedTokens, req.DiscordPIN)
-		}
+		delete(app.discord.verifiedTokens, req.DiscordPIN)
 	}
 	if telegramVerified {
 		tgUser := TelegramUser{
@@ -368,8 +349,8 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 		if lang, ok := app.telegram.languages[tgToken.ChatID]; ok {
 			tgUser.Lang = lang
 		}
-		if app.storage.telegram == nil {
-			app.storage.telegram = telegramStore{}
+		if app.storage.deprecatedTelegram == nil {
+			app.storage.deprecatedTelegram = telegramStore{}
 		}
 		app.telegram.DeleteVerifiedToken(req.TelegramPIN)
 		app.storage.SetTelegramKey(user.ID, tgUser)
@@ -412,13 +393,10 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 	if matrixVerified {
 		matrixUser.Contact = req.MatrixContact
 		delete(app.matrix.tokens, req.MatrixPIN)
-		if app.storage.matrix == nil {
-			app.storage.matrix = matrixStore{}
+		if app.storage.deprecatedMatrix == nil {
+			app.storage.deprecatedMatrix = matrixStore{}
 		}
 		app.storage.SetMatrixKey(user.ID, matrixUser)
-		if err := app.storage.storeMatrixUsers(); err != nil {
-			app.err.Printf("Failed to store Matrix users: %v", err)
-		}
 	}
 	if (emailEnabled && app.config.Section("welcome_email").Key("enabled").MustBool(false) && req.Email != "") || telegramVerified || discordVerified || matrixVerified {
 		name := app.getAddressOrName(user.ID)
@@ -478,14 +456,10 @@ func (app *appContext) NewUser(gc *gin.Context) {
 			respond(400, "errorNoEmail", gc)
 			return
 		}
-		if app.config.Section("email").Key("require_unique").MustBool(false) && req.Email != "" {
-			for _, email := range app.storage.GetEmails() {
-				if req.Email == email.Addr {
-					app.info.Printf("%s: New user failed: Email already in use", req.Code)
-					respond(400, "errorEmailLinked", gc)
-					return
-				}
-			}
+		if app.config.Section("email").Key("require_unique").MustBool(false) && req.Email != "" && app.EmailAddressExists(req.Email) {
+			app.info.Printf("%s: New user failed: Email already in use", req.Code)
+			respond(400, "errorEmailLinked", gc)
+			return
 		}
 	}
 	f, success := app.newUser(req, false)
@@ -641,21 +615,16 @@ func (app *appContext) ExtendExpiry(gc *gin.Context) {
 		respondBool(400, false, gc)
 		return
 	}
-	app.storage.usersLock.Lock()
-	defer app.storage.usersLock.Unlock()
 	for _, id := range req.Users {
-		if expiry, ok := app.storage.users[id]; ok {
-			app.storage.users[id] = expiry.AddDate(0, req.Months, req.Days).Add(time.Duration(((60 * req.Hours) + req.Minutes)) * time.Minute)
+		base := time.Now()
+		if expiry, ok := app.storage.GetUserExpiryKey(id); ok {
+			base = expiry.Expiry
 			app.debug.Printf("Expiry extended for \"%s\"", id)
 		} else {
-			app.storage.users[id] = time.Now().AddDate(0, req.Months, req.Days).Add(time.Duration(((60 * req.Hours) + req.Minutes)) * time.Minute)
 			app.debug.Printf("Created expiry for \"%s\"", id)
 		}
-	}
-	if err := app.storage.storeUsers(); err != nil {
-		app.err.Printf("Failed to store user duration: %v", err)
-		respondBool(500, false, gc)
-		return
+		expiry := UserExpiry{Expiry: base.AddDate(0, req.Months, req.Days).Add(time.Duration(((60 * req.Hours) + req.Minutes)) * time.Minute)}
+		app.storage.SetUserExpiryKey(id, expiry)
 	}
 	respondBool(204, true, gc)
 }
@@ -727,27 +696,21 @@ func (app *appContext) SaveAnnounceTemplate(gc *gin.Context) {
 		respondBool(400, false, gc)
 		return
 	}
-	app.storage.announcements[req.Name] = req
-	if err := app.storage.storeAnnouncements(); err != nil {
-		respondBool(500, false, gc)
-		app.err.Printf("Failed to store announcement templates: %v", err)
-		return
-	}
+
+	app.storage.SetAnnouncementsKey(req.Name, req)
 	respondBool(200, true, gc)
 }
 
 // @Summary Save an announcement as a template for use or editing later.
 // @Produce json
 // @Success 200 {object} getAnnouncementsDTO
-// @Router /users/announce/template [get]
+// @Router /users/announce [get]
 // @Security Bearer
 // @tags Users
 func (app *appContext) GetAnnounceTemplates(gc *gin.Context) {
-	resp := &getAnnouncementsDTO{make([]string, len(app.storage.announcements))}
-	i := 0
-	for name := range app.storage.announcements {
-		resp.Announcements[i] = name
-		i++
+	resp := &getAnnouncementsDTO{make([]string, len(app.storage.GetAnnouncements()))}
+	for i, a := range app.storage.GetAnnouncements() {
+		resp.Announcements[i] = a.Name
 	}
 	gc.JSON(200, resp)
 }
@@ -762,7 +725,7 @@ func (app *appContext) GetAnnounceTemplates(gc *gin.Context) {
 // @tags Users
 func (app *appContext) GetAnnounceTemplate(gc *gin.Context) {
 	name := gc.Param("name")
-	if announcement, ok := app.storage.announcements[name]; ok {
+	if announcement, ok := app.storage.GetAnnouncementsKey(name); ok {
 		gc.JSON(200, announcement)
 		return
 	}
@@ -779,12 +742,7 @@ func (app *appContext) GetAnnounceTemplate(gc *gin.Context) {
 // @tags Users
 func (app *appContext) DeleteAnnounceTemplate(gc *gin.Context) {
 	name := gc.Param("name")
-	delete(app.storage.announcements, name)
-	if err := app.storage.storeAnnouncements(); err != nil {
-		respondBool(500, false, gc)
-		app.err.Printf("Failed to store announcement templates: %v", err)
-		return
-	}
+	app.storage.DeleteAnnouncementsKey(name)
 	respondBool(200, false, gc)
 }
 
@@ -876,8 +834,6 @@ func (app *appContext) GetUsers(gc *gin.Context) {
 	adminOnly := app.config.Section("ui").Key("admin_only").MustBool(true)
 	allowAll := app.config.Section("ui").Key("allow_all").MustBool(false)
 	i := 0
-	app.storage.usersLock.Lock()
-	defer app.storage.usersLock.Unlock()
 	for _, jfUser := range users {
 		user := respUser{
 			ID:       jfUser.ID,
@@ -894,9 +850,9 @@ func (app *appContext) GetUsers(gc *gin.Context) {
 			user.Label = email.Label
 			user.AccountsAdmin = (app.jellyfinLogin) && (email.Admin || (adminOnly && jfUser.Policy.IsAdministrator) || allowAll)
 		}
-		expiry, ok := app.storage.users[jfUser.ID]
+		expiry, ok := app.storage.GetUserExpiryKey(jfUser.ID)
 		if ok {
-			user.Expiry = expiry.Unix()
+			user.Expiry = expiry.Expiry.Unix()
 		}
 		if tgUser, ok := app.storage.GetTelegramKey(jfUser.ID); ok {
 			user.Telegram = tgUser.Username
@@ -947,10 +903,6 @@ func (app *appContext) SetAccountsAdmin(gc *gin.Context) {
 			app.storage.SetEmailsKey(id, emailStore)
 		}
 	}
-	if err := app.storage.storeEmails(); err != nil {
-		app.err.Printf("Failed to store email list: %v", err)
-		respondBool(500, false, gc)
-	}
 	app.info.Println("Email list modified")
 	respondBool(204, true, gc)
 }
@@ -983,10 +935,6 @@ func (app *appContext) ModifyLabels(gc *gin.Context) {
 			emailStore.Label = label
 			app.storage.SetEmailsKey(id, emailStore)
 		}
-	}
-	if err := app.storage.storeEmails(); err != nil {
-		app.err.Printf("Failed to store email list: %v", err)
-		respondBool(500, false, gc)
 	}
 	app.info.Println("Email list modified")
 	respondBool(204, true, gc)
@@ -1022,7 +970,6 @@ func (app *appContext) ModifyEmails(gc *gin.Context) {
 			// Auto enable contact by email for newly added addresses
 			if !ok || oldEmail.Addr == "" {
 				emailStore.Contact = true
-				app.storage.storeEmails()
 			}
 
 			emailStore.Addr = address
@@ -1039,7 +986,6 @@ func (app *appContext) ModifyEmails(gc *gin.Context) {
 			}
 		}
 	}
-	app.storage.storeEmails()
 	app.info.Println("Email list modified")
 	respondBool(200, true, gc)
 }
@@ -1062,25 +1008,24 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 	var displayprefs map[string]interface{}
 	var ombi map[string]interface{}
 	if req.From == "profile" {
-		app.storage.loadProfiles()
 		// Check profile exists & isn't empty
-		if _, ok := app.storage.profiles[req.Profile]; !ok || app.storage.profiles[req.Profile].Policy.BlockedTags == nil {
+		profile, ok := app.storage.GetProfileKey(req.Profile)
+		if !ok || profile.Policy.BlockedTags == nil {
 			app.err.Printf("Couldn't find profile \"%s\" or profile was empty", req.Profile)
 			respond(500, "Couldn't find profile", gc)
 			return
 		}
 		if req.Homescreen {
-			if app.storage.profiles[req.Profile].Configuration.GroupedFolders == nil || len(app.storage.profiles[req.Profile].Displayprefs) == 0 {
+			if profile.Configuration.GroupedFolders == nil || len(profile.Displayprefs) == 0 {
 				app.err.Printf("No homescreen saved in profile \"%s\"", req.Profile)
 				respond(500, "No homescreen template available", gc)
 				return
 			}
-			configuration = app.storage.profiles[req.Profile].Configuration
-			displayprefs = app.storage.profiles[req.Profile].Displayprefs
+			configuration = profile.Configuration
+			displayprefs = profile.Displayprefs
 		}
-		policy = app.storage.profiles[req.Profile].Policy
+		policy = profile.Policy
 		if app.config.Section("ombi").Key("enabled").MustBool(false) {
-			profile := app.storage.profiles[req.Profile]
 			if profile.Ombi != nil && len(profile.Ombi) != 0 {
 				ombi = profile.Ombi
 			}

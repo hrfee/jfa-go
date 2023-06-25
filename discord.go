@@ -6,6 +6,7 @@ import (
 	"time"
 
 	dg "github.com/bwmarrin/discordgo"
+	"github.com/timshannon/badgerhold/v4"
 )
 
 type DiscordDaemon struct {
@@ -478,11 +479,11 @@ func (d *DiscordDaemon) cmdLang(s *dg.Session, i *dg.InteractionCreate, lang str
 	code := i.ApplicationCommandData().Options[0].StringValue()
 	if _, ok := d.app.storage.lang.Telegram[code]; ok {
 		var user DiscordUser
-		for jfID, u := range d.app.storage.GetDiscord() {
+		for _, u := range d.app.storage.GetDiscord() {
 			if u.ID == i.Interaction.Member.User.ID {
 				u.Lang = code
 				lang = code
-				d.app.storage.SetDiscordKey(jfID, u)
+				d.app.storage.SetDiscordKey(u.JellyfinID, u)
 				user = u
 				break
 			}
@@ -585,10 +586,10 @@ func (d *DiscordDaemon) msgLang(s *dg.Session, m *dg.MessageCreate, sects []stri
 	}
 	if _, ok := d.app.storage.lang.Telegram[sects[1]]; ok {
 		var user DiscordUser
-		for jfID, u := range d.app.storage.GetDiscord() {
+		for _, u := range d.app.storage.GetDiscord() {
 			if u.ID == m.Author.ID {
 				u.Lang = sects[1]
-				d.app.storage.SetDiscordKey(jfID, u)
+				d.app.storage.SetDiscordKey(u.JellyfinID, u)
 				user = u
 				break
 			}
@@ -708,15 +709,9 @@ func (d *DiscordDaemon) AssignedUserVerified(pin string, jfID string) (user Disc
 }
 
 // UserExists returns whether or not a user with the given ID exists.
-func (d *DiscordDaemon) UserExists(id string) (ok bool) {
-	ok = false
-	for _, u := range d.app.storage.GetDiscord() {
-		if u.ID == id {
-			ok = true
-			break
-		}
-	}
-	return
+func (d *DiscordDaemon) UserExists(id string) bool {
+	c, err := d.app.storage.db.Count(&DiscordUser{}, badgerhold.Where("ID").Eq(id))
+	return err != nil || c > 0
 }
 
 // DeleteVerifiedUser removes the token with the given PIN.

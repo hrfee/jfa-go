@@ -38,14 +38,9 @@ func (app *appContext) MyDetails(gc *gin.Context) {
 	}
 	resp.Disabled = user.Policy.IsDisabled
 
-	if exp, ok := app.storage.users[user.ID]; ok {
-		resp.Expiry = exp.Unix()
+	if exp, ok := app.storage.GetUserExpiryKey(user.ID); ok {
+		resp.Expiry = exp.Expiry.Unix()
 	}
-
-	app.storage.loadEmails()
-	app.storage.loadDiscordUsers()
-	app.storage.loadMatrixUsers()
-	app.storage.loadTelegramUsers()
 
 	if emailEnabled {
 		resp.Email = &MyDetailsContactMethodsDTO{}
@@ -199,7 +194,6 @@ func (app *appContext) confirmMyAction(gc *gin.Context, key string) {
 			}
 		}
 
-		app.storage.storeEmails()
 		app.info.Println("Email list modified")
 		gc.Redirect(http.StatusSeeOther, "/my/account")
 		return
@@ -511,8 +505,8 @@ func (app *appContext) ResetMyPassword(gc *gin.Context) {
 	var pwr InternalPWR
 	var err error
 
-	jfID := app.ReverseUserSearch(address)
-	if jfID == "" {
+	jfUser, ok := app.ReverseUserSearch(address)
+	if !ok {
 		app.debug.Printf("Ignoring PWR request: User not found")
 
 		for range timerWait {
@@ -521,7 +515,7 @@ func (app *appContext) ResetMyPassword(gc *gin.Context) {
 		}
 		return
 	}
-	pwr, err = app.GenInternalReset(jfID)
+	pwr, err = app.GenInternalReset(jfUser.ID)
 	if err != nil {
 		app.err.Printf("Failed to get user from Jellyfin: %v", err)
 		for range timerWait {
@@ -550,7 +544,7 @@ func (app *appContext) ResetMyPassword(gc *gin.Context) {
 			return
 		}
 		return
-	} else if err := app.sendByID(msg, jfID); err != nil {
+	} else if err := app.sendByID(msg, jfUser.ID); err != nil {
 		app.err.Printf("Failed to send password reset message to \"%s\": %v", address, err)
 	} else {
 		app.info.Printf("Sent password reset message to \"%s\"", address)

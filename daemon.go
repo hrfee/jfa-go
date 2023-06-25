@@ -7,85 +7,53 @@ import "time"
 // the user cache is fresh.
 func (app *appContext) clearEmails() {
 	app.debug.Println("Housekeeping: removing unused email addresses")
-	users, status, err := app.jf.GetUsers(false)
-	if status != 200 || err != nil || len(users) == 0 {
-		app.err.Printf("Failed to get users from Jellyfin (%d): %v", status, err)
-		return
-	}
-	// Rebuild email storage to from existing users to reduce time complexity
-	emails := emailStore{}
-	app.storage.emailsLock.Lock()
-	for _, user := range users {
-		if email, ok := app.storage.GetEmailsKey(user.ID); ok {
-			emails[user.ID] = email
+	emails := app.storage.GetEmails()
+	for _, email := range emails {
+		_, status, err := app.jf.UserByID(email.JellyfinID, false)
+		if status == 200 && err != nil {
+			continue
 		}
+		app.storage.DeleteEmailsKey(email.JellyfinID)
 	}
-	app.storage.emails = emails
-	app.storage.storeEmails()
-	app.storage.emailsLock.Unlock()
 }
 
 // clearDiscord does the same as clearEmails, but for Discord Users.
 func (app *appContext) clearDiscord() {
 	app.debug.Println("Housekeeping: removing unused Discord IDs")
-	users, status, err := app.jf.GetUsers(false)
-	if status != 200 || err != nil || len(users) == 0 {
-		app.err.Printf("Failed to get users from Jellyfin (%d): %v", status, err)
-		return
-	}
-	// Rebuild discord storage to from existing users to reduce time complexity
-	dcUsers := discordStore{}
-	app.storage.discordLock.Lock()
-	for _, user := range users {
-		if dcUser, ok := app.storage.GetDiscordKey(user.ID); ok {
-			dcUsers[user.ID] = dcUser
+	discordUsers := app.storage.GetDiscord()
+	for _, discordUser := range discordUsers {
+		_, status, err := app.jf.UserByID(discordUser.JellyfinID, false)
+		if status == 200 && err != nil {
+			continue
 		}
+		app.storage.DeleteDiscordKey(discordUser.JellyfinID)
 	}
-	app.storage.discord = dcUsers
-	app.storage.storeDiscordUsers()
-	app.storage.discordLock.Unlock()
 }
 
 // clearMatrix does the same as clearEmails, but for Matrix Users.
 func (app *appContext) clearMatrix() {
 	app.debug.Println("Housekeeping: removing unused Matrix IDs")
-	users, status, err := app.jf.GetUsers(false)
-	if status != 200 || err != nil || len(users) == 0 {
-		app.err.Printf("Failed to get users from Jellyfin (%d): %v", status, err)
-		return
-	}
-	// Rebuild matrix storage to from existing users to reduce time complexity
-	mxUsers := matrixStore{}
-	app.storage.matrixLock.Lock()
-	for _, user := range users {
-		if mxUser, ok := app.storage.GetMatrixKey(user.ID); ok {
-			mxUsers[user.ID] = mxUser
+	matrixUsers := app.storage.GetMatrix()
+	for _, matrixUser := range matrixUsers {
+		_, status, err := app.jf.UserByID(matrixUser.JellyfinID, false)
+		if status == 200 && err != nil {
+			continue
 		}
+		app.storage.DeleteMatrixKey(matrixUser.JellyfinID)
 	}
-	app.storage.matrix = mxUsers
-	app.storage.storeMatrixUsers()
-	app.storage.matrixLock.Unlock()
 }
 
 // clearTelegram does the same as clearEmails, but for Telegram Users.
 func (app *appContext) clearTelegram() {
 	app.debug.Println("Housekeeping: removing unused Telegram IDs")
-	users, status, err := app.jf.GetUsers(false)
-	if status != 200 || err != nil || len(users) == 0 {
-		app.err.Printf("Failed to get users from Jellyfin (%d): %v", status, err)
-		return
-	}
-	// Rebuild telegram storage to from existing users to reduce time complexity
-	tgUsers := telegramStore{}
-	app.storage.telegramLock.Lock()
-	for _, user := range users {
-		if tgUser, ok := app.storage.GetTelegramKey(user.ID); ok {
-			tgUsers[user.ID] = tgUser
+	telegramUsers := app.storage.GetTelegram()
+	for _, telegramUser := range telegramUsers {
+		_, status, err := app.jf.UserByID(telegramUser.JellyfinID, false)
+		if status == 200 && err != nil {
+			continue
 		}
+		app.storage.DeleteTelegramKey(telegramUser.JellyfinID)
 	}
-	app.storage.telegram = tgUsers
-	app.storage.storeTelegramUsers()
-	app.storage.telegramLock.Unlock()
 }
 
 // https://bbengfort.github.io/snippets/2016/06/26/background-work-goroutines-timer.html THANKS
@@ -148,7 +116,6 @@ func (rt *housekeepingDaemon) run() {
 			break
 		}
 		started := time.Now()
-		rt.app.storage.loadInvites()
 
 		for _, job := range rt.jobs {
 			job(rt.app)

@@ -157,15 +157,6 @@ func (app *appContext) loadConfig() error {
 		app.MustSetValue("updates", "channel", releaseChannel)
 	}
 
-	app.storage.customEmails_path = app.config.Section("files").Key("custom_emails").String()
-	app.storage.loadCustomEmails()
-
-	app.MustSetValue("user_page", "enabled", "true")
-	if app.config.Section("user_page").Key("enabled").MustBool(false) {
-		app.storage.userPage_path = app.config.Section("files").Key("custom_user_page_content").String()
-		app.storage.loadUserPageContent()
-	}
-
 	substituteStrings = app.config.Section("jellyfin").Key("substitute_jellyfin_strings").MustString("")
 
 	if substituteStrings != "" {

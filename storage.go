@@ -8,11 +8,11 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/hrfee/mediabrowser"
 	"github.com/steambap/captcha"
+	"github.com/timshannon/badgerhold/v4"
 )
 
 type discordStore map[string]DiscordUser
@@ -20,224 +20,439 @@ type telegramStore map[string]TelegramUser
 type matrixStore map[string]MatrixUser
 type emailStore map[string]EmailAddress
 
+type UserExpiry struct {
+	JellyfinID string `badgerhold:"key"`
+	Expiry     time.Time
+}
+
 type Storage struct {
-	timePattern                                                                                                                                                                                                                         string
+	timePattern string
+
+	db_path string
+	db      *badgerhold.Store
+
 	invite_path, emails_path, policy_path, configuration_path, displayprefs_path, ombi_path, profiles_path, customEmails_path, users_path, telegram_path, discord_path, matrix_path, announcements_path, matrix_sql_path, userPage_path string
-	users                                                                                                                                                                                                                               map[string]time.Time // Map of Jellyfin User IDs to their expiry times.
-	invites                                                                                                                                                                                                                             Invites
-	profiles                                                                                                                                                                                                                            map[string]Profile
-	defaultProfile                                                                                                                                                                                                                      string
-	displayprefs, ombi_template                                                                                                                                                                                                         map[string]interface{}
-	emails                                                                                                                                                                                                                              emailStore
-	telegram                                                                                                                                                                                                                            telegramStore // Map of Jellyfin User IDs to telegram users.
-	discord                                                                                                                                                                                                                             discordStore  // Map of Jellyfin user IDs to discord users.
-	matrix                                                                                                                                                                                                                              matrixStore   // Map of Jellyfin user IDs to Matrix users.
-	customEmails                                                                                                                                                                                                                        customEmails
-	userPage                                                                                                                                                                                                                            userPageContent
-	policy                                                                                                                                                                                                                              mediabrowser.Policy
-	configuration                                                                                                                                                                                                                       mediabrowser.Configuration
+	deprecatedUserExpiries                                                                                                                                                                                                              map[string]time.Time // Map of Jellyfin User IDs to their expiry times.
+	deprecatedInvites                                                                                                                                                                                                                   Invites
+	deprecatedProfiles                                                                                                                                                                                                                  map[string]Profile
+	deprecatedDisplayprefs, deprecatedOmbiTemplate                                                                                                                                                                                      map[string]interface{}
+	deprecatedEmails                                                                                                                                                                                                                    emailStore    // Map of Jellyfin User IDs to Email addresses.
+	deprecatedTelegram                                                                                                                                                                                                                  telegramStore // Map of Jellyfin User IDs to telegram users.
+	deprecatedDiscord                                                                                                                                                                                                                   discordStore  // Map of Jellyfin user IDs to discord users.
+	deprecatedMatrix                                                                                                                                                                                                                    matrixStore   // Map of Jellyfin user IDs to Matrix users.
+	deprecatedPolicy                                                                                                                                                                                                                    mediabrowser.Policy
+	deprecatedConfiguration                                                                                                                                                                                                             mediabrowser.Configuration
+	deprecatedAnnouncements                                                                                                                                                                                                             map[string]announcementTemplate
+	deprecatedCustomEmails                                                                                                                                                                                                              customEmails
+	deprecatedUserPageContent                                                                                                                                                                                                           userPageContent
 	lang                                                                                                                                                                                                                                Lang
-	announcements                                                                                                                                                                                                                       map[string]announcementTemplate
-	invitesLock, usersLock, discordLock, telegramLock, matrixLock, emailsLock                                                                                                                                                           sync.Mutex
+}
+
+func (app *appContext) ConnectDB() {
+	opts := badgerhold.DefaultOptions
+	opts.Dir = app.storage.db_path
+	opts.ValueDir = app.storage.db_path
+	db, err := badgerhold.Open(opts)
+	if err != nil {
+		app.err.Fatalf("Failed to open db \"%s\": %v", app.storage.db_path, err)
+	}
+	app.storage.db = db
+	app.info.Printf("Connected to DB \"%s\"", app.storage.db_path)
 }
 
 // GetEmails returns a copy of the store.
-func (st *Storage) GetEmails() emailStore {
-	return st.emails
+func (st *Storage) GetEmails() []EmailAddress {
+	result := []EmailAddress{}
+	err := st.db.Find(&result, &badgerhold.Query{})
+	if err != nil {
+		// fmt.Printf("Failed to find emails: %v\n", err)
+	}
+	return result
 }
 
 // GetEmailsKey returns the value stored in the store's key.
 func (st *Storage) GetEmailsKey(k string) (EmailAddress, bool) {
-	v, ok := st.emails[k]
-	return v, ok
+	result := EmailAddress{}
+	err := st.db.Get(k, &result)
+	ok := true
+	if err != nil {
+		// fmt.Printf("Failed to find email: %v\n", err)
+		ok = false
+	}
+	return result, ok
 }
 
 // SetEmailsKey stores value v in key k.
 func (st *Storage) SetEmailsKey(k string, v EmailAddress) {
-	st.emailsLock.Lock()
-	st.emails[k] = v
-	st.storeEmails()
-	st.emailsLock.Unlock()
+	v.JellyfinID = k
+	err := st.db.Upsert(k, v)
+	if err != nil {
+		// fmt.Printf("Failed to set email: %v\n", err)
+	}
 }
 
 // DeleteEmailKey deletes value at key k.
 func (st *Storage) DeleteEmailsKey(k string) {
-	st.emailsLock.Lock()
-	delete(st.emails, k)
-	st.storeEmails()
-	st.emailsLock.Unlock()
+	st.db.Delete(k, EmailAddress{})
 }
 
 // GetDiscord returns a copy of the store.
-func (st *Storage) GetDiscord() discordStore {
-	if st.discord == nil {
-		st.discord = discordStore{}
+func (st *Storage) GetDiscord() []DiscordUser {
+	result := []DiscordUser{}
+	err := st.db.Find(&result, &badgerhold.Query{})
+	if err != nil {
+		// fmt.Printf("Failed to find users: %v\n", err)
 	}
-	return st.discord
+	return result
 }
 
 // GetDiscordKey returns the value stored in the store's key.
 func (st *Storage) GetDiscordKey(k string) (DiscordUser, bool) {
-	v, ok := st.discord[k]
-	return v, ok
+	result := DiscordUser{}
+	err := st.db.Get(k, &result)
+	ok := true
+	if err != nil {
+		// fmt.Printf("Failed to find user: %v\n", err)
+		ok = false
+	}
+	return result, ok
 }
 
 // SetDiscordKey stores value v in key k.
 func (st *Storage) SetDiscordKey(k string, v DiscordUser) {
-	st.discordLock.Lock()
-	if st.discord == nil {
-		st.discord = discordStore{}
+	v.JellyfinID = k
+	err := st.db.Upsert(k, v)
+	if err != nil {
+		// fmt.Printf("Failed to set user: %v\n", err)
 	}
-	st.discord[k] = v
-	st.storeDiscordUsers()
-	st.discordLock.Unlock()
 }
 
 // DeleteDiscordKey deletes value at key k.
 func (st *Storage) DeleteDiscordKey(k string) {
-	st.discordLock.Lock()
-	delete(st.discord, k)
-	st.storeDiscordUsers()
-	st.discordLock.Unlock()
+	st.db.Delete(k, DiscordUser{})
 }
 
 // GetTelegram returns a copy of the store.
-func (st *Storage) GetTelegram() telegramStore {
-	if st.telegram == nil {
-		st.telegram = telegramStore{}
+func (st *Storage) GetTelegram() []TelegramUser {
+	result := []TelegramUser{}
+	err := st.db.Find(&result, &badgerhold.Query{})
+	if err != nil {
+		// fmt.Printf("Failed to find users: %v\n", err)
 	}
-	return st.telegram
+	return result
 }
 
 // GetTelegramKey returns the value stored in the store's key.
 func (st *Storage) GetTelegramKey(k string) (TelegramUser, bool) {
-	v, ok := st.telegram[k]
-	return v, ok
+	result := TelegramUser{}
+	err := st.db.Get(k, &result)
+	ok := true
+	if err != nil {
+		// fmt.Printf("Failed to find user: %v\n", err)
+		ok = false
+	}
+	return result, ok
 }
 
 // SetTelegramKey stores value v in key k.
 func (st *Storage) SetTelegramKey(k string, v TelegramUser) {
-	st.telegramLock.Lock()
-	if st.telegram == nil {
-		st.telegram = telegramStore{}
+	v.JellyfinID = k
+	err := st.db.Upsert(k, v)
+	if err != nil {
+		// fmt.Printf("Failed to set user: %v\n", err)
 	}
-	st.telegram[k] = v
-	st.storeTelegramUsers()
-	st.telegramLock.Unlock()
 }
 
 // DeleteTelegramKey deletes value at key k.
 func (st *Storage) DeleteTelegramKey(k string) {
-	st.telegramLock.Lock()
-	delete(st.telegram, k)
-	st.storeTelegramUsers()
-	st.telegramLock.Unlock()
+	st.db.Delete(k, TelegramUser{})
 }
 
 // GetMatrix returns a copy of the store.
-func (st *Storage) GetMatrix() matrixStore {
-	if st.matrix == nil {
-		st.matrix = matrixStore{}
+func (st *Storage) GetMatrix() []MatrixUser {
+	result := []MatrixUser{}
+	err := st.db.Find(&result, &badgerhold.Query{})
+	if err != nil {
+		// fmt.Printf("Failed to find users: %v\n", err)
 	}
-	return st.matrix
+	return result
 }
 
 // GetMatrixKey returns the value stored in the store's key.
 func (st *Storage) GetMatrixKey(k string) (MatrixUser, bool) {
-	v, ok := st.matrix[k]
-	return v, ok
+	result := MatrixUser{}
+	err := st.db.Get(k, &result)
+	ok := true
+	if err != nil {
+		// fmt.Printf("Failed to find user: %v\n", err)
+		ok = false
+	}
+	return result, ok
 }
 
 // SetMatrixKey stores value v in key k.
 func (st *Storage) SetMatrixKey(k string, v MatrixUser) {
-	st.matrixLock.Lock()
-	if st.matrix == nil {
-		st.matrix = matrixStore{}
+	v.JellyfinID = k
+	err := st.db.Upsert(k, v)
+	if err != nil {
+		// fmt.Printf("Failed to set user: %v\n", err)
 	}
-	st.matrix[k] = v
-	st.storeMatrixUsers()
-	st.matrixLock.Unlock()
 }
 
 // DeleteMatrixKey deletes value at key k.
 func (st *Storage) DeleteMatrixKey(k string) {
-	st.matrixLock.Lock()
-	delete(st.matrix, k)
-	st.storeMatrixUsers()
-	st.matrixLock.Unlock()
+	st.db.Delete(k, MatrixUser{})
 }
 
 // GetInvites returns a copy of the store.
-func (st *Storage) GetInvites() Invites {
-	if st.invites == nil {
-		st.invites = Invites{}
+func (st *Storage) GetInvites() []Invite {
+	result := []Invite{}
+	err := st.db.Find(&result, &badgerhold.Query{})
+	if err != nil {
+		// fmt.Printf("Failed to find invites: %v\n", err)
 	}
-	return st.invites
+	return result
 }
 
 // GetInvitesKey returns the value stored in the store's key.
 func (st *Storage) GetInvitesKey(k string) (Invite, bool) {
-	v, ok := st.invites[k]
-	return v, ok
+	result := Invite{}
+	err := st.db.Get(k, &result)
+	ok := true
+	if err != nil {
+		// fmt.Printf("Failed to find invite: %v\n", err)
+		ok = false
+	}
+	return result, ok
 }
 
 // SetInvitesKey stores value v in key k.
 func (st *Storage) SetInvitesKey(k string, v Invite) {
-	st.invitesLock.Lock()
-	if st.invites == nil {
-		st.invites = Invites{}
+	v.Code = k
+	err := st.db.Upsert(k, v)
+	if err != nil {
+		// fmt.Printf("Failed to set invite: %v\n", err)
 	}
-	st.invites[k] = v
-	st.storeInvites()
-	st.invitesLock.Unlock()
 }
 
 // DeleteInvitesKey deletes value at key k.
 func (st *Storage) DeleteInvitesKey(k string) {
-	st.invitesLock.Lock()
-	delete(st.invites, k)
-	st.storeInvites()
-	st.invitesLock.Unlock()
+	st.db.Delete(k, Invite{})
+}
+
+// GetAnnouncements returns a copy of the store.
+func (st *Storage) GetAnnouncements() []announcementTemplate {
+	result := []announcementTemplate{}
+	err := st.db.Find(&result, &badgerhold.Query{})
+	if err != nil {
+		// fmt.Printf("Failed to find announcements: %v\n", err)
+	}
+	return result
+}
+
+// GetAnnouncementsKey returns the value stored in the store's key.
+func (st *Storage) GetAnnouncementsKey(k string) (announcementTemplate, bool) {
+	result := announcementTemplate{}
+	err := st.db.Get(k, &result)
+	ok := true
+	if err != nil {
+		// fmt.Printf("Failed to find announcement: %v\n", err)
+		ok = false
+	}
+	return result, ok
+}
+
+// SetAnnouncementsKey stores value v in key k.
+func (st *Storage) SetAnnouncementsKey(k string, v announcementTemplate) {
+	err := st.db.Upsert(k, v)
+	if err != nil {
+		// fmt.Printf("Failed to set announcement: %v\n", err)
+	}
+}
+
+// DeleteAnnouncementsKey deletes value at key k.
+func (st *Storage) DeleteAnnouncementsKey(k string) {
+	st.db.Delete(k, announcementTemplate{})
+}
+
+// GetUserExpiries returns a copy of the store.
+func (st *Storage) GetUserExpiries() []UserExpiry {
+	result := []UserExpiry{}
+	err := st.db.Find(&result, &badgerhold.Query{})
+	if err != nil {
+		// fmt.Printf("Failed to find expiries: %v\n", err)
+	}
+	return result
+}
+
+// GetUserExpiryKey returns the value stored in the store's key.
+func (st *Storage) GetUserExpiryKey(k string) (UserExpiry, bool) {
+	result := UserExpiry{}
+	err := st.db.Get(k, &result)
+	ok := true
+	if err != nil {
+		// fmt.Printf("Failed to find expiry: %v\n", err)
+		ok = false
+	}
+	return result, ok
+}
+
+// SetUserExpiryKey stores value v in key k.
+func (st *Storage) SetUserExpiryKey(k string, v UserExpiry) {
+	v.JellyfinID = k
+	err := st.db.Upsert(k, v)
+	if err != nil {
+		// fmt.Printf("Failed to set expiry: %v\n", err)
+	}
+}
+
+// DeleteUserExpiryKey deletes value at key k.
+func (st *Storage) DeleteUserExpiryKey(k string) {
+	st.db.Delete(k, UserExpiry{})
+}
+
+// GetProfiles returns a copy of the store.
+func (st *Storage) GetProfiles() []Profile {
+	result := []Profile{}
+	err := st.db.Find(&result, &badgerhold.Query{})
+	if err != nil {
+		// fmt.Printf("Failed to find profiles: %v\n", err)
+	}
+	return result
+}
+
+// GetProfileKey returns the value stored in the store's key.
+func (st *Storage) GetProfileKey(k string) (Profile, bool) {
+	result := Profile{}
+	err := st.db.Get(k, &result)
+	ok := true
+	if err != nil {
+		// fmt.Printf("Failed to find profile: %v\n", err)
+		ok = false
+	}
+	return result, ok
+}
+
+// SetProfileKey stores value v in key k.
+func (st *Storage) SetProfileKey(k string, v Profile) {
+	v.Name = k
+	v.Admin = v.Policy.IsAdministrator
+	if v.Policy.EnabledFolders != nil {
+		if len(v.Policy.EnabledFolders) == 0 {
+			v.LibraryAccess = "All"
+		} else {
+			v.LibraryAccess = strconv.Itoa(len(v.Policy.EnabledFolders))
+		}
+	}
+	if v.FromUser == "" {
+		v.FromUser = "Unknown"
+	}
+	err := st.db.Upsert(k, v)
+	if err != nil {
+		// fmt.Printf("Failed to set profile: %v\n", err)
+	}
+}
+
+// DeleteProfileKey deletes value at key k.
+func (st *Storage) DeleteProfileKey(k string) {
+	st.db.Delete(k, Profile{})
+}
+
+// GetDefaultProfile returns the first profile set as default, or anything available if there isn't one.
+func (st *Storage) GetDefaultProfile() Profile {
+	defaultProfile := Profile{}
+	err := st.db.FindOne(&defaultProfile, badgerhold.Where("Default").Eq(true))
+	if err != nil {
+		st.db.FindOne(&defaultProfile, &badgerhold.Query{})
+	}
+	return defaultProfile
+}
+
+// GetCustomContent returns a copy of the store.
+func (st *Storage) GetCustomContent() []CustomContent {
+	result := []CustomContent{}
+	err := st.db.Find(&result, &badgerhold.Query{})
+	if err != nil {
+		// fmt.Printf("Failed to find custom content: %v\n", err)
+	}
+	return result
+}
+
+// GetCustomContentKey returns the value stored in the store's key.
+func (st *Storage) GetCustomContentKey(k string) (CustomContent, bool) {
+	result := CustomContent{}
+	err := st.db.Get(k, &result)
+	ok := true
+	if err != nil {
+		// fmt.Printf("Failed to find custom content: %v\n", err)
+		ok = false
+	}
+	return result, ok
+}
+
+// MustGetCustomContentKey returns the value stored in the store's key, or an empty value.
+func (st *Storage) MustGetCustomContentKey(k string) CustomContent {
+	result := CustomContent{}
+	st.db.Get(k, &result)
+	return result
+}
+
+// SetCustomContentKey stores value v in key k.
+func (st *Storage) SetCustomContentKey(k string, v CustomContent) {
+	v.Name = k
+	err := st.db.Upsert(k, v)
+	if err != nil {
+		// fmt.Printf("Failed to set custom content: %v\n", err)
+	}
+}
+
+// DeleteCustomContentKey deletes value at key k.
+func (st *Storage) DeleteCustomContentKey(k string) {
+	st.db.Delete(k, CustomContent{})
 }
 
 type TelegramUser struct {
-	ChatID   int64
-	Username string
-	Lang     string
-	Contact  bool // Whether to contact through telegram or not
+	JellyfinID string `badgerhold:"key"`
+	ChatID     int64  `badgerhold:"index"`
+	Username   string `badgerhold:"index"`
+	Lang       string
+	Contact    bool // Whether to contact through telegram or not
 }
 
 type DiscordUser struct {
 	ChannelID     string
-	ID            string
-	Username      string
+	ID            string `badgerhold:"index"`
+	Username      string `badgerhold:"index"`
 	Discriminator string
 	Lang          string
 	Contact       bool
-	JellyfinID    string `json:"-"` // Used internally in discord.go
+	JellyfinID    string `json:"-" badgerhold:"key"` // Used internally in discord.go
 }
 
 type EmailAddress struct {
-	Addr    string
-	Label   string // User Label.
-	Contact bool
-	Admin   bool // Whether or not user is jfa-go admin.
+	Addr       string `badgerhold:"index"`
+	Label      string // User Label.
+	Contact    bool
+	Admin      bool   // Whether or not user is jfa-go admin.
+	JellyfinID string `badgerhold:"key"`
 }
 
 type customEmails struct {
-	UserCreated       customContent `json:"userCreated"`
-	InviteExpiry      customContent `json:"inviteExpiry"`
-	PasswordReset     customContent `json:"passwordReset"`
-	UserDeleted       customContent `json:"userDeleted"`
-	UserDisabled      customContent `json:"userDisabled"`
-	UserEnabled       customContent `json:"userEnabled"`
-	InviteEmail       customContent `json:"inviteEmail"`
-	WelcomeEmail      customContent `json:"welcomeEmail"`
-	EmailConfirmation customContent `json:"emailConfirmation"`
-	UserExpired       customContent `json:"userExpired"`
+	UserCreated       CustomContent `json:"userCreated"`
+	InviteExpiry      CustomContent `json:"inviteExpiry"`
+	PasswordReset     CustomContent `json:"passwordReset"`
+	UserDeleted       CustomContent `json:"userDeleted"`
+	UserDisabled      CustomContent `json:"userDisabled"`
+	UserEnabled       CustomContent `json:"userEnabled"`
+	InviteEmail       CustomContent `json:"inviteEmail"`
+	WelcomeEmail      CustomContent `json:"welcomeEmail"`
+	EmailConfirmation CustomContent `json:"emailConfirmation"`
+	UserExpired       CustomContent `json:"userExpired"`
 }
 
-type customContent struct {
+// CustomContent stores customized versions of jfa-go content, including emails and user messages.
+type CustomContent struct {
+	Name         string   `json:"name" badgerhold:"key"`
 	Enabled      bool     `json:"enabled,omitempty"`
 	Content      string   `json:"content"`
 	Variables    []string `json:"variables,omitempty"`
@@ -245,14 +460,15 @@ type customContent struct {
 }
 
 type userPageContent struct {
-	Login customContent `json:"login"`
-	Page  customContent `json:"page"`
+	Login CustomContent `json:"login"`
+	Page  CustomContent `json:"page"`
 }
 
 // timePattern: %Y-%m-%dT%H:%M:%S.%f
 
 type Profile struct {
-	Admin         bool                       `json:"admin,omitempty"`
+	Name          string                     `badgerhold:"key"`
+	Admin         bool                       `json:"admin,omitempty" badgerhold:"index"`
 	LibraryAccess string                     `json:"libraries,omitempty"`
 	FromUser      string                     `json:"fromUser,omitempty"`
 	Policy        mediabrowser.Policy        `json:"policy,omitempty"`
@@ -263,6 +479,7 @@ type Profile struct {
 }
 
 type Invite struct {
+	Code          string    `badgerhold:"key"`
 	Created       time.Time `json:"created"`
 	NoLimit       bool      `json:"no-limit"`
 	RemainingUses int       `json:"remaining-uses"`
@@ -964,18 +1181,16 @@ func (st *Storage) loadLangTelegram(filesystems ...fs.FS) error {
 type Invites map[string]Invite
 
 func (st *Storage) loadInvites() error {
-	return loadJSON(st.invite_path, &st.invites)
+	return loadJSON(st.invite_path, &st.deprecatedInvites)
 }
 
 func (st *Storage) storeInvites() error {
-	return storeJSON(st.invite_path, st.invites)
+	return storeJSON(st.invite_path, st.deprecatedInvites)
 }
 
-func (st *Storage) loadUsers() error {
-	st.usersLock.Lock()
-	defer st.usersLock.Unlock()
-	if st.users == nil {
-		st.users = map[string]time.Time{}
+func (st *Storage) loadUserExpiries() error {
+	if st.deprecatedUserExpiries == nil {
+		st.deprecatedUserExpiries = map[string]time.Time{}
 	}
 	temp := map[string]time.Time{}
 	err := loadJSON(st.users_path, &temp)
@@ -983,111 +1198,111 @@ func (st *Storage) loadUsers() error {
 		return err
 	}
 	for id, t1 := range temp {
-		if _, ok := st.users[id]; !ok {
-			st.users[id] = t1
+		if _, ok := st.deprecatedUserExpiries[id]; !ok {
+			st.deprecatedUserExpiries[id] = t1
 		}
 	}
 	return nil
 }
 
-func (st *Storage) storeUsers() error {
-	return storeJSON(st.users_path, st.users)
+func (st *Storage) storeUserExpiries() error {
+	return storeJSON(st.users_path, st.deprecatedUserExpiries)
 }
 
 func (st *Storage) loadEmails() error {
-	return loadJSON(st.emails_path, &st.emails)
+	return loadJSON(st.emails_path, &st.deprecatedEmails)
 }
 
 func (st *Storage) storeEmails() error {
-	return storeJSON(st.emails_path, st.emails)
+	return storeJSON(st.emails_path, st.deprecatedEmails)
 }
 
 func (st *Storage) loadTelegramUsers() error {
-	return loadJSON(st.telegram_path, &st.telegram)
+	return loadJSON(st.telegram_path, &st.deprecatedTelegram)
 }
 
 func (st *Storage) storeTelegramUsers() error {
-	return storeJSON(st.telegram_path, st.telegram)
+	return storeJSON(st.telegram_path, st.deprecatedTelegram)
 }
 
 func (st *Storage) loadDiscordUsers() error {
-	return loadJSON(st.discord_path, &st.discord)
+	return loadJSON(st.discord_path, &st.deprecatedDiscord)
 }
 
 func (st *Storage) storeDiscordUsers() error {
-	return storeJSON(st.discord_path, st.discord)
+	return storeJSON(st.discord_path, st.deprecatedDiscord)
 }
 
 func (st *Storage) loadMatrixUsers() error {
-	return loadJSON(st.matrix_path, &st.matrix)
+	return loadJSON(st.matrix_path, &st.deprecatedMatrix)
 }
 
 func (st *Storage) storeMatrixUsers() error {
-	return storeJSON(st.matrix_path, st.matrix)
+	return storeJSON(st.matrix_path, st.deprecatedMatrix)
 }
 
 func (st *Storage) loadCustomEmails() error {
-	return loadJSON(st.customEmails_path, &st.customEmails)
+	return loadJSON(st.customEmails_path, &st.deprecatedCustomEmails)
 }
 
 func (st *Storage) storeCustomEmails() error {
-	return storeJSON(st.customEmails_path, st.customEmails)
+	return storeJSON(st.customEmails_path, st.deprecatedCustomEmails)
 }
 
 func (st *Storage) loadUserPageContent() error {
-	return loadJSON(st.userPage_path, &st.userPage)
+	return loadJSON(st.userPage_path, &st.deprecatedUserPageContent)
 }
 
 func (st *Storage) storeUserPageContent() error {
-	return storeJSON(st.userPage_path, st.userPage)
+	return storeJSON(st.userPage_path, st.deprecatedUserPageContent)
 }
 
 func (st *Storage) loadPolicy() error {
-	return loadJSON(st.policy_path, &st.policy)
+	return loadJSON(st.policy_path, &st.deprecatedPolicy)
 }
 
 func (st *Storage) storePolicy() error {
-	return storeJSON(st.policy_path, st.policy)
+	return storeJSON(st.policy_path, st.deprecatedPolicy)
 }
 
 func (st *Storage) loadConfiguration() error {
-	return loadJSON(st.configuration_path, &st.configuration)
+	return loadJSON(st.configuration_path, &st.deprecatedConfiguration)
 }
 
 func (st *Storage) storeConfiguration() error {
-	return storeJSON(st.configuration_path, st.configuration)
+	return storeJSON(st.configuration_path, st.deprecatedConfiguration)
 }
 
 func (st *Storage) loadDisplayprefs() error {
-	return loadJSON(st.displayprefs_path, &st.displayprefs)
+	return loadJSON(st.displayprefs_path, &st.deprecatedDisplayprefs)
 }
 
 func (st *Storage) storeDisplayprefs() error {
-	return storeJSON(st.displayprefs_path, st.displayprefs)
+	return storeJSON(st.displayprefs_path, st.deprecatedDisplayprefs)
 }
 
 func (st *Storage) loadOmbiTemplate() error {
-	return loadJSON(st.ombi_path, &st.ombi_template)
+	return loadJSON(st.ombi_path, &st.deprecatedOmbiTemplate)
 }
 
 func (st *Storage) storeOmbiTemplate() error {
-	return storeJSON(st.ombi_path, st.ombi_template)
+	return storeJSON(st.ombi_path, st.deprecatedOmbiTemplate)
 }
 
 func (st *Storage) loadAnnouncements() error {
-	return loadJSON(st.announcements_path, &st.announcements)
+	return loadJSON(st.announcements_path, &st.deprecatedAnnouncements)
 }
 
 func (st *Storage) storeAnnouncements() error {
-	return storeJSON(st.announcements_path, st.announcements)
+	return storeJSON(st.announcements_path, st.deprecatedAnnouncements)
 }
 
 func (st *Storage) loadProfiles() error {
-	err := loadJSON(st.profiles_path, &st.profiles)
-	for name, profile := range st.profiles {
-		if profile.Default {
-			st.defaultProfile = name
-		}
+	err := loadJSON(st.profiles_path, &st.deprecatedProfiles)
+	for name, profile := range st.deprecatedProfiles {
+		// if profile.Default {
+		// 	st.defaultProfile = name
+		// }
 		change := false
 		if profile.Policy.IsAdministrator != profile.Admin {
 			change = true
@@ -1107,19 +1322,19 @@ func (st *Storage) loadProfiles() error {
 			change = true
 		}
 		if change {
-			st.profiles[name] = profile
+			st.deprecatedProfiles[name] = profile
 		}
 	}
-	if st.defaultProfile == "" {
-		for n := range st.profiles {
-			st.defaultProfile = n
-		}
-	}
+	// if st.defaultProfile == "" {
+	// 	for n := range st.deprecatedProfiles {
+	// 		st.defaultProfile = n
+	// 	}
+	// }
 	return err
 }
 
 func (st *Storage) storeProfiles() error {
-	return storeJSON(st.profiles_path, st.profiles)
+	return storeJSON(st.profiles_path, st.deprecatedProfiles)
 }
 
 func (st *Storage) migrateToProfile() error {
@@ -1127,10 +1342,10 @@ func (st *Storage) migrateToProfile() error {
 	st.loadConfiguration()
 	st.loadDisplayprefs()
 	st.loadProfiles()
-	st.profiles["Default"] = Profile{
-		Policy:        st.policy,
-		Configuration: st.configuration,
-		Displayprefs:  st.displayprefs,
+	st.deprecatedProfiles["Default"] = Profile{
+		Policy:        st.deprecatedPolicy,
+		Configuration: st.deprecatedConfiguration,
+		Displayprefs:  st.deprecatedDisplayprefs,
 	}
 	return st.storeProfiles()
 }

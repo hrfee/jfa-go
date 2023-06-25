@@ -224,13 +224,13 @@ func (app *appContext) MyUserPage(gc *gin.Context) {
 		data["discordInviteLink"] = app.discord.inviteChannelName != ""
 	}
 
-	pageMessages := map[string]*customContent{
-		"Login": app.getCustomMessage("UserLogin"),
-		"Page":  app.getCustomMessage("UserPage"),
-	}
+	pageMessagesExist := map[string]bool{}
+	pageMessages := map[string]CustomContent{}
+	pageMessages["Login"], pageMessagesExist["Login"] = app.storage.GetCustomContentKey("UserLogin")
+	pageMessages["Page"], pageMessagesExist["Page"] = app.storage.GetCustomContentKey("UserPage")
 
 	for name, msg := range pageMessages {
-		if msg == nil {
+		if !pageMessagesExist[name] {
 			continue
 		}
 		data[name+"MessageEnabled"] = msg.Enabled
