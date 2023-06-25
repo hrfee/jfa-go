@@ -987,7 +987,7 @@ export class accountsList {
                     // FIXME: Generate filter card for each filter class
                     const filterCard = document.createElement("span");
                     filterCard.ariaLabel = window.lang.strings("clickToRemoveFilter");
-                    filterCard.classList.add("button", "~" + (boolState ? "positive" : "critical"), "@high", "center", "m-2");
+                    filterCard.classList.add("button", "~" + (boolState ? "positive" : "critical"), "@high", "center", "mx-2", "h-full");
                     filterCard.innerHTML = `
                     <span class="font-bold mr-2">${queryFormat.name}</span>
                     <i class="text-2xl ri-${boolState? "checkbox" : "close"}-circle-fill"></i>
@@ -1021,7 +1021,7 @@ export class accountsList {
             if (queryFormat.string) {
                 const filterCard = document.createElement("span");
                 filterCard.ariaLabel = window.lang.strings("clickToRemoveFilter");
-                filterCard.classList.add("button", "~neutral", "@low", "center", "m-2", "h-full");
+                filterCard.classList.add("button", "~neutral", "@low", "center", "mx-2", "h-full");
                 filterCard.innerHTML = `
                 <span class="font-bold mr-2">${queryFormat.name}:</span> "${split[1]}"
                 `;
