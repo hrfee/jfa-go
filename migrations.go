@@ -201,6 +201,53 @@ type MigrationStatus struct {
 	Done bool
 }
 
+func loadLegacyData(app *appContext) {
+	app.storage.invite_path = app.config.Section("files").Key("invites").String()
+	if err := app.storage.loadInvites(); err != nil {
+		app.err.Printf("LegacyData: Failed to load Invites: %v", err)
+	}
+	app.storage.emails_path = app.config.Section("files").Key("emails").String()
+	if err := app.storage.loadEmails(); err != nil {
+		app.err.Printf("LegacyData: Failed to load Emails: %v", err)
+		err := migrateEmailStorage(app)
+		if err != nil {
+			app.err.Printf("LegacyData: Failed to migrate Email storage: %v", err)
+		}
+	}
+	app.storage.users_path = app.config.Section("files").Key("users").String()
+	if err := app.storage.loadUserExpiries(); err != nil {
+		app.err.Printf("LegacyData: Failed to load Users: %v", err)
+	}
+	app.storage.telegram_path = app.config.Section("files").Key("telegram_users").String()
+	if err := app.storage.loadTelegramUsers(); err != nil {
+		app.err.Printf("LegacyData: Failed to load Telegram users: %v", err)
+	}
+	app.storage.discord_path = app.config.Section("files").Key("discord_users").String()
+	if err := app.storage.loadDiscordUsers(); err != nil {
+		app.err.Printf("LegacyData: Failed to load Discord users: %v", err)
+	}
+	app.storage.matrix_path = app.config.Section("files").Key("matrix_users").String()
+	if err := app.storage.loadMatrixUsers(); err != nil {
+		app.err.Printf("LegacyData: Failed to load Matrix users: %v", err)
+	}
+	app.storage.announcements_path = app.config.Section("files").Key("announcements").String()
+	if err := app.storage.loadAnnouncements(); err != nil {
+		app.err.Printf("LegacyData: Failed to load announcement templates: %v", err)
+	}
+
+	app.storage.profiles_path = app.config.Section("files").Key("user_profiles").String()
+	app.storage.loadProfiles()
+
+	app.storage.customEmails_path = app.config.Section("files").Key("custom_emails").String()
+	app.storage.loadCustomEmails()
+
+	app.MustSetValue("user_page", "enabled", "true")
+	if app.config.Section("user_page").Key("enabled").MustBool(false) {
+		app.storage.userPage_path = app.config.Section("files").Key("custom_user_page_content").String()
+		app.storage.loadUserPageContent()
+	}
+}
+
 func migrateToBadger(app *appContext) {
 	// Check the DB to see if we've already migrated
 	migrated := MigrationStatus{}
@@ -209,48 +256,39 @@ func migrateToBadger(app *appContext) {
 		return
 	}
 	app.info.Println("Migrating to Badger(hold)")
-	app.storage.loadAnnouncements()
+	loadLegacyData(app)
 	for k, v := range app.storage.deprecatedAnnouncements {
 		app.storage.SetAnnouncementsKey(k, v)
 	}
 
-	app.storage.loadDiscordUsers()
 	for jfID, v := range app.storage.deprecatedDiscord {
 		app.storage.SetDiscordKey(jfID, v)
 	}
 
-	app.storage.loadTelegramUsers()
 	for jfID, v := range app.storage.deprecatedTelegram {
 		app.storage.SetTelegramKey(jfID, v)
 	}
 
-	app.storage.loadMatrixUsers()
 	for jfID, v := range app.storage.deprecatedMatrix {
 		app.storage.SetMatrixKey(jfID, v)
 	}
 
-	app.storage.loadEmails()
 	for jfID, v := range app.storage.deprecatedEmails {
 		app.storage.SetEmailsKey(jfID, v)
 	}
 
-	app.storage.loadInvites()
 	for k, v := range app.storage.deprecatedInvites {
 		app.storage.SetInvitesKey(k, v)
 	}
 
-	app.storage.loadUserExpiries()
 	for k, v := range app.storage.deprecatedUserExpiries {
 		app.storage.SetUserExpiryKey(k, UserExpiry{Expiry: v})
 	}
 
-	app.storage.loadProfiles()
 	for k, v := range app.storage.deprecatedProfiles {
 		app.storage.SetProfileKey(k, v)
 	}
 
-	app.storage.loadCustomEmails()
-	app.storage.loadUserPageContent()
 	if _, ok := app.storage.GetCustomContentKey("UserCreated"); !ok {
 		app.storage.SetCustomContentKey("UserCreated", app.storage.deprecatedCustomEmails.UserCreated)
 	}
