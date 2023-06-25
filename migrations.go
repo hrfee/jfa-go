@@ -280,6 +280,11 @@ func migrateToBadger(app *appContext) {
 	if _, ok := app.storage.GetCustomContentKey("UserPage"); !ok {
 		app.storage.SetCustomContentKey("UserPage", app.storage.deprecatedUserPageContent.Page)
 	}
+
+	tempConfig, _ := ini.Load(app.configPath)
+	tempConfig.Section("").Key("migrated_to_db").SetValue("true")
+	tempConfig.SaveTo(app.configPath)
+	app.info.Println("All data migrated to database. JSON files in the config folder can be deleted if you are sure all data is correct in the app. Create an issue if you have problems.")
 }
 
 // Migrate between hyphenated & non-hyphenated user IDs. Doesn't seem to happen anymore, so disabled.
