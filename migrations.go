@@ -196,10 +196,17 @@ func linkExistingOmbiDiscordTelegram(app *appContext) error {
 	return nil
 }
 
+// MigrationStatus is just used to store whether data from JSON files has been migrated to the DB.
+type MigrationStatus struct {
+	Done bool
+}
+
 func migrateToBadger(app *appContext) {
-	if app.config.Section("").Key("migrated_to_db").MustBool(false) {
+	// Check the DB to see if we've already migrated
+	migrated := MigrationStatus{}
+	app.storage.db.Get("migrated_to_db", &migrated)
+	if migrated.Done {
 		return
-		// FIXME: Mark as done at some point
 	}
 	app.info.Println("Migrating to Badger(hold)")
 	app.storage.loadAnnouncements()
@@ -281,9 +288,10 @@ func migrateToBadger(app *appContext) {
 		app.storage.SetCustomContentKey("UserPage", app.storage.deprecatedUserPageContent.Page)
 	}
 
-	tempConfig, _ := ini.Load(app.configPath)
-	tempConfig.Section("").Key("migrated_to_db").SetValue("true")
-	tempConfig.SaveTo(app.configPath)
+	err := app.storage.db.Upsert("migrated_to_db", MigrationStatus{true})
+	if err != nil {
+		app.err.Fatalf("Failed to migrate to DB: %v\n", err)
+	}
 	app.info.Println("All data migrated to database. JSON files in the config folder can be deleted if you are sure all data is correct in the app. Create an issue if you have problems.")
 }
 
