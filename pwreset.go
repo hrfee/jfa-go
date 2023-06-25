@@ -100,7 +100,6 @@ func pwrMonitor(app *appContext, watcher *fsnotify.Watcher) {
 						app.debug.Printf("Error: %s", err)
 						return
 					}
-					app.storage.loadEmails()
 					uid := user.ID
 					if uid == "" {
 						app.err.Printf("Couldn't get user ID for user \"%s\"", pwr.Username)

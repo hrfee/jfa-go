@@ -116,7 +116,6 @@ func (rt *housekeepingDaemon) run() {
 			break
 		}
 		started := time.Now()
-		rt.app.storage.loadInvites()
 
 		for _, job := range rt.jobs {
 			job(rt.app)

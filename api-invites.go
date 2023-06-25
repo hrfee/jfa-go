@@ -15,7 +15,6 @@ import (
 
 func (app *appContext) checkInvites() {
 	currentTime := time.Now()
-	app.storage.loadInvites()
 	for _, data := range app.storage.GetInvites() {
 		expiry := data.ValidTill
 		if !currentTime.After(expiry) {
@@ -59,7 +58,6 @@ func (app *appContext) checkInvites() {
 
 func (app *appContext) checkInvite(code string, used bool, username string) bool {
 	currentTime := time.Now()
-	app.storage.loadInvites()
 	inv, match := app.storage.GetInvitesKey(code)
 	if !match {
 		return false
@@ -128,7 +126,6 @@ func (app *appContext) checkInvite(code string, used bool, username string) bool
 func (app *appContext) GenerateInvite(gc *gin.Context) {
 	var req generateInviteDTO
 	app.debug.Println("Generating new invite")
-	app.storage.loadInvites()
 	gc.BindJSON(&req)
 	currentTime := time.Now()
 	validTill := currentTime.AddDate(0, req.Months, req.Days)
@@ -222,7 +219,6 @@ func (app *appContext) GenerateInvite(gc *gin.Context) {
 func (app *appContext) GetInvites(gc *gin.Context) {
 	app.debug.Println("Invites requested")
 	currentTime := time.Now()
-	app.storage.loadInvites()
 	app.checkInvites()
 	var invites []inviteDTO
 	for _, inv := range app.storage.GetInvites() {
@@ -344,8 +340,6 @@ func (app *appContext) SetNotify(gc *gin.Context) {
 	changed := false
 	for code, settings := range req {
 		app.debug.Printf("%s: Notification settings change requested", code)
-		app.storage.loadInvites()
-		app.storage.loadEmails()
 		invite, ok := app.storage.GetInvitesKey(code)
 		if !ok {
 			app.err.Printf("%s Notification setting change failed: Invalid code", code)

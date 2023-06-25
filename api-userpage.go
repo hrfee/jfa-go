@@ -42,11 +42,6 @@ func (app *appContext) MyDetails(gc *gin.Context) {
 		resp.Expiry = exp.Expiry.Unix()
 	}
 
-	app.storage.loadEmails()
-	app.storage.loadDiscordUsers()
-	app.storage.loadMatrixUsers()
-	app.storage.loadTelegramUsers()
-
 	if emailEnabled {
 		resp.Email = &MyDetailsContactMethodsDTO{}
 		if email, ok := app.storage.GetEmailsKey(user.ID); ok && email.Addr != "" {
