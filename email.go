@@ -331,10 +331,11 @@ func (emailer *Emailer) constructConfirmation(code, username, key string, app *a
 	}
 	var err error
 	template := emailer.confirmationValues(code, username, key, app, noSub)
-	if app.storage.customEmails.EmailConfirmation.Enabled {
+	message := app.storage.MustGetCustomContentKey("EmailConfirmation")
+	if message.Enabled {
 		content := templateEmail(
-			app.storage.customEmails.EmailConfirmation.Content,
-			app.storage.customEmails.EmailConfirmation.Variables,
+			message.Content,
+			message.Variables,
 			nil,
 			template,
 		)
@@ -414,10 +415,11 @@ func (emailer *Emailer) constructInvite(code string, invite Invite, app *appCont
 	}
 	template := emailer.inviteValues(code, invite, app, noSub)
 	var err error
-	if app.storage.customEmails.InviteEmail.Enabled {
+	message := app.storage.MustGetCustomContentKey("InviteEmail")
+	if message.Enabled {
 		content := templateEmail(
-			app.storage.customEmails.InviteEmail.Content,
-			app.storage.customEmails.InviteEmail.Variables,
+			message.Content,
+			message.Variables,
 			nil,
 			template,
 		)
@@ -453,10 +455,11 @@ func (emailer *Emailer) constructExpiry(code string, invite Invite, app *appCont
 	}
 	var err error
 	template := emailer.expiryValues(code, invite, app, noSub)
-	if app.storage.customEmails.InviteExpiry.Enabled {
+	message := app.storage.MustGetCustomContentKey("InviteExpiry")
+	if message.Enabled {
 		content := templateEmail(
-			app.storage.customEmails.InviteExpiry.Content,
-			app.storage.customEmails.InviteExpiry.Variables,
+			message.Content,
+			message.Variables,
 			nil,
 			template,
 		)
@@ -507,10 +510,11 @@ func (emailer *Emailer) constructCreated(code, username, address string, invite 
 	}
 	template := emailer.createdValues(code, username, address, invite, app, noSub)
 	var err error
-	if app.storage.customEmails.UserCreated.Enabled {
+	message := app.storage.MustGetCustomContentKey("UserCreated")
+	if message.Enabled {
 		content := templateEmail(
-			app.storage.customEmails.UserCreated.Content,
-			app.storage.customEmails.UserCreated.Variables,
+			message.Content,
+			message.Variables,
 			nil,
 			template,
 		)
@@ -580,10 +584,11 @@ func (emailer *Emailer) constructReset(pwr PasswordReset, app *appContext, noSub
 	}
 	template := emailer.resetValues(pwr, app, noSub)
 	var err error
-	if app.storage.customEmails.PasswordReset.Enabled {
+	message := app.storage.MustGetCustomContentKey("PasswordReset")
+	if message.Enabled {
 		content := templateEmail(
-			app.storage.customEmails.PasswordReset.Content,
-			app.storage.customEmails.PasswordReset.Variables,
+			message.Content,
+			message.Variables,
 			nil,
 			template,
 		)
@@ -621,10 +626,11 @@ func (emailer *Emailer) constructDeleted(reason string, app *appContext, noSub b
 	}
 	var err error
 	template := emailer.deletedValues(reason, app, noSub)
-	if app.storage.customEmails.UserDeleted.Enabled {
+	message := app.storage.MustGetCustomContentKey("UserDeleted")
+	if message.Enabled {
 		content := templateEmail(
-			app.storage.customEmails.UserDeleted.Content,
-			app.storage.customEmails.UserDeleted.Variables,
+			message.Content,
+			message.Variables,
 			nil,
 			template,
 		)
@@ -662,10 +668,11 @@ func (emailer *Emailer) constructDisabled(reason string, app *appContext, noSub 
 	}
 	var err error
 	template := emailer.disabledValues(reason, app, noSub)
-	if app.storage.customEmails.UserDisabled.Enabled {
+	message := app.storage.MustGetCustomContentKey("UserDisabled")
+	if message.Enabled {
 		content := templateEmail(
-			app.storage.customEmails.UserDisabled.Content,
-			app.storage.customEmails.UserDisabled.Variables,
+			message.Content,
+			message.Variables,
 			nil,
 			template,
 		)
@@ -703,10 +710,11 @@ func (emailer *Emailer) constructEnabled(reason string, app *appContext, noSub b
 	}
 	var err error
 	template := emailer.enabledValues(reason, app, noSub)
-	if app.storage.customEmails.UserEnabled.Enabled {
+	message := app.storage.MustGetCustomContentKey("UserEnabled")
+	if message.Enabled {
 		content := templateEmail(
-			app.storage.customEmails.UserEnabled.Content,
-			app.storage.customEmails.UserEnabled.Variables,
+			message.Content,
+			message.Variables,
 			nil,
 			template,
 		)
@@ -758,7 +766,8 @@ func (emailer *Emailer) constructWelcome(username string, expiry time.Time, app 
 	}
 	var err error
 	var template map[string]interface{}
-	if app.storage.customEmails.WelcomeEmail.Enabled {
+	message := app.storage.MustGetCustomContentKey("WelcomeEmail")
+	if message.Enabled {
 		template = emailer.welcomeValues(username, expiry, app, noSub, true)
 	} else {
 		template = emailer.welcomeValues(username, expiry, app, noSub, false)
@@ -768,11 +777,11 @@ func (emailer *Emailer) constructWelcome(username string, expiry time.Time, app 
 			"date": "{yourAccountWillExpire}",
 		})
 	}
-	if app.storage.customEmails.WelcomeEmail.Enabled {
+	if message.Enabled {
 		content := templateEmail(
-			app.storage.customEmails.WelcomeEmail.Content,
-			app.storage.customEmails.WelcomeEmail.Variables,
-			app.storage.customEmails.WelcomeEmail.Conditionals,
+			message.Content,
+			message.Variables,
+			message.Conditionals,
 			template,
 		)
 		email, err = emailer.constructTemplate(email.Subject, content, app)
@@ -803,10 +812,11 @@ func (emailer *Emailer) constructUserExpired(app *appContext, noSub bool) (*Mess
 	}
 	var err error
 	template := emailer.userExpiredValues(app, noSub)
-	if app.storage.customEmails.UserExpired.Enabled {
+	message := app.storage.MustGetCustomContentKey("UserExpired")
+	if message.Enabled {
 		content := templateEmail(
-			app.storage.customEmails.UserExpired.Content,
-			app.storage.customEmails.UserExpired.Variables,
+			message.Content,
+			message.Variables,
 			nil,
 			template,
 		)

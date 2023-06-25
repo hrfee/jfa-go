@@ -241,6 +241,45 @@ func migrateToBadger(app *appContext) {
 	for k, v := range app.storage.deprecatedProfiles {
 		app.storage.SetProfileKey(k, v)
 	}
+
+	app.storage.loadCustomEmails()
+	app.storage.loadUserPageContent()
+	if _, ok := app.storage.GetCustomContentKey("UserCreated"); !ok {
+		app.storage.SetCustomContentKey("UserCreated", app.storage.deprecatedCustomEmails.UserCreated)
+	}
+	if _, ok := app.storage.GetCustomContentKey("InviteExpiry"); !ok {
+		app.storage.SetCustomContentKey("InviteExpiry", app.storage.deprecatedCustomEmails.InviteExpiry)
+	}
+	if _, ok := app.storage.GetCustomContentKey("PasswordReset"); !ok {
+		app.storage.SetCustomContentKey("PasswordReset", app.storage.deprecatedCustomEmails.PasswordReset)
+	}
+	if _, ok := app.storage.GetCustomContentKey("UserDeleted"); !ok {
+		app.storage.SetCustomContentKey("UserDeleted", app.storage.deprecatedCustomEmails.UserDeleted)
+	}
+	if _, ok := app.storage.GetCustomContentKey("UserDisabled"); !ok {
+		app.storage.SetCustomContentKey("UserDisabled", app.storage.deprecatedCustomEmails.UserDisabled)
+	}
+	if _, ok := app.storage.GetCustomContentKey("UserEnabled"); !ok {
+		app.storage.SetCustomContentKey("UserEnabled", app.storage.deprecatedCustomEmails.UserEnabled)
+	}
+	if _, ok := app.storage.GetCustomContentKey("InviteEmail"); !ok {
+		app.storage.SetCustomContentKey("InviteEmail", app.storage.deprecatedCustomEmails.InviteEmail)
+	}
+	if _, ok := app.storage.GetCustomContentKey("WelcomeEmail"); !ok {
+		app.storage.SetCustomContentKey("WelcomeEmail", app.storage.deprecatedCustomEmails.WelcomeEmail)
+	}
+	if _, ok := app.storage.GetCustomContentKey("EmailConfirmation"); !ok {
+		app.storage.SetCustomContentKey("EmailConfirmation", app.storage.deprecatedCustomEmails.EmailConfirmation)
+	}
+	if _, ok := app.storage.GetCustomContentKey("UserExpired"); !ok {
+		app.storage.SetCustomContentKey("UserExpired", app.storage.deprecatedCustomEmails.UserExpired)
+	}
+	if _, ok := app.storage.GetCustomContentKey("UserLogin"); !ok {
+		app.storage.SetCustomContentKey("UserLogin", app.storage.deprecatedUserPageContent.Login)
+	}
+	if _, ok := app.storage.GetCustomContentKey("UserPage"); !ok {
+		app.storage.SetCustomContentKey("UserPage", app.storage.deprecatedUserPageContent.Page)
+	}
 }
 
 // Migrate between hyphenated & non-hyphenated user IDs. Doesn't seem to happen anymore, so disabled.

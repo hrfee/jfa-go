@@ -40,12 +40,12 @@ type Storage struct {
 	deprecatedTelegram                                                                                                                                                                                                                  telegramStore // Map of Jellyfin User IDs to telegram users.
 	deprecatedDiscord                                                                                                                                                                                                                   discordStore  // Map of Jellyfin user IDs to discord users.
 	deprecatedMatrix                                                                                                                                                                                                                    matrixStore   // Map of Jellyfin user IDs to Matrix users.
-	customEmails                                                                                                                                                                                                                        customEmails
-	userPage                                                                                                                                                                                                                            userPageContent
 	deprecatedPolicy                                                                                                                                                                                                                    mediabrowser.Policy
 	deprecatedConfiguration                                                                                                                                                                                                             mediabrowser.Configuration
-	lang                                                                                                                                                                                                                                Lang
 	deprecatedAnnouncements                                                                                                                                                                                                             map[string]announcementTemplate
+	deprecatedCustomEmails                                                                                                                                                                                                              customEmails
+	deprecatedUserPageContent                                                                                                                                                                                                           userPageContent
+	lang                                                                                                                                                                                                                                Lang
 }
 
 func (app *appContext) ConnectDB() {
@@ -368,6 +368,49 @@ func (st *Storage) GetDefaultProfile() Profile {
 	return defaultProfile
 }
 
+// GetCustomContent returns a copy of the store.
+func (st *Storage) GetCustomContent() []CustomContent {
+	result := []CustomContent{}
+	err := st.db.Find(&result, &badgerhold.Query{})
+	if err != nil {
+		// fmt.Printf("Failed to find custom content: %v\n", err)
+	}
+	return result
+}
+
+// GetCustomContentKey returns the value stored in the store's key.
+func (st *Storage) GetCustomContentKey(k string) (CustomContent, bool) {
+	result := CustomContent{}
+	err := st.db.Get(k, &result)
+	ok := true
+	if err != nil {
+		// fmt.Printf("Failed to find custom content: %v\n", err)
+		ok = false
+	}
+	return result, ok
+}
+
+// MustGetCustomContentKey returns the value stored in the store's key, or an empty value.
+func (st *Storage) MustGetCustomContentKey(k string) CustomContent {
+	result := CustomContent{}
+	st.db.Get(k, &result)
+	return result
+}
+
+// SetCustomContentKey stores value v in key k.
+func (st *Storage) SetCustomContentKey(k string, v CustomContent) {
+	v.Name = k
+	err := st.db.Upsert(k, v)
+	if err != nil {
+		// fmt.Printf("Failed to set custom content: %v\n", err)
+	}
+}
+
+// DeleteCustomContentKey deletes value at key k.
+func (st *Storage) DeleteCustomContentKey(k string) {
+	st.db.Delete(k, CustomContent{})
+}
+
 type TelegramUser struct {
 	JellyfinID string `badgerhold:"key"`
 	ChatID     int64  `badgerhold:"index"`
@@ -395,19 +438,21 @@ type EmailAddress struct {
 }
 
 type customEmails struct {
-	UserCreated       customContent `json:"userCreated"`
-	InviteExpiry      customContent `json:"inviteExpiry"`
-	PasswordReset     customContent `json:"passwordReset"`
-	UserDeleted       customContent `json:"userDeleted"`
-	UserDisabled      customContent `json:"userDisabled"`
-	UserEnabled       customContent `json:"userEnabled"`
-	InviteEmail       customContent `json:"inviteEmail"`
-	WelcomeEmail      customContent `json:"welcomeEmail"`
-	EmailConfirmation customContent `json:"emailConfirmation"`
-	UserExpired       customContent `json:"userExpired"`
+	UserCreated       CustomContent `json:"userCreated"`
+	InviteExpiry      CustomContent `json:"inviteExpiry"`
+	PasswordReset     CustomContent `json:"passwordReset"`
+	UserDeleted       CustomContent `json:"userDeleted"`
+	UserDisabled      CustomContent `json:"userDisabled"`
+	UserEnabled       CustomContent `json:"userEnabled"`
+	InviteEmail       CustomContent `json:"inviteEmail"`
+	WelcomeEmail      CustomContent `json:"welcomeEmail"`
+	EmailConfirmation CustomContent `json:"emailConfirmation"`
+	UserExpired       CustomContent `json:"userExpired"`
 }
 
-type customContent struct {
+// CustomContent stores customized versions of jfa-go content, including emails and user messages.
+type CustomContent struct {
+	Name         string   `json:"name" badgerhold:"key"`
 	Enabled      bool     `json:"enabled,omitempty"`
 	Content      string   `json:"content"`
 	Variables    []string `json:"variables,omitempty"`
@@ -415,8 +460,8 @@ type customContent struct {
 }
 
 type userPageContent struct {
-	Login customContent `json:"login"`
-	Page  customContent `json:"page"`
+	Login CustomContent `json:"login"`
+	Page  CustomContent `json:"page"`
 }
 
 // timePattern: %Y-%m-%dT%H:%M:%S.%f
@@ -1197,19 +1242,19 @@ func (st *Storage) storeMatrixUsers() error {
 }
 
 func (st *Storage) loadCustomEmails() error {
-	return loadJSON(st.customEmails_path, &st.customEmails)
+	return loadJSON(st.customEmails_path, &st.deprecatedCustomEmails)
 }
 
 func (st *Storage) storeCustomEmails() error {
-	return storeJSON(st.customEmails_path, st.customEmails)
+	return storeJSON(st.customEmails_path, st.deprecatedCustomEmails)
 }
 
 func (st *Storage) loadUserPageContent() error {
-	return loadJSON(st.userPage_path, &st.userPage)
+	return loadJSON(st.userPage_path, &st.deprecatedUserPageContent)
 }
 
 func (st *Storage) storeUserPageContent() error {
-	return storeJSON(st.userPage_path, st.userPage)
+	return storeJSON(st.userPage_path, st.deprecatedUserPageContent)
 }
 
 func (st *Storage) loadPolicy() error {
