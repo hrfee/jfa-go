@@ -5,11 +5,12 @@ export class Login {
     private _modal: Modal;
     private _form: HTMLFormElement;
     private _url: string;
+    private _endpoint: string;
     private _onLogin: (username: string, password: string) => void;
     private _logoutButton: HTMLElement = null;
 
     constructor(modal: Modal, endpoint: string) {
-
+        this._endpoint = endpoint;
         this._url = window.URLBase + endpoint;
         if (this._url[this._url.length-1] != '/') this._url += "/";
 
@@ -32,13 +33,21 @@ export class Login {
     bindLogout = (button: HTMLElement) => {
         this._logoutButton = button;
         this._logoutButton.classList.add("unfocused");
-        this._logoutButton.onclick = () => _post(this._url + "logout", null, (req: XMLHttpRequest): boolean => {
-            if (req.readyState == 4 && req.status == 200) {
-                window.token = "";
-                location.reload();
-                return false;
-            }
-        });
+        const logoutFunc = (url: string, tryAgain: boolean) => {
+            _post(url + "logout", null, (req: XMLHttpRequest): boolean => {
+                if (req.readyState == 4 && req.status == 200) {
+                    window.token = "";
+                    location.reload();
+                    return false;
+                }
+            }, false, (req: XMLHttpRequest) => {
+                if (req.readyState == 4 && req.status == 404 && tryAgain) {
+                    console.log("trying without URL Base...");
+                    logoutFunc(this._endpoint, false);
+                }
+            });
+        };
+        this._logoutButton.onclick = () => logoutFunc(this._url, true);
     };
 
     get onLogin() { return this._onLogin; }
