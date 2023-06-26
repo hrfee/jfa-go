@@ -341,6 +341,7 @@
                     "required": false,
                     "requires_restart": true,
                     "type": "bool",
+                    "depends_true": "enabled",
                     "value": false,
                     "description": "More reliable, but requires some setup. See jfa-go wiki for more info."
                 },

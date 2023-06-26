@@ -56,17 +56,19 @@ export const loadLangSelector = (page: string) => {
             localStorage.setItem("timefmt", fmt);
         };
         const t12 = document.getElementById("lang-12h") as HTMLInputElement;
-        t12.onchange = () => setTimefmt("12h");
-        const t24 = document.getElementById("lang-24h") as HTMLInputElement;
-        t24.onchange = () => setTimefmt("24h");
+        if (typeof(t12) !== "undefined" && t12 != null) {
+            t12.onchange = () => setTimefmt("12h");
+            const t24 = document.getElementById("lang-24h") as HTMLInputElement;
+            t24.onchange = () => setTimefmt("24h");
 
-        const preference = localStorage.getItem("timefmt");
-        if (preference == "12h") {
-            t12.checked = true;
-            t24.checked = false;
-        } else if (preference == "24h") {
-            t24.checked = true;
-            t12.checked = false;
+            const preference = localStorage.getItem("timefmt");
+            if (preference == "12h") {
+                t12.checked = true;
+                t24.checked = false;
+            } else if (preference == "24h") {
+                t24.checked = true;
+                t12.checked = false;
+            }
         }
     }
     let queryString = new URLSearchParams(window.location.search);
