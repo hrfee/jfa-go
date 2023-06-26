@@ -417,9 +417,11 @@
             </span>
             <span class="button ~warning" alt="{{ .strings.theme }}" id="button-theme"><i class="ri-sun-line"></i></span>
         </div>
-        <div class="top-4 right-4 absolute">
-            <a class="button ~info" href="/my/account"><i class="ri-account-circle-fill mr-2"></i>{{ .strings.myAccount }}</a>
-        </div>
+        {{ if .userPageEnabled }}
+            <div class="top-4 right-4 absolute">
+                <a class="button ~info" href="/my/account"><i class="ri-account-circle-fill mr-2"></i>{{ .strings.myAccount }}</a>
+            </div>
+        {{ end }}
         <div class="page-container">
             <div class="mb-4">
                 <header class="flex flex-wrap items-center justify-between">
