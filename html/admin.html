@@ -29,6 +29,11 @@
                 <input type="text" class="field input ~neutral @high mt-4 mb-2" placeholder="{{ .strings.username }}" id="add-user-user">
                 <input type="email" class="field input ~neutral @high mt-4 mb-2" placeholder="{{ .strings.emailAddress }}">
                 <input type="password" class="field input ~neutral @high mb-4" placeholder="{{ .strings.password }}" id="add-user-password">
+                <label class="label supra">{{ .strings.profile }}</label>
+                <div class="select ~neutral @low mb-2 mt-4">
+                    <select id="add-user-profile">
+                    </select>
+                </div>
                 <label>
                     <input type="submit" class="unfocused">
                     <span class="button ~urge @low full-width center supra submit">{{ .strings.create }}</span>

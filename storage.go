@@ -330,6 +330,9 @@ func (st *Storage) GetProfileKey(k string) (Profile, bool) {
 		// fmt.Printf("Failed to find profile: %v\n", err)
 		ok = false
 	}
+	if result.Policy.BlockedTags == nil {
+		result.Policy.BlockedTags = []interface{}{}
+	}
 	return result, ok
 }
 
@@ -471,6 +474,7 @@ type Profile struct {
 	Admin         bool                       `json:"admin,omitempty" badgerhold:"index"`
 	LibraryAccess string                     `json:"libraries,omitempty"`
 	FromUser      string                     `json:"fromUser,omitempty"`
+	Homescreen    bool                       `json:"homescreen"`
 	Policy        mediabrowser.Policy        `json:"policy,omitempty"`
 	Configuration mediabrowser.Configuration `json:"configuration,omitempty"`
 	Displayprefs  map[string]interface{}     `json:"displayprefs,omitempty"`

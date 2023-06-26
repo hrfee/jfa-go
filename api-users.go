@@ -45,8 +45,13 @@ func (app *appContext) NewUserAdmin(gc *gin.Context) {
 	}
 	id := user.ID
 	profile := app.storage.GetDefaultProfile()
-	// Check profile isn't empty
-	if profile.Policy.BlockedTags != nil {
+	if req.Profile != "" && req.Profile != "none" {
+		if p, ok := app.storage.GetProfileKey(req.Profile); ok {
+			profile = p
+		} else {
+			app.debug.Printf("Couldn't find profile \"%s\", using default", req.Profile)
+		}
+
 		status, err = app.jf.SetPolicy(id, profile.Policy)
 		if !(status == 200 || status == 204 || err == nil) {
 			app.err.Printf("%s: Failed to set user policy (%d): %v", req.Username, status, err)
@@ -64,7 +69,6 @@ func (app *appContext) NewUserAdmin(gc *gin.Context) {
 		app.storage.SetEmailsKey(id, EmailAddress{Addr: req.Email, Contact: true})
 	}
 	if app.config.Section("ombi").Key("enabled").MustBool(false) {
-		profile := app.storage.GetDefaultProfile()
 		if profile.Ombi == nil {
 			profile.Ombi = map[string]interface{}{}
 		}
@@ -305,22 +309,18 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 		if !ok {
 			profile = app.storage.GetDefaultProfile()
 		}
-		if profile.Policy.BlockedTags != nil {
-			app.debug.Printf("Applying policy from profile \"%s\"", invite.Profile)
-			status, err = app.jf.SetPolicy(id, profile.Policy)
-			if !((status == 200 || status == 204) && err == nil) {
-				app.err.Printf("%s: Failed to set user policy (%d): %v", req.Code, status, err)
-			}
+		app.debug.Printf("Applying policy from profile \"%s\"", invite.Profile)
+		status, err = app.jf.SetPolicy(id, profile.Policy)
+		if !((status == 200 || status == 204) && err == nil) {
+			app.err.Printf("%s: Failed to set user policy (%d): %v", req.Code, status, err)
 		}
-		if profile.Configuration.GroupedFolders != nil && len(profile.Displayprefs) != 0 {
-			app.debug.Printf("Applying homescreen from profile \"%s\"", invite.Profile)
-			status, err = app.jf.SetConfiguration(id, profile.Configuration)
-			if (status == 200 || status == 204) && err == nil {
-				status, err = app.jf.SetDisplayPreferences(id, profile.Displayprefs)
-			}
-			if !((status == 200 || status == 204) && err == nil) {
-				app.err.Printf("%s: Failed to set configuration template (%d): %v", req.Code, status, err)
-			}
+		app.debug.Printf("Applying homescreen from profile \"%s\"", invite.Profile)
+		status, err = app.jf.SetConfiguration(id, profile.Configuration)
+		if (status == 200 || status == 204) && err == nil {
+			status, err = app.jf.SetDisplayPreferences(id, profile.Displayprefs)
+		}
+		if !((status == 200 || status == 204) && err == nil) {
+			app.err.Printf("%s: Failed to set configuration template (%d): %v", req.Code, status, err)
 		}
 	}
 	// if app.config.Section("password_resets").Key("enabled").MustBool(false) {
@@ -1010,13 +1010,13 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 	if req.From == "profile" {
 		// Check profile exists & isn't empty
 		profile, ok := app.storage.GetProfileKey(req.Profile)
-		if !ok || profile.Policy.BlockedTags == nil {
+		if !ok {
 			app.err.Printf("Couldn't find profile \"%s\" or profile was empty", req.Profile)
 			respond(500, "Couldn't find profile", gc)
 			return
 		}
 		if req.Homescreen {
-			if profile.Configuration.GroupedFolders == nil || len(profile.Displayprefs) == 0 {
+			if !profile.Homescreen {
 				app.err.Printf("No homescreen saved in profile \"%s\"", req.Profile)
 				respond(500, "No homescreen template available", gc)
 				return

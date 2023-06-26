@@ -286,6 +286,9 @@ func migrateToBadger(app *appContext) {
 	}
 
 	for k, v := range app.storage.deprecatedProfiles {
+		if v.Configuration.GroupedFolders != nil || len(v.Displayprefs) != 0 {
+			v.Homescreen = true
+		}
 		app.storage.SetProfileKey(k, v)
 	}
 

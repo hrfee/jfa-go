@@ -765,6 +765,7 @@ export class accountsList {
     private _addUserName = this._addUserForm.querySelector("input[type=text]") as HTMLInputElement;
     private _addUserEmail = this._addUserForm.querySelector("input[type=email]") as HTMLInputElement;
     private _addUserPassword = this._addUserForm.querySelector("input[type=password]") as HTMLInputElement;
+    private _addUserProfile = this._addUserForm.querySelector("select") as HTMLSelectElement;
     
     // Columns for sorting.
     private _columns: { [className: string]: Column } = {};
@@ -1252,7 +1253,8 @@ export class accountsList {
         const send = {
             "username": this._addUserName.value,
             "email": this._addUserEmail.value,
-            "password": this._addUserPassword.value
+            "password": this._addUserPassword.value,
+            "profile": this._addUserProfile.value,
         };
         for (let field in send) {
             if (!send[field]) {
@@ -1733,6 +1735,15 @@ export class accountsList {
         }
     }
 
+    private _populateAddUserProfiles = () => {
+        this._addUserProfile.textContent = "";
+        let innerHTML = `<option value="none">${window.lang.strings("inviteNoProfile")}</option>`;
+        for (let i = 0; i < window.availableProfiles.length; i++) {
+            innerHTML += `<option value="${window.availableProfiles[i]}" ${i == 0 ? "selected" : ""}>${window.availableProfiles[i]}</option>`;
+        }
+        this._addUserProfile.innerHTML = innerHTML;
+    }
+
     constructor() {
         this._populateNumbers();
         this._users = {};
@@ -1743,7 +1754,10 @@ export class accountsList {
         document.addEventListener("accounts-reload", this.reload);
         document.addEventListener("accountCheckEvent", () => { this._checkCount++; this._checkCheckCount(); });
         document.addEventListener("accountUncheckEvent", () => { this._checkCount--; this._checkCheckCount(); });
-        this._addUserButton.onclick = window.modals.addUser.toggle;
+        this._addUserButton.onclick = () => {
+            this._populateAddUserProfiles();
+            window.modals.addUser.toggle();
+        };
         this._addUserForm.addEventListener("submit", this._addUser);
 
         this._deleteNotify.onchange = () => {

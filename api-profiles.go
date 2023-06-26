@@ -79,8 +79,9 @@ func (app *appContext) CreateProfile(gc *gin.Context) {
 		return
 	}
 	profile := Profile{
-		FromUser: user.Name,
-		Policy:   user.Policy,
+		FromUser:   user.Name,
+		Policy:     user.Policy,
+		Homescreen: req.Homescreen,
 	}
 	app.debug.Printf("Creating profile from user \"%s\"", user.Name)
 	if req.Homescreen {

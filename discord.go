@@ -222,7 +222,6 @@ func (d *DiscordDaemon) NewTempInvite(ageSeconds, maxUses int) (inviteURL, iconU
 	}
 	// FIXME: Fix CSS, and handle no icon
 	iconURL = guild.IconURL("256")
-	fmt.Println("GOT ICON", iconURL)
 	return
 }
 
