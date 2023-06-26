@@ -3,14 +3,14 @@
         "name": "Italiano (IT)"
     },
     "strings": {
-        "startMessage": "",
-        "discordStartMessage": "",
-        "matrixStartMessage": "",
-        "invalidPIN": "",
-        "pinSuccess": "",
-        "languageMessage": "",
-        "languageMessageDiscord": "",
-        "languageSet": "",
-        "discordDMs": ""
+        "startMessage": "Salve!\nInserisci il tuo PIN Jellyfin per verificare il tuo account.",
+        "discordStartMessage": "Salve!\n Inserisci il tuo PIN con `/pin <PIN>`per verificare il tuo account.",
+        "matrixStartMessage": "Salve!\nInserisci il PIN sottostante nella pagina di accesso di Jellyfin per verificare il tuo account.",
+        "invalidPIN": "Il PIN non è valido, riprova.",
+        "pinSuccess": "Fatto! Puoi ritornare alla pagina di accesso.",
+        "languageMessage": "Nota: Vedi le lingue disponibili con {command}, e imposta la lingua con {command} <language code>.",
+        "languageMessageDiscord": "Nota: imposta la tua lingua con /lang <language name>.",
+        "languageSet": "Lingua impostata in {language}.",
+        "discordDMs": "Controlla i tuoi messaggi privati per una risposta."
     }
 }
