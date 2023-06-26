@@ -19,12 +19,40 @@
         "yourAccountIsValidUntil": "Il tuo account sarà valido fino al {date}.",
         "sendPIN": "Scrivi il PIN qui sotto al bot, poi torna qui per connettere il tuo account.",
         "sendPINDiscord": "Scrivi {command} in {server_channel} su Discord, poi invia il PIN qui sotto.",
-        "matrixEnterUser": "Inserisci il tuo ID utente, premi invia e ti verrò inviato un PIN. Inseriscilo qui per continuare."
+        "matrixEnterUser": "Inserisci il tuo ID utente, premi invia e ti verrò inviato un PIN. Inseriscilo qui per continuare.",
+        "customMessagePlaceholderHeader": "Personalizza questa scheda",
+        "oldPassword": "Vecchia Password",
+        "newPassword": "Nuova Password",
+        "userPageSuccessMessage": "Potrai vedere e modificare i dettagli del tuo account sulla pagina {myAccount}.",
+        "resetPasswordThroughJellyfin": "Per ripristinare la tua password, visita {jfLink} e premi \"Password Dimenticata\".",
+        "welcomeUser": "Benvenuto, {user}!",
+        "addContactMethod": "Aggiungi metodo di contatto",
+        "editContactMethod": "Modifica metodo di contatto",
+        "resetPasswordThroughLink": "Per ripristinare la password, inserisci il tuo username, indirizzo email o un username di contatto collegato, e invia. Verrà inviato un link per ripristinare la password.",
+        "joinTheServer": "Entra nel server:",
+        "customMessagePlaceholderContent": "Fare clic sul pulsante di modifica della pagina utente nelle impostazioni per personalizzare questa scheda o visualizzarne una nella schermata di accesso e non preoccuparti, l'utente non può veder questo.",
+        "resetPassword": "Ripristina Password",
+        "resetSent": "Richiesta di ripristino inviata.",
+        "resetSentDescription": "Se l'username/metodo di contatto corrisponde ad un account esistente, verrà inviato un link di reset a tutti i metodi di contatto disponibili. Il codice scadrà tra 30 minuti.",
+        "changePassword": "Cambia Password"
     },
     "notifications": {
         "errorUserExists": "L'utente è già esistente.",
         "errorInvalidCode": "Codice di invito non valido.",
-        "errorTelegramVerification": "Verifica Telegram richiesta."
+        "errorTelegramVerification": "Verifica Telegram richiesta.",
+        "errorPassword": "Verifica i requisiti password.",
+        "errorNoMatch": "Le password non corrispondono.",
+        "errorNoEmail": "Email richiesta.",
+        "errorCaptcha": "Captcha errato.",
+        "errorUnknown": "Errore sconosciuto.",
+        "verified": "Account verificato.",
+        "errorAccountLinked": "Account già in uso.",
+        "errorEmailLinked": "Email già in uso.",
+        "errorInvalidPIN": "PIN non valido.",
+        "errorDiscordVerification": "Verifica Discord richiesta.",
+        "errorMatrixVerification": "Verifica Matrix richiesta.",
+        "errorOldPassword": "Vecchia password non corretta.",
+        "passwordChanged": "Password Cambiata."
     },
     "validationStrings": {
         "length": {
