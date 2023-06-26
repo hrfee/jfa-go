@@ -113,7 +113,8 @@ export class notificationBox implements NotificationBox {
         const closeButton = document.createElement('span') as HTMLSpanElement;
         closeButton.classList.add("button", "~critical", "@low", "ml-4");
         closeButton.innerHTML = `<i class="icon ri-close-line"></i>`;
-        closeButton.onclick = () => { this._box.removeChild(noti); };
+        closeButton.onclick = () => this._close(noti);
+        noti.classList.add("animate-slide-in");
         noti.appendChild(closeButton);
         return noti;
     }
@@ -125,10 +126,20 @@ export class notificationBox implements NotificationBox {
         const closeButton = document.createElement('span') as HTMLSpanElement;
         closeButton.classList.add("button", "~positive", "@low", "ml-4");
         closeButton.innerHTML = `<i class="icon ri-close-line"></i>`;
-        closeButton.onclick = () => { this._box.removeChild(noti); };
+        closeButton.onclick = () => this._close(noti); 
+        noti.classList.add("animate-slide-in");
         noti.appendChild(closeButton);
         return noti;
     }
+    
+    private _close = (noti: HTMLElement) => {
+        noti.classList.remove("animate-slide-in");
+        noti.classList.add("animate-slide-out");
+        noti.addEventListener(window.animationEvent, () => {
+            this._box.removeChild(noti); 
+        }, false);
+    }
+
     
     connectionError = () => { this.customError("connectionError", window.lang.notif("errorConnection")); }
 
@@ -138,11 +149,13 @@ export class notificationBox implements NotificationBox {
         noti.classList.add("error-" + type);
         const previousNoti: HTMLElement | undefined = this._box.querySelector("aside.error-" + type);
         if (this._errorTypes[type] && previousNoti !== undefined && previousNoti != null) {
-            previousNoti.remove();
+            this._box.removeChild(previousNoti);
+            noti.classList.add("animate-pulse");
+            noti.classList.remove("animate-slide-in");
         }
         this._box.appendChild(noti);
         this._errorTypes[type] = true;
-        setTimeout(() => { if (this._box.contains(noti)) { this._box.removeChild(noti); this._errorTypes[type] = false; } }, this.timeout*1000);
+        setTimeout(() => { if (this._box.contains(noti)) { this._close(noti); this._errorTypes[type] = false; } }, this.timeout*1000);
     }
     
     customPositive = (type: string, bold: string, message: string) => {
@@ -151,11 +164,13 @@ export class notificationBox implements NotificationBox {
         noti.classList.add("positive-" + type);
         const previousNoti: HTMLElement | undefined = this._box.querySelector("aside.positive-" + type);
         if (this._positiveTypes[type] && previousNoti !== undefined && previousNoti != null) {
-            previousNoti.remove();
+            this._box.removeChild(previousNoti);
+            noti.classList.add("animate-pulse");
+            noti.classList.remove("animate-slide-in");
         }
         this._box.appendChild(noti);
         this._positiveTypes[type] = true;
-        setTimeout(() => { if (this._box.contains(noti)) { this._box.removeChild(noti); this._positiveTypes[type] = false; } }, this.timeout*1000);
+        setTimeout(() => { if (this._box.contains(noti)) { this._close(noti); this._positiveTypes[type] = false; } }, this.timeout*1000);
     }
 
     customSuccess = (type: string, message: string) => this.customPositive(type, window.lang.strings("success") + ":", message)
