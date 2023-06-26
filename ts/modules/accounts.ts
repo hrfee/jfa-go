@@ -1404,6 +1404,9 @@ export class accountsList {
                 this._announceButton.nextElementSibling.children[0].classList.add("unfocused");
                 return;
             }
+            if (list.length > 0) {
+                this._announceButton.innerHTML = `${window.lang.strings("announce")} <i class="ml-2 ri-arrow-drop-down-line"></i>`;
+            }
             const dList = document.getElementById("accounts-announce-templates") as HTMLDivElement;
             dList.textContent = '';
             for (let name of list) {
