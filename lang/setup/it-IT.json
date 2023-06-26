@@ -1,49 +1,49 @@
 {
     "meta": {
-        "name": ""
+        "name": "Italiano (IT)"
     },
     "strings": {
-        "pageTitle": "",
-        "next": "",
-        "back": "",
-        "optional": "",
-        "serverType": "",
-        "disabled": "",
-        "enabled": "",
-        "port": "",
-        "message": "",
-        "serverAddress": "",
-        "emailSubject": "",
-        "URL": "",
-        "apiKey": "",
-        "error": "",
-        "errorInvalidUserPass": "",
-        "errorNotAdmin": "",
-        "errorUserDisabled": "",
-        "error404": "",
-        "errorConnectionRefused": "",
-        "errorUnknown": ""
+        "pageTitle": "Configurazione - jfa-go",
+        "next": "Avanti",
+        "back": "Indietro",
+        "optional": "Opzionale",
+        "serverType": "Tipo server",
+        "disabled": "Disabilitato",
+        "enabled": "Abilitato",
+        "port": "Porta",
+        "message": "Messaggio",
+        "serverAddress": "Indirizzo server",
+        "emailSubject": "Oggetto email",
+        "URL": "URL",
+        "apiKey": "Chiave API",
+        "error": "Errore",
+        "errorInvalidUserPass": "Username/password non validi.",
+        "errorNotAdmin": "Utente non autorizzato a gestire il server.",
+        "errorUserDisabled": "L’utente potrebbe essere disabilitato.",
+        "error404": "404, controlla l’URL interno.",
+        "errorConnectionRefused": "Connessione rifiutata.",
+        "errorUnknown": "Errore sconosciuto, controllare i log."
     },
     "startPage": {
-        "welcome": "",
-        "pressStart": "",
-        "httpsNotice": "",
-        "start": ""
+        "welcome": "Benvenuto!",
+        "pressStart": "Dovrai eseguire un paio di cose per impostare jfa-go. Premi Inizia per continuare.",
+        "httpsNotice": "Assicurati di star accedendo a questa pagina tramite HTTPS o una rete privata.",
+        "start": "Inizia"
     },
     "endPage": {
-        "finished": "",
-        "restartMessage": "",
-        "refreshPage": ""
+        "finished": "Finito!",
+        "restartMessage": "Puoi configurare bot di Discord/Telegram/Matrix, personalizzare i tuoi messaggi e altro nelle Impostazioni. Clicca qui sotto per riavviare, poi ricarica la pagina.",
+        "refreshPage": "Ricarica"
     },
     "language": {
-        "title": "",
-        "description": "",
-        "defaultAdminLang": "",
-        "defaultFormLang": "",
-        "defaultEmailLang": ""
+        "title": "Lingua",
+        "description": "Le traduzioni della community sono disponibili per la maggior parte di jfa-go. Puoi scegliere le lingue di default qui sotto, ma altri utenti possono sempre cambiarle se lo desiderano. Se vuoi aiutare nelle traduzioni, accedi a {n} per iniziare a contribuire!",
+        "defaultAdminLang": "Lingua default per admin",
+        "defaultFormLang": "Lingua default per creazione account",
+        "defaultEmailLang": "Lingua default per email"
     },
     "general": {
-        "title": "",
+        "title": "Generale",
         "listenAddress": "",
         "urlBase": "",
         "urlBaseNotice": "",
