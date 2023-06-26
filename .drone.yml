@@ -103,6 +103,7 @@ steps:
               from_secret: BUILDRONE_KEY
           JFA_GO_BUILT_BY:
               from_secret: BUILT_BY
+          JFA_GO_SNAPSHOT: y
 
 volumes:
     - name: ssh_key
