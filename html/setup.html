@@ -146,6 +146,7 @@
                     <label class="row switch pb-4">
                         <input type="radio" class="mr-2" name="ui-jellyfin_login" value="false"><span>{{ .lang.Login.authorizeManual }}</span>
                     </label>
+                    <p class="support pb-4 pl-4 mt-1">{{ .lang.Login.authorizeManualUserPageNotice }}</p>
                 </div>
                 <div id="login-manual">
                     <label class="label">
@@ -231,6 +232,21 @@
                     <input type="text" class="input ~neutral @low mt-4" id="ombi-api_key">
                     <p class="support mb-2 mt-1">{{ .lang.Ombi.apiKeyNotice }}</p>
                 </label>
+                <section class="section ~neutral banner footer flex-expand middle">
+                    <span class="button ~neutral @low back">{{ .lang.Strings.back }}</span>
+                    <div>
+                        <span class="button ~urge @low next">{{ .lang.Strings.next }}</span>
+                    </div>
+                </section>
+            </div>
+            <div class="card ~neutral @low mb-2 unfocused">
+                <span class="heading">{{ .lang.UserPage.title }}</span>
+                <p class="content my-2">{{ .lang.UserPage.description }}</p>
+                <p class="content my-2">{{ .lang.UserPage.customizeMessages }}</p>
+                <label class="row switch pb-4">
+                    <input type="checkbox" class="mr-2" id="userpage-enabled"><span>{{ .lang.Strings.enabled }}</span>
+                </label>
+                <p class="support mb-1 mt-1">{{ .lang.UserPage.requiredSettings }}</p>
                 <section class="section ~neutral banner footer flex-expand middle">
                     <span class="button ~neutral @low back">{{ .lang.Strings.back }}</span>
                     <div>
@@ -391,7 +407,7 @@
                 </label>
                 <label class="switch">
                     <input type="checkbox" class="mr-2" id="password_resets-link_reset"><span>{{ .lang.PasswordResets.resetLinks }}</span>
-                    <p class="support mb-2 mt-1">{{ .lang.PasswordResets.resetLinksNotice }}</p>
+                    <p class="support mb-2 mt-1">{{ .lang.PasswordResets.resetLinksNotice }} {{ .lang.PasswordResets.resetLinksRequiredForUserPage }}</p>
                 </label>
                 <label class="switch">
                     <input type="checkbox" class="mr-2" id="password_resets-set_password"><span>{{ .lang.PasswordResets.setPassword }}</span>

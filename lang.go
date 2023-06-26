@@ -123,6 +123,7 @@ type setupLang struct {
 	Email              langSection `json:"email"`
 	Messages           langSection `json:"messages"`
 	Notifications      langSection `json:"notifications"`
+	UserPage           langSection `json:"userPage"`
 	WelcomeEmails      langSection `json:"welcomeEmails"`
 	PasswordResets     langSection `json:"passwordResets"`
 	InviteEmails       langSection `json:"inviteEmails"`

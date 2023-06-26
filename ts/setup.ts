@@ -283,6 +283,9 @@ const settings = {
     "notifications": {
         "enabled": new Checkbox(get("notifications-enabled"))
     },
+    "user_page": {
+        "enabled": new Checkbox(get("userpage-enabled"))
+    },
     "welcome_email": {
         "enabled": new Checkbox(get("welcome_email-enabled"), "", false, "welcome_email", "enabled"),
         "subject": new Input(get("welcome_email-subject"), "", "", "enabled", true, "welcome_email")

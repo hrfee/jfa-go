@@ -70,6 +70,7 @@
         "adminOnly": "Admin users only (recommended)",
         "allowAll": "Allow all Jellyfin users to login",
         "allowAllDescription": "Not recommended, you should allow individual users to login once setup.",
+        "authorizeManualUserPageNotice": "Using this will disable the \"User Page\" feature.",
         "emailNotice": "Your email address can be used to receive notifications."
     },
     "jellyfinEmby": {
@@ -109,6 +110,12 @@
         "title": "Admin Notifications",
         "description": "If enabled, you can choose (per invite) to receive an message when an invite expires, or a user is created. If you didn't choose the Jellyfin login method, make sure you provided your email address, or add another contact method later."
     },
+    "userPage": {
+        "title": "User Page",
+        "description": "The user page (shown as \"My Account\") allows users to access information about their account, such as their contact methods and account expiry. They can also change their password, start a password reset, and link/change contact methods, without having to ask you. Additionally, customized Markdown messages can be shown to the users before and after logging in.",
+        "customizeMessages": "Click the edit button next to \"User Page\" in settings to set them later.",
+        "requiredSettings": "Log-in to jfa-go via Jellyfin must be set. Ensure \"reset password via link\" is selected later for self-service password resets."
+    },
     "welcomeEmails": {
         "title": "Welcome messages",
         "description": "If enabled, an message will be sent to new users with the Jellyfin/Emby URL and their username."
@@ -119,10 +126,11 @@
     },
     "passwordResets": {
         "title": "Password Resets",
-        "description": "When a user tries to reset their password, Jellyfin creates a file named 'passwordreset-*.json' which contains a PIN. jfa-go reads the file and sends the PIN to the user.",
+        "description": "When a user tries to reset their password, Jellyfin creates a file named 'passwordreset-*.json' which contains a PIN. jfa-go reads the file and sends the PIN to the user. If you enabled the \"User Page\" feature, a reset can also be performed there, given a username, email, or contact method.",
         "pathToJellyfin": "Path to Jellyfin configuration directory",
-        "pathToJellyfinNotice": "If you don't know where this is, try resetting your password in Jellyfin. A popup with '<path to jellyfin>/passwordreset-*.json' will appear.",
+        "pathToJellyfinNotice": "If you don't know where this is, try resetting your password in Jellyfin. A popup with '<path to jellyfin>/passwordreset-*.json' will appear. This is not necessary if you only want to use self-service password resets through the \"User Page\".",
         "resetLinks": "Send a link instead of a PIN",
+        "resetLinksRequiredForUserPage": "Required for self-service password reset on the User Page.",
         "resetLinksNotice": "If Ombi integration is enabled, use this to sync Jellyfin password resets with Ombi.",
         "resetLinksLanguage": "Default reset link language",
         "setPassword": "Set password through link",
