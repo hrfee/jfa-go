@@ -19,13 +19,47 @@
         "linkTelegram": "Link Telegram",
         "contactEmail": "Contatta tramite Email",
         "contactTelegram": "Contatta tramite Telegram",
-        "linkDiscord": "Link Discord",
+        "linkDiscord": "Collega Discord",
         "linkMatrix": "Link Matrix",
         "contactDiscord": "Contatta tramite Discord",
         "theme": "Tema",
         "refresh": "Aggiorna",
-        "required": "Richiesto"
+        "required": "Richiesto",
+        "accountStatus": "Stato Account",
+        "login": "Login",
+        "admin": "Admin",
+        "enabled": "Abilitato",
+        "disabled": "Disabilitato",
+        "reEnable": "Riabilita",
+        "disable": "Disattiva",
+        "contactMethods": "Metodo di contatto",
+        "notSet": "Non impostato",
+        "expiry": "Scadenza",
+        "add": "Aggiungi",
+        "edit": "Modifica",
+        "delete": "Elimina",
+        "myAccount": "Il mio Account",
+        "logout": "Esci"
     },
-    "notifications": {},
-    "quantityStrings": {}
+    "notifications": {
+        "errorUnknown": "Errore sconosciuto.",
+        "errorLoginBlank": "L'username o password sono stati lasciati vuoti.",
+        "errorConnection": "Non riesco a connettermi a jfa-go.",
+        "error401Unauthorized": "Non autorizzato. Prova a ricaricare la pagina.",
+        "errorSaveSettings": "Impossibile salvare impostazione."
+    },
+    "quantityStrings": {
+        "year": {
+            "singular": "{n} Anno",
+            "plural": "{n} Anni"
+        },
+        "month": {
+            "singular": "{n} Mese",
+            "plural": "{n} Mesi"
+        },
+        "day": {
+            "singular": "{n} Giorno",
+            "plural": "{n} Giorni"
+        }
+    }
 }
