@@ -88,6 +88,11 @@ else
 	NPMOPTS :=
 endif
 
+ifeq (, $(shell which swag))
+	SWAGINSTALL := $(GOBINARY) install github.com/swaggo/swag/cmd/swag@latest
+else
+	SWAGINSTALL :=
+endif
 
 npm:
 	$(info installing npm dependencies)
@@ -122,7 +127,7 @@ typescript:
 	$(COPYTS)
 
 swagger:
-	$(GOBINARY) install github.com/swaggo/swag/cmd/swag@latest
+	$(SWAGINSTALL)
 	swag init -g main.go
 
 compile:
