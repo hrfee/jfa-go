@@ -1,6 +1,6 @@
 {
     "meta": {
-        "name": ""
+        "name": "Italiano (IT)"
     },
     "strings": {
         "invites": "",
@@ -48,7 +48,7 @@
         "variables": "",
         "conditionals": "",
         "preview": "",
-        "reset": "",
+        "reset": "Ripristino",
         "donate": "",
         "unlink": "",
         "sendPWR": "",
