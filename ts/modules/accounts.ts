@@ -462,15 +462,15 @@ class user implements User {
     }
 
     matchesSearch = (query: string): boolean => {
+        console.log(this.name, "matches", query, ":", this.name.includes(query));
         return (
-            this.name.includes(query) ||
-            this.label.includes(query) ||
-            this.discord.includes(query) ||
-            this.email.includes(query) ||
             this.id.includes(query) ||
-            this.label.includes(query) ||
-            this.matrix.includes(query) ||
-            this.telegram.includes(query)
+            this.name.toLowerCase().includes(query) ||
+            this.label.toLowerCase().includes(query) ||
+            this.email.toLowerCase().includes(query) ||
+            this.discord.toLowerCase().includes(query) ||
+            this.matrix.toLowerCase().includes(query) ||
+            this.telegram.toLowerCase().includes(query)
         );
     }
 
