@@ -3,12 +3,14 @@ package main
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 	"github.com/hrfee/mediabrowser"
+	"github.com/lithammer/shortuuid/v3"
 )
 
 // @Summary Creates a new Jellyfin user without an invite.
@@ -627,6 +629,58 @@ func (app *appContext) ExtendExpiry(gc *gin.Context) {
 		app.storage.SetUserExpiryKey(id, expiry)
 	}
 	respondBool(204, true, gc)
+}
+
+// @Summary Enable referrals for the given user(s) based on the rules set in the given invite code, or profile.
+// @Produce json
+// @Param mode path string true "mode of template sourcing from 'invite' or 'profile'."
+// @Param source path string true "invite code or profile name, depending on what mode is."
+// @Success 200 {object} boolResponse
+// @Failure 400 {object} boolResponse
+// @Failure 500 {object} boolResponse
+// @Router /users/referral/{mode}/{source} [post]
+// @Security Bearer
+// @tags Users
+func (app *appContext) EnableReferralForUsers(gc *gin.Context) {
+	var req EnableDisableReferralDTO
+	gc.BindJSON(&req)
+	mode := gc.Param("mode")
+	source := gc.Param("source")
+
+	baseInv := Invite{}
+	if mode == "profile" {
+		profile, ok := app.storage.GetProfileKey(source)
+		err := app.storage.db.Get(profile.ReferralTemplateKey, &baseInv)
+		if !ok || profile.ReferralTemplateKey == "" || err != nil {
+			app.debug.Printf("Couldn't find template to source from")
+			respondBool(400, false, gc)
+			return
+
+		}
+	} else if mode == "invite" {
+		// Get the invite, and modify it to turn it into a referral
+		err := app.storage.db.Get(source, &baseInv)
+		if err != nil {
+			app.debug.Printf("Couldn't find invite to source from")
+			respondBool(400, false, gc)
+			return
+		}
+	}
+	for _, u := range req.Users {
+		inv := baseInv
+		inv.Code = shortuuid.New()
+		// make sure code doesn't begin with number
+		_, err := strconv.Atoi(string(inv.Code[0]))
+		for err == nil {
+			inv.Code = shortuuid.New()
+			_, err = strconv.Atoi(string(inv.Code[0]))
+		}
+		inv.Created = time.Now()
+		inv.ValidTill = inv.Created.Add(REFERRAL_EXPIRY_DAYS * 24 * time.Hour)
+		inv.IsReferral = true
+		inv.ReferrerJellyfinID = u
+		app.storage.SetInvitesKey(inv.Code, inv)
+	}
 }
 
 // @Summary Send an announcement via email to a given list of users.

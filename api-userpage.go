@@ -3,11 +3,18 @@ package main
 import (
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
+	"github.com/lithammer/shortuuid/v3"
+	"github.com/timshannon/badgerhold/v4"
+)
+
+const (
+	REFERRAL_EXPIRY_DAYS = 365
 )
 
 // @Summary Returns the logged-in user's Jellyfin ID & Username, and other details.
@@ -620,4 +627,63 @@ func (app *appContext) ChangeMyPassword(gc *gin.Context) {
 		app.debug.Printf("Couldn't get cookies: %s", err)
 	}
 	respondBool(204, true, gc)
+}
+
+// @Summary Get or generate a new referral code.
+// @Produce json
+// @Success 200 {object} GetMyReferralRespDTO
+// @Failure 400 {object} boolResponse
+// @Failure 401 {object} boolResponse
+// @Failure 500 {object} boolResponse
+// @Router /my/referral [get]
+// @Security Bearer
+// @Tags User Page
+func (app *appContext) GetMyReferral(gc *gin.Context) {
+	// 1. Look for existing template bound to this Jellyfin ID
+	//    If one exists, that means its just for us and so we
+	//    can use it directly.
+	inv := Invite{}
+	err := app.storage.db.Find(&inv, badgerhold.Where("ReferrerJellyfinID").Eq(gc.GetString("jfId")))
+	if err != nil {
+		// 2. Look for a template matching the key found in the user storage
+		//    Since this key is shared between a profile, we make a copy.
+		user, ok := app.storage.GetEmailsKey(gc.GetString("jfId"))
+		err = app.storage.db.Get(user.ReferralTemplateKey, &inv)
+		if !ok || err != nil {
+			app.debug.Printf("Ignoring referral request, couldn't find template.")
+			respondBool(400, false, gc)
+			return
+		}
+		inv.Code = shortuuid.New()
+		// make sure code doesn't begin with number
+		_, err := strconv.Atoi(string(inv.Code[0]))
+		for err == nil {
+			inv.Code = shortuuid.New()
+			_, err = strconv.Atoi(string(inv.Code[0]))
+		}
+		inv.Created = time.Now()
+		inv.ValidTill = inv.Created.Add(REFERRAL_EXPIRY_DAYS * 24 * time.Hour)
+		inv.IsReferral = true
+		app.storage.SetInvitesKey(inv.Code, inv)
+	} else if time.Now().After(inv.ValidTill) {
+		// 3. We found an invite for us, but it's expired.
+		//    We delete it from storage, and put it back with a fresh code and expiry.
+		app.storage.DeleteInvitesKey(inv.Code)
+		inv.Code = shortuuid.New()
+		// make sure code doesn't begin with number
+		_, err := strconv.Atoi(string(inv.Code[0]))
+		for err == nil {
+			inv.Code = shortuuid.New()
+			_, err = strconv.Atoi(string(inv.Code[0]))
+		}
+		inv.Created = time.Now()
+		inv.ValidTill = inv.Created.Add(REFERRAL_EXPIRY_DAYS * 24 * time.Hour)
+		app.storage.SetInvitesKey(inv.Code, inv)
+	}
+	gc.JSON(200, GetMyReferralRespDTO{
+		Code:          inv.Code,
+		RemainingUses: inv.RemainingUses,
+		NoLimit:       inv.NoLimit,
+		Expiry:        inv.ValidTill,
+	})
 }

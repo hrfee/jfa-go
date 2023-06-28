@@ -748,9 +748,14 @@ export class accountsList {
     private _modifySettings = document.getElementById("accounts-modify-user") as HTMLSpanElement;
     private _modifySettingsProfile = document.getElementById("radio-use-profile") as HTMLInputElement;
     private _modifySettingsUser = document.getElementById("radio-use-user") as HTMLInputElement;
+    private _enableReferrals = document.getElementById("accounts-enable-referrals") as HTMLSpanElement;
+    private _enableReferralsProfile = document.getElementById("radio-referrals-use-profile") as HTMLInputElement;
+    private _enableReferralsInvite = document.getElementById("radio-referrals-use-invite") as HTMLInputElement;
     private _sendPWR = document.getElementById("accounts-send-pwr") as HTMLSpanElement;
     private _profileSelect = document.getElementById("modify-user-profiles") as HTMLSelectElement;
     private _userSelect = document.getElementById("modify-user-users") as HTMLSelectElement;
+    private _referralsProfileSelect = document.getElementById("enable-referrals-user-profiles") as HTMLSelectElement;
+    private _referralsInviteSelect = document.getElementById("enable-referrals-user-invites") as HTMLSelectElement;
     private _search = document.getElementById("accounts-search") as HTMLInputElement;
 
     private _selectAll = document.getElementById("accounts-select-all") as HTMLInputElement;
@@ -1154,6 +1159,9 @@ export class accountsList {
             this._selectAll.indeterminate = false;
             this._selectAll.checked = false;
             this._modifySettings.classList.add("unfocused");
+            if (window.referralsEnabled) {
+                this._enableReferrals.classList.add("unfocused");
+            }
             this._deleteUser.classList.add("unfocused");
             if (window.emailEnabled || window.telegramEnabled) {
                 this._announceButton.parentElement.classList.add("unfocused");
@@ -1176,6 +1184,9 @@ export class accountsList {
                 this._selectAll.indeterminate = true;
             }
             this._modifySettings.classList.remove("unfocused");
+            if (window.referralsEnabled) {
+                this._enableReferrals.classList.remove("unfocused");
+            }
             this._deleteUser.classList.remove("unfocused");
             this._deleteUser.textContent = window.lang.quantity("deleteUser", list.length);
             if (window.emailEnabled || window.telegramEnabled) {
@@ -1662,6 +1673,60 @@ export class accountsList {
         };
         window.modals.modifyUser.show();
     }
+    
+    enableReferrals = () => {
+        const modalHeader = document.getElementById("header-enable-referrals-user");
+        modalHeader.textContent = window.lang.quantity("enableReferralsFor", this._collectUsers().length)
+        let list = this._collectUsers();
+        // FIXME: Collect Profiles, Invite
+        (() => {
+            let innerHTML = "";
+            for (const profile of window.availableProfiles) {
+                innerHTML += `<option value="${profile}">${profile}</option>`;
+            }
+            this._referralsProfileSelect.innerHTML = innerHTML;
+        })();
+
+        (() => {
+            let innerHTML = "";
+            // for (let id in this._users) {
+            //     innerHTML += `<option value="${id}">${this._users[id].name}</option>`;
+            // }
+            this._referralsInviteSelect.innerHTML = innerHTML;
+        })();
+
+        const form = document.getElementById("form-enable-referrals-user") as HTMLFormElement;
+        const button = form.querySelector("span.submit") as HTMLSpanElement;
+        this._enableReferralsProfile.checked = true;
+        this._enableReferralsInvite.checked = false;
+        form.onsubmit = (event: Event) => {
+            event.preventDefault();
+            toggleLoader(button);
+            let send = {
+                "users": list
+            };
+            if (this._enableReferralsProfile.checked && !this._enableReferralsInvite.checked) { 
+                send["from"] = "profile";
+                send["profile"] = this._referralsProfileSelect.value;
+            } else if (this._enableReferralsInvite.checked && !this._enableReferralsProfile.checked) {
+                send["from"] = "invite";
+                send["id"] = this._referralsInviteSelect.value;
+            }
+            _post("/users/referrals/" + send["from"] + "/" + send["id"], send, (req: XMLHttpRequest) => {
+                if (req.readyState == 4) {
+                    toggleLoader(button);
+                    if (req.status == 400) {
+                        window.notifications.customError("unknownError", window.lang.notif("errorUnknown"));
+                    } else if (req.status == 200 || req.status == 204) {
+                        window.notifications.customSuccess("enableReferralsSuccess", window.lang.quantity("appliedSettings", this._collectUsers().length));
+                    }
+                    this.reload();
+                    window.modals.enableReferralsUser.close();
+                }
+            });
+        };
+        window.modals.enableReferralsUser.show();
+    }
 
     extendExpiry = (enableUser?: boolean) => {
         const list = this._collectUsers();
@@ -1793,6 +1858,31 @@ export class accountsList {
         };
         this._modifySettingsProfile.onchange = checkSource;
         this._modifySettingsUser.onchange = checkSource;
+
+        if (window.referralsEnabled) {
+            this._enableReferrals.onclick = this.enableReferrals;
+            const checkReferralSource = () => {
+                const profileSpan = this._enableReferralsProfile.nextElementSibling as HTMLSpanElement;
+                const inviteSpan = this._enableReferralsInvite.nextElementSibling as HTMLSpanElement;
+                if (this._enableReferralsProfile.checked) {
+                    this._referralsInviteSelect.parentElement.classList.add("unfocused");
+                    this._referralsProfileSelect.parentElement.classList.remove("unfocused")
+                    profileSpan.classList.add("@high");
+                    profileSpan.classList.remove("@low");
+                    inviteSpan.classList.remove("@high");
+                    inviteSpan.classList.add("@low");
+                } else {
+                    this._referralsInviteSelect.parentElement.classList.remove("unfocused");
+                    this._referralsProfileSelect.parentElement.classList.add("unfocused");
+                    inviteSpan.classList.add("@high");
+                    inviteSpan.classList.remove("@low");
+                    profileSpan.classList.remove("@high");
+                    profileSpan.classList.add("@low");
+                }
+            };
+            this._enableReferralsProfile.onchange = checkReferralSource;
+            this._enableReferralsInvite.onchange = checkReferralSource;
+        }
 
         this._deleteUser.onclick = this.deleteUsers;
         this._deleteUser.classList.add("unfocused");

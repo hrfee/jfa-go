@@ -78,6 +78,10 @@ window.availableProfiles = window.availableProfiles || [];
     if (window.linkResetEnabled) {
         window.modals.sendPWR = new Modal(document.getElementById("modal-send-pwr"));
     }
+
+    if (window.referralsEnabled) {
+        window.modals.enableReferralsUser = new Modal(document.getElementById("modal-enable-referrals-user"));
+    }
 })();
 
 var inviteCreator = new createInvite();

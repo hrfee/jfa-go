@@ -226,6 +226,9 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 			api.DELETE(p+"/profiles/ombi/:profile", app.DeleteOmbiProfile)
 		}
 		api.POST(p+"/matrix/login", app.MatrixLogin)
+		if app.config.Section("user_page").Key("referrals").MustBool(false) {
+			api.POST(p+"/users/referral/:mode/:source", app.EnableReferralForUsers)
+		}
 
 		if userPageEnabled {
 			user.GET(p+"/details", app.MyDetails)
@@ -242,6 +245,9 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 			user.DELETE(p+"/telegram", app.UnlinkMyTelegram)
 			user.DELETE(p+"/matrix", app.UnlinkMyMatrix)
 			user.POST(p+"/password", app.ChangeMyPassword)
+			if app.config.Section("user_page").Key("referrals").MustBool(false) {
+				user.GET(p+"/referral", app.GetMyReferral)
+			}
 		}
 	}
 }

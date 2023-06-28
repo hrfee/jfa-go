@@ -414,3 +414,15 @@ type ChangeMyPasswordDTO struct {
 	Old string `json:"old"`
 	New string `json:"new"`
 }
+
+type GetMyReferralRespDTO struct {
+	Code          string    `json:"code"`
+	RemainingUses int       `json:"remaining-uses"`
+	NoLimit       bool      `json:"no-limit"`
+	Expiry        time.Time `json:"expiry"` // Come back after this time to get a new referral
+}
+
+type EnableDisableReferralDTO struct {
+	Users   []string `json:"users"`
+	Enabled bool     `json:"enabled"`
+}
