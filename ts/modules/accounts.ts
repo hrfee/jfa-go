@@ -924,7 +924,6 @@ export class accountsList {
 
         // const words = query.split(" ");
         let words: string[] = [];
-        // FIXME: SPLIT BY SPACE, UNLESS IN QUOTES
         
         let quoteSymbol = ``;
         let queryStart = -1;
@@ -990,7 +989,6 @@ export class accountsList {
                     boolState = false;
                 }
                 if (isBool) {
-                    // FIXME: Generate filter card for each filter class
                     const filterCard = document.createElement("span");
                     filterCard.ariaLabel = window.lang.strings("clickToRemoveFilter");
                     filterCard.classList.add("button", "~" + (boolState ? "positive" : "critical"), "@high", "center", "mx-2", "h-full");
@@ -1678,21 +1676,42 @@ export class accountsList {
         const modalHeader = document.getElementById("header-enable-referrals-user");
         modalHeader.textContent = window.lang.quantity("enableReferralsFor", this._collectUsers().length)
         let list = this._collectUsers();
-        // FIXME: Collect Profiles, Invite
         (() => {
-            let innerHTML = "";
-            for (const profile of window.availableProfiles) {
-                innerHTML += `<option value="${profile}">${profile}</option>`;
-            }
-            this._referralsProfileSelect.innerHTML = innerHTML;
+            _get("/invites", null, (req: XMLHttpRequest) => {
+                if (req.readyState != 4 || req.status != 200) return;
+
+                // 1. Invites
+
+                let innerHTML = "";
+                let invites = req.response["invites"] as Array<Invite>;
+                window.availableProfiles = req.response["profiles"];
+                if (invites) {
+                    for (let inv of invites) {
+                        let name = inv.code;
+                        if (inv.label) {
+                            name = `${inv.label} (${inv.code})`;
+                        }
+                        innerHTML += `<option value="${inv.code}">${name}</option>`;
+                    }
+                } else {
+                    this._enableReferralsInvite.checked = false;
+                    this._enableReferralsProfile.checked = true;
+                    innerHTML += `<option>${window.lang.strings("inviteNoInvites")}</option>`;
+                }
+                this._referralsInviteSelect.innerHTML = innerHTML;
+            
+                // 2. Profiles
+
+                innerHTML = "";
+                for (const profile of window.availableProfiles) {
+                    innerHTML += `<option value="${profile}">${profile}</option>`;
+                }
+                this._referralsProfileSelect.innerHTML = innerHTML;
+            });
         })();
 
+        // FIXME: Collect Profiles, Invite
         (() => {
-            let innerHTML = "";
-            // for (let id in this._users) {
-            //     innerHTML += `<option value="${id}">${this._users[id].name}</option>`;
-            // }
-            this._referralsInviteSelect.innerHTML = innerHTML;
         })();
 
         const form = document.getElementById("form-enable-referrals-user") as HTMLFormElement;
@@ -1861,9 +1880,9 @@ export class accountsList {
 
         if (window.referralsEnabled) {
             this._enableReferrals.onclick = this.enableReferrals;
+            const profileSpan = this._enableReferralsProfile.nextElementSibling as HTMLSpanElement;
+            const inviteSpan = this._enableReferralsInvite.nextElementSibling as HTMLSpanElement;
             const checkReferralSource = () => {
-                const profileSpan = this._enableReferralsProfile.nextElementSibling as HTMLSpanElement;
-                const inviteSpan = this._enableReferralsInvite.nextElementSibling as HTMLSpanElement;
                 if (this._enableReferralsProfile.checked) {
                     this._referralsInviteSelect.parentElement.classList.add("unfocused");
                     this._referralsProfileSelect.parentElement.classList.remove("unfocused")
@@ -1882,6 +1901,7 @@ export class accountsList {
             };
             this._enableReferralsProfile.onchange = checkReferralSource;
             this._enableReferralsInvite.onchange = checkReferralSource;
+            checkReferralSource();
         }
 
         this._deleteUser.onclick = this.deleteUsers;
