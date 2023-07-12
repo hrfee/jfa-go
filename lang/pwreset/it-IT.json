@@ -9,8 +9,8 @@
         "tryAgain": "Riprova.",
         "youCanLogin": "Puoi eseguire l'accesso con il codice sottostante come password.",
         "youCanLoginOmbi": "Puoi accedere a Jellyfin & Ombi con il codice sottostante come password.",
-        "youCanLoginPassword": "",
-        "changeYourPassword": "",
-        "enterYourPassword": ""
+        "youCanLoginPassword": "Puoi accedere con la nuova password. Premi sotto per andare su Jellyfin.",
+        "changeYourPassword": "Assicurati di cambiare la password dopo l'accesso.",
+        "enterYourPassword": "Inserire la nuova password qui sotto."
     }
 }
