@@ -44,81 +44,81 @@
     },
     "general": {
         "title": "Generale",
-        "listenAddress": "",
-        "urlBase": "",
-        "urlBaseNotice": "",
-        "lightTheme": "",
-        "darkTheme": "",
-        "useHTTPS": "",
-        "httpsPort": "",
-        "useHTTPSNotice": "",
-        "pathToCertificate": "",
-        "pathToKeyFile": ""
+        "listenAddress": "Indirizzo d'ascolto",
+        "urlBase": "Base dell'URL",
+        "urlBaseNotice": "Necessario solo con sottodominio sotto reverse proxy (e.g 'jellyf.in/accounts').",
+        "lightTheme": "Chiaro",
+        "darkTheme": "Scuro",
+        "useHTTPS": "Usa HTTPS",
+        "httpsPort": "Porta HTTPS",
+        "useHTTPSNotice": "Consigliato solo senza l'utilizzo di un reverse proxy.",
+        "pathToCertificate": "Path del certificato",
+        "pathToKeyFile": "Path del file key"
     },
     "updates": {
-        "title": "",
-        "description": "",
-        "updateChannel": "",
-        "stable": "",
-        "unstable": ""
+        "title": "Aggiornamenti",
+        "description": "Abilita per ricevere una notifica quando nuovi aggiornamenti sono disponibili. jfa-go controllerà {n} ogni 30 minuti. Non vengono raccolte informazioni di identificazione personale o IP.",
+        "updateChannel": "Canale degli aggiornamenti",
+        "stable": "Stabile",
+        "unstable": "Instabile"
     },
     "login": {
-        "title": "",
-        "description": "",
-        "authorizeWithJellyfin": "",
-        "authorizeManual": "",
-        "adminOnly": "",
-        "allowAll": "",
-        "allowAllDescription": "",
-        "emailNotice": ""
+        "title": "Login",
+        "description": "Per accedere alla pagina amministrativa, devi effettuare il login con un metodo qui sotto:",
+        "authorizeWithJellyfin": "Autorizza con Jellyfin/Emby: Le credenziali di accesso sono condivise con Jellyfin, che supporta utenti multipli.",
+        "authorizeManual": "Username e Password: Imposta manualmente username e password.",
+        "adminOnly": "Solo utenti amministrativi (consigliato)",
+        "allowAll": "Consenti l'accesso a tutti gli utenti Jellyfin",
+        "allowAllDescription": "Non consigliato, dovresti consentire ai singoli utenti di accedere una volta configurato.",
+        "emailNotice": "Il tuo indirizzo email può essere usato per ricevere notifiche."
     },
     "jellyfinEmby": {
-        "title": "",
-        "description": "",
-        "embyNotice": "",
-        "internal": "",
-        "external": "",
-        "replaceJellyfin": "",
-        "replaceJellyfinNotice": "",
-        "addressExternalNotice": "",
-        "testConnection": ""
+        "title": "Jellyfin/Emby",
+        "description": "Un account amministrativo è richiesto perchè l'API non consente la creazione di utenti usando un'API key. Dovresti creare un account separato e spuntare 'Consenti a questo utente di amministrare il server'. Puoi disabilitare tutto il resto. Una volta fatto, inserisci le credenziali di login qui.",
+        "embyNotice": "Il supporto per Emby è limitato e non supporta il reset delle password.",
+        "internal": "Interno",
+        "external": "Esterno",
+        "replaceJellyfin": "Nome server",
+        "replaceJellyfinNotice": "Se fornito, sostituisce ogni occorrenza di 'Jellyfin' nell'app.",
+        "addressExternalNotice": "Lasciare in bianco per usare lo stesso indirizzo.",
+        "testConnection": "Test di connessione"
     },
     "ombi": {
-        "title": "",
-        "description": "",
-        "apiKeyNotice": ""
+        "title": "Ombi",
+        "description": "Collegandosi ad Ombi, verrà creato un account sia su Jellyfin che su Ombi quando un utente accede tramite jfa-go. Al termine del setup, accedi alle impostazioni per impostare un profilo di default per i nuovi utenti Ombi.",
+        "apiKeyNotice": "Presente nella prima scheda delle impostazioni di Ombi."
     },
     "messages": {
-        "title": "",
-        "description": ""
+        "title": "Messaggi",
+        "description": "jfa-go può inviare reset password e diversi messaggi tramite Email, Discord, Telegram, e/o Matrix. Puoi configurare l'email qui sotto, e gli altri possono essere configurati successivamente nelle impostazioni. Le istruzioni si trovano sugli {n}. Se non ne hai bisogno, puoi disabilitare queste funzionalità qui."
     },
     "email": {
-        "title": "",
-        "description": "",
-        "method": "",
+        "title": "Email",
+        "description": "jfa-go può inviare PIN di reset password e diverse notifiche tramite email. Puoi connetterti ad un server SMTP, o usare le {n} API.",
+        "method": "Metodo di invio",
         "useEmailAsUsername": "",
         "useEmailAsUsernameNotice": "",
         "fromAddress": "",
         "senderName": "",
         "dateFormat": "",
         "dateFormatNotice": "",
-        "encryption": "",
-        "mailgunApiURL": ""
+        "encryption": "Crittografia",
+        "mailgunApiURL": "URL API"
     },
     "notifications": {
-        "title": "",
+        "title": "Notifiche amministrative",
         "description": ""
     },
     "welcomeEmails": {
-        "title": "",
+        "title": "Messaggi di benvenuto",
         "description": ""
     },
     "inviteEmails": {
-        "title": "",
+        "title": "Messaggi d'invito",
         "description": ""
     },
     "passwordResets": {
-        "title": "",
+        "title": "Reset password",
         "description": "",
         "pathToJellyfin": "",
         "pathToJellyfinNotice": "",
