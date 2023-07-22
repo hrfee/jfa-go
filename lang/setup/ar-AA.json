@@ -1,17 +1,17 @@
 {
     "meta": {
-        "name": ""
+        "name": "الانجيلزية"
     },
     "strings": {
-        "pageTitle": "",
-        "next": "",
-        "back": "",
-        "optional": "",
-        "serverType": "",
-        "disabled": "",
-        "enabled": "",
-        "port": "",
-        "message": "",
+        "pageTitle": "اعدادات jfa-go",
+        "next": "التالي",
+        "back": "الرجوع",
+        "optional": "اختياري",
+        "serverType": "نوع الخادم",
+        "disabled": "معطل",
+        "enabled": "مفعل",
+        "port": "المنفذ",
+        "message": "رسالة",
         "serverAddress": "",
         "emailSubject": "",
         "URL": "",
