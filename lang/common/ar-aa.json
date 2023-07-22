@@ -1,8 +1,65 @@
 {
     "meta": {
-        "name": "العربية (AR)"
+        "name": "الانجيلزية"
     },
-    "strings": {},
-    "notifications": {},
-    "quantityStrings": {}
+    "strings": {
+        "username": "اسم المستخدم",
+        "password": "كلمة المرور",
+        "emailAddress": "البريد الالكتروني",
+        "name": "الاسم",
+        "submit": "ادخال",
+        "success": "نجاح",
+        "continue": "اكمل",
+        "error": "خطأ",
+        "copy": "نسخ",
+        "time24h": "توقيت 24 ساعة",
+        "time12h": "توقيت 12 ساعة",
+        "linkTelegram": "رابط تلغرام",
+        "contactTelegram": "التواصل عبر التلغرام",
+        "linkDiscord": "رابط الدسكورد",
+        "linkMatrix": "رابط الماتركس",
+        "contactDiscord": "التواصل عبر الدسكورد",
+        "theme": "القالب",
+        "refresh": "تحديث",
+        "required": "مطلوب",
+        "login": "تسجيل الدخول",
+        "admin": "المسؤول",
+        "reEnable": "اعادة تفعيل",
+        "disable": "تجميد",
+        "accountStatus": "حالة الحساب",
+        "notSet": "لم تحدد",
+        "expiry": "انتهاء الصلاحية",
+        "add": "اضافة",
+        "edit": "تعديل",
+        "delete": "حذف",
+        "myAccount": "حسابي",
+        "disabled": "معطل",
+        "enabled": "مفعل",
+        "send": "ارسال",
+        "copied": "تم النسخ",
+        "contactEmail": "التواصل عبر البريد الالكتروني",
+        "logout": "تسجيل الخروج",
+        "contactMethods": "وسيلة التواصل"
+    },
+    "notifications": {
+        "errorUnknown": "خطأ غير معروف.",
+        "error401Unauthorized": "غير مخول. حاول تحديث الصفحة.",
+        "errorSaveSettings": "لا يمكن حفظ الاعدادات.",
+        "errorLoginBlank": "اسم المستخدم و/أو كلمة المرور لم يتم ادخالها.",
+        "errorConnection": "لا يمكن الاتصال بـالبرنامج."
+    },
+    "quantityStrings": {
+        "year": {
+            "singular": "{n} سنة",
+            "plural": "{n} سنوات"
+        },
+        "month": {
+            "singular": "{n} شهر",
+            "plural": "{n} أشهر"
+        },
+        "day": {
+            "singular": "{n} يوم",
+            "plural": "{n} أيام"
+        }
+    }
 }
