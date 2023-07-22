@@ -1,32 +1,32 @@
 {
     "meta": {
-        "name": ""
+        "name": "الانجيلزية"
     },
     "strings": {
-        "ifItWasNotYou": "",
-        "helloUser": "",
-        "reason": ""
+        "ifItWasNotYou": "اذا لم تكن انت, الرجاء تجاهل هذا.",
+        "helloUser": "أهلا {username},",
+        "reason": "السبب"
     },
     "userCreated": {
-        "name": "",
-        "title": "",
-        "aUserWasCreated": "",
-        "time": "",
-        "notificationNotice": ""
+        "name": "انشاء الحساب",
+        "title": "ملاحظة تم انشاء الحساب",
+        "aUserWasCreated": "تم انشاء الحساب بواسطة الكود {code}.",
+        "time": "الوقت",
+        "notificationNotice": "ملاحظة: الرسائل التذكيرية يمكن تعديلها في لوحة التحكم."
     },
     "inviteExpiry": {
-        "name": "",
-        "title": "",
-        "inviteExpired": "",
-        "expiredAt": "",
-        "notificationNotice": ""
+        "name": "انتهاء صلاحية الدعوة",
+        "title": "ملاحظة: انتهاء صلاحية الدعوة",
+        "inviteExpired": "صلاحية الدعوة منتهية.",
+        "expiredAt": "معرف {code} ينتهي في {time} .",
+        "notificationNotice": "ملاحظة: الرسائل التذكيرية يمكن تعديلها في لوحة التحكم."
     },
     "passwordReset": {
-        "name": "",
-        "title": "",
-        "someoneHasRequestedReset": "",
-        "ifItWasYou": "",
-        "ifItWasYouLink": "",
+        "name": "اعادة تعيين كلمة المرور",
+        "title": "تم طلب اعادة تعيين كلمة المرور - جيليفين",
+        "someoneHasRequestedReset": "احد ما قام ب طلب اعادة تعيين كلمة المرور مؤخرا.",
+        "ifItWasYou": "اذا كنت انت , ادخل الرمز في الاسفل في الخانة.",
+        "ifItWasYouLink": "اذا كنت انت , اضغط على الرابط بالاسفل.",
         "codeExpiry": "",
         "pin": ""
     },
