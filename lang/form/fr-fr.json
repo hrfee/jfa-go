@@ -7,20 +7,35 @@
         "pageTitle": "Créer un compte Jellyfin",
         "createAccountHeader": "Création du compte",
         "accountDetails": "Détails",
-        "emailAddress": "E-mail",
+        "emailAddress": "Courriel",
         "username": "Nom d'utilisateur",
         "password": "Mot de passe",
         "reEnterPassword": "Confirmez mot de passe",
         "reEnterPasswordInvalid": "Les mots de passe ne correspondent pas.",
         "createAccountButton": "Créer le compte",
         "passwordRequirementsHeader": "Mot de passe requis",
-        "successHeader": "Succès !",
+        "successHeader": "Succès !",
         "confirmationRequired": "Confirmation de l'adresse e-mail requise",
         "confirmationRequiredMessage": "Veuillez vérifier votre boite de réception pour confirmer votre adresse e-mail.",
         "yourAccountIsValidUntil": "Votre compte sera valide jusqu'au {date}.",
         "sendPIN": "Envoyez le code PIN ci-dessous au bot, puis revenez ici pour lier votre compte.",
-        "sendPINDiscord": "Écrivez {command} dans le salon {server_channel} sur Discord puis envoyez le PIN en message privé au bot.",
-        "matrixEnterUser": "Entrez votre nom d'utilisateur, appuyez sur soumettre et un code PIN vous sera envoyé. Cliquez ici pour continuez."
+        "sendPINDiscord": "Écrivez {command} dans le salon {server_channel} sur Discord puis envoyez le PIN.",
+        "matrixEnterUser": "Entrez votre nom d'utilisateur, appuyez sur soumettre et un code PIN vous sera envoyé. Cliquez ici pour continuez.",
+        "resetPasswordThroughJellyfin": "Pour réinitialiser votre mot de passe, aller sur {jfLink} et cliquer sur \"Mot de passe oublié\".",
+        "resetPasswordThroughLink": "Pour réinitialiser votre mot de passe, saisissez votre nom d'utilisateur ou adresse courriel. Un lien vous sera envoyé.",
+        "resetSent": "Lien de réinitialisation envoyé.",
+        "resetSentDescription": "Si un compte avec ce nom d'utilisateur ou cette adresse courriel existe, un lien de réinitialisation de mot de passe vous sera envoyé. Le lien expire dans 30 minutes.",
+        "changePassword": "Modifier le mot de passe",
+        "oldPassword": "Ancien mot de passe",
+        "addContactMethod": "Ajouter un moyen de contact",
+        "userPageSuccessMessage": "Vous pouvez voir et modifier les détails de votre compte plus tard sur la page {myAccount}.",
+        "customMessagePlaceholderContent": "Cliquez sur le bouton de modification de la page utilisateur dans les paramètres pour personnaliser cette carte, ou en afficher une sur l'écran de connexion, et ne vous inquiétez pas, l'utilisateur ne peut pas voir ceci.",
+        "newPassword": "Nouveau mot de passe",
+        "welcomeUser": "Bienvenue, {user} !",
+        "editContactMethod": "Modifier le moyen de contact",
+        "joinTheServer": "Rejoindre le serveur :",
+        "customMessagePlaceholderHeader": "Personnaliser cette carte",
+        "resetPassword": "Réinitialisation de mot de passe"
     },
     "validationStrings": {
         "length": {
@@ -59,6 +74,8 @@
         "errorCaptcha": "Captcha incorrect.",
         "errorPassword": "Vérifiez les exigences relatives au mot de passe.",
         "errorNoMatch": "Les mots de passe ne correspondent pas.",
-        "errorAccountLinked": "Compte déjà utilisé."
+        "errorAccountLinked": "Compte déjà utilisé.",
+        "errorOldPassword": "Ancien mot de passe erroné.",
+        "passwordChanged": "Mot de passe modifié."
     }
 }
