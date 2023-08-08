@@ -103,7 +103,22 @@
         "ombiProfile": "Profil d'utilisateur Ombi",
         "logs": "Logs",
         "accessJFA": "Accès à jfa-go",
-        "accessJFASettings": "Ne peut pas être changé car \"Admin Only\" ou \"Allow All\" a été défini dans Paramètres > Général."
+        "accessJFASettings": "Ne peut pas être changé car \"Admin Only\" ou \"Allow All\" a été défini dans Paramètres > Général.",
+        "buildTime": "Heure de la version",
+        "builtBy": "Version créée par",
+        "sortingBy": "Trier par",
+        "filters": "Filtres",
+        "clickToRemoveFilter": "Cliquer pour supprimer ce filtre.",
+        "clearSearch": "Réinitialiser la recherche",
+        "actions": "Actions",
+        "searchOptions": "Recherche avancée",
+        "matchText": "Texte correspondant",
+        "jellyfinID": "ID Jellyfin",
+        "userPageLogin": "Page utilisateur : Connexion",
+        "userPagePage": "Page utilisateur : Page",
+        "after": "Après",
+        "before": "Avant",
+        "unlink": "Délier le compte"
     },
     "notifications": {
         "changedEmailAddress": "Adresse e-mail modifiée de {n}.",
