@@ -3,7 +3,7 @@
         "name": "Français (FR)"
     },
     "strings": {
-        "pageTitle": "Installation - jfa-go",
+        "pageTitle": "Installation - JFA-Go",
         "next": "Suivant",
         "back": "Retour",
         "optional": "Optionnel",
@@ -20,7 +20,9 @@
         "error404": "404, vérifiez l'URL interne.",
         "errorInvalidUserPass": "Nom d'utilisateur/mot de passe invalide.",
         "errorNotAdmin": "L'utilisateur n'est pas autorisé à gérer le serveur.",
-        "errorConnectionRefused": "Connexion refusée."
+        "errorConnectionRefused": "Connexion refusée.",
+        "error": "Erreur",
+        "errorUnknown": "Erreur inconnue, vérifier les logs de l'application."
     },
     "startPage": {
         "welcome": "Bienvenue !",
