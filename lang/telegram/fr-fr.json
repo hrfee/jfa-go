@@ -8,7 +8,7 @@
         "invalidPIN": "Ce code PIN est invalide, réessayez.",
         "pinSuccess": "Succès ! Vous pouvez maintenant retourner à la page d’inscription.",
         "languageMessage": "Note : Découvrez les langues disponibles avec {command} et paramétrez la langue souhaitée avec {command} <language code>.",
-        "discordStartMessage": "Salut !\n Entrez votre code PIN avec '/pin <PIN>' pour vérifier votre compte.",
+        "discordStartMessage": "Salut !\nEntrez votre code PIN avec `/pin <PIN>` pour vérifier votre compte.",
         "discordDMs": "Veuillez vérifier vos DM pour une réponse.",
         "languageSet": "Langue définie sur {language}.",
         "languageMessageDiscord": "Note : définissez votre langue avec /lang <nom de la langue>."
