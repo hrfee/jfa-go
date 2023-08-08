@@ -5,7 +5,7 @@
     "strings": {
         "username": "Nom d'utilisateur",
         "password": "Mot de passe",
-        "emailAddress": "Adresse e-mail",
+        "emailAddress": "Adresse courriel",
         "name": "Nom",
         "submit": "Soumettre",
         "send": "Envoyer",
@@ -36,7 +36,11 @@
         "add": "Ajouter",
         "edit": "Éditer",
         "delete": "Effacer",
-        "inviteRemainingUses": "Utilisations restantes"
+        "inviteRemainingUses": "Utilisations restantes",
+        "accountStatus": "Statut du compte",
+        "notSet": "Non défini",
+        "myAccount": "Mon compte",
+        "contactMethods": "Moyens de contact"
     },
     "notifications": {
         "errorLoginBlank": "Le nom d'utilisateur et/ou le mot de passe sont vides.",
@@ -45,5 +49,18 @@
         "error401Unauthorized": "Non autorisé. Essayez d'actualiser la page.",
         "errorSaveSettings": "Impossible d'enregistrer les paramètres."
     },
-    "quantityStrings": {}
+    "quantityStrings": {
+        "year": {
+            "plural": "{n] années",
+            "singular": "{n] année"
+        },
+        "day": {
+            "singular": "{n] jour",
+            "plural": "{n] jours"
+        },
+        "month": {
+            "singular": "{n] mois",
+            "plural": "{n] mois"
+        }
+    }
 }
