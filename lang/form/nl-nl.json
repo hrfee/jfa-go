@@ -19,7 +19,15 @@
         "yourAccountIsValidUntil": "Je account zal geldig zijn tot {date}.",
         "sendPIN": "Stuur onderstaande pincode naar de bot, en kom daarna hier terug om je account te koppelen.",
         "matrixEnterUser": "Voer je gebruikers ID in, druk op versturen, en er wordt je een pincode toegestuurd. Vul die hier in om door te gaan.",
-        "sendPINDiscord": "Typ {command} in {server_channel} op Discord, stuur daarna onderstaande pincode."
+        "sendPINDiscord": "Typ {command} in {server_channel} op Discord, stuur daarna onderstaande pincode.",
+        "oldPassword": "Huidig wachtwoord",
+        "newPassword": "Nieuw wachtwoord",
+        "welcomeUser": "Welkom, {user}!",
+        "addContactMethod": "Voeg contact methode toe",
+        "editContactMethod": "Wijzig contact methode",
+        "joinTheServer": "Word lid van de server:",
+        "resetPassword": "Wachtwoord opnieuw instellen",
+        "changePassword": "Wachtwoord wijzigen"
     },
     "validationStrings": {
         "length": {
@@ -56,6 +64,10 @@
         "errorNoEmail": "E-mail vereist.",
         "errorPassword": "Controleer wachtwoordeisen.",
         "errorNoMatch": "Wachtwoorden komen niet overeen.",
-        "errorCaptcha": "Captcha incorrect."
+        "errorCaptcha": "Captcha incorrect.",
+        "errorAccountLinked": "Account is al in gebruik.",
+        "errorEmailLinked": "Emailadres is al in gebruik.",
+        "errorOldPassword": "Huidig wachtwoord is niet correct.",
+        "passwordChanged": "Wachtwoord gewijzigd."
     }
 }
