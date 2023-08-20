@@ -36,7 +36,11 @@
         "add": "添加",
         "edit": "编辑",
         "delete": "删除",
-        "inviteRemainingUses": "剩余使用次数"
+        "inviteRemainingUses": "剩余使用次数",
+        "contactMethods": "联系方式",
+        "accountStatus": "帐户状态",
+        "notSet": "未设置",
+        "myAccount": "我的帐户"
     },
     "notifications": {
         "errorLoginBlank": "用户名/密码留空。",
@@ -45,5 +49,18 @@
         "error401Unauthorized": "无授权。尝试刷新页面。",
         "errorSaveSettings": "无法保存设置。"
     },
-    "quantityStrings": {}
+    "quantityStrings": {
+        "day": {
+            "plural": "{n} 天",
+            "singular": "{n} 天"
+        },
+        "month": {
+            "singular": "{n} 月",
+            "plural": "{n} 月"
+        },
+        "year": {
+            "singular": "{n} 年",
+            "plural": "{n} 年"
+        }
+    }
 }
