@@ -20,7 +20,9 @@
         "errorNotAdmin": "此用户不允许管理服务。",
         "errorUserDisabled": "此永固可能已被禁用。",
         "error404": "404，请检查内部URL。",
-        "errorConnectionRefused": "连接被拒绝。"
+        "errorConnectionRefused": "连接被拒绝。",
+        "error": "错误",
+        "errorUnknown": "未知错误，请检查应用程序日志。"
     },
     "startPage": {
         "welcome": "欢迎！",
