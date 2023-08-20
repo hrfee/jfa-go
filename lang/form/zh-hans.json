@@ -19,7 +19,22 @@
         "yourAccountIsValidUntil": "您的账户将在 {date} 之前有效。",
         "sendPIN": "把下面的PIN码发给机器人，然后回到这页绑定您的账户。",
         "sendPINDiscord": "在Discord {server_channel} 频道中，输入 {command} 并将下面的PIN码。",
-        "matrixEnterUser": "输入您的用户ID并点击提交，将发送给您的PIN码输入到这里并继续。"
+        "matrixEnterUser": "输入您的用户ID并点击提交，将发送给您的PIN码输入到这里并继续。",
+        "addContactMethod": "添加联系方式",
+        "resetPassword": "重置密码",
+        "resetPasswordThroughJellyfin": "要重置您的密码，请访问 {jfLink} 并点击“忘记密码”。",
+        "resetPasswordThroughLink": "要重置您的密码，请输入您的用户名、电子邮件地址或绑定的联系方式用户名，然后点击提交。系统将发送重置密码的链接。",
+        "changePassword": "更改密码",
+        "resetSentDescription": "如果用户名/联系方式存在，则会通过所有可用的联系方式发送密码重置链接。重置代码将在30分钟后过期。",
+        "resetSent": "密码重置链接已发送。",
+        "userPageSuccessMessage": "您可以稍后在 {myAccount} 页面上查看和更改您帐户的详细信息。",
+        "customMessagePlaceholderContent": "点击设置中的用户页面编辑按钮以自定义这张卡片，以在登录页面上显示，不用担心，用户看不到条消息。",
+        "oldPassword": "当前密码",
+        "newPassword": "新密码",
+        "welcomeUser": "欢迎，{user}！",
+        "editContactMethod": "修改联系方式",
+        "joinTheServer": "加入服务器：",
+        "customMessagePlaceholderHeader": "自定义此卡"
     },
     "notifications": {
         "errorUserExists": "用户已经存在。",
@@ -33,7 +48,11 @@
         "errorNoEmail": "必要输入电邮地址。",
         "errorCaptcha": "验证码不对。",
         "errorPassword": "请您检查密码要求再试。",
-        "errorNoMatch": "密码不匹配。"
+        "errorNoMatch": "密码不匹配。",
+        "errorAccountLinked": "账号已存在。",
+        "errorOldPassword": "旧密码不正确。",
+        "errorEmailLinked": "邮箱地址已经存在。",
+        "passwordChanged": "密码已更改。"
     },
     "validationStrings": {
         "length": {
