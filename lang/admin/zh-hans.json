@@ -102,7 +102,22 @@
         "sendPWRValidFor": "此链接有效30分钟。",
         "ombiProfile": "Ombi 用户配置文件",
         "accessJFASettings": "无法更改，因为“仅限管理员”或“允许所有”已在“设置”>“常规”中设置。",
-        "accessJFA": "访问jfa-go"
+        "accessJFA": "访问 jfa-go",
+        "buildTime": "构建时间",
+        "builtBy": "由",
+        "clickToRemoveFilter": "单击此处以取消此筛选器。",
+        "filters": "筛选器",
+        "jellyfinID": "Jellyfin ID",
+        "clearSearch": "清除搜索",
+        "searchOptions": "搜索选项",
+        "matchText": "匹配文本",
+        "userPagePage": "用户页面",
+        "actions": "操作",
+        "after": "之后",
+        "before": "之前",
+        "unlink": "取消关联帐户",
+        "sortingBy": "排序方式",
+        "userPageLogin": "用户页面：登录"
     },
     "notifications": {
         "changedEmailAddress": "更改了 {n} 的电子邮件地址。",
