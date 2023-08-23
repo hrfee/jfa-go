@@ -1,16 +1,16 @@
 {
     "meta": {
-        "name": "الانجيلزية"
+        "name": "العربية (AR)"
     },
     "strings": {
-        "startMessage": "مرحبا!\nضع رقمك السري للتحقق من حسابك.",
-        "discordStartMessage": "مرحبا!\nضع رقمك السري `/pin <PIN>` للتحقق من حسابك.",
-        "matrixStartMessage": "أهلا\nأدخل رقم التعريف الشخصي أدناه في صفحة الاشتراك في Jellyfin للتحقق من حسابك.",
+        "startMessage": "مرحبا!\nقم بإدخال رمز Jellyfin للتحقق من حسابك.",
+        "discordStartMessage": "مرحباً!\nضع بإدخال الرمز بإستخدام `/pin <PIN>` للتحقق من حسابك.",
+        "matrixStartMessage": "مرحباً\nأدخل رقم التعريف الشخصي أدناه في صفحة الاشتراك في Jellyfin للتحقق من حسابك.",
         "invalidPIN": "رقم التعريف الشخصي هذا غير صالح ، حاول مرة أخرى.",
         "pinSuccess": "تم! يمكنك الآن العودة إلى صفحة التسجيل.",
-        "languageMessage": "ملاحظة: اطلع على اللغات المتاحة باستخدام {command} ، وقم بتعيين اللغة باستخدام {command} <language code>.",
+        "languageMessage": "ملاحظة: اطّلع على اللغات المتاحة باستخدام {command} ، وقم بتعيين اللغة باستخدام {command} <language code>.",
         "languageMessageDiscord": "ملاحظة: اضبط لغتك باستخدام / lang <language name>.",
-        "languageSet": "تم تعيين اللغة على {language}.",
+        "languageSet": "تم تعيين اللغة إلى {language}.",
         "discordDMs": "يرجى التحقق من الرسائل المباشرة الخاصة بك للحصول على رد."
     }
 }
