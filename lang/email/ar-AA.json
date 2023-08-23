@@ -1,77 +1,77 @@
 {
     "meta": {
-        "name": "الانجيلزية"
+        "name": "العربية (AR)"
     },
     "strings": {
-        "ifItWasNotYou": "اذا لم تكن انت, الرجاء تجاهل هذا.",
-        "helloUser": "أهلا {username},",
+        "ifItWasNotYou": "اذا لم يكن هذا انت، الرجاء تجاهل هذا.",
+        "helloUser": "مرحباً {username}،",
         "reason": "السبب"
     },
     "userCreated": {
-        "name": "انشاء الحساب",
-        "title": "ملاحظة تم انشاء الحساب",
-        "aUserWasCreated": "تم انشاء الحساب بواسطة الكود {code}.",
+        "name": "إنشاء حساب",
+        "title": "ملاحظة: تم إنشاء الحساب",
+        "aUserWasCreated": "تم إنشاء الحساب بواسطة الرمز {code}.",
         "time": "الوقت",
         "notificationNotice": "ملاحظة: الرسائل التذكيرية يمكن تعديلها في لوحة التحكم."
     },
     "inviteExpiry": {
         "name": "انتهاء صلاحية الدعوة",
-        "title": "ملاحظة: انتهاء صلاحية الدعوة",
-        "inviteExpired": "صلاحية الدعوة منتهية.",
-        "expiredAt": "معرف {code} ينتهي في {time} .",
+        "title": "ملاحظة: انتهت صلاحية الدعوة",
+        "inviteExpired": "انتهت صلاحية الدعوة.",
+        "expiredAt": "انتهت صلاحية الرمز {code} في {time} .",
         "notificationNotice": "ملاحظة: الرسائل التذكيرية يمكن تعديلها في لوحة التحكم."
     },
     "passwordReset": {
-        "name": "اعادة تعيين كلمة المرور",
-        "title": "تم طلب اعادة تعيين كلمة المرور - جيليفين",
-        "someoneHasRequestedReset": "احد ما قام ب طلب اعادة تعيين كلمة المرور مؤخرا.",
-        "ifItWasYou": "اذا كنت انت , ادخل الرمز في الاسفل في الخانة.",
-        "ifItWasYouLink": "اذا كنت انت , اضغط على الرابط بالاسفل.",
-        "codeExpiry": "",
-        "pin": ""
+        "name": "إعادة تعيين كلمة المرور",
+        "title": "تم طلب إعادة تعيين كلمة المرور - Jellyfin",
+        "someoneHasRequestedReset": "قام شخص ما بطلب إعادة تعيين كلمة المرور مؤخرا.",
+        "ifItWasYou": "إذا كان هذا انت، أدخل رمز التعريف الشخصي أدناه في الخانة.",
+        "ifItWasYouLink": "إذا كان هذا انت، اضغط على الرابط أدناه.",
+        "codeExpiry": "ستنتهي صلاحية الرمز في {date}، {time} UTC، خلال {expiresInMinutes}.",
+        "pin": "رمز التعريف الشخصي"
     },
     "userDeleted": {
-        "name": "",
-        "title": "",
-        "yourAccountWasDeleted": ""
+        "name": "حذف المستخدم",
+        "title": "لقد تم حذف حسابك - Jellyfin",
+        "yourAccountWasDeleted": "لقد تم حذف حسابك في Jellyfin."
     },
     "userDisabled": {
-        "name": "",
-        "title": "",
-        "yourAccountWasDisabled": ""
+        "name": "تعطيل المستخدم",
+        "title": "لقد تم تعطيل حسابك - Jellyfin",
+        "yourAccountWasDisabled": "لقد تم تعطيل حسابك."
     },
     "userEnabled": {
-        "name": "",
-        "title": "",
-        "yourAccountWasEnabled": ""
+        "name": "تفعيل المستخدم",
+        "title": "لقد تم تفعيل حسابك - Jellyfin",
+        "yourAccountWasEnabled": "لقد تم تفعيل حسابك."
     },
     "inviteEmail": {
-        "name": "",
-        "title": "",
-        "hello": "",
-        "youHaveBeenInvited": "",
-        "toJoin": "",
-        "inviteExpiry": "",
-        "linkButton": ""
+        "name": "دعوة البريد الإلكتروني",
+        "title": "دعوة - Jellyfin",
+        "hello": "مرحباً",
+        "youHaveBeenInvited": "تمت دعوتك إلى Jellyfin.",
+        "toJoin": "للإنضمام، اتبع الرابط أدناه.",
+        "inviteExpiry": "ستنتهي صلاحية الدعوة في {date} {time}، خلال {expiresInMinutes}، اتخذ اجراءاً.",
+        "linkButton": "قم بإعداد حسابك"
     },
     "welcomeEmail": {
-        "name": "",
-        "title": "",
-        "welcome": "",
-        "youCanLoginWith": "",
-        "yourAccountWillExpire": "",
-        "jellyfinURL": ""
+        "name": "مرحباً",
+        "title": "مرحباً في Jellyfin",
+        "welcome": "مرحباً في Jellyfin!",
+        "youCanLoginWith": "يمكنك تسجيل الدخول بإستخدام المعلومات أدناه",
+        "yourAccountWillExpire": "ستنتهي صلاحية حسابك في {date}.",
+        "jellyfinURL": "رابط"
     },
     "emailConfirmation": {
-        "name": "",
-        "title": "",
-        "clickBelow": "",
-        "confirmEmail": ""
+        "name": "بريد التحقق",
+        "title": "قم بتأكيد حسابك - Jellyfin",
+        "clickBelow": "اضغط الرابط ادناه لتأكيد حسابك والبدء في استخدام Jellyfin.",
+        "confirmEmail": "تأكيد البريد الإلكتروني"
     },
     "userExpired": {
-        "name": "",
-        "title": "",
-        "yourAccountHasExpired": "",
-        "contactTheAdmin": ""
+        "name": "انتهاء صلاحية المستخدم",
+        "title": "انتهت صلاحية حسابك - Jellyfin",
+        "yourAccountHasExpired": "انتهت صلاحية حسابك.",
+        "contactTheAdmin": "تواصل مع المشرفين للمزيد من المعلومات."
     }
 }
