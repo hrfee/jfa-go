@@ -1,23 +1,23 @@
 {
     "meta": {
-        "name": "الانجيلزية"
+        "name": "العربية (AR)"
     },
     "strings": {
-        "pageTitle": "اعدادات jfa-go",
+        "pageTitle": "الإعداد- jfa-go",
         "next": "التالي",
-        "back": "الرجوع",
+        "back": "الخلف",
         "optional": "اختياري",
         "serverType": "نوع الخادم",
         "disabled": "معطل",
         "enabled": "مفعل",
         "port": "المنفذ",
-        "message": "رسالة",
-        "serverAddress": "",
-        "emailSubject": "",
-        "URL": "",
-        "apiKey": "",
-        "error": "",
-        "errorInvalidUserPass": "",
+        "message": "الرسالة",
+        "serverAddress": "عنوان الخادم",
+        "emailSubject": "موضوع البريد الإلكتروني",
+        "URL": "رابط",
+        "apiKey": "مفتاح API",
+        "error": "خطأ",
+        "errorInvalidUserPass": "اسم مستخدم/كلمة مرور خاطئة.",
         "errorNotAdmin": "",
         "errorUserDisabled": "",
         "error404": "",
