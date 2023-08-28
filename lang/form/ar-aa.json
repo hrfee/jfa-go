@@ -41,7 +41,7 @@
         "errorInvalidCode": "رمز دعوة غير صالح.",
         "errorTelegramVerification": "مطلوب التحقق من تيليجرام.",
         "errorDiscordVerification": "مطلوب التحقق من الدسكورد.",
-        "errorMatrixVerification": "مطلوب التحقق من المصفوفة.",
+        "errorMatrixVerification": "مطلوب التحقق من Matrix.",
         "errorInvalidPIN": "رقم التعريف الشخصي غير صالح.",
         "errorUnknown": "خطأ غير معروف.",
         "errorNoEmail": "البريد الإلكتروني مطلوب.",
