@@ -30,7 +30,7 @@
         "modifySettings": "Ganti Pengaturan",
         "modifySettingsDescription": "Terapkan pengaturan dari profil yang ada, atau dapatkan langsung dari pengguna.",
         "applyHomescreenLayout": "Terapkan tata letak layar beranda",
-        "sendDeleteNotificationEmail": "Kirim email notifikasi",
+        "sendDeleteNotificationEmail": "Kirim pesan notifikasi",
         "sendDeleteNotifiationExample": "Akun anda telah dihapus.",
         "settingsRestart": "Mulai ulang",
         "settingsRestarting": "Mengulang kembali…",
@@ -67,9 +67,14 @@
         "customizeMessages": "Sesuaikan Email",
         "customizeMessagesDescription": "Jika Anda tidak ingin menggunakan templat email jfa-go, Anda dapat membuatnya sendiri menggunakan Markdown.",
         "announce": "Mengumumkan",
-        "subject": "Subjek Email",
+        "subject": "Subjek",
         "message": "Pesan",
-        "markdownSupported": "Markdown didukung."
+        "markdownSupported": "Markdown didukung.",
+        "donate": "Donasi",
+        "select": "Pilih",
+        "search": "Cari",
+        "download": "Unduh",
+        "inviteMonths": "Bulan"
     },
     "notifications": {
         "changedEmailAddress": "Alamat email {n} diubah.",
