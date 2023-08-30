@@ -25,9 +25,8 @@
     "notifications": {
         "errorLoginBlank": "Nama pengguna dan / atau sandi kosong.",
         "errorConnection": "Tidak dapat terhubung ke jfa-go.",
-        "errorUnknown": "Kesalahan yang tidak diketahui.",
+        "errorUnknown": "Terjadi kesalahan yang tidak diketahui.",
         "error401Unauthorized": "Tidak ter-otorisasi. Coba segarkan halaman.",
         "errorSaveSettings": "Tidak dapat menyimpan pengaturan."
-    },
-    "quantityStrings": {}
+    }
 }
