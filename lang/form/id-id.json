@@ -25,13 +25,14 @@
         "newPassword": "Sandi Baru",
         "welcomeUser": "Selamat datang, {user}!",
         "joinTheServer": "Bergabung ke server:",
-        "changePassword": "Ubah Sandi"
+        "changePassword": "Ubah Sandi",
+        "resetPassword": "Atur Ulang Sandi"
     },
     "notifications": {
         "errorUserExists": "Pengguna sudah ada.",
         "errorInvalidCode": "Kode undangan tidak sah.",
         "errorDiscordVerification": "Butuh verifikasi pada Discord.",
-        "errorUnknown": "Terjadi kesalahan.",
+        "errorUnknown": "Terjadi kesalahan yang tidak diketahui.",
         "errorTelegramVerification": "Butuh verifikasi pada Telegram.",
         "errorInvalidPIN": "PIN salah.",
         "errorCaptcha": "Captcha salah.",
