@@ -1,6 +1,6 @@
 {
     "meta": {
-        "name": "English (US)"
+        "name": "Angol (US)"
     },
     "strings": {
         "pageTitle": "Telepítés - jfa-go",
@@ -8,7 +8,7 @@
         "back": "Vissza",
         "optional": "Opcionális",
         "serverType": "Szerver típus",
-        "disabled": "Letiltva",
+        "disabled": "Tiltva",
         "enabled": "Engedélyezve",
         "port": "Port",
         "message": "Üzenet",
@@ -20,7 +20,8 @@
         "errorNotAdmin": "A felhasználó számára nincs engedélyezve a szerver kezelése.",
         "errorUserDisabled": "Lehetséges, hogy a felhasználó le lett tiltva.",
         "error404": "404, ellenőrizze a belső URL-t.",
-        "errorConnectionRefused": ""
+        "errorConnectionRefused": "",
+        "error": "Hiba"
     },
     "startPage": {
         "welcome": "Üdv!",
