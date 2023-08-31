@@ -1,6 +1,6 @@
 {
     "meta": {
-        "name": "English (US)"
+        "name": "Angol (US)"
     },
     "strings": {
         "pageTitle": "Jellyfin fiók létrehozása",
@@ -10,7 +10,7 @@
         "username": "Felhasználónév",
         "password": "Jelszó",
         "reEnterPassword": "Jelszó megerősítése",
-        "reEnterPasswordInvalid": "A jelszavak nem egyeznek",
+        "reEnterPasswordInvalid": "A jelszavak nem egyeznek.",
         "createAccountButton": "Fiók létrehozása",
         "passwordRequirementsHeader": "Jelszó követelmények",
         "successHeader": "Siker!",
@@ -19,7 +19,22 @@
         "yourAccountIsValidUntil": "A fiókja eddig lesz érvényes: {date}.",
         "sendPIN": "Az alábbi PIN-t küldje el a botnak, majd itt csatolja össze a fiókját.",
         "sendPINDiscord": "Írja be a {command} parancsot a {server_channel} Discord csatornába, adja meg a PIN-t.",
-        "matrixEnterUser": "Írja be a felhasználója azonosítóját majd nyomja meg a beküldés gombot. A kapott kódot ide írja be."
+        "matrixEnterUser": "Írja be a felhasználója azonosítóját majd nyomja meg a beküldés gombot. A kapott kódot ide írja be.",
+        "customMessagePlaceholderContent": "Kattints a felhasználói oldal szerkesztés gombjára a beállításokban a kártya testreszabásához, vagy jeleníts meg egyet a bejelentkezési képernyőn, ne aggódj, a felhasználó ezt nem láthatja.",
+        "resetSentDescription": "Ha létezik fiók a megadott felhasználónévvel/kapcsolattartási móddal, akkor a jelszó visszaállító link minden megadott módon el lesz küldve. A kód 30 percen belül lejár.",
+        "oldPassword": "Régi jelszó",
+        "newPassword": "Új jelszó",
+        "welcomeUser": "Üdvözlet, {user}!",
+        "addContactMethod": "Kapcsolattartási opció hozzáadása",
+        "editContactMethod": "Kapcsolattartási opció szerkesztése",
+        "joinTheServer": "Csatlakozz a szerverhez:",
+        "customMessagePlaceholderHeader": "Kártya személyreszabása",
+        "userPageSuccessMessage": "Meg tudod nézni és szerkeszteni a részleteket a fiókodról késöbb a {myAccount} oldalon.",
+        "resetPassword": "Jelszó visszaállítása",
+        "resetPasswordThroughJellyfin": "A jelszavad visszaállításához látogass el a {jfLink} oldalra, és nyomj rá az \"Elfelejtett jelszó\" gombra.",
+        "resetPasswordThroughLink": "A jelszavad visszaállításához, add meg a felhasználóneved, e-mail címed vagy a hozzákötött kapcsolattartási felhasználónevet, és nyomj a gombra. A linket levélben fogod kapni.",
+        "resetSent": "Visszaállítás elküldve.",
+        "changePassword": "Jelszó megváltoztatása"
     },
     "notifications": {
         "errorUserExists": "A felhasználó már létezik.",
@@ -35,12 +50,14 @@
         "errorCaptcha": "Hibás Captcha.",
         "errorNoMatch": "A jelszavak nem egyeznek.",
         "errorEmailLinked": "Az e-mail cím már használatban van.",
-        "errorAccountLinked": "A fiók már használatban van."
+        "errorAccountLinked": "A fiók már használatban van.",
+        "errorOldPassword": "Helytelen a régi jelszó.",
+        "passwordChanged": "Jelszó megváltoztatva."
     },
     "validationStrings": {
         "length": {
             "singular": "Legalább {n} karakter",
-            "plural": "Legalább {n} karakter szükséges."
+            "plural": "Legalább {n} karakter szükséges"
         },
         "uppercase": {
             "singular": "Legalább {n} nagybetűs karakter",
