@@ -1,16 +1,16 @@
 {
     "meta": {
-        "name": ""
+        "name": "Angol (US)"
     },
     "strings": {
-        "startMessage": "",
-        "discordStartMessage": "",
-        "matrixStartMessage": "",
-        "invalidPIN": "",
-        "pinSuccess": "",
-        "languageMessage": "",
-        "languageMessageDiscord": "",
-        "languageSet": "",
-        "discordDMs": ""
+        "startMessage": "Helló!\nAdd meg a Jellyfin PIN kódodat itt, hogy megerősítsd a fiókodat.",
+        "discordStartMessage": "Helló!\n Add meg a PIN kódodat így: `/ping <PIN>` hogy megerősítsd a fiókod.",
+        "matrixStartMessage": "Helló\nAdd meg a lenti PIN kódot a Jellyfin belépés oldalán hogy azonosítsd a fiókodat.",
+        "invalidPIN": "Helytelen PIN kód, próbáld újra.",
+        "pinSuccess": "Siker! Most visszatérhetsz a belépés oldalra.",
+        "languageMessage": "Megjegyzés: Az elérhető nyelveket a {command} parancsal láthatod, és a {command} <nyelv kód> parancsal szerkesztheted.",
+        "languageMessageDiscord": "Megjegyzés: a saját nyelvet a /lang <nyelv neve> parancsal tudod beállítani.",
+        "languageSet": "Nyelv {language}-ra/re állítva.",
+        "discordDMs": "Ellenőrizd az üzeneteidet."
     }
 }
