@@ -1,16 +1,16 @@
 {
     "meta": {
-        "name": ""
+        "name": "Angol (US)"
     },
     "strings": {
-        "passwordReset": "",
-        "reset": "",
-        "resetFailed": "",
-        "tryAgain": "",
-        "youCanLogin": "",
-        "youCanLoginOmbi": "",
-        "youCanLoginPassword": "",
-        "changeYourPassword": "",
-        "enterYourPassword": ""
+        "passwordReset": "Jelszó visszaállítás",
+        "reset": "Visszaállítás",
+        "resetFailed": "Jelszó visszaállítás sikertelen",
+        "tryAgain": "Kérlek próbáld újra.",
+        "youCanLogin": "Most már bejelentkezhetsz az alábbió kóddal (jelszó helyett).",
+        "youCanLoginOmbi": "Most már bejelentkezhetsz Jellyfinbe és Ombiba az alábbi kóddal (jelszó helyett).",
+        "youCanLoginPassword": "Most már bejelentkezhetsz az új jelszavaddal. Nyomd meg a gombot hogy továbblépj a Jellyfinbe.",
+        "changeYourPassword": "Ne felejtsd el megváltoztatni a jelszavadat belépés után.",
+        "enterYourPassword": "Add meg a jelszavad a lenti mezőbe."
     }
 }
