@@ -1,6 +1,6 @@
 {
     "meta": {
-        "name": "English (US)"
+        "name": "Angol (US)"
     },
     "strings": {
         "login": "Belépés",
@@ -13,8 +13,53 @@
         "expiry": "Lejárat",
         "add": "Hozzáadás",
         "edit": "Szerkesztés",
-        "delete": "Törlés"
+        "delete": "Törlés",
+        "password": "Jelszó",
+        "username": "Felhasználónév",
+        "emailAddress": "E-mail cím",
+        "name": "Név",
+        "submit": "Mentés",
+        "send": "Küldés",
+        "success": "Siker",
+        "continue": "Folytatás",
+        "error": "Hiba",
+        "copy": "Másolás",
+        "copied": "Másolva",
+        "time24h": "24 órás idő",
+        "time12h": "12 órás idő",
+        "linkTelegram": "Telegram összekötése",
+        "contactEmail": "Kapcsolat e-mailen keresztül",
+        "contactTelegram": "Kapcsolat telegramon keresztül",
+        "linkDiscord": "Discord összekötése",
+        "linkMatrix": "Matrix összekötése",
+        "contactDiscord": "Kapcsolat discordon keresztül",
+        "theme": "Téma",
+        "refresh": "Frissítés",
+        "required": "Kötelező",
+        "contactMethods": "Kapcsolati lehetőségek",
+        "accountStatus": "Fiók státusz",
+        "notSet": "Nincs beállítva",
+        "myAccount": "Saját fiókom"
     },
-    "notifications": {},
-    "quantityStrings": {}
+    "notifications": {
+        "errorLoginBlank": "A felhasználónév és/vagy a jelszó üresen lett hagyva.",
+        "errorConnection": "Nem lehet csatlakozni a jfa-go-hoz.",
+        "errorUnknown": "Ismeretlen hiba.",
+        "error401Unauthorized": "Nincs jogosultság. Próbáld frissíteni az oldalt.",
+        "errorSaveSettings": "Nem lehet menteni a beállításokat."
+    },
+    "quantityStrings": {
+        "year": {
+            "singular": "{n} Év",
+            "plural": "{n} Évek"
+        },
+        "month": {
+            "singular": "{n} Hónap",
+            "plural": "{n} Hónapok"
+        },
+        "day": {
+            "singular": "{n} Nap",
+            "plural": "{n} Napok"
+        }
+    }
 }
