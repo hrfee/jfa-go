@@ -3,7 +3,7 @@
         "name": "Español (ES)"
     },
     "strings": {
-        "pageTitle": "Configuración - jfa-go",
+        "pageTitle": "instalación - jfa-go",
         "next": "Siguiente",
         "back": "Volver",
         "optional": "Opcional",
@@ -20,7 +20,9 @@
         "errorNotAdmin": "El usuario no tiene permitido administrar el servidor.",
         "errorUserDisabled": "El usuario puede estar desactivado.",
         "error404": "404, verifique la URL interna.",
-        "errorConnectionRefused": "Conexión rechazada."
+        "errorConnectionRefused": "Conexión rechazada.",
+        "errorUnknown": "Error desconocido, verifique los registros de la aplicación.",
+        "error": "Error"
     },
     "startPage": {
         "welcome": "¡Bienvenido!",
