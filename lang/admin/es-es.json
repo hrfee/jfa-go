@@ -102,7 +102,21 @@
         "ombiProfile": "Perfil de usuario de Ombi",
         "logs": "Registros",
         "accessJFA": "Acceso",
-        "accessJFASettings": "No se puede cambia, ya que se ha establecido \"Solo administradores\" o \"Permitir a todos\" en Configuración > General."
+        "accessJFASettings": "No se puede cambia, ya que se ha establecido \"Solo administradores\" o \"Permitir a todos\" en Configuración > General.",
+        "buildTime": "Tiempo de construcción",
+        "builtBy": "Construido por",
+        "sortingBy": "Ordenar por",
+        "filters": "Filtros",
+        "clearSearch": "Borrar búsqueda",
+        "searchOptions": "Opciones de búsqueda",
+        "matchText": "Coincidir texto",
+        "jellyfinID": "Jellyfin ID",
+        "userPageLogin": "Página de usuario: Iniciar sesión",
+        "userPagePage": "Página de usuario: Página",
+        "after": "Después",
+        "before": "Antes",
+        "unlink": "Desvincular cuenta",
+        "clickToRemoveFilter": "Haga clic para eliminar el filtro."
     },
     "notifications": {
         "changedEmailAddress": "Se cambió la dirección de correo electrónico de {n}.",
