@@ -115,6 +115,7 @@ declare interface Modals {
     logs: Modal;
     email?: Modal;
     enableReferralsUser?: Modal;
+    enableReferralsProfile?: Modal;
 }
 
 interface Invite {

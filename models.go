@@ -71,10 +71,11 @@ type inviteProfileDTO struct {
 }
 
 type profileDTO struct {
-	Admin         bool   `json:"admin" example:"false"`   // Whether profile has admin rights or not
-	LibraryAccess string `json:"libraries" example:"all"` // Number of libraries profile has access to
-	FromUser      string `json:"fromUser" example:"jeff"` // The user the profile is based on
-	Ombi          bool   `json:"ombi"`                    // Whether or not Ombi settings are stored in this profile.
+	Admin            bool   `json:"admin" example:"false"`            // Whether profile has admin rights or not
+	LibraryAccess    string `json:"libraries" example:"all"`          // Number of libraries profile has access to
+	FromUser         string `json:"fromUser" example:"jeff"`          // The user the profile is based on
+	Ombi             bool   `json:"ombi"`                             // Whether or not Ombi settings are stored in this profile.
+	ReferralsEnabled bool   `json:"referrals_enabled" example:"true"` // Whether or not the profile has referrals enabled, and has a template invite stored.
 }
 
 type getProfilesDTO struct {
@@ -423,6 +424,5 @@ type GetMyReferralRespDTO struct {
 }
 
 type EnableDisableReferralDTO struct {
-	Users   []string `json:"users"`
-	Enabled bool     `json:"enabled"`
+	Users []string `json:"users"`
 }

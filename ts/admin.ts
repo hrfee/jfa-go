@@ -81,6 +81,7 @@ window.availableProfiles = window.availableProfiles || [];
 
     if (window.referralsEnabled) {
         window.modals.enableReferralsUser = new Modal(document.getElementById("modal-enable-referrals-user"));
+        window.modals.enableReferralsProfile = new Modal(document.getElementById("modal-enable-referrals-profile"));
     }
 })();
 

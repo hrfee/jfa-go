@@ -385,7 +385,7 @@
                 "enabled": {
                     "name": "Enabled",
                     "required": false,
-                    "requires_restart": false,
+                    "requires_restart": true,
                     "type": "bool",
                     "value": true
                 },
@@ -409,7 +409,7 @@
                 "referrals": {
                     "name": "User Referrals",
                     "required": false,
-                    "requires_restart": false,
+                    "requires_restart": true,
                     "type": "bool",
                     "value": true,
                     "description": "Users are given their own \"invite\" to send to others."

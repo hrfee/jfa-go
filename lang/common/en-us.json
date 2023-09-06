@@ -39,7 +39,8 @@
         "add": "Add",
         "edit": "Edit",
         "delete": "Delete",
-        "myAccount": "My Account"
+        "myAccount": "My Account",
+        "referrals": "Referrals"
     },
     "notifications": {
         "errorLoginBlank": "The username and/or password were left blank.",

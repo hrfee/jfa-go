@@ -646,7 +646,7 @@ func (app *appContext) GetMyReferral(gc *gin.Context) {
 	err := app.storage.db.Find(&inv, badgerhold.Where("ReferrerJellyfinID").Eq(gc.GetString("jfId")))
 	if err != nil {
 		// 2. Look for a template matching the key found in the user storage
-		//    Since this key is shared between a profile, we make a copy.
+		//    Since this key is shared between users in a profile, we make a copy.
 		user, ok := app.storage.GetEmailsKey(gc.GetString("jfId"))
 		err = app.storage.db.Get(user.ReferralTemplateKey, &inv)
 		if !ok || err != nil {

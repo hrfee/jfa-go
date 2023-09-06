@@ -1127,7 +1127,7 @@ export class accountsList {
                 }
             }
         }
-        return result
+        return result;
     };
 
 
@@ -1693,11 +1693,12 @@ export class accountsList {
                         }
                         innerHTML += `<option value="${inv.code}">${name}</option>`;
                     }
+                    this._enableReferralsInvite.checked = true;
                 } else {
                     this._enableReferralsInvite.checked = false;
-                    this._enableReferralsProfile.checked = true;
                     innerHTML += `<option>${window.lang.strings("inviteNoInvites")}</option>`;
                 }
+                this._enableReferralsProfile.checked = !(this._enableReferralsInvite.checked);
                 this._referralsInviteSelect.innerHTML = innerHTML;
             
                 // 2. Profiles
@@ -1710,20 +1711,15 @@ export class accountsList {
             });
         })();
 
-        // FIXME: Collect Profiles, Invite
-        (() => {
-        })();
-
         const form = document.getElementById("form-enable-referrals-user") as HTMLFormElement;
         const button = form.querySelector("span.submit") as HTMLSpanElement;
-        this._enableReferralsProfile.checked = true;
-        this._enableReferralsInvite.checked = false;
         form.onsubmit = (event: Event) => {
             event.preventDefault();
             toggleLoader(button);
             let send = {
                 "users": list
             };
+            // console.log("profile:", this._enableReferralsProfile.checked, this._enableReferralsInvite.checked); 
             if (this._enableReferralsProfile.checked && !this._enableReferralsInvite.checked) { 
                 send["from"] = "profile";
                 send["profile"] = this._referralsProfileSelect.value;
@@ -1731,7 +1727,7 @@ export class accountsList {
                 send["from"] = "invite";
                 send["id"] = this._referralsInviteSelect.value;
             }
-            _post("/users/referrals/" + send["from"] + "/" + send["id"], send, (req: XMLHttpRequest) => {
+            _post("/users/referral/" + send["from"] + "/" + (send["id"] ? send["id"] : send["profile"]), send, (req: XMLHttpRequest) => {
                 if (req.readyState == 4) {
                     toggleLoader(button);
                     if (req.status == 400) {
@@ -1744,6 +1740,8 @@ export class accountsList {
                 }
             });
         };
+        this._enableReferralsProfile.checked = true;
+        this._enableReferralsInvite.checked = false;
         window.modals.enableReferralsUser.show();
     }
 
@@ -1879,10 +1877,10 @@ export class accountsList {
         this._modifySettingsUser.onchange = checkSource;
 
         if (window.referralsEnabled) {
-            this._enableReferrals.onclick = this.enableReferrals;
             const profileSpan = this._enableReferralsProfile.nextElementSibling as HTMLSpanElement;
             const inviteSpan = this._enableReferralsInvite.nextElementSibling as HTMLSpanElement;
             const checkReferralSource = () => {
+                console.log("States:", this._enableReferralsProfile.checked, this._enableReferralsInvite.checked);
                 if (this._enableReferralsProfile.checked) {
                     this._referralsInviteSelect.parentElement.classList.add("unfocused");
                     this._referralsProfileSelect.parentElement.classList.remove("unfocused")
@@ -1899,9 +1897,20 @@ export class accountsList {
                     profileSpan.classList.add("@low");
                 }
             };
-            this._enableReferralsProfile.onchange = checkReferralSource;
-            this._enableReferralsInvite.onchange = checkReferralSource;
-            checkReferralSource();
+            profileSpan.onclick = () => {
+                this._enableReferralsProfile.checked = true;
+                this._enableReferralsInvite.checked = false;
+                checkReferralSource();
+            };
+            inviteSpan.onclick = () => {;
+                this._enableReferralsInvite.checked = true;
+                this._enableReferralsProfile.checked = false;
+                checkReferralSource();
+            };
+            this._enableReferrals.onclick = () => {
+                this.enableReferrals();
+                profileSpan.onclick(null);
+            };
         }
 
         this._deleteUser.onclick = this.deleteUsers;

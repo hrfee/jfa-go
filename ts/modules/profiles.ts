@@ -5,6 +5,7 @@ interface Profile {
     libraries: string;
     fromUser: string;
     ombi: boolean;
+    referrals_enabled: boolean;
 }
 
 class profile implements Profile {
@@ -16,6 +17,8 @@ class profile implements Profile {
     private _fromUser: HTMLTableDataCellElement;
     private _defaultRadio: HTMLInputElement;
     private _ombi: boolean;
+    private _referralsButton: HTMLSpanElement;
+    private _referralsEnabled: boolean;
 
     get name(): string { return this._name.textContent; }
     set name(v: string) { this._name.textContent = v; }
@@ -51,7 +54,22 @@ class profile implements Profile {
 
     get fromUser(): string { return this._fromUser.textContent; }
     set fromUser(v: string) { this._fromUser.textContent = v; }
-    
+   
+    get referrals_enabled(): boolean { return this._referralsEnabled; }
+    set referrals_enabled(v: boolean) {
+        if (!window.referralsEnabled) return;
+        this._referralsEnabled = v;
+        if (v) {
+            this._referralsButton.textContent = window.lang.strings("delete");
+            this._referralsButton.classList.add("~critical");
+            this._referralsButton.classList.remove("~neutral");
+        } else {
+            this._referralsButton.textContent = window.lang.strings("add");
+            this._referralsButton.classList.add("~neutral");
+            this._referralsButton.classList.remove("~critical");
+        }
+    }
+
     get default(): boolean { return this._defaultRadio.checked; }
     set default(v: boolean) { this._defaultRadio.checked = v; }
 
@@ -64,6 +82,9 @@ class profile implements Profile {
         if (window.ombiEnabled) innerHTML += `
             <td><span class="button @low profile-ombi"></span></td>
         `;
+        if (window.referralsEnabled) innerHTML += `
+            <td><span class="button @low profile-referrals"></span></td>
+        `;
         innerHTML += `
             <td class="profile-from ellipsis"></td>
             <td class="profile-libraries"></td>
@@ -75,6 +96,8 @@ class profile implements Profile {
         this._libraries = this._row.querySelector("td.profile-libraries") as HTMLTableDataCellElement;
         if (window.ombiEnabled)
             this._ombiButton = this._row.querySelector("span.profile-ombi") as HTMLSpanElement;
+        if (window.referralsEnabled)
+            this._referralsButton = this._row.querySelector("span.profile-referrals") as HTMLSpanElement;
         this._fromUser = this._row.querySelector("td.profile-from") as HTMLTableDataCellElement;
         this._defaultRadio = this._row.querySelector("input[type=radio]") as HTMLInputElement;
         this._defaultRadio.onclick = () => document.dispatchEvent(new CustomEvent("profiles-default", { detail: this.name }));
@@ -89,9 +112,11 @@ class profile implements Profile {
         this.fromUser = p.fromUser;
         this.libraries = p.libraries;
         this.ombi = p.ombi;
+        this.referrals_enabled = p.referrals_enabled;
     }
 
     setOmbiFunc = (ombiFunc: (ombi: boolean) => void) => { this._ombiButton.onclick = () => ombiFunc(this._ombi); }
+    setReferralFunc = (referralFunc: (enabled: boolean) => void) => { this._referralsButton.onclick = () => referralFunc(this._referralsEnabled); }
 
     remove = () => { document.dispatchEvent(new CustomEvent("profiles-delete", { detail: this._name })); this._row.remove(); }
 
@@ -143,6 +168,57 @@ export class ProfileEditor {
         }
     }
 
+    enableReferrals = (name: string) => {
+        const referralsInviteSelect = document.getElementById("enable-referrals-profile-invites") as HTMLSelectElement;
+        _get("/invites", null, (req: XMLHttpRequest) => {
+            if (req.readyState != 4 || req.status != 200) return;
+
+            let innerHTML = "";
+            let invites = req.response["invites"] as Array<Invite>;
+            window.availableProfiles = req.response["profiles"];
+            if (invites) {
+                for (let inv of invites) {
+                    let name = inv.code;
+                    if (inv.label) {
+                        name = `${inv.label} (${inv.code})`;
+                    }
+                    innerHTML += `<option value="${inv.code}">${name}</option>`;
+                }
+            } else {
+                innerHTML += `<option>${window.lang.strings("inviteNoInvites")}</option>`;
+            }
+            
+            referralsInviteSelect.innerHTML = innerHTML;
+        });
+
+        const form = document.getElementById("form-enable-referrals-profile") as HTMLFormElement;
+        const button = form.querySelector("span.submit") as HTMLSpanElement;
+        form.onsubmit = (event: Event) => {
+            event.preventDefault();
+            toggleLoader(button);
+
+            let send = {
+                "profile": name,
+                "invite": referralsInviteSelect.value
+            };
+            
+            _post("/profiles/referral/" + send["profile"] + "/" + send["invite"], send, (req: XMLHttpRequest) => {
+                if (req.readyState == 4) {
+                    toggleLoader(button);
+                    if (req.status == 400) {
+                        window.notifications.customError("unknownError", window.lang.notif("errorUnknown"));
+                    } else if (req.status == 200 || req.status == 204) {
+                        window.notifications.customSuccess("enableReferralsSuccess", window.lang.notif("referralsEnabled"));
+                    }
+                    window.modals.enableReferralsProfile.close();
+                    this.load();
+                }
+            });
+        };
+        window.modals.profiles.close();
+        window.modals.enableReferralsProfile.show();
+    };
+
     load = () => _get("/profiles", null, (req: XMLHttpRequest) => {
         if (req.readyState == 4) {
             if (req.status == 200) {
@@ -171,6 +247,15 @@ export class ProfileEditor {
                                     } else {
                                         window.modals.profiles.close();
                                         this._ombiProfiles.load(name);
+                                    }
+                                });
+                            if (window.referralsEnabled)
+                                this._profiles[name].setReferralFunc((enabled: boolean) => {
+                                    if (enabled) {
+                                        // FIXME: Unlink template
+                                        console.log("FIXME");
+                                    } else {
+                                        this.enableReferrals(name);
                                     }
                                 });
                             this._table.appendChild(this._profiles[name].asElement());

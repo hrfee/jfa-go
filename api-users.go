@@ -657,6 +657,7 @@ func (app *appContext) EnableReferralForUsers(gc *gin.Context) {
 			return
 
 		}
+		app.debug.Printf("Found referral template in profile: %+v\n", profile.ReferralTemplateKey)
 	} else if mode == "invite" {
 		// Get the invite, and modify it to turn it into a referral
 		err := app.storage.db.Get(source, &baseInv)
