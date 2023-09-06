@@ -693,6 +693,9 @@
                                     {{ if .discordEnabled }}
                                     <th class="text-center-i grid gap-4 place-items-stretch accounts-header-discord">Discord</th>
                                     {{ end }}
+                                    {{ if .referralsEnabled }}
+                                    <th class="text-center-i grid gap-4 place-items-stretch accounts-header-referrals">{{ .strings.referrals }}</th>
+                                    {{ end }}
                                     <th class="grid gap-4 place-items-stretch accounts-header-expiry">{{ .strings.expiry }}</th>
                                     <th class="grid gap-4 place-items-stretch accounts-header-last-active">{{ .strings.lastActiveTime }}</th>
                                 </tr>

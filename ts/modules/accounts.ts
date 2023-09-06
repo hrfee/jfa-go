@@ -23,6 +23,7 @@ interface User {
     notify_matrix: boolean;
     label: string;
     accounts_admin: boolean;
+    referrals_enabled: boolean;
 }
 
 interface getPinResponse {
@@ -69,6 +70,8 @@ class user implements User {
     private _labelEditButton: HTMLElement;
     private _accounts_admin: HTMLInputElement
     private _selected: boolean;
+    private _referralsEnabled: boolean;
+    private _referralsEnabledCheck: HTMLElement;
 
     lastNotifyMethod = (): string => {
         // Telegram, Matrix, Discord
@@ -159,6 +162,17 @@ class user implements User {
     set notify_email(s: boolean) {
         if (this._notifyDropdown) {
             (this._notifyDropdown.querySelector(".accounts-contact-email") as HTMLInputElement).checked = s;
+        }
+    }
+
+    get referrals_enabled(): boolean { return this._referralsEnabled; }
+    set referrals_enabled(v: boolean) {
+        this._referralsEnabled = v;
+        if (!window.referralsEnabled) return;
+        if (!v) {
+            this._referralsEnabledCheck.textContent = ``;
+        } else {
+            this._referralsEnabledCheck.innerHTML = `<i class="ri-check-line" aria-label="${window.lang.strings("enabled")}"></i>`;
         }
     }
 
@@ -506,6 +520,11 @@ class user implements User {
             <td class="accounts-discord"></td>
             `;
         }
+        if (window.referralsEnabled) {
+            innerHTML += `
+            <td class="accounts-referrals text-center-i grid gap-4 place-items-stretch"></td>
+            `;
+        }
         innerHTML += `
         <td class="accounts-expiry"></td>
         <td class="accounts-last-active whitespace-nowrap"></td>
@@ -543,6 +562,10 @@ class user implements User {
                     }
                 });
             };
+        }
+        
+        if (window.referralsEnabled) {
+            this._referralsEnabledCheck = this._row.querySelector(".accounts-referrals");
         }
 
         this._notifyDropdown = this._constructDropdown();
@@ -716,6 +739,7 @@ class user implements User {
         this.discord_id = user.discord_id;
         this.label = user.label;
         this.accounts_admin = user.accounts_admin;
+        this.referrals_enabled = user.referrals_enabled;
     }
 
     asElement = (): HTMLTableRowElement => { return this._row; }
@@ -1061,7 +1085,7 @@ export class accountsList {
 
                 let attempt: { year?: number, month?: number, day?: number, hour?: number, minute?: number } = dateParser.attempt(split[1]);
                 // Month in Date objects is 0-based, so make our parsed date that way too
-                if ("month" in attempt) attempt["month"] -= 1;
+                if ("month" in attempt) attempt.month -= 1;
 
                 let date: Date = (Date as any).fromString(split[1]) as Date;
                 console.log("Read", attempt, "and", date);

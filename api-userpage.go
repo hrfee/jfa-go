@@ -643,7 +643,7 @@ func (app *appContext) GetMyReferral(gc *gin.Context) {
 	//    If one exists, that means its just for us and so we
 	//    can use it directly.
 	inv := Invite{}
-	err := app.storage.db.Find(&inv, badgerhold.Where("ReferrerJellyfinID").Eq(gc.GetString("jfId")))
+	err := app.storage.db.FindOne(&inv, badgerhold.Where("ReferrerJellyfinID").Eq(gc.GetString("jfId")))
 	if err != nil {
 		// 2. Look for a template matching the key found in the user storage
 		//    Since this key is shared between users in a profile, we make a copy.
@@ -664,6 +664,7 @@ func (app *appContext) GetMyReferral(gc *gin.Context) {
 		inv.Created = time.Now()
 		inv.ValidTill = inv.Created.Add(REFERRAL_EXPIRY_DAYS * 24 * time.Hour)
 		inv.IsReferral = true
+		inv.ReferrerJellyfinID = gc.GetString("jfId")
 		app.storage.SetInvitesKey(inv.Code, inv)
 	} else if time.Now().After(inv.ValidTill) {
 		// 3. We found an invite for us, but it's expired.

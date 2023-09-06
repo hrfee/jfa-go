@@ -151,6 +151,7 @@ type respUser struct {
 	NotifyThroughMatrix   bool   `json:"notify_matrix"`
 	Label                 string `json:"label"`          // Label of user, shown next to their name.
 	AccountsAdmin         bool   `json:"accounts_admin"` // Whether or not the user is a jfa-go admin.
+	ReferralsEnabled      bool   `json:"referrals_enabled"`
 }
 
 type getUsersDTO struct {

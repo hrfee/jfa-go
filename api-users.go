@@ -11,6 +11,7 @@ import (
 	"github.com/golang-jwt/jwt"
 	"github.com/hrfee/mediabrowser"
 	"github.com/lithammer/shortuuid/v3"
+	"github.com/timshannon/badgerhold/v4"
 )
 
 // @Summary Creates a new Jellyfin user without an invite.
@@ -668,6 +669,10 @@ func (app *appContext) EnableReferralForUsers(gc *gin.Context) {
 		}
 	}
 	for _, u := range req.Users {
+		// 1. Wipe out any existing referral codes.
+		app.storage.db.DeleteMatching(Invite{}, badgerhold.Where("ReferrerJellyfinID").Eq(u))
+
+		// 2. Generate referral invite.
 		inv := baseInv
 		inv.Code = shortuuid.New()
 		// make sure code doesn't begin with number
@@ -888,13 +893,15 @@ func (app *appContext) GetUsers(gc *gin.Context) {
 	}
 	adminOnly := app.config.Section("ui").Key("admin_only").MustBool(true)
 	allowAll := app.config.Section("ui").Key("allow_all").MustBool(false)
+	referralsEnabled := app.config.Section("user_page").Key("referrals").MustBool(false)
 	i := 0
 	for _, jfUser := range users {
 		user := respUser{
-			ID:       jfUser.ID,
-			Name:     jfUser.Name,
-			Admin:    jfUser.Policy.IsAdministrator,
-			Disabled: jfUser.Policy.IsDisabled,
+			ID:               jfUser.ID,
+			Name:             jfUser.Name,
+			Admin:            jfUser.Policy.IsAdministrator,
+			Disabled:         jfUser.Policy.IsDisabled,
+			ReferralsEnabled: false,
 		}
 		if !jfUser.LastActivityDate.IsZero() {
 			user.LastActive = jfUser.LastActivityDate.Unix()
@@ -922,6 +929,18 @@ func (app *appContext) GetUsers(gc *gin.Context) {
 			// user.Discord = dcUser.Username + "#" + dcUser.Discriminator
 			user.DiscordID = dcUser.ID
 			user.NotifyThroughDiscord = dcUser.Contact
+		}
+		// FIXME: Send referral data
+		referrerInv := Invite{}
+		if referralsEnabled {
+			// 1. Directly attached invite.
+			err := app.storage.db.FindOne(&referrerInv, badgerhold.Where("ReferrerJellyfinID").Eq(jfUser.ID))
+			if err == nil {
+				user.ReferralsEnabled = true
+				// 2. Referrals via profile template. Shallow check, doesn't look for the thing in the database.
+			} else if email, ok := app.storage.GetEmailsKey(jfUser.ID); ok && email.ReferralTemplateKey != "" {
+				user.ReferralsEnabled = true
+			}
 		}
 		resp.UserList[i] = user
 		i++
