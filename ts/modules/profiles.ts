@@ -168,6 +168,61 @@ export class ProfileEditor {
         }
     }
 
+    load = () => _get("/profiles", null, (req: XMLHttpRequest) => {
+        if (req.readyState == 4) {
+            if (req.status == 200) {
+                let resp = req.response as profileResp;
+                if (Object.keys(resp.profiles).length == 0) {
+                    this.empty = true;
+                } else {
+                    this.empty = false;
+                    for (let name in resp.profiles) {
+                        if (name in this._profiles) {
+                            this._profiles[name].update(name, resp.profiles[name]);
+                        } else {
+                            this._profiles[name] = new profile(name, resp.profiles[name]);
+                            if (window.ombiEnabled)
+                                this._profiles[name].setOmbiFunc((ombi: boolean) => {
+                                    if (ombi) {
+                                        this._ombiProfiles.delete(name, (req: XMLHttpRequest) => {
+                                            if (req.readyState == 4) {
+                                                if (req.status != 204) {
+                                                    window.notifications.customError("errorDeleteOmbi", window.lang.notif("errorUnknown"));
+                                                    return;
+                                                }
+                                                this._profiles[name].ombi = false;
+                                            }
+                                        });
+                                    } else {
+                                        window.modals.profiles.close();
+                                        this._ombiProfiles.load(name);
+                                    }
+                                });
+                            if (window.referralsEnabled)
+                                this._profiles[name].setReferralFunc((enabled: boolean) => {
+                                    if (enabled) {
+                                        this.disableReferrals(name);
+                                    } else {
+                                        this.enableReferrals(name);
+                                    }
+                                });
+                            this._table.appendChild(this._profiles[name].asElement());
+                        }
+                    }
+                }
+                this.default = resp.default_profile;
+                window.modals.profiles.show();
+            } else {
+                window.notifications.customError("profileEditor", window.lang.notif("errorLoadProfiles"));
+            }
+        }
+    })
+
+    disableReferrals = (name: string) => _delete("/profiles/referral/" + name, null, (req: XMLHttpRequest) => {
+        if (req.readyState != 4) return;
+        this.load();
+    });
+
     enableReferrals = (name: string) => {
         const referralsInviteSelect = document.getElementById("enable-referrals-profile-invites") as HTMLSelectElement;
         _get("/invites", null, (req: XMLHttpRequest) => {
@@ -218,57 +273,6 @@ export class ProfileEditor {
         window.modals.profiles.close();
         window.modals.enableReferralsProfile.show();
     };
-
-    load = () => _get("/profiles", null, (req: XMLHttpRequest) => {
-        if (req.readyState == 4) {
-            if (req.status == 200) {
-                let resp = req.response as profileResp;
-                if (Object.keys(resp.profiles).length == 0) {
-                    this.empty = true;
-                } else {
-                    this.empty = false;
-                    for (let name in resp.profiles) {
-                        if (name in this._profiles) {
-                            this._profiles[name].update(name, resp.profiles[name]);
-                        } else {
-                            this._profiles[name] = new profile(name, resp.profiles[name]);
-                            if (window.ombiEnabled)
-                                this._profiles[name].setOmbiFunc((ombi: boolean) => {
-                                    if (ombi) {
-                                        this._ombiProfiles.delete(name, (req: XMLHttpRequest) => {
-                                            if (req.readyState == 4) {
-                                                if (req.status != 204) {
-                                                    window.notifications.customError("errorDeleteOmbi", window.lang.notif("errorUnknown"));
-                                                    return;
-                                                }
-                                                this._profiles[name].ombi = false;
-                                            }
-                                        });
-                                    } else {
-                                        window.modals.profiles.close();
-                                        this._ombiProfiles.load(name);
-                                    }
-                                });
-                            if (window.referralsEnabled)
-                                this._profiles[name].setReferralFunc((enabled: boolean) => {
-                                    if (enabled) {
-                                        // FIXME: Unlink template
-                                        console.log("FIXME");
-                                    } else {
-                                        this.enableReferrals(name);
-                                    }
-                                });
-                            this._table.appendChild(this._profiles[name].asElement());
-                        }
-                    }
-                }
-                this.default = resp.default_profile;
-                window.modals.profiles.show();
-            } else {
-                window.notifications.customError("profileEditor", window.lang.notif("errorLoadProfiles"));
-            }
-        }
-    })
 
     constructor() {
         (document.getElementById('setting-profiles') as HTMLSpanElement).onclick = this.load;

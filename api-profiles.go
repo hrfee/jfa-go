@@ -181,5 +181,18 @@ func (app *appContext) EnableReferralForProfile(gc *gin.Context) {
 // @Security Bearer
 // @tags Profiles & Settings
 func (app *appContext) DisableReferralForProfile(gc *gin.Context) {
+	profileName := gc.Param("profile")
+	profile, ok := app.storage.GetProfileKey(profileName)
+	if !ok {
+		respondBool(200, true, gc)
+		return
+	}
+
+	app.storage.DeleteInvitesKey(profile.ReferralTemplateKey)
+
+	profile.ReferralTemplateKey = ""
+
+	app.storage.SetProfileKey(profileName, profile)
+
 	respondBool(200, true, gc)
 }
