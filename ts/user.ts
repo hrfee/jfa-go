@@ -363,7 +363,8 @@ const discordConf: ServiceConfiguration = {
     }
 };
 
-let discord = new Discord(discordConf);
+let discord: Discord;
+if (window.discordEnabled) discord = new Discord(discordConf);
 
 const telegramConf: ServiceConfiguration = {
     modal: window.modals.telegram as Modal,
@@ -378,7 +379,8 @@ const telegramConf: ServiceConfiguration = {
     }
 };
 
-let telegram = new Telegram(telegramConf);
+let telegram: Telegram;
+if (window.telegramEnabled) telegram = new Telegram(telegramConf);
 
 const matrixConf: MatrixConfiguration = {
     modal: window.modals.matrix as Modal,
@@ -393,7 +395,8 @@ const matrixConf: MatrixConfiguration = {
     }
 };
 
-let matrix = new Matrix(matrixConf);
+let matrix: Matrix;
+if (window.matrixEnabled) matrix = new Matrix(matrixConf);
 
 
 const oldPasswordField = document.getElementById("user-old-password") as HTMLInputElement;
@@ -468,14 +471,15 @@ document.addEventListener("details-reload", () => {
             // Note the weird format of the functions for discord/telegram:
             // "this" was being redefined within the onclick() method, so
             // they had to be wrapped in an anonymous function.
-            const contactMethods: { name: string, icon: string, f: (add: boolean) => void, required: boolean }[] = [
-                {name: "email", icon: `<i class="ri-mail-fill ri-lg"></i>`, f: addEditEmail, required: true},
-                {name: "discord", icon: `<i class="ri-discord-fill ri-lg"></i>`, f: (add: boolean) => { discord.onclick(); }, required: window.discordRequired},
-                {name: "telegram", icon: `<i class="ri-telegram-fill ri-lg"></i>`, f: (add: boolean) => { telegram.onclick() }, required: window.telegramRequired},
-                {name: "matrix", icon: `<span class="font-bold">[m]</span>`, f: (add: boolean) => { matrix.show(); }, required: window.matrixRequired}
+            const contactMethods: { name: string, icon: string, f: (add: boolean) => void, required: boolean, enabled: boolean }[] = [
+                {name: "email", icon: `<i class="ri-mail-fill ri-lg"></i>`, f: addEditEmail, required: true, enabled: true},
+                {name: "discord", icon: `<i class="ri-discord-fill ri-lg"></i>`, f: (add: boolean) => { discord.onclick(); }, required: window.discordRequired, enabled: window.discordEnabled},
+                {name: "telegram", icon: `<i class="ri-telegram-fill ri-lg"></i>`, f: (add: boolean) => { telegram.onclick() }, required: window.telegramRequired, enabled: window.telegramEnabled},
+                {name: "matrix", icon: `<span class="font-bold">[m]</span>`, f: (add: boolean) => { matrix.show(); }, required: window.matrixRequired, enabled: window.matrixEnabled}
             ];
             
             for (let method of contactMethods) {
+                if (!(method.enabled)) continue;
                 if (method.name in details) {
                     contactMethodList.append(method.name, details[method.name], method.icon, method.f, method.required);
                 }
