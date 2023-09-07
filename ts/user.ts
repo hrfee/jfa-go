@@ -621,6 +621,8 @@ document.addEventListener("details-reload", () => {
                 }
             }
 
+            messageCard.innerHTML = messageCard.innerHTML.replace(new RegExp("{username}", "g"), details.username);
+
             if (typeof(messageCard) != "undefined" && messageCard != null) {
                 setBestRowSpan(messageCard, false);
                 // contactCard.querySelector(".content").classList.add("h-100");
