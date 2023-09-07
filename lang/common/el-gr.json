@@ -25,7 +25,8 @@
         "disable": "Απενεργοποίηση",
         "expiry": "Λήξη",
         "edit": "Επεξεργασία",
-        "delete": "Διαγραφή"
+        "delete": "Διαγραφή",
+        "inviteRemainingUses": "Εναπομείναντες χρήσεις"
     },
     "notifications": {
         "errorLoginBlank": "Το όνομα χρήστη και/ή ο κωδικός ήταν κενά.",

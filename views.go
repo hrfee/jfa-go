@@ -204,6 +204,7 @@ func (app *appContext) MyUserPage(gc *gin.Context) {
 		"langName":          lang,
 		"jfLink":            app.config.Section("ui").Key("redirect_url").String(),
 		"requirements":      app.validator.getCriteria(),
+		"referralsEnabled":  app.config.Section("user_page").Key("enabled").MustBool(false) && app.config.Section("user_page").Key("referrals").MustBool(false),
 	}
 	if telegramEnabled {
 		data["telegramUsername"] = app.telegram.username

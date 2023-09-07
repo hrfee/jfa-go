@@ -35,7 +35,8 @@
         "expiry": "到期",
         "add": "添加",
         "edit": "編輯",
-        "delete": "刪除"
+        "delete": "刪除",
+        "inviteRemainingUses": "剩餘使用次數"
     },
     "notifications": {
         "errorLoginBlank": "帳戶名稱和/或密碼留空。",

@@ -35,7 +35,8 @@
         "expiry": "Verloop",
         "add": "Voeg toe",
         "edit": "Bewerken",
-        "delete": "Verwijderen"
+        "delete": "Verwijderen",
+        "inviteRemainingUses": "Resterend aantal keer te gebruiken"
     },
     "notifications": {
         "errorLoginBlank": "De gebruikersnaam en/of wachtwoord is leeg.",

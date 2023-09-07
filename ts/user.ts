@@ -1,7 +1,7 @@
 import { ThemeManager } from "./modules/theme.js";
 import { lang, LangFile, loadLangSelector } from "./modules/lang.js";
 import { Modal } from "./modules/modal.js";
-import { _get, _post, _delete, notificationBox, whichAnimationEvent, toDateString, toggleLoader, addLoader, removeLoader } from "./modules/common.js";
+import { _get, _post, _delete, notificationBox, whichAnimationEvent, toDateString, toggleLoader, addLoader, removeLoader, toClipboard } from "./modules/common.js";
 import { Login } from "./modules/login.js";
 import { Discord, Telegram, Matrix, ServiceConfiguration, MatrixConfiguration } from "./modules/account-linking.js";
 import { Validator, ValidatorConf, ValidatorRespDTO } from "./modules/validator.js";
@@ -18,6 +18,7 @@ interface userWindow extends Window {
     matrixUserID: string;
     discordSendPINMessage: string;
     pwrEnabled: string;
+    referralsEnabled: boolean;
 }
 
 declare var window: userWindow;
@@ -107,6 +108,14 @@ interface MyDetails {
     discord?: MyDetailsContactMethod;
     telegram?: MyDetailsContactMethod;
     matrix?: MyDetailsContactMethod;
+    has_referrals: boolean;
+}
+
+interface MyReferral {
+    code: string;
+    remaining_uses: string;
+    no_limit: boolean;
+    expiry: number;
 }
 
 interface ContactDTO {
@@ -512,6 +521,62 @@ document.addEventListener("details-reload", () => {
                 // contactCard.querySelector(".content").classList.add("h-100");
             } else if (!statusCard.classList.contains("unfocused")) {
                 setBestRowSpan(passwordCard, true);
+            }
+
+            let referralCard = document.getElementById("card-referrals");
+            if (window.referralsEnabled && typeof(referralCard) != "undefined" && referralCard != null) {
+                if (details.has_referrals) {
+                    _get("/my/referral", null, (req: XMLHttpRequest) => {
+                        if (req.readyState != 4 || req.status != 200) return; 
+                        const referral: MyReferral = req.response as MyReferral;
+                        const infoArea = referralCard.querySelector(".user-referrals-info") as HTMLDivElement;
+
+                        infoArea.innerHTML = `
+                        <div class="row my-3">
+                            <div class="inline baseline">
+                                <span class="text-2xl">${referral.no_limit ? "∞" : referral.remaining_uses}</span> <span class="text-gray-400 text-lg">${window.lang.strings("inviteRemainingUses")}</span>
+                            </div>
+                        </div>
+                        <div class="row my-3">
+                            <div class="inline baseline">
+                                <span class="text-gray-400 text-lg">${window.lang.strings("expiry")}</span> <span class="text-2xl">${toDateString(new Date(referral.expiry * 1000))}</span>
+                            <div>
+                        </div>
+                        `;
+
+                        const linkButton = referralCard.querySelector(".user-referrals-button") as HTMLButtonElement;
+
+                        let codeLink = window.location.href;
+                        for (let split of ["#", "?", "account", "my"]) {
+                            codeLink = codeLink.split(split)[0];
+                        }
+                        if (codeLink.slice(-1) != "/") { codeLink += "/"; }
+                        codeLink = codeLink + "invite/" + referral.code;
+
+                        linkButton.addEventListener("click", () => {
+                            toClipboard(codeLink);
+                            const content = linkButton.innerHTML;
+                            linkButton.innerHTML = `
+                            ${window.lang.strings("copied")} <i class="ri-check-line ml-2"></i>
+                            `;
+                            linkButton.classList.add("~positive");
+                            linkButton.classList.remove("~info");
+                            setTimeout(() => {
+                                linkButton.classList.add("~info");
+                                linkButton.classList.remove("~positive");
+                                linkButton.innerHTML = content;
+                            }, 2000);
+                        });
+
+
+
+
+                        referralCard.classList.remove("unfocused");
+
+                    });
+                } else {
+                    referralCard.classList.add("unfocused");
+                }
             }
         }
     });

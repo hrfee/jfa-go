@@ -35,7 +35,8 @@
         "expiry": "Expiry",
         "add": "Add",
         "edit": "Edit",
-        "delete": "Delete"
+        "delete": "Delete",
+        "inviteRemainingUses": "Remaining uses"
     },
     "notifications": {
         "errorLoginBlank": "The username and/or password was left blank.",

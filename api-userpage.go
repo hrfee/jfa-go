@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	REFERRAL_EXPIRY_DAYS = 365
+	REFERRAL_EXPIRY_DAYS = 90
 )
 
 // @Summary Returns the logged-in user's Jellyfin ID & Username, and other details.
@@ -78,6 +78,25 @@ func (app *appContext) MyDetails(gc *gin.Context) {
 		if matrix, ok := app.storage.GetMatrixKey(user.ID); ok {
 			resp.Matrix.Value = matrix.UserID
 			resp.Matrix.Enabled = matrix.Contact
+		}
+	}
+
+	if app.config.Section("user_page").Key("referrals").MustBool(false) {
+		// 1. Look for existing template bound to this Jellyfin ID
+		//    If one exists, that means its just for us and so we
+		//    can use it directly.
+		inv := Invite{}
+		err := app.storage.db.FindOne(&inv, badgerhold.Where("ReferrerJellyfinID").Eq(resp.Id))
+		if err == nil {
+			resp.HasReferrals = true
+		} else {
+			// 2. Look for a template matching the key found in the user storage
+			//    Since this key is shared between users in a profile, we make a copy.
+			user, ok := app.storage.GetEmailsKey(gc.GetString("jfId"))
+			err = app.storage.db.Get(user.ReferralTemplateKey, &inv)
+			if ok && err == nil {
+				resp.HasReferrals = true
+			}
 		}
 	}
 
@@ -685,6 +704,6 @@ func (app *appContext) GetMyReferral(gc *gin.Context) {
 		Code:          inv.Code,
 		RemainingUses: inv.RemainingUses,
 		NoLimit:       inv.NoLimit,
-		Expiry:        inv.ValidTill,
+		Expiry:        inv.ValidTill.Unix(),
 	})
 }

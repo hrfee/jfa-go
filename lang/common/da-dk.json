@@ -35,7 +35,8 @@
         "expiry": "Udløb",
         "add": "Tilføj",
         "edit": "Rediger",
-        "delete": "Slet"
+        "delete": "Slet",
+        "inviteRemainingUses": "Resterende anvendelser"
     },
     "notifications": {
         "errorLoginBlank": "Brugernavnet og/eller adgangskoden blev efterladt tomme.",

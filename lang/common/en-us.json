@@ -40,7 +40,8 @@
         "edit": "Edit",
         "delete": "Delete",
         "myAccount": "My Account",
-        "referrals": "Referrals"
+        "referrals": "Referrals",
+        "inviteRemainingUses": "Remaining uses"
     },
     "notifications": {
         "errorLoginBlank": "The username and/or password were left blank.",

@@ -390,6 +390,7 @@ type MyDetailsDTO struct {
 	Discord       *MyDetailsContactMethodsDTO `json:"discord,omitempty"`
 	Telegram      *MyDetailsContactMethodsDTO `json:"telegram,omitempty"`
 	Matrix        *MyDetailsContactMethodsDTO `json:"matrix,omitempty"`
+	HasReferrals  bool                        `json:"has_referrals,omitempty"`
 }
 
 type MyDetailsContactMethodsDTO struct {
@@ -418,10 +419,10 @@ type ChangeMyPasswordDTO struct {
 }
 
 type GetMyReferralRespDTO struct {
-	Code          string    `json:"code"`
-	RemainingUses int       `json:"remaining-uses"`
-	NoLimit       bool      `json:"no-limit"`
-	Expiry        time.Time `json:"expiry"` // Come back after this time to get a new referral
+	Code          string `json:"code"`
+	RemainingUses int    `json:"remaining_uses"`
+	NoLimit       bool   `json:"no_limit"`
+	Expiry        int64  `json:"expiry"` // Come back after this time to get a new referral
 }
 
 type EnableDisableReferralDTO struct {

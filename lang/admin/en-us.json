@@ -95,7 +95,6 @@
         "inviteUsersCreated": "Created users",
         "inviteNoProfile": "No Profile",
         "inviteDateCreated": "Created",
-        "inviteRemainingUses": "Remaining uses",
         "inviteNoInvites": "None",
         "inviteExpiresInTime": "Expires in {n}",
         "notifyEvent": "Notify on:",
@@ -224,4 +223,4 @@
             "plural": "Extended expiry for {n} users."
         }
     }
-} 
+}
