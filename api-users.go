@@ -304,6 +304,12 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 		}
 	}
 	id := user.ID
+
+	emailStore := EmailAddress{
+		Addr:    req.Email,
+		Contact: (req.Email != ""),
+	}
+
 	var profile Profile
 	if invite.Profile != "" {
 		app.debug.Printf("Applying settings from profile \"%s\"", invite.Profile)
@@ -325,10 +331,15 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 		if !((status == 200 || status == 204) && err == nil) {
 			app.err.Printf("%s: Failed to set configuration template (%d): %v", req.Code, status, err)
 		}
+		if app.config.Section("user_page").Key("enabled").MustBool(false) && app.config.Section("user_page").Key("referrals").MustBool(false) && profile.ReferralTemplateKey != "" {
+			emailStore.ReferralTemplateKey = profile.ReferralTemplateKey
+			// Store here, just incase email are disabled (whether this is even possible, i don't know)
+			app.storage.SetEmailsKey(id, emailStore)
+		}
 	}
 	// if app.config.Section("password_resets").Key("enabled").MustBool(false) {
 	if req.Email != "" {
-		app.storage.SetEmailsKey(id, EmailAddress{Addr: req.Email, Contact: true})
+		app.storage.SetEmailsKey(id, emailStore)
 	}
 	expiry := time.Time{}
 	if invite.UserExpiry {
