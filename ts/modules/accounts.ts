@@ -1225,6 +1225,7 @@ export class accountsList {
             let anyNonExpiries = list.length == 0 ? true : false;
             let allNonExpiries = true;
             let noContactCount = 0;
+            let referralState = Number(this._users[list[0]].referrals_enabled); // -1 = hide, 0 = show "enable", 1 = show "disable"
             // Only show enable/disable button if all selected have the same state.
             this._shouldEnable = this._users[list[0]].disabled
             let showDisableEnable = true;
@@ -1243,6 +1244,9 @@ export class accountsList {
                 if (!showDisableEnable && anyNonExpiries) { break; }
                 if (!this._users[id].lastNotifyMethod()) {
                     noContactCount++;
+                }
+                if (window.referralsEnabled && referralState != -1 && Number(this._users[id].referrals_enabled) != referralState) {
+                    referralState = -1;
                 }
             }
             this._settingExpiry = false;
@@ -1276,6 +1280,22 @@ export class accountsList {
                 }
                 this._disableEnable.parentElement.classList.remove("unfocused");
                 this._disableEnable.textContent = message;
+            }
+            if (window.referralsEnabled) {
+                if (referralState == -1) {
+                    this._enableReferrals.classList.add("unfocused");
+                }  else {
+                    this._enableReferrals.classList.remove("unfocused");
+                }
+                if (referralState == 0) {
+                    this._enableReferrals.classList.add("~urge");
+                    this._enableReferrals.classList.remove("~warning");
+                    this._enableReferrals.textContent = window.lang.strings("enableReferrals");
+                } else if (referralState == 1) {
+                    this._enableReferrals.classList.add("~warning");
+                    this._enableReferrals.classList.remove("~urge");
+                    this._enableReferrals.textContent = window.lang.strings("disableReferrals");
+                }
             }
         }
     }
@@ -1708,6 +1728,17 @@ export class accountsList {
         const modalHeader = document.getElementById("header-enable-referrals-user");
         modalHeader.textContent = window.lang.quantity("enableReferralsFor", this._collectUsers().length)
         let list = this._collectUsers();
+
+        // Check if we're disabling or enabling
+        if (this._users[list[0]].referrals_enabled) {
+            _delete("/users/referral", {"users": list}, (req: XMLHttpRequest) => {
+                if (req.readyState != 4 || req.status != 200) return;
+                window.notifications.customSuccess("disabledReferralsSuccess", window.lang.quantity("appliedSettings", list.length));
+                this.reload();
+            });
+            return;
+        }
+            
         (() => {
             _get("/invites", null, (req: XMLHttpRequest) => {
                 if (req.readyState != 4 || req.status != 200) return;
@@ -1765,7 +1796,7 @@ export class accountsList {
                     if (req.status == 400) {
                         window.notifications.customError("unknownError", window.lang.notif("errorUnknown"));
                     } else if (req.status == 200 || req.status == 204) {
-                        window.notifications.customSuccess("enableReferralsSuccess", window.lang.quantity("appliedSettings", this._collectUsers().length));
+                        window.notifications.customSuccess("enableReferralsSuccess", window.lang.quantity("appliedSettings", list.length));
                     }
                     this.reload();
                     window.modals.enableReferralsUser.close();

@@ -65,6 +65,7 @@
         "modifySettings": "Modify Settings",
         "modifySettingsDescription": "Apply settings from an existing profile, or source them directly from a user.",
         "enableReferrals": "Enable Referrals",
+        "disableReferrals": "Disable Referrals",
         "enableReferralsDescription": "Give users a personal referral link similiar to an invite, to send to friends/family. Can be sourced from a referral template in a profile, or from an existing invite.",
         "enableReferralsProfileDescription": "Give users created with this profile a personal referral link similiar to an invite, to send to friends/family. Create an invite with the desired settings, then select it here. Each referral will then be based on this invite. You can delete the invite once complete.",
         "applyHomescreenLayout": "Apply homescreen layout",

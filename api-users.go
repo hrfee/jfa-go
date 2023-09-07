@@ -634,6 +634,7 @@ func (app *appContext) ExtendExpiry(gc *gin.Context) {
 
 // @Summary Enable referrals for the given user(s) based on the rules set in the given invite code, or profile.
 // @Produce json
+// @Param EnableDisableReferralDTO body EnableDisableReferralDTO true "List of users"
 // @Param mode path string true "mode of template sourcing from 'invite' or 'profile'."
 // @Param source path string true "invite code or profile name, depending on what mode is."
 // @Success 200 {object} boolResponse
@@ -687,6 +688,30 @@ func (app *appContext) EnableReferralForUsers(gc *gin.Context) {
 		inv.ReferrerJellyfinID = u
 		app.storage.SetInvitesKey(inv.Code, inv)
 	}
+}
+
+// @Summary Disable referrals for the given user(s).
+// @Produce json
+// @Param EnableDisableReferralDTO body EnableDisableReferralDTO true "List of users"
+// @Success 200 {object} boolResponse
+// @Router /users/referral [delete]
+// @Security Bearer
+// @tags Users
+func (app *appContext) DisableReferralForUsers(gc *gin.Context) {
+	var req EnableDisableReferralDTO
+	gc.BindJSON(&req)
+	for _, u := range req.Users {
+		// 1. Delete directly bound template
+		app.storage.db.DeleteMatching(Invite{}, badgerhold.Where("ReferrerJellyfinID").Eq(u))
+		// 2. Check for and delete profile-attached template
+		user, ok := app.storage.GetEmailsKey(u)
+		if !ok {
+			continue
+		}
+		user.ReferralTemplateKey = ""
+		app.storage.SetEmailsKey(u, user)
+	}
+	respondBool(200, true, gc)
 }
 
 // @Summary Send an announcement via email to a given list of users.
