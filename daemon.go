@@ -10,7 +10,7 @@ func (app *appContext) clearEmails() {
 	emails := app.storage.GetEmails()
 	for _, email := range emails {
 		_, status, err := app.jf.UserByID(email.JellyfinID, false)
-		if status == 200 && err != nil {
+		if status == 200 && err == nil {
 			continue
 		}
 		app.storage.DeleteEmailsKey(email.JellyfinID)
@@ -23,7 +23,7 @@ func (app *appContext) clearDiscord() {
 	discordUsers := app.storage.GetDiscord()
 	for _, discordUser := range discordUsers {
 		_, status, err := app.jf.UserByID(discordUser.JellyfinID, false)
-		if status == 200 && err != nil {
+		if status == 200 && err == nil {
 			continue
 		}
 		app.storage.DeleteDiscordKey(discordUser.JellyfinID)
@@ -36,7 +36,7 @@ func (app *appContext) clearMatrix() {
 	matrixUsers := app.storage.GetMatrix()
 	for _, matrixUser := range matrixUsers {
 		_, status, err := app.jf.UserByID(matrixUser.JellyfinID, false)
-		if status == 200 && err != nil {
+		if status == 200 && err == nil {
 			continue
 		}
 		app.storage.DeleteMatrixKey(matrixUser.JellyfinID)
@@ -49,7 +49,7 @@ func (app *appContext) clearTelegram() {
 	telegramUsers := app.storage.GetTelegram()
 	for _, telegramUser := range telegramUsers {
 		_, status, err := app.jf.UserByID(telegramUser.JellyfinID, false)
-		if status == 200 && err != nil {
+		if status == 200 && err == nil {
 			continue
 		}
 		app.storage.DeleteTelegramKey(telegramUser.JellyfinID)
