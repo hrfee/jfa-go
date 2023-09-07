@@ -52,13 +52,10 @@ a rewrite of [jellyfin-accounts](https://github.com/hrfee/jellyfin-accounts) (or
 
 #### Interface
 <p align="center">
-    <img src="images/demo.gif" width="100%"></img>
-</p>
-
-<p align="center">
-    <img src="images/invites.png" width="31%" style="margin-left: 1.5%;" alt="Invites tab"></img>
-    <img src="images/accounts.png" width="31%" style="margin-right: 1.5%;" alt="Accounts tab"></img> 
-    <img src="images/create.png" width="31%" style="margin-right: 1.5%;" alt="Accounts creation"></img> 
+    <img src="images/invites.png" width="47%" style="margin-left: 1.5%;" align="top" alt="Invites tab"></img>
+    <img src="images/create.png" width="47%" style="margin-right: 1.5%;" align="top" alt="Accounts creation"></img> 
+    <img src="images/myaccount.png" width="47%" style="margin-left: 1.5%; margin-top: 1rem;" align="top" alt="My Account Page"></img>
+    <img src="images/accounts.png" width="47%" style="margin-right: 1.5%; margin-top: 1rem;" align="top" alt="Accounts tab"></img> 
 </p>
 
 #### Install
