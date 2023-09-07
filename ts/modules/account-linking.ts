@@ -162,6 +162,8 @@ export class Discord extends ServiceLinker {
     onclick() {
         if (this._conf.inviteURL != "") {
             this._getInviteURL();
+        } else {
+            (document.getElementById("discord-invite") as HTMLSpanElement).parentElement.remove();
         }
 
         super.onclick();
