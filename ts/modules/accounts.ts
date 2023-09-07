@@ -935,6 +935,14 @@ export class accountsList {
             bool: true,
             string: false,
             date: true
+        },
+        "referrals-enabled": {
+            name: window.lang.strings("referrals"),
+            getter: "referrals_enabled",
+            bool: true,
+            string: false,
+            date: false,
+            dependsOnTableHeader: "accounts-header-referrals"
         }
     }
 
