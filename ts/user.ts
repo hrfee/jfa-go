@@ -113,7 +113,7 @@ interface MyDetails {
 
 interface MyReferral {
     code: string;
-    remaining_uses: string;
+    remaining_uses: number;
     no_limit: boolean;
     expiry: number;
 }
@@ -246,6 +246,107 @@ class ContactMethods {
     };
 }
 
+class ReferralCard {
+    private _card: HTMLElement;
+    private _code: string;
+    private _url: string;
+    private _expiry: Date;
+    private _expiryUnix: number;
+    private _remainingUses: number;
+    private _noLimit: boolean;
+
+    private _button: HTMLButtonElement;
+    private _infoArea: HTMLDivElement;
+    private _remainingUsesEl: HTMLSpanElement;
+    private _expiryEl: HTMLSpanElement;
+
+    get code(): string { return this._code; }
+    set code(c: string) {
+        this._code = c;
+        let url = window.location.href;
+        for (let split of ["#", "?", "account", "my"]) {
+            url = url.split(split)[0];
+        }
+        if (url.slice(-1) != "/") { url += "/"; }
+        url = url + "invite/" + this._code;
+        this._url = url;
+    }
+
+    get remaining_uses(): number { return this._remainingUses; }
+    set remaining_uses(v: number) { 
+        this._remainingUses = v;
+        if (v > 0 && !(this._noLimit))
+            this._remainingUsesEl.textContent = `${v}`;
+    }
+
+    get no_limit(): boolean { return this._noLimit; }
+    set no_limit(v: boolean) {
+        this._noLimit = v;
+        if (v)
+            this._remainingUsesEl.textContent = `∞`;
+        else
+            this._remainingUsesEl.textContent = `${this._remainingUses}`;
+    }
+
+    get expiry(): Date { return this._expiry; };
+    set expiry(expiryUnix: number) {
+        this._expiryUnix = expiryUnix;
+        this._expiry = new Date(expiryUnix * 1000);
+        this._expiryEl.textContent = toDateString(this._expiry);
+    }
+    
+    constructor(card: HTMLElement) {
+        this._card = card;
+        this._button = this._card.querySelector(".user-referrals-button") as HTMLButtonElement;
+        this._infoArea = this._card.querySelector(".user-referrals-info") as HTMLDivElement;
+
+        this._infoArea.innerHTML = `
+        <div class="row my-3">
+            <div class="inline baseline">
+                <span class="text-2xl referral-remaining-uses"></span> <span class="text-gray-400 text-lg">${window.lang.strings("inviteRemainingUses")}</span>
+            </div>
+        </div>
+        <div class="row my-3">
+            <div class="inline baseline">
+                <span class="text-gray-400 text-lg">${window.lang.strings("expiry")}</span> <span class="text-2xl referral-expiry"></span>
+            <div>
+        </div>
+        `;
+    
+        this._remainingUsesEl = this._infoArea.querySelector(".referral-remaining-uses") as HTMLSpanElement;
+        this._expiryEl = this._infoArea.querySelector(".referral-expiry") as HTMLSpanElement;
+        
+        document.addEventListener("timefmt-change", () => {
+            this.expiry = this._expiryUnix;
+        });
+
+        this._button.addEventListener("click", () => {
+            toClipboard(this._url);
+            const content = this._button.innerHTML;
+            this._button.innerHTML = `
+            ${window.lang.strings("copied")} <i class="ri-check-line ml-2"></i>
+            `;
+            this._button.classList.add("~positive");
+            this._button.classList.remove("~info");
+            setTimeout(() => {
+                this._button.classList.add("~info");
+                this._button.classList.remove("~positive");
+                this._button.innerHTML = content;
+            }, 2000);
+        });
+    }
+
+    hide = () => this._card.classList.add("unfocused");
+
+    update = (referral: MyReferral) => {
+        this.code = referral.code;
+        this.remaining_uses = referral.remaining_uses;
+        this.no_limit = referral.no_limit;
+        this.expiry = referral.expiry;
+        this._card.classList.remove("unfocused");
+    };
+}
+
 class ExpiryCard {
     private _card: HTMLElement;
     private _expiry: Date;
@@ -326,6 +427,9 @@ class ExpiryCard {
 }
 
 var expiryCard = new ExpiryCard(statusCard);
+
+var referralCard: ReferralCard;
+if (window.referralsEnabled) referralCard = new ReferralCard(document.getElementById("card-referrals"));
 
 var contactMethodList = new ContactMethods(contactCard);
 
@@ -523,59 +627,15 @@ document.addEventListener("details-reload", () => {
                 setBestRowSpan(passwordCard, true);
             }
 
-            let referralCard = document.getElementById("card-referrals");
-            if (window.referralsEnabled && typeof(referralCard) != "undefined" && referralCard != null) {
+            if (window.referralsEnabled) {
                 if (details.has_referrals) {
                     _get("/my/referral", null, (req: XMLHttpRequest) => {
                         if (req.readyState != 4 || req.status != 200) return; 
                         const referral: MyReferral = req.response as MyReferral;
-                        const infoArea = referralCard.querySelector(".user-referrals-info") as HTMLDivElement;
-
-                        infoArea.innerHTML = `
-                        <div class="row my-3">
-                            <div class="inline baseline">
-                                <span class="text-2xl">${referral.no_limit ? "∞" : referral.remaining_uses}</span> <span class="text-gray-400 text-lg">${window.lang.strings("inviteRemainingUses")}</span>
-                            </div>
-                        </div>
-                        <div class="row my-3">
-                            <div class="inline baseline">
-                                <span class="text-gray-400 text-lg">${window.lang.strings("expiry")}</span> <span class="text-2xl">${toDateString(new Date(referral.expiry * 1000))}</span>
-                            <div>
-                        </div>
-                        `;
-
-                        const linkButton = referralCard.querySelector(".user-referrals-button") as HTMLButtonElement;
-
-                        let codeLink = window.location.href;
-                        for (let split of ["#", "?", "account", "my"]) {
-                            codeLink = codeLink.split(split)[0];
-                        }
-                        if (codeLink.slice(-1) != "/") { codeLink += "/"; }
-                        codeLink = codeLink + "invite/" + referral.code;
-
-                        linkButton.addEventListener("click", () => {
-                            toClipboard(codeLink);
-                            const content = linkButton.innerHTML;
-                            linkButton.innerHTML = `
-                            ${window.lang.strings("copied")} <i class="ri-check-line ml-2"></i>
-                            `;
-                            linkButton.classList.add("~positive");
-                            linkButton.classList.remove("~info");
-                            setTimeout(() => {
-                                linkButton.classList.add("~info");
-                                linkButton.classList.remove("~positive");
-                                linkButton.innerHTML = content;
-                            }, 2000);
-                        });
-
-
-
-
-                        referralCard.classList.remove("unfocused");
-
+                        referralCard.update(referral);
                     });
                 } else {
-                    referralCard.classList.add("unfocused");
+                    referralCard.hide();
                 }
             }
         }
