@@ -36,7 +36,8 @@
         "resetSentDescription": "If an account with the given username/contact method exists, a password reset link has been sent via all contact methods available. The code will expire in 30 minutes.",
         "changePassword": "Change Password",
         "referralsDescription": "Invite friends & family to Jellyfin with this link. Come back here for a new one if it expires.",
-        "copyReferral": "Copy Link"
+        "copyReferral": "Copy Link",
+        "invitedBy": "Invited By"
     },
     "notifications": {
         "errorUserExists": "User already exists.",
