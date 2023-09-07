@@ -19,7 +19,8 @@
         "login": "Masuk",
         "logout": "Keluar",
         "edit": "Edit",
-        "delete": "Hapus"
+        "delete": "Hapus",
+        "inviteRemainingUses": "Penggunaan yang tersisa"
     },
     "notifications": {
         "errorLoginBlank": "Nama pengguna dan / atau sandi kosong.",

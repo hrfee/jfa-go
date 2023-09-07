@@ -429,15 +429,16 @@ type DiscordUser struct {
 	Discriminator string
 	Lang          string
 	Contact       bool
-	JellyfinID    string `json:"-" badgerhold:"key"` // Used internally in discord.go
+	JellyfinID    string `json:"-" badgerhold:"key"`
 }
 
 type EmailAddress struct {
-	Addr       string `badgerhold:"index"`
-	Label      string // User Label.
-	Contact    bool
-	Admin      bool   // Whether or not user is jfa-go admin.
-	JellyfinID string `badgerhold:"key"`
+	Addr                string `badgerhold:"index"`
+	Label               string // User Label.
+	Contact             bool
+	Admin               bool   // Whether or not user is jfa-go admin.
+	JellyfinID          string `badgerhold:"key"`
+	ReferralTemplateKey string
 }
 
 type customEmails struct {
@@ -470,16 +471,17 @@ type userPageContent struct {
 // timePattern: %Y-%m-%dT%H:%M:%S.%f
 
 type Profile struct {
-	Name          string                     `badgerhold:"key"`
-	Admin         bool                       `json:"admin,omitempty" badgerhold:"index"`
-	LibraryAccess string                     `json:"libraries,omitempty"`
-	FromUser      string                     `json:"fromUser,omitempty"`
-	Homescreen    bool                       `json:"homescreen"`
-	Policy        mediabrowser.Policy        `json:"policy,omitempty"`
-	Configuration mediabrowser.Configuration `json:"configuration,omitempty"`
-	Displayprefs  map[string]interface{}     `json:"displayprefs,omitempty"`
-	Default       bool                       `json:"default,omitempty"`
-	Ombi          map[string]interface{}     `json:"ombi,omitempty"`
+	Name                string                     `badgerhold:"key"`
+	Admin               bool                       `json:"admin,omitempty" badgerhold:"index"`
+	LibraryAccess       string                     `json:"libraries,omitempty"`
+	FromUser            string                     `json:"fromUser,omitempty"`
+	Homescreen          bool                       `json:"homescreen"`
+	Policy              mediabrowser.Policy        `json:"policy,omitempty"`
+	Configuration       mediabrowser.Configuration `json:"configuration,omitempty"`
+	Displayprefs        map[string]interface{}     `json:"displayprefs,omitempty"`
+	Default             bool                       `json:"default,omitempty"`
+	Ombi                map[string]interface{}     `json:"ombi,omitempty"`
+	ReferralTemplateKey string
 }
 
 type Invite struct {
@@ -495,11 +497,14 @@ type Invite struct {
 	UserMinutes   int       `json:"user-minutes,omitempty"`
 	SendTo        string    `json:"email"`
 	// Used to be stored as formatted time, now as Unix.
-	UsedBy   [][]string                 `json:"used-by"`
-	Notify   map[string]map[string]bool `json:"notify"`
-	Profile  string                     `json:"profile"`
-	Label    string                     `json:"label,omitempty"`
-	Captchas map[string]*captcha.Data   // Map of Captcha IDs to answers
+	UsedBy                     [][]string                 `json:"used-by"`
+	Notify                     map[string]map[string]bool `json:"notify"`
+	Profile                    string                     `json:"profile"`
+	Label                      string                     `json:"label,omitempty"`
+	Captchas                   map[string]*captcha.Data   // Map of Captcha IDs to answers
+	IsReferral                 bool                       `json:"is_referral" badgerhold:"index"`
+	ReferrerJellyfinID         string                     `json:"referrer_id"`
+	ReferrerTemplateForProfile string
 }
 
 type Lang struct {

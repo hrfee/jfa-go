@@ -71,10 +71,11 @@ type inviteProfileDTO struct {
 }
 
 type profileDTO struct {
-	Admin         bool   `json:"admin" example:"false"`   // Whether profile has admin rights or not
-	LibraryAccess string `json:"libraries" example:"all"` // Number of libraries profile has access to
-	FromUser      string `json:"fromUser" example:"jeff"` // The user the profile is based on
-	Ombi          bool   `json:"ombi"`                    // Whether or not Ombi settings are stored in this profile.
+	Admin            bool   `json:"admin" example:"false"`            // Whether profile has admin rights or not
+	LibraryAccess    string `json:"libraries" example:"all"`          // Number of libraries profile has access to
+	FromUser         string `json:"fromUser" example:"jeff"`          // The user the profile is based on
+	Ombi             bool   `json:"ombi"`                             // Whether or not Ombi settings are stored in this profile.
+	ReferralsEnabled bool   `json:"referrals_enabled" example:"true"` // Whether or not the profile has referrals enabled, and has a template invite stored.
 }
 
 type getProfilesDTO struct {
@@ -150,6 +151,7 @@ type respUser struct {
 	NotifyThroughMatrix   bool   `json:"notify_matrix"`
 	Label                 string `json:"label"`          // Label of user, shown next to their name.
 	AccountsAdmin         bool   `json:"accounts_admin"` // Whether or not the user is a jfa-go admin.
+	ReferralsEnabled      bool   `json:"referrals_enabled"`
 }
 
 type getUsersDTO struct {
@@ -388,6 +390,7 @@ type MyDetailsDTO struct {
 	Discord       *MyDetailsContactMethodsDTO `json:"discord,omitempty"`
 	Telegram      *MyDetailsContactMethodsDTO `json:"telegram,omitempty"`
 	Matrix        *MyDetailsContactMethodsDTO `json:"matrix,omitempty"`
+	HasReferrals  bool                        `json:"has_referrals,omitempty"`
 }
 
 type MyDetailsContactMethodsDTO struct {
@@ -413,4 +416,15 @@ type GetMyPINDTO struct {
 type ChangeMyPasswordDTO struct {
 	Old string `json:"old"`
 	New string `json:"new"`
+}
+
+type GetMyReferralRespDTO struct {
+	Code          string `json:"code"`
+	RemainingUses int    `json:"remaining_uses"`
+	NoLimit       bool   `json:"no_limit"`
+	Expiry        int64  `json:"expiry"` // Come back after this time to get a new referral
+}
+
+type EnableDisableReferralDTO struct {
+	Users []string `json:"users"`
 }

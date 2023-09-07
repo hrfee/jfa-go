@@ -17,6 +17,7 @@
             window.jellyfinLogin = {{ .jellyfinLogin }};
             window.jfAdminOnly = {{ .jfAdminOnly }};
             window.jfAllowAll = {{ .jfAllowAll }};
+            window.referralsEnabled = {{ .referralsEnabled }};
         </script>
         <title>Admin - jfa-go</title>
         {{ template "header.html" . }}
@@ -107,6 +108,48 @@
                 </label>
             </form>
         </div>
+        {{ if .referralsEnabled }}
+        <div id="modal-enable-referrals-user" class="modal">
+            <form class="card relative mx-auto my-[10%] w-4/5 lg:w-1/3" id="form-enable-referrals-user" href="">
+                <span class="heading"><span id="header-enable-referrals-user"></span> <span class="modal-close">&times;</span></span>
+                <p class="content my-4">{{ .strings.enableReferralsDescription }}</p>
+                <div class="flex flex-row mb-4">
+                    <label class="flex-row-group mr-2">
+                        <input type="radio" name="enable-referrals-user-source" class="unfocused" id="radio-referrals-use-profile" checked>
+                        <span class="button ~neutral @high supra full-width center">{{ .strings.profile }}</span>
+                    </label>
+                    <label class="flex-row-group ml-2">
+                        <input type="radio" name="enable-referrals-user-source" class="unfocused" id="radio-referrals-use-invite">
+                        <span class="button ~neutral @low supra full-width center">{{ .strings.invite }}</span>
+                    </label>
+                </div>
+                <div class="select ~neutral @low mb-4">
+                    <select id="enable-referrals-user-profiles"></select>
+                </div>
+                <div class="select ~neutral @low mb-4 unfocused">
+                    <select id="enable-referrals-user-invites"></select>
+                </div>
+                <label>
+                    <input type="submit" class="unfocused">
+                    <span class="button ~urge @low full-width center supra submit">{{ .strings.apply }}</span>
+                </label>
+            </form>
+        </div>
+        <div id="modal-enable-referrals-profile" class="modal">
+            <form class="card relative mx-auto my-[10%] w-4/5 lg:w-1/3" id="form-enable-referrals-profile" href="">
+                <span class="heading"><span id="header-enable-referrals-profile">{{ .strings.enableReferrals }}</span> <span class="modal-close">&times;</span></span>
+                <p class="content my-4">{{ .strings.enableReferralsProfileDescription }}</p>
+                <label class="supra" for="enable-referrals-profile-invites">{{ .strings.invite }}</label>
+                <div class="select ~neutral @low mb-4 mt-2">
+                    <select id="enable-referrals-profile-invites"></select>
+                </div>
+                <label>
+                    <input type="submit" class="unfocused">
+                    <span class="button ~urge @low full-width center supra submit">{{ .strings.apply }}</span>
+                </label>
+            </form>
+        </div>
+        {{ end }}
         <div id="modal-delete-user" class="modal">
             <form class="card relative mx-auto my-[10%] w-4/5 lg:w-1/3" id="form-delete-user" href="">
                 <span class="heading"><span id="header-delete-user"></span> <span class="modal-close">&times;</span></span>
@@ -302,6 +345,9 @@
                                 <th>{{ .strings.userProfilesIsDefault }}</th>
                                 {{ if .ombiEnabled }}
                                 <th>Ombi</th>
+                                {{ end }}
+                                {{ if .referralsEnabled }}
+                                <th>{{ .strings.referrals }}</th>
                                 {{ end }}
                                 <th>{{ .strings.from }}</th>
                                 <th>{{ .strings.userProfilesLibraries }}</th>
@@ -613,6 +659,9 @@
                             </div>
                         </div>
                         <span class="col button ~urge @low center max-w-[20%]" id="accounts-modify-user">{{ .strings.modifySettings }}</span>
+                        {{ if .referralsEnabled }}
+                            <span class="col button ~urge @low center max-w-[20%]" id="accounts-enable-referrals">{{ .strings.enableReferrals }}</span>
+                        {{ end }}
                         <span class="col button ~warning @low center max-w-[20%]" id="accounts-extend-expiry">{{ .strings.extendExpiry }}</span>
                         <div id="accounts-disable-enable-dropdown" class="col dropdown manual pb-0i max-w-[20%]" tabindex="0">
                             <span class="w-100 button ~positive @low center" id="accounts-disable-enable">{{ .strings.disable }}</span>
@@ -643,6 +692,9 @@
                                     {{ end }}
                                     {{ if .discordEnabled }}
                                     <th class="text-center-i grid gap-4 place-items-stretch accounts-header-discord">Discord</th>
+                                    {{ end }}
+                                    {{ if .referralsEnabled }}
+                                    <th class="text-center-i grid gap-4 place-items-stretch accounts-header-referrals">{{ .strings.referrals }}</th>
                                     {{ end }}
                                     <th class="grid gap-4 place-items-stretch accounts-header-expiry">{{ .strings.expiry }}</th>
                                     <th class="grid gap-4 place-items-stretch accounts-header-last-active">{{ .strings.lastActiveTime }}</th>

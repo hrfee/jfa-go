@@ -35,7 +35,8 @@
         "expiry": "Expiración",
         "add": "Agregar",
         "edit": "Editar",
-        "delete": "Eliminar"
+        "delete": "Eliminar",
+        "inviteRemainingUses": "Usos restantes"
     },
     "notifications": {
         "errorLoginBlank": "El nombre de usuario y/o la contraseña se dejaron en blanco.",

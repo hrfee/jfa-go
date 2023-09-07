@@ -22,7 +22,8 @@
         "disabled": "Inaktiverad",
         "expiry": "Löper ut",
         "edit": "Redigera",
-        "delete": "Radera"
+        "delete": "Radera",
+        "inviteRemainingUses": "Återstående användningar"
     },
     "notifications": {
         "errorLoginBlank": "Användarnamnet och/eller lösenordet lämnades tomt.",

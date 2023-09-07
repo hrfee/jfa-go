@@ -1,9 +1,11 @@
 package main
 
 import (
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/lithammer/shortuuid/v3"
 	"github.com/timshannon/badgerhold/v4"
 )
 
@@ -19,13 +21,23 @@ func (app *appContext) GetProfiles(gc *gin.Context) {
 		DefaultProfile: app.storage.GetDefaultProfile().Name,
 		Profiles:       map[string]profileDTO{},
 	}
+	referralsEnabled := app.config.Section("user_page").Key("referrals").MustBool(false)
+	baseInv := Invite{}
 	for _, p := range app.storage.GetProfiles() {
-		out.Profiles[p.Name] = profileDTO{
-			Admin:         p.Admin,
-			LibraryAccess: p.LibraryAccess,
-			FromUser:      p.FromUser,
-			Ombi:          p.Ombi != nil,
+		pdto := profileDTO{
+			Admin:            p.Admin,
+			LibraryAccess:    p.LibraryAccess,
+			FromUser:         p.FromUser,
+			Ombi:             p.Ombi != nil,
+			ReferralsEnabled: false,
 		}
+		if referralsEnabled {
+			err := app.storage.db.Get(p.ReferralTemplateKey, &baseInv)
+			if p.ReferralTemplateKey != "" && err == nil {
+				pdto.ReferralsEnabled = true
+			}
+		}
+		out.Profiles[p.Name] = pdto
 	}
 	gc.JSON(200, out)
 }
@@ -109,5 +121,78 @@ func (app *appContext) DeleteProfile(gc *gin.Context) {
 	gc.BindJSON(&req)
 	name := req.Name
 	app.storage.DeleteProfileKey(name)
+	respondBool(200, true, gc)
+}
+
+// @Summary Enable referrals for a profile, sourced from the given invite by its code.
+// @Produce json
+// @Param profile path string true "name of profile to enable referrals for."
+// @Param invite path string true "invite code to create referral template from."
+// @Success 200 {object} boolResponse
+// @Failure 400 {object} stringResponse
+// @Failure 500 {object} stringResponse
+// @Router /profiles/referral/{profile}/{invite} [post]
+// @Security Bearer
+// @tags Profiles & Settings
+func (app *appContext) EnableReferralForProfile(gc *gin.Context) {
+	profileName := gc.Param("profile")
+	invCode := gc.Param("invite")
+	inv, ok := app.storage.GetInvitesKey(invCode)
+	if !ok {
+		respond(400, "Invalid invite code", gc)
+		app.err.Printf("\"%s\": Failed to enable referrals: invite not found", profileName)
+		return
+	}
+	profile, ok := app.storage.GetProfileKey(profileName)
+	if !ok {
+		respond(400, "Invalid profile", gc)
+		app.err.Printf("\"%s\": Failed to enable referrals: profile not found", profileName)
+		return
+	}
+
+	// Generate new code for referral template
+	inv.Code = shortuuid.New()
+	// make sure code doesn't begin with number
+	_, err := strconv.Atoi(string(inv.Code[0]))
+	for err == nil {
+		inv.Code = shortuuid.New()
+		_, err = strconv.Atoi(string(inv.Code[0]))
+	}
+	inv.Created = time.Now()
+	inv.ValidTill = inv.Created.Add(REFERRAL_EXPIRY_DAYS * 24 * time.Hour)
+	inv.IsReferral = true
+	// Since this is a template for multiple users, ReferrerJellyfinID is not set.
+	// inv.ReferrerJellyfinID = ...
+
+	app.storage.SetInvitesKey(inv.Code, inv)
+
+	profile.ReferralTemplateKey = inv.Code
+
+	app.storage.SetProfileKey(profile.Name, profile)
+
+	respondBool(200, true, gc)
+}
+
+// @Summary Disable referrals for a profile, and removes the referral template. no-op if not enabled.
+// @Produce json
+// @Param profile path string true "name of profile to enable referrals for."
+// @Success 200 {object} boolResponse
+// @Router /profiles/referral/{profile} [delete]
+// @Security Bearer
+// @tags Profiles & Settings
+func (app *appContext) DisableReferralForProfile(gc *gin.Context) {
+	profileName := gc.Param("profile")
+	profile, ok := app.storage.GetProfileKey(profileName)
+	if !ok {
+		respondBool(200, true, gc)
+		return
+	}
+
+	app.storage.DeleteInvitesKey(profile.ReferralTemplateKey)
+
+	profile.ReferralTemplateKey = ""
+
+	app.storage.SetProfileKey(profileName, profile)
+
 	respondBool(200, true, gc)
 }

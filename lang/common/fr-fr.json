@@ -35,7 +35,8 @@
         "expiry": "Expiration",
         "add": "Ajouter",
         "edit": "Éditer",
-        "delete": "Effacer"
+        "delete": "Effacer",
+        "inviteRemainingUses": "Utilisations restantes"
     },
     "notifications": {
         "errorLoginBlank": "Le nom d'utilisateur et/ou le mot de passe sont vides.",

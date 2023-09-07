@@ -38,7 +38,10 @@
         "expiry": "common",
         "add": "common",
         "edit": "common",
-        "delete": "admin"
+        "delete": "common",
+        "myAccount": "common",
+        "referrals": "common",
+        "inviteRemainingUses": "admin"
     },
     "notifications": {
         "errorLoginBlank": "common",

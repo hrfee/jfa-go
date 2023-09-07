@@ -87,7 +87,6 @@
         "inviteUsersCreated": "創建的帳戶",
         "inviteNoProfile": "無資料",
         "inviteDateCreated": "已創建",
-        "inviteRemainingUses": "剩餘使用次數",
         "inviteNoInvites": "無",
         "inviteExpiresInTime": "在 {n} 到期",
         "notifyEvent": "通知：",

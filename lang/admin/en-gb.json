@@ -124,7 +124,6 @@
         "addProfileStoreHomescreenLayout": "Store homescreen layout",
         "inviteNoUsersCreated": "None yet!",
         "inviteUsersCreated": "Created users",
-        "inviteRemainingUses": "Remaining uses",
         "inviteNoInvites": "None",
         "inviteExpiresInTime": "Expires in {n}",
         "notifyEvent": "Notify on:",

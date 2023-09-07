@@ -40,6 +40,7 @@ declare interface Window {
     jellyfinLogin: boolean;
     jfAdminOnly: boolean;
     jfAllowAll: boolean;
+    referralsEnabled: boolean;
 }
 
 declare interface Update {
@@ -113,6 +114,8 @@ declare interface Modals {
     pwr?: Modal;
     logs: Modal;
     email?: Modal;
+    enableReferralsUser?: Modal;
+    enableReferralsProfile?: Modal;
 }
 
 interface Invite {

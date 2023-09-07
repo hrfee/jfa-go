@@ -23,6 +23,7 @@ interface User {
     notify_matrix: boolean;
     label: string;
     accounts_admin: boolean;
+    referrals_enabled: boolean;
 }
 
 interface getPinResponse {
@@ -69,6 +70,8 @@ class user implements User {
     private _labelEditButton: HTMLElement;
     private _accounts_admin: HTMLInputElement
     private _selected: boolean;
+    private _referralsEnabled: boolean;
+    private _referralsEnabledCheck: HTMLElement;
 
     lastNotifyMethod = (): string => {
         // Telegram, Matrix, Discord
@@ -159,6 +162,17 @@ class user implements User {
     set notify_email(s: boolean) {
         if (this._notifyDropdown) {
             (this._notifyDropdown.querySelector(".accounts-contact-email") as HTMLInputElement).checked = s;
+        }
+    }
+
+    get referrals_enabled(): boolean { return this._referralsEnabled; }
+    set referrals_enabled(v: boolean) {
+        this._referralsEnabled = v;
+        if (!window.referralsEnabled) return;
+        if (!v) {
+            this._referralsEnabledCheck.textContent = ``;
+        } else {
+            this._referralsEnabledCheck.innerHTML = `<i class="ri-check-line" aria-label="${window.lang.strings("enabled")}"></i>`;
         }
     }
 
@@ -506,6 +520,11 @@ class user implements User {
             <td class="accounts-discord"></td>
             `;
         }
+        if (window.referralsEnabled) {
+            innerHTML += `
+            <td class="accounts-referrals text-center-i grid gap-4 place-items-stretch"></td>
+            `;
+        }
         innerHTML += `
         <td class="accounts-expiry"></td>
         <td class="accounts-last-active whitespace-nowrap"></td>
@@ -543,6 +562,10 @@ class user implements User {
                     }
                 });
             };
+        }
+        
+        if (window.referralsEnabled) {
+            this._referralsEnabledCheck = this._row.querySelector(".accounts-referrals");
         }
 
         this._notifyDropdown = this._constructDropdown();
@@ -716,6 +739,7 @@ class user implements User {
         this.discord_id = user.discord_id;
         this.label = user.label;
         this.accounts_admin = user.accounts_admin;
+        this.referrals_enabled = user.referrals_enabled;
     }
 
     asElement = (): HTMLTableRowElement => { return this._row; }
@@ -748,9 +772,14 @@ export class accountsList {
     private _modifySettings = document.getElementById("accounts-modify-user") as HTMLSpanElement;
     private _modifySettingsProfile = document.getElementById("radio-use-profile") as HTMLInputElement;
     private _modifySettingsUser = document.getElementById("radio-use-user") as HTMLInputElement;
+    private _enableReferrals = document.getElementById("accounts-enable-referrals") as HTMLSpanElement;
+    private _enableReferralsProfile = document.getElementById("radio-referrals-use-profile") as HTMLInputElement;
+    private _enableReferralsInvite = document.getElementById("radio-referrals-use-invite") as HTMLInputElement;
     private _sendPWR = document.getElementById("accounts-send-pwr") as HTMLSpanElement;
     private _profileSelect = document.getElementById("modify-user-profiles") as HTMLSelectElement;
     private _userSelect = document.getElementById("modify-user-users") as HTMLSelectElement;
+    private _referralsProfileSelect = document.getElementById("enable-referrals-user-profiles") as HTMLSelectElement;
+    private _referralsInviteSelect = document.getElementById("enable-referrals-user-invites") as HTMLSelectElement;
     private _search = document.getElementById("accounts-search") as HTMLInputElement;
 
     private _selectAll = document.getElementById("accounts-select-all") as HTMLInputElement;
@@ -906,6 +935,14 @@ export class accountsList {
             bool: true,
             string: false,
             date: true
+        },
+        "referrals-enabled": {
+            name: window.lang.strings("referrals"),
+            getter: "referrals_enabled",
+            bool: true,
+            string: false,
+            date: false,
+            dependsOnTableHeader: "accounts-header-referrals"
         }
     }
 
@@ -919,7 +956,6 @@ export class accountsList {
 
         // const words = query.split(" ");
         let words: string[] = [];
-        // FIXME: SPLIT BY SPACE, UNLESS IN QUOTES
         
         let quoteSymbol = ``;
         let queryStart = -1;
@@ -985,7 +1021,6 @@ export class accountsList {
                     boolState = false;
                 }
                 if (isBool) {
-                    // FIXME: Generate filter card for each filter class
                     const filterCard = document.createElement("span");
                     filterCard.ariaLabel = window.lang.strings("clickToRemoveFilter");
                     filterCard.classList.add("button", "~" + (boolState ? "positive" : "critical"), "@high", "center", "mx-2", "h-full");
@@ -1058,7 +1093,7 @@ export class accountsList {
 
                 let attempt: { year?: number, month?: number, day?: number, hour?: number, minute?: number } = dateParser.attempt(split[1]);
                 // Month in Date objects is 0-based, so make our parsed date that way too
-                if ("month" in attempt) attempt["month"] -= 1;
+                if ("month" in attempt) attempt.month -= 1;
 
                 let date: Date = (Date as any).fromString(split[1]) as Date;
                 console.log("Read", attempt, "and", date);
@@ -1124,7 +1159,7 @@ export class accountsList {
                 }
             }
         }
-        return result
+        return result;
     };
 
 
@@ -1154,6 +1189,9 @@ export class accountsList {
             this._selectAll.indeterminate = false;
             this._selectAll.checked = false;
             this._modifySettings.classList.add("unfocused");
+            if (window.referralsEnabled) {
+                this._enableReferrals.classList.add("unfocused");
+            }
             this._deleteUser.classList.add("unfocused");
             if (window.emailEnabled || window.telegramEnabled) {
                 this._announceButton.parentElement.classList.add("unfocused");
@@ -1176,6 +1214,9 @@ export class accountsList {
                 this._selectAll.indeterminate = true;
             }
             this._modifySettings.classList.remove("unfocused");
+            if (window.referralsEnabled) {
+                this._enableReferrals.classList.remove("unfocused");
+            }
             this._deleteUser.classList.remove("unfocused");
             this._deleteUser.textContent = window.lang.quantity("deleteUser", list.length);
             if (window.emailEnabled || window.telegramEnabled) {
@@ -1184,6 +1225,7 @@ export class accountsList {
             let anyNonExpiries = list.length == 0 ? true : false;
             let allNonExpiries = true;
             let noContactCount = 0;
+            let referralState = Number(this._users[list[0]].referrals_enabled); // -1 = hide, 0 = show "enable", 1 = show "disable"
             // Only show enable/disable button if all selected have the same state.
             this._shouldEnable = this._users[list[0]].disabled
             let showDisableEnable = true;
@@ -1202,6 +1244,9 @@ export class accountsList {
                 if (!showDisableEnable && anyNonExpiries) { break; }
                 if (!this._users[id].lastNotifyMethod()) {
                     noContactCount++;
+                }
+                if (window.referralsEnabled && referralState != -1 && Number(this._users[id].referrals_enabled) != referralState) {
+                    referralState = -1;
                 }
             }
             this._settingExpiry = false;
@@ -1235,6 +1280,22 @@ export class accountsList {
                 }
                 this._disableEnable.parentElement.classList.remove("unfocused");
                 this._disableEnable.textContent = message;
+            }
+            if (window.referralsEnabled) {
+                if (referralState == -1) {
+                    this._enableReferrals.classList.add("unfocused");
+                }  else {
+                    this._enableReferrals.classList.remove("unfocused");
+                }
+                if (referralState == 0) {
+                    this._enableReferrals.classList.add("~urge");
+                    this._enableReferrals.classList.remove("~warning");
+                    this._enableReferrals.textContent = window.lang.strings("enableReferrals");
+                } else if (referralState == 1) {
+                    this._enableReferrals.classList.add("~warning");
+                    this._enableReferrals.classList.remove("~urge");
+                    this._enableReferrals.textContent = window.lang.strings("disableReferrals");
+                }
             }
         }
     }
@@ -1662,6 +1723,90 @@ export class accountsList {
         };
         window.modals.modifyUser.show();
     }
+    
+    enableReferrals = () => {
+        const modalHeader = document.getElementById("header-enable-referrals-user");
+        modalHeader.textContent = window.lang.quantity("enableReferralsFor", this._collectUsers().length)
+        let list = this._collectUsers();
+
+        // Check if we're disabling or enabling
+        if (this._users[list[0]].referrals_enabled) {
+            _delete("/users/referral", {"users": list}, (req: XMLHttpRequest) => {
+                if (req.readyState != 4 || req.status != 200) return;
+                window.notifications.customSuccess("disabledReferralsSuccess", window.lang.quantity("appliedSettings", list.length));
+                this.reload();
+            });
+            return;
+        }
+            
+        (() => {
+            _get("/invites", null, (req: XMLHttpRequest) => {
+                if (req.readyState != 4 || req.status != 200) return;
+
+                // 1. Invites
+
+                let innerHTML = "";
+                let invites = req.response["invites"] as Array<Invite>;
+                window.availableProfiles = req.response["profiles"];
+                if (invites) {
+                    for (let inv of invites) {
+                        let name = inv.code;
+                        if (inv.label) {
+                            name = `${inv.label} (${inv.code})`;
+                        }
+                        innerHTML += `<option value="${inv.code}">${name}</option>`;
+                    }
+                    this._enableReferralsInvite.checked = true;
+                } else {
+                    this._enableReferralsInvite.checked = false;
+                    innerHTML += `<option>${window.lang.strings("inviteNoInvites")}</option>`;
+                }
+                this._enableReferralsProfile.checked = !(this._enableReferralsInvite.checked);
+                this._referralsInviteSelect.innerHTML = innerHTML;
+            
+                // 2. Profiles
+
+                innerHTML = "";
+                for (const profile of window.availableProfiles) {
+                    innerHTML += `<option value="${profile}">${profile}</option>`;
+                }
+                this._referralsProfileSelect.innerHTML = innerHTML;
+            });
+        })();
+
+        const form = document.getElementById("form-enable-referrals-user") as HTMLFormElement;
+        const button = form.querySelector("span.submit") as HTMLSpanElement;
+        form.onsubmit = (event: Event) => {
+            event.preventDefault();
+            toggleLoader(button);
+            let send = {
+                "users": list
+            };
+            // console.log("profile:", this._enableReferralsProfile.checked, this._enableReferralsInvite.checked); 
+            if (this._enableReferralsProfile.checked && !this._enableReferralsInvite.checked) { 
+                send["from"] = "profile";
+                send["profile"] = this._referralsProfileSelect.value;
+            } else if (this._enableReferralsInvite.checked && !this._enableReferralsProfile.checked) {
+                send["from"] = "invite";
+                send["id"] = this._referralsInviteSelect.value;
+            }
+            _post("/users/referral/" + send["from"] + "/" + (send["id"] ? send["id"] : send["profile"]), send, (req: XMLHttpRequest) => {
+                if (req.readyState == 4) {
+                    toggleLoader(button);
+                    if (req.status == 400) {
+                        window.notifications.customError("noReferralTemplateError", window.lang.notif("errorNoReferralTemplate"));
+                    } else if (req.status == 200 || req.status == 204) {
+                        window.notifications.customSuccess("enableReferralsSuccess", window.lang.quantity("appliedSettings", list.length));
+                    }
+                    this.reload();
+                    window.modals.enableReferralsUser.close();
+                }
+            });
+        };
+        this._enableReferralsProfile.checked = true;
+        this._enableReferralsInvite.checked = false;
+        window.modals.enableReferralsUser.show();
+    }
 
     extendExpiry = (enableUser?: boolean) => {
         const list = this._collectUsers();
@@ -1793,6 +1938,43 @@ export class accountsList {
         };
         this._modifySettingsProfile.onchange = checkSource;
         this._modifySettingsUser.onchange = checkSource;
+
+        if (window.referralsEnabled) {
+            const profileSpan = this._enableReferralsProfile.nextElementSibling as HTMLSpanElement;
+            const inviteSpan = this._enableReferralsInvite.nextElementSibling as HTMLSpanElement;
+            const checkReferralSource = () => {
+                console.log("States:", this._enableReferralsProfile.checked, this._enableReferralsInvite.checked);
+                if (this._enableReferralsProfile.checked) {
+                    this._referralsInviteSelect.parentElement.classList.add("unfocused");
+                    this._referralsProfileSelect.parentElement.classList.remove("unfocused")
+                    profileSpan.classList.add("@high");
+                    profileSpan.classList.remove("@low");
+                    inviteSpan.classList.remove("@high");
+                    inviteSpan.classList.add("@low");
+                } else {
+                    this._referralsInviteSelect.parentElement.classList.remove("unfocused");
+                    this._referralsProfileSelect.parentElement.classList.add("unfocused");
+                    inviteSpan.classList.add("@high");
+                    inviteSpan.classList.remove("@low");
+                    profileSpan.classList.remove("@high");
+                    profileSpan.classList.add("@low");
+                }
+            };
+            profileSpan.onclick = () => {
+                this._enableReferralsProfile.checked = true;
+                this._enableReferralsInvite.checked = false;
+                checkReferralSource();
+            };
+            inviteSpan.onclick = () => {;
+                this._enableReferralsInvite.checked = true;
+                this._enableReferralsProfile.checked = false;
+                checkReferralSource();
+            };
+            this._enableReferrals.onclick = () => {
+                this.enableReferrals();
+                profileSpan.onclick(null);
+            };
+        }
 
         this._deleteUser.onclick = this.deleteUsers;
         this._deleteUser.classList.add("unfocused");

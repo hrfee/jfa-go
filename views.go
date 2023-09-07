@@ -173,6 +173,7 @@ func (app *appContext) AdminPage(gc *gin.Context) {
 		"jfAdminOnly":      jfAdminOnly,
 		"jfAllowAll":       jfAllowAll,
 		"userPageEnabled":  app.config.Section("user_page").Key("enabled").MustBool(false),
+		"referralsEnabled": app.config.Section("user_page").Key("enabled").MustBool(false) && app.config.Section("user_page").Key("referrals").MustBool(false),
 	})
 }
 
@@ -203,6 +204,7 @@ func (app *appContext) MyUserPage(gc *gin.Context) {
 		"langName":          lang,
 		"jfLink":            app.config.Section("ui").Key("redirect_url").String(),
 		"requirements":      app.validator.getCriteria(),
+		"referralsEnabled":  app.config.Section("user_page").Key("enabled").MustBool(false) && app.config.Section("user_page").Key("referrals").MustBool(false),
 	}
 	if telegramEnabled {
 		data["telegramUsername"] = app.telegram.username
@@ -617,6 +619,14 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 	}
 	userPageAddress += "/my/account"
 
+	fromUser := ""
+	if inv.ReferrerJellyfinID != "" {
+		sender, status, err := app.jf.UserByID(inv.ReferrerJellyfinID, false)
+		if status == 200 && err == nil {
+			fromUser = sender.Name
+		}
+	}
+
 	data := gin.H{
 		"urlBase":            app.getURLBase(gc),
 		"cssClass":           app.cssClass,
@@ -652,6 +662,7 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 		"reCAPTCHASiteKey":   app.config.Section("captcha").Key("recaptcha_site_key").MustString(""),
 		"userPageEnabled":    app.config.Section("user_page").Key("enabled").MustBool(false),
 		"userPageAddress":    userPageAddress,
+		"fromUser":           fromUser,
 	}
 	if telegram {
 		data["telegramPIN"] = app.telegram.NewAuthToken()

@@ -53,7 +53,6 @@
         "inviteUsersCreated": "Erstellte Benutzer",
         "inviteNoProfile": "Kein Profil",
         "inviteDateCreated": "Erstellt",
-        "inviteRemainingUses": "Verbleibende Verwendungen",
         "inviteNoInvites": "Keine",
         "inviteExpiresInTime": "Läuft in {n} ab",
         "notifyEvent": "Benachrichtigen bei:",

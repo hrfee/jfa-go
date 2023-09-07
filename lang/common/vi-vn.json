@@ -13,7 +13,8 @@
         "expiry": "Hết hạn",
         "add": "Thêm",
         "edit": "Chỉnh sửa",
-        "delete": "Xóa"
+        "delete": "Xóa",
+        "inviteRemainingUses": "Số lần sử dụng còn lại"
     },
     "notifications": {
         "errorConnection": "Không thể kết nối với jfa-go.",

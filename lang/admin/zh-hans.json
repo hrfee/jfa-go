@@ -80,7 +80,6 @@
         "inviteUsersCreated": "已创建的用户",
         "inviteNoProfile": "没有个人资料",
         "inviteDateCreated": "已创建",
-        "inviteRemainingUses": "剩余使用次数",
         "inviteNoInvites": "无",
         "inviteExpiresInTime": "在 {n} 到期",
         "notifyEvent": "通知：",

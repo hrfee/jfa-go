@@ -3,12 +3,15 @@ package main
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 	"github.com/hrfee/mediabrowser"
+	"github.com/lithammer/shortuuid/v3"
+	"github.com/timshannon/badgerhold/v4"
 )
 
 // @Summary Creates a new Jellyfin user without an invite.
@@ -301,6 +304,12 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 		}
 	}
 	id := user.ID
+
+	emailStore := EmailAddress{
+		Addr:    req.Email,
+		Contact: (req.Email != ""),
+	}
+
 	var profile Profile
 	if invite.Profile != "" {
 		app.debug.Printf("Applying settings from profile \"%s\"", invite.Profile)
@@ -322,10 +331,15 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 		if !((status == 200 || status == 204) && err == nil) {
 			app.err.Printf("%s: Failed to set configuration template (%d): %v", req.Code, status, err)
 		}
+		if app.config.Section("user_page").Key("enabled").MustBool(false) && app.config.Section("user_page").Key("referrals").MustBool(false) && profile.ReferralTemplateKey != "" {
+			emailStore.ReferralTemplateKey = profile.ReferralTemplateKey
+			// Store here, just incase email are disabled (whether this is even possible, i don't know)
+			app.storage.SetEmailsKey(id, emailStore)
+		}
 	}
 	// if app.config.Section("password_resets").Key("enabled").MustBool(false) {
 	if req.Email != "" {
-		app.storage.SetEmailsKey(id, EmailAddress{Addr: req.Email, Contact: true})
+		app.storage.SetEmailsKey(id, emailStore)
 	}
 	expiry := time.Time{}
 	if invite.UserExpiry {
@@ -629,6 +643,88 @@ func (app *appContext) ExtendExpiry(gc *gin.Context) {
 	respondBool(204, true, gc)
 }
 
+// @Summary Enable referrals for the given user(s) based on the rules set in the given invite code, or profile.
+// @Produce json
+// @Param EnableDisableReferralDTO body EnableDisableReferralDTO true "List of users"
+// @Param mode path string true "mode of template sourcing from 'invite' or 'profile'."
+// @Param source path string true "invite code or profile name, depending on what mode is."
+// @Success 200 {object} boolResponse
+// @Failure 400 {object} boolResponse
+// @Failure 500 {object} boolResponse
+// @Router /users/referral/{mode}/{source} [post]
+// @Security Bearer
+// @tags Users
+func (app *appContext) EnableReferralForUsers(gc *gin.Context) {
+	var req EnableDisableReferralDTO
+	gc.BindJSON(&req)
+	mode := gc.Param("mode")
+	source := gc.Param("source")
+
+	baseInv := Invite{}
+	if mode == "profile" {
+		profile, ok := app.storage.GetProfileKey(source)
+		err := app.storage.db.Get(profile.ReferralTemplateKey, &baseInv)
+		if !ok || profile.ReferralTemplateKey == "" || err != nil {
+			app.debug.Printf("Couldn't find template to source from")
+			respondBool(400, false, gc)
+			return
+
+		}
+		app.debug.Printf("Found referral template in profile: %+v\n", profile.ReferralTemplateKey)
+	} else if mode == "invite" {
+		// Get the invite, and modify it to turn it into a referral
+		err := app.storage.db.Get(source, &baseInv)
+		if err != nil {
+			app.debug.Printf("Couldn't find invite to source from")
+			respondBool(400, false, gc)
+			return
+		}
+	}
+	for _, u := range req.Users {
+		// 1. Wipe out any existing referral codes.
+		app.storage.db.DeleteMatching(Invite{}, badgerhold.Where("ReferrerJellyfinID").Eq(u))
+
+		// 2. Generate referral invite.
+		inv := baseInv
+		inv.Code = shortuuid.New()
+		// make sure code doesn't begin with number
+		_, err := strconv.Atoi(string(inv.Code[0]))
+		for err == nil {
+			inv.Code = shortuuid.New()
+			_, err = strconv.Atoi(string(inv.Code[0]))
+		}
+		inv.Created = time.Now()
+		inv.ValidTill = inv.Created.Add(REFERRAL_EXPIRY_DAYS * 24 * time.Hour)
+		inv.IsReferral = true
+		inv.ReferrerJellyfinID = u
+		app.storage.SetInvitesKey(inv.Code, inv)
+	}
+}
+
+// @Summary Disable referrals for the given user(s).
+// @Produce json
+// @Param EnableDisableReferralDTO body EnableDisableReferralDTO true "List of users"
+// @Success 200 {object} boolResponse
+// @Router /users/referral [delete]
+// @Security Bearer
+// @tags Users
+func (app *appContext) DisableReferralForUsers(gc *gin.Context) {
+	var req EnableDisableReferralDTO
+	gc.BindJSON(&req)
+	for _, u := range req.Users {
+		// 1. Delete directly bound template
+		app.storage.db.DeleteMatching(Invite{}, badgerhold.Where("ReferrerJellyfinID").Eq(u))
+		// 2. Check for and delete profile-attached template
+		user, ok := app.storage.GetEmailsKey(u)
+		if !ok {
+			continue
+		}
+		user.ReferralTemplateKey = ""
+		app.storage.SetEmailsKey(u, user)
+	}
+	respondBool(200, true, gc)
+}
+
 // @Summary Send an announcement via email to a given list of users.
 // @Produce json
 // @Param announcementDTO body announcementDTO true "Announcement request object"
@@ -833,13 +929,15 @@ func (app *appContext) GetUsers(gc *gin.Context) {
 	}
 	adminOnly := app.config.Section("ui").Key("admin_only").MustBool(true)
 	allowAll := app.config.Section("ui").Key("allow_all").MustBool(false)
+	referralsEnabled := app.config.Section("user_page").Key("referrals").MustBool(false)
 	i := 0
 	for _, jfUser := range users {
 		user := respUser{
-			ID:       jfUser.ID,
-			Name:     jfUser.Name,
-			Admin:    jfUser.Policy.IsAdministrator,
-			Disabled: jfUser.Policy.IsDisabled,
+			ID:               jfUser.ID,
+			Name:             jfUser.Name,
+			Admin:            jfUser.Policy.IsAdministrator,
+			Disabled:         jfUser.Policy.IsDisabled,
+			ReferralsEnabled: false,
 		}
 		if !jfUser.LastActivityDate.IsZero() {
 			user.LastActive = jfUser.LastActivityDate.Unix()
@@ -867,6 +965,18 @@ func (app *appContext) GetUsers(gc *gin.Context) {
 			// user.Discord = dcUser.Username + "#" + dcUser.Discriminator
 			user.DiscordID = dcUser.ID
 			user.NotifyThroughDiscord = dcUser.Contact
+		}
+		// FIXME: Send referral data
+		referrerInv := Invite{}
+		if referralsEnabled {
+			// 1. Directly attached invite.
+			err := app.storage.db.FindOne(&referrerInv, badgerhold.Where("ReferrerJellyfinID").Eq(jfUser.ID))
+			if err == nil {
+				user.ReferralsEnabled = true
+				// 2. Referrals via profile template. Shallow check, doesn't look for the thing in the database.
+			} else if email, ok := app.storage.GetEmailsKey(jfUser.ID); ok && email.ReferralTemplateKey != "" {
+				user.ReferralsEnabled = true
+			}
 		}
 		resp.UserList[i] = user
 		i++

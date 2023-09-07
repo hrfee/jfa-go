@@ -16,6 +16,9 @@ import (
 func (app *appContext) checkInvites() {
 	currentTime := time.Now()
 	for _, data := range app.storage.GetInvites() {
+		if data.IsReferral {
+			continue
+		}
 		expiry := data.ValidTill
 		if !currentTime.After(expiry) {
 			continue
@@ -222,6 +225,9 @@ func (app *appContext) GetInvites(gc *gin.Context) {
 	app.checkInvites()
 	var invites []inviteDTO
 	for _, inv := range app.storage.GetInvites() {
+		if inv.IsReferral {
+			continue
+		}
 		_, months, days, hours, minutes, _ := timeDiff(inv.ValidTill, currentTime)
 		invite := inviteDTO{
 			Code:        inv.Code,

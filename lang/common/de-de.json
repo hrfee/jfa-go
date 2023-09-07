@@ -35,7 +35,8 @@
         "expiry": "Ablaufdatum",
         "add": "Hinzufügen",
         "edit": "Bearbeiten",
-        "delete": "Löschen"
+        "delete": "Löschen",
+        "inviteRemainingUses": "Verbleibende Verwendungen"
     },
     "notifications": {
         "errorLoginBlank": "Der Benutzername und/oder das Passwort wurden nicht ausgefüllt.",

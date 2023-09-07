@@ -4,6 +4,7 @@
     },
     "strings": {
         "invites": "Invites",
+        "invite": "Invite",
         "accounts": "Accounts",
         "settings": "Settings",
         "inviteMonths": "Months",
@@ -63,6 +64,10 @@
         "markdownSupported": "Markdown is supported.",
         "modifySettings": "Modify Settings",
         "modifySettingsDescription": "Apply settings from an existing profile, or source them directly from a user.",
+        "enableReferrals": "Enable Referrals",
+        "disableReferrals": "Disable Referrals",
+        "enableReferralsDescription": "Give users a personal referral link similiar to an invite, to send to friends/family. Can be sourced from a referral template in a profile, or from an existing invite.",
+        "enableReferralsProfileDescription": "Give users created with this profile a personal referral link similiar to an invite, to send to friends/family. Create an invite with the desired settings, then select it here. Each referral will then be based on this invite. You can delete the invite once complete.",
         "applyHomescreenLayout": "Apply homescreen layout",
         "sendDeleteNotificationEmail": "Send notification message",
         "sendDeleteNotifiationExample": "Your account has been deleted.",
@@ -90,7 +95,6 @@
         "inviteUsersCreated": "Created users",
         "inviteNoProfile": "No Profile",
         "inviteDateCreated": "Created",
-        "inviteRemainingUses": "Remaining uses",
         "inviteNoInvites": "None",
         "inviteExpiresInTime": "Expires in {n}",
         "notifyEvent": "Notify on:",
@@ -132,6 +136,7 @@
         "updateAppliedRefresh": "Update applied, please refresh.",
         "telegramVerified": "Telegram account verified.",
         "accountConnected": "Account connected.",
+        "referralsEnabled": "Referrals enabled.",
         "errorSettingsAppliedNoHomescreenLayout": "Settings were applied, but applying homescreen layout may have failed.",
         "errorHomescreenAppliedNoSettings": "Homescreen layout was applied, but applying settings may have failed.",
         "errorSettingsFailed": "Application failed.",
@@ -152,6 +157,7 @@
         "errorSendWelcomeEmail": "Failed to send welcome message (check console/logs)",
         "errorApplyUpdate": "Failed to apply update, try manually.",
         "errorCheckUpdate": "Failed to check for update.",
+        "errorNoReferralTemplate": "Profile doesn't contain referral template, add one in settings.",
         "updateAvailable": "A new update is available, check settings.",
         "noUpdatesAvailable": "No new updates available."
     },
@@ -159,6 +165,10 @@
         "modifySettingsFor": {
             "singular": "Modify Settings for {n} user",
             "plural": "Modify Settings for {n} users"
+        },
+        "enableReferralsFor": {
+            "singular": "Enable Referrals for {n} user",
+            "plural": "Enable Referrals for {n} users"
         },
         "deleteNUsers": {
             "singular": "Delete {n} user",

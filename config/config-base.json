@@ -385,7 +385,7 @@
                 "enabled": {
                     "name": "Enabled",
                     "required": false,
-                    "requires_restart": false,
+                    "requires_restart": true,
                     "type": "bool",
                     "value": true
                 },
@@ -405,6 +405,22 @@
                     "depends_true": "enabled",
                     "required": "false",
                     "description": "Click the edit icon next to the \"User Page\" Setting to add custom Markdown messages that will be shown to the user. Note message cards are not private, little effort is required for anyone to view them."
+                },
+                "referrals": {
+                    "name": "User Referrals",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "bool",
+                    "value": true,
+                    "description": "Users are given their own \"invite\" to send to others."
+                },
+                "referrals_note": {
+                    "name": "Using Referrals:",
+                    "type": "note",
+                    "value": "",
+                    "depends_true": "referrals",
+                    "required": "false",
+                    "description": "Create an invite with your desired settings, then either assign it to a user in the accounts tab, or to a profile in settings."
                 }
             }
         },
