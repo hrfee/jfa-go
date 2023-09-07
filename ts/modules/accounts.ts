@@ -1794,7 +1794,7 @@ export class accountsList {
                 if (req.readyState == 4) {
                     toggleLoader(button);
                     if (req.status == 400) {
-                        window.notifications.customError("unknownError", window.lang.notif("errorUnknown"));
+                        window.notifications.customError("noReferralTemplateError", window.lang.notif("errorNoReferralTemplate"));
                     } else if (req.status == 200 || req.status == 204) {
                         window.notifications.customSuccess("enableReferralsSuccess", window.lang.quantity("appliedSettings", list.length));
                     }

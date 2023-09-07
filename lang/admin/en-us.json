@@ -158,6 +158,7 @@
         "errorSendWelcomeEmail": "Failed to send welcome message (check console/logs)",
         "errorApplyUpdate": "Failed to apply update, try manually.",
         "errorCheckUpdate": "Failed to check for update.",
+        "errorNoReferralTemplate": "Profile doesn't contain referral template, add one in settings.",
         "updateAvailable": "A new update is available, check settings.",
         "noUpdatesAvailable": "No new updates available."
     },
@@ -223,4 +224,4 @@
             "plural": "Extended expiry for {n} users."
         }
     }
-}
+} 
