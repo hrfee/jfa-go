@@ -13,9 +13,26 @@ import (
 	"github.com/timshannon/badgerhold/v4"
 )
 
+const (
+	CAPTCHA_VALIDITY = 20 * 60 // Seconds
+)
+
 func (app *appContext) checkInvites() {
 	currentTime := time.Now()
 	for _, data := range app.storage.GetInvites() {
+		captchas := data.Captchas
+		captchasExpired := false
+		for key, capt := range data.Captchas {
+			if time.Now().After(capt.Generated.Add(CAPTCHA_VALIDITY * time.Second)) {
+				delete(captchas, key)
+				captchasExpired = true
+			}
+		}
+		if captchasExpired {
+			data.Captchas = captchas
+			app.storage.SetInvitesKey(data.Code, data)
+		}
+
 		if data.IsReferral {
 			continue
 		}

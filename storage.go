@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/hrfee/mediabrowser"
-	"github.com/steambap/captcha"
 	"github.com/timshannon/badgerhold/v4"
 )
 
@@ -501,10 +500,16 @@ type Invite struct {
 	Notify                     map[string]map[string]bool `json:"notify"`
 	Profile                    string                     `json:"profile"`
 	Label                      string                     `json:"label,omitempty"`
-	Captchas                   map[string]*captcha.Data   // Map of Captcha IDs to answers
+	Captchas                   map[string]Captcha         // Map of Captcha IDs to images & answers
 	IsReferral                 bool                       `json:"is_referral" badgerhold:"index"`
 	ReferrerJellyfinID         string                     `json:"referrer_id"`
 	ReferrerTemplateForProfile string
+}
+
+type Captcha struct {
+	Answer    string
+	Image     []byte // image/png
+	Generated time.Time
 }
 
 type Lang struct {

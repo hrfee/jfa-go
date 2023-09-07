@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bufio"
+	"bytes"
 	"encoding/json"
 	"html/template"
 	"io"
@@ -372,20 +374,16 @@ func (app *appContext) GetCaptcha(gc *gin.Context) {
 			"contactMessage": app.config.Section("ui").Key("contact_message").String(),
 		})
 	}
-	var capt *captcha.Data
+	var capt Captcha
+	ok = true
 	if inv.Captchas != nil {
-		capt = inv.Captchas[captchaID]
+		capt, ok = inv.Captchas[captchaID]
 	}
-	if capt == nil {
+	if !ok {
 		respondBool(400, false, gc)
 		return
 	}
-	if err := capt.WriteImage(gc.Writer); err != nil {
-		app.err.Printf("Failed to write CAPTCHA image: %v", err)
-		respondBool(500, false, gc)
-		return
-	}
-	gc.Status(200)
+	gc.Data(200, "image/png", capt.Image)
 	return
 }
 
@@ -414,10 +412,20 @@ func (app *appContext) GenCaptcha(gc *gin.Context) {
 		return
 	}
 	if inv.Captchas == nil {
-		inv.Captchas = map[string]*captcha.Data{}
+		inv.Captchas = map[string]Captcha{}
 	}
 	captchaID := genAuthToken()
-	inv.Captchas[captchaID] = capt
+	var buf bytes.Buffer
+	if err := capt.WriteImage(bufio.NewWriter(&buf)); err != nil {
+		app.err.Printf("Failed to render captcha: %v", err)
+		respondBool(500, false, gc)
+		return
+	}
+	inv.Captchas[captchaID] = Captcha{
+		Answer:    capt.Text,
+		Image:     buf.Bytes(),
+		Generated: time.Now(),
+	}
 	app.storage.SetInvitesKey(code, inv)
 	gc.JSON(200, genCaptchaDTO{captchaID})
 	return
@@ -437,7 +445,7 @@ func (app *appContext) verifyCaptcha(code, id, text string) bool {
 			app.debug.Printf("Couldn't find Captcha \"%s\"", id)
 			return false
 		}
-		return strings.ToLower(c.Text) == strings.ToLower(text)
+		return strings.ToLower(c.Answer) == strings.ToLower(text)
 	}
 
 	// reCAPTCHA
@@ -504,15 +512,15 @@ func (app *appContext) VerifyCaptcha(gc *gin.Context) {
 		})
 		return
 	}
-	var capt *captcha.Data
+	var capt Captcha
 	if inv.Captchas != nil {
-		capt = inv.Captchas[captchaID]
+		capt, ok = inv.Captchas[captchaID]
 	}
-	if capt == nil {
+	if !ok {
 		respondBool(400, false, gc)
 		return
 	}
-	if strings.ToLower(capt.Text) != strings.ToLower(text) {
+	if strings.ToLower(capt.Answer) != strings.ToLower(text) {
 		respondBool(400, false, gc)
 		return
 	}
