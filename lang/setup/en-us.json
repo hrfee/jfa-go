@@ -32,7 +32,7 @@
     },
     "endPage": {
         "finished": "Finished!",
-        "restartMessage": "You can configure Discord/Telegram/Matrix bots, customize your messages and more in Settings. Click below to restart, then refresh the page.",
+        "restartMessage": "Features like Discord/Telegram/Matrix bots, custom Markdown messages, and a user-accessible \"My Account\" page can be found in Settings, so make sure to give it a browse. Click below to restart, then refresh the page.",
         "refreshPage": "Refresh"
     },
     "language": {
