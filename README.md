@@ -38,9 +38,12 @@ a rewrite of [jellyfin-accounts](https://github.com/hrfee/jellyfin-accounts) (or
 * 🔗 Ombi Integration: Automatically creates Ombi accounts for new users using their email address and login details, and your own defined set of permissions.
 * Account management: Apply settings to your users individually or en masse, and delete users, optionally sending them an email notification with a reason.
 * Telegram/Discord/Matrix Integration: Verify users via a chat bot, and send Password Resets, Announcements, etc. through it.
+* "My Account" Page: Allows users to reset their password, manage contact details, view their account expiry date, and send referrals. Custom messages can be added, with markdown.
+* Referrals: Users can be given special invites to send to their friends and families.
 * 📨 Email storage: Add your existing users email addresses through the UI, and jfa-go will ask new users for them on account creation.
     * Email addresses can optionally be used instead of usernames
 * 🔑 Password resets: When users forget their passwords and request a change in Jellyfin, jfa-go reads the PIN from the created file and sends it straight to them via email/telegram.
+  * Can also be done through the "My Account" page if enabled.
 * Admin Notifications: Get notified when someone creates an account, or an invite expires.
 * 📣 Announcements: Bulk message your users with announcements about your server.
 * Authentication via Jellyfin: Instead of using separate credentials for jfa-go and Jellyfin, jfa-go can use it as the authentication provider.
@@ -172,3 +175,4 @@ For translations, use the weblate instance [here](https://weblate.jfa-go.com/eng
 Big thanks to those who sponsor me. You can see them below:
 
 [<img src="https://sponsors-endpoint.hrfee.pw/sponsor/avatar/0" width="35">](https://sponsors-endpoint.hrfee.pw/sponsor/profile/0)
+[<img src="https://sponsors-endpoint.hrfee.pw/sponsor/avatar/1" width="35">](https://sponsors-endpoint.hrfee.pw/sponsor/profile/0)
