@@ -450,6 +450,7 @@ const addEditEmail = (add: boolean): void => {
         _post("/my/email", {"email": input.value}, (req: XMLHttpRequest) => {
             if (req.readyState == 4 && (req.status == 303 || req.status == 200)) {
                 document.dispatchEvent(new CustomEvent("details-reload"));
+                window.modals.email.close();
             }
         }, true, (req: XMLHttpRequest) => {
             if (req.readyState == 4 && req.status == 401) {
