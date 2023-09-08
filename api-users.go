@@ -310,6 +310,10 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 		Contact: (req.Email != ""),
 	}
 
+	if invite.UserLabel != "" {
+		emailStore.Label = invite.UserLabel
+	}
+
 	var profile Profile
 	if invite.Profile != "" {
 		app.debug.Printf("Applying settings from profile \"%s\"", invite.Profile)
@@ -338,7 +342,7 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 		}
 	}
 	// if app.config.Section("password_resets").Key("enabled").MustBool(false) {
-	if req.Email != "" {
+	if req.Email != "" || invite.UserLabel != "" {
 		app.storage.SetEmailsKey(id, emailStore)
 	}
 	expiry := time.Time{}

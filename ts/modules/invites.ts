@@ -48,9 +48,11 @@ class DOMInvite implements Invite {
         if (label) {
             labelLabel.textContent = window.lang.strings("userLabel");
             value.textContent = label;
+            value.classList.remove("unfocused");
         } else {
             labelLabel.textContent = "";
             value.textContent = "";
+            value.classList.add("unfocused");
         }
     }
 
@@ -366,7 +368,7 @@ class DOMInvite implements Invite {
         <p class="supra mb-4 top">${window.lang.strings("inviteDateCreated")} <strong class="inv-created"></strong></p>
         <p class="supra mb-4">${window.lang.strings("inviteRemainingUses")} <strong class="inv-remaining"></strong></p>
         <p class="supra mb-4"><span class="user-expiry"></span> <strong class="user-expiry-time"></strong></p>
-        <p class="mb-4 flex items-center"><span class="user-label-label supra mr-2"></span> <span class="user-label chip ~blue"></span></p>
+        <p class="mb-4 flex items-center"><span class="user-label-label supra mr-2"></span> <span class="user-label chip ~blue unfocused"></span></p>
         `;
 
         this._right = document.createElement('div') as HTMLDivElement;
