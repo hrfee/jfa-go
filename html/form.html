@@ -43,7 +43,7 @@
         <div id="notification-box"></div>
         <div class="page-container">
             <div class="card dark:~d_neutral @low">
-                <div class="flex flex-col justify-between md:flex-row gap-3 items-baseline mb-2">
+                <div class="flex flex-col md:flex-row gap-3 items-baseline mb-2">
                     <span class="heading mr-5">
                         {{ if .passwordReset }}
                         {{ .strings.passwordReset }}
@@ -58,9 +58,6 @@
                             {{ .helpMessage }}
                         {{ end }}
                     </span>
-                    {{ if .fromUser }}
-                        <span class="badge ~positive text-lg p-1 px-2 self-center">{{ .strings.invitedBy }} {{ .fromUser }}</span>
-                    {{ end }}
                 </div>
                 <div class="flex flex-col md:flex-row gap-3">
                     <div class="flex-1">
@@ -126,6 +123,9 @@
                         </form>
                     </div>
                     <div class="flex-initial">
+                        {{ if .fromUser }}
+                            <aside class="col aside sm ~positive mb-4" id="invite-from-user" data-from="{{ .fromUser }}">{{ .strings.invitedBy }}</aside>
+                        {{ end }}
                         <div class="card ~neutral @low mb-4">
                             <span class="label supra">{{ .strings.passwordRequirementsHeader }}</span>
                             <ul>
@@ -146,7 +146,7 @@
                         </div>
                         {{ end }}
                         {{ if .contactMessage }}
-                        <aside class="col aside sm ~info mt-4">{{ .contactMessage }}</aside>
+                            <aside class="col aside sm ~info mt-4">{{ .contactMessage }}</aside>
                         {{ end }}
                     </div>
                 </div>

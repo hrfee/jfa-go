@@ -37,7 +37,7 @@
         "changePassword": "Change Password",
         "referralsDescription": "Invite friends & family to Jellyfin with this link. Come back here for a new one if it expires.",
         "copyReferral": "Copy Link",
-        "invitedBy": "Invited By"
+        "invitedBy": "You were invited by user {user}."
     },
     "notifications": {
         "errorUserExists": "User already exists.",

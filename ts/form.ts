@@ -392,3 +392,8 @@ const create = (event: SubmitEvent) => {
 validator.validate();
 
 form.onsubmit = create;
+
+const invitedByAside = document.getElementById("invite-from-user");
+if (typeof(invitedByAside) != "undefined" && invitedByAside != null) {
+    invitedByAside.textContent = invitedByAside.textContent.replace("{user}", invitedByAside.getAttribute("data-from"));
+}
