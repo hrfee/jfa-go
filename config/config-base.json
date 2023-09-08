@@ -377,8 +377,8 @@
         "user_page": {
             "order": [],
             "meta": {
-                "name": "User Page",
-                "description": "The User Page (My Account) allows users to access and modify info directly, such as changing/adding contact methods, seeing their expiry date, or changing their password. Password resets can also be initiated from here, given a contact method or username. ",
+                "name": "User Page/\"My Account\"",
+                "description": "The User Page (My Account) allows users to access and modify info directly, such as changing/adding contact methods, seeing their expiry date, sending referrals or changing their password. Password resets can also be initiated from here, given a contact method or username. ",
                 "depends_true": "ui|jellyfin_login"
             },
             "settings": {
