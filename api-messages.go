@@ -162,7 +162,7 @@ func (app *appContext) GetCustomMessageTemplate(gc *gin.Context) {
 	username := app.storage.lang.Email[lang].Strings.get("username")
 	emailAddress := app.storage.lang.Email[lang].Strings.get("emailAddress")
 	customMessage, ok := app.storage.GetCustomContentKey(id)
-	if !ok {
+	if !ok && id != "Announcement" {
 		app.err.Printf("Failed to get custom message with ID \"%s\"", id)
 		respondBool(400, false, gc)
 		return
