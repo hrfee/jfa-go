@@ -41,6 +41,8 @@
         "profile": "Profile",
         "unknown": "Unknown",
         "label": "Label",
+        "userLabel": "User Label",
+        "userLabelDescription": "Label to apply to users created with this invite.",
         "logs": "Logs",
         "announce": "Announce",
         "templates": "Templates",

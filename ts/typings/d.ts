@@ -129,6 +129,7 @@ interface Invite {
     notifyCreation?: boolean;
     profile?: string;
     label?: string;
+    user_label?: string;
     userExpiry?: boolean;
     userExpiryTime?: string;
 }

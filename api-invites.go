@@ -161,6 +161,9 @@ func (app *appContext) GenerateInvite(gc *gin.Context) {
 	if req.Label != "" {
 		invite.Label = req.Label
 	}
+	if req.UserLabel != "" {
+		invite.UserLabel = req.UserLabel
+	}
 	invite.Created = currentTime
 	if req.MultipleUses {
 		if req.NoLimit {
@@ -261,6 +264,7 @@ func (app *appContext) GetInvites(gc *gin.Context) {
 			Profile:     inv.Profile,
 			NoLimit:     inv.NoLimit,
 			Label:       inv.Label,
+			UserLabel:   inv.UserLabel,
 		}
 		if len(inv.UsedBy) != 0 {
 			invite.UsedBy = map[string]int64{}

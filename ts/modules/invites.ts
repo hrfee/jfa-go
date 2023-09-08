@@ -39,6 +39,21 @@ class DOMInvite implements Invite {
         }
     }
 
+    private _userLabel: string = "";
+    get user_label(): string { return this._userLabel; }
+    set user_label(label: string) {
+        this._userLabel = label;
+        const labelLabel = this._middle.querySelector(".user-label-label");
+        const value = this._middle.querySelector(".user-label");
+        if (label) {
+            labelLabel.textContent = window.lang.strings("userLabel");
+            value.textContent = label;
+        } else {
+            labelLabel.textContent = "";
+            value.textContent = "";
+        }
+    }
+
     private _code: string = "None";
     get code(): string { return this._code; }
     set code(code: string) {
@@ -351,6 +366,7 @@ class DOMInvite implements Invite {
         <p class="supra mb-4 top">${window.lang.strings("inviteDateCreated")} <strong class="inv-created"></strong></p>
         <p class="supra mb-4">${window.lang.strings("inviteRemainingUses")} <strong class="inv-remaining"></strong></p>
         <p class="supra mb-4"><span class="user-expiry"></span> <strong class="user-expiry-time"></strong></p>
+        <p class="mb-4 flex items-center"><span class="user-label-label supra mr-2"></span> <span class="user-label chip ~blue"></span></p>
         `;
 
         this._right = document.createElement('div') as HTMLDivElement;
@@ -385,6 +401,9 @@ class DOMInvite implements Invite {
         this.usedBy = invite.usedBy;
         if (invite.label) {
             this.label = invite.label;
+        }
+        if (invite.user_label) {
+            this.user_label = invite.user_label;
         }
         this.userExpiryTime = invite.userExpiryTime || "";
     }
@@ -486,6 +505,7 @@ function parseInvite(invite: { [f: string]: string | number | { [name: string]: 
     parsed.code = invite["code"] as string;
     parsed.send_to = invite["send_to"] as string || "";
     parsed.label = invite["label"] as string || "";
+    parsed.user_label = invite["user_label"] as string || "";
     let time = "";
     let userExpiryTime = "";
     const fields = ["months", "days", "hours", "minutes"];
@@ -530,6 +550,7 @@ export class createInvite {
     private _createButton = document.getElementById("create-submit") as HTMLSpanElement;
     private _profile = document.getElementById("create-profile") as HTMLSelectElement;
     private _label = document.getElementById("create-label") as HTMLInputElement;
+    private _userLabel = document.getElementById("create-user-label") as HTMLInputElement;
 
     private _months = document.getElementById("create-months") as HTMLSelectElement;
     private _days = document.getElementById("create-days") as HTMLSelectElement;
@@ -571,6 +592,9 @@ export class createInvite {
 
     get label(): string { return this._label.value; }
     set label(label: string) { this._label.value = label; }
+
+    get user_label(): string { return this._userLabel.value; }
+    set user_label(label: string) { this._userLabel.value = label; }
 
     get sendToEnabled(): boolean {
         return this._sendToEnabled.checked;
@@ -749,7 +773,8 @@ export class createInvite {
             "remaining-uses": this.uses,
             "send-to": this.sendToEnabled ? this.sendTo : "",
             "profile": this.profile,
-            "label": this.label
+            "label": this.label,
+            "user_label": this.user_label
         };
         _post("/invites", send, (req: XMLHttpRequest) => {
             if (req.readyState == 4) {
