@@ -2055,8 +2055,8 @@ export class accountsList {
             this.loadPreview();
         };
 
-        const headerNames: string[] = ["username", "access-jfa", "email", "telegram", "matrix", "discord", "expiry", "last-active"];
-        const headerGetters: string[] = ["name", "accounts_admin", "email", "telegram", "matrix", "discord", "expiry", "last_active"];
+        const headerNames: string[] = ["username", "access-jfa", "email", "telegram", "matrix", "discord", "expiry", "last-active", "referrals"];
+        const headerGetters: string[] = ["name", "accounts_admin", "email", "telegram", "matrix", "discord", "expiry", "last_active", "referrals_enabled"];
         for (let i = 0; i < headerNames.length; i++) {
             const header: HTMLTableHeaderCellElement = document.querySelector(".accounts-header-" + headerNames[i]) as HTMLTableHeaderCellElement;
             if (header !== null) {
