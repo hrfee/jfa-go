@@ -213,7 +213,8 @@ func (ud *Updater) GetTag() (Tag, int, error) {
 
 func (t *Tag) IsNew() bool {
 	// fmt.Printf("Build Time: %+v, Release Date: %+v", buildTime, t.ReleaseDate)
-	return t.Version[:7] != commit && t.Ready && t.ReleaseDate.After(buildTime)
+	// Add 20 minutes to account for build time
+	return t.Version[:7] != commit && t.Ready && t.ReleaseDate.After(buildTime.Add(time.Duration(20)*time.Minute))
 }
 
 func (ud *Updater) getRelease() (release GHRelease, status int, err error) {
