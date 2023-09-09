@@ -469,7 +469,9 @@ class DOMNote implements SNote {
     set name(n: string) { this._name.textContent = n; }
 
     get description(): string { return this._description.textContent; }
-    set description(d: string) { this._description.textContent = d; }
+    set description(d: string) {
+        this._description.innerHTML = d;
+    }
 
     get value(): string { return ""; }
     set value(v: string) { return; }

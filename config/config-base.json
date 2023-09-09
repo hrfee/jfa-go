@@ -1012,6 +1012,14 @@
                     "value": true,
                     "description": "Enable to store provided email addresses, monitor Jellyfin directory for pw-resets, and send reset pins"
                 },
+                "pwr_note": {
+                    "name": "Setup:",
+                    "type": "note",
+                    "value": "",
+                    "depends_true": "enabled",
+                    "required": "false",
+                    "description": "There are multiple ways password resets can be set up. See the <a href=\"https://wiki.jfa-go.com/docs/pwr/\" target=\"_blank\">wiki page</a> for more information."
+                },
                 "watch_directory": {
                     "name": "Jellyfin directory",
                     "required": false,
