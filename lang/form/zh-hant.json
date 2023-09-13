@@ -19,7 +19,22 @@
         "yourAccountIsValidUntil": "您的帳戶有效期至 {date}。",
         "sendPIN": "將下面的 PIN 碼發送給機器人，然後返回此處連結您的帳戶。",
         "sendPINDiscord": "在 Discord 上的 {server_channel} 中輸入 {command}，然後發送下方的 PIN 碼。",
-        "matrixEnterUser": "輸入您的帳戶 ID 並點擊提交。在此處輸入發送給您的PIN 碼以繼續。"
+        "matrixEnterUser": "輸入您的帳戶 ID 並點擊提交。在此處輸入發送給您的PIN 碼以繼續。",
+        "oldPassword": "舊密碼",
+        "newPassword": "新密碼",
+        "welcomeUser": "歡迎，{user}!",
+        "addContactMethod": "添加聯繫方式",
+        "editContactMethod": "編輯聯繫方式",
+        "joinTheServer": "加入伺服器:",
+        "customMessagePlaceholderHeader": "自定義此卡片",
+        "customMessagePlaceholderContent": "單擊設置中的用戶頁面編輯按鈕可以自定義此卡片，或在登錄屏幕上顯示一張卡片，不用擔心，用戶看不到它。",
+        "userPageSuccessMessage": "您稍後可以在 {myAccount} 頁面上查看和更改有關您帳戶的詳細信息。",
+        "resetPassword": "重設密碼",
+        "resetPasswordThroughJellyfin": "要重置您的密碼，請訪問 {jfLink} 並按“忘記密碼”按鈕。",
+        "resetPasswordThroughLink": "要重置密碼，請輸入您的用戶名、電子郵件地址或鏈接的聯繫方式用戶名，然後提交。 將發送一個鏈接以重置您的密碼。",
+        "resetSent": "重置已發送。",
+        "resetSentDescription": "如果存在具有給定用戶名/聯繫方式的帳戶，則已通過所有可用的聯繫方式發送密碼重置鏈接。 該代碼將在 30 分鐘後過期。",
+        "changePassword": "更改密碼"
     },
     "notifications": {
         "errorUserExists": "帳戶已存在。",
@@ -33,7 +48,11 @@
         "errorCaptcha": "CAPTCHA 驗證碼不正確。",
         "errorPassword": "請您檢查密碼要求後再試。",
         "errorNoMatch": "密碼不匹配。",
-        "verified": "帳戶已驗證。"
+        "verified": "帳戶已驗證。",
+        "errorEmailLinked": "電子郵件已被使用。",
+        "errorAccountLinked": "帳戶已在使用。",
+        "errorOldPassword": "舊密碼不正確。",
+        "passwordChanged": "密碼已更改。"
     },
     "validationStrings": {
         "length": {
