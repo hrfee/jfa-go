@@ -20,7 +20,9 @@
         "errorNotAdmin": "此帳戶不允許管理伺服器。",
         "errorUserDisabled": "此帳戶可能已被禁用。",
         "error404": "404, 請檢查內部網址(internal URL)。",
-        "errorConnectionRefused": "連線遭拒。"
+        "errorConnectionRefused": "連線遭拒。",
+        "error": "錯誤",
+        "errorUnknown": "未知錯誤，請檢查日誌。"
     },
     "startPage": {
         "welcome": "歡迎！",
