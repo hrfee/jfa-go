@@ -20,7 +20,9 @@
         "errorNotAdmin": "Dieser Benutzer darf den Server nicht verwalten.",
         "errorUserDisabled": "Konto ist eventuell deaktiviert.",
         "error404": "404, prüfe die interne URL.",
-        "errorConnectionRefused": "Verbindung abgelehnt."
+        "errorConnectionRefused": "Verbindung abgelehnt.",
+        "error": "Fehler",
+        "errorUnknown": "Unbekannter Fehler, prüfe die Logs."
     },
     "startPage": {
         "welcome": "Willkommen!",
