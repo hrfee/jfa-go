@@ -102,7 +102,20 @@
         "accessJFASettings": "Kann nicht geändert werden, da entweder \"Nur Admin-Benutzer\" oder \"Erlaube allen Jellyfin-Nutzern sich anzumelden\" in Einstellungen > Allgemein aktiviert ist.",
         "saveAsTemplate": "Als Vorlage speichern",
         "deleteTemplate": "Vorlage löschen",
-        "templateEnterName": "Gebe einen Namen ein, um diese Vorlage zu speichern."
+        "templateEnterName": "Gebe einen Namen ein, um diese Vorlage zu speichern.",
+        "filters": "Filter",
+        "clickToRemoveFilter": "zum Entfernen des Filters klicken.",
+        "clearSearch": "Suche löschen",
+        "actions": "Aktionen",
+        "searchOptions": "Suchoptionen",
+        "matchText": "Textübereinstummung",
+        "jellyfinID": "Jellyfin ID",
+        "userPageLogin": "Benutzer Seite: Login",
+        "userPagePage": "Benutzer Seite: Seite",
+        "after": "nach",
+        "before": "vor",
+        "unlink": "Account trennen",
+        "sortingBy": "Sortieren nach"
     },
     "notifications": {
         "changedEmailAddress": "E-Mail-Adresse von {n} geändert.",
