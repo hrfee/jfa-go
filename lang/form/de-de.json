@@ -19,7 +19,18 @@
         "yourAccountIsValidUntil": "Dein Konto wird bis zum {date} gültig sein.",
         "sendPIN": "Sende die untenstehende PIN an den Bot und komm dann hierher zurück, um dein Konto zu verbinden.",
         "sendPINDiscord": "Gib auf Discord {command} in {server_channel} ein und sende die untenstehende PIN.",
-        "matrixEnterUser": "Gib deine Benutzer-ID ein und drücke auf Absenden. Anschließend erhälst du ein PIN, die hier eingegeben wird um fortzufahren."
+        "matrixEnterUser": "Gib deine Benutzer-ID ein und drücke auf Absenden. Anschließend erhälst du ein PIN, die hier eingegeben wird um fortzufahren.",
+        "oldPassword": "Altes Passwort",
+        "customMessagePlaceholderHeader": "Karte anpassen",
+        "customMessagePlaceholderContent": "Klicke auf die Benutzerseite bearbeiten Schaltfläche in den Einstellungen, um diese Karte anzupassen, oder auf dem Login Screen anzeigen zu lassen. Keine Angst: Der Benutzer kann dies nicht sehen.",
+        "newPassword": "Neues Passwort",
+        "welcomeUser": "Willkommen, {user}!",
+        "addContactMethod": "Kontaktmethode hinzufügen",
+        "editContactMethod": "Kontaktmethode bearbeiten",
+        "joinTheServer": "Server beitreten:",
+        "userPageSuccessMessage": "Du kannst die Details deines Accounts später in {myAccount} Seite einsehen und ändern.",
+        "resetPassword": "Passwort zurücksetzen",
+        "resetPasswordThroughJellyfin": "Um das Passwort zurückzusetzen, besuche {jfLink} und drücke auf die Schaltfläche \"Passwort vergessen\"."
     },
     "validationStrings": {
         "length": {
