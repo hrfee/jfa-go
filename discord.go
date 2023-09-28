@@ -351,6 +351,24 @@ func (d *DiscordDaemon) registerCommands() {
 					Description: "User to Invite",
 					Required:    true,
 				},
+				{
+					Type:        dg.ApplicationCommandOptionInteger,
+					Name:        "expire after",
+					Description: "Time in minutes before expiration",
+					Required:    false,
+				},
+				{
+					Type:        dg.ApplicationCommandOptionString,
+					Name:        "label",
+					Description: "Label to apply to the user created with this invite",
+					Required:    false,
+				},
+				{
+					Type:        dg.ApplicationCommandOptionString,
+					Name:        "Profile",
+					Description: "Profile to apply to the user created with this invite",
+					Required:    false,
+				},
 			},
 		},
 	}
@@ -518,11 +536,85 @@ func (d *DiscordDaemon) cmdLang(s *dg.Session, i *dg.InteractionCreate, lang str
 	}
 }
 
-func (d *DiscordDaemon) cmdInvite(s *dg.Session, i *dg.InteractionCreate, lang string) {
+func (d *DiscordDaemon) cmdInvite(app *appContext, s *dg.Session, i *dg.InteractionCreate, lang string) {
 	requestor := d.MustGetUser(channel.ID, i.Interaction.Member.User.ID, i.Interaction.Member.User.Discriminator, i.Interaction.Member.User.Username)
 	d.users[i.Interaction.Member.User.ID] = requestor
 	invuser := i.ApplicationCommandData().Options[0].StringValue()
+	label := i.ApplicationCommandData().Options[2].StringValue()
+	profile := i.ApplicationCommandData().Options[3].StringValue()
+	if i.ApplicationCommandData().Options[1] != "" {
+		expmin := i.ApplicationCommandData().Options[1]
+	} else {
+		expmin := 30
+	}
 	//	Check whether requestor is linked to the admin account
+	//	variation of app.GenerateInvite, some parts commented to potentially add back in later
+	app.debug.Println("Generating new invite with options: %s: %i: %s: %s", invuser, expmin, profile, label)
+	currentTime := time.Now()
+	validTill = currentTime.Add(time.Minute*time.Duration(expmin))
+	// make sure code doesn't begin with number
+	inviteCode := shortuuid.New()
+	_, err := strconv.Atoi(string(inviteCode[0]))
+	for err == nil {
+		inviteCode = shortuuid.New()
+		_, err = strconv.Atoi(string(inviteCode[0]))
+	}
+	var invite Invite
+	if label != "" {
+		invite.Label = label
+	}
+	invite.Created = currentTime
+	invite.RemainingUses = 1
+	invite.UserExpiry = false
+	/*if invite.UserExpiry {
+		invite.UserMonths = req.UserMonths
+		invite.UserDays = req.UserDays
+		invite.UserHours = req.UserHours
+		invite.UserMinutes = req.UserMinutes
+	}*/
+	invite.ValidTill = validTill
+	if invuser != "" && app.config.Section("invite_emails").Key("enabled").MustBool(false) {
+		addressValid := false
+		discord := ""
+		app.debug.Printf("%s: Sending invite message", inviteCode)
+		if discordEnabled && !strings.Contains(invuser, "@") {
+			users := app.discord.GetUsers(invuser)
+			if len(users) == 0 {
+				invite.SendTo = fmt.Sprintf("Failed: User not found: \"%s\"", invuser)
+			} else if len(users) > 1 {
+				invite.SendTo = fmt.Sprintf("Failed: Multiple users found: \"%s\"", invuser)
+			} else {
+				invite.SendTo = invuser
+				addressValid = true
+				discord = users[0].User.ID
+			}
+		}
+		if addressValid {
+			msg, err := app.email.constructInvite(inviteCode, invite, app, false)
+			if err != nil {
+				invite.SendTo = fmt.Sprintf("Failed to send to %s", invuser)
+				app.err.Printf("%s: Failed to construct invite message: %v", inviteCode, err)
+			} else {
+				var err error
+				err = app.discord.SendDM(msg, discord)
+				if err != nil {
+					invite.SendTo = fmt.Sprintf("Failed to send to %s", invuser)
+					app.err.Printf("%s: %s: %v", inviteCode, invite.SendTo, err)
+				} else {
+					app.info.Printf("%s: Sent invite email to \"%s\"", inviteCode, invuser)
+				}
+			}
+		}
+	}
+	if profile != "" {
+		if _, ok := app.storage.GetProfileKey(profile); ok {
+			invite.Profile = profile
+		} else {
+			invite.Profile = "Default"
+		}
+	}
+	app.storage.SetInvitesKey(inviteCode, invite)
+	respondBool(200, true, gc)
 }
 	
 func (d *DiscordDaemon) messageHandler(s *dg.Session, m *dg.MessageCreate) {
