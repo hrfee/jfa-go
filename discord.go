@@ -50,6 +50,7 @@ func newDiscordDaemon(app *appContext) (*DiscordDaemon, error) {
 	dd.commandHandlers[app.config.Section("discord").Key("start_command").MustString("start")] = dd.cmdStart
 	dd.commandHandlers["lang"] = dd.cmdLang
 	dd.commandHandlers["pin"] = dd.cmdPIN
+	dd.commandHandlers["invite"] = dd.cmdInvite
 	for _, user := range app.storage.GetDiscord() {
 		dd.users[user.ID] = user
 	}
