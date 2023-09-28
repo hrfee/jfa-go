@@ -128,6 +128,8 @@ func (d *DiscordDaemon) run() {
 			d.inviteChannelName = invChannel
 		}
 	}
+	d.bot.Activity.Name = "/" + app.config.Section("discord").Key("start_command").MustString("start")
+	d.bot.Activity.Type = dg.ActivityTypeGame
 	defer d.deregisterCommands()
 	defer d.bot.Close()
 
@@ -339,6 +341,18 @@ func (d *DiscordDaemon) registerCommands() {
 				},
 			},
 		},
+		{
+			Name:        "invite",
+			Description: "Send an invite to a discord user (admin only).",
+			Options: []*dg.ApplicationCommandOption{
+				{
+					Type:        dg.ApplicationCommandOptionUser,
+					Name:        "user",
+					Description: "User to Invite",
+					Required:    true,
+				},
+			},
+		},
 	}
 	commands[1].Options[0].Choices = make([]*dg.ApplicationCommandOptionChoice, len(d.app.storage.lang.Telegram))
 	i := 0
@@ -504,6 +518,13 @@ func (d *DiscordDaemon) cmdLang(s *dg.Session, i *dg.InteractionCreate, lang str
 	}
 }
 
+func (d *DiscordDaemon) cmdInvite(s *dg.Session, i *dg.InteractionCreate, lang string) {
+	requestor := d.MustGetUser(channel.ID, i.Interaction.Member.User.ID, i.Interaction.Member.User.Discriminator, i.Interaction.Member.User.Username)
+	d.users[i.Interaction.Member.User.ID] = requestor
+	invuser := i.ApplicationCommandData().Options[0].StringValue()
+	//	Check whether requestor is linked to the admin account
+}
+	
 func (d *DiscordDaemon) messageHandler(s *dg.Session, m *dg.MessageCreate) {
 	if m.GuildID != "" && d.channelName != "" {
 		if d.channelID == "" {
