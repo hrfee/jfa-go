@@ -541,7 +541,6 @@ func (d *DiscordDaemon) cmdInvite(s *dg.Session, i *dg.InteractionCreate, lang s
 	channel, err := s.UserChannelCreate(i.Interaction.Member.User.ID)
 	requestor := d.MustGetUser(channel.ID, i.Interaction.Member.User.ID, i.Interaction.Member.User.Discriminator, i.Interaction.Member.User.Username)
 	d.users[i.Interaction.Member.User.ID] = requestor
-	d.app.debug.Println("Requested by: %v: %s:", requestor.JellyfinID, d.users[i.Interaction.Member.User.ID].JellyfinID)
 	invuser := fmt.Sprintf("%v", i.ApplicationCommandData().Options[0].Value)
 	d.app.debug.Println(invuser)
 	//label := i.ApplicationCommandData().Options[2].StringValue()
