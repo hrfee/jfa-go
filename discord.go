@@ -130,8 +130,7 @@ func (d *DiscordDaemon) run() {
 			d.inviteChannelName = invChannel
 		}
 	}
-	//dg.Activity.Name = "/" + d.app.config.Section("discord").Key("start_command").MustString("start")
-	//dg.Activity.Type = dg.ActivityTypeGame
+	err = d.bot.UpdateGameStatus(0, "/"+d.app.config.Section("discord").Key("start_command").MustString("start"))
 	defer d.deregisterCommands()
 	defer d.bot.Close()
 
@@ -352,25 +351,25 @@ func (d *DiscordDaemon) registerCommands() {
 					Name:        "user",
 					Description: "User to Invite",
 					Required:    true,
+				},	//	running with just one option for now to mesh with what we've got, also may have the syntax wrong here
+				/*{
+					Type:        dg.ApplicationCommandOptionInteger,
+					Name:        "expire after",
+					Description: "Time in minutes before expiration",
+					Required:    false,
 				},
-				//{
-				//	Type:        dg.ApplicationCommandOptionInteger,
-				//	Name:        "expire after",
-				//	Description: "Time in minutes before expiration",
-				//	Required:    false,
-				//},
-				//{
-				//	Type:        dg.ApplicationCommandOptionString,
-				//	Name:        "label",
-				//	Description: "Label to apply to the user created with this invite",
-				//	Required:    false,
-				//},
-				//{
-				//	Type:        dg.ApplicationCommandOptionString,
-				//	Name:        "profile",
-				//	Description: "Profile to apply to the user created with this invite",
-				//	Required:    false,
-				//},
+				{
+					Type:        dg.ApplicationCommandOptionString,
+					Name:        "label",
+					Description: "Label to apply to the user created with this invite",
+					Required:    false,
+				},
+				{
+					Type:        dg.ApplicationCommandOptionString,
+					Name:        "profile",
+					Description: "Profile to apply to the user created with this invite",
+					Required:    false,
+				}, */
 			},
 		},
 	}
@@ -542,18 +541,19 @@ func (d *DiscordDaemon) cmdInvite(s *dg.Session, i *dg.InteractionCreate, lang s
 	channel, err := s.UserChannelCreate(i.Interaction.Member.User.ID)
 	requestor := d.MustGetUser(channel.ID, i.Interaction.Member.User.ID, i.Interaction.Member.User.Discriminator, i.Interaction.Member.User.Username)
 	d.users[i.Interaction.Member.User.ID] = requestor
+	d.app.debug.Println("Requested by: %v: %s:", requestor.JellyfinID, d.users[i.Interaction.Member.User.ID].JellyfinID)
 	invuser := fmt.Sprintf("%v", i.ApplicationCommandData().Options[0].Value)
 	d.app.debug.Println(invuser)
-//	label := i.ApplicationCommandData().Options[2].StringValue()
-//	profile := i.ApplicationCommandData().Options[3].StringValue()
-//	mins, err := strconv.Atoi(i.ApplicationCommandData().Options[1].StringValue())
+	//label := i.ApplicationCommandData().Options[2].StringValue()
+	//profile := i.ApplicationCommandData().Options[3].StringValue()
+	//mins, err := strconv.Atoi(i.ApplicationCommandData().Options[1].StringValue())
 	expmin := 30
-//	if mins > 0 {
-//		expmin = mins
-//	}
-	//	Check whether requestor is linked to the admin account*
-	//	variation of app.GenerateInvite, some parts commented to potentially add back in later
-	// d.app.debug.Println("Generating new invite with options: %s: %i: %s: %s", invuser, expmin, profile, label)
+	//if mins > 0 {
+	//	expmin = mins
+	//}
+	//	Need to check whether requestor is linked to the admin account *possibly add Admin bool to DiscordUser struct
+	//	variation of app.GenerateInvite, some parts commented to potentially add back in later with the other options
+	//d.app.debug.Println("Generating new invite with options: %s: %i: %s: %s", invuser, expmin, profile, label)
 	currentTime := time.Now()
 	validTill := currentTime.Add(time.Minute*time.Duration(expmin))
 	// make sure code doesn't begin with number
