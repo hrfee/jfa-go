@@ -3,9 +3,11 @@ package main
 import (
 	"fmt"
 	"strings"
+	"strconv"
 	"time"
 
 	dg "github.com/bwmarrin/discordgo"
+	"github.com/lithammer/shortuuid/v3"
 	"github.com/timshannon/badgerhold/v4"
 )
 
@@ -50,7 +52,7 @@ func newDiscordDaemon(app *appContext) (*DiscordDaemon, error) {
 	dd.commandHandlers[app.config.Section("discord").Key("start_command").MustString("start")] = dd.cmdStart
 	dd.commandHandlers["lang"] = dd.cmdLang
 	dd.commandHandlers["pin"] = dd.cmdPIN
-	dd.commandHandlers["invite"] = dd.cmdInvite
+	dd.commandHandlers["inv"] = dd.cmdInvite
 	for _, user := range app.storage.GetDiscord() {
 		dd.users[user.ID] = user
 	}
@@ -128,8 +130,8 @@ func (d *DiscordDaemon) run() {
 			d.inviteChannelName = invChannel
 		}
 	}
-	d.bot.Activity.Name = "/" + app.config.Section("discord").Key("start_command").MustString("start")
-	d.bot.Activity.Type = dg.ActivityTypeGame
+	//dg.Activity.Name = "/" + d.app.config.Section("discord").Key("start_command").MustString("start")
+	//dg.Activity.Type = dg.ActivityTypeGame
 	defer d.deregisterCommands()
 	defer d.bot.Close()
 
@@ -342,7 +344,7 @@ func (d *DiscordDaemon) registerCommands() {
 			},
 		},
 		{
-			Name:        "invite",
+			Name:        "inv",
 			Description: "Send an invite to a discord user (admin only).",
 			Options: []*dg.ApplicationCommandOption{
 				{
@@ -351,24 +353,24 @@ func (d *DiscordDaemon) registerCommands() {
 					Description: "User to Invite",
 					Required:    true,
 				},
-				{
-					Type:        dg.ApplicationCommandOptionInteger,
-					Name:        "expire after",
-					Description: "Time in minutes before expiration",
-					Required:    false,
-				},
-				{
-					Type:        dg.ApplicationCommandOptionString,
-					Name:        "label",
-					Description: "Label to apply to the user created with this invite",
-					Required:    false,
-				},
-				{
-					Type:        dg.ApplicationCommandOptionString,
-					Name:        "Profile",
-					Description: "Profile to apply to the user created with this invite",
-					Required:    false,
-				},
+				//{
+				//	Type:        dg.ApplicationCommandOptionInteger,
+				//	Name:        "expire after",
+				//	Description: "Time in minutes before expiration",
+				//	Required:    false,
+				//},
+				//{
+				//	Type:        dg.ApplicationCommandOptionString,
+				//	Name:        "label",
+				//	Description: "Label to apply to the user created with this invite",
+				//	Required:    false,
+				//},
+				//{
+				//	Type:        dg.ApplicationCommandOptionString,
+				//	Name:        "profile",
+				//	Description: "Profile to apply to the user created with this invite",
+				//	Required:    false,
+				//},
 			},
 		},
 	}
@@ -536,33 +538,35 @@ func (d *DiscordDaemon) cmdLang(s *dg.Session, i *dg.InteractionCreate, lang str
 	}
 }
 
-func (d *DiscordDaemon) cmdInvite(app *appContext, s *dg.Session, i *dg.InteractionCreate, lang string) {
+func (d *DiscordDaemon) cmdInvite(s *dg.Session, i *dg.InteractionCreate, lang string) {
+	channel, err := s.UserChannelCreate(i.Interaction.Member.User.ID)
 	requestor := d.MustGetUser(channel.ID, i.Interaction.Member.User.ID, i.Interaction.Member.User.Discriminator, i.Interaction.Member.User.Username)
 	d.users[i.Interaction.Member.User.ID] = requestor
-	invuser := i.ApplicationCommandData().Options[0].StringValue()
-	label := i.ApplicationCommandData().Options[2].StringValue()
-	profile := i.ApplicationCommandData().Options[3].StringValue()
-	if i.ApplicationCommandData().Options[1] != "" {
-		expmin := i.ApplicationCommandData().Options[1]
-	} else {
-		expmin := 30
-	}
-	//	Check whether requestor is linked to the admin account
+	invuser := fmt.Sprintf("%v", i.ApplicationCommandData().Options[0].Value)
+	d.app.debug.Println(invuser)
+//	label := i.ApplicationCommandData().Options[2].StringValue()
+//	profile := i.ApplicationCommandData().Options[3].StringValue()
+//	mins, err := strconv.Atoi(i.ApplicationCommandData().Options[1].StringValue())
+	expmin := 30
+//	if mins > 0 {
+//		expmin = mins
+//	}
+	//	Check whether requestor is linked to the admin account*
 	//	variation of app.GenerateInvite, some parts commented to potentially add back in later
-	app.debug.Println("Generating new invite with options: %s: %i: %s: %s", invuser, expmin, profile, label)
+	// d.app.debug.Println("Generating new invite with options: %s: %i: %s: %s", invuser, expmin, profile, label)
 	currentTime := time.Now()
-	validTill = currentTime.Add(time.Minute*time.Duration(expmin))
+	validTill := currentTime.Add(time.Minute*time.Duration(expmin))
 	// make sure code doesn't begin with number
 	inviteCode := shortuuid.New()
-	_, err := strconv.Atoi(string(inviteCode[0]))
+	_, err = strconv.Atoi(string(inviteCode[0]))
 	for err == nil {
 		inviteCode = shortuuid.New()
 		_, err = strconv.Atoi(string(inviteCode[0]))
 	}
 	var invite Invite
-	if label != "" {
-		invite.Label = label
-	}
+	//if label != "" {
+	//	invite.Label = label
+	//}
 	invite.Created = currentTime
 	invite.RemainingUses = 1
 	invite.UserExpiry = false
@@ -573,48 +577,35 @@ func (d *DiscordDaemon) cmdInvite(app *appContext, s *dg.Session, i *dg.Interact
 		invite.UserMinutes = req.UserMinutes
 	}*/
 	invite.ValidTill = validTill
-	if invuser != "" && app.config.Section("invite_emails").Key("enabled").MustBool(false) {
-		addressValid := false
+	if invuser != "" && d.app.config.Section("invite_emails").Key("enabled").MustBool(false) {
 		discord := ""
-		app.debug.Printf("%s: Sending invite message", inviteCode)
-		if discordEnabled && !strings.Contains(invuser, "@") {
-			users := app.discord.GetUsers(invuser)
-			if len(users) == 0 {
-				invite.SendTo = fmt.Sprintf("Failed: User not found: \"%s\"", invuser)
-			} else if len(users) > 1 {
-				invite.SendTo = fmt.Sprintf("Failed: Multiple users found: \"%s\"", invuser)
-			} else {
-				invite.SendTo = invuser
-				addressValid = true
-				discord = users[0].User.ID
-			}
-		}
-		if addressValid {
-			msg, err := app.email.constructInvite(inviteCode, invite, app, false)
+		d.app.debug.Printf("%s: Sending invite message", inviteCode)
+		invname, err := d.bot.GuildMember(d.guildID, invuser)
+		invite.SendTo = invname.User.Username
+
+		msg, err := d.app.email.constructInvite(inviteCode, invite, d.app, false)
+		if err != nil {
+			invite.SendTo = fmt.Sprintf("Failed to send to %s", invuser)
+			d.app.err.Printf("%s: Failed to construct invite message: %v", inviteCode, err)
+		} else {
+			var err error
+			err = d.app.discord.SendDM(msg, discord)
 			if err != nil {
 				invite.SendTo = fmt.Sprintf("Failed to send to %s", invuser)
-				app.err.Printf("%s: Failed to construct invite message: %v", inviteCode, err)
+				d.app.err.Printf("%s: %s: %v", inviteCode, invite.SendTo, err)
 			} else {
-				var err error
-				err = app.discord.SendDM(msg, discord)
-				if err != nil {
-					invite.SendTo = fmt.Sprintf("Failed to send to %s", invuser)
-					app.err.Printf("%s: %s: %v", inviteCode, invite.SendTo, err)
-				} else {
-					app.info.Printf("%s: Sent invite email to \"%s\"", inviteCode, invuser)
-				}
+				d.app.info.Printf("%s: Sent invite email to \"%s\"", inviteCode, invuser)
 			}
 		}
 	}
-	if profile != "" {
-		if _, ok := app.storage.GetProfileKey(profile); ok {
-			invite.Profile = profile
-		} else {
-			invite.Profile = "Default"
-		}
-	}
-	app.storage.SetInvitesKey(inviteCode, invite)
-	respondBool(200, true, gc)
+	//if profile != "" {
+	//	if _, ok := d.app.storage.GetProfileKey(profile); ok {
+	//		invite.Profile = profile
+	//	} else {
+	//		invite.Profile = "Default"
+	//	}
+	//}
+	d.app.storage.SetInvitesKey(inviteCode, invite)
 }
 	
 func (d *DiscordDaemon) messageHandler(s *dg.Session, m *dg.MessageCreate) {
