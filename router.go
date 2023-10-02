@@ -160,12 +160,11 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 
 	api := router.Group("/", app.webAuth())
 
-	var user *gin.RouterGroup
-	if userPageEnabled {
-		user = router.Group("/my", app.userAuth())
-	}
-
 	for _, p := range routePrefixes {
+		var user *gin.RouterGroup
+		if userPageEnabled {
+			user = router.Group(p+"/my", app.userAuth())
+		}
 		router.POST(p+"/logout", app.Logout)
 		api.DELETE(p+"/users", app.DeleteUsers)
 		api.GET(p+"/users", app.GetUsers)
@@ -234,22 +233,22 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 		}
 
 		if userPageEnabled {
-			user.GET(p+"/details", app.MyDetails)
-			user.POST(p+"/contact", app.SetMyContactMethods)
-			user.POST(p+"/logout", app.LogoutUser)
-			user.POST(p+"/email", app.ModifyMyEmail)
-			user.GET(p+"/discord/invite", app.MyDiscordServerInvite)
-			user.GET(p+"/pin/:service", app.GetMyPIN)
-			user.GET(p+"/discord/verified/:pin", app.MyDiscordVerifiedInvite)
-			user.GET(p+"/telegram/verified/:pin", app.MyTelegramVerifiedInvite)
-			user.POST(p+"/matrix/user", app.MatrixSendMyPIN)
-			user.GET(p+"/matrix/verified/:userID/:pin", app.MatrixCheckMyPIN)
-			user.DELETE(p+"/discord", app.UnlinkMyDiscord)
-			user.DELETE(p+"/telegram", app.UnlinkMyTelegram)
-			user.DELETE(p+"/matrix", app.UnlinkMyMatrix)
-			user.POST(p+"/password", app.ChangeMyPassword)
+			user.GET("/details", app.MyDetails)
+			user.POST("/contact", app.SetMyContactMethods)
+			user.POST("/logout", app.LogoutUser)
+			user.POST("/email", app.ModifyMyEmail)
+			user.GET("/discord/invite", app.MyDiscordServerInvite)
+			user.GET("/pin/:service", app.GetMyPIN)
+			user.GET("/discord/verified/:pin", app.MyDiscordVerifiedInvite)
+			user.GET("/telegram/verified/:pin", app.MyTelegramVerifiedInvite)
+			user.POST("/matrix/user", app.MatrixSendMyPIN)
+			user.GET("/matrix/verified/:userID/:pin", app.MatrixCheckMyPIN)
+			user.DELETE("/discord", app.UnlinkMyDiscord)
+			user.DELETE("/telegram", app.UnlinkMyTelegram)
+			user.DELETE("/matrix", app.UnlinkMyMatrix)
+			user.POST("/password", app.ChangeMyPassword)
 			if app.config.Section("user_page").Key("referrals").MustBool(false) {
-				user.GET(p+"/referral", app.GetMyReferral)
+				user.GET("/referral", app.GetMyReferral)
 			}
 		}
 	}

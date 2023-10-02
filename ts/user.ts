@@ -556,7 +556,6 @@ changePasswordButton.addEventListener("click", () => {
         }
     });
 });
-// FIXME: Submit & Validate
 
 document.addEventListener("details-reload", () => {
     _get("/my/details", null, (req: XMLHttpRequest) => {
