@@ -274,6 +274,18 @@
                     "value": false,
                     "advanced": true,
                     "description": "Navigate directly to the above URL instead of needing the user to click \"Continue\"."
+                },
+                "login_appearance": {
+                    "name": "Login screen appearance",
+                    "required": false,
+                    "requires_restart": false,
+                    "type": "select",
+                    "options": [
+                        ["clear", "Transparent"],
+                        ["opaque", "Opaque"]
+                    ],
+                    "value": "clear",
+                    "description": "Appearance of the Admin login screen."
                 }
             }
         },

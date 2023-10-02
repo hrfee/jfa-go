@@ -163,7 +163,7 @@ window.onpopstate = (event: PopStateEvent) => {
     window.tabs.switch(event.state);
 }
 
-const login = new Login(window.modals.login as Modal, "/");
+const login = new Login(window.modals.login as Modal, "/", window.loginAppearance);
 login.onLogin = () => {
     console.log("Logged in.");
     window.updater = new Updater();

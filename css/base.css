@@ -15,6 +15,9 @@
     --border-width-4: 5px;
     --border-width-8: 8px;
     font-family: 'Hanken Grotesk', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+
+    --bg-light: #fff;
+    --bg-dark: #101010;
 }
 
 .light {
@@ -26,11 +29,11 @@
 }
 
 .dark body {
-    background-color: #101010;
+    background-color: var(--bg-dark);
 }
 
 html:not(.dark) body {
-    background-color: #fff;
+    background-color: var(--bg-light);
 }
 
 .dark select, .dark option, .dark input {

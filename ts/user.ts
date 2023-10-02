@@ -644,7 +644,7 @@ document.addEventListener("details-reload", () => {
     });
 });
 
-const login = new Login(window.modals.login as Modal, "/my/");
+const login = new Login(window.modals.login as Modal, "/my/", "opaque");
 login.onLogin = () => {
     console.log("Logged in.");
     document.querySelector(".page-container").classList.remove("unfocused");

@@ -41,6 +41,7 @@ declare interface Window {
     jfAdminOnly: boolean;
     jfAllowAll: boolean;
     referralsEnabled: boolean;
+    loginAppearance: string; 
 }
 
 declare interface Update {
