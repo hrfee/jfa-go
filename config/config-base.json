@@ -418,6 +418,14 @@
                     "required": "false",
                     "description": "Click the edit icon next to the \"User Page\" Setting to add custom Markdown messages that will be shown to the user. Note message cards are not private, little effort is required for anyone to view them."
                 },
+                "show_link": {
+                    "name": "Show Link on Admin Login page",
+                    "required": false,
+                    "requires_restart": false,
+                    "type": "bool",
+                    "value": true,
+                    "description": "Whether or not to show a link to the \"My Account\" page on the admin login screen, to direct lost users."
+                },
                 "referrals": {
                     "name": "User Referrals",
                     "required": false,
