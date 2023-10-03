@@ -293,7 +293,8 @@
             "order": [],
             "meta": {
                 "name": "Advanced",
-                "description": "Advanced settings."
+                "description": "Advanced settings.",
+                "advanced": true
             },
             "settings": {
                 "tls": {
@@ -330,6 +331,22 @@
                     "type": "text",
                     "value": "",
                     "description": "Path to .key file. See jfa-go wiki for more info."
+                },
+                "auth_retry_count": {
+                    "name": "Initial auth retry count",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "number",
+                    "value": 6,
+                    "description": "Number of times to retry initial connection to Jellyfin before failing."
+                },
+                "auth_retry_gap": {
+                    "name": "Initial auth retry gap (seconds)",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "number",
+                    "value": 10,
+                    "description": "Duration in seconds to wait between connection retries."
                 }
             }
         },

@@ -391,7 +391,12 @@ func start(asDaemon, firstCall bool) {
 			app.jf.Verbose = true
 		}
 		var status int
-		_, status, err = app.jf.Authenticate(app.config.Section("jellyfin").Key("username").String(), app.config.Section("jellyfin").Key("password").String())
+		retryOpts := mediabrowser.MustAuthenticateOptions{
+			RetryCount:  app.config.Section("advanced").Key("auth_retry_count").MustInt(6),
+			RetryGap:    time.Duration(app.config.Section("advanced").Key("auth_retry_gap").MustInt(10)) * time.Second,
+			LogFailures: true,
+		}
+		_, status, err = app.jf.MustAuthenticate(app.config.Section("jellyfin").Key("username").String(), app.config.Section("jellyfin").Key("password").String(), retryOpts)
 		if status != 200 || err != nil {
 			app.err.Fatalf("Failed to authenticate with Jellyfin @ \"%s\" (%d): %v", server, status, err)
 		}
