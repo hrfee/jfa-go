@@ -551,6 +551,10 @@ func (d *DiscordDaemon) cmdInvite(s *dg.Session, i *dg.InteractionCreate, lang s
 	//	expmin = mins
 	//}
 	//	Need to check whether requestor is linked to the admin account *possibly add Admin bool to DiscordUser struct
+	requestoremail := GetEmailsKey(requestor.JfID)
+	if !requestoremail.admin {
+		d.app.err.Printf("User is not admin")
+	}
 	//	variation of app.GenerateInvite, some parts commented to potentially add back in later with the other options
 	//d.app.debug.Println("Generating new invite with options: %s: %i: %s: %s", invuser, expmin, profile, label)
 	currentTime := time.Now()
