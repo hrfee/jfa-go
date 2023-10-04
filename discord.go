@@ -551,7 +551,7 @@ func (d *DiscordDaemon) cmdInvite(s *dg.Session, i *dg.InteractionCreate, lang s
 	//	expmin = mins
 	//}
 	//	Need to check whether requestor is linked to the admin account *possibly add Admin bool to DiscordUser struct
-	requestoremail := GetEmailsKey(requestor.JfID)
+	requestoremail := d.app.storage.GetEmailsKey(requestor.JellyfinID)
 	if !requestoremail.admin {
 		d.app.err.Printf("User is not admin")
 	}
