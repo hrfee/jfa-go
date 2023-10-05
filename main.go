@@ -24,6 +24,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/hrfee/jfa-go/common"
 	_ "github.com/hrfee/jfa-go/docs"
+	"github.com/hrfee/jfa-go/easyproxy"
 	"github.com/hrfee/jfa-go/logger"
 	"github.com/hrfee/jfa-go/ombi"
 	"github.com/hrfee/mediabrowser"
@@ -390,6 +391,23 @@ func start(asDaemon, firstCall bool) {
 		if debugMode {
 			app.jf.Verbose = true
 		}
+
+		if app.config.Section("advanced").Key("proxy").MustBool(false) {
+			// FIXME: Use Proxy
+			protocol := easyproxy.HTTP
+			if strings.Contains(app.config.Section("advanced").Key("proxy_protocol").MustString("http"), "socks") {
+				protocol = easyproxy.SOCKS5
+			}
+			addr := app.config.Section("advanced").Key("proxy_address").MustString("")
+			user := app.config.Section("advanced").Key("proxy_user").MustString("")
+			password := app.config.Section("advanced").Key("proxy_password").MustString("")
+			transport, err := easyproxy.NewTransport(protocol, addr, user, password)
+			if err != nil {
+				app.err.Printf("Failed to initialize Proxy: %v\n", err)
+			}
+			app.jf.SetTransport(transport)
+		}
+
 		var status int
 		retryOpts := mediabrowser.MustAuthenticateOptions{
 			RetryCount:  app.config.Section("advanced").Key("auth_retry_count").MustInt(6),

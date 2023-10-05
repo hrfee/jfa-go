@@ -347,6 +347,54 @@
                     "type": "number",
                     "value": 10,
                     "description": "Duration in seconds to wait between connection retries."
+                },
+                "proxy": {
+                    "name": "Use Proxy",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "bool",
+                    "value": false,
+                    "description": "Whether or not to use a HTTP/SOCKS5 Proxy."
+                },
+                "proxy_protocol": {
+                    "name": "Proxy Protocol",
+                    "depends_true": "proxy",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "select",
+                    "options": [
+                        ["http", "HTTP"],
+                        ["socks", "SOCKS5"]
+                    ],
+                    "value": "http",
+                    "description": "Protocol to use for proxy connection."
+                },
+                "proxy_address": {
+                    "name": "Proxy Address",
+                    "depends_true": "proxy",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "text",
+                    "value": "",
+                    "description": "Proxy address, including port."
+                },
+                "proxy_user": {
+                    "name": "Proxy Username",
+                    "depends_true": "proxy",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "text",
+                    "value": "",
+                    "description": "Leave blank for no Authentication."
+                },
+                "proxy_password": {
+                    "name": "Proxy Password",
+                    "depends_true": "proxy",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "password",
+                    "value": "",
+                    "description": "Leave blank for no Authentication."
                 }
             }
         },
