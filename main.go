@@ -114,6 +114,9 @@ type appContext struct {
 	newUpdate            bool // Whether whatever's in update is new.
 	tag                  Tag
 	update               Update
+	proxyEnabled         bool
+	proxyTransport       *http.Transport
+	proxyConfig          easyproxy.ProxyConfig
 	internalPWRs         map[string]InternalPWR
 	ConfirmationKeys     map[string]map[string]newUserDTO // Map of invite code to jwt to request
 	confirmationKeysLock sync.Mutex
@@ -392,20 +395,8 @@ func start(asDaemon, firstCall bool) {
 			app.jf.Verbose = true
 		}
 
-		if app.config.Section("advanced").Key("proxy").MustBool(false) {
-			// FIXME: Use Proxy
-			protocol := easyproxy.HTTP
-			if strings.Contains(app.config.Section("advanced").Key("proxy_protocol").MustString("http"), "socks") {
-				protocol = easyproxy.SOCKS5
-			}
-			addr := app.config.Section("advanced").Key("proxy_address").MustString("")
-			user := app.config.Section("advanced").Key("proxy_user").MustString("")
-			password := app.config.Section("advanced").Key("proxy_password").MustString("")
-			transport, err := easyproxy.NewTransport(protocol, addr, user, password)
-			if err != nil {
-				app.err.Printf("Failed to initialize Proxy: %v\n", err)
-			}
-			app.jf.SetTransport(transport)
+		if app.proxyEnabled {
+			app.jf.SetTransport(app.proxyTransport)
 		}
 
 		var status int

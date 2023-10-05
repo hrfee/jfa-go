@@ -43,7 +43,7 @@ require (
 	github.com/swaggo/gin-swagger v1.6.0
 	github.com/timshannon/badgerhold/v4 v4.0.2
 	github.com/writeas/go-strip-markdown v2.0.1+incompatible
-	github.com/xhit/go-simple-mail/v2 v2.13.0
+	github.com/xhit/go-simple-mail/v2 v2.16.0
 	gopkg.in/ini.v1 v1.67.0
 	maunium.net/go/mautrix v0.15.3
 )
@@ -93,6 +93,7 @@ require (
 	github.com/klauspost/compress v1.16.6 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.5 // indirect
 	github.com/leodido/go-urn v1.2.4 // indirect
+	github.com/magisterquis/connectproxy v0.0.0-20200725203833-3582e84f0c9b // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.19 // indirect

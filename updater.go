@@ -185,6 +185,11 @@ type BuildDTO struct {
 	Tags    map[string]Tag
 }
 
+// SetTransport sets the http.Transport to use for requests. Can be used to set a proxy.
+func (ud *Updater) SetTransport(t *http.Transport) {
+	ud.httpClient.Transport = t
+}
+
 func (ud *Updater) GetTag() (Tag, int, error) {
 	if ud.buildType == off {
 		return Tag{}, -1, nil
