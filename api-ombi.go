@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hrfee/mediabrowser"
 )
 
 func (app *appContext) getOmbiUser(jfID string) (map[string]interface{}, int, error) {
@@ -29,7 +30,31 @@ func (app *appContext) getOmbiUser(jfID string) (map[string]interface{}, int, er
 			return ombiUser, code, err
 		}
 	}
-	return nil, 400, fmt.Errorf("Couldn't find user")
+	return nil, 400, fmt.Errorf("couldn't find user")
+}
+
+// Returns a user with the given name who has been imported from Jellyfin/Emby by Ombi
+func (app *appContext) getOmbiImportedUser(name string) (map[string]interface{}, int, error) {
+	// Ombi User Types: 3/4 = Emby, 5 = Jellyfin
+	ombiUsers, code, err := app.ombi.GetUsers()
+	if err != nil || code != 200 {
+		return nil, code, err
+	}
+	for _, ombiUser := range ombiUsers {
+		if ombiUser["userName"].(string) == name {
+			uType, ok := ombiUser["userType"].(int)
+			if !ok { // Don't know if Ombi somehow allows duplicate usernames
+				continue
+			}
+			if serverType == mediabrowser.JellyfinServer && uType != 5 { // Jellyfin
+				continue
+			} else if uType != 3 && uType != 4 { // Emby
+				continue
+			}
+			return ombiUser, code, err
+		}
+	}
+	return nil, 400, fmt.Errorf("couldn't find user")
 }
 
 // @Summary Get a list of Ombi users.
