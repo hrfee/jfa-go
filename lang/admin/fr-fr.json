@@ -124,7 +124,8 @@
         "invite": "Inviter",
         "userLabel": "Étiquette",
         "userLabelDescription": "Étiquette à appliquer aux utilisateurs créés avec cette invitation.",
-        "disableReferrals": "Désactiver Parrainage"
+        "disableReferrals": "Désactiver Parrainage",
+        "enableReferralsProfileDescription": "Donnez aux utilisateurs créés avec ce profil un lien de parrainage personnel semblable à une invitation, à envoyer à vos amis/famille. Créez une invitation avec les paramètres souhaités, puis sélectionnez-la ici. Chaque référence sera alors basée sur cette invitation. Vous pouvez supprimer l'invitation une fois terminée."
     },
     "notifications": {
         "changedEmailAddress": "Adresse e-mail modifiée de {n}.",
@@ -162,7 +163,9 @@
         "accountConnected": "Compte connecté.",
         "savedAnnouncement": "Annonce enregistrée.",
         "setOmbiProfile": "Profil ombi enregistré.",
-        "errorSetOmbiProfile": "Echec de la sauvegarde du profil ombi."
+        "errorSetOmbiProfile": "Echec de la sauvegarde du profil ombi.",
+        "errorNoReferralTemplate": "Le profil ne contient pas de modèle de référence, ajoutez-en un dans les paramètres.",
+        "referralsEnabled": "Parrainage activer."
     },
     "quantityStrings": {
         "modifySettingsFor": {
@@ -220,6 +223,10 @@
         "setExpiry": {
             "singular": "Définir l'expiration pour {n} utilisateur",
             "plural": "Définir l'expiration pour {n} utilisateurs"
+        },
+        "enableReferralsFor": {
+            "singular": "Activer les parrainages pour {n} utilisateur",
+            "plural": "Activer les parrainages pour {n} utilisateur"
         }
     }
 }
