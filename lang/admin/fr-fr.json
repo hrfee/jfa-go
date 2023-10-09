@@ -118,7 +118,13 @@
         "userPagePage": "Page utilisateur : Page",
         "after": "Après",
         "before": "Avant",
-        "unlink": "Délier le compte"
+        "unlink": "Délier le compte",
+        "enableReferrals": "Activer Parrainage",
+        "enableReferralsDescription": "Offrez aux utilisateurs un lien de parrainage personnel semblable à une invitation, à envoyer à vos amis/famille. Peut provenir modèle de profil ou d’une invitation existante.",
+        "invite": "Inviter",
+        "userLabel": "Étiquette",
+        "userLabelDescription": "Étiquette à appliquer aux utilisateurs créés avec cette invitation.",
+        "disableReferrals": "Désactiver Parrainage"
     },
     "notifications": {
         "changedEmailAddress": "Adresse e-mail modifiée de {n}.",
