@@ -132,3 +132,18 @@ func (app *appContext) DeleteOmbiProfile(gc *gin.Context) {
 	app.storage.SetProfileKey(profileName, profile)
 	respondBool(204, true, gc)
 }
+
+func (app *appContext) applyOmbiProfile(user map[string]interface{}, profile map[string]interface{}) (status int, err error) {
+	for k, v := range profile {
+		switch v.(type) {
+		case map[string]interface{}, []interface{}:
+			user[k] = v
+		default:
+			if v != user[k] {
+				user[k] = v
+			}
+		}
+	}
+	status, err = app.ombi.ModifyUser(user)
+	return
+}
