@@ -351,17 +351,24 @@ func (d *DiscordDaemon) registerCommands() {
 					Name:        "user",
 					Description: "User to Invite",
 					Required:    true,
-				}, //	running with just one option for now to mesh with what we've got, also may have the syntax wrong here
-				/*{
+				},
+				{
 					Type:        dg.ApplicationCommandOptionInteger,
-					Name:        "expire after",
+					Name:        "expiry",
 					Description: "Time in minutes before expiration",
 					Required:    false,
 				},
+				/* Label should be automatically set to something like "Discord invite for @username"
 				{
 					Type:        dg.ApplicationCommandOptionString,
 					Name:        "label",
-					Description: "Label to apply to the user created with this invite",
+					Description: "Label given to this invite (shown on the Admin page)",
+					Required:    false,
+				}, */
+				{
+					Type:        dg.ApplicationCommandOptionString,
+					Name:        "user_label",
+					Description: "Label given to users created with this invite",
 					Required:    false,
 				},
 				{
@@ -369,7 +376,7 @@ func (d *DiscordDaemon) registerCommands() {
 					Name:        "profile",
 					Description: "Profile to apply to the user created with this invite",
 					Required:    false,
-				}, */
+				},
 			},
 		},
 	}
@@ -546,7 +553,6 @@ func (d *DiscordDaemon) cmdInvite(s *dg.Session, i *dg.InteractionCreate, lang s
 	//label := i.ApplicationCommandData().Options[2].StringValue()
 	//profile := i.ApplicationCommandData().Options[3].StringValue()
 	//mins, err := strconv.Atoi(i.ApplicationCommandData().Options[1].StringValue())
-	expmin := 30
 	//if mins > 0 {
 	//	expmin = mins
 	//}
@@ -558,10 +564,28 @@ func (d *DiscordDaemon) cmdInvite(s *dg.Session, i *dg.InteractionCreate, lang s
 	if !requesterEmail.Admin {
 		d.app.err.Printf("User is not admin")
 	}
-	//	variation of app.GenerateInvite, some parts commented to potentially add back in later with the other options
-	//d.app.debug.Println("Generating new invite with options: %s: %i: %s: %s", invuser, expmin, profile, label)
+
+	var expiryMinutes int64 = 30
+	userLabel := ""
+	profileName := ""
+
+	for i, opt := range i.ApplicationCommandData().Options {
+		if i == 0 {
+			continue
+		}
+		switch opt.Name {
+		case "expiry":
+			expiryMinutes = opt.IntValue()
+		case "user_label":
+			userLabel = opt.StringValue()
+		case "profile":
+			profileName = opt.StringValue()
+		}
+	}
+
 	currentTime := time.Now()
-	validTill := currentTime.Add(time.Minute * time.Duration(expmin))
+
+	validTill := currentTime.Add(time.Minute * time.Duration(expiryMinutes))
 	// make sure code doesn't begin with number
 	inviteCode := shortuuid.New()
 	_, err = strconv.Atoi(string(inviteCode[0]))
@@ -569,20 +593,23 @@ func (d *DiscordDaemon) cmdInvite(s *dg.Session, i *dg.InteractionCreate, lang s
 		inviteCode = shortuuid.New()
 		_, err = strconv.Atoi(string(inviteCode[0]))
 	}
-	var invite Invite
-	//if label != "" {
-	//	invite.Label = label
-	//}
-	invite.Created = currentTime
-	invite.RemainingUses = 1
-	invite.UserExpiry = false
-	/*if invite.UserExpiry {
-		invite.UserMonths = req.UserMonths
-		invite.UserDays = req.UserDays
-		invite.UserHours = req.UserHours
-		invite.UserMinutes = req.UserMinutes
-	}*/
-	invite.ValidTill = validTill
+
+	invite := Invite{
+		Code:          inviteCode,
+		Created:       currentTime,
+		RemainingUses: 1,
+		UserExpiry:    false,
+		ValidTill:     validTill,
+		UserLabel:     userLabel,
+		Profile:       "Default",
+		Label:         fmt.Sprintf("Discord Invite for %s", RenderDiscordUsername(recipient)),
+	}
+	if profileName != "" {
+		if _, ok := d.app.storage.GetProfileKey(profileName); ok {
+			invite.Profile = profileName
+		}
+	}
+
 	if recipient != nil && d.app.config.Section("invite_emails").Key("enabled").MustBool(false) {
 		d.app.debug.Printf("%s: Sending invite message", inviteCode)
 		invname, err := d.bot.GuildMember(d.guildID, recipient.ID)
@@ -624,12 +651,6 @@ func (d *DiscordDaemon) cmdInvite(s *dg.Session, i *dg.InteractionCreate, lang s
 		}
 	}
 	//if profile != "" {
-	//	if _, ok := d.app.storage.GetProfileKey(profile); ok {
-	//		invite.Profile = profile
-	//	} else {
-	//		invite.Profile = "Default"
-	//	}
-	//}
 	d.app.storage.SetInvitesKey(inviteCode, invite)
 }
 
