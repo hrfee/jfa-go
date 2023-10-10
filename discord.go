@@ -586,11 +586,9 @@ func (d *DiscordDaemon) cmdInvite(s *dg.Session, i *dg.InteractionCreate, lang s
 	}*/
 	invite.ValidTill = validTill
 	if invuser != "" && d.app.config.Section("invite_emails").Key("enabled").MustBool(false) {
-		discord := ""
 		d.app.debug.Printf("%s: Sending invite message", inviteCode)
 		invname, err := d.bot.GuildMember(d.guildID, invuser)
 		invite.SendTo = invname.User.Username
-
 		msg, err := d.app.email.constructInvite(inviteCode, invite, d.app, false)
 		if err != nil {
 			invite.SendTo = fmt.Sprintf("Failed to send to %s", invuser)
@@ -598,7 +596,7 @@ func (d *DiscordDaemon) cmdInvite(s *dg.Session, i *dg.InteractionCreate, lang s
 			//add response message
 		} else {
 			var err error
-			err = d.app.discord.SendDM(msg, discord)
+			err = d.app.discord.SendDM(msg, invuser)
 			if err != nil {
 				invite.SendTo = fmt.Sprintf("Failed to send to %s", invuser)
 				d.app.err.Printf("%s: %s: %v", inviteCode, invite.SendTo, err)
