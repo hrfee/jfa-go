@@ -52,16 +52,16 @@
     },
     "quantityStrings": {
         "year": {
-            "plural": "{n] années",
-            "singular": "{n] année"
+            "plural": "{n} années",
+            "singular": "{n} année"
         },
         "day": {
-            "singular": "{n] jour",
-            "plural": "{n] jours"
+            "singular": "{n} jour",
+            "plural": "{n} jours"
         },
         "month": {
-            "singular": "{n] mois",
-            "plural": "{n] mois"
+            "singular": "{n} mois",
+            "plural": "{n} mois"
         }
     }
 }
