@@ -349,13 +349,13 @@ func (d *DiscordDaemon) registerCommands() {
 				{
 					Type:        dg.ApplicationCommandOptionUser,
 					Name:        "user",
-					Description: "User to Invite",
+					Description: "User to Invite.",
 					Required:    true,
 				},
 				{
 					Type:        dg.ApplicationCommandOptionInteger,
 					Name:        "expiry",
-					Description: "Time in minutes before expiration",
+					Description: "Time in minutes before expiration.",
 					Required:    false,
 				},
 				/* Label should be automatically set to something like "Discord invite for @username"
@@ -368,13 +368,13 @@ func (d *DiscordDaemon) registerCommands() {
 				{
 					Type:        dg.ApplicationCommandOptionString,
 					Name:        "user_label",
-					Description: "Label given to users created with this invite",
+					Description: "Label given to users created with this invite.",
 					Required:    false,
 				},
 				{
 					Type:        dg.ApplicationCommandOptionString,
 					Name:        "profile",
-					Description: "Profile to apply to the user created with this invite",
+					Description: "Profile to apply. Restart jfa-go if there's any missing.",
 					Required:    false,
 				},
 			},
@@ -383,12 +383,23 @@ func (d *DiscordDaemon) registerCommands() {
 	commands[1].Options[0].Choices = make([]*dg.ApplicationCommandOptionChoice, len(d.app.storage.lang.Telegram))
 	i := 0
 	for code := range d.app.storage.lang.Telegram {
-		d.app.debug.Printf("Registering choice \"%s\":\"%s\"\n", d.app.storage.lang.Telegram[code].Meta.Name, code)
+		d.app.debug.Printf("Discord: registering lang choice \"%s\":\"%s\"\n", d.app.storage.lang.Telegram[code].Meta.Name, code)
 		commands[1].Options[0].Choices[i] = &dg.ApplicationCommandOptionChoice{
 			Name:  d.app.storage.lang.Telegram[code].Meta.Name,
 			Value: code,
 		}
 		i++
+	}
+
+	// FIXME: Maybe make this reload when profiles change
+	profiles := d.app.storage.GetProfiles()
+	commands[3].Options[3].Choices = make([]*dg.ApplicationCommandOptionChoice, len(profiles))
+	for i, profile := range profiles {
+		d.app.debug.Printf("Discord: registering profile choice \"%s\"", profile.Name)
+		commands[3].Options[3].Choices[i] = &dg.ApplicationCommandOptionChoice{
+			Name:  profile.Name,
+			Value: profile.Name,
+		}
 	}
 
 	// d.deregisterCommands()
@@ -416,7 +427,7 @@ func (d *DiscordDaemon) deregisterCommands() {
 		return
 	}
 	for _, cmd := range existingCommands {
-		if err := d.bot.ApplicationCommandDelete(d.bot.State.User.ID, "", cmd.ID); err != nil {
+		if err := d.bot.ApplicationCommandDelete(d.bot.State.User.ID, d.guildID, cmd.ID); err != nil {
 			d.app.err.Printf("Failed to deregister command: %v", err)
 		}
 	}
@@ -602,7 +613,7 @@ func (d *DiscordDaemon) cmdInvite(s *dg.Session, i *dg.InteractionCreate, lang s
 		ValidTill:     validTill,
 		UserLabel:     userLabel,
 		Profile:       "Default",
-		Label:         fmt.Sprintf("Discord Invite for %s", RenderDiscordUsername(recipient)),
+		Label:         fmt.Sprintf("Discord: %s", RenderDiscordUsername(recipient)),
 	}
 	if profileName != "" {
 		if _, ok := d.app.storage.GetProfileKey(profileName); ok {
