@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"strings"
 	"strconv"
+	"strings"
 	"time"
 
 	dg "github.com/bwmarrin/discordgo"
@@ -351,7 +351,7 @@ func (d *DiscordDaemon) registerCommands() {
 					Name:        "user",
 					Description: "User to Invite",
 					Required:    true,
-				},	//	running with just one option for now to mesh with what we've got, also may have the syntax wrong here
+				}, //	running with just one option for now to mesh with what we've got, also may have the syntax wrong here
 				/*{
 					Type:        dg.ApplicationCommandOptionInteger,
 					Name:        "expire after",
@@ -539,10 +539,10 @@ func (d *DiscordDaemon) cmdLang(s *dg.Session, i *dg.InteractionCreate, lang str
 
 func (d *DiscordDaemon) cmdInvite(s *dg.Session, i *dg.InteractionCreate, lang string) {
 	channel, err := s.UserChannelCreate(i.Interaction.Member.User.ID)
-	requestor := d.MustGetUser(channel.ID, i.Interaction.Member.User.ID, i.Interaction.Member.User.Discriminator, i.Interaction.Member.User.Username)
-	d.users[i.Interaction.Member.User.ID] = requestor
-	invuser := fmt.Sprintf("%v", i.ApplicationCommandData().Options[0].Value)
-	d.app.debug.Println(invuser)
+	requester := d.MustGetUser(channel.ID, i.Interaction.Member.User.ID, i.Interaction.Member.User.Discriminator, i.Interaction.Member.User.Username)
+	d.users[i.Interaction.Member.User.ID] = requester
+	recipient := i.ApplicationCommandData().Options[0].UserValue(s)
+	// d.app.debug.Println(invuser)
 	//label := i.ApplicationCommandData().Options[2].StringValue()
 	//profile := i.ApplicationCommandData().Options[3].StringValue()
 	//mins, err := strconv.Atoi(i.ApplicationCommandData().Options[1].StringValue())
@@ -551,17 +551,17 @@ func (d *DiscordDaemon) cmdInvite(s *dg.Session, i *dg.InteractionCreate, lang s
 	//	expmin = mins
 	//}
 	//	Need to check whether requestor is linked to the admin account *possibly add Admin bool to DiscordUser struct
-	requestoremail, ok := d.app.storage.GetEmailsKey(requestor.JellyfinID)
+	requesterEmail, ok := d.app.storage.GetEmailsKey(requester.JellyfinID)
 	if !ok {
 		d.app.err.Printf("Failed to verify admin")
 	}
-	if !requestoremail.Admin {
+	if !requesterEmail.Admin {
 		d.app.err.Printf("User is not admin")
 	}
 	//	variation of app.GenerateInvite, some parts commented to potentially add back in later with the other options
 	//d.app.debug.Println("Generating new invite with options: %s: %i: %s: %s", invuser, expmin, profile, label)
 	currentTime := time.Now()
-	validTill := currentTime.Add(time.Minute*time.Duration(expmin))
+	validTill := currentTime.Add(time.Minute * time.Duration(expmin))
 	// make sure code doesn't begin with number
 	inviteCode := shortuuid.New()
 	_, err = strconv.Atoi(string(inviteCode[0]))
@@ -583,24 +583,43 @@ func (d *DiscordDaemon) cmdInvite(s *dg.Session, i *dg.InteractionCreate, lang s
 		invite.UserMinutes = req.UserMinutes
 	}*/
 	invite.ValidTill = validTill
-	if invuser != "" && d.app.config.Section("invite_emails").Key("enabled").MustBool(false) {
-		discord := ""
+	if recipient != nil && d.app.config.Section("invite_emails").Key("enabled").MustBool(false) {
 		d.app.debug.Printf("%s: Sending invite message", inviteCode)
-		invname, err := d.bot.GuildMember(d.guildID, invuser)
+		invname, err := d.bot.GuildMember(d.guildID, recipient.ID)
 		invite.SendTo = invname.User.Username
 
 		msg, err := d.app.email.constructInvite(inviteCode, invite, d.app, false)
 		if err != nil {
-			invite.SendTo = fmt.Sprintf("Failed to send to %s", invuser)
+			invite.SendTo = fmt.Sprintf("Failed to send to %s", RenderDiscordUsername(recipient))
 			d.app.err.Printf("%s: Failed to construct invite message: %v", inviteCode, err)
 		} else {
 			var err error
-			err = d.app.discord.SendDM(msg, discord)
+			err = d.app.discord.SendDM(msg, recipient.ID)
 			if err != nil {
-				invite.SendTo = fmt.Sprintf("Failed to send to %s", invuser)
+				invite.SendTo = fmt.Sprintf("Failed to send to %s", RenderDiscordUsername(recipient))
 				d.app.err.Printf("%s: %s: %v", inviteCode, invite.SendTo, err)
+				err := s.InteractionRespond(i.Interaction, &dg.InteractionResponse{
+					Type: dg.InteractionResponseChannelMessageWithSource,
+					Data: &dg.InteractionResponseData{
+						Content: d.app.storage.lang.Telegram[lang].Strings.get("sentInviteFailure"),
+						Flags:   64, // Ephemeral
+					},
+				})
+				if err != nil {
+					d.app.err.Printf("Discord: Failed to send message to \"%s\": %v", RenderDiscordUsername(requester), err)
+				}
 			} else {
-				d.app.info.Printf("%s: Sent invite email to \"%s\"", inviteCode, invuser)
+				d.app.info.Printf("%s: Sent invite email to \"%s\"", inviteCode, RenderDiscordUsername(recipient))
+				err := s.InteractionRespond(i.Interaction, &dg.InteractionResponse{
+					Type: dg.InteractionResponseChannelMessageWithSource,
+					Data: &dg.InteractionResponseData{
+						Content: d.app.storage.lang.Telegram[lang].Strings.get("sentInvite"),
+						Flags:   64, // Ephemeral
+					},
+				})
+				if err != nil {
+					d.app.err.Printf("Discord: Failed to send message to \"%s\": %v", RenderDiscordUsername(requester), err)
+				}
 			}
 		}
 	}
@@ -613,7 +632,7 @@ func (d *DiscordDaemon) cmdInvite(s *dg.Session, i *dg.InteractionCreate, lang s
 	//}
 	d.app.storage.SetInvitesKey(inviteCode, invite)
 }
-	
+
 func (d *DiscordDaemon) messageHandler(s *dg.Session, m *dg.MessageCreate) {
 	if m.GuildID != "" && d.channelName != "" {
 		if d.channelID == "" {
