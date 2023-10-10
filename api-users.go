@@ -377,30 +377,47 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 		if profile.Ombi != nil && len(profile.Ombi) != 0 {
 			template := profile.Ombi
 			errors, code, err := app.ombi.NewUser(req.Username, req.Password, req.Email, template)
+			accountExists := false
+			var ombiUser map[string]interface{}
 			if err != nil || code != 200 {
-				app.info.Printf("Failed to create Ombi user (%d): %s", code, err)
-				app.debug.Printf("Errors reported by Ombi: %s", strings.Join(errors, ", "))
-			} else {
-				app.info.Println("Created Ombi user")
-				if discordVerified || telegramVerified {
-					ombiUser, status, err := app.getOmbiUser(id)
+				// Check if on the off chance, Ombi's user importer has already added the account.
+				ombiUser, status, err = app.getOmbiImportedUser(req.Username)
+				if status == 200 && err == nil {
+					app.info.Println("Found existing Ombi user, applying changes")
+					accountExists = true
+					template["password"] = req.Password
+					status, err = app.applyOmbiProfile(ombiUser, template)
 					if status != 200 || err != nil {
-						app.err.Printf("Failed to get Ombi user (%d): %v", status, err)
-					} else {
-						dID := ""
-						tUser := ""
-						if discordVerified {
-							dID = discordUser.ID
-						}
-						if telegramVerified {
-							u, _ := app.storage.GetTelegramKey(user.ID)
-							tUser = u.Username
-						}
-						resp, status, err := app.ombi.SetNotificationPrefs(ombiUser, dID, tUser)
-						if !(status == 200 || status == 204) || err != nil {
-							app.err.Printf("Failed to link Telegram/Discord to Ombi (%d): %v", status, err)
-							app.debug.Printf("Response: %v", resp)
-						}
+						app.err.Printf("Failed to modify existing Ombi user (%d): %v\n", status, err)
+					}
+				} else {
+					app.info.Printf("Failed to create Ombi user (%d): %s", code, err)
+					app.debug.Printf("Errors reported by Ombi: %s", strings.Join(errors, ", "))
+				}
+			} else {
+				ombiUser, status, err = app.getOmbiUser(id)
+				if status != 200 || err != nil {
+					app.err.Printf("Failed to get Ombi user (%d): %v", status, err)
+				} else {
+					app.info.Println("Created Ombi user")
+					accountExists = true
+				}
+			}
+			if accountExists {
+				if discordVerified || telegramVerified {
+					dID := ""
+					tUser := ""
+					if discordVerified {
+						dID = discordUser.ID
+					}
+					if telegramVerified {
+						u, _ := app.storage.GetTelegramKey(user.ID)
+						tUser = u.Username
+					}
+					resp, status, err := app.ombi.SetNotificationPrefs(ombiUser, dID, tUser)
+					if !(status == 200 || status == 204) || err != nil {
+						app.err.Printf("Failed to link Telegram/Discord to Ombi (%d): %v", status, err)
+						app.debug.Printf("Response: %v", resp)
 					}
 				}
 			}
@@ -1214,17 +1231,7 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 				// newUser["userName"] = user["userName"]
 				// newUser["alias"] = user["alias"]
 				// newUser["emailAddress"] = user["emailAddress"]
-				for k, v := range ombi {
-					switch v.(type) {
-					case map[string]interface{}, []interface{}:
-						user[k] = v
-					default:
-						if v != user[k] {
-							user[k] = v
-						}
-					}
-				}
-				status, err = app.ombi.ModifyUser(user)
+				status, err = app.applyOmbiProfile(user, ombi)
 				if status != 200 || err != nil {
 					errorString += fmt.Sprintf("Apply %d: %v ", status, err)
 				}

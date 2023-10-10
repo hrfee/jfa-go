@@ -5,7 +5,7 @@
     "strings": {
         "username": "Nom d'utilisateur",
         "password": "Mot de passe",
-        "emailAddress": "Adresse courriel",
+        "emailAddress": "Adresse Email",
         "name": "Nom",
         "submit": "Soumettre",
         "send": "Envoyer",
@@ -29,7 +29,7 @@
         "logout": "Se déconnecter",
         "admin": "Administrateur",
         "enabled": "Activé",
-        "disabled": "Désactivé",
+        "disabled": "Désactiver",
         "reEnable": "Ré-activé",
         "disable": "Désactivé",
         "expiry": "Expiration",
@@ -40,7 +40,8 @@
         "accountStatus": "Statut du compte",
         "notSet": "Non défini",
         "myAccount": "Mon compte",
-        "contactMethods": "Moyens de contact"
+        "contactMethods": "Moyens de contact",
+        "referrals": "Programme de parrainage"
     },
     "notifications": {
         "errorLoginBlank": "Le nom d'utilisateur et/ou le mot de passe sont vides.",
@@ -51,16 +52,16 @@
     },
     "quantityStrings": {
         "year": {
-            "plural": "{n] années",
-            "singular": "{n] année"
+            "plural": "{n} années",
+            "singular": "{n} année"
         },
         "day": {
-            "singular": "{n] jour",
-            "plural": "{n] jours"
+            "singular": "{n} jour",
+            "plural": "{n} jours"
         },
         "month": {
-            "singular": "{n] mois",
-            "plural": "{n] mois"
+            "singular": "{n} mois",
+            "plural": "{n} mois"
         }
     }
 }

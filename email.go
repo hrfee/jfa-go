@@ -19,6 +19,7 @@ import (
 
 	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/html"
+	"github.com/hrfee/jfa-go/easyproxy"
 	"github.com/hrfee/mediabrowser"
 	"github.com/itchyny/timefmt-go"
 	"github.com/mailgun/mailgun-go/v4"
@@ -87,7 +88,11 @@ func NewEmailer(app *appContext) *Emailer {
 		if username == "" && password != "" {
 			username = emailer.fromAddr
 		}
-		err := emailer.NewSMTP(app.config.Section("smtp").Key("server").String(), app.config.Section("smtp").Key("port").MustInt(465), username, password, sslTLS, app.config.Section("smtp").Key("ssl_cert").MustString(""), app.config.Section("smtp").Key("hello_hostname").String(), app.config.Section("smtp").Key("cert_validation").MustBool(true))
+		var proxyConf *easyproxy.ProxyConfig = nil
+		if app.proxyEnabled {
+			proxyConf = &app.proxyConfig
+		}
+		err := emailer.NewSMTP(app.config.Section("smtp").Key("server").String(), app.config.Section("smtp").Key("port").MustInt(465), username, password, sslTLS, app.config.Section("smtp").Key("ssl_cert").MustString(""), app.config.Section("smtp").Key("hello_hostname").String(), app.config.Section("smtp").Key("cert_validation").MustBool(true), proxyConf)
 		if err != nil {
 			app.err.Printf("Error while initiating SMTP mailer: %v", err)
 		}
@@ -113,7 +118,7 @@ type SMTP struct {
 }
 
 // NewSMTP returns an SMTP emailClient.
-func (emailer *Emailer) NewSMTP(server string, port int, username, password string, sslTLS bool, certPath string, helloHostname string, validateCertificate bool) (err error) {
+func (emailer *Emailer) NewSMTP(server string, port int, username, password string, sslTLS bool, certPath string, helloHostname string, validateCertificate bool, proxy *easyproxy.ProxyConfig) (err error) {
 	sender := &SMTP{}
 	sender.Client = sMail.NewSMTPClient()
 	if sslTLS {
@@ -131,11 +136,15 @@ func (emailer *Emailer) NewSMTP(server string, port int, username, password stri
 	sender.Client.Host = server
 	sender.Client.Port = port
 	sender.Client.KeepAlive = false
+
 	// x509.SystemCertPool is unavailable on windows
 	if PLATFORM == "windows" {
 		sender.Client.TLSConfig = &tls.Config{
 			InsecureSkipVerify: !validateCertificate,
 			ServerName:         server,
+		}
+		if proxy != nil {
+			sender.Client.CustomConn, err = easyproxy.NewConn(*proxy, fmt.Sprintf("%s:%d", server, port), sender.Client.TLSConfig)
 		}
 		emailer.sender = sender
 		return
@@ -155,6 +164,9 @@ func (emailer *Emailer) NewSMTP(server string, port int, username, password stri
 		InsecureSkipVerify: !validateCertificate,
 		ServerName:         server,
 		RootCAs:            rootCAs,
+	}
+	if proxy != nil {
+		sender.Client.CustomConn, err = easyproxy.NewConn(*proxy, fmt.Sprintf("%s:%d", server, port), sender.Client.TLSConfig)
 	}
 	emailer.sender = sender
 	return

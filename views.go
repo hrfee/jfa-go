@@ -175,7 +175,9 @@ func (app *appContext) AdminPage(gc *gin.Context) {
 		"jfAdminOnly":      jfAdminOnly,
 		"jfAllowAll":       jfAllowAll,
 		"userPageEnabled":  app.config.Section("user_page").Key("enabled").MustBool(false),
+		"showUserPageLink": app.config.Section("user_page").Key("show_link").MustBool(true),
 		"referralsEnabled": app.config.Section("user_page").Key("enabled").MustBool(false) && app.config.Section("user_page").Key("referrals").MustBool(false),
+		"loginAppearance":  app.config.Section("ui").Key("login_appearance").MustString("clear"),
 	})
 }
 

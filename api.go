@@ -182,7 +182,7 @@ func (app *appContext) ResetSetPassword(gc *gin.Context) {
 	}
 	if app.config.Section("ombi").Key("enabled").MustBool(false) {
 		// Silently fail for changing ombi passwords
-		if status != 200 || err != nil {
+		if (status != 200 && status != 204) || err != nil {
 			app.err.Printf("Failed to get user \"%s\" from jellyfin/emby (%d): %v", username, status, err)
 			respondBool(200, true, gc)
 			return
