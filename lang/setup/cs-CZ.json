@@ -1,160 +1,160 @@
 {
     "meta": {
-        "name": ""
+        "name": "Čeština (CZ)"
     },
     "strings": {
-        "pageTitle": "",
-        "next": "",
-        "back": "",
-        "optional": "",
-        "serverType": "",
-        "disabled": "",
-        "enabled": "",
-        "port": "",
-        "message": "",
-        "serverAddress": "",
-        "emailSubject": "",
-        "URL": "",
-        "apiKey": "",
-        "error": "",
-        "errorInvalidUserPass": "",
-        "errorNotAdmin": "",
-        "errorUserDisabled": "",
-        "error404": "",
-        "errorConnectionRefused": "",
-        "errorUnknown": ""
+        "pageTitle": "Nastavení - jfa-go",
+        "next": "Další",
+        "back": "Zpět",
+        "optional": "Volitelný",
+        "serverType": "Typ serveru",
+        "disabled": "Zakázáno",
+        "enabled": "Povoleno",
+        "port": "Port",
+        "message": "Zpráva",
+        "serverAddress": "Adresa serveru",
+        "emailSubject": "Předmět emailu",
+        "URL": "URL",
+        "apiKey": "Klíč API",
+        "error": "Chyba",
+        "errorInvalidUserPass": "Neplatné uživatelské jméno či heslo.",
+        "errorNotAdmin": "Uživatel nemá oprávnění spravovat server.",
+        "errorUserDisabled": "Uživatel může být zakázán.",
+        "error404": "404, zkontrolujte interní URL.",
+        "errorConnectionRefused": "Spojení odmítnuto.",
+        "errorUnknown": "Neznámá chyba, zkontrolujte protokoly aplikace."
     },
     "startPage": {
-        "welcome": "",
-        "pressStart": "",
-        "httpsNotice": "",
-        "start": ""
+        "welcome": "Vítejte!",
+        "pressStart": "Chcete-li nastavit jfa-go, budete muset udělat několik věcí. Pokračujte stisknutím tlačítka start.",
+        "httpsNotice": "Ujistěte se, že na tuto stránku přistupujete přes HTTPS nebo v privátní síti.",
+        "start": "Start"
     },
     "endPage": {
-        "finished": "",
-        "restartMessage": "",
-        "refreshPage": ""
+        "finished": "Ukončeno!",
+        "restartMessage": "Funkce jako roboti Discord/Telegram/Matrix, vlastní zprávy Markdown a uživatelsky přístupná stránka \"Můj účet\" najdete v Nastavení, takže si ji nezapomeňte prohlédnout. Kliknutím níže restartujte a poté obnovte stránku.",
+        "refreshPage": "Obnovit"
     },
     "language": {
-        "title": "",
-        "description": "",
-        "defaultAdminLang": "",
-        "defaultFormLang": "",
-        "defaultEmailLang": ""
+        "title": "Jazyk",
+        "description": "Komunitní překlady jsou k dispozici pro většinu částí jfa-go. Níže si můžete vybrat výchozí jazyky, ale uživatelé je stále mohou změnit, pokud si to přejí. Pokud chcete pomoci s překladem, přihlaste se k {n} a začněte přispívat!",
+        "defaultAdminLang": "Výchozí jazyk správce",
+        "defaultFormLang": "Výchozí jazyk vytváření účtu",
+        "defaultEmailLang": "Výchozí jazyk e-mailu"
     },
     "general": {
-        "title": "",
-        "listenAddress": "",
-        "urlBase": "",
-        "urlBaseNotice": "",
-        "lightTheme": "",
-        "darkTheme": "",
-        "useHTTPS": "",
-        "httpsPort": "",
-        "useHTTPSNotice": "",
-        "pathToCertificate": "",
-        "pathToKeyFile": ""
+        "title": "Všeobecné",
+        "listenAddress": "Listen Address",
+        "urlBase": "URL Base",
+        "urlBaseNotice": "Je potřeba pouze při použití reverzního proxy na subdoméně (např. 'jellyf.in/accounts').",
+        "lightTheme": "Světlý",
+        "darkTheme": "Tmavý",
+        "useHTTPS": "Použijte HTTPS",
+        "httpsPort": "HTTPS Port",
+        "useHTTPSNotice": "Doporučeno pouze v případě, že nepoužíváte reverzní proxy.",
+        "pathToCertificate": "Cesta k certifikátu",
+        "pathToKeyFile": "Cesta k souboru klíče"
     },
     "updates": {
-        "title": "",
-        "description": "",
-        "updateChannel": "",
-        "stable": "",
-        "unstable": ""
+        "title": "Aktualizace",
+        "description": "Povolte, abyste byli informováni, když jsou k dispozici nové aktualizace. jfa-go bude kontrolovat {n} každých 30 minut. Nejsou shromažďovány žádné IP adresy ani osobní údaje.",
+        "updateChannel": "Aktualizovat kanál",
+        "stable": "Stabilní",
+        "unstable": "Nestabilní"
     },
     "login": {
-        "title": "",
-        "description": "",
-        "authorizeWithJellyfin": "",
-        "authorizeManual": "",
-        "adminOnly": "",
-        "allowAll": "",
-        "allowAllDescription": "",
-        "authorizeManualUserPageNotice": "",
-        "emailNotice": ""
+        "title": "Přihlásit se",
+        "description": "Pro přístup na stránku správce se musíte přihlásit níže uvedeným způsobem:",
+        "authorizeWithJellyfin": "Autorizovat pomocí Jellyfin/Emby: Přihlašovací údaje jsou sdíleny s Jellyfinem, což umožňuje více uživatelů.",
+        "authorizeManual": "Uživatelské jméno a heslo: Ručně nastavte uživatelské jméno a heslo.",
+        "adminOnly": "Pouze správci (doporučeno)",
+        "allowAll": "Povolit všem uživatelům Jellyfin přihlášení",
+        "allowAllDescription": "Nedoporučuje se, měli byste povolit přihlášení jednotlivých uživatelů po nastavení.",
+        "authorizeManualUserPageNotice": "Pomocí tohoto deaktivujete funkci \"Uživatelská stránka\".",
+        "emailNotice": "Vaši e-mailovou adresu lze použít k přijímání upozornění."
     },
     "jellyfinEmby": {
-        "title": "",
-        "description": "",
-        "embyNotice": "",
-        "internal": "",
-        "external": "",
-        "replaceJellyfin": "",
-        "replaceJellyfinNotice": "",
-        "addressExternalNotice": "",
-        "testConnection": ""
+        "title": "Jellyfin/Emby",
+        "description": "Účet správce je nutný, protože rozhraní API neumožňuje vytváření uživatelů pomocí klíče API. Měli byste si vytvořit samostatný účet a zaškrtnout 'Povolit tomuto uživateli spravovat server'. Vše ostatní můžete zakázat. Až budete hotovi, zadejte zde přihlašovací údaje.",
+        "embyNotice": "Podpora Emby je omezená a nepodporuje resetování hesla.",
+        "internal": "Vnitřní",
+        "external": "Externí",
+        "replaceJellyfin": "Název serveru",
+        "replaceJellyfinNotice": "Pokud je uveden, nahradí to jakýkoli výskyt 'Jellyfin' v aplikaci.",
+        "addressExternalNotice": "Chcete-li použít stejnou adresu, ponechte prázdné.",
+        "testConnection": "Test připojení"
     },
     "ombi": {
-        "title": "",
-        "description": "",
-        "apiKeyNotice": ""
+        "title": "Ombi",
+        "description": "Připojením k Ombi se vytvoří účet Jellyfin i Ombi, když se uživatel připojí přes jfa-go. Po dokončení nastavení přejděte do Nastavení a nastavte výchozí profil pro nové uživatele ombi.",
+        "apiKeyNotice": "Najdete to na první kartě nastavení Ombi."
     },
     "messages": {
-        "title": "",
-        "description": ""
+        "title": "Zprávy",
+        "description": "jfa-go může odesílat resetování hesla a různé zprávy prostřednictvím e-mailu, Discordu, telegramu a/nebo Matrixu. Níže si můžete nastavit e-mail a ostatní můžete nakonfigurovat v Nastavení později. Pokyny naleznete na {n}. Pokud to nepotřebujete, můžete zde tyto funkce zakázat."
     },
     "email": {
-        "title": "",
-        "description": "",
-        "method": "",
-        "useEmailAsUsername": "",
-        "useEmailAsUsernameNotice": "",
-        "fromAddress": "",
-        "senderName": "",
-        "dateFormat": "",
-        "dateFormatNotice": "",
-        "encryption": "",
-        "mailgunApiURL": ""
+        "title": "Email",
+        "description": "jfa-go může posílat PINy pro resetování hesla a různá upozornění prostřednictvím e-mailu. Můžete se připojit k serveru SMTP nebo použít {n} API.",
+        "method": "Způsob odeslání",
+        "useEmailAsUsername": "Jako uživatelské jméno použijte e-mailové adresy",
+        "useEmailAsUsernameNotice": "Pokud je povoleno, noví uživatelé se budou přihlašovat do Jellyfin/Emby pomocí své e-mailové adresy namísto uživatelského jména.",
+        "fromAddress": "Z adresy",
+        "senderName": "Jméno odesílatele",
+        "dateFormat": "Datový formát",
+        "dateFormatNotice": "Datum má formát strftime. Pro více informací navštivte {n}.",
+        "encryption": "Šifrování",
+        "mailgunApiURL": "API URL"
     },
     "notifications": {
-        "title": "",
-        "description": ""
+        "title": "Upozornění pro správce",
+        "description": "Je-li povoleno, můžete si vybrat (na pozvánku), že chcete dostávat zprávu, když pozvánka vyprší nebo když je vytvořen uživatel. Pokud jste nezvolili způsob přihlášení Jellyfin, ujistěte se, že jste uvedli svou e-mailovou adresu, nebo později přidejte jiný způsob kontaktu."
     },
     "userPage": {
-        "title": "",
-        "description": "",
-        "customizeMessages": "",
-        "requiredSettings": ""
+        "title": "Uživatelská stránka",
+        "description": "Uživatelská stránka (zobrazená jako \"Můj účet\") umožňuje uživatelům přístup k informacím o jejich účtu, jako jsou jejich způsoby kontaktu a vypršení platnosti účtu. Mohou si také změnit heslo, zahájit resetování hesla a propojit/změnit způsoby kontaktu, aniž by se vás museli ptát. Kromě toho mohou být uživatelům před a po přihlášení zobrazeny přizpůsobené zprávy Markdown.",
+        "customizeMessages": "Chcete-li je nastavit později, klikněte v nastavení na tlačítko Upravit vedle položky \"Stránka uživatele\".",
+        "requiredSettings": "Musí být nastaveno přihlášení do jfa-go přes Jellyfin. Zajistěte, aby bylo později pro samoobslužné resetování hesla vybráno \"resetovat heslo přes odkaz\"."
     },
     "welcomeEmails": {
-        "title": "",
-        "description": ""
+        "title": "Uvítací zprávy",
+        "description": "Pokud je povoleno, bude novým uživatelům odeslána zpráva s adresou URL Jellyfin/Emby a jejich uživatelským jménem."
     },
     "inviteEmails": {
-        "title": "",
-        "description": ""
+        "title": "Pozvací zprávy",
+        "description": "Pokud je povoleno, můžete posílat pozvánky přímo na e-mailovou adresu uživatele, uživatele Discordu nebo Matrixu. Protože možná používáte reverzní proxy, musíte zadat adresy URL, ze kterých se přistupuje k pozvánkám. Napište základ URL a připojte '/invite'."
     },
     "passwordResets": {
-        "title": "",
-        "description": "",
-        "pathToJellyfin": "",
-        "pathToJellyfinNotice": "",
-        "resetLinks": "",
-        "resetLinksRequiredForUserPage": "",
-        "resetLinksNotice": "",
-        "resetLinksLanguage": "",
-        "setPassword": "",
-        "setPasswordNotice": ""
+        "title": "Obnovení hesla",
+        "description": "Když se uživatel pokusí resetovat své heslo, Jellyfin vytvoří soubor s názvem 'passwordreset-*.json', který obsahuje PIN. jfa-go přečte soubor a odešle PIN uživateli. Pokud jste povolili funkci \"Uživatelská stránka\", lze reset provést také tam, zadáte-li uživatelské jméno, e-mail nebo způsob kontaktu.",
+        "pathToJellyfin": "Cesta ke konfiguračnímu adresáři Jellyfin",
+        "pathToJellyfinNotice": "Pokud nevíte, kde to je, zkuste resetovat heslo v Jellyfin. Objeví se vyskakovací okno s '<cesta k jellyfin>/passwordreset-*.json'. Toto není nutné, pokud chcete používat pouze samoobslužné resetování hesla prostřednictvím \"Uživatelské stránky\".",
+        "resetLinks": "Místo PINu pošlete odkaz",
+        "resetLinksRequiredForUserPage": "Vyžadováno pro samoobslužné resetování hesla na Uživatelské stránce.",
+        "resetLinksNotice": "Pokud je povolena integrace Ombi, použijte tuto možnost k synchronizaci resetování hesla Jellyfin s Ombi.",
+        "resetLinksLanguage": "Výchozí odkaz k resetování jazyku",
+        "setPassword": "Nastavit heslo přes odkaz",
+        "setPasswordNotice": "Povolení znamená, že uživatel nemusí po resetování měnit své heslo z PIN. Bude také vynuceno ověření hesla."
     },
     "passwordValidation": {
-        "title": "",
-        "description": "",
-        "length": "",
-        "uppercase": "",
-        "lowercase": "",
-        "numbers": "",
-        "special": ""
+        "title": "Ověření hesla",
+        "description": "Pokud je povoleno, na stránce vytvoření účtu se zobrazí sada požadavků na heslo, jako je minimální délka, velká/malá písmena atd.",
+        "length": "Délka",
+        "uppercase": "Velká písmena",
+        "lowercase": "Malá písmena",
+        "numbers": "Čísla",
+        "special": "Speciální znaky (%, * atd.)"
     },
     "helpMessages": {
-        "title": "",
-        "description": "",
-        "contactMessage": "",
-        "contactMessageNotice": "",
-        "helpMessage": "",
-        "helpMessageNotice": "",
-        "successMessage": "",
-        "successMessageNotice": "",
-        "emailMessage": "",
-        "emailMessageNotice": ""
+        "title": "Zprávy nápovědy",
+        "description": "Tyto zprávy se zobrazí na stránce vytvoření účtu a v některých e-mailech.",
+        "contactMessage": "Kontaktní zpráva",
+        "contactMessageNotice": "Zobrazí se v dolní části všech stránek kromě admin.",
+        "helpMessage": "Zpráva nápovědy",
+        "helpMessageNotice": "Zobrazí se na stránce vytvoření účtu.",
+        "successMessage": "Zpráva o úspěchu",
+        "successMessageNotice": "Zobrazí se, když si uživatel vytvoří svůj účet.",
+        "emailMessage": "Emailová zpráva",
+        "emailMessageNotice": "Zobrazuje se ve spodní části e-mailů."
     }
 }
