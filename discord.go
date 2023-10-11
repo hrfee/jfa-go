@@ -2,12 +2,10 @@ package main
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 	"time"
 
 	dg "github.com/bwmarrin/discordgo"
-	"github.com/lithammer/shortuuid/v3"
 	"github.com/timshannon/badgerhold/v4"
 )
 
@@ -599,16 +597,9 @@ func (d *DiscordDaemon) cmdInvite(s *dg.Session, i *dg.InteractionCreate, lang s
 	currentTime := time.Now()
 
 	validTill := currentTime.Add(time.Minute * time.Duration(expiryMinutes))
-	// make sure code doesn't begin with number
-	inviteCode := shortuuid.New()
-	_, err = strconv.Atoi(string(inviteCode[0]))
-	for err == nil {
-		inviteCode = shortuuid.New()
-		_, err = strconv.Atoi(string(inviteCode[0]))
-	}
 
 	invite := Invite{
-		Code:          inviteCode,
+		Code:          GenerateInviteCode(),
 		Created:       currentTime,
 		RemainingUses: 1,
 		UserExpiry:    false,
@@ -624,20 +615,20 @@ func (d *DiscordDaemon) cmdInvite(s *dg.Session, i *dg.InteractionCreate, lang s
 	}
 
 	if recipient != nil && d.app.config.Section("invite_emails").Key("enabled").MustBool(false) {
-		d.app.debug.Printf("%s: Sending invite message", inviteCode)
+		d.app.debug.Printf("%s: Sending invite message", invite.Code)
 		invname, err := d.bot.GuildMember(d.guildID, recipient.ID)
 		invite.SendTo = invname.User.Username
-		msg, err := d.app.email.constructInvite(inviteCode, invite, d.app, false)
+		msg, err := d.app.email.constructInvite(invite.Code, invite, d.app, false)
 		if err != nil {
 			invite.SendTo = fmt.Sprintf("Failed to send to %s", RenderDiscordUsername(recipient))
-			d.app.err.Printf("%s: Failed to construct invite message: %v", inviteCode, err)
+			d.app.err.Printf("%s: Failed to construct invite message: %v", invite.Code, err)
 			//add response message
 		} else {
 			var err error
 			err = d.app.discord.SendDM(msg, recipient.ID)
 			if err != nil {
 				invite.SendTo = fmt.Sprintf("Failed to send to %s", RenderDiscordUsername(recipient))
-				d.app.err.Printf("%s: %s: %v", inviteCode, invite.SendTo, err)
+				d.app.err.Printf("%s: %s: %v", invite.Code, invite.SendTo, err)
 				err := s.InteractionRespond(i.Interaction, &dg.InteractionResponse{
 					Type: dg.InteractionResponseChannelMessageWithSource,
 					Data: &dg.InteractionResponseData{
@@ -649,7 +640,7 @@ func (d *DiscordDaemon) cmdInvite(s *dg.Session, i *dg.InteractionCreate, lang s
 					d.app.err.Printf("Discord: Failed to send message to \"%s\": %v", RenderDiscordUsername(requester), err)
 				}
 			} else {
-				d.app.info.Printf("%s: Sent invite email to \"%s\"", inviteCode, RenderDiscordUsername(recipient))
+				d.app.info.Printf("%s: Sent invite email to \"%s\"", invite.Code, RenderDiscordUsername(recipient))
 				err := s.InteractionRespond(i.Interaction, &dg.InteractionResponse{
 					Type: dg.InteractionResponseChannelMessageWithSource,
 					Data: &dg.InteractionResponseData{
