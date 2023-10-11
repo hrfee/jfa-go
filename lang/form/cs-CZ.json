@@ -1,82 +1,82 @@
 {
     "meta": {
-        "name": ""
+        "name": "Čeština (CZ)"
     },
     "strings": {
-        "pageTitle": "",
-        "createAccountHeader": "",
-        "accountDetails": "",
-        "emailAddress": "",
-        "username": "",
-        "oldPassword": "",
-        "newPassword": "",
-        "password": "",
-        "reEnterPassword": "",
-        "reEnterPasswordInvalid": "",
-        "createAccountButton": "",
-        "passwordRequirementsHeader": "",
-        "successHeader": "",
-        "confirmationRequired": "",
-        "confirmationRequiredMessage": "",
-        "yourAccountIsValidUntil": "",
-        "sendPIN": "",
-        "sendPINDiscord": "",
-        "matrixEnterUser": "",
-        "welcomeUser": "",
-        "addContactMethod": "",
-        "editContactMethod": "",
-        "joinTheServer": "",
-        "customMessagePlaceholderHeader": "",
-        "customMessagePlaceholderContent": "",
-        "userPageSuccessMessage": "",
-        "resetPassword": "",
-        "resetPasswordThroughJellyfin": "",
-        "resetPasswordThroughLink": "",
-        "resetSent": "",
-        "resetSentDescription": "",
-        "changePassword": "",
-        "referralsDescription": "",
-        "copyReferral": "",
-        "invitedBy": ""
+        "pageTitle": "Vytvořte účet Jellyfin",
+        "createAccountHeader": "Vytvořit účet",
+        "accountDetails": "Podrobnosti",
+        "emailAddress": "Email",
+        "username": "Uživatelské jméno",
+        "oldPassword": "Staré heslo",
+        "newPassword": "Nové heslo",
+        "password": "Heslo",
+        "reEnterPassword": "Znovu zadejte heslo",
+        "reEnterPasswordInvalid": "Hesla nejsou stejná.",
+        "createAccountButton": "Vytvořit účet",
+        "passwordRequirementsHeader": "Požadavky na heslo",
+        "successHeader": "Hotovo!",
+        "confirmationRequired": "Vyžaduje se potvrzení e-mailem",
+        "confirmationRequiredMessage": "Zkontrolujte prosím svou e-mailovou schránku a ověřte svou adresu.",
+        "yourAccountIsValidUntil": "Váš účet bude platný do {date}.",
+        "sendPIN": "Odešlete robotovi níže uvedený PIN a poté se sem vraťte a propojte svůj účet.",
+        "sendPINDiscord": "Napište {command} do {server_channel} na Discordu a poté odešlete PIN níže.",
+        "matrixEnterUser": "Zadejte své uživatelské ID, stiskněte Odeslat a bude vám zaslán PIN. Chcete-li pokračovat, zadejte jej zde.",
+        "welcomeUser": "Vítejte, {user}!",
+        "addContactMethod": "Přidat metodu kontaktu",
+        "editContactMethod": "Upravit metodu kontaktu",
+        "joinTheServer": "Připojte se na server:",
+        "customMessagePlaceholderHeader": "Přizpůsobte si tuto kartu",
+        "customMessagePlaceholderContent": "Kliknutím na tlačítko upravit stránku uživatele v nastavení můžete přizpůsobit tuto kartu nebo ji zobrazit na přihlašovací obrazovce a nebojte se, uživatel to nevidí.",
+        "userPageSuccessMessage": "Podrobnosti o svém účtu můžete později zobrazit a změnit na stránce {myAccount}.",
+        "resetPassword": "Obnovit heslo",
+        "resetPasswordThroughJellyfin": "Chcete-li obnovit heslo, navštivte {jfLink} a stiskněte tlačítko \"Zapomenuté heslo\".",
+        "resetPasswordThroughLink": "Chcete-li obnovit heslo, zadejte své uživatelské jméno, e-mailovou adresu nebo uživatelské jméno propojené kontaktní metody a odešlete. Bude odeslán odkaz pro resetování hesla.",
+        "resetSent": "Resetování odesláno.",
+        "resetSentDescription": "Pokud existuje účet s daným uživatelským jménem/způsobem kontaktu, byl prostřednictvím všech dostupných způsobů kontaktu odeslán odkaz pro resetování hesla. Platnost kódu vyprší za 30 minut.",
+        "changePassword": "Změnit heslo",
+        "referralsDescription": "Pozvěte přátele a rodinu do Jellyfin pomocí tohoto odkazu. Vraťte se sem pro nový, pokud vyprší.",
+        "copyReferral": "Kopírovat odkaz",
+        "invitedBy": "Pozval vás uživatel {user}."
     },
     "notifications": {
-        "errorUserExists": "",
-        "errorInvalidCode": "",
-        "errorAccountLinked": "",
-        "errorEmailLinked": "",
-        "errorTelegramVerification": "",
-        "errorDiscordVerification": "",
-        "errorMatrixVerification": "",
-        "errorInvalidPIN": "",
-        "errorUnknown": "",
-        "errorNoEmail": "",
-        "errorCaptcha": "",
-        "errorPassword": "",
-        "errorNoMatch": "",
-        "errorOldPassword": "",
-        "passwordChanged": "",
-        "verified": ""
+        "errorUserExists": "Uživatel již existuje.",
+        "errorInvalidCode": "Neplatný zvací kód.",
+        "errorAccountLinked": "Účet se již používá.",
+        "errorEmailLinked": "Email je již používán.",
+        "errorTelegramVerification": "Je vyžadováno ověření telegramem.",
+        "errorDiscordVerification": "Vyžaduje se ověření neshody.",
+        "errorMatrixVerification": "Vyžaduje se ověření matice.",
+        "errorInvalidPIN": "PIN je neplatný.",
+        "errorUnknown": "Neznámá chyba.",
+        "errorNoEmail": "Email je vyžadován.",
+        "errorCaptcha": "Captcha je nesprávná.",
+        "errorPassword": "Zkontrolujte požadavky na heslo.",
+        "errorNoMatch": "Hesla se neshodují.",
+        "errorOldPassword": "Staré heslo je nesprávné.",
+        "passwordChanged": "Heslo změněno.",
+        "verified": "Účet ověřen."
     },
     "validationStrings": {
         "length": {
-            "singular": "",
-            "plural": ""
+            "singular": "Musí mít alespoň {n} znak",
+            "plural": "Musí mít nejméně {n} znaků"
         },
         "uppercase": {
-            "singular": "",
-            "plural": ""
+            "singular": "Musí mít alespoň {n} velkých písmen",
+            "plural": "Musí obsahovat alespoň {n} velkých písmen"
         },
         "lowercase": {
-            "singular": "",
-            "plural": ""
+            "singular": "Musí mít alespoň {n} malých písmen",
+            "plural": "Musí obsahovat alespoň {n} malých písmen"
         },
         "number": {
-            "singular": "",
-            "plural": ""
+            "singular": "Musí mít alespoň {n} číslo",
+            "plural": "Musí mít alespoň {n} čísel"
         },
         "special": {
-            "singular": "",
-            "plural": ""
+            "singular": "Musí mít alespoň {n} speciálních znaků",
+            "plural": "Musí obsahovat alespoň {n} speciálních znaků"
         }
     }
 }
