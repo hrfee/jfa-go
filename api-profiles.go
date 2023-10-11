@@ -1,11 +1,9 @@
 package main
 
 import (
-	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/lithammer/shortuuid/v3"
 	"github.com/timshannon/badgerhold/v4"
 )
 
@@ -151,13 +149,7 @@ func (app *appContext) EnableReferralForProfile(gc *gin.Context) {
 	}
 
 	// Generate new code for referral template
-	inv.Code = shortuuid.New()
-	// make sure code doesn't begin with number
-	_, err := strconv.Atoi(string(inv.Code[0]))
-	for err == nil {
-		inv.Code = shortuuid.New()
-		_, err = strconv.Atoi(string(inv.Code[0]))
-	}
+	inv.Code = GenerateInviteCode()
 	inv.Created = time.Now()
 	inv.ValidTill = inv.Created.Add(REFERRAL_EXPIRY_DAYS * 24 * time.Hour)
 	inv.IsReferral = true

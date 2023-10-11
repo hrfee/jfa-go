@@ -3,13 +3,11 @@ package main
 import (
 	"net/http"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
-	"github.com/lithammer/shortuuid/v3"
 	"github.com/timshannon/badgerhold/v4"
 )
 
@@ -673,13 +671,7 @@ func (app *appContext) GetMyReferral(gc *gin.Context) {
 			respondBool(400, false, gc)
 			return
 		}
-		inv.Code = shortuuid.New()
-		// make sure code doesn't begin with number
-		_, err := strconv.Atoi(string(inv.Code[0]))
-		for err == nil {
-			inv.Code = shortuuid.New()
-			_, err = strconv.Atoi(string(inv.Code[0]))
-		}
+		inv.Code = GenerateInviteCode()
 		inv.Created = time.Now()
 		inv.ValidTill = inv.Created.Add(REFERRAL_EXPIRY_DAYS * 24 * time.Hour)
 		inv.IsReferral = true
@@ -689,13 +681,7 @@ func (app *appContext) GetMyReferral(gc *gin.Context) {
 		// 3. We found an invite for us, but it's expired.
 		//    We delete it from storage, and put it back with a fresh code and expiry.
 		app.storage.DeleteInvitesKey(inv.Code)
-		inv.Code = shortuuid.New()
-		// make sure code doesn't begin with number
-		_, err := strconv.Atoi(string(inv.Code[0]))
-		for err == nil {
-			inv.Code = shortuuid.New()
-			_, err = strconv.Atoi(string(inv.Code[0]))
-		}
+		inv.Code = GenerateInviteCode()
 		inv.Created = time.Now()
 		inv.ValidTill = inv.Created.Add(REFERRAL_EXPIRY_DAYS * 24 * time.Hour)
 		app.storage.SetInvitesKey(inv.Code, inv)
