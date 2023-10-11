@@ -17,6 +17,18 @@ const (
 	CAPTCHA_VALIDITY = 20 * 60 // Seconds
 )
 
+// GenerateInviteCode generates an invite code in the correct format.
+func GenerateInviteCode() string {
+	// make sure code doesn't begin with number
+	inviteCode := shortuuid.New()
+	_, err := strconv.Atoi(string(inviteCode[0]))
+	for err == nil {
+		inviteCode = shortuuid.New()
+		_, err = strconv.Atoi(string(inviteCode[0]))
+	}
+	return inviteCode
+}
+
 func (app *appContext) checkInvites() {
 	currentTime := time.Now()
 	for _, data := range app.storage.GetInvites() {
@@ -150,14 +162,8 @@ func (app *appContext) GenerateInvite(gc *gin.Context) {
 	currentTime := time.Now()
 	validTill := currentTime.AddDate(0, req.Months, req.Days)
 	validTill = validTill.Add(time.Hour*time.Duration(req.Hours) + time.Minute*time.Duration(req.Minutes))
-	// make sure code doesn't begin with number
-	inviteCode := shortuuid.New()
-	_, err := strconv.Atoi(string(inviteCode[0]))
-	for err == nil {
-		inviteCode = shortuuid.New()
-		_, err = strconv.Atoi(string(inviteCode[0]))
-	}
 	var invite Invite
+	invite.Code = GenerateInviteCode()
 	if req.Label != "" {
 		invite.Label = req.Label
 	}
@@ -185,7 +191,7 @@ func (app *appContext) GenerateInvite(gc *gin.Context) {
 	if req.SendTo != "" && app.config.Section("invite_emails").Key("enabled").MustBool(false) {
 		addressValid := false
 		discord := ""
-		app.debug.Printf("%s: Sending invite message", inviteCode)
+		app.debug.Printf("%s: Sending invite message", invite.Code)
 		if discordEnabled && !strings.Contains(req.SendTo, "@") {
 			users := app.discord.GetUsers(req.SendTo)
 			if len(users) == 0 {
@@ -202,10 +208,10 @@ func (app *appContext) GenerateInvite(gc *gin.Context) {
 			invite.SendTo = req.SendTo
 		}
 		if addressValid {
-			msg, err := app.email.constructInvite(inviteCode, invite, app, false)
+			msg, err := app.email.constructInvite(invite.Code, invite, app, false)
 			if err != nil {
 				invite.SendTo = fmt.Sprintf("Failed to send to %s", req.SendTo)
-				app.err.Printf("%s: Failed to construct invite message: %v", inviteCode, err)
+				app.err.Printf("%s: Failed to construct invite message: %v", invite.Code, err)
 			} else {
 				var err error
 				if discord != "" {
@@ -215,9 +221,9 @@ func (app *appContext) GenerateInvite(gc *gin.Context) {
 				}
 				if err != nil {
 					invite.SendTo = fmt.Sprintf("Failed to send to %s", req.SendTo)
-					app.err.Printf("%s: %s: %v", inviteCode, invite.SendTo, err)
+					app.err.Printf("%s: %s: %v", invite.Code, invite.SendTo, err)
 				} else {
-					app.info.Printf("%s: Sent invite email to \"%s\"", inviteCode, req.SendTo)
+					app.info.Printf("%s: Sent invite email to \"%s\"", invite.Code, req.SendTo)
 				}
 			}
 		}
@@ -229,7 +235,7 @@ func (app *appContext) GenerateInvite(gc *gin.Context) {
 			invite.Profile = "Default"
 		}
 	}
-	app.storage.SetInvitesKey(inviteCode, invite)
+	app.storage.SetInvitesKey(invite.Code, invite)
 	respondBool(200, true, gc)
 }
 
