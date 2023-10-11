@@ -24,6 +24,7 @@ type DiscordDaemon struct {
 	app                                                        *appContext
 	commandHandlers                                            map[string]func(s *dg.Session, i *dg.InteractionCreate, lang string)
 	commandIDs                                                 []string
+	commandDescriptions                                        []*dg.ApplicationCommand
 }
 
 func newDiscordDaemon(app *appContext) (*DiscordDaemon, error) {
@@ -222,7 +223,6 @@ func (d *DiscordDaemon) NewTempInvite(ageSeconds, maxUses int) (inviteURL, iconU
 		d.app.err.Printf("Discord: Failed to get guild: %v", err)
 		return
 	}
-	// FIXME: Fix CSS, and handle no icon
 	iconURL = guild.IconURL("256")
 	return
 }
@@ -310,7 +310,7 @@ func (d *DiscordDaemon) Shutdown() {
 }
 
 func (d *DiscordDaemon) registerCommands() {
-	commands := []*dg.ApplicationCommand{
+	d.commandDescriptions = []*dg.ApplicationCommand{
 		{
 			Name:        d.app.config.Section("discord").Key("start_command").MustString("start"),
 			Description: "Start the Discord linking process. The bot will send further instructions.",
@@ -372,29 +372,28 @@ func (d *DiscordDaemon) registerCommands() {
 				{
 					Type:        dg.ApplicationCommandOptionString,
 					Name:        "profile",
-					Description: "Profile to apply. Restart jfa-go if there's any missing.",
+					Description: "Profile to apply to the created user.",
 					Required:    false,
 				},
 			},
 		},
 	}
-	commands[1].Options[0].Choices = make([]*dg.ApplicationCommandOptionChoice, len(d.app.storage.lang.Telegram))
+	d.commandDescriptions[1].Options[0].Choices = make([]*dg.ApplicationCommandOptionChoice, len(d.app.storage.lang.Telegram))
 	i := 0
 	for code := range d.app.storage.lang.Telegram {
 		d.app.debug.Printf("Discord: registering lang choice \"%s\":\"%s\"\n", d.app.storage.lang.Telegram[code].Meta.Name, code)
-		commands[1].Options[0].Choices[i] = &dg.ApplicationCommandOptionChoice{
+		d.commandDescriptions[1].Options[0].Choices[i] = &dg.ApplicationCommandOptionChoice{
 			Name:  d.app.storage.lang.Telegram[code].Meta.Name,
 			Value: code,
 		}
 		i++
 	}
 
-	// FIXME: Maybe make this reload when profiles change
 	profiles := d.app.storage.GetProfiles()
-	commands[3].Options[3].Choices = make([]*dg.ApplicationCommandOptionChoice, len(profiles))
+	d.commandDescriptions[3].Options[3].Choices = make([]*dg.ApplicationCommandOptionChoice, len(profiles))
 	for i, profile := range profiles {
 		d.app.debug.Printf("Discord: registering profile choice \"%s\"", profile.Name)
-		commands[3].Options[3].Choices[i] = &dg.ApplicationCommandOptionChoice{
+		d.commandDescriptions[3].Options[3].Choices[i] = &dg.ApplicationCommandOptionChoice{
 			Name:  profile.Name,
 			Value: profile.Name,
 		}
@@ -402,12 +401,12 @@ func (d *DiscordDaemon) registerCommands() {
 
 	// d.deregisterCommands()
 
-	d.commandIDs = make([]string, len(commands))
+	d.commandIDs = make([]string, len(d.commandDescriptions))
 	// cCommands, err := d.bot.ApplicationCommandBulkOverwrite(d.bot.State.User.ID, d.guildID, commands)
 	// if err != nil {
 	// 	d.app.err.Printf("Discord: Cannot create commands: %v", err)
 	// }
-	for i, cmd := range commands {
+	for i, cmd := range d.commandDescriptions {
 		command, err := d.bot.ApplicationCommandCreate(d.bot.State.User.ID, d.guildID, cmd)
 		if err != nil {
 			d.app.err.Printf("Discord: Cannot create command \"%s\": %v", cmd.Name, err)
@@ -426,8 +425,28 @@ func (d *DiscordDaemon) deregisterCommands() {
 	}
 	for _, cmd := range existingCommands {
 		if err := d.bot.ApplicationCommandDelete(d.bot.State.User.ID, d.guildID, cmd.ID); err != nil {
-			d.app.err.Printf("Failed to deregister command: %v", err)
+			d.app.err.Printf("Discord: Failed to deregister command: %v", err)
 		}
+	}
+}
+
+// UpdateCommands updates commands which have defined lists of options, to be used when changes occur.
+func (d *DiscordDaemon) UpdateCommands() {
+	// Reload Profile List
+	profiles := d.app.storage.GetProfiles()
+	d.commandDescriptions[3].Options[3].Choices = make([]*dg.ApplicationCommandOptionChoice, len(profiles))
+	for i, profile := range profiles {
+		d.app.debug.Printf("Discord: registering profile choice \"%s\"", profile.Name)
+		d.commandDescriptions[3].Options[3].Choices[i] = &dg.ApplicationCommandOptionChoice{
+			Name:  profile.Name,
+			Value: profile.Name,
+		}
+	}
+	cmd, err := d.bot.ApplicationCommandEdit(d.bot.State.User.ID, d.guildID, d.commandIDs[3], d.commandDescriptions[3])
+	if err != nil {
+		d.app.err.Printf("Discord: Failed to update profile list: %v\n", err)
+	} else {
+		d.commandIDs[3] = cmd.ID
 	}
 }
 
