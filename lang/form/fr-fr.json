@@ -7,11 +7,11 @@
         "pageTitle": "Créer un compte Jellyfin",
         "createAccountHeader": "Création du compte",
         "accountDetails": "Détails",
-        "emailAddress": "Courriel",
+        "emailAddress": "Email",
         "username": "Nom d'utilisateur",
         "password": "Mot de passe",
         "reEnterPassword": "Confirmez mot de passe",
-        "reEnterPasswordInvalid": "Les mots de passe ne correspondent pas.",
+        "reEnterPasswordInvalid": "Les mots de passe ne sont pas pareils.",
         "createAccountButton": "Créer le compte",
         "passwordRequirementsHeader": "Mot de passe requis",
         "successHeader": "Succès !",
@@ -35,7 +35,10 @@
         "editContactMethod": "Modifier le moyen de contact",
         "joinTheServer": "Rejoindre le serveur :",
         "customMessagePlaceholderHeader": "Personnaliser cette carte",
-        "resetPassword": "Réinitialisation de mot de passe"
+        "resetPassword": "Réinitialisation mot de passe",
+        "referralsDescription": "Invitez vos amis et votre famille à Jellyfin avec ce lien. Revenez ici pour en obtenir un nouveau s'il expire.",
+        "copyReferral": "Copier le lien",
+        "invitedBy": "Vous avez été invité par l'utilisateur {user}."
     },
     "validationStrings": {
         "length": {

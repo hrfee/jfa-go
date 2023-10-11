@@ -23,7 +23,22 @@
         "expiry": "Löper ut",
         "edit": "Redigera",
         "delete": "Radera",
-        "inviteRemainingUses": "Återstående användningar"
+        "inviteRemainingUses": "Återstående användningar",
+        "send": "Skicka",
+        "linkDiscord": "Länka Discord",
+        "copied": "Kopierat",
+        "linkTelegram": "Länka Telegram",
+        "contactEmail": "Kontakta via e-post",
+        "contactTelegram": "Kontakta via Telegram",
+        "refresh": "Uppdatera",
+        "required": "Obligatoriskt",
+        "contactDiscord": "Kontakt via Discord",
+        "linkMatrix": "Länka Matrix",
+        "reEnable": "Återaktivera",
+        "disable": "Inaktivera",
+        "contactMethods": "Kontaktmetoder",
+        "accountStatus": "Kontostatus",
+        "notSet": "Inte inställt"
     },
     "notifications": {
         "errorLoginBlank": "Användarnamnet och/eller lösenordet lämnades tomt.",
@@ -31,6 +46,5 @@
         "errorUnknown": "Okänt fel.",
         "error401Unauthorized": "Obehörig. Prova att uppdatera sidan.",
         "errorSaveSettings": "Det gick inte att spara inställningarna."
-    },
-    "quantityStrings": {}
+    }
 }

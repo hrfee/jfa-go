@@ -274,6 +274,18 @@
                     "value": false,
                     "advanced": true,
                     "description": "Navigate directly to the above URL instead of needing the user to click \"Continue\"."
+                },
+                "login_appearance": {
+                    "name": "Login screen appearance",
+                    "required": false,
+                    "requires_restart": false,
+                    "type": "select",
+                    "options": [
+                        ["clear", "Transparent"],
+                        ["opaque", "Opaque"]
+                    ],
+                    "value": "clear",
+                    "description": "Appearance of the Admin login screen."
                 }
             }
         },
@@ -281,7 +293,8 @@
             "order": [],
             "meta": {
                 "name": "Advanced",
-                "description": "Advanced settings."
+                "description": "Advanced settings.",
+                "advanced": true
             },
             "settings": {
                 "tls": {
@@ -318,6 +331,70 @@
                     "type": "text",
                     "value": "",
                     "description": "Path to .key file. See jfa-go wiki for more info."
+                },
+                "auth_retry_count": {
+                    "name": "Initial auth retry count",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "number",
+                    "value": 6,
+                    "description": "Number of times to retry initial connection to Jellyfin before failing."
+                },
+                "auth_retry_gap": {
+                    "name": "Initial auth retry gap (seconds)",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "number",
+                    "value": 10,
+                    "description": "Duration in seconds to wait between connection retries."
+                },
+                "proxy": {
+                    "name": "Use Proxy",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "bool",
+                    "value": false,
+                    "description": "Whether or not to use a HTTP/SOCKS5 Proxy."
+                },
+                "proxy_protocol": {
+                    "name": "Proxy Protocol",
+                    "depends_true": "proxy",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "select",
+                    "options": [
+                        ["http", "HTTP"],
+                        ["socks", "SOCKS5"]
+                    ],
+                    "value": "http",
+                    "description": "Protocol to use for proxy connection."
+                },
+                "proxy_address": {
+                    "name": "Proxy Address",
+                    "depends_true": "proxy",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "text",
+                    "value": "",
+                    "description": "Proxy address, including port."
+                },
+                "proxy_user": {
+                    "name": "Proxy Username",
+                    "depends_true": "proxy",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "text",
+                    "value": "",
+                    "description": "Leave blank for no Authentication."
+                },
+                "proxy_password": {
+                    "name": "Proxy Password",
+                    "depends_true": "proxy",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "password",
+                    "value": "",
+                    "description": "Leave blank for no Authentication."
                 }
             }
         },
@@ -405,6 +482,14 @@
                     "depends_true": "enabled",
                     "required": "false",
                     "description": "Click the edit icon next to the \"User Page\" Setting to add custom Markdown messages that will be shown to the user. Note message cards are not private, little effort is required for anyone to view them."
+                },
+                "show_link": {
+                    "name": "Show Link on Admin Login page",
+                    "required": false,
+                    "requires_restart": false,
+                    "type": "bool",
+                    "value": true,
+                    "description": "Whether or not to show a link to the \"My Account\" page on the admin login screen, to direct lost users."
                 },
                 "referrals": {
                     "name": "User Referrals",

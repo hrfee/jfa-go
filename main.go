@@ -24,6 +24,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/hrfee/jfa-go/common"
 	_ "github.com/hrfee/jfa-go/docs"
+	"github.com/hrfee/jfa-go/easyproxy"
 	"github.com/hrfee/jfa-go/logger"
 	"github.com/hrfee/jfa-go/ombi"
 	"github.com/hrfee/mediabrowser"
@@ -113,6 +114,9 @@ type appContext struct {
 	newUpdate            bool // Whether whatever's in update is new.
 	tag                  Tag
 	update               Update
+	proxyEnabled         bool
+	proxyTransport       *http.Transport
+	proxyConfig          easyproxy.ProxyConfig
 	internalPWRs         map[string]InternalPWR
 	ConfirmationKeys     map[string]map[string]newUserDTO // Map of invite code to jwt to request
 	confirmationKeysLock sync.Mutex
@@ -390,8 +394,18 @@ func start(asDaemon, firstCall bool) {
 		if debugMode {
 			app.jf.Verbose = true
 		}
+
+		if app.proxyEnabled {
+			app.jf.SetTransport(app.proxyTransport)
+		}
+
 		var status int
-		_, status, err = app.jf.Authenticate(app.config.Section("jellyfin").Key("username").String(), app.config.Section("jellyfin").Key("password").String())
+		retryOpts := mediabrowser.MustAuthenticateOptions{
+			RetryCount:  app.config.Section("advanced").Key("auth_retry_count").MustInt(6),
+			RetryGap:    time.Duration(app.config.Section("advanced").Key("auth_retry_gap").MustInt(10)) * time.Second,
+			LogFailures: true,
+		}
+		_, status, err = app.jf.MustAuthenticate(app.config.Section("jellyfin").Key("username").String(), app.config.Section("jellyfin").Key("password").String(), retryOpts)
 		if status != 200 || err != nil {
 			app.err.Fatalf("Failed to authenticate with Jellyfin @ \"%s\" (%d): %v", server, status, err)
 		}

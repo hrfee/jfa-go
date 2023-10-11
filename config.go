@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/hrfee/jfa-go/easyproxy"
 	"gopkg.in/ini.v1"
 )
 
@@ -135,6 +136,22 @@ func (app *appContext) loadConfig() error {
 		messagesEnabled = false
 	}
 
+	if app.proxyEnabled = app.config.Section("advanced").Key("proxy").MustBool(false); app.proxyEnabled {
+		app.proxyConfig = easyproxy.ProxyConfig{}
+		app.proxyConfig.Protocol = easyproxy.HTTP
+		if strings.Contains(app.config.Section("advanced").Key("proxy_protocol").MustString("http"), "socks") {
+			app.proxyConfig.Protocol = easyproxy.SOCKS5
+		}
+		app.proxyConfig.Addr = app.config.Section("advanced").Key("proxy_address").MustString("")
+		app.proxyConfig.User = app.config.Section("advanced").Key("proxy_user").MustString("")
+		app.proxyConfig.Password = app.config.Section("advanced").Key("proxy_password").MustString("")
+		app.proxyTransport, err = easyproxy.NewTransport(app.proxyConfig)
+		if err != nil {
+			app.err.Printf("Failed to initialize Proxy: %v\n", err)
+		}
+		app.proxyEnabled = true
+	}
+
 	app.MustSetValue("updates", "enabled", "true")
 	releaseChannel := app.config.Section("updates").Key("channel").String()
 	if app.config.Section("updates").Key("enabled").MustBool(false) {
@@ -147,6 +164,9 @@ func (app *appContext) loadConfig() error {
 			v = "git"
 		}
 		app.updater = newUpdater(baseURL, namespace, repo, v, commit, updater)
+		if app.proxyEnabled {
+			app.updater.SetTransport(app.proxyTransport)
+		}
 	}
 	if releaseChannel == "" {
 		if version == "git" {

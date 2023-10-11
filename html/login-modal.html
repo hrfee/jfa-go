@@ -7,6 +7,14 @@
                 </div>
             {{ end }}
         {{ end }}
+        {{ if index . "userPageEnabled" }}
+                {{ if and .userPageEnabled .showUserPageLink }}
+                <div class="card mx-2 flex-initial w-[100%] xl:w-[35%] mb-4 xl:mb-0 dark:~d_neutral @low content">
+                    <span class="heading row">{{ .strings.loginNotAdmin }}</span>
+                    <a class="button ~info h-12 w-100" href="{{ .urlBase }}/my/account"><i class="ri-account-circle-fill mr-2"></i>{{ .strings.myAccount }}</a>
+                </div>
+            {{ end }}
+        {{ end }}
         <form class="card mx-2 flex-auto form-login w-[100%] xl:w-[55%] mb-0" href="">
             <span class="heading">{{ .strings.login }}</span>
             <input type="text" class="field input ~neutral @high mt-4 mb-2" placeholder="{{ .strings.username }}" id="login-user">

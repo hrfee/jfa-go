@@ -8,13 +8,21 @@ export class Login {
     private _endpoint: string;
     private _onLogin: (username: string, password: string) => void;
     private _logoutButton: HTMLElement = null;
+    private _wall: HTMLElement;
+    private _hasOpacityWall: boolean = false;
 
-    constructor(modal: Modal, endpoint: string) {
+    constructor(modal: Modal, endpoint: string, appearance: string) {
         this._endpoint = endpoint;
         this._url = window.URLBase + endpoint;
         if (this._url[this._url.length-1] != '/') this._url += "/";
 
         this._modal = modal;
+        if (appearance == "opaque") {
+            this._hasOpacityWall = true;
+            this._wall = document.createElement("div");
+            this._wall.classList.add("wall");
+            this._modal.asElement().parentElement.appendChild(this._wall);
+        }
         this._form = this._modal.asElement().querySelector(".form-login") as HTMLFormElement;
         this._form.onsubmit = (event: SubmitEvent) => {
             event.preventDefault();
@@ -86,6 +94,7 @@ export class Login {
                     if (this._onLogin) {
                         this._onLogin(username, password);
                     }
+                    if (this._hasOpacityWall) this._wall.remove();
                     this._modal.close();
                     if (this._logoutButton != null)
                         this._logoutButton.classList.remove("unfocused");

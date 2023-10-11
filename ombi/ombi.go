@@ -239,9 +239,9 @@ type NotificationPref struct {
 func (ombi *Ombi) SetNotificationPrefs(user map[string]interface{}, discordID, telegramUser string) (result string, code int, err error) {
 	id := user["id"].(string)
 	url := fmt.Sprintf("%s/api/v1/Identity/NotificationPreferences", ombi.server)
-	var data []NotificationPref
+	data := []NotificationPref{}
 	if discordID != "" {
-		data = []NotificationPref{NotificationPref{NotifAgentDiscord, id, discordID, true}}
+		data = append(data, NotificationPref{NotifAgentDiscord, id, discordID, true})
 	}
 	if telegramUser != "" {
 		data = append(data, NotificationPref{NotifAgentTelegram, id, telegramUser, true})

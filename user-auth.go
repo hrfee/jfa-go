@@ -1,6 +1,10 @@
 package main
 
-import "github.com/gin-gonic/gin"
+import (
+	"strings"
+
+	"github.com/gin-gonic/gin"
+)
 
 func (app *appContext) userAuth() gin.HandlerFunc {
 	return app.userAuthenticate
@@ -60,7 +64,11 @@ func (app *appContext) getUserTokenLogin(gc *gin.Context) {
 	}
 
 	app.debug.Printf("Token generated for non-admin user \"%s\"", username)
-	gc.SetCookie("user-refresh", refresh, REFRESH_TOKEN_VALIDITY_SEC, "/my", gc.Request.URL.Hostname(), true, true)
+	uri := "/my"
+	if strings.HasPrefix(gc.Request.RequestURI, app.URLBase) {
+		uri = "/accounts/my"
+	}
+	gc.SetCookie("user-refresh", refresh, REFRESH_TOKEN_VALIDITY_SEC, uri, gc.Request.URL.Hostname(), true, true)
 	gc.JSON(200, getTokenDTO{token})
 }
 

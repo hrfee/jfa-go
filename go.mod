@@ -14,6 +14,8 @@ replace github.com/hrfee/jfa-go/linecache => ./linecache
 
 replace github.com/hrfee/jfa-go/api => ./api
 
+replace github.com/hrfee/jfa-go/easyproxy => ./easyproxy
+
 require (
 	github.com/bwmarrin/discordgo v0.27.1
 	github.com/emersion/go-autostart v0.0.0-20210130080809-00ed301c8e9a
@@ -31,7 +33,7 @@ require (
 	github.com/hrfee/jfa-go/linecache v0.0.0-20230626224816-f72960635dc3
 	github.com/hrfee/jfa-go/logger v0.0.0-20230626224816-f72960635dc3
 	github.com/hrfee/jfa-go/ombi v0.0.0-20230626224816-f72960635dc3
-	github.com/hrfee/mediabrowser v0.3.10
+	github.com/hrfee/mediabrowser v0.3.12
 	github.com/itchyny/timefmt-go v0.1.5
 	github.com/lithammer/shortuuid/v3 v3.0.7
 	github.com/mailgun/mailgun-go/v4 v4.9.1
@@ -41,7 +43,7 @@ require (
 	github.com/swaggo/gin-swagger v1.6.0
 	github.com/timshannon/badgerhold/v4 v4.0.2
 	github.com/writeas/go-strip-markdown v2.0.1+incompatible
-	github.com/xhit/go-simple-mail/v2 v2.13.0
+	github.com/xhit/go-simple-mail/v2 v2.16.0
 	gopkg.in/ini.v1 v1.67.0
 	maunium.net/go/mautrix v0.15.3
 )
@@ -85,11 +87,13 @@ require (
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
+	github.com/hrfee/jfa-go/easyproxy v0.0.0-00010101000000-000000000000 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.16.6 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.5 // indirect
 	github.com/leodido/go-urn v1.2.4 // indirect
+	github.com/magisterquis/connectproxy v0.0.0-20200725203833-3582e84f0c9b // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.19 // indirect
@@ -116,12 +120,12 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.24.0 // indirect
 	golang.org/x/arch v0.3.0 // indirect
-	golang.org/x/crypto v0.10.0 // indirect
+	golang.org/x/crypto v0.13.0 // indirect
 	golang.org/x/exp v0.0.0-20230626212559-97b1e661b5df // indirect
 	golang.org/x/image v0.8.0 // indirect
-	golang.org/x/net v0.11.0 // indirect
-	golang.org/x/sys v0.9.0 // indirect
-	golang.org/x/text v0.10.0 // indirect
+	golang.org/x/net v0.15.0 // indirect
+	golang.org/x/sys v0.12.0 // indirect
+	golang.org/x/text v0.13.0 // indirect
 	golang.org/x/tools v0.10.0 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

@@ -567,13 +567,15 @@ func (d *DiscordDaemon) cmdInvite(s *dg.Session, i *dg.InteractionCreate, lang s
 	//if mins > 0 {
 	//	expmin = mins
 	//}
-	//	Need to check whether requestor is linked to the admin account *possibly add Admin bool to DiscordUser struct
+	//	Check whether requestor is linked to the admin account
 	requesterEmail, ok := d.app.storage.GetEmailsKey(requester.JellyfinID)
 	if !ok {
 		d.app.err.Printf("Failed to verify admin")
 	}
 	if !requesterEmail.Admin {
 		d.app.err.Printf("User is not admin")
+		//add response message
+		return
 	}
 
 	var expiryMinutes int64 = 30
@@ -625,11 +627,11 @@ func (d *DiscordDaemon) cmdInvite(s *dg.Session, i *dg.InteractionCreate, lang s
 		d.app.debug.Printf("%s: Sending invite message", inviteCode)
 		invname, err := d.bot.GuildMember(d.guildID, recipient.ID)
 		invite.SendTo = invname.User.Username
-
 		msg, err := d.app.email.constructInvite(inviteCode, invite, d.app, false)
 		if err != nil {
 			invite.SendTo = fmt.Sprintf("Failed to send to %s", RenderDiscordUsername(recipient))
 			d.app.err.Printf("%s: Failed to construct invite message: %v", inviteCode, err)
+			//add response message
 		} else {
 			var err error
 			err = d.app.discord.SendDM(msg, recipient.ID)
