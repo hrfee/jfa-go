@@ -1,16 +1,16 @@
 {
     "meta": {
-        "name": ""
+        "name": "Čeština (CZ)"
     },
     "strings": {
-        "startMessage": "",
-        "discordStartMessage": "",
-        "matrixStartMessage": "",
-        "invalidPIN": "",
-        "pinSuccess": "",
-        "languageMessage": "",
-        "languageMessageDiscord": "",
-        "languageSet": "",
-        "discordDMs": ""
+        "startMessage": "Ahoj!\nZde zadejte svůj PIN kód Jellyfin pro ověření svého účtu.",
+        "discordStartMessage": "Ahoj!\n Zadejte svůj PIN pomocí `/pin <PIN>` pro ověření svého účtu.",
+        "matrixStartMessage": "Ahoj\nZadejte níže uvedený PIN na přihlašovací stránce Jellyfin a ověřte svůj účet.",
+        "invalidPIN": "Tento PIN byl neplatný, zkuste to znovu.",
+        "pinSuccess": "Hotovo! Nyní se můžete vrátit na stránku registrace.",
+        "languageMessage": "Poznámka: Dostupné jazyky zobrazíte pomocí příkazu {command} a jazyk nastavíte pomocí příkazu {command} <kód jazyka>.",
+        "languageMessageDiscord": "Poznámka: nastavte svůj jazyk pomocí /lang <název jazyka>.",
+        "languageSet": "Jazyk nastaven na {language}.",
+        "discordDMs": "Zkontrolujte prosím své DM pro odpověď."
     }
 }
