@@ -1,16 +1,16 @@
 {
     "meta": {
-        "name": ""
+        "name": "Čeština (CZ)"
     },
     "strings": {
-        "passwordReset": "",
-        "reset": "",
-        "resetFailed": "",
-        "tryAgain": "",
-        "youCanLogin": "",
-        "youCanLoginOmbi": "",
-        "youCanLoginPassword": "",
-        "changeYourPassword": "",
-        "enterYourPassword": ""
+        "passwordReset": "Resetovat heslo",
+        "reset": "Resetovat",
+        "resetFailed": "Obnovení hesla se nezdařilo",
+        "tryAgain": "Prosím zkuste to znovu.",
+        "youCanLogin": "Nyní se můžete přihlásit pomocí níže uvedeného kódu jako svého hesla.",
+        "youCanLoginOmbi": "Nyní se můžete přihlásit do Jellyfin & Ombi pomocí níže uvedeného kódu jako hesla.",
+        "youCanLoginPassword": "Nyní se můžete přihlásit pomocí svého nového hesla. Stisknutím níže pokračujte na Jellyfin.",
+        "changeYourPassword": "Po přihlášení nezapomeňte změnit heslo.",
+        "enterYourPassword": "Níže zadejte své nové heslo."
     }
 }
