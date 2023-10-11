@@ -555,6 +555,10 @@ func (d *DiscordDaemon) cmdLang(s *dg.Session, i *dg.InteractionCreate, lang str
 
 func (d *DiscordDaemon) cmdInvite(s *dg.Session, i *dg.InteractionCreate, lang string) {
 	channel, err := s.UserChannelCreate(i.Interaction.Member.User.ID)
+	if err != nil {
+		d.app.err.Printf("Discord: Failed to create private channel with \"%s\": %v", i.Interaction.Member.User.Username, err)
+		return
+	}
 	requester := d.MustGetUser(channel.ID, i.Interaction.Member.User.ID, i.Interaction.Member.User.Discriminator, i.Interaction.Member.User.Username)
 	d.users[i.Interaction.Member.User.ID] = requester
 	recipient := i.ApplicationCommandData().Options[0].UserValue(s)
@@ -622,7 +626,16 @@ func (d *DiscordDaemon) cmdInvite(s *dg.Session, i *dg.InteractionCreate, lang s
 		if err != nil {
 			invite.SendTo = fmt.Sprintf("Failed to send to %s", RenderDiscordUsername(recipient))
 			d.app.err.Printf("%s: Failed to construct invite message: %v", invite.Code, err)
-			//add response message
+			err := s.InteractionRespond(i.Interaction, &dg.InteractionResponse{
+				Type: dg.InteractionResponseChannelMessageWithSource,
+				Data: &dg.InteractionResponseData{
+					Content: d.app.storage.lang.Telegram[lang].Strings.get("sentInviteFailure"),
+					Flags:   64, // Ephemeral
+				},
+			})
+			if err != nil {
+				d.app.err.Printf("Discord: Failed to send message to \"%s\": %v", RenderDiscordUsername(requester), err)
+			}
 		} else {
 			var err error
 			err = d.app.discord.SendDM(msg, recipient.ID)
@@ -655,7 +668,7 @@ func (d *DiscordDaemon) cmdInvite(s *dg.Session, i *dg.InteractionCreate, lang s
 		}
 	}
 	//if profile != "" {
-	d.app.storage.SetInvitesKey(inviteCode, invite)
+	d.app.storage.SetInvitesKey(invite.Code, invite)
 }
 
 func (d *DiscordDaemon) messageHandler(s *dg.Session, m *dg.MessageCreate) {
