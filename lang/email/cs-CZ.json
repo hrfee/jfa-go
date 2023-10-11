@@ -1,77 +1,77 @@
 {
     "meta": {
-        "name": ""
+        "name": "Čeština (CZ)"
     },
     "strings": {
-        "ifItWasNotYou": "",
-        "helloUser": "",
-        "reason": ""
+        "ifItWasNotYou": "Pokud jste to nebyl vy, ignorujte to.",
+        "helloUser": "Ahoj {username},",
+        "reason": "Důvod"
     },
     "userCreated": {
-        "name": "",
-        "title": "",
-        "aUserWasCreated": "",
-        "time": "",
-        "notificationNotice": ""
+        "name": "Vytvoření uživatele",
+        "title": "Upozornění: Uživatel vytvořen",
+        "aUserWasCreated": "Uživatel byl vytvořen pomocí kódu {code}.",
+        "time": "Čas",
+        "notificationNotice": "Poznámka: Zprávy s upozorněním lze přepínat na řídicím panelu správce."
     },
     "inviteExpiry": {
-        "name": "",
-        "title": "",
-        "inviteExpired": "",
-        "expiredAt": "",
-        "notificationNotice": ""
+        "name": "Platnost pozvánky",
+        "title": "Upozornění: Platnost pozvánky vypršela",
+        "inviteExpired": "Platnost pozvánky vypršela.",
+        "expiredAt": "Platnost kódu {code} vypršela v {time}.",
+        "notificationNotice": "Poznámka: Zprávy s upozorněním lze přepínat na řídicím panelu správce."
     },
     "passwordReset": {
-        "name": "",
-        "title": "",
-        "someoneHasRequestedReset": "",
-        "ifItWasYou": "",
-        "ifItWasYouLink": "",
-        "codeExpiry": "",
-        "pin": ""
+        "name": "Resetovat heslo",
+        "title": "Požadováno resetování hesla - Jellyfin",
+        "someoneHasRequestedReset": "Někdo nedávno požádal o reset hesla na Jellyfin.",
+        "ifItWasYou": "Pokud jste to byli vy, zadejte do výzvy níže uvedený kód PIN.",
+        "ifItWasYouLink": "Pokud jste to byli vy, klikněte na odkaz níže.",
+        "codeExpiry": "Platnost kódu vyprší {date} v {time} UTC, což je za {expiresInMinutes}.",
+        "pin": "PIN"
     },
     "userDeleted": {
-        "name": "",
-        "title": "",
-        "yourAccountWasDeleted": ""
+        "name": "Smazání uživatele",
+        "title": "Váš účet byl smazán - Jellyfin",
+        "yourAccountWasDeleted": "Váš účet Jellyfin byl smazán."
     },
     "userDisabled": {
-        "name": "",
-        "title": "",
-        "yourAccountWasDisabled": ""
+        "name": "Uživatel zakázán",
+        "title": "Váš účet byl deaktivován - Jellyfin",
+        "yourAccountWasDisabled": "Váš účet byl deaktivován."
     },
     "userEnabled": {
-        "name": "",
-        "title": "",
-        "yourAccountWasEnabled": ""
+        "name": "Uživatel povolen",
+        "title": "Váš účet byl znovu aktivován - Jellyfin",
+        "yourAccountWasEnabled": "Váš účet byl znovu aktivován."
     },
     "inviteEmail": {
-        "name": "",
-        "title": "",
-        "hello": "",
-        "youHaveBeenInvited": "",
-        "toJoin": "",
-        "inviteExpiry": "",
-        "linkButton": ""
+        "name": "Pozvací e-mail",
+        "title": "Pozvat - Jellyfin",
+        "hello": "Ahoj",
+        "youHaveBeenInvited": "Byli jste pozváni do Jellyfinu.",
+        "toJoin": "Chcete-li se připojit, postupujte podle níže uvedeného odkazu.",
+        "inviteExpiry": "Platnost této pozvánky vyprší {date} v {time}, což je za {expiresInMinutes}, proto jednejte rychle.",
+        "linkButton": "Nastavte si účet"
     },
     "welcomeEmail": {
-        "name": "",
-        "title": "",
-        "welcome": "",
-        "youCanLoginWith": "",
-        "yourAccountWillExpire": "",
-        "jellyfinURL": ""
+        "name": "Vítejte",
+        "title": "Vítejte v Jellyfin",
+        "welcome": "Vítejte v Jellyfin!",
+        "youCanLoginWith": "Přihlásit se můžete pomocí níže uvedených údajů",
+        "yourAccountWillExpire": "Platnost vašeho účtu vyprší dne {date}.",
+        "jellyfinURL": "URL"
     },
     "emailConfirmation": {
-        "name": "",
-        "title": "",
-        "clickBelow": "",
-        "confirmEmail": ""
+        "name": "Potvrzující email",
+        "title": "Potvrďte svůj email - Jellyfin",
+        "clickBelow": "Kliknutím na odkaz níže potvrďte svou e-mailovou adresu a začněte používat Jellyfin.",
+        "confirmEmail": "Potvrdit email"
     },
     "userExpired": {
-        "name": "",
-        "title": "",
-        "yourAccountHasExpired": "",
-        "contactTheAdmin": ""
+        "name": "Vypršení platnosti uživatele",
+        "title": "Platnost vašeho účtu vypršela – Jellyfin",
+        "yourAccountHasExpired": "Platnost vašeho účtu vypršela.",
+        "contactTheAdmin": "Pro více informací kontaktujte administrátora."
     }
 }
