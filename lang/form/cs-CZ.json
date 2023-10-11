@@ -1,0 +1,82 @@
+{
+    "meta": {
+        "name": ""
+    },
+    "strings": {
+        "pageTitle": "",
+        "createAccountHeader": "",
+        "accountDetails": "",
+        "emailAddress": "",
+        "username": "",
+        "oldPassword": "",
+        "newPassword": "",
+        "password": "",
+        "reEnterPassword": "",
+        "reEnterPasswordInvalid": "",
+        "createAccountButton": "",
+        "passwordRequirementsHeader": "",
+        "successHeader": "",
+        "confirmationRequired": "",
+        "confirmationRequiredMessage": "",
+        "yourAccountIsValidUntil": "",
+        "sendPIN": "",
+        "sendPINDiscord": "",
+        "matrixEnterUser": "",
+        "welcomeUser": "",
+        "addContactMethod": "",
+        "editContactMethod": "",
+        "joinTheServer": "",
+        "customMessagePlaceholderHeader": "",
+        "customMessagePlaceholderContent": "",
+        "userPageSuccessMessage": "",
+        "resetPassword": "",
+        "resetPasswordThroughJellyfin": "",
+        "resetPasswordThroughLink": "",
+        "resetSent": "",
+        "resetSentDescription": "",
+        "changePassword": "",
+        "referralsDescription": "",
+        "copyReferral": "",
+        "invitedBy": ""
+    },
+    "notifications": {
+        "errorUserExists": "",
+        "errorInvalidCode": "",
+        "errorAccountLinked": "",
+        "errorEmailLinked": "",
+        "errorTelegramVerification": "",
+        "errorDiscordVerification": "",
+        "errorMatrixVerification": "",
+        "errorInvalidPIN": "",
+        "errorUnknown": "",
+        "errorNoEmail": "",
+        "errorCaptcha": "",
+        "errorPassword": "",
+        "errorNoMatch": "",
+        "errorOldPassword": "",
+        "passwordChanged": "",
+        "verified": ""
+    },
+    "validationStrings": {
+        "length": {
+            "singular": "",
+            "plural": ""
+        },
+        "uppercase": {
+            "singular": "",
+            "plural": ""
+        },
+        "lowercase": {
+            "singular": "",
+            "plural": ""
+        },
+        "number": {
+            "singular": "",
+            "plural": ""
+        },
+        "special": {
+            "singular": "",
+            "plural": ""
+        }
+    }
+}
