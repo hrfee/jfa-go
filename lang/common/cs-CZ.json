@@ -1,0 +1,67 @@
+{
+    "meta": {
+        "name": ""
+    },
+    "strings": {
+        "username": "",
+        "password": "",
+        "emailAddress": "",
+        "name": "",
+        "submit": "",
+        "send": "",
+        "success": "",
+        "continue": "",
+        "error": "",
+        "copy": "",
+        "copied": "",
+        "time24h": "",
+        "time12h": "",
+        "linkTelegram": "",
+        "contactEmail": "",
+        "contactTelegram": "",
+        "linkDiscord": "",
+        "linkMatrix": "",
+        "contactDiscord": "",
+        "theme": "",
+        "refresh": "",
+        "required": "",
+        "login": "",
+        "logout": "",
+        "admin": "",
+        "enabled": "",
+        "disabled": "",
+        "reEnable": "",
+        "disable": "",
+        "contactMethods": "",
+        "accountStatus": "",
+        "notSet": "",
+        "expiry": "",
+        "add": "",
+        "edit": "",
+        "delete": "",
+        "myAccount": "",
+        "referrals": "",
+        "inviteRemainingUses": ""
+    },
+    "notifications": {
+        "errorLoginBlank": "",
+        "errorConnection": "",
+        "errorUnknown": "",
+        "error401Unauthorized": "",
+        "errorSaveSettings": ""
+    },
+    "quantityStrings": {
+        "year": {
+            "singular": "",
+            "plural": ""
+        },
+        "month": {
+            "singular": "",
+            "plural": ""
+        },
+        "day": {
+            "singular": "",
+            "plural": ""
+        }
+    }
+}
