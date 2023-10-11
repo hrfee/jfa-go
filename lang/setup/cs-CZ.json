@@ -44,7 +44,7 @@
     },
     "general": {
         "title": "Všeobecné",
-        "listenAddress": "Listen Address",
+        "listenAddress": "Posloucha adresu",
         "urlBase": "URL Base",
         "urlBaseNotice": "Je potřeba pouze při použití reverzního proxy na subdoméně (např. 'jellyf.in/accounts').",
         "lightTheme": "Světlý",
