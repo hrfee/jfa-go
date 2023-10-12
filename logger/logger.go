@@ -28,9 +28,10 @@ type Logger struct {
 	fatalFunc func(err interface{})
 }
 
-func Lshortfile() string {
+// Lshortfile is a re-implemented log.Lshortfile with a modifiable call level.
+func Lshortfile(level int) string {
 	// 0 = This function, 1 = Print/Printf/Println, 2 = Caller of Print/Printf/Println
-	_, file, line, ok := runtime.Caller(2)
+	_, file, line, ok := runtime.Caller(level)
 	lineString := strconv.Itoa(line)
 	if !ok {
 		return ""
@@ -45,6 +46,10 @@ func Lshortfile() string {
 		}
 	}
 	return file + ":" + lineString + ":"
+}
+
+func lshortfile() string {
+	return Lshortfile(2)
 }
 
 func NewLogger(out io.Writer, prefix string, flag int, color c.Attribute) (l *Logger) {
@@ -73,7 +78,7 @@ func (l *Logger) Printf(format string, v ...interface{}) {
 	}
 	var out string
 	if l.shortfile {
-		out = Lshortfile()
+		out = lshortfile()
 	}
 	out += " " + l.printer.Sprintf(format, v...)
 	l.logger.Print(out)
@@ -85,7 +90,7 @@ func (l *Logger) Print(v ...interface{}) {
 	}
 	var out string
 	if l.shortfile {
-		out = Lshortfile()
+		out = lshortfile()
 	}
 	out += " " + l.printer.Sprint(v...)
 	l.logger.Print(out)
@@ -97,7 +102,7 @@ func (l *Logger) Println(v ...interface{}) {
 	}
 	var out string
 	if l.shortfile {
-		out = Lshortfile()
+		out = lshortfile()
 	}
 	out += " " + l.printer.Sprintln(v...)
 	l.logger.Print(out)
@@ -109,7 +114,7 @@ func (l *Logger) Fatal(v ...interface{}) {
 	}
 	var out string
 	if l.shortfile {
-		out = Lshortfile()
+		out = lshortfile()
 	}
 	out += " " + l.printer.Sprint(v...)
 	l.logger.Fatal(out)
@@ -121,7 +126,7 @@ func (l *Logger) Fatalf(format string, v ...interface{}) {
 	}
 	var out string
 	if l.shortfile {
-		out = Lshortfile()
+		out = lshortfile()
 	}
 	out += " " + l.printer.Sprintf(format, v...)
 	if l.fatalFunc != nil {

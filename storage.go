@@ -111,7 +111,7 @@ func (st *Storage) DebugWatch(storeType StoreType, key, mainData string) {
 		actionString = "DELETE"
 	}
 	if logAction == LogAll || mainData == "" {
-		st.debug.Printf("%s: %s[%s] = \"%s\"\n", actionString, actionKey, key, mainData)
+		st.debug.Printf("%s @ %s %s[%s] = \"%s\"\n", actionString, logger.Lshortfile(3), actionKey, key, mainData)
 	}
 }
 
