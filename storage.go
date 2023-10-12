@@ -10,8 +10,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hrfee/jfa-go/logger"
 	"github.com/hrfee/mediabrowser"
 	"github.com/timshannon/badgerhold/v4"
+	"gopkg.in/ini.v1"
 )
 
 type discordStore map[string]DiscordUser
@@ -24,7 +26,18 @@ type UserExpiry struct {
 	Expiry     time.Time
 }
 
+type DebugLogAction int
+
+const (
+	NoLog DebugLogAction = iota
+	LogAll
+	LogDeletion // Logs deletion, and wiping of main field in new data, e.g. setting email.addr to "".
+)
+
 type Storage struct {
+	debug      *logger.Logger
+	logActions map[string]DebugLogAction
+
 	timePattern string
 
 	db_path string
@@ -45,6 +58,76 @@ type Storage struct {
 	deprecatedCustomEmails                                                                                                                                                                                                              customEmails
 	deprecatedUserPageContent                                                                                                                                                                                                           userPageContent
 	lang                                                                                                                                                                                                                                Lang
+}
+
+type StoreType int
+
+// Used for debug logging of storage.
+const (
+	StoredEmails StoreType = iota
+	StoredDiscord
+	StoredTelegram
+	StoredMatrix
+	StoredInvites
+	StoredAnnouncements
+	StoredExpiries
+	StoredProfiles
+	StoredCustomContent
+)
+
+// DebugWatch logs database writes according on the advanced debugging settings in the Advanced section
+func (st *Storage) DebugWatch(storeType StoreType, key, mainData string) {
+	if st.debug == nil {
+		return
+	}
+	actionKey := ""
+	switch storeType {
+	case StoredEmails:
+		actionKey = "emails"
+	case StoredDiscord:
+		actionKey = "discord"
+	case StoredTelegram:
+		actionKey = "telegram"
+	case StoredMatrix:
+		actionKey = "matrix"
+	case StoredInvites:
+		actionKey = "invites"
+	case StoredAnnouncements:
+		actionKey = "announcements"
+	case StoredExpiries:
+		actionKey = "expiries"
+	case StoredProfiles:
+		actionKey = "profiles"
+	case StoredCustomContent:
+		actionKey = "custom_content"
+	}
+
+	logAction := st.logActions[actionKey]
+	if logAction == NoLog {
+		return
+	}
+	actionString := "WRITE"
+	if mainData == "" {
+		actionString = "DELETE"
+	}
+	if logAction == LogAll || mainData == "" {
+		st.debug.Printf("%s: %s[%s] = \"%s\"\n", actionString, actionKey, key, mainData)
+	}
+}
+
+func generateLogActions(c *ini.File) map[string]DebugLogAction {
+	m := map[string]DebugLogAction{}
+	for _, v := range []string{"emails", "discord", "telegram", "matrix", "invites", "announcements", "expirires", "profiles", "custom_content"} {
+		switch c.Section("advanced").Key("debug_log_" + v).MustString("none") {
+		case "none":
+			m[v] = NoLog
+		case "all":
+			m[v] = LogAll
+		case "deletion":
+			m[v] = LogDeletion
+		}
+	}
+	return m
 }
 
 func (app *appContext) ConnectDB() {
@@ -83,6 +166,7 @@ func (st *Storage) GetEmailsKey(k string) (EmailAddress, bool) {
 
 // SetEmailsKey stores value v in key k.
 func (st *Storage) SetEmailsKey(k string, v EmailAddress) {
+	st.DebugWatch(StoredEmails, k, v.Addr)
 	v.JellyfinID = k
 	err := st.db.Upsert(k, v)
 	if err != nil {
@@ -92,6 +176,7 @@ func (st *Storage) SetEmailsKey(k string, v EmailAddress) {
 
 // DeleteEmailKey deletes value at key k.
 func (st *Storage) DeleteEmailsKey(k string) {
+	st.DebugWatch(StoredEmails, k, "")
 	st.db.Delete(k, EmailAddress{})
 }
 
@@ -119,6 +204,7 @@ func (st *Storage) GetDiscordKey(k string) (DiscordUser, bool) {
 
 // SetDiscordKey stores value v in key k.
 func (st *Storage) SetDiscordKey(k string, v DiscordUser) {
+	st.DebugWatch(StoredDiscord, k, v.Username)
 	v.JellyfinID = k
 	err := st.db.Upsert(k, v)
 	if err != nil {
@@ -128,6 +214,7 @@ func (st *Storage) SetDiscordKey(k string, v DiscordUser) {
 
 // DeleteDiscordKey deletes value at key k.
 func (st *Storage) DeleteDiscordKey(k string) {
+	st.DebugWatch(StoredDiscord, k, "")
 	st.db.Delete(k, DiscordUser{})
 }
 
@@ -155,6 +242,7 @@ func (st *Storage) GetTelegramKey(k string) (TelegramUser, bool) {
 
 // SetTelegramKey stores value v in key k.
 func (st *Storage) SetTelegramKey(k string, v TelegramUser) {
+	st.DebugWatch(StoredTelegram, k, v.Username)
 	v.JellyfinID = k
 	err := st.db.Upsert(k, v)
 	if err != nil {
@@ -164,6 +252,7 @@ func (st *Storage) SetTelegramKey(k string, v TelegramUser) {
 
 // DeleteTelegramKey deletes value at key k.
 func (st *Storage) DeleteTelegramKey(k string) {
+	st.DebugWatch(StoredTelegram, k, "")
 	st.db.Delete(k, TelegramUser{})
 }
 
@@ -191,6 +280,7 @@ func (st *Storage) GetMatrixKey(k string) (MatrixUser, bool) {
 
 // SetMatrixKey stores value v in key k.
 func (st *Storage) SetMatrixKey(k string, v MatrixUser) {
+	st.DebugWatch(StoredMatrix, k, v.UserID)
 	v.JellyfinID = k
 	err := st.db.Upsert(k, v)
 	if err != nil {
@@ -200,6 +290,7 @@ func (st *Storage) SetMatrixKey(k string, v MatrixUser) {
 
 // DeleteMatrixKey deletes value at key k.
 func (st *Storage) DeleteMatrixKey(k string) {
+	st.DebugWatch(StoredMatrix, k, "")
 	st.db.Delete(k, MatrixUser{})
 }
 
@@ -227,6 +318,7 @@ func (st *Storage) GetInvitesKey(k string) (Invite, bool) {
 
 // SetInvitesKey stores value v in key k.
 func (st *Storage) SetInvitesKey(k string, v Invite) {
+	st.DebugWatch(StoredInvites, k, "changed") // Not sure what the main data from this would be
 	v.Code = k
 	err := st.db.Upsert(k, v)
 	if err != nil {
@@ -236,6 +328,7 @@ func (st *Storage) SetInvitesKey(k string, v Invite) {
 
 // DeleteInvitesKey deletes value at key k.
 func (st *Storage) DeleteInvitesKey(k string) {
+	st.DebugWatch(StoredInvites, k, "")
 	st.db.Delete(k, Invite{})
 }
 
@@ -263,6 +356,7 @@ func (st *Storage) GetAnnouncementsKey(k string) (announcementTemplate, bool) {
 
 // SetAnnouncementsKey stores value v in key k.
 func (st *Storage) SetAnnouncementsKey(k string, v announcementTemplate) {
+	st.DebugWatch(StoredAnnouncements, k, v.Subject)
 	err := st.db.Upsert(k, v)
 	if err != nil {
 		// fmt.Printf("Failed to set announcement: %v\n", err)
@@ -271,6 +365,7 @@ func (st *Storage) SetAnnouncementsKey(k string, v announcementTemplate) {
 
 // DeleteAnnouncementsKey deletes value at key k.
 func (st *Storage) DeleteAnnouncementsKey(k string) {
+	st.DebugWatch(StoredAnnouncements, k, "")
 	st.db.Delete(k, announcementTemplate{})
 }
 
@@ -298,6 +393,7 @@ func (st *Storage) GetUserExpiryKey(k string) (UserExpiry, bool) {
 
 // SetUserExpiryKey stores value v in key k.
 func (st *Storage) SetUserExpiryKey(k string, v UserExpiry) {
+	st.DebugWatch(StoredExpiries, k, v.Expiry.String())
 	v.JellyfinID = k
 	err := st.db.Upsert(k, v)
 	if err != nil {
@@ -307,6 +403,7 @@ func (st *Storage) SetUserExpiryKey(k string, v UserExpiry) {
 
 // DeleteUserExpiryKey deletes value at key k.
 func (st *Storage) DeleteUserExpiryKey(k string) {
+	st.DebugWatch(StoredExpiries, k, "")
 	st.db.Delete(k, UserExpiry{})
 }
 
@@ -337,6 +434,7 @@ func (st *Storage) GetProfileKey(k string) (Profile, bool) {
 
 // SetProfileKey stores value v in key k.
 func (st *Storage) SetProfileKey(k string, v Profile) {
+	st.DebugWatch(StoredProfiles, k, "changed")
 	v.Name = k
 	v.Admin = v.Policy.IsAdministrator
 	if v.Policy.EnabledFolders != nil {
@@ -357,6 +455,7 @@ func (st *Storage) SetProfileKey(k string, v Profile) {
 
 // DeleteProfileKey deletes value at key k.
 func (st *Storage) DeleteProfileKey(k string) {
+	st.DebugWatch(StoredProfiles, k, "")
 	st.db.Delete(k, Profile{})
 }
 
@@ -401,6 +500,7 @@ func (st *Storage) MustGetCustomContentKey(k string) CustomContent {
 
 // SetCustomContentKey stores value v in key k.
 func (st *Storage) SetCustomContentKey(k string, v CustomContent) {
+	st.DebugWatch(StoredCustomContent, k, "changed")
 	v.Name = k
 	err := st.db.Upsert(k, v)
 	if err != nil {
@@ -410,6 +510,7 @@ func (st *Storage) SetCustomContentKey(k string, v CustomContent) {
 
 // DeleteCustomContentKey deletes value at key k.
 func (st *Storage) DeleteCustomContentKey(k string) {
+	st.DebugWatch(StoredCustomContent, k, "")
 	st.db.Delete(k, CustomContent{})
 }
 

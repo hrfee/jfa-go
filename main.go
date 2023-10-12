@@ -246,8 +246,12 @@ func start(asDaemon, firstCall bool) {
 	}
 	if debugMode {
 		app.debug = logger.NewLogger(os.Stdout, "[DEBUG] ", log.Ltime|log.Lshortfile, color.FgYellow)
+		// Bind debug log
+		app.storage.debug = app.debug
+		app.storage.logActions = generateLogActions(app.config)
 	} else {
 		app.debug = logger.NewEmptyLogger()
+		app.storage.debug = nil
 	}
 	if *PPROF {
 		app.info.Print(warning("\n\nWARNING: Don't use pprof in production.\n\n"))

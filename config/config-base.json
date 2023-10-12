@@ -395,6 +395,123 @@
                     "type": "password",
                     "value": "",
                     "description": "Leave blank for no Authentication."
+                },
+                "debug_log_emails": {
+                    "name": "Debug Storage Logging: Emails",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "select",
+                    "options": [
+                        ["none", "None"],
+                        ["all", "All Writes"],
+                        ["deletion", "Deletion Only*"]
+                    ],
+                    "value": "none",
+                    "description": "Extra debug logging for writes to the database. *: Deletion also includes blanking out major fields, e.g. an email address."
+                },
+                "debug_log_discord": {
+                    "name": "Debug Storage Logging: Discord",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "select",
+                    "options": [
+                        ["none", "None"],
+                        ["all", "All Writes"],
+                        ["deletion", "Deletion Only*"]
+                    ],
+                    "value": "none",
+                    "description": "Extra debug logging for writes to the database. *: Deletion also includes blanking out major fields, e.g. an email address."
+                },
+                "debug_log_telegram": {
+                    "name": "Debug Storage Logging: Telegram",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "select",
+                    "options": [
+                        ["none", "None"],
+                        ["all", "All Writes"],
+                        ["deletion", "Deletion Only*"]
+                    ],
+                    "value": "none",
+                    "description": "Extra debug logging for writes to the database. *: Deletion also includes blanking out major fields, e.g. an email address."
+                },
+                "debug_log_matrix": {
+                    "name": "Debug Storage Logging: Matrix",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "select",
+                    "options": [
+                        ["none", "None"],
+                        ["all", "All Writes"],
+                        ["deletion", "Deletion Only*"]
+                    ],
+                    "value": "none",
+                    "description": "Extra debug logging for writes to the database. *: Deletion also includes blanking out major fields, e.g. an email address."
+                },
+                "debug_log_invites": {
+                    "name": "Debug Storage Logging: Invites",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "select",
+                    "options": [
+                        ["none", "None"],
+                        ["all", "All Writes"],
+                        ["deletion", "Deletion Only*"]
+                    ],
+                    "value": "none",
+                    "description": "Extra debug logging for writes to the database. *: Deletion also includes blanking out major fields, e.g. an email address."
+                },
+                "debug_log_announcements": {
+                    "name": "Debug Storage Logging: Announcements",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "select",
+                    "options": [
+                        ["none", "None"],
+                        ["all", "All Writes"],
+                        ["deletion", "Deletion Only*"]
+                    ],
+                    "value": "none",
+                    "description": "Extra debug logging for writes to the database. *: Deletion also includes blanking out major fields, e.g. an email address."
+                },
+                "debug_log_expiries": {
+                    "name": "Debug Storage Logging: User Expiries",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "select",
+                    "options": [
+                        ["none", "None"],
+                        ["all", "All Writes"],
+                        ["deletion", "Deletion Only*"]
+                    ],
+                    "value": "none",
+                    "description": "Extra debug logging for writes to the database. *: Deletion also includes blanking out major fields, e.g. an email address."
+                },
+                "debug_log_profiles": {
+                    "name": "Debug Storage Logging: Profiles",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "select",
+                    "options": [
+                        ["none", "None"],
+                        ["all", "All Writes"],
+                        ["deletion", "Deletion Only*"]
+                    ],
+                    "value": "none",
+                    "description": "Extra debug logging for writes to the database. *: Deletion also includes blanking out major fields, e.g. an email address."
+                },
+                "debug_log_custom_content": {
+                    "name": "Debug Storage Logging: Custom Message Content",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "select",
+                    "options": [
+                        ["none", "None"],
+                        ["all", "All Writes"],
+                        ["deletion", "Deletion Only*"]
+                    ],
+                    "value": "none",
+                    "description": "Extra debug logging for writes to the database. *: Deletion also includes blanking out major fields, e.g. an email address."
                 }
             }
         },
