@@ -11,6 +11,8 @@
         "languageMessage": "Note: See available languages with {command}, and set language with {command} <language code>.",
         "languageMessageDiscord": "Note: set your language with /lang <language name>.",
         "languageSet": "Language set to {language}.",
-        "discordDMs": "Please check your DMs for a response."
+        "discordDMs": "Please check your DMs for a response.",
+        "sentInvite": "Sent invite.",
+        "sentInviteFailure": "Failed to send invite, check logs."
     }
 }

@@ -24,6 +24,7 @@ type DiscordDaemon struct {
 	app                                                        *appContext
 	commandHandlers                                            map[string]func(s *dg.Session, i *dg.InteractionCreate, lang string)
 	commandIDs                                                 []string
+	commandDescriptions                                        []*dg.ApplicationCommand
 }
 
 func newDiscordDaemon(app *appContext) (*DiscordDaemon, error) {
@@ -50,6 +51,7 @@ func newDiscordDaemon(app *appContext) (*DiscordDaemon, error) {
 	dd.commandHandlers[app.config.Section("discord").Key("start_command").MustString("start")] = dd.cmdStart
 	dd.commandHandlers["lang"] = dd.cmdLang
 	dd.commandHandlers["pin"] = dd.cmdPIN
+	dd.commandHandlers["inv"] = dd.cmdInvite
 	for _, user := range app.storage.GetDiscord() {
 		dd.users[user.ID] = user
 	}
@@ -127,6 +129,7 @@ func (d *DiscordDaemon) run() {
 			d.inviteChannelName = invChannel
 		}
 	}
+	err = d.bot.UpdateGameStatus(0, "/"+d.app.config.Section("discord").Key("start_command").MustString("start"))
 	defer d.deregisterCommands()
 	defer d.bot.Close()
 
@@ -220,7 +223,6 @@ func (d *DiscordDaemon) NewTempInvite(ageSeconds, maxUses int) (inviteURL, iconU
 		d.app.err.Printf("Discord: Failed to get guild: %v", err)
 		return
 	}
-	// FIXME: Fix CSS, and handle no icon
 	iconURL = guild.IconURL("256")
 	return
 }
@@ -308,7 +310,7 @@ func (d *DiscordDaemon) Shutdown() {
 }
 
 func (d *DiscordDaemon) registerCommands() {
-	commands := []*dg.ApplicationCommand{
+	d.commandDescriptions = []*dg.ApplicationCommand{
 		{
 			Name:        d.app.config.Section("discord").Key("start_command").MustString("start"),
 			Description: "Start the Discord linking process. The bot will send further instructions.",
@@ -338,26 +340,73 @@ func (d *DiscordDaemon) registerCommands() {
 				},
 			},
 		},
+		{
+			Name:        "inv",
+			Description: "Send an invite to a discord user (admin only).",
+			Options: []*dg.ApplicationCommandOption{
+				{
+					Type:        dg.ApplicationCommandOptionUser,
+					Name:        "user",
+					Description: "User to Invite.",
+					Required:    true,
+				},
+				{
+					Type:        dg.ApplicationCommandOptionInteger,
+					Name:        "expiry",
+					Description: "Time in minutes before expiration.",
+					Required:    false,
+				},
+				/* Label should be automatically set to something like "Discord invite for @username"
+				{
+					Type:        dg.ApplicationCommandOptionString,
+					Name:        "label",
+					Description: "Label given to this invite (shown on the Admin page)",
+					Required:    false,
+				}, */
+				{
+					Type:        dg.ApplicationCommandOptionString,
+					Name:        "user_label",
+					Description: "Label given to users created with this invite.",
+					Required:    false,
+				},
+				{
+					Type:        dg.ApplicationCommandOptionString,
+					Name:        "profile",
+					Description: "Profile to apply to the created user.",
+					Required:    false,
+				},
+			},
+		},
 	}
-	commands[1].Options[0].Choices = make([]*dg.ApplicationCommandOptionChoice, len(d.app.storage.lang.Telegram))
+	d.commandDescriptions[1].Options[0].Choices = make([]*dg.ApplicationCommandOptionChoice, len(d.app.storage.lang.Telegram))
 	i := 0
 	for code := range d.app.storage.lang.Telegram {
-		d.app.debug.Printf("Registering choice \"%s\":\"%s\"\n", d.app.storage.lang.Telegram[code].Meta.Name, code)
-		commands[1].Options[0].Choices[i] = &dg.ApplicationCommandOptionChoice{
+		d.app.debug.Printf("Discord: registering lang choice \"%s\":\"%s\"\n", d.app.storage.lang.Telegram[code].Meta.Name, code)
+		d.commandDescriptions[1].Options[0].Choices[i] = &dg.ApplicationCommandOptionChoice{
 			Name:  d.app.storage.lang.Telegram[code].Meta.Name,
 			Value: code,
 		}
 		i++
 	}
 
+	profiles := d.app.storage.GetProfiles()
+	d.commandDescriptions[3].Options[3].Choices = make([]*dg.ApplicationCommandOptionChoice, len(profiles))
+	for i, profile := range profiles {
+		d.app.debug.Printf("Discord: registering profile choice \"%s\"", profile.Name)
+		d.commandDescriptions[3].Options[3].Choices[i] = &dg.ApplicationCommandOptionChoice{
+			Name:  profile.Name,
+			Value: profile.Name,
+		}
+	}
+
 	// d.deregisterCommands()
 
-	d.commandIDs = make([]string, len(commands))
+	d.commandIDs = make([]string, len(d.commandDescriptions))
 	// cCommands, err := d.bot.ApplicationCommandBulkOverwrite(d.bot.State.User.ID, d.guildID, commands)
 	// if err != nil {
 	// 	d.app.err.Printf("Discord: Cannot create commands: %v", err)
 	// }
-	for i, cmd := range commands {
+	for i, cmd := range d.commandDescriptions {
 		command, err := d.bot.ApplicationCommandCreate(d.bot.State.User.ID, d.guildID, cmd)
 		if err != nil {
 			d.app.err.Printf("Discord: Cannot create command \"%s\": %v", cmd.Name, err)
@@ -375,9 +424,29 @@ func (d *DiscordDaemon) deregisterCommands() {
 		return
 	}
 	for _, cmd := range existingCommands {
-		if err := d.bot.ApplicationCommandDelete(d.bot.State.User.ID, "", cmd.ID); err != nil {
-			d.app.err.Printf("Failed to deregister command: %v", err)
+		if err := d.bot.ApplicationCommandDelete(d.bot.State.User.ID, d.guildID, cmd.ID); err != nil {
+			d.app.err.Printf("Discord: Failed to deregister command: %v", err)
 		}
+	}
+}
+
+// UpdateCommands updates commands which have defined lists of options, to be used when changes occur.
+func (d *DiscordDaemon) UpdateCommands() {
+	// Reload Profile List
+	profiles := d.app.storage.GetProfiles()
+	d.commandDescriptions[3].Options[3].Choices = make([]*dg.ApplicationCommandOptionChoice, len(profiles))
+	for i, profile := range profiles {
+		d.app.debug.Printf("Discord: registering profile choice \"%s\"", profile.Name)
+		d.commandDescriptions[3].Options[3].Choices[i] = &dg.ApplicationCommandOptionChoice{
+			Name:  profile.Name,
+			Value: profile.Name,
+		}
+	}
+	cmd, err := d.bot.ApplicationCommandEdit(d.bot.State.User.ID, d.guildID, d.commandIDs[3], d.commandDescriptions[3])
+	if err != nil {
+		d.app.err.Printf("Discord: Failed to update profile list: %v\n", err)
+	} else {
+		d.commandIDs[3] = cmd.ID
 	}
 }
 
@@ -501,6 +570,124 @@ func (d *DiscordDaemon) cmdLang(s *dg.Session, i *dg.InteractionCreate, lang str
 			return
 		}
 	}
+}
+
+func (d *DiscordDaemon) cmdInvite(s *dg.Session, i *dg.InteractionCreate, lang string) {
+	channel, err := s.UserChannelCreate(i.Interaction.Member.User.ID)
+	if err != nil {
+		d.app.err.Printf("Discord: Failed to create private channel with \"%s\": %v", i.Interaction.Member.User.Username, err)
+		return
+	}
+	requester := d.MustGetUser(channel.ID, i.Interaction.Member.User.ID, i.Interaction.Member.User.Discriminator, i.Interaction.Member.User.Username)
+	d.users[i.Interaction.Member.User.ID] = requester
+	recipient := i.ApplicationCommandData().Options[0].UserValue(s)
+	// d.app.debug.Println(invuser)
+	//label := i.ApplicationCommandData().Options[2].StringValue()
+	//profile := i.ApplicationCommandData().Options[3].StringValue()
+	//mins, err := strconv.Atoi(i.ApplicationCommandData().Options[1].StringValue())
+	//if mins > 0 {
+	//	expmin = mins
+	//}
+	//	Check whether requestor is linked to the admin account
+	requesterEmail, ok := d.app.storage.GetEmailsKey(requester.JellyfinID)
+	if !ok {
+		d.app.err.Printf("Failed to verify admin")
+	}
+	if !requesterEmail.Admin {
+		d.app.err.Printf("User is not admin")
+		//add response message
+		return
+	}
+
+	var expiryMinutes int64 = 30
+	userLabel := ""
+	profileName := ""
+
+	for i, opt := range i.ApplicationCommandData().Options {
+		if i == 0 {
+			continue
+		}
+		switch opt.Name {
+		case "expiry":
+			expiryMinutes = opt.IntValue()
+		case "user_label":
+			userLabel = opt.StringValue()
+		case "profile":
+			profileName = opt.StringValue()
+		}
+	}
+
+	currentTime := time.Now()
+
+	validTill := currentTime.Add(time.Minute * time.Duration(expiryMinutes))
+
+	invite := Invite{
+		Code:          GenerateInviteCode(),
+		Created:       currentTime,
+		RemainingUses: 1,
+		UserExpiry:    false,
+		ValidTill:     validTill,
+		UserLabel:     userLabel,
+		Profile:       "Default",
+		Label:         fmt.Sprintf("Discord: %s", RenderDiscordUsername(recipient)),
+	}
+	if profileName != "" {
+		if _, ok := d.app.storage.GetProfileKey(profileName); ok {
+			invite.Profile = profileName
+		}
+	}
+
+	if recipient != nil && d.app.config.Section("invite_emails").Key("enabled").MustBool(false) {
+		d.app.debug.Printf("%s: Sending invite message", invite.Code)
+		invname, err := d.bot.GuildMember(d.guildID, recipient.ID)
+		invite.SendTo = invname.User.Username
+		msg, err := d.app.email.constructInvite(invite.Code, invite, d.app, false)
+		if err != nil {
+			invite.SendTo = fmt.Sprintf("Failed to send to %s", RenderDiscordUsername(recipient))
+			d.app.err.Printf("%s: Failed to construct invite message: %v", invite.Code, err)
+			err := s.InteractionRespond(i.Interaction, &dg.InteractionResponse{
+				Type: dg.InteractionResponseChannelMessageWithSource,
+				Data: &dg.InteractionResponseData{
+					Content: d.app.storage.lang.Telegram[lang].Strings.get("sentInviteFailure"),
+					Flags:   64, // Ephemeral
+				},
+			})
+			if err != nil {
+				d.app.err.Printf("Discord: Failed to send message to \"%s\": %v", RenderDiscordUsername(requester), err)
+			}
+		} else {
+			var err error
+			err = d.app.discord.SendDM(msg, recipient.ID)
+			if err != nil {
+				invite.SendTo = fmt.Sprintf("Failed to send to %s", RenderDiscordUsername(recipient))
+				d.app.err.Printf("%s: %s: %v", invite.Code, invite.SendTo, err)
+				err := s.InteractionRespond(i.Interaction, &dg.InteractionResponse{
+					Type: dg.InteractionResponseChannelMessageWithSource,
+					Data: &dg.InteractionResponseData{
+						Content: d.app.storage.lang.Telegram[lang].Strings.get("sentInviteFailure"),
+						Flags:   64, // Ephemeral
+					},
+				})
+				if err != nil {
+					d.app.err.Printf("Discord: Failed to send message to \"%s\": %v", RenderDiscordUsername(requester), err)
+				}
+			} else {
+				d.app.info.Printf("%s: Sent invite email to \"%s\"", invite.Code, RenderDiscordUsername(recipient))
+				err := s.InteractionRespond(i.Interaction, &dg.InteractionResponse{
+					Type: dg.InteractionResponseChannelMessageWithSource,
+					Data: &dg.InteractionResponseData{
+						Content: d.app.storage.lang.Telegram[lang].Strings.get("sentInvite"),
+						Flags:   64, // Ephemeral
+					},
+				})
+				if err != nil {
+					d.app.err.Printf("Discord: Failed to send message to \"%s\": %v", RenderDiscordUsername(requester), err)
+				}
+			}
+		}
+	}
+	//if profile != "" {
+	d.app.storage.SetInvitesKey(invite.Code, invite)
 }
 
 func (d *DiscordDaemon) messageHandler(s *dg.Session, m *dg.MessageCreate) {

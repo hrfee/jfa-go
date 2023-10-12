@@ -104,6 +104,10 @@ func (app *appContext) CreateProfile(gc *gin.Context) {
 		}
 	}
 	app.storage.SetProfileKey(req.Name, profile)
+	// Refresh discord bots, profile list
+	if discordEnabled {
+		app.discord.UpdateCommands()
+	}
 	respondBool(200, true, gc)
 }
 
