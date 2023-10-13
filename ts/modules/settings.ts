@@ -123,9 +123,9 @@ class DOMInput {
             if (setting.depends_false) { state = false; }
             document.addEventListener(`settings-${dependant[0]}-${dependant[1]}`, (event: settingsBoolEvent) => {
                 if (Boolean(event.detail) !== state) {
-                    this._input.parentElement.parentElement.classList.add("unfocused");
+                    this._input.parentElement.classList.add("unfocused");
                 } else {
-                    this._input.parentElement.parentElement.classList.remove("unfocused");
+                    this._input.parentElement.classList.remove("unfocused");
                 }
             });
         }
@@ -882,7 +882,9 @@ export class settingsList {
                 if (this._settings.sections[section].settings[setting].type == "note") continue;
                 const element = sectionElement.querySelector(`div[data-name="${setting}"]`) as HTMLElement;
                 // FIXME: Make this look better, stop it cutting of the top of tooltips
-                element.classList.remove("-mx-2", "my-2", "p-2", "aside", "~neutral", "@low");
+                // element.classList.remove("-mx-2", "my-2", "p-2", "aside", "~neutral", "@low");
+                element.classList.add("opacity-50", "pointer-events-none");
+                element.setAttribute("aria-disabled", "true");
                 if (setting.toLowerCase().includes(query) ||
                     this._settings.sections[section].settings[setting].name.toLowerCase().includes(query) ||
                     this._settings.sections[section].settings[setting].description.toLowerCase().includes(query) ||
@@ -896,7 +898,9 @@ export class settingsList {
                         !(this._settings.sections[section].settings[setting].advanced))) {
                         
                         // FIXME: Make this look better, stop it cutting of the top of tooltips
-                        element.classList.add("-mx-2", "my-2", "p-2", "aside", "~neutral", "@low");
+                        // element.classList.add("-mx-2", "my-2", "p-2", "aside", "~neutral", "@low");
+                        element.classList.remove("opacity-50", "pointer-events-none");
+                        element.setAttribute("aria-disabled", "false");
                     }
                 }
             }
