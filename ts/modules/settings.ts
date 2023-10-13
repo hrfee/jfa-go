@@ -123,9 +123,9 @@ class DOMInput {
             if (setting.depends_false) { state = false; }
             document.addEventListener(`settings-${dependant[0]}-${dependant[1]}`, (event: settingsBoolEvent) => {
                 if (Boolean(event.detail) !== state) {
-                    this._input.parentElement.classList.add("unfocused");
+                    this._input.parentElement.parentElement.classList.add("unfocused");
                 } else {
-                    this._input.parentElement.classList.remove("unfocused");
+                    this._input.parentElement.parentElement.classList.remove("unfocused");
                 }
             });
         }
@@ -629,8 +629,8 @@ export class settingsList {
     private _settings: Settings;
     private _advanced: boolean = false;
 
-    private _searchbox: HTMLElement = document.getElementById("settings-search");
-    private _clearSearchbox: HTMLElement = document.getElementById("settings-search-clear");
+    private _searchbox: HTMLInputElement = document.getElementById("settings-search") as HTMLInputElement;
+    private _clearSearchbox: HTMLButtonElement = document.getElementById("settings-search-clear") as HTMLButtonElement;
 
 
     addSection = (name: string, s: Section, subButton?: HTMLElement) => {
@@ -670,7 +670,7 @@ export class settingsList {
                 } else {
                     button.classList.remove("unfocused");
                 }
-                // FIXME: Re-call search
+                this._searchbox.oninput(null);
             });
         }
         this._buttons[name] = button;
@@ -756,11 +756,17 @@ export class settingsList {
                 parent.classList.add("~neutral");
                 parent.classList.remove("~urge");
             }
+            this._searchbox.oninput(null);
         };
         advancedEnableToggle.checked = false;
 
-        // FIXME: Remove this!
-        (window as any).sSearch = this.search;
+        this._searchbox.oninput = () => {
+            this.search(this._searchbox.value);
+        };
+        this._clearSearchbox.onclick = () => {
+            this._searchbox.value = "";
+            this._searchbox.oninput(null);
+        };
     }
 
     private _addMatrix = () => {
@@ -855,10 +861,9 @@ export class settingsList {
         }
     })
 
-    // FIXME: Create & bind to this._searchbox
-    // FXME: this._clearSearchbox clears search
     search = (query: string) => {
         query = query.toLowerCase();
+
         let firstVisibleSection = "";
         for (let section of this._settings.order) {
             // hide button, unhide if matched
@@ -872,7 +877,12 @@ export class settingsList {
                     firstVisibleSection = firstVisibleSection || section;
                 }
             }
+            const sectionElement = this._sections[section].asElement();
             for (let setting of this._settings.sections[section].order) {
+                if (this._settings.sections[section].settings[setting].type == "note") continue;
+                const element = sectionElement.querySelector(`div[data-name="${setting}"]`) as HTMLElement;
+                // FIXME: Make this look better, stop it cutting of the top of tooltips
+                element.classList.remove("-mx-2", "my-2", "p-2", "aside", "~neutral", "@low");
                 if (setting.toLowerCase().includes(query) ||
                     this._settings.sections[section].settings[setting].name.toLowerCase().includes(query) ||
                     this._settings.sections[section].settings[setting].description.toLowerCase().includes(query) ||
@@ -881,8 +891,12 @@ export class settingsList {
                         this._buttons[section].classList.remove("unfocused");
                         firstVisibleSection = firstVisibleSection || section;
                     }
-                    if ((this._settings.sections[section].settings[setting].advanced && this._advanced) || !(this._settings.sections[section].settings[setting].advanced)) {
-                        // FIXME: Highlight setting somehow
+                    if (query != "" &&
+                        ((this._settings.sections[section].settings[setting].advanced && this._advanced) ||
+                        !(this._settings.sections[section].settings[setting].advanced))) {
+                        
+                        // FIXME: Make this look better, stop it cutting of the top of tooltips
+                        element.classList.add("-mx-2", "my-2", "p-2", "aside", "~neutral", "@low");
                     }
                 }
             }
