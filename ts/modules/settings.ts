@@ -102,6 +102,7 @@ class DOMInput {
     constructor(inputType: string, setting: Setting, section: string, name: string) {
         this._container = document.createElement("div");
         this._container.classList.add("setting");
+        this._container.setAttribute("data-name", name)
         this._container.innerHTML = `
         <label class="label">
             <span class="setting-label"></span> <span class="setting-required"></span> <span class="setting-restart"></span>
@@ -262,6 +263,7 @@ class DOMBool implements SBool {
     constructor(setting: SBool, section: string, name: string) {
         this._container = document.createElement("div");
         this._container.classList.add("setting");
+        this._container.setAttribute("data-name", name)
         this._container.innerHTML = `
         <label class="switch mb-2">
             <input type="checkbox">
@@ -396,6 +398,7 @@ class DOMSelect implements SSelect {
         this._options = [];
         this._container = document.createElement("div");
         this._container.classList.add("setting");
+        this._container.setAttribute("data-name", name)
         this._container.innerHTML = `
         <label class="label">
             <span class="setting-label"></span> <span class="setting-required"></span> <span class="setting-restart"></span>
@@ -544,6 +547,7 @@ class sectionPanel {
         this._settings = {};
         this._section = document.createElement("div") as HTMLDivElement;
         this._section.classList.add("settings-section", "unfocused");
+        this._section.setAttribute("data-section", sectionName);
         this._section.innerHTML = `
         <span class="heading">${s.meta.name}</span>
         <p class="support lg my-2">${s.meta.description}</p>
@@ -622,6 +626,12 @@ export class settingsList {
     private _buttons: { [name: string]: HTMLSpanElement }
     private _needsRestart: boolean = false;
     private _messageEditor = new MessageEditor();
+    private _settings: Settings;
+    private _advanced: boolean = false;
+
+    private _searchbox: HTMLElement = document.getElementById("settings-search");
+    private _clearSearchbox: HTMLElement = document.getElementById("settings-search-clear");
+
 
     addSection = (name: string, s: Section, subButton?: HTMLElement) => {
         const section = new sectionPanel(s, name);
@@ -637,6 +647,7 @@ export class settingsList {
             let state = true;
             if (s.meta.depends_false) { state = false; }
             document.addEventListener(`settings-${dependant[0]}-${dependant[1]}`, (event: settingsBoolEvent) => {
+
                 if (Boolean(event.detail) !== state) {
                     button.classList.add("unfocused");
                     document.dispatchEvent(new CustomEvent(`settings-${name}`, { detail: false }));
@@ -659,6 +670,7 @@ export class settingsList {
                 } else {
                     button.classList.remove("unfocused");
                 }
+                // FIXME: Re-call search
             });
         }
         this._buttons[name] = button;
@@ -736,7 +748,8 @@ export class settingsList {
         advancedEnableToggle.onchange = () => {
             document.dispatchEvent(new CustomEvent("settings-advancedState", { detail: advancedEnableToggle.checked }));
             const parent = advancedEnableToggle.parentElement;
-            if (advancedEnableToggle.checked) {
+            this._advanced = advancedEnableToggle.checked;
+            if (this._advanced) {
                 parent.classList.add("~urge");
                 parent.classList.remove("~neutral");
             } else {
@@ -745,6 +758,9 @@ export class settingsList {
             }
         };
         advancedEnableToggle.checked = false;
+
+        // FIXME: Remove this!
+        (window as any).sSearch = this.search;
     }
 
     private _addMatrix = () => {
@@ -787,10 +803,10 @@ export class settingsList {
                 window.notifications.customError("settingsLoadError", window.lang.notif("errorLoadSettings"));
                 return;
             }
-            let settings = req.response as Settings;
-            for (let name of settings.order) {
+            this._settings = req.response as Settings;
+            for (let name of this._settings.order) {
                 if (name in this._sections) {
-                    this._sections[name].update(settings.sections[name]);
+                    this._sections[name].update(this._settings.sections[name]);
                 } else {
                     if (name == "messages" || name == "user_page") {
                         const editButton = document.createElement("div");
@@ -806,7 +822,7 @@ export class settingsList {
                         (editButton.querySelector("span.button") as HTMLSpanElement).onclick = () => {
                             this._messageEditor.showList(name == "messages" ? "email" : "user");
                         };
-                        this.addSection(name, settings.sections[name], editButton);
+                        this.addSection(name, this._settings.sections[name], editButton);
                     } else if (name == "updates") {
                         const icon = document.createElement("span") as HTMLSpanElement;
                         if (window.updater.updateAvailable) {
@@ -814,7 +830,7 @@ export class settingsList {
                             icon.innerHTML = `<i class="ri-download-line" title="${window.lang.strings("update")}"></i>`;
                             icon.onclick = () => window.updater.checkForUpdates(window.modals.updateInfo.show);
                         }
-                        this.addSection(name, settings.sections[name], icon);
+                        this.addSection(name, this._settings.sections[name], icon);
                     } else if (name == "matrix" && !window.matrixEnabled) {
                         const addButton = document.createElement("div");
                         addButton.classList.add("tooltip", "left");
@@ -825,19 +841,58 @@ export class settingsList {
                         </span>
                         `;
                         (addButton.querySelector("span.button") as HTMLSpanElement).onclick = this._addMatrix;
-                        this.addSection(name, settings.sections[name], addButton);
+                        this.addSection(name, this._settings.sections[name], addButton);
                     } else {
-                        this.addSection(name, settings.sections[name]);
+                        this.addSection(name, this._settings.sections[name]);
                     }
                 }
             }
-            this._showPanel(settings.order[0]);
+            this._showPanel(this._settings.order[0]);
             document.dispatchEvent(new CustomEvent("settings-loaded"));
             document.dispatchEvent(new CustomEvent("settings-advancedState", { detail: false }));
             this._saveButton.classList.add("unfocused");
             this._needsRestart = false;
         }
     })
+
+    // FIXME: Create & bind to this._searchbox
+    // FXME: this._clearSearchbox clears search
+    search = (query: string) => {
+        query = query.toLowerCase();
+        let firstVisibleSection = "";
+        for (let section of this._settings.order) {
+            // hide button, unhide if matched
+            this._buttons[section].classList.add("unfocused");
+
+            if (section.toLowerCase().includes(query) ||
+                this._settings.sections[section].meta.name.toLowerCase().includes(query) ||
+                this._settings.sections[section].meta.description.toLowerCase().includes(query)) {
+                if ((this._settings.sections[section].meta.advanced && this._advanced) || !(this._settings.sections[section].meta.advanced)) {
+                    this._buttons[section].classList.remove("unfocused");
+                    firstVisibleSection = firstVisibleSection || section;
+                }
+            }
+            for (let setting of this._settings.sections[section].order) {
+                if (setting.toLowerCase().includes(query) ||
+                    this._settings.sections[section].settings[setting].name.toLowerCase().includes(query) ||
+                    this._settings.sections[section].settings[setting].description.toLowerCase().includes(query) ||
+                    String(this._settings.sections[section].settings[setting].value).toLowerCase().includes(query)) {
+                    if ((this._settings.sections[section].meta.advanced && this._advanced) || !(this._settings.sections[section].meta.advanced)) {
+                        this._buttons[section].classList.remove("unfocused");
+                        firstVisibleSection = firstVisibleSection || section;
+                    }
+                    if ((this._settings.sections[section].settings[setting].advanced && this._advanced) || !(this._settings.sections[section].settings[setting].advanced)) {
+                        // FIXME: Highlight setting somehow
+                    }
+                }
+            }
+        }
+        if (firstVisibleSection) {
+            this._buttons[firstVisibleSection].onclick(null);
+        } else {
+            // FIXME: Show "no results found" in right panel (mention enabling advanced settings
+        }
+    }
 }
 
 export interface templateEmail {
