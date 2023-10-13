@@ -550,7 +550,7 @@ class sectionPanel {
         this._section.setAttribute("data-section", sectionName);
         this._section.innerHTML = `
         <span class="heading">${s.meta.name}</span>
-        <p class="support lg my-2">${s.meta.description}</p>
+        <p class="support lg my-2 settings-section-description">${s.meta.description}</p>
         `;
 
         this.update(s);
@@ -866,6 +866,12 @@ export class settingsList {
 
         let firstVisibleSection = "";
         for (let section of this._settings.order) {
+
+            let dependencyCard = this._sections[section].asElement().querySelector(".settings-dependency-message");
+            if (dependencyCard) dependencyCard.remove();
+            dependencyCard = null;
+            let dependencyList = null;
+
             // hide button, unhide if matched
             this._buttons[section].classList.add("unfocused");
 
@@ -881,7 +887,7 @@ export class settingsList {
             for (let setting of this._settings.sections[section].order) {
                 if (this._settings.sections[section].settings[setting].type == "note") continue;
                 const element = sectionElement.querySelector(`div[data-name="${setting}"]`) as HTMLElement;
-                // FIXME: Make this look better, stop it cutting of the top of tooltips
+
                 // element.classList.remove("-mx-2", "my-2", "p-2", "aside", "~neutral", "@low");
                 element.classList.add("opacity-50", "pointer-events-none");
                 element.setAttribute("aria-disabled", "true");
@@ -893,14 +899,45 @@ export class settingsList {
                         this._buttons[section].classList.remove("unfocused");
                         firstVisibleSection = firstVisibleSection || section;
                     }
-                    if (query != "" &&
-                        ((this._settings.sections[section].settings[setting].advanced && this._advanced) ||
-                        !(this._settings.sections[section].settings[setting].advanced))) {
-                        
-                        // FIXME: Make this look better, stop it cutting of the top of tooltips
+                    const shouldShow = (query != "" &&
+                                    ((this._settings.sections[section].settings[setting].advanced && this._advanced) ||
+                                    !(this._settings.sections[section].settings[setting].advanced)));
+                    if (shouldShow) {
                         // element.classList.add("-mx-2", "my-2", "p-2", "aside", "~neutral", "@low");
                         element.classList.remove("opacity-50", "pointer-events-none");
                         element.setAttribute("aria-disabled", "false");
+                    }
+                    if ((shouldShow && element.querySelector("label").classList.contains("unfocused")) || (!shouldShow)) {
+                        // Add a note explaining why the setting is hidden
+                        if (!dependencyCard) {
+                            dependencyCard = document.createElement("aside");
+                            dependencyCard.classList.add("aside", "my-2", "~warning", "settings-dependency-message");
+                            dependencyCard.innerHTML = `
+                            <div class="content text-sm">
+                                <span class="font-bold">${window.lang.strings("settingsHiddenDependency")}</span>
+                        
+                                <ul class="settings-dependency-list"></ul>
+                            </div>
+                            `;
+                            dependencyList = dependencyCard.querySelector(".settings-dependency-list") as HTMLUListElement;
+                            // Insert it right after the description
+                            this._sections[section].asElement().insertBefore(dependencyCard, this._sections[section].asElement().querySelector(".settings-section-description").nextElementSibling);
+                        }
+                        const li = document.createElement("li");
+                        if (shouldShow) {
+                            const depCode = this._settings.sections[section].settings[setting].depends_true || this._settings.sections[section].settings[setting].depends_false;
+                            const dep = splitDependant(section, depCode);
+
+                            let depName = this._settings.sections[dep[0]].settings[dep[1]].name;
+                            if (dep[0] != section) {
+                                depName = this._settings.sections[dep[0]].meta.name + " > " + depName;
+                            }
+
+                            li.textContent = window.lang.strings("settingsDependsOn").replace("{setting}", `"`+this._settings.sections[section].settings[setting].name+`"`).replace("{dependency}", `"`+depName+`"`);
+                        } else {
+                            li.textContent = window.lang.strings("settingsAdvancedMode").replace("{setting}", `"`+this._settings.sections[section].settings[setting].name+`"`);
+                        }
+                        dependencyList.appendChild(li);
                     }
                 }
             }
