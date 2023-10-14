@@ -918,6 +918,22 @@
                     "type": "bool",
                     "value": true,
                     "description": "Warning, disabling this makes you much more vulnerable to man-in-the-middle attacks"
+                },
+                "auth_type": {
+                    "name": "Authentication type",
+                    "required": false,
+                    "requires_restart": false,
+                    "advanced": false,
+                    "type": "select",
+                    "options": [
+                        ["0", "Plain"],
+                        ["1", "Login"],
+                        ["2", "CRAM-MD5"],
+                        ["3", "None"],
+                        ["4", "Auto"]
+                    ],
+                    "value": 4,
+                    "description": "SMTP authentication method"
                 }
             }
         },

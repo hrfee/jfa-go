@@ -92,7 +92,8 @@ func NewEmailer(app *appContext) *Emailer {
 		if app.proxyEnabled {
 			proxyConf = &app.proxyConfig
 		}
-		err := emailer.NewSMTP(app.config.Section("smtp").Key("server").String(), app.config.Section("smtp").Key("port").MustInt(465), username, password, sslTLS, app.config.Section("smtp").Key("ssl_cert").MustString(""), app.config.Section("smtp").Key("hello_hostname").String(), app.config.Section("smtp").Key("cert_validation").MustBool(true), proxyConf)
+		authType := sMail.AuthType(app.config.Section("smtp").Key("auth_type").MustInt(4))
+		err := emailer.NewSMTP(app.config.Section("smtp").Key("server").String(), app.config.Section("smtp").Key("port").MustInt(465), username, password, sslTLS, app.config.Section("smtp").Key("ssl_cert").MustString(""), app.config.Section("smtp").Key("hello_hostname").String(), app.config.Section("smtp").Key("cert_validation").MustBool(true), authType, proxyConf)
 		if err != nil {
 			app.err.Printf("Error while initiating SMTP mailer: %v", err)
 		}
@@ -118,7 +119,7 @@ type SMTP struct {
 }
 
 // NewSMTP returns an SMTP emailClient.
-func (emailer *Emailer) NewSMTP(server string, port int, username, password string, sslTLS bool, certPath string, helloHostname string, validateCertificate bool, proxy *easyproxy.ProxyConfig) (err error) {
+func (emailer *Emailer) NewSMTP(server string, port int, username, password string, sslTLS bool, certPath string, helloHostname string, validateCertificate bool, authType sMail.AuthType, proxy *easyproxy.ProxyConfig) (err error) {
 	sender := &SMTP{}
 	sender.Client = sMail.NewSMTPClient()
 	if sslTLS {
@@ -127,7 +128,7 @@ func (emailer *Emailer) NewSMTP(server string, port int, username, password stri
 		sender.Client.Encryption = sMail.EncryptionSTARTTLS
 	}
 	if username != "" || password != "" {
-		sender.Client.Authentication = sMail.AuthLogin
+		sender.Client.Authentication = authType
 		sender.Client.Username = username
 		sender.Client.Password = password
 	}
