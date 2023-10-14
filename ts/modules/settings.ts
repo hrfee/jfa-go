@@ -102,6 +102,7 @@ class DOMInput {
     constructor(inputType: string, setting: Setting, section: string, name: string) {
         this._container = document.createElement("div");
         this._container.classList.add("setting");
+        this._container.setAttribute("data-name", name)
         this._container.innerHTML = `
         <label class="label">
             <span class="setting-label"></span> <span class="setting-required"></span> <span class="setting-restart"></span>
@@ -262,6 +263,7 @@ class DOMBool implements SBool {
     constructor(setting: SBool, section: string, name: string) {
         this._container = document.createElement("div");
         this._container.classList.add("setting");
+        this._container.setAttribute("data-name", name)
         this._container.innerHTML = `
         <label class="switch mb-2">
             <input type="checkbox">
@@ -396,6 +398,7 @@ class DOMSelect implements SSelect {
         this._options = [];
         this._container = document.createElement("div");
         this._container.classList.add("setting");
+        this._container.setAttribute("data-name", name)
         this._container.innerHTML = `
         <label class="label">
             <span class="setting-label"></span> <span class="setting-required"></span> <span class="setting-restart"></span>
@@ -544,9 +547,10 @@ class sectionPanel {
         this._settings = {};
         this._section = document.createElement("div") as HTMLDivElement;
         this._section.classList.add("settings-section", "unfocused");
+        this._section.setAttribute("data-section", sectionName);
         this._section.innerHTML = `
         <span class="heading">${s.meta.name}</span>
-        <p class="support lg my-2">${s.meta.description}</p>
+        <p class="support lg my-2 settings-section-description">${s.meta.description}</p>
         `;
 
         this.update(s);
@@ -618,10 +622,19 @@ export class settingsList {
 
     private _panel = document.getElementById("settings-panel") as HTMLDivElement;
     private _sidebar = document.getElementById("settings-sidebar") as HTMLDivElement;
+    private _visibleSection: string;
     private _sections: { [name: string]: sectionPanel }
     private _buttons: { [name: string]: HTMLSpanElement }
     private _needsRestart: boolean = false;
     private _messageEditor = new MessageEditor();
+    private _settings: Settings;
+    private _advanced: boolean = false;
+
+    private _searchbox: HTMLInputElement = document.getElementById("settings-search") as HTMLInputElement;
+    private _clearSearchboxButtons: Array<HTMLButtonElement> = Array.from(document.getElementsByClassName("settings-search-clear")) as Array<HTMLButtonElement>;
+
+    private _noResultsPanel: HTMLElement = document.getElementById("settings-not-found");
+
 
     addSection = (name: string, s: Section, subButton?: HTMLElement) => {
         const section = new sectionPanel(s, name);
@@ -637,6 +650,7 @@ export class settingsList {
             let state = true;
             if (s.meta.depends_false) { state = false; }
             document.addEventListener(`settings-${dependant[0]}-${dependant[1]}`, (event: settingsBoolEvent) => {
+
                 if (Boolean(event.detail) !== state) {
                     button.classList.add("unfocused");
                     document.dispatchEvent(new CustomEvent(`settings-${name}`, { detail: false }));
@@ -659,6 +673,7 @@ export class settingsList {
                 } else {
                     button.classList.remove("unfocused");
                 }
+                this._searchbox.oninput(null);
             });
         }
         this._buttons[name] = button;
@@ -669,6 +684,7 @@ export class settingsList {
         for (let n in this._sections) {
             if (n == name) {
                 this._sections[name].visible = true;
+                this._visibleSection = name;
                 this._buttons[name].classList.add("selected");
             } else {
                 this._sections[n].visible = false;
@@ -736,15 +752,27 @@ export class settingsList {
         advancedEnableToggle.onchange = () => {
             document.dispatchEvent(new CustomEvent("settings-advancedState", { detail: advancedEnableToggle.checked }));
             const parent = advancedEnableToggle.parentElement;
-            if (advancedEnableToggle.checked) {
+            this._advanced = advancedEnableToggle.checked;
+            if (this._advanced) {
                 parent.classList.add("~urge");
                 parent.classList.remove("~neutral");
             } else {
                 parent.classList.add("~neutral");
                 parent.classList.remove("~urge");
             }
+            this._searchbox.oninput(null);
         };
         advancedEnableToggle.checked = false;
+
+        this._searchbox.oninput = () => {
+            this.search(this._searchbox.value);
+        };
+        for (let b of this._clearSearchboxButtons) {
+            b.onclick = () => {
+                this._searchbox.value = "";
+                this._searchbox.oninput(null);
+            };
+        };
     }
 
     private _addMatrix = () => {
@@ -787,10 +815,10 @@ export class settingsList {
                 window.notifications.customError("settingsLoadError", window.lang.notif("errorLoadSettings"));
                 return;
             }
-            let settings = req.response as Settings;
-            for (let name of settings.order) {
+            this._settings = req.response as Settings;
+            for (let name of this._settings.order) {
                 if (name in this._sections) {
-                    this._sections[name].update(settings.sections[name]);
+                    this._sections[name].update(this._settings.sections[name]);
                 } else {
                     if (name == "messages" || name == "user_page") {
                         const editButton = document.createElement("div");
@@ -806,7 +834,7 @@ export class settingsList {
                         (editButton.querySelector("span.button") as HTMLSpanElement).onclick = () => {
                             this._messageEditor.showList(name == "messages" ? "email" : "user");
                         };
-                        this.addSection(name, settings.sections[name], editButton);
+                        this.addSection(name, this._settings.sections[name], editButton);
                     } else if (name == "updates") {
                         const icon = document.createElement("span") as HTMLSpanElement;
                         if (window.updater.updateAvailable) {
@@ -814,7 +842,7 @@ export class settingsList {
                             icon.innerHTML = `<i class="ri-download-line" title="${window.lang.strings("update")}"></i>`;
                             icon.onclick = () => window.updater.checkForUpdates(window.modals.updateInfo.show);
                         }
-                        this.addSection(name, settings.sections[name], icon);
+                        this.addSection(name, this._settings.sections[name], icon);
                     } else if (name == "matrix" && !window.matrixEnabled) {
                         const addButton = document.createElement("div");
                         addButton.classList.add("tooltip", "left");
@@ -825,19 +853,126 @@ export class settingsList {
                         </span>
                         `;
                         (addButton.querySelector("span.button") as HTMLSpanElement).onclick = this._addMatrix;
-                        this.addSection(name, settings.sections[name], addButton);
+                        this.addSection(name, this._settings.sections[name], addButton);
                     } else {
-                        this.addSection(name, settings.sections[name]);
+                        this.addSection(name, this._settings.sections[name]);
                     }
                 }
             }
-            this._showPanel(settings.order[0]);
+            this._showPanel(this._settings.order[0]);
             document.dispatchEvent(new CustomEvent("settings-loaded"));
             document.dispatchEvent(new CustomEvent("settings-advancedState", { detail: false }));
             this._saveButton.classList.add("unfocused");
             this._needsRestart = false;
         }
     })
+
+    // FIXME: Search "About" & "User profiles", pseudo-search "User profiles" for things like "Ombi", "Referrals", etc.
+    search = (query: string) => {
+        query = query.toLowerCase().trim();
+        // Make sure a blank search is detected when there's just whitespace.
+        if (query.replace(/\s+/g, "") == "") query = "";
+
+        let firstVisibleSection = "";
+        for (let section of this._settings.order) {
+
+            let dependencyCard = this._sections[section].asElement().querySelector(".settings-dependency-message");
+            if (dependencyCard) dependencyCard.remove();
+            dependencyCard = null;
+            let dependencyList = null;
+
+            // hide button, unhide if matched
+            this._buttons[section].classList.add("unfocused");
+
+            let matchedSection = false;
+
+            if (section.toLowerCase().includes(query) ||
+                this._settings.sections[section].meta.name.toLowerCase().includes(query) ||
+                this._settings.sections[section].meta.description.toLowerCase().includes(query)) {
+                if ((this._settings.sections[section].meta.advanced && this._advanced) || !(this._settings.sections[section].meta.advanced)) {
+                    this._buttons[section].classList.remove("unfocused");
+                    firstVisibleSection = firstVisibleSection || section;
+                    matchedSection = true;
+                }
+            }
+            const sectionElement = this._sections[section].asElement();
+            for (let setting of this._settings.sections[section].order) {
+                if (this._settings.sections[section].settings[setting].type == "note") continue;
+                const element = sectionElement.querySelector(`div[data-name="${setting}"]`) as HTMLElement;
+
+                // If we match the whole section, don't bother searching settings.
+                if (matchedSection) {
+                    element.classList.remove("opacity-50", "pointer-events-none");
+                    element.setAttribute("aria-disabled", "false");
+                    continue;
+                }
+
+                // element.classList.remove("-mx-2", "my-2", "p-2", "aside", "~neutral", "@low");
+                element.classList.add("opacity-50", "pointer-events-none");
+                element.setAttribute("aria-disabled", "true");
+                if (setting.toLowerCase().includes(query) ||
+                    this._settings.sections[section].settings[setting].name.toLowerCase().includes(query) ||
+                    this._settings.sections[section].settings[setting].description.toLowerCase().includes(query) ||
+                    String(this._settings.sections[section].settings[setting].value).toLowerCase().includes(query)) {
+                    if ((this._settings.sections[section].meta.advanced && this._advanced) || !(this._settings.sections[section].meta.advanced)) {
+                        this._buttons[section].classList.remove("unfocused");
+                        firstVisibleSection = firstVisibleSection || section;
+                    }
+                    const shouldShow = (query != "" &&
+                                    ((this._settings.sections[section].settings[setting].advanced && this._advanced) ||
+                                    !(this._settings.sections[section].settings[setting].advanced)));
+                    if (shouldShow || query == "") {
+                        // element.classList.add("-mx-2", "my-2", "p-2", "aside", "~neutral", "@low");
+                        element.classList.remove("opacity-50", "pointer-events-none");
+                        element.setAttribute("aria-disabled", "false");
+                    }
+                    if (query != "" && ((shouldShow && element.querySelector("label").classList.contains("unfocused")) || (!shouldShow))) {
+                        // Add a note explaining why the setting is hidden
+                        if (!dependencyCard) {
+                            dependencyCard = document.createElement("aside");
+                            dependencyCard.classList.add("aside", "my-2", "~warning", "settings-dependency-message");
+                            dependencyCard.innerHTML = `
+                            <div class="content text-sm">
+                                <span class="font-bold">${window.lang.strings("settingsHiddenDependency")}</span>
+                        
+                                <ul class="settings-dependency-list"></ul>
+                            </div>
+                            `;
+                            dependencyList = dependencyCard.querySelector(".settings-dependency-list") as HTMLUListElement;
+                            // Insert it right after the description
+                            this._sections[section].asElement().insertBefore(dependencyCard, this._sections[section].asElement().querySelector(".settings-section-description").nextElementSibling);
+                        }
+                        const li = document.createElement("li");
+                        if (shouldShow) {
+                            const depCode = this._settings.sections[section].settings[setting].depends_true || this._settings.sections[section].settings[setting].depends_false;
+                            const dep = splitDependant(section, depCode);
+
+                            let depName = this._settings.sections[dep[0]].settings[dep[1]].name;
+                            if (dep[0] != section) {
+                                depName = this._settings.sections[dep[0]].meta.name + " > " + depName;
+                            }
+
+                            li.textContent = window.lang.strings("settingsDependsOn").replace("{setting}", `"`+this._settings.sections[section].settings[setting].name+`"`).replace("{dependency}", `"`+depName+`"`);
+                        } else {
+                            li.textContent = window.lang.strings("settingsAdvancedMode").replace("{setting}", `"`+this._settings.sections[section].settings[setting].name+`"`);
+                        }
+                        dependencyList.appendChild(li);
+                    }
+                }
+            }
+        }
+        if (firstVisibleSection && (query != "" || this._visibleSection == "")) {
+            this._buttons[firstVisibleSection].onclick(null);
+            this._noResultsPanel.classList.add("unfocused");
+        } else if (query != "") {
+            this._noResultsPanel.classList.remove("unfocused");
+            if (this._visibleSection) {
+                this._sections[this._visibleSection].visible = false;
+                this._buttons[this._visibleSection].classList.remove("selected");
+                this._visibleSection = "";
+            }
+        }
+    }
 }
 
 export interface templateEmail {

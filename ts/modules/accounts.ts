@@ -946,6 +946,8 @@ export class accountsList {
         }
     }
 
+    private _notFoundPanel: HTMLElement = document.getElementById("accounts-not-found");
+
     search = (query: String): string[] => {
         console.log(this._queries);
         this._filterArea.textContent = "";
@@ -2021,17 +2023,25 @@ export class accountsList {
                 this._inSearch = true;
                 // this.setVisibility(this.search(query), true);
             }
-            this.setVisibility(this.search(query), true);
+            const results = this.search(query);
+            this.setVisibility(results, true);
             this._checkCheckCount();
             this.showHideSearchOptionsHeader();
+            if (results.length == 0) {
+                this._notFoundPanel.classList.remove("unfocused");
+            } else {
+                this._notFoundPanel.classList.add("unfocused");
+            }
         };
         this._search.oninput = onchange;
 
-        const clearSearchButton = document.getElementById("accounts-search-clear") as HTMLSpanElement;
-        clearSearchButton.addEventListener("click", () => {
-            this._search.value = "";
-            onchange();
-        });
+        const clearSearchButtons = Array.from(document.getElementsByClassName("accounts-search-clear")) as Array<HTMLSpanElement>;
+        for (let b of clearSearchButtons) {
+            b.addEventListener("click", () => {
+                this._search.value = "";
+                onchange();
+            });
+        }
 
         this._announceTextarea.onkeyup = this.loadPreview;
         addDiscord = newDiscordSearch(window.lang.strings("linkDiscord"), window.lang.strings("searchDiscordUser"), window.lang.strings("add"), (user: DiscordUser, id: string) => { 
@@ -2084,8 +2094,15 @@ export class accountsList {
             // console.log("ordering by", event.detail, ": ", this._ordering);
             if (!(this._inSearch)) {
                 this.setVisibility(this._ordering, true);
+                this._notFoundPanel.classList.add("unfocused");
             } else {
-                this.setVisibility(this.search(this._search.value), true);
+                const results = this.search(this._search.value);
+                this.setVisibility(results, true);
+                if (results.length == 0) {
+                    this._notFoundPanel.classList.remove("unfocused");
+                } else {
+                    this._notFoundPanel.classList.add("unfocused");
+                }
             }
             this.showHideSearchOptionsHeader();
         });
@@ -2195,8 +2212,15 @@ export class accountsList {
                 this._ordering = this._columns[this._activeSortColumn].sort(this._users);
                 if (!(this._inSearch)) {
                     this.setVisibility(this._ordering, true);
+                    this._notFoundPanel.classList.add("unfocused");
                 } else {
-                    this.setVisibility(this.search(this._search.value), true);
+                    const results = this.search(this._search.value);
+                    if (results.length == 0) {
+                        this._notFoundPanel.classList.remove("unfocused");
+                    } else {
+                        this._notFoundPanel.classList.add("unfocused");
+                    }
+                    this.setVisibility(results, true);
                 }
                 this._checkCheckCount();
             }
