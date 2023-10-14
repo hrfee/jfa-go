@@ -645,7 +645,7 @@
                             </div>
                         </div>
                         <input type="search" class="field ~neutral @low input search ml-2 mr-2" id="accounts-search" placeholder="{{ .strings.search }}">
-                        <span class="button ~neutral @low center ml-[-2.64rem] rounded-s-none" id="accounts-search-clear" aria-label="{{ .strings.clearSearch }}" text="{{ .strings.clearSearch }}"><i class="ri-close-line"></i></span>
+                        <span class="button ~neutral @low center ml-[-2.64rem] rounded-s-none accounts-search-clear" aria-label="{{ .strings.clearSearch }}" text="{{ .strings.clearSearch }}"><i class="ri-close-line"></i></span>
                     </div>
                     <div class="supra py-1 sm hidden" id="accounts-search-options-header">{{ .strings.searchOptions }}</div>
                     <div class="row -mx-2 mb-2">
@@ -708,6 +708,14 @@
                             </thead>
                             <tbody id="accounts-list"></tbody>
                         </table>
+                        <div class="unfocused h-[100%] my-3" id="accounts-not-found">
+                            <div class="flex flex-col h-[100%] justify-center items-center">
+                                <span class="text-2xl font-medium italic mb-3">{{ .strings.noResultsFound }}</span>
+                                <button class="button ~neutral @low accounts-search-clear">
+                                    <span class="mr-2">{{ .strings.clearSearch }}</span><i class="ri-close-line"></i>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
