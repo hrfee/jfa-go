@@ -622,6 +622,7 @@ export class settingsList {
 
     private _panel = document.getElementById("settings-panel") as HTMLDivElement;
     private _sidebar = document.getElementById("settings-sidebar") as HTMLDivElement;
+    private _visibleSection: string;
     private _sections: { [name: string]: sectionPanel }
     private _buttons: { [name: string]: HTMLSpanElement }
     private _needsRestart: boolean = false;
@@ -630,7 +631,9 @@ export class settingsList {
     private _advanced: boolean = false;
 
     private _searchbox: HTMLInputElement = document.getElementById("settings-search") as HTMLInputElement;
-    private _clearSearchbox: HTMLButtonElement = document.getElementById("settings-search-clear") as HTMLButtonElement;
+    private _clearSearchboxButtons: Array<HTMLButtonElement> = Array.from(document.getElementsByClassName("settings-search-clear")) as Array<HTMLButtonElement>;
+
+    private _noResultsPanel: HTMLElement = document.getElementById("settings-not-found");
 
 
     addSection = (name: string, s: Section, subButton?: HTMLElement) => {
@@ -681,6 +684,7 @@ export class settingsList {
         for (let n in this._sections) {
             if (n == name) {
                 this._sections[name].visible = true;
+                this._visibleSection = name;
                 this._buttons[name].classList.add("selected");
             } else {
                 this._sections[n].visible = false;
@@ -763,9 +767,11 @@ export class settingsList {
         this._searchbox.oninput = () => {
             this.search(this._searchbox.value);
         };
-        this._clearSearchbox.onclick = () => {
-            this._searchbox.value = "";
-            this._searchbox.oninput(null);
+        for (let b of this._clearSearchboxButtons) {
+            b.onclick = () => {
+                this._searchbox.value = "";
+                this._searchbox.oninput(null);
+            };
         };
     }
 
@@ -861,8 +867,11 @@ export class settingsList {
         }
     })
 
+    // FIXME: Search "About" & "User profiles", pseudo-search "User profiles" for things like "Ombi", "Referrals", etc.
     search = (query: string) => {
-        query = query.toLowerCase();
+        query = query.toLowerCase().trim();
+        // Make sure a blank search is detected when there's just whitespace.
+        if (query.replace(/\s+/g, "") == "") query = "";
 
         let firstVisibleSection = "";
         for (let section of this._settings.order) {
@@ -875,18 +884,28 @@ export class settingsList {
             // hide button, unhide if matched
             this._buttons[section].classList.add("unfocused");
 
+            let matchedSection = false;
+
             if (section.toLowerCase().includes(query) ||
                 this._settings.sections[section].meta.name.toLowerCase().includes(query) ||
                 this._settings.sections[section].meta.description.toLowerCase().includes(query)) {
                 if ((this._settings.sections[section].meta.advanced && this._advanced) || !(this._settings.sections[section].meta.advanced)) {
                     this._buttons[section].classList.remove("unfocused");
                     firstVisibleSection = firstVisibleSection || section;
+                    matchedSection = true;
                 }
             }
             const sectionElement = this._sections[section].asElement();
             for (let setting of this._settings.sections[section].order) {
                 if (this._settings.sections[section].settings[setting].type == "note") continue;
                 const element = sectionElement.querySelector(`div[data-name="${setting}"]`) as HTMLElement;
+
+                // If we match the whole section, don't bother searching settings.
+                if (matchedSection) {
+                    element.classList.remove("opacity-50", "pointer-events-none");
+                    element.setAttribute("aria-disabled", "false");
+                    continue;
+                }
 
                 // element.classList.remove("-mx-2", "my-2", "p-2", "aside", "~neutral", "@low");
                 element.classList.add("opacity-50", "pointer-events-none");
@@ -902,12 +921,12 @@ export class settingsList {
                     const shouldShow = (query != "" &&
                                     ((this._settings.sections[section].settings[setting].advanced && this._advanced) ||
                                     !(this._settings.sections[section].settings[setting].advanced)));
-                    if (shouldShow) {
+                    if (shouldShow || query == "") {
                         // element.classList.add("-mx-2", "my-2", "p-2", "aside", "~neutral", "@low");
                         element.classList.remove("opacity-50", "pointer-events-none");
                         element.setAttribute("aria-disabled", "false");
                     }
-                    if ((shouldShow && element.querySelector("label").classList.contains("unfocused")) || (!shouldShow)) {
+                    if (query != "" && ((shouldShow && element.querySelector("label").classList.contains("unfocused")) || (!shouldShow))) {
                         // Add a note explaining why the setting is hidden
                         if (!dependencyCard) {
                             dependencyCard = document.createElement("aside");
@@ -942,10 +961,16 @@ export class settingsList {
                 }
             }
         }
-        if (firstVisibleSection) {
+        if (firstVisibleSection && (query != "" || this._visibleSection == "")) {
             this._buttons[firstVisibleSection].onclick(null);
-        } else {
-            // FIXME: Show "no results found" in right panel (mention enabling advanced settings
+            this._noResultsPanel.classList.add("unfocused");
+        } else if (query != "") {
+            this._noResultsPanel.classList.remove("unfocused");
+            if (this._visibleSection) {
+                this._sections[this._visibleSection].visible = false;
+                this._buttons[this._visibleSection].classList.remove("selected");
+                this._visibleSection = "";
+            }
         }
     }
 }
