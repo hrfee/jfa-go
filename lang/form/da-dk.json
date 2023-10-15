@@ -19,7 +19,25 @@
         "yourAccountIsValidUntil": "Din konto er gyldig indtil {date}.",
         "sendPIN": "Send nedenstående pinkode til botten, og kom derefter tilbage her for at sammenkoble din konto.",
         "sendPINDiscord": "Skriv {command} i {server_channel} på Discord, og send PIN-koden nedenfor.",
-        "matrixEnterUser": "Skriv dit Bruger ID, tryk Indsend, og en PIN-kode vil blive sendt til dig. Skriv den her efter, for at fortsætte."
+        "matrixEnterUser": "Skriv dit Bruger ID, tryk Indsend, og en PIN-kode vil blive sendt til dig. Skriv den her efter, for at fortsætte.",
+        "referralsDescription": "Inviter venner og familie til Jellyfin med dette link. Kom tilbage her for et nyt, hvis det udløber.",
+        "oldPassword": "Gammelt Kodeord",
+        "newPassword": "Nyt Kodeord",
+        "welcomeUser": "Velkommen, {user}!",
+        "addContactMethod": "Tilføj Kontakt Metode",
+        "editContactMethod": "Rediger Kontakt Metode",
+        "joinTheServer": "Tilslut dig serveren:",
+        "customMessagePlaceholderHeader": "Tilpas dette kort",
+        "customMessagePlaceholderContent": "Klik på knappen Rediger brugersiden i indstillinger for at tilpasse dette kort, eller vis et på login-skærmen, og bare rolig, brugeren kan ikke se dette.",
+        "userPageSuccessMessage": "Du kan se og ændre detaljer om din konto senere på {myAccount} siden.",
+        "resetPassword": "Nulstille Kodeord",
+        "resetPasswordThroughJellyfin": "For at nulstille din adgangskode skal du besøge {jfLink} og trykke på knappen \"Glemt adgangskode\".",
+        "resetPasswordThroughLink": "For at nulstille din adgangskode skal du indtaste dit brugernavn, din e-mail adresse eller et linket brugernavn til en kontakt metode og indsende. Et link vil blive sendt for at nulstille din adgangskode.",
+        "resetSent": "Nulstilling Sendt.",
+        "resetSentDescription": "Hvis der findes en konto med det givne brugernavn/kontakt metode, er et link til nulstilling af adgangskode blevet sendt via alle tilgængelige kontakt metoder. Koden udløber om 30 minutter.",
+        "changePassword": "Skift Kodeord",
+        "copyReferral": "Kopier Link",
+        "invitedBy": "Du blev inviteret af brugeren {user}."
     },
     "notifications": {
         "errorUserExists": "Brugeren eksistere allerede.",
@@ -33,7 +51,11 @@
         "errorNoEmail": "E-mail er påkrævet.",
         "errorCaptcha": "Forkert Captcha.",
         "errorPassword": "Tjek krav til adgangskode.",
-        "errorNoMatch": "Adgangskoder stemmer ikke overens."
+        "errorNoMatch": "Adgangskoder stemmer ikke overens.",
+        "errorEmailLinked": "E-mail er allerede i brug.",
+        "errorAccountLinked": "Kontoen er allerede i brug.",
+        "errorOldPassword": "Den gamle adgangskode er forkert.",
+        "passwordChanged": "Adgangskode Ændret."
     },
     "validationStrings": {
         "length": {
