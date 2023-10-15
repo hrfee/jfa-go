@@ -9,8 +9,10 @@
         "pinSuccess": "Sådan! Du kan nu gå tilbage til tilmeldingssiden.",
         "languageMessage": "Note: Se tilgængelige sprog med {command}, og vælg sprog med {command} <sprog kode>.",
         "discordStartMessage": "Hej!\n Indtast din pinkode med `/pin <PIN>` for at bekræfte din konto.",
-        "languageMessageDiscord": "Bemærk: Indstil dit sprog med /lang <sprognavn>.",
-        "languageSet": "Sprog indstillet til {language}.",
-        "discordDMs": "Tjek venligst dine DM's for et svar."
+        "languageMessageDiscord": "Note: Sæt dit sprog med /lang <sprog navn>.",
+        "languageSet": "Sprog sat til {language}.",
+        "discordDMs": "Tjek venligst dine DMs for et svar.",
+        "sentInvite": "Invitation Sendt.",
+        "sentInviteFailure": "Kunne ikke sende invitation, tjek logfilerne."
     }
 }
