@@ -11,7 +11,7 @@
         "disabled": "Deaktiveret",
         "enabled": "Aktiveret",
         "port": "Port",
-        "message": "Meddelelse",
+        "message": "Besked",
         "serverAddress": "Serveradresse",
         "emailSubject": "E-mail emne",
         "URL": "URL",
@@ -20,7 +20,9 @@
         "errorInvalidUserPass": "Ugyldigt brugernavn/adgangskode.",
         "errorUserDisabled": "Bruger kan være deaktiveret.",
         "error404": "404, tjek den interne URL.",
-        "errorConnectionRefused": "Tilslutning afvist."
+        "errorConnectionRefused": "Tilslutning afvist.",
+        "error": "Fejl",
+        "errorUnknown": "Ukendt fejl, tjek app logfiler."
     },
     "startPage": {
         "welcome": "Velkommen!",
@@ -30,7 +32,7 @@
     },
     "endPage": {
         "finished": "Færdig!",
-        "restartMessage": "Du kan konfigurere Discord/Telegram/Matrix bots, tilpasse dine meddelelser og mere i Indstillinger. Klik herunder for at genstarte, og opdater siden.",
+        "restartMessage": "Funktioner som Discord/Telegram/Matrix bots, brugerdefinerede Markdown beskeder og en brugertilgængelig side \"Min konto\" kan findes i Indstillinger, så sørg for at gennemse den. Klik nedenfor for at genstarte, og opdater derefter siden.",
         "refreshPage": "Opdater"
     },
     "language": {
@@ -68,7 +70,8 @@
         "adminOnly": "Kun administratorbrugere (anbefalet)",
         "emailNotice": "Din e-mail adresse kan bruges til at modtage underretninger.",
         "allowAll": "Tillad alle Jellyfin brugere at logge ind",
-        "allowAllDescription": "Det anbefales ikke, du bør tillade individuelle brugere at logge ind, når de er konfigureret."
+        "allowAllDescription": "Det anbefales ikke, du bør tillade individuelle brugere at logge ind, når de er konfigureret.",
+        "authorizeManualUserPageNotice": "Brug af dette vil deaktivere \"Brugerside\" funktionen."
     },
     "jellyfinEmby": {
         "title": "Jellyfin/Emby",
@@ -113,14 +116,15 @@
     },
     "passwordResets": {
         "title": "Nulstilling af Adgangskoder",
-        "description": "Når en bruger forsøger at nulstille deres adgangskode, opretter Jellyfin en fil med navnet 'passwordreset - *. Json', som indeholder en PIN-kode. jfa-go læser filen og sender PIN-koden til brugeren.",
+        "description": "Når en bruger forsøger at nulstille deres adgangskode, opretter Jellyfin en fil med navnet 'passwordreset - *. Json', som indeholder en Pinkode. jfa-go læser filen og sender Pinkoden til brugeren. jfa-go læser filen og sender Pinkoden til brugeren. Hvis du aktiverede funktionen \"Brugerside\", kan en nulstilling også udføres der, givet et brugernavn, email eller kontaktmetode.",
         "pathToJellyfin": "Sti til Jellyfin's konfigurations mappe",
-        "pathToJellyfinNotice": "Hvis du ikke ved hvor dette er, kan du prøve at nulstille din adgangskode i Jellyfin. En popup med '<sti til jellyfin>/passwordreset - *. Json' vises.",
+        "pathToJellyfinNotice": "Hvis du ikke ved hvor dette er, kan du prøve at nulstille din adgangskode i Jellyfin. En popup med '<sti til jellyfin>/passwordreset - *. Json' vises. Dette er ikke nødvendigt, hvis du kun ønsker at bruge selvbetjenings nulstilling af adgangskode via \"Brugersiden\".",
         "resetLinks": "Send et link i stedet for en PIN-kode",
         "resetLinksNotice": "Hvis Ombi integration er aktiveret, skal du bruge denne til at synkronisere nulstilling af Jellyfin's adgangskode med Ombi.",
         "resetLinksLanguage": "Standard sprog til nulstillings link",
         "setPassword": "Angiv adgangskode gennem link",
-        "setPasswordNotice": "Aktivering af dette betyder at brugeren ikke behøver at ændre sin adgangskode væk fra pinkoden efter nulstillingen. Adgangskodevalidering håndhæves også."
+        "setPasswordNotice": "Aktivering af dette betyder at brugeren ikke behøver at ændre sin adgangskode væk fra pinkoden efter nulstillingen. Adgangskodevalidering håndhæves også.",
+        "resetLinksRequiredForUserPage": "Nødvendig for nulstilling af selvbetjenings adgangskode på brugersiden."
     },
     "passwordValidation": {
         "title": "Validering af adgangskode",
@@ -146,5 +150,11 @@
     "messages": {
         "title": "Beskeder",
         "description": "jfa-go kan sende nulstilling af adgangskoder og forskellige meddelelser via E-mail, Discord, Telegram og/eller Matrix. Du kan konfigurere E-mail herunder, og de andre kan konfigureres i Indstillinger senere. Instruktioner kan findes på {n}. Hvis du ikke har brug for dette, kan du deaktivere disse funktioner her."
+    },
+    "userPage": {
+        "description": "Brugersiden (vist som \"Min konto\") giver brugerne adgang til oplysninger om deres konto, såsom deres kontaktmetoder og kontoudløb. De kan også ændre deres adgangskode, starte en nulstilling af adgangskode og linke/ændre kontaktmetoder uden at skulle spørge dig. Derudover kan tilpassede Markdown beskeder vises til brugerne før og efter login.",
+        "title": "Brugerside",
+        "customizeMessages": "Klik på redigeringsknappen ved siden af \"Brugerside\" i indstillingerne for at indstille dem senere.",
+        "requiredSettings": "Log ind på jfa-go via Jellyfin skal indstilles. Sørg for, at \"nulstil adgangskode via link\" er valgt senere for selvbetjenings nulstilling af adgangskode."
     }
 }
