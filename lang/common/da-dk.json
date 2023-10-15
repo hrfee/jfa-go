@@ -5,7 +5,7 @@
     "strings": {
         "username": "Brugernavn",
         "password": "Adgangskode",
-        "emailAddress": "E-mail Adresse",
+        "emailAddress": "Email adresse",
         "name": "Navn",
         "submit": "Indsend",
         "send": "Send",
@@ -36,7 +36,12 @@
         "add": "Tilføj",
         "edit": "Rediger",
         "delete": "Slet",
-        "inviteRemainingUses": "Resterende anvendelser"
+        "inviteRemainingUses": "Resterende anvendelser",
+        "referrals": "Henvisninger",
+        "contactMethods": "Kontakt Metoder",
+        "accountStatus": "Kontostatus",
+        "notSet": "Ikke sat",
+        "myAccount": "Min Konto"
     },
     "notifications": {
         "errorLoginBlank": "Brugernavnet og/eller adgangskoden blev efterladt tomme.",
@@ -45,5 +50,18 @@
         "error401Unauthorized": "Adgang nægtet. Prøv at genindlæse siden.",
         "errorSaveSettings": "Kunne ikke gemme indstillingerne."
     },
-    "quantityStrings": {}
+    "quantityStrings": {
+        "year": {
+            "singular": "{n} År",
+            "plural": "{n} År"
+        },
+        "month": {
+            "singular": "{n} Månede",
+            "plural": "{n} Måneder"
+        },
+        "day": {
+            "singular": "{n} Dag",
+            "plural": "{n} Dage"
+        }
+    }
 }
