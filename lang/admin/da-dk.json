@@ -37,9 +37,9 @@
         "profile": "Profil",
         "unknown": "Ukendt",
         "label": "Etiket",
-        "announce": "Annoncere",
+        "announce": "Meddelelse",
         "subject": "Emne",
-        "message": "Meddelelse",
+        "message": "Besked",
         "variables": "Variabler",
         "conditionals": "Betingelser",
         "preview": "Eksempel",
@@ -47,13 +47,13 @@
         "donate": "Doner",
         "contactThrough": "Kontakt gennem:",
         "extendExpiry": "Forlæng udløb",
-        "customizeMessages": "Tilpas Meddelelser",
-        "customizeMessagesDescription": "Hvis du ikke vil bruge jfa-go's meddelelses skabeloner, kan du oprette din egen ved hjælp af Markdown.",
+        "customizeMessages": "Tilpas Beskeder",
+        "customizeMessagesDescription": "Hvis du ikke vil bruge jfa-go's besked skabeloner, kan du oprette din egen ved hjælp af Markdown.",
         "markdownSupported": "Markdown understøttes.",
         "modifySettings": "Rediger indstillinger",
         "modifySettingsDescription": "Anvend indstillinger fra en eksisterende profil, eller hent dem direkte fra en bruger.",
         "applyHomescreenLayout": "Anvend startskærmens layout",
-        "sendDeleteNotificationEmail": "Send notifikations meddelelse",
+        "sendDeleteNotificationEmail": "Send notifikations besked",
         "sendDeleteNotifiationExample": "Din konto er blevet slettet.",
         "settingsRestart": "Genstart",
         "settingsRestarting": "Genstarter…",
@@ -102,7 +102,35 @@
         "sendPWRSuccessManual": "Hvis brugeren ikke er modtaget den, så tryk på kopier for manuelt at sende et link til dem.",
         "sendPWRValidFor": "Dette link er gyldigt i 30m.",
         "accessJFA": "Få adgang til jfa-go",
-        "accessJFASettings": "Kan ikke ændres, da enten \"Kun administrator\" eller \"Tillad alle\" er blevet indstillet i Indstillinger > Generelt."
+        "accessJFASettings": "Kan ikke ændres, da enten \"Kun administrator\" eller \"Tillad alle\" er blevet indstillet i Indstillinger > Generelt.",
+        "after": "Efter",
+        "settingsHiddenDependency": "Matchende indstillinger er skjult, fordi de afhænger af værdien af en anden indstilling:",
+        "userPageLogin": "Brugerside: Login",
+        "buildTime": "Bygnings Tid",
+        "invite": "inviter",
+        "loginNotAdmin": "Ikke en Admin?",
+        "userLabel": "Brugeretiket",
+        "userLabelDescription": "Etiket, der skal anvendes på brugere, der er oprettet med denne invitation.",
+        "sortingBy": "Sortering Efter",
+        "clickToRemoveFilter": "Klik for at fjerne dette filter.",
+        "clearSearch": "Ryd søgning",
+        "actions": "Handlinger",
+        "unlink": "Fjern linket til konto",
+        "enableReferrals": "Aktiver henvisninger",
+        "disableReferrals": "Deaktiver henvisninger",
+        "enableReferralsDescription": "Giv brugerne et personligt henvisningslink, der ligner en invitation, til at sende til venner/familie. Kan hentes fra en henvisningsskabelon i en profil eller fra en eksisterende invitation.",
+        "enableReferralsProfileDescription": "Giv brugere oprettet med denne profil et personligt henvisningslink, der ligner en invitation, til at sende til venner/familie. Opret en invitation med de ønskede indstillinger, og vælg den her. Hver henvisning vil så være baseret på denne invitation. Du kan slette invitationen, når den er fuldført.",
+        "before": "Før",
+        "noResultsFound": "Ingen Resultater Fundet",
+        "settingsDependsOn": "{setting}: afhænger af {dependency}",
+        "settingsMaybeUnderAdvanced": "Tip: Du finder muligvis det du leder efter, ved at aktivere Avancerede indstillinger.",
+        "settingsAdvancedMode": "{setting}: Avanceret Indstillinger skal være aktiveret",
+        "filters": "Filtre",
+        "searchOptions": "Søge Indstillinger",
+        "matchText": "Match Tekst",
+        "jellyfinID": "Jellyfin ID",
+        "userPagePage": "Brugerside: Side",
+        "builtBy": "Bygget Af"
     },
     "notifications": {
         "changedEmailAddress": "Ændret e-mail adresse på {n}.",
@@ -133,14 +161,16 @@
         "errorFailureCheckLogs": "Mislykkedes (tjek konsol/logfiler)",
         "errorPartialFailureCheckLogs": "Delvis fejl (tjek konsol/logfiler)",
         "errorUserCreated": "Kunne ikke oprette bruger {n}.",
-        "errorSendWelcomeEmail": "Kunne ikke sende velkomst meddelelse (tjek konsol/logfiler",
+        "errorSendWelcomeEmail": "Kunne ikke sende velkomst besked (tjek konsol/logfiler",
         "errorApplyUpdate": "Kunne ikke anvende opdateringen, prøv manuelt.",
         "errorCheckUpdate": "Kunne ikke kontrollere for opdatering.",
         "updateAvailable": "En ny opdatering er tilgængelig, tjek indstillingerne.",
         "noUpdatesAvailable": "Ingen nye opdateringer tilgængelige.",
         "savedAnnouncement": "Meddelelse gemt.",
         "setOmbiProfile": "Gemt i ombi profilen.",
-        "errorSetOmbiProfile": "Ombi profilen kunne ikke gemmes."
+        "errorSetOmbiProfile": "Ombi profilen kunne ikke gemmes.",
+        "referralsEnabled": "Henvisninger aktiveret.",
+        "errorNoReferralTemplate": "Profilen indeholder ikke en henvisningsskabelon. Tilføj en i indstillingerne."
     },
     "quantityStrings": {
         "modifySettingsFor": {
@@ -180,8 +210,8 @@
             "plural": "Aktiveret {n} brugere."
         },
         "announceTo": {
-            "singular": "Annoncer til {n} bruger",
-            "plural": "Annoncer til {n} brugere"
+            "singular": "Send Meddelelse til {n} bruger",
+            "plural": "Send Meddelelse til {n} brugere"
         },
         "appliedSettings": {
             "singular": "Anvendte indstillinger til {n} bruger.",
@@ -198,6 +228,10 @@
         "setExpiry": {
             "singular": "Indstil udløb for {n} bruger",
             "plural": "Indstil udløb for {n} brugere"
+        },
+        "enableReferralsFor": {
+            "singular": "Aktiver Henvisninger for {n} bruger",
+            "plural": "Aktiver Henvisninger for {n} brugere"
         }
     }
 }
