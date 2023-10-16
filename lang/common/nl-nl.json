@@ -36,7 +36,12 @@
         "add": "Voeg toe",
         "edit": "Bewerken",
         "delete": "Verwijderen",
-        "inviteRemainingUses": "Resterend aantal keer te gebruiken"
+        "inviteRemainingUses": "Resterend aantal keer te gebruiken",
+        "referrals": "Verwijzingen",
+        "contactMethods": "Contactmethodes",
+        "accountStatus": "Account status",
+        "notSet": "Niet ingesteld",
+        "myAccount": "Mijn account"
     },
     "notifications": {
         "errorLoginBlank": "De gebruikersnaam en/of wachtwoord is leeg.",
@@ -45,5 +50,18 @@
         "error401Unauthorized": "Geen toegang. Probeer de pagina te vernieuwen.",
         "errorSaveSettings": "Opslaan van instellingen mislukt."
     },
-    "quantityStrings": {}
+    "quantityStrings": {
+        "year": {
+            "singular": "{n} jaar",
+            "plural": "{n} jaar"
+        },
+        "month": {
+            "singular": "{n} maand",
+            "plural": "{n} maanden"
+        },
+        "day": {
+            "singular": "{n} dag",
+            "plural": "{n} dagen"
+        }
+    }
 }
