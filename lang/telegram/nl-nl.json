@@ -11,6 +11,8 @@
         "discordStartMessage": "Hallo!\nVoer je pincode in met `/pin <PINCODE>` om je account te verifiëren.",
         "languageMessageDiscord": "Opmerking: stel je taal in met /lang <taal>.",
         "languageSet": "Taal ingesteld als {language}.",
-        "discordDMs": "Bekijk alsjeblieft je DMs voor een antwoord."
+        "discordDMs": "Bekijk alsjeblieft je DMs voor een antwoord.",
+        "sentInviteFailure": "Fout bij versturen uitnodiging, bekijk de logs.",
+        "sentInvite": "Uitnodiging verstuurd."
     }
 }
