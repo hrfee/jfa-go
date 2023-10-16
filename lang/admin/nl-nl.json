@@ -102,7 +102,35 @@
         "ombiProfile": "Ombi gebruikersprofiel",
         "logs": "Logs",
         "accessJFA": "Toegang tot jfa-go",
-        "accessJFASettings": "Kan niet worden aangepast, omdat \"Alleen beheerders\" of \"Laat alle Jellyfin-gebruikers inloggen\" is aangevinkt in Instellingen > Algemeen."
+        "accessJFASettings": "Kan niet worden aangepast, omdat \"Alleen beheerders\" of \"Laat alle Jellyfin-gebruikers inloggen\" is aangevinkt in Instellingen > Algemeen.",
+        "noResultsFound": "Geen resultaten gevonden",
+        "settingsHiddenDependency": "Overeenkomende instellingen zijn verborgen, omdat ze afhangen van een andere instelling:",
+        "settingsAdvancedMode": "{setting}: Geavanceerde instellingen moet ingeschakeld zijn",
+        "builtBy": "Build door",
+        "buildTime": "Build moment",
+        "userPageLogin": "Gebruikerspagina: Inloggen",
+        "loginNotAdmin": "Geen beheerder?",
+        "before": "Voor",
+        "unlink": "Ontkoppel account",
+        "after": "Na",
+        "invite": "Uitnodiging",
+        "userLabel": "Gebruikerslabel",
+        "userLabelDescription": "Label om toe te wijzen aan gebruikers aangemaakt met deze uitnodiging.",
+        "enableReferrals": "Verwijzingen inschakelen",
+        "disableReferrals": "Verwijzingen uitschakelen",
+        "enableReferralsDescription": "Geef gebruikers een persoonlijke verwijslink gelijkend op een uitnodiging, om naar vrienden/familie te sturen. Kan opgebouwd worden aan de hand van een verwijssjabloon in een profiel, of een bestaande uitnodiging.",
+        "enableReferralsProfileDescription": "Geef gebruikers aangemaakt met dit profiel een persoonlijke verwijslink gelijkend op een uitnodiging, om naar vrienden/familie te sturen. Maak een uitnodiging aan met de gewenste instellingen, en selecteer die hier. Elke verwijzing wordt gebaseerd op die uitnodiging. Je kunt de uitnodiging daarna verwijderen.",
+        "settingsDependsOn": "{setting}: hangt af van {dependency}",
+        "settingsMaybeUnderAdvanced": "Tip: je vindt misschien wat je zoekt door Geavanceerde instellingen in te schakelen.",
+        "sortingBy": "Sorteren naar",
+        "filters": "Filters",
+        "clickToRemoveFilter": "Klik om dit filter te verwijderen.",
+        "clearSearch": "Zoekopdracht verwijderen",
+        "actions": "Acties",
+        "searchOptions": "Zoekopties",
+        "matchText": "Tekstovereenkomst",
+        "jellyfinID": "Jellyfin ID",
+        "userPagePage": "Gebruikerspagina: Pagina"
     },
     "notifications": {
         "changedEmailAddress": "E-mailadres van {n} gewijzigd.",
@@ -140,7 +168,9 @@
         "accountConnected": "Account gekoppeld.",
         "savedAnnouncement": "Aankondiging opgeslagen.",
         "setOmbiProfile": "Opgeslagen ombi-profiel.",
-        "errorSetOmbiProfile": "Opslaan van ombi-profiel mislukt."
+        "errorSetOmbiProfile": "Opslaan van ombi-profiel mislukt.",
+        "errorNoReferralTemplate": "Profiel bevat geen verwijzingssjabloon, voeg er een toe bij instellingen.",
+        "referralsEnabled": "Verwijzingen actief."
     },
     "quantityStrings": {
         "modifySettingsFor": {
@@ -198,6 +228,10 @@
         "setExpiry": {
             "singular": "Stel verloop in voor {n} gebruiker",
             "plural": "Stel verloop in voor {n} gebruikers"
+        },
+        "enableReferralsFor": {
+            "plural": "Verwijzingen activeren voor {1} gebruikers",
+            "singular": "Verwijzingen activeren voor {1} gebruiker"
         }
     }
 }
