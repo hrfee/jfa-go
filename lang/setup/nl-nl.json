@@ -20,7 +20,9 @@
         "errorUserDisabled": "De gebruiker kan uitgeschakeld zijn.",
         "error404": "404, controleer de interne URL.",
         "errorNotAdmin": "Gebruiker heeft geen beheersrechten.",
-        "errorConnectionRefused": "Verbinding geweigerd."
+        "errorConnectionRefused": "Verbinding geweigerd.",
+        "errorUnknown": "Onbekende fout, bekijk de logs.",
+        "error": "Fout"
     },
     "startPage": {
         "welcome": "Welkom!",
@@ -30,7 +32,7 @@
     },
     "endPage": {
         "finished": "Klaar!",
-        "restartMessage": "Je kunt Discord/Telegram/Matrix bots instellen, berichten aanpassen en meer bij Instellingen. Klik hieronder om te herstarten, en ververs de pagina.",
+        "restartMessage": "Instellingen als Discord/Telegram/Matrix bots, aangepaste Markdown berichten, en een gebruiker-toegankelijke \"Mijn Account\" pagina zijn te vinden onder \"Instellingen\", dus kijk daar even rond. Klik hieronder om te herstarten, en ververs de pagina.",
         "refreshPage": "Verversen"
     },
     "language": {
@@ -61,7 +63,8 @@
         "adminOnly": "Alleen beheerders (aanbevolen)",
         "emailNotice": "Je e-mailadres kan gebruikt worden om meldingen te ontvangen.",
         "allowAll": "Laat alle Jellyfin-gebruikers inloggen",
-        "allowAllDescription": "Afgeraden, je kunt beter individuele gebruikers toegang geven na de setup."
+        "allowAllDescription": "Afgeraden, je kunt beter individuele gebruikers toegang geven na de setup.",
+        "authorizeManualUserPageNotice": "Gebruik hiervan schakelt de \"Gebruikerspagina\" functie uit."
     },
     "jellyfinEmby": {
         "title": "Jellyfin/Emby",
@@ -106,14 +109,15 @@
     },
     "passwordResets": {
         "title": "Wachtwoordresets",
-        "description": "Wanneer een gebruiker een wachtwoordreset aanvraagt, maakt Jellyfin een bestand aan dat 'passwordreset-*.json' heet en een pincode bevat. jfa-go leest dit bestand uit en stuurt de pincode naar de gebruiker.",
+        "description": "Wanneer een gebruiker een wachtwoordreset aanvraagt, maakt Jellyfin een bestand aan dat 'passwordreset-*.json' heet en een pincode bevat. jfa-go leest dit bestand uit en stuurt de pincode naar de gebruiker. Als je de \"Gebruikerspagina\" functionaliteit inschakelt, kan een reset ook daar worden gedaan aan de hand van een gebruikersnaam, e-mail, of contactmethode.",
         "pathToJellyfin": "Pad naar Jellyfin configuratiemap",
-        "pathToJellyfinNotice": "Als je niet weet waar dit is, probeer de je wachtwoord te resetten in Jellyfin. Er verschijnt dan een popup met '<path to jellyfin>/passwordreset-*.json'.",
+        "pathToJellyfinNotice": "Als je niet weet waar dit is, probeer de je wachtwoord te resetten in Jellyfin. Er verschijnt dan een popup met '<path to jellyfin>/passwordreset-*.json'. Dit is niet nodig als je alleen zelfzervice wachtwoordresets via de \"Gebruikerspagina\" wilt gebruiken.",
         "resetLinks": "Stuur een link in plaats van een pincode",
         "resetLinksNotice": "Als Ombi-integratie is ingeschakeld, gebruik dan dit om Jellyfin wachtwoordresets te synchroniseren met Ombi.",
         "resetLinksLanguage": "Standaard reset-link taal",
         "setPassword": "Stel wachtwoord in via link",
-        "setPasswordNotice": "Als dit aanstaat hoeft de gebruiker het wachtwoord niet te wijzigen van de PINcode na de reset. Wachtwoordvalidatie wordt ook afgedwongen."
+        "setPasswordNotice": "Als dit aanstaat hoeft de gebruiker het wachtwoord niet te wijzigen van de PINcode na de reset. Wachtwoordvalidatie wordt ook afgedwongen.",
+        "resetLinksRequiredForUserPage": "Nodig voor zelfservice wachtwoordreset op de gebruikerspagina."
     },
     "passwordValidation": {
         "title": "Wachtwoordvalidatie",
@@ -146,5 +150,11 @@
     "messages": {
         "title": "Berichten",
         "description": "jfa-go kan wachtwoordresets en verschillende berichten sturen via E-mail, Discord, Telegram, en/of Matrix. Je kunt e-mail hieronder instellen, en de rest kan later bij Instellingen aangepast worden. Instructies staan op de {n}. Als je dit niet nodig hebt, kun je deze onderdelen hier uitschakelen."
+    },
+    "userPage": {
+        "description": "De gebruikerspagina (getoond als \"Mijn account\") geeft gebruikers toegang tot informatie over hun account, zoals contactmethodes en verloopdatum. Ze kunnen ook hun wachtwoord wijzigen, een wachtwoord-reset starten, en contactmethodes koppelen/wijzigen zonder het jou te hoeven vragen. Bovendien kunnen aanpasbare MArkdown berichten worden getoond aan gebruikers voor en na het inloggen.",
+        "title": "Gebruikerspagina",
+        "customizeMessages": "Gebruik de bewerken knop naast \"Gebruikerspagina\" in de instellingen om dit later in te stellen.",
+        "requiredSettings": "Inloggen bij jfa-go via Jellyfin moet ingesteld zijn. Controleer dat \"reset wachtwoord via link\" later wordt gekozen voor zelfservice wachtwoord-resets."
     }
 }
