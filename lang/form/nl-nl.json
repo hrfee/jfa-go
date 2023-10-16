@@ -27,7 +27,17 @@
         "editContactMethod": "Wijzig contact methode",
         "joinTheServer": "Word lid van de server:",
         "resetPassword": "Wachtwoord opnieuw instellen",
-        "changePassword": "Wachtwoord wijzigen"
+        "changePassword": "Wachtwoord wijzigen",
+        "resetSentDescription": "Als er een account met de opgegeven gebruikersnaam/contactmethode bestaat, is er een wachtwoordreset-link verstuurd via alle bekende contactmethodes. De link is 30 minuten geldig.",
+        "customMessagePlaceholderHeader": "Kaart aanpassen",
+        "customMessagePlaceholderContent": "Klik op de gebruikerspagina aanpassen knop in instellingen om deze kaart aan te passen, of om op het loginscherm te tonen. En wees maar niet bang: de gebruiker kan dit niet zien.",
+        "userPageSuccessMessage": "Je kunt details van je account later bekijken en aanpassen op de {myAccount} pagina.",
+        "resetPasswordThroughJellyfin": "Om je wachtwoord te resetten, ga naar {jfLink} en druk op de \"Wachtwoord vergeten\" knop.",
+        "resetPasswordThroughLink": "Om je wachtwoord te resetten, vul je gebruikersnaam, e-mailadres of gebruikersnaam van een gelinkte contactmethode in, en verstuur. Er wordt een wachtwoord-reset link gestuurd.",
+        "resetSent": "Reset-link verstuurd.",
+        "referralsDescription": "Nodig vrienden en familie uit met deze link. Kom hier terug voor een nieuwe als hij verloopt.",
+        "copyReferral": "Kopieer link",
+        "invitedBy": "Je bent uitgenodigd door gebruiker {user}."
     },
     "validationStrings": {
         "length": {
