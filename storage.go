@@ -21,6 +21,36 @@ type telegramStore map[string]TelegramUser
 type matrixStore map[string]MatrixUser
 type emailStore map[string]EmailAddress
 
+type ActivityType int
+
+const (
+	ActivityCreation       ActivityType = iota // FIXME
+	ActivityDeletion                           // FIXME
+	ActivityDisabled                           // FIXME
+	ActivityEnabled                            // FIXME
+	ActivityLinked                             // FIXME
+	ActivityChangePassword                     // FIXME
+	ActivityResetPassword                      // FIXME
+	ActivityCreateInvite                       // FIXME
+)
+
+type ActivitySource int
+
+const (
+	ActivityUser  ActivitySource = iota // Source = UserID. For ActivityCreation, this would mean the referrer.
+	ActivityAdmin                       // Source = Admin's UserID, or simply just "admin"
+	ActivityAnon                        // Source = Blank, or potentially browser info. For ActivityCreation, this would be via an invite
+)
+
+type Activity struct {
+	Type       ActivityType `badgerhold:"index"`
+	UserID     string
+	SourceType ActivitySource
+	Source     string
+	InviteCode string // Only set for ActivityCreation
+	Time       time.Time
+}
+
 type UserExpiry struct {
 	JellyfinID string `badgerhold:"key"`
 	Expiry     time.Time
