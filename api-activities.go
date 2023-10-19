@@ -96,9 +96,12 @@ func (app *appContext) GetActivities(gc *gin.Context) {
 	req := GetActivitiesDTO{}
 	gc.BindJSON(&req)
 	query := &badgerhold.Query{}
-	activityType := stringToActivityType(req.Type)
-	if activityType != ActivityUnknown {
-		query = badgerhold.Where("Type").Eq(activityType)
+	activityTypes := make([]interface{}, len(req.Type))
+	for i, v := range req.Type {
+		activityTypes[i] = stringToActivityType(v)
+	}
+	if len(activityTypes) != 0 {
+		query = badgerhold.Where("Type").In(activityTypes...)
 	}
 
 	if req.Ascending {

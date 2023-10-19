@@ -475,6 +475,7 @@
                     <div>
                         <span id="button-tab-invites" class="text-3xl button portal ~neutral dark:~d_neutral @low mr-2 mb-2 px-5">{{ .strings.invites }}</span>
                         <span id="button-tab-accounts" class="text-3xl button portal ~neutral dark:~d_neutral @low mr-2 mb-2 px-5">{{ .strings.accounts }}</span>
+                        <span id="button-tab-activity" class="text-3xl button portal ~neutral dark:~d_neutral @low mr-2 mb-2 px-5">{{ .strings.activity }}</span>
                         <span id="button-tab-settings" class="text-3xl button portal ~neutral dark:~d_neutral @low mr-2 mb-2 px-5">{{ .strings.settings }}</span>
                     </div>
                 </header>
@@ -637,6 +638,93 @@
                     <div class="flex-expand align-middle">
                         <span class="text-3xl font-bold mr-4">{{ .strings.accounts }}</span>
                         <div id="accounts-filter-dropdown" class="dropdown z-10" tabindex="0">
+                            <span class="h-100 button ~neutral @low center" id="accounts-filter-button">{{ .strings.filters }}</span>
+                            <div class="dropdown-display">
+                                <div class="card ~neutral @low mt-2" id="accounts-filter-list">
+                                    <p class="supra pb-2">{{ .strings.filters }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="search" class="field ~neutral @low input search ml-2 mr-2" id="accounts-search" placeholder="{{ .strings.search }}">
+                        <span class="button ~neutral @low center ml-[-2.64rem] rounded-s-none accounts-search-clear" aria-label="{{ .strings.clearSearch }}" text="{{ .strings.clearSearch }}"><i class="ri-close-line"></i></span>
+                    </div>
+                    <div class="supra py-1 sm hidden" id="accounts-search-options-header">{{ .strings.searchOptions }}</div>
+                    <div class="row -mx-2 mb-2">
+                        <button type="button" class="button ~neutral @low center mx-2 hidden"><span id="accounts-sort-by-field"></span> <i class="ri-close-line ml-2 text-2xl"></i></button>
+                        <span id="accounts-filter-area"></span>
+                    </div>
+                    <div class="supra py-1 sm">{{ .strings.actions }}</div>
+                    <div class="row -mx-2">
+                        <span class="col button ~neutral @low center max-w-[20%]" id="accounts-add-user">{{ .quantityStrings.addUser.Singular }}</span>
+                        <div id="accounts-announce-dropdown" class="col dropdown pb-0i max-w-[20%]" tabindex="0">
+                            <span class="w-100 button ~info @low center" id="accounts-announce">{{ .strings.announce }}</span>
+                            <div class="dropdown-display">
+                                <div class="card ~neutral @low">
+                                    <span class="supra sm">{{ .strings.templates }}</span>
+                                    <div id="accounts-announce-templates"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <span class="col button ~urge @low center max-w-[20%]" id="accounts-modify-user">{{ .strings.modifySettings }}</span>
+                        {{ if .referralsEnabled }}
+                            <span class="col button ~urge @low center max-w-[20%]" id="accounts-enable-referrals">{{ .strings.enableReferrals }}</span>
+                        {{ end }}
+                        <span class="col button ~warning @low center max-w-[20%]" id="accounts-extend-expiry">{{ .strings.extendExpiry }}</span>
+                        <div id="accounts-disable-enable-dropdown" class="col dropdown manual pb-0i max-w-[20%]" tabindex="0">
+                            <span class="w-100 button ~positive @low center" id="accounts-disable-enable">{{ .strings.disable }}</span>
+                            <div class="dropdown-display">
+                                <div class="card ~neutral @low">
+                                    <span class="button ~urge full-width accounts-announce-template-button" id="accounts-enable-expiry">{{ .strings.setExpiry }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <span class="col button ~info @low center unfocused max-w-[20%]" id="accounts-send-pwr">{{ .strings.sendPWR }}</span>
+                        <span class="col button ~critical @low center max-w-[20%]" id="accounts-delete-user">{{ .quantityStrings.deleteUser.Singular }}</span>
+                    </div>
+                    <div class="card @low accounts-header table-responsive mt-2">
+                        <table class="table text-base leading-4">
+                            <thead>
+                                <tr>
+                                    <th><input type="checkbox" value="" id="accounts-select-all"></th>
+                                    <th class="table-inline my-2 grid gap-4 place-items-stretch accounts-header-username">{{ .strings.username }}</th>
+                                    {{ if .jellyfinLogin }}
+                                    <th class="text-center-i grid gap-4 place-items-stretch accounts-header-access-jfa">{{ .strings.accessJFA }}</th>
+                                    {{ end }}
+                                    <th class="grid gap-4 place-items-stretch accounts-header-email">{{ .strings.emailAddress }}</th>
+                                    {{ if .telegramEnabled }}
+                                    <th class="text-center-i grid gap-4 place-items-stretch accounts-header-telegram">Telegram</th>
+                                    {{ end }}
+                                    {{ if .matrixEnabled }}
+                                    <th class="text-center-i grid gap-4 place-items-stretch accounts-header-matrix">Matrix</th>
+                                    {{ end }}
+                                    {{ if .discordEnabled }}
+                                    <th class="text-center-i grid gap-4 place-items-stretch accounts-header-discord">Discord</th>
+                                    {{ end }}
+                                    {{ if .referralsEnabled }}
+                                    <th class="text-center-i grid gap-4 place-items-stretch accounts-header-referrals">{{ .strings.referrals }}</th>
+                                    {{ end }}
+                                    <th class="grid gap-4 place-items-stretch accounts-header-expiry">{{ .strings.expiry }}</th>
+                                    <th class="grid gap-4 place-items-stretch accounts-header-last-active">{{ .strings.lastActiveTime }}</th>
+                                </tr>
+                            </thead>
+                            <tbody id="accounts-list"></tbody>
+                        </table>
+                        <div class="unfocused h-[100%] my-3" id="accounts-not-found">
+                            <div class="flex flex-col h-[100%] justify-center items-center">
+                                <span class="text-2xl font-medium italic mb-3">{{ .strings.noResultsFound }}</span>
+                                <button class="button ~neutral @low accounts-search-clear">
+                                    <span class="mr-2">{{ .strings.clearSearch }}</span><i class="ri-close-line"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="tab-activity" class="unfocused">
+                <div class="card @low dark:~d_neutral activity mb-4 overflow-visible">
+                    <div class="flex-expand align-middle">
+                        <span class="text-3xl font-bold mr-4">{{ .strings.activity }}</span>
+                        <div id="activity-filter-dropdown" class="dropdown z-10" tabindex="0">
                             <span class="h-100 button ~neutral @low center" id="accounts-filter-button">{{ .strings.filters }}</span>
                             <div class="dropdown-display">
                                 <div class="card ~neutral @low mt-2" id="accounts-filter-list">

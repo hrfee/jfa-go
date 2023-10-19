@@ -443,10 +443,10 @@ type ActivityDTO struct {
 }
 
 type GetActivitiesDTO struct {
-	Type      string `json:"type"` // Type of activity to get. Leave blank for all.
-	Limit     int    `json:"limit"`
-	Page      int    `json:"page"` // zero-indexed
-	Ascending bool   `json:"ascending"`
+	Type      []string `json:"type"` // Types of activity to get. Leave blank for all.
+	Limit     int      `json:"limit"`
+	Page      int      `json:"page"` // zero-indexed
+	Ascending bool     `json:"ascending"`
 }
 
 type GetActivitiesRespDTO struct {
