@@ -1,0 +1,141 @@
+package main
+
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/timshannon/badgerhold/v4"
+)
+
+func stringToActivityType(v string) ActivityType {
+	switch v {
+	case "creation":
+		return ActivityCreation
+	case "deletion":
+		return ActivityDeletion
+	case "disabled":
+		return ActivityDisabled
+	case "enabled":
+		return ActivityEnabled
+	case "contactLinked":
+		return ActivityContactLinked
+	case "contactUnlinked":
+		return ActivityContactUnlinked
+	case "changePassword":
+		return ActivityChangePassword
+	case "resetPassword":
+		return ActivityResetPassword
+	case "createInvite":
+		return ActivityCreateInvite
+	case "deleteInvite":
+		return ActivityDeleteInvite
+	}
+	return ActivityUnknown
+}
+
+func activityTypeToString(v ActivityType) string {
+	switch v {
+	case ActivityCreation:
+		return "creation"
+	case ActivityDeletion:
+		return "deletion"
+	case ActivityDisabled:
+		return "disabled"
+	case ActivityEnabled:
+		return "enabled"
+	case ActivityContactLinked:
+		return "contactLinked"
+	case ActivityContactUnlinked:
+		return "contactUnlinked"
+	case ActivityChangePassword:
+		return "changePassword"
+	case ActivityResetPassword:
+		return "resetPassword"
+	case ActivityCreateInvite:
+		return "createInvite"
+	case ActivityDeleteInvite:
+		return "deleteInvite"
+	}
+	return "unknown"
+}
+
+func stringToActivitySource(v string) ActivitySource {
+	switch v {
+	case "user":
+		return ActivityUser
+	case "admin":
+		return ActivityAdmin
+	case "anon":
+		return ActivityAnon
+	case "daemon":
+		return ActivityDaemon
+	}
+	return ActivityAnon
+}
+
+func activitySourceToString(v ActivitySource) string {
+	switch v {
+	case ActivityUser:
+		return "user"
+	case ActivityAdmin:
+		return "admin"
+	case ActivityAnon:
+		return "anon"
+	case ActivityDaemon:
+		return "daemon"
+	}
+	return "anon"
+}
+
+// @Summary Get the requested set of activities, Paginated, filtered and sorted.
+// @Produce json
+// @Param GetActivitiesDTO body GetActivitiesDTO true "search parameters"
+// @Success 200 {object} GetActivitiesRespDTO
+// @Router /activity [get]
+// @Security Bearer
+// @tags Activity
+func (app *appContext) GetActivities(gc *gin.Context) {
+	req := GetActivitiesDTO{}
+	gc.BindJSON(&req)
+	query := &badgerhold.Query{}
+	activityType := stringToActivityType(req.Type)
+	if activityType != ActivityUnknown {
+		query = badgerhold.Where("Type").Eq(activityType)
+	}
+
+	if req.Ascending {
+		query = query.Reverse()
+	}
+
+	query = query.SortBy("Time")
+
+	if req.Limit == 0 {
+		req.Limit = 10
+	}
+
+	query = query.Skip(req.Page * req.Limit).Limit(req.Limit)
+
+	var results []Activity
+	err := app.storage.db.Find(&results, query)
+
+	if err != nil {
+		app.err.Printf("Failed to read activities from DB: %v\n", err)
+	}
+
+	resp := GetActivitiesRespDTO{
+		Activities: make([]ActivityDTO, len(results)),
+	}
+
+	for i, act := range results {
+		resp.Activities[i] = ActivityDTO{
+			ID:         act.ID,
+			Type:       activityTypeToString(act.Type),
+			UserID:     act.UserID,
+			SourceType: activitySourceToString(act.SourceType),
+			Source:     act.Source,
+			InviteCode: act.InviteCode,
+			Value:      act.Value,
+			Time:       act.Time.Unix(),
+		}
+	}
+
+	gc.JSON(200, resp)
+}

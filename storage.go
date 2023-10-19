@@ -34,6 +34,7 @@ const (
 	ActivityResetPassword
 	ActivityCreateInvite
 	ActivityDeleteInvite
+	ActivityUnknown
 )
 
 type ActivitySource int
@@ -46,6 +47,7 @@ const (
 )
 
 type Activity struct {
+	ID         string       `badgerhold:"key"`
 	Type       ActivityType `badgerhold:"index"`
 	UserID     string       // ID of target user. For account creation, this will be the newly created account
 	SourceType ActivitySource
@@ -562,6 +564,7 @@ func (st *Storage) GetActivityKey(k string) (Activity, bool) {
 
 // SetActivityKey stores value v in key k.
 func (st *Storage) SetActivityKey(k string, v Activity) {
+	v.ID = k
 	err := st.db.Upsert(k, v)
 	if err != nil {
 		// fmt.Printf("Failed to set custom content: %v\n", err)

@@ -232,6 +232,8 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 			api.DELETE(p+"/profiles/referral/:profile", app.DisableReferralForProfile)
 		}
 
+		api.GET(p+"/activity", app.GetActivities)
+
 		if userPageEnabled {
 			user.GET("/details", app.MyDetails)
 			user.POST("/contact", app.SetMyContactMethods)

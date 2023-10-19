@@ -638,6 +638,9 @@ func flagPassed(name string) (found bool) {
 // @tag.name Profiles & Settings
 // @tag.description Profile and settings related operations.
 
+// @tag.name Activity
+// @tag.description Routes related to the activity log.
+
 // @tag.name Configuration
 // @tag.description jfa-go settings.
 
