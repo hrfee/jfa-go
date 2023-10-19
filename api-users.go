@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 	"github.com/hrfee/mediabrowser"
+	"github.com/lithammer/shortuuid/v3"
 	"github.com/timshannon/badgerhold/v4"
 )
 
@@ -45,6 +46,16 @@ func (app *appContext) NewUserAdmin(gc *gin.Context) {
 		return
 	}
 	id := user.ID
+
+	// Record activity
+	app.storage.SetActivityKey(shortuuid.New(), Activity{
+		Type:       ActivityCreation,
+		UserID:     id,
+		SourceType: ActivityAdmin,
+		Source:     gc.GetString("jfId"),
+		Time:       time.Now(),
+	})
+
 	profile := app.storage.GetDefaultProfile()
 	if req.Profile != "" && req.Profile != "none" {
 		if p, ok := app.storage.GetProfileKey(req.Profile); ok {
@@ -302,6 +313,23 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 		}
 	}
 	id := user.ID
+
+	// Record activity
+	sourceType := ActivityAnon
+	source := ""
+	if invite.ReferrerJellyfinID != "" {
+		sourceType = ActivityUser
+		source = invite.ReferrerJellyfinID
+	}
+
+	app.storage.SetActivityKey(shortuuid.New(), Activity{
+		Type:       ActivityCreation,
+		UserID:     id,
+		SourceType: sourceType,
+		Source:     source,
+		InviteCode: invite.Code,
+		Time:       time.Now(),
+	})
 
 	emailStore := EmailAddress{
 		Addr:    req.Email,

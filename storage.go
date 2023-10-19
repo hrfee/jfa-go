@@ -24,14 +24,15 @@ type emailStore map[string]EmailAddress
 type ActivityType int
 
 const (
-	ActivityCreation       ActivityType = iota // FIXME
-	ActivityDeletion                           // FIXME
-	ActivityDisabled                           // FIXME
-	ActivityEnabled                            // FIXME
-	ActivityLinked                             // FIXME
-	ActivityChangePassword                     // FIXME
-	ActivityResetPassword                      // FIXME
-	ActivityCreateInvite                       // FIXME
+	ActivityCreation ActivityType = iota
+	ActivityDeletion
+	ActivityDisabled
+	ActivityEnabled
+	ActivityLinked
+	ActivityChangePassword
+	ActivityResetPassword
+	ActivityCreateInvite
+	ActivityDeleteInvite
 )
 
 type ActivitySource int
@@ -542,6 +543,31 @@ func (st *Storage) SetCustomContentKey(k string, v CustomContent) {
 func (st *Storage) DeleteCustomContentKey(k string) {
 	st.DebugWatch(StoredCustomContent, k, "")
 	st.db.Delete(k, CustomContent{})
+}
+
+// GetActivityKey returns the value stored in the store's key.
+func (st *Storage) GetActivityKey(k string) (Activity, bool) {
+	result := Activity{}
+	err := st.db.Get(k, &result)
+	ok := true
+	if err != nil {
+		// fmt.Printf("Failed to find custom content: %v\n", err)
+		ok = false
+	}
+	return result, ok
+}
+
+// SetActivityKey stores value v in key k.
+func (st *Storage) SetActivityKey(k string, v Activity) {
+	err := st.db.Upsert(k, v)
+	if err != nil {
+		// fmt.Printf("Failed to set custom content: %v\n", err)
+	}
+}
+
+// DeleteActivityKey deletes value at key k.
+func (st *Storage) DeleteActivityKey(k string) {
+	st.db.Delete(k, Activity{})
 }
 
 type TelegramUser struct {
