@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/hrfee/mediabrowser"
 	"github.com/itchyny/timefmt-go"
+	"github.com/lithammer/shortuuid/v3"
 	"gopkg.in/ini.v1"
 )
 
@@ -157,6 +158,7 @@ func (app *appContext) ResetSetPassword(gc *gin.Context) {
 		}
 		username = resp.UsersReset[0]
 	}
+
 	var user mediabrowser.User
 	var status int
 	var err error
@@ -170,6 +172,15 @@ func (app *appContext) ResetSetPassword(gc *gin.Context) {
 		respondBool(500, false, gc)
 		return
 	}
+
+	app.storage.SetActivityKey(shortuuid.New(), Activity{
+		Type:       ActivityResetPassword,
+		UserID:     user.ID,
+		SourceType: ActivityUser,
+		Source:     user.ID,
+		Time:       time.Now(),
+	})
+
 	prevPassword := req.PIN
 	if isInternal {
 		prevPassword = ""

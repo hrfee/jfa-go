@@ -567,6 +567,10 @@ func (app *appContext) EnableDisableUsers(gc *gin.Context) {
 			sendMail = false
 		}
 	}
+	activityType := ActivityDisabled
+	if req.Enabled {
+		activityType = ActivityEnabled
+	}
 	for _, userID := range req.Users {
 		user, status, err := app.jf.UserByID(userID, false)
 		if status != 200 || err != nil {
@@ -581,6 +585,16 @@ func (app *appContext) EnableDisableUsers(gc *gin.Context) {
 			app.err.Printf("Failed to set policy for user \"%s\" (%d): %v", userID, status, err)
 			continue
 		}
+
+		// Record activity
+		app.storage.SetActivityKey(shortuuid.New(), Activity{
+			Type:       activityType,
+			UserID:     userID,
+			SourceType: ActivityAdmin,
+			Source:     gc.GetString("jfId"),
+			Time:       time.Now(),
+		})
+
 		if sendMail && req.Notify {
 			if err := app.sendByID(msg, userID); err != nil {
 				app.err.Printf("Failed to send account enabled/disabled email: %v", err)
@@ -642,6 +656,16 @@ func (app *appContext) DeleteUsers(gc *gin.Context) {
 				errors[userID] += msg
 			}
 		}
+
+		// Record activity
+		app.storage.SetActivityKey(shortuuid.New(), Activity{
+			Type:       ActivityDeletion,
+			UserID:     userID,
+			SourceType: ActivityAdmin,
+			Source:     gc.GetString("jfId"),
+			Time:       time.Now(),
+		})
+
 		if sendMail && req.Notify {
 			if err := app.sendByID(msg, userID); err != nil {
 				app.err.Printf("Failed to send account deletion email: %v", err)

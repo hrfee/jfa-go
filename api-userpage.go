@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
+	"github.com/lithammer/shortuuid/v3"
 	"github.com/timshannon/badgerhold/v4"
 )
 
@@ -620,6 +621,15 @@ func (app *appContext) ChangeMyPassword(gc *gin.Context) {
 		respondBool(500, false, gc)
 		return
 	}
+
+	app.storage.SetActivityKey(shortuuid.New(), Activity{
+		Type:       ActivityChangePassword,
+		UserID:     user.ID,
+		SourceType: ActivityUser,
+		Source:     user.ID,
+		Time:       time.Now(),
+	})
+
 	if app.config.Section("ombi").Key("enabled").MustBool(false) {
 		func() {
 			ombiUser, status, err := app.getOmbiUser(gc.GetString("jfId"))

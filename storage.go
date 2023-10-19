@@ -38,14 +38,15 @@ const (
 type ActivitySource int
 
 const (
-	ActivityUser  ActivitySource = iota // Source = UserID. For ActivityCreation, this would mean the referrer.
-	ActivityAdmin                       // Source = Admin's UserID, or simply just "admin"
-	ActivityAnon                        // Source = Blank, or potentially browser info. For ActivityCreation, this would be via an invite
+	ActivityUser   ActivitySource = iota // Source = UserID. For ActivityCreation, this would mean the referrer.
+	ActivityAdmin                        // Source = Admin's UserID, or blank if jellyfin login isn't on.
+	ActivityAnon                         // Source = Blank, or potentially browser info. For ActivityCreation, this would be via an invite
+	ActivityDaemon                       // Source = Blank, was deleted/disabled due to expiry by daemon
 )
 
 type Activity struct {
 	Type       ActivityType `badgerhold:"index"`
-	UserID     string
+	UserID     string       // ID of target user. For account creation, this will be the newly created account
 	SourceType ActivitySource
 	Source     string
 	InviteCode string // Only set for ActivityCreation

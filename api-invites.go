@@ -85,6 +85,13 @@ func (app *appContext) checkInvites() {
 			wait.Wait()
 		}
 		app.storage.DeleteInvitesKey(data.Code)
+
+		app.storage.SetActivityKey(shortuuid.New(), Activity{
+			Type:       ActivityDeleteInvite,
+			SourceType: ActivityDaemon,
+			InviteCode: data.Code,
+			Time:       time.Now(),
+		})
 	}
 }
 
@@ -130,12 +137,24 @@ func (app *appContext) checkInvite(code string, used bool, username string) bool
 		}
 		match = false
 		app.storage.DeleteInvitesKey(code)
+		app.storage.SetActivityKey(shortuuid.New(), Activity{
+			Type:       ActivityDeleteInvite,
+			SourceType: ActivityDaemon,
+			InviteCode: code,
+			Time:       time.Now(),
+		})
 	} else if used {
 		del := false
 		newInv := inv
 		if newInv.RemainingUses == 1 {
 			del = true
 			app.storage.DeleteInvitesKey(code)
+			app.storage.SetActivityKey(shortuuid.New(), Activity{
+				Type:       ActivityDeleteInvite,
+				SourceType: ActivityDaemon,
+				InviteCode: code,
+				Time:       time.Now(),
+			})
 		} else if newInv.RemainingUses != 0 {
 			// 0 means infinite i guess?
 			newInv.RemainingUses--
@@ -236,6 +255,17 @@ func (app *appContext) GenerateInvite(gc *gin.Context) {
 		}
 	}
 	app.storage.SetInvitesKey(invite.Code, invite)
+
+	// Record activity
+	app.storage.SetActivityKey(shortuuid.New(), Activity{
+		Type:       ActivityCreateInvite,
+		UserID:     "",
+		SourceType: ActivityAdmin,
+		Source:     gc.GetString("jfId"),
+		InviteCode: invite.Code,
+		Time:       time.Now(),
+	})
+
 	respondBool(200, true, gc)
 }
 
@@ -433,6 +463,15 @@ func (app *appContext) DeleteInvite(gc *gin.Context) {
 	_, ok = app.storage.GetInvitesKey(req.Code)
 	if ok {
 		app.storage.DeleteInvitesKey(req.Code)
+
+		// Record activity
+		app.storage.SetActivityKey(shortuuid.New(), Activity{
+			Type:       ActivityDeleteInvite,
+			SourceType: ActivityAdmin,
+			Source:     gc.GetString("jfId"),
+			Time:       time.Now(),
+		})
+
 		app.info.Printf("%s: Invite deleted", req.Code)
 		respondBool(200, true, gc)
 		return

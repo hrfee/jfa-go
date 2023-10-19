@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/hrfee/mediabrowser"
+	"github.com/lithammer/shortuuid/v3"
 )
 
 type userDaemon struct {
@@ -95,18 +96,31 @@ func (app *appContext) checkUsers() {
 				continue
 			}
 			app.info.Printf("%s expired user \"%s\"", termPlural, user.Name)
+
+			// Record activity
+			activity := Activity{
+				UserID:     id,
+				SourceType: ActivityDaemon,
+				Time:       time.Now(),
+			}
+
 			if mode == "delete" {
 				status, err = app.jf.DeleteUser(id)
+				activity.Type = ActivityDeletion
 			} else if mode == "disable" {
 				user.Policy.IsDisabled = true
 				// Admins can't be disabled
 				user.Policy.IsAdministrator = false
 				status, err = app.jf.SetPolicy(id, user.Policy)
+				activity.Type = ActivityDisabled
 			}
 			if !(status == 200 || status == 204) || err != nil {
 				app.err.Printf("Failed to %s \"%s\" (%d): %s", mode, user.Name, status, err)
 				continue
 			}
+
+			app.storage.SetActivityKey(shortuuid.New(), activity)
+
 			app.storage.DeleteUserExpiryKey(expiry.JellyfinID)
 			app.jf.CacheExpiry = time.Now()
 			if contact {
