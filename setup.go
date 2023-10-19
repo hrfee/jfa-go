@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hrfee/jfa-go/easyproxy"
 	"github.com/hrfee/mediabrowser"
 )
 
@@ -47,10 +48,15 @@ func (app *appContext) ServeSetup(gc *gin.Context) {
 }
 
 type testReq struct {
-	ServerType string `json:"type"`
-	Server     string `json:"server"`
-	Username   string `json:"username"`
-	Password   string `json:"password"`
+	ServerType    string `json:"type"`
+	Server        string `json:"server"`
+	Username      string `json:"username"`
+	Password      string `json:"password"`
+	Proxy         bool   `json:"proxy"`
+	ProxyProtocol string `json:"proxy_protocol,omitempty"`
+	ProxyAddress  string `json:"proxy_address,omitempty"`
+	ProxyUsername string `json:"proxy_user,omitempty"`
+	ProxyPassword string `json:"proxy_password,omitempty"`
 }
 
 func (app *appContext) TestJF(gc *gin.Context) {
@@ -64,6 +70,26 @@ func (app *appContext) TestJF(gc *gin.Context) {
 		serverType = mediabrowser.EmbyServer
 	}
 	tempjf, _ := mediabrowser.NewServer(serverType, req.Server, "jfa-go-setup", app.version, "auth", "auth", mediabrowser.NewNamedTimeoutHandler("authJF", req.Server, true), 30)
+
+	if req.Proxy {
+		conf := easyproxy.ProxyConfig{
+			Protocol: easyproxy.HTTP,
+			Addr:     req.ProxyAddress,
+			User:     req.ProxyUsername,
+			Password: req.ProxyPassword,
+		}
+		if strings.Contains(req.ProxyProtocol, "socks") {
+			conf.Protocol = easyproxy.SOCKS5
+		}
+
+		transport, err := easyproxy.NewTransport(conf)
+		if err != nil {
+			respond(400, "errorProxy", gc)
+			return
+		}
+		tempjf.SetTransport(transport)
+	}
+
 	user, status, err := tempjf.Authenticate(req.Username, req.Password)
 	if !(status == 200 || status == 204) || err != nil {
 		msg := ""
@@ -126,6 +152,7 @@ func (st *Storage) loadLangSetup(filesystems ...fs.FS) error {
 					patchLang(&lang.Strings, &fallback.Strings, &english.Strings)
 					patchLang(&lang.StartPage, &fallback.StartPage, &english.StartPage)
 					patchLang(&lang.Updates, &fallback.Updates, &english.Updates)
+					patchLang(&lang.Proxy, &fallback.Proxy, &english.Proxy)
 					patchLang(&lang.EndPage, &fallback.EndPage, &english.EndPage)
 					patchLang(&lang.Language, &fallback.Language, &english.Language)
 					patchLang(&lang.Login, &fallback.Login, &english.Login)
@@ -144,6 +171,7 @@ func (st *Storage) loadLangSetup(filesystems ...fs.FS) error {
 				patchLang(&lang.Strings, &english.Strings)
 				patchLang(&lang.StartPage, &english.StartPage)
 				patchLang(&lang.Updates, &english.Updates)
+				patchLang(&lang.Proxy, &english.Proxy)
 				patchLang(&lang.EndPage, &english.EndPage)
 				patchLang(&lang.Language, &english.Language)
 				patchLang(&lang.Login, &english.Login)

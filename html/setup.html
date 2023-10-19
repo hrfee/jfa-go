@@ -122,6 +122,32 @@
                                 </select>
                             </div>
                         </label>
+                        <span class="heading">{{ .lang.Proxy.title }}</span>
+                        <p class="content my-2" id="proxy-description">{{ .lang.Proxy.description }}</p>
+                        <label class="row switch pb-4">
+                            <input type="checkbox" class="mr-2" id="advanced-proxy"><span>{{ .lang.Strings.enabled }}</span>
+                        </label>
+                        <label class="label">
+                            <span>{{ .lang.Proxy.protocol }}</span>
+                            <div class="select ~neutral @low mt-4 mb-2">
+                                <select id="advanced-proxy_protocol">
+                                    <option value="http">HTTP</option>
+                                    <option value="socks">SOCKS5</option>
+                                </select>
+                            </div>
+                        </label>
+                        <label class="label">
+                            <span class="mt-4">{{ .lang.Proxy.address }}</span>
+                            <input type="text" class="input ~neutral @low mt-4 mb-2" id="advanced-proxy_address">
+                        </label>
+                        <label class="label">
+                            <span class="mt-4">{{ .lang.Strings.username }}</span>
+                            <input type="text" class="input ~neutral @low mt-4 mb-2" id="advanced-proxy_user">
+                        </label>
+                        <label class="label">
+                            <span class="mt-4">{{ .lang.Strings.password }}</span>
+                            <input type="text" class="input ~neutral @low mt-4 mb-2" id="advanced-proxy_password">
+                        </label>
                     </div>
                 </div>
                 <section class="section ~neutral banner footer flex-expand middle">

@@ -18,11 +18,12 @@
         "apiKey": "API Key",
         "error": "Error",
         "errorInvalidUserPass": "Invalid username/password.",
-        "errorNotAdmin": "User is not allowed to manage server.",
+        "errorNotAdmin": "User is not aEnabledllowed to manage server.",
         "errorUserDisabled": "User may be disabled.",
         "error404": "404, check the internal URL.",
         "errorConnectionRefused": "Connection refused.",
-        "errorUnknown": "Unknown error, check app logs."
+        "errorUnknown": "Unknown error, check app logs.",
+        "errorProxy": "Proxy configuration invalid."
     },
     "startPage": {
         "welcome": "Welcome!",
@@ -61,6 +62,12 @@
         "updateChannel": "Update Channel",
         "stable": "Stable",
         "unstable": "Unstable"
+    },
+    "proxy": {
+        "title": "Proxy",
+        "description": "Have jfa-go make all connections through a HTTP/SOCKS5 proxy. Connection to Jellyfin will be tested through this.",
+        "protocol": "Protocol",
+        "address": "Address (Including Port)"
     },
     "login": {
         "title": "Login",

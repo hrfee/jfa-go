@@ -85,6 +85,13 @@ class Checkbox {
                 }
             });
         }
+
+        if (this._el.hasAttribute("checked")) {
+            this._el.checked = true;
+        } else {
+            this._el.checked = false;
+        }
+        this.broadcast();
     }
 }
 
@@ -315,10 +322,14 @@ const settings = {
         "tls": new Checkbox(get("advanced-tls"), "", false, "advanced", "tls"),
         "tls_port": new Input(get("advanced-tls_port"), "", "", "tls", true, "advanced"),
         "tls_cert": new Input(get("advanced-tls_cert"), "", "", "tls", true, "advanced"),
-        "tls_key": new Input(get("advanced-tls_key"), "", "", "tls", true, "advanced")
+        "tls_key": new Input(get("advanced-tls_key"), "", "", "tls", true, "advanced"),
+        "proxy": new Checkbox(get("advanced-proxy"), "", false, "advanced", "proxy"),
+        "proxy_protocol": new Select(get("advanced-proxy_protocol"), "proxy", true, "advanced"),
+        "proxy_address": new Input(get("advanced-proxy_address"), "", "", "proxy", true, "advanced"),
+        "proxy_user": new Input(get("advanced-proxy_user"), "", "", "proxy", true, "advanced"),
+        "proxy_password": new Input(get("advanced-proxy_password"), "", "", "proxy", true, "advanced")
     }
 };
-
 const checkTheme = () => {
     if (settings["ui"]["theme"].value.includes("Dark")) {
         document.documentElement.classList.add("dark-theme");
@@ -553,7 +564,12 @@ window.onpopstate = (event: PopStateEvent) => {
             "type": settings["jellyfin"]["type"].value,
             "server": settings["jellyfin"]["server"].value,
             "username": settings["jellyfin"]["username"].value,
-            "password": settings["jellyfin"]["password"].value
+            "password": settings["jellyfin"]["password"].value,
+            "proxy": settings["advanced"]["proxy"].value == "true",
+            "proxy_protocol": settings["advanced"]["proxy_protocol"].value,
+            "proxy_address": settings["advanced"]["proxy_address"].value,
+            "proxy_user": settings["advanced"]["proxy_user"].value,
+            "proxy_password": settings["advanced"]["proxy_password"].value
         };
         _post("/jellyfin/test", send, (req: XMLHttpRequest) => {
             if (req.readyState == 4) {
