@@ -1,6 +1,10 @@
 package main
 
-import "time"
+import (
+	"time"
+
+	"github.com/hrfee/mediabrowser"
+)
 
 // clearEmails removes stored emails for users which no longer exist.
 // meant to be called with other such housekeeping functions, so assumes
@@ -9,11 +13,14 @@ func (app *appContext) clearEmails() {
 	app.debug.Println("Housekeeping: removing unused email addresses")
 	emails := app.storage.GetEmails()
 	for _, email := range emails {
-		_, status, err := app.jf.UserByID(email.JellyfinID, false)
-		if status == 200 && err == nil {
+		_, _, err := app.jf.UserByID(email.JellyfinID, false)
+		// Make sure the user doesn't exist, and no other error has occured
+		switch err.(type) {
+		case mediabrowser.ErrUserNotFound:
+			app.storage.DeleteEmailsKey(email.JellyfinID)
+		default:
 			continue
 		}
-		app.storage.DeleteEmailsKey(email.JellyfinID)
 	}
 }
 
@@ -22,11 +29,14 @@ func (app *appContext) clearDiscord() {
 	app.debug.Println("Housekeeping: removing unused Discord IDs")
 	discordUsers := app.storage.GetDiscord()
 	for _, discordUser := range discordUsers {
-		_, status, err := app.jf.UserByID(discordUser.JellyfinID, false)
-		if status == 200 && err == nil {
+		_, _, err := app.jf.UserByID(discordUser.JellyfinID, false)
+		// Make sure the user doesn't exist, and no other error has occured
+		switch err.(type) {
+		case mediabrowser.ErrUserNotFound:
+			app.storage.DeleteDiscordKey(discordUser.JellyfinID)
+		default:
 			continue
 		}
-		app.storage.DeleteDiscordKey(discordUser.JellyfinID)
 	}
 }
 
@@ -35,11 +45,14 @@ func (app *appContext) clearMatrix() {
 	app.debug.Println("Housekeeping: removing unused Matrix IDs")
 	matrixUsers := app.storage.GetMatrix()
 	for _, matrixUser := range matrixUsers {
-		_, status, err := app.jf.UserByID(matrixUser.JellyfinID, false)
-		if status == 200 && err == nil {
+		_, _, err := app.jf.UserByID(matrixUser.JellyfinID, false)
+		// Make sure the user doesn't exist, and no other error has occured
+		switch err.(type) {
+		case mediabrowser.ErrUserNotFound:
+			app.storage.DeleteMatrixKey(matrixUser.JellyfinID)
+		default:
 			continue
 		}
-		app.storage.DeleteMatrixKey(matrixUser.JellyfinID)
 	}
 }
 
@@ -48,11 +61,14 @@ func (app *appContext) clearTelegram() {
 	app.debug.Println("Housekeeping: removing unused Telegram IDs")
 	telegramUsers := app.storage.GetTelegram()
 	for _, telegramUser := range telegramUsers {
-		_, status, err := app.jf.UserByID(telegramUser.JellyfinID, false)
-		if status == 200 && err == nil {
+		_, _, err := app.jf.UserByID(telegramUser.JellyfinID, false)
+		// Make sure the user doesn't exist, and no other error has occured
+		switch err.(type) {
+		case mediabrowser.ErrUserNotFound:
+			app.storage.DeleteTelegramKey(telegramUser.JellyfinID)
+		default:
 			continue
 		}
-		app.storage.DeleteTelegramKey(telegramUser.JellyfinID)
 	}
 }
 
