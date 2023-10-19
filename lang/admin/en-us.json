@@ -130,7 +130,8 @@
         "userPagePage": "User Page: Page",
         "buildTime": "Build Time",  
         "builtBy": "Built By",
-        "loginNotAdmin": "Not an Admin?"
+        "loginNotAdmin": "Not an Admin?",
+        "referrer": "Referrer"
     },
     "notifications": {
         "changedEmailAddress": "Changed email address of {n}.",

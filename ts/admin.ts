@@ -121,6 +121,10 @@ const tabs: { url: string, reloader: () => void }[] = [
         reloader: accounts.reload
     },
     {
+        url: "activity",
+        reloader: () => {console.log("FIXME: Reload Activity")}
+    },
+    {
         url: "settings",
         reloader: settings.reload
     }
@@ -179,6 +183,7 @@ login.onLogin = () => {
         case "settings":
             settings.reload();
             break;
+        // FIXME: Reload activity
     }
 }
 

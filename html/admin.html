@@ -768,40 +768,30 @@
                         <span class="col button ~info @low center unfocused max-w-[20%]" id="accounts-send-pwr">{{ .strings.sendPWR }}</span>
                         <span class="col button ~critical @low center max-w-[20%]" id="accounts-delete-user">{{ .quantityStrings.deleteUser.Singular }}</span>
                     </div>
-                    <div class="card @low accounts-header table-responsive mt-2">
-                        <table class="table text-base leading-4">
-                            <thead>
-                                <tr>
-                                    <th><input type="checkbox" value="" id="accounts-select-all"></th>
-                                    <th class="table-inline my-2 grid gap-4 place-items-stretch accounts-header-username">{{ .strings.username }}</th>
-                                    {{ if .jellyfinLogin }}
-                                    <th class="text-center-i grid gap-4 place-items-stretch accounts-header-access-jfa">{{ .strings.accessJFA }}</th>
-                                    {{ end }}
-                                    <th class="grid gap-4 place-items-stretch accounts-header-email">{{ .strings.emailAddress }}</th>
-                                    {{ if .telegramEnabled }}
-                                    <th class="text-center-i grid gap-4 place-items-stretch accounts-header-telegram">Telegram</th>
-                                    {{ end }}
-                                    {{ if .matrixEnabled }}
-                                    <th class="text-center-i grid gap-4 place-items-stretch accounts-header-matrix">Matrix</th>
-                                    {{ end }}
-                                    {{ if .discordEnabled }}
-                                    <th class="text-center-i grid gap-4 place-items-stretch accounts-header-discord">Discord</th>
-                                    {{ end }}
-                                    {{ if .referralsEnabled }}
-                                    <th class="text-center-i grid gap-4 place-items-stretch accounts-header-referrals">{{ .strings.referrals }}</th>
-                                    {{ end }}
-                                    <th class="grid gap-4 place-items-stretch accounts-header-expiry">{{ .strings.expiry }}</th>
-                                    <th class="grid gap-4 place-items-stretch accounts-header-last-active">{{ .strings.lastActiveTime }}</th>
-                                </tr>
-                            </thead>
-                            <tbody id="accounts-list"></tbody>
-                        </table>
-                        <div class="unfocused h-[100%] my-3" id="accounts-not-found">
-                            <div class="flex flex-col h-[100%] justify-center items-center">
-                                <span class="text-2xl font-medium italic mb-3">{{ .strings.noResultsFound }}</span>
-                                <button class="button ~neutral @low accounts-search-clear">
-                                    <span class="mr-2">{{ .strings.clearSearch }}</span><i class="ri-close-line"></i>
-                                </button>
+                    <div class="flex flex-col md:flex-row gap-3">
+                        <div class="card @low dark:~d_neutral col max-w-[20%]">
+                            <div class="flex-expand">
+                                <input type="search" class="field ~neutral @low input settings-section-button justify-between mb-2" id="settings-search" placeholder="{{ .strings.search }}">
+                                <button class="button ~neutral @low center -ml-10 rounded-s-none mb-2 settings-search-clear" aria-label="{{ .strings.clearSearch }}" text="{{ .strings.clearSearch }}"><i class="ri-close-line"></i></button>
+                            </div>
+                            <aside class="aside sm ~urge dark:~d_info mb-2 @low" id="settings-message">Note: <span class="badge ~critical">*</span> indicates a required field, <span class="badge ~info dark:~d_warning">R</span> indicates changes require a restart.</aside> 
+                            <span class="button ~neutral @low settings-section-button justify-between mb-2" id="setting-about"><span class="flex">{{ .strings.aboutProgram }} <i class="ri-information-line ml-2"></i></span></span>
+                            <span class="button ~neutral @low settings-section-button justify-between mb-2" id="setting-profiles"><span class="flex">{{ .strings.userProfiles }} <i class="ri-user-line ml-2"></i></span></span>
+                        </div>
+                        <div class="card ~neutral @low col overflow">
+                            <div class="card ~urge @low">
+                                <div class="flex justify-between mb-2">
+                                    <span class="heading text-2xl activity-title">Account Created: <a href="/fixme" class="activity-url">"hrfee"</a></span>
+                                    <span class="text-sm font-medium activity-time">26/10/23 14:32</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <div>
+                                        <span class="content supra mr-2 activity-source-type">From Invite</span><a href="fixme" class="activity-source">BdBmpGDzuJhHSsboAsYgrE</a>
+                                    </div>
+                                    <div>
+                                        <span class="content supra mr-2">Referrer</span><a href="fixme" class="activity-referrer">username</a>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
