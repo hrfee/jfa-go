@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/lithammer/shortuuid/v3"
 	"gopkg.in/ini.v1"
 )
 
@@ -677,7 +678,18 @@ func (app *appContext) DiscordConnect(gc *gin.Context) {
 		respondBool(500, false, gc)
 		return
 	}
+
 	app.storage.SetDiscordKey(req.JellyfinID, user)
+
+	app.storage.SetActivityKey(shortuuid.New(), Activity{
+		Type:       ActivityContactLinked,
+		UserID:     req.JellyfinID,
+		SourceType: ActivityAdmin,
+		Source:     gc.GetString("jfId"),
+		Value:      "discord",
+		Time:       time.Now(),
+	})
+
 	linkExistingOmbiDiscordTelegram(app)
 	respondBool(200, true, gc)
 }
@@ -697,6 +709,16 @@ func (app *appContext) UnlinkDiscord(gc *gin.Context) {
 		return
 	} */
 	app.storage.DeleteDiscordKey(req.ID)
+
+	app.storage.SetActivityKey(shortuuid.New(), Activity{
+		Type:       ActivityContactUnlinked,
+		UserID:     req.ID,
+		SourceType: ActivityAdmin,
+		Source:     gc.GetString("jfId"),
+		Value:      "discord",
+		Time:       time.Now(),
+	})
+
 	respondBool(200, true, gc)
 }
 
@@ -715,6 +737,16 @@ func (app *appContext) UnlinkTelegram(gc *gin.Context) {
 		return
 	} */
 	app.storage.DeleteTelegramKey(req.ID)
+
+	app.storage.SetActivityKey(shortuuid.New(), Activity{
+		Type:       ActivityContactUnlinked,
+		UserID:     req.ID,
+		SourceType: ActivityAdmin,
+		Source:     gc.GetString("jfId"),
+		Value:      "telegram",
+		Time:       time.Now(),
+	})
+
 	respondBool(200, true, gc)
 }
 
@@ -733,5 +765,15 @@ func (app *appContext) UnlinkMatrix(gc *gin.Context) {
 		return
 	} */
 	app.storage.DeleteMatrixKey(req.ID)
+
+	app.storage.SetActivityKey(shortuuid.New(), Activity{
+		Type:       ActivityContactUnlinked,
+		UserID:     req.ID,
+		SourceType: ActivityAdmin,
+		Source:     gc.GetString("jfId"),
+		Value:      "matrix",
+		Time:       time.Now(),
+	})
+
 	respondBool(200, true, gc)
 }

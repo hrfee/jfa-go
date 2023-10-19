@@ -28,7 +28,8 @@ const (
 	ActivityDeletion
 	ActivityDisabled
 	ActivityEnabled
-	ActivityLinked
+	ActivityContactLinked
+	ActivityContactUnlinked
 	ActivityChangePassword
 	ActivityResetPassword
 	ActivityCreateInvite
@@ -50,6 +51,7 @@ type Activity struct {
 	SourceType ActivitySource
 	Source     string
 	InviteCode string // Only set for ActivityCreation
+	Value      string // Used for ActivityContactLinked, "email/discord/telegram/matrix"
 	Time       time.Time
 }
 

@@ -381,6 +381,7 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 		if app.storage.deprecatedDiscord == nil {
 			app.storage.deprecatedDiscord = discordStore{}
 		}
+		// Note we don't log an activity here, since it's part of creating a user.
 		app.storage.SetDiscordKey(user.ID, discordUser)
 		delete(app.discord.verifiedTokens, req.DiscordPIN)
 	}
@@ -1149,6 +1150,16 @@ func (app *appContext) ModifyEmails(gc *gin.Context) {
 
 			emailStore.Addr = address
 			app.storage.SetEmailsKey(id, emailStore)
+
+			app.storage.SetActivityKey(shortuuid.New(), Activity{
+				Type:       ActivityContactLinked,
+				UserID:     id,
+				SourceType: ActivityAdmin,
+				Source:     gc.GetString("jfId"),
+				Value:      "email",
+				Time:       time.Now(),
+			})
+
 			if ombiEnabled {
 				ombiUser, code, err := app.getOmbiUser(id)
 				if code == 200 && err == nil {
