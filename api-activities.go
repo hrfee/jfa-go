@@ -89,7 +89,7 @@ func activitySourceToString(v ActivitySource) string {
 // @Produce json
 // @Param GetActivitiesDTO body GetActivitiesDTO true "search parameters"
 // @Success 200 {object} GetActivitiesRespDTO
-// @Router /activity [get]
+// @Router /activity [post]
 // @Security Bearer
 // @tags Activity
 func (app *appContext) GetActivities(gc *gin.Context) {
@@ -137,6 +137,16 @@ func (app *appContext) GetActivities(gc *gin.Context) {
 			InviteCode: act.InviteCode,
 			Value:      act.Value,
 			Time:       act.Time.Unix(),
+		}
+		user, status, err := app.jf.UserByID(act.UserID, false)
+		if status == 200 && err == nil {
+			resp.Activities[i].Username = user.Name
+		}
+		if (act.SourceType == ActivityUser || act.SourceType == ActivityAdmin) && act.Source != "" {
+			user, status, err = app.jf.UserByID(act.Source, false)
+			if status == 200 && err == nil {
+				resp.Activities[i].SourceUsername = user.Name
+			}
 		}
 	}
 

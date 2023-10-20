@@ -61,10 +61,10 @@ func (app *appContext) checkUsers() {
 		return
 	}
 	mode := "disable"
-	termPlural := "Disabling"
+	term := "Disabling"
 	if app.config.Section("user_expiry").Key("behaviour").MustString("disable_user") == "delete_user" {
 		mode = "delete"
-		termPlural = "Deleting"
+		term = "Deleting"
 	}
 	contact := false
 	if messagesEnabled && app.config.Section("user_expiry").Key("send_email").MustBool(true) {
@@ -95,7 +95,7 @@ func (app *appContext) checkUsers() {
 				app.storage.DeleteUserExpiryKey(expiry.JellyfinID)
 				continue
 			}
-			app.info.Printf("%s expired user \"%s\"", termPlural, user.Name)
+			app.info.Printf("%s expired user \"%s\"", term, user.Name)
 
 			// Record activity
 			activity := Activity{

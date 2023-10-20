@@ -1,4 +1,4 @@
-import { _get, toDateString } from "../modules/common.js";
+import { _post, toDateString } from "../modules/common.js";
 
 export interface activity {
     id: string;
@@ -9,6 +9,8 @@ export interface activity {
     invite_code: string;
     value: string;
     time: number;
+    username: string;
+    source_username: string;
 }
 
 var activityTypeMoods = {
@@ -37,25 +39,50 @@ export class Activity { // FIXME: Add "implements"
     private _expiryTypeBadge: HTMLElement;
     private _act: activity;
 
+    _genUserLink = (): string => {
+        return `<a class="font-medium hover:underline" href="/accounts/user/${this._act.user_id}">${this._act.username || this._act.user_id.substring(0, 5)}</a>`;
+    }
+        
+    _genSrcUserLink = (): string => {
+        return `<a class="font-medium hover:underline" href="/accounts/user/${this._act.source}">${this._act.source_username || this._act.source.substring(0, 5)}</a>`;
+    }
+
+    private _renderInvText = (): string => { return `<span class="font-medium font-mono">${this.value || this.invite_code || "???"}</span>`; }
+
+    private _genInvLink = (): string => {
+        return `<a class="hover:underline" href="/accounts/invites/${this.invite_code}">${this._renderInvText()}</a>`;
+    }
+
     get type(): string { return this._act.type; }
     set type(v: string) {
         this._act.type = v;
 
         let mood = activityTypeMoods[v]; // 1 = positive, 0 = neutral, -1 = negative
+        this._card.classList.remove("~warning");
+        this._card.classList.remove("~neutral");
+        this._card.classList.remove("~urge");
         
-        for (let i = 0; i < moodColours.length; i++) {
+        if (mood == -1) {
+            this._card.classList.add("~warning");
+        } else if (mood == 0) {
+            this._card.classList.add("~neutral");
+        } else if (mood == 1) {
+            this._card.classList.add("~urge");
+        }
+
+        /* for (let i = 0; i < moodColours.length; i++) {
             if (i-1 == mood) this._card.classList.add(moodColours[i]);
             else this._card.classList.remove(moodColours[i]);
-        }
+        } */
        
         if (this.type == "changePassword" || this.type == "resetPassword") {
             let innerHTML = ``;
             if (this.type == "changePassword") innerHTML = window.lang.strings("accountChangedPassword");
             else innerHTML = window.lang.strings("accountResetPassword");
-            innerHTML = innerHTML.replace("{user}", `<a href="/accounts/user/${this._act.user_id}">FIXME</a>`);
+            innerHTML = innerHTML.replace("{user}", this._genUserLink());
             this._title.innerHTML = innerHTML;
         } else if (this.type == "contactLinked" || this.type == "contactUnlinked") {
-            let platform = this._act.type;
+            let platform = this.value;
             if (platform == "email") {
                 platform = window.lang.strings("emailAddress");
             } else {
@@ -64,40 +91,46 @@ export class Activity { // FIXME: Add "implements"
             let innerHTML = ``;
             if (this.type == "contactLinked") innerHTML = window.lang.strings("accountLinked");
             else innerHTML = window.lang.strings("accountUnlinked");
-            innerHTML = innerHTML.replace("{user}", `<a href="/accounts/user/${this._act.user_id}">FIXME</a>`).replace("{contactMethod}", platform);
+            innerHTML = innerHTML.replace("{user}", this._genUserLink()).replace("{contactMethod}", platform);
             this._title.innerHTML = innerHTML;
         } else if (this.type == "creation") {
-            this._title.innerHTML = window.lang.strings("accountCreated").replace("{user}", `<a href="/accounts/user/${this._act.user_id}">FIXME</a>`);
+            this._title.innerHTML = window.lang.strings("accountCreated").replace("{user}", this._genUserLink());
             if (this.source_type == "user") {
-                this._referrer.innerHTML = `<span class="supra mr-2">${window.lang.strings("referrer")}</span><a href="/accounts/${this._source}">FIXME</a>`;
+                this._referrer.innerHTML = `<span class="supra mr-2">${window.lang.strings("referrer")}</span>${this._genSrcUserLink()}`;
             } else {
                 this._referrer.textContent = ``;
             }
         } else if (this.type == "deletion") {
             if (this.source_type == "daemon") {
-                this._title.innerHTML = window.lang.strings("accountExpired").replace("{user}", `<a href="/accounts/user/${this._act.user_id}">FIXME</a>`);
+                this._title.innerHTML = window.lang.strings("accountExpired").replace("{user}", this._genUserLink());
                 this._expiryTypeBadge.classList.add("~critical");
-                this._expiryTypeBadge.classList.remove("~warning");
+                this._expiryTypeBadge.classList.remove("~info");
                 this._expiryTypeBadge.textContent = window.lang.strings("deleted");
             } else {
-                this._title.innerHTML = window.lang.strings("accountDeleted").replace("{user}", `<a href="/accounts/user/${this._act.user_id}">FIXME</a>`);
+                this._title.innerHTML = window.lang.strings("accountDeleted").replace("{user}", this._genUserLink());
             }
         } else if (this.type == "enabled") {
-            this._title.innerHTML = window.lang.strings("accountReEnabled").replace("{user}", `<a href="/accounts/user/${this._act.user_id}">FIXME</a>`);
+            this._title.innerHTML = window.lang.strings("accountReEnabled").replace("{user}", this._genUserLink());
         } else if (this.type == "disabled") {
             if (this.source_type == "daemon") {
-                this._title.innerHTML = window.lang.strings("accountExpired").replace("{user}", `<a href="/accounts/user/${this._act.user_id}">FIXME</a>`);
-                this._expiryTypeBadge.classList.add("~warning");
+                this._title.innerHTML = window.lang.strings("accountExpired").replace("{user}", this._genUserLink());
+                this._expiryTypeBadge.classList.add("~info");
                 this._expiryTypeBadge.classList.remove("~critical");
                 this._expiryTypeBadge.textContent = window.lang.strings("disabled");
             } else {
-                this._title.innerHTML = window.lang.strings("accountDisabled").replace("{user}", `<a href="/accounts/user/${this._act.user_id}">FIXME</a>`);
+                this._title.innerHTML = window.lang.strings("accountDisabled").replace("{user}", this._genUserLink());
             }
         } else if (this.type == "createInvite") {
-            this._title.innerHTML = window.lang.strings("inviteCreated").replace("{invite}", `<a href="/accounts/user/${this.invite_code}">${this.value || this.invite_code}</a>`);
+            this._title.innerHTML = window.lang.strings("inviteCreated").replace("{invite}", this._genInvLink());
         } else if (this.type == "deleteInvite") {
+            let innerHTML = ``;
+            if (this.source_type == "daemon") {
+                innerHTML = window.lang.strings("inviteExpired");
+            } else {
+                innerHTML = window.lang.strings("inviteDeleted");
+            }
 
-            this._title.innerHTML = window.lang.strings("inviteDeleted").replace("{invite}", this.value || this.invite_code);
+            this._title.innerHTML = innerHTML.replace("{invite}", this._renderInvText());
         }
 
         /*} else if (this.source_type == "admin") {
@@ -130,14 +163,22 @@ export class Activity { // FIXME: Add "implements"
         this._act.value = v;
     }
 
+    get source(): string { return this._act.source; }
+    set source(v: string) {
+        this._act.source = v;
+    }
+
     constructor(act: activity) {
         this._card = document.createElement("div");
 
-        this._card.classList.add("card", "@low");
+        this._card.classList.add("card", "@low", "my-2");
         this._card.innerHTML = `
-        <div class="flex justify-between mb-2">
-            <span class="heading text-2xl activity-title"></span><span class="activity-expiry-type badge"></span>
-            <span class="text-sm font-medium activity-time" aria-label="${window.lang.strings("date")}"></span>
+        <div class="flex flex-col md:flex-row justify-between mb-2">
+            <span class="heading truncate flex-initial md:text-2xl text-xl activity-title"></span>
+            <div class="flex flex-col flex-none ml-0 md:ml-2">
+                <span class="font-medium md:text-sm text-xs activity-time" aria-label="${window.lang.strings("date")}"></span>
+                <span class="activity-expiry-type badge self-start md:self-end mt-1"></span>
+            </div>
         </div>
         <div class="flex justify-between">
             <div>
@@ -156,6 +197,10 @@ export class Activity { // FIXME: Add "implements"
         this._referrer = this._card.querySelector(".activity-referrer");
         this._expiryTypeBadge = this._card.querySelector(".activity-expiry-type");
 
+        document.addEventListener("timefmt-change", () => {
+            this.time = this.time;
+        });
+
         this.update(act);
     }
 
@@ -164,6 +209,8 @@ export class Activity { // FIXME: Add "implements"
         this._act = act;
         this.source_type = act.source_type;
         this.invite_code = act.invite_code;
+        this.time = act.time;
+        this.source = act.source;
         this.value = act.value;
         this.type  = act.type;
     }
@@ -179,7 +226,13 @@ export class activityList {
     private _activityList: HTMLElement;
 
     reload = () => {
-        _get("/activity", null, (req: XMLHttpRequest) => {
+        let send = {
+            "type": [],
+            "limit": 30,
+            "page": 0,
+            "ascending": false
+        }
+        _post("/activity", send, (req: XMLHttpRequest) => {
             if (req.readyState != 4) return;
             if (req.status != 200) {
                 window.notifications.customError("loadActivitiesError", window.lang.notif("errorLoadActivities"));
@@ -193,7 +246,7 @@ export class activityList {
                 const activity = new Activity(act);
                 this._activityList.appendChild(activity.asElement());
             }
-        });
+        }, true);
     }
 
     constructor() {

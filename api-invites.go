@@ -90,6 +90,7 @@ func (app *appContext) checkInvites() {
 			Type:       ActivityDeleteInvite,
 			SourceType: ActivityDaemon,
 			InviteCode: data.Code,
+			Value:      data.Label,
 			Time:       time.Now(),
 		})
 	}
@@ -141,6 +142,7 @@ func (app *appContext) checkInvite(code string, used bool, username string) bool
 			Type:       ActivityDeleteInvite,
 			SourceType: ActivityDaemon,
 			InviteCode: code,
+			Value:      inv.Label,
 			Time:       time.Now(),
 		})
 	} else if used {
@@ -153,6 +155,7 @@ func (app *appContext) checkInvite(code string, used bool, username string) bool
 				Type:       ActivityDeleteInvite,
 				SourceType: ActivityDaemon,
 				InviteCode: code,
+				Value:      inv.Label,
 				Time:       time.Now(),
 			})
 		} else if newInv.RemainingUses != 0 {
@@ -460,8 +463,7 @@ func (app *appContext) DeleteInvite(gc *gin.Context) {
 	var req deleteInviteDTO
 	gc.BindJSON(&req)
 	app.debug.Printf("%s: Deletion requested", req.Code)
-	var ok bool
-	_, ok = app.storage.GetInvitesKey(req.Code)
+	inv, ok := app.storage.GetInvitesKey(req.Code)
 	if ok {
 		app.storage.DeleteInvitesKey(req.Code)
 
@@ -470,6 +472,8 @@ func (app *appContext) DeleteInvite(gc *gin.Context) {
 			Type:       ActivityDeleteInvite,
 			SourceType: ActivityAdmin,
 			Source:     gc.GetString("jfId"),
+			InviteCode: req.Code,
+			Value:      inv.Label,
 			Time:       time.Now(),
 		})
 

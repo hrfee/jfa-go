@@ -134,8 +134,8 @@
         "builtBy": "Built By",
         "loginNotAdmin": "Not an Admin?",
         "referrer": "Referrer",
-        "accountLinked": "{user}: {contactMethod} linked",
-        "accountUnlinked": "{user}: {contactMethod} removed",
+        "accountLinked": "{contactMethod} linked: {user}",
+        "accountUnlinked": "{contactMethod} removed: {user}",
         "accountResetPassword": "{user} reset their password",
         "accountChangedPassword": "{user} changed their password",
         "accountCreated": "Account created: {user}",
@@ -146,7 +146,8 @@
         "userDeleted": "User was deleted.",
         "userDisabled": "User was disabled",
         "inviteCreated": "Invite created: {invite}",
-        "inviteDeleted": "Invite deleted: {invite}"
+        "inviteDeleted": "Invite deleted: {invite}",
+        "inviteExpired": "Invite expired: {invite}"
     },
     "notifications": {
         "changedEmailAddress": "Changed email address of {n}.",

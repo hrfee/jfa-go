@@ -52,7 +52,7 @@ type Activity struct {
 	UserID     string       // ID of target user. For account creation, this will be the newly created account
 	SourceType ActivitySource
 	Source     string
-	InviteCode string // Only set for ActivityCreation
+	InviteCode string // Set for ActivityCreation, create/deleteInvite
 	Value      string // Used for ActivityContactLinked, "email/discord/telegram/matrix", and Create/DeleteInvite, where it's the label.
 	Time       time.Time
 }

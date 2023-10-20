@@ -432,14 +432,16 @@ type EnableDisableReferralDTO struct {
 }
 
 type ActivityDTO struct {
-	ID         string `json:"id"`
-	Type       string `json:"type"`
-	UserID     string `json:"user_id"`
-	SourceType string `json:"source_type"`
-	Source     string `json:"source"`
-	InviteCode string `json:"invite_code"`
-	Value      string `json:"value"`
-	Time       int64  `json:"time"`
+	ID             string `json:"id"`
+	Type           string `json:"type"`
+	UserID         string `json:"user_id"`
+	Username       string `json:"username"`
+	SourceType     string `json:"source_type"`
+	Source         string `json:"source"`
+	SourceUsername string `json:"source_username"`
+	InviteCode     string `json:"invite_code"`
+	Value          string `json:"value"`
+	Time           int64  `json:"time"`
 }
 
 type GetActivitiesDTO struct {
