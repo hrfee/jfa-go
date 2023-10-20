@@ -55,6 +55,8 @@
         "reset": "Reset",
         "donate": "Donate",
         "unlink": "Unlink Account",
+        "deleted": "Deleted",
+        "disabled": "Disabled",
         "sendPWR": "Send Password Reset",
         "noResultsFound": "No Results Found",
         "contactThrough": "Contact through:",
@@ -131,7 +133,20 @@
         "buildTime": "Build Time",  
         "builtBy": "Built By",
         "loginNotAdmin": "Not an Admin?",
-        "referrer": "Referrer"
+        "referrer": "Referrer",
+        "accountLinked": "{user}: {contactMethod} linked",
+        "accountUnlinked": "{user}: {contactMethod} removed",
+        "accountResetPassword": "{user} reset their password",
+        "accountChangedPassword": "{user} changed their password",
+        "accountCreated": "Account created: {user}",
+        "accountDeleted": "Account deleted: {user}",
+        "accountDisabled": "Account disabled: {user}",
+        "accountReEnabled": "Account re-enabled: {user}",
+        "accountExpired": "Account expired: {user}",
+        "userDeleted": "User was deleted.",
+        "userDisabled": "User was disabled",
+        "inviteCreated": "Invite created: {invite}",
+        "inviteDeleted": "Invite deleted: {invite}"
     },
     "notifications": {
         "changedEmailAddress": "Changed email address of {n}.",
@@ -168,6 +183,7 @@
         "errorApplyUpdate": "Failed to apply update, try manually.",
         "errorCheckUpdate": "Failed to check for update.",
         "errorNoReferralTemplate": "Profile doesn't contain referral template, add one in settings.",
+        "errorLoadActivities": "Failed to load activities.",
         "updateAvailable": "A new update is available, check settings.",
         "noUpdatesAvailable": "No new updates available."
     },

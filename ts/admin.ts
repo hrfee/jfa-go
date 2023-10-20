@@ -5,6 +5,7 @@ import { Tabs } from "./modules/tabs.js";
 import { inviteList, createInvite } from "./modules/invites.js";
 import { accountsList } from "./modules/accounts.js";
 import { settingsList } from "./modules/settings.js";
+import { activityList } from "./modules/activity.js";
 import { ProfileEditor } from "./modules/profiles.js";
 import { _get, _post, notificationBox, whichAnimationEvent } from "./modules/common.js";
 import { Updater } from "./modules/update.js";
@@ -89,6 +90,8 @@ var inviteCreator = new createInvite();
 
 var accounts = new accountsList();
 
+var activity = new activityList();
+
 window.invites = new inviteList();
 
 var settings = new settingsList();
@@ -122,7 +125,7 @@ const tabs: { url: string, reloader: () => void }[] = [
     },
     {
         url: "activity",
-        reloader: () => {console.log("FIXME: Reload Activity")}
+        reloader: activity.reload
     },
     {
         url: "settings",
@@ -171,6 +174,7 @@ const login = new Login(window.modals.login as Modal, "/", window.loginAppearanc
 login.onLogin = () => {
     console.log("Logged in.");
     window.updater = new Updater();
+    // FIXME: Decide whether to autoload activity or not
     setInterval(() => { window.invites.reload(); accounts.reload(); }, 30*1000);
     const currentTab = window.tabs.current;
     switch (currentTab) {
@@ -183,7 +187,9 @@ login.onLogin = () => {
         case "settings":
             settings.reload();
             break;
-        // FIXME: Reload activity
+        case "activity": // FIXME: fix URL clash with route
+            activity.reload();
+            break;
     }
 }
 

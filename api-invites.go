@@ -263,6 +263,7 @@ func (app *appContext) GenerateInvite(gc *gin.Context) {
 		SourceType: ActivityAdmin,
 		Source:     gc.GetString("jfId"),
 		InviteCode: invite.Code,
+		Value:      invite.Label,
 		Time:       time.Now(),
 	})
 
