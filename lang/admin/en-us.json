@@ -147,7 +147,11 @@
         "userDisabled": "User was disabled",
         "inviteCreated": "Invite created: {invite}",
         "inviteDeleted": "Invite deleted: {invite}",
-        "inviteExpired": "Invite expired: {invite}"
+        "inviteExpired": "Invite expired: {invite}",
+        "fromInvite": "From Invite",
+        "byAdmin": "By Admin",
+        "byUser": "By User",
+        "byJfaGo": "By jfa-go"
     },
     "notifications": {
         "changedEmailAddress": "Changed email address of {n}.",

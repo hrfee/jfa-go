@@ -39,12 +39,20 @@ export class Activity { // FIXME: Add "implements"
     private _expiryTypeBadge: HTMLElement;
     private _act: activity;
 
+    _genUserText = (): string => {
+        return `<span class="font-medium">${this._act.username || this._act.user_id.substring(0, 5)}</span>`;
+    }
+
+    _genSrcUserText = (): string => {
+        return `<span class="font-medium">${this._act.source_username || this._act.source.substring(0, 5)}</span>`;
+    }
+
     _genUserLink = (): string => {
-        return `<a class="font-medium hover:underline" href="/accounts/user/${this._act.user_id}">${this._act.username || this._act.user_id.substring(0, 5)}</a>`;
+        return `<a class="hover:underline" href="/accounts/user/${this._act.user_id}">${this._genUserText()}</a>`;
     }
         
     _genSrcUserLink = (): string => {
-        return `<a class="font-medium hover:underline" href="/accounts/user/${this._act.source}">${this._act.source_username || this._act.source.substring(0, 5)}</a>`;
+        return `<a class="hover:underline" href="/accounts/user/${this._act.source}">${this._genSrcUserText()}</a>`;
     }
 
     private _renderInvText = (): string => { return `<span class="font-medium font-mono">${this.value || this.invite_code || "???"}</span>`; }
@@ -102,12 +110,12 @@ export class Activity { // FIXME: Add "implements"
             }
         } else if (this.type == "deletion") {
             if (this.source_type == "daemon") {
-                this._title.innerHTML = window.lang.strings("accountExpired").replace("{user}", this._genUserLink());
+                this._title.innerHTML = window.lang.strings("accountExpired").replace("{user}", this._genUserText());
                 this._expiryTypeBadge.classList.add("~critical");
                 this._expiryTypeBadge.classList.remove("~info");
                 this._expiryTypeBadge.textContent = window.lang.strings("deleted");
             } else {
-                this._title.innerHTML = window.lang.strings("accountDeleted").replace("{user}", this._genUserLink());
+                this._title.innerHTML = window.lang.strings("accountDeleted").replace("{user}", this._genUserText());
             }
         } else if (this.type == "enabled") {
             this._title.innerHTML = window.lang.strings("accountReEnabled").replace("{user}", this._genUserLink());
@@ -151,6 +159,15 @@ export class Activity { // FIXME: Add "implements"
     get source_type(): string { return this._act.source_type; }
     set source_type(v: string) {
         this._act.source_type = v;
+        if ((this.source_type == "anon" || this.source_type == "user") && this.type == "creation") {
+            this._sourceType.textContent = window.lang.strings("fromInvite");
+        } else if (this.source_type == "admin") {
+            this._sourceType.textContent = window.lang.strings("byAdmin");
+        } else if (this.source_type == "user" && this.type != "creation") {
+            this._sourceType.textContent = window.lang.strings("byUser");
+        } else if (this.source_type == "daemon") {
+            this._sourceType.textContent = window.lang.strings("byJfaGo");
+        }
     }
 
     get invite_code(): string { return this._act.invite_code; }
@@ -166,6 +183,11 @@ export class Activity { // FIXME: Add "implements"
     get source(): string { return this._act.source; }
     set source(v: string) {
         this._act.source = v;
+        if ((this.source_type == "anon" || this.source_type == "user") && this.type == "creation") {
+            this._source.innerHTML = this._genInvLink();
+        } else if ((this.source_type == "admin" || this.source_type == "user") && this._act.source != "" && this._act.source_username != "") {
+            this._source.innerHTML = this._genSrcUserLink();
+        }
     }
 
     constructor(act: activity) {
@@ -180,7 +202,7 @@ export class Activity { // FIXME: Add "implements"
                 <span class="activity-expiry-type badge self-start md:self-end mt-1"></span>
             </div>
         </div>
-        <div class="flex justify-between">
+        <div class="flex flex-col md:flex-row justify-between">
             <div>
                 <span class="content supra mr-2 activity-source-type"></span><span class="activity-source"></span>
             </div>
@@ -228,7 +250,7 @@ export class activityList {
     reload = () => {
         let send = {
             "type": [],
-            "limit": 30,
+            "limit": 60,
             "page": 0,
             "ascending": false
         }

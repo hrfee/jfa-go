@@ -53,6 +53,7 @@ func (app *appContext) NewUserAdmin(gc *gin.Context) {
 		UserID:     id,
 		SourceType: ActivityAdmin,
 		Source:     gc.GetString("jfId"),
+		Value:      user.Name,
 		Time:       time.Now(),
 	})
 
@@ -328,6 +329,7 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 		SourceType: sourceType,
 		Source:     source,
 		InviteCode: invite.Code,
+		Value:      user.Name,
 		Time:       time.Now(),
 	})
 
@@ -648,6 +650,12 @@ func (app *appContext) DeleteUsers(gc *gin.Context) {
 				}
 			}
 		}
+
+		username := ""
+		if user, status, err := app.jf.UserByID(userID, false); status == 200 && err == nil {
+			username = user.Name
+		}
+
 		status, err := app.jf.DeleteUser(userID)
 		if !(status == 200 || status == 204) || err != nil {
 			msg := fmt.Sprintf("%d: %v", status, err)
@@ -664,6 +672,7 @@ func (app *appContext) DeleteUsers(gc *gin.Context) {
 			UserID:     userID,
 			SourceType: ActivityAdmin,
 			Source:     gc.GetString("jfId"),
+			Value:      username,
 			Time:       time.Now(),
 		})
 
@@ -1151,8 +1160,12 @@ func (app *appContext) ModifyEmails(gc *gin.Context) {
 			emailStore.Addr = address
 			app.storage.SetEmailsKey(id, emailStore)
 
+			activityType := ActivityContactLinked
+			if address == "" {
+				activityType = ActivityContactUnlinked
+			}
 			app.storage.SetActivityKey(shortuuid.New(), Activity{
-				Type:       ActivityContactLinked,
+				Type:       activityType,
 				UserID:     id,
 				SourceType: ActivityAdmin,
 				Source:     gc.GetString("jfId"),

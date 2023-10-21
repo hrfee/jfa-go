@@ -53,7 +53,7 @@ type Activity struct {
 	SourceType ActivitySource
 	Source     string
 	InviteCode string // Set for ActivityCreation, create/deleteInvite
-	Value      string // Used for ActivityContactLinked, "email/discord/telegram/matrix", and Create/DeleteInvite, where it's the label.
+	Value      string // Used for ActivityContactLinked where it's "email/discord/telegram/matrix", Create/DeleteInvite, where it's the label, and Creation/Deletion, where it's the Username.
 	Time       time.Time
 }
 

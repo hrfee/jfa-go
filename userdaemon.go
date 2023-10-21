@@ -107,6 +107,7 @@ func (app *appContext) checkUsers() {
 			if mode == "delete" {
 				status, err = app.jf.DeleteUser(id)
 				activity.Type = ActivityDeletion
+				activity.Value = user.Name
 			} else if mode == "disable" {
 				user.Policy.IsDisabled = true
 				// Admins can't be disabled
