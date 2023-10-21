@@ -2,6 +2,7 @@ const dateParser = require("any-date-parser");
 
 export interface QueryType {
     name: string;
+    description?: string;
     getter: string;
     bool: boolean;
     string: boolean;
@@ -15,6 +16,7 @@ export interface SearchConfiguration {
     sortingByButton: HTMLButtonElement;
     searchOptionsHeader: HTMLElement;
     notFoundPanel: HTMLElement;
+    filterList: HTMLElement;
     clearSearchButtonSelector: string;
     search: HTMLInputElement;
     queries: { [field: string]: QueryType };
@@ -158,7 +160,7 @@ export class Search {
                 let cachedResult = [...result];
                 for (let id of cachedResult) {
                     const u = this._items[id];
-                    const value = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(u), queryFormat.getter).get.call(u);
+                    const value = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(u), queryFormat.getter).get.call(u).toLowerCase();
                     if (!(value.includes(split[1]))) {
                         result.splice(result.indexOf(id), 1);
                     }
@@ -280,6 +282,90 @@ export class Search {
             this._c.notFoundPanel.classList.remove("unfocused");
         } else {
             this._c.notFoundPanel.classList.add("unfocused");
+        }
+    }
+
+    fillInFilter = (name: string, value: string, offset?: number) => {
+        this._c.search.value = name + ":" + value + " " + this._c.search.value;
+        this._c.search.focus();
+        let newPos = name.length + 1 + value.length;
+        if (typeof offset !== 'undefined')
+            newPos += offset;
+        this._c.search.setSelectionRange(newPos, newPos);
+        this._c.search.oninput(null as any);
+    };
+
+    generateFilterList = () => {
+        // Generate filter buttons
+        for (let queryName of Object.keys(this._c.queries)) {
+            const query = this._c.queries[queryName];
+            if ("show" in query && !query.show) continue;
+            if ("dependsOnElement" in query && query.dependsOnElement) {
+                const el = document.querySelector(query.dependsOnElement);
+                if (el === null) continue;
+            }
+
+            const container = document.createElement("span") as HTMLSpanElement;
+            container.classList.add("button", "button-xl", "~neutral", "@low", "mb-1", "mr-2");
+            container.innerHTML = `
+            <div class="flex flex-col mr-2">
+                <span>${query.name}</span>
+                <span class="support">${query.description || ""}</span>
+            </div>
+            `;
+            if (query.bool) {
+                const pos = document.createElement("button") as HTMLButtonElement;
+                pos.type = "button";
+                pos.ariaLabel = `Filter by "${query.name}": True`;
+                pos.classList.add("button", "~positive", "ml-2");
+                pos.innerHTML = `<i class="ri-checkbox-circle-fill"></i>`;
+                pos.addEventListener("click", () => this.fillInFilter(queryName, "true"));
+                const neg = document.createElement("button") as HTMLButtonElement;
+                neg.type = "button";
+                neg.ariaLabel = `Filter by "${query.name}": False`;
+                neg.classList.add("button", "~critical", "ml-2");
+                neg.innerHTML = `<i class="ri-close-circle-fill"></i>`;
+                neg.addEventListener("click", () => this.fillInFilter(queryName, "false"));
+
+                container.appendChild(pos);
+                container.appendChild(neg);
+            }
+            if (query.string) {
+                const button = document.createElement("button") as HTMLButtonElement;
+                button.type = "button";
+                button.classList.add("button", "~urge", "ml-2");
+                button.innerHTML = `<i class="ri-equal-line mr-2"></i>${window.lang.strings("matchText")}`;
+
+                // Position cursor between quotes
+                button.addEventListener("click", () => this.fillInFilter(queryName, `""`, -1));
+                
+                container.appendChild(button);
+            }
+            if (query.date) {
+                const onDate = document.createElement("button") as HTMLButtonElement;
+                onDate.type = "button";
+                onDate.classList.add("button", "~urge", "ml-2");
+                onDate.innerHTML = `<i class="ri-calendar-check-line mr-2"></i>On Date`;
+                onDate.addEventListener("click", () => this.fillInFilter(queryName, `"="`, -1));
+
+                const beforeDate = document.createElement("button") as HTMLButtonElement;
+                beforeDate.type = "button";
+                beforeDate.classList.add("button", "~urge", "ml-2");
+                beforeDate.innerHTML = `<i class="ri-calendar-check-line mr-2"></i>Before Date`;
+                beforeDate.addEventListener("click", () => this.fillInFilter(queryName, `"<"`, -1));
+
+                const afterDate = document.createElement("button") as HTMLButtonElement;
+                afterDate.type = "button";
+                afterDate.classList.add("button", "~urge", "ml-2");
+                afterDate.innerHTML = `<i class="ri-calendar-check-line mr-2"></i>After Date`;
+                afterDate.addEventListener("click", () => this.fillInFilter(queryName, `">"`, -1));
+                
+                container.appendChild(onDate);
+                container.appendChild(beforeDate);
+                container.appendChild(afterDate);
+            }
+
+            this._c.filterList.appendChild(container);
         }
     }
 

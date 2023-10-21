@@ -151,7 +151,22 @@
         "fromInvite": "From Invite",
         "byAdmin": "By Admin",
         "byUser": "By User",
-        "byJfaGo": "By jfa-go"
+        "byJfaGo": "By jfa-go",
+        "activityID": "Activity ID",
+        "title": "Title",
+        "usersMentioned": "User mentioned",
+        "actor": "Actor",
+        "actorDescription": "The thing that caused this action. <hr class=\"sep\"> \"user\"/\"admin\"/\"daemon\" or a username.",
+        "accountCreationFilter": "Account Creation",
+        "accountDeletionFilter": "Account Deletion",
+        "accountDisabledFilter": "Account Disabled",
+        "accountEnabledFilter": "Account Enabled",
+        "contactLinkedFilter": "Contact Linked",
+        "contactUnlinkedFilter": "Contact Unlinked",
+        "passwordChangeFilter": "Password Changed",
+        "passwordResetFilter": "Password Reset",
+        "inviteCreatedFilter": "Invite Created",
+        "inviteDeletedFilter": "Invite Deleted/Expired"
     },
     "notifications": {
         "changedEmailAddress": "Changed email address of {n}.",

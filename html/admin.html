@@ -725,48 +725,20 @@
                     <div class="flex-expand align-middle">
                         <span class="text-3xl font-bold mr-4">{{ .strings.activity }}</span>
                         <div id="activity-filter-dropdown" class="dropdown z-10" tabindex="0">
-                            <span class="h-100 button ~neutral @low center" id="accounts-filter-button">{{ .strings.filters }}</span>
+                            <span class="h-100 button ~neutral @low center" id="activity-filter-button">{{ .strings.filters }}</span>
                             <div class="dropdown-display">
-                                <div class="card ~neutral @low mt-2" id="accounts-filter-list">
+                                <div class="card ~neutral @low mt-2" id="activity-filter-list">
                                     <p class="supra pb-2">{{ .strings.filters }}</p>
                                 </div>
                             </div>
                         </div>
-                        <input type="search" class="field ~neutral @low input search ml-2 mr-2" id="accounts-search" placeholder="{{ .strings.search }}">
-                        <span class="button ~neutral @low center ml-[-2.64rem] rounded-s-none accounts-search-clear" aria-label="{{ .strings.clearSearch }}" text="{{ .strings.clearSearch }}"><i class="ri-close-line"></i></span>
+                        <input type="search" class="field ~neutral @low input search ml-2 mr-2" id="activity-search" placeholder="{{ .strings.search }}">
+                        <span class="button ~neutral @low center ml-[-2.64rem] rounded-s-none activity-search-clear" aria-label="{{ .strings.clearSearch }}" text="{{ .strings.clearSearch }}"><i class="ri-close-line"></i></span>
                     </div>
-                    <div class="supra py-1 sm hidden" id="accounts-search-options-header">{{ .strings.searchOptions }}</div>
+                    <div class="supra py-1 sm hidden" id="activity-search-options-header">{{ .strings.searchOptions }}</div>
                     <div class="row -mx-2 mb-2">
-                        <button type="button" class="button ~neutral @low center mx-2 hidden"><span id="accounts-sort-by-field"></span> <i class="ri-close-line ml-2 text-2xl"></i></button>
-                        <span id="accounts-filter-area"></span>
-                    </div>
-                    <div class="supra py-1 sm">{{ .strings.actions }}</div>
-                    <div class="row -mx-2">
-                        <span class="col button ~neutral @low center max-w-[20%]" id="accounts-add-user">{{ .quantityStrings.addUser.Singular }}</span>
-                        <div id="accounts-announce-dropdown" class="col dropdown pb-0i max-w-[20%]" tabindex="0">
-                            <span class="w-100 button ~info @low center" id="accounts-announce">{{ .strings.announce }}</span>
-                            <div class="dropdown-display">
-                                <div class="card ~neutral @low">
-                                    <span class="supra sm">{{ .strings.templates }}</span>
-                                    <div id="accounts-announce-templates"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <span class="col button ~urge @low center max-w-[20%]" id="accounts-modify-user">{{ .strings.modifySettings }}</span>
-                        {{ if .referralsEnabled }}
-                            <span class="col button ~urge @low center max-w-[20%]" id="accounts-enable-referrals">{{ .strings.enableReferrals }}</span>
-                        {{ end }}
-                        <span class="col button ~warning @low center max-w-[20%]" id="accounts-extend-expiry">{{ .strings.extendExpiry }}</span>
-                        <div id="accounts-disable-enable-dropdown" class="col dropdown manual pb-0i max-w-[20%]" tabindex="0">
-                            <span class="w-100 button ~positive @low center" id="accounts-disable-enable">{{ .strings.disable }}</span>
-                            <div class="dropdown-display">
-                                <div class="card ~neutral @low">
-                                    <span class="button ~urge full-width accounts-announce-template-button" id="accounts-enable-expiry">{{ .strings.setExpiry }}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <span class="col button ~info @low center unfocused max-w-[20%]" id="accounts-send-pwr">{{ .strings.sendPWR }}</span>
-                        <span class="col button ~critical @low center max-w-[20%]" id="accounts-delete-user">{{ .quantityStrings.deleteUser.Singular }}</span>
+                        <button type="button" class="button ~neutral @low center mx-2 hidden"><span id="activity-sort-by-field"></span> <i class="ri-close-line ml-2 text-2xl"></i></button>
+                        <span id="activity-filter-area"></span>
                     </div>
                     <div class="flex flex-col md:flex-row gap-3">
                         <div class="card @low dark:~d_neutral col max-w-[20%]">
@@ -778,19 +750,14 @@
                             <span class="button ~neutral @low settings-section-button justify-between mb-2" id="setting-about"><span class="flex">{{ .strings.aboutProgram }} <i class="ri-information-line ml-2"></i></span></span>
                             <span class="button ~neutral @low settings-section-button justify-between mb-2" id="setting-profiles"><span class="flex">{{ .strings.userProfiles }} <i class="ri-user-line ml-2"></i></span></span>
                         </div>
-                        <div class="card ~neutral @low col" id="activity-card-list">
-                            <div class="card ~urge @low">
-                                <div class="flex justify-between mb-2">
-                                    <span class="heading text-2xl activity-title">Account Created: <a href="/fixme" class="activity-url">"hrfee"</a></span>
-                                    <span class="text-sm font-medium activity-time">26/10/23 14:32</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <div>
-                                        <span class="content supra mr-2 activity-source-type">From Invite</span><a href="fixme" class="activity-source">BdBmpGDzuJhHSsboAsYgrE</a>
-                                    </div>
-                                    <div>
-                                        <span class="content supra mr-2">Referrer</span><a href="fixme" class="activity-referrer">username</a>
-                                    </div>
+                        <div class="card ~neutral @low col">
+                            <div id="activity-card-list"></div>
+                            <div class="unfocused h-[100%] my-3" id="activity-not-found">
+                                <div class="flex flex-col h-[100%] justify-center items-center">
+                                    <span class="text-2xl font-medium italic mb-3">{{ .strings.noResultsFound }}</span>
+                                    <button class="button ~neutral @low activity-search-clear">
+                                        <span class="mr-2">{{ .strings.clearSearch }}</span><i class="ri-close-line"></i>
+                                    </button>
                                 </div>
                             </div>
                         </div>

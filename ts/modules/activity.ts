@@ -1,14 +1,15 @@
 import { _post, _delete, toDateString } from "../modules/common.js";
+import { Search, SearchConfiguration, QueryType, SearchableItem } from "../modules/search.js";
 
 export interface activity {
-    id: string;
-    type: string;
-    user_id: string;
-    source_type: string;
-    source: string;
-    invite_code: string;
-    value: string;
-    time: number;
+    id: string; 
+    type: string; 
+    user_id: string; 
+    source_type: string; 
+    source: string; 
+    invite_code: string; 
+    value: string; 
+    time: number; 
     username: string;
     source_username: string;
 }
@@ -26,11 +27,11 @@ var activityTypeMoods = {
     "deleteInvite": -1
 };
 
-var moodColours = ["~warning", "~neutral", "~urge"];
+// var moodColours = ["~warning", "~neutral", "~urge"];
 
 export var activityReload = new CustomEvent("activity-reload");
 
-export class Activity { // FIXME: Add "implements"
+export class Activity implements activity, SearchableItem { // FIXME: Add "implements"
     private _card: HTMLElement;
     private _title: HTMLElement;
     private _time: HTMLElement;
@@ -62,6 +63,33 @@ export class Activity { // FIXME: Add "implements"
 
     private _genInvLink = (): string => {
         return `<a class="hover:underline" href="/accounts/invites/${this.invite_code}">${this._renderInvText()}</a>`;
+    }
+
+
+    get accountCreation(): boolean { return this.type == "creation"; }
+    get accountDeletion(): boolean { return this.type == "deletion"; }
+    get accountDisabled(): boolean { return this.type == "disabled"; }
+    get accountEnabled(): boolean { return this.type == "enabled"; }
+    get contactLinked(): boolean { return this.type == "contactLinked"; }
+    get contactUnlinked(): boolean { return this.type == "contactUnlinked"; }
+    get passwordChange(): boolean { return this.type == "changePassword"; }
+    get passwordReset(): boolean { return this.type == "resetPassword"; }
+    get inviteCreated(): boolean { return this.type == "createInvite"; }
+    get inviteDeleted(): boolean { return this.type == "deleteInvite"; }
+
+    get mentionedUsers(): string {
+        return (this.username + " " + this.source_username).toLowerCase();
+    }
+
+    get actor(): string {
+        let out = this.source_type + " ";
+        if (this.source_type == "admin" || this.source_type == "user") out += this.source_username;
+        return out.toLowerCase();
+    }
+
+    get referrer(): string {
+        if (this.type != "creation" || this.source_type != "user") return "";
+        return this.source_username.toLowerCase();
     }
 
     get type(): string { return this._act.type; }
@@ -195,6 +223,29 @@ export class Activity { // FIXME: Add "implements"
         }
     }
 
+    get id(): string { return this._act.id; }
+    set id(v: string) { this._act.id = v; }
+
+    get user_id(): string { return this._act.user_id; }
+    set user_id(v: string) { this._act.user_id = v; }
+
+    get username(): string { return this._act.username; }
+    set username(v: string) { this._act.username = v; }
+
+    get source_username(): string { return this._act.source_username; }
+    set source_username(v: string) { this._act.source_username = v; }
+
+    get title(): string { return this._title.textContent; }
+
+    matchesSearch = (query: string): boolean => {
+        // console.log(this.title, "matches", query, ":", this.title.includes(query));
+        return (
+            this.title.toLowerCase().includes(query) ||
+            this.username.toLowerCase().includes(query) ||
+            this.source_username.toLowerCase().includes(query)
+        );
+    }
+
     constructor(act: activity) {
         this._card = document.createElement("div");
 
@@ -265,6 +316,26 @@ interface ActivitiesDTO {
 
 export class activityList {
     private _activityList: HTMLElement;
+    private _activities: { [id: string]: Activity } = {}; 
+    private _ordering: string[] = [];
+    private _filterArea = document.getElementById("activity-filter-area");
+    private _searchOptionsHeader = document.getElementById("activity-search-options-header");
+    private _sortingByButton = document.getElementById("activity-sort-by-field") as HTMLButtonElement;
+    private _notFoundPanel = document.getElementById("activity-not-found");
+    private _searchBox = document.getElementById("activity-search") as HTMLInputElement;
+    private _search: Search;
+
+
+    setVisibility = (activities: string[], visible: boolean) => {
+        this._activityList.textContent = ``;
+        for (let id of this._ordering) {
+            if (visible && activities.indexOf(id) != -1) {
+                this._activityList.appendChild(this._activities[id].asElement());
+            } else if (!visible && activities.indexOf(id) == -1) {
+                this._activityList.appendChild(this._activities[id].asElement());
+            }
+        }
+    }
 
     reload = () => {
         let send = {
@@ -281,17 +352,165 @@ export class activityList {
             }
 
             let resp = req.response as ActivitiesDTO;
-            this._activityList.textContent = ``;
-
+            // FIXME: Don't destroy everything each reload!
+            this._activities = {};
             for (let act of resp.activities) {
-                const activity = new Activity(act);
-                this._activityList.appendChild(activity.asElement());
+                this._activities[act.id] = new Activity(act);
+                this._activityList.appendChild(this._activities[act.id].asElement());
+            }
+            this._search.items = this._activities;
+            // FIXME: Actually implement sorting
+            this._ordering = Object.keys(this._activities);
+            this._search.ordering = this._ordering;
+
+            if (this._search.inSearch) {
+                const results = this._search.search(this._searchBox.value);
+                this.setVisibility(results, true);
+                if (results.length == 0) {
+                    this._notFoundPanel.classList.remove("unfocused");
+                } else {
+                    this._notFoundPanel.classList.add("unfocused");
+                }
+            } else {
+                this.setVisibility(this._ordering, true);
+                this._notFoundPanel.classList.add("unfocused");
             }
         }, true);
     }
+    
+    private _queries: { [field: string]: QueryType } = {
+        "id": {
+            name: window.lang.strings("activityID"),
+            getter: "id",
+            bool: false,
+            string: true,
+            date: false
+        },
+        "title": {
+            name: window.lang.strings("title"),
+            getter: "title",
+            bool: false,
+            string: true,
+            date: false
+        },
+        "user": {
+            name: window.lang.strings("usersMentioned"),
+            getter: "mentionedUsers",
+            bool: false,
+            string: true,
+            date: false
+        },
+        "actor": {
+            name: window.lang.strings("actor"),
+            description: window.lang.strings("actorDescription"),
+            getter: "actor",
+            bool: false,
+            string: true,
+            date: false
+        },
+        "referrer": {
+            name: window.lang.strings("referrer"),
+            getter: "referrer",
+            bool: true,
+            string: true,
+            date: false
+        },
+        "date": {
+            name: window.lang.strings("date"),
+            getter: "date",
+            bool: false,
+            string: false,
+            date: true
+        },
+        "account-creation": {
+            name: window.lang.strings("accountCreationFilter"),
+            getter: "accountCreation",
+            bool: true,
+            string: false,
+            date: false
+        },
+        "account-deletion": {
+            name: window.lang.strings("accountDeletionFilter"),
+            getter: "accountDeletion",
+            bool: true,
+            string: false,
+            date: false
+        },
+        "account-disabled": {
+            name: window.lang.strings("accountDisabledFilter"),
+            getter: "accountDisabled",
+            bool: true,
+            string: false,
+            date: false
+        },
+        "account-enabled": {
+            name: window.lang.strings("accountEnabledFilter"),
+            getter: "accountEnabled",
+            bool: true,
+            string: false,
+            date: false
+        },
+        "contact-linked": {
+            name: window.lang.strings("contactLinkedFilter"),
+            getter: "contactLinked",
+            bool: true,
+            string: false,
+            date: false
+        },
+        "contact-unlinked": {
+            name: window.lang.strings("contactUnlinkedFilter"),
+            getter: "contactUnlinked",
+            bool: true,
+            string: false,
+            date: false
+        },
+        "password-change": {
+            name: window.lang.strings("passwordChangeFilter"),
+            getter: "passwordChange",
+            bool: true,
+            string: false,
+            date: false
+        },
+        "password-reset": {
+            name: window.lang.strings("passwordResetFilter"),
+            getter: "passwordReset",
+            bool: true,
+            string: false,
+            date: false
+        },
+        "invite-created": {
+            name: window.lang.strings("inviteCreatedFilter"),
+            getter: "inviteCreated",
+            bool: true,
+            string: false,
+            date: false
+        },
+        "invite-deleted": {
+            name: window.lang.strings("inviteDeletedFilter"),
+            getter: "inviteDeleted",
+            bool: true,
+            string: false,
+            date: false
+        }
+    };
 
     constructor() {
         this._activityList = document.getElementById("activity-card-list");
         document.addEventListener("activity-reload", this.reload);
+
+        let conf: SearchConfiguration = {
+            filterArea: this._filterArea,
+            sortingByButton: this._sortingByButton,
+            searchOptionsHeader: this._searchOptionsHeader,
+            notFoundPanel: this._notFoundPanel,
+            search: this._searchBox,
+            clearSearchButtonSelector: ".activity-search-clear",
+            queries: this._queries,
+            setVisibility: this.setVisibility,
+            filterList: document.getElementById("activity-filter-list"),
+            onSearchCallback: () => {}
+        }
+        this._search = new Search(conf);
+        this._search.generateFilterList();
     }
 }
