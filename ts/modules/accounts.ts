@@ -1808,7 +1808,7 @@ export class accountsList {
             queries: this._queries,
             setVisibility: this.setVisibility,
             clearSearchButtonSelector: ".accounts-search-clear",
-            onSearchCallback: () => {
+            onSearchCallback: (_0: number, _1: boolean) => {
                 this._checkCheckCount();
             }
         };

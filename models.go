@@ -453,4 +453,5 @@ type GetActivitiesDTO struct {
 
 type GetActivitiesRespDTO struct {
 	Activities []ActivityDTO `json:"activities"`
+	LastPage   bool          `json:"last_page"`
 }

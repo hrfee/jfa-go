@@ -104,7 +104,7 @@ func (app *appContext) GetActivities(gc *gin.Context) {
 		query = badgerhold.Where("Type").In(activityTypes...)
 	}
 
-	if req.Ascending {
+	if !req.Ascending {
 		query = query.Reverse()
 	}
 
@@ -125,6 +125,7 @@ func (app *appContext) GetActivities(gc *gin.Context) {
 
 	resp := GetActivitiesRespDTO{
 		Activities: make([]ActivityDTO, len(results)),
+		LastPage:   len(results) != req.Limit,
 	}
 
 	for i, act := range results {

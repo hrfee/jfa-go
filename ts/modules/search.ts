@@ -21,7 +21,8 @@ export interface SearchConfiguration {
     search: HTMLInputElement;
     queries: { [field: string]: QueryType };
     setVisibility: (items: string[], visible: boolean) => void;
-    onSearchCallback: () => void;
+    onSearchCallback: (visibleCount: number, newItems: boolean) => void;
+    loadMore?: () => void;
 }
 
 export interface SearchableItem {
@@ -267,7 +268,7 @@ export class Search {
     get ordering(): string[] { return this._ordering; }
     set ordering(v: string[]) { this._ordering = v; }
 
-    onSearchBoxChange = () => {
+    onSearchBoxChange = (newItems: boolean = false) => {
         const query = this._c.search.value;
         if (!query) {
             this.inSearch = false;
@@ -276,7 +277,7 @@ export class Search {
         }
         const results = this.search(query);
         this._c.setVisibility(results, true);
-        this._c.onSearchCallback();
+        this._c.onSearchCallback(results.length, newItems);
         this.showHideSearchOptionsHeader();
         if (results.length == 0) {
             this._c.notFoundPanel.classList.remove("unfocused");
@@ -294,6 +295,8 @@ export class Search {
         this._c.search.setSelectionRange(newPos, newPos);
         this._c.search.oninput(null as any);
     };
+    
+
 
     generateFilterList = () => {
         // Generate filter buttons
@@ -372,7 +375,7 @@ export class Search {
     constructor(c: SearchConfiguration) {
         this._c = c;
 
-        this._c.search.oninput = this.onSearchBoxChange;
+        this._c.search.oninput = () => this.onSearchBoxChange();
 
         const clearSearchButtons = Array.from(document.querySelectorAll(this._c.clearSearchButtonSelector)) as Array<HTMLSpanElement>;
         for (let b of clearSearchButtons) {

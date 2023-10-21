@@ -1,4 +1,4 @@
-import { _post, _delete, toDateString } from "../modules/common.js";
+import { _post, _delete, toDateString, addLoader, removeLoader } from "../modules/common.js";
 import { Search, SearchConfiguration, QueryType, SearchableItem } from "../modules/search.js";
 
 export interface activity {
@@ -31,7 +31,7 @@ var activityTypeMoods = {
 
 export var activityReload = new CustomEvent("activity-reload");
 
-export class Activity implements activity, SearchableItem { // FIXME: Add "implements"
+export class Activity implements activity, SearchableItem {
     private _card: HTMLElement;
     private _title: HTMLElement;
     private _time: HTMLElement;
@@ -173,14 +173,6 @@ export class Activity implements activity, SearchableItem { // FIXME: Add "imple
 
             this._title.innerHTML = innerHTML.replace("{invite}", this._renderInvText());
         }
-
-        /*} else if (this.source_type == "admin") {
-            // FIXME: Handle contactLinked/Unlinked, creation/deletion, enable/disable, createInvite/deleteInvite
-        } else if (this.source_type == "anon") {
-            this._referrer.innerHTML = ``;
-        } else if (this.source_type == "daemon") {
-            // FIXME: Handle deleteInvite, disabled, deletion
-        }*/
     }
 
     get time(): number { return this._timeUnix; }
@@ -289,7 +281,6 @@ export class Activity implements activity, SearchableItem { // FIXME: Add "imple
     }
 
     update = (act: activity) => {
-        // FIXME
         this._act = act;
         this.source_type = act.source_type;
         this.invite_code = act.invite_code;
@@ -312,6 +303,7 @@ export class Activity implements activity, SearchableItem { // FIXME: Add "imple
 
 interface ActivitiesDTO {
     activities: activity[];
+    last_page: boolean;
 }
 
 export class activityList {
@@ -323,7 +315,14 @@ export class activityList {
     private _sortingByButton = document.getElementById("activity-sort-by-field") as HTMLButtonElement;
     private _notFoundPanel = document.getElementById("activity-not-found");
     private _searchBox = document.getElementById("activity-search") as HTMLInputElement;
+    private _sortDirection = document.getElementById("activity-sort-direction") as HTMLButtonElement;
+    private _loader = document.getElementById("activity-loader");
     private _search: Search;
+    private _ascending: boolean;
+    private _hasLoaded: boolean;
+    private _lastLoad: number;
+    private _page: number = 0;
+    private _lastPage: boolean;
 
 
     setVisibility = (activities: string[], visible: boolean) => {
@@ -338,11 +337,19 @@ export class activityList {
     }
 
     reload = () => {
+        this._lastLoad = Date.now();
+        this._lastPage = false;
+        // this._page = 0;
+        let limit = 10;
+        if (this._page != 0) {
+            limit *= this._page+1;
+        };
+
         let send = {
             "type": [],
-            "limit": 60,
+            "limit": limit,
             "page": 0,
-            "ascending": false
+            "ascending": this.ascending
         }
         _post("/activity", send, (req: XMLHttpRequest) => {
             if (req.readyState != 4) return;
@@ -351,33 +358,72 @@ export class activityList {
                 return;
             }
 
+            this._hasLoaded = true;
+
             let resp = req.response as ActivitiesDTO;
             // FIXME: Don't destroy everything each reload!
             this._activities = {};
+            this._ordering = [];
+
             for (let act of resp.activities) {
                 this._activities[act.id] = new Activity(act);
-                this._activityList.appendChild(this._activities[act.id].asElement());
+                this._ordering.push(act.id);
             }
             this._search.items = this._activities;
-            // FIXME: Actually implement sorting
-            this._ordering = Object.keys(this._activities);
             this._search.ordering = this._ordering;
 
             if (this._search.inSearch) {
-                const results = this._search.search(this._searchBox.value);
-                this.setVisibility(results, true);
-                if (results.length == 0) {
-                    this._notFoundPanel.classList.remove("unfocused");
-                } else {
-                    this._notFoundPanel.classList.add("unfocused");
-                }
+                this._search.onSearchBoxChange(true);
             } else {
                 this.setVisibility(this._ordering, true);
                 this._notFoundPanel.classList.add("unfocused");
             }
         }, true);
     }
-    
+
+    loadMore = () => {
+        this._lastLoad = Date.now();
+        this._page += 1;
+
+        let send = {
+            "type": [],
+            "limit": 10,
+            "page": this._page,
+            "ascending": this._ascending
+        };
+
+        // this._activityList.classList.add("unfocused");
+        // addLoader(this._loader, false, true);
+
+        _post("/activity", send, (req: XMLHttpRequest) => {
+            if (req.readyState != 4) return;
+            if (req.status != 200) {
+                window.notifications.customError("loadActivitiesError", window.lang.notif("errorLoadActivities"));
+                return;
+            }
+
+            let resp = req.response as ActivitiesDTO;
+            
+            this._lastPage = resp.last_page;
+
+            for (let act of resp.activities) {
+                this._activities[act.id] = new Activity(act);
+                this._ordering.push(act.id);
+            }
+            // this._search.items = this._activities;
+            // this._search.ordering = this._ordering;
+
+            if (this._search.inSearch) {
+                this._search.onSearchBoxChange(true);
+            } else {
+                this.setVisibility(this._ordering, true);
+                this._notFoundPanel.classList.add("unfocused");
+            }
+            // removeLoader(this._loader);
+            // this._activityList.classList.remove("unfocused");
+        }, true);
+    }
+
     private _queries: { [field: string]: QueryType } = {
         "id": {
             name: window.lang.strings("activityID"),
@@ -494,6 +540,27 @@ export class activityList {
         }
     };
 
+    get ascending(): boolean { return this._ascending; }
+    set ascending(v: boolean) {
+        this._ascending = v;
+        this._sortDirection.innerHTML = `${window.lang.strings("sortDirection")} <i class="ri-arrow-${v ? "up" : "down"}-s-line ml-2"></i>`;
+        if (this._hasLoaded) {
+            this.reload();
+        }
+    }
+
+    detectScroll = () => {
+        // console.log(window.innerHeight + document.documentElement.scrollTop, document.scrollingElement.scrollHeight);
+        if (Math.abs(window.innerHeight + document.documentElement.scrollTop - document.scrollingElement.scrollHeight) < 50) {
+            // window.notifications.customSuccess("scroll", "Reached bottom.");
+            // Wait 1s between loads
+            if (this._lastLoad + 1000 > Date.now()) return;
+            this.loadMore();
+        }
+    }
+
+    private _prevResultCount = 0;
+
     constructor() {
         this._activityList = document.getElementById("activity-card-list");
         document.addEventListener("activity-reload", this.reload);
@@ -508,9 +575,21 @@ export class activityList {
             queries: this._queries,
             setVisibility: this.setVisibility,
             filterList: document.getElementById("activity-filter-list"),
-            onSearchCallback: () => {}
+            onSearchCallback: (visibleCount: number, newItems: boolean) => {
+                
+                if (visibleCount < 10) {
+                    if (!newItems || this._prevResultCount != visibleCount || (visibleCount == 0 && !this._lastPage)) this.loadMore();
+                }
+                this._prevResultCount = visibleCount;
+            }
         }
         this._search = new Search(conf);
         this._search.generateFilterList();
+
+        this._hasLoaded = false;
+        this.ascending = false;
+        this._sortDirection.addEventListener("click", () => this.ascending = !this.ascending);
+
+        window.onscroll = this.detectScroll;
     }
 }

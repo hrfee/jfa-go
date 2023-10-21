@@ -732,6 +732,7 @@
                                 </div>
                             </div>
                         </div>
+                        <button class="button ~neutral @low ml-2" id="activity-sort-direction">{{ .strings.sortDirection }}</button>
                         <input type="search" class="field ~neutral @low input search ml-2 mr-2" id="activity-search" placeholder="{{ .strings.search }}">
                         <span class="button ~neutral @low center ml-[-2.64rem] rounded-s-none activity-search-clear" aria-label="{{ .strings.clearSearch }}" text="{{ .strings.clearSearch }}"><i class="ri-close-line"></i></span>
                     </div>
@@ -740,25 +741,15 @@
                         <button type="button" class="button ~neutral @low center mx-2 hidden"><span id="activity-sort-by-field"></span> <i class="ri-close-line ml-2 text-2xl"></i></button>
                         <span id="activity-filter-area"></span>
                     </div>
-                    <div class="flex flex-col md:flex-row gap-3">
-                        <div class="card @low dark:~d_neutral col max-w-[20%]">
-                            <div class="flex-expand">
-                                <input type="search" class="field ~neutral @low input settings-section-button justify-between mb-2" id="settings-search" placeholder="{{ .strings.search }}">
-                                <button class="button ~neutral @low center -ml-10 rounded-s-none mb-2 settings-search-clear" aria-label="{{ .strings.clearSearch }}" text="{{ .strings.clearSearch }}"><i class="ri-close-line"></i></button>
-                            </div>
-                            <aside class="aside sm ~urge dark:~d_info mb-2 @low" id="settings-message">Note: <span class="badge ~critical">*</span> indicates a required field, <span class="badge ~info dark:~d_warning">R</span> indicates changes require a restart.</aside> 
-                            <span class="button ~neutral @low settings-section-button justify-between mb-2" id="setting-about"><span class="flex">{{ .strings.aboutProgram }} <i class="ri-information-line ml-2"></i></span></span>
-                            <span class="button ~neutral @low settings-section-button justify-between mb-2" id="setting-profiles"><span class="flex">{{ .strings.userProfiles }} <i class="ri-user-line ml-2"></i></span></span>
-                        </div>
-                        <div class="card ~neutral @low col">
-                            <div id="activity-card-list"></div>
-                            <div class="unfocused h-[100%] my-3" id="activity-not-found">
-                                <div class="flex flex-col h-[100%] justify-center items-center">
-                                    <span class="text-2xl font-medium italic mb-3">{{ .strings.noResultsFound }}</span>
-                                    <button class="button ~neutral @low activity-search-clear">
-                                        <span class="mr-2">{{ .strings.clearSearch }}</span><i class="ri-close-line"></i>
-                                    </button>
-                                </div>
+                    <div class="card @low dark:~d_neutral col">
+                        <div id="activity-card-list"></div>
+                        <div id="activity-loader"></div>
+                        <div class="unfocused h-[100%] my-3" id="activity-not-found">
+                            <div class="flex flex-col h-[100%] justify-center items-center">
+                                <span class="text-2xl font-medium italic mb-3">{{ .strings.noResultsFound }}</span>
+                                <button class="button ~neutral @low activity-search-clear">
+                                    <span class="mr-2">{{ .strings.clearSearch }}</span><i class="ri-close-line"></i>
+                                </button>
                             </div>
                         </div>
                     </div>
