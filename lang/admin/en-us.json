@@ -167,6 +167,7 @@
         "telegramVerified": "Telegram account verified.",
         "accountConnected": "Account connected.",
         "referralsEnabled": "Referrals enabled.",
+        "activityDeleted": "Activity Deleted.",
         "errorSettingsAppliedNoHomescreenLayout": "Settings were applied, but applying homescreen layout may have failed.",
         "errorHomescreenAppliedNoSettings": "Homescreen layout was applied, but applying settings may have failed.",
         "errorSettingsFailed": "Application failed.",

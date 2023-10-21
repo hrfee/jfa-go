@@ -1,4 +1,4 @@
-import { _post, toDateString } from "../modules/common.js";
+import { _post, _delete, toDateString } from "../modules/common.js";
 
 export interface activity {
     id: string;
@@ -28,6 +28,8 @@ var activityTypeMoods = {
 
 var moodColours = ["~warning", "~neutral", "~urge"];
 
+export var activityReload = new CustomEvent("activity-reload");
+
 export class Activity { // FIXME: Add "implements"
     private _card: HTMLElement;
     private _title: HTMLElement;
@@ -37,6 +39,7 @@ export class Activity { // FIXME: Add "implements"
     private _source: HTMLElement;
     private _referrer: HTMLElement;
     private _expiryTypeBadge: HTMLElement;
+    private _delete: HTMLElement;
     private _act: activity;
 
     _genUserText = (): string => {
@@ -66,16 +69,18 @@ export class Activity { // FIXME: Add "implements"
         this._act.type = v;
 
         let mood = activityTypeMoods[v]; // 1 = positive, 0 = neutral, -1 = negative
-        this._card.classList.remove("~warning");
-        this._card.classList.remove("~neutral");
-        this._card.classList.remove("~urge");
-        
-        if (mood == -1) {
-            this._card.classList.add("~warning");
-        } else if (mood == 0) {
-            this._card.classList.add("~neutral");
-        } else if (mood == 1) {
-            this._card.classList.add("~urge");
+        for (let el of [this._card, this._delete]) {
+            el.classList.remove("~warning");
+            el.classList.remove("~neutral");
+            el.classList.remove("~urge");
+            
+            if (mood == -1) {
+                el.classList.add("~warning");
+            } else if (mood == 0) {
+                el.classList.add("~neutral");
+            } else if (mood == 1) {
+                el.classList.add("~urge");
+            }
         }
 
         /* for (let i = 0; i < moodColours.length; i++) {
@@ -209,6 +214,9 @@ export class Activity { // FIXME: Add "implements"
             <div>
                 <span class="content activity-referrer"></span>
             </div>
+            <div>
+                <button class="button @low hover:~critical rounded-full px-1 py-px activity-delete" aria-label="${window.lang.strings("delete")}"><i class="ri-close-line"></i></button>
+            </div>
         </div>
         `;
 
@@ -218,10 +226,13 @@ export class Activity { // FIXME: Add "implements"
         this._source = this._card.querySelector(".activity-source");
         this._referrer = this._card.querySelector(".activity-referrer");
         this._expiryTypeBadge = this._card.querySelector(".activity-expiry-type");
+        this._delete = this._card.querySelector(".activity-delete");
 
         document.addEventListener("timefmt-change", () => {
             this.time = this.time;
         });
+
+        this._delete.addEventListener("click", this.delete);
 
         this.update(act);
     }
@@ -236,6 +247,14 @@ export class Activity { // FIXME: Add "implements"
         this.value = act.value;
         this.type  = act.type;
     }
+
+    delete = () => _delete("/activity/" + this._act.id, null, (req: XMLHttpRequest) => {
+        if (req.readyState != 4) return;
+        if (req.status == 200) {
+            window.notifications.customSuccess("activityDeleted", window.lang.notif("activityDeleted"));
+        }
+        document.dispatchEvent(activityReload);
+    });
 
     asElement = () => { return this._card; };
 }
@@ -273,5 +292,6 @@ export class activityList {
 
     constructor() {
         this._activityList = document.getElementById("activity-card-list");
+        document.addEventListener("activity-reload", this.reload);
     }
 }

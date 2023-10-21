@@ -155,3 +155,15 @@ func (app *appContext) GetActivities(gc *gin.Context) {
 
 	gc.JSON(200, resp)
 }
+
+// @Summary Delete the activity with the given ID. No-op if non-existent, always succeeds.
+// @Produce json
+// @Param id path string true "ID of activity to delete"
+// @Success 200 {object} boolResponse
+// @Router /activity/{id} [delete]
+// @Security Bearer
+// @tags Activity
+func (app *appContext) DeleteActivity(gc *gin.Context) {
+	app.storage.DeleteActivityKey(gc.Param("id"))
+	respondBool(200, true, gc)
+}
