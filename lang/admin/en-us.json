@@ -59,6 +59,8 @@
         "disabled": "Disabled",
         "sendPWR": "Send Password Reset",
         "noResultsFound": "No Results Found",
+        "keepSearching": "Keep Searching",
+        "keepSearchingDescription": "Only the current loaded activities were searched. Click below if you wish to search all activities.",
         "contactThrough": "Contact through:",
         "extendExpiry": "Extend expiry",
         "sendPWRManual": "User {n} has no method of contact, press copy to get a link to send to them.",
@@ -169,6 +171,7 @@
         "inviteCreatedFilter": "Invite Created",
         "inviteDeletedFilter": "Invite Deleted/Expired",
         "loadMore": "Load More",
+        "loadAll": "Load All",
         "noMoreResults": "No more results."
     },
     "notifications": {

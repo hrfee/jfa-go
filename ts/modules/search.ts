@@ -16,12 +16,13 @@ export interface SearchConfiguration {
     sortingByButton: HTMLButtonElement;
     searchOptionsHeader: HTMLElement;
     notFoundPanel: HTMLElement;
+    notFoundCallback?: (notFound: boolean) => void;
     filterList: HTMLElement;
     clearSearchButtonSelector: string;
     search: HTMLInputElement;
     queries: { [field: string]: QueryType };
     setVisibility: (items: string[], visible: boolean) => void;
-    onSearchCallback: (visibleCount: number, newItems: boolean) => void;
+    onSearchCallback: (visibleCount: number, newItems: boolean, loadAll: boolean) => void;
     loadMore?: () => void;
 }
 
@@ -268,7 +269,7 @@ export class Search {
     get ordering(): string[] { return this._ordering; }
     set ordering(v: string[]) { this._ordering = v; }
 
-    onSearchBoxChange = (newItems: boolean = false) => {
+    onSearchBoxChange = (newItems: boolean = false, loadAll: boolean = false) => {
         const query = this._c.search.value;
         if (!query) {
             this.inSearch = false;
@@ -277,13 +278,14 @@ export class Search {
         }
         const results = this.search(query);
         this._c.setVisibility(results, true);
-        this._c.onSearchCallback(results.length, newItems);
+        this._c.onSearchCallback(results.length, newItems, loadAll);
         this.showHideSearchOptionsHeader();
         if (results.length == 0) {
             this._c.notFoundPanel.classList.remove("unfocused");
         } else {
             this._c.notFoundPanel.classList.add("unfocused");
         }
+        if (this._c.notFoundCallback) this._c.notFoundCallback(results.length == 0);
     }
 
     fillInFilter = (name: string, value: string, offset?: number) => {

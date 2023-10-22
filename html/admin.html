@@ -748,13 +748,18 @@
                         <div class="unfocused h-[100%] my-3" id="activity-not-found">
                             <div class="flex flex-col h-[100%] justify-center items-center">
                                 <span class="text-2xl font-medium italic mb-3">{{ .strings.noResultsFound }}</span>
-                                <button class="button ~neutral @low activity-search-clear">
-                                    <span class="mr-2">{{ .strings.clearSearch }}</span><i class="ri-close-line"></i>
-                                </button>
+                                <span class="text-xl font-medium italic mb-3 unfocused" id="activity-keep-searching-description">{{ .strings.keepSearchingDescription }}</span>
+                                <div class="flex flex-row">
+                                    <button class="button ~neutral @low activity-search-clear">
+                                        <span class="mr-2">{{ .strings.clearSearch }}</span><i class="ri-close-line"></i>
+                                    </button>
+                                    <button class="button ~neutral @low unfocused" id="activity-keep-searching">{{ .strings.keepSearching }}</button>
+                                </div>
                             </div>
                         </div>
                         <div class="flex justify-center">
-                            <button class="button my-2 ~neutral @low" id="activity-load-more">{{ .strings.loadMore }}</button>
+                            <button class="button m-2 ~neutral @low" id="activity-load-more">{{ .strings.loadMore }}</button>
+                            <button class="button m-2 ~neutral @low" id="activity-load-all">{{ .strings.loadAll }}</button>
                         </div>
                     </div>
                 </div>

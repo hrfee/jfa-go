@@ -352,7 +352,11 @@ export class activityList {
     private _sortDirection = document.getElementById("activity-sort-direction") as HTMLButtonElement;
     private _loader = document.getElementById("activity-loader");
     private _loadMoreButton = document.getElementById("activity-load-more") as HTMLButtonElement;
+    private _loadAllButton = document.getElementById("activity-load-all") as HTMLButtonElement;
     private _refreshButton = document.getElementById("activity-refresh") as HTMLButtonElement;
+    private _keepSearchingDescription = document.getElementById("activity-keep-searching-description");
+    private _keepSearchingButton = document.getElementById("activity-keep-searching");
+
     private _search: Search;
     private _ascending: boolean;
     private _hasLoaded: boolean;
@@ -375,6 +379,10 @@ export class activityList {
     reload = () => {
         this._lastLoad = Date.now();
         this._lastPage = false;
+        this._loadMoreButton.textContent = window.lang.strings("loadMore");
+        this._loadMoreButton.disabled = false;
+        this._loadAllButton.classList.remove("unfocused");
+        this._loadAllButton.disabled = false;
         // this._page = 0;
         let limit = 10;
         if (this._page != 0) {
@@ -414,17 +422,23 @@ export class activityList {
 
             if (this._search.inSearch) {
                 this._search.onSearchBoxChange(true);
+                this._loadAllButton.classList.remove("unfocused");
             } else {
                 this.setVisibility(this._ordering, true);
+                this._loadAllButton.classList.add("unfocused");
                 this._notFoundPanel.classList.add("unfocused");
             }
         }, true);
     }
 
-    loadMore = () => {
+    loadMore = (callback?: () => void, loadAll: boolean = false) => {
         this._lastLoad = Date.now();
         this._loadMoreButton.disabled = true;
-        const timeout = setTimeout(() => this._loadMoreButton.disabled = false, 1000);
+        // this._loadAllButton.disabled = true;
+        const timeout = setTimeout(() => {
+            this._loadMoreButton.disabled = false;
+            // this._loadAllButton.disabled = false;
+        }, 1000);
         this._page += 1;
 
         let send = {
@@ -450,6 +464,8 @@ export class activityList {
             if (this._lastPage) {
                 clearTimeout(timeout);
                 this._loadMoreButton.disabled = true;
+                removeLoader(this._loadAllButton);
+                this._loadAllButton.classList.add("unfocused");
                 this._loadMoreButton.textContent = window.lang.strings("noMoreResults");
             }
 
@@ -460,12 +476,17 @@ export class activityList {
             // this._search.items = this._activities;
             // this._search.ordering = this._ordering;
 
-            if (this._search.inSearch) {
-                this._search.onSearchBoxChange(true);
+            if (this._search.inSearch || loadAll) {
+                if (this._lastPage) {
+                    loadAll = false;
+                }
+                this._search.onSearchBoxChange(true, loadAll);
             } else {
                 this.setVisibility(this._ordering, true);
                 this._notFoundPanel.classList.add("unfocused");
             }
+
+            if (callback) callback();
             // removeLoader(this._loader);
             // this._activityList.classList.remove("unfocused");
         }, true);
@@ -601,13 +622,26 @@ export class activityList {
         // console.log(window.innerHeight + document.documentElement.scrollTop, document.scrollingElement.scrollHeight);
         if (Math.abs(window.innerHeight + document.documentElement.scrollTop - document.scrollingElement.scrollHeight) < 50) {
             // window.notifications.customSuccess("scroll", "Reached bottom.");
-            // Wait 1s between loads
-            if (this._lastLoad + 1000 > Date.now()) return;
+            // Wait .5s between loads
+            if (this._lastLoad + 500 > Date.now()) return;
             this.loadMore();
         }
     }
 
     private _prevResultCount = 0;
+
+    private _notFoundCallback = (notFound: boolean) => {
+        if (notFound) this._loadMoreButton.classList.add("unfocused");
+        else this._loadMoreButton.classList.remove("unfocused");
+
+        if (notFound && !this._lastPage) {
+            this._keepSearchingButton.classList.remove("unfocused");
+            this._keepSearchingDescription.classList.remove("unfocused");
+        } else {
+            this._keepSearchingButton.classList.add("unfocused");
+            this._keepSearchingDescription.classList.add("unfocused");
+        }
+    };
 
     constructor() {
         this._activityList = document.getElementById("activity-card-list");
@@ -623,10 +657,13 @@ export class activityList {
             queries: this._queries,
             setVisibility: this.setVisibility,
             filterList: document.getElementById("activity-filter-list"),
-            onSearchCallback: (visibleCount: number, newItems: boolean) => {
+            // notFoundCallback: this._notFoundCallback,
+            onSearchCallback: (visibleCount: number, newItems: boolean, loadAll: boolean) => {
+                if (this._search.inSearch && !this._lastPage) this._loadAllButton.classList.remove("unfocused");
+                else this._loadAllButton.classList.add("unfocused");
                 
                 if (visibleCount < 10) {
-                    if (!newItems || this._prevResultCount != visibleCount || (visibleCount == 0 && !this._lastPage)) this.loadMore();
+                    if (!newItems || this._prevResultCount != visibleCount || (visibleCount == 0 && !this._lastPage) || loadAll) this.loadMore(() => {}, loadAll);
                 }
                 this._prevResultCount = visibleCount;
             }
@@ -638,7 +675,15 @@ export class activityList {
         this.ascending = false;
         this._sortDirection.addEventListener("click", () => this.ascending = !this.ascending);
 
-        this._loadMoreButton.onclick = this.loadMore;
+        this._loadMoreButton.onclick = () => this.loadMore();
+        this._loadAllButton.onclick = () => {
+            addLoader(this._loadAllButton, true);
+            this.loadMore(() => {}, true);
+        };
+        /* this._keepSearchingButton.onclick = () => {
+            addLoader(this._keepSearchingButton, true);
+            this.loadMore(() => removeLoader(this._keepSearchingButton, true));
+        }; */
         this._refreshButton.onclick = this.reload;
 
         window.onscroll = this.detectScroll;
