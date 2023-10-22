@@ -1,5 +1,7 @@
 import { _post, _delete, toDateString, addLoader, removeLoader } from "../modules/common.js";
 import { Search, SearchConfiguration, QueryType, SearchableItem } from "../modules/search.js";
+import { accountURLEvent } from "../modules/accounts.js";
+import { inviteURLEvent } from "../modules/invites.js";
 
 export interface activity {
     id: string; 
@@ -42,6 +44,14 @@ export class Activity implements activity, SearchableItem {
     private _expiryTypeBadge: HTMLElement;
     private _delete: HTMLElement;
     private _act: activity;
+    private _urlBase: string = ((): string => {
+        let link = window.location.href;
+        for (let split of ["#", "?", "/activity"]) {
+            link = link.split(split)[0];
+        }
+        if (link.slice(-1) != "/") { link += "/"; }
+        return link;
+    })();
 
     _genUserText = (): string => {
         return `<span class="font-medium">${this._act.username || this._act.user_id.substring(0, 5)}</span>`;
@@ -52,17 +62,17 @@ export class Activity implements activity, SearchableItem {
     }
 
     _genUserLink = (): string => {
-        return `<a class="hover:underline" href="/accounts/user/${this._act.user_id}">${this._genUserText()}</a>`;
+        return `<span role="link" tabindex="0" class="hover:underline cursor-pointer activity-pseudo-link-user" data-id="${this._act.user_id}" data-href="${this._urlBase}accounts/user/${this._act.user_id}">${this._genUserText()}</span>`;
     }
         
     _genSrcUserLink = (): string => {
-        return `<a class="hover:underline" href="/accounts/user/${this._act.source}">${this._genSrcUserText()}</a>`;
+        return `<span role="link" tabindex="0" class="hover:underline cursor-pointer activity-pseudo-link-user" data-id="${this._act.user_id}" data-href="${this._urlBase}accounts/user/${this._act.source}">${this._genSrcUserText()}</span>`;
     }
 
     private _renderInvText = (): string => { return `<span class="font-medium font-mono">${this.value || this.invite_code || "???"}</span>`; }
 
     private _genInvLink = (): string => {
-        return `<a class="hover:underline" href="/accounts/invites/${this.invite_code}">${this._renderInvText()}</a>`;
+        return `<span role="link" tabindex="0" class="hover:underline cursor-pointer activity-pseudo-link-invite" data-id="${this.invite_code}" data-href="${this._urlBase}invites/${this.invite_code}">${this._renderInvText()}</span>`;
     }
 
 
@@ -278,6 +288,30 @@ export class Activity implements activity, SearchableItem {
         this._delete.addEventListener("click", this.delete);
 
         this.update(act);
+
+        const pseudoUsers = this._card.getElementsByClassName("activity-pseudo-link-user") as HTMLCollectionOf<HTMLAnchorElement>;
+        const pseudoInvites = this._card.getElementsByClassName("activity-pseudo-link-invite") as HTMLCollectionOf<HTMLAnchorElement>;
+
+        for (let i = 0; i < pseudoUsers.length; i++) {
+            const navigate = (event: Event) => {
+                event.preventDefault()
+                window.tabs.switch("accounts");
+                document.dispatchEvent(accountURLEvent(pseudoUsers[i].getAttribute("data-id")));
+                window.history.pushState(null, document.title, pseudoUsers[i].getAttribute("data-href"));
+            }
+            pseudoUsers[i].onclick = navigate;
+            pseudoUsers[i].onkeydown = navigate;
+        }
+        for (let i = 0; i < pseudoInvites.length; i++) {
+            const navigate = (event: Event) => {
+                event.preventDefault();
+                window.tabs.switch("invites");
+                document.dispatchEvent(inviteURLEvent(pseudoInvites[i].getAttribute("data-id")));
+                window.history.pushState(null, document.title, pseudoInvites[i].getAttribute("data-href"));
+            }
+            pseudoInvites[i].onclick = navigate;
+            pseudoInvites[i].onkeydown = navigate;
+        }
     }
 
     update = (act: activity) => {

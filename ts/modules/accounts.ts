@@ -74,6 +74,8 @@ class user implements User, SearchableItem {
     private _referralsEnabled: boolean;
     private _referralsEnabledCheck: HTMLElement;
 
+    focus = () => this._row.scrollIntoView({ behavior: "smooth", block: "center" });
+
     lastNotifyMethod = (): string => {
         // Telegram, Matrix, Discord
         const telegram = window.telegramEnabled && this._telegramUsername && this._telegramUsername != "";
@@ -1678,6 +1680,14 @@ export class accountsList {
         this._addUserProfile.innerHTML = innerHTML;
     }
 
+    public static readonly _accountURLEvent = "account-url";
+    registerURLListener = () => document.addEventListener(accountsList._accountURLEvent, (event: CustomEvent) => {
+        const userID = event.detail;
+        this._searchBox.value = `id:"${userID}"`;
+        this._search.onSearchBoxChange();
+        this._users[userID].focus();
+    });
+
     constructor() {
         this._populateNumbers();
         this._users = {};
@@ -1885,6 +1895,8 @@ export class accountsList {
         this.showHideSearchOptionsHeader();
 
         this._search.generateFilterList();
+
+        this.registerURLListener();
     }
 
     reload = () => {
@@ -1926,6 +1938,8 @@ export class accountsList {
         this.loadTemplates();
     }
 }
+
+export const accountURLEvent = (id: string) => { return new CustomEvent(accountsList._accountURLEvent, {"detail": id}) };
 
 type GetterReturnType = Boolean | boolean | String | Number | number;
 type Getter = () => GetterReturnType;
