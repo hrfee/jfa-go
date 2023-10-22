@@ -597,6 +597,7 @@ export class activityList {
     }
 
     detectScroll = () => {
+        if (!this._hasLoaded) return;
         // console.log(window.innerHeight + document.documentElement.scrollTop, document.scrollingElement.scrollHeight);
         if (Math.abs(window.innerHeight + document.documentElement.scrollTop - document.scrollingElement.scrollHeight) < 50) {
             // window.notifications.customSuccess("scroll", "Reached bottom.");

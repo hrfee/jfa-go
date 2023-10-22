@@ -425,15 +425,25 @@ export class inviteList implements inviteList {
 
     invites: { [code: string]: DOMInvite };
 
-    public static readonly _inviteURLEvent = "invite-url";
-    registerURLListener = () => document.addEventListener(inviteList._inviteURLEvent, (event: CustomEvent) => {
-        const inviteCode = event.detail;
+    focusInvite = (inviteCode: string, errorMsg: string = window.lang.notif("errorInviteNoLongerExists")) => {
         for (let code of Object.keys(this.invites)) {
             this.invites[code].expanded = code == inviteCode;
         }
         if (inviteCode in this.invites) this.invites[inviteCode].focus();
-        else window.notifications.customError("inviteDoesntExistError", window.lang.notif("errorInviteDoesntExist"));
+        else window.notifications.customError("inviteDoesntExistError", errorMsg);
+    };
+
+    public static readonly _inviteURLEvent = "invite-url";
+    registerURLListener = () => document.addEventListener(inviteList._inviteURLEvent, (event: CustomEvent) => {
+        this.focusInvite(event.detail);
     })
+
+    isInviteURL = () => { return window.location.pathname.startsWith(window.URLBase + "/invites/"); }
+
+    loadInviteURL = () => {
+        let inviteCode = window.location.pathname.split(window.URLBase + "/invites/")[1].split("?lang")[0];
+        this.focusInvite(inviteCode, window.lang.notif("errorInviteNotFound"));
+    }
 
     constructor() {
         this._list = document.getElementById('invites') as HTMLDivElement;
@@ -482,7 +492,7 @@ export class inviteList implements inviteList {
         this._list.appendChild(domInv.asElement());
     }
 
-    reload = () => _get("/invites", null, (req: XMLHttpRequest) => {
+    reload = (callback?: () => void) => _get("/invites", null, (req: XMLHttpRequest) => {
         if (req.readyState == 4) {
             let data = req.response;
             if (req.status == 200) {
@@ -511,6 +521,8 @@ export class inviteList implements inviteList {
                 this.invites[code].remove();
                 delete this.invites[code];
             }
+
+            if (callback) callback();
         }
     })
 }

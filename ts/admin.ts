@@ -144,6 +144,9 @@ for (let tab of tabs) {
     }
 }
 
+let isInviteURL = window.invites.isInviteURL();
+let isAccountURL = accounts.isAccountURL();
+
 // Default tab
 if ((window.URLBase + "/").includes(window.location.pathname)) {
     window.tabs.switch(defaultTab.url, true);
@@ -153,7 +156,9 @@ document.addEventListener("tab-change", (event: CustomEvent) => {
     const urlParams = new URLSearchParams(window.location.search);
     const lang = urlParams.get('lang');
     let tab = window.URLBase + "/" + event.detail;
-    if (tab == window.URLBase + "/invites") {
+    if (event.detail == "") {
+        tab = window.location.pathname;
+    } else if (tab == window.URLBase + "/invites") {
         if (window.location.pathname == window.URLBase + "/") {
             tab = window.URLBase + "/";
         } else if (window.URLBase) { tab = window.URLBase; }
@@ -189,6 +194,20 @@ login.onLogin = () => {
             break;
         case "activity": // FIXME: fix URL clash with route
             activity.reload();
+            break;
+        default:
+            console.log(isAccountURL, isInviteURL);
+            if (isInviteURL) {
+                window.invites.reload(() => {
+                    window.invites.loadInviteURL();
+                    window.tabs.switch("invites", false, true);
+                });
+            } else if (isAccountURL) {
+                accounts.reload(() => {
+                    accounts.loadAccountURL(); 
+                    window.tabs.switch("accounts", false, true);
+                });
+            }
             break;
     }
 }

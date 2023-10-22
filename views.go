@@ -39,6 +39,10 @@ func (app *appContext) loadCSSHeader() string {
 
 func (app *appContext) getURLBase(gc *gin.Context) string {
 	if strings.HasPrefix(gc.Request.URL.String(), app.URLBase) {
+		// Hack to fix the common URL base /accounts
+		if app.URLBase == "/accounts" && strings.HasPrefix(gc.Request.URL.String(), "/accounts/user/") {
+			return ""
+		}
 		return app.URLBase
 	}
 	return ""

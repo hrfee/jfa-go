@@ -1680,13 +1680,24 @@ export class accountsList {
         this._addUserProfile.innerHTML = innerHTML;
     }
 
-    public static readonly _accountURLEvent = "account-url";
-    registerURLListener = () => document.addEventListener(accountsList._accountURLEvent, (event: CustomEvent) => {
-        const userID = event.detail;
+    focusAccount = (userID: string) => {
+        console.log("focusing user", userID);
         this._searchBox.value = `id:"${userID}"`;
         this._search.onSearchBoxChange();
-        this._users[userID].focus();
+        if (userID in this._users) this._users[userID].focus();
+    }
+
+    public static readonly _accountURLEvent = "account-url";
+    registerURLListener = () => document.addEventListener(accountsList._accountURLEvent, (event: CustomEvent) => {
+        this.focusAccount(event.detail);
     });
+
+    isAccountURL = () => { return window.location.pathname.startsWith(window.URLBase + "/accounts/user/"); }
+
+    loadAccountURL = () => {
+        let userID = window.location.pathname.split(window.URLBase + "/accounts/user/")[1].split("?lang")[0];
+        this.focusAccount(userID);
+    }
 
     constructor() {
         this._populateNumbers();
@@ -1695,7 +1706,7 @@ export class accountsList {
         this._selectAll.onchange = () => {
             this.selectAll = this._selectAll.checked;
         };
-        document.addEventListener("accounts-reload", this.reload);
+        document.addEventListener("accounts-reload", () => this.reload());
         document.addEventListener("accountCheckEvent", () => { this._checkCount++; this._checkCheckCount(); });
         document.addEventListener("accountUncheckEvent", () => { this._checkCount--; this._checkCheckCount(); });
         this._addUserButton.onclick = () => {
@@ -1899,7 +1910,7 @@ export class accountsList {
         this.registerURLListener();
     }
 
-    reload = () => {
+    reload = (callback?: () => void) => {
         _get("/users", null, (req: XMLHttpRequest) => {
             if (req.readyState == 4 && req.status == 200) {
                 // same method as inviteList.reload()
@@ -1933,6 +1944,8 @@ export class accountsList {
                     this.setVisibility(results, true);
                 }
                 this._checkCheckCount();
+
+                if (callback) callback();
             }
         });
         this.loadTemplates();
