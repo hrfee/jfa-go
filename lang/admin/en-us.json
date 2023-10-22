@@ -167,7 +167,9 @@
         "passwordChangeFilter": "Password Changed",
         "passwordResetFilter": "Password Reset",
         "inviteCreatedFilter": "Invite Created",
-        "inviteDeletedFilter": "Invite Deleted/Expired"
+        "inviteDeletedFilter": "Invite Deleted/Expired",
+        "loadMore": "Load More",
+        "noMoreResults": "No more results."
     },
     "notifications": {
         "changedEmailAddress": "Changed email address of {n}.",

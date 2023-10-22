@@ -735,13 +735,14 @@
                         <button class="button ~neutral @low ml-2" id="activity-sort-direction">{{ .strings.sortDirection }}</button>
                         <input type="search" class="field ~neutral @low input search ml-2 mr-2" id="activity-search" placeholder="{{ .strings.search }}">
                         <span class="button ~neutral @low center ml-[-2.64rem] rounded-s-none activity-search-clear" aria-label="{{ .strings.clearSearch }}" text="{{ .strings.clearSearch }}"><i class="ri-close-line"></i></span>
+                        <button class="button ~info @low ml-2" id="activity-refresh" aria-label="{{ .strings.refresh }}" disabled><i class="ri-refresh-line"></i></button>
                     </div>
                     <div class="supra py-1 sm hidden" id="activity-search-options-header">{{ .strings.searchOptions }}</div>
                     <div class="row -mx-2 mb-2">
                         <button type="button" class="button ~neutral @low center mx-2 hidden"><span id="activity-sort-by-field"></span> <i class="ri-close-line ml-2 text-2xl"></i></button>
                         <span id="activity-filter-area"></span>
                     </div>
-                    <div class="card @low dark:~d_neutral col">
+                    <div class="my-2">
                         <div id="activity-card-list"></div>
                         <div id="activity-loader"></div>
                         <div class="unfocused h-[100%] my-3" id="activity-not-found">
@@ -751,6 +752,9 @@
                                     <span class="mr-2">{{ .strings.clearSearch }}</span><i class="ri-close-line"></i>
                                 </button>
                             </div>
+                        </div>
+                        <div class="flex justify-center">
+                            <button class="button my-2 ~neutral @low" id="activity-load-more">{{ .strings.loadMore }}</button>
                         </div>
                     </div>
                 </div>

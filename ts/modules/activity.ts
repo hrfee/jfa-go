@@ -317,6 +317,8 @@ export class activityList {
     private _searchBox = document.getElementById("activity-search") as HTMLInputElement;
     private _sortDirection = document.getElementById("activity-sort-direction") as HTMLButtonElement;
     private _loader = document.getElementById("activity-loader");
+    private _loadMoreButton = document.getElementById("activity-load-more") as HTMLButtonElement;
+    private _refreshButton = document.getElementById("activity-refresh") as HTMLButtonElement;
     private _search: Search;
     private _ascending: boolean;
     private _hasLoaded: boolean;
@@ -344,13 +346,14 @@ export class activityList {
         if (this._page != 0) {
             limit *= this._page+1;
         };
-
+        
         let send = {
             "type": [],
             "limit": limit,
             "page": 0,
             "ascending": this.ascending
         }
+
         _post("/activity", send, (req: XMLHttpRequest) => {
             if (req.readyState != 4) return;
             if (req.status != 200) {
@@ -359,6 +362,9 @@ export class activityList {
             }
 
             this._hasLoaded = true;
+            // Allow refreshes every 15s
+            this._refreshButton.disabled = true;
+            setTimeout(() => this._refreshButton.disabled = false, 15000);
 
             let resp = req.response as ActivitiesDTO;
             // FIXME: Don't destroy everything each reload!
@@ -383,6 +389,8 @@ export class activityList {
 
     loadMore = () => {
         this._lastLoad = Date.now();
+        this._loadMoreButton.disabled = true;
+        const timeout = setTimeout(() => this._loadMoreButton.disabled = false, 1000);
         this._page += 1;
 
         let send = {
@@ -405,6 +413,11 @@ export class activityList {
             let resp = req.response as ActivitiesDTO;
             
             this._lastPage = resp.last_page;
+            if (this._lastPage) {
+                clearTimeout(timeout);
+                this._loadMoreButton.disabled = true;
+                this._loadMoreButton.textContent = window.lang.strings("noMoreResults");
+            }
 
             for (let act of resp.activities) {
                 this._activities[act.id] = new Activity(act);
@@ -589,6 +602,9 @@ export class activityList {
         this._hasLoaded = false;
         this.ascending = false;
         this._sortDirection.addEventListener("click", () => this.ascending = !this.ascending);
+
+        this._loadMoreButton.onclick = this.loadMore;
+        this._refreshButton.onclick = this.reload;
 
         window.onscroll = this.detectScroll;
     }
