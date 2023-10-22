@@ -118,6 +118,7 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 
 		router.GET(p+"/accounts", app.AdminPage)
 		router.GET(p+"/settings", app.AdminPage)
+		router.GET(p+"/activity", app.AdminPage)
 		router.GET(p+"/lang/:page/:file", app.ServeLang)
 		router.GET(p+"/token/login", app.getTokenLogin)
 		router.GET(p+"/token/refresh", app.getTokenRefresh)
