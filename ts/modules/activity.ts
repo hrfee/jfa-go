@@ -464,6 +464,7 @@ export class activityList {
                 this._search.onSearchBoxChange(true);
                 this._loadAllButton.classList.remove("unfocused");
             } else {
+                this.shown = this.loaded;
                 this.setVisibility(this._ordering, true);
                 this._loadAllButton.classList.add("unfocused");
                 this._notFoundPanel.classList.add("unfocused");
