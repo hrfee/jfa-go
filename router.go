@@ -237,6 +237,7 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 
 		api.POST(p+"/activity", app.GetActivities)
 		api.DELETE(p+"/activity/:id", app.DeleteActivity)
+		api.GET(p+"/activity/count", app.GetActivityCount)
 
 		if userPageEnabled {
 			user.GET("/details", app.MyDetails)

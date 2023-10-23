@@ -455,3 +455,7 @@ type GetActivitiesRespDTO struct {
 	Activities []ActivityDTO `json:"activities"`
 	LastPage   bool          `json:"last_page"`
 }
+
+type GetActivityCountDTO struct {
+	Count uint64 `json:"count"`
+}

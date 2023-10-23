@@ -168,3 +168,19 @@ func (app *appContext) DeleteActivity(gc *gin.Context) {
 	app.storage.DeleteActivityKey(gc.Param("id"))
 	respondBool(200, true, gc)
 }
+
+// @Summary Returns the total number of activities stored in the database.
+// @Produce json
+// @Success 200 {object} GetActivityCountDTO
+// @Router /activity/count [get]
+// @Security Bearer
+// @tags Activity
+func (app *appContext) GetActivityCount(gc *gin.Context) {
+	resp := GetActivityCountDTO{}
+	var err error
+	resp.Count, err = app.storage.db.Count(&Activity{}, &badgerhold.Query{})
+	if err != nil {
+		resp.Count = 0
+	}
+	gc.JSON(200, resp)
+}

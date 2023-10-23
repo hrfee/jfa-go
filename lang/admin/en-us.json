@@ -172,7 +172,10 @@
         "inviteDeletedFilter": "Invite Deleted/Expired",
         "loadMore": "Load More",
         "loadAll": "Load All",
-        "noMoreResults": "No more results."
+        "noMoreResults": "No more results.",
+        "totalRecords": "{n} Total Records",
+        "loadedRecords": "{n} Loaded",
+        "shownRecords": "{n} Shown"
     },
     "notifications": {
         "changedEmailAddress": "Changed email address of {n}.",
