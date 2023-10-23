@@ -214,7 +214,7 @@ func (app *appContext) GenerateInvite(gc *gin.Context) {
 		addressValid := false
 		discord := ""
 		app.debug.Printf("%s: Sending invite message", invite.Code)
-		if discordEnabled && !strings.Contains(req.SendTo, "@") {
+		if discordEnabled && (!strings.Contains(req.SendTo, "@") || strings.HasPrefix(req.SendTo, "@")) {
 			users := app.discord.GetUsers(req.SendTo)
 			if len(users) == 0 {
 				invite.SendTo = fmt.Sprintf("Failed: User not found: \"%s\"", req.SendTo)
