@@ -305,9 +305,11 @@ export class Activity implements activity, SearchableItem {
         for (let i = 0; i < pseudoInvites.length; i++) {
             const navigate = (event: Event) => {
                 event.preventDefault();
-                window.tabs.switch("invites");
-                document.dispatchEvent(inviteURLEvent(pseudoInvites[i].getAttribute("data-id")));
-                window.history.pushState(null, document.title, pseudoInvites[i].getAttribute("data-href"));
+                window.invites.reload(() => {
+                    window.tabs.switch("invites");
+                    document.dispatchEvent(inviteURLEvent(pseudoInvites[i].getAttribute("data-id")));
+                    window.history.pushState(null, document.title, pseudoInvites[i].getAttribute("data-href"));
+                });
             }
             pseudoInvites[i].onclick = navigate;
             pseudoInvites[i].onkeydown = navigate;
