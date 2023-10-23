@@ -704,7 +704,7 @@ export class activityList {
                 if (this._search.inSearch && !this._lastPage) this._loadAllButton.classList.remove("unfocused");
                 else this._loadAllButton.classList.add("unfocused");
                 
-                if (visibleCount < 10) {
+                if (visibleCount < 10 || loadAll) {
                     if (!newItems || this._prevResultCount != visibleCount || (visibleCount == 0 && !this._lastPage) || loadAll) this.loadMore(() => {}, loadAll);
                 }
                 this._prevResultCount = visibleCount;

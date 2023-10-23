@@ -78,6 +78,9 @@ func (app *appContext) loadConfig() error {
 	app.MustSetValue("smtp", "cert_validation", "true")
 	app.MustSetValue("smtp", "auth_type", "4")
 
+	app.MustSetValue("activity_log", "keep_n_records", "1000")
+	app.MustSetValue("activity_log", "delete_after_days", "90")
+
 	sc := app.config.Section("discord").Key("start_command").MustString("start")
 	app.config.Section("discord").Key("start_command").SetValue(strings.TrimPrefix(strings.TrimPrefix(sc, "/"), "!"))
 
