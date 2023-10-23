@@ -475,6 +475,7 @@
                     <div>
                         <span id="button-tab-invites" class="text-3xl button portal ~neutral dark:~d_neutral @low mr-2 mb-2 px-5">{{ .strings.invites }}</span>
                         <span id="button-tab-accounts" class="text-3xl button portal ~neutral dark:~d_neutral @low mr-2 mb-2 px-5">{{ .strings.accounts }}</span>
+                        <span id="button-tab-activity" class="text-3xl button portal ~neutral dark:~d_neutral @low mr-2 mb-2 px-5">{{ .strings.activity }}</span>
                         <span id="button-tab-settings" class="text-3xl button portal ~neutral dark:~d_neutral @low mr-2 mb-2 px-5">{{ .strings.settings }}</span>
                     </div>
                 </header>
@@ -715,6 +716,57 @@
                                     <span class="mr-2">{{ .strings.clearSearch }}</span><i class="ri-close-line"></i>
                                 </button>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="tab-activity" class="unfocused">
+                <div class="card @low dark:~d_neutral activity mb-4 overflow-visible">
+                    <div class="flex-expand align-middle">
+                        <span class="text-3xl font-bold mr-4">{{ .strings.activity }}</span>
+                        <div id="activity-filter-dropdown" class="dropdown z-10" tabindex="0">
+                            <span class="h-100 button ~neutral @low center" id="activity-filter-button">{{ .strings.filters }}</span>
+                            <div class="dropdown-display">
+                                <div class="card ~neutral @low mt-2" id="activity-filter-list">
+                                    <p class="supra pb-2">{{ .strings.filters }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="button ~neutral @low ml-2" id="activity-sort-direction">{{ .strings.sortDirection }}</button>
+                        <input type="search" class="field ~neutral @low input search ml-2 mr-2" id="activity-search" placeholder="{{ .strings.search }}">
+                        <span class="button ~neutral @low center ml-[-2.64rem] rounded-s-none activity-search-clear" aria-label="{{ .strings.clearSearch }}" text="{{ .strings.clearSearch }}"><i class="ri-close-line"></i></span>
+                        <button class="button ~info @low ml-2" id="activity-refresh" aria-label="{{ .strings.refresh }}" disabled><i class="ri-refresh-line"></i></button>
+                    </div>
+                    <div class="flex flex-row justify-between py-2">
+                        <div class="supra sm hidden" id="activity-search-options-header">{{ .strings.searchOptions }}</div>
+                        <div class="supra sm">
+                            <span id="activity-total-records" class="mx-2"></span>
+                            <span id="activity-loaded-records" class="mx-2"></span>
+                            <span id="activity-shown-records" class="mx-2"></span>
+                        </div>
+                    </div>
+                    <div class="row -mx-2 mb-2">
+                        <button type="button" class="button ~neutral @low center mx-2 hidden"><span id="activity-sort-by-field"></span> <i class="ri-close-line ml-2 text-2xl"></i></button>
+                        <span id="activity-filter-area"></span>
+                    </div>
+                    <div class="my-2">
+                        <div id="activity-card-list"></div>
+                        <div id="activity-loader"></div>
+                        <div class="unfocused h-[100%] my-3" id="activity-not-found">
+                            <div class="flex flex-col h-[100%] justify-center items-center">
+                                <span class="text-2xl font-medium italic mb-3">{{ .strings.noResultsFound }}</span>
+                                <span class="text-xl font-medium italic mb-3 unfocused" id="activity-keep-searching-description">{{ .strings.keepSearchingDescription }}</span>
+                                <div class="flex flex-row">
+                                    <button class="button ~neutral @low activity-search-clear">
+                                        <span class="mr-2">{{ .strings.clearSearch }}</span><i class="ri-close-line"></i>
+                                    </button>
+                                    <button class="button ~neutral @low unfocused" id="activity-keep-searching">{{ .strings.keepSearching }}</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex justify-center">
+                            <button class="button m-2 ~neutral @low" id="activity-load-more">{{ .strings.loadMore }}</button>
+                            <button class="button m-2 ~neutral @low" id="activity-load-all">{{ .strings.loadAll }}</button>
                         </div>
                     </div>
                 </div>

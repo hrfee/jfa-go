@@ -3,6 +3,10 @@
     color: rgba(0, 0, 0, 0) !important;
 }
 
+.loader.rel {
+    position: relative;
+}
+
 .loader .dot {
     --diameter: 0.5rem;
     --radius: calc(var(--diameter) / 2);
@@ -15,6 +19,12 @@
     left: calc(50% - var(--radius));
     animation: osc 1s cubic-bezier(.72,.16,.31,.97) infinite;
 }
+
+.loader.rel .dot {
+    position: absolute;
+    top: 50%;
+}
+
 .loader.loader-sm .dot {
     --deviation: 10%;
 }

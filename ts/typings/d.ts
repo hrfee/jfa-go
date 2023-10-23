@@ -80,7 +80,7 @@ declare interface Tabs {
     current: string;
     tabs: Array<Tab>;
     addTab: (tabID: string, preFunc?: () => void, postFunc?: () => void) => void;
-    switch: (tabID: string, noRun?: boolean) => void;
+    switch: (tabID: string, noRun?: boolean, keepURL?: boolean) => void;
 }
 
 declare interface Tab {
@@ -139,7 +139,9 @@ interface inviteList {
     empty: boolean;
     invites: { [code: string]: Invite }
     add: (invite: Invite) => void;
-    reload: () => void;
+    reload: (callback?: () => void) => void;
+    isInviteURL: () => boolean;
+    loadInviteURL: () => void;
 }
 
 // Finally added to typescript, dont need this anymore.

@@ -20,7 +20,7 @@ export class Tabs implements Tabs {
     get current(): string { return this._current; }
     set current(tabID: string) { this.switch(tabID); }
 
-    switch = (tabID: string, noRun: boolean = false) => {
+    switch = (tabID: string, noRun: boolean = false, keepURL: boolean = false) => {
         this._current = tabID;
         for (let t of this.tabs) {
             if (t.tabID == tabID) {
@@ -28,7 +28,7 @@ export class Tabs implements Tabs {
                 if (t.preFunc && !noRun) { t.preFunc(); }
                 t.tabEl.classList.remove("unfocused");
                 if (t.postFunc && !noRun) { t.postFunc(); }
-                document.dispatchEvent(new CustomEvent("tab-change", { detail: tabID }));
+                document.dispatchEvent(new CustomEvent("tab-change", { detail: keepURL ? "" : tabID }));
             } else {
                 t.buttonEl.classList.remove("active");
                 t.buttonEl.classList.remove("~urge");

@@ -3,6 +3,7 @@ import { templateEmail } from "../modules/settings.js";
 import { Marked } from "@ts-stack/markdown";
 import { stripMarkdown } from "../modules/stripmd.js";
 import { DiscordUser, newDiscordSearch } from "../modules/discord.js";
+import { Search, SearchConfiguration, QueryType, SearchableItem } from "../modules/search.js";
 const dateParser = require("any-date-parser");
 
 interface User {
@@ -39,7 +40,7 @@ interface announcementTemplate {
 
 var addDiscord: (passData: string) => void;
 
-class user implements User {
+class user implements User, SearchableItem {
     private _id = "";
     private _row: HTMLTableRowElement;
     private _check: HTMLInputElement;
@@ -72,6 +73,8 @@ class user implements User {
     private _selected: boolean;
     private _referralsEnabled: boolean;
     private _referralsEnabledCheck: HTMLElement;
+
+    focus = () => this._row.scrollIntoView({ behavior: "smooth", block: "center" });
 
     lastNotifyMethod = (): string => {
         // Telegram, Matrix, Discord
@@ -269,7 +272,7 @@ class user implements User {
                 <span class="chip btn @low"><i class="ri-link" alt="${window.lang.strings("add")}"></i></span>
                 <input type="text" class="input ~neutral @low stealth-input unfocused" placeholder="@user:riot.im">
             </div>
-            `;
+        `;
             (this._matrix.querySelector("span") as HTMLSpanElement).onclick = this._addMatrix;
         } else {
             this._notifyDropdown.querySelector(".accounts-area-matrix").classList.remove("unfocused");
@@ -780,13 +783,13 @@ export class accountsList {
     private _userSelect = document.getElementById("modify-user-users") as HTMLSelectElement;
     private _referralsProfileSelect = document.getElementById("enable-referrals-user-profiles") as HTMLSelectElement;
     private _referralsInviteSelect = document.getElementById("enable-referrals-user-invites") as HTMLSelectElement;
-    private _search = document.getElementById("accounts-search") as HTMLInputElement;
+    private _searchBox = document.getElementById("accounts-search") as HTMLInputElement;
+    private _search: Search;
 
     private _selectAll = document.getElementById("accounts-select-all") as HTMLInputElement;
     private _users: { [id: string]: user };
     private _ordering: string[] = [];
     private _checkCount: number = 0;
-    private _inSearch = false;
     // Whether the enable/disable button should enable or not.
     private _shouldEnable = false;
 
@@ -836,7 +839,7 @@ export class accountsList {
         }
     }
 
-    private _queries: { [field: string]: { name: string, getter: string, bool: boolean, string: boolean, date: boolean, dependsOnTableHeader?: string, show?: boolean }} = {
+    private _queries: { [field: string]: QueryType } = {
         "id": {
             // We don't use a translation here to circumvent the name substitution feature.
             name: "Jellyfin/Emby ID",
@@ -887,7 +890,7 @@ export class accountsList {
             bool: true,
             string: false,
             date: false,
-            dependsOnTableHeader: "accounts-header-access-jfa"
+            dependsOnElement: ".accounts-header-access-jfa"
         },
         "email": {
             name: window.lang.strings("emailAddress"),
@@ -895,7 +898,7 @@ export class accountsList {
             bool: true,
             string: true,
             date: false,
-            dependsOnTableHeader: "accounts-header-email"
+            dependsOnElement: ".accounts-header-email"
         },
         "telegram": {
             name: "Telegram",
@@ -903,7 +906,7 @@ export class accountsList {
             bool: true,
             string: true,
             date: false,
-            dependsOnTableHeader: "accounts-header-telegram"
+            dependsOnElement: ".accounts-header-telegram"
         },
         "matrix": {
             name: "Matrix",
@@ -911,7 +914,7 @@ export class accountsList {
             bool: true,
             string: true,
             date: false,
-            dependsOnTableHeader: "accounts-header-matrix"
+            dependsOnElement: ".accounts-header-matrix"
         },
         "discord": {
             name: "Discord",
@@ -919,7 +922,7 @@ export class accountsList {
             bool: true,
             string: true,
             date: false,
-            dependsOnTableHeader: "accounts-header-discord"
+            dependsOnElement: ".accounts-header-discord"
         },
         "expiry": {
             name: window.lang.strings("expiry"),
@@ -927,7 +930,7 @@ export class accountsList {
             bool: true,
             string: false,
             date: true,
-            dependsOnTableHeader: "accounts-header-expiry"
+            dependsOnElement: ".accounts-header-expiry"
         },
         "last-active": {
             name: window.lang.strings("lastActiveTime"),
@@ -942,228 +945,11 @@ export class accountsList {
             bool: true,
             string: false,
             date: false,
-            dependsOnTableHeader: "accounts-header-referrals"
+            dependsOnElement: ".accounts-header-referrals"
         }
     }
 
     private _notFoundPanel: HTMLElement = document.getElementById("accounts-not-found");
-
-    search = (query: String): string[] => {
-        console.log(this._queries);
-        this._filterArea.textContent = "";
-
-        query = query.toLowerCase();
-        let result: string[] = [...this._ordering];
-        // console.log("initial:", result);
-
-        // const words = query.split(" ");
-        let words: string[] = [];
-        
-        let quoteSymbol = ``;
-        let queryStart = -1;
-        let lastQuote = -1;
-        for (let i = 0; i < query.length; i++) {
-            if (queryStart == -1 && query[i] != " " && query[i] != `"` && query[i] != `'`) {
-                queryStart = i;
-            }
-            if ((query[i] == `"` || query[i] == `'`) && (quoteSymbol == `` || query[i] == quoteSymbol)) {
-                if (lastQuote != -1) {
-                    lastQuote = -1;
-                    quoteSymbol = ``;
-                } else {
-                    lastQuote = i;
-                    quoteSymbol = query[i];
-                }
-            }
-
-            if (query[i] == " " || i == query.length-1) {
-                if (lastQuote != -1) {
-                    continue;
-                } else {
-                    let end = i+1;
-                    if (query[i] == " ") {
-                        end = i;
-                        while (i+1 < query.length && query[i+1] == " ") {
-                            i += 1;
-                        }
-                    }
-                    words.push(query.substring(queryStart, end).replace(/['"]/g, ""));
-                    console.log("pushed", words);
-                    queryStart = -1;
-                }
-            }
-        }
-
-        query = "";
-        for (let word of words) {
-            if (!word.includes(":")) {
-                let cachedResult = [...result];
-                for (let id of cachedResult) {
-                    const u = this._users[id];
-                    if (!u.matchesSearch(word)) {
-                        result.splice(result.indexOf(id), 1);
-                    }
-                }
-                continue;
-            }
-            const split = [word.substring(0, word.indexOf(":")), word.substring(word.indexOf(":")+1)];
-            
-            if (!(split[0] in this._queries)) continue;
-
-            const queryFormat = this._queries[split[0]];
-
-            if (queryFormat.bool) {
-                let isBool = false;
-                let boolState = false;
-                if (split[1] == "true" || split[1] == "yes" || split[1] == "t" || split[1] == "y") {
-                    isBool = true;
-                    boolState = true;
-                } else if (split[1] == "false" || split[1] == "no" || split[1] == "f" || split[1] == "n") {
-                    isBool = true;
-                    boolState = false;
-                }
-                if (isBool) {
-                    const filterCard = document.createElement("span");
-                    filterCard.ariaLabel = window.lang.strings("clickToRemoveFilter");
-                    filterCard.classList.add("button", "~" + (boolState ? "positive" : "critical"), "@high", "center", "mx-2", "h-full");
-                    filterCard.innerHTML = `
-                    <span class="font-bold mr-2">${queryFormat.name}</span>
-                    <i class="text-2xl ri-${boolState? "checkbox" : "close"}-circle-fill"></i>
-                    `;
-
-                    filterCard.addEventListener("click", () => {
-                        for (let quote of [`"`, `'`, ``]) {
-                            this._search.value = this._search.value.replace(split[0] + ":" + quote + split[1] + quote, "");
-                        }
-                        this._search.oninput((null as Event));
-                    })
-
-                    this._filterArea.appendChild(filterCard);
-
-                    // console.log("is bool, state", boolState);
-                    // So removing elements doesn't affect us
-                    let cachedResult = [...result];
-                    for (let id of cachedResult) {
-                        const u = this._users[id];
-                        const value = Object.getOwnPropertyDescriptor(user.prototype, queryFormat.getter).get.call(u);
-                        // console.log("got", queryFormat.getter + ":", value);
-                        // Remove from result if not matching query
-                        if (!((value && boolState) || (!value && !boolState))) {
-                            // console.log("not matching, result is", result);
-                            result.splice(result.indexOf(id), 1);
-                        }
-                    }
-                    continue
-                }
-            }
-            if (queryFormat.string) {
-                const filterCard = document.createElement("span");
-                filterCard.ariaLabel = window.lang.strings("clickToRemoveFilter");
-                filterCard.classList.add("button", "~neutral", "@low", "center", "mx-2", "h-full");
-                filterCard.innerHTML = `
-                <span class="font-bold mr-2">${queryFormat.name}:</span> "${split[1]}"
-                `;
-
-                filterCard.addEventListener("click", () => {
-                    for (let quote of [`"`, `'`, ``]) {
-                        let regex = new RegExp(split[0] + ":" + quote + split[1] + quote, "ig");
-                        this._search.value = this._search.value.replace(regex, "");
-                    }
-                    this._search.oninput((null as Event));
-                })
-
-                this._filterArea.appendChild(filterCard);
-
-                let cachedResult = [...result];
-                for (let id of cachedResult) {
-                    const u = this._users[id];
-                    const value = Object.getOwnPropertyDescriptor(user.prototype, queryFormat.getter).get.call(u);
-                    if (!(value.includes(split[1]))) {
-                        result.splice(result.indexOf(id), 1);
-                    }
-                }
-                continue;
-            }
-            if (queryFormat.date) {
-                // -1 = Before, 0 = On, 1 = After, 2 = No symbol, assume 0
-                let compareType = (split[1][0] == ">") ? 1 : ((split[1][0] == "<") ? -1 : ((split[1][0] == "=") ? 0 : 2));
-                let unmodifiedValue = split[1];
-                if (compareType != 2) {
-                    split[1] = split[1].substring(1);
-                }
-                if (compareType == 2) compareType = 0;
-
-                let attempt: { year?: number, month?: number, day?: number, hour?: number, minute?: number } = dateParser.attempt(split[1]);
-                // Month in Date objects is 0-based, so make our parsed date that way too
-                if ("month" in attempt) attempt.month -= 1;
-
-                let date: Date = (Date as any).fromString(split[1]) as Date;
-                console.log("Read", attempt, "and", date);
-                if ("invalid" in (date as any)) continue;
-
-                const filterCard = document.createElement("span");
-                filterCard.ariaLabel = window.lang.strings("clickToRemoveFilter");
-                filterCard.classList.add("button", "~neutral", "@low", "center", "m-2", "h-full");
-                filterCard.innerHTML = `
-                <span class="font-bold mr-2">${queryFormat.name}:</span> ${(compareType == 1) ? window.lang.strings("after")+" " : ((compareType == -1) ? window.lang.strings("before")+" " : "")}${split[1]}
-                `;
-                
-                filterCard.addEventListener("click", () => {
-                    for (let quote of [`"`, `'`, ``]) {
-                        let regex = new RegExp(split[0] + ":" + quote + unmodifiedValue + quote, "ig");
-                        this._search.value = this._search.value.replace(regex, "");
-                    }
-                    
-                    this._search.oninput((null as Event));
-                })
-                
-                this._filterArea.appendChild(filterCard);
-
-                let cachedResult = [...result];
-                for (let id of cachedResult) {
-                    const u = this._users[id];
-                    const unixValue = Object.getOwnPropertyDescriptor(user.prototype, queryFormat.getter).get.call(u);
-                    if (unixValue == 0) {
-                        result.splice(result.indexOf(id), 1);
-                        continue;
-                    }
-                    let value = new Date(unixValue*1000);
-                    
-                    const getterPairs: [string, () => number][] = [["year", Date.prototype.getFullYear], ["month", Date.prototype.getMonth], ["day", Date.prototype.getDate], ["hour", Date.prototype.getHours], ["minute", Date.prototype.getMinutes]];
-
-                    // When doing > or < <time> with no date, we need to ignore the rest of the Date object
-                    if (compareType != 0 && Object.keys(attempt).length == 2 && "hour" in attempt && "minute" in attempt) { 
-                        const temp = new Date(date.valueOf());
-                        temp.setHours(value.getHours(), value.getMinutes());
-                        value = temp;
-                        console.log("just hours/minutes workaround, value set to", value);
-                    }
-
-
-                    let match = true;
-                    if (compareType == 0) {
-                        for (let pair of getterPairs) {
-                            if (pair[0] in attempt) {
-                                if (compareType == 0 && attempt[pair[0]] != pair[1].call(value)) {
-                                    match = false;
-                                    break;
-                                }
-                            }
-                        }
-                    } else if (compareType == -1) {
-                        match = (value < date);
-                    } else if (compareType == 1) {
-                        match = (value > date);
-                    }
-                    if (!match) {
-                        result.splice(result.indexOf(id), 1);
-                    }
-                }
-            }
-        }
-        return result;
-    };
-
 
     get selectAll(): boolean { return this._selectAll.checked; }
     set selectAll(state: boolean) {
@@ -1894,6 +1680,25 @@ export class accountsList {
         this._addUserProfile.innerHTML = innerHTML;
     }
 
+    focusAccount = (userID: string) => {
+        console.log("focusing user", userID);
+        this._searchBox.value = `id:"${userID}"`;
+        this._search.onSearchBoxChange();
+        if (userID in this._users) this._users[userID].focus();
+    }
+
+    public static readonly _accountURLEvent = "account-url";
+    registerURLListener = () => document.addEventListener(accountsList._accountURLEvent, (event: CustomEvent) => {
+        this.focusAccount(event.detail);
+    });
+
+    isAccountURL = () => { return window.location.pathname.startsWith(window.URLBase + "/accounts/user/"); }
+
+    loadAccountURL = () => {
+        let userID = window.location.pathname.split(window.URLBase + "/accounts/user/")[1].split("?lang")[0];
+        this.focusAccount(userID);
+    }
+
     constructor() {
         this._populateNumbers();
         this._users = {};
@@ -1901,7 +1706,7 @@ export class accountsList {
         this._selectAll.onchange = () => {
             this.selectAll = this._selectAll.checked;
         };
-        document.addEventListener("accounts-reload", this.reload);
+        document.addEventListener("accounts-reload", () => this.reload());
         document.addEventListener("accountCheckEvent", () => { this._checkCount++; this._checkCheckCount(); });
         document.addEventListener("accountUncheckEvent", () => { this._checkCount--; this._checkCheckCount(); });
         this._addUserButton.onclick = () => {
@@ -2014,34 +1819,23 @@ export class accountsList {
             this._deleteNotify.checked = false;
         }*/
 
-        const onchange = () => {
-            const query = this._search.value;
-            if (!query) {
-                // this.setVisibility(this._ordering, true);
-                this._inSearch = false;
-            } else {
-                this._inSearch = true;
-                // this.setVisibility(this.search(query), true);
-            }
-            const results = this.search(query);
-            this.setVisibility(results, true);
-            this._checkCheckCount();
-            this.showHideSearchOptionsHeader();
-            if (results.length == 0) {
-                this._notFoundPanel.classList.remove("unfocused");
-            } else {
-                this._notFoundPanel.classList.add("unfocused");
+        let conf: SearchConfiguration = {
+            filterArea: this._filterArea,
+            sortingByButton: this._sortingByButton,
+            searchOptionsHeader: this._searchOptionsHeader,
+            notFoundPanel: this._notFoundPanel,
+            filterList: document.getElementById("accounts-filter-list"),
+            search: this._searchBox,
+            queries: this._queries,
+            setVisibility: this.setVisibility,
+            clearSearchButtonSelector: ".accounts-search-clear",
+            onSearchCallback: (_0: number, _1: boolean, _2: boolean) => {
+                this._checkCheckCount();
             }
         };
-        this._search.oninput = onchange;
-
-        const clearSearchButtons = Array.from(document.getElementsByClassName("accounts-search-clear")) as Array<HTMLSpanElement>;
-        for (let b of clearSearchButtons) {
-            b.addEventListener("click", () => {
-                this._search.value = "";
-                onchange();
-            });
-        }
+        this._search = new Search(conf);
+        this._search.items = this._users;
+        
 
         this._announceTextarea.onkeyup = this.loadPreview;
         addDiscord = newDiscordSearch(window.lang.strings("linkDiscord"), window.lang.strings("searchDiscordUser"), window.lang.strings("add"), (user: DiscordUser, id: string) => { 
@@ -2088,15 +1882,16 @@ export class accountsList {
 
         document.addEventListener("header-click", (event: CustomEvent) => {
             this._ordering = this._columns[event.detail].sort(this._users);
+            this._search.ordering = this._ordering;
             this._activeSortColumn = event.detail;
             this._sortingByButton.innerHTML = this._columns[event.detail].buttonContent;
             this._sortingByButton.parentElement.classList.remove("hidden");
             // console.log("ordering by", event.detail, ": ", this._ordering);
-            if (!(this._inSearch)) {
+            if (!(this._search.inSearch)) {
                 this.setVisibility(this._ordering, true);
                 this._notFoundPanel.classList.add("unfocused");
             } else {
-                const results = this.search(this._search.value);
+                const results = this._search.search(this._searchBox.value);
                 this.setVisibility(results, true);
                 if (results.length == 0) {
                     this._notFoundPanel.classList.remove("unfocused");
@@ -2110,87 +1905,12 @@ export class accountsList {
         defaultSort();
         this.showHideSearchOptionsHeader();
 
-        const filterList = document.getElementById("accounts-filter-list");
+        this._search.generateFilterList();
 
-        const fillInFilter = (name: string, value: string, offset?: number) => {
-            this._search.value = name + ":" + value + " " + this._search.value;
-            this._search.focus();
-            let newPos = name.length + 1 + value.length;
-            if (typeof offset !== 'undefined')
-                newPos += offset;
-            this._search.setSelectionRange(newPos, newPos);
-            this._search.oninput(null as any);
-        };
-
-        // Generate filter buttons
-        for (let queryName of Object.keys(this._queries)) {
-            const query = this._queries[queryName];
-            if ("show" in query && !query.show) continue;
-            if ("dependsOnTableHeader" in query && query.dependsOnTableHeader) {
-                const el = document.querySelector("."+query.dependsOnTableHeader);
-                if (el === null) continue;
-            }
-
-            const container = document.createElement("span") as HTMLSpanElement;
-            container.classList.add("button", "button-xl", "~neutral", "@low", "mb-1", "mr-2");
-            container.innerHTML = `<span class="mr-2">${query.name}</span>`;
-            if (query.bool) {
-                const pos = document.createElement("button") as HTMLButtonElement;
-                pos.type = "button";
-                pos.ariaLabel = `Filter by "${query.name}": True`;
-                pos.classList.add("button", "~positive", "ml-2");
-                pos.innerHTML = `<i class="ri-checkbox-circle-fill"></i>`;
-                pos.addEventListener("click", () => fillInFilter(queryName, "true"));
-                const neg = document.createElement("button") as HTMLButtonElement;
-                neg.type = "button";
-                neg.ariaLabel = `Filter by "${query.name}": False`;
-                neg.classList.add("button", "~critical", "ml-2");
-                neg.innerHTML = `<i class="ri-close-circle-fill"></i>`;
-                neg.addEventListener("click", () => fillInFilter(queryName, "false"));
-
-                container.appendChild(pos);
-                container.appendChild(neg);
-            }
-            if (query.string) {
-                const button = document.createElement("button") as HTMLButtonElement;
-                button.type = "button";
-                button.classList.add("button", "~urge", "ml-2");
-                button.innerHTML = `<i class="ri-equal-line mr-2"></i>${window.lang.strings("matchText")}`;
-
-                // Position cursor between quotes
-                button.addEventListener("click", () => fillInFilter(queryName, `""`, -1));
-                
-                container.appendChild(button);
-            }
-            if (query.date) {
-                const onDate = document.createElement("button") as HTMLButtonElement;
-                onDate.type = "button";
-                onDate.classList.add("button", "~urge", "ml-2");
-                onDate.innerHTML = `<i class="ri-calendar-check-line mr-2"></i>On Date`;
-                onDate.addEventListener("click", () => fillInFilter(queryName, `"="`, -1));
-
-                const beforeDate = document.createElement("button") as HTMLButtonElement;
-                beforeDate.type = "button";
-                beforeDate.classList.add("button", "~urge", "ml-2");
-                beforeDate.innerHTML = `<i class="ri-calendar-check-line mr-2"></i>Before Date`;
-                beforeDate.addEventListener("click", () => fillInFilter(queryName, `"<"`, -1));
-
-                const afterDate = document.createElement("button") as HTMLButtonElement;
-                afterDate.type = "button";
-                afterDate.classList.add("button", "~urge", "ml-2");
-                afterDate.innerHTML = `<i class="ri-calendar-check-line mr-2"></i>After Date`;
-                afterDate.addEventListener("click", () => fillInFilter(queryName, `">"`, -1));
-                
-                container.appendChild(onDate);
-                container.appendChild(beforeDate);
-                container.appendChild(afterDate);
-            }
-
-            filterList.appendChild(container);
-        }
+        this.registerURLListener();
     }
 
-    reload = () => {
+    reload = (callback?: () => void) => {
         _get("/users", null, (req: XMLHttpRequest) => {
             if (req.readyState == 4 && req.status == 200) {
                 // same method as inviteList.reload()
@@ -2210,11 +1930,12 @@ export class accountsList {
                 }
                 // console.log("reload, so sorting by", this._activeSortColumn);
                 this._ordering = this._columns[this._activeSortColumn].sort(this._users);
-                if (!(this._inSearch)) {
+                this._search.ordering = this._ordering;
+                if (!(this._search.inSearch)) {
                     this.setVisibility(this._ordering, true);
                     this._notFoundPanel.classList.add("unfocused");
                 } else {
-                    const results = this.search(this._search.value);
+                    const results = this._search.search(this._searchBox.value);
                     if (results.length == 0) {
                         this._notFoundPanel.classList.remove("unfocused");
                     } else {
@@ -2223,11 +1944,15 @@ export class accountsList {
                     this.setVisibility(results, true);
                 }
                 this._checkCheckCount();
+
+                if (callback) callback();
             }
         });
         this.loadTemplates();
     }
 }
+
+export const accountURLEvent = (id: string) => { return new CustomEvent(accountsList._accountURLEvent, {"detail": id}) };
 
 type GetterReturnType = Boolean | boolean | String | Number | number;
 type Getter = () => GetterReturnType;

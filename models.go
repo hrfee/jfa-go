@@ -430,3 +430,32 @@ type GetMyReferralRespDTO struct {
 type EnableDisableReferralDTO struct {
 	Users []string `json:"users"`
 }
+
+type ActivityDTO struct {
+	ID             string `json:"id"`
+	Type           string `json:"type"`
+	UserID         string `json:"user_id"`
+	Username       string `json:"username"`
+	SourceType     string `json:"source_type"`
+	Source         string `json:"source"`
+	SourceUsername string `json:"source_username"`
+	InviteCode     string `json:"invite_code"`
+	Value          string `json:"value"`
+	Time           int64  `json:"time"`
+}
+
+type GetActivitiesDTO struct {
+	Type      []string `json:"type"` // Types of activity to get. Leave blank for all.
+	Limit     int      `json:"limit"`
+	Page      int      `json:"page"` // zero-indexed
+	Ascending bool     `json:"ascending"`
+}
+
+type GetActivitiesRespDTO struct {
+	Activities []ActivityDTO `json:"activities"`
+	LastPage   bool          `json:"last_page"`
+}
+
+type GetActivityCountDTO struct {
+	Count uint64 `json:"count"`
+}

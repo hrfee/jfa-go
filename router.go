@@ -118,6 +118,9 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 
 		router.GET(p+"/accounts", app.AdminPage)
 		router.GET(p+"/settings", app.AdminPage)
+		router.GET(p+"/activity", app.AdminPage)
+		router.GET(p+"/accounts/user/:userID", app.AdminPage)
+		router.GET(p+"/invites/:code", app.AdminPage)
 		router.GET(p+"/lang/:page/:file", app.ServeLang)
 		router.GET(p+"/token/login", app.getTokenLogin)
 		router.GET(p+"/token/refresh", app.getTokenRefresh)
@@ -231,6 +234,10 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 			api.POST(p+"/profiles/referral/:profile/:invite", app.EnableReferralForProfile)
 			api.DELETE(p+"/profiles/referral/:profile", app.DisableReferralForProfile)
 		}
+
+		api.POST(p+"/activity", app.GetActivities)
+		api.DELETE(p+"/activity/:id", app.DeleteActivity)
+		api.GET(p+"/activity/count", app.GetActivityCount)
 
 		if userPageEnabled {
 			user.GET("/details", app.MyDetails)

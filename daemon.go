@@ -3,7 +3,9 @@ package main
 import (
 	"time"
 
+	"github.com/dgraph-io/badger/v3"
 	"github.com/hrfee/mediabrowser"
+	"github.com/timshannon/badgerhold/v4"
 )
 
 // clearEmails removes stored emails for users which no longer exist.
@@ -72,6 +74,37 @@ func (app *appContext) clearTelegram() {
 	}
 }
 
+func (app *appContext) clearActivities() {
+	app.debug.Println("Husekeeping: Cleaning up Activity log...")
+	keepCount := app.config.Section("activity_log").Key("keep_n_records").MustInt(1000)
+	maxAgeDays := app.config.Section("activity_log").Key("delete_after_days").MustInt(90)
+	minAge := time.Now().AddDate(0, 0, -maxAgeDays)
+	err := error(nil)
+	errorSource := 0
+	if maxAgeDays != 0 {
+		err = app.storage.db.DeleteMatching(&Activity{}, badgerhold.Where("Time").Lt(minAge))
+	}
+	if err == nil && keepCount != 0 {
+		// app.debug.Printf("Keeping %d records", keepCount)
+		err = app.storage.db.DeleteMatching(&Activity{}, (&badgerhold.Query{}).Reverse().SortBy("Time").Skip(keepCount))
+		if err != nil {
+			errorSource = 1
+		}
+	}
+	if err == badger.ErrTxnTooBig {
+		app.debug.Printf("Activities: Delete txn was too big, doing it manually.")
+		list := []Activity{}
+		if errorSource == 0 {
+			app.storage.db.Find(&list, badgerhold.Where("Time").Lt(minAge))
+		} else {
+			app.storage.db.Find(&list, (&badgerhold.Query{}).Reverse().SortBy("Time").Skip(keepCount))
+		}
+		for _, record := range list {
+			app.storage.DeleteActivityKey(record.ID)
+		}
+	}
+}
+
 // https://bbengfort.github.io/snippets/2016/06/26/background-work-goroutines-timer.html THANKS
 
 type housekeepingDaemon struct {
@@ -91,10 +124,13 @@ func newInviteDaemon(interval time.Duration, app *appContext) *housekeepingDaemo
 		period:          interval,
 		app:             app,
 	}
-	daemon.jobs = []func(app *appContext){func(app *appContext) {
-		app.debug.Println("Housekeeping: Checking for expired invites")
-		app.checkInvites()
-	}}
+	daemon.jobs = []func(app *appContext){
+		func(app *appContext) {
+			app.debug.Println("Housekeeping: Checking for expired invites")
+			app.checkInvites()
+		},
+		func(app *appContext) { app.clearActivities() },
+	}
 
 	clearEmail := app.config.Section("email").Key("require_unique").MustBool(false)
 	clearDiscord := app.config.Section("discord").Key("require_unique").MustBool(false)

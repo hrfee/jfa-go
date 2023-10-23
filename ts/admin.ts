@@ -5,6 +5,7 @@ import { Tabs } from "./modules/tabs.js";
 import { inviteList, createInvite } from "./modules/invites.js";
 import { accountsList } from "./modules/accounts.js";
 import { settingsList } from "./modules/settings.js";
+import { activityList } from "./modules/activity.js";
 import { ProfileEditor } from "./modules/profiles.js";
 import { _get, _post, notificationBox, whichAnimationEvent } from "./modules/common.js";
 import { Updater } from "./modules/update.js";
@@ -89,6 +90,8 @@ var inviteCreator = new createInvite();
 
 var accounts = new accountsList();
 
+var activity = new activityList();
+
 window.invites = new inviteList();
 
 var settings = new settingsList();
@@ -121,6 +124,10 @@ const tabs: { url: string, reloader: () => void }[] = [
         reloader: accounts.reload
     },
     {
+        url: "activity",
+        reloader: activity.reload
+    },
+    {
         url: "settings",
         reloader: settings.reload
     }
@@ -137,6 +144,9 @@ for (let tab of tabs) {
     }
 }
 
+let isInviteURL = window.invites.isInviteURL();
+let isAccountURL = accounts.isAccountURL();
+
 // Default tab
 if ((window.URLBase + "/").includes(window.location.pathname)) {
     window.tabs.switch(defaultTab.url, true);
@@ -146,7 +156,9 @@ document.addEventListener("tab-change", (event: CustomEvent) => {
     const urlParams = new URLSearchParams(window.location.search);
     const lang = urlParams.get('lang');
     let tab = window.URLBase + "/" + event.detail;
-    if (tab == window.URLBase + "/invites") {
+    if (event.detail == "") {
+        tab = window.location.pathname;
+    } else if (tab == window.URLBase + "/invites") {
         if (window.location.pathname == window.URLBase + "/") {
             tab = window.URLBase + "/";
         } else if (window.URLBase) { tab = window.URLBase; }
@@ -167,6 +179,7 @@ const login = new Login(window.modals.login as Modal, "/", window.loginAppearanc
 login.onLogin = () => {
     console.log("Logged in.");
     window.updater = new Updater();
+    // FIXME: Decide whether to autoload activity or not
     setInterval(() => { window.invites.reload(); accounts.reload(); }, 30*1000);
     const currentTab = window.tabs.current;
     switch (currentTab) {
@@ -178,6 +191,23 @@ login.onLogin = () => {
             break;
         case "settings":
             settings.reload();
+            break;
+        case "activity": // FIXME: fix URL clash with route
+            activity.reload();
+            break;
+        default:
+            console.log(isAccountURL, isInviteURL);
+            if (isInviteURL) {
+                window.invites.reload(() => {
+                    window.invites.loadInviteURL();
+                    window.tabs.switch("invites", false, true);
+                });
+            } else if (isAccountURL) {
+                accounts.reload(() => {
+                    accounts.loadAccountURL(); 
+                    window.tabs.switch("accounts", false, true);
+                });
+            }
             break;
     }
 }

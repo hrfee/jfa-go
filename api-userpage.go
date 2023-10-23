@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
+	"github.com/lithammer/shortuuid/v3"
 	"github.com/timshannon/badgerhold/v4"
 )
 
@@ -207,6 +208,16 @@ func (app *appContext) confirmMyAction(gc *gin.Context, key string) {
 		}
 		emailStore.Addr = claims["email"].(string)
 		app.storage.SetEmailsKey(id, emailStore)
+
+		app.storage.SetActivityKey(shortuuid.New(), Activity{
+			Type:       ActivityContactLinked,
+			UserID:     gc.GetString("jfId"),
+			SourceType: ActivityUser,
+			Source:     gc.GetString("jfId"),
+			Value:      "email",
+			Time:       time.Now(),
+		})
+
 		if app.config.Section("ombi").Key("enabled").MustBool(false) {
 			ombiUser, code, err := app.getOmbiUser(id)
 			if code == 200 && err == nil {
@@ -359,6 +370,16 @@ func (app *appContext) MyDiscordVerifiedInvite(gc *gin.Context) {
 		dcUser.Contact = existingUser.Contact
 	}
 	app.storage.SetDiscordKey(gc.GetString("jfId"), dcUser)
+
+	app.storage.SetActivityKey(shortuuid.New(), Activity{
+		Type:       ActivityContactLinked,
+		UserID:     gc.GetString("jfId"),
+		SourceType: ActivityUser,
+		Source:     gc.GetString("jfId"),
+		Value:      "discord",
+		Time:       time.Now(),
+	})
+
 	respondBool(200, true, gc)
 }
 
@@ -397,6 +418,16 @@ func (app *appContext) MyTelegramVerifiedInvite(gc *gin.Context) {
 		tgUser.Contact = existingUser.Contact
 	}
 	app.storage.SetTelegramKey(gc.GetString("jfId"), tgUser)
+
+	app.storage.SetActivityKey(shortuuid.New(), Activity{
+		Type:       ActivityContactLinked,
+		UserID:     gc.GetString("jfId"),
+		SourceType: ActivityUser,
+		Source:     gc.GetString("jfId"),
+		Value:      "telegram",
+		Time:       time.Now(),
+	})
+
 	respondBool(200, true, gc)
 }
 
@@ -468,6 +499,16 @@ func (app *appContext) MatrixCheckMyPIN(gc *gin.Context) {
 	}
 
 	app.storage.SetMatrixKey(gc.GetString("jfId"), mxUser)
+
+	app.storage.SetActivityKey(shortuuid.New(), Activity{
+		Type:       ActivityContactLinked,
+		UserID:     gc.GetString("jfId"),
+		SourceType: ActivityUser,
+		Source:     gc.GetString("jfId"),
+		Value:      "matrix",
+		Time:       time.Now(),
+	})
+
 	delete(app.matrix.tokens, pin)
 	respondBool(200, true, gc)
 }
@@ -480,6 +521,16 @@ func (app *appContext) MatrixCheckMyPIN(gc *gin.Context) {
 // @Tags User Page
 func (app *appContext) UnlinkMyDiscord(gc *gin.Context) {
 	app.storage.DeleteDiscordKey(gc.GetString("jfId"))
+
+	app.storage.SetActivityKey(shortuuid.New(), Activity{
+		Type:       ActivityContactUnlinked,
+		UserID:     gc.GetString("jfId"),
+		SourceType: ActivityUser,
+		Source:     gc.GetString("jfId"),
+		Value:      "discord",
+		Time:       time.Now(),
+	})
+
 	respondBool(200, true, gc)
 }
 
@@ -491,6 +542,16 @@ func (app *appContext) UnlinkMyDiscord(gc *gin.Context) {
 // @Tags User Page
 func (app *appContext) UnlinkMyTelegram(gc *gin.Context) {
 	app.storage.DeleteTelegramKey(gc.GetString("jfId"))
+
+	app.storage.SetActivityKey(shortuuid.New(), Activity{
+		Type:       ActivityContactUnlinked,
+		UserID:     gc.GetString("jfId"),
+		SourceType: ActivityUser,
+		Source:     gc.GetString("jfId"),
+		Value:      "telegram",
+		Time:       time.Now(),
+	})
+
 	respondBool(200, true, gc)
 }
 
@@ -502,6 +563,16 @@ func (app *appContext) UnlinkMyTelegram(gc *gin.Context) {
 // @Tags User Page
 func (app *appContext) UnlinkMyMatrix(gc *gin.Context) {
 	app.storage.DeleteMatrixKey(gc.GetString("jfId"))
+
+	app.storage.SetActivityKey(shortuuid.New(), Activity{
+		Type:       ActivityContactUnlinked,
+		UserID:     gc.GetString("jfId"),
+		SourceType: ActivityUser,
+		Source:     gc.GetString("jfId"),
+		Value:      "matrix",
+		Time:       time.Now(),
+	})
+
 	respondBool(200, true, gc)
 }
 
@@ -620,6 +691,15 @@ func (app *appContext) ChangeMyPassword(gc *gin.Context) {
 		respondBool(500, false, gc)
 		return
 	}
+
+	app.storage.SetActivityKey(shortuuid.New(), Activity{
+		Type:       ActivityChangePassword,
+		UserID:     user.ID,
+		SourceType: ActivityUser,
+		Source:     user.ID,
+		Time:       time.Now(),
+	})
+
 	if app.config.Section("ombi").Key("enabled").MustBool(false) {
 		func() {
 			ombiUser, status, err := app.getOmbiUser(gc.GetString("jfId"))

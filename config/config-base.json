@@ -515,6 +515,31 @@
                 }
             }
         },
+        "activity_log": {
+            "order": [],
+            "meta": {
+                "name": "Activity Log",
+                "description": "Settings for data retention of the activity log."
+            },
+            "settings": {
+                "keep_n_records": {
+                    "name": "Number of records to keep",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "number",
+                    "value": 1000,
+                    "description": "How many of the most recent activities to keep. Set to 0 to disable."
+                },
+                "delete_after_days": {
+                    "name": "Delete activities older than (days):",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "number",
+                    "value": 90,
+                    "description": "If an activity was created this many days ago, it will be deleted. Set to 0 to disable."
+                }
+            }
+        },
         "captcha": {
             "order": [],
             "meta": {

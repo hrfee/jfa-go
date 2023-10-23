@@ -199,9 +199,10 @@ export function toggleLoader(el: HTMLElement, small: boolean = true) {
     }
 }
 
-export function addLoader(el: HTMLElement, small: boolean = true) {
+export function addLoader(el: HTMLElement, small: boolean = true, relative: boolean = false) {
     if (!el.classList.contains("loader")) {
         el.classList.add("loader");
+        if (relative) el.classList.add("rel");
         if (small) { el.classList.add("loader-sm"); }
         const dot = document.createElement("span") as HTMLSpanElement;
         dot.classList.add("dot")
@@ -213,6 +214,7 @@ export function removeLoader(el: HTMLElement, small: boolean = true) {
     if (el.classList.contains("loader")) {
         el.classList.remove("loader");
         el.classList.remove("loader-sm");
+        el.classList.remove("rel");
         const dot = el.querySelector("span.dot");
         if (dot) { dot.remove(); }
     }

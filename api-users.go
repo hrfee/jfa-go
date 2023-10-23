@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 	"github.com/hrfee/mediabrowser"
+	"github.com/lithammer/shortuuid/v3"
 	"github.com/timshannon/badgerhold/v4"
 )
 
@@ -45,6 +46,17 @@ func (app *appContext) NewUserAdmin(gc *gin.Context) {
 		return
 	}
 	id := user.ID
+
+	// Record activity
+	app.storage.SetActivityKey(shortuuid.New(), Activity{
+		Type:       ActivityCreation,
+		UserID:     id,
+		SourceType: ActivityAdmin,
+		Source:     gc.GetString("jfId"),
+		Value:      user.Name,
+		Time:       time.Now(),
+	})
+
 	profile := app.storage.GetDefaultProfile()
 	if req.Profile != "" && req.Profile != "none" {
 		if p, ok := app.storage.GetProfileKey(req.Profile); ok {
@@ -303,6 +315,24 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 	}
 	id := user.ID
 
+	// Record activity
+	sourceType := ActivityAnon
+	source := ""
+	if invite.ReferrerJellyfinID != "" {
+		sourceType = ActivityUser
+		source = invite.ReferrerJellyfinID
+	}
+
+	app.storage.SetActivityKey(shortuuid.New(), Activity{
+		Type:       ActivityCreation,
+		UserID:     id,
+		SourceType: sourceType,
+		Source:     source,
+		InviteCode: invite.Code,
+		Value:      user.Name,
+		Time:       time.Now(),
+	})
+
 	emailStore := EmailAddress{
 		Addr:    req.Email,
 		Contact: (req.Email != ""),
@@ -353,6 +383,7 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 		if app.storage.deprecatedDiscord == nil {
 			app.storage.deprecatedDiscord = discordStore{}
 		}
+		// Note we don't log an activity here, since it's part of creating a user.
 		app.storage.SetDiscordKey(user.ID, discordUser)
 		delete(app.discord.verifiedTokens, req.DiscordPIN)
 	}
@@ -539,6 +570,10 @@ func (app *appContext) EnableDisableUsers(gc *gin.Context) {
 			sendMail = false
 		}
 	}
+	activityType := ActivityDisabled
+	if req.Enabled {
+		activityType = ActivityEnabled
+	}
 	for _, userID := range req.Users {
 		user, status, err := app.jf.UserByID(userID, false)
 		if status != 200 || err != nil {
@@ -553,6 +588,16 @@ func (app *appContext) EnableDisableUsers(gc *gin.Context) {
 			app.err.Printf("Failed to set policy for user \"%s\" (%d): %v", userID, status, err)
 			continue
 		}
+
+		// Record activity
+		app.storage.SetActivityKey(shortuuid.New(), Activity{
+			Type:       activityType,
+			UserID:     userID,
+			SourceType: ActivityAdmin,
+			Source:     gc.GetString("jfId"),
+			Time:       time.Now(),
+		})
+
 		if sendMail && req.Notify {
 			if err := app.sendByID(msg, userID); err != nil {
 				app.err.Printf("Failed to send account enabled/disabled email: %v", err)
@@ -605,6 +650,12 @@ func (app *appContext) DeleteUsers(gc *gin.Context) {
 				}
 			}
 		}
+
+		username := ""
+		if user, status, err := app.jf.UserByID(userID, false); status == 200 && err == nil {
+			username = user.Name
+		}
+
 		status, err := app.jf.DeleteUser(userID)
 		if !(status == 200 || status == 204) || err != nil {
 			msg := fmt.Sprintf("%d: %v", status, err)
@@ -614,6 +665,17 @@ func (app *appContext) DeleteUsers(gc *gin.Context) {
 				errors[userID] += msg
 			}
 		}
+
+		// Record activity
+		app.storage.SetActivityKey(shortuuid.New(), Activity{
+			Type:       ActivityDeletion,
+			UserID:     userID,
+			SourceType: ActivityAdmin,
+			Source:     gc.GetString("jfId"),
+			Value:      username,
+			Time:       time.Now(),
+		})
+
 		if sendMail && req.Notify {
 			if err := app.sendByID(msg, userID); err != nil {
 				app.err.Printf("Failed to send account deletion email: %v", err)
@@ -1097,6 +1159,20 @@ func (app *appContext) ModifyEmails(gc *gin.Context) {
 
 			emailStore.Addr = address
 			app.storage.SetEmailsKey(id, emailStore)
+
+			activityType := ActivityContactLinked
+			if address == "" {
+				activityType = ActivityContactUnlinked
+			}
+			app.storage.SetActivityKey(shortuuid.New(), Activity{
+				Type:       activityType,
+				UserID:     id,
+				SourceType: ActivityAdmin,
+				Source:     gc.GetString("jfId"),
+				Value:      "email",
+				Time:       time.Now(),
+			})
+
 			if ombiEnabled {
 				ombiUser, code, err := app.getOmbiUser(id)
 				if code == 200 && err == nil {

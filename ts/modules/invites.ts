@@ -261,6 +261,8 @@ class DOMInvite implements Invite {
         }
     }
 
+    focus = () => this._container.scrollIntoView({ behavior: "smooth", block: "center" });
+
     constructor(invite: Invite) {
         // first create the invite structure, then use our setter methods to fill in the data.
         this._container = document.createElement('div') as HTMLDivElement;
@@ -423,6 +425,26 @@ export class inviteList implements inviteList {
 
     invites: { [code: string]: DOMInvite };
 
+    focusInvite = (inviteCode: string, errorMsg: string = window.lang.notif("errorInviteNoLongerExists")) => {
+        for (let code of Object.keys(this.invites)) {
+            this.invites[code].expanded = code == inviteCode;
+        }
+        if (inviteCode in this.invites) this.invites[inviteCode].focus();
+        else window.notifications.customError("inviteDoesntExistError", errorMsg);
+    };
+
+    public static readonly _inviteURLEvent = "invite-url";
+    registerURLListener = () => document.addEventListener(inviteList._inviteURLEvent, (event: CustomEvent) => {
+        this.focusInvite(event.detail);
+    })
+
+    isInviteURL = () => { return window.location.pathname.startsWith(window.URLBase + "/invites/"); }
+
+    loadInviteURL = () => {
+        let inviteCode = window.location.pathname.split(window.URLBase + "/invites/")[1].split("?lang")[0];
+        this.focusInvite(inviteCode, window.lang.notif("errorInviteNotFound"));
+    }
+
     constructor() {
         this._list = document.getElementById('invites') as HTMLDivElement;
         this.empty = true;
@@ -436,6 +458,8 @@ export class inviteList implements inviteList {
                 this.empty = true;
             }
         }, false);
+
+        this.registerURLListener();
     }
 
     get empty(): boolean { return this._empty; }
@@ -468,7 +492,7 @@ export class inviteList implements inviteList {
         this._list.appendChild(domInv.asElement());
     }
 
-    reload = () => _get("/invites", null, (req: XMLHttpRequest) => {
+    reload = (callback?: () => void) => _get("/invites", null, (req: XMLHttpRequest) => {
         if (req.readyState == 4) {
             let data = req.response;
             if (req.status == 200) {
@@ -497,10 +521,13 @@ export class inviteList implements inviteList {
                 this.invites[code].remove();
                 delete this.invites[code];
             }
+
+            if (callback) callback();
         }
     })
 }
-    
+
+export const inviteURLEvent = (id: string) => { return new CustomEvent(inviteList._inviteURLEvent, {"detail": id}) };
 
 function parseInvite(invite: { [f: string]: string | number | { [name: string]: number } | boolean }): Invite {
     let parsed: Invite = {};

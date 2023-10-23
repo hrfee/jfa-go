@@ -17,6 +17,7 @@ import (
 	"github.com/golang-jwt/jwt"
 	"github.com/gomarkdown/markdown"
 	"github.com/hrfee/mediabrowser"
+	"github.com/lithammer/shortuuid/v3"
 	"github.com/steambap/captcha"
 )
 
@@ -38,6 +39,10 @@ func (app *appContext) loadCSSHeader() string {
 
 func (app *appContext) getURLBase(gc *gin.Context) string {
 	if strings.HasPrefix(gc.Request.URL.String(), app.URLBase) {
+		// Hack to fix the common URL base /accounts
+		if app.URLBase == "/accounts" && strings.HasPrefix(gc.Request.URL.String(), "/accounts/user/") {
+			return ""
+		}
 		return app.URLBase
 	}
 	return ""
@@ -329,6 +334,7 @@ func (app *appContext) ResetPassword(gc *gin.Context) {
 		}
 		username = pwr.Username
 	}
+
 	if (status == 200 || status == 204) && err == nil && (isInternal || resp.Success) {
 		data["success"] = true
 		data["pin"] = pin
@@ -338,6 +344,21 @@ func (app *appContext) ResetPassword(gc *gin.Context) {
 	} else {
 		app.err.Printf("Password Reset failed (%d): %v", status, err)
 	}
+
+	// Only log PWRs we know the user for.
+	if username != "" {
+		jfUser, status, err := app.jf.UserByName(username, false)
+		if err == nil && status == 200 {
+			app.storage.SetActivityKey(shortuuid.New(), Activity{
+				Type:       ActivityResetPassword,
+				UserID:     jfUser.ID,
+				SourceType: ActivityUser,
+				Source:     jfUser.ID,
+				Time:       time.Now(),
+			})
+		}
+	}
+
 	if app.config.Section("ombi").Key("enabled").MustBool(false) {
 		jfUser, status, err := app.jf.UserByName(username, false)
 		if status != 200 || err != nil {

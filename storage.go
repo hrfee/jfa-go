@@ -21,6 +21,42 @@ type telegramStore map[string]TelegramUser
 type matrixStore map[string]MatrixUser
 type emailStore map[string]EmailAddress
 
+type ActivityType int
+
+const (
+	ActivityCreation ActivityType = iota
+	ActivityDeletion
+	ActivityDisabled
+	ActivityEnabled
+	ActivityContactLinked
+	ActivityContactUnlinked
+	ActivityChangePassword
+	ActivityResetPassword
+	ActivityCreateInvite
+	ActivityDeleteInvite
+	ActivityUnknown
+)
+
+type ActivitySource int
+
+const (
+	ActivityUser   ActivitySource = iota // Source = UserID. For ActivityCreation, this would mean the referrer.
+	ActivityAdmin                        // Source = Admin's UserID, or blank if jellyfin login isn't on.
+	ActivityAnon                         // Source = Blank, or potentially browser info. For ActivityCreation, this would be via an invite
+	ActivityDaemon                       // Source = Blank, was deleted/disabled due to expiry by daemon
+)
+
+type Activity struct {
+	ID         string       `badgerhold:"key"`
+	Type       ActivityType `badgerhold:"index"`
+	UserID     string       // ID of target user. For account creation, this will be the newly created account
+	SourceType ActivitySource
+	Source     string
+	InviteCode string // Set for ActivityCreation, create/deleteInvite
+	Value      string // Used for ActivityContactLinked where it's "email/discord/telegram/matrix", Create/DeleteInvite, where it's the label, and Creation/Deletion, where it's the Username.
+	Time       time.Time
+}
+
 type UserExpiry struct {
 	JellyfinID string `badgerhold:"key"`
 	Expiry     time.Time
@@ -512,6 +548,32 @@ func (st *Storage) SetCustomContentKey(k string, v CustomContent) {
 func (st *Storage) DeleteCustomContentKey(k string) {
 	st.DebugWatch(StoredCustomContent, k, "")
 	st.db.Delete(k, CustomContent{})
+}
+
+// GetActivityKey returns the value stored in the store's key.
+func (st *Storage) GetActivityKey(k string) (Activity, bool) {
+	result := Activity{}
+	err := st.db.Get(k, &result)
+	ok := true
+	if err != nil {
+		// fmt.Printf("Failed to find custom content: %v\n", err)
+		ok = false
+	}
+	return result, ok
+}
+
+// SetActivityKey stores value v in key k.
+func (st *Storage) SetActivityKey(k string, v Activity) {
+	v.ID = k
+	err := st.db.Upsert(k, v)
+	if err != nil {
+		// fmt.Printf("Failed to set custom content: %v\n", err)
+	}
+}
+
+// DeleteActivityKey deletes value at key k.
+func (st *Storage) DeleteActivityKey(k string) {
+	st.db.Delete(k, Activity{})
 }
 
 type TelegramUser struct {
