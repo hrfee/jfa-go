@@ -22,7 +22,8 @@
         "errorNotAdmin": "Gebruiker heeft geen beheersrechten.",
         "errorConnectionRefused": "Verbinding geweigerd.",
         "errorUnknown": "Onbekende fout, bekijk de logs.",
-        "error": "Fout"
+        "error": "Fout",
+        "errorProxy": "Proxy-instellingen onjuist."
     },
     "startPage": {
         "welcome": "Welkom!",
@@ -156,5 +157,11 @@
         "title": "Gebruikerspagina",
         "customizeMessages": "Gebruik de bewerken knop naast \"Gebruikerspagina\" in de instellingen om dit later in te stellen.",
         "requiredSettings": "Inloggen bij jfa-go via Jellyfin moet ingesteld zijn. Controleer dat \"reset wachtwoord via link\" later wordt gekozen voor zelfservice wachtwoord-resets."
+    },
+    "proxy": {
+        "title": "Proxy",
+        "description": "Laat jfa-go alle verbindingen via een HTTP/SOCKS5 proxy maken. De verbinding met Jellyfin wordt hierdoorheen getest.",
+        "protocol": "Protocol",
+        "address": "Adres (inclusief poort)"
     }
 }
