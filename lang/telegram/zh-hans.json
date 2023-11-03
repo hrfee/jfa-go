@@ -11,6 +11,8 @@
         "discordStartMessage": "您好！\n请输入 `/pin <PIN码>`以验证您的账户。",
         "languageMessageDiscord": "提示：使用 `/lang <语言>` 设置语言。",
         "languageSet": "语言改成 {language}。",
-        "discordDMs": "请检查您的DM找回答。"
+        "discordDMs": "请检查您的DM找回答。",
+        "sentInvite": "已发送邀请。",
+        "sentInviteFailure": "发送邀请失败，请检查日志。"
     }
 }
