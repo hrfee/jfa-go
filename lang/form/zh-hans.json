@@ -34,7 +34,10 @@
         "welcomeUser": "欢迎，{user}！",
         "editContactMethod": "修改联系方式",
         "joinTheServer": "加入服务器：",
-        "customMessagePlaceholderHeader": "自定义此卡"
+        "customMessagePlaceholderHeader": "自定义此卡",
+        "referralsDescription": "使用此链接邀请朋友和家人加入Jellyfin。如果链接过期，请回到这里获取一个新的。",
+        "copyReferral": "复制链接",
+        "invitedBy": "您是由用户{user}邀请的。"
     },
     "notifications": {
         "errorUserExists": "用户已经存在。",
