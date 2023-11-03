@@ -29,7 +29,7 @@
         "logout": "登出",
         "admin": "管理员",
         "enabled": "已启用",
-        "disabled": "已禁用",
+        "disabled": "禁用",
         "reEnable": "重新启用",
         "disable": "禁用",
         "expiry": "到期",
@@ -40,7 +40,8 @@
         "contactMethods": "联系方式",
         "accountStatus": "帐户状态",
         "notSet": "未设置",
-        "myAccount": "我的帐户"
+        "myAccount": "我的帐户",
+        "referrals": "推荐"
     },
     "notifications": {
         "errorLoginBlank": "用户名/密码留空。",
