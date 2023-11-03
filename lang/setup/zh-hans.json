@@ -8,7 +8,7 @@
         "back": "上一步",
         "optional": "可选的",
         "serverType": "服务类型",
-        "disabled": "已禁用",
+        "disabled": "禁用",
         "enabled": "已启用",
         "port": "端口",
         "message": "信息",
@@ -17,12 +17,13 @@
         "URL": "链接",
         "apiKey": "API 密钥",
         "errorInvalidUserPass": "无效的用户名/密码。",
-        "errorNotAdmin": "此用户不允许管理服务。",
+        "errorNotAdmin": "用户没有权限管理服务器。",
         "errorUserDisabled": "此永固可能已被禁用。",
         "error404": "404，请检查内部URL。",
         "errorConnectionRefused": "连接被拒绝。",
         "error": "错误",
-        "errorUnknown": "未知错误，请检查应用程序日志。"
+        "errorUnknown": "未知错误，请检查应用程序日志。",
+        "errorProxy": "代理配置无效。"
     },
     "startPage": {
         "welcome": "欢迎！",
@@ -70,7 +71,8 @@
         "adminOnly": "仅允许管理员账户(推荐)",
         "emailNotice": "您的电子邮件地址可以用来接收通知。",
         "allowAllDescription": "不建议，您应该允许单个用户在设置后登录。",
-        "allowAll": "允许所有Jellyfin用户登录"
+        "allowAll": "允许所有Jellyfin用户登录",
+        "authorizeManualUserPageNotice": "使用此选项将禁用“用户页面”功能。"
     },
     "jellyfinEmby": {
         "title": "Jellyfin/Emby",
@@ -126,7 +128,8 @@
         "resetLinksNotice": "如果启用了 Ombi 集成，请使用它与 Ombi 同步 Jellyfin 密码重置。",
         "resetLinksLanguage": "默认重置链接语言",
         "setPassword": "通过链接设置密码",
-        "setPasswordNotice": "启用此功能意味着用户无需在重置后通过 PIN 更改其密码。并将强制执行密码验证。"
+        "setPasswordNotice": "启用此功能意味着用户无需在重置后通过 PIN 更改其密码。并将强制执行密码验证。",
+        "resetLinksRequiredForUserPage": "对于用户页面上的自助密码重置，这是必需的。"
     },
     "passwordValidation": {
         "title": "密码验证",
@@ -148,5 +151,17 @@
         "successMessageNotice": "在用户创建账户时显示。",
         "emailMessage": "电子邮件",
         "emailMessageNotice": "显示在电子邮件的底部。"
+    },
+    "proxy": {
+        "description": "让jfa-go通过HTTP/SOCKS5代理进行所有连接。连接到Jellyfin将通过此代理进行测试。",
+        "title": "代理",
+        "protocol": "协议",
+        "address": "地址（包括端口）"
+    },
+    "userPage": {
+        "description": "用户页面（显示为“我的帐户”）允许用户访问有关他们帐户的信息，如其联系方式和账户过期日期。他们还可以更改密码、启动密码重置，并在无需询问您的情况下链接/更改联系方式。此外，用户还可以在登录前后看到自定义的Markdown消息。",
+        "title": "用户页面",
+        "customizeMessages": "在设置中，单击“用户页面”旁边的编辑按钮以稍后进行设置。",
+        "requiredSettings": "通过Jellyfin登录到jfa-go必须设置。确保稍后选择“通过链接重置密码”以进行自助密码重置。"
     }
 }
