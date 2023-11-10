@@ -367,6 +367,19 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 			emailStore.ReferralTemplateKey = profile.ReferralTemplateKey
 			// Store here, just incase email are disabled (whether this is even possible, i don't know)
 			app.storage.SetEmailsKey(id, emailStore)
+
+			// If UseReferralExpiry is enabled, create the ref now so the clock starts ticking
+			refInv := Invite{}
+			err = app.storage.db.Get(profile.ReferralTemplateKey, &refInv)
+			if refInv.UseReferralExpiry {
+				refInv.Code = GenerateInviteCode()
+				expiryDelta := refInv.ValidTill.Sub(refInv.Created)
+				refInv.Created = time.Now()
+				refInv.ValidTill = refInv.Created.Add(expiryDelta)
+				refInv.IsReferral = true
+				refInv.ReferrerJellyfinID = id
+				app.storage.SetInvitesKey(refInv.Code, refInv)
+			}
 		}
 	}
 	// if app.config.Section("password_resets").Key("enabled").MustBool(false) {
@@ -729,10 +742,11 @@ func (app *appContext) ExtendExpiry(gc *gin.Context) {
 // @Param EnableDisableReferralDTO body EnableDisableReferralDTO true "List of users"
 // @Param mode path string true "mode of template sourcing from 'invite' or 'profile'."
 // @Param source path string true "invite code or profile name, depending on what mode is."
+// @Param useExpiry path string true "with-expiry or none."
 // @Success 200 {object} boolResponse
 // @Failure 400 {object} boolResponse
 // @Failure 500 {object} boolResponse
-// @Router /users/referral/{mode}/{source} [post]
+// @Router /users/referral/{mode}/{source}/{useExpiry} [post]
 // @Security Bearer
 // @tags Users
 func (app *appContext) EnableReferralForUsers(gc *gin.Context) {
@@ -740,7 +754,7 @@ func (app *appContext) EnableReferralForUsers(gc *gin.Context) {
 	gc.BindJSON(&req)
 	mode := gc.Param("mode")
 	source := gc.Param("source")
-
+	useExpiry := gc.Param("useExpiry") == "with-expiry"
 	baseInv := Invite{}
 	if mode == "profile" {
 		profile, ok := app.storage.GetProfileKey(source)
@@ -768,10 +782,16 @@ func (app *appContext) EnableReferralForUsers(gc *gin.Context) {
 		// 2. Generate referral invite.
 		inv := baseInv
 		inv.Code = GenerateInviteCode()
+		expiryDelta := inv.ValidTill.Sub(inv.Created)
 		inv.Created = time.Now()
-		inv.ValidTill = inv.Created.Add(REFERRAL_EXPIRY_DAYS * 24 * time.Hour)
+		if useExpiry {
+			inv.ValidTill = inv.Created.Add(expiryDelta)
+		} else {
+			inv.ValidTill = inv.Created.Add(REFERRAL_EXPIRY_DAYS * 24 * time.Hour)
+		}
 		inv.IsReferral = true
 		inv.ReferrerJellyfinID = u
+		inv.UseReferralExpiry = useExpiry
 		app.storage.SetInvitesKey(inv.Code, inv)
 	}
 }

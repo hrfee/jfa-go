@@ -116,6 +116,7 @@ interface MyReferral {
     remaining_uses: number;
     no_limit: boolean;
     expiry: number;
+    use_expiry: boolean;
 }
 
 interface ContactDTO {
@@ -252,6 +253,7 @@ class ReferralCard {
     private _url: string;
     private _expiry: Date;
     private _expiryUnix: number;
+    private _useExpiry: boolean;
     private _remainingUses: number;
     private _noLimit: boolean;
 
@@ -259,6 +261,7 @@ class ReferralCard {
     private _infoArea: HTMLDivElement;
     private _remainingUsesEl: HTMLSpanElement;
     private _expiryEl: HTMLSpanElement;
+    private _descriptionEl: HTMLSpanElement;
 
     get code(): string { return this._code; }
     set code(c: string) {
@@ -294,11 +297,22 @@ class ReferralCard {
         this._expiry = new Date(expiryUnix * 1000);
         this._expiryEl.textContent = toDateString(this._expiry);
     }
+
+    get use_expiry(): boolean { return this._useExpiry; }
+    set use_expiry(v: boolean) {
+        this._useExpiry = v;
+        if (v) {
+            this._descriptionEl.textContent = window.lang.strings("referralsWithExpiryDescription");
+        } else {
+            this._descriptionEl.textContent = window.lang.strings("referralsDescription");
+        }
+    }
     
     constructor(card: HTMLElement) {
         this._card = card;
         this._button = this._card.querySelector(".user-referrals-button") as HTMLButtonElement;
         this._infoArea = this._card.querySelector(".user-referrals-info") as HTMLDivElement;
+        this._descriptionEl = this._card.querySelector(".user-referrals-description") as HTMLSpanElement;
 
         this._infoArea.innerHTML = `
         <div class="row my-3">
@@ -344,6 +358,7 @@ class ReferralCard {
         this.no_limit = referral.no_limit;
         this.expiry = referral.expiry;
         this._card.classList.remove("unfocused");
+        this.use_expiry = referral.use_expiry;
     };
 }
 

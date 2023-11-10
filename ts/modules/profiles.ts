@@ -225,6 +225,7 @@ export class ProfileEditor {
 
     enableReferrals = (name: string) => {
         const referralsInviteSelect = document.getElementById("enable-referrals-profile-invites") as HTMLSelectElement;
+        const referralsExpiry = document.getElementById("enable-referrals-profile-expiry") as HTMLInputElement;
         _get("/invites", null, (req: XMLHttpRequest) => {
             if (req.readyState != 4 || req.status != 200) return;
 
@@ -257,7 +258,7 @@ export class ProfileEditor {
                 "invite": referralsInviteSelect.value
             };
             
-            _post("/profiles/referral/" + send["profile"] + "/" + send["invite"], send, (req: XMLHttpRequest) => {
+            _post("/profiles/referral/" + send["profile"] + "/" + send["invite"] + "/" + (referralsExpiry.checked ? "with-expiry" : "none"), send, (req: XMLHttpRequest) => {
                 if (req.readyState == 4) {
                     toggleLoader(button);
                     if (req.status == 400) {
@@ -270,6 +271,7 @@ export class ProfileEditor {
                 }
             });
         };
+        referralsExpiry.checked = false;
         window.modals.profiles.close();
         window.modals.enableReferralsProfile.show();
     };

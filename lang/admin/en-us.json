@@ -76,6 +76,8 @@
         "disableReferrals": "Disable Referrals",
         "enableReferralsDescription": "Give users a personal referral link similiar to an invite, to send to friends/family. Can be sourced from a referral template in a profile, or from an existing invite.",
         "enableReferralsProfileDescription": "Give users created with this profile a personal referral link similiar to an invite, to send to friends/family. Create an invite with the desired settings, then select it here. Each referral will then be based on this invite. You can delete the invite once complete.",
+        "useInviteExpiry": "Set expiry from profile/invite",
+        "useInviteExpiryNote": "By default, invites expire after 90 days but can be renewed by the user. Enable for the referral to be disabled after the time set.",
         "applyHomescreenLayout": "Apply homescreen layout",
         "sendDeleteNotificationEmail": "Send notification message",
         "sendDeleteNotifiationExample": "Your account has been deleted.",

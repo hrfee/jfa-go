@@ -783,6 +783,7 @@ export class accountsList {
     private _userSelect = document.getElementById("modify-user-users") as HTMLSelectElement;
     private _referralsProfileSelect = document.getElementById("enable-referrals-user-profiles") as HTMLSelectElement;
     private _referralsInviteSelect = document.getElementById("enable-referrals-user-invites") as HTMLSelectElement;
+    private _referralsExpiry = document.getElementById("enable-referrals-user-expiry") as HTMLInputElement;
     private _searchBox = document.getElementById("accounts-search") as HTMLInputElement;
     private _search: Search;
 
@@ -1578,7 +1579,7 @@ export class accountsList {
                 send["from"] = "invite";
                 send["id"] = this._referralsInviteSelect.value;
             }
-            _post("/users/referral/" + send["from"] + "/" + (send["id"] ? send["id"] : send["profile"]), send, (req: XMLHttpRequest) => {
+            _post("/users/referral/" + send["from"] + "/" + (send["id"] ? send["id"] : send["profile"]) + "/" + (this._referralsExpiry.checked ? "with-expiry" : "none"), send, (req: XMLHttpRequest) => {
                 if (req.readyState == 4) {
                     toggleLoader(button);
                     if (req.status == 400) {
@@ -1593,6 +1594,7 @@ export class accountsList {
         };
         this._enableReferralsProfile.checked = true;
         this._enableReferralsInvite.checked = false;
+        this._referralsExpiry.checked = false;
         window.modals.enableReferralsUser.show();
     }
 

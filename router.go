@@ -229,9 +229,9 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 		}
 		api.POST(p+"/matrix/login", app.MatrixLogin)
 		if app.config.Section("user_page").Key("referrals").MustBool(false) {
-			api.POST(p+"/users/referral/:mode/:source", app.EnableReferralForUsers)
+			api.POST(p+"/users/referral/:mode/:source/:useExpiry", app.EnableReferralForUsers)
 			api.DELETE(p+"/users/referral", app.DisableReferralForUsers)
-			api.POST(p+"/profiles/referral/:profile/:invite", app.EnableReferralForProfile)
+			api.POST(p+"/profiles/referral/:profile/:invite/:useExpiry", app.EnableReferralForProfile)
 			api.DELETE(p+"/profiles/referral/:profile", app.DisableReferralForProfile)
 		}
 

@@ -130,15 +130,17 @@ func (app *appContext) DeleteProfile(gc *gin.Context) {
 // @Produce json
 // @Param profile path string true "name of profile to enable referrals for."
 // @Param invite path string true "invite code to create referral template from."
+// @Param useExpiry path string true "with-expiry or none."
 // @Success 200 {object} boolResponse
 // @Failure 400 {object} stringResponse
 // @Failure 500 {object} stringResponse
-// @Router /profiles/referral/{profile}/{invite} [post]
+// @Router /profiles/referral/{profile}/{invite}/{useExpiry} [post]
 // @Security Bearer
 // @tags Profiles & Settings
 func (app *appContext) EnableReferralForProfile(gc *gin.Context) {
 	profileName := gc.Param("profile")
 	invCode := gc.Param("invite")
+	useExpiry := gc.Param("useExpiry") == "with-expiry"
 	inv, ok := app.storage.GetInvitesKey(invCode)
 	if !ok {
 		respond(400, "Invalid invite code", gc)
@@ -154,9 +156,15 @@ func (app *appContext) EnableReferralForProfile(gc *gin.Context) {
 
 	// Generate new code for referral template
 	inv.Code = GenerateInviteCode()
+	expiryDelta := inv.ValidTill.Sub(inv.Created)
 	inv.Created = time.Now()
-	inv.ValidTill = inv.Created.Add(REFERRAL_EXPIRY_DAYS * 24 * time.Hour)
+	if useExpiry {
+		inv.ValidTill = inv.Created.Add(expiryDelta)
+	} else {
+		inv.ValidTill = inv.Created.Add(REFERRAL_EXPIRY_DAYS * 24 * time.Hour)
+	}
 	inv.IsReferral = true
+	inv.UseReferralExpiry = useExpiry
 	// Since this is a template for multiple users, ReferrerJellyfinID is not set.
 	// inv.ReferrerJellyfinID = ...
 

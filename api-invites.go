@@ -45,14 +45,24 @@ func (app *appContext) checkInvites() {
 			app.storage.SetInvitesKey(data.Code, data)
 		}
 
-		if data.IsReferral {
+		if data.IsReferral && (!data.UseReferralExpiry || data.ReferrerJellyfinID == "") {
 			continue
 		}
 		expiry := data.ValidTill
 		if !currentTime.After(expiry) {
 			continue
 		}
+
 		app.debug.Printf("Housekeeping: Deleting old invite %s", data.Code)
+
+		// Disable referrals for the user if UseReferralExpiry is enabled, so no new ones are made.
+		if data.IsReferral && data.UseReferralExpiry && data.ReferrerJellyfinID != "" {
+			user, ok := app.storage.GetEmailsKey(data.ReferrerJellyfinID)
+			if ok {
+				user.ReferralTemplateKey = ""
+				app.storage.SetEmailsKey(data.ReferrerJellyfinID, user)
+			}
+		}
 		notify := data.Notify
 		if emailEnabled && app.config.Section("notifications").Key("enabled").MustBool(false) && len(notify) != 0 {
 			app.debug.Printf("%s: Expiry notification", data.Code)
@@ -135,6 +145,13 @@ func (app *appContext) checkInvite(code string, used bool, username string) bool
 				}(address)
 			}
 			wait.Wait()
+		}
+		if inv.IsReferral && inv.ReferrerJellyfinID != "" && inv.UseReferralExpiry {
+			user, ok := app.storage.GetEmailsKey(inv.ReferrerJellyfinID)
+			if ok {
+				user.ReferralTemplateKey = ""
+				app.storage.SetEmailsKey(inv.ReferrerJellyfinID, user)
+			}
 		}
 		match = false
 		app.storage.DeleteInvitesKey(code)

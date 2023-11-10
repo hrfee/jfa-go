@@ -130,6 +130,11 @@
                 <div class="select ~neutral @low mb-4 unfocused">
                     <select id="enable-referrals-user-invites"></select>
                 </div>
+                <label class="switch mb-4">
+                    <input type="checkbox" id="enable-referrals-user-expiry">
+                    <span>{{ .strings.useInviteExpiry }}</span>
+                    <span class="flex flex-row support mt-2">{{ .strings.useInviteExpiryNote }}</span>
+                </label>
                 <label>
                     <input type="submit" class="unfocused">
                     <span class="button ~urge @low full-width center supra submit">{{ .strings.apply }}</span>
@@ -144,6 +149,11 @@
                 <div class="select ~neutral @low mb-4 mt-2">
                     <select id="enable-referrals-profile-invites"></select>
                 </div>
+                <label class="switch mb-4">
+                    <input type="checkbox" id="enable-referrals-profile-expiry">
+                    <span>{{ .strings.useInviteExpiry }}</span>
+                    <span class="flex flex-row support mt-2">{{ .strings.useInviteExpiryNote }}</span>
+                </label>
                 <label>
                     <input type="submit" class="unfocused">
                     <span class="button ~urge @low full-width center supra submit">{{ .strings.apply }}</span>

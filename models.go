@@ -424,7 +424,8 @@ type GetMyReferralRespDTO struct {
 	Code          string `json:"code"`
 	RemainingUses int    `json:"remaining_uses"`
 	NoLimit       bool   `json:"no_limit"`
-	Expiry        int64  `json:"expiry"` // Come back after this time to get a new referral
+	Expiry        int64  `json:"expiry"` // Come back after this time to get a new referral (if UseExpiry, a new one can't be made).
+	UseExpiry     bool   `json:"use_expiry"`
 }
 
 type EnableDisableReferralDTO struct {

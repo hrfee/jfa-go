@@ -746,21 +746,37 @@ func (app *appContext) GetMyReferral(gc *gin.Context) {
 		//    Since this key is shared between users in a profile, we make a copy.
 		user, ok := app.storage.GetEmailsKey(gc.GetString("jfId"))
 		err = app.storage.db.Get(user.ReferralTemplateKey, &inv)
-		if !ok || err != nil {
+		if !ok || err != nil || user.ReferralTemplateKey == "" {
 			app.debug.Printf("Ignoring referral request, couldn't find template.")
 			respondBool(400, false, gc)
 			return
 		}
 		inv.Code = GenerateInviteCode()
+		expiryDelta := inv.ValidTill.Sub(inv.Created)
 		inv.Created = time.Now()
-		inv.ValidTill = inv.Created.Add(REFERRAL_EXPIRY_DAYS * 24 * time.Hour)
+		if inv.UseReferralExpiry {
+			inv.ValidTill = inv.Created.Add(expiryDelta)
+		} else {
+			inv.ValidTill = inv.Created.Add(REFERRAL_EXPIRY_DAYS * 24 * time.Hour)
+		}
 		inv.IsReferral = true
 		inv.ReferrerJellyfinID = gc.GetString("jfId")
 		app.storage.SetInvitesKey(inv.Code, inv)
 	} else if time.Now().After(inv.ValidTill) {
 		// 3. We found an invite for us, but it's expired.
 		//    We delete it from storage, and put it back with a fresh code and expiry.
+		//    If UseReferralExpiry is enabled, we delete it and return nothing.
 		app.storage.DeleteInvitesKey(inv.Code)
+		if inv.UseReferralExpiry {
+			user, ok := app.storage.GetEmailsKey(gc.GetString("jfId"))
+			if ok {
+				user.ReferralTemplateKey = ""
+				app.storage.SetEmailsKey(gc.GetString("jfId"), user)
+			}
+			app.debug.Printf("Ignoring referral request, expired.")
+			respondBool(400, false, gc)
+			return
+		}
 		inv.Code = GenerateInviteCode()
 		inv.Created = time.Now()
 		inv.ValidTill = inv.Created.Add(REFERRAL_EXPIRY_DAYS * 24 * time.Hour)
@@ -771,5 +787,6 @@ func (app *appContext) GetMyReferral(gc *gin.Context) {
 		RemainingUses: inv.RemainingUses,
 		NoLimit:       inv.NoLimit,
 		Expiry:        inv.ValidTill.Unix(),
+		UseExpiry:     inv.UseReferralExpiry,
 	})
 }

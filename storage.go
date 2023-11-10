@@ -659,15 +659,15 @@ type Invite struct {
 	UserMinutes   int       `json:"user-minutes,omitempty"`
 	SendTo        string    `json:"email"`
 	// Used to be stored as formatted time, now as Unix.
-	UsedBy                     [][]string                 `json:"used-by"`
-	Notify                     map[string]map[string]bool `json:"notify"`
-	Profile                    string                     `json:"profile"`
-	Label                      string                     `json:"label,omitempty"`
-	UserLabel                  string                     `json:"user_label,omitempty" example:"Friend"` // Label to apply to users created w/ this invite.
-	Captchas                   map[string]Captcha         // Map of Captcha IDs to images & answers
-	IsReferral                 bool                       `json:"is_referral" badgerhold:"index"`
-	ReferrerJellyfinID         string                     `json:"referrer_id"`
-	ReferrerTemplateForProfile string
+	UsedBy             [][]string                 `json:"used-by"`
+	Notify             map[string]map[string]bool `json:"notify"`
+	Profile            string                     `json:"profile"`
+	Label              string                     `json:"label,omitempty"`
+	UserLabel          string                     `json:"user_label,omitempty" example:"Friend"` // Label to apply to users created w/ this invite.
+	Captchas           map[string]Captcha         // Map of Captcha IDs to images & answers
+	IsReferral         bool                       `json:"is_referral" badgerhold:"index"`
+	ReferrerJellyfinID string                     `json:"referrer_id"`
+	UseReferralExpiry  bool                       `json:"use_referral_expiry"`
 }
 
 type Captcha struct {
