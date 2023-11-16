@@ -173,6 +173,7 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 		api.GET(p+"/users", app.GetUsers)
 		api.POST(p+"/users", app.NewUserAdmin)
 		api.POST(p+"/users/extend", app.ExtendExpiry)
+		api.DELETE(p+"/users/:id/expiry", app.RemoveExpiry)
 		api.POST(p+"/users/enable", app.EnableDisableUsers)
 		api.POST(p+"/invites", app.GenerateInvite)
 		api.GET(p+"/invites", app.GetInvites)

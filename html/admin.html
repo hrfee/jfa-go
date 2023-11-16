@@ -679,7 +679,15 @@
                         {{ if .referralsEnabled }}
                             <span class="col button ~urge @low center max-w-[20%]" id="accounts-enable-referrals">{{ .strings.enableReferrals }}</span>
                         {{ end }}
-                        <span class="col button ~warning @low center max-w-[20%]" id="accounts-extend-expiry">{{ .strings.extendExpiry }}</span>
+                        <div id="accounts-expiry-dropdown" class="col dropdown pb-0i max-w-[20%]" tabindex="0">
+                            <span class="w-100 button ~positive @low center" id="accounts-expiry-dropdown-button">{{ .strings.expiry }} <i class="ri-arrow-down-s-line ml-2"></i></span>
+                            <div class="dropdown-display">
+                                <div class="card ~neutral @low">
+                                    <span class="button ~warning full-width @low center" id="accounts-extend-expiry">{{ .strings.extendExpiry }}</span>
+                                    <span class="button ~critical full-width @low center mt-2" id="accounts-remove-expiry">{{ .strings.removeExpiry }}</span>
+                                </div>
+                            </div>
+                        </div>
                         <div id="accounts-disable-enable-dropdown" class="col dropdown manual pb-0i max-w-[20%]" tabindex="0">
                             <span class="w-100 button ~positive @low center" id="accounts-disable-enable">{{ .strings.disable }}</span>
                             <div class="dropdown-display">

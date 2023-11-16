@@ -769,7 +769,9 @@ export class accountsList {
     private _enableExpiry = document.getElementById("accounts-enable-expiry") as HTMLSpanElement;
     private _deleteNotify = document.getElementById("delete-user-notify") as HTMLInputElement;
     private _deleteReason = document.getElementById("textarea-delete-user") as HTMLTextAreaElement;
+    private _expiryDropdown = document.getElementById("accounts-expiry-dropdown") as HTMLElement;
     private _extendExpiry = document.getElementById("accounts-extend-expiry") as HTMLSpanElement;
+    private _removeExpiry = document.getElementById("accounts-remove-expiry") as HTMLSpanElement;
     private _enableExpiryNotify = document.getElementById("expiry-extend-enable") as HTMLInputElement;
     private _enableExpiryReason = document.getElementById("textarea-extend-enable") as HTMLTextAreaElement;
     private _modifySettings = document.getElementById("accounts-modify-user") as HTMLSpanElement;
@@ -985,7 +987,7 @@ export class accountsList {
             if (window.emailEnabled || window.telegramEnabled) {
                 this._announceButton.parentElement.classList.add("unfocused");
             }
-            this._extendExpiry.classList.add("unfocused");
+            this._expiryDropdown.classList.add("unfocused");
             this._disableEnable.parentElement.classList.add("unfocused");
             this._sendPWR.classList.add("unfocused");
         } else {
@@ -1021,7 +1023,7 @@ export class accountsList {
             for (let id of list) {
                 if (!anyNonExpiries && !this._users[id].expiry) {
                     anyNonExpiries = true;
-                    this._extendExpiry.classList.add("unfocused");
+                    this._expiryDropdown.classList.add("unfocused");
                 }
                 if (this._users[id].expiry) {
                     allNonExpiries = false;
@@ -1040,13 +1042,15 @@ export class accountsList {
             }
             this._settingExpiry = false;
             if (!anyNonExpiries && !allNonExpiries) {
-                this._extendExpiry.classList.remove("unfocused");
+                this._expiryDropdown.classList.remove("unfocused");
                 this._extendExpiry.textContent = window.lang.strings("extendExpiry");
+                this._removeExpiry.classList.remove("unfocused");
             }
             if (allNonExpiries) {
-                this._extendExpiry.classList.remove("unfocused");
+                this._expiryDropdown.classList.remove("unfocused");
                 this._extendExpiry.textContent = window.lang.strings("setExpiry");
                 this._settingExpiry = true;
+                this._removeExpiry.classList.add("unfocused");
             }
             // Only show "Send PWR" if a maximum of 1 user selected doesn't have a contact method
             if (noContactCount > 1) {
@@ -1598,6 +1602,29 @@ export class accountsList {
         window.modals.enableReferralsUser.show();
     }
 
+    removeExpiry = () => {
+        const list = this._collectUsers();
+
+        let success = true;
+        for (let id of list) {
+            _delete("/users/" + id + "/expiry", null, (req: XMLHttpRequest) => {
+                if (req.readyState != 4) return;
+                if (req.status != 200) {
+                    success = false;
+                    return;
+                }
+            });
+            if (!success) break;
+        }
+
+        if (success) {
+            window.notifications.customSuccess("modifySettingsSuccess", window.lang.quantity("appliedSettings", list.length));
+        } else {
+            window.notifications.customError("modifySettingsError", window.lang.notif("errorSettingsFailed"));
+        }
+        this.reload();
+    }
+
     extendExpiry = (enableUser?: boolean) => {
         const list = this._collectUsers();
         let applyList: string[] = [];
@@ -1792,7 +1819,8 @@ export class accountsList {
         this._announceButton.parentElement.classList.add("unfocused");
 
         this._extendExpiry.onclick = () => { this.extendExpiry(); };
-        this._extendExpiry.classList.add("unfocused");
+        this._removeExpiry.onclick = () => { this.removeExpiry(); };
+        this._expiryDropdown.classList.add("unfocused");
 
         this._disableEnable.onclick = this.enableDisableUsers;
         this._disableEnable.parentElement.classList.add("unfocused");

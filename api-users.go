@@ -707,7 +707,7 @@ func (app *appContext) DeleteUsers(gc *gin.Context) {
 	respondBool(200, true, gc)
 }
 
-// @Summary Extend time before the user(s) expiry, or create and expiry if it doesn't exist.
+// @Summary Extend time before the user(s) expiry, or create an expiry if it doesn't exist.
 // @Produce json
 // @Param extendExpiryDTO body extendExpiryDTO true "Extend expiry object"
 // @Success 200 {object} boolResponse
@@ -737,6 +737,17 @@ func (app *appContext) ExtendExpiry(gc *gin.Context) {
 	respondBool(204, true, gc)
 }
 
+// @Summary Remove an expiry from a user's account.
+// @Produce json
+// @Param id path string true "id of user to extend expiry of."
+// @Success 200 {object} boolResponse
+// @Router /users/{id}/expiry [delete]
+// @tags Users
+func (app *appContext) RemoveExpiry(gc *gin.Context) {
+	app.storage.DeleteUserExpiryKey(gc.Param("id"))
+	respondBool(200, true, gc)
+}
+
 // @Summary Enable referrals for the given user(s) based on the rules set in the given invite code, or profile.
 // @Produce json
 // @Param EnableDisableReferralDTO body EnableDisableReferralDTO true "List of users"
@@ -753,6 +764,7 @@ func (app *appContext) EnableReferralForUsers(gc *gin.Context) {
 	var req EnableDisableReferralDTO
 	gc.BindJSON(&req)
 	mode := gc.Param("mode")
+
 	source := gc.Param("source")
 	useExpiry := gc.Param("useExpiry") == "with-expiry"
 	baseInv := Invite{}
