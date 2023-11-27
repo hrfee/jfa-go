@@ -115,7 +115,8 @@
         "after": "nach",
         "before": "vor",
         "unlink": "Account trennen",
-        "sortingBy": "Sortieren nach"
+        "sortingBy": "Sortieren nach",
+        "activity": "Aktivität"
     },
     "notifications": {
         "changedEmailAddress": "E-Mail-Adresse von {n} geändert.",
