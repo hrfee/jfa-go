@@ -234,6 +234,11 @@ func (app *appContext) MyUserPage(gc *gin.Context) {
 		data["discordServerName"] = app.discord.serverName
 		data["discordInviteLink"] = app.discord.inviteChannelName != ""
 	}
+	if data["linkResetEnabled"].(bool) {
+		data["resetPasswordUsername"] = app.config.Section("user_page").Key("allow_pwr_username").MustBool(true)
+		data["resetPasswordEmail"] = app.config.Section("user_page").Key("allow_pwr_email").MustBool(true)
+		data["resetPasswordContactMethod"] = app.config.Section("user_page").Key("allow_pwr_contact_method").MustBool(true)
+	}
 
 	pageMessagesExist := map[string]bool{}
 	pageMessages := map[string]CustomContent{}

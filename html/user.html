@@ -48,11 +48,17 @@
         </div>
         {{ if .pwrEnabled }}
         <div id="modal-pwr" class="modal">
-            <div class="card relative mx-auto my-[10%] w-4/5 lg:w-1/3 ~neutral @low">
+            <div class="card content relative mx-auto my-[10%] w-4/5 lg:w-1/3 ~neutral @low">
                 <span class="heading">{{ .strings.resetPassword }}</span>
                 <p class="content my-2">
                 {{ if .linkResetEnabled }}
-                    {{ .strings.resetPasswordThroughLink }}
+                    {{ .strings.resetPasswordThroughLinkStart }}
+                    <ul class="content">
+                        {{ if .resetPasswordUsername }}<li>{{ .strings.resetPasswordUsername }}</li>{{ end }}
+                        {{ if .resetPasswordEmail }}<li>{{ .strings.resetPasswordEmail }}</li>{{ end }}
+                        {{ if .resetPasswordContactMethod }}<li>{{ .strings.resetPasswordContactMethod }}</li>{{ end }}
+                    </ul>
+                    {{ .strings.resetPasswordThroughLinkEnd }}
                 {{ else }}
                     {{ .strings.resetPasswordThroughJellyfin }}
                 {{ end }}

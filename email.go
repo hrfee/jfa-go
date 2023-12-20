@@ -899,55 +899,65 @@ func (app *appContext) getAddressOrName(jfID string) string {
 
 // ReverseUserSearch returns the jellyfin ID of the user with the given username, email, or contact method username.
 // returns "" if none found. returns only the first match, might be an issue if there are users with the same contact method usernames.
-func (app *appContext) ReverseUserSearch(address string) (user mediabrowser.User, ok bool) {
+func (app *appContext) ReverseUserSearch(address string, matchUsername, matchEmail, matchContactMethod bool) (user mediabrowser.User, ok bool) {
 	ok = false
-	user, status, err := app.jf.UserByName(address, false)
-	if status == 200 && err == nil {
-		ok = true
-		return
+	var status int
+	var err error = nil
+	if matchUsername {
+		user, status, err = app.jf.UserByName(address, false)
+		if status == 200 && err == nil {
+			ok = true
+			return
+		}
 	}
-	emailAddresses := []EmailAddress{}
-	err = app.storage.db.Find(&emailAddresses, badgerhold.Where("Addr").Eq(address))
-	if err == nil && len(emailAddresses) > 0 {
-		for _, emailUser := range emailAddresses {
-			user, status, err = app.jf.UserByID(emailUser.JellyfinID, false)
-			if status == 200 && err == nil {
-				ok = true
-				return
+
+	if matchEmail {
+		emailAddresses := []EmailAddress{}
+		err = app.storage.db.Find(&emailAddresses, badgerhold.Where("Addr").Eq(address))
+		if err == nil && len(emailAddresses) > 0 {
+			for _, emailUser := range emailAddresses {
+				user, status, err = app.jf.UserByID(emailUser.JellyfinID, false)
+				if status == 200 && err == nil {
+					ok = true
+					return
+				}
 			}
 		}
 	}
+
 	// Dont know how we'd use badgerhold when we need to render each username,
 	// Apart from storing the rendered name in the db.
-	for _, dcUser := range app.storage.GetDiscord() {
-		if RenderDiscordUsername(dcUser) == strings.ToLower(address) {
-			user, status, err = app.jf.UserByID(dcUser.JellyfinID, false)
-			if status == 200 && err == nil {
-				ok = true
-				return
+	if matchContactMethod {
+		for _, dcUser := range app.storage.GetDiscord() {
+			if RenderDiscordUsername(dcUser) == strings.ToLower(address) {
+				user, status, err = app.jf.UserByID(dcUser.JellyfinID, false)
+				if status == 200 && err == nil {
+					ok = true
+					return
+				}
 			}
 		}
-	}
-	tgUsername := strings.TrimPrefix(address, "@")
-	telegramUsers := []TelegramUser{}
-	err = app.storage.db.Find(&telegramUsers, badgerhold.Where("Username").Eq(tgUsername))
-	if err == nil && len(telegramUsers) > 0 {
-		for _, telegramUser := range telegramUsers {
-			user, status, err = app.jf.UserByID(telegramUser.JellyfinID, false)
-			if status == 200 && err == nil {
-				ok = true
-				return
+		tgUsername := strings.TrimPrefix(address, "@")
+		telegramUsers := []TelegramUser{}
+		err = app.storage.db.Find(&telegramUsers, badgerhold.Where("Username").Eq(tgUsername))
+		if err == nil && len(telegramUsers) > 0 {
+			for _, telegramUser := range telegramUsers {
+				user, status, err = app.jf.UserByID(telegramUser.JellyfinID, false)
+				if status == 200 && err == nil {
+					ok = true
+					return
+				}
 			}
 		}
-	}
-	matrixUsers := []MatrixUser{}
-	err = app.storage.db.Find(&matrixUsers, badgerhold.Where("UserID").Eq(address))
-	if err == nil && len(matrixUsers) > 0 {
-		for _, matrixUser := range matrixUsers {
-			user, status, err = app.jf.UserByID(matrixUser.JellyfinID, false)
-			if status == 200 && err == nil {
-				ok = true
-				return
+		matrixUsers := []MatrixUser{}
+		err = app.storage.db.Find(&matrixUsers, badgerhold.Where("UserID").Eq(address))
+		if err == nil && len(matrixUsers) > 0 {
+			for _, matrixUser := range matrixUsers {
+				user, status, err = app.jf.UserByID(matrixUser.JellyfinID, false)
+				if status == 200 && err == nil {
+					ok = true
+					return
+				}
 			}
 		}
 	}

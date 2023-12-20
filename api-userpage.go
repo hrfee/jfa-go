@@ -590,6 +590,9 @@ func (app *appContext) ResetMyPassword(gc *gin.Context) {
 	cancel := time.AfterFunc(1*time.Second, func() {
 		timerWait <- true
 	})
+	usernameAllowed := app.config.Section("user_page").Key("allow_pwr_username").MustBool(true)
+	emailAllowed := app.config.Section("user_page").Key("allow_pwr_email").MustBool(true)
+	contactMethodAllowed := app.config.Section("user_page").Key("allow_pwr_contact_method").MustBool(true)
 	address := gc.Param("address")
 	if address == "" {
 		app.debug.Println("Ignoring empty request for PWR")
@@ -600,7 +603,7 @@ func (app *appContext) ResetMyPassword(gc *gin.Context) {
 	var pwr InternalPWR
 	var err error
 
-	jfUser, ok := app.ReverseUserSearch(address)
+	jfUser, ok := app.ReverseUserSearch(address, usernameAllowed, emailAllowed, contactMethodAllowed)
 	if !ok {
 		app.debug.Printf("Ignoring PWR request: User not found")
 

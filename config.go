@@ -122,6 +122,20 @@ func (app *appContext) loadConfig() error {
 	app.MustSetValue("password_resets", "url_base", strings.TrimSuffix(url1, "/invite"))
 	app.MustSetValue("invite_emails", "url_base", url2)
 
+	pwrMethods := []string{"allow_pwr_username", "allow_pwr_email", "allow_pwr_contact_method"}
+	allDisabled := true
+	for _, v := range pwrMethods {
+		if app.config.Section("user_page").Key(v).MustBool(true) {
+			allDisabled = false
+		}
+	}
+	if allDisabled {
+		fmt.Println("SETALLTRUE")
+		for _, v := range pwrMethods {
+			app.config.Section("user_page").Key(v).SetValue("true")
+		}
+	}
+
 	messagesEnabled = app.config.Section("messages").Key("enabled").MustBool(false)
 	telegramEnabled = app.config.Section("telegram").Key("enabled").MustBool(false)
 	discordEnabled = app.config.Section("discord").Key("enabled").MustBool(false)

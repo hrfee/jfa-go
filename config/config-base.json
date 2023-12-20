@@ -629,6 +629,7 @@
                     "name": "Show Link on Admin Login page",
                     "required": false,
                     "requires_restart": false,
+                    "depends_true": "enabled",
                     "type": "bool",
                     "value": true,
                     "description": "Whether or not to show a link to the \"My Account\" page on the admin login screen, to direct lost users."
@@ -637,6 +638,7 @@
                     "name": "User Referrals",
                     "required": false,
                     "requires_restart": true,
+                    "depends_true": "enabled",
                     "type": "bool",
                     "value": true,
                     "description": "Users are given their own \"invite\" to send to others."
@@ -648,6 +650,41 @@
                     "depends_true": "referrals",
                     "required": "false",
                     "description": "Create an invite with your desired settings, then either assign it to a user in the accounts tab, or to a profile in settings."
+                },
+                "allow_pwr_username": {
+                    "name": "Allow PWR with username",
+                    "required": false,
+                    "requires_restart": true,
+                    "depends_true": "enabled",
+                    "type": "bool",
+                    "value": true,
+                    "description": "Allow users to start a Password Reset by inputting their username."
+                },
+                "allow_pwr_email": {
+                    "name": "Allow PWR with email address",
+                    "required": false,
+                    "requires_restart": true,
+                    "depends_true": "enabled",
+                    "type": "bool",
+                    "value": true,
+                    "description": "Allow users to start a Password Reset by inputting their email address."
+                },
+                "allow_pwr_contact_method": {
+                    "name": "Allow PWR with Discord/Telegram/Matrix",
+                    "required": false,
+                    "requires_restart": true,
+                    "depends_true": "enabled",
+                    "type": "bool",
+                    "value": true,
+                    "description": "Allow users to start a Password Reset by inputting their Discord/Telegram/Matrix username/id."
+                },
+                "pwr_note": {
+                    "name": "PWR Methods",
+                    "type": "note",
+                    "depends_true": "enabled",
+                    "value": "",
+                    "required": "false",
+                    "description": "Select at least one PWR initiation method. If none are selected, all will be enabled."
                 }
             }
         },
