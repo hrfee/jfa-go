@@ -280,7 +280,8 @@ func (app *appContext) ResetPassword(gc *gin.Context) {
 		"ombiEnabled":    app.config.Section("ombi").Key("enabled").MustBool(false),
 	}
 	pwr, isInternal := app.internalPWRs[pin]
-	if isInternal && setPassword {
+	// if isInternal && setPassword {
+	if setPassword {
 		data["helpMessage"] = app.config.Section("ui").Key("help_message").String()
 		data["successMessage"] = app.config.Section("ui").Key("success_message").String()
 		data["jfLink"] = app.config.Section("ui").Key("redirect_url").String()
@@ -324,7 +325,7 @@ func (app *appContext) ResetPassword(gc *gin.Context) {
 	var status int
 	var err error
 	var username string
-	if !isInternal {
+	if !isInternal && !setPassword {
 		resp, status, err = app.jf.ResetPassword(pin)
 	} else if time.Now().After(pwr.Expiry) {
 		app.debug.Printf("Ignoring PWR request due to expired internal PIN: %s", pin)
