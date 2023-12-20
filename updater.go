@@ -161,6 +161,7 @@ func newUpdater(buildroneURL, namespace, repo, version, commit, buildType string
 	if runtime.GOOS == "windows" {
 		binary += ".exe"
 	}
+	fmt.Println("monitoring", tag)
 	return &Updater{
 		httpClient:     &http.Client{Timeout: 10 * time.Second},
 		timeoutHandler: common.NewTimeoutHandler("updater", buildroneURL, true),
@@ -211,7 +212,7 @@ func (ud *Updater) GetTag() (Tag, int, error) {
 	var tag Tag
 	err = json.Unmarshal(body, &tag)
 	if tag.Version == "" {
-		err = errors.New("Tag was empty")
+		err = errors.New("Tag at \"" + url + "\" was empty")
 	}
 	return tag, resp.StatusCode, err
 }
