@@ -121,6 +121,7 @@ typescript:
 	$(ESBUILD) --target=es6 --bundle tempts/admin.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/admin.js --minify
 	$(ESBUILD) --target=es6 --bundle tempts/user.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/user.js --minify
 	$(ESBUILD) --target=es6 --bundle tempts/pwr.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/pwr.js --minify
+	$(ESBUILD) --target=es6 --bundle tempts/pwr-pin.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/pwr-pin.js --minify
 	$(ESBUILD) --target=es6 --bundle tempts/form.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/form.js --minify
 	$(ESBUILD) --target=es6 --bundle tempts/setup.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/setup.js --minify
 	$(ESBUILD) --target=es6 --bundle tempts/crash.ts --outfile=./$(DATA)/crash.js --minify

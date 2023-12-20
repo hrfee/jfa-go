@@ -29,6 +29,7 @@ before:
     - npx esbuild --target=es6 --bundle tempts/admin.ts {{.Env.JFA_GO_SOURCEMAP}} --outfile=./data/web/js/admin.js {{.Env.JFA_GO_MINIFY}}
     - npx esbuild --target=es6 --bundle tempts/user.ts {{.Env.JFA_GO_SOURCEMAP}} --outfile=./data/web/js/user.js {{.Env.JFA_GO_MINIFY}}
     - npx esbuild --target=es6 --bundle tempts/pwr.ts {{.Env.JFA_GO_SOURCEMAP}} --outfile=./data/web/js/pwr.js {{.Env.JFA_GO_MINIFY}}
+    - npx esbuild --target=es6 --bundle tempts/pwr-pin.ts {{.Env.JFA_GO_SOURCEMAP}} --outfile=./data/web/js/pwr-pin.js {{.Env.JFA_GO_MINIFY}}
     - npx esbuild --target=es6 --bundle tempts/form.ts {{.Env.JFA_GO_SOURCEMAP}} --outfile=./data/web/js/form.js {{.Env.JFA_GO_MINIFY}}
     - npx esbuild --target=es6 --bundle tempts/setup.ts {{.Env.JFA_GO_SOURCEMAP}} --outfile=./data/web/js/setup.js {{.Env.JFA_GO_MINIFY}}
     - npx esbuild --target=es6 --bundle tempts/crash.ts {{.Env.JFA_GO_SOURCEMAP}} --outfile=./data/crash.js {{.Env.JFA_GO_MINIFY}}
