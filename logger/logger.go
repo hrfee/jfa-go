@@ -49,7 +49,7 @@ func Lshortfile(level int) string {
 }
 
 func lshortfile() string {
-	return Lshortfile(2)
+	return Lshortfile(3)
 }
 
 func NewLogger(out io.Writer, prefix string, flag int, color c.Attribute) (l *Logger) {
