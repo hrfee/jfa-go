@@ -771,6 +771,12 @@ export class accountsList {
     private _deleteReason = document.getElementById("textarea-delete-user") as HTMLTextAreaElement;
     private _expiryDropdown = document.getElementById("accounts-expiry-dropdown") as HTMLElement;
     private _extendExpiry = document.getElementById("accounts-extend-expiry") as HTMLSpanElement;
+    private  _extendExpiryForm = document.getElementById("form-extend-expiry") as HTMLFormElement;
+    private _extendExpiryTextInput = document.getElementById("extend-expiry-text") as HTMLInputElement;
+    private _extendExpiryFieldInputs = document.getElementById("extend-expiry-field-inputs") as HTMLElement;
+    private _usingExtendExpiryTextInput = true;
+
+    private _extendExpiryDate = document.getElementById("extend-expiry-date") as HTMLElement;
     private _removeExpiry = document.getElementById("accounts-remove-expiry") as HTMLSpanElement;
     private _enableExpiryNotify = document.getElementById("expiry-extend-enable") as HTMLInputElement;
     private _enableExpiryReason = document.getElementById("textarea-extend-enable") as HTMLTextAreaElement;
@@ -1625,6 +1631,45 @@ export class accountsList {
         this.reload();
     }
 
+    _displayExpiryDate = () => {
+        let date: Date;
+        let invalid = false;
+        if (this._usingExtendExpiryTextInput) {
+            date = (Date as any).fromString(this._extendExpiryTextInput.value) as Date;
+            invalid = "invalid" in (date as any);
+        } else {
+            let fields: Array<HTMLSelectElement> = [
+                document.getElementById("extend-expiry-months") as HTMLSelectElement,
+                document.getElementById("extend-expiry-days") as HTMLSelectElement,
+                document.getElementById("extend-expiry-hours") as HTMLSelectElement,
+                document.getElementById("extend-expiry-minutes") as HTMLSelectElement
+            ];
+            invalid = fields[0].value == "0" && fields[1].value == "0" && fields[2].value == "0" && fields[3].value == "0";
+            let id = this._collectUsers().length == 1 ? this._collectUsers()[0] : "";
+            if (!id) invalid = true;
+            else {
+                date = new Date(this._users[id].expiry*1000);
+                if (this._users[id].expiry == 0) date = new Date();
+                date.setMonth(date.getMonth() + (+fields[0].value))
+                date.setDate(date.getDate() + (+fields[1].value));
+                date.setHours(date.getHours() + (+fields[2].value));
+                date.setMinutes(date.getMinutes() + (+fields[3].value));
+            }
+        }
+        const submit = this._extendExpiryForm.querySelector(`input[type="submit"]`) as HTMLInputElement;
+        const submitSpan = submit.nextElementSibling;
+        if (invalid) {
+            submit.disabled = true;
+            submitSpan.classList.add("opacity-60");
+            this._extendExpiryDate.classList.add("unfocused");
+        } else {
+            submit.disabled = false;
+            submitSpan.classList.remove("opacity-60");
+            this._extendExpiryDate.textContent = window.lang.strings("accountWillExpire").replace("{date}", toDateString(date));
+            this._extendExpiryDate.classList.remove("unfocused");
+        }
+    }
+
     extendExpiry = (enableUser?: boolean) => {
         const list = this._collectUsers();
         let applyList: string[] = [];
@@ -1647,10 +1692,20 @@ export class accountsList {
         }
         document.getElementById("header-extend-expiry").textContent = header;
         const extend = () => {
-            let send = { "users": applyList }
-            for (let field of ["months", "days", "hours", "minutes"]) {
-                send[field] = +(document.getElementById("extend-expiry-"+field) as HTMLSelectElement).value;
+            let send = { "users": applyList, "timestamp": 0 }
+            if (this._usingExtendExpiryTextInput) {
+                let date = (Date as any).fromString(this._extendExpiryTextInput.value) as Date;
+                send["timestamp"] = Math.floor(date.getTime() / 1000);
+                if ("invalid" in (date as any)) {
+                    window.notifications.customError("extendExpiryError", window.lang.notif("errorInvalidDate"));
+                    return;
+                }
+            } else {
+                for (let field of ["months", "days", "hours", "minutes"]) {
+                    send[field] = +(document.getElementById("extend-expiry-"+field) as HTMLSelectElement).value;
+                }
             }
+
             _post("/users/extend", send, (req: XMLHttpRequest) => {
                 if (req.readyState == 4) {
                     if (req.status != 200 && req.status != 204) {
@@ -1663,8 +1718,7 @@ export class accountsList {
                 }
             });
         };
-        const form = document.getElementById("form-extend-expiry") as HTMLFormElement;
-        form.onsubmit = (event: Event) => {
+        this._extendExpiryForm.onsubmit = (event: Event) => {
             event.preventDefault();
             if (enableUser) {
                 this._enableDisableUsers(applyList, true, this._enableExpiryNotify.checked, this._enableExpiryNotify ? this._enableExpiryReason.value : null, (req: XMLHttpRequest) => {
@@ -1685,6 +1739,7 @@ export class accountsList {
                 extend();
             }
         }
+        this._extendExpiryTextInput.value = "";
         window.modals.extendExpiry.show();
     }
     
@@ -1821,6 +1876,37 @@ export class accountsList {
         this._extendExpiry.onclick = () => { this.extendExpiry(); };
         this._removeExpiry.onclick = () => { this.removeExpiry(); };
         this._expiryDropdown.classList.add("unfocused");
+        this._extendExpiryDate.classList.add("unfocused");
+
+        this._extendExpiryTextInput.onkeyup = () => {
+            this._extendExpiryTextInput.parentElement.parentElement.classList.remove("opacity-60");
+            this._extendExpiryFieldInputs.classList.add("opacity-60");
+                this._usingExtendExpiryTextInput = true;
+            this._displayExpiryDate();
+        }
+
+        this._extendExpiryTextInput.onclick = () => {
+            this._extendExpiryTextInput.parentElement.parentElement.classList.remove("opacity-60");
+            this._extendExpiryFieldInputs.classList.add("opacity-60");
+            this._usingExtendExpiryTextInput = true;
+            this._displayExpiryDate();
+        };
+
+        this._extendExpiryFieldInputs.onclick = () => {
+            this._extendExpiryFieldInputs.classList.remove("opacity-60");
+            this._extendExpiryTextInput.parentElement.parentElement.classList.add("opacity-60");
+            this._usingExtendExpiryTextInput = false;
+            this._displayExpiryDate();
+        };
+        
+        for (let field of ["months", "days", "hours", "minutes"]) {
+            (document.getElementById("extend-expiry-"+field) as HTMLSelectElement).onchange = () => {
+                this._extendExpiryFieldInputs.classList.remove("opacity-60");
+                this._extendExpiryTextInput.parentElement.parentElement.classList.add("opacity-60");
+                this._usingExtendExpiryTextInput = false;
+                this._displayExpiryDate();
+            };
+        }
 
         this._disableEnable.onclick = this.enableDisableUsers;
         this._disableEnable.parentElement.classList.add("unfocused");

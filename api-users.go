@@ -719,7 +719,7 @@ func (app *appContext) ExtendExpiry(gc *gin.Context) {
 	var req extendExpiryDTO
 	gc.BindJSON(&req)
 	app.info.Printf("Expiry extension requested for %d user(s)", len(req.Users))
-	if req.Months <= 0 && req.Days <= 0 && req.Hours <= 0 && req.Minutes <= 0 {
+	if req.Months <= 0 && req.Days <= 0 && req.Hours <= 0 && req.Minutes <= 0 && req.Timestamp <= 0 {
 		respondBool(400, false, gc)
 		return
 	}
@@ -731,7 +731,12 @@ func (app *appContext) ExtendExpiry(gc *gin.Context) {
 		} else {
 			app.debug.Printf("Created expiry for \"%s\"", id)
 		}
-		expiry := UserExpiry{Expiry: base.AddDate(0, req.Months, req.Days).Add(time.Duration(((60 * req.Hours) + req.Minutes)) * time.Minute)}
+		expiry := UserExpiry{}
+		if req.Timestamp != 0 {
+			expiry.Expiry = time.Unix(req.Timestamp, 0)
+		} else {
+			expiry.Expiry = base.AddDate(0, req.Months, req.Days).Add(time.Duration(((60 * req.Hours) + req.Minutes)) * time.Minute)
+		}
 		app.storage.SetUserExpiryKey(id, expiry)
 	}
 	respondBool(204, true, gc)

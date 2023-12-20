@@ -64,6 +64,7 @@
         "extendExpiry": "Extend expiry",
         "setExpiry": "Set expiry",
         "removeExpiry": "Remove expiry",
+        "enterExpiry": "Enter an expiry",
         "sendPWRManual": "User {n} has no method of contact, press copy to get a link to send to them.",
         "sendPWRSuccess": "Password reset link sent.",
         "sendPWRSuccessManual": "If the user hasn't received it, press copy to get a link to manually send to them.",
@@ -149,6 +150,7 @@
         "accountDisabled": "Account disabled: {user}",
         "accountReEnabled": "Account re-enabled: {user}",
         "accountExpired": "Account expired: {user}",
+        "accountWillExpire": "Account will expire on {date}",
         "userDeleted": "User was deleted.",
         "userDisabled": "User was disabled",
         "inviteCreated": "Invite created: {invite}",
@@ -219,6 +221,7 @@
         "errorCheckUpdate": "Failed to check for update.",
         "errorNoReferralTemplate": "Profile doesn't contain referral template, add one in settings.",
         "errorLoadActivities": "Failed to load activities.",
+        "errorInvalidDate": "Date is invalid.",
         "updateAvailable": "A new update is available, check settings.",
         "noUpdatesAvailable": "No new updates available."
     },

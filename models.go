@@ -261,11 +261,12 @@ type customEmailDTO struct {
 }
 
 type extendExpiryDTO struct {
-	Users   []string `json:"users"`               // List of user IDs to apply to.
-	Months  int      `json:"months" example:"1"`  // Number of months to add.
-	Days    int      `json:"days" example:"1"`    // Number of days to add.
-	Hours   int      `json:"hours" example:"2"`   // Number of hours to add.
-	Minutes int      `json:"minutes" example:"3"` // Number of minutes to add.
+	Users     []string `json:"users"`               // List of user IDs to apply to.
+	Months    int      `json:"months" example:"1"`  // Number of months to add.
+	Days      int      `json:"days" example:"1"`    // Number of days to add.
+	Hours     int      `json:"hours" example:"2"`   // Number of hours to add.
+	Minutes   int      `json:"minutes" example:"3"` // Number of minutes to add.
+	Timestamp int64    `json:"timestamp"`           // Optional, exact time to expire at. Overrides other fields.
 }
 
 type checkUpdateDTO struct {

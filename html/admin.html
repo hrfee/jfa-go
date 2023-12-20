@@ -181,39 +181,49 @@
             <form class="card relative mx-auto my-[10%] w-4/5 lg:w-1/3" id="form-extend-expiry" href="">
                 <span class="heading"><span id="header-extend-expiry"></span> <span class="modal-close">&times;</span></span>
                 <div class="content mt-8">
-                    <div class="row">
-                        <div class="col">
-                            <label class="label supra" for="extend-expiry-months">{{ .strings.inviteMonths }}</label>
-                            <div class="select ~neutral @low mb-2 mt-4">
-                                <select id="extend-expiry-months">
-                                    <option>0</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col">
-                            <label class="label supra" for="extend-expiry-days">{{ .strings.inviteDays }}</label>
-                            <div class="select ~neutral @low mb-2 mt-4">
-                                <select id="extend-expiry-days">
-                                    <option>0</option>
-                                </select>
-                            </div>
+                    <aside class="aside sm ~urge dark:~d_info mb-2 @low row unfocused" id="extend-expiry-date"></aside>
+                    <div>
+                        <span class="text-xl supra row py-1">{{ .strings.setExpiry }}</span>
+                        <div class="row">
+                            <input type="text" id="extend-expiry-text" class="input ~neutral @low mb-2 mt-4" placeholder="{{ .strings.enterExpiry }}">
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col">
-                            <label class="label supra" for="extend-expiry-hours">{{ .strings.inviteHours }}</label>
-                            <div class="select ~neutral @low mb-2 mt-4">
-                                <select id="extend-expiry-hours">
-                                    <option>0</option>
-                                </select>
+                    <div id="extend-expiry-field-inputs">
+                        <span class="text-xl supra row py-1">{{ .strings.extendExpiry }}</span>
+                        <div class="row">
+                            <div class="col">
+                                <label class="label supra" for="extend-expiry-months">{{ .strings.inviteMonths }}</label>
+                                <div class="select ~neutral @low mb-2 mt-4">
+                                    <select id="extend-expiry-months">
+                                        <option>0</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <label class="label supra" for="extend-expiry-days">{{ .strings.inviteDays }}</label>
+                                <div class="select ~neutral @low mb-2 mt-4">
+                                    <select id="extend-expiry-days">
+                                        <option>0</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
-                        <div class="col">
-                            <label class="label supra" for="extend-expiry-minutes">{{ .strings.inviteMinutes }}</label>
-                            <div class="select ~neutral @low mb-2 mt-4">
-                                <select id="extend-expiry-minutes">
-                                    <option>0</option>
-                                </select>
+                        <div class="row">
+                            <div class="col">
+                                <label class="label supra" for="extend-expiry-hours">{{ .strings.inviteHours }}</label>
+                                <div class="select ~neutral @low mb-2 mt-4">
+                                    <select id="extend-expiry-hours">
+                                        <option>0</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <label class="label supra" for="extend-expiry-minutes">{{ .strings.inviteMinutes }}</label>
+                                <div class="select ~neutral @low mb-2 mt-4">
+                                    <select id="extend-expiry-minutes">
+                                        <option>0</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
                     </div>
