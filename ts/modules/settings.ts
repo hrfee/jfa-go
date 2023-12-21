@@ -1,4 +1,4 @@
-import { _get, _post, _delete, _download, toggleLoader, addLoader, removeLoader, insertText, toClipboard, toDateString } from "../modules/common.js";
+import { _get, _post, _delete, _download, _upload, toggleLoader, addLoader, removeLoader, insertText, toClipboard, toDateString } from "../modules/common.js";
 import { Marked } from "@ts-stack/markdown";
 import { stripMarkdown } from "../modules/stripmd.js";
 
@@ -830,6 +830,21 @@ export class settingsList {
         };
         this._backupSortDirection.onclick = () => this.setBackupSort(!(this._backupSortAscending));
         const advancedEnableToggle = document.getElementById("settings-advanced-enabled") as HTMLInputElement;
+
+        const filedlg = document.getElementById("backups-file") as HTMLInputElement;
+        document.getElementById("settings-backups-upload").onclick = () => {
+            filedlg.click(); 
+        };
+        filedlg.addEventListener("change", () => {
+            if (filedlg.files.length == 0) return;
+            const form = new FormData();
+            form.append("backups-file", filedlg.files[0], filedlg.files[0].name);
+            _upload("/backups/restore", form);
+            window.modals.backups.close();
+            window.modals.settingsRefresh.modal.querySelector("span.heading").textContent = window.lang.strings("settingsRestarting");
+            window.modals.settingsRefresh.show();
+        });
+
         advancedEnableToggle.onchange = () => {
             document.dispatchEvent(new CustomEvent("settings-advancedState", { detail: advancedEnableToggle.checked }));
             const parent = advancedEnableToggle.parentElement;

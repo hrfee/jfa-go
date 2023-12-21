@@ -611,8 +611,7 @@ func (app *appContext) GetBackups(gc *gin.Context) {
 
 // @Summary Restore a backup file stored locally to the server.
 // @Param fname path string true "backup filename"
-// @Router /backups/restore/{fname} [get]
-// @Produce octet-stream
+// @Router /backups/restore/{fname} [post]
 // @Produce json
 // @Failure 400 {object} boolResponse
 // @Security Bearer
@@ -629,6 +628,29 @@ func (app *appContext) RestoreLocalBackup(gc *gin.Context) {
 	}
 	path := app.config.Section("backups").Key("path").String()
 	fullpath := filepath.Join(path, fname)
+	LOADBAK = fullpath
+	app.restart(gc)
+}
+
+// @Summary Restore a backup file uploaded by the user.
+// @Param file formData file true ".bak file"
+// @Router /backups/restore [post]
+// @Produce json
+// @Failure 400 {object} boolResponse
+// @Security Bearer
+// @tags Other
+func (app *appContext) RestoreBackup(gc *gin.Context) {
+	file, err := gc.FormFile("backups-file")
+	if err != nil {
+		app.err.Printf("Failed to get file from form data: %v\n", err)
+		respondBool(400, false, gc)
+		return
+	}
+	app.debug.Printf("Got uploaded file \"%s\"\n", file.Filename)
+	path := app.config.Section("backups").Key("path").String()
+	fullpath := filepath.Join(path, "jfa-go-upload-bak-"+time.Now().Local().Format(BACKUP_DATEFMT)+BACKUP_SUFFIX)
+	gc.SaveUploadedFile(file, fullpath)
+	app.debug.Printf("Saved to \"%s\"\n", fullpath)
 	LOADBAK = fullpath
 	app.restart(gc)
 }

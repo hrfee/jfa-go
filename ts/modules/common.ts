@@ -56,6 +56,15 @@ export const _download = (url: string, fname: string): void => {
     req.send();
 };
 
+export const _upload = (url: string, formData: FormData): void => {
+    let req = new XMLHttpRequest();
+    if (window.URLBase) { url = window.URLBase + url; }
+    req.open("POST", url, true);
+    req.setRequestHeader("Authorization", "Bearer " + window.token);
+    // req.setRequestHeader('Content-Type', 'multipart/form-data');
+    req.send(formData);
+};
+
 export const _post = (url: string, data: Object, onreadystatechange: (req: XMLHttpRequest) => void, response?: boolean, statusHandler?: (req: XMLHttpRequest) => void): void => {
     let req = new XMLHttpRequest();
     req.open("POST", window.URLBase + url, true);
