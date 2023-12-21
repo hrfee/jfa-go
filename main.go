@@ -658,6 +658,9 @@ func flagPassed(name string) (found bool) {
 // @tag.name Ombi
 // @tag.description Ombi related operations.
 
+// @tag.name Backups
+// @tag.description Database backup/restore operations.
+
 // @tag.name Other
 // @tag.description Things that dont fit elsewhere.
 
