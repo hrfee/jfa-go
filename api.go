@@ -1,6 +1,9 @@
 package main
 
 import (
+	"os"
+	"path/filepath"
+	"sort"
 	"strings"
 	"time"
 
@@ -544,4 +547,64 @@ func (app *appContext) Restart() error {
 	// Safety Sleep (Ensure shutdown tasks get done)
 	time.Sleep(time.Second)
 	return nil
+}
+
+// @Summary Creates a backup of the database.
+// @Router /backups [post]
+// @Success 200 {object} CreateBackupDTO
+// @Security Bearer
+// @tags Other
+func (app *appContext) CreateBackup(gc *gin.Context) {
+	backup := app.makeBackup()
+	gc.JSON(200, backup)
+}
+
+// @Summary Download a specific backup file. Requires auth, so can't be accessed plainly in the browser.
+// @Param fname path string true "backup filename"
+// @Router /backups/{fname} [get]
+// @Produce octet-stream
+// @Produce json
+// @Success 200 {body} file
+// @Success 400 {object} boolResponse
+// @Security Bearer
+// @tags Other
+func (app *appContext) GetBackup(gc *gin.Context) {
+	fname := gc.Param("fname")
+	// Hopefully this is enough to ensure the path isn't malicious. Hidden behind bearer auth anyway so shouldn't matter too much I guess.
+	ok := strings.HasPrefix(fname, BACKUP_PREFIX) && strings.HasSuffix(fname, BACKUP_SUFFIX)
+	t, err := time.Parse(BACKUP_DATEFMT, strings.TrimSuffix(strings.TrimPrefix(fname, BACKUP_PREFIX), BACKUP_SUFFIX))
+	if !ok || err != nil || t.IsZero() {
+		app.debug.Printf("Ignoring backup DL request due to fname: %v\n", err)
+		respondBool(400, false, gc)
+		return
+	}
+	path := app.config.Section("backups").Key("path").String()
+	fullpath := filepath.Join(path, fname)
+	gc.FileAttachment(fullpath, fname)
+}
+
+// @Summary Get a list of backups.
+// @Router /backups [get]
+// @Produce json
+// @Success 200 {object} GetBackupsDTO
+// @Security Bearer
+// @tags Other
+func (app *appContext) GetBackups(gc *gin.Context) {
+	path := app.config.Section("backups").Key("path").String()
+	backups := app.getBackups()
+	sort.Sort(backups)
+	resp := GetBackupsDTO{}
+	resp.Backups = make([]CreateBackupDTO, backups.count)
+
+	for i, item := range backups.files[:backups.count] {
+		resp.Backups[i].Name = item.Name()
+		fullpath := filepath.Join(path, item.Name())
+		resp.Backups[i].Path = fullpath
+		resp.Backups[i].Date = backups.dates[i].Unix()
+		fstat, err := os.Stat(fullpath)
+		if err == nil {
+			resp.Backups[i].Size = fileSize(fstat.Size())
+		}
+	}
+	gc.JSON(200, resp)
 }

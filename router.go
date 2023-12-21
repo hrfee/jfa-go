@@ -208,6 +208,9 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 		api.POST(p+"/config", app.ModifyConfig)
 		api.POST(p+"/restart", app.restart)
 		api.GET(p+"/logs", app.GetLog)
+		api.POST(p+"/backups", app.CreateBackup)
+		api.GET(p+"/backups/:fname", app.GetBackup)
+		api.GET(p+"/backups", app.GetBackups)
 		if telegramEnabled || discordEnabled || matrixEnabled {
 			api.GET(p+"/telegram/pin", app.TelegramGetPin)
 			api.GET(p+"/telegram/verified/:pin", app.TelegramVerified)

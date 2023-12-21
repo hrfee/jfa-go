@@ -180,9 +180,21 @@
         "noMoreResults": "No more results.",
         "totalRecords": "{n} Total Records",
         "loadedRecords": "{n} Loaded",
-        "shownRecords": "{n} Shown"
+        "shownRecords": "{n} Shown",
+        "backups": "Backups",
+        "backupsDescription": "Backups of the database can be made, restored, or downloaded from here.",
+        "backupsFormatNote": "Only backup files with the standard name format will be shown here. To use any other, upload the backup manually.",
+        "backupDownloadRestore": "Download / Restore",
+        "backupUpload": "Upload backup",
+        "backupDownload": "Download backup",
+        "backupRestore": "Restore backup",
+        "backupNow": "Backup Now",
+        "backupCreated": "Backup created",
+        "backupCanBeFound": "The backup can be found on the server at {filepath}.",
+        "backupCanDownload": "Alternatively, click below to download the backup."
     },
     "notifications": {
+        "pathCopied": "Full path copied to clipboard.",
         "changedEmailAddress": "Changed email address of {n}.",
         "userCreated": "User {n} created.",
         "createProfile": "Created profile {n}.",

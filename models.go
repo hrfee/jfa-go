@@ -461,3 +461,14 @@ type GetActivitiesRespDTO struct {
 type GetActivityCountDTO struct {
 	Count uint64 `json:"count"`
 }
+
+type CreateBackupDTO struct {
+	Size string `json:"size"`
+	Name string `json:"name"`
+	Path string `json:"path"`
+	Date int64  `json:"date"`
+}
+
+type GetBackupsDTO struct {
+	Backups []CreateBackupDTO `json:"backups"`
+}

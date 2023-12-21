@@ -117,6 +117,8 @@ declare interface Modals {
     email?: Modal;
     enableReferralsUser?: Modal;
     enableReferralsProfile?: Modal;
+    backedUp?: Modal;
+    backups?: Modal;
 }
 
 interface Invite {

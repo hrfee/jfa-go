@@ -328,6 +328,40 @@
                 </div>
             </div>
         </div>
+        <div id="modal-backups" class="modal">
+            <div class="card relative mx-auto my-[10%] w-4/5 lg:w-1/3">
+                <span class="heading">{{ .strings.backups }} <span class="modal-close">&times;</span></span>
+                <p class="content my-4">{{ .strings.backupsDescription }}</p>
+                <p class="content my-4">{{ .strings.backupsFormatNote }}</p>
+                <div class="row col flex">
+                    <button class="button ~info @low mr-2 mt-4 mb-4" id="settings-backups-backup">{{ .strings.backupNow }}</button>
+                    <button class="button ~neutral @low mr-2 mt-4 mb-4" id="settings-backups-upload">{{ .strings.backupUpload }}</button>
+                    <button class="button ~neutral @low mr-2 mt-4 mb-4" id="settings-backups-sort-direction">{{ .strings.sortDirection }}</button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>{{ .strings.name }}</th>
+                                <th>{{ .strings.date }}</th>
+                                <th class="table-inline justify-center">{{ .strings.backupDownloadRestore }}</th>
+                            </tr>
+                        </thead>
+                        <tbody id="backups-list"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div id="modal-backed-up" class="modal">
+            <div class="card relative mx-auto my-[10%] w-4/5 lg:w-1/3 ~neutral @low">
+                <span class="heading">{{ .strings.backupCreated }} <span class="modal-close">&times;</span></span>
+                <p class="content my-4" id="settings-backed-up-location"></p>
+                <p class="content my-4">{{ .strings.backupCanDownload }}</p>
+                <div>
+                    <button class="button flex w-100 ~info @low mb-2"><span class="flex items-center" id="settings-backed-up-download">{{ .strings.download }}</span></button>
+                </div>
+            </div>
+        </div>
         <div id="modal-refresh" class="modal">
             <div class="card relative mx-auto my-[10%] w-4/5 lg:w-1/3 ~neutral @low">
                 <span class="heading">{{ .strings.settingsApplied }}</span>
@@ -810,7 +844,8 @@
                             </label>
                         </div>
                         <div>
-                            <span class="button ~info @low my-1" id="settings-logs">{{ .strings.logs }}</span>
+                            <span class="button ~neutral @low my-1" id="settings-logs">{{ .strings.logs }}</span>
+                            <span class="button ~info @low my-1" id="settings-backups">{{ .strings.backups }}</span>
                             <span class="button ~neutral @low my-1" id="settings-restart">{{ .strings.settingsRestart }}</span>
                             <span class="button ~urge @low unfocused my-1" id="settings-save">{{ .strings.settingsSave }}</span>
                         </div>

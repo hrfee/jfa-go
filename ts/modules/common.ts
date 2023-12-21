@@ -40,6 +40,22 @@ export const _get = (url: string, data: Object, onreadystatechange: (req: XMLHtt
     req.send(JSON.stringify(data));
 };
 
+export const _download = (url: string, fname: string): void => {
+    let req = new XMLHttpRequest();
+    if (window.URLBase) { url = window.URLBase + url; }
+    req.open("GET", url, true);
+    req.responseType = 'blob';
+    req.setRequestHeader("Authorization", "Bearer " + window.token);
+    req.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+    req.onload = (e: Event) => {
+        let link = document.createElement("a") as HTMLAnchorElement;
+        link.href = URL.createObjectURL(req.response);
+        link.download = fname;
+        link.dispatchEvent(new MouseEvent("click"));
+    };
+    req.send();
+};
+
 export const _post = (url: string, data: Object, onreadystatechange: (req: XMLHttpRequest) => void, response?: boolean, statusHandler?: (req: XMLHttpRequest) => void): void => {
     let req = new XMLHttpRequest();
     req.open("POST", window.URLBase + url, true);

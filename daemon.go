@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"sort"
@@ -87,6 +88,7 @@ func (app *appContext) clearTelegram() {
 type BackupList struct {
 	files []os.DirEntry
 	dates []time.Time
+	count int
 }
 
 func (bl BackupList) Len() int { return len(bl.files) }
@@ -108,24 +110,37 @@ func (bl BackupList) Less(i, j int) bool {
 	return bl.dates[j].After(bl.dates[i])
 }
 
-func (app *appContext) makeBackup() {
-	toKeep := app.config.Section("backups").Key("keep_n_backups").MustInt(20)
-	fname := BACKUP_PREFIX + time.Now().Local().Format(BACKUP_DATEFMT) + BACKUP_SUFFIX
+// Get human-readable file size from f.Size() result.
+// https://programming.guide/go/formatting-byte-size-to-human-readable-format.html
+func fileSize(l int64) string {
+	const unit = 1000
+	if l < unit {
+		return fmt.Sprintf("%dB", l)
+	}
+	div, exp := int64(unit), 0
+	for n := l / unit; n >= unit; n /= unit {
+		div *= unit
+		exp++
+	}
+	return fmt.Sprintf("%.1f%c", float64(l)/float64(div), "KMGTPE"[exp])
+}
+
+func (app *appContext) getBackups() *BackupList {
 	path := app.config.Section("backups").Key("path").String()
 	err := os.MkdirAll(path, 0755)
 	if err != nil {
 		app.err.Printf("Failed to create backup directory \"%s\": %v\n", path, err)
-		return
+		return nil
 	}
 	items, err := os.ReadDir(path)
 	if err != nil {
 		app.err.Printf("Failed to read backup directory \"%s\": %v\n", path, err)
-		return
+		return nil
 	}
-	backups := BackupList{}
+	backups := &BackupList{}
 	backups.files = items
 	backups.dates = make([]time.Time, len(items))
-	backupCount := 0
+	backups.count = 0
 	for i, item := range items {
 		if item.IsDir() || !(strings.HasSuffix(item.Name(), BACKUP_SUFFIX)) {
 			continue
@@ -136,10 +151,22 @@ func (app *appContext) makeBackup() {
 			continue
 		}
 		backups.dates[i] = t
-		backupCount++
+		backups.count++
 	}
-	toDelete := backupCount + 1 - toKeep
-	if toDelete > 0 {
+	return backups
+}
+
+func (app *appContext) makeBackup() (fileDetails CreateBackupDTO) {
+	toKeep := app.config.Section("backups").Key("keep_n_backups").MustInt(20)
+	fname := BACKUP_PREFIX + time.Now().Local().Format(BACKUP_DATEFMT) + BACKUP_SUFFIX
+	path := app.config.Section("backups").Key("path").String()
+	backups := app.getBackups()
+	if backups == nil {
+		return
+	}
+	toDelete := backups.count + 1 - toKeep
+	// fmt.Printf("toDelete: %d, backCount: %d, keep: %d, length: %d\n", toDelete, backups.count, toKeep, len(backups.files))
+	if toDelete > 0 && toDelete <= backups.count {
 		sort.Sort(backups)
 		for _, item := range backups.files[:toDelete] {
 			fullpath := filepath.Join(path, item.Name())
@@ -163,10 +190,21 @@ func (app *appContext) makeBackup() {
 		app.err.Printf("Failed to create backup: %v\n", err)
 		return
 	}
+
+	fstat, err := f.Stat()
+	if err != nil {
+		app.err.Printf("Failed to get info on new backup: %v\n", err)
+		return
+	}
+	fileDetails.Size = fileSize(fstat.Size())
+	fileDetails.Name = fname
+	fileDetails.Path = fullpath
+	// fmt.Printf("Created backup %+v\n", fileDetails)
+	return
 }
 
 func (app *appContext) clearActivities() {
-	app.debug.Println("Husekeeping: Cleaning up Activity log...")
+	app.debug.Println("Housekeeping: Cleaning up Activity log...")
 	keepCount := app.config.Section("activity_log").Key("keep_n_records").MustInt(1000)
 	maxAgeDays := app.config.Section("activity_log").Key("delete_after_days").MustInt(90)
 	minAge := time.Now().AddDate(0, 0, -maxAgeDays)
