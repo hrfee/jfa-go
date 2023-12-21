@@ -785,7 +785,10 @@ export class settingsList {
             <td class="whitespace-nowrap"><span class="text-black dark:text-white font-mono bg-inherit">${b.name}</span> <span class="button ~info @low ml-2 backup-copy" title="${window.lang.strings("copy")}"><i class="ri-file-copy-line"></i></span></td>
             <td>${toDateString(new Date(b.date*1000))}</td>
             <td class="table-inline justify-center">
-                <span class="backup-download button ~positive @low" title="${window.lang.strings("backupDownload")}"><i class="ri-download-line"></i></span>
+                <span class="backup-download button ~positive @low" title="${window.lang.strings("backupDownload")}">
+                    <i class="ri-download-line"></i>
+                    <span class="badge ~positive @low ml-2">${b.size}</span>
+                </span>
                 <span class="backup-restore button ~critical @low ml-2 py-[inherit]" title="${window.lang.strings("backupRestore")}"><i class="icon ri-restart-line"></i></span>
             </td>
             `;
