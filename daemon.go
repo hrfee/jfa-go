@@ -203,6 +203,33 @@ func (app *appContext) makeBackup() (fileDetails CreateBackupDTO) {
 	return
 }
 
+func (app *appContext) loadPendingBackup() {
+	if LOADBAK == "" {
+		return
+	}
+	oldPath := filepath.Join(app.dataPath, "db-pre-"+filepath.Base(LOADBAK))
+	app.info.Printf("Moving existing database to \"%s\"\n", oldPath)
+	err := os.Rename(app.storage.db_path, oldPath)
+	if err != nil {
+		app.err.Fatalf("Failed to move existing database: %v\n", err)
+	}
+
+	app.ConnectDB()
+	defer app.storage.db.Close()
+
+	f, err := os.Open(LOADBAK)
+	if err != nil {
+		app.err.Fatalf("Failed to open backup file \"%s\": %v\n", LOADBAK, err)
+	}
+	err = app.storage.db.Badger().Load(f, 256)
+	f.Close()
+	if err != nil {
+		app.err.Fatalf("Failed to restore backup file \"%s\": %v\n", LOADBAK, err)
+	}
+	app.info.Printf("Restored backup \"%s\".", LOADBAK)
+	LOADBAK = ""
+}
+
 func (app *appContext) clearActivities() {
 	app.debug.Println("Housekeeping: Cleaning up Activity log...")
 	keepCount := app.config.Section("activity_log").Key("keep_n_records").MustInt(1000)

@@ -23,6 +23,7 @@ func (app *appContext) loadArgs(firstCall bool) {
 		HOST = flag.String("host", "", "alternate address to host web ui on.")
 		PORT = flag.Int("port", 0, "alternate port to host web ui on.")
 		flag.IntVar(PORT, "p", 0, "SHORTHAND")
+		_LOADBAK = flag.String("restore", "", "path to database backup to restore.")
 		DEBUG = flag.Bool("debug", false, "Enables debug logging.")
 		PPROF = flag.Bool("pprof", false, "Exposes pprof profiler on /debug/pprof.")
 		SWAGGER = flag.Bool("swagger", false, "Enable swagger at /swagger/index.html")
@@ -40,6 +41,9 @@ func (app *appContext) loadArgs(firstCall bool) {
 		}
 		if *PPROF {
 			os.Setenv("PPROF", "1")
+		}
+		if *_LOADBAK != "" {
+			LOADBAK = *_LOADBAK
 		}
 	}
 

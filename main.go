@@ -56,6 +56,8 @@ var (
 	commit               string
 	buildTimeUnix        string
 	builtBy              string
+	_LOADBAK             *string
+	LOADBAK              = ""
 )
 
 var temp = func() string {
@@ -355,8 +357,10 @@ func start(asDaemon, firstCall bool) {
 		}
 
 		app.storage.db_path = filepath.Join(app.dataPath, "db")
+		app.loadPendingBackup()
 		app.ConnectDB()
 		defer app.storage.db.Close()
+
 		// Read config-base for settings on web.
 		app.configBasePath = "config-base.json"
 		configBase, _ := fs.ReadFile(localFS, app.configBasePath)
