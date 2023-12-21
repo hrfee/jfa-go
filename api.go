@@ -565,7 +565,7 @@ func (app *appContext) CreateBackup(gc *gin.Context) {
 // @Produce octet-stream
 // @Produce json
 // @Success 200 {body} file
-// @Success 400 {object} boolResponse
+// @Failure 400 {object} boolResponse
 // @Security Bearer
 // @tags Other
 func (app *appContext) GetBackup(gc *gin.Context) {
@@ -607,4 +607,28 @@ func (app *appContext) GetBackups(gc *gin.Context) {
 		}
 	}
 	gc.JSON(200, resp)
+}
+
+// @Summary Restore a backup file stored locally to the server.
+// @Param fname path string true "backup filename"
+// @Router /backups/restore/{fname} [get]
+// @Produce octet-stream
+// @Produce json
+// @Failure 400 {object} boolResponse
+// @Security Bearer
+// @tags Other
+func (app *appContext) RestoreLocalBackup(gc *gin.Context) {
+	fname := gc.Param("fname")
+	// Hopefully this is enough to ensure the path isn't malicious. Hidden behind bearer auth anyway so shouldn't matter too much I guess.
+	ok := strings.HasPrefix(fname, BACKUP_PREFIX) && strings.HasSuffix(fname, BACKUP_SUFFIX)
+	t, err := time.Parse(BACKUP_DATEFMT, strings.TrimSuffix(strings.TrimPrefix(fname, BACKUP_PREFIX), BACKUP_SUFFIX))
+	if !ok || err != nil || t.IsZero() {
+		app.debug.Printf("Ignoring backup DL request due to fname: %v\n", err)
+		respondBool(400, false, gc)
+		return
+	}
+	path := app.config.Section("backups").Key("path").String()
+	fullpath := filepath.Join(path, fname)
+	LOADBAK = fullpath
+	app.restart(gc)
 }

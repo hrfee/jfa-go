@@ -797,6 +797,12 @@ export class settingsList {
                 window.notifications.customPositive("pathCopied", "", window.lang.notif("pathCopied"));
             });
             tr.querySelector(".backup-download").addEventListener("click", () => _download("/backups/" + b.name, b.name));
+            tr.querySelector(".backup-restore").addEventListener("click", () => {
+                _post("/backups/restore/"+b.name, null, () => {});
+                window.modals.backups.close();
+                window.modals.settingsRefresh.modal.querySelector("span.heading").textContent = window.lang.strings("settingsRestarting");
+                window.modals.settingsRefresh.show();
+            });
             table.appendChild(tr);
         }
     });

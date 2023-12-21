@@ -207,7 +207,7 @@ func (app *appContext) loadPendingBackup() {
 	if LOADBAK == "" {
 		return
 	}
-	oldPath := filepath.Join(app.dataPath, "db-pre-"+filepath.Base(LOADBAK))
+	oldPath := filepath.Join(app.dataPath, "db-"+string(time.Now().Unix())+"-pre-"+filepath.Base(LOADBAK))
 	app.info.Printf("Moving existing database to \"%s\"\n", oldPath)
 	err := os.Rename(app.storage.db_path, oldPath)
 	if err != nil {
