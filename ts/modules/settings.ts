@@ -1,6 +1,13 @@
-import { _get, _post, _delete, toggleLoader, addLoader, removeLoader, insertText } from "../modules/common.js";
+import { _get, _post, _delete, _download, _upload, toggleLoader, addLoader, removeLoader, insertText, toClipboard, toDateString } from "../modules/common.js";
 import { Marked } from "@ts-stack/markdown";
 import { stripMarkdown } from "../modules/stripmd.js";
+
+interface BackupDTO {
+    size: string;
+    name: string;
+    path: string;
+    date: number;
+}
 
 interface settingsBoolEvent extends Event { 
     detail: boolean;
@@ -635,6 +642,8 @@ export class settingsList {
 
     private _noResultsPanel: HTMLElement = document.getElementById("settings-not-found");
 
+    private _backupSortDirection = document.getElementById("settings-backups-sort-direction") as HTMLButtonElement;
+    private _backupSortAscending = true;
 
     addSection = (name: string, s: Section, subButton?: HTMLElement) => {
         const section = new sectionPanel(s, name);
@@ -736,6 +745,68 @@ export class settingsList {
         }
     });
 
+    setBackupSort = (ascending: boolean) => {
+        this._backupSortAscending = ascending;
+        this._backupSortDirection.innerHTML = `${window.lang.strings("sortDirection")} <i class="ri-arrow-${ascending ? "up" : "down"}-s-line ml-2"></i>`;
+        this._getBackups();
+    };
+
+    private _backup = () => _post("/backups", null, (req: XMLHttpRequest) => {
+        if (req.readyState != 4 || req.status != 200) return;
+        const backupDTO = req.response as BackupDTO;
+        if (backupDTO.path == "") {
+            window.notifications.customError("backupError", window.lang.strings("errorFailureCheckLogs"));
+            return;
+        }
+        const location = document.getElementById("settings-backed-up-location");
+        const download = document.getElementById("settings-backed-up-download");
+        location.innerHTML = window.lang.strings("backupCanBeFound").replace("{filepath}", `<span class="text-black dark:text-white font-mono bg-inherit">"`+backupDTO.path+`"</span>`);
+        download.innerHTML = `
+        <i class="ri-download-line"></i>
+        <span class="ml-2">${window.lang.strings("download")}</span>
+        <span class="badge ~info @low ml-2">${backupDTO.size}</span>
+        `;
+        
+        download.parentElement.onclick = () => _download("/backups/" + backupDTO.name, backupDTO.name);
+        window.modals.backedUp.show();
+    }, true);
+
+    private _getBackups = () => _get("/backups", null, (req: XMLHttpRequest) => {
+        if (req.readyState != 4 || req.status != 200) return;
+        const backups = req.response["backups"] as BackupDTO[];
+        const table = document.getElementById("backups-list");
+        table.textContent = ``;
+        if (!this._backupSortAscending) {
+            backups.reverse();
+        }
+        for (let b of backups) {
+            const tr = document.createElement("tr") as HTMLTableRowElement;
+            tr.innerHTML = `
+            <td class="whitespace-nowrap"><span class="text-black dark:text-white font-mono bg-inherit">${b.name}</span> <span class="button ~info @low ml-2 backup-copy" title="${window.lang.strings("copy")}"><i class="ri-file-copy-line"></i></span></td>
+            <td>${toDateString(new Date(b.date*1000))}</td>
+            <td class="table-inline justify-center">
+                <span class="backup-download button ~positive @low" title="${window.lang.strings("backupDownload")}">
+                    <i class="ri-download-line"></i>
+                    <span class="badge ~positive @low ml-2">${b.size}</span>
+                </span>
+                <span class="backup-restore button ~critical @low ml-2 py-[inherit]" title="${window.lang.strings("backupRestore")}"><i class="icon ri-restart-line"></i></span>
+            </td>
+            `;
+            tr.querySelector(".backup-copy").addEventListener("click", () => {
+                toClipboard(b.path);
+                window.notifications.customPositive("pathCopied", "", window.lang.notif("pathCopied"));
+            });
+            tr.querySelector(".backup-download").addEventListener("click", () => _download("/backups/" + b.name, b.name));
+            tr.querySelector(".backup-restore").addEventListener("click", () => {
+                _post("/backups/restore/"+b.name, null, () => {});
+                window.modals.backups.close();
+                window.modals.settingsRefresh.modal.querySelector("span.heading").textContent = window.lang.strings("settingsRestarting");
+                window.modals.settingsRefresh.show();
+            });
+            table.appendChild(tr);
+        }
+    });
+
     constructor() {
         this._sections = {};
         this._buttons = {};
@@ -748,7 +819,32 @@ export class settingsList {
         this._saveButton.onclick = this._save;
         document.addEventListener("settings-requires-restart", () => { this._needsRestart = true; });
         document.getElementById("settings-logs").onclick = this._showLogs;
+        document.getElementById("settings-backups-backup").onclick = () => {
+            window.modals.backups.close();
+            this._backup();
+        };
+
+        document.getElementById("settings-backups").onclick = () => {
+            this.setBackupSort(this._backupSortAscending);
+            window.modals.backups.show();
+        };
+        this._backupSortDirection.onclick = () => this.setBackupSort(!(this._backupSortAscending));
         const advancedEnableToggle = document.getElementById("settings-advanced-enabled") as HTMLInputElement;
+
+        const filedlg = document.getElementById("backups-file") as HTMLInputElement;
+        document.getElementById("settings-backups-upload").onclick = () => {
+            filedlg.click(); 
+        };
+        filedlg.addEventListener("change", () => {
+            if (filedlg.files.length == 0) return;
+            const form = new FormData();
+            form.append("backups-file", filedlg.files[0], filedlg.files[0].name);
+            _upload("/backups/restore", form);
+            window.modals.backups.close();
+            window.modals.settingsRefresh.modal.querySelector("span.heading").textContent = window.lang.strings("settingsRestarting");
+            window.modals.settingsRefresh.show();
+        });
+
         advancedEnableToggle.onchange = () => {
             document.dispatchEvent(new CustomEvent("settings-advancedState", { detail: advancedEnableToggle.checked }));
             const parent = advancedEnableToggle.parentElement;

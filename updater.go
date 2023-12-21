@@ -161,7 +161,6 @@ func newUpdater(buildroneURL, namespace, repo, version, commit, buildType string
 	if runtime.GOOS == "windows" {
 		binary += ".exe"
 	}
-	fmt.Println("monitoring", tag)
 	return &Updater{
 		httpClient:     &http.Client{Timeout: 10 * time.Second},
 		timeoutHandler: common.NewTimeoutHandler("updater", buildroneURL, true),

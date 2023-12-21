@@ -75,7 +75,7 @@ func (app *appContext) clearTelegram() {
 }
 
 func (app *appContext) clearActivities() {
-	app.debug.Println("Husekeeping: Cleaning up Activity log...")
+	app.debug.Println("Housekeeping: Cleaning up Activity log...")
 	keepCount := app.config.Section("activity_log").Key("keep_n_records").MustInt(1000)
 	maxAgeDays := app.config.Section("activity_log").Key("delete_after_days").MustInt(90)
 	minAge := time.Now().AddDate(0, 0, -maxAgeDays)

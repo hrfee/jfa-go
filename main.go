@@ -56,6 +56,8 @@ var (
 	commit               string
 	buildTimeUnix        string
 	builtBy              string
+	_LOADBAK             *string
+	LOADBAK              = ""
 )
 
 var temp = func() string {
@@ -355,8 +357,10 @@ func start(asDaemon, firstCall bool) {
 		}
 
 		app.storage.db_path = filepath.Join(app.dataPath, "db")
+		app.loadPendingBackup()
 		app.ConnectDB()
 		defer app.storage.db.Close()
+
 		// Read config-base for settings on web.
 		app.configBasePath = "config-base.json"
 		configBase, _ := fs.ReadFile(localFS, app.configBasePath)
@@ -473,6 +477,13 @@ func start(asDaemon, firstCall bool) {
 
 		if app.config.Section("updates").Key("enabled").MustBool(false) {
 			go app.checkForUpdates()
+		}
+
+		var backupDaemon *housekeepingDaemon
+		if app.config.Section("backups").Key("enabled").MustBool(false) {
+			backupDaemon = newBackupDaemon(app)
+			go backupDaemon.run()
+			defer backupDaemon.Shutdown()
 		}
 
 		if telegramEnabled {
@@ -646,6 +657,9 @@ func flagPassed(name string) (found bool) {
 
 // @tag.name Ombi
 // @tag.description Ombi related operations.
+
+// @tag.name Backups
+// @tag.description Database backup/restore operations.
 
 // @tag.name Other
 // @tag.description Things that dont fit elsewhere.

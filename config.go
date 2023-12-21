@@ -112,6 +112,10 @@ func (app *appContext) loadConfig() error {
 
 	app.MustSetValue("telegram", "show_on_reg", "true")
 
+	app.MustSetValue("backups", "every_n_minutes", "1440")
+	app.MustSetValue("backups", "path", filepath.Join(app.dataPath, "backups"))
+	app.MustSetValue("backups", "keep_n_backups", "20")
+
 	app.config.Section("jellyfin").Key("version").SetValue(version)
 	app.config.Section("jellyfin").Key("device").SetValue("jfa-go")
 	app.config.Section("jellyfin").Key("device_id").SetValue(fmt.Sprintf("jfa-go-%s-%s", version, commit))

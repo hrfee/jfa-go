@@ -68,6 +68,10 @@ window.availableProfiles = window.availableProfiles || [];
 
     window.modals.logs = new Modal(document.getElementById("modal-logs"));
 
+    window.modals.backedUp = new Modal(document.getElementById("modal-backed-up"));
+
+    window.modals.backups = new Modal(document.getElementById("modal-backups"));
+
     if (window.telegramEnabled) {
         window.modals.telegram = new Modal(document.getElementById("modal-telegram"));
     }
