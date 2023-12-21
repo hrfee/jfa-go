@@ -186,7 +186,7 @@
         "backupsFormatNote": "Only backup files with the standard name format will be shown here. To use any other, upload the backup manually.",
         "backupsCopy": "When applying a backup, a copy of the original \"db\" folder will be made next to it, in case anything goes wrong.",
         "backupDownloadRestore": "Download / Restore",
-        "backupUpload": "Upload Backup",
+        "backupUpload": "Upload & Restore Backup",
         "backupDownload": "Download Backup",
         "backupRestore": "Restore Backup",
         "backupNow": "Backup Now",
