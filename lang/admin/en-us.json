@@ -192,7 +192,8 @@
         "backupNow": "Backup Now",
         "backupCreated": "Backup created",
         "backupCanBeFound": "The backup can be found on the server at {filepath}.",
-        "backupCanDownload": "Alternatively, click below to download the backup."
+        "backupCanDownload": "Alternatively, click below to download the backup.",
+        "wikiPage": "Wiki Page"
     },
     "notifications": {
         "pathCopied": "Full path copied to clipboard.",
