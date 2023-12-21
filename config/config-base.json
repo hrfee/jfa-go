@@ -1561,11 +1561,11 @@
             "order": [],
             "meta": {
                 "name": "Backups",
-                "description": "Settings for database backups."
+                "description": "Settings for database backups. Press the \"Backups\" button above to create, download and restore backups."
             },
             "settings": {
                 "enabled": {
-                    "name": "Enabled",
+                    "name": "Scheduled Backups",
                     "required": false,
                     "requires_restart": true,
                     "type": "bool",
@@ -1593,7 +1593,6 @@
                     "name": "Number of backups to keep",
                     "required": false,
                     "requires_restart": true,
-                    "depends_true": "enabled",
                     "type": "number",
                     "value": 20,
                     "description": "Number of most recent backups to keep. Once this is hit, the oldest backup will be deleted before doing a new one."

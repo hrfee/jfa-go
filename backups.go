@@ -9,6 +9,13 @@ import (
 	"time"
 )
 
+const (
+	BACKUP_PREFIX        = "jfa-go-db-"
+	BACKUP_UPLOAD_PREFIX = "upload-"
+	BACKUP_DATEFMT       = "2006-01-02T15-04-05"
+	BACKUP_SUFFIX        = ".bak"
+)
+
 type BackupList struct {
 	files []os.DirEntry
 	dates []time.Time
@@ -69,7 +76,7 @@ func (app *appContext) getBackups() *BackupList {
 		if item.IsDir() || !(strings.HasSuffix(item.Name(), BACKUP_SUFFIX)) {
 			continue
 		}
-		t, err := time.Parse(BACKUP_DATEFMT, strings.TrimSuffix(strings.TrimPrefix(item.Name(), BACKUP_PREFIX), BACKUP_SUFFIX))
+		t, err := time.Parse(BACKUP_DATEFMT, strings.TrimSuffix(strings.TrimPrefix(strings.TrimPrefix(item.Name(), BACKUP_UPLOAD_PREFIX), BACKUP_PREFIX), BACKUP_SUFFIX))
 		if err != nil {
 			app.debug.Printf("Failed to parse backup filename \"%s\": %v\n", item.Name(), err)
 			continue

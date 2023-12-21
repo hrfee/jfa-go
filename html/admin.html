@@ -331,14 +331,18 @@
         <div id="modal-backups" class="modal">
             <div class="card relative mx-auto my-[10%] w-4/5 lg:w-1/3">
                 <span class="heading">{{ .strings.backups }} <span class="modal-close">&times;</span></span>
-                <p class="content my-4">{{ .strings.backupsDescription }}</p>
-                <p class="content my-4">{{ .strings.backupsCopy }}</p>
-                <p class="content my-4">{{ .strings.backupsFormatNote }}</p>
-                <div class="row col flex">
-                    <button class="button ~info @low mr-2 mt-4 mb-4" id="settings-backups-backup">{{ .strings.backupNow }}</button>
-                    <button class="button ~neutral @low mr-2 mt-4 mb-4" id="settings-backups-upload">{{ .strings.backupUpload }}</button>
+                <div class="content my-4">
+                    {{ .strings.backupsDescription }}
+                    <ul>
+                        <li>{{ .strings.backupsCopy }}</li>
+                        <li>{{ .strings.backupsFormatNote }}</li>
+                    </ul>
+                </div>
+                <div class="flex flex-row flex-wrap my-2">
+                    <button class="button ~info @low mr-2 mb-2" id="settings-backups-backup">{{ .strings.backupNow }}</button>
+                    <button class="button ~neutral @low mr-2 mb-2" id="settings-backups-upload">{{ .strings.backupUpload }}</button>
                     <input id="backups-file" name="backups-file" type="file" hidden>
-                    <button class="button ~neutral @low mr-2 mt-4 mb-4" id="settings-backups-sort-direction">{{ .strings.sortDirection }}</button>
+                    <button class="button ~neutral @low mr-2 mb-2" id="settings-backups-sort-direction">{{ .strings.sortDirection }}</button>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="table">

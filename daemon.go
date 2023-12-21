@@ -8,12 +8,6 @@ import (
 	"github.com/timshannon/badgerhold/v4"
 )
 
-const (
-	BACKUP_PREFIX  = "jfa-go-db-"
-	BACKUP_DATEFMT = "2006-01-02T15-04-05"
-	BACKUP_SUFFIX  = ".bak"
-)
-
 // clearEmails removes stored emails for users which no longer exist.
 // meant to be called with other such housekeeping functions, so assumes
 // the user cache is fresh.
