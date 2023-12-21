@@ -475,6 +475,13 @@ func start(asDaemon, firstCall bool) {
 			go app.checkForUpdates()
 		}
 
+		var backupDaemon *housekeepingDaemon
+		if app.config.Section("backups").Key("enabled").MustBool(false) {
+			backupDaemon = newBackupDaemon(app)
+			go backupDaemon.run()
+			defer backupDaemon.Shutdown()
+		}
+
 		if telegramEnabled {
 			app.telegram, err = newTelegramDaemon(app)
 			if err != nil {

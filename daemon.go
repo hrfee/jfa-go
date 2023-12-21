@@ -1,11 +1,21 @@
 package main
 
 import (
+	"os"
+	"path/filepath"
+	"sort"
+	"strings"
 	"time"
 
 	"github.com/dgraph-io/badger/v3"
 	"github.com/hrfee/mediabrowser"
 	"github.com/timshannon/badgerhold/v4"
+)
+
+const (
+	BACKUP_PREFIX  = "jfa-go-db-"
+	BACKUP_DATEFMT = "2006-01-02T15-04-05"
+	BACKUP_SUFFIX  = ".bak"
 )
 
 // clearEmails removes stored emails for users which no longer exist.
@@ -74,6 +84,87 @@ func (app *appContext) clearTelegram() {
 	}
 }
 
+type BackupList struct {
+	files []os.DirEntry
+	dates []time.Time
+}
+
+func (bl BackupList) Len() int { return len(bl.files) }
+func (bl BackupList) Swap(i, j int) {
+	bl.files[i], bl.files[j] = bl.files[j], bl.files[i]
+	bl.dates[i], bl.dates[j] = bl.dates[j], bl.dates[i]
+}
+
+func (bl BackupList) Less(i, j int) bool {
+	// Push non-backup files to the end of the array,
+	// Since they didn't have a date parsed.
+	if bl.dates[i].IsZero() {
+		return false
+	}
+	if bl.dates[j].IsZero() {
+		return true
+	}
+	// Sort by oldest first
+	return bl.dates[j].After(bl.dates[i])
+}
+
+func (app *appContext) makeBackup() {
+	toKeep := app.config.Section("backups").Key("keep_n_backups").MustInt(20)
+	fname := BACKUP_PREFIX + time.Now().Local().Format(BACKUP_DATEFMT) + BACKUP_SUFFIX
+	path := app.config.Section("backups").Key("path").String()
+	err := os.MkdirAll(path, 0755)
+	if err != nil {
+		app.err.Printf("Failed to create backup directory \"%s\": %v\n", path, err)
+		return
+	}
+	items, err := os.ReadDir(path)
+	if err != nil {
+		app.err.Printf("Failed to read backup directory \"%s\": %v\n", path, err)
+		return
+	}
+	backups := BackupList{}
+	backups.files = items
+	backups.dates = make([]time.Time, len(items))
+	backupCount := 0
+	for i, item := range items {
+		if item.IsDir() || !(strings.HasSuffix(item.Name(), BACKUP_SUFFIX)) {
+			continue
+		}
+		t, err := time.Parse(BACKUP_DATEFMT, strings.TrimSuffix(strings.TrimPrefix(item.Name(), BACKUP_PREFIX), BACKUP_SUFFIX))
+		if err != nil {
+			app.debug.Printf("Failed to parse backup filename \"%s\": %v\n", item.Name(), err)
+			continue
+		}
+		backups.dates[i] = t
+		backupCount++
+	}
+	toDelete := backupCount + 1 - toKeep
+	if toDelete > 0 {
+		sort.Sort(backups)
+		for _, item := range backups.files[:toDelete] {
+			fullpath := filepath.Join(path, item.Name())
+			app.debug.Printf("Deleting old backup \"%s\"\n", item.Name())
+			err := os.Remove(fullpath)
+			if err != nil {
+				app.err.Printf("Failed to delete old backup \"%s\": %v\n", fullpath, err)
+				return
+			}
+		}
+	}
+	fullpath := filepath.Join(path, fname)
+	f, err := os.Create(fullpath)
+	if err != nil {
+		app.err.Printf("Failed to open backup file \"%s\": %v\n", fullpath, err)
+		return
+	}
+	defer f.Close()
+	_, err = app.storage.db.Badger().Backup(f, 0)
+	if err != nil {
+		app.err.Printf("Failed to create backup: %v\n", err)
+		return
+	}
+}
+
 func (app *appContext) clearActivities() {
 	app.debug.Println("Husekeeping: Cleaning up Activity log...")
 	keepCount := app.config.Section("activity_log").Key("keep_n_records").MustInt(1000)
@@ -114,6 +205,24 @@ type housekeepingDaemon struct {
 	period          time.Duration
 	jobs            []func(app *appContext)
 	app             *appContext
+}
+
+func newBackupDaemon(app *appContext) *housekeepingDaemon {
+	interval := time.Duration(app.config.Section("backups").Key("every_n_minutes").MustInt(1440)) * time.Minute
+	daemon := housekeepingDaemon{
+		Stopped:         false,
+		ShutdownChannel: make(chan string),
+		Interval:        interval,
+		period:          interval,
+		app:             app,
+	}
+	daemon.jobs = []func(app *appContext){
+		func(app *appContext) {
+			app.debug.Println("Backups: Creating backup")
+			app.makeBackup()
+		},
+	}
+	return &daemon
 }
 
 func newInviteDaemon(interval time.Duration, app *appContext) *housekeepingDaemon {

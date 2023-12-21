@@ -1557,6 +1557,49 @@
                 }
             }
         },
+        "backups": {
+            "order": [],
+            "meta": {
+                "name": "Backups",
+                "description": "Settings for database backups."
+            },
+            "settings": {
+                "enabled": {
+                    "name": "Enabled",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "bool",
+                    "value": false,
+                    "description": "Enable to generate database backups on a schedule."
+                },
+                "path": {
+                    "name": "Backup Path",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "text",
+                    "value": "",
+                    "description": "Path to directory to store backups in. defaults to <data_directory>/backups."
+                },
+                "every_n_minutes": {
+                    "name": "Backup frequency (Minutes)",
+                    "required": false,
+                    "requires_restart": true,
+                    "depends_true": "enabled",
+                    "type": "number",
+                    "value": 1440,
+                    "description": "Backup after this many minutes has passed since the last. Resets every restart."
+                },
+                "keep_n_backups": {
+                    "name": "Number of backups to keep",
+                    "required": false,
+                    "requires_restart": true,
+                    "depends_true": "enabled",
+                    "type": "number",
+                    "value": 20,
+                    "description": "Number of most recent backups to keep. Once this is hit, the oldest backup will be deleted before doing a new one."
+                }
+            }
+        },
         "welcome_email": {
             "order": [],
             "meta": {
