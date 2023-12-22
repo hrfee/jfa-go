@@ -532,8 +532,8 @@
         {{ end }}
         <div class="page-container">
             <div class="mb-4">
-                <header class="flex flex-wrap items-center justify-between">
-                    <div>
+                <header>
+                    <div class="flex flex-row overflow-x-scroll items-center">
                         <span id="button-tab-invites" class="text-3xl button portal ~neutral dark:~d_neutral @low mr-2 mb-2 px-5">{{ .strings.invites }}</span>
                         <span id="button-tab-accounts" class="text-3xl button portal ~neutral dark:~d_neutral @low mr-2 mb-2 px-5">{{ .strings.accounts }}</span>
                         <span id="button-tab-activity" class="text-3xl button portal ~neutral dark:~d_neutral @low mr-2 mb-2 px-5">{{ .strings.activity }}</span>
@@ -700,7 +700,7 @@
                         <div class="flex flex-col md:flex-row align-middle gap-2">
                             <div class="flex flex-row align-middle justify-between md:justify-normal">
                                 <span class="text-3xl font-bold mr-4">{{ .strings.accounts }}</span>
-                                <button class="button ~neutral @low center dropdown-manual-toggle" id="accounts-filter-button" tabindex="0">{{ .strings.filters }}</button>
+                                <span class="dropdown-manual-toggle"><button class="h-100 button ~neutral @low center" id="accounts-filter-button" tabindex="0">{{ .strings.filters }}</button></span>
                             </div>
                             <div class="flex flex-row align-middle w-100">
                                 <input type="search" class="field ~neutral @low input search mr-2" id="accounts-search" placeholder="{{ .strings.search }}">
@@ -718,11 +718,11 @@
                         <button type="button" class="button ~neutral @low center mx-2 hidden"><span id="accounts-sort-by-field"></span> <i class="ri-close-line ml-2 text-2xl"></i></button>
                         <span id="accounts-filter-area"></span>
                     </div>
-                    <div class="supra py-1 sm">{{ .strings.actions }}</div>
+                    <div class="supra pt-1 pb-2 sm">{{ .strings.actions }}</div>
                     <div class="flex flex-row flex-wrap gap-3 mb-4">
                         <span class="button ~neutral @low center " id="accounts-add-user">{{ .quantityStrings.addUser.Singular }}</span>
                         <div id="accounts-announce-dropdown" class="dropdown pb-0i " tabindex="0">
-                            <span class="w-100 button ~info @low center" id="accounts-announce">{{ .strings.announce }}</span>
+                            <span class="w-100 button ~info @low center items-baseline" id="accounts-announce">{{ .strings.announce }}</span>
                             <div class="dropdown-display">
                                 <div class="card ~neutral @low">
                                     <span class="supra sm">{{ .strings.templates }}</span>
@@ -735,7 +735,7 @@
                             <span class="button ~urge @low center " id="accounts-enable-referrals">{{ .strings.enableReferrals }}</span>
                         {{ end }}
                         <div id="accounts-expiry-dropdown" class="dropdown pb-0i " tabindex="0">
-                            <span class="w-100 button ~positive @low center" id="accounts-expiry-dropdown-button">{{ .strings.expiry }} <i class="ri-arrow-down-s-line ml-2"></i></span>
+                            <span class="w-100 button ~positive @low center items-baseline" id="accounts-expiry-dropdown-button">{{ .strings.expiry }} <i class="ri-arrow-down-s-line ml-2"></i></span>
                             <div class="dropdown-display">
                                 <div class="card ~neutral @low">
                                     <span class="button ~warning full-width @low center" id="accounts-extend-expiry">{{ .strings.extendExpiry }}</span>
@@ -800,7 +800,7 @@
                             <div class="flex flex-row align-middle justify-between md:justify-normal">
                                 <span class="text-3xl font-bold mr-4">{{ .strings.activity }}</span>
                                 <div class="flex flex-row align-middle">
-                                    <span class="button ~neutral @low center dropdown-manual-toggle" id="activity-filter-button">{{ .strings.filters }}</span>
+                                    <span class="dropdown-manual-toggle"><button class="h-100 button ~neutral @low center" id="activity-filter-button">{{ .strings.filters }}</button></span>
                                     <button class="button ~neutral @low ml-2" id="activity-sort-direction">{{ .strings.sortDirection }}</button>
                                 </div>
                             </div>
@@ -816,12 +816,12 @@
                             </div>
                         </div>
                     </div>
-                    <div class="flex flex-row justify-between py-2">
+                    <div class="flex flex-row justify-between pt-3 pb-2">
                         <div class="supra sm hidden" id="activity-search-options-header">{{ .strings.searchOptions }}</div>
-                        <div class="supra sm">
-                            <span id="activity-total-records" class="mx-2"></span>
-                            <span id="activity-loaded-records" class="mx-2"></span>
-                            <span id="activity-shown-records" class="mx-2"></span>
+                        <div class="supra sm flex flex-row gap-2">
+                            <span id="activity-total-records"></span>
+                            <span id="activity-loaded-records"></span>
+                            <span id="activity-shown-records"></span>
                         </div>
                     </div>
                     <div class="row -mx-2 mb-2">

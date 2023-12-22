@@ -575,7 +575,6 @@ input[type="checkbox" i], [class^="ri-"], [class*=" ri-"], .ri-refresh-line:befo
     cursor: pointer;
 }
 
-
 .g-recaptcha {
     overflow: hidden;
     width: 296px;
@@ -586,4 +585,9 @@ input[type="checkbox" i], [class^="ri-"], [class*=" ri-"], .ri-refresh-line:befo
 
 .g-recaptcha iframe {
     margin: -2px 0px 0px -4px;
+}
+
+.dropdown-manual-toggle {
+    margin-bottom: -0.5rem;
+    padding-bottom: 0.5rem;
 }

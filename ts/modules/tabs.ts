@@ -22,13 +22,18 @@ export class Tabs implements Tabs {
 
     switch = (tabID: string, noRun: boolean = false, keepURL: boolean = false) => {
         this._current = tabID;
+        let baseOffset = -1;
         for (let t of this.tabs) {
+            if (baseOffset == -1) baseOffset = t.buttonEl.offsetLeft;
             if (t.tabID == tabID) {
                 t.buttonEl.classList.add("active", "~urge");
                 if (t.preFunc && !noRun) { t.preFunc(); }
                 t.tabEl.classList.remove("unfocused");
                 if (t.postFunc && !noRun) { t.postFunc(); }
                 document.dispatchEvent(new CustomEvent("tab-change", { detail: keepURL ? "" : tabID }));
+                // t.buttonEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' })
+
+                t.buttonEl.parentElement.scrollTo(t.buttonEl.offsetLeft-baseOffset, 0);
             } else {
                 t.buttonEl.classList.remove("active");
                 t.buttonEl.classList.remove("~urge");

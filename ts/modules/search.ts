@@ -311,7 +311,7 @@ export class Search {
             }
 
             const container = document.createElement("span") as HTMLSpanElement;
-            container.classList.add("button", "button-xl", "~neutral", "@low", "mb-1", "mr-2");
+            container.classList.add("button", "button-xl", "~neutral", "@low", "mb-1", "mr-2", "align-bottom");
             container.innerHTML = `
             <div class="flex flex-col mr-2">
                 <span>${query.name}</span>
