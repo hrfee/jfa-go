@@ -7,7 +7,7 @@ import { accountsList } from "./modules/accounts.js";
 import { settingsList } from "./modules/settings.js";
 import { activityList } from "./modules/activity.js";
 import { ProfileEditor } from "./modules/profiles.js";
-import { _get, _post, notificationBox, whichAnimationEvent } from "./modules/common.js";
+import { _get, _post, notificationBox, whichAnimationEvent, bindManualDropdowns } from "./modules/common.js";
 import { Updater } from "./modules/update.js";
 import { Login } from "./modules/login.js";
 
@@ -215,6 +215,8 @@ login.onLogin = () => {
             break;
     }
 }
+
+bindManualDropdowns();
 
 login.bindLogout(document.getElementById("logout-button"));
 

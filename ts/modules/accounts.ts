@@ -188,7 +188,7 @@ class user implements User, SearchableItem {
         if (!telegram && !discord && !matrix && !email) return;
         let innerHTML = `
         <i class="icon ri-settings-2-line ml-2 dropdown-button"></i>
-        <div class="dropdown over-top manual">
+        <div class="dropdown manual">
             <div class="dropdown-display lg">
                 <div class="card ~neutral @low">
                     <div class="supra sm mb-2">${window.lang.strings("contactThrough")}</div>

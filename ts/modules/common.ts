@@ -263,3 +263,31 @@ export function insertText(textarea: HTMLTextAreaElement, text: string) {
         textarea.focus();
     }
 }
+
+export function bindManualDropdowns() {
+    const buttons = Array.from(document.getElementsByClassName("dropdown-manual-toggle") as HTMLCollectionOf<HTMLSpanElement>);
+    for (let button of buttons) {
+        const parent = button.closest(".dropdown.manual");
+        const display = parent.querySelector(".dropdown-display");
+        const mousein = () => parent.classList.add("selected");
+        const mouseout = () => parent.classList.remove("selected");
+        button.addEventListener("mouseover", mousein);
+        button.addEventListener("mouseout", mouseout);
+        display.addEventListener("mouseover",  mousein);
+        display.addEventListener("mouseout", mouseout);
+        button.onclick = () => {
+            parent.classList.add("selected");
+            document.addEventListener("click", outerClickListener);
+            button.removeEventListener("mouseout", mouseout);
+            display.removeEventListener("mouseout", mouseout);
+        };
+        const outerClickListener = (event: Event) => {
+            if (!(event.target instanceof HTMLElement && (display.contains(event.target) || button.contains(event.target)))) {
+                parent.classList.remove("selected");
+                document.removeEventListener("click", outerClickListener);
+                button.addEventListener("mouseout", mouseout);
+                display.addEventListener("mouseout", mouseout);
+            }
+        };
+    }
+}
