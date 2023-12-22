@@ -345,7 +345,7 @@
                     <input id="backups-file" name="backups-file" type="file" hidden>
                     <button class="button ~neutral @low mr-2 mb-2" id="settings-backups-sort-direction">{{ .strings.sortDirection }}</button>
                 </div>
-                <div class="overflow-x-auto">
+                <div class="overflow-x-auto text-xs md:text-sm">
                     <table class="table">
                         <thead>
                             <tr>
@@ -852,19 +852,19 @@
             </div>
             <div id="tab-settings" class="unfocused">
                 <div class="card @low dark:~d_neutral settings overflow">
-                    <div class="flex-expand">
-                        <div class="flex-row">
+                    <div class="flex flex-col md:flex-row align-middle gap-2">
+                        <div class="flex flex-row align-middle justify-between md:justify-normal">
                             <span class="heading">{{ .strings.settings }}</span>
-                            <label for="settings-advanced-enabled" class="button ~neutral @low ml-2 my-2">
+                            <label for="settings-advanced-enabled" class="button ~neutral @low ml-2">
                                 <input type="checkbox" id="settings-advanced-enabled" aria-label="Advanced settings enabled">
                                 <span class="ml-2">{{ .strings.advancedSettings }} </span>
                             </label>
                         </div>
-                        <div>
-                            <span class="button ~neutral @low my-1" id="settings-logs">{{ .strings.logs }}</span>
-                            <span class="button ~info @low my-1" id="settings-backups">{{ .strings.backups }}</span>
-                            <span class="button ~neutral @low my-1" id="settings-restart">{{ .strings.settingsRestart }}</span>
-                            <span class="button ~urge @low unfocused my-1" id="settings-save">{{ .strings.settingsSave }}</span>
+                        <div class="flex flex-row justify-start md:justify-end gap-2 w-100">
+                            <span class="button ~neutral @low" id="settings-logs">{{ .strings.logs }}</span>
+                            <span class="button ~info @low" id="settings-backups">{{ .strings.backups }}</span>
+                            <span class="button ~neutral @low" id="settings-restart">{{ .strings.settingsRestart }}</span>
+                            <span class="button ~urge @low unfocused" id="settings-save">{{ .strings.settingsSave }}</span>
                         </div>
                     </div>
                     <div class="flex flex-col md:flex-row gap-3">
