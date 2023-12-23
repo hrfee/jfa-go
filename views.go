@@ -296,6 +296,10 @@ func (app *appContext) ResetPassword(gc *gin.Context) {
 		data["telegramEnabled"] = false
 		data["discordEnabled"] = false
 		data["matrixEnabled"] = false
+		data["captcha"] = app.config.Section("captcha").Key("enabled").MustBool(false)
+		data["reCAPTCHA"] = app.config.Section("captcha").Key("recaptcha").MustBool(false)
+		data["reCAPTCHASiteKey"] = app.config.Section("captcha").Key("recaptcha_site_key").MustString("")
+		data["pwrPIN"] = pin
 		gcHTML(gc, http.StatusOK, "form-loader.html", data)
 		return
 	}
@@ -393,20 +397,28 @@ func (app *appContext) ResetPassword(gc *gin.Context) {
 // @Router /captcha/img/{code}/{captchaID} [get]
 func (app *appContext) GetCaptcha(gc *gin.Context) {
 	code := gc.Param("invCode")
+	isPWR := gc.Query("pwr") == "true"
 	captchaID := gc.Param("captchaID")
-	inv, ok := app.storage.GetInvitesKey(code)
-	if !ok {
-		gcHTML(gc, 404, "invalidCode.html", gin.H{
-			"urlBase":        app.getURLBase(gc),
-			"cssClass":       app.cssClass,
-			"cssVersion":     cssVersion,
-			"contactMessage": app.config.Section("ui").Key("contact_message").String(),
-		})
-	}
+	var inv Invite
 	var capt Captcha
-	ok = true
-	if inv.Captchas != nil {
-		capt, ok = inv.Captchas[captchaID]
+	ok := true
+	if !isPWR {
+		inv, ok = app.storage.GetInvitesKey(code)
+		if !ok {
+			gcHTML(gc, 404, "invalidCode.html", gin.H{
+				"urlBase":        app.getURLBase(gc),
+				"cssClass":       app.cssClass,
+				"cssVersion":     cssVersion,
+				"contactMessage": app.config.Section("ui").Key("contact_message").String(),
+			})
+		}
+		if inv.Captchas != nil {
+			capt, ok = inv.Captchas[captchaID]
+		} else {
+			ok = false
+		}
+	} else {
+		capt, ok = app.pwrCaptchas[code]
 	}
 	if !ok {
 		respondBool(400, false, gc)
@@ -425,7 +437,13 @@ func (app *appContext) GetCaptcha(gc *gin.Context) {
 // @tags Users
 func (app *appContext) GenCaptcha(gc *gin.Context) {
 	code := gc.Param("invCode")
-	inv, ok := app.storage.GetInvitesKey(code)
+	isPWR := gc.Query("pwr") == "true"
+	var inv Invite
+	ok := true
+	if !isPWR {
+		inv, ok = app.storage.GetInvitesKey(code)
+	}
+
 	if !ok {
 		gcHTML(gc, 404, "invalidCode.html", gin.H{
 			"urlBase":        app.getURLBase(gc),
@@ -440,7 +458,7 @@ func (app *appContext) GenCaptcha(gc *gin.Context) {
 		respondBool(500, false, gc)
 		return
 	}
-	if inv.Captchas == nil {
+	if !isPWR && inv.Captchas == nil {
 		inv.Captchas = map[string]Captcha{}
 	}
 	captchaID := genAuthToken()
@@ -450,26 +468,43 @@ func (app *appContext) GenCaptcha(gc *gin.Context) {
 		respondBool(500, false, gc)
 		return
 	}
-	inv.Captchas[captchaID] = Captcha{
-		Answer:    capt.Text,
-		Image:     buf.Bytes(),
-		Generated: time.Now(),
+	if isPWR {
+		if app.pwrCaptchas == nil {
+			app.pwrCaptchas = map[string]Captcha{}
+		}
+		app.pwrCaptchas[code] = Captcha{
+			Answer:    capt.Text,
+			Image:     buf.Bytes(),
+			Generated: time.Now(),
+		}
+	} else {
+		inv.Captchas[captchaID] = Captcha{
+			Answer:    capt.Text,
+			Image:     buf.Bytes(),
+			Generated: time.Now(),
+		}
+		app.storage.SetInvitesKey(code, inv)
 	}
-	app.storage.SetInvitesKey(code, inv)
 	gc.JSON(200, genCaptchaDTO{captchaID})
 	return
 }
 
-func (app *appContext) verifyCaptcha(code, id, text string) bool {
+func (app *appContext) verifyCaptcha(code, id, text string, isPWR bool) bool {
 	reCAPTCHA := app.config.Section("captcha").Key("recaptcha").MustBool(false)
 	if !reCAPTCHA {
 		// internal CAPTCHA
-		inv, ok := app.storage.GetInvitesKey(code)
-		if !ok || inv.Captchas == nil {
-			app.debug.Printf("Couldn't find invite \"%s\"", code)
-			return false
+		var c Captcha
+		ok := true
+		if !isPWR {
+			inv, ok := app.storage.GetInvitesKey(code)
+			if !ok || (!isPWR && inv.Captchas == nil) {
+				app.debug.Printf("Couldn't find invite \"%s\"", code)
+				return false
+			}
+			c, ok = inv.Captchas[id]
+		} else {
+			c, ok = app.pwrCaptchas[code]
 		}
-		c, ok := inv.Captchas[id]
 		if !ok {
 			app.debug.Printf("Couldn't find Captcha \"%s\"", id)
 			return false
@@ -529,21 +564,30 @@ func (app *appContext) verifyCaptcha(code, id, text string) bool {
 // @Router /captcha/verify/{code}/{captchaID}/{text} [get]
 func (app *appContext) VerifyCaptcha(gc *gin.Context) {
 	code := gc.Param("invCode")
+	isPWR := gc.Query("pwr") == "true"
 	captchaID := gc.Param("captchaID")
 	text := gc.Param("text")
-	inv, ok := app.storage.GetInvitesKey(code)
-	if !ok {
-		gcHTML(gc, 404, "invalidCode.html", gin.H{
-			"urlBase":        app.getURLBase(gc),
-			"cssClass":       app.cssClass,
-			"cssVersion":     cssVersion,
-			"contactMessage": app.config.Section("ui").Key("contact_message").String(),
-		})
-		return
-	}
+	var inv Invite
 	var capt Captcha
-	if inv.Captchas != nil {
-		capt, ok = inv.Captchas[captchaID]
+	var ok bool
+	if !isPWR {
+		inv, ok = app.storage.GetInvitesKey(code)
+		if !ok {
+			gcHTML(gc, 404, "invalidCode.html", gin.H{
+				"urlBase":        app.getURLBase(gc),
+				"cssClass":       app.cssClass,
+				"cssVersion":     cssVersion,
+				"contactMessage": app.config.Section("ui").Key("contact_message").String(),
+			})
+			return
+		}
+		if inv.Captchas != nil {
+			capt, ok = inv.Captchas[captchaID]
+		} else {
+			ok = false
+		}
+	} else {
+		capt, ok = app.pwrCaptchas[code]
 	}
 	if !ok {
 		respondBool(400, false, gc)

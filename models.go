@@ -332,8 +332,9 @@ type MatrixLoginDTO struct {
 }
 
 type ResetPasswordDTO struct {
-	PIN      string `json:"pin"`
-	Password string `json:"password"`
+	PIN         string `json:"pin"`
+	Password    string `json:"password"`
+	CaptchaText string `json:"captcha_text"`
 }
 
 type AdminPasswordResetDTO struct {

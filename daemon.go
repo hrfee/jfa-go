@@ -74,6 +74,17 @@ func (app *appContext) clearTelegram() {
 	}
 }
 
+func (app *appContext) clearPWRCaptchas() {
+	app.debug.Println("Housekeeping: Clearing old PWR Captchas")
+	captchas := map[string]Captcha{}
+	for k, capt := range app.pwrCaptchas {
+		if capt.Generated.Add(CAPTCHA_VALIDITY * time.Second).After(time.Now()) {
+			captchas[k] = capt
+		}
+	}
+	app.pwrCaptchas = captchas
+}
+
 func (app *appContext) clearActivities() {
 	app.debug.Println("Housekeeping: Cleaning up Activity log...")
 	keepCount := app.config.Section("activity_log").Key("keep_n_records").MustInt(1000)
@@ -136,6 +147,7 @@ func newInviteDaemon(interval time.Duration, app *appContext) *housekeepingDaemo
 	clearDiscord := app.config.Section("discord").Key("require_unique").MustBool(false)
 	clearTelegram := app.config.Section("telegram").Key("require_unique").MustBool(false)
 	clearMatrix := app.config.Section("matrix").Key("require_unique").MustBool(false)
+	clearPWR := app.config.Section("captcha").Key("enabled").MustBool(false) && !app.config.Section("captcha").Key("recaptcha").MustBool(false)
 
 	if clearEmail || clearDiscord || clearTelegram || clearMatrix {
 		daemon.jobs = append(daemon.jobs, func(app *appContext) { app.jf.CacheExpiry = time.Now() })
@@ -152,6 +164,9 @@ func newInviteDaemon(interval time.Duration, app *appContext) *housekeepingDaemo
 	}
 	if clearMatrix {
 		daemon.jobs = append(daemon.jobs, func(app *appContext) { app.clearMatrix() })
+	}
+	if clearPWR {
+		daemon.jobs = append(daemon.jobs, func(app *appContext) { app.clearPWRCaptchas() })
 	}
 
 	return &daemon

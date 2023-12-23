@@ -34,8 +34,12 @@
 </script>
 {{ if .passwordReset }}
 <script src="js/pwr.js" type="module"></script>
+<script>
+    window.pwrPIN = "{{ .pwrPIN }}";
+</script>
 {{ else }}
 <script src="js/form.js" type="module"></script>
+{{ end }}
 {{ if .reCAPTCHA }}
 <script>
     var reCAPTCHACallback = () => {
@@ -47,6 +51,5 @@
     }
 </script>
 <script src="https://www.google.com/recaptcha/api.js?onload=reCAPTCHACallback&render=explicit" async defer></script>
-{{ end }}
 {{ end }}
 {{ end }}
