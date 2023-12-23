@@ -78,7 +78,7 @@ class DOMInvite implements Invite {
     get expiresIn(): string { return this._expiresIn }
     set expiresIn(expiry: string) {
         this._expiresIn = expiry;
-        this._infoArea.querySelector("span.inv-duration").textContent = expiry;
+        this._codeArea.querySelector("span.inv-duration").textContent = expiry;
     }
 
     private _userExpiry: string;
@@ -105,7 +105,7 @@ class DOMInvite implements Invite {
     get send_to(): string { return this._send_to };
     set send_to(address: string) {
         this._send_to = address;
-        const container = this._infoArea.querySelector(".tooltip") as HTMLDivElement;
+        const container = this._codeArea.querySelector(".tooltip") as HTMLDivElement;
         const icon = container.querySelector("i");
         const chip = container.querySelector("span.inv-email-chip");
         const tooltip = container.querySelector("span.content") as HTMLSpanElement;
@@ -270,14 +270,22 @@ class DOMInvite implements Invite {
 
         this._header = document.createElement('div') as HTMLDivElement;
         this._container.appendChild(this._header);
-        this._header.classList.add("card", "dark:~d_neutral", "@low", "inv-header", "elem-pad", "no-pad", "flex-expand", "row", "mt-2", "overflow-y");
+        this._header.classList.add("card", "dark:~d_neutral", "@low", "inv-header", "elem-pad", "no-pad", "flex", "flex-row", "justify-between", "mt-2", "overflow-y");
 
         this._codeArea = document.createElement('div') as HTMLDivElement;
         this._header.appendChild(this._codeArea);
-        this._codeArea.classList.add("inv-codearea");
+        this._codeArea.classList.add("flex", "flex-row", "flex-wrap", "justify-between", "w-100", "items-baseline", "gap-2", "truncate");
         this._codeArea.innerHTML = `
-        <a class="invite-link text-black dark:text-white font-mono bg-inherit mr-4" href=""></a>
-        <span class="button ~info @low" title="${window.lang.strings("copy")}"><i class="ri-file-copy-line"></i></span>
+        <div class="flex items-baseline gap-x-4 gap-y-2 truncate">
+            <a class="invite-link text-black dark:text-white font-mono bg-inherit" href=""></a>
+            <span class="button ~info @low" title="${window.lang.strings("copy")}"><i class="ri-file-copy-line"></i></span>
+        </div>
+        <div>
+            <div class="tooltip left">
+                <span class="inv-email-chip"><i></i></span>
+                <span class="content sm"></span>
+            </div><span class="inv-duration"></span>
+        </div>
         `;
         const copyButton = this._codeArea.querySelector("span.button") as HTMLSpanElement;
         copyButton.onclick = () => { 
@@ -297,14 +305,9 @@ class DOMInvite implements Invite {
 
         this._infoArea = document.createElement('div') as HTMLDivElement;
         this._header.appendChild(this._infoArea);
-        this._infoArea.classList.add("inv-infoarea");
+        this._infoArea.classList.add("inv-infoarea", "flex", "flex-row", "items-baseline", "gap-2");
         this._infoArea.innerHTML = `
-        <div class="tooltip left">
-            <span class="inv-email-chip"><i></i></span>
-            <span class="content sm"></span>
-        </div>
-        <span class="inv-duration mr-4"></span>
-        <span class="button ~critical @low inv-delete">${window.lang.strings("delete")}</span>
+        <span class="button ~critical @low inv-delete h-100">${window.lang.strings("delete")}</span>
         <label>
             <i class="icon clickable ri-arrow-down-s-line not-rotated"></i>
             <input class="inv-toggle-details unfocused" type="checkbox">
@@ -315,11 +318,13 @@ class DOMInvite implements Invite {
 
         const toggle = (this._infoArea.querySelector("input.inv-toggle-details") as HTMLInputElement);
         toggle.onchange = () => { this.expanded = !this.expanded; };
-        this._header.onclick = (event: Event) => { 
-            if (event.target == this._header) {
+        const toggleDetails = (event: Event) => { 
+            if (event.target == this._header || event.target == this._codeArea || event.target == this._infoArea) {
                 this.expanded = !this.expanded; 
             }
         };
+        this._header.onclick = toggleDetails;
+
 
         this._details = document.createElement('div') as HTMLDivElement;
         this._container.appendChild(this._details);
