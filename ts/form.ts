@@ -4,7 +4,7 @@ import { _get, _post, toggleLoader, addLoader, removeLoader, toDateString } from
 import { loadLangSelector } from "./modules/lang.js";
 import { Validator, ValidatorConf, ValidatorRespDTO } from "./modules/validator.js";
 import { Discord, Telegram, Matrix, ServiceConfiguration, MatrixConfiguration } from "./modules/account-linking.js";
-import { Captcha } from "./modules/captcha.js";
+import { Captcha, GreCAPTCHA } from "./modules/captcha.js";
 
 interface formWindow extends Window {
     invalidPassword: string;
@@ -173,7 +173,7 @@ if (!window.usernameEnabled) { usernameField.parentElement.remove(); usernameFie
 const passwordField = document.getElementById("create-password") as HTMLInputElement;
 const rePasswordField = document.getElementById("create-reenter-password") as HTMLInputElement;
 
-let captcha = new Captcha(window.code, window.captcha, window.reCAPTCHA);
+let captcha = new Captcha(window.code, window.captcha, window.reCAPTCHA, false);
 
 function _baseValidator(oncomplete: (valid: boolean) => void, captchaValid: boolean): void {
     if (window.emailRequired) {
@@ -203,20 +203,7 @@ function _baseValidator(oncomplete: (valid: boolean) => void, captchaValid: bool
 
 let baseValidator = captcha.baseValidatorWrapper(_baseValidator); 
 
-interface GreCAPTCHA {
-    render: (container: HTMLDivElement, parameters: {
-        sitekey?: string,
-        theme?: string,
-        size?: string,
-        tabindex?: number,
-        "callback"?: () => void,
-        "expired-callback"?: () => void,
-        "error-callback"?: () => void
-    }) => void;
-    getResponse: (opt_widget_id?: HTMLDivElement) => string;
-}
-
-declare var grecaptcha: GreCAPTCHA
+declare var grecaptcha: GreCAPTCHA;
 
 let validatorConf: ValidatorConf = {
     passwordField: passwordField,

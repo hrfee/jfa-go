@@ -114,6 +114,7 @@ func (app *appContext) ResetSetPassword(gc *gin.Context) {
 	var req ResetPasswordDTO
 	gc.BindJSON(&req)
 	validation := app.validator.validate(req.Password)
+	captcha := app.config.Section("captcha").Key("enabled").MustBool(false)
 	valid := true
 	for _, val := range validation {
 		if !val {
@@ -121,12 +122,18 @@ func (app *appContext) ResetSetPassword(gc *gin.Context) {
 		}
 	}
 	if !valid || req.PIN == "" {
-		// 200 bcs idk what i did in js
 		app.info.Printf("%s: Password reset failed: Invalid password", req.PIN)
 		gc.JSON(400, validation)
 		return
 	}
 	isInternal := false
+
+	if captcha && !app.verifyCaptcha(req.PIN, req.PIN, req.CaptchaText, true) {
+		app.info.Printf("%s: PWR Failed: Captcha Incorrect", req.PIN)
+		respond(400, "errorCaptcha", gc)
+		return
+	}
+
 	var userID, username string
 	if reset, ok := app.internalPWRs[req.PIN]; ok {
 		isInternal = true
@@ -138,6 +145,7 @@ func (app *appContext) ResetSetPassword(gc *gin.Context) {
 		}
 		userID = reset.ID
 		username = reset.Username
+
 		status, err := app.jf.ResetPasswordAdmin(userID)
 		if !(status == 200 || status == 204) || err != nil {
 			app.err.Printf("Password Reset failed (%d): %v", status, err)

@@ -503,7 +503,7 @@ func (app *appContext) NewUser(gc *gin.Context) {
 	var req newUserDTO
 	gc.BindJSON(&req)
 	app.debug.Printf("%s: New user attempt", req.Code)
-	if app.config.Section("captcha").Key("enabled").MustBool(false) && !app.verifyCaptcha(req.Code, req.CaptchaID, req.CaptchaText) {
+	if app.config.Section("captcha").Key("enabled").MustBool(false) && !app.verifyCaptcha(req.Code, req.CaptchaID, req.CaptchaText, false) {
 		app.info.Printf("%s: New user failed: Captcha Incorrect", req.Code)
 		respond(400, "errorCaptcha", gc)
 		return
