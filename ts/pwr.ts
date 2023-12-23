@@ -103,7 +103,7 @@ form.onsubmit = (event: Event) => {
         if (req.readyState == 4) {
             removeLoader(submitSpan);
             if (req.status == 400) {
-                if (req.response["error"] as string) { // FIXME: Show captcha error
+                if (req.response["error"] as string) {
                     const old = submitSpan.textContent;
                     submitSpan.textContent = window.messages[req.response["error"]];
                     submitSpan.classList.add("~critical");
