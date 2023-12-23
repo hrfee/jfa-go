@@ -296,6 +296,9 @@ func (app *appContext) ResetPassword(gc *gin.Context) {
 		data["telegramEnabled"] = false
 		data["discordEnabled"] = false
 		data["matrixEnabled"] = false
+		data["captcha"] = app.config.Section("captcha").Key("enabled").MustBool(false)
+		data["reCAPTCHA"] = app.config.Section("captcha").Key("recaptcha").MustBool(false)
+		data["reCAPTCHASiteKey"] = app.config.Section("captcha").Key("recaptcha_site_key").MustString("")
 		gcHTML(gc, http.StatusOK, "form-loader.html", data)
 		return
 	}

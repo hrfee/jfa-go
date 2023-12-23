@@ -4,6 +4,7 @@ import { _get, _post, toggleLoader, addLoader, removeLoader, toDateString } from
 import { loadLangSelector } from "./modules/lang.js";
 import { Validator, ValidatorConf, ValidatorRespDTO } from "./modules/validator.js";
 import { Discord, Telegram, Matrix, ServiceConfiguration, MatrixConfiguration } from "./modules/account-linking.js";
+import { Captcha } from "./modules/captcha.js";
 
 interface formWindow extends Window {
     invalidPassword: string;
@@ -172,35 +173,7 @@ if (!window.usernameEnabled) { usernameField.parentElement.remove(); usernameFie
 const passwordField = document.getElementById("create-password") as HTMLInputElement;
 const rePasswordField = document.getElementById("create-reenter-password") as HTMLInputElement;
 
-let captchaVerified = false;
-let captchaID = "";
-let captchaInput = document.getElementById("captcha-input") as HTMLInputElement;
-const captchaCheckbox = document.getElementById("captcha-success") as HTMLSpanElement;
-let prevCaptcha = "";
-
-let baseValidator = (oncomplete: (valid: boolean) => void): void => {
-    if (window.captcha && !window.reCAPTCHA && (captchaInput.value != prevCaptcha)) {
-        prevCaptcha = captchaInput.value;
-        _post("/captcha/verify/" + window.code + "/" + captchaID + "/" + captchaInput.value, null, (req: XMLHttpRequest) => {
-            if (req.readyState == 4) {
-                if (req.status == 204) {
-                    captchaCheckbox.innerHTML = `<i class="ri-check-line"></i>`;
-                    captchaCheckbox.classList.add("~positive");
-                    captchaCheckbox.classList.remove("~critical");
-                    captchaVerified = true;
-                } else {
-                    captchaCheckbox.innerHTML = `<i class="ri-close-line"></i>`;
-                    captchaCheckbox.classList.add("~critical");
-                    captchaCheckbox.classList.remove("~positive");
-                    captchaVerified = false;
-                }
-                _baseValidator(oncomplete, captchaVerified);
-            }
-        });
-    } else {
-        _baseValidator(oncomplete, captchaVerified);
-    }
-}
+let captcha = new Captcha(window.code, window.captcha, window.reCAPTCHA);
 
 function _baseValidator(oncomplete: (valid: boolean) => void, captchaValid: boolean): void {
     if (window.emailRequired) {
@@ -227,6 +200,8 @@ function _baseValidator(oncomplete: (valid: boolean) => void, captchaValid: bool
     }
     oncomplete(true);
 }
+
+let baseValidator = captcha.baseValidatorWrapper(_baseValidator); 
 
 interface GreCAPTCHA {
     render: (container: HTMLDivElement, parameters: {
@@ -273,29 +248,15 @@ interface sendDTO {
     captcha_text?: string;
 }
 
-const genCaptcha = () => {
-    _get("/captcha/gen/"+window.code, null, (req: XMLHttpRequest) => {
-        if (req.readyState == 4) {
-            if (req.status == 200) {
-                captchaID = req.response["id"];
-                document.getElementById("captcha-img").innerHTML = `
-                <img class="w-100" src="${window.location.toString().substring(0, window.location.toString().lastIndexOf("/invite"))}/captcha/img/${window.code}/${captchaID}"></img>
-                `;
-                captchaInput.value = "";
-            }
-        }
-    });
-};
-
 if (window.captcha && !window.reCAPTCHA) {
-    genCaptcha();
-    (document.getElementById("captcha-regen") as HTMLSpanElement).onclick = genCaptcha;
-    captchaInput.onkeyup = validator.validate;
+    captcha.generate();
+    (document.getElementById("captcha-regen") as HTMLSpanElement).onclick = captcha.generate;
+    captcha.input.onkeyup = validator.validate;
 }
 
 const create = (event: SubmitEvent) => {
     event.preventDefault();
-    if (window.captcha && !window.reCAPTCHA && !captchaVerified) {
+    if (window.captcha && !window.reCAPTCHA && !captcha.verified) {
         
     }
     addLoader(submitSpan);
@@ -330,8 +291,8 @@ const create = (event: SubmitEvent) => {
         if (window.reCAPTCHA) {
             send.captcha_text = grecaptcha.getResponse();
         } else {
-            send.captcha_id = captchaID;
-            send.captcha_text = captchaInput.value;
+            send.captcha_id = captcha.captchaID;
+            send.captcha_text = captcha.input.value;
         }
     }
     _post("/newUser", send, (req: XMLHttpRequest) => {

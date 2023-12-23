@@ -28,6 +28,9 @@ interface formWindow extends Window {
     userExpiryHours: number;
     userExpiryMinutes: number;
     userExpiryMessage: string;
+    captcha: boolean;
+    reCAPTCHA: boolean;
+    reCAPTCHASiteKey: string;
 }
 
 loadLangSelector("pwr");
