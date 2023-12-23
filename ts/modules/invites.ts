@@ -105,20 +105,20 @@ class DOMInvite implements Invite {
     get send_to(): string { return this._send_to };
     set send_to(address: string) {
         this._send_to = address;
-        const container = this._codeArea.querySelector(".tooltip") as HTMLDivElement;
+        const container = this._infoArea.querySelector(".tooltip") as HTMLDivElement;
         const icon = container.querySelector("i");
         const chip = container.querySelector("span.inv-email-chip");
         const tooltip = container.querySelector("span.content") as HTMLSpanElement;
         if (address == "") {
-            container.classList.remove("mr-4");
             icon.classList.remove("ri-mail-line");
             icon.classList.remove("ri-mail-close-line");
             chip.classList.remove("~neutral");
             chip.classList.remove("~critical");
-            chip.classList.remove("chip");
+            chip.classList.remove("button");
+            chip.parentElement.classList.remove("h-100");
         } else {
-            container.classList.add("mr-4");
-            chip.classList.add("chip");
+            chip.classList.add("button");
+            chip.parentElement.classList.add("h-100");
             if (address.includes("Failed")) {
                 icon.classList.remove("ri-mail-line");
                 icon.classList.add("ri-mail-close-line");
@@ -266,11 +266,11 @@ class DOMInvite implements Invite {
     constructor(invite: Invite) {
         // first create the invite structure, then use our setter methods to fill in the data.
         this._container = document.createElement('div') as HTMLDivElement;
-        this._container.classList.add("inv");
+        this._container.classList.add("inv", "overflow-y-visible");
 
         this._header = document.createElement('div') as HTMLDivElement;
         this._container.appendChild(this._header);
-        this._header.classList.add("card", "dark:~d_neutral", "@low", "inv-header", "elem-pad", "no-pad", "flex", "flex-row", "justify-between", "mt-2", "overflow-y");
+        this._header.classList.add("card", "dark:~d_neutral", "@low", "inv-header", "flex", "flex-row", "justify-between", "mt-2", "overflow-visible", "gap-2");
 
         this._codeArea = document.createElement('div') as HTMLDivElement;
         this._header.appendChild(this._codeArea);
@@ -280,12 +280,7 @@ class DOMInvite implements Invite {
             <a class="invite-link text-black dark:text-white font-mono bg-inherit" href=""></a>
             <span class="button ~info @low" title="${window.lang.strings("copy")}"><i class="ri-file-copy-line"></i></span>
         </div>
-        <div>
-            <div class="tooltip left">
-                <span class="inv-email-chip"><i></i></span>
-                <span class="content sm"></span>
-            </div><span class="inv-duration"></span>
-        </div>
+        <span class="inv-duration"></span>
         `;
         const copyButton = this._codeArea.querySelector("span.button") as HTMLSpanElement;
         copyButton.onclick = () => { 
@@ -307,6 +302,10 @@ class DOMInvite implements Invite {
         this._header.appendChild(this._infoArea);
         this._infoArea.classList.add("inv-infoarea", "flex", "flex-row", "items-baseline", "gap-2");
         this._infoArea.innerHTML = `
+        <div class="tooltip below darker" tabindex="0">
+            <span class="inv-email-chip h-100"><i></i></span>
+            <span class="content sm p-1"></span>
+        </div>
         <span class="button ~critical @low inv-delete h-100">${window.lang.strings("delete")}</span>
         <label>
             <i class="icon clickable ri-arrow-down-s-line not-rotated"></i>
