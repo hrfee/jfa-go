@@ -134,6 +134,7 @@ type getTokenDTO struct {
 }
 
 func (app *appContext) decodeValidateLoginHeader(gc *gin.Context) (username, password string, ok bool) {
+    ip := strings.TrimSpace(gc.Request.Header.Get("X-Real-IP"))
 	header := strings.SplitN(gc.Request.Header.Get("Authorization"), " ", 2)
 	auth, _ := base64.StdEncoding.DecodeString(header[1])
 	creds := strings.SplitN(string(auth), ":", 2)
@@ -141,7 +142,7 @@ func (app *appContext) decodeValidateLoginHeader(gc *gin.Context) (username, pas
 	password = creds[1]
 	ok = false
 	if username == "" || password == "" {
-		app.debug.Println("Auth denied: blank username/password")
+		app.debug.Print("Auth denied: blank username/password ip=", ip, "\n")
 		respond(401, "Unauthorized", gc)
 		return
 	}
@@ -150,16 +151,17 @@ func (app *appContext) decodeValidateLoginHeader(gc *gin.Context) (username, pas
 }
 
 func (app *appContext) validateJellyfinCredentials(username, password string, gc *gin.Context) (user mediabrowser.User, ok bool) {
+    ip := strings.TrimSpace(gc.Request.Header.Get("X-Real-IP"))
 	ok = false
 	user, status, err := app.authJf.Authenticate(username, password)
 	if status != 200 || err != nil {
 		if status == 401 || status == 400 {
-			app.info.Println("Auth denied: Invalid username/password (Jellyfin)")
+			app.info.Print("Auth denied: Invalid username/password (Jellyfin) ip=", ip, "\n")
 			respond(401, "Unauthorized", gc)
 			return
 		}
 		if status == 403 {
-			app.info.Println("Auth denied: Jellyfin account disabled")
+			app.info.Print("Auth denied: Jellyfin account disabled ip=", ip, "\n")
 			respond(403, "yourAccountWasDisabled", gc)
 			return
 		}
@@ -180,6 +182,7 @@ func (app *appContext) validateJellyfinCredentials(username, password string, gc
 // @tags Auth
 // @Security getTokenAuth
 func (app *appContext) getTokenLogin(gc *gin.Context) {
+    ip := strings.TrimSpace(gc.Request.Header.Get("X-Real-IP"))
 	app.info.Println("Token requested (login attempt)")
 	username, password, ok := app.decodeValidateLoginHeader(gc)
 	if !ok {
@@ -196,7 +199,7 @@ func (app *appContext) getTokenLogin(gc *gin.Context) {
 		}
 	}
 	if !app.jellyfinLogin && !match {
-		app.info.Println("Auth denied: Invalid username/password")
+		app.info.Print("Auth denied: Invalid username/password ip=", ip, "\n")
 		respond(401, "Unauthorized", gc)
 		return
 	}
