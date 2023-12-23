@@ -46,12 +46,12 @@ func (app *appContext) getUserTokenLogin(gc *gin.Context) {
 		return
 	}
 	app.info.Println("UserToken requested (login attempt)")
-	username, password, ok := app.decodeValidateLoginHeader(gc)
+	username, password, ok := app.decodeValidateLoginHeader(gc, true)
 	if !ok {
 		return
 	}
 
-	user, ok := app.validateJellyfinCredentials(username, password, gc)
+	user, ok := app.validateJellyfinCredentials(username, password, gc, true)
 	if !ok {
 		return
 	}

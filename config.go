@@ -120,6 +120,9 @@ func (app *appContext) loadConfig() error {
 	app.config.Section("jellyfin").Key("device").SetValue("jfa-go")
 	app.config.Section("jellyfin").Key("device_id").SetValue(fmt.Sprintf("jfa-go-%s-%s", version, commit))
 
+	LOGIP = app.config.Section("advanced").Key("log_ips").MustBool(false)
+	LOGIPU = app.config.Section("advanced").Key("log_ips_userpage").MustBool(false)
+
 	// These two settings are pretty much the same
 	url1 := app.config.Section("invite_emails").Key("url_base").String()
 	url2 := app.config.Section("password_resets").Key("url_base").String()

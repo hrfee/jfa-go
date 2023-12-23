@@ -18,6 +18,28 @@ const (
 	REFRESH_TOKEN_VALIDITY_SEC = 3600 * 24
 )
 
+func (app *appContext) logIpInfo(gc *gin.Context, user bool, out string) {
+	app.info.Printf(out)
+	if (user && LOGIPU) || (!user && LOGIP) {
+		app.info.Printf(" (ip=%s)", strings.TrimSpace(gc.Request.Header.Get("X-Real-IP")))
+	}
+	app.info.Print("\n")
+}
+func (app *appContext) logIpDebug(gc *gin.Context, user bool, out string) {
+	app.debug.Printf(out)
+	if (user && LOGIPU) || (!user && LOGIP) {
+		app.debug.Printf(" (ip=%s)", strings.TrimSpace(gc.Request.Header.Get("X-Real-IP")))
+	}
+	app.debug.Print("\n")
+}
+func (app *appContext) logIpErr(gc *gin.Context, user bool, out string) {
+	app.err.Printf(out)
+	if (user && LOGIPU) || (!user && LOGIP) {
+		app.err.Printf(" (ip=%s)", strings.TrimSpace(gc.Request.Header.Get("X-Real-IP")))
+	}
+	app.err.Print("\n")
+}
+
 func (app *appContext) webAuth() gin.HandlerFunc {
 	return app.authenticate
 }
@@ -133,8 +155,7 @@ type getTokenDTO struct {
 	Token string `json:"token" example:"kjsdklsfdkljfsjsdfklsdfkldsfjdfskjsdfjklsdf"` // API token for use with everything else.
 }
 
-func (app *appContext) decodeValidateLoginHeader(gc *gin.Context) (username, password string, ok bool) {
-    ip := strings.TrimSpace(gc.Request.Header.Get("X-Real-IP"))
+func (app *appContext) decodeValidateLoginHeader(gc *gin.Context, userpage bool) (username, password string, ok bool) {
 	header := strings.SplitN(gc.Request.Header.Get("Authorization"), " ", 2)
 	auth, _ := base64.StdEncoding.DecodeString(header[1])
 	creds := strings.SplitN(string(auth), ":", 2)
@@ -142,7 +163,7 @@ func (app *appContext) decodeValidateLoginHeader(gc *gin.Context) (username, pas
 	password = creds[1]
 	ok = false
 	if username == "" || password == "" {
-		app.debug.Print("Auth denied: blank username/password ip=", ip, "\n")
+		app.logIpDebug(gc, userpage, "Auth denied: blank username/password")
 		respond(401, "Unauthorized", gc)
 		return
 	}
@@ -150,18 +171,17 @@ func (app *appContext) decodeValidateLoginHeader(gc *gin.Context) (username, pas
 	return
 }
 
-func (app *appContext) validateJellyfinCredentials(username, password string, gc *gin.Context) (user mediabrowser.User, ok bool) {
-    ip := strings.TrimSpace(gc.Request.Header.Get("X-Real-IP"))
+func (app *appContext) validateJellyfinCredentials(username, password string, gc *gin.Context, userpage bool) (user mediabrowser.User, ok bool) {
 	ok = false
 	user, status, err := app.authJf.Authenticate(username, password)
 	if status != 200 || err != nil {
 		if status == 401 || status == 400 {
-			app.info.Print("Auth denied: Invalid username/password (Jellyfin) ip=", ip, "\n")
+			app.logIpInfo(gc, userpage, "Auth denied: Invalid username/password (Jellyfin)")
 			respond(401, "Unauthorized", gc)
 			return
 		}
 		if status == 403 {
-			app.info.Print("Auth denied: Jellyfin account disabled ip=", ip, "\n")
+			app.logIpInfo(gc, userpage, "Auth denied: Jellyfin account disabled")
 			respond(403, "yourAccountWasDisabled", gc)
 			return
 		}
@@ -182,9 +202,8 @@ func (app *appContext) validateJellyfinCredentials(username, password string, gc
 // @tags Auth
 // @Security getTokenAuth
 func (app *appContext) getTokenLogin(gc *gin.Context) {
-    ip := strings.TrimSpace(gc.Request.Header.Get("X-Real-IP"))
 	app.info.Println("Token requested (login attempt)")
-	username, password, ok := app.decodeValidateLoginHeader(gc)
+	username, password, ok := app.decodeValidateLoginHeader(gc, false)
 	if !ok {
 		return
 	}
@@ -199,12 +218,12 @@ func (app *appContext) getTokenLogin(gc *gin.Context) {
 		}
 	}
 	if !app.jellyfinLogin && !match {
-		app.info.Print("Auth denied: Invalid username/password ip=", ip, "\n")
+		app.logIpInfo(gc, false, "Auth denied: Invalid username/password")
 		respond(401, "Unauthorized", gc)
 		return
 	}
 	if !match {
-		user, ok := app.validateJellyfinCredentials(username, password, gc)
+		user, ok := app.validateJellyfinCredentials(username, password, gc, false)
 		if !ok {
 			return
 		}

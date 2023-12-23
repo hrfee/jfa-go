@@ -297,6 +297,29 @@
                 "advanced": true
             },
             "settings": {
+                "log_ips": {
+                    "name": "Log IPs accessing Admin Page",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "bool",
+                    "value": false,
+                    "description": "Log IP addresses in console and in activities. See notice below on legality."
+                },
+                "log_ips_userpage": {
+                    "name": "Log IPs accessing User Page",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "bool",
+                    "value": false,
+                    "description": "Log IP addresses in console and in activities. See notice below on legality."
+                },
+                "ip_note": {
+                    "name": "Logging IPs:",
+                    "type": "note",
+                    "value": "",
+                    "required": "false",
+                    "description": "Logging IP addresses through jfa-go may violate GDPR or other privacy regulations, as IPs are linked to account information. Enable at your own risk."
+                },
                 "tls": {
                     "name": "TLS/HTTP2",
                     "required": false,
