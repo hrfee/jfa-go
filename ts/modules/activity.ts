@@ -14,6 +14,7 @@ export interface activity {
     time: number; 
     username: string;
     source_username: string;
+    ip: string;
 }
 
 var activityTypeMoods = {
@@ -43,6 +44,7 @@ export class Activity implements activity, SearchableItem {
     private _referrer: HTMLElement;
     private _expiryTypeBadge: HTMLElement;
     private _delete: HTMLElement;
+    private _ip: HTMLElement;
     private _act: activity;
     private _urlBase: string = ((): string => {
         let link = window.location.href;
@@ -205,6 +207,16 @@ export class Activity implements activity, SearchableItem {
         }
     }
 
+    get ip(): string { return this._act.ip; }
+    set ip(v: string) {
+        this._act.ip = v;
+        if (v) {
+            this._ip.innerHTML = `<span class="supra mr-2">IP</span><span class="font-mono bg-inherit">${v}</span>`;
+        } else {
+            this._ip.textContent = ``;
+        }
+    }
+
     get invite_code(): string { return this._act.invite_code; }
     set invite_code(v: string) {
         this._act.invite_code = v;
@@ -260,12 +272,13 @@ export class Activity implements activity, SearchableItem {
                 <span class="activity-expiry-type badge self-start md:self-end mt-1"></span>
             </div>
         </div>
-        <div class="flex flex-col md:flex-row justify-between">
-            <div>
-                <span class="content supra mr-2 activity-source-type"></span><span class="activity-source"></span>
-            </div>
-            <div>
+        <div class="flex flex-row justify-between items-end">
+            <div class="flex flex-col md:flex-row gap-2">
+                <div>    
+                    <span class="content supra mr-2 activity-source-type"></span><span class="activity-source"></span>
+                </div>
                 <span class="content activity-referrer"></span>
+                <span class="content activity-ip"></span>
             </div>
             <div>
                 <button class="button @low hover:~critical rounded-full px-1 py-px activity-delete" aria-label="${window.lang.strings("delete")}"><i class="ri-close-line"></i></button>
@@ -277,6 +290,7 @@ export class Activity implements activity, SearchableItem {
         this._time = this._card.querySelector(".activity-time");
         this._sourceType = this._card.querySelector(".activity-source-type");
         this._source = this._card.querySelector(".activity-source");
+        this._ip = this._card.querySelector(".activity-ip");
         this._referrer = this._card.querySelector(".activity-referrer");
         this._expiryTypeBadge = this._card.querySelector(".activity-expiry-type");
         this._delete = this._card.querySelector(".activity-delete");
@@ -324,6 +338,7 @@ export class Activity implements activity, SearchableItem {
         this.source = act.source;
         this.value = act.value;
         this.type  = act.type;
+        this.ip = act.ip;
     }
 
     delete = () => _delete("/activity/" + this._act.id, null, (req: XMLHttpRequest) => {

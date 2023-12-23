@@ -444,6 +444,7 @@ type ActivityDTO struct {
 	InviteCode     string `json:"invite_code"`
 	Value          string `json:"value"`
 	Time           int64  `json:"time"`
+	IP             string `json:"ip"`
 }
 
 type GetActivitiesDTO struct {

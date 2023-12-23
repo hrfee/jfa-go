@@ -102,7 +102,7 @@ func (app *appContext) checkInvites() {
 			InviteCode: data.Code,
 			Value:      data.Label,
 			Time:       time.Now(),
-		})
+		}, nil, false)
 	}
 }
 
@@ -161,7 +161,7 @@ func (app *appContext) checkInvite(code string, used bool, username string) bool
 			InviteCode: code,
 			Value:      inv.Label,
 			Time:       time.Now(),
-		})
+		}, nil, false)
 	} else if used {
 		del := false
 		newInv := inv
@@ -174,7 +174,7 @@ func (app *appContext) checkInvite(code string, used bool, username string) bool
 				InviteCode: code,
 				Value:      inv.Label,
 				Time:       time.Now(),
-			})
+			}, nil, false)
 		} else if newInv.RemainingUses != 0 {
 			// 0 means infinite i guess?
 			newInv.RemainingUses--
@@ -285,7 +285,7 @@ func (app *appContext) GenerateInvite(gc *gin.Context) {
 		InviteCode: invite.Code,
 		Value:      invite.Label,
 		Time:       time.Now(),
-	})
+	}, gc, false)
 
 	respondBool(200, true, gc)
 }
@@ -492,7 +492,7 @@ func (app *appContext) DeleteInvite(gc *gin.Context) {
 			InviteCode: req.Code,
 			Value:      inv.Label,
 			Time:       time.Now(),
-		})
+		}, gc, false)
 
 		app.info.Printf("%s: Invite deleted", req.Code)
 		respondBool(200, true, gc)

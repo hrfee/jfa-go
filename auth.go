@@ -19,25 +19,22 @@ const (
 )
 
 func (app *appContext) logIpInfo(gc *gin.Context, user bool, out string) {
-	app.info.Printf(out)
 	if (user && LOGIPU) || (!user && LOGIP) {
-		app.info.Printf(" (ip=%s)", strings.TrimSpace(gc.Request.Header.Get("X-Real-IP")))
+		out += fmt.Sprintf(" (ip=%s)", gc.ClientIP())
 	}
-	app.info.Print("\n")
+	app.info.Println(out)
 }
 func (app *appContext) logIpDebug(gc *gin.Context, user bool, out string) {
-	app.debug.Printf(out)
 	if (user && LOGIPU) || (!user && LOGIP) {
-		app.debug.Printf(" (ip=%s)", strings.TrimSpace(gc.Request.Header.Get("X-Real-IP")))
+		out += fmt.Sprintf(" (ip=%s)", gc.ClientIP())
 	}
-	app.debug.Print("\n")
+	app.debug.Println(out)
 }
 func (app *appContext) logIpErr(gc *gin.Context, user bool, out string) {
-	app.err.Printf(out)
 	if (user && LOGIPU) || (!user && LOGIP) {
-		app.err.Printf(" (ip=%s)", strings.TrimSpace(gc.Request.Header.Get("X-Real-IP")))
+		out += fmt.Sprintf(" (ip=%s)", gc.ClientIP())
 	}
-	app.err.Print("\n")
+	app.err.Println(out)
 }
 
 func (app *appContext) webAuth() gin.HandlerFunc {
@@ -202,7 +199,7 @@ func (app *appContext) validateJellyfinCredentials(username, password string, gc
 // @tags Auth
 // @Security getTokenAuth
 func (app *appContext) getTokenLogin(gc *gin.Context) {
-	app.info.Println("Token requested (login attempt)")
+	app.logIpInfo(gc, false, "Token requested (login attempt)")
 	username, password, ok := app.decodeValidateLoginHeader(gc, false)
 	if !ok {
 		return
@@ -307,7 +304,7 @@ func (app *appContext) decodeValidateRefreshCookie(gc *gin.Context, cookieName s
 // @Router /token/refresh [get]
 // @tags Auth
 func (app *appContext) getTokenRefresh(gc *gin.Context) {
-	app.debug.Println("Token requested (refresh token)")
+	app.logIpInfo(gc, false, "Token requested (refresh token)")
 	claims, ok := app.decodeValidateRefreshCookie(gc, "refresh")
 	if !ok {
 		return

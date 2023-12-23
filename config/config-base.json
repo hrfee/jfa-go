@@ -303,15 +303,15 @@
                     "requires_restart": true,
                     "type": "bool",
                     "value": false,
-                    "description": "Log IP addresses in console and in activities. See notice below on legality."
+                    "description": "Log IP addresses of admins and admin page requests in console and in activities. See notice below on legality."
                 },
-                "log_ips_userpage": {
+                "log_ips_users": {
                     "name": "Log IPs accessing User Page",
                     "required": false,
                     "requires_restart": true,
                     "type": "bool",
                     "value": false,
-                    "description": "Log IP addresses in console and in activities. See notice below on legality."
+                    "description": "Log IP addresses of users in console and in activities. See notice below on legality."
                 },
                 "ip_note": {
                     "name": "Logging IPs:",
