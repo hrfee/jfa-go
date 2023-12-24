@@ -120,7 +120,7 @@ func (app *appContext) checkUsers() {
 				continue
 			}
 
-			app.storage.SetActivityKey(shortuuid.New(), activity)
+			app.storage.SetActivityKey(shortuuid.New(), activity, nil, false)
 
 			app.storage.DeleteUserExpiryKey(expiry.JellyfinID)
 			app.jf.CacheExpiry = time.Now()

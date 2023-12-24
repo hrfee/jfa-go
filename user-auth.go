@@ -45,13 +45,13 @@ func (app *appContext) getUserTokenLogin(gc *gin.Context) {
 		respond(500, "Contact Admin", gc)
 		return
 	}
-	app.info.Println("UserToken requested (login attempt)")
-	username, password, ok := app.decodeValidateLoginHeader(gc)
+	app.logIpInfo(gc, true, "UserToken requested (login attempt)")
+	username, password, ok := app.decodeValidateLoginHeader(gc, true)
 	if !ok {
 		return
 	}
 
-	user, ok := app.validateJellyfinCredentials(username, password, gc)
+	user, ok := app.validateJellyfinCredentials(username, password, gc, true)
 	if !ok {
 		return
 	}
@@ -86,7 +86,7 @@ func (app *appContext) getUserTokenRefresh(gc *gin.Context) {
 		return
 	}
 
-	app.info.Println("UserToken request (refresh token)")
+	app.logIpInfo(gc, true, "UserToken request (refresh token)")
 	claims, ok := app.decodeValidateRefreshCookie(gc, "user-refresh")
 	if !ok {
 		return

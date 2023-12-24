@@ -46,6 +46,8 @@ var (
 	SWAGGER            *bool
 	QUIT               = false
 	RUNNING            = false
+	LOGIP              = false // Log admin IPs
+	LOGIPU             = false // Log user IPs
 	// Used to know how many times to re-broadcast restart signal.
 	RESTARTLISTENERCOUNT = 0
 	warning              = color.New(color.FgYellow).SprintfFunc()

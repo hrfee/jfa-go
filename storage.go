@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/hrfee/jfa-go/logger"
 	"github.com/hrfee/mediabrowser"
 	"github.com/timshannon/badgerhold/v4"
@@ -55,6 +56,7 @@ type Activity struct {
 	InviteCode string // Set for ActivityCreation, create/deleteInvite
 	Value      string // Used for ActivityContactLinked where it's "email/discord/telegram/matrix", Create/DeleteInvite, where it's the label, and Creation/Deletion, where it's the Username.
 	Time       time.Time
+	IP         string
 }
 
 type UserExpiry struct {
@@ -563,8 +565,12 @@ func (st *Storage) GetActivityKey(k string) (Activity, bool) {
 }
 
 // SetActivityKey stores value v in key k.
-func (st *Storage) SetActivityKey(k string, v Activity) {
+// If the IP should be logged, pass "gc", and whether or not the action is of a user
+func (st *Storage) SetActivityKey(k string, v Activity, gc *gin.Context, user bool) {
 	v.ID = k
+	if gc != nil && ((LOGIPU && user) || (LOGIP && !user)) {
+		v.IP = gc.ClientIP()
+	}
 	err := st.db.Upsert(k, v)
 	if err != nil {
 		// fmt.Printf("Failed to set custom content: %v\n", err)

@@ -573,6 +573,7 @@ func (app *appContext) MatrixCheckPIN(gc *gin.Context) {
 // @Failure 500 {object} boolResponse
 // @Param MatrixLoginDTO body MatrixLoginDTO true "Username & password."
 // @Router /matrix/login [post]
+// @Security Bearer
 // @tags Other
 func (app *appContext) MatrixLogin(gc *gin.Context) {
 	var req MatrixLoginDTO
@@ -608,6 +609,7 @@ func (app *appContext) MatrixLogin(gc *gin.Context) {
 // @Failure 500 {object} boolResponse
 // @Param MatrixConnectUserDTO body MatrixConnectUserDTO true "User's Jellyfin ID & Matrix user ID."
 // @Router /users/matrix [post]
+// @Security Bearer
 // @tags Other
 func (app *appContext) MatrixConnect(gc *gin.Context) {
 	var req MatrixConnectUserDTO
@@ -639,6 +641,7 @@ func (app *appContext) MatrixConnect(gc *gin.Context) {
 // @Failure 500 {object} boolResponse
 // @Param username path string true "username to search."
 // @Router /users/discord/{username} [get]
+// @Security Bearer
 // @tags Other
 func (app *appContext) DiscordGetUsers(gc *gin.Context) {
 	name := gc.Param("username")
@@ -665,6 +668,7 @@ func (app *appContext) DiscordGetUsers(gc *gin.Context) {
 // @Failure 500 {object} boolResponse
 // @Param DiscordConnectUserDTO body DiscordConnectUserDTO true "User's Jellyfin ID & Discord ID."
 // @Router /users/discord [post]
+// @Security Bearer
 // @tags Other
 func (app *appContext) DiscordConnect(gc *gin.Context) {
 	var req DiscordConnectUserDTO
@@ -688,7 +692,7 @@ func (app *appContext) DiscordConnect(gc *gin.Context) {
 		Source:     gc.GetString("jfId"),
 		Value:      "discord",
 		Time:       time.Now(),
-	})
+	}, gc, false)
 
 	linkExistingOmbiDiscordTelegram(app)
 	respondBool(200, true, gc)
@@ -699,6 +703,7 @@ func (app *appContext) DiscordConnect(gc *gin.Context) {
 // @Success 200 {object} boolResponse
 // @Param forUserDTO body forUserDTO true "User's Jellyfin ID."
 // @Router /users/discord [delete]
+// @Security Bearer
 // @Tags Users
 func (app *appContext) UnlinkDiscord(gc *gin.Context) {
 	var req forUserDTO
@@ -717,7 +722,7 @@ func (app *appContext) UnlinkDiscord(gc *gin.Context) {
 		Source:     gc.GetString("jfId"),
 		Value:      "discord",
 		Time:       time.Now(),
-	})
+	}, gc, false)
 
 	respondBool(200, true, gc)
 }
@@ -727,6 +732,7 @@ func (app *appContext) UnlinkDiscord(gc *gin.Context) {
 // @Success 200 {object} boolResponse
 // @Param forUserDTO body forUserDTO true "User's Jellyfin ID."
 // @Router /users/telegram [delete]
+// @Security Bearer
 // @Tags Users
 func (app *appContext) UnlinkTelegram(gc *gin.Context) {
 	var req forUserDTO
@@ -745,7 +751,7 @@ func (app *appContext) UnlinkTelegram(gc *gin.Context) {
 		Source:     gc.GetString("jfId"),
 		Value:      "telegram",
 		Time:       time.Now(),
-	})
+	}, gc, false)
 
 	respondBool(200, true, gc)
 }
@@ -755,6 +761,7 @@ func (app *appContext) UnlinkTelegram(gc *gin.Context) {
 // @Success 200 {object} boolResponse
 // @Param forUserDTO body forUserDTO true "User's Jellyfin ID."
 // @Router /users/matrix [delete]
+// @Security Bearer
 // @Tags Users
 func (app *appContext) UnlinkMatrix(gc *gin.Context) {
 	var req forUserDTO
@@ -773,7 +780,7 @@ func (app *appContext) UnlinkMatrix(gc *gin.Context) {
 		Source:     gc.GetString("jfId"),
 		Value:      "matrix",
 		Time:       time.Now(),
-	})
+	}, gc, false)
 
 	respondBool(200, true, gc)
 }

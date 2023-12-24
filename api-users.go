@@ -55,7 +55,7 @@ func (app *appContext) NewUserAdmin(gc *gin.Context) {
 		Source:     gc.GetString("jfId"),
 		Value:      user.Name,
 		Time:       time.Now(),
-	})
+	}, gc, false)
 
 	profile := app.storage.GetDefaultProfile()
 	if req.Profile != "" && req.Profile != "none" {
@@ -114,7 +114,7 @@ func (app *appContext) NewUserAdmin(gc *gin.Context) {
 type errorFunc func(gc *gin.Context)
 
 // Used on the form & when a users email has been confirmed.
-func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, success bool) {
+func (app *appContext) newUser(req newUserDTO, confirmed bool, gc *gin.Context) (f errorFunc, success bool) {
 	existingUser, _, _ := app.jf.UserByName(req.Username, false)
 	if existingUser.Name != "" {
 		f = func(gc *gin.Context) {
@@ -331,7 +331,7 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool) (f errorFunc, suc
 		InviteCode: invite.Code,
 		Value:      user.Name,
 		Time:       time.Now(),
-	})
+	}, gc, true)
 
 	emailStore := EmailAddress{
 		Addr:    req.Email,
@@ -539,7 +539,7 @@ func (app *appContext) NewUser(gc *gin.Context) {
 			return
 		}
 	}
-	f, success := app.newUser(req, false)
+	f, success := app.newUser(req, false, gc)
 	if !success {
 		f(gc)
 		return
@@ -609,7 +609,7 @@ func (app *appContext) EnableDisableUsers(gc *gin.Context) {
 			SourceType: ActivityAdmin,
 			Source:     gc.GetString("jfId"),
 			Time:       time.Now(),
-		})
+		}, gc, false)
 
 		if sendMail && req.Notify {
 			if err := app.sendByID(msg, userID); err != nil {
@@ -687,7 +687,7 @@ func (app *appContext) DeleteUsers(gc *gin.Context) {
 			Source:     gc.GetString("jfId"),
 			Value:      username,
 			Time:       time.Now(),
-		})
+		}, gc, false)
 
 		if sendMail && req.Notify {
 			if err := app.sendByID(msg, userID); err != nil {
@@ -1208,7 +1208,7 @@ func (app *appContext) ModifyEmails(gc *gin.Context) {
 				Source:     gc.GetString("jfId"),
 				Value:      "email",
 				Time:       time.Now(),
-			})
+			}, gc, false)
 
 			if ombiEnabled {
 				ombiUser, code, err := app.getOmbiUser(id)

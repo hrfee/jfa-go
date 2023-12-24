@@ -365,7 +365,7 @@ func (app *appContext) ResetPassword(gc *gin.Context) {
 				SourceType: ActivityUser,
 				Source:     jfUser.ID,
 				Time:       time.Now(),
-			})
+			}, gc, true)
 		}
 	}
 
@@ -655,7 +655,7 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 			app.debug.Printf("Invalid key")
 			return
 		}
-		f, success := app.newUser(req, true)
+		f, success := app.newUser(req, true, gc)
 		if !success {
 			app.err.Printf("Failed to create new user")
 			// Not meant for us. Calling this will be a mess, but at least it might give us some information.

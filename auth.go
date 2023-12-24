@@ -18,6 +18,25 @@ const (
 	REFRESH_TOKEN_VALIDITY_SEC = 3600 * 24
 )
 
+func (app *appContext) logIpInfo(gc *gin.Context, user bool, out string) {
+	if (user && LOGIPU) || (!user && LOGIP) {
+		out += fmt.Sprintf(" (ip=%s)", gc.ClientIP())
+	}
+	app.info.Println(out)
+}
+func (app *appContext) logIpDebug(gc *gin.Context, user bool, out string) {
+	if (user && LOGIPU) || (!user && LOGIP) {
+		out += fmt.Sprintf(" (ip=%s)", gc.ClientIP())
+	}
+	app.debug.Println(out)
+}
+func (app *appContext) logIpErr(gc *gin.Context, user bool, out string) {
+	if (user && LOGIPU) || (!user && LOGIP) {
+		out += fmt.Sprintf(" (ip=%s)", gc.ClientIP())
+	}
+	app.err.Println(out)
+}
+
 func (app *appContext) webAuth() gin.HandlerFunc {
 	return app.authenticate
 }
@@ -133,7 +152,7 @@ type getTokenDTO struct {
 	Token string `json:"token" example:"kjsdklsfdkljfsjsdfklsdfkldsfjdfskjsdfjklsdf"` // API token for use with everything else.
 }
 
-func (app *appContext) decodeValidateLoginHeader(gc *gin.Context) (username, password string, ok bool) {
+func (app *appContext) decodeValidateLoginHeader(gc *gin.Context, userpage bool) (username, password string, ok bool) {
 	header := strings.SplitN(gc.Request.Header.Get("Authorization"), " ", 2)
 	auth, _ := base64.StdEncoding.DecodeString(header[1])
 	creds := strings.SplitN(string(auth), ":", 2)
@@ -141,7 +160,7 @@ func (app *appContext) decodeValidateLoginHeader(gc *gin.Context) (username, pas
 	password = creds[1]
 	ok = false
 	if username == "" || password == "" {
-		app.debug.Println("Auth denied: blank username/password")
+		app.logIpDebug(gc, userpage, "Auth denied: blank username/password")
 		respond(401, "Unauthorized", gc)
 		return
 	}
@@ -149,17 +168,17 @@ func (app *appContext) decodeValidateLoginHeader(gc *gin.Context) (username, pas
 	return
 }
 
-func (app *appContext) validateJellyfinCredentials(username, password string, gc *gin.Context) (user mediabrowser.User, ok bool) {
+func (app *appContext) validateJellyfinCredentials(username, password string, gc *gin.Context, userpage bool) (user mediabrowser.User, ok bool) {
 	ok = false
 	user, status, err := app.authJf.Authenticate(username, password)
 	if status != 200 || err != nil {
 		if status == 401 || status == 400 {
-			app.info.Println("Auth denied: Invalid username/password (Jellyfin)")
+			app.logIpInfo(gc, userpage, "Auth denied: Invalid username/password (Jellyfin)")
 			respond(401, "Unauthorized", gc)
 			return
 		}
 		if status == 403 {
-			app.info.Println("Auth denied: Jellyfin account disabled")
+			app.logIpInfo(gc, userpage, "Auth denied: Jellyfin account disabled")
 			respond(403, "yourAccountWasDisabled", gc)
 			return
 		}
@@ -180,8 +199,8 @@ func (app *appContext) validateJellyfinCredentials(username, password string, gc
 // @tags Auth
 // @Security getTokenAuth
 func (app *appContext) getTokenLogin(gc *gin.Context) {
-	app.info.Println("Token requested (login attempt)")
-	username, password, ok := app.decodeValidateLoginHeader(gc)
+	app.logIpInfo(gc, false, "Token requested (login attempt)")
+	username, password, ok := app.decodeValidateLoginHeader(gc, false)
 	if !ok {
 		return
 	}
@@ -196,12 +215,12 @@ func (app *appContext) getTokenLogin(gc *gin.Context) {
 		}
 	}
 	if !app.jellyfinLogin && !match {
-		app.info.Println("Auth denied: Invalid username/password")
+		app.logIpInfo(gc, false, "Auth denied: Invalid username/password")
 		respond(401, "Unauthorized", gc)
 		return
 	}
 	if !match {
-		user, ok := app.validateJellyfinCredentials(username, password, gc)
+		user, ok := app.validateJellyfinCredentials(username, password, gc, false)
 		if !ok {
 			return
 		}
@@ -285,7 +304,7 @@ func (app *appContext) decodeValidateRefreshCookie(gc *gin.Context, cookieName s
 // @Router /token/refresh [get]
 // @tags Auth
 func (app *appContext) getTokenRefresh(gc *gin.Context) {
-	app.debug.Println("Token requested (refresh token)")
+	app.logIpInfo(gc, false, "Token requested (refresh token)")
 	claims, ok := app.decodeValidateRefreshCookie(gc, "refresh")
 	if !ok {
 		return

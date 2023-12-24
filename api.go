@@ -187,7 +187,7 @@ func (app *appContext) ResetSetPassword(gc *gin.Context) {
 		SourceType: ActivityUser,
 		Source:     user.ID,
 		Time:       time.Now(),
-	})
+	}, gc, true)
 
 	prevPassword := req.PIN
 	if isInternal {

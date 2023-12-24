@@ -216,7 +216,7 @@ func (app *appContext) confirmMyAction(gc *gin.Context, key string) {
 			Source:     gc.GetString("jfId"),
 			Value:      "email",
 			Time:       time.Now(),
-		})
+		}, gc, true)
 
 		if app.config.Section("ombi").Key("enabled").MustBool(false) {
 			ombiUser, code, err := app.getOmbiUser(id)
@@ -378,7 +378,7 @@ func (app *appContext) MyDiscordVerifiedInvite(gc *gin.Context) {
 		Source:     gc.GetString("jfId"),
 		Value:      "discord",
 		Time:       time.Now(),
-	})
+	}, gc, true)
 
 	respondBool(200, true, gc)
 }
@@ -426,7 +426,7 @@ func (app *appContext) MyTelegramVerifiedInvite(gc *gin.Context) {
 		Source:     gc.GetString("jfId"),
 		Value:      "telegram",
 		Time:       time.Now(),
-	})
+	}, gc, true)
 
 	respondBool(200, true, gc)
 }
@@ -507,7 +507,7 @@ func (app *appContext) MatrixCheckMyPIN(gc *gin.Context) {
 		Source:     gc.GetString("jfId"),
 		Value:      "matrix",
 		Time:       time.Now(),
-	})
+	}, gc, true)
 
 	delete(app.matrix.tokens, pin)
 	respondBool(200, true, gc)
@@ -529,7 +529,7 @@ func (app *appContext) UnlinkMyDiscord(gc *gin.Context) {
 		Source:     gc.GetString("jfId"),
 		Value:      "discord",
 		Time:       time.Now(),
-	})
+	}, gc, true)
 
 	respondBool(200, true, gc)
 }
@@ -550,7 +550,7 @@ func (app *appContext) UnlinkMyTelegram(gc *gin.Context) {
 		Source:     gc.GetString("jfId"),
 		Value:      "telegram",
 		Time:       time.Now(),
-	})
+	}, gc, true)
 
 	respondBool(200, true, gc)
 }
@@ -571,7 +571,7 @@ func (app *appContext) UnlinkMyMatrix(gc *gin.Context) {
 		Source:     gc.GetString("jfId"),
 		Value:      "matrix",
 		Time:       time.Now(),
-	})
+	}, gc, true)
 
 	respondBool(200, true, gc)
 }
@@ -701,7 +701,7 @@ func (app *appContext) ChangeMyPassword(gc *gin.Context) {
 		SourceType: ActivityUser,
 		Source:     user.ID,
 		Time:       time.Now(),
-	})
+	}, gc, true)
 
 	if app.config.Section("ombi").Key("enabled").MustBool(false) {
 		func() {

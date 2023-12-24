@@ -138,6 +138,7 @@ func (app *appContext) GetActivities(gc *gin.Context) {
 			InviteCode: act.InviteCode,
 			Value:      act.Value,
 			Time:       act.Time.Unix(),
+			IP:         act.IP,
 		}
 		if act.Type == ActivityDeletion || act.Type == ActivityCreation {
 			resp.Activities[i].Username = act.Value
