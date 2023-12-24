@@ -146,10 +146,11 @@ class DOMInvite implements Invite {
         }
         this._right.classList.remove("empty");
         let innerHTML = `
-        <table class="table inv-table">
+        <table class="table inv-table table-p-0">
             <thead>
                 <tr>
                     <th>${window.lang.strings("name")}</th>
+                    <th class="w-2"></th>
                     <th>${window.lang.strings("date")}</th>
                 </tr>
             </thead>
@@ -159,6 +160,7 @@ class DOMInvite implements Invite {
             innerHTML += `
                 <tr>
                     <td>${username}</td>
+                    <td class="w-2"></td>
                     <td>${toDateString(new Date(uB[username] * 1000))}</td>
                 </tr>
             `;
@@ -327,14 +329,17 @@ class DOMInvite implements Invite {
 
         this._details = document.createElement('div') as HTMLDivElement;
         this._container.appendChild(this._details);
-        this._details.classList.add("card", "~neutral", "@low", "mt-2", "no-pad", "inv-details");
+        this._details.classList.add("card", "~neutral", "@low", "mt-2", "inv-details");
         const detailsInner = document.createElement('div') as HTMLDivElement;
         this._details.appendChild(detailsInner);
-        detailsInner.classList.add("inv-row", "flex-expand", "row", "elem-pad", "align-top");
+        detailsInner.classList.add("inv-row", "flex", "flex-row", "justify-between", "align-top");
 
         this._left = document.createElement('div') as HTMLDivElement;
+        this._left.classList.add("flex", "flex-row", "gap-4");
         detailsInner.appendChild(this._left);
-        this._left.classList.add("inv-profilearea");
+        const leftLeft = document.createElement("div") as HTMLDivElement;
+        this._left.appendChild(leftLeft);
+        leftLeft.classList.add("inv-profilearea");
         let innerHTML = `
         <p class="supra mb-2 top">${window.lang.strings("profile")}</p>
         <div class="select ~neutral @low inv-profileselect inline-block mb-2">
@@ -356,7 +361,7 @@ class DOMInvite implements Invite {
             </label>
             `;
         }
-        this._left.innerHTML = innerHTML;
+        leftLeft.innerHTML = innerHTML;
         (this._left.querySelector("select") as HTMLSelectElement).onchange = this.updateProfile;
         
         if (window.notificationsEnabled) {
@@ -368,20 +373,21 @@ class DOMInvite implements Invite {
         }
 
         this._middle = document.createElement('div') as HTMLDivElement;
-        detailsInner.appendChild(this._middle);
-        this._middle.classList.add("block");
+        this._left.appendChild(this._middle);
+        this._middle.classList.add("flex", "flex-col", "justify-between");
         this._middle.innerHTML = `
-        <p class="supra mb-4 top">${window.lang.strings("inviteDateCreated")} <strong class="inv-created"></strong></p>
-        <p class="supra mb-4">${window.lang.strings("inviteRemainingUses")} <strong class="inv-remaining"></strong></p>
-        <p class="supra mb-4"><span class="user-expiry"></span> <strong class="user-expiry-time"></strong></p>
-        <p class="mb-4 flex items-center"><span class="user-label-label supra mr-2"></span> <span class="user-label chip ~blue unfocused"></span></p>
+        <p class="supra top">${window.lang.strings("inviteDateCreated")} <strong class="inv-created"></strong></p>
+        <p class="supra">${window.lang.strings("inviteRemainingUses")} <strong class="inv-remaining"></strong></p>
+        <p class="supra"><span class="user-expiry"></span> <strong class="user-expiry-time"></strong></p>
+        <p class="flex items-center"><span class="user-label-label supra mr-2"></span> <span class="user-label chip ~blue unfocused"></span></p>
         `;
 
         this._right = document.createElement('div') as HTMLDivElement;
         detailsInner.appendChild(this._right);
         this._right.classList.add("card", "~neutral", "@low", "inv-created-users");
-        this._right.innerHTML = `<strong class="supra table-header">${window.lang.strings("inviteUsersCreated")}</strong>`;
+        this._right.innerHTML = `<span class="supra table-header">${window.lang.strings("inviteUsersCreated")}</span>`;
         this._userTable = document.createElement('div') as HTMLDivElement;
+        this._userTable.classList.add("text-sm", "mt-1");
         this._right.appendChild(this._userTable);
 
 

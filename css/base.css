@@ -219,21 +219,8 @@ sup.\~critical, .text-critical {
     font-size: 1rem;
 }
 
-.inv-created-users strong,p {
-    padding-left: 0.5rem;
-    padding-bottom: 0.2rem;
-}
-
-.inv-created-users.empty strong,p {
-    padding: 0;
-}
-
 .inv {
     overflow: visible;
-}
-
-.inv-table {
-    font-size: 0.8rem;
 }
 
 .inv-profilearea {
@@ -416,7 +403,16 @@ table {
     color: var(--color-content);
 }
 
+table.table.manual-pad th, table.table.manual-pad td {
+    padding: 0;
+}
 
+table.table-p-0 th, table.table-p-0 td {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}
 
 p.top {
     margin-top: 0px;
