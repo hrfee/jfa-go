@@ -557,7 +557,16 @@ func start(asDaemon, firstCall bool) {
 			cert := app.config.Section("advanced").Key("tls_cert").MustString("")
 			key := app.config.Section("advanced").Key("tls_key").MustString("")
 			if err := SRV.ListenAndServeTLS(cert, key); err != nil {
-				app.err.Printf("Failure serving: %s", err)
+				filesToCheck := []string{cert, key}
+				fileNames := []string{"Certificate", "Key"}
+				for i, v := range filesToCheck {
+					_, err := os.Stat(v)
+					if err != nil {
+						app.err.Printf("SSL/TLS %s: %v\n", fileNames[i], err)
+					}
+				}
+
+				app.err.Fatalf("Failure serving with SSL/TLS: %s", err)
 			}
 		} else {
 			if err := SRV.ListenAndServe(); err != nil {
