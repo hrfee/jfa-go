@@ -1746,6 +1746,8 @@ export class accountsList {
             }
         }
         this._extendExpiryTextInput.value = "";
+        this._usingExtendExpiryTextInput = false;
+        this._extendExpiryDate.classList.add("unfocused");
         this._displayExpiryDate();
         window.modals.extendExpiry.show();
     }
