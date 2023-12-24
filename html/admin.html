@@ -259,7 +259,7 @@
                             <input type="text" class="input ~neutral @low mb-2 mt-4">
                             <p class="support">{{ .strings.templateEnterName }}</p>
                         </label>
-                        <div class="row flex-expand">
+                        <div class="flex flex-row justify-between">
                             <label>
                                 <input type="submit" class="unfocused">
                                 <span class="button ~urge @low center supra submit">{{ .strings.send }}</span>
@@ -881,7 +881,7 @@
                     </div>
                     <div class="flex flex-col md:flex-row gap-3">
                         <div class="card @low dark:~d_neutral col" id="settings-sidebar">
-                            <div class="flex-expand">
+                            <div class="flex flex-row justify-between">
                                 <input type="search" class="field ~neutral @low input settings-section-button justify-between mb-2" id="settings-search" placeholder="{{ .strings.search }}">
                                 <button class="button ~neutral @low center -ml-10 rounded-s-none mb-2 settings-search-clear" aria-label="{{ .strings.clearSearch }}" text="{{ .strings.clearSearch }}"><i class="ri-close-line"></i></button>
                             </div>

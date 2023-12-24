@@ -637,10 +637,10 @@ document.addEventListener("details-reload", () => {
 
             if (typeof(messageCard) != "undefined" && messageCard != null) {
                 messageCard.innerHTML = messageCard.innerHTML.replace(new RegExp("{username}", "g"), details.username);
-                setBestRowSpan(messageCard, false);
+                // setBestRowSpan(messageCard, false);
                 // contactCard.querySelector(".content").classList.add("h-100");
             } else if (!statusCard.classList.contains("unfocused")) {
-                setBestRowSpan(passwordCard, true);
+                // setBestRowSpan(passwordCard, true);
             }
 
             if (window.referralsEnabled) {
@@ -649,14 +649,68 @@ document.addEventListener("details-reload", () => {
                         if (req.readyState != 4 || req.status != 200) return; 
                         const referral: MyReferral = req.response as MyReferral;
                         referralCard.update(referral);
+                        setCardOrder(messageCard);
                     });
                 } else {
                     referralCard.hide();
+                    setCardOrder(messageCard);
                 }
+            } else {
+                setCardOrder(messageCard);
             }
         }
     });
 });
+
+const setCardOrder = (messageCard: HTMLElement) => {
+    const cards = document.getElementById("user-cardlist");
+    const children = Array.from(cards.children);
+    const idxs = [...Array(cards.childElementCount).keys()]
+    // The message card is the first element and should always be so, so remove it from the list.
+    const hasMessageCard = !(typeof(messageCard) == "undefined" || messageCard == null);
+    if (hasMessageCard) idxs.shift();
+    const perms = generatePermutations(idxs);
+    let minHeight = 999999;
+    let minHeightPerm: [number[], number[]];
+    for (let perm of perms) {
+        let leftHeight = 0;
+        for (let idx of perm[0]) {
+            leftHeight += (cards.children[idx] as HTMLElement).offsetHeight;
+        }
+        if (hasMessageCard) leftHeight += (cards.children[0] as HTMLElement).offsetHeight;
+        let rightHeight = 0;
+        for (let idx of perm[1]) {
+            rightHeight += (cards.children[idx] as HTMLElement).offsetHeight;
+        }
+        let height = Math.max(leftHeight, rightHeight);
+        // console.log("got height", leftHeight, rightHeight, height, "for", perm);
+        if (height < minHeight) {
+            minHeight = height;
+            minHeightPerm = perm;
+        }
+    }
+
+    const gapDiv = () => {
+        const g = document.createElement("div");
+        g.classList.add("my-4");
+        return g;
+    };
+
+    let addValue = hasMessageCard ? 1 : 0;
+    // if (hasMessageCard) cards.appendChild(children[0]);
+    if (hasMessageCard) cards.appendChild(gapDiv());
+    for (let side of minHeightPerm) {
+        for (let i = 0; i < side.length; i++) {
+            // (cards.children[side[i]] as HTMLElement).style.order = (i+addValue).toString();
+            children[side[i]].remove();
+            cards.appendChild(children[side[i]]);
+            cards.appendChild(gapDiv());
+        }
+        // addValue += side.length;
+    }
+
+    console.log("Shortest order:", minHeightPerm);
+};
 
 const login = new Login(window.modals.login as Modal, "/my/", "opaque");
 login.onLogin = () => {
@@ -697,6 +751,24 @@ const computeRealHeight = (el: HTMLElement): number => {
         }
     }
     return total;
+}
+
+const generatePermutations = (xs: number[]): [number[], number[]][] => {
+    const l = xs.length;
+    let out: [number[], number[]][] = [];
+    for (let i = 0; i < (l << 1); i++) {
+        let incl = [];
+        let excl = [];
+        for (let j = 0; j < l; j++) {
+            if (i & (1 << j)) {
+                incl.push(xs[j]);
+            } else {
+                excl.push(xs[j]);
+            }
+        }
+        out.push([incl, excl]);
+    }
+    return out;
 }
 
 login.bindLogout(document.getElementById("logout-button"));
