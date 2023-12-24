@@ -554,48 +554,48 @@
                 <div class="card @low dark:~d_neutral">
                     <span class="heading">{{ .strings.create }}</span>
                     <div class="flex flex-col md:flex-row gap-3" id="create-inv">
-                        <div class="card ~neutral @low col">
-                            <div class="row mb-2">
-                                <label class="col mr-2">
+                        <div class="card ~neutral @low flex flex-col gap-2 w-1/2">
+                            <div class="flex flex-row gap-2">
+                                <label class="w-1/2">
                                     <input type="radio" name="duration" class="unfocused" id="radio-inv-duration" checked>
                                     <span class="button ~neutral @high supra full-width center">{{ .strings.inviteDuration }}</span>
                                 </label>
-                                <label class="col ml-2">
+                                <label class="w-1/2">
                                     <input type="radio" name="duration" class="unfocused" id="radio-user-expiry">
                                     <span class="button ~neutral @low supra full-width center">{{ .strings.userExpiry }}</span>
                                 </label>
                             </div>
-                            <div id="inv-duration">
-                                <div class="row">
-                                    <div class="col">
+                            <div id="inv-duration" class="flex flex-col gap-2">
+                                <div class="flex flex-row gap-2">
+                                    <div class="grow flex flex-col gap-4">
                                         <label class="label supra" for="create-months">{{ .strings.inviteMonths }}</label>
-                                        <div class="select ~neutral @low mb-2 mt-4">
+                                        <div class="select ~neutral @low">
                                             <select id="create-months">
                                                 <option>0</option>
                                             </select>
                                         </div>
                                     </div>
-                                    <div class="col">
+                                    <div class="grow flex flex-col gap-4">
                                         <label class="label supra" for="create-days">{{ .strings.inviteDays }}</label>
-                                        <div class="select ~neutral @low mb-2 mt-4">
+                                        <div class="select ~neutral @low">
                                             <select id="create-days">
                                                 <option>0</option>
                                             </select>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="row">
-                                    <div class="col">
+                                <div class="flex flex-row gap-2">
+                                    <div class="grow flex flex-col gap-4">
                                         <label class="label supra" for="create-hours">{{ .strings.inviteHours }}</label>
-                                        <div class="select ~neutral @low mb-2 mt-4">
+                                        <div class="select ~neutral @low">
                                             <select id="create-hours">
                                                 <option>0</option>
                                             </select>
                                         </div>
                                     </div>
-                                    <div class="col">
+                                    <div class="grow flex flex-col gap-4">
                                         <label class="label supra" for="create-minutes">{{ .strings.inviteMinutes }}</label>
-                                        <div class="select ~neutral @low mb-2 mt-4">
+                                        <div class="select ~neutral @low">
                                             <select id="create-minutes">
                                                 <option>0</option>
                                             </select>
@@ -603,44 +603,46 @@
                                     </div>
                                 </div>
                             </div>
-                            <div id="user-expiry" class="unfocused">
-                                <p class="support mb-2">{{ .strings.userExpiryDescription }}</p>
-                                <div class="mb-2">
-                                    <label for="create-user-expiry-enabled" class="button ~neutral @low">
-                                        <input type="checkbox" id="create-user-expiry-enabled" aria-label="User duration enabled">
-                                        <span class="ml-2">{{ .strings.enabled }} </span>
-                                    </label>
+                            <div id="user-expiry" class="unfocused flex flex-col gap-2">
+                                <div class="flex flex-row gap-2">
+                                    <p class="support">{{ .strings.userExpiryDescription }}</p>
+                                    <div>
+                                        <label for="create-user-expiry-enabled" class="button ~neutral @low">
+                                            <input type="checkbox" id="create-user-expiry-enabled" aria-label="User duration enabled">
+                                            <span class="ml-2">{{ .strings.enabled }} </span>
+                                        </label>
+                                    </div>
                                 </div>
-                                <div class="row">
-                                    <div class="col">
+                                <div class="flex flex-row gap-2">
+                                    <div class="grow flex flex-col gap-4">
                                         <label class="label supra" for="user-months">{{ .strings.inviteMonths }}</label>
-                                        <div class="select ~neutral @low mb-2 mt-4">
+                                        <div class="select ~neutral @low">
                                             <select id="user-months">
                                                 <option>0</option>
                                             </select>
                                         </div>
                                     </div>
-                                    <div class="col">
+                                    <div class="grow flex flex-col gap-4">
                                         <label class="label supra" for="user-days">{{ .strings.inviteDays }}</label>
-                                        <div class="select ~neutral @low mb-2 mt-4">
+                                        <div class="select ~neutral @low">
                                             <select id="user-days">
                                                 <option>0</option>
                                             </select>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="row">
-                                    <div class="col">
+                                <div class="flex flex-row gap-2">
+                                    <div class="grow flex flex-col gap-4">
                                         <label class="label supra" for="user-hours">{{ .strings.inviteHours }}</label>
-                                        <div class="select ~neutral @low mb-2 mt-4">
+                                        <div class="select ~neutral @low">
                                             <select id="user-hours">
                                                 <option>0</option>
                                             </select>
                                         </div>
                                     </div>
-                                    <div class="col">
+                                    <div class="grow flex flex-col gap-4">
                                         <label class="label supra" for="user-minutes">{{ .strings.inviteMinutes }}</label>
-                                        <div class="select ~neutral @low mb-2 mt-4">
+                                        <div class="select ~neutral @low">
                                             <select id="user-minutes">
                                                 <option>0</option>
                                             </select>
@@ -648,48 +650,58 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col">
+                            <div class="flex flex-col gap-4">
                                 <label class="label supra" for="create-label"> {{ .strings.label }}</label>
-                                <input type="text" id="create-label" class="input ~neutral @low mb-2 mt-4">
+                                <input type="text" id="create-label" class="input ~neutral @low">
                             </div>
-                            <div class="col">
-                                <label class="label supra" for="create-user-label"> {{ .strings.userLabel }}</label>
-                                <p class="support">{{ .strings.userLabelDescription }}</p>
-                                <input type="text" id="create-user-label" class="input ~neutral @low mb-2 mt-4">
+                            <div class="flex flex-col gap-4">
+                                <div>
+                                    <label class="label supra" for="create-user-label"> {{ .strings.userLabel }}</label>
+                                    <p class="support">{{ .strings.userLabelDescription }}</p>
+                                </div>
+                                <input type="text" id="create-user-label" class="input ~neutral @low">
                             </div>
                         </div>
-                        <div class="card ~neutral @low col">
-                            <label class="label supra" for="create-uses">{{ .strings.inviteNumberOfUses }}</label>
-                            <div class="flex-expand mb-2 mt-4">
-                                <input type="number" min="0" id="create-uses" class="input ~neutral @low mr-2" value=1>
-                                <label for="create-inf-uses" class="button ~neutral @low" title="Set uses to infinite">
-                                    <span>&infin;</span>
-                                    <input type="checkbox" class="unfocused" id="create-inf-uses" aria-label="Set uses to infinite">
-                                </label>
-                            </div>
-                            <p class="support unfocused my-2" id="create-inf-uses-warning"><span class="badge ~critical">{{ .strings.warning }}</span> {{ .strings.inviteInfiniteUsesWarning }}</p>
-                            <label class="label supra">{{ .strings.profile }}</label>
-                            <div class="select ~neutral @low mb-2 mt-4">
-                                <select id="create-profile">
-                                </select>
-                            </div>
-                            <div id="create-send-to-container">
-                                <label class="label supra">{{ .strings.inviteSendToEmail }}</label>
-                                <div class="flex-expand mb-2 mt-4">
-                                    {{ if .discordEnabled }}
-                                    <input type="text" id="create-send-to" class="input ~neutral @low mr-2" placeholder="example@example.com | user#1234">
-                                    <span id="create-send-to-search" class="button ~neutral @low mr-2">
-                                        <i class="icon ri-search-2-line" title="{{ .strings.search }}"></i>
-                                    </span>
-                                    {{ else }}
-                                    <input type="email" id="create-send-to" class="input ~neutral @low mr-2" placeholder="example@example.com">
-                                    {{ end }}
-                                    <label for="create-send-to-enabled" class="button ~neutral @low">
-                                        <input type="checkbox" id="create-send-to-enabled" aria-label="Send to address enabled">
-                                    </label>
+                        <div class="card ~neutral @low flex flex-col justify-between gap-2 w-1/2">
+                            <div class="flex flex-col gap-2">
+                                <div class="flex flex-col gap-4">
+                                    <label class="label supra" for="create-uses">{{ .strings.inviteNumberOfUses }}</label>
+                                    <div class="flex flex-row gap-2">
+                                        <input type="number" min="0" id="create-uses" class="input ~neutral @low" value=1>
+                                        <label for="create-inf-uses" class="button ~neutral @low" title="Set uses to infinite">
+                                            <span>&infin;</span>
+                                            <input type="checkbox" class="unfocused" id="create-inf-uses" aria-label="Set uses to infinite">
+                                        </label>
+                                    </div>
+                                </div>
+                                <p class="support unfocused" id="create-inf-uses-warning"><span class="badge ~critical">{{ .strings.warning }}</span> {{ .strings.inviteInfiniteUsesWarning }}</p>
+                                <div class="flex flex-col gap-4">
+                                    <label class="label supra">{{ .strings.profile }}</label>
+                                    <div class="select ~neutral @low">
+                                        <select id="create-profile">
+                                        </select>
+                                    </div>
+                                </div>
+                                <div id="create-send-to-container" class="flex flex-col gap-4">
+                                    <label class="label supra">{{ .strings.inviteSendToEmail }}</label>
+                                    <div class="flex flex-row gap-2">
+                                        {{ if .discordEnabled }}
+                                        <input type="text" id="create-send-to" class="input ~neutral @low" placeholder="example@example.com | user#1234">
+                                        <span id="create-send-to-search" class="button ~neutral @low">
+                                            <i class="icon ri-search-2-line" title="{{ .strings.search }}"></i>
+                                        </span>
+                                        {{ else }}
+                                        <input type="email" id="create-send-to" class="input ~neutral @low" placeholder="example@example.com">
+                                        {{ end }}
+                                        <label for="create-send-to-enabled" class="button ~neutral @low">
+                                            <input type="checkbox" id="create-send-to-enabled" aria-label="Send to address enabled">
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
-                            <span class="button ~urge @low supra full-width center lg" id="create-submit">{{ .strings.create }}</span>
+                            <div>
+                                <span class="button ~urge @low supra full-width center lg" id="create-submit">{{ .strings.create }}</span>
+                            </div>
                         </div>
                     </div>
                 </div>

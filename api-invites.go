@@ -305,7 +305,8 @@ func (app *appContext) GetInvites(gc *gin.Context) {
 		if inv.IsReferral {
 			continue
 		}
-		_, months, days, hours, minutes, _ := timeDiff(inv.ValidTill, currentTime)
+		years, months, days, hours, minutes, _ := timeDiff(inv.ValidTill, currentTime)
+		months += years * 12
 		invite := inviteDTO{
 			Code:        inv.Code,
 			Months:      months,
