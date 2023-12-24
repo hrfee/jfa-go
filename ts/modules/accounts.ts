@@ -1634,6 +1634,7 @@ export class accountsList {
     _displayExpiryDate = () => {
         let date: Date;
         let invalid = false;
+        let users = this._collectUsers();
         if (this._usingExtendExpiryTextInput) {
             date = (Date as any).fromString(this._extendExpiryTextInput.value) as Date;
             invalid = "invalid" in (date as any);
@@ -1645,7 +1646,7 @@ export class accountsList {
                 document.getElementById("extend-expiry-minutes") as HTMLSelectElement
             ];
             invalid = fields[0].value == "0" && fields[1].value == "0" && fields[2].value == "0" && fields[3].value == "0";
-            let id = this._collectUsers().length == 1 ? this._collectUsers()[0] : "";
+            let id = users.length > 0 ? users[0] : "";
             if (!id) invalid = true;
             else {
                 date = new Date(this._users[id].expiry*1000);
@@ -1665,7 +1666,12 @@ export class accountsList {
         } else {
             submit.disabled = false;
             submitSpan.classList.remove("opacity-60");
-            this._extendExpiryDate.textContent = window.lang.strings("accountWillExpire").replace("{date}", toDateString(date));
+            this._extendExpiryDate.innerHTML = `
+            <div class="flex flex-col">
+                <span>${window.lang.strings("accountWillExpire").replace("{date}", toDateString(date))}</span>
+                ${users.length > 1 ? "<span>"+window.lang.strings("expirationBasedOn")+"</span>" : ""}
+            </div>
+            `;
             this._extendExpiryDate.classList.remove("unfocused");
         }
     }
@@ -1740,6 +1746,7 @@ export class accountsList {
             }
         }
         this._extendExpiryTextInput.value = "";
+        this._displayExpiryDate();
         window.modals.extendExpiry.show();
     }
     
