@@ -106,48 +106,6 @@ div.card:contains(section.banner.footer) {
     padding-bottom: 0px;
 }
 
-.tab-button {
-    font-size: 2rem;
-}
-
-.al {
-    text-align: left;
-}
-
-.ar {
-    text-align: right;
-}
-
-.ac {
-    text-align: center;
-}
-
-.w-100 {
-    width: 100%;
-}
-
-.h-100 {
-    height: 100%;
-}
-
-.inline-block {
-    display: inline-block;
-}
-
-.align-top {
-    align-items: top;
-}
-
-.flex-expand {
-    display: flex;
-    justify-content: space-between;
-}
-
-.flex-row-group {
-    display: block;
-    flex-grow: 1;
-}
-
 .row {
     display: flex;
     flex-wrap: wrap;
@@ -172,23 +130,7 @@ span.sm:not(.heading) {
     margin: .25rem;
 }
 
-.flex-col {
-    display: flex;
-    flex-direction: column;
-}
-
-.flex-form {
-    display: flex;
-    flex-direction: column;
-}
-
-@media screen and (min-width: 768px) {
-    .flex-form {
-        flex: 1;
-        margin: 0.5rem;
-    }
-}
-
+/* Who knows for half of these to be honest */
 @media screen and (max-width: 400px) {
     .row {
         flex-direction: column;
@@ -219,52 +161,6 @@ sup.\~critical, .text-critical {
     font-size: 1rem;
 }
 
-.inv {
-    overflow: visible;
-}
-
-.inv-profileselect {
-    min-width: 100%;
-}
-
-.inv-codearea {
-    max-width: 40%;
-    min-width: 10rem;
-    display: flex;
-    justify-content: start;
-    align-items: center;
-}
-
-.inv-empty .inv-codearea {
-    justify-content: start;
-}
-
-
-.invite-link {
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
-    width: auto;
-}
-
-.ellipsis {
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
-}
-
-.no-pad {
-    padding: 0px 0px 0px 0px;
-}
-
-.elem-pad > * {
-    margin: var(--spacing-4, 1rem);
-}
-
-.icon.clickable {
-    padding: 0.5rem 0.6rem;
-}
-
 .input {
     box-sizing: border-box; /* fixes weird length issue with inputs */
 }
@@ -283,24 +179,12 @@ sup.\~critical, .text-critical {
     width: 100%;
 }
 
-.flex-auto {
-    flex: auto;
-}
-
 .center {
     justify-content: center;
 }
 
 .middle {
     align-items: center;
-}
-
-.no-lp {
-    padding-left: 0px;
-}
-
-.block {
-    display: block;
 }
 
 .focused {

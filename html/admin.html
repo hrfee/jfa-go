@@ -62,8 +62,8 @@
                         </a>
                         <div class="dropdown-display">
                             <div class="card ~neutral @low">
-                                <a href="https://github.com/sponsors/hrfee" target="_blank" class="button ~neutral mb-2 w-100 lang-link">GitHub</a>
-                                <a href="https://ko-fi.com/hrfee" target="_blank" class="button ~neutral mb-2 w-100 lang-link">Ko-fi</a>
+                                <a href="https://github.com/sponsors/hrfee" target="_blank" class="button ~neutral mb-2 w-full lang-link">GitHub</a>
+                                <a href="https://ko-fi.com/hrfee" target="_blank" class="button ~neutral mb-2 w-full lang-link">Ko-fi</a>
                             </div>
                         </div>
                     </div>
@@ -84,11 +84,11 @@
                 <span class="heading"><span id="header-modify-user"></span> <span class="modal-close">&times;</span></span>
                 <p class="content my-4">{{ .strings.modifySettingsDescription }}</p>
                 <div class="flex flex-row mb-4">
-                    <label class="flex-row-group mr-2">
+                    <label class="grow mr-2">
                         <input type="radio" name="modify-user-source" class="unfocused" id="radio-use-profile" checked>
                         <span class="button ~neutral @high supra full-width center">{{ .strings.profile }}</span>
                     </label>
-                    <label class="flex-row-group ml-2">
+                    <label class="grow ml-2">
                         <input type="radio" name="modify-user-source" class="unfocused" id="radio-use-user">
                         <span class="button ~neutral @low supra full-width center">{{ .strings.user }}</span>
                     </label>
@@ -115,11 +115,11 @@
                 <span class="heading"><span id="header-enable-referrals-user"></span> <span class="modal-close">&times;</span></span>
                 <p class="content my-4">{{ .strings.enableReferralsDescription }}</p>
                 <div class="flex flex-row mb-4">
-                    <label class="flex-row-group mr-2">
+                    <label class="grow mr-2">
                         <input type="radio" name="enable-referrals-user-source" class="unfocused" id="radio-referrals-use-profile" checked>
                         <span class="button ~neutral @high supra full-width center">{{ .strings.profile }}</span>
                     </label>
-                    <label class="flex-row-group ml-2">
+                    <label class="grow ml-2">
                         <input type="radio" name="enable-referrals-user-source" class="unfocused" id="radio-referrals-use-invite">
                         <span class="button ~neutral @low supra full-width center">{{ .strings.invite }}</span>
                     </label>
@@ -365,7 +365,7 @@
                 <p class="content my-4" id="settings-backed-up-location"></p>
                 <p class="content my-4">{{ .strings.backupCanDownload }}</p>
                 <div>
-                    <button class="button flex w-100 ~info @low mb-2"><span class="flex items-center" id="settings-backed-up-download">{{ .strings.download }}</span></button>
+                    <button class="button flex w-full ~info @low mb-2"><span class="flex items-center" id="settings-backed-up-download">{{ .strings.download }}</span></button>
                 </div>
             </div>
         </div>
@@ -708,13 +708,13 @@
             </div>
             <div id="tab-accounts" class="unfocused">
                 <div class="card @low dark:~d_neutral accounts mb-4 overflow-visible">
-                    <div id="accounts-filter-dropdown" class="dropdown manual z-10 w-100">
+                    <div id="accounts-filter-dropdown" class="dropdown manual z-10 w-full">
                         <div class="flex flex-col md:flex-row align-middle gap-2">
                             <div class="flex flex-row align-middle justify-between md:justify-normal">
                                 <span class="text-3xl font-bold mr-4">{{ .strings.accounts }}</span>
-                                <span class="dropdown-manual-toggle"><button class="h-100 button ~neutral @low center" id="accounts-filter-button" tabindex="0">{{ .strings.filters }}</button></span>
+                                <span class="dropdown-manual-toggle"><button class="h-full button ~neutral @low center" id="accounts-filter-button" tabindex="0">{{ .strings.filters }}</button></span>
                             </div>
-                            <div class="flex flex-row align-middle w-100">
+                            <div class="flex flex-row align-middle w-full">
                                 <input type="search" class="field ~neutral @low input search mr-2" id="accounts-search" placeholder="{{ .strings.search }}">
                                 <span class="button ~neutral @low center ml-[-2.64rem] rounded-s-none accounts-search-clear" aria-label="{{ .strings.clearSearch }}" text="{{ .strings.clearSearch }}"><i class="ri-close-line"></i></span>
                             </div>
@@ -734,7 +734,7 @@
                     <div class="flex flex-row flex-wrap gap-3 mb-4">
                         <span class="button ~neutral @low center " id="accounts-add-user">{{ .quantityStrings.addUser.Singular }}</span>
                         <div id="accounts-announce-dropdown" class="dropdown pb-0i " tabindex="0">
-                            <span class="w-100 button ~info @low center items-baseline" id="accounts-announce">{{ .strings.announce }}</span>
+                            <span class="w-full button ~info @low center items-baseline" id="accounts-announce">{{ .strings.announce }}</span>
                             <div class="dropdown-display">
                                 <div class="card ~neutral @low">
                                     <span class="supra sm">{{ .strings.templates }}</span>
@@ -747,7 +747,7 @@
                             <span class="button ~urge @low center " id="accounts-enable-referrals">{{ .strings.enableReferrals }}</span>
                         {{ end }}
                         <div id="accounts-expiry-dropdown" class="dropdown pb-0i " tabindex="0">
-                            <span class="w-100 button ~positive @low center items-baseline" id="accounts-expiry-dropdown-button">{{ .strings.expiry }} <i class="ri-arrow-down-s-line ml-2"></i></span>
+                            <span class="w-full button ~positive @low center items-baseline" id="accounts-expiry-dropdown-button">{{ .strings.expiry }} <i class="ri-arrow-down-s-line ml-2"></i></span>
                             <div class="dropdown-display">
                                 <div class="card ~neutral @low">
                                     <span class="button ~warning full-width @low center" id="accounts-extend-expiry">{{ .strings.extendExpiry }}</span>
@@ -756,7 +756,7 @@
                             </div>
                         </div>
                         <div id="accounts-disable-enable-dropdown" class="dropdown manual pb-0i " tabindex="0">
-                            <span class="w-100 button ~positive @low center" id="accounts-disable-enable">{{ .strings.disable }}</span>
+                            <span class="w-full button ~positive @low center" id="accounts-disable-enable">{{ .strings.disable }}</span>
                             <div class="dropdown-display">
                                 <div class="card ~neutral @low">
                                     <span class="button ~urge full-width accounts-announce-template-button" id="accounts-enable-expiry">{{ .strings.setExpiry }}</span>
@@ -807,16 +807,16 @@
             </div>
             <div id="tab-activity" class="unfocused">
                 <div class="card @low dark:~d_neutral activity mb-4 overflow-visible">
-                    <div id="activity-filter-dropdown" class="dropdown manual z-10 w-100" tabindex="0">
+                    <div id="activity-filter-dropdown" class="dropdown manual z-10 w-full" tabindex="0">
                         <div class="flex flex-col md:flex-row align-middle gap-2">
                             <div class="flex flex-row align-middle justify-between md:justify-normal">
                                 <span class="text-3xl font-bold mr-4">{{ .strings.activity }}</span>
                                 <div class="flex flex-row align-middle">
-                                    <span class="dropdown-manual-toggle"><button class="h-100 button ~neutral @low center" id="activity-filter-button">{{ .strings.filters }}</button></span>
+                                    <span class="dropdown-manual-toggle"><button class="h-full button ~neutral @low center" id="activity-filter-button">{{ .strings.filters }}</button></span>
                                     <button class="button ~neutral @low ml-2" id="activity-sort-direction">{{ .strings.sortDirection }}</button>
                                 </div>
                             </div>
-                            <div class="flex flex-row align-middle w-100">
+                            <div class="flex flex-row align-middle w-full">
                                 <input type="search" class="field ~neutral @low input search mr-2" id="activity-search" placeholder="{{ .strings.search }}">
                                 <span class="button ~neutral @low center ml-[-2.64rem] rounded-s-none activity-search-clear" aria-label="{{ .strings.clearSearch }}" text="{{ .strings.clearSearch }}"><i class="ri-close-line"></i></span>
                                 <button class="button ~info @low ml-2" id="activity-refresh" aria-label="{{ .strings.refresh }}" disabled><i class="ri-refresh-line"></i></button>
@@ -872,7 +872,7 @@
                                 <span class="ml-2">{{ .strings.advancedSettings }} </span>
                             </label>
                         </div>
-                        <div class="flex flex-row justify-start md:justify-end gap-2 w-100">
+                        <div class="flex flex-row justify-start md:justify-end gap-2 w-full">
                             <span class="button ~neutral @low" id="settings-logs">{{ .strings.logs }}</span>
                             <span class="button ~info @low" id="settings-backups">{{ .strings.backups }}</span>
                             <span class="button ~neutral @low" id="settings-restart">{{ .strings.settingsRestart }}</span>

@@ -86,7 +86,7 @@ class profile implements Profile {
             <td><span class="button @low profile-referrals"></span></td>
         `;
         innerHTML += `
-            <td class="profile-from ellipsis"></td>
+            <td class="profile-from truncate"></td>
             <td class="profile-libraries"></td>
             <td><span class="button ~critical @low">${window.lang.strings("delete")}</span></td>
         `;

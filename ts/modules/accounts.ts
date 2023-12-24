@@ -218,13 +218,13 @@ class user implements User, SearchableItem {
                     </div>
                     <div class="supra sm mb-2 accounts-unlink-header">${window.lang.strings("unlink")}:</div>
                     <div class="accounts-unlink-telegram"> 
-                        <button class="button ~critical mb-2 w-100">Telegram</button>
+                        <button class="button ~critical mb-2 w-full">Telegram</button>
                     </div>
                     <div class="accounts-unlink-discord"> 
-                        <button class="button ~critical mb-2 w-100">Discord</button>
+                        <button class="button ~critical mb-2 w-full">Discord</button>
                     </div>
                     <div class="accounts-unlink-matrix"> 
-                        <button class="button ~critical mb-2 w-100">Matrix</button>
+                        <button class="button ~critical mb-2 w-full">Matrix</button>
                     </div>
                 </div>
             </div>
@@ -1271,7 +1271,7 @@ export class accountsList {
             dList.textContent = '';
             for (let name of list) {
                 const el = document.createElement("div") as HTMLDivElement;
-                el.classList.add("flex-expand", "ellipsis", "mt-2");
+                el.classList.add("flex", "flex-row", "justify-between", "truncate", "mt-2");
                 el.innerHTML = `
                 <span class="button ~neutral sm full-width accounts-announce-template-button">${name}</span><span class="button ~critical fr ml-4 accounts-announce-template-delete">&times;</span>
                 `;

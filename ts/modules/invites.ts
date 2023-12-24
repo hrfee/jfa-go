@@ -115,10 +115,10 @@ class DOMInvite implements Invite {
             chip.classList.remove("~neutral");
             chip.classList.remove("~critical");
             chip.classList.remove("button");
-            chip.parentElement.classList.remove("h-100");
+            chip.parentElement.classList.remove("h-full");
         } else {
             chip.classList.add("button");
-            chip.parentElement.classList.add("h-100");
+            chip.parentElement.classList.add("h-full");
             if (address.includes("Failed")) {
                 icon.classList.remove("ri-mail-line");
                 icon.classList.add("ri-mail-close-line");
@@ -268,7 +268,7 @@ class DOMInvite implements Invite {
     constructor(invite: Invite) {
         // first create the invite structure, then use our setter methods to fill in the data.
         this._container = document.createElement('div') as HTMLDivElement;
-        this._container.classList.add("inv", "overflow-y-visible");
+        this._container.classList.add("inv", "overflow-visible");
 
         this._header = document.createElement('div') as HTMLDivElement;
         this._container.appendChild(this._header);
@@ -276,10 +276,10 @@ class DOMInvite implements Invite {
 
         this._codeArea = document.createElement('div') as HTMLDivElement;
         this._header.appendChild(this._codeArea);
-        this._codeArea.classList.add("flex", "flex-row", "flex-wrap", "justify-between", "w-100", "items-baseline", "gap-2", "truncate");
+        this._codeArea.classList.add("flex", "flex-row", "flex-wrap", "justify-between", "w-full", "items-baseline", "gap-2", "truncate");
         this._codeArea.innerHTML = `
         <div class="flex items-baseline gap-x-4 gap-y-2 truncate">
-            <a class="invite-link text-black dark:text-white font-mono bg-inherit" href=""></a>
+            <a class="invite-link text-black dark:text-white font-mono bg-inherit truncate" href=""></a>
             <span class="button ~info @low" title="${window.lang.strings("copy")}"><i class="ri-file-copy-line"></i></span>
         </div>
         <span class="inv-duration"></span>
@@ -305,12 +305,12 @@ class DOMInvite implements Invite {
         this._infoArea.classList.add("inv-infoarea", "flex", "flex-row", "items-baseline", "gap-2");
         this._infoArea.innerHTML = `
         <div class="tooltip below darker" tabindex="0">
-            <span class="inv-email-chip h-100"><i></i></span>
+            <span class="inv-email-chip h-full"><i></i></span>
             <span class="content sm p-1"></span>
         </div>
-        <span class="button ~critical @low inv-delete h-100">${window.lang.strings("delete")}</span>
+        <span class="button ~critical @low inv-delete h-full">${window.lang.strings("delete")}</span>
         <label>
-            <i class="icon clickable ri-arrow-down-s-line not-rotated"></i>
+            <i class="icon px-2.5 py-2 ri-arrow-down-s-line not-rotated"></i>
             <input class="inv-toggle-details unfocused" type="checkbox">
         </label>
         `;
@@ -332,7 +332,7 @@ class DOMInvite implements Invite {
         this._details.classList.add("card", "~neutral", "@low", "mt-2", "inv-details");
         const detailsInner = document.createElement('div') as HTMLDivElement;
         this._details.appendChild(detailsInner);
-        detailsInner.classList.add("inv-row", "flex", "flex-row", "flex-wrap", "justify-between", "align-top", "gap-4");
+        detailsInner.classList.add("inv-row", "flex", "flex-row", "flex-wrap", "justify-between", "gap-4");
 
         this._left = document.createElement('div') as HTMLDivElement;
         this._left.classList.add("flex", "flex-row", "flex-wrap", "gap-4", "min-w-full", "sm:min-w-fit", "whitespace-nowrap");
@@ -342,7 +342,7 @@ class DOMInvite implements Invite {
         leftLeft.classList.add("inv-profilearea", "min-w-full", "sm:min-w-fit");
         let innerHTML = `
         <p class="supra mb-2 top">${window.lang.strings("profile")}</p>
-        <div class="select ~neutral @low inv-profileselect inline-block mb-2">
+        <div class="select ~neutral @low inv-profileselect min-w-full inline-block mb-2">
             <select>
                 <option value="noProfile" selected>${window.lang.strings("inviteNoProfile")}</option>
             </select>
@@ -480,8 +480,8 @@ export class inviteList implements inviteList {
             this._list.classList.add("empty");
             this._list.innerHTML = `
             <div class="inv inv-empty">
-                <div class="card dark:~d_neutral @low inv-header flex-expand mt-2">
-                    <div class="inv-codearea">
+                <div class="card dark:~d_neutral @low inv-header mt-2">
+                    <div class="justify-start">
                         <span class="text-black dark:text-white font-mono bg-inherit">${window.lang.strings("inviteNoInvites")}</span>
                     </div>
                 </div>

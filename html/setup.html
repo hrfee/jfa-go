@@ -30,7 +30,7 @@
                 <div class="row col flex center">
                     <p class="content my-2">{{ .lang.StartPage.pressStart }}</p>
                 </div>
-                <section class="section ~neutral banner footer flex-expand middle">
+                <section class="section ~neutral banner footer flex flex-row justify-between middle">
                     <span class="support">{{ .lang.StartPage.httpsNotice }}</span>
                     <span class="button ~urge @low next">{{ .lang.StartPage.start }}</span>
                 </section>
@@ -59,7 +59,7 @@
                         </select>
                     </div>
                 </label>
-                <section class="section ~neutral banner footer flex-expand middle">
+                <section class="section ~neutral banner footer flex flex-row justify-between middle">
                     <span class="button ~neutral @low back">{{ .lang.Strings.back }}</span>
                     <span class="button ~urge @low next">{{ .lang.Strings.next }}</span>
                 </section>
@@ -150,7 +150,7 @@
                         </label>
                     </div>
                 </div>
-                <section class="section ~neutral banner footer flex-expand middle">
+                <section class="section ~neutral banner footer flex flex-row justify-between middle">
                     <span class="button ~neutral @low back">{{ .lang.Strings.back }}</span>
                     <span class="button ~urge @low next">{{ .lang.Strings.next }}</span>
                 </section>
@@ -189,7 +189,7 @@
                         <span class="support mb-2 mt-1">{{ .lang.Login.emailNotice }}</span>
                     </label>
                 </div>
-                <section class="section ~neutral banner footer flex-expand middle">
+                <section class="section ~neutral banner footer flex flex-row justify-between middle">
                     <span class="button ~neutral @low back">{{ .lang.Strings.back }}</span>
                     <span class="button ~urge @low next">{{ .lang.Strings.next }}</span>
                 </section>
@@ -235,7 +235,7 @@
                         </label>
                     </div>
                 </div>
-                <section class="section ~neutral banner footer flex-expand middle">
+                <section class="section ~neutral banner footer flex flex-row justify-between middle">
                     <span class="button ~neutral @low back">{{ .lang.Strings.back }}</span>
                     <div>
                         <span class="button ~urge @low" id="jellyfin-test-connection">{{ .lang.JellyfinEmby.testConnection }}</span>
@@ -258,7 +258,7 @@
                     <input type="text" class="input ~neutral @low mt-4" id="ombi-api_key">
                     <p class="support mb-2 mt-1">{{ .lang.Ombi.apiKeyNotice }}</p>
                 </label>
-                <section class="section ~neutral banner footer flex-expand middle">
+                <section class="section ~neutral banner footer flex flex-row justify-between middle">
                     <span class="button ~neutral @low back">{{ .lang.Strings.back }}</span>
                     <div>
                         <span class="button ~urge @low next">{{ .lang.Strings.next }}</span>
@@ -273,7 +273,7 @@
                     <input type="checkbox" class="mr-2" id="userpage-enabled"><span>{{ .lang.Strings.enabled }}</span>
                 </label>
                 <p class="support mb-1 mt-1">{{ .lang.UserPage.requiredSettings }}</p>
-                <section class="section ~neutral banner footer flex-expand middle">
+                <section class="section ~neutral banner footer flex flex-row justify-between middle">
                     <span class="button ~neutral @low back">{{ .lang.Strings.back }}</span>
                     <div>
                         <span class="button ~urge @low next">{{ .lang.Strings.next }}</span>
@@ -370,7 +370,7 @@
                         </div>
                     </div>
                 </div>
-                <section class="section ~neutral banner footer flex-expand middle">
+                <section class="section ~neutral banner footer flex flex-row justify-between middle">
                     <span class="button ~neutral @low back">{{ .lang.Strings.back }}</span>
                     <div>
                         <span class="button ~urge @low next">{{ .lang.Strings.next }}</span>
@@ -392,7 +392,7 @@
                     <span class="mt-4">{{ .lang.Strings.emailSubject }}</span>
                     <input type="text" class="input ~neutral @low mt-4 mb-2" id="welcome_email-subject" placeholder="{{ .emailLang.WelcomeEmail.title }}">
                 </label>
-                <section class="section ~neutral banner footer flex-expand middle">
+                <section class="section ~neutral banner footer flex flex-row justify-between middle">
                     <span class="button ~neutral @low back">{{ .lang.Strings.back }}</span>
                     <div>
                         <span class="button ~urge @low next">{{ .lang.Strings.next }}</span>
@@ -413,7 +413,7 @@
                     <span class="mt-4">{{ .lang.Strings.emailSubject }}</span>
                     <input type="text" class="input ~neutral @low mt-4 mb-2" id="invite_emails-subject" placeholder="{{ .emailLang.InviteEmail.title }}">
                 </label>
-                <section class="section ~neutral banner footer flex-expand middle">
+                <section class="section ~neutral banner footer flex flex-row justify-between middle">
                     <span class="button ~neutral @low back">{{ .lang.Strings.back }}</span>
                     <div>
                         <span class="button ~urge @low next">{{ .lang.Strings.next }}</span>
@@ -450,7 +450,7 @@
                     <span class="mt-4">{{ .lang.Strings.emailSubject }}</span>
                     <input type="text" class="input ~neutral @low mt-4 mb-2" id="password_resets-subject" placeholder="{{ .emailLang.PasswordReset.title }}">
                 </label>
-                <section class="section ~neutral banner footer flex-expand middle">
+                <section class="section ~neutral banner footer flex flex-row justify-between middle">
                     <span class="button ~neutral @low back">{{ .lang.Strings.back }}</span>
                     <div>
                         <span class="button ~urge @low next">{{ .lang.Strings.next }}</span>
@@ -483,7 +483,7 @@
                     <span class="mt-4">{{ .lang.PasswordValidation.special }}</span>
                     <input type="number" class="input ~neutral @low mt-4 mb-2" id="password_validation-special" value="0">
                 </label>
-                <section class="section ~neutral banner footer flex-expand middle">
+                <section class="section ~neutral banner footer flex flex-row justify-between middle">
                     <span class="button ~neutral @low back">{{ .lang.Strings.back }}</span>
                     <div>
                         <span class="button ~urge @low next">{{ .lang.Strings.next }}</span>
@@ -513,7 +513,7 @@
                     <input type="text" class="input ~neutral @low mt-4" id="email-message">
                     <p class="support mb-2 mt-1">{{ .lang.HelpMessages.emailMessageNotice }}</p>
                 </label>
-                <section class="section ~neutral banner footer flex-expand middle">
+                <section class="section ~neutral banner footer flex flex-row justify-between middle">
                     <span class="button ~neutral @low back">{{ .lang.Strings.back }}</span>
                     <div>
                         <span class="button ~urge @low next">{{ .lang.Strings.next }}</span>

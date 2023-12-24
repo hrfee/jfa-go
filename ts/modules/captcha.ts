@@ -51,7 +51,7 @@ export class Captcha {
                 this.captchaID = this.isPWR ? this.code : req.response["id"];
                 // the Math.random() appearance below is used for PWRs, since they don't have a unique captchaID. The parameter is ignored by the server, but tells the browser to reload the image.
                 document.getElementById("captcha-img").innerHTML = `
-                <img class="w-100" src="${window.location.toString().substring(0, window.location.toString().lastIndexOf("/invite"))}/captcha/img/${this.code}/${this.isPWR ? Math.random() : this.captchaID}${this.isPWR ? "?pwr=true" : ""}"></img>
+                <img class="w-full" src="${window.location.toString().substring(0, window.location.toString().lastIndexOf("/invite"))}/captcha/img/${this.code}/${this.isPWR ? Math.random() : this.captchaID}${this.isPWR ? "?pwr=true" : ""}"></img>
                 `;
                 this.input.value = "";
             }

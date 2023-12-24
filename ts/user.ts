@@ -144,9 +144,9 @@ class ContactMethods {
 
     append = (name: string, details: MyDetailsContactMethod, icon: string, addEditFunc?: (add: boolean) => void, required?: boolean) => {
         const row = document.createElement("div");
-        row.classList.add("flex", "flex-expand", "my-2", "flex-nowrap");
+        row.classList.add("flex", "flex-row", "justify-between", "my-2", "flex-nowrap");
         let innerHTML = `
-            <div class="flex items-baseline flex-nowrap ellipsis">
+            <div class="flex items-baseline flex-nowrap truncate">
                 <span class="shield ~urge" alt="${name}">
                     <span class="icon">
                         ${icon}
