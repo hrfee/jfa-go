@@ -332,14 +332,14 @@ class DOMInvite implements Invite {
         this._details.classList.add("card", "~neutral", "@low", "mt-2", "inv-details");
         const detailsInner = document.createElement('div') as HTMLDivElement;
         this._details.appendChild(detailsInner);
-        detailsInner.classList.add("inv-row", "flex", "flex-row", "justify-between", "align-top");
+        detailsInner.classList.add("inv-row", "flex", "flex-row", "flex-wrap", "justify-between", "align-top", "gap-4");
 
         this._left = document.createElement('div') as HTMLDivElement;
-        this._left.classList.add("flex", "flex-row", "gap-4");
+        this._left.classList.add("flex", "flex-row", "flex-wrap", "gap-4", "min-w-full", "sm:min-w-fit", "whitespace-nowrap");
         detailsInner.appendChild(this._left);
         const leftLeft = document.createElement("div") as HTMLDivElement;
         this._left.appendChild(leftLeft);
-        leftLeft.classList.add("inv-profilearea");
+        leftLeft.classList.add("inv-profilearea", "min-w-full", "sm:min-w-fit");
         let innerHTML = `
         <p class="supra mb-2 top">${window.lang.strings("profile")}</p>
         <div class="select ~neutral @low inv-profileselect inline-block mb-2">
@@ -384,10 +384,10 @@ class DOMInvite implements Invite {
 
         this._right = document.createElement('div') as HTMLDivElement;
         detailsInner.appendChild(this._right);
-        this._right.classList.add("card", "~neutral", "@low", "inv-created-users");
+        this._right.classList.add("card", "~neutral", "@low", "inv-created-users", "min-w-full", "sm:min-w-fit", "whitespace-nowrap");
         this._right.innerHTML = `<span class="supra table-header">${window.lang.strings("inviteUsersCreated")}</span>`;
         this._userTable = document.createElement('div') as HTMLDivElement;
-        this._userTable.classList.add("text-sm", "mt-1");
+        this._userTable.classList.add("text-sm", "mt-1", );
         this._right.appendChild(this._userTable);
 
 
