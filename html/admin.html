@@ -50,12 +50,12 @@
                 <p>{{ .strings.commitNoun }} <span class="text-black dark:text-white font-mono bg-inherit">{{ .commit }}</span></p>
                 <p>{{ .strings.buildTime }} <span class="text-black dark:text-white font-mono bg-inherit">{{ .buildTime }}</span></p>
                 <p>{{ .strings.builtBy }} <span class="text-black dark:text-white font-mono bg-inherit">{{ .builtBy }}</span></p>
-                <div class="row col flex">
-                    <a class="button ~neutral mr-2 mt-4 mb-4 lang-link" href="https://github.com/hrfee/jfa-go"><i class="ri-github-line mr-2"></i>github</a>
-                    <a class="button ~urge mt-4 mb-4 mr-2 lang-link" href="https://wiki.jfa-go.com">wiki/docs</a>
-                    <a class="button ~positive mt-4 mb-4 mr-2 lang-link" href="https://weblate.jfa-go.com">translation</a>
-                    <div class="dropdown mr-2" tabindex="0">
-                        <a href="https://github.com/sponsors/hrfee" target="_blank" class="button ~info mt-4 mb-4 dropdown-button lang-link">
+                <div class="flex flex-row flex-wrap gap-2 my-2">
+                    <a class="button ~neutral lang-link" href="https://github.com/hrfee/jfa-go"><i class="ri-github-line mr-2"></i>github</a>
+                    <a class="button ~urge lang-link" href="https://wiki.jfa-go.com">wiki/docs</a>
+                    <a class="button ~positive lang-link" href="https://weblate.jfa-go.com">translation</a>
+                    <div class="dropdown" tabindex="0">
+                        <a href="https://github.com/sponsors/hrfee" target="_blank" class="button ~info dropdown-button lang-link">
                             <i class="ri-hand-heart-line mr-2"></i>
                             donate
                             <span class="ml-2 chev"></span>
@@ -67,7 +67,7 @@
                             </div>
                         </div>
                     </div>
-                    <a class="button ~urge mt-4 mb-4 @low discord lang-link" href="https://discord.com/invite/MrtvuQmyhP" target="_blank"><i class="ri-discord-line mr-2"></i>discord</a>
+                    <a class="button ~urge @low discord lang-link" href="https://discord.com/invite/MrtvuQmyhP" target="_blank"><i class="ri-discord-line mr-2"></i>discord</a>
                 </div>
                 <p><a href="https://github.com/hrfee/jfa-go/blob/main/LICENSE">Available under the MIT License. Font "Hanken Grotesk" available under SIL OFL 1.1 License.</a></p>
                 <pre class="font-mono bg-inherit">{{ .license }}</pre>
@@ -278,7 +278,7 @@
             <div class="card relative mx-auto my-[10%] w-11/12 sm:w-4/5 lg:w-1/3">
                 <span class="heading">{{ .strings.customizeMessages }} <span class="modal-close">&times;</span></span>
                 <p class="content my-4">{{ .strings.customizeMessagesDescription }}</p>
-                <div class="table-responsive">
+                <div class="">
                     <table class="table">
                         <thead>
                             <tr>
@@ -329,7 +329,7 @@
             </div>
         </div>
         <div id="modal-backups" class="modal">
-            <div class="card relative mx-auto my-[10%] w-11/12 sm:w-4/5 lg:w-1/3">
+            <div class="card relative mx-auto my-[10%] w-11/12 sm:w-4/5 lg:w-2/3">
                 <span class="heading">{{ .strings.backups }} <span class="modal-close">&times;</span></span>
                 <div class="content my-4">
                     {{ .strings.backupsDescription }}
@@ -396,7 +396,7 @@
             </form>
         </div>
         <div id="modal-user-profiles" class="modal">
-            <div class="relative mx-auto my-[10%] w-11/12 sm:w-4/5 lg:w-1/3 content card">
+            <div class="relative mx-auto my-[10%] w-11/12 sm:w-4/5 lg:w-2/3 content card">
                 <span class="heading">{{ .strings.userProfiles }} <span class="modal-close">&times;</span></span>
                 <p class="content my-4">{{ .strings.userProfilesDescription }}</p>
                 <div class="table-responsive">
