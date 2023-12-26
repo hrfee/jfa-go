@@ -7,11 +7,11 @@ all:
 	cp -r ts tempts
 	../scripts/dark-variant.sh tempts
 	npx esbuild --target=es6 --bundle tempts/main.ts --outfile=out/main.js --minify
-	npx esbuild --bundle base.css --outfile=out/bundle.css --external:remixicon.css --external:modal.css --minify
+	npx esbuild --bundle base.css --outfile=out/bundle.css --external:remixicon.css --external:modal.css --external:../fonts/hanken* --minify
 	npx tailwindcss -c tailwind.config.js -i out/bundle.css -o out/bundle.css
 	cd out && npx uncss index.html --stylesheets remixicon.css > _remixicon.css; cd ..
 	mv out/_remixicon.css out/remixicon.css
-	cp ../static/* out/
+	cp -r ../static/* out/
 	node inject.js
 
 debug:
@@ -22,10 +22,10 @@ debug:
 	-rm -r tempts
 	cp -r ts tempts
 	../scripts/dark-variant.sh tempts
-	npx esbuild --bundle base.css --outfile=out/bundle.css --external:remixicon.css --minify
+	npx esbuild --bundle base.css --outfile=out/bundle.css --external:remixicon.css --external:../fonts/hanken* --minify
 	npx esbuild --target=es6 --bundle ts/main.ts --sourcemap --outfile=out/main.js --minify
 	npx tailwindcss -c tailwind.config.js -i out/bundle.css -o out/bundle.css
-	cp ../static/* out/
+	cp -r ../static/* out/
 
 monitor:
 	npx live-server --watch=out --open=out/index.html &

@@ -21,7 +21,8 @@
             <div class="relative mx-auto my-[10%] w-4/5 lg:w-2/3 content card">
                 <span class="heading"> Debian/Ubuntu (apt)</span>
                 <div class="mt-1">
-                    <pre style="margin: 0; line-height: 125%">curl https://apt.hrfee.dev/hrfee.pubkey.gpg | sudo apt-key add -
+                    <pre style="margin: 0; line-height: 125%">sudo apt-get update && sudo apt-get install curl apt-transport-https gnupg
+curl https://apt.hrfee.dev/hrfee.pubkey.gpg | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/apt.hrfee.dev.gpg
 
 echo <span style="color: #aa5500">&quot;deb https://apt.hrfee.dev trusty<span id="deb-unstable" class="unfocused">-unstable</span> main&quot;</span> | sudo tee /etc/apt/sources.list.d/hrfee.list
 
