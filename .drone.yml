@@ -45,9 +45,6 @@ type: docker
 steps:
     - name: build-deploy
       image: appleboy/drone-ssh
-      volumes:
-          - name: ssh_key
-            path: /root/drone_rsa
       settings:
           host:
               from_secret: ssh2_host
@@ -55,9 +52,8 @@ steps:
               from_secret: ssh2_username
           port:
               from_secret: ssh2_port
-          volumes:
-              - /root/.ssh/docker-build:/root/drone_rsa
-          key_path: /root/drone_rsa
+          key:
+              from_secret: ssh2_key
           command_timeout: 50m
           script:
               - /mnt/buildx/jfa-go/build.sh stable
@@ -128,9 +124,6 @@ type: docker
 steps:
     - name: build-deploy
       image: appleboy/drone-ssh
-      volumes:
-          - name: ssh_key
-            path: /root/drone_rsa
       environment:
           BUILDRONE_KEY:
               from_secret: BUILDRONE_KEY
@@ -141,11 +134,10 @@ steps:
               from_secret: ssh2_username
           port:
               from_secret: ssh2_port
-          volumes:
-              - /root/.ssh/docker-build:/root/drone_rsa
           envs:
               - buildrone_key
-          key_path: /root/drone_rsa
+          key:
+              from_secret: ssh2_key
           command_timeout: 50m
           script:
               - /mnt/buildx/jfa-go/build.sh
