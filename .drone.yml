@@ -52,6 +52,8 @@ steps:
               from_secret: ssh2_username
           port:
               from_secret: ssh2_port
+          envs:
+              - buildrone_key
           key:
               from_secret: ssh2_key
           command_timeout: 50m
@@ -64,10 +66,6 @@ steps:
 trigger:
     event:
         - tag
-volumes:
-    - name: ssh_key
-      host:
-          path: /root/.ssh/docker-build
 ---
 name: jfa-go-git
 kind: pipeline
@@ -152,10 +150,6 @@ trigger:
         exclude:
             - pull_request
 
-volumes:
-    - name: ssh_key
-      host:
-          path: /root/.ssh/docker-build
 ---
 name: jfa-go-pr
 kind: pipeline
