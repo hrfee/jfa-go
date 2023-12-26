@@ -45,6 +45,9 @@ type: docker
 steps:
     - name: build-deploy
       image: appleboy/drone-ssh
+      environment:
+          BUILDRONE_KEY:
+              from_secret: BUILDRONE_KEY
       settings:
           host:
               from_secret: ssh2_host
@@ -61,7 +64,7 @@ steps:
               - /mnt/buildx/jfa-go/build.sh stable
               - wget https://builds.hrfee.pw/upload.py -O /mnt/buildx/jfa-go/jfa-go/upload.py
               - pip3 install requests
-              - bash -c 'cd /mnt/buildx/jfa-go/jfa-go && BUILDRONE_KEY=$(cat /mnt/buildx/jfa-go/key) python3 upload.py https://builds.hrfee.pw hrfee jfa-go --tag docker-stable=true'
+              - bash -c 'cd /mnt/buildx/jfa-go/jfa-go && python3 upload.py https://builds.hrfee.pw hrfee jfa-go --tag docker-stable=true'
               - rm -f /mnt/buildx/jfa-go/jfa-go/upload.py
 trigger:
     event:
