@@ -22,32 +22,25 @@ If you want a bit more of a guarantee of support, I've seen these projects menti
 * [Jellyseerr](https://github.com/Fallenbagel/jellyseerr) is a fork of Overseerr, which can manage users and mainly acts as an Ombi alternative.
 * [Organizr](https://github.com/causefx/Organizr) doesn't focus on Jellyfin, but allows putting self-hosted services into "tabs" on a central page, and allows creating users, which lets one control who can access what.
 ---
-jfa-go is a user management app for [Jellyfin](https://github.com/jellyfin/jellyfin) (and now [Emby](https://emby.media/)) that provides invite-based account creation as well as other features that make one's instance much easier to manage.
-
-a rewrite of [jellyfin-accounts](https://github.com/hrfee/jellyfin-accounts) (original naming for both, ik 
-😂).
+jfa-go is a user management app for [Jellyfin](https://github.com/jellyfin/jellyfin) (and [Emby](https://emby.media/) as 2nd class) that provides invite-based account creation as well as other features that make one's instance much easier to manage.
 
 #### Features
 * 🧑 Invite based account creation: Send invites to your friends or family, and let them choose their own username and password without relying on you.
-    * Send invites via a link and/or email
+    * Send invites via a link and/or email, discord, telegram or matrix
     * Granular control over invites: Validity period as well as number of uses can be specified.
     * Account profiles: Assign settings profiles to invites so new users have your predefined permissions, homescreen layout, etc. applied to their account on creation.
     * Password validation: Ensure users choose a strong password.
-    * CAPTCHAs can be enabled to avoid bots
+    * CAPTCHAs and contact method verificatoin can be enabled to avoid bots.
 * ⌛ User expiry: Specify a validity period, and new users accounts will be disabled/deleted after it. The period can be manually extended too.
-* 🔗 Ombi Integration: Automatically creates Ombi accounts for new users using their email address and login details, and your own defined set of permissions.
-* Account management: Apply settings to your users individually or en masse, and delete users, optionally sending them an email notification with a reason.
+* 🔗 Ombi Integration: Automatically creates Ombi accounts for new users using their email address and login details, and your own defined set of permissions. See [wiki](https://wiki.jfa-go.com/docs/ombi/) for a warning on this one.
+* Account management: Bulk or individually; apply settings, delete, disable/enable, send messages and much more.
+* 📣 Announcements: Bulk message your users with announcements about your server.
 * Telegram/Discord/Matrix Integration: Verify users via a chat bot, and send Password Resets, Announcements, etc. through it.
-* "My Account" Page: Allows users to reset their password, manage contact details, view their account expiry date, and send referrals. Custom messages can be added, with markdown.
-* Referrals: Users can be given special invites to send to their friends and families.
-* 📨 Email storage: Add your existing users email addresses through the UI, and jfa-go will ask new users for them on account creation.
-    * Email addresses can optionally be used instead of usernames
+* "My Account" Page: Allows users to reset their password, manage contact details, view their account expiry date, and send referrals. Can be customized with markdown.
+* Referrals: Users can be given special invites to send to their friends and families, similar to some invite-only services like Bluesky.
 * 🔑 Password resets: When users forget their passwords and request a change in Jellyfin, jfa-go reads the PIN from the created file and sends it straight to them via email/telegram.
   * Can also be done through the "My Account" page if enabled.
 * Admin Notifications: Get notified when someone creates an account, or an invite expires.
-* 📣 Announcements: Bulk message your users with announcements about your server.
-* Authentication via Jellyfin: Instead of using separate credentials for jfa-go and Jellyfin, jfa-go can use it as the authentication provider.
-    * Enables the usage of jfa-go by multiple people
 * 🌓 Customizations
     * Customize emails with variables and markdown
     * Specify contact and help messages to appear in emails and pages
@@ -72,7 +65,7 @@ docker create \
              -p 8056:8056 \
             # -p 8057:8057 if using tls
              -v /path/to/.config/jfa-go:/data \ # Path to wherever you want to store the config file and other data
-             -v /path/to/jellyfin:/jf \ # Path to Jellyfin config directory, ignore if using Emby
+             -v /path/to/jellyfin:/jf \ # Only needed for password resets through Jellyfin, ignore if not using or using Emby
              -v /etc/localtime:/etc/localtime:ro \ # Makes sure time is correct
              hrfee/jfa-go # hrfee/jfa-go:unstable for latest build from git
 ```
@@ -80,7 +73,7 @@ docker create \
 ##### [Debian/Ubuntu](https://apt.hrfee.dev)
 ```sh
 sudo apt-get update && sudo apt-get install curl apt-transport-https gnupg
-curl https://apt.hrfee.dev/hrfee.pubkey.gpg | sudo apt-key add -
+curl https://apt.hrfee.dev/hrfee.pubkey.gpg | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/apt.hrfee.dev.gpg
 
 # For stable releases
 echo "deb https://apt.hrfee.dev trusty main" | sudo tee /etc/apt/sources.list.d/hrfee.list
@@ -108,7 +101,7 @@ Available on the AUR as:
 ##### Other platforms
 Download precompiled binaries from:
  * [The releases section](https://github.com/hrfee/jfa-go/releases) (stable)
- * [Buildrone](https://builds.hrfee.dev/view/hrfee/jfa-go) (nightly)
+ * [dl.jfa-go.com](https://dl.jfa-go.com) (nightly)
 
 unzip the `jfa-go`/`jfa-go.exe` executable to somewhere useful.
 * For \*nix/macOS users, `chmod +x jfa-go` then place it somewhere in your PATH like `/usr/bin`.
@@ -147,6 +140,8 @@ Usage of jfa-go:
     	alternate port to host web ui on.
   -pprof
     	Exposes pprof profiler on /debug/pprof.
+  -restore string
+    	path to database backup to restore.
   -swagger
     	Enable swagger at /swagger/index.html
 ```
@@ -154,18 +149,9 @@ Usage of jfa-go:
 #### Systemd
 jfa-go does not run as a daemon by default. Run `jfa-go systemd` to create a systemd `.service` file in your current directory, which you can copy into `~/.config/systemd/user` or somewhere else.
 
----
-
-If you're switching from jellyfin-accounts, copy your existing `~/.jf-accounts` to:
-
-* `XDG_CONFIG_DIR/jfa-go` (usually ~/.config/jfa-go) on \*nix systems, 
-* `%AppData%/jfa-go` on Windows,
-* `~/Library/Application Support/jfa-go` on macOS.
-
-(or specify config/data path  with `-config/-data` respectively.)
 
 #### Contributing
-See [the wiki page](https://wiki.jfa-go.com/docs/dev/) or [CONTRIBUTING.md](https://github.com/hrfee/jfa-go/blob/main/CONTRIBUTING.md).
+See [the wiki page](https://wiki.jfa-go.com/docs/dev/).
 ##### Translation
 [![Translation status](https://weblate.jfa-go.com/widgets/jfa-go/-/multi-auto.svg)](https://weblate.jfa-go.com/engage/jfa-go/)
 
@@ -175,4 +161,3 @@ For translations, use the weblate instance [here](https://weblate.jfa-go.com/eng
 Big thanks to those who sponsor me. You can see them below:
 
 [<img src="https://sponsors-endpoint.hrfee.pw/sponsor/avatar/0" width="35">](https://sponsors-endpoint.hrfee.pw/sponsor/profile/0)
-[<img src="https://sponsors-endpoint.hrfee.pw/sponsor/avatar/1" width="35">](https://sponsors-endpoint.hrfee.pw/sponsor/profile/0)
