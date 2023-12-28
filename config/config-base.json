@@ -173,22 +173,22 @@
                     "description": "Enable this to use Jellyfin users instead of the below username and pw."
                 },
                 "admin_only": {
-                    "name": "Allow admin users only",
+                    "name": "Allow admin users only on \"Admin\" pages",
                     "required": false,
                     "requires_restart": true,
                     "depends_true": "jellyfin_login",
                     "type": "bool",
                     "value": true,
-                    "description": "Allows only admin users on Jellyfin to access the admin page."
+                    "description": "Allows only admin users on Jellyfin to access the admin page. Doesn't apply to the \"My Accounts\" page."
                 },
                 "allow_all": {
-                    "name": "Allow all users to login",
+                    "name": "Allow all users to login to \"Admin\" pages",
                     "required": false,
                     "requires_restart": true,
                     "depends_true": "jellyfin_login",
                     "type": "bool",
                     "value": false,
-                    "description": "Allow all Jellyfin users to access jfa-go. Not recommended, add individual users in the Accounts tab instead."
+                    "description": "Allow all Jellyfin users to access jfa-go. Not recommended, add individual users in the Accounts tab instead. Doesn't apply to the \"My Accounts\" page."
                 },
                 "username": {
                     "name": "Web Username",
@@ -620,7 +620,7 @@
             "order": [],
             "meta": {
                 "name": "User Page/\"My Account\"",
-                "description": "The User Page (My Account) allows users to access and modify info directly, such as changing/adding contact methods, seeing their expiry date, sending referrals or changing their password. Password resets can also be initiated from here, given a contact method or username. ",
+                "description": "The User Page (My Account) allows users to access and modify info directly, such as changing/adding contact methods, seeing their expiry date, sending referrals or changing their password. Password resets can also be initiated from here, given a contact method or username. Access control settings set in \"General\" do not apply to this page, nor does \"Access jfa-go\" in the Accounts tab.",
                 "depends_true": "ui|jellyfin_login"
             },
             "settings": {
