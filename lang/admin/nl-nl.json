@@ -176,7 +176,26 @@
         "noMoreResults": "Niet meer resultaten.",
         "totalRecords": "{n} documenten totaal",
         "loadedRecords": "{n} geladen",
-        "shownRecords": "{n} getoond"
+        "shownRecords": "{n} getoond",
+        "useInviteExpiry": "Neem verloop over van profiel/uitnodiging",
+        "backups": "Backups",
+        "removeExpiry": "Verwijder verloop",
+        "enterExpiry": "Voer verloop in",
+        "accountWillExpire": "Account verloopt op {date}.",
+        "expirationBasedOn": "Datum gebaseerd op 1e gebruiker.",
+        "backupsFormatNote": "Alleen backupbestanden met het standaard naamformaat worden hier getoond. Upload handmatig om een ander bestand te gebruiken.",
+        "backupDownloadRestore": "Downloaden / Terugzetten",
+        "backupUpload": "Upload backup & zet terug",
+        "backupDownload": "Download backup",
+        "backupRestore": "Backup terugzetten",
+        "backupNow": "Nu backup maken",
+        "backupCreated": "Backup gemaakt",
+        "backupCanBeFound": "De backup kan op de server gevonden worden onder {filepath}.",
+        "backupCanDownload": "Of klik hieronder om de backup te downloaden.",
+        "wikiPage": "Wiki pagina",
+        "useInviteExpiryNote": "Standaard verlopen uitnodigingen na 90 dagen, maar kunnen ze vernieuwd worden door de gebruiker. Schakel in om de verwijzing uit te schakelen na de ingestelde tijd.",
+        "backupsDescription": "Hier kunnen backups van de database gemaakt, teruggezet, of gedownload worden.",
+        "backupsCopy": "Bij het toepassen van een backup wordt er een kopie van de originele \"db\" folder naast gemaakt, voor het geval er iets misgaat."
     },
     "notifications": {
         "changedEmailAddress": "E-mailadres van {n} gewijzigd.",
@@ -220,7 +239,9 @@
         "activityDeleted": "Activiteit verwijderd.",
         "errorInviteNoLongerExists": "Uitnodiging bestaat niet meer.",
         "errorInviteNotFound": "Uitnodiging niet gevonden.",
-        "errorLoadActivities": "Laden van activiteiten mislukt."
+        "errorLoadActivities": "Laden van activiteiten mislukt.",
+        "pathCopied": "Volledig pad gekopieerd naar klembord.",
+        "errorInvalidDate": "Ongeldige datum."
     },
     "quantityStrings": {
         "modifySettingsFor": {
