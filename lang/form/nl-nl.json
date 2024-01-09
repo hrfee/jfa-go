@@ -37,7 +37,13 @@
         "resetSent": "Reset-link verstuurd.",
         "referralsDescription": "Nodig vrienden en familie uit met deze link. Kom hier terug voor een nieuwe als hij verloopt.",
         "copyReferral": "Kopieer link",
-        "invitedBy": "Je bent uitgenodigd door gebruiker {user}."
+        "invitedBy": "Je bent uitgenodigd door gebruiker {user}.",
+        "resetPasswordThroughLinkStart": "Voer één van onderstaande velden in om je wachtwoord te resetten:",
+        "resetPasswordUsername": "Je Jellyfin gebruikersnaam",
+        "referralsWithExpiryDescription": "Nodig vrienden en familie uit voor Jellyfin met deze link. De link wordt uitgeschakeld zodra hij verloopt.",
+        "resetPasswordEmail": "Je e-mailadres",
+        "resetPasswordThroughLinkEnd": "Druk daarna op versturen. Er wordt dan een link verstuurd om je wachtwoord te resetten.",
+        "resetPasswordContactMethod": "De gebruikersnaam van een contactmethode die aan je account gekoppeld is"
     },
     "validationStrings": {
         "length": {
