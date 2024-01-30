@@ -17,9 +17,30 @@
         "confirmationRequired": "Se requiere confirmación por correo electrónico",
         "confirmationRequiredMessage": "Por favor, revise la bandeja de entrada de su correo electrónico para verificar su dirección.",
         "yourAccountIsValidUntil": "Su cuenta será válida hasta el {date}.",
-        "sendPINDiscord": "Escribe {command} en {server_channel} en Discord, luego envía el PIN a través de DM al bot.",
+        "sendPINDiscord": "Escriba {command} en {server_channel} en Discord, luego envíe el PIN a través de DM al bot.",
         "sendPIN": "Envíe el PIN a continuación al bot, luego regrese aquí para vincular su cuenta.",
-        "matrixEnterUser": "Ingrese su ID de usuario, presione enviar y se le enviará un PIN. Ingrese aquí para continuar."
+        "matrixEnterUser": "Ingrese su ID de usuario, presione enviar y se le enviará un PIN. Ingrese aquí para continuar.",
+        "oldPassword": "Contraseña anterior",
+        "newPassword": "Nueva contraseña",
+        "addContactMethod": "Añadir método de contacto",
+        "editContactMethod": "Editar método de contacto",
+        "resetPassword": "Restablecer contraseña",
+        "joinTheServer": "Unirse al servidor:",
+        "resetPasswordThroughJellyfin": "Para restablecer la contraseña, visite {jfLink} y presione el botón \"Contraseña olvidada\".",
+        "userPageSuccessMessage": "Puede ver y modificar los detalles de su cuenta más tarde desde la página de {myAccount}.",
+        "resetPasswordThroughLink": "Para restablecer la contraseña, introduzca su nombre de usuario, dirección de correo electrónico o el nombre de usuario de un método de contacto vinculado, y presione enviar. Recibirá un enlace para restablecer la contraseña.",
+        "resetSent": "Restablecimiento enviado.",
+        "changePassword": "Cambiar contraseña",
+        "copyReferral": "Copiar enlace",
+        "invitedBy": "Invitación recibida de parte del usuario {user}.",
+        "referralsDescription": "Invite a amigos y familiares a Jellyfin con este enlace. Vuelva aquí para conseguir uno nuevo si este caduca.",
+        "resetPasswordThroughLinkStart": "Para restablecer su contraseña, introduzca uno de los siguientes a continuación:",
+        "resetPasswordThroughLinkEnd": "Y presione enviar. Se le mandará un enlace para restablecer su contraseña.",
+        "resetPasswordUsername": "Su nombre de usuario de Jellyfin",
+        "resetPasswordEmail": "Su dirección de correo electrónico",
+        "resetPasswordContactMethod": "El nombre de usuario de cualquier método de contacto vinculado a su cuenta",
+        "resetSentDescription": "Si una cuenta con el nombre de usuario o método de contacto suministrados existe, se habrá enviado un enlace de restablecimiento de contraseña a través de todos los métodos de contacto disponibles. El código caducará a los 30 minutos.",
+        "referralsWithExpiryDescription": "Invite a amigos y familia a Jellyfin con este enlace. El enlace se desactivará cuando caduque."
     },
     "notifications": {
         "errorUserExists": "El usuario ya existe.",
@@ -35,7 +56,9 @@
         "errorPassword": "Requisitos para la contraseña.",
         "errorNoMatch": "Las contraseñas no coinciden.",
         "errorAccountLinked": "La cuenta ya está en uso.",
-        "errorEmailLinked": "El correo electrónico ya está en uso."
+        "errorEmailLinked": "El correo electrónico ya está en uso.",
+        "errorOldPassword": "Contraseña anterior incorrecta.",
+        "passwordChanged": "Contraseña cambiada."
     },
     "validationStrings": {
         "length": {
