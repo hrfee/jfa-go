@@ -36,7 +36,12 @@
         "add": "Agregar",
         "edit": "Editar",
         "delete": "Eliminar",
-        "inviteRemainingUses": "Usos restantes"
+        "inviteRemainingUses": "Usos restantes",
+        "contactMethods": "Métodos de contacto",
+        "accountStatus": "Estado de la cuenta",
+        "notSet": "No establecido",
+        "myAccount": "Mi cuenta",
+        "referrals": "Referencias"
     },
     "notifications": {
         "errorLoginBlank": "El nombre de usuario y/o la contraseña se dejaron en blanco.",
@@ -45,5 +50,18 @@
         "error401Unauthorized": "No autorizado. Intente actualizar la página.",
         "errorSaveSettings": "No se pudo guardar la configuración."
     },
-    "quantityStrings": {}
+    "quantityStrings": {
+        "year": {
+            "plural": "{n} años",
+            "singular": "{n} año"
+        },
+        "month": {
+            "singular": "{n} mes",
+            "plural": "{n} meses"
+        },
+        "day": {
+            "singular": "{n} día",
+            "plural": "{n} días"
+        }
+    }
 }
