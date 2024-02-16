@@ -101,7 +101,8 @@
         "deleteTemplate": "Usuń szablon",
         "templateEnterName": "Wprowadź nazwę aby zapisać szablon.",
         "accessJFA": "",
-        "accessJFASettings": ""
+        "accessJFASettings": "",
+        "invite": "Zaproś"
     },
     "notifications": {
         "changedEmailAddress": "Zmieniono adres email {n}.",
