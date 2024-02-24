@@ -7,7 +7,7 @@
         "pageTitle": "Créer un compte Jellyfin",
         "createAccountHeader": "Création du compte",
         "accountDetails": "Détails",
-        "emailAddress": "Email",
+        "emailAddress": "Mail",
         "username": "Nom d'utilisateur",
         "password": "Mot de passe",
         "reEnterPassword": "Confirmez mot de passe",
@@ -38,7 +38,13 @@
         "resetPassword": "Réinitialisation mot de passe",
         "referralsDescription": "Invitez vos amis et votre famille à Jellyfin avec ce lien. Revenez ici pour en obtenir un nouveau s'il expire.",
         "copyReferral": "Copier le lien",
-        "invitedBy": "Vous avez été invité par l'utilisateur {user}."
+        "invitedBy": "Vous avez été invité par l'utilisateur {user}.",
+        "resetPasswordUsername": "Votre username Jellyfin",
+        "resetPasswordEmail": "Votre adresse email",
+        "resetPasswordThroughLinkStart": "Pour réinitialiser votre mot de passe, saisissez l'une des informations suivantes :",
+        "resetPasswordContactMethod": "Le nom d'utilisateur de toute méthode de contact liée à votre compte",
+        "resetPasswordThroughLinkEnd": "Appuyez ensuite sur Soumettre. Un lien vous sera envoyé pour réinitialiser votre mot de passe.",
+        "referralsWithExpiryDescription": "Invitez vos amis et votre famille à Jellyfin avec ce lien. Le lien sera désactivé une fois expiré."
     },
     "validationStrings": {
         "length": {
