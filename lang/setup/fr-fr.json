@@ -3,12 +3,12 @@
         "name": "Français (FR)"
     },
     "strings": {
-        "pageTitle": "Installation - JFA-Go",
+        "pageTitle": "Installation - jfa-go",
         "next": "Suivant",
         "back": "Retour",
         "optional": "Optionnel",
         "serverType": "Type de serveur",
-        "disabled": "Désactiver",
+        "disabled": "Désactivé",
         "enabled": "Activé",
         "port": "Port",
         "message": "Message",
@@ -22,7 +22,8 @@
         "errorNotAdmin": "L'utilisateur n'est pas autorisé à gérer le serveur.",
         "errorConnectionRefused": "Connexion refusée.",
         "error": "Erreur",
-        "errorUnknown": "Erreur inconnue, vérifier les logs de l'application."
+        "errorUnknown": "Erreur inconnue, vérifier les logs de l'application.",
+        "errorProxy": "Configuration du proxy invalide."
     },
     "startPage": {
         "welcome": "Bienvenue !",
@@ -32,7 +33,7 @@
     },
     "endPage": {
         "finished": "Terminé !",
-        "restartMessage": "Vous pouvez configurer les bots Discord/Telegram/Matrix, personnaliser vos messages et plus encore dans Paramètres. Cliquez ci-dessous pour redémarrer, puis actualisez la page.",
+        "restartMessage": "Vous pouvez configurer les bots Discord/Telegram/Matrix, personnaliser l’apparence vos messages, et plus encore dans Paramètres. Cliquez ci-dessous pour redémarrer, puis actualisez la page.",
         "refreshPage": "Rafraichir"
     },
     "language": {
@@ -63,7 +64,8 @@
         "adminOnly": "Administrateurs seulement (recommandé)",
         "emailNotice": "Votre adresse e-mail peut être utilisée pour recevoir des notifications.",
         "allowAll": "Autoriser tous les utilisateurs de Jellyfin à se connecter",
-        "allowAllDescription": "Non recommandé, vous devez autoriser individuellement les utilisateurs à se connecter une fois la configuration effectuée."
+        "allowAllDescription": "Non recommandé, vous devez autoriser individuellement les utilisateurs à se connecter une fois la configuration effectuée.",
+        "authorizeManualUserPageNotice": "Son utilisation désactivera la fonctionnalité \"Page utilisateur\"."
     },
     "jellyfinEmby": {
         "title": "Jellyfin/Emby",
@@ -108,14 +110,15 @@
     },
     "passwordResets": {
         "title": "Réinitialisation de mot de passe",
-        "description": "Lorsqu'un utilisateur essaie de réinitialiser son mot de passe, Jellyfin créé un fichier nommé 'passwordreset-*.json' qui contient le code PIN. jfa-go lit le fichier et envoie le code PIN à l'utilisateur.",
+        "description": "Lorsqu'un utilisateur essaie de réinitialiser son mot de passe, Jellyfin créé un fichier nommé 'passwordreset-*.json' qui contient le code PIN. jfa-go lit le fichier et envoie le code PIN à l'utilisateur. Si vous avez activé la fonctionnalité « Page utilisateur », une réinitialisation peut également y être effectuée, en fonction d'un nom d'utilisateur, d'un e-mail ou d'une méthode de contact.",
         "pathToJellyfin": "Chemin du dossier de configuration de Jellyfin",
-        "pathToJellyfinNotice": "Si vous ne savez pas où c'est, essayez de réinitialiser votre mot de passe dans Jellyfin. Une popup avec '<path to jellyfin>/passwordreset-*.json' apparaitra.",
+        "pathToJellyfinNotice": "Si vous ne savez pas où c'est, essayez de réinitialiser votre mot de passe dans Jellyfin. Une popup avec '<path to jellyfin>/passwordreset-*.json' apparaitra. Cela n'est pas nécessaire si vous souhaitez uniquement utiliser la réinitialisation de mot de passe en libre-service via la « Page utilisateur ».",
         "resetLinks": "Envoyer un lien plutôt qu'un PIN",
         "resetLinksNotice": "Si l'intégration est activée, utilisez ceci pour synchroniser les réinitialisations de mots de passe Jellyfin avec Ombi.",
         "resetLinksLanguage": "Langue du lien de réinitialisation par défaut",
         "setPassword": "Définir le mot de passe via le lien",
-        "setPasswordNotice": "L'activation de cette option signifie que l'utilisateur n'a pas à modifier son mot de passe à partir du code PIN après la réinitialisation. La validation du mot de passe sera également appliquée."
+        "setPasswordNotice": "L'activation de cette option signifie que l'utilisateur n'a pas à modifier son mot de passe à partir du code PIN après la réinitialisation. La validation du mot de passe sera également appliquée.",
+        "resetLinksRequiredForUserPage": "Requis pour la réinitialisation du mot de passe par l'utilisateur sur la page utilisateur."
     },
     "passwordValidation": {
         "title": "Validation du mot de passe",
@@ -148,5 +151,17 @@
     "messages": {
         "title": "Messages",
         "description": "jfa-go peut envoyer des réinitialisations de mot de passe et divers messages par e-mail, Discord, Telegram et/ou Matrix. Vous pouvez configurer l'e-mail ci-dessous, et les autres peuvent être configurés dans les paramètres plus tard. Les instructions se trouvent sur le {n}. Si vous n'en avez pas besoin, vous pouvez désactiver ces fonctionnalités ici."
+    },
+    "userPage": {
+        "title": "Page utilisateur",
+        "customizeMessages": "Cliquez sur le bouton Modifier à côté de « Page utilisateur » dans les paramètres pour les définir ultérieurement.",
+        "requiredSettings": "La connexion à jfa-go via Jellyfin doit être définie. Assurez-vous que « Réinitialiser le mot de passe via un lien » est sélectionné ultérieurement pour les réinitialisations de mot de passe par les utilisateurs.",
+        "description": "La page utilisateur (affichée sous « Mon compte ») permet aux utilisateurs d'accéder aux informations sur leur compte, telles que leurs méthodes de contact et l'expiration de leur compte. Ils peuvent également modifier leur mot de passe, lancer une réinitialisation de mot de passe et lier/modifier les méthodes de contact, sans avoir à vous le demander. De plus, des messages personnalisés peuvent être affichés aux utilisateurs avant et après la connexion."
+    },
+    "proxy": {
+        "title": "Proxy",
+        "protocol": "Protocole",
+        "address": "Adresse (y compris le port)",
+        "description": "Demandez à jfa-go d'établir toutes les connexions via un proxy HTTP/SOCKS5. La connexion à Jellyfin sera testée à travers cela."
     }
 }
