@@ -8,7 +8,7 @@
         "back": "Voltar",
         "optional": "Opcional",
         "serverType": "Tipo de Servidor",
-        "disabled": "Desativado",
+        "disabled": "Desabilitado",
         "enabled": "Habilitado",
         "port": "Porta",
         "message": "Mensagem",
