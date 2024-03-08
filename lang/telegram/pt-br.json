@@ -11,6 +11,8 @@
         "languageMessageDiscord": "Nota: defina seu idioma com /lang <language name>.",
         "languageSet": "Idioma definido como {idioma}.",
         "discordDMs": "Por favor, verifique seus DMs para uma resposta.",
-        "discordStartMessage": "Oi!\n Digite seu PIN com `/pin <PIN>` para verificar sua conta."
+        "discordStartMessage": "Oi!\n Digite seu PIN com `/pin <PIN>` para verificar sua conta.",
+        "sentInvite": "Enviou convite.",
+        "sentInviteFailure": "Falha ao enviar o convite. Verifique os registros."
     }
 }
