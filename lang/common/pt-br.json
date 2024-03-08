@@ -7,7 +7,7 @@
         "password": "Senha",
         "emailAddress": "Endereço de e-mail",
         "name": "Nome",
-        "submit": "Enviar",
+        "submit": "Envie",
         "send": "Enviar",
         "success": "Sucesso",
         "continue": "Continuar",
@@ -36,7 +36,12 @@
         "add": "Adicionar",
         "edit": "Editar",
         "delete": "Deletar",
-        "inviteRemainingUses": "Uso restantes"
+        "inviteRemainingUses": "Uso restantes",
+        "referrals": "Referências",
+        "contactMethods": "Métodos de contato",
+        "accountStatus": "Estado da conta",
+        "notSet": "Não configurado",
+        "myAccount": "Minha conta"
     },
     "notifications": {
         "errorLoginBlank": "O nome de usuário e/ou senha foram deixados em branco.",
@@ -45,5 +50,18 @@
         "error401Unauthorized": "Não autorizado. Tente atualizar a página.",
         "errorSaveSettings": "Não foi possível salvar as configurações."
     },
-    "quantityStrings": {}
+    "quantityStrings": {
+        "day": {
+            "plural": "{n} Dias",
+            "singular": "{n} Dia"
+        },
+        "year": {
+            "singular": "{n} Ano",
+            "plural": "{n} anos"
+        },
+        "month": {
+            "singular": "{n} Mês",
+            "plural": "{n} meses"
+        }
+    }
 }
