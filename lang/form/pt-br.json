@@ -3,7 +3,7 @@
         "name": "Português (BR)"
     },
     "strings": {
-        "pageTitle": "Criar conta Jellyfin",
+        "pageTitle": "Crie uma conta Jellyfin",
         "createAccountHeader": "Criar Conta",
         "accountDetails": "Detalhes",
         "emailAddress": "E-mail",
@@ -17,7 +17,7 @@
         "confirmationRequired": "Confirmação por e-mail",
         "confirmationRequiredMessage": "Verifique sua caixa de email para finalizar o cadastro.",
         "yourAccountIsValidUntil": "Sua conta é válida até {date}.",
-        "sendPIN": "Envie o PIN abaixo para o bot e volte aqui para vincular sua conta.",
+        "sendPIN": "Envie o PIN abaixo para o bot e depois volte aqui para vincular sua conta.",
         "sendPINDiscord": "Digite {command} em {server_channel} no Discord e envie o PIN abaixo.",
         "matrixEnterUser": "Digite sua ID de usuário, pressione enviar e um PIN será enviado. E digite aqui para continuar.",
         "resetPasswordUsername": "Seu nome de usuário Jellyfin",
