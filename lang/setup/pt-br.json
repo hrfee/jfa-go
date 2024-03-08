@@ -3,7 +3,7 @@
         "name": "Português (BR)"
     },
     "strings": {
-        "pageTitle": "Configuração - jfa-go",
+        "pageTitle": "Configuração do jfa-go",
         "next": "Próximo",
         "back": "Voltar",
         "optional": "Opcional",
@@ -20,7 +20,10 @@
         "errorUserDisabled": "O usuário pode estar desabilitado.",
         "error404": "404, verifique a URL interna.",
         "errorInvalidUserPass": "Usuário ou Senha Inválidos.",
-        "errorConnectionRefused": "Conexão recusada."
+        "errorConnectionRefused": "Conexão recusada.",
+        "errorUnknown": "Erro desconhecido. Verifique os registros do aplicativo.",
+        "errorProxy": "Configuração de proxy inválida.",
+        "error": "Error"
     },
     "startPage": {
         "welcome": "Bem Vindo!",
@@ -61,7 +64,8 @@
         "adminOnly": "Apenas usuários administradores (recomendado)",
         "emailNotice": "Seu endereço de email pode ser usado para receber notificações.",
         "allowAll": "Permitir que todos os usuários do Jellyfin façam login",
-        "allowAllDescription": "Não recomendado, você deve permitir que usuários individuais façam login após a configuração."
+        "allowAllDescription": "Não recomendado, você deve permitir que usuários individuais façam login após a configuração.",
+        "authorizeManualUserPageNotice": "Usar isso desativará o recurso \"Página do usuário\"."
     },
     "jellyfinEmby": {
         "title": "Jellyfin/Emby",
@@ -113,7 +117,8 @@
         "resetLinksNotice": "Se a integração do Ombi estiver habilitada, use para sincronizar as redefinições de senha do Jellyfin com o Ombi.",
         "resetLinksLanguage": "Idioma do link de redefinição padrão",
         "setPassword": "Definir a senha por meio de link",
-        "setPasswordNotice": "Se habilitar significa que o usuário não precisa alterar a senha do PIN após a redefinição. A validação de senha também será aplicada."
+        "setPasswordNotice": "Se habilitar significa que o usuário não precisa alterar a senha do PIN após a redefinição. A validação de senha também será aplicada.",
+        "resetLinksRequiredForUserPage": "Obrigatório para redefinição de senha de autoatendimento na página do usuário."
     },
     "passwordValidation": {
         "title": "Validar Senha",
@@ -125,7 +130,7 @@
         "special": "Caracteres Especial (%, *, etc.)"
     },
     "helpMessages": {
-        "title": "Mensagem de Ajuda",
+        "title": "Mensagem para Ajuda",
         "description": "Essas mensagens serão exibidas na página de criação de conta e em alguns emails.",
         "contactMessage": "Mensagem de Contato",
         "contactMessageNotice": "Exibido na parte inferior de todas as páginas, exceto na administradora.",
@@ -146,5 +151,17 @@
     "messages": {
         "title": "Mensagens",
         "description": "jfa-go pode enviar redefinições de senha e várias mensagens por e-mail, Discord, Telegram e/ou Matrix. Você pode configurar o e-mail abaixo e os outros podem ser configurados em Configurações posteriormente. As instruções podem ser encontradas em {n}. Se você não precisar, pode desativar esses recursos aqui."
+    },
+    "proxy": {
+        "description": "Faça com que o jfa-go faça todas as conexões por meio de um proxy HTTP/SOCKS5. A conexão com o Jellyfin será testada através disso.",
+        "title": "Proxy",
+        "protocol": "Procedimento",
+        "address": "Endereço (incluindo porta)"
+    },
+    "userPage": {
+        "description": "A página do usuário (mostrada como “Minha Conta”) permite que os usuários acessem informações sobre sua conta, como métodos de contato e vencimento da conta. Eles também podem alterar sua senha, iniciar uma redefinição de senha e vincular/alterar métodos de contato, sem precisar perguntar a você. Além disso, mensagens Markdown personalizadas podem ser mostradas aos usuários antes e depois do entrar.",
+        "title": "Página de usuário",
+        "customizeMessages": "Clique no botão de edição próximo a “Página do usuário” nas configurações para defini-las mais tarde.",
+        "requiredSettings": "Ao entra no jfa-go via Jellyfin deve ser configurado. Certifique-se de que \"redefinir senha via link\" esteja selecionado posteriormente para redefinições de senha de autoatendimento."
     }
 }
