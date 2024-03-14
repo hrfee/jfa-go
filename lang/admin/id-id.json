@@ -74,7 +74,9 @@
         "select": "Pilih",
         "search": "Cari",
         "download": "Unduh",
-        "inviteMonths": "Bulan"
+        "inviteMonths": "Bulan",
+        "inviteDuration": "Durasi undangan",
+        "activity": "Aktivitas"
     },
     "notifications": {
         "changedEmailAddress": "Alamat email {n} diubah.",
