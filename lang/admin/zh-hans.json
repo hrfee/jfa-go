@@ -176,7 +176,26 @@
         "noMoreResults": "没有更多结果了。",
         "totalRecords": "{n} 总记录数",
         "loadedRecords": "已加载{n}",
-        "shownRecords": "已显示{n}"
+        "shownRecords": "已显示{n}",
+        "removeExpiry": "用户过期删除时间",
+        "useInviteExpiryNote": "在默认情况下，邀请会在90天之后过期，但是用户可以手动续期该邀请。启动该设置手动设置有效期后会关闭推荐设置。",
+        "accountWillExpire": "账户将在{date}后过期。",
+        "expirationBasedOn": "根据第一个用户给出的日期。",
+        "backupsFormatNote": "此处仅显示具有标准名称格式的备份文件。如要使用其他名称的备份，请手动上传。",
+        "backupCanDownload": "或者，单击下面的按钮下载备份。",
+        "enterExpiry": "输入自定义过期时间",
+        "useInviteExpiry": "设置个人资料/邀请的有效期",
+        "backups": "备份设置",
+        "backupsDescription": "可以从这里制作、恢复或下载数据库的备份。",
+        "backupsCopy": "当在使用备份文件恢复时，程序将创建原始“db”文件夹的副本，以防出现问题。",
+        "backupDownloadRestore": "下载/恢复",
+        "backupUpload": "上传和恢复备份",
+        "backupRestore": "恢复备份",
+        "backupDownload": "下载备份",
+        "backupNow": "立即备份",
+        "backupCreated": "备份已创建",
+        "backupCanBeFound": "该备份可以在服务器上的 {filepath} 处找到。",
+        "wikiPage": "帮助文档"
     },
     "notifications": {
         "changedEmailAddress": "更改了 {n} 的电子邮件地址。",
@@ -220,7 +239,9 @@
         "referralsEnabled": "已启用推荐。",
         "errorInviteNoLongerExists": "邀请已不存在。",
         "errorInviteNotFound": "未找到邀请。",
-        "errorLoadActivities": "无法加载活动。"
+        "errorLoadActivities": "无法加载活动。",
+        "pathCopied": "完整路径已复制到剪贴板。",
+        "errorInvalidDate": "日期无效。"
     },
     "quantityStrings": {
         "modifySettingsFor": {
