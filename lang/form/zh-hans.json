@@ -37,7 +37,13 @@
         "customMessagePlaceholderHeader": "自定义此卡",
         "referralsDescription": "使用此链接邀请朋友和家人加入Jellyfin。如果链接过期，请回到这里获取一个新的。",
         "copyReferral": "复制链接",
-        "invitedBy": "您是由用户{user}邀请的。"
+        "invitedBy": "您是由用户{user}邀请的。",
+        "resetPasswordThroughLinkEnd": "按下提交按钮后，将会发送一个链接用以重置您的密码。",
+        "resetPasswordUsername": "你的Jellyfin用户名",
+        "resetPasswordThroughLinkStart": "要重置密码，请输入以下任一信息：",
+        "resetPasswordEmail": "你的邮箱地址",
+        "resetPasswordContactMethod": "与您的账户相关联的任何联系方式的用户名",
+        "referralsWithExpiryDescription": "使用此链接邀请亲朋好友加入 Jellyfin。过期后，链接将失效。"
     },
     "notifications": {
         "errorUserExists": "用户已经存在。",
