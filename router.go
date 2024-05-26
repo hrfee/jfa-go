@@ -24,19 +24,29 @@ func (app *appContext) loadHTML(router *gin.Engine) {
 		app.err.Fatalf("Couldn't access template directory: \"%s\"", templatePath)
 		return
 	}
-	loadFiles := make([]string, len(htmlFiles))
-	for i, f := range htmlFiles {
+	loadInternal := []string{}
+	loadExternal := []string{}
+	for _, f := range htmlFiles {
 		if _, err := os.Stat(filepath.Join(customPath, f.Name())); os.IsNotExist(err) {
 			app.debug.Printf("Using default \"%s\"", f.Name())
-			loadFiles[i] = FSJoin(templatePath, f.Name())
+			loadInternal = append(loadInternal, FSJoin(templatePath, f.Name()))
 		} else {
 			app.info.Printf("Using custom \"%s\"", f.Name())
-			loadFiles[i] = filepath.Join(filepath.Join(customPath, f.Name()))
+			loadExternal = append(loadExternal, filepath.Join(filepath.Join(customPath, f.Name())))
 		}
 	}
-	tmpl, err := template.ParseFS(localFS, loadFiles...)
-	if err != nil {
-		app.err.Fatalf("Failed to load templates: %v", err)
+	var tmpl *template.Template
+	if len(loadInternal) != 0 {
+		tmpl, err = template.ParseFS(localFS, loadInternal...)
+		if err != nil {
+			app.err.Fatalf("Failed to load templates: %v", err)
+		}
+	}
+	if len(loadExternal) != 0 {
+		tmpl, err = tmpl.ParseFiles(loadExternal...)
+		if err != nil {
+			app.err.Fatalf("Failed to load external templates: %v", err)
+		}
 	}
 	router.SetHTMLTemplate(tmpl)
 }
