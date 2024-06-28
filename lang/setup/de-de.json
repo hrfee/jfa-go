@@ -22,7 +22,8 @@
         "error404": "404, prüfe die interne URL.",
         "errorConnectionRefused": "Verbindung abgelehnt.",
         "error": "Fehler",
-        "errorUnknown": "Unbekannter Fehler, prüfe die Logs."
+        "errorUnknown": "Unbekannter Fehler, prüfe die Logs.",
+        "errorProxy": "Proxy Konfiguration ungültig."
     },
     "startPage": {
         "welcome": "Willkommen!",
@@ -63,7 +64,8 @@
         "adminOnly": "Nur Admin-Benutzer (empfohlen)",
         "emailNotice": "Deine E-Mail-Adresse kann verwendet werden, um Benachrichtigungen zu erhalten.",
         "allowAll": "Erlaube allen Jellyfin-Nutzern sich anzumelden",
-        "allowAllDescription": "Nicht empfohlen. Nach der Einrichtung solltest du einzelnen Benutzern erlauben, sich anzumelden."
+        "allowAllDescription": "Nicht empfohlen. Nach der Einrichtung solltest du einzelnen Benutzern erlauben, sich anzumelden.",
+        "authorizeManualUserPageNotice": "Dadurch wird die Funktion \"Benutzerseite\" deaktiviert."
     },
     "jellyfinEmby": {
         "title": "Jellyfin/Emby",
@@ -148,5 +150,11 @@
     "messages": {
         "title": "Mitteilungen",
         "description": "jfa-go kann Passwortrücksetzungen und verschiedene Benachrichtigungen per E-Mail, Discord, Telegram und/oder Matrix verschicken. E-Mail kannst du unten einrichten, die Anderen später in den Einstellungen. Anweisungen findest du im {n}. Falls nicht benötigt, kannst du diese Funktionen hier deaktivieren."
+    },
+    "proxy": {
+        "description": "Lass jfa-go alle Verbindungen über einen HTTP/SOCKS5-Proxy herstellen. Die Verbindung zu Jellyfin wird über diesen Proxy getestet.",
+        "title": "Proxy",
+        "protocol": "Protokoll",
+        "address": "Adresse (inkl. Port)"
     }
 }
