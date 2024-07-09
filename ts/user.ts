@@ -267,9 +267,8 @@ class ReferralCard {
     set code(c: string) {
         this._code = c;
         let url = window.location.href;
-        for (let split of ["#", "?", "account", "my"]) {
-            url = url.split(split)[0];
-        }
+        let pathArray = url.split('/');
+        url = `${pathArray[0]}//${pathArray[2]}/`;
         if (url.slice(-1) != "/") { url += "/"; }
         url = url + "invite/" + this._code;
         this._url = url;
