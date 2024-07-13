@@ -266,13 +266,20 @@ class ReferralCard {
     get code(): string { return this._code; }
     set code(c: string) {
         this._code = c;
-        let url = window.location.href;
-        for (let split of ["#", "?", "account", "my"]) {
-            url = url.split(split)[0];
+        
+        let u = new URL(window.location.href);
+        let path = u.pathname;
+        for (let split of ["account", "my"]) {
+            path = path.split(split)[0];
         }
-        if (url.slice(-1) != "/") { url += "/"; }
-        url = url + "invite/" + this._code;
-        this._url = url;
+        if (path.slice(-1) != "/") { path += "/"; }
+        path = path + "invite/" + this._code;
+        
+        u.pathname = path;
+        u.hash = "";
+        u.search = "";
+    
+        this._url = u.toString();
     }
 
     get remaining_uses(): number { return this._remainingUses; }
