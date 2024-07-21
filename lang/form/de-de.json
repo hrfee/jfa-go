@@ -17,7 +17,7 @@
         "confirmationRequired": "E-Mail Bestätigung erforderlich",
         "confirmationRequiredMessage": "Bitte überprüfe deinen Posteingang und bestätige deine E-Mail-Adresse.",
         "yourAccountIsValidUntil": "Dein Konto wird bis zum {date} gültig sein.",
-        "sendPIN": "Sende die untenstehende PIN an den Bot und komm dann hierher zurück, um dein Konto zu verbinden.",
+        "sendPIN": "Sende die PIN unten an den Bot und komm dann hierher zurück, um dein Konto zu verknüpfen.",
         "sendPINDiscord": "Gib auf Discord {command} in {server_channel} ein und sende die untenstehende PIN.",
         "matrixEnterUser": "Gib deine Benutzer-ID ein und drücke auf Absenden. Anschließend erhälst du ein PIN, die hier eingegeben wird um fortzufahren.",
         "oldPassword": "Altes Passwort",
@@ -30,7 +30,20 @@
         "joinTheServer": "Server beitreten:",
         "userPageSuccessMessage": "Du kannst die Details deines Accounts später in {myAccount} Seite einsehen und ändern.",
         "resetPassword": "Passwort zurücksetzen",
-        "resetPasswordThroughJellyfin": "Um das Passwort zurückzusetzen, besuche {jfLink} und drücke auf die Schaltfläche \"Passwort vergessen\"."
+        "resetPasswordThroughJellyfin": "Um das Passwort zurückzusetzen, besuche {jfLink} und drücke auf die Schaltfläche \"Passwort vergessen\".",
+        "resetPasswordThroughLinkStart": "Um dein Passwort zurückzusetzen, gib eine der folgenden Möglichkeiten ein:",
+        "resetPasswordContactMethod": "Den Benutzernamen einer Kontaktmethode, die mit deinem Konto verknüpft ist",
+        "changePassword": "Passwort ändern",
+        "resetPasswordThroughLink": "Um dein Passwort zurückzusetzen, gib deinen Benutzernamen, deine E-Mail-Adresse oder einer verlinkten Kontaktmethode ein und sende ihn ab. Du erhältst einen Link zum Zurücksetzen deines Passworts.",
+        "resetSent": "Infos zum Zurücksetzen wurden gesendet.",
+        "resetSentDescription": "Wenn ein Konto mit dem angegebenen Benutzernamen/der angegebenen Kontaktmethode existiert, wurde ein Link zum Zurücksetzen des Passworts über alle verfügbaren Kontaktmethoden verschickt. Der Code ist 30 Minuten gültig.",
+        "referralsDescription": "Lade Freunde & Familie mit diesem Link zu Jellyfin ein. Wenn er abläuft, kannst du hier einen neuen Link anfordern.",
+        "copyReferral": "Link kopieren",
+        "invitedBy": "Du wurdest von {user} eingeladen.",
+        "resetPasswordThroughLinkEnd": "Drücke dann auf Abschicken. Du erhältst einen Link, mit dem du dein Passwort zurücksetzen kannst.",
+        "resetPasswordUsername": "Dein Jellyfin-Benutzername",
+        "resetPasswordEmail": "Deine E-Mail Adresse",
+        "referralsWithExpiryDescription": "Lade Freunde & Familie mit diesem Link zu Jellyfin ein. Der Link wird deaktiviert, sobald er abläuft."
     },
     "validationStrings": {
         "length": {
@@ -67,6 +80,10 @@
         "errorNoEmail": "E-Mail Adresse erforderlich.",
         "errorCaptcha": "Captcha falsch.",
         "errorPassword": "Prüfe die Passwortanforderungen.",
-        "errorNoMatch": "Passwörter stimmen nicht überein."
+        "errorNoMatch": "Passwörter stimmen nicht überein.",
+        "errorAccountLinked": "Konto wird bereits verwendet.",
+        "errorEmailLinked": "E-Mail wird bereits verwendet.",
+        "passwordChanged": "Das Passwort wurde geändert.",
+        "errorOldPassword": "Das alte Passwort ist falsch."
     }
 }
