@@ -566,11 +566,19 @@ func start(asDaemon, firstCall bool) {
 					}
 				}
 
-				app.err.Fatalf("Failure serving with SSL/TLS: %s", err)
+				if err == http.ErrServerClosed {
+					app.err.Printf("Failure serving with SSL/TLS: %s", err)
+				} else {
+					app.err.Fatalf("Failure serving with SSL/TLS: %s", err)
+				}
 			}
 		} else {
 			if err := SRV.ListenAndServe(); err != nil {
-				app.err.Printf("Failure serving: %s", err)
+				if err == http.ErrServerClosed {
+					app.err.Printf("Failure serving: %s", err)
+				} else {
+					app.err.Fatalf("Failure serving: %s", err)
+				}
 			}
 		}
 	}()
