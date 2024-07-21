@@ -1275,8 +1275,9 @@ export class accountsList {
                 el.innerHTML = `
                 <span class="button ~neutral sm full-width accounts-announce-template-button">${name}</span><span class="button ~critical fr ml-4 accounts-announce-template-delete">&times;</span>
                 `;
+                let urlSafeName = encodeURIComponent(encodeURIComponent(name));
                 (el.querySelector("span.accounts-announce-template-button") as HTMLSpanElement).onclick = () => {
-                    _get("/users/announce/" + name, null, (req: XMLHttpRequest) => {
+                    _get("/users/announce/" + urlSafeName, null, (req: XMLHttpRequest) => {
                         if (req.readyState == 4) {
                             let template: announcementTemplate;
                             if (req.status != 200) {
@@ -1289,7 +1290,7 @@ export class accountsList {
                     });
                 };
                 (el.querySelector("span.accounts-announce-template-delete") as HTMLSpanElement).onclick = () => {
-                    _delete("/users/announce/" + name, null, (req: XMLHttpRequest) => {
+                    _delete("/users/announce/" + urlSafeName, null, (req: XMLHttpRequest) => {
                         if (req.readyState == 4) {
                             if (req.status != 200) {
                                 window.notifications.customError("deleteTemplateError", window.lang.notif("errorFailureCheckLogs"));

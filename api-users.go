@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -927,12 +928,17 @@ func (app *appContext) GetAnnounceTemplates(gc *gin.Context) {
 // @Produce json
 // @Success 200 {object} announcementTemplate
 // @Failure 400 {object} boolResponse
-// @Param name path string true "name of template"
+// @Param name path string true "name of template (url encoded if necessary)"
 // @Router /users/announce/template/{name} [get]
 // @Security Bearer
 // @tags Users
 func (app *appContext) GetAnnounceTemplate(gc *gin.Context) {
-	name := gc.Param("name")
+	escapedName := gc.Param("name")
+	name, err := url.QueryUnescape(escapedName)
+	if err != nil {
+		respondBool(400, false, gc)
+		return
+	}
 	if announcement, ok := app.storage.GetAnnouncementsKey(name); ok {
 		gc.JSON(200, announcement)
 		return
