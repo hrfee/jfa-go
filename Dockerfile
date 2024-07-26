@@ -15,6 +15,8 @@ RUN (cd /opt/build; make configuration npm email typescript variants-html bundle
 FROM --platform=$BUILDPLATFORM golang:latest AS build
 ARG TARGETARCH
 ENV GOARCH=$TARGETARCH
+ARG BUILT_BY
+ENV BUILTBY=$BUILT_BY
 
 COPY --from=support /opt/build /opt/build
 
