@@ -21,6 +21,7 @@ steps:
       - sh -c "echo \"$REPO_SSH_ID\" > /tmp/id_repo && chmod 600 /tmp/id_repo"
       - bash -c 'sftp -P 2022 -i /tmp/id_repo -o StrictHostKeyChecking=no root@apt.hrfee.dev:/repo/incoming <<< $"put dist/*.deb"'
       - bash -c 'ssh -i /tmp/id_repo root@apt.hrfee.dev -p 2022 "repo-process-deb trusty"'
+      - bash -c 'ssh -i /tmp/id_repo root@apt.hrfee.dev -p 2022 "repo-process-deb trusty-unstable"'
       - bash -c 'ssh -i /tmp/id_repo root@apt.hrfee.dev -p 2022 "rm -f /repo/incoming/*.deb"'
   - name: buildrone
     image: docker.io/hrfee/jfa-go-build-docker:latest
