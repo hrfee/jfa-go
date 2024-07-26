@@ -1,0 +1,26 @@
+when:
+  - event: push
+    branch: main
+
+steps:
+  - name: build
+    image: docker.io/woodpeckerci/plugin-docker-buildx
+    settings:
+        username:
+            from_secret: DOCKER_USERNAME
+        password:
+            from_secret: DOCKER_TOKEN
+        repo: docker.io/hrfee/jfa-go
+        tags: FIXME-unstable
+        registry: docker.io
+        platforms: linux/amd64,linux/arm64,linux/arm/v7
+  - name: buildrone
+    image: docker.io/python
+    environment:
+        BUILDRONE_KEY:
+            from_secret: BUILDRONE_KEY
+    commands:
+      - wget https://builds.hrfee.pw/upload.py
+      - pip install requests
+      - python upload.py https://builds.hrfee.pw hrfee jfa-go --tag docker-unstable=true
+
