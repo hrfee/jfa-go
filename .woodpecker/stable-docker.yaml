@@ -11,7 +11,7 @@ steps:
         password:
             from_secret: DOCKER_TOKEN
         repo: docker.io/hrfee/jfa-go
-        tags: FIXME-latest
+        tags: latest
         registry: docker.io
         platforms: linux/amd64,linux/arm64,linux/arm/v7
   - name: buildrone
