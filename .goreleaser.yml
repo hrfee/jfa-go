@@ -80,6 +80,9 @@ builds:
       dir: ./
       env:
         - CGO_ENABLED=1
+        - CC=x86_64-linux-gnu-gcc
+        - CXX=x86_64-linux-gnu-gcc
+        - PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:$PKG_CONFIG_PATH
       flags:
         - -tags=tray
       ldflags:
