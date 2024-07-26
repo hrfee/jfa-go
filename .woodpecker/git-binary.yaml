@@ -8,6 +8,8 @@ clone:
         image: woodpeckerci/plugin-git
         settings:
             tags: true
+            partial: false
+            depth: 0
 
 steps:
   - name: redoc
