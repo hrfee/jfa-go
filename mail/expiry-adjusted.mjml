@@ -60,6 +60,8 @@
     <mj-section mj-class="bg">
       <mj-column>
         <mj-text mj-class="text" font-size="16px" font-family="Noto Sans, Helvetica, Arial, sans-serif">
+            <p>{{ .helloUser }}</p>
+
             <h3>{{ .yourExpiryWasAdjusted }}</h3>
 
             <p>{{ .ifPreviouslyDisabled }}</p>

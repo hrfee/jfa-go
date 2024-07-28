@@ -741,7 +741,7 @@ func (emailer *Emailer) constructEnabled(reason string, app *appContext, noSub b
 	return email, nil
 }
 
-func (emailer *Emailer) expiryAdjustedValues(expiry time.Time, reason string, app *appContext, noSub bool, custom bool) map[string]interface{} {
+func (emailer *Emailer) expiryAdjustedValues(username string, expiry time.Time, reason string, app *appContext, noSub bool, custom bool) map[string]interface{} {
 	template := map[string]interface{}{
 		"yourExpiryWasAdjusted": emailer.lang.UserExpiryAdjusted.get("yourExpiryWasAdjusted"),
 		"ifPreviouslyDisabled":  emailer.lang.UserExpiryAdjusted.get("ifPreviouslyDisabled"),
@@ -750,6 +750,7 @@ func (emailer *Emailer) expiryAdjustedValues(expiry time.Time, reason string, ap
 		"message":               "",
 	}
 	if noSub {
+		template["helloUser"] = emailer.lang.Strings.get("helloUser")
 		empty := []string{"reason", "newExpiry"}
 		for _, v := range empty {
 			template[v] = "{" + v + "}"
@@ -757,6 +758,7 @@ func (emailer *Emailer) expiryAdjustedValues(expiry time.Time, reason string, ap
 	} else {
 		template["reason"] = reason
 		template["message"] = app.config.Section("messages").Key("message").String()
+		template["helloUser"] = emailer.lang.Strings.template("helloUser", tmpl{"username": username})
 		exp := app.formatDatetime(expiry)
 		if !expiry.IsZero() {
 			if custom {
@@ -771,7 +773,7 @@ func (emailer *Emailer) expiryAdjustedValues(expiry time.Time, reason string, ap
 	return template
 }
 
-func (emailer *Emailer) constructExpiryAdjusted(expiry time.Time, reason string, app *appContext, noSub bool) (*Message, error) {
+func (emailer *Emailer) constructExpiryAdjusted(username string, expiry time.Time, reason string, app *appContext, noSub bool) (*Message, error) {
 	email := &Message{
 		Subject: app.config.Section("user_expiry").Key("adjustment_subject").MustString(emailer.lang.UserExpiryAdjusted.get("title")),
 	}
@@ -779,9 +781,9 @@ func (emailer *Emailer) constructExpiryAdjusted(expiry time.Time, reason string,
 	var template map[string]interface{}
 	message := app.storage.MustGetCustomContentKey("UserExpiryAdjusted")
 	if message.Enabled {
-		template = emailer.expiryAdjustedValues(expiry, reason, app, noSub, true)
+		template = emailer.expiryAdjustedValues(username, expiry, reason, app, noSub, true)
 	} else {
-		template = emailer.expiryAdjustedValues(expiry, reason, app, noSub, false)
+		template = emailer.expiryAdjustedValues(username, expiry, reason, app, noSub, false)
 	}
 	if noSub {
 		template["newExpiry"] = emailer.lang.UserExpiryAdjusted.template("newExpiry", tmpl{

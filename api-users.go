@@ -293,24 +293,24 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool, gc *gin.Context) 
 	if emailEnabled && app.config.Section("notifications").Key("enabled").MustBool(false) {
 		for address, settings := range invite.Notify {
 			if settings["notify-creation"] {
-				go func() {
+				go func(addr string) {
 					msg, err := app.email.constructCreated(req.Code, req.Username, req.Email, invite, app, false)
 					if err != nil {
 						app.err.Printf("%s: Failed to construct user creation notification: %v", req.Code, err)
 					} else {
-						// Check whether notify "address" is an email address of Jellyfin ID
-						if strings.Contains(address, "@") {
-							err = app.email.send(msg, address)
+						// Check whether notify "addr" is an email address of Jellyfin ID
+						if strings.Contains(addr, "@") {
+							err = app.email.send(msg, addr)
 						} else {
-							err = app.sendByID(msg, address)
+							err = app.sendByID(msg, addr)
 						}
 						if err != nil {
 							app.err.Printf("%s: Failed to send user creation notification: %v", req.Code, err)
 						} else {
-							app.info.Printf("Sent user creation notification to %s", address)
+							app.info.Printf("Sent user creation notification to %s", addr)
 						}
 					}
-				}()
+				}(address)
 			}
 		}
 	}
@@ -739,6 +739,22 @@ func (app *appContext) ExtendExpiry(gc *gin.Context) {
 			expiry.Expiry = base.AddDate(0, req.Months, req.Days).Add(time.Duration(((60 * req.Hours) + req.Minutes)) * time.Minute)
 		}
 		app.storage.SetUserExpiryKey(id, expiry)
+		if messagesEnabled && req.Notify {
+			go func(uid string, exp time.Time) {
+				user, status, err := app.jf.UserByID(uid, false)
+				if status != 200 || err != nil {
+					return
+				}
+				msg, err := app.email.constructExpiryAdjusted(user.Name, exp, req.Reason, app, false)
+				if err != nil {
+					app.err.Printf("%s: Failed to construct expiry adjustment notification: %v", uid, err)
+					return
+				}
+				if err := app.sendByID(msg, uid); err != nil {
+					app.err.Printf("%s: Failed to send expiry adjustment notification: %v", uid, err)
+				}
+			}(id, expiry.Expiry)
+		}
 	}
 	respondBool(204, true, gc)
 }

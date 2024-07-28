@@ -187,9 +187,9 @@ func (app *appContext) GetCustomMessageTemplate(gc *gin.Context) {
 		values = app.email.deletedValues(app.storage.lang.Email[lang].Strings.get("reason"), app, false)
 	case "UserExpiryAdjusted":
 		if noContent {
-			msg, err = app.email.constructExpiryAdjusted(time.Time{}, "", app, true)
+			msg, err = app.email.constructExpiryAdjusted("", time.Time{}, "", app, true)
 		}
-		values = app.email.expiryAdjustedValues(time.Now(), app.storage.lang.Email[lang].Strings.get("reason"), app, false, true)
+		values = app.email.expiryAdjustedValues(username, time.Now(), app.storage.lang.Email[lang].Strings.get("reason"), app, false, true)
 	case "InviteEmail":
 		if noContent {
 			msg, err = app.email.constructInvite("", Invite{}, app, true)

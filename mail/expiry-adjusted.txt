@@ -1,3 +1,5 @@
+{{ .helloUser }}
+
 {{ .yourExpiryWasAdjusted }}
 
 {{ .ifPreviouslyDisabled }}
@@ -7,4 +9,3 @@
 {{ .reasonString }}: {{ .reason }}
 
 {{ .message }}
-

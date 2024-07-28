@@ -1684,22 +1684,25 @@ export class accountsList {
             applyList.push(id);
         }
         this._enableExpiryReason.classList.add("unfocused");
+        this._enableExpiryNotify.parentElement.classList.remove("unfocused");
+        this._enableExpiryNotify.checked = false;
+        this._enableExpiryReason.value = "";
         let header: string;
         if (enableUser) {
             header = window.lang.quantity("reEnableUsers", list.length);
-            this._enableExpiryNotify.parentElement.classList.remove("unfocused");
-            this._enableExpiryNotify.checked = false;
-            this._enableExpiryReason.value = "";
         } else if (this._settingExpiry) {
             header = window.lang.quantity("setExpiry", list.length);
-            this._enableExpiryNotify.parentElement.classList.add("unfocused");
+            // this._enableExpiryNotify.parentElement.classList.add("unfocused");
         } else {
             header = window.lang.quantity("extendExpiry", applyList.length);
-            this._enableExpiryNotify.parentElement.classList.add("unfocused");
+            // this._enableExpiryNotify.parentElement.classList.add("unfocused");
         }
         document.getElementById("header-extend-expiry").textContent = header;
         const extend = () => {
-            let send = { "users": applyList, "timestamp": 0 }
+            let send = { "users": applyList, "timestamp": 0, "notify": this._enableExpiryNotify.checked }
+            if (this._enableExpiryNotify.checked) {
+                send["reason"] = this._enableExpiryReason.value;
+            }
             if (this._usingExtendExpiryTextInput) {
                 let date = (Date as any).fromString(this._extendExpiryTextInput.value) as Date;
                 send["timestamp"] = Math.floor(date.getTime() / 1000);
@@ -1728,7 +1731,7 @@ export class accountsList {
         this._extendExpiryForm.onsubmit = (event: Event) => {
             event.preventDefault();
             if (enableUser) {
-                this._enableDisableUsers(applyList, true, this._enableExpiryNotify.checked, this._enableExpiryNotify ? this._enableExpiryReason.value : null, (req: XMLHttpRequest) => {
+                this._enableDisableUsers(applyList, true, this._enableExpiryNotify.checked, this._enableExpiryNotify.checked ? this._enableExpiryReason.value : null, (req: XMLHttpRequest) => {
                     if (req.readyState == 4) {
                         if (req.status != 200 && req.status != 204) {
                             window.modals.extendExpiry.close();
