@@ -610,16 +610,17 @@ type EmailAddress struct {
 }
 
 type customEmails struct {
-	UserCreated       CustomContent `json:"userCreated"`
-	InviteExpiry      CustomContent `json:"inviteExpiry"`
-	PasswordReset     CustomContent `json:"passwordReset"`
-	UserDeleted       CustomContent `json:"userDeleted"`
-	UserDisabled      CustomContent `json:"userDisabled"`
-	UserEnabled       CustomContent `json:"userEnabled"`
-	InviteEmail       CustomContent `json:"inviteEmail"`
-	WelcomeEmail      CustomContent `json:"welcomeEmail"`
-	EmailConfirmation CustomContent `json:"emailConfirmation"`
-	UserExpired       CustomContent `json:"userExpired"`
+	UserCreated        CustomContent `json:"userCreated"`
+	InviteExpiry       CustomContent `json:"inviteExpiry"`
+	PasswordReset      CustomContent `json:"passwordReset"`
+	UserDeleted        CustomContent `json:"userDeleted"`
+	UserDisabled       CustomContent `json:"userDisabled"`
+	UserEnabled        CustomContent `json:"userEnabled"`
+	UserExpiryAdjusted CustomContent `json:"userExpiryAdjusted"`
+	InviteEmail        CustomContent `json:"inviteEmail"`
+	WelcomeEmail       CustomContent `json:"welcomeEmail"`
+	EmailConfirmation  CustomContent `json:"emailConfirmation"`
+	UserExpired        CustomContent `json:"userExpired"`
 }
 
 // CustomContent stores customized versions of jfa-go content, including emails and user messages.
@@ -1225,6 +1226,7 @@ func (st *Storage) loadLangEmail(filesystems ...fs.FS) error {
 					patchLang(&lang.UserDeleted, &fallback.UserDeleted, &english.UserDeleted)
 					patchLang(&lang.UserDisabled, &fallback.UserDisabled, &english.UserDisabled)
 					patchLang(&lang.UserEnabled, &fallback.UserEnabled, &english.UserEnabled)
+					patchLang(&lang.UserExpiryAdjusted, &fallback.UserExpiryAdjusted, &english.UserExpiryAdjusted)
 					patchLang(&lang.InviteEmail, &fallback.InviteEmail, &english.InviteEmail)
 					patchLang(&lang.WelcomeEmail, &fallback.WelcomeEmail, &english.WelcomeEmail)
 					patchLang(&lang.EmailConfirmation, &fallback.EmailConfirmation, &english.EmailConfirmation)
@@ -1239,6 +1241,7 @@ func (st *Storage) loadLangEmail(filesystems ...fs.FS) error {
 				patchLang(&lang.UserDeleted, &english.UserDeleted)
 				patchLang(&lang.UserDisabled, &english.UserDisabled)
 				patchLang(&lang.UserEnabled, &english.UserEnabled)
+				patchLang(&lang.UserExpiryAdjusted, &english.UserExpiryAdjusted)
 				patchLang(&lang.InviteEmail, &english.InviteEmail)
 				patchLang(&lang.WelcomeEmail, &english.WelcomeEmail)
 				patchLang(&lang.EmailConfirmation, &english.EmailConfirmation)

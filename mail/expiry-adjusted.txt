@@ -1,0 +1,10 @@
+{{ .yourExpiryWasAdjusted }}
+
+{{ .ifPreviouslyDisabled }}
+
+{{ .newExpiry }}
+
+{{ .reasonString }}: {{ .reason }}
+
+{{ .message }}
+

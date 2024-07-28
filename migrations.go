@@ -17,6 +17,7 @@ func runMigrations(app *appContext) {
 	linkExistingOmbiDiscordTelegram(app)
 	// migrateHyphens(app)
 	migrateToBadger(app)
+	intialiseCustomContent(app)
 }
 
 // Migrate pre-0.2.0 user templates to profiles
@@ -329,11 +330,60 @@ func migrateToBadger(app *appContext) {
 		app.storage.SetCustomContentKey("UserPage", app.storage.deprecatedUserPageContent.Page)
 	}
 
+	// Custom content not present here was added post-badger.
+
 	err := app.storage.db.Upsert("migrated_to_db", MigrationStatus{true})
 	if err != nil {
 		app.err.Fatalf("Failed to migrate to DB: %v\n", err)
 	}
 	app.info.Println("All data migrated to database. JSON files in the config folder can be deleted if you are sure all data is correct in the app. Create an issue if you have problems.")
+}
+
+// Simply creates an emply CC template if not imn the DB already.
+// Add new CC types here!
+func intialiseCustomContent(app *appContext) {
+	emptyCC := CustomContent{
+		Enabled: false,
+	}
+	if _, ok := app.storage.GetCustomContentKey("UserCreated"); !ok {
+		app.storage.SetCustomContentKey("UserCreated", emptyCC)
+	}
+	if _, ok := app.storage.GetCustomContentKey("InviteExpiry"); !ok {
+		app.storage.SetCustomContentKey("InviteExpiry", emptyCC)
+	}
+	if _, ok := app.storage.GetCustomContentKey("PasswordReset"); !ok {
+		app.storage.SetCustomContentKey("PasswordReset", emptyCC)
+	}
+	if _, ok := app.storage.GetCustomContentKey("UserDeleted"); !ok {
+		app.storage.SetCustomContentKey("UserDeleted", emptyCC)
+	}
+	if _, ok := app.storage.GetCustomContentKey("UserDisabled"); !ok {
+		app.storage.SetCustomContentKey("UserDisabled", emptyCC)
+	}
+	if _, ok := app.storage.GetCustomContentKey("UserEnabled"); !ok {
+		app.storage.SetCustomContentKey("UserEnabled", emptyCC)
+	}
+	if _, ok := app.storage.GetCustomContentKey("InviteEmail"); !ok {
+		app.storage.SetCustomContentKey("InviteEmail", emptyCC)
+	}
+	if _, ok := app.storage.GetCustomContentKey("WelcomeEmail"); !ok {
+		app.storage.SetCustomContentKey("WelcomeEmail", emptyCC)
+	}
+	if _, ok := app.storage.GetCustomContentKey("EmailConfirmation"); !ok {
+		app.storage.SetCustomContentKey("EmailConfirmation", emptyCC)
+	}
+	if _, ok := app.storage.GetCustomContentKey("UserExpired"); !ok {
+		app.storage.SetCustomContentKey("UserExpired", emptyCC)
+	}
+	if _, ok := app.storage.GetCustomContentKey("UserLogin"); !ok {
+		app.storage.SetCustomContentKey("UserLogin", emptyCC)
+	}
+	if _, ok := app.storage.GetCustomContentKey("UserPage"); !ok {
+		app.storage.SetCustomContentKey("UserPage", emptyCC)
+	}
+	if _, ok := app.storage.GetCustomContentKey("UserExpiryAdjusted"); !ok {
+		app.storage.SetCustomContentKey("UserExpiryAdjusted", emptyCC)
+	}
 }
 
 // Migrate between hyphenated & non-hyphenated user IDs. Doesn't seem to happen anymore, so disabled.

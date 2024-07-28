@@ -105,6 +105,9 @@ func (app *appContext) loadConfig() error {
 	app.MustSetValue("user_expiry", "email_html", "jfa-go:"+"user-expired.html")
 	app.MustSetValue("user_expiry", "email_text", "jfa-go:"+"user-expired.txt")
 
+	app.MustSetValue("user_expiry", "adjustment_email_html", "jfa-go:"+"expiry-adjusted.html")
+	app.MustSetValue("user_expiry", "adjustment_email_text", "jfa-go:"+"expiry-adjusted.txt")
+
 	app.MustSetValue("matrix", "topic", "Jellyfin notifications")
 	app.MustSetValue("matrix", "show_on_reg", "true")
 

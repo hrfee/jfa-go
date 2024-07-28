@@ -1713,7 +1713,7 @@
             "order": [],
             "meta": {
                 "name": "User Expiry",
-                "description": "When set on an invite, users will be deleted or disabled a specified amount of time after they create their account."
+                "description": "When set on an invite, users will be deleted or disabled a specified amount of time after they create their account. Expiries can also be set and extended for invididual users, optionally with a message why."
             },
             "settings": {
                 "behaviour": {
@@ -1758,6 +1758,35 @@
                 },
                 "email_text": {
                     "name": "Custom email (plaintext)",
+                    "required": false,
+                    "requires_restart": false,
+                    "advanced": true,
+                    "depends_true": "messages|enabled",
+                    "type": "text",
+                    "value": "",
+                    "description": "Path to custom email in plain text"
+                },
+                "adjustment_subject": {
+                    "name": "Adjustment: email subject",
+                    "required": false,
+                    "requires_restart": false,
+                    "depends_true": "messages|enabled",
+                    "type": "text",
+                    "value": "",
+                    "description": "Subject of adjustment emails, sent optionally when setting/extending an expiry."
+                },
+                "adjustment_email_html": {
+                    "name": "Adjustment: Custom email (HTML)",
+                    "required": false,
+                    "requires_restart": false,
+                    "advanced": true,
+                    "depends_true": "messages|enabled",
+                    "type": "text",
+                    "value": "",
+                    "description": "Path to custom email html"
+                },
+                "adjustment_email_text": {
+                    "name": "Adjustment: Custom email (plaintext)",
                     "required": false,
                     "requires_restart": false,
                     "advanced": true,

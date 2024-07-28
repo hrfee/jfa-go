@@ -741,6 +741,70 @@ func (emailer *Emailer) constructEnabled(reason string, app *appContext, noSub b
 	return email, nil
 }
 
+func (emailer *Emailer) expiryAdjustedValues(expiry time.Time, reason string, app *appContext, noSub bool, custom bool) map[string]interface{} {
+	template := map[string]interface{}{
+		"yourExpiryWasAdjusted": emailer.lang.UserExpiryAdjusted.get("yourExpiryWasAdjusted"),
+		"ifPreviouslyDisabled":  emailer.lang.UserExpiryAdjusted.get("ifPreviouslyDisabled"),
+		"reasonString":          emailer.lang.Strings.get("reason"),
+		"newExpiry":             "",
+		"message":               "",
+	}
+	if noSub {
+		empty := []string{"reason", "newExpiry"}
+		for _, v := range empty {
+			template[v] = "{" + v + "}"
+		}
+	} else {
+		template["reason"] = reason
+		template["message"] = app.config.Section("messages").Key("message").String()
+		exp := app.formatDatetime(expiry)
+		if !expiry.IsZero() {
+			if custom {
+				template["newExpiry"] = exp
+			} else if !expiry.IsZero() {
+				template["newExpiry"] = emailer.lang.UserExpiryAdjusted.template("newExpiry", tmpl{
+					"date": exp,
+				})
+			}
+		}
+	}
+	return template
+}
+
+func (emailer *Emailer) constructExpiryAdjusted(expiry time.Time, reason string, app *appContext, noSub bool) (*Message, error) {
+	email := &Message{
+		Subject: app.config.Section("user_expiry").Key("adjustment_subject").MustString(emailer.lang.UserExpiryAdjusted.get("title")),
+	}
+	var err error
+	var template map[string]interface{}
+	message := app.storage.MustGetCustomContentKey("UserExpiryAdjusted")
+	if message.Enabled {
+		template = emailer.expiryAdjustedValues(expiry, reason, app, noSub, true)
+	} else {
+		template = emailer.expiryAdjustedValues(expiry, reason, app, noSub, false)
+	}
+	if noSub {
+		template["newExpiry"] = emailer.lang.UserExpiryAdjusted.template("newExpiry", tmpl{
+			"date": "{newExpiry}",
+		})
+	}
+	if message.Enabled {
+		content := templateEmail(
+			message.Content,
+			message.Variables,
+			nil,
+			template,
+		)
+		email, err = emailer.constructTemplate(email.Subject, content, app)
+	} else {
+		email.HTML, email.Text, email.Markdown, err = emailer.construct(app, "user_expiry", "adjustment_email_", template)
+	}
+	if err != nil {
+		return nil, err
+	}
+	return email, nil
+}
+
 func (emailer *Emailer) welcomeValues(username string, expiry time.Time, app *appContext, noSub bool, custom bool) map[string]interface{} {
 	template := map[string]interface{}{
 		"welcome":               emailer.lang.WelcomeEmail.get("welcome"),

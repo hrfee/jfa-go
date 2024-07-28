@@ -45,6 +45,13 @@
         "title": "Your account has been re-enabled - Jellyfin",
         "yourAccountWasEnabled": "Your account was re-enabled."
     },
+    "userExpiryAdjusted": {
+        "name": "Expiry adjusted",
+        "title": "Account expiry adjusted - Jellyfin",
+        "yourExpiryWasAdjusted": "Your account's expiry date has been adjusted.",
+        "ifPreviouslyDisabled": "If your account was previously disabled, it has been re-enabled.",
+        "newExpiry": "Your account will now expire on {date}."
+    },
     "inviteEmail": {
         "name": "Invite email",
         "title": "Invite - Jellyfin",

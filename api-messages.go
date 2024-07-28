@@ -26,18 +26,19 @@ func (app *appContext) GetCustomContent(gc *gin.Context) {
 		adminLang = app.storage.lang.chosenAdminLang
 	}
 	list := emailListDTO{
-		"UserCreated":       {Name: app.storage.lang.Email[lang].UserCreated["name"], Enabled: app.storage.MustGetCustomContentKey("UserCreated").Enabled},
-		"InviteExpiry":      {Name: app.storage.lang.Email[lang].InviteExpiry["name"], Enabled: app.storage.MustGetCustomContentKey("InviteExpiry").Enabled},
-		"PasswordReset":     {Name: app.storage.lang.Email[lang].PasswordReset["name"], Enabled: app.storage.MustGetCustomContentKey("PasswordReset").Enabled},
-		"UserDeleted":       {Name: app.storage.lang.Email[lang].UserDeleted["name"], Enabled: app.storage.MustGetCustomContentKey("UserDeleted").Enabled},
-		"UserDisabled":      {Name: app.storage.lang.Email[lang].UserDisabled["name"], Enabled: app.storage.MustGetCustomContentKey("UserDisabled").Enabled},
-		"UserEnabled":       {Name: app.storage.lang.Email[lang].UserEnabled["name"], Enabled: app.storage.MustGetCustomContentKey("UserEnabled").Enabled},
-		"InviteEmail":       {Name: app.storage.lang.Email[lang].InviteEmail["name"], Enabled: app.storage.MustGetCustomContentKey("InviteEmail").Enabled},
-		"WelcomeEmail":      {Name: app.storage.lang.Email[lang].WelcomeEmail["name"], Enabled: app.storage.MustGetCustomContentKey("WelcomeEmail").Enabled},
-		"EmailConfirmation": {Name: app.storage.lang.Email[lang].EmailConfirmation["name"], Enabled: app.storage.MustGetCustomContentKey("EmailConfirmation").Enabled},
-		"UserExpired":       {Name: app.storage.lang.Email[lang].UserExpired["name"], Enabled: app.storage.MustGetCustomContentKey("UserExpired").Enabled},
-		"UserLogin":         {Name: app.storage.lang.Admin[adminLang].Strings["userPageLogin"], Enabled: app.storage.MustGetCustomContentKey("UserLogin").Enabled},
-		"UserPage":          {Name: app.storage.lang.Admin[adminLang].Strings["userPagePage"], Enabled: app.storage.MustGetCustomContentKey("UserPage").Enabled},
+		"UserCreated":        {Name: app.storage.lang.Email[lang].UserCreated["name"], Enabled: app.storage.MustGetCustomContentKey("UserCreated").Enabled},
+		"InviteExpiry":       {Name: app.storage.lang.Email[lang].InviteExpiry["name"], Enabled: app.storage.MustGetCustomContentKey("InviteExpiry").Enabled},
+		"PasswordReset":      {Name: app.storage.lang.Email[lang].PasswordReset["name"], Enabled: app.storage.MustGetCustomContentKey("PasswordReset").Enabled},
+		"UserDeleted":        {Name: app.storage.lang.Email[lang].UserDeleted["name"], Enabled: app.storage.MustGetCustomContentKey("UserDeleted").Enabled},
+		"UserDisabled":       {Name: app.storage.lang.Email[lang].UserDisabled["name"], Enabled: app.storage.MustGetCustomContentKey("UserDisabled").Enabled},
+		"UserEnabled":        {Name: app.storage.lang.Email[lang].UserEnabled["name"], Enabled: app.storage.MustGetCustomContentKey("UserEnabled").Enabled},
+		"UserExpiryAdjusted": {Name: app.storage.lang.Email[lang].UserExpiryAdjusted["name"], Enabled: app.storage.MustGetCustomContentKey("UserExpiryAdjusted").Enabled},
+		"InviteEmail":        {Name: app.storage.lang.Email[lang].InviteEmail["name"], Enabled: app.storage.MustGetCustomContentKey("InviteEmail").Enabled},
+		"WelcomeEmail":       {Name: app.storage.lang.Email[lang].WelcomeEmail["name"], Enabled: app.storage.MustGetCustomContentKey("WelcomeEmail").Enabled},
+		"EmailConfirmation":  {Name: app.storage.lang.Email[lang].EmailConfirmation["name"], Enabled: app.storage.MustGetCustomContentKey("EmailConfirmation").Enabled},
+		"UserExpired":        {Name: app.storage.lang.Email[lang].UserExpired["name"], Enabled: app.storage.MustGetCustomContentKey("UserExpired").Enabled},
+		"UserLogin":          {Name: app.storage.lang.Admin[adminLang].Strings["userPageLogin"], Enabled: app.storage.MustGetCustomContentKey("UserLogin").Enabled},
+		"UserPage":           {Name: app.storage.lang.Admin[adminLang].Strings["userPagePage"], Enabled: app.storage.MustGetCustomContentKey("UserPage").Enabled},
 	}
 
 	filter := gc.Query("filter")
@@ -50,39 +51,6 @@ func (app *appContext) GetCustomContent(gc *gin.Context) {
 
 	gc.JSON(200, list)
 }
-
-// No longer needed, these are stored by string keys in the database now.
-/* func (app *appContext) getCustomMessage(id string) *CustomContent {
-	switch id {
-	case "Announcement":
-		return &CustomContent{}
-	case "UserCreated":
-		return &app.storage.customEmails.UserCreated
-	case "InviteExpiry":
-		return &app.storage.customEmails.InviteExpiry
-	case "PasswordReset":
-		return &app.storage.customEmails.PasswordReset
-	case "UserDeleted":
-		return &app.storage.customEmails.UserDeleted
-	case "UserDisabled":
-		return &app.storage.customEmails.UserDisabled
-	case "UserEnabled":
-		return &app.storage.customEmails.UserEnabled
-	case "InviteEmail":
-		return &app.storage.customEmails.InviteEmail
-	case "WelcomeEmail":
-		return &app.storage.customEmails.WelcomeEmail
-	case "EmailConfirmation":
-		return &app.storage.customEmails.EmailConfirmation
-	case "UserExpired":
-		return &app.storage.customEmails.UserExpired
-	case "UserLogin":
-		return &app.storage.userPage.Login
-	case "UserPage":
-		return &app.storage.userPage.Page
-	}
-	return nil
-} */
 
 // @Summary Sets the corresponding custom content.
 // @Produce json
@@ -217,6 +185,11 @@ func (app *appContext) GetCustomMessageTemplate(gc *gin.Context) {
 			msg, err = app.email.constructEnabled("", app, true)
 		}
 		values = app.email.deletedValues(app.storage.lang.Email[lang].Strings.get("reason"), app, false)
+	case "UserExpiryAdjusted":
+		if noContent {
+			msg, err = app.email.constructExpiryAdjusted(time.Time{}, "", app, true)
+		}
+		values = app.email.expiryAdjustedValues(time.Now(), app.storage.lang.Email[lang].Strings.get("reason"), app, false, true)
 	case "InviteEmail":
 		if noContent {
 			msg, err = app.email.constructInvite("", Invite{}, app, true)
