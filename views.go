@@ -271,13 +271,14 @@ func (app *appContext) ResetPassword(gc *gin.Context) {
 	app.pushResources(gc, PWRPage)
 	lang := app.getLang(gc, PWRPage, app.storage.lang.chosenPWRLang)
 	data := gin.H{
-		"urlBase":        app.getURLBase(gc),
-		"cssClass":       app.cssClass,
-		"cssVersion":     cssVersion,
-		"contactMessage": app.config.Section("ui").Key("contact_message").String(),
-		"strings":        app.storage.lang.PasswordReset[lang].Strings,
-		"success":        false,
-		"ombiEnabled":    app.config.Section("ombi").Key("enabled").MustBool(false),
+		"urlBase":           app.getURLBase(gc),
+		"cssClass":          app.cssClass,
+		"cssVersion":        cssVersion,
+		"contactMessage":    app.config.Section("ui").Key("contact_message").String(),
+		"strings":           app.storage.lang.PasswordReset[lang].Strings,
+		"success":           false,
+		"ombiEnabled":       app.config.Section("ombi").Key("enabled").MustBool(false),
+		"customSuccessCard": false,
 	}
 	pwr, isInternal := app.internalPWRs[pin]
 	// if isInternal && setPassword {
@@ -734,6 +735,7 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 		"userExpiryMessage":  app.storage.lang.User[lang].Strings.get("yourAccountIsValidUntil"),
 		"langName":           lang,
 		"passwordReset":      false,
+		"customSuccessCard":  false,
 		"telegramEnabled":    telegram,
 		"discordEnabled":     discord,
 		"matrixEnabled":      matrix,
@@ -765,6 +767,22 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 		}))
 		data["discordServerName"] = app.discord.serverName
 		data["discordInviteLink"] = app.discord.inviteChannelName != ""
+	}
+	if msg, ok := app.storage.GetCustomContentKey("PostSignupCard"); ok && msg.Enabled {
+		data["customSuccessCard"] = true
+		// We don't template here, since the username is only known after login.
+		data["customSuccessCardContent"] = template.HTML(markdown.ToHTML(
+			[]byte(templateEmail(
+				msg.Content,
+				msg.Variables,
+				msg.Conditionals,
+				map[string]interface{}{
+					"username":     "{username}",
+					"myAccountURL": userPageAddress,
+				},
+			),
+			), nil, markdownRenderer,
+		))
 	}
 
 	// if discordEnabled {

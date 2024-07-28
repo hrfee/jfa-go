@@ -14,12 +14,19 @@
     </head>
     <body class="max-w-full overflow-x-hidden section">
         <div id="modal-success" class="modal">
-            <div class="card relative mx-auto my-[10%] w-4/5 lg:w-1/3">
-                <span class="heading mb-4">{{ if .passwordReset }}{{ .strings.passwordReset }}{{ else }}{{ .strings.successHeader }}{{ end }}</span>
-                <p class="content mb-4">{{ if .passwordReset }}{{ .strings.youCanLoginPassword }}{{ else }}{{ .successMessage }}{{ end }}</p>
-                {{ if .userPageEnabled }}<p class="content mb-4" id="modal-success-user-page-area" my-account-term="{{ .strings.myAccount }}">{{ .strings.userPageSuccessMessage }}</p>{{ end }}
-                <a class="button ~urge @low full-width center supra submit" href="{{ .jfLink }}" id="create-success-button">{{ .strings.continue }}</a>
-            </div>
+            {{ if .customSuccessCard }}
+                <div class="card @low dark:~d_neutral content break-words relative mx-auto my-[10%] w-4/5 lg:w-1/3">
+                    {{ .customSuccessCardContent }}
+                    <a class="button ~urge @low full-width center supra submit my-2" href="{{ .jfLink }}" id="create-success-button">{{ .strings.continue }}</a>
+                </div>
+            {{ else }}
+                <div class="card relative mx-auto my-[10%] w-4/5 lg:w-1/3">
+                    <span class="heading mb-4">{{ if .passwordReset }}{{ .strings.passwordReset }}{{ else }}{{ .strings.successHeader }}{{ end }}</span>
+                    <p class="content mb-4">{{ if .passwordReset }}{{ .strings.youCanLoginPassword }}{{ else }}{{ .successMessage }}{{ end }}</p>
+                    {{ if .userPageEnabled }}<p class="content mb-4" id="modal-success-user-page-area" my-account-term="{{ .strings.myAccount }}">{{ .strings.userPageSuccessMessage }}</p>{{ end }}
+                    <a class="button ~urge @low full-width center supra submit" href="{{ .jfLink }}" id="create-success-button">{{ .strings.continue }}</a>
+                </div>
+            {{ end }}
         </div>
         <div id="modal-confirmation" class="modal">
             <div class="card relative mx-auto my-[10%] w-4/5 lg:w-1/3">

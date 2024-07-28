@@ -38,6 +38,7 @@ interface formWindow extends Window {
     reCAPTCHASiteKey: string;
     userPageEnabled: boolean;
     userPageAddress: string;
+    customSuccessCard: boolean;
 }
 
 loadLangSelector("form");
@@ -296,7 +297,10 @@ const create = (event: SubmitEvent) => {
                 const url = ((document.getElementById("modal-success") as HTMLDivElement).querySelector("a.submit") as HTMLAnchorElement).href;
                 window.location.href = url;
             } else {
-                if (window.userPageEnabled) {
+                if (window.customSuccessCard) {
+                    const content = window.successModal.asElement().querySelector(".card");
+                    content.innerHTML = content.innerHTML.replace(new RegExp("{username}", "g"), send.username)
+                } else if (window.userPageEnabled) {
                     const userPageNoticeArea = document.getElementById("modal-success-user-page-area");
                     const link = `<a href="${window.userPageAddress}" target="_blank">${userPageNoticeArea.getAttribute("my-account-term")}</a>`;
                     userPageNoticeArea.innerHTML = userPageNoticeArea.textContent.replace("{myAccount}", link);

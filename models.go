@@ -239,8 +239,9 @@ type langDTO map[string]string
 type emailListDTO map[string]emailListEl
 
 type emailListEl struct {
-	Name    string `json:"name"`
-	Enabled bool   `json:"enabled"`
+	Name        string `json:"name"`
+	Enabled     bool   `json:"enabled"`
+	Description string `json:"description"`
 }
 
 type emailSetDTO struct {

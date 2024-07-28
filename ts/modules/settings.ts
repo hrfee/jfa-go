@@ -1083,6 +1083,7 @@ export interface templateEmail {
 interface emailListEl {
     name: string;
     enabled: boolean;
+    description: string;
 }
 
 class MessageEditor {
@@ -1092,6 +1093,7 @@ class MessageEditor {
     private _templ: templateEmail;
     private _form = document.getElementById("form-editor") as HTMLFormElement;
     private _header = document.getElementById("header-editor") as HTMLSpanElement;
+    private _aside = document.getElementById("aside-editor") as HTMLElement;
     private _variables = document.getElementById("editor-variables") as HTMLDivElement;
     private _variablesLabel = document.getElementById("label-editor-variables") as HTMLElement;
     private _conditionals = document.getElementById("editor-conditionals") as HTMLDivElement;
@@ -1113,6 +1115,12 @@ class MessageEditor {
                 if (this._names[id] !== undefined) {
                     this._header.textContent = this._names[id].name;
                 } 
+                this._aside.classList.add("unfocused");
+                if (this._names[id].description != "") {
+                    this._aside.textContent = this._names[id].description;
+                    this._aside.classList.remove("unfocused");
+                }
+
                 this._templ = req.response as templateEmail;
                 this._textArea.value = this._templ.content;
                 if (this._templ.html == "") {
@@ -1212,11 +1220,22 @@ class MessageEditor {
                     if (this._names[id].enabled) {
                         resetButton = `<i class="icon ri-restart-line" title="${window.lang.get("strings", "reset")}"></i>`;
                     }
-                    tr.innerHTML = `
-                    <td>${this._names[id].name}</td>
+                    let innerHTML = `
+                    <td>
+                        ${this._names[id].name}
+                    `;
+                    if (this._names[id].description != "") innerHTML += `
+                        <div class="tooltip right">
+                            <i class="icon ri-information-line"></i>
+                            <span class="content sm">${this._names[id].description}</span>
+                        </div>
+                    `;
+                    innerHTML += `
+                    </td>
                     <td class="table-inline justify-center"><span class="customize-reset">${resetButton}</span></td>
                     <td><span class="button ~info @low" title="${window.lang.get("strings", "edit")}"><i class="icon ri-edit-line"></i></span></td>
                     `;
+                    tr.innerHTML = innerHTML;
                     (tr.querySelector("span.button") as HTMLSpanElement).onclick = () => {
                         window.modals.customizeEmails.close()
                         this.loadEditor(id);

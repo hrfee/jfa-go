@@ -31,6 +31,11 @@
     window.reCAPTCHASiteKey = "{{ .reCAPTCHASiteKey }}";
     window.userPageEnabled = {{ .userPageEnabled }};
     window.userPageAddress = "{{ .userPageAddress }}";
+    {{ if index . "customSuccessCard" }}
+        window.customSuccessCard = {{ .customSuccessCard }};
+    {{ else }}
+        window.customSuccessCard = false;
+    {{ end }}
 </script>
 {{ if .passwordReset }}
 <script src="js/pwr.js" type="module"></script>

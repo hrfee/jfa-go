@@ -247,7 +247,7 @@
                     "requires_restart": false,
                     "type": "text",
                     "value": "Your account has been created. Click below to continue to Jellyfin.",
-                    "description": "Displayed when a user creates an account"
+                    "description": "Displayed when a user creates an account. Use the \"post-signup card\" in the Message editor for more control."
                 },
                 "url_base": {
                     "name": "Reverse Proxy subfolder",
@@ -273,7 +273,7 @@
                     "type": "bool",
                     "value": false,
                     "advanced": true,
-                    "description": "Navigate directly to the above URL instead of needing the user to click \"Continue\"."
+                    "description": "Navigate directly to the above URL instead of needing the user to click \"Continue\". Overrides the post-signup card."
                 },
                 "login_appearance": {
                     "name": "Login screen appearance",
@@ -702,7 +702,7 @@
                     "description": "Allow users to start a Password Reset by inputting their Discord/Telegram/Matrix username/id."
                 },
                 "pwr_note": {
-                    "name": "PWR Methods",
+                    "name": "PWR Methods:",
                     "type": "note",
                     "depends_true": "enabled",
                     "value": "",

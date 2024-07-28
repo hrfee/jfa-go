@@ -39,6 +39,7 @@ func (app *appContext) GetCustomContent(gc *gin.Context) {
 		"UserExpired":        {Name: app.storage.lang.Email[lang].UserExpired["name"], Enabled: app.storage.MustGetCustomContentKey("UserExpired").Enabled},
 		"UserLogin":          {Name: app.storage.lang.Admin[adminLang].Strings["userPageLogin"], Enabled: app.storage.MustGetCustomContentKey("UserLogin").Enabled},
 		"UserPage":           {Name: app.storage.lang.Admin[adminLang].Strings["userPagePage"], Enabled: app.storage.MustGetCustomContentKey("UserPage").Enabled},
+		"PostSignupCard":     {Name: app.storage.lang.Admin[adminLang].Strings["postSignupCard"], Enabled: app.storage.MustGetCustomContentKey("PostSignupCard").Enabled, Description: app.storage.lang.Admin[adminLang].Strings["postSignupCardDescription"]},
 	}
 
 	filter := gc.Query("filter")
@@ -145,7 +146,11 @@ func (app *appContext) GetCustomMessageTemplate(gc *gin.Context) {
 	} else if id == "UserLogin" {
 		variables = []string{}
 		customMessage.Variables = variables
+	} else if id == "PostSignupCard" {
+		variables = []string{"{username}", "{myAccountURL}"}
+		customMessage.Variables = variables
 	}
+
 	content = customMessage.Content
 	noContent := content == ""
 	if !noContent {
@@ -210,14 +215,14 @@ func (app *appContext) GetCustomMessageTemplate(gc *gin.Context) {
 			msg, err = app.email.constructUserExpired(app, true)
 		}
 		values = app.email.userExpiredValues(app, false)
-	case "UserLogin", "UserPage":
+	case "UserLogin", "UserPage", "PostSignupCard":
 		values = map[string]interface{}{}
 	}
 	if err != nil {
 		respondBool(500, false, gc)
 		return
 	}
-	if noContent && id != "Announcement" && id != "UserPage" && id != "UserLogin" {
+	if noContent && id != "Announcement" && id != "UserPage" && id != "UserLogin" && id != "PostSignupCard" {
 		content = msg.Text
 		variables = make([]string, strings.Count(content, "{"))
 		i := 0
@@ -243,17 +248,32 @@ func (app *appContext) GetCustomMessageTemplate(gc *gin.Context) {
 	}
 	app.storage.SetCustomContentKey(id, customMessage)
 	var mail *Message
-	if id != "UserLogin" && id != "UserPage" {
+	if id != "UserLogin" && id != "UserPage" && id != "PostSignupCard" {
 		mail, err = app.email.constructTemplate("", "<div class=\"preview-content\"></div>", app)
 		if err != nil {
 			respondBool(500, false, gc)
 			return
 		}
+	} else if id == "PostSignupCard" {
+		// Jankiness follows.
+		// Source content from "Success Message" setting.
+		if noContent {
+			content = "# " + app.storage.lang.User[app.storage.lang.chosenUserLang].Strings.get("successHeader") + "\n" + app.config.Section("ui").Key("success_message").String()
+			if app.config.Section("user_page").Key("enabled").MustBool(false) {
+				content += "\n\n<br>\n" + app.storage.lang.User[app.storage.lang.chosenUserLang].Strings.template("userPageSuccessMessage", tmpl{
+					"myAccount": "[" + app.storage.lang.User[app.storage.lang.chosenUserLang].Strings.get("myAccount") + "]({myAccountURL})",
+				})
+			}
+		}
+		mail = &Message{
+			HTML: "<div class=\"card ~neutral dark:~d_neutral @low\"><div class=\"preview-content\"></div><br><button class=\"button ~urge dark:~d_urge @low full-width center supra submit\">" + app.storage.lang.User[app.storage.lang.chosenUserLang].Strings.get("continue") + "</a></div>",
+		}
+		mail.Markdown = mail.HTML
 	} else {
 		mail = &Message{
-			HTML:     "<div class=\"card ~neutral dark:~d_neutral @low preview-content\"></div>",
-			Markdown: "<div class=\"card ~neutral dark:~d_neutral @low preview-content\"></div>",
+			HTML: "<div class=\"card ~neutral dark:~d_neutral @low preview-content\"></div>",
 		}
+		mail.Markdown = mail.HTML
 	}
 	gc.JSON(200, customEmailDTO{Content: content, Variables: variables, Conditionals: conditionals, Values: values, HTML: mail.HTML, Plaintext: mail.Text})
 }

@@ -339,7 +339,7 @@ func migrateToBadger(app *appContext) {
 	app.info.Println("All data migrated to database. JSON files in the config folder can be deleted if you are sure all data is correct in the app. Create an issue if you have problems.")
 }
 
-// Simply creates an emply CC template if not imn the DB already.
+// Simply creates an emply CC template if not in the DB already.
 // Add new CC types here!
 func intialiseCustomContent(app *appContext) {
 	emptyCC := CustomContent{
@@ -383,6 +383,10 @@ func intialiseCustomContent(app *appContext) {
 	}
 	if _, ok := app.storage.GetCustomContentKey("UserExpiryAdjusted"); !ok {
 		app.storage.SetCustomContentKey("UserExpiryAdjusted", emptyCC)
+	}
+	if _, ok := app.storage.GetCustomContentKey("PostSignupCard"); !ok {
+		app.storage.SetCustomContentKey("PostSignupCard", emptyCC)
+
 	}
 }
 
