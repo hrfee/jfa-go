@@ -18,6 +18,7 @@ replace github.com/hrfee/jfa-go/easyproxy => ./easyproxy
 
 require (
 	github.com/bwmarrin/discordgo v0.27.1
+	github.com/dgraph-io/badger/v3 v3.2103.5
 	github.com/emersion/go-autostart v0.0.0-20210130080809-00ed301c8e9a
 	github.com/fatih/color v1.15.0
 	github.com/fsnotify/fsnotify v1.6.0
@@ -30,10 +31,11 @@ require (
 	github.com/gomarkdown/markdown v0.0.0-20230322041520-c84983bdbf2a
 	github.com/hrfee/jfa-go/common v0.0.0-20230626224816-f72960635dc3
 	github.com/hrfee/jfa-go/docs v0.0.0-20230626224816-f72960635dc3
+	github.com/hrfee/jfa-go/easyproxy v0.0.0-00010101000000-000000000000
 	github.com/hrfee/jfa-go/linecache v0.0.0-20230626224816-f72960635dc3
 	github.com/hrfee/jfa-go/logger v0.0.0-20230626224816-f72960635dc3
 	github.com/hrfee/jfa-go/ombi v0.0.0-20230626224816-f72960635dc3
-	github.com/hrfee/mediabrowser v0.3.12
+	github.com/hrfee/mediabrowser v0.3.13
 	github.com/itchyny/timefmt-go v0.1.5
 	github.com/lithammer/shortuuid/v3 v3.0.7
 	github.com/mailgun/mailgun-go/v4 v4.9.1
@@ -54,7 +56,6 @@ require (
 	github.com/cespare/xxhash v1.1.0 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
-	github.com/dgraph-io/badger/v3 v3.2103.5 // indirect
 	github.com/dgraph-io/ristretto v0.1.1 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
@@ -87,7 +88,6 @@ require (
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
-	github.com/hrfee/jfa-go/easyproxy v0.0.0-00010101000000-000000000000 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.16.6 // indirect
