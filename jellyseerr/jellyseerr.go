@@ -91,7 +91,7 @@ func (js *Jellyseerr) getJSON(url string, params map[string]string, queryParams 
 }
 
 // does a POST and optionally returns response as string. Returns a string instead of an io.reader bcs i couldn't get it working otherwise.
-func (js *Jellyseerr) send(mode string, url string, data interface{}, response bool, headers map[string]string) (string, int, error) {
+func (js *Jellyseerr) send(mode string, url string, data any, response bool, headers map[string]string) (string, int, error) {
 	responseText := ""
 	params, _ := json.Marshal(data)
 	req, _ := http.NewRequest(mode, url, bytes.NewBuffer(params))
@@ -129,11 +129,11 @@ func (js *Jellyseerr) send(mode string, url string, data interface{}, response b
 	return responseText, resp.StatusCode, nil
 }
 
-func (js *Jellyseerr) post(url string, data map[string]interface{}, response bool) (string, int, error) {
+func (js *Jellyseerr) post(url string, data any, response bool) (string, int, error) {
 	return js.send("POST", url, data, response, nil)
 }
 
-func (js *Jellyseerr) put(url string, data map[string]interface{}, response bool) (string, int, error) {
+func (js *Jellyseerr) put(url string, data any, response bool) (string, int, error) {
 	return js.send("PUT", url, data, response, nil)
 }
 
@@ -235,4 +235,93 @@ func (js *Jellyseerr) Me() (User, error) {
 	}
 	err = json.Unmarshal([]byte(resp), &data)
 	return data, err
+}
+
+func (js *Jellyseerr) GetPermissions(jfID string) (Permissions, error) {
+	data := permissionsDTO{Permissions: -1}
+	u, err := js.MustGetUser(jfID)
+	if err != nil {
+		return data.Permissions, err
+	}
+
+	resp, status, err := js.getJSON(fmt.Sprintf(js.server+"/user/%d/settings/permissions", u.ID), nil, url.Values{})
+	if err != nil {
+		return data.Permissions, err
+	}
+	if status != 200 {
+		return data.Permissions, fmt.Errorf("failed (error %d)", status)
+	}
+	err = json.Unmarshal([]byte(resp), &data)
+	return data.Permissions, err
+}
+
+func (js *Jellyseerr) SetPermissions(jfID string, perm Permissions) error {
+	u, err := js.MustGetUser(jfID)
+	if err != nil {
+		return err
+	}
+
+	_, status, err := js.post(fmt.Sprintf(js.server+"/user/%d/settings/permissions", u.ID), permissionsDTO{Permissions: perm}, false)
+	if err != nil {
+		return err
+	}
+	if status != 200 && status != 201 {
+		return fmt.Errorf("failed (error %d)", status)
+	}
+	u.Permissions = perm
+	js.userCache[jfID] = u
+	return nil
+}
+
+func (js *Jellyseerr) ApplyTemplateToUser(jfID string, tmpl UserTemplate) error {
+	u, err := js.MustGetUser(jfID)
+	if err != nil {
+		return err
+	}
+
+	_, status, err := js.put(fmt.Sprintf(js.server+"/user/%d", u.ID), tmpl, false)
+	if err != nil {
+		return err
+	}
+	if status != 200 && status != 201 {
+		return fmt.Errorf("failed (error %d)", status)
+	}
+	u.UserTemplate = tmpl
+	js.userCache[jfID] = u
+	return nil
+}
+
+func (js *Jellyseerr) ModifyUser(jfID string, conf map[UserField]string) error {
+	u, err := js.MustGetUser(jfID)
+	if err != nil {
+		return err
+	}
+
+	_, status, err := js.put(fmt.Sprintf(js.server+"/user/%d", u.ID), conf, false)
+	if err != nil {
+		return err
+	}
+	if status != 200 && status != 201 {
+		return fmt.Errorf("failed (error %d)", status)
+	}
+	// Lazily just invalidate the cache.
+	js.cacheExpiry = time.Now()
+	return nil
+}
+
+func (js *Jellyseerr) DeleteUser(jfID string) error {
+	u, err := js.MustGetUser(jfID)
+	if err != nil {
+		return err
+	}
+
+	_, status, err := js.send("DELETE", fmt.Sprintf(js.server+"/user/%d", u.ID), nil, false, nil)
+	if status != 200 && status != 201 {
+		return fmt.Errorf("failed (error %d)", status)
+	}
+	if err != nil {
+		return err
+	}
+	delete(js.userCache, jfID)
+	return err
 }
