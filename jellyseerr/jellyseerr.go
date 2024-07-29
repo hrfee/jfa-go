@@ -325,3 +325,53 @@ func (js *Jellyseerr) DeleteUser(jfID string) error {
 	delete(js.userCache, jfID)
 	return err
 }
+
+func (js *Jellyseerr) GetNotificationPreferences(jfID string) (Notifications, error) {
+	var data Notifications
+	u, err := js.MustGetUser(jfID)
+	if err != nil {
+		return data, err
+	}
+
+	resp, status, err := js.getJSON(fmt.Sprintf(js.server+"/user/%d/settings/notifications", u.ID), nil, url.Values{})
+	if err != nil {
+		return data, err
+	}
+	if status != 200 {
+		return data, fmt.Errorf("failed (error %d)", status)
+	}
+	err = json.Unmarshal([]byte(resp), &data)
+	return data, err
+}
+
+func (js *Jellyseerr) ApplyNotificationsTemplateToUser(jfID string, tmpl NotificationsTemplate) error {
+	u, err := js.MustGetUser(jfID)
+	if err != nil {
+		return err
+	}
+
+	_, status, err := js.post(fmt.Sprintf(js.server+"/user/%d/settings/notifications", u.ID), tmpl, false)
+	if err != nil {
+		return err
+	}
+	if status != 200 && status != 201 {
+		return fmt.Errorf("failed (error %d)", status)
+	}
+	return nil
+}
+
+func (js *Jellyseerr) ModifyNotifications(jfID string, conf map[NotificationsField]string) error {
+	u, err := js.MustGetUser(jfID)
+	if err != nil {
+		return err
+	}
+
+	_, status, err := js.post(fmt.Sprintf(js.server+"/user/%d/settings/notifications", u.ID), conf, false)
+	if err != nil {
+		return err
+	}
+	if status != 200 && status != 201 {
+		return fmt.Errorf("failed (error %d)", status)
+	}
+	return nil
+}

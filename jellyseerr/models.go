@@ -56,3 +56,45 @@ type permissionsDTO struct {
 }
 
 type Permissions int
+
+type NotificationTypes struct {
+	Discord    int `json:"discord"`
+	Email      int `json:"email"`
+	Pushbullet int `json:"pushbullet"`
+	Pushover   int `json:"pushover"`
+	Slack      int `json:"slack"`
+	Telegram   int `json:"telegram"`
+	Webhook    int `json:"webhook"`
+	Webpush    int `json:"webpush"`
+}
+
+type NotificationsField string
+
+const (
+	FieldDiscord         NotificationsField = "discordId"
+	FieldTelegram        NotificationsField = "telegramChatId"
+	FieldEmailEnabled    NotificationsField = "emailEnabled"
+	FieldDiscordEnabled  NotificationsField = "discordEnabled"
+	FieldTelegramEnabled NotificationsField = "telegramEnabled"
+)
+
+type Notifications struct {
+	NotificationsTemplate
+	PgpKey                   any    `json:"pgpKey"`
+	DiscordID                string `json:"discordId"`
+	PushbulletAccessToken    any    `json:"pushbulletAccessToken"`
+	PushoverApplicationToken any    `json:"pushoverApplicationToken"`
+	PushoverUserKey          any    `json:"pushoverUserKey"`
+	TelegramChatID           string `json:"telegramChatId"`
+}
+
+type NotificationsTemplate struct {
+	EmailEnabled         bool              `json:"emailEnabled"`
+	DiscordEnabled       bool              `json:"discordEnabled"`
+	DiscordEnabledTypes  int               `json:"discordEnabledTypes"`
+	PushoverSound        any               `json:"pushoverSound"`
+	TelegramEnabled      bool              `json:"telegramEnabled"`
+	TelegramSendSilently any               `json:"telegramSendSilently"`
+	WebPushEnabled       bool              `json:"webPushEnabled"`
+	NotifTypes           NotificationTypes `json:"notificationTypes"`
+}
