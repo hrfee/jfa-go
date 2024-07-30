@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
+	"github.com/hrfee/jfa-go/jellyseerr"
 	"github.com/lithammer/shortuuid/v3"
 	"github.com/timshannon/badgerhold/v4"
 )
@@ -200,14 +201,7 @@ func (app *appContext) confirmMyAction(gc *gin.Context, key string) {
 		gc.Redirect(http.StatusSeeOther, "/my/account")
 		return
 	} else if target == UserEmailChange {
-		emailStore, ok := app.storage.GetEmailsKey(id)
-		if !ok {
-			emailStore = EmailAddress{
-				Contact: true,
-			}
-		}
-		emailStore.Addr = claims["email"].(string)
-		app.storage.SetEmailsKey(id, emailStore)
+		app.modifyEmail(id, claims["email"].(string))
 
 		app.storage.SetActivityKey(shortuuid.New(), Activity{
 			Type:       ActivityContactLinked,
@@ -217,17 +211,6 @@ func (app *appContext) confirmMyAction(gc *gin.Context, key string) {
 			Value:      "email",
 			Time:       time.Now(),
 		}, gc, true)
-
-		if app.config.Section("ombi").Key("enabled").MustBool(false) {
-			ombiUser, code, err := app.getOmbiUser(id)
-			if code == 200 && err == nil {
-				ombiUser["emailAddress"] = claims["email"].(string)
-				code, err = app.ombi.ModifyUser(ombiUser)
-				if code != 200 || err != nil {
-					app.err.Printf("%s: Failed to change ombi email address (%d): %v", ombiUser["userName"].(string), code, err)
-				}
-			}
-		}
 
 		app.info.Println("Email list modified")
 		gc.Redirect(http.StatusSeeOther, "/my/account")
@@ -371,6 +354,13 @@ func (app *appContext) MyDiscordVerifiedInvite(gc *gin.Context) {
 	}
 	app.storage.SetDiscordKey(gc.GetString("jfId"), dcUser)
 
+	if err := app.js.ModifyNotifications(gc.GetString("jfId"), map[jellyseerr.NotificationsField]any{
+		jellyseerr.FieldDiscord:        dcUser.ID,
+		jellyseerr.FieldDiscordEnabled: dcUser.Contact,
+	}); err != nil {
+		app.err.Printf("Failed to sync contact methods with Jellyseerr: %v", err)
+	}
+
 	app.storage.SetActivityKey(shortuuid.New(), Activity{
 		Type:       ActivityContactLinked,
 		UserID:     gc.GetString("jfId"),
@@ -418,6 +408,13 @@ func (app *appContext) MyTelegramVerifiedInvite(gc *gin.Context) {
 		tgUser.Contact = existingUser.Contact
 	}
 	app.storage.SetTelegramKey(gc.GetString("jfId"), tgUser)
+
+	if err := app.js.ModifyNotifications(gc.GetString("jfId"), map[jellyseerr.NotificationsField]any{
+		jellyseerr.FieldTelegram:        tgUser.ChatID,
+		jellyseerr.FieldTelegramEnabled: tgUser.Contact,
+	}); err != nil {
+		app.err.Printf("Failed to sync contact methods with Jellyseerr: %v", err)
+	}
 
 	app.storage.SetActivityKey(shortuuid.New(), Activity{
 		Type:       ActivityContactLinked,
@@ -522,6 +519,13 @@ func (app *appContext) MatrixCheckMyPIN(gc *gin.Context) {
 func (app *appContext) UnlinkMyDiscord(gc *gin.Context) {
 	app.storage.DeleteDiscordKey(gc.GetString("jfId"))
 
+	if err := app.js.ModifyNotifications(gc.GetString("jfId"), map[jellyseerr.NotificationsField]any{
+		jellyseerr.FieldDiscord:        jellyseerr.BogusIdentifier,
+		jellyseerr.FieldDiscordEnabled: false,
+	}); err != nil {
+		app.err.Printf("Failed to sync contact methods with Jellyseerr: %v", err)
+	}
+
 	app.storage.SetActivityKey(shortuuid.New(), Activity{
 		Type:       ActivityContactUnlinked,
 		UserID:     gc.GetString("jfId"),
@@ -542,6 +546,13 @@ func (app *appContext) UnlinkMyDiscord(gc *gin.Context) {
 // @Tags User Page
 func (app *appContext) UnlinkMyTelegram(gc *gin.Context) {
 	app.storage.DeleteTelegramKey(gc.GetString("jfId"))
+
+	if err := app.js.ModifyNotifications(gc.GetString("jfId"), map[jellyseerr.NotificationsField]any{
+		jellyseerr.FieldTelegram:        jellyseerr.BogusIdentifier,
+		jellyseerr.FieldTelegramEnabled: false,
+	}); err != nil {
+		app.err.Printf("Failed to sync contact methods with Jellyseerr: %v", err)
+	}
 
 	app.storage.SetActivityKey(shortuuid.New(), Activity{
 		Type:       ActivityContactUnlinked,

@@ -16,7 +16,8 @@ import (
 )
 
 const (
-	API_SUFFIX = "/api/v1"
+	API_SUFFIX      = "/api/v1"
+	BogusIdentifier = "123412341234123456"
 )
 
 // Jellyseerr represents a running Jellyseerr instance.
@@ -300,6 +301,9 @@ func (js *Jellyseerr) ApplyTemplateToUser(jfID string, tmpl UserTemplate) error 
 }
 
 func (js *Jellyseerr) ModifyUser(jfID string, conf map[UserField]any) error {
+	if _, ok := conf[FieldEmail]; ok {
+		return fmt.Errorf("email is read only, set with ModifyMainUserSettings instead")
+	}
 	u, err := js.MustGetUser(jfID)
 	if err != nil {
 		return err
@@ -407,4 +411,22 @@ func (js *Jellyseerr) UserByID(jellyseerrID int64) (User, error) {
 	}
 	err = json.Unmarshal([]byte(resp), &data)
 	return data, err
+}
+
+func (js *Jellyseerr) ModifyMainUserSettings(jfID string, conf MainUserSettings) error {
+	u, err := js.MustGetUser(jfID)
+	if err != nil {
+		return err
+	}
+
+	_, status, err := js.put(fmt.Sprintf(js.server+"/user/%d/settings/main", u.ID), conf, false)
+	if err != nil {
+		return err
+	}
+	if status != 200 && status != 201 {
+		return fmt.Errorf("failed (error %d)", status)
+	}
+	// Lazily just invalidate the cache.
+	js.cacheExpiry = time.Now()
+	return nil
 }

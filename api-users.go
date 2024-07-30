@@ -516,7 +516,7 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool, gc *gin.Context) 
 			}
 			contactMethods := map[jellyseerr.NotificationsField]any{}
 			if emailEnabled {
-				err = app.js.ModifyUser(id, map[jellyseerr.UserField]any{jellyseerr.FieldEmail: req.Email})
+				err = app.js.ModifyMainUserSettings(id, jellyseerr.MainUserSettings{Email: req.Email})
 				if err != nil {
 					app.err.Printf("Failed to set Jellyseerr email address: %v\n", err)
 				} else {
@@ -1258,6 +1258,44 @@ func (app *appContext) ModifyLabels(gc *gin.Context) {
 	respondBool(204, true, gc)
 }
 
+func (app *appContext) modifyEmail(jfID string, addr string) {
+	contactPrefChanged := false
+	emailStore, ok := app.storage.GetEmailsKey(jfID)
+	// Auto enable contact by email for newly added addresses
+	if !ok || emailStore.Addr == "" {
+		emailStore = EmailAddress{
+			Contact: true,
+		}
+		contactPrefChanged = true
+	}
+	emailStore.Addr = addr
+	app.storage.SetEmailsKey(jfID, emailStore)
+	if app.config.Section("ombi").Key("enabled").MustBool(false) {
+		ombiUser, code, err := app.getOmbiUser(jfID)
+		if code == 200 && err == nil {
+			ombiUser["emailAddress"] = addr
+			code, err = app.ombi.ModifyUser(ombiUser)
+			if code != 200 || err != nil {
+				app.err.Printf("%s: Failed to change ombi email address (%d): %v", ombiUser["userName"].(string), code, err)
+			}
+		}
+	}
+	if app.config.Section("jellyseerr").Key("enabled").MustBool(false) {
+		err := app.js.ModifyMainUserSettings(jfID, jellyseerr.MainUserSettings{Email: addr})
+		if err != nil {
+			app.err.Printf("Failed to set Jellyseerr email address: %v\n", err)
+		} else if contactPrefChanged {
+			contactMethods := map[jellyseerr.NotificationsField]any{
+				jellyseerr.FieldEmailEnabled: true,
+			}
+			err := app.js.ModifyNotifications(jfID, contactMethods)
+			if err != nil {
+				app.err.Printf("Failed to sync contact methods with Jellyseerr: %v", err)
+			}
+		}
+	}
+}
+
 // @Summary Modify user's email addresses.
 // @Produce json
 // @Param modifyEmailsDTO body modifyEmailsDTO true "Map of userIDs to email addresses"
@@ -1276,22 +1314,10 @@ func (app *appContext) ModifyEmails(gc *gin.Context) {
 		respond(500, "Couldn't get users", gc)
 		return
 	}
-	ombiEnabled := app.config.Section("ombi").Key("enabled").MustBool(false)
 	for _, jfUser := range users {
 		id := jfUser.ID
 		if address, ok := req[id]; ok {
-			var emailStore = EmailAddress{}
-			oldEmail, ok := app.storage.GetEmailsKey(id)
-			if ok {
-				emailStore = oldEmail
-			}
-			// Auto enable contact by email for newly added addresses
-			if !ok || oldEmail.Addr == "" {
-				emailStore.Contact = true
-			}
-
-			emailStore.Addr = address
-			app.storage.SetEmailsKey(id, emailStore)
+			app.modifyEmail(id, address)
 
 			activityType := ActivityContactLinked
 			if address == "" {
@@ -1305,17 +1331,6 @@ func (app *appContext) ModifyEmails(gc *gin.Context) {
 				Value:      "email",
 				Time:       time.Now(),
 			}, gc, false)
-
-			if ombiEnabled {
-				ombiUser, code, err := app.getOmbiUser(id)
-				if code == 200 && err == nil {
-					ombiUser["emailAddress"] = address
-					code, err = app.ombi.ModifyUser(ombiUser)
-					if code != 200 || err != nil {
-						app.err.Printf("%s: Failed to change ombi email address (%d): %v", ombiUser["userName"].(string), code, err)
-					}
-				}
-			}
 		}
 	}
 	app.info.Println("Email list modified")

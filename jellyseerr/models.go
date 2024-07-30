@@ -115,3 +115,18 @@ type NotificationsTemplate struct {
 	WebPushEnabled       bool              `json:"webPushEnabled,omitempty"`
 	NotifTypes           NotificationTypes `json:"notificationTypes"`
 }
+
+type MainUserSettings struct {
+	Username            string `json:"username,omitempty"`
+	Email               string `json:"email,omitempty"`
+	DiscordID           string `json:"discordId,omitempty"`
+	Locale              string `json:"locale,omitempty"`
+	Region              string `json:"region,omitempty"`
+	OriginalLanguage    any    `json:"originalLanguage,omitempty"`
+	MovieQuotaLimit     any    `json:"movieQuotaLimit,omitempty"`
+	MovieQuotaDays      any    `json:"movieQuotaDays,omitempty"`
+	TvQuotaLimit        any    `json:"tvQuotaLimit,omitempty"`
+	TvQuotaDays         any    `json:"tvQuotaDays,omitempty"`
+	WatchlistSyncMovies any    `json:"watchlistSyncMovies,omitempty"`
+	WatchlistSyncTv     any    `json:"watchlistSyncTv,omitempty"`
+}

@@ -1595,6 +1595,14 @@
                     "value": false,
                     "description": "Enable the Jellyseerr integration."
                 },
+                "usertype_note": {
+                    "name": "Password Changes:",
+                    "type": "note",
+                    "value": "",
+                    "depends_true": "enabled",
+                    "required": "false",
+                    "description": "Ensure existing users on Jellyseerr are \"Jellyfin User\"s not \"Local User\"s, as password changes are not synced with Jellyseerr."
+                },
                 "server": {
                     "name": "URL",
                     "required": false,
