@@ -81,6 +81,10 @@ type NotificationTypes struct {
 	Webpush    int64 `json:"webpush,omitempty"`
 }
 
+func (nt *NotificationTypes) Empty() bool {
+	return nt.Discord == 0 && nt.Email == 0 && nt.Pushbullet == 0 && nt.Pushover == 0 && nt.Slack == 0 && nt.Telegram == 0 && nt.Webhook == 0 && nt.Webpush == 0
+}
+
 type NotificationsField string
 
 const (
@@ -102,12 +106,12 @@ type Notifications struct {
 }
 
 type NotificationsTemplate struct {
-	EmailEnabled         bool              `json:"emailEnabled,omitempty"`
-	DiscordEnabled       bool              `json:"discordEnabled,omitempty"`
-	DiscordEnabledTypes  int64             `json:"discordEnabledTypes,omitempty"`
-	PushoverSound        any               `json:"pushoverSound,omitempty"`
-	TelegramEnabled      bool              `json:"telegramEnabled,omitempty"`
-	TelegramSendSilently any               `json:"telegramSendSilently,omitempty"`
-	WebPushEnabled       bool              `json:"webPushEnabled,omitempty"`
-	NotifTypes           NotificationTypes `json:"notificationTypes,omitempty"`
+	EmailEnabled         bool               `json:"emailEnabled,omitempty"`
+	DiscordEnabled       bool               `json:"discordEnabled,omitempty"`
+	DiscordEnabledTypes  int64              `json:"discordEnabledTypes,omitempty"`
+	PushoverSound        any                `json:"pushoverSound,omitempty"`
+	TelegramEnabled      bool               `json:"telegramEnabled,omitempty"`
+	TelegramSendSilently any                `json:"telegramSendSilently,omitempty"`
+	WebPushEnabled       bool               `json:"webPushEnabled,omitempty"`
+	NotifTypes           *NotificationTypes `json:"notificationTypes,omitempty"`
 }

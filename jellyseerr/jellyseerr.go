@@ -356,6 +356,9 @@ func (js *Jellyseerr) GetNotificationPreferencesByID(jellyseerrID int64) (Notifi
 }
 
 func (js *Jellyseerr) ApplyNotificationsTemplateToUser(jfID string, tmpl NotificationsTemplate) error {
+	if tmpl.NotifTypes.Empty() {
+		tmpl.NotifTypes = nil
+	}
 	u, err := js.MustGetUser(jfID)
 	if err != nil {
 		return err
