@@ -1374,12 +1374,12 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 			displayprefs = profile.Displayprefs
 		}
 		policy = profile.Policy
-		if app.config.Section("ombi").Key("enabled").MustBool(false) {
+		if req.Ombi && app.config.Section("ombi").Key("enabled").MustBool(false) {
 			if profile.Ombi != nil && len(profile.Ombi) != 0 {
 				ombi = profile.Ombi
 			}
 		}
-		if app.config.Section("jellyseerr").Key("enabled").MustBool(false) {
+		if req.Jellyseerr && app.config.Section("jellyseerr").Key("enabled").MustBool(false) {
 			if profile.Jellyseerr.Enabled {
 				jellyseerr = profile.Jellyseerr
 			}

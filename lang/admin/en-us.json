@@ -81,6 +81,8 @@
         "useInviteExpiry": "Set expiry from profile/invite",
         "useInviteExpiryNote": "By default, invites expire after 90 days but can be renewed by the user. Enable for the referral to be disabled after the time set.",
         "applyHomescreenLayout": "Apply homescreen layout",
+        "applyOmbi": "Apply Ombi profile (if available)",
+        "applyJellyseerr": "Apply Jellyseerr profile (if available)",
         "sendDeleteNotificationEmail": "Send notification message",
         "sendDeleteNotifiationExample": "Your account has been deleted.",
         "settingsRestart": "Restart",

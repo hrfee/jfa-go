@@ -179,6 +179,8 @@ type userSettingsDTO struct {
 	ApplyTo    []string `json:"apply_to"`   // Users to apply settings to
 	ID         string   `json:"id"`         // ID of user (if from = "user")
 	Homescreen bool     `json:"homescreen"` // Whether to apply homescreen layout or not
+	Ombi       bool     `json:"ombi"`       // Whether to apply ombi profile or not
+	Jellyseerr bool     `json:"jellyseerr"` // Whether to apply jellyseerr profile or not
 }
 
 type announcementDTO struct {

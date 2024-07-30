@@ -187,6 +187,7 @@ login.onLogin = () => {
     console.log("Logged in.");
     window.updater = new Updater();
     // FIXME: Decide whether to autoload activity or not
+    window.invites.reload()
     setInterval(() => { window.invites.reload(); accounts.reload(); }, 30*1000);
     const currentTab = window.tabs.current;
     switch (currentTab) {
