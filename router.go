@@ -238,6 +238,11 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 			api.GET(p+"/users/discord/:username", app.DiscordGetUsers)
 			api.POST(p+"/users/discord", app.DiscordConnect)
 		}
+		if app.config.Section("jellyseerr").Key("enabled").MustBool(false) {
+			api.GET(p+"/jellyseerr/users", app.JellyseerrUsers)
+			api.POST(p+"/profiles/jellyseerr/:profile/:id", app.SetJellyseerrProfile)
+			api.DELETE(p+"/profiles/jellyseerr/:profile", app.DeleteJellyseerrProfile)
+		}
 		if app.config.Section("ombi").Key("enabled").MustBool(false) {
 			api.GET(p+"/ombi/users", app.OmbiUsers)
 			api.POST(p+"/profiles/ombi/:profile", app.SetOmbiProfile)

@@ -5,6 +5,7 @@ interface Profile {
     libraries: string;
     fromUser: string;
     ombi: boolean;
+    jellyseerr: boolean;
     referrals_enabled: boolean;
 }
 
@@ -14,9 +15,11 @@ class profile implements Profile {
     private _adminChip: HTMLSpanElement;
     private _libraries: HTMLTableDataCellElement;
     private _ombiButton: HTMLSpanElement;
+    private _ombi: boolean;
+    private _jellyseerrButton: HTMLSpanElement;
+    private _jellyseerr: boolean;
     private _fromUser: HTMLTableDataCellElement;
     private _defaultRadio: HTMLInputElement;
-    private _ombi: boolean;
     private _referralsButton: HTMLSpanElement;
     private _referralsEnabled: boolean;
 
@@ -51,6 +54,21 @@ class profile implements Profile {
             this._ombiButton.classList.remove("~critical");
         }
     }
+    
+    get jellyseerr(): boolean { return this._jellyseerr; }
+    set jellyseerr(v: boolean) {
+        if (!window.jellyseerrEnabled) return;
+        this._jellyseerr = v;
+        if (v) {
+            this._jellyseerrButton.textContent = window.lang.strings("delete");
+            this._jellyseerrButton.classList.add("~critical");
+            this._jellyseerrButton.classList.remove("~neutral");
+        } else {
+            this._jellyseerrButton.textContent = window.lang.strings("add");
+            this._jellyseerrButton.classList.add("~neutral");
+            this._jellyseerrButton.classList.remove("~critical");
+        }
+    }
 
     get fromUser(): string { return this._fromUser.textContent; }
     set fromUser(v: string) { this._fromUser.textContent = v; }
@@ -82,6 +100,9 @@ class profile implements Profile {
         if (window.ombiEnabled) innerHTML += `
             <td><span class="button @low profile-ombi"></span></td>
         `;
+        if (window.jellyseerrEnabled) innerHTML += `
+            <td><span class="button @low profile-jellyseerr"></span></td>
+        `;
         if (window.referralsEnabled) innerHTML += `
             <td><span class="button @low profile-referrals"></span></td>
         `;
@@ -96,6 +117,8 @@ class profile implements Profile {
         this._libraries = this._row.querySelector("td.profile-libraries") as HTMLTableDataCellElement;
         if (window.ombiEnabled)
             this._ombiButton = this._row.querySelector("span.profile-ombi") as HTMLSpanElement;
+        if (window.jellyseerrEnabled)
+            this._jellyseerrButton = this._row.querySelector("span.profile-jellyseerr") as HTMLSpanElement;
         if (window.referralsEnabled)
             this._referralsButton = this._row.querySelector("span.profile-referrals") as HTMLSpanElement;
         this._fromUser = this._row.querySelector("td.profile-from") as HTMLTableDataCellElement;
@@ -112,10 +135,12 @@ class profile implements Profile {
         this.fromUser = p.fromUser;
         this.libraries = p.libraries;
         this.ombi = p.ombi;
+        this.jellyseerr = p.jellyseerr;
         this.referrals_enabled = p.referrals_enabled;
     }
 
     setOmbiFunc = (ombiFunc: (ombi: boolean) => void) => { this._ombiButton.onclick = () => ombiFunc(this._ombi); }
+    setJellyseerrFunc = (jellyseerrFunc: (jellyseerr: boolean) => void) => { this._jellyseerrButton.onclick = () => jellyseerrFunc(this._jellyseerr); }
     setReferralFunc = (referralFunc: (enabled: boolean) => void) => { this._referralsButton.onclick = () => referralFunc(this._referralsEnabled); }
 
     remove = () => { document.dispatchEvent(new CustomEvent("profiles-delete", { detail: this._name })); this._row.remove(); }
@@ -144,6 +169,7 @@ export class ProfileEditor {
     private _profiles: { [name: string]: profile } = {};
     private _default: string;
     private _ombiProfiles: ombiProfiles;
+    private _jellyseerrProfiles: jellyseerrProfiles;
 
     private _createForm = document.getElementById("form-add-profile") as HTMLFormElement;
     private _profileName = document.getElementById("add-profile-name") as HTMLInputElement;
@@ -181,7 +207,7 @@ export class ProfileEditor {
                             this._profiles[name].update(name, resp.profiles[name]);
                         } else {
                             this._profiles[name] = new profile(name, resp.profiles[name]);
-                            if (window.ombiEnabled)
+                            if (window.ombiEnabled) {
                                 this._profiles[name].setOmbiFunc((ombi: boolean) => {
                                     if (ombi) {
                                         this._ombiProfiles.delete(name, (req: XMLHttpRequest) => {
@@ -198,7 +224,26 @@ export class ProfileEditor {
                                         this._ombiProfiles.load(name);
                                     }
                                 });
-                            if (window.referralsEnabled)
+                            }
+                            if (window.jellyseerrEnabled) {
+                                this._profiles[name].setJellyseerrFunc((jellyseerr: boolean) => {
+                                    if (jellyseerr) {
+                                        this._jellyseerrProfiles.delete(name, (req: XMLHttpRequest) => {
+                                            if (req.readyState == 4) {
+                                                if (req.status != 204) {
+                                                    window.notifications.customError("errorDeleteJellyseerr", window.lang.notif("errorUnknown"));
+                                                    return;
+                                                }
+                                                this._profiles[name].jellyseerr = false;
+                                            }
+                                        });
+                                    } else {
+                                        window.modals.profiles.close();
+                                        this._jellyseerrProfiles.load(name);
+                                    }
+                                });
+                            }
+                            if (window.referralsEnabled) {
                                 this._profiles[name].setReferralFunc((enabled: boolean) => {
                                     if (enabled) {
                                         this.disableReferrals(name);
@@ -206,6 +251,7 @@ export class ProfileEditor {
                                         this.enableReferrals(name);
                                     }
                                 });
+                            }
                             this._table.appendChild(this._profiles[name].asElement());
                         }
                     }
@@ -299,6 +345,8 @@ export class ProfileEditor {
 
         if (window.ombiEnabled)
             this._ombiProfiles = new ombiProfiles();
+        if (window.jellyseerrEnabled)
+            this._jellyseerrProfiles = new jellyseerrProfiles();
 
         this._createButton.onclick = () => _get("/users", null, (req: XMLHttpRequest) => {
             if (req.readyState == 4) {
@@ -366,7 +414,7 @@ export class ombiProfiles {
         let resp = {} as ombiUser;
         resp.id = this._select.value;
         resp.name = this._users[resp.id];
-        _post("/profiles/ombi/" + this._currentProfile, resp, (req: XMLHttpRequest) => {
+        _post("/profiles/ombi/" + encodeURIComponent(encodeURIComponent(this._currentProfile)), resp, (req: XMLHttpRequest) => {
             if (req.readyState == 4) {
                 toggleLoader(button);
                 if (req.status == 200 || req.status == 204) {
@@ -379,7 +427,7 @@ export class ombiProfiles {
         });
     }
 
-    delete = (profile: string, post?: (req: XMLHttpRequest) => void) => _delete("/profiles/ombi/" + profile, null, post);
+    delete = (profile: string, post?: (req: XMLHttpRequest) => void) => _delete("/profiles/ombi/" + encodeURIComponent(encodeURIComponent(profile)), null, post);
 
     load = (profile: string) => {
         this._currentProfile = profile;
@@ -396,6 +444,57 @@ export class ombiProfiles {
                     window.modals.ombiProfile.show();
                 } else {
                     window.notifications.customError("ombiLoadError", window.lang.notif("errorLoadOmbiUsers"))
+                }
+            }
+        });
+    }
+}
+
+export class jellyseerrProfiles {
+    private _form: HTMLFormElement;
+    private _select: HTMLSelectElement;
+    private _users: { [id: string]: string } = {};
+    private _currentProfile: string;
+
+    constructor() {
+        this._form = document.getElementById("form-jellyseerr-defaults") as HTMLFormElement;
+        this._form.onsubmit = this.send;
+        this._select = this._form.querySelector("select") as HTMLSelectElement;
+    }
+    send = () => {
+        const button = this._form.querySelector("span.submit") as HTMLSpanElement;
+        toggleLoader(button);
+        let encodedProfile = encodeURIComponent(encodeURIComponent(this._currentProfile));
+        _post("/profiles/jellyseerr/" + encodedProfile + "/" + this._select.value, null, (req: XMLHttpRequest) => {
+            if (req.readyState == 4) {
+                toggleLoader(button);
+                if (req.status == 200 || req.status == 204) {
+                    window.notifications.customSuccess("jellyseerrDefaults", window.lang.notif("savedProfile"));
+                } else {
+                    window.notifications.customError("jellyseerrDefaults", window.lang.notif("errorSavedProfile"));
+                }
+                window.modals.jellyseerrProfile.close();
+            }
+        });
+    }
+
+    delete = (profile: string, post?: (req: XMLHttpRequest) => void) => _delete("/profiles/jellyseerr/" + encodeURIComponent(encodeURIComponent(profile)), null, post);
+
+    load = (profile: string) => {
+        this._currentProfile = profile;
+        _get("/jellyseerr/users", null, (req: XMLHttpRequest) => {
+            if (req.readyState == 4) {
+                if (req.status == 200 && "users" in req.response) {
+                    const users = req.response["users"] as ombiUser[]; 
+                    let innerHTML = "";
+                    for (let user of users) {
+                        this._users[user.id] = user.name;
+                        innerHTML += `<option value="${user.id}">${user.name}</option>`;
+                    }
+                    this._select.innerHTML = innerHTML;
+                    window.modals.jellyseerrProfile.show();
+                } else {
+                    window.notifications.customError("jellyseerrLoadError", window.lang.notif("errorLoadUsers"))
                 }
             }
         });

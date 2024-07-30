@@ -16,6 +16,7 @@ type newUserDTO struct {
 	Username        string `json:"username" example:"jeff" binding:"required"`  // User's username
 	Password        string `json:"password" example:"guest" binding:"required"` // User's password
 	Email           string `json:"email" example:"jeff@jellyf.in"`              // User's email address
+	EmailContact    bool   `json:"email_contact"`                               // Whether or not to use email for notifications/pwrs
 	Code            string `json:"code" example:"abc0933jncjkcjj"`              // Invite code (required on /newUser)
 	TelegramPIN     string `json:"telegram_pin" example:"A1-B2-3C"`             // Telegram verification PIN (if used)
 	TelegramContact bool   `json:"telegram_contact"`                            // Whether or not to use telegram for notifications/pwrs
@@ -76,6 +77,7 @@ type profileDTO struct {
 	LibraryAccess    string `json:"libraries" example:"all"`          // Number of libraries profile has access to
 	FromUser         string `json:"fromUser" example:"jeff"`          // The user the profile is based on
 	Ombi             bool   `json:"ombi"`                             // Whether or not Ombi settings are stored in this profile.
+	Jellyseerr       bool   `json:"jellyseerr"`                       // Whether or not Jellyseerr settings are stored in this profile.
 	ReferralsEnabled bool   `json:"referrals_enabled" example:"true"` // Whether or not the profile has referrals enabled, and has a template invite stored.
 }
 

@@ -11,61 +11,74 @@ const (
 
 type User struct {
 	UserTemplate                         // Note: You can set this with User.UserTemplate = value.
-	Warnings                   []any     `json:"warnings"`
-	ID                         int       `json:"id"`
-	Email                      string    `json:"email"`
-	PlexUsername               string    `json:"plexUsername"`
-	JellyfinUsername           string    `json:"jellyfinUsername"`
-	Username                   string    `json:"username"`
-	RecoveryLinkExpirationDate any       `json:"recoveryLinkExpirationDate"`
-	PlexID                     string    `json:"plexId"`
-	JellyfinUserID             string    `json:"jellyfinUserId"`
-	JellyfinDeviceID           string    `json:"jellyfinDeviceId"`
-	JellyfinAuthToken          string    `json:"jellyfinAuthToken"`
-	PlexToken                  string    `json:"plexToken"`
-	Avatar                     string    `json:"avatar"`
-	CreatedAt                  time.Time `json:"createdAt"`
-	UpdatedAt                  time.Time `json:"updatedAt"`
-	RequestCount               int       `json:"requestCount"`
-	DisplayName                string    `json:"displayName"`
+	UserType                   int64     `json:"userType,omitempty"`
+	Warnings                   []any     `json:"warnings,omitempty"`
+	ID                         int64     `json:"id,omitempty"`
+	Email                      string    `json:"email,omitempty"`
+	PlexUsername               string    `json:"plexUsername,omitempty"`
+	JellyfinUsername           string    `json:"jellyfinUsername,omitempty"`
+	Username                   string    `json:"username,omitempty"`
+	RecoveryLinkExpirationDate any       `json:"recoveryLinkExpirationDate,omitempty"`
+	PlexID                     string    `json:"plexId,omitempty"`
+	JellyfinUserID             string    `json:"jellyfinUserId,omitempty"`
+	JellyfinDeviceID           string    `json:"jellyfinDeviceId,omitempty"`
+	JellyfinAuthToken          string    `json:"jellyfinAuthToken,omitempty"`
+	PlexToken                  string    `json:"plexToken,omitempty"`
+	Avatar                     string    `json:"avatar,omitempty"`
+	CreatedAt                  time.Time `json:"createdAt,omitempty"`
+	UpdatedAt                  time.Time `json:"updatedAt,omitempty"`
+	RequestCount               int64     `json:"requestCount,omitempty"`
+	DisplayName                string    `json:"displayName,omitempty"`
+}
+
+func (u User) Name() string {
+	var n string
+	if u.Username != "" {
+		n = u.Username
+	} else if u.JellyfinUsername != "" {
+		n = u.JellyfinUsername
+	}
+	if u.DisplayName != "" {
+		n += " (" + u.DisplayName + ")"
+	}
+	return n
 }
 
 type UserTemplate struct {
-	Permissions     Permissions `json:"permissions"`
-	UserType        int         `json:"userType"`
-	MovieQuotaLimit any         `json:"movieQuotaLimit"`
-	MovieQuotaDays  any         `json:"movieQuotaDays"`
-	TvQuotaLimit    any         `json:"tvQuotaLimit"`
-	TvQuotaDays     any         `json:"tvQuotaDays"`
+	Permissions     Permissions `json:"permissions,omitempty"`
+	MovieQuotaLimit any         `json:"movieQuotaLimit,omitempty"`
+	MovieQuotaDays  any         `json:"movieQuotaDays,omitempty"`
+	TvQuotaLimit    any         `json:"tvQuotaLimit,omitempty"`
+	TvQuotaDays     any         `json:"tvQuotaDays,omitempty"`
 }
 
 type PageInfo struct {
-	Pages    int `json:"pages"`
-	PageSize int `json:"pageSize"`
-	Results  int `json:"results"`
-	Page     int `json:"page"`
+	Pages    int `json:"pages,omitempty"`
+	PageSize int `json:"pageSize,omitempty"`
+	Results  int `json:"results,omitempty"`
+	Page     int `json:"page,omitempty"`
 }
 
 type GetUsersDTO struct {
-	Page    PageInfo `json:"pageInfo"`
-	Results []User   `json:"results"`
+	Page    PageInfo `json:"pageInfo,omitempty"`
+	Results []User   `json:"results,omitempty"`
 }
 
 type permissionsDTO struct {
-	Permissions Permissions `json:"permissions"`
+	Permissions Permissions `json:"permissions,omitempty"`
 }
 
 type Permissions int
 
 type NotificationTypes struct {
-	Discord    int `json:"discord"`
-	Email      int `json:"email"`
-	Pushbullet int `json:"pushbullet"`
-	Pushover   int `json:"pushover"`
-	Slack      int `json:"slack"`
-	Telegram   int `json:"telegram"`
-	Webhook    int `json:"webhook"`
-	Webpush    int `json:"webpush"`
+	Discord    int64 `json:"discord,omitempty"`
+	Email      int64 `json:"email,omitempty"`
+	Pushbullet int64 `json:"pushbullet,omitempty"`
+	Pushover   int64 `json:"pushover,omitempty"`
+	Slack      int64 `json:"slack,omitempty"`
+	Telegram   int64 `json:"telegram,omitempty"`
+	Webhook    int64 `json:"webhook,omitempty"`
+	Webpush    int64 `json:"webpush,omitempty"`
 }
 
 type NotificationsField string
@@ -80,21 +93,21 @@ const (
 
 type Notifications struct {
 	NotificationsTemplate
-	PgpKey                   any    `json:"pgpKey"`
-	DiscordID                string `json:"discordId"`
-	PushbulletAccessToken    any    `json:"pushbulletAccessToken"`
-	PushoverApplicationToken any    `json:"pushoverApplicationToken"`
-	PushoverUserKey          any    `json:"pushoverUserKey"`
-	TelegramChatID           string `json:"telegramChatId"`
+	PgpKey                   any    `json:"pgpKey,omitempty"`
+	DiscordID                string `json:"discordId,omitempty"`
+	PushbulletAccessToken    any    `json:"pushbulletAccessToken,omitempty"`
+	PushoverApplicationToken any    `json:"pushoverApplicationToken,omitempty"`
+	PushoverUserKey          any    `json:"pushoverUserKey,omitempty"`
+	TelegramChatID           string `json:"telegramChatId,omitempty"`
 }
 
 type NotificationsTemplate struct {
-	EmailEnabled         bool              `json:"emailEnabled"`
-	DiscordEnabled       bool              `json:"discordEnabled"`
-	DiscordEnabledTypes  int               `json:"discordEnabledTypes"`
-	PushoverSound        any               `json:"pushoverSound"`
-	TelegramEnabled      bool              `json:"telegramEnabled"`
-	TelegramSendSilently any               `json:"telegramSendSilently"`
-	WebPushEnabled       bool              `json:"webPushEnabled"`
-	NotifTypes           NotificationTypes `json:"notificationTypes"`
+	EmailEnabled         bool              `json:"emailEnabled,omitempty"`
+	DiscordEnabled       bool              `json:"discordEnabled,omitempty"`
+	DiscordEnabledTypes  int64             `json:"discordEnabledTypes,omitempty"`
+	PushoverSound        any               `json:"pushoverSound,omitempty"`
+	TelegramEnabled      bool              `json:"telegramEnabled,omitempty"`
+	TelegramSendSilently any               `json:"telegramSendSilently,omitempty"`
+	WebPushEnabled       bool              `json:"webPushEnabled,omitempty"`
+	NotifTypes           NotificationTypes `json:"notificationTypes,omitempty"`
 }

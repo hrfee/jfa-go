@@ -25,6 +25,7 @@ import (
 	"github.com/hrfee/jfa-go/common"
 	_ "github.com/hrfee/jfa-go/docs"
 	"github.com/hrfee/jfa-go/easyproxy"
+	"github.com/hrfee/jfa-go/jellyseerr"
 	"github.com/hrfee/jfa-go/logger"
 	"github.com/hrfee/jfa-go/ombi"
 	"github.com/hrfee/mediabrowser"
@@ -101,6 +102,7 @@ type appContext struct {
 	jf                   *mediabrowser.MediaBrowser
 	authJf               *mediabrowser.MediaBrowser
 	ombi                 *ombi.Ombi
+	js                   *jellyseerr.Jellyseerr
 	datePattern          string
 	timePattern          string
 	storage              Storage
@@ -355,6 +357,17 @@ func start(asDaemon, firstCall bool) {
 				ombiServer,
 				app.config.Section("ombi").Key("api_key").String(),
 				common.NewTimeoutHandler("Ombi", ombiServer, true),
+			)
+
+		}
+
+		if app.config.Section("jellyseerr").Key("enabled").MustBool(false) {
+			app.debug.Printf("Connecting to Jellyseerr")
+			jellyseerrServer := app.config.Section("jellyseerr").Key("server").String()
+			app.js = jellyseerr.NewJellyseerr(
+				jellyseerrServer,
+				app.config.Section("jellyseerr").Key("api_key").String(),
+				common.NewTimeoutHandler("Jellyseerr", jellyseerrServer, true),
 			)
 
 		}

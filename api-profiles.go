@@ -27,6 +27,7 @@ func (app *appContext) GetProfiles(gc *gin.Context) {
 			LibraryAccess:    p.LibraryAccess,
 			FromUser:         p.FromUser,
 			Ombi:             p.Ombi != nil,
+			Jellyseerr:       p.Jellyseerr.Enabled,
 			ReferralsEnabled: false,
 		}
 		if referralsEnabled {

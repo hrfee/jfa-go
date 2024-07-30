@@ -1580,6 +1580,41 @@
                 }
             }
         },
+        "jellyseerr": {
+            "order": [],
+            "meta": {
+                "name": "Jellyseerr Integration",
+                "description": "Connect to Jellyseerr to automatically trigger the import of users on account creation, and to automatically link contact methods (email, discord and telegram). A template must be added to a User Profile for accounts to be created."
+            },
+            "settings": {
+                "enabled": {
+                    "name": "Enabled",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "bool",
+                    "value": false,
+                    "description": "Enable the Jellyseerr integration."
+                },
+                "server": {
+                    "name": "URL",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "text",
+                    "value": "localhost:5000",
+                    "depends_true": "enabled",
+                    "description": "Jellyseerr server URL."
+                },
+                "api_key": {
+                    "name": "API Key",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "text",
+                    "value": "",
+                    "depends_true": "enabled",
+                    "description": "API Key. Get this from the first tab in Jellyseerr's settings."
+                }
+            }
+        },
         "backups": {
             "order": [],
             "meta": {

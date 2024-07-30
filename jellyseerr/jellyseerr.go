@@ -21,13 +21,14 @@ const (
 
 // Jellyseerr represents a running Jellyseerr instance.
 type Jellyseerr struct {
-	server, key    string
-	header         map[string]string
-	httpClient     *http.Client
-	userCache      map[string]User // Map of jellyfin IDs to users
-	cacheExpiry    time.Time
-	cacheLength    time.Duration
-	timeoutHandler common.TimeoutHandler
+	server, key      string
+	header           map[string]string
+	httpClient       *http.Client
+	userCache        map[string]User // Map of jellyfin IDs to users
+	cacheExpiry      time.Time
+	cacheLength      time.Duration
+	timeoutHandler   common.TimeoutHandler
+	LogRequestBodies bool
 }
 
 // NewJellyseerr returns an Ombi object.
@@ -44,10 +45,11 @@ func NewJellyseerr(server, key string, timeoutHandler common.TimeoutHandler) *Je
 		header: map[string]string{
 			"X-Api-Key": key,
 		},
-		cacheLength:    time.Duration(30) * time.Minute,
-		cacheExpiry:    time.Now(),
-		timeoutHandler: timeoutHandler,
-		userCache:      map[string]User{},
+		cacheLength:      time.Duration(30) * time.Minute,
+		cacheExpiry:      time.Now(),
+		timeoutHandler:   timeoutHandler,
+		userCache:        map[string]User{},
+		LogRequestBodies: false,
 	}
 }
 
@@ -59,6 +61,9 @@ func (js *Jellyseerr) getJSON(url string, params map[string]string, queryParams 
 	var req *http.Request
 	if params != nil {
 		jsonParams, _ := json.Marshal(params)
+		if js.LogRequestBodies {
+			fmt.Printf("Jellyseerr API Client: Sending Data \"%s\"\n", string(jsonParams))
+		}
 		req, _ = http.NewRequest("GET", url+"?"+queryParams.Encode(), bytes.NewBuffer(jsonParams))
 	} else {
 		req, _ = http.NewRequest("GET", url+"?"+queryParams.Encode(), nil)
@@ -94,6 +99,9 @@ func (js *Jellyseerr) getJSON(url string, params map[string]string, queryParams 
 func (js *Jellyseerr) send(mode string, url string, data any, response bool, headers map[string]string) (string, int, error) {
 	responseText := ""
 	params, _ := json.Marshal(data)
+	if js.LogRequestBodies {
+		fmt.Printf("Jellyseerr API Client: Sending Data \"%s\"\n", string(params))
+	}
 	req, _ := http.NewRequest(mode, url, bytes.NewBuffer(params))
 	req.Header.Add("Content-Type", "application/json")
 	for name, value := range js.header {
@@ -291,7 +299,7 @@ func (js *Jellyseerr) ApplyTemplateToUser(jfID string, tmpl UserTemplate) error 
 	return nil
 }
 
-func (js *Jellyseerr) ModifyUser(jfID string, conf map[UserField]string) error {
+func (js *Jellyseerr) ModifyUser(jfID string, conf map[UserField]any) error {
 	u, err := js.MustGetUser(jfID)
 	if err != nil {
 		return err
@@ -327,13 +335,16 @@ func (js *Jellyseerr) DeleteUser(jfID string) error {
 }
 
 func (js *Jellyseerr) GetNotificationPreferences(jfID string) (Notifications, error) {
-	var data Notifications
 	u, err := js.MustGetUser(jfID)
 	if err != nil {
-		return data, err
+		return Notifications{}, err
 	}
+	return js.GetNotificationPreferencesByID(u.ID)
+}
 
-	resp, status, err := js.getJSON(fmt.Sprintf(js.server+"/user/%d/settings/notifications", u.ID), nil, url.Values{})
+func (js *Jellyseerr) GetNotificationPreferencesByID(jellyseerrID int64) (Notifications, error) {
+	var data Notifications
+	resp, status, err := js.getJSON(fmt.Sprintf(js.server+"/user/%d/settings/notifications", jellyseerrID), nil, url.Values{})
 	if err != nil {
 		return data, err
 	}
@@ -360,7 +371,7 @@ func (js *Jellyseerr) ApplyNotificationsTemplateToUser(jfID string, tmpl Notific
 	return nil
 }
 
-func (js *Jellyseerr) ModifyNotifications(jfID string, conf map[NotificationsField]string) error {
+func (js *Jellyseerr) ModifyNotifications(jfID string, conf map[NotificationsField]any) error {
 	u, err := js.MustGetUser(jfID)
 	if err != nil {
 		return err
@@ -374,4 +385,22 @@ func (js *Jellyseerr) ModifyNotifications(jfID string, conf map[NotificationsFie
 		return fmt.Errorf("failed (error %d)", status)
 	}
 	return nil
+}
+
+func (js *Jellyseerr) GetUsers() (map[string]User, error) {
+	err := js.getUsers()
+	return js.userCache, err
+}
+
+func (js *Jellyseerr) UserByID(jellyseerrID int64) (User, error) {
+	resp, status, err := js.getJSON(js.server+fmt.Sprintf("/user/%d", jellyseerrID), nil, url.Values{})
+	var data User
+	if status != 200 {
+		return data, fmt.Errorf("failed (error %d)", status)
+	}
+	if err != nil {
+		return data, err
+	}
+	err = json.Unmarshal([]byte(resp), &data)
+	return data, err
 }
