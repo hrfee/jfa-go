@@ -369,6 +369,7 @@ func start(asDaemon, firstCall bool) {
 				app.config.Section("jellyseerr").Key("api_key").String(),
 				common.NewTimeoutHandler("Jellyseerr", jellyseerrServer, true),
 			)
+			app.js.LogRequestBodies = true
 
 		}
 

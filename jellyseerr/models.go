@@ -71,19 +71,19 @@ type permissionsDTO struct {
 type Permissions int
 
 type NotificationTypes struct {
-	Discord    int64 `json:"discord,omitempty"`
-	Email      int64 `json:"email,omitempty"`
-	Pushbullet int64 `json:"pushbullet,omitempty"`
-	Pushover   int64 `json:"pushover,omitempty"`
-	Slack      int64 `json:"slack,omitempty"`
-	Telegram   int64 `json:"telegram,omitempty"`
-	Webhook    int64 `json:"webhook,omitempty"`
-	Webpush    int64 `json:"webpush,omitempty"`
+	Discord    int64 `json:"discord"`
+	Email      int64 `json:"email"`
+	Pushbullet int64 `json:"pushbullet"`
+	Pushover   int64 `json:"pushover"`
+	Slack      int64 `json:"slack"`
+	Telegram   int64 `json:"telegram"`
+	Webhook    int64 `json:"webhook"`
+	Webpush    int64 `json:"webpush"`
 }
 
-func (nt *NotificationTypes) Empty() bool {
+/* func (nt *NotificationTypes) Empty() bool {
 	return nt.Discord == 0 && nt.Email == 0 && nt.Pushbullet == 0 && nt.Pushover == 0 && nt.Slack == 0 && nt.Telegram == 0 && nt.Webhook == 0 && nt.Webpush == 0
-}
+} */
 
 type NotificationsField string
 
@@ -106,12 +106,12 @@ type Notifications struct {
 }
 
 type NotificationsTemplate struct {
-	EmailEnabled         bool               `json:"emailEnabled,omitempty"`
-	DiscordEnabled       bool               `json:"discordEnabled,omitempty"`
-	DiscordEnabledTypes  int64              `json:"discordEnabledTypes,omitempty"`
-	PushoverSound        any                `json:"pushoverSound,omitempty"`
-	TelegramEnabled      bool               `json:"telegramEnabled,omitempty"`
-	TelegramSendSilently any                `json:"telegramSendSilently,omitempty"`
-	WebPushEnabled       bool               `json:"webPushEnabled,omitempty"`
-	NotifTypes           *NotificationTypes `json:"notificationTypes,omitempty"`
+	EmailEnabled         bool              `json:"emailEnabled,omitempty"`
+	DiscordEnabled       bool              `json:"discordEnabled,omitempty"`
+	DiscordEnabledTypes  int64             `json:"discordEnabledTypes,omitempty"`
+	PushoverSound        any               `json:"pushoverSound,omitempty"`
+	TelegramEnabled      bool              `json:"telegramEnabled,omitempty"`
+	TelegramSendSilently any               `json:"telegramSendSilently,omitempty"`
+	WebPushEnabled       bool              `json:"webPushEnabled,omitempty"`
+	NotifTypes           NotificationTypes `json:"notificationTypes"`
 }

@@ -356,9 +356,10 @@ func (js *Jellyseerr) GetNotificationPreferencesByID(jellyseerrID int64) (Notifi
 }
 
 func (js *Jellyseerr) ApplyNotificationsTemplateToUser(jfID string, tmpl NotificationsTemplate) error {
-	if tmpl.NotifTypes.Empty() {
+	// This behaviour is not desired, this being all-zero means no notifications, which is a settings state we'd want to store!
+	/* if tmpl.NotifTypes.Empty() {
 		tmpl.NotifTypes = nil
-	}
+	}*/
 	u, err := js.MustGetUser(jfID)
 	if err != nil {
 		return err
