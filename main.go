@@ -491,8 +491,8 @@ func start(asDaemon, firstCall bool) {
 
 		var jellyseerrDaemon *GenericDaemon
 		if app.config.Section("jellyseerr").Key("enabled").MustBool(false) && app.config.Section("jellyseerr").Key("import_existing").MustBool(false) {
-			jellyseerrDaemon = newJellyseerrDaemon(time.Duration(30*time.Second), app)
-			// jellyseerrDaemon = newJellyseerrDaemon(time.Duration(5*time.Minute), app)
+			// jellyseerrDaemon = newJellyseerrDaemon(time.Duration(30*time.Second), app)
+			jellyseerrDaemon = newJellyseerrDaemon(time.Duration(10*time.Minute), app)
 			go jellyseerrDaemon.run()
 			defer jellyseerrDaemon.Shutdown()
 		}
