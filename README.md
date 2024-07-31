@@ -1,5 +1,5 @@
 ![jfa-go](images/banner.svg)
-[![Build Status](https://drone.hrfee.dev/api/badges/hrfee/jfa-go/status.svg?ref=refs/heads/main)](https://drone.hrfee.dev/hrfee/jfa-go)
+[![Build Status](https://ci.hrfee.dev/api/badges/3/status.svg)](https://ci.hrfee.dev/repos/3)
 [![Docker Hub](https://img.shields.io/docker/pulls/hrfee/jfa-go?label=docker)](https://hub.docker.com/r/hrfee/jfa-go)
 [![Translation status](https://weblate.jfa-go.com/widgets/jfa-go/-/svg-badge.svg)](https://weblate.jfa-go.com/engage/jfa-go/)
 [![Docs/Wiki](https://img.shields.io/static/v1?label=documentation&message=jfa-go.com&color=informational)](https://wiki.jfa-go.com)
@@ -13,13 +13,14 @@
 Studies mean I can't work on this project a lot outside of breaks, however I hope i'll be able to fit in general support and things like bug fixes into my time. New features and such will likely come in short bursts throughout the year (if they do at all).
 
 #### Does/Will it still work?
-jfa-go currently works on Jellyfin 10.8.13, the latest version as of 26/12/23. I should be able to maintain compatability in the future, unless any big changes occur.
+jfa-go currently works on Jellyfin 10.9.8, the latest version as of 31/07/2024. I should be able to maintain compatability in the future, unless any big changes occur.
 
 #### Alternatives
 If you want a bit more of a guarantee of support, I've seen these projects mentioned although haven't tried them myself.
 
 * [Wizarr](https://github.com/Wizarrrr/wizarr) focuses on invites, and also includes some Discord & Ombi integration.
-* [Jellyseerr](https://github.com/Fallenbagel/jellyseerr) is a fork of Overseerr, which can manage users and mainly acts as an Ombi alternative.
+* [Jellyseerr](https://github.com/Fallenbagel/jellyseerr) is a fork of Overseerr which can manage users and mainly acts as an Ombi alternative.
+  * [jfa-go now integrates with Jellyseerr, much like Ombi, but better.](https://github.com/hrfee/jfa-go/pull/351)
 * [Organizr](https://github.com/causefx/Organizr) doesn't focus on Jellyfin, but allows putting self-hosted services into "tabs" on a central page, and allows creating users, which lets one control who can access what.
 ---
 jfa-go is a user management app for [Jellyfin](https://github.com/jellyfin/jellyfin) (and [Emby](https://emby.media/) as 2nd class) that provides invite-based account creation as well as other features that make one's instance much easier to manage.
@@ -32,7 +33,7 @@ jfa-go is a user management app for [Jellyfin](https://github.com/jellyfin/jelly
     * Password validation: Ensure users choose a strong password.
     * CAPTCHAs and contact method verificatoin can be enabled to avoid bots.
 * ⌛ User expiry: Specify a validity period, and new users accounts will be disabled/deleted after it. The period can be manually extended too.
-* 🔗 Ombi Integration: Automatically creates Ombi accounts for new users using their email address and login details, and your own defined set of permissions. See [wiki](https://wiki.jfa-go.com/docs/ombi/) for a warning on this one.
+* 🔗 Ombi/Jellyseerr Integration: Automatically creates and synchronizes details for new accounts. Supports setting permissions with the Profiles feature. **Ombi integration use is risky, see [wiki](https://wiki.jfa-go.com/docs/ombi/)**.
 * Account management: Bulk or individually; apply settings, delete, disable/enable, send messages and much more.
 * 📣 Announcements: Bulk message your users with announcements about your server.
 * Telegram/Discord/Matrix Integration: Verify users via a chat bot, and send Password Resets, Announcements, etc. through it.
