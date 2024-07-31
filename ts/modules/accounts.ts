@@ -795,7 +795,8 @@ export class accountsList {
     private _searchBox = document.getElementById("accounts-search") as HTMLInputElement;
     private _search: Search;
 
-    private _applyHomesreen = document.getElementById("modify-user-homescreen") as HTMLInputElement;
+    private _applyHomescreen = document.getElementById("modify-user-homescreen") as HTMLInputElement;
+    private _applyConfiguration = document.getElementById("modify-user-configuration") as HTMLInputElement;
     private _applyOmbi = document.getElementById("modify-user-ombi") as HTMLInputElement;
     private _applyJellyseerr = document.getElementById("modify-user-jellyseerr") as HTMLInputElement;
 
@@ -1490,7 +1491,8 @@ export class accountsList {
             toggleLoader(button);
             let send = {
                 "apply_to": list,
-                "homescreen": this._applyHomesreen.checked,
+                "homescreen": this._applyHomescreen.checked,
+                "configuration": this._applyConfiguration.checked,
                 "ombi": this._applyOmbi.checked,
                 "jellyseerr": this._applyJellyseerr.checked
             };

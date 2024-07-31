@@ -174,13 +174,16 @@ type ombiUsersDTO struct {
 type modifyEmailsDTO map[string]string
 
 type userSettingsDTO struct {
-	From       string   `json:"from"`       // Whether to apply from "user" or "profile"
-	Profile    string   `json:"profile"`    // Name of profile (if from = "profile")
-	ApplyTo    []string `json:"apply_to"`   // Users to apply settings to
-	ID         string   `json:"id"`         // ID of user (if from = "user")
-	Homescreen bool     `json:"homescreen"` // Whether to apply homescreen layout or not
-	Ombi       bool     `json:"ombi"`       // Whether to apply ombi profile or not
-	Jellyseerr bool     `json:"jellyseerr"` // Whether to apply jellyseerr profile or not
+	From    string   `json:"from"`     // Whether to apply from "user" or "profile"
+	Profile string   `json:"profile"`  // Name of profile (if from = "profile")
+	ApplyTo []string `json:"apply_to"` // Users to apply settings to
+	ID      string   `json:"id"`       // ID of user (if from = "user")
+	// Note confusing name: "Configuration" on the admin UI just means it in the sense
+	// of the account's settings.
+	Policy     bool `json:"configuration"` // Whether to apply jf policy not
+	Homescreen bool `json:"homescreen"`    // Whether to apply homescreen layout or not
+	Ombi       bool `json:"ombi"`          // Whether to apply ombi profile or not
+	Jellyseerr bool `json:"jellyseerr"`    // Whether to apply jellyseerr profile or not
 }
 
 type announcementDTO struct {

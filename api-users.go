@@ -1372,7 +1372,9 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 			configuration = profile.Configuration
 			displayprefs = profile.Displayprefs
 		}
-		policy = profile.Policy
+		if req.Policy {
+			policy = profile.Policy
+		}
 		if req.Ombi && app.config.Section("ombi").Key("enabled").MustBool(false) {
 			if profile.Ombi != nil && len(profile.Ombi) != 0 {
 				ombi = profile.Ombi
@@ -1394,7 +1396,9 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 			return
 		}
 		applyingFrom = "\"" + user.Name + "\""
-		policy = user.Policy
+		if req.Policy {
+			policy = user.Policy
+		}
 		if req.Homescreen {
 			displayprefs, status, err = app.jf.GetDisplayPreferences(req.ID)
 			if !(status == 200 || status == 204) || err != nil {
@@ -1421,9 +1425,13 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 		app.debug.Println("Adding delay between requests for large batch")
 	}
 	for _, id := range req.ApplyTo {
-		status, err := app.jf.SetPolicy(id, policy)
-		if !(status == 200 || status == 204) || err != nil {
-			errors["policy"][id] = fmt.Sprintf("%d: %s", status, err)
+		var status int
+		var err error
+		if req.Policy {
+			status, err = app.jf.SetPolicy(id, policy)
+			if !(status == 200 || status == 204) || err != nil {
+				errors["policy"][id] = fmt.Sprintf("%d: %s", status, err)
+			}
 		}
 		if shouldDelay {
 			time.Sleep(250 * time.Millisecond)
