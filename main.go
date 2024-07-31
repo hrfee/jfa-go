@@ -27,6 +27,7 @@ import (
 	"github.com/hrfee/jfa-go/easyproxy"
 	"github.com/hrfee/jfa-go/jellyseerr"
 	"github.com/hrfee/jfa-go/logger"
+	lm "github.com/hrfee/jfa-go/logmessages"
 	"github.com/hrfee/jfa-go/ombi"
 	"github.com/hrfee/mediabrowser"
 	"github.com/lithammer/shortuuid/v3"
@@ -213,22 +214,21 @@ func start(asDaemon, firstCall bool) {
 		firstRun = true
 		dConfig, err := fs.ReadFile(localFS, "config-default.ini")
 		if err != nil {
-			app.err.Fatalf("Couldn't find default config file")
+			app.err.Fatalf(lm.NoConfig)
 		}
 		nConfig, err := os.Create(app.configPath)
 		if err != nil && os.IsNotExist(err) {
 			err = os.MkdirAll(filepath.Dir(app.configPath), 0760)
 		}
 		if err != nil {
-			app.err.Printf("Couldn't open config file for writing: \"%s\"", app.configPath)
-			app.err.Fatalf("Error: %s", err)
+			app.err.Fatalf(lm.FailedWriting, app.configPath, err)
 		}
 		defer nConfig.Close()
 		_, err = nConfig.Write(dConfig)
 		if err != nil {
-			app.err.Fatalf("Couldn't copy default config.")
+			app.err.Fatalf(lm.FailedCopyConfig, app.configPath, err)
 		}
-		app.info.Printf("Copied default configuration to \"%s\"", app.configPath)
+		app.info.Printf(lm.CopyConfig, app.configPath)
 		tempConfig, _ := ini.Load(app.configPath)
 		tempConfig.Section("").Key("first_run").SetValue("true")
 		tempConfig.SaveTo(app.configPath)
@@ -237,8 +237,9 @@ func start(asDaemon, firstCall bool) {
 	var debugMode bool
 	var address string
 	if err := app.loadConfig(); err != nil {
-		app.err.Fatalf("Failed to load config file \"%s\": %v", app.configPath, err)
+		app.err.Fatalf(lm.FailedLoadConfig, app.configPath, err)
 	}
+	app.info.Printf(lm.LoadConfig, app.configPath)
 
 	if app.config.Section("").Key("first_run").MustBool(false) {
 		firstRun = true
@@ -270,7 +271,7 @@ func start(asDaemon, firstCall bool) {
 			os.Remove(SOCK)
 			listener, err := net.Listen("unix", SOCK)
 			if err != nil {
-				app.err.Fatalf("Couldn't establish socket connection at %s\n", SOCK)
+				app.err.Fatalf(lm.FailedSocketConnect, SOCK, err)
 			}
 			c := make(chan os.Signal, 1)
 			signal.Notify(c, os.Interrupt, syscall.SIGTERM)
@@ -286,13 +287,13 @@ func start(asDaemon, firstCall bool) {
 			for {
 				con, err := listener.Accept()
 				if err != nil {
-					app.err.Printf("Couldn't read message on %s: %s", SOCK, err)
+					app.err.Printf(lm.FailedSocketRead, SOCK, err)
 					continue
 				}
 				buf := make([]byte, 512)
 				nr, err := con.Read(buf)
 				if err != nil {
-					app.err.Printf("Couldn't read message on %s: %s", SOCK, err)
+					app.err.Printf(lm.FailedSocketRead, SOCK, err)
 					continue
 				}
 				command := string(buf[0:nr])
@@ -317,13 +318,13 @@ func start(asDaemon, firstCall bool) {
 		err = app.storage.loadLang(langFS, os.DirFS(externalLang))
 	}
 	if err != nil {
-		app.info.Fatalf("Failed to load language files: %+v\n", err)
+		app.info.Fatalf(lm.FailedLangLoad, err)
 	}
 
 	if !firstRun {
 		app.host = app.config.Section("ui").Key("host").String()
 		if app.config.Section("advanced").Key("tls").MustBool(false) {
-			app.info.Println("Using TLS/HTTP2")
+			app.info.Println(lm.UsingTLS)
 			app.port = app.config.Section("advanced").Key("tls_port").MustInt(8057)
 		} else {
 			app.port = app.config.Section("ui").Key("port").MustInt(8056)
@@ -348,10 +349,8 @@ func start(asDaemon, firstCall bool) {
 		}
 		address = fmt.Sprintf("%s:%d", app.host, app.port)
 
-		app.debug.Printf("Loaded config file \"%s\"", app.configPath)
-
 		if app.config.Section("ombi").Key("enabled").MustBool(false) {
-			app.debug.Printf("Connecting to Ombi")
+			app.debug.Printf(lm.UsingOmbi)
 			ombiServer := app.config.Section("ombi").Key("server").String()
 			app.ombi = ombi.NewOmbi(
 				ombiServer,
@@ -362,7 +361,7 @@ func start(asDaemon, firstCall bool) {
 		}
 
 		if app.config.Section("jellyseerr").Key("enabled").MustBool(false) {
-			app.debug.Printf("Connecting to Jellyseerr")
+			app.debug.Printf(lm.UsingJellyseerr)
 			jellyseerrServer := app.config.Section("jellyseerr").Key("server").String()
 			app.js = jellyseerr.NewJellyseerr(
 				jellyseerrServer,
@@ -398,10 +397,9 @@ func start(asDaemon, firstCall bool) {
 		if stringServerType == "emby" {
 			serverType = mediabrowser.EmbyServer
 			timeoutHandler = mediabrowser.NewNamedTimeoutHandler("Emby", "\""+server+"\"", true)
-			app.info.Println("Using Emby server type")
-			fmt.Println(warning("WARNING: Emby compatibility is experimental, and support is limited.\nPassword resets are not available."))
+			app.info.Println(lm.UsingEmby)
 		} else {
-			app.info.Println("Using Jellyfin server type")
+			app.info.Println(lm.UsingJellyfin)
 		}
 
 		app.jf, err = mediabrowser.NewServer(
@@ -415,7 +413,7 @@ func start(asDaemon, firstCall bool) {
 			cacheTimeout,
 		)
 		if err != nil {
-			app.err.Fatalf("Failed to authenticate with Jellyfin @ \"%s\": %v", server, err)
+			app.err.Fatalf(lm.FailedAuthJellyfin, server, -1, err)
 		}
 		if debugMode {
 			app.jf.Verbose = true
@@ -433,9 +431,9 @@ func start(asDaemon, firstCall bool) {
 		}
 		_, status, err = app.jf.MustAuthenticate(app.config.Section("jellyfin").Key("username").String(), app.config.Section("jellyfin").Key("password").String(), retryOpts)
 		if status != 200 || err != nil {
-			app.err.Fatalf("Failed to authenticate with Jellyfin @ \"%s\" (%d): %v", server, status, err)
+			app.err.Fatalf(lm.FailedAuthJellyfin, server, status, err)
 		}
-		app.info.Printf("Authenticated with \"%s\"", server)
+		app.info.Printf(lm.AuthJellyfin, server)
 
 		runMigrations(app)
 
@@ -448,8 +446,9 @@ func start(asDaemon, firstCall bool) {
 			user.Username = app.config.Section("ui").Key("username").String()
 			user.Password = app.config.Section("ui").Key("password").String()
 			app.adminUsers = append(app.adminUsers, user)
+			app.info.Println(lm.UsingLocalAuth)
 		} else {
-			app.debug.Println("Using Jellyfin for authentication")
+			app.debug.Println(lm.UsingJellyfinAuth)
 			app.authJf, _ = mediabrowser.NewServer(serverType, server, "jfa-go", app.version, "auth", "auth", timeoutHandler, cacheTimeout)
 			if debugMode {
 				app.authJf.Verbose = true
@@ -515,9 +514,10 @@ func start(asDaemon, firstCall bool) {
 		if telegramEnabled {
 			app.telegram, err = newTelegramDaemon(app)
 			if err != nil {
-				app.err.Printf("Failed to authenticate with Telegram: %v", err)
+				app.err.Printf(lm.FailedInitTelegram, err)
 				telegramEnabled = false
 			} else {
+				app.debug.Println(lm.InitTelegram)
 				go app.telegram.run()
 				defer app.telegram.Shutdown()
 			}
@@ -525,9 +525,10 @@ func start(asDaemon, firstCall bool) {
 		if discordEnabled {
 			app.discord, err = newDiscordDaemon(app)
 			if err != nil {
-				app.err.Printf("Failed to authenticate with Discord: %v", err)
+				app.err.Printf(lm.FailedInitDiscord, err)
 				discordEnabled = false
 			} else {
+				app.debug.Println(lm.InitDiscord)
 				go app.discord.run()
 				defer app.discord.Shutdown()
 			}
@@ -535,9 +536,10 @@ func start(asDaemon, firstCall bool) {
 		if matrixEnabled {
 			app.matrix, err = newMatrixDaemon(app)
 			if err != nil {
-				app.err.Printf("Failed to initialize Matrix daemon: %v", err)
+				app.err.Printf(lm.FailedInitMatrix, err)
 				matrixEnabled = false
 			} else {
+				app.debug.Println(lm.InitMatrix)
 				go app.matrix.run()
 				defer app.matrix.Shutdown()
 			}
@@ -558,7 +560,7 @@ func start(asDaemon, firstCall bool) {
 		app.storage.lang.SetupPath = "setup"
 		err := app.storage.loadLangSetup(langFS)
 		if err != nil {
-			app.info.Fatalf("Failed to load language files: %+v\n", err)
+			app.info.Fatalf(lm.FailedLangLoad, err)
 		}
 	}
 
@@ -566,14 +568,14 @@ func start(asDaemon, firstCall bool) {
 	// workaround for potentially broken windows mime types
 	mime.AddExtensionType(".js", "application/javascript")
 
-	app.info.Println("Initializing router")
+	app.info.Println(lm.InitRouter)
 	router := app.loadRouter(address, debugMode)
-	app.info.Println("Loading routes")
+	app.info.Println(lm.LoadRoutes)
 	if !firstRun {
 		app.loadRoutes(router)
 	} else {
 		app.loadSetup(router)
-		app.info.Printf("Loading setup @ %s", address)
+		app.info.Printf(lm.LoadingSetup, address)
 	}
 	go func() {
 		if app.config.Section("advanced").Key("tls").MustBool(false) {
@@ -581,45 +583,45 @@ func start(asDaemon, firstCall bool) {
 			key := app.config.Section("advanced").Key("tls_key").MustString("")
 			if err := SRV.ListenAndServeTLS(cert, key); err != nil {
 				filesToCheck := []string{cert, key}
-				fileNames := []string{"Certificate", "Key"}
+				fileNames := []string{lm.InvalidSSLCert, lm.InvalidSSLKey}
 				for i, v := range filesToCheck {
 					_, err := os.Stat(v)
 					if err != nil {
-						app.err.Printf("SSL/TLS %s: %v\n", fileNames[i], err)
+						app.err.Printf(fileNames[i], v, err)
 					}
 				}
 
 				if err == http.ErrServerClosed {
-					app.err.Printf("Failure serving with SSL/TLS: %s", err)
+					app.err.Printf(lm.FailServeSSL, err)
 				} else {
-					app.err.Fatalf("Failure serving with SSL/TLS: %s", err)
+					app.err.Fatalf(lm.FailServeSSL, err)
 				}
 			}
 		} else {
 			if err := SRV.ListenAndServe(); err != nil {
 				if err == http.ErrServerClosed {
-					app.err.Printf("Failure serving: %s", err)
+					app.err.Printf(lm.FailServe, err)
 				} else {
-					app.err.Fatalf("Failure serving: %s", err)
+					app.err.Fatalf(lm.FailServe, err)
 				}
 			}
 		}
 	}()
 	if firstRun {
-		app.info.Printf("Loaded, visit %s to start.", address)
+		app.info.Printf(lm.ServingSetup, address)
 	} else {
-		app.info.Printf("Loaded @ %s", address)
+		app.info.Printf(lm.Serving, address)
 	}
 
 	waitForRestart()
 
-	app.info.Printf("Restart/Quit signal received, give me a second!")
+	app.info.Printf(lm.QuitReceived)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 	if err := SRV.Shutdown(ctx); err != nil {
-		app.err.Fatalf("Server shutdown error: %s", err)
+		app.err.Fatalf(lm.FailedQuit, err)
 	}
-	app.info.Println("Server shut down.")
+	app.info.Println(lm.Quit)
 	return
 }
 
@@ -631,7 +633,7 @@ func shutdown() {
 }
 
 func (app *appContext) shutdown() {
-	app.info.Println("Shutting down...")
+	app.info.Println(lm.Quitting)
 	shutdown()
 }
 
@@ -715,15 +717,17 @@ func printVersion() {
 	fmt.Println(info("jfa-go version: %s (%s)%s\n", hiwhite(version), white(commit), tray))
 }
 
+const SYSTEMD_SERVICE = "jfa-go.service"
+
 func main() {
 	f, err := logOutput()
 	if err != nil {
-		fmt.Printf("Failed to start logging: %v\n", err)
+		fmt.Printf(lm.FailedLogging, err)
 	}
 	defer f()
 	printVersion()
 	SOCK = filepath.Join(temp, SOCK)
-	fmt.Println("Socket:", SOCK)
+	fmt.Printf(lm.SocketPath+"\n", SOCK)
 	if flagPassed("test") {
 		TEST = true
 	}
@@ -752,21 +756,23 @@ func main() {
 	} else if flagPassed("stop") {
 		con, err := net.Dial("unix", SOCK)
 		if err != nil {
-			fmt.Printf("Couldn't dial socket %s, are you sure jfa-go is running?\n", SOCK)
+			fmt.Printf(lm.FailedSocketConnect+"\n", SOCK, err)
+			fmt.Println(lm.SocketCheckRunning)
 			os.Exit(1)
 		}
 		_, err = con.Write([]byte("stop"))
 		if err != nil {
-			fmt.Printf("Couldn't send command to socket %s, are you sure jfa-go is running?\n", SOCK)
+			fmt.Printf(lm.FailedSocketWrite+"\n", SOCK, err)
+			fmt.Println(lm.SocketCheckRunning)
 			os.Exit(1)
 		}
-		fmt.Println("Sent.")
+		fmt.Println(lm.SocketWrite)
 	} else if flagPassed("daemon") {
 		start(true, true)
 	} else if flagPassed("systemd") {
-		service, err := fs.ReadFile(localFS, "jfa-go.service")
+		service, err := fs.ReadFile(localFS, SYSTEMD_SERVICE)
 		if err != nil {
-			fmt.Printf("Couldn't read jfa-go.service: %v\n", err)
+			fmt.Printf(lm.FailedReading+"\n", SYSTEMD_SERVICE, err)
 			os.Exit(1)
 		}
 		absPath, err := filepath.Abs(os.Args[0])
@@ -780,13 +786,13 @@ func main() {
 			}
 		}
 		service = []byte(strings.Replace(string(service), "{executable}", command, 1))
-		err = os.WriteFile("jfa-go.service", service, 0666)
+		err = os.WriteFile(SYSTEMD_SERVICE, service, 0666)
 		if err != nil {
-			fmt.Printf("Couldn't write jfa-go.service: %v\n", err)
+			fmt.Printf(lm.FailedWriting+"\n", SYSTEMD_SERVICE, err)
 			os.Exit(1)
 		}
 		fmt.Println(info(`If you want to execute jfa-go with special arguments, re-run this command with them.
-Move the newly created "jfa-go.service" file to ~/.config/systemd/user (Creating it if necessary).
+Move the newly created SYSTEMD_SERVICE file to ~/.config/systemd/user (Creating it if necessary).
 Then run "systemctl --user daemon-reload".
 You can then run:
 

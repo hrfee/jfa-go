@@ -1,6 +1,6 @@
 module github.com/hrfee/jfa-go
 
-go 1.20
+go 1.22.4
 
 replace github.com/hrfee/jfa-go/docs => ./docs
 
@@ -9,6 +9,8 @@ replace github.com/hrfee/jfa-go/common => ./common
 replace github.com/hrfee/jfa-go/ombi => ./ombi
 
 replace github.com/hrfee/jfa-go/logger => ./logger
+
+replace github.com/hrfee/jfa-go/logmessages => ./logmessages
 
 replace github.com/hrfee/jfa-go/linecache => ./linecache
 
@@ -35,7 +37,7 @@ require (
 	github.com/hrfee/jfa-go/docs v0.0.0-20230626224816-f72960635dc3
 	github.com/hrfee/jfa-go/easyproxy v0.0.0-00010101000000-000000000000
 	github.com/hrfee/jfa-go/linecache v0.0.0-20230626224816-f72960635dc3
-	github.com/hrfee/jfa-go/logger v0.0.0-20230626224816-f72960635dc3
+	github.com/hrfee/jfa-go/logger v0.0.0-20240731152135-2d066ea7cd32
 	github.com/hrfee/jfa-go/ombi v0.0.0-20230626224816-f72960635dc3
 	github.com/hrfee/mediabrowser v0.3.13
 	github.com/itchyny/timefmt-go v0.1.5
@@ -91,6 +93,7 @@ require (
 	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/hrfee/jfa-go/jellyseerr v0.0.0-00010101000000-000000000000 // indirect
+	github.com/hrfee/jfa-go/logmessages v0.0.0-00010101000000-000000000000 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.16.6 // indirect
