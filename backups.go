@@ -161,20 +161,13 @@ func (app *appContext) loadPendingBackup() {
 	LOADBAK = ""
 }
 
-func newBackupDaemon(app *appContext) *housekeepingDaemon {
+func newBackupDaemon(app *appContext) *GenericDaemon {
 	interval := time.Duration(app.config.Section("backups").Key("every_n_minutes").MustInt(1440)) * time.Minute
-	daemon := housekeepingDaemon{
-		Stopped:         false,
-		ShutdownChannel: make(chan string),
-		Interval:        interval,
-		period:          interval,
-		app:             app,
-	}
-	daemon.jobs = []func(app *appContext){
+	d := NewGenericDaemon(interval, app,
 		func(app *appContext) {
 			app.debug.Println("Backups: Creating backup")
 			app.makeBackup()
 		},
-	}
-	return &daemon
+	)
+	return d
 }

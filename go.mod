@@ -16,6 +16,8 @@ replace github.com/hrfee/jfa-go/api => ./api
 
 replace github.com/hrfee/jfa-go/easyproxy => ./easyproxy
 
+replace github.com/hrfee/jfa-go/jellyseerr => ./jellyseerr
+
 require (
 	github.com/bwmarrin/discordgo v0.27.1
 	github.com/dgraph-io/badger/v3 v3.2103.5
@@ -29,7 +31,7 @@ require (
 	github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/gomarkdown/markdown v0.0.0-20230322041520-c84983bdbf2a
-	github.com/hrfee/jfa-go/common v0.0.0-20230626224816-f72960635dc3
+	github.com/hrfee/jfa-go/common v0.0.0-20240728190513-dabef831d769
 	github.com/hrfee/jfa-go/docs v0.0.0-20230626224816-f72960635dc3
 	github.com/hrfee/jfa-go/easyproxy v0.0.0-00010101000000-000000000000
 	github.com/hrfee/jfa-go/linecache v0.0.0-20230626224816-f72960635dc3
@@ -88,6 +90,7 @@ require (
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
+	github.com/hrfee/jfa-go/jellyseerr v0.0.0-00010101000000-000000000000 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.16.6 // indirect

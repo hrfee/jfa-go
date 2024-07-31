@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/url"
 
 	"github.com/gin-gonic/gin"
 	"github.com/hrfee/mediabrowser"
@@ -95,7 +96,8 @@ func (app *appContext) OmbiUsers(gc *gin.Context) {
 func (app *appContext) SetOmbiProfile(gc *gin.Context) {
 	var req ombiUser
 	gc.BindJSON(&req)
-	profileName := gc.Param("profile")
+	escapedProfileName := gc.Param("profile")
+	profileName, _ := url.QueryUnescape(escapedProfileName)
 	profile, ok := app.storage.GetProfileKey(profileName)
 	if !ok {
 		respondBool(400, false, gc)
@@ -122,7 +124,8 @@ func (app *appContext) SetOmbiProfile(gc *gin.Context) {
 // @Security Bearer
 // @tags Ombi
 func (app *appContext) DeleteOmbiProfile(gc *gin.Context) {
-	profileName := gc.Param("profile")
+	escapedProfileName := gc.Param("profile")
+	profileName, _ := url.QueryUnescape(escapedProfileName)
 	profile, ok := app.storage.GetProfileKey(profileName)
 	if !ok {
 		respondBool(400, false, gc)

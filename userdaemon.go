@@ -7,47 +7,14 @@ import (
 	"github.com/lithammer/shortuuid/v3"
 )
 
-type userDaemon struct {
-	Stopped         bool
-	ShutdownChannel chan string
-	Interval        time.Duration
-	period          time.Duration
-	app             *appContext
-}
-
-func newUserDaemon(interval time.Duration, app *appContext) *userDaemon {
-	return &userDaemon{
-		Stopped:         false,
-		ShutdownChannel: make(chan string),
-		Interval:        interval,
-		period:          interval,
-		app:             app,
-	}
-}
-
-func (rt *userDaemon) run() {
-	rt.app.info.Println("User daemon started")
-	for {
-		select {
-		case <-rt.ShutdownChannel:
-			rt.ShutdownChannel <- "Down"
-			return
-		case <-time.After(rt.period):
-			break
-		}
-		started := time.Now()
-		rt.app.checkUsers()
-		finished := time.Now()
-		duration := finished.Sub(started)
-		rt.period = rt.Interval - duration
-	}
-}
-
-func (rt *userDaemon) shutdown() {
-	rt.Stopped = true
-	rt.ShutdownChannel <- "Down"
-	<-rt.ShutdownChannel
-	close(rt.ShutdownChannel)
+func newUserDaemon(interval time.Duration, app *appContext) *GenericDaemon {
+	d := NewGenericDaemon(interval, app,
+		func(app *appContext) {
+			app.checkUsers()
+		},
+	)
+	d.Name("User daemon")
+	return d
 }
 
 func (app *appContext) checkUsers() {

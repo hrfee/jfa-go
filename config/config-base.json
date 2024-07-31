@@ -1580,6 +1580,66 @@
                 }
             }
         },
+        "jellyseerr": {
+            "order": [],
+            "meta": {
+                "name": "Jellyseerr Integration",
+                "description": "Connect to Jellyseerr to automatically trigger the import of users on account creation, and to automatically link contact methods (email, discord and telegram). A template must be added to a User Profile for accounts to be created."
+            },
+            "settings": {
+                "enabled": {
+                    "name": "Enabled",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "bool",
+                    "value": false,
+                    "description": "Enable the Jellyseerr integration."
+                },
+                "usertype_note": {
+                    "name": "Password Changes:",
+                    "type": "note",
+                    "value": "",
+                    "depends_true": "enabled",
+                    "required": "false",
+                    "description": "Ensure existing users on Jellyseerr are \"Jellyfin User\"s not \"Local User\"s, as password changes are not synced with Jellyseerr."
+                },
+                "server": {
+                    "name": "URL",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "text",
+                    "value": "localhost:5000",
+                    "depends_true": "enabled",
+                    "description": "Jellyseerr server URL."
+                },
+                "api_key": {
+                    "name": "API Key",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "text",
+                    "value": "",
+                    "depends_true": "enabled",
+                    "description": "API Key. Get this from the first tab in Jellyseerr's settings."
+                },
+                "import_existing": {
+                    "name": "Import existing users to Jellyseerr",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "bool",
+                    "value": false,
+                    "depends_true": "enabled",
+                    "description": "Existing users (and those created outside jfa-go) will have their contact info imported to Jellyseerr."
+                },
+                "constraints_note": {
+                    "name": "Unique Emails:",
+                    "type": "note",
+                    "value": "",
+                    "depends_true": "import_existing",
+                    "required": "false",
+                    "description": "Jellyseerr requires email addresses to be unique. If this is not the case, you may see errors in jfa-go's logs. You can require unique addresses in Settings > Email."
+                }
+            }
+        },
         "backups": {
             "order": [],
             "meta": {

@@ -10,6 +10,7 @@
             window.discordEnabled = {{ .discordEnabled }};
             window.matrixEnabled = {{ .matrixEnabled }};
             window.ombiEnabled = {{ .ombiEnabled }};
+            window.jellyseerrEnabled = {{ .jellyseerrEnabled }};
             window.usernameEnabled = {{ .username }};
             window.langFile = JSON.parse({{ .language }});
             window.linkResetEnabled = {{ .linkResetEnabled }};
@@ -83,30 +84,44 @@
             <form class="card relative mx-auto my-[10%] w-11/12 sm:w-4/5 lg:w-1/3" id="form-modify-user" href="">
                 <span class="heading"><span id="header-modify-user"></span> <span class="modal-close">&times;</span></span>
                 <p class="content my-4">{{ .strings.modifySettingsDescription }}</p>
-                <div class="flex flex-row mb-4">
-                    <label class="grow mr-2">
-                        <input type="radio" name="modify-user-source" class="unfocused" id="radio-use-profile" checked>
-                        <span class="button ~neutral @high supra full-width center">{{ .strings.profile }}</span>
+                <div class="flex flex-col gap-4 my-2">
+                    <div class="flex flex-row gap-2">
+                        <label class="grow">
+                            <input type="radio" name="modify-user-source" class="unfocused" id="radio-use-profile" checked>
+                            <span class="button ~neutral @high supra full-width center">{{ .strings.profile }}</span>
+                        </label>
+                        <label class="grow">
+                            <input type="radio" name="modify-user-source" class="unfocused" id="radio-use-user">
+                            <span class="button ~neutral @low supra full-width center">{{ .strings.user }}</span>
+                        </label>
+                    </div>
+                    <div class="select ~neutral @low">
+                        <select id="modify-user-profiles"></select>
+                    </div>
+                    <div class="select ~neutral @low unfocused">
+                        <select id="modify-user-users"></select>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="modify-user-configuration" checked>
+                        <span>{{ .strings.applyConfigurationAndPolicy }}</span>
                     </label>
-                    <label class="grow ml-2">
-                        <input type="radio" name="modify-user-source" class="unfocused" id="radio-use-user">
-                        <span class="button ~neutral @low supra full-width center">{{ .strings.user }}</span>
+                    <label class="switch">
+                        <input type="checkbox" id="modify-user-homescreen" checked>
+                        <span>{{ .strings.applyHomescreenLayout }}</span>
+                    </label>
+                    <label class="switch">
+                        <input type="checkbox" id="modify-user-ombi" checked>
+                        <span>{{ .strings.applyOmbi }}</span>
+                    </label>
+                    <label class="switch">
+                        <input type="checkbox" id="modify-user-jellyseerr" checked>
+                        <span>{{ .strings.applyJellyseerr }}</span>
+                    </label>
+                    <label>
+                        <input type="submit" class="unfocused">
+                        <span class="button ~urge @low full-width center supra submit">{{ .strings.apply }}</span>
                     </label>
                 </div>
-                <div class="select ~neutral @low mb-4">
-                    <select id="modify-user-profiles"></select>
-                </div>
-                <div class="select ~neutral @low mb-4 unfocused">
-                    <select id="modify-user-users"></select>
-                </div>
-                <label class="switch mb-4">
-                    <input type="checkbox" id="modify-user-homescreen" checked>
-                    <span>{{ .strings.applyHomescreenLayout }}</span>
-                </label>
-                <label>
-                    <input type="submit" class="unfocused">
-                    <span class="button ~urge @low full-width center supra submit">{{ .strings.apply }}</span>
-                </label>
             </form>
         </div>
         {{ if .referralsEnabled }}
@@ -396,6 +411,19 @@
                 </label>
             </form>
         </div>
+        <div id="modal-jellyseerr-profile" class="modal">
+            <form class="card relative mx-auto my-[10%] w-11/12 sm:w-4/5 lg:w-1/3" id="form-jellyseerr-defaults" href="">
+                <span class="heading">{{ .strings.jellyseerrProfile }} <span class="modal-close">&times;</span></span>
+                <p class="content my-4">{{ .strings.jellyseerrUserDefaultsDescription }}</p>
+                <div class="select ~neutral @low mb-4">
+                    <select></select>
+                </div>
+                <label>
+                    <input type="submit" class="unfocused">
+                    <span class="button ~urge @low full-width center supra submit">{{ .strings.submit }}</span>
+                </label>
+            </form>
+        </div>
         <div id="modal-user-profiles" class="modal">
             <div class="relative mx-auto my-[10%] w-11/12 sm:w-4/5 lg:w-2/3 content card">
                 <span class="heading">{{ .strings.userProfiles }} <span class="modal-close">&times;</span></span>
@@ -408,6 +436,9 @@
                                 <th>{{ .strings.userProfilesIsDefault }}</th>
                                 {{ if .ombiEnabled }}
                                 <th>Ombi</th>
+                                {{ end }}
+                                {{ if .jellyseerrEnabled }}
+                                <th>Jellyseerr</th>
                                 {{ end }}
                                 {{ if .referralsEnabled }}
                                 <th>{{ .strings.referrals }}</th>

@@ -49,6 +49,9 @@ window.availableProfiles = window.availableProfiles || [];
 
     window.modals.ombiProfile = new Modal(document.getElementById('modal-ombi-profile'));
     document.getElementById('form-ombi-defaults').addEventListener('submit', window.modals.ombiProfile.close);
+    
+    window.modals.jellyseerrProfile = new Modal(document.getElementById('modal-jellyseerr-profile'));
+    document.getElementById('form-jellyseerr-defaults').addEventListener('submit', window.modals.jellyseerrProfile.close);
 
     window.modals.profiles = new Modal(document.getElementById("modal-user-profiles"));
 
@@ -184,6 +187,7 @@ login.onLogin = () => {
     console.log("Logged in.");
     window.updater = new Updater();
     // FIXME: Decide whether to autoload activity or not
+    window.invites.reload()
     setInterval(() => { window.invites.reload(); accounts.reload(); }, 30*1000);
     const currentTab = window.tabs.current;
     switch (currentTab) {

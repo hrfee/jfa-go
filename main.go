@@ -25,6 +25,7 @@ import (
 	"github.com/hrfee/jfa-go/common"
 	_ "github.com/hrfee/jfa-go/docs"
 	"github.com/hrfee/jfa-go/easyproxy"
+	"github.com/hrfee/jfa-go/jellyseerr"
 	"github.com/hrfee/jfa-go/logger"
 	"github.com/hrfee/jfa-go/ombi"
 	"github.com/hrfee/mediabrowser"
@@ -101,6 +102,7 @@ type appContext struct {
 	jf                   *mediabrowser.MediaBrowser
 	authJf               *mediabrowser.MediaBrowser
 	ombi                 *ombi.Ombi
+	js                   *jellyseerr.Jellyseerr
 	datePattern          string
 	timePattern          string
 	storage              Storage
@@ -359,6 +361,19 @@ func start(asDaemon, firstCall bool) {
 
 		}
 
+		if app.config.Section("jellyseerr").Key("enabled").MustBool(false) {
+			app.debug.Printf("Connecting to Jellyseerr")
+			jellyseerrServer := app.config.Section("jellyseerr").Key("server").String()
+			app.js = jellyseerr.NewJellyseerr(
+				jellyseerrServer,
+				app.config.Section("jellyseerr").Key("api_key").String(),
+				common.NewTimeoutHandler("Jellyseerr", jellyseerrServer, true),
+			)
+			app.js.AutoImportUsers = app.config.Section("jellyseerr").Key("import_existing").MustBool(false)
+			// app.js.LogRequestBodies = true
+
+		}
+
 		app.storage.db_path = filepath.Join(app.dataPath, "db")
 		app.loadPendingBackup()
 		app.ConnectDB()
@@ -466,13 +481,21 @@ func start(asDaemon, firstCall bool) {
 			os.Exit(0)
 		}
 
-		invDaemon := newInviteDaemon(time.Duration(60*time.Second), app)
+		invDaemon := newHousekeepingDaemon(time.Duration(60*time.Second), app)
 		go invDaemon.run()
 		defer invDaemon.Shutdown()
 
 		userDaemon := newUserDaemon(time.Duration(60*time.Second), app)
 		go userDaemon.run()
-		defer userDaemon.shutdown()
+		defer userDaemon.Shutdown()
+
+		var jellyseerrDaemon *GenericDaemon
+		if app.config.Section("jellyseerr").Key("enabled").MustBool(false) && app.config.Section("jellyseerr").Key("import_existing").MustBool(false) {
+			// jellyseerrDaemon = newJellyseerrDaemon(time.Duration(30*time.Second), app)
+			jellyseerrDaemon = newJellyseerrDaemon(time.Duration(10*time.Minute), app)
+			go jellyseerrDaemon.run()
+			defer jellyseerrDaemon.Shutdown()
+		}
 
 		if app.config.Section("password_resets").Key("enabled").MustBool(false) && serverType == mediabrowser.JellyfinServer {
 			go app.StartPWR()
@@ -482,7 +505,7 @@ func start(asDaemon, firstCall bool) {
 			go app.checkForUpdates()
 		}
 
-		var backupDaemon *housekeepingDaemon
+		var backupDaemon *GenericDaemon
 		if app.config.Section("backups").Key("enabled").MustBool(false) {
 			backupDaemon = newBackupDaemon(app)
 			go backupDaemon.run()

@@ -133,6 +133,7 @@ func (app *appContext) AdminPage(gc *gin.Context) {
 	emailEnabled, _ := app.config.Section("invite_emails").Key("enabled").Bool()
 	notificationsEnabled, _ := app.config.Section("notifications").Key("enabled").Bool()
 	ombiEnabled := app.config.Section("ombi").Key("enabled").MustBool(false)
+	jellyseerrEnabled := app.config.Section("jellyseerr").Key("enabled").MustBool(false)
 	jfAdminOnly := app.config.Section("ui").Key("admin_only").MustBool(true)
 	jfAllowAll := app.config.Section("ui").Key("allow_all").MustBool(false)
 	var license string
@@ -155,34 +156,35 @@ func (app *appContext) AdminPage(gc *gin.Context) {
 	}
 
 	gcHTML(gc, http.StatusOK, "admin.html", gin.H{
-		"urlBase":          app.getURLBase(gc),
-		"cssClass":         app.cssClass,
-		"cssVersion":       cssVersion,
-		"contactMessage":   "",
-		"emailEnabled":     emailEnabled,
-		"telegramEnabled":  telegramEnabled,
-		"discordEnabled":   discordEnabled,
-		"matrixEnabled":    matrixEnabled,
-		"ombiEnabled":      ombiEnabled,
-		"linkResetEnabled": app.config.Section("password_resets").Key("link_reset").MustBool(false),
-		"notifications":    notificationsEnabled,
-		"version":          version,
-		"commit":           commit,
-		"buildTime":        buildTime,
-		"builtBy":          builtBy,
-		"username":         !app.config.Section("email").Key("no_username").MustBool(false),
-		"strings":          app.storage.lang.Admin[lang].Strings,
-		"quantityStrings":  app.storage.lang.Admin[lang].QuantityStrings,
-		"language":         app.storage.lang.Admin[lang].JSON,
-		"langName":         lang,
-		"license":          license,
-		"jellyfinLogin":    app.jellyfinLogin,
-		"jfAdminOnly":      jfAdminOnly,
-		"jfAllowAll":       jfAllowAll,
-		"userPageEnabled":  app.config.Section("user_page").Key("enabled").MustBool(false),
-		"showUserPageLink": app.config.Section("user_page").Key("show_link").MustBool(true),
-		"referralsEnabled": app.config.Section("user_page").Key("enabled").MustBool(false) && app.config.Section("user_page").Key("referrals").MustBool(false),
-		"loginAppearance":  app.config.Section("ui").Key("login_appearance").MustString("clear"),
+		"urlBase":           app.getURLBase(gc),
+		"cssClass":          app.cssClass,
+		"cssVersion":        cssVersion,
+		"contactMessage":    "",
+		"emailEnabled":      emailEnabled,
+		"telegramEnabled":   telegramEnabled,
+		"discordEnabled":    discordEnabled,
+		"matrixEnabled":     matrixEnabled,
+		"ombiEnabled":       ombiEnabled,
+		"jellyseerrEnabled": jellyseerrEnabled,
+		"linkResetEnabled":  app.config.Section("password_resets").Key("link_reset").MustBool(false),
+		"notifications":     notificationsEnabled,
+		"version":           version,
+		"commit":            commit,
+		"buildTime":         buildTime,
+		"builtBy":           builtBy,
+		"username":          !app.config.Section("email").Key("no_username").MustBool(false),
+		"strings":           app.storage.lang.Admin[lang].Strings,
+		"quantityStrings":   app.storage.lang.Admin[lang].QuantityStrings,
+		"language":          app.storage.lang.Admin[lang].JSON,
+		"langName":          lang,
+		"license":           license,
+		"jellyfinLogin":     app.jellyfinLogin,
+		"jfAdminOnly":       jfAdminOnly,
+		"jfAllowAll":        jfAllowAll,
+		"userPageEnabled":   app.config.Section("user_page").Key("enabled").MustBool(false),
+		"showUserPageLink":  app.config.Section("user_page").Key("show_link").MustBool(true),
+		"referralsEnabled":  app.config.Section("user_page").Key("enabled").MustBool(false) && app.config.Section("user_page").Key("referrals").MustBool(false),
+		"loginAppearance":   app.config.Section("ui").Key("login_appearance").MustString("clear"),
 	})
 }
 
@@ -192,6 +194,7 @@ func (app *appContext) MyUserPage(gc *gin.Context) {
 	emailEnabled, _ := app.config.Section("invite_emails").Key("enabled").Bool()
 	notificationsEnabled, _ := app.config.Section("notifications").Key("enabled").Bool()
 	ombiEnabled := app.config.Section("ombi").Key("enabled").MustBool(false)
+	jellyseerrEnabled := app.config.Section("jellyseerr").Key("enabled").MustBool(false)
 	data := gin.H{
 		"urlBase":           app.getURLBase(gc),
 		"cssClass":          app.cssClass,
@@ -203,6 +206,7 @@ func (app *appContext) MyUserPage(gc *gin.Context) {
 		"discordEnabled":    discordEnabled,
 		"matrixEnabled":     matrixEnabled,
 		"ombiEnabled":       ombiEnabled,
+		"jellyseerrEnabled": jellyseerrEnabled,
 		"pwrEnabled":        app.config.Section("password_resets").Key("enabled").MustBool(false),
 		"linkResetEnabled":  app.config.Section("password_resets").Key("link_reset").MustBool(false),
 		"notifications":     notificationsEnabled,
@@ -278,6 +282,7 @@ func (app *appContext) ResetPassword(gc *gin.Context) {
 		"strings":           app.storage.lang.PasswordReset[lang].Strings,
 		"success":           false,
 		"ombiEnabled":       app.config.Section("ombi").Key("enabled").MustBool(false),
+		"jellyseerrEnabled": app.config.Section("jellyseerr").Key("enabled").MustBool(false),
 		"customSuccessCard": false,
 	}
 	pwr, isInternal := app.internalPWRs[pin]

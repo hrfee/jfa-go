@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
+	"github.com/hrfee/jfa-go/jellyseerr"
 	"github.com/hrfee/mediabrowser"
 	"github.com/lithammer/shortuuid/v3"
 	"github.com/timshannon/badgerhold/v4"
@@ -92,6 +93,29 @@ func (app *appContext) NewUserAdmin(gc *gin.Context) {
 			app.debug.Printf("Errors reported by Ombi: %s", strings.Join(errors, ", "))
 		} else {
 			app.info.Println("Created Ombi user")
+		}
+	}
+	if app.config.Section("jellyseerr").Key("enabled").MustBool(false) {
+		// Gets existing user (not possible) or imports the given user.
+		_, err := app.js.MustGetUser(id)
+		if err != nil {
+			app.err.Printf("Failed to create Jellyseerr user: %v", err)
+		} else {
+			app.info.Println("Created Jellyseerr user")
+		}
+		err = app.js.ApplyTemplateToUser(id, profile.Jellyseerr.User)
+		if err != nil {
+			app.err.Printf("Failed to apply Jellyseerr user template: %v\n", err)
+		}
+		err = app.js.ApplyNotificationsTemplateToUser(id, profile.Jellyseerr.Notifications)
+		if err != nil {
+			app.err.Printf("Failed to apply Jellyseerr notifications template: %v\n", err)
+		}
+		if emailEnabled {
+			err = app.js.ModifyUser(id, map[jellyseerr.UserField]any{jellyseerr.FieldEmail: req.Email})
+			if err != nil {
+				app.err.Printf("Failed to set Jellyseerr email address: %v\n", err)
+			}
 		}
 	}
 	if emailEnabled && app.config.Section("welcome_email").Key("enabled").MustBool(false) && req.Email != "" {
@@ -338,6 +362,10 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool, gc *gin.Context) 
 		Addr:    req.Email,
 		Contact: (req.Email != ""),
 	}
+	// Only allow disabling of email contact if some other method is available.
+	if req.DiscordContact || req.TelegramContact || req.MatrixContact {
+		emailStore.Contact = req.EmailContact
+	}
 
 	if invite.UserLabel != "" {
 		emailStore.Label = invite.UserLabel
@@ -466,6 +494,51 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool, gc *gin.Context) 
 			}
 		} else {
 			app.debug.Printf("Skipping Ombi: Profile \"%s\" was empty", invite.Profile)
+		}
+	}
+	if invite.Profile != "" && app.config.Section("jellyseerr").Key("enabled").MustBool(false) {
+		if profile.Jellyseerr.Enabled {
+			// Gets existing user (not possible) or imports the given user.
+			_, err := app.js.MustGetUser(id)
+			if err != nil {
+				app.err.Printf("Failed to create Jellyseerr user: %v", err)
+			} else {
+				app.info.Println("Created Jellyseerr user")
+			}
+			err = app.js.ApplyTemplateToUser(id, profile.Jellyseerr.User)
+			if err != nil {
+				app.err.Printf("Failed to apply Jellyseerr user template: %v\n", err)
+			}
+			err = app.js.ApplyNotificationsTemplateToUser(id, profile.Jellyseerr.Notifications)
+			if err != nil {
+				app.err.Printf("Failed to apply Jellyseerr notifications template: %v\n", err)
+			}
+			contactMethods := map[jellyseerr.NotificationsField]any{}
+			if emailEnabled {
+				err = app.js.ModifyMainUserSettings(id, jellyseerr.MainUserSettings{Email: req.Email})
+				if err != nil {
+					app.err.Printf("Failed to set Jellyseerr email address: %v\n", err)
+				} else {
+					contactMethods[jellyseerr.FieldEmailEnabled] = req.EmailContact
+				}
+			}
+			if discordVerified {
+				contactMethods[jellyseerr.FieldDiscord] = discordUser.ID
+				contactMethods[jellyseerr.FieldDiscordEnabled] = req.DiscordContact
+			}
+			if telegramVerified {
+				u, _ := app.storage.GetTelegramKey(user.ID)
+				contactMethods[jellyseerr.FieldTelegram] = u.ChatID
+				contactMethods[jellyseerr.FieldTelegramEnabled] = req.TelegramContact
+			}
+			if emailEnabled || discordVerified || telegramVerified {
+				err := app.js.ModifyNotifications(id, contactMethods)
+				if err != nil {
+					app.err.Printf("Failed to sync contact methods with Jellyseerr: %v", err)
+				}
+			}
+		} else {
+			app.debug.Printf("Skipping Jellyseerr: Profile \"%s\" was empty", invite.Profile)
 		}
 	}
 	if matrixVerified {
@@ -1184,6 +1257,44 @@ func (app *appContext) ModifyLabels(gc *gin.Context) {
 	respondBool(204, true, gc)
 }
 
+func (app *appContext) modifyEmail(jfID string, addr string) {
+	contactPrefChanged := false
+	emailStore, ok := app.storage.GetEmailsKey(jfID)
+	// Auto enable contact by email for newly added addresses
+	if !ok || emailStore.Addr == "" {
+		emailStore = EmailAddress{
+			Contact: true,
+		}
+		contactPrefChanged = true
+	}
+	emailStore.Addr = addr
+	app.storage.SetEmailsKey(jfID, emailStore)
+	if app.config.Section("ombi").Key("enabled").MustBool(false) {
+		ombiUser, code, err := app.getOmbiUser(jfID)
+		if code == 200 && err == nil {
+			ombiUser["emailAddress"] = addr
+			code, err = app.ombi.ModifyUser(ombiUser)
+			if code != 200 || err != nil {
+				app.err.Printf("%s: Failed to change ombi email address (%d): %v", ombiUser["userName"].(string), code, err)
+			}
+		}
+	}
+	if app.config.Section("jellyseerr").Key("enabled").MustBool(false) {
+		err := app.js.ModifyMainUserSettings(jfID, jellyseerr.MainUserSettings{Email: addr})
+		if err != nil {
+			app.err.Printf("Failed to set Jellyseerr email address: %v\n", err)
+		} else if contactPrefChanged {
+			contactMethods := map[jellyseerr.NotificationsField]any{
+				jellyseerr.FieldEmailEnabled: true,
+			}
+			err := app.js.ModifyNotifications(jfID, contactMethods)
+			if err != nil {
+				app.err.Printf("Failed to sync contact methods with Jellyseerr: %v", err)
+			}
+		}
+	}
+}
+
 // @Summary Modify user's email addresses.
 // @Produce json
 // @Param modifyEmailsDTO body modifyEmailsDTO true "Map of userIDs to email addresses"
@@ -1202,22 +1313,10 @@ func (app *appContext) ModifyEmails(gc *gin.Context) {
 		respond(500, "Couldn't get users", gc)
 		return
 	}
-	ombiEnabled := app.config.Section("ombi").Key("enabled").MustBool(false)
 	for _, jfUser := range users {
 		id := jfUser.ID
 		if address, ok := req[id]; ok {
-			var emailStore = EmailAddress{}
-			oldEmail, ok := app.storage.GetEmailsKey(id)
-			if ok {
-				emailStore = oldEmail
-			}
-			// Auto enable contact by email for newly added addresses
-			if !ok || oldEmail.Addr == "" {
-				emailStore.Contact = true
-			}
-
-			emailStore.Addr = address
-			app.storage.SetEmailsKey(id, emailStore)
+			app.modifyEmail(id, address)
 
 			activityType := ActivityContactLinked
 			if address == "" {
@@ -1231,17 +1330,6 @@ func (app *appContext) ModifyEmails(gc *gin.Context) {
 				Value:      "email",
 				Time:       time.Now(),
 			}, gc, false)
-
-			if ombiEnabled {
-				ombiUser, code, err := app.getOmbiUser(id)
-				if code == 200 && err == nil {
-					ombiUser["emailAddress"] = address
-					code, err = app.ombi.ModifyUser(ombiUser)
-					if code != 200 || err != nil {
-						app.err.Printf("%s: Failed to change ombi email address (%d): %v", ombiUser["userName"].(string), code, err)
-					}
-				}
-			}
 		}
 	}
 	app.info.Println("Email list modified")
@@ -1265,6 +1353,8 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 	var configuration mediabrowser.Configuration
 	var displayprefs map[string]interface{}
 	var ombi map[string]interface{}
+	var jellyseerr JellyseerrTemplate
+	jellyseerr.Enabled = false
 	if req.From == "profile" {
 		// Check profile exists & isn't empty
 		profile, ok := app.storage.GetProfileKey(req.Profile)
@@ -1282,10 +1372,17 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 			configuration = profile.Configuration
 			displayprefs = profile.Displayprefs
 		}
-		policy = profile.Policy
-		if app.config.Section("ombi").Key("enabled").MustBool(false) {
+		if req.Policy {
+			policy = profile.Policy
+		}
+		if req.Ombi && app.config.Section("ombi").Key("enabled").MustBool(false) {
 			if profile.Ombi != nil && len(profile.Ombi) != 0 {
 				ombi = profile.Ombi
+			}
+		}
+		if req.Jellyseerr && app.config.Section("jellyseerr").Key("enabled").MustBool(false) {
+			if profile.Jellyseerr.Enabled {
+				jellyseerr = profile.Jellyseerr
 			}
 		}
 
@@ -1299,7 +1396,9 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 			return
 		}
 		applyingFrom = "\"" + user.Name + "\""
-		policy = user.Policy
+		if req.Policy {
+			policy = user.Policy
+		}
 		if req.Homescreen {
 			displayprefs, status, err = app.jf.GetDisplayPreferences(req.ID)
 			if !(status == 200 || status == 204) || err != nil {
@@ -1315,6 +1414,7 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 		"policy":     map[string]string{},
 		"homescreen": map[string]string{},
 		"ombi":       map[string]string{},
+		"jellyseerr": map[string]string{},
 	}
 	/* Jellyfin doesn't seem to like too many of these requests sent in succession
 	and can crash and mess up its database. Issue #160 says this occurs when more
@@ -1325,9 +1425,13 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 		app.debug.Println("Adding delay between requests for large batch")
 	}
 	for _, id := range req.ApplyTo {
-		status, err := app.jf.SetPolicy(id, policy)
-		if !(status == 200 || status == 204) || err != nil {
-			errors["policy"][id] = fmt.Sprintf("%d: %s", status, err)
+		var status int
+		var err error
+		if req.Policy {
+			status, err = app.jf.SetPolicy(id, policy)
+			if !(status == 200 || status == 204) || err != nil {
+				errors["policy"][id] = fmt.Sprintf("%d: %s", status, err)
+			}
 		}
 		if shouldDelay {
 			time.Sleep(250 * time.Millisecond)
@@ -1367,6 +1471,26 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 				errors["ombi"][id] = errorString
 			}
 		}
+		if jellyseerr.Enabled {
+			errorString := ""
+			// newUser := ombi
+			// newUser["id"] = user["id"]
+			// newUser["userName"] = user["userName"]
+			// newUser["alias"] = user["alias"]
+			// newUser["emailAddress"] = user["emailAddress"]
+			err := app.js.ApplyTemplateToUser(id, jellyseerr.User)
+			if err != nil {
+				errorString += fmt.Sprintf("ApplyUser: %v ", err)
+			}
+			err = app.js.ApplyNotificationsTemplateToUser(id, jellyseerr.Notifications)
+			if err != nil {
+				errorString += fmt.Sprintf("ApplyNotifications: %v ", err)
+			}
+			if errorString != "" {
+				errors["jellyseerr"][id] = errorString
+			}
+		}
+
 		if shouldDelay {
 			time.Sleep(250 * time.Millisecond)
 		}

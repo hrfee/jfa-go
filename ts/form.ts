@@ -224,6 +224,7 @@ if (window.emailRequired) {
 interface sendDTO {
     code: string;
     email: string;
+    email_contact?: boolean;
     username: string;
     password: string;
     telegram_pin?: string;
@@ -252,8 +253,9 @@ const create = (event: SubmitEvent) => {
         code: window.code,
         username: usernameField.value,
         email: emailField.value,
+        email_contact: true,
         password: passwordField.value
-    };
+    }
     if (telegramVerified) {
         send.telegram_pin = window.telegramPIN;
         const checkbox = document.getElementById("contact-via-telegram") as HTMLInputElement;
@@ -274,6 +276,10 @@ const create = (event: SubmitEvent) => {
         if (checkbox.checked) {
             send.matrix_contact = true;
         }
+    }
+    if (matrixVerified || discordVerified || telegramVerified) {
+        const checkbox = document.getElementById("contact-via-email") as HTMLInputElement;
+        send.email_contact = checkbox.checked;
     }
     if (window.captcha) {
         if (window.reCAPTCHA) {

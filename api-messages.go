@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hrfee/jfa-go/jellyseerr"
 	"github.com/lithammer/shortuuid/v3"
 	"gopkg.in/ini.v1"
 )
@@ -322,6 +323,14 @@ func (app *appContext) TelegramAddUser(gc *gin.Context) {
 		tgUser.Lang = lang
 	}
 	app.storage.SetTelegramKey(req.ID, tgUser)
+
+	if err := app.js.ModifyNotifications(gc.GetString("jfId"), map[jellyseerr.NotificationsField]any{
+		jellyseerr.FieldTelegram:        tgUser.ChatID,
+		jellyseerr.FieldTelegramEnabled: tgUser.Contact,
+	}); err != nil {
+		app.err.Printf("Failed to sync contact methods with Jellyseerr: %v", err)
+	}
+
 	linkExistingOmbiDiscordTelegram(app)
 	respondBool(200, true, gc)
 }
@@ -346,6 +355,7 @@ func (app *appContext) SetContactMethods(gc *gin.Context) {
 }
 
 func (app *appContext) setContactMethods(req SetContactMethodsDTO, gc *gin.Context) {
+	jsPrefs := map[jellyseerr.NotificationsField]any{}
 	if tgUser, ok := app.storage.GetTelegramKey(req.ID); ok {
 		change := tgUser.Contact != req.Telegram
 		tgUser.Contact = req.Telegram
@@ -356,6 +366,7 @@ func (app *appContext) setContactMethods(req SetContactMethodsDTO, gc *gin.Conte
 				msg = " not"
 			}
 			app.debug.Printf("Telegram: User \"%s\" will%s be notified through Telegram.", tgUser.Username, msg)
+			jsPrefs[jellyseerr.FieldTelegramEnabled] = req.Telegram
 		}
 	}
 	if dcUser, ok := app.storage.GetDiscordKey(req.ID); ok {
@@ -368,6 +379,7 @@ func (app *appContext) setContactMethods(req SetContactMethodsDTO, gc *gin.Conte
 				msg = " not"
 			}
 			app.debug.Printf("Discord: User \"%s\" will%s be notified through Discord.", dcUser.Username, msg)
+			jsPrefs[jellyseerr.FieldDiscordEnabled] = req.Discord
 		}
 	}
 	if mxUser, ok := app.storage.GetMatrixKey(req.ID); ok {
@@ -392,6 +404,13 @@ func (app *appContext) setContactMethods(req SetContactMethodsDTO, gc *gin.Conte
 				msg = " not"
 			}
 			app.debug.Printf("\"%s\" will%s be notified via Email.", email.Addr, msg)
+			jsPrefs[jellyseerr.FieldEmailEnabled] = req.Email
+		}
+	}
+	if app.config.Section("jellyseerr").Key("enabled").MustBool(false) {
+		err := app.js.ModifyNotifications(req.ID, jsPrefs)
+		if err != nil {
+			app.err.Printf("Failed to sync contact prefs with Jellyseerr: %v", err)
 		}
 	}
 	respondBool(200, true, gc)
@@ -678,6 +697,13 @@ func (app *appContext) DiscordConnect(gc *gin.Context) {
 
 	app.storage.SetDiscordKey(req.JellyfinID, user)
 
+	if err := app.js.ModifyNotifications(req.JellyfinID, map[jellyseerr.NotificationsField]any{
+		jellyseerr.FieldDiscord:        req.DiscordID,
+		jellyseerr.FieldDiscordEnabled: true,
+	}); err != nil {
+		app.err.Printf("Failed to sync contact methods with Jellyseerr: %v", err)
+	}
+
 	app.storage.SetActivityKey(shortuuid.New(), Activity{
 		Type:       ActivityContactLinked,
 		UserID:     req.JellyfinID,
@@ -708,6 +734,14 @@ func (app *appContext) UnlinkDiscord(gc *gin.Context) {
 	} */
 	app.storage.DeleteDiscordKey(req.ID)
 
+	// May not actually remove Discord ID, but should disable interaction.
+	if err := app.js.ModifyNotifications(gc.GetString("jfId"), map[jellyseerr.NotificationsField]any{
+		jellyseerr.FieldDiscord:        jellyseerr.BogusIdentifier,
+		jellyseerr.FieldDiscordEnabled: false,
+	}); err != nil {
+		app.err.Printf("Failed to sync contact methods with Jellyseerr: %v", err)
+	}
+
 	app.storage.SetActivityKey(shortuuid.New(), Activity{
 		Type:       ActivityContactUnlinked,
 		UserID:     req.ID,
@@ -736,6 +770,13 @@ func (app *appContext) UnlinkTelegram(gc *gin.Context) {
 		return
 	} */
 	app.storage.DeleteTelegramKey(req.ID)
+
+	if err := app.js.ModifyNotifications(gc.GetString("jfId"), map[jellyseerr.NotificationsField]any{
+		jellyseerr.FieldTelegram:        jellyseerr.BogusIdentifier,
+		jellyseerr.FieldTelegramEnabled: false,
+	}); err != nil {
+		app.err.Printf("Failed to sync contact methods with Jellyseerr: %v", err)
+	}
 
 	app.storage.SetActivityKey(shortuuid.New(), Activity{
 		Type:       ActivityContactUnlinked,

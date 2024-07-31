@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hrfee/jfa-go/jellyseerr"
 	"github.com/hrfee/jfa-go/logger"
 	"github.com/hrfee/mediabrowser"
 	"github.com/timshannon/badgerhold/v4"
@@ -650,7 +651,14 @@ type Profile struct {
 	Displayprefs        map[string]interface{}     `json:"displayprefs,omitempty"`
 	Default             bool                       `json:"default,omitempty"`
 	Ombi                map[string]interface{}     `json:"ombi,omitempty"`
+	Jellyseerr          JellyseerrTemplate         `json:"jellyseerr,omitempty"`
 	ReferralTemplateKey string
+}
+
+type JellyseerrTemplate struct {
+	Enabled       bool                             `json:"enabled,omitempty"`
+	User          jellyseerr.UserTemplate          `json:"user,omitempty"`
+	Notifications jellyseerr.NotificationsTemplate `json:"notifications,omitempty"`
 }
 
 type Invite struct {

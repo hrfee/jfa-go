@@ -795,6 +795,11 @@ export class accountsList {
     private _searchBox = document.getElementById("accounts-search") as HTMLInputElement;
     private _search: Search;
 
+    private _applyHomescreen = document.getElementById("modify-user-homescreen") as HTMLInputElement;
+    private _applyConfiguration = document.getElementById("modify-user-configuration") as HTMLInputElement;
+    private _applyOmbi = document.getElementById("modify-user-ombi") as HTMLInputElement;
+    private _applyJellyseerr = document.getElementById("modify-user-jellyseerr") as HTMLInputElement;
+
     private _selectAll = document.getElementById("accounts-select-all") as HTMLInputElement;
     private _users: { [id: string]: user };
     private _ordering: string[] = [];
@@ -1459,6 +1464,7 @@ export class accountsList {
         const modalHeader = document.getElementById("header-modify-user");
         modalHeader.textContent = window.lang.quantity("modifySettingsFor", this._collectUsers().length)
         let list = this._collectUsers();
+
         (() => {
             let innerHTML = "";
             for (const profile of window.availableProfiles) {
@@ -1477,6 +1483,7 @@ export class accountsList {
 
         const form = document.getElementById("form-modify-user") as HTMLFormElement;
         const button = form.querySelector("span.submit") as HTMLSpanElement;
+
         this._modifySettingsProfile.checked = true;
         this._modifySettingsUser.checked = false;
         form.onsubmit = (event: Event) => {
@@ -1484,7 +1491,10 @@ export class accountsList {
             toggleLoader(button);
             let send = {
                 "apply_to": list,
-                "homescreen": (document.getElementById("modify-user-homescreen") as HTMLInputElement).checked
+                "homescreen": this._applyHomescreen.checked,
+                "configuration": this._applyConfiguration.checked,
+                "ombi": this._applyOmbi.checked,
+                "jellyseerr": this._applyJellyseerr.checked
             };
             if (this._modifySettingsProfile.checked && !this._modifySettingsUser.checked) { 
                 send["from"] = "profile";
@@ -1821,6 +1831,16 @@ export class accountsList {
         };
         this._modifySettings.onclick = this.modifyUsers;
         this._modifySettings.classList.add("unfocused");
+
+        if (window.ombiEnabled)
+            this._applyOmbi.parentElement.classList.remove("unfocused");
+        else
+            this._applyOmbi.parentElement.classList.add("unfocused");
+        if (window.jellyseerrEnabled)
+            this._applyJellyseerr.parentElement.classList.remove("unfocused");
+        else
+            this._applyJellyseerr.parentElement.classList.add("unfocused");
+
         const checkSource = () => {
             const profileSpan = this._modifySettingsProfile.nextElementSibling as HTMLSpanElement;
             const userSpan = this._modifySettingsUser.nextElementSibling as HTMLSpanElement;
@@ -1831,6 +1851,8 @@ export class accountsList {
                 profileSpan.classList.remove("@low");
                 userSpan.classList.remove("@high");
                 userSpan.classList.add("@low");
+                this._applyOmbi.parentElement.classList.remove("unfocused");
+                this._applyJellyseerr.parentElement.classList.remove("unfocused");
             } else {
                 this._userSelect.parentElement.classList.remove("unfocused");
                 this._profileSelect.parentElement.classList.add("unfocused");
@@ -1838,6 +1860,8 @@ export class accountsList {
                 userSpan.classList.remove("@low");
                 profileSpan.classList.remove("@high");
                 profileSpan.classList.add("@low");
+                this._applyOmbi.parentElement.classList.add("unfocused");
+                this._applyJellyseerr.parentElement.classList.add("unfocused");
             }
         };
         this._modifySettingsProfile.onchange = checkSource;

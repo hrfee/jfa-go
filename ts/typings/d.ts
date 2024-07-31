@@ -24,6 +24,7 @@ declare interface Window {
     discordEnabled: boolean;
     matrixEnabled: boolean;
     ombiEnabled: boolean;
+    jellyseerrEnabled: boolean;
     usernameEnabled: boolean;
     linkResetEnabled: boolean;
     token: string;
@@ -101,6 +102,7 @@ declare interface Modals {
     settingsRestart: Modal;
     settingsRefresh: Modal;
     ombiProfile?: Modal;
+    jellyseerrProfile?: Modal;
     profiles: Modal;
     addProfile: Modal;
     announce: Modal;
