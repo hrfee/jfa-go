@@ -1620,6 +1620,15 @@
                     "value": "",
                     "depends_true": "enabled",
                     "description": "API Key. Get this from the first tab in Jellyseerr's settings."
+                },
+                "import_existing": {
+                    "name": "Import existing users to Jellyseerr",
+                    "required": false,
+                    "requires_restart": true,
+                    "type": "bool",
+                    "value": false,
+                    "depends_true": "enabled",
+                    "description": "Existing users (and those created outside jfa-go) will have their contact info imported to Jellyseerr."
                 }
             }
         },

@@ -30,6 +30,7 @@ type Jellyseerr struct {
 	cacheLength      time.Duration
 	timeoutHandler   common.TimeoutHandler
 	LogRequestBodies bool
+	AutoImportUsers  bool
 }
 
 // NewJellyseerr returns an Ombi object.
@@ -63,7 +64,7 @@ func (js *Jellyseerr) getJSON(url string, params map[string]string, queryParams 
 	if params != nil {
 		jsonParams, _ := json.Marshal(params)
 		if js.LogRequestBodies {
-			fmt.Printf("Jellyseerr API Client: Sending Data \"%s\"\n", string(jsonParams))
+			fmt.Printf("Jellyseerr API Client: Sending Data \"%s\" to \"%s\"\n", string(jsonParams), url)
 		}
 		req, _ = http.NewRequest("GET", url+"?"+queryParams.Encode(), bytes.NewBuffer(jsonParams))
 	} else {
@@ -101,7 +102,7 @@ func (js *Jellyseerr) send(mode string, url string, data any, response bool, hea
 	responseText := ""
 	params, _ := json.Marshal(data)
 	if js.LogRequestBodies {
-		fmt.Printf("Jellyseerr API Client: Sending Data \"%s\"\n", string(params))
+		fmt.Printf("Jellyseerr API Client: Sending Data \"%s\" to \"%s\"\n", string(params), url)
 	}
 	req, _ := http.NewRequest(mode, url, bytes.NewBuffer(params))
 	req.Header.Add("Content-Type", "application/json")
@@ -175,7 +176,7 @@ func (js *Jellyseerr) getUsers() error {
 	pageCount := 1
 	pageIndex := 0
 	for {
-		res, err := js.getUserPage(0)
+		res, err := js.getUserPage(pageIndex)
 		if err != nil {
 			return err
 		}
@@ -197,8 +198,11 @@ func (js *Jellyseerr) getUsers() error {
 func (js *Jellyseerr) getUserPage(page int) (GetUsersDTO, error) {
 	params := url.Values{}
 	params.Add("take", "30")
-	params.Add("skip", strconv.Itoa(page))
+	params.Add("skip", strconv.Itoa(page*30))
 	params.Add("sort", "created")
+	if js.LogRequestBodies {
+		fmt.Printf("Jellyseerr API Client: Sending with URL params \"%+v\"\n", params)
+	}
 	resp, status, err := js.getJSON(js.server+"/user", nil, params)
 	var data GetUsersDTO
 	if status != 200 {
@@ -211,25 +215,55 @@ func (js *Jellyseerr) getUserPage(page int) (GetUsersDTO, error) {
 	return data, err
 }
 
-// MustGetUser provides the same function as ImportFromJellyfin, but will always return the user,
-// even if they already existed.
 func (js *Jellyseerr) MustGetUser(jfID string) (User, error) {
-	js.getUsers()
-	if u, ok := js.userCache[jfID]; ok {
-		return u, nil
+	u, _, err := js.GetOrImportUser(jfID)
+	return u, err
+}
+
+// GetImportedUser provides the same function as ImportFromJellyfin, but will always return the user,
+// even if they already existed. Also returns whether the user was imported or not,
+func (js *Jellyseerr) GetOrImportUser(jfID string) (u User, imported bool, err error) {
+	imported = false
+	u, err = js.GetExistingUser(jfID)
+	if err == nil {
+		return
 	}
-	users, err := js.ImportFromJellyfin(jfID)
-	var u User
+	var users []User
+	users, err = js.ImportFromJellyfin(jfID)
 	if err != nil {
-		return u, err
+		return
 	}
 	if len(users) != 0 {
-		return users[0], err
+		u = users[0]
+		err = nil
+		return
 	}
-	if u, ok := js.userCache[jfID]; ok {
-		return u, nil
+	err = fmt.Errorf("user not found or imported")
+	return
+}
+
+func (js *Jellyseerr) GetExistingUser(jfID string) (u User, err error) {
+	js.getUsers()
+	ok := false
+	err = nil
+	if u, ok = js.userCache[jfID]; ok {
+		return
 	}
-	return u, fmt.Errorf("user not found")
+	js.cacheExpiry = time.Now()
+	js.getUsers()
+	if u, ok = js.userCache[jfID]; ok {
+		err = nil
+		return
+	}
+	err = fmt.Errorf("user not found")
+	return
+}
+
+func (js *Jellyseerr) getUser(jfID string) (User, error) {
+	if js.AutoImportUsers {
+		return js.MustGetUser(jfID)
+	}
+	return js.GetExistingUser(jfID)
 }
 
 func (js *Jellyseerr) Me() (User, error) {
@@ -248,7 +282,7 @@ func (js *Jellyseerr) Me() (User, error) {
 
 func (js *Jellyseerr) GetPermissions(jfID string) (Permissions, error) {
 	data := permissionsDTO{Permissions: -1}
-	u, err := js.MustGetUser(jfID)
+	u, err := js.getUser(jfID)
 	if err != nil {
 		return data.Permissions, err
 	}
@@ -265,7 +299,7 @@ func (js *Jellyseerr) GetPermissions(jfID string) (Permissions, error) {
 }
 
 func (js *Jellyseerr) SetPermissions(jfID string, perm Permissions) error {
-	u, err := js.MustGetUser(jfID)
+	u, err := js.getUser(jfID)
 	if err != nil {
 		return err
 	}
@@ -283,7 +317,7 @@ func (js *Jellyseerr) SetPermissions(jfID string, perm Permissions) error {
 }
 
 func (js *Jellyseerr) ApplyTemplateToUser(jfID string, tmpl UserTemplate) error {
-	u, err := js.MustGetUser(jfID)
+	u, err := js.getUser(jfID)
 	if err != nil {
 		return err
 	}
@@ -304,7 +338,7 @@ func (js *Jellyseerr) ModifyUser(jfID string, conf map[UserField]any) error {
 	if _, ok := conf[FieldEmail]; ok {
 		return fmt.Errorf("email is read only, set with ModifyMainUserSettings instead")
 	}
-	u, err := js.MustGetUser(jfID)
+	u, err := js.getUser(jfID)
 	if err != nil {
 		return err
 	}
@@ -322,7 +356,7 @@ func (js *Jellyseerr) ModifyUser(jfID string, conf map[UserField]any) error {
 }
 
 func (js *Jellyseerr) DeleteUser(jfID string) error {
-	u, err := js.MustGetUser(jfID)
+	u, err := js.getUser(jfID)
 	if err != nil {
 		return err
 	}
@@ -339,7 +373,7 @@ func (js *Jellyseerr) DeleteUser(jfID string) error {
 }
 
 func (js *Jellyseerr) GetNotificationPreferences(jfID string) (Notifications, error) {
-	u, err := js.MustGetUser(jfID)
+	u, err := js.getUser(jfID)
 	if err != nil {
 		return Notifications{}, err
 	}
@@ -364,7 +398,7 @@ func (js *Jellyseerr) ApplyNotificationsTemplateToUser(jfID string, tmpl Notific
 	/* if tmpl.NotifTypes.Empty() {
 		tmpl.NotifTypes = nil
 	}*/
-	u, err := js.MustGetUser(jfID)
+	u, err := js.getUser(jfID)
 	if err != nil {
 		return err
 	}
@@ -380,7 +414,7 @@ func (js *Jellyseerr) ApplyNotificationsTemplateToUser(jfID string, tmpl Notific
 }
 
 func (js *Jellyseerr) ModifyNotifications(jfID string, conf map[NotificationsField]any) error {
-	u, err := js.MustGetUser(jfID)
+	u, err := js.getUser(jfID)
 	if err != nil {
 		return err
 	}
@@ -414,12 +448,12 @@ func (js *Jellyseerr) UserByID(jellyseerrID int64) (User, error) {
 }
 
 func (js *Jellyseerr) ModifyMainUserSettings(jfID string, conf MainUserSettings) error {
-	u, err := js.MustGetUser(jfID)
+	u, err := js.getUser(jfID)
 	if err != nil {
 		return err
 	}
 
-	_, status, err := js.put(fmt.Sprintf(js.server+"/user/%d/settings/main", u.ID), conf, false)
+	_, status, err := js.post(fmt.Sprintf(js.server+"/user/%d/settings/main", u.ID), conf, false)
 	if err != nil {
 		return err
 	}

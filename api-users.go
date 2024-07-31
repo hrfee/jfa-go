@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/url"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 
@@ -529,7 +528,7 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool, gc *gin.Context) 
 			}
 			if telegramVerified {
 				u, _ := app.storage.GetTelegramKey(user.ID)
-				contactMethods[jellyseerr.FieldTelegram] = strconv.FormatInt(u.ChatID, 10)
+				contactMethods[jellyseerr.FieldTelegram] = u.ChatID
 				contactMethods[jellyseerr.FieldTelegramEnabled] = req.TelegramContact
 			}
 			if emailEnabled || discordVerified || telegramVerified {
