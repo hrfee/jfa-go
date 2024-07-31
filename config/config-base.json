@@ -1629,6 +1629,14 @@
                     "value": false,
                     "depends_true": "enabled",
                     "description": "Existing users (and those created outside jfa-go) will have their contact info imported to Jellyseerr."
+                },
+                "constraints_note": {
+                    "name": "Unique Emails:",
+                    "type": "note",
+                    "value": "",
+                    "depends_true": "import_existing",
+                    "required": "false",
+                    "description": "Jellyseerr requires email addresses to be unique. If this is not the case, you may see errors in jfa-go's logs. You can require unique addresses in Settings > Email."
                 }
             }
         },

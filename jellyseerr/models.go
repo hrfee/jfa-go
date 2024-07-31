@@ -130,3 +130,7 @@ type MainUserSettings struct {
 	WatchlistSyncMovies any    `json:"watchlistSyncMovies,omitempty"`
 	WatchlistSyncTv     any    `json:"watchlistSyncTv,omitempty"`
 }
+
+type ErrorDTO struct {
+	Message string `json:"message,omitempty"`
+}

@@ -55,96 +55,90 @@ func NewJellyseerr(server, key string, timeoutHandler common.TimeoutHandler) *Je
 	}
 }
 
-// does a GET and returns the response as a string.
-func (js *Jellyseerr) getJSON(url string, params map[string]string, queryParams url.Values) (string, int, error) {
-	if js.key == "" {
-		return "", 401, fmt.Errorf("No API key provided")
+func (js *Jellyseerr) req(mode string, uri string, data any, queryParams url.Values, headers map[string]string, response bool) (string, int, error) {
+	var params []byte
+	if data != nil {
+		params, _ = json.Marshal(data)
+	}
+	if js.LogRequestBodies {
+		fmt.Printf("Jellyseerr API Client: Sending Data \"%s\" to \"%s\"\n", string(params), uri)
+	}
+	if qp := queryParams.Encode(); qp != "" {
+		uri += "?" + qp
 	}
 	var req *http.Request
-	if params != nil {
-		jsonParams, _ := json.Marshal(params)
-		if js.LogRequestBodies {
-			fmt.Printf("Jellyseerr API Client: Sending Data \"%s\" to \"%s\"\n", string(jsonParams), url)
-		}
-		req, _ = http.NewRequest("GET", url+"?"+queryParams.Encode(), bytes.NewBuffer(jsonParams))
+	if data != nil {
+		req, _ = http.NewRequest(mode, uri, bytes.NewBuffer(params))
 	} else {
-		req, _ = http.NewRequest("GET", url+"?"+queryParams.Encode(), nil)
+		req, _ = http.NewRequest(mode, uri, nil)
 	}
-	for name, value := range js.header {
-		req.Header.Add(name, value)
-	}
-	resp, err := js.httpClient.Do(req)
-	defer js.timeoutHandler()
-	if err != nil || resp.StatusCode != 200 {
-		if resp.StatusCode == 401 {
-			return "", 401, fmt.Errorf("Invalid API Key")
-		}
-		return "", resp.StatusCode, err
-	}
-	defer resp.Body.Close()
-	var data io.Reader
-	switch resp.Header.Get("Content-Encoding") {
-	case "gzip":
-		data, _ = gzip.NewReader(resp.Body)
-	default:
-		data = resp.Body
-	}
-	buf := new(strings.Builder)
-	_, err = io.Copy(buf, data)
-	if err != nil {
-		return "", 500, err
-	}
-	return buf.String(), resp.StatusCode, nil
-}
-
-// does a POST and optionally returns response as string. Returns a string instead of an io.reader bcs i couldn't get it working otherwise.
-func (js *Jellyseerr) send(mode string, url string, data any, response bool, headers map[string]string) (string, int, error) {
-	responseText := ""
-	params, _ := json.Marshal(data)
-	if js.LogRequestBodies {
-		fmt.Printf("Jellyseerr API Client: Sending Data \"%s\" to \"%s\"\n", string(params), url)
-	}
-	req, _ := http.NewRequest(mode, url, bytes.NewBuffer(params))
 	req.Header.Add("Content-Type", "application/json")
 	for name, value := range js.header {
 		req.Header.Add(name, value)
 	}
-	for name, value := range headers {
-		req.Header.Add(name, value)
+	if headers != nil {
+		for name, value := range headers {
+			req.Header.Add(name, value)
+		}
 	}
 	resp, err := js.httpClient.Do(req)
+	reqFailed := err != nil || !(resp.StatusCode == 200 || resp.StatusCode == 201)
 	defer js.timeoutHandler()
-	if err != nil || !(resp.StatusCode == 200 || resp.StatusCode == 201) {
-		if resp.StatusCode == 401 {
-			return "", 401, fmt.Errorf("Invalid API Key")
+	var responseText string
+	defer resp.Body.Close()
+	if response || reqFailed {
+		responseText, err = js.decodeResp(resp)
+		if err != nil {
+			return responseText, resp.StatusCode, err
+		}
+	}
+	if reqFailed {
+		var msg ErrorDTO
+		err = json.Unmarshal([]byte(responseText), &msg)
+		if err != nil {
+			return responseText, resp.StatusCode, err
+		}
+		if msg.Message == "" {
+			err = fmt.Errorf("failed (error %d)", resp.StatusCode)
+		} else {
+			err = fmt.Errorf("got %d: %s", resp.StatusCode, msg.Message)
 		}
 		return responseText, resp.StatusCode, err
 	}
-	if response {
-		defer resp.Body.Close()
-		var out io.Reader
-		switch resp.Header.Get("Content-Encoding") {
-		case "gzip":
-			out, _ = gzip.NewReader(resp.Body)
-		default:
-			out = resp.Body
-		}
-		buf := new(strings.Builder)
-		_, err = io.Copy(buf, out)
-		if err != nil {
-			return "", 500, err
-		}
-		responseText = buf.String()
+	return responseText, resp.StatusCode, err
+}
+
+func (js *Jellyseerr) decodeResp(resp *http.Response) (string, error) {
+	var out io.Reader
+	switch resp.Header.Get("Content-Encoding") {
+	case "gzip":
+		out, _ = gzip.NewReader(resp.Body)
+	default:
+		out = resp.Body
 	}
-	return responseText, resp.StatusCode, nil
+	buf := new(strings.Builder)
+	_, err := io.Copy(buf, out)
+	if err != nil {
+		return "", err
+	}
+	return buf.String(), nil
 }
 
-func (js *Jellyseerr) post(url string, data any, response bool) (string, int, error) {
-	return js.send("POST", url, data, response, nil)
+func (js *Jellyseerr) get(uri string, data any, params url.Values) (string, int, error) {
+	return js.req(http.MethodGet, uri, data, params, nil, true)
 }
 
-func (js *Jellyseerr) put(url string, data any, response bool) (string, int, error) {
-	return js.send("PUT", url, data, response, nil)
+func (js *Jellyseerr) post(uri string, data any, response bool) (string, int, error) {
+	return js.req(http.MethodPost, uri, data, url.Values{}, nil, response)
+}
+
+func (js *Jellyseerr) put(uri string, data any, response bool) (string, int, error) {
+	return js.req(http.MethodPut, uri, data, url.Values{}, nil, response)
+}
+
+func (js *Jellyseerr) delete(uri string, data any) (int, error) {
+	_, status, err := js.req(http.MethodDelete, uri, data, url.Values{}, nil, false)
+	return status, err
 }
 
 func (js *Jellyseerr) ImportFromJellyfin(jfIDs ...string) ([]User, error) {
@@ -203,7 +197,7 @@ func (js *Jellyseerr) getUserPage(page int) (GetUsersDTO, error) {
 	if js.LogRequestBodies {
 		fmt.Printf("Jellyseerr API Client: Sending with URL params \"%+v\"\n", params)
 	}
-	resp, status, err := js.getJSON(js.server+"/user", nil, params)
+	resp, status, err := js.get(js.server+"/user", nil, params)
 	var data GetUsersDTO
 	if status != 200 {
 		return data, fmt.Errorf("failed (error %d)", status)
@@ -267,7 +261,7 @@ func (js *Jellyseerr) getUser(jfID string) (User, error) {
 }
 
 func (js *Jellyseerr) Me() (User, error) {
-	resp, status, err := js.getJSON(js.server+"/auth/me", nil, url.Values{})
+	resp, status, err := js.get(js.server+"/auth/me", nil, url.Values{})
 	var data User
 	data.ID = -1
 	if status != 200 {
@@ -287,7 +281,7 @@ func (js *Jellyseerr) GetPermissions(jfID string) (Permissions, error) {
 		return data.Permissions, err
 	}
 
-	resp, status, err := js.getJSON(fmt.Sprintf(js.server+"/user/%d/settings/permissions", u.ID), nil, url.Values{})
+	resp, status, err := js.get(fmt.Sprintf(js.server+"/user/%d/settings/permissions", u.ID), nil, url.Values{})
 	if err != nil {
 		return data.Permissions, err
 	}
@@ -361,7 +355,7 @@ func (js *Jellyseerr) DeleteUser(jfID string) error {
 		return err
 	}
 
-	_, status, err := js.send("DELETE", fmt.Sprintf(js.server+"/user/%d", u.ID), nil, false, nil)
+	status, err := js.delete(fmt.Sprintf(js.server+"/user/%d", u.ID), nil)
 	if status != 200 && status != 201 {
 		return fmt.Errorf("failed (error %d)", status)
 	}
@@ -382,7 +376,7 @@ func (js *Jellyseerr) GetNotificationPreferences(jfID string) (Notifications, er
 
 func (js *Jellyseerr) GetNotificationPreferencesByID(jellyseerrID int64) (Notifications, error) {
 	var data Notifications
-	resp, status, err := js.getJSON(fmt.Sprintf(js.server+"/user/%d/settings/notifications", jellyseerrID), nil, url.Values{})
+	resp, status, err := js.get(fmt.Sprintf(js.server+"/user/%d/settings/notifications", jellyseerrID), nil, url.Values{})
 	if err != nil {
 		return data, err
 	}
@@ -435,7 +429,7 @@ func (js *Jellyseerr) GetUsers() (map[string]User, error) {
 }
 
 func (js *Jellyseerr) UserByID(jellyseerrID int64) (User, error) {
-	resp, status, err := js.getJSON(js.server+fmt.Sprintf("/user/%d", jellyseerrID), nil, url.Values{})
+	resp, status, err := js.get(js.server+fmt.Sprintf("/user/%d", jellyseerrID), nil, url.Values{})
 	var data User
 	if status != 200 {
 		return data, fmt.Errorf("failed (error %d)", status)
