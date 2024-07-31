@@ -1,9 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	lm "github.com/hrfee/jfa-go/logmessages"
 	"github.com/timshannon/badgerhold/v4"
 )
 
@@ -14,7 +16,6 @@ import (
 // @Security Bearer
 // @tags Profiles & Settings
 func (app *appContext) GetProfiles(gc *gin.Context) {
-	app.debug.Println("Profiles requested")
 	out := getProfilesDTO{
 		DefaultProfile: app.storage.GetDefaultProfile().Name,
 		Profiles:       map[string]profileDTO{},
@@ -52,10 +53,11 @@ func (app *appContext) GetProfiles(gc *gin.Context) {
 func (app *appContext) SetDefaultProfile(gc *gin.Context) {
 	req := profileChangeDTO{}
 	gc.BindJSON(&req)
-	app.info.Printf("Setting default profile to \"%s\"", req.Name)
+	app.info.Printf(lm.SetDefaultProfile, req.Name)
 	if _, ok := app.storage.GetProfileKey(req.Name); !ok {
-		app.err.Printf("Profile not found: \"%s\"", req.Name)
-		respond(500, "Profile not found", gc)
+		msg := fmt.Sprintf(lm.FailedGetProfile, req.Name)
+		app.err.Println(msg)
+		respond(500, msg, gc)
 		return
 	}
 	app.storage.db.ForEach(&badgerhold.Query{}, func(profile *Profile) error {
@@ -79,13 +81,12 @@ func (app *appContext) SetDefaultProfile(gc *gin.Context) {
 // @Security Bearer
 // @tags Profiles & Settings
 func (app *appContext) CreateProfile(gc *gin.Context) {
-	app.info.Println("Profile creation requested")
 	var req newProfileDTO
 	gc.BindJSON(&req)
 	app.jf.CacheExpiry = time.Now()
 	user, status, err := app.jf.UserByID(req.ID, false)
 	if !(status == 200 || status == 204) || err != nil {
-		app.err.Printf("Failed to get user from Jellyfin (%d): %v", status, err)
+		app.err.Printf(lm.FailedGetUsers, lm.Jellyfin, err)
 		respond(500, "Couldn't get user", gc)
 		return
 	}
@@ -94,12 +95,12 @@ func (app *appContext) CreateProfile(gc *gin.Context) {
 		Policy:     user.Policy,
 		Homescreen: req.Homescreen,
 	}
-	app.debug.Printf("Creating profile from user \"%s\"", user.Name)
+	app.debug.Printf(lm.CreateProfileFromUser, user.Name)
 	if req.Homescreen {
 		profile.Configuration = user.Configuration
 		profile.Displayprefs, status, err = app.jf.GetDisplayPreferences(req.ID)
 		if !(status == 200 || status == 204) || err != nil {
-			app.err.Printf("Failed to get DisplayPrefs (%d): %v", status, err)
+			app.err.Printf(lm.FailedGetJellyfinDisplayPrefs, req.ID, err)
 			respond(500, "Couldn't get displayprefs", gc)
 			return
 		}
@@ -145,13 +146,13 @@ func (app *appContext) EnableReferralForProfile(gc *gin.Context) {
 	inv, ok := app.storage.GetInvitesKey(invCode)
 	if !ok {
 		respond(400, "Invalid invite code", gc)
-		app.err.Printf("\"%s\": Failed to enable referrals: invite not found", profileName)
+		app.err.Printf(lm.InvalidInviteCode, invCode)
 		return
 	}
 	profile, ok := app.storage.GetProfileKey(profileName)
 	if !ok {
 		respond(400, "Invalid profile", gc)
-		app.err.Printf("\"%s\": Failed to enable referrals: profile not found", profileName)
+		app.err.Printf(lm.FailedGetProfile, profileName)
 		return
 	}
 

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"strings"
@@ -9,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 	"github.com/hrfee/jfa-go/jellyseerr"
+	lm "github.com/hrfee/jfa-go/logmessages"
 	"github.com/lithammer/shortuuid/v3"
 	"github.com/timshannon/badgerhold/v4"
 )
@@ -29,7 +31,7 @@ func (app *appContext) MyDetails(gc *gin.Context) {
 
 	user, status, err := app.jf.UserByID(resp.Id, false)
 	if status != 200 || err != nil {
-		app.err.Printf("Failed to get Jellyfin user (%d): %+v\n", status, err)
+		app.err.Printf(lm.FailedGetUsers, lm.Jellyfin, err)
 		respond(500, "Failed to get user", gc)
 		return
 	}
@@ -133,8 +135,9 @@ func (app *appContext) SetMyContactMethods(gc *gin.Context) {
 func (app *appContext) LogoutUser(gc *gin.Context) {
 	cookie, err := gc.Cookie("user-refresh")
 	if err != nil {
-		app.debug.Printf("Couldn't get cookies: %s", err)
-		respond(500, "Couldn't fetch cookies", gc)
+		msg := fmt.Sprintf(lm.FailedGetCookies, "user-refresh", err)
+		app.debug.Println(msg)
+		respond(500, msg, gc)
 		return
 	}
 	app.invalidTokens = append(app.invalidTokens, cookie)
@@ -174,21 +177,21 @@ func (app *appContext) confirmMyAction(gc *gin.Context, key string) {
 	}
 	token, err := jwt.Parse(key, checkToken)
 	if err != nil {
-		app.err.Printf("Failed to parse key: %s", err)
+		app.err.Printf(lm.FailedParseJWT, err)
 		fail()
 		// respond(500, "unknownError", gc)
 		return
 	}
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
-		app.err.Printf("Failed to parse key: %s", err)
+		app.err.Println(lm.FailedCastJWT)
 		fail()
 		// respond(500, "unknownError", gc)
 		return
 	}
 	expiry := time.Unix(int64(claims["exp"].(float64)), 0)
 	if !(ok && token.Valid && claims["type"].(string) == "confirmation" && expiry.After(time.Now())) {
-		app.err.Printf("Invalid key")
+		app.err.Println(lm.InvalidJWT)
 		fail()
 		// respond(400, "invalidKey", gc)
 		return
@@ -212,7 +215,7 @@ func (app *appContext) confirmMyAction(gc *gin.Context, key string) {
 			Time:       time.Now(),
 		}, gc, true)
 
-		app.info.Println("Email list modified")
+		app.info.Printf(lm.UserEmailAdjusted, gc.GetString("jfId"))
 		gc.Redirect(http.StatusSeeOther, "/my/account")
 		return
 	}
@@ -231,7 +234,6 @@ func (app *appContext) confirmMyAction(gc *gin.Context, key string) {
 func (app *appContext) ModifyMyEmail(gc *gin.Context) {
 	var req ModifyMyEmailDTO
 	gc.BindJSON(&req)
-	app.debug.Println("Email modification requested")
 	if !strings.ContainsRune(req.Email, '@') {
 		respond(400, "Invalid Email Address", gc)
 		return
@@ -251,7 +253,7 @@ func (app *appContext) ModifyMyEmail(gc *gin.Context) {
 	key, err := tk.SignedString([]byte(os.Getenv("JFA_SECRET")))
 
 	if err != nil {
-		app.err.Printf("Failed to generate confirmation token: %v", err)
+		app.err.Printf(lm.FailedSignJWT, err)
 		respond(500, "errorUnknown", gc)
 		return
 	}
@@ -262,15 +264,15 @@ func (app *appContext) ModifyMyEmail(gc *gin.Context) {
 		if status == 200 && err == nil {
 			name = user.Name
 		}
-		app.debug.Printf("%s: Email confirmation required", id)
+		app.debug.Printf(lm.EmailConfirmationRequired, id)
 		respond(401, "confirmEmail", gc)
 		msg, err := app.email.constructConfirmation("", name, key, app, false)
 		if err != nil {
-			app.err.Printf("%s: Failed to construct confirmation email: %v", name, err)
+			app.err.Printf(lm.FailedConstructConfirmationEmail, id, err)
 		} else if err := app.email.send(msg, req.Email); err != nil {
-			app.err.Printf("%s: Failed to send user confirmation email: %v", name, err)
+			app.err.Printf(lm.FailedSendConfirmationEmail, id, req.Email, err)
 		} else {
-			app.info.Printf("%s: Sent user confirmation email to \"%s\"", name, req.Email)
+			app.err.Printf(lm.SentConfirmationEmail, id, req.Email)
 		}
 		return
 	}
@@ -358,7 +360,7 @@ func (app *appContext) MyDiscordVerifiedInvite(gc *gin.Context) {
 		jellyseerr.FieldDiscord:        dcUser.ID,
 		jellyseerr.FieldDiscordEnabled: dcUser.Contact,
 	}); err != nil {
-		app.err.Printf("Failed to sync contact methods with Jellyseerr: %v", err)
+		app.err.Printf(lm.FailedSyncContactMethods, lm.Jellyseerr, err)
 	}
 
 	app.storage.SetActivityKey(shortuuid.New(), Activity{
@@ -413,7 +415,7 @@ func (app *appContext) MyTelegramVerifiedInvite(gc *gin.Context) {
 		jellyseerr.FieldTelegram:        tgUser.ChatID,
 		jellyseerr.FieldTelegramEnabled: tgUser.Contact,
 	}); err != nil {
-		app.err.Printf("Failed to sync contact methods with Jellyseerr: %v", err)
+		app.err.Printf(lm.FailedSyncContactMethods, lm.Jellyseerr, err)
 	}
 
 	app.storage.SetActivityKey(shortuuid.New(), Activity{
@@ -477,12 +479,12 @@ func (app *appContext) MatrixCheckMyPIN(gc *gin.Context) {
 	pin := gc.Param("pin")
 	user, ok := app.matrix.tokens[pin]
 	if !ok {
-		app.debug.Println("Matrix: PIN not found")
+		app.debug.Printf(lm.InvalidPIN, pin)
 		respondBool(200, false, gc)
 		return
 	}
 	if user.User.UserID != userID {
-		app.debug.Println("Matrix: User ID of PIN didn't match")
+		app.debug.Printf(lm.UnauthorizedPIN, pin)
 		respondBool(200, false, gc)
 		return
 	}
@@ -523,7 +525,7 @@ func (app *appContext) UnlinkMyDiscord(gc *gin.Context) {
 		jellyseerr.FieldDiscord:        jellyseerr.BogusIdentifier,
 		jellyseerr.FieldDiscordEnabled: false,
 	}); err != nil {
-		app.err.Printf("Failed to sync contact methods with Jellyseerr: %v", err)
+		app.err.Printf(lm.FailedSyncContactMethods, lm.Jellyseerr, err)
 	}
 
 	app.storage.SetActivityKey(shortuuid.New(), Activity{
@@ -551,7 +553,7 @@ func (app *appContext) UnlinkMyTelegram(gc *gin.Context) {
 		jellyseerr.FieldTelegram:        jellyseerr.BogusIdentifier,
 		jellyseerr.FieldTelegramEnabled: false,
 	}); err != nil {
-		app.err.Printf("Failed to sync contact methods with Jellyseerr: %v", err)
+		app.err.Printf(lm.FailedSyncContactMethods, lm.Jellyseerr, err)
 	}
 
 	app.storage.SetActivityKey(shortuuid.New(), Activity{
@@ -606,7 +608,6 @@ func (app *appContext) ResetMyPassword(gc *gin.Context) {
 	contactMethodAllowed := app.config.Section("user_page").Key("allow_pwr_contact_method").MustBool(true)
 	address := gc.Param("address")
 	if address == "" {
-		app.debug.Println("Ignoring empty request for PWR")
 		cancel.Stop()
 		respondBool(400, false, gc)
 		return
@@ -616,7 +617,7 @@ func (app *appContext) ResetMyPassword(gc *gin.Context) {
 
 	jfUser, ok := app.ReverseUserSearch(address, usernameAllowed, emailAllowed, contactMethodAllowed)
 	if !ok {
-		app.debug.Printf("Ignoring PWR request: User not found")
+		app.debug.Printf(lm.FailedGetUsers, lm.Jellyfin, "no results")
 
 		for range timerWait {
 			respondBool(204, true, gc)
@@ -626,7 +627,7 @@ func (app *appContext) ResetMyPassword(gc *gin.Context) {
 	}
 	pwr, err = app.GenInternalReset(jfUser.ID)
 	if err != nil {
-		app.err.Printf("Failed to get user from Jellyfin: %v", err)
+		app.err.Printf(lm.FailedGetUsers, lm.Jellyfin, err)
 		for range timerWait {
 			respondBool(204, true, gc)
 			return
@@ -647,16 +648,16 @@ func (app *appContext) ResetMyPassword(gc *gin.Context) {
 		}, app, false,
 	)
 	if err != nil {
-		app.err.Printf("Failed to construct password reset message for \"%s\": %v", pwr.Username, err)
+		app.err.Printf(lm.FailedConstructPWRMessage, pwr.Username, err)
 		for range timerWait {
 			respondBool(204, true, gc)
 			return
 		}
 		return
 	} else if err := app.sendByID(msg, jfUser.ID); err != nil {
-		app.err.Printf("Failed to send password reset message to \"%s\": %v", address, err)
+		app.err.Printf(lm.FailedSendPWRMessage, pwr.Username, "?", err)
 	} else {
-		app.info.Printf("Sent password reset message to \"%s\"", address)
+		app.info.Printf(lm.SentPWRMessage, pwr.Username, "?")
 	}
 	for range timerWait {
 		respondBool(204, true, gc)
@@ -683,14 +684,13 @@ func (app *appContext) ChangeMyPassword(gc *gin.Context) {
 	validation := app.validator.validate(req.New)
 	for _, val := range validation {
 		if !val {
-			app.debug.Printf("%s: Change password failed: Invalid password", gc.GetString("jfId"))
 			gc.JSON(400, validation)
 			return
 		}
 	}
 	user, status, err := app.jf.UserByID(gc.GetString("jfId"), false)
 	if status != 200 || err != nil {
-		app.err.Printf("Failed to change password: couldn't find user (%d): %+v", status, err)
+		app.err.Printf(lm.FailedGetUser, gc.GetString("jfId"), lm.Jellyfin, err)
 		respondBool(500, false, gc)
 		return
 	}
@@ -718,16 +718,16 @@ func (app *appContext) ChangeMyPassword(gc *gin.Context) {
 		func() {
 			ombiUser, status, err := app.getOmbiUser(gc.GetString("jfId"))
 			if status != 200 || err != nil {
-				app.err.Printf("Failed to get user \"%s\" from ombi (%d): %v", user.Name, status, err)
+				app.err.Printf(lm.FailedGetUser, user.Name, lm.Ombi, err)
 				return
 			}
 			ombiUser["password"] = req.New
 			status, err = app.ombi.ModifyUser(ombiUser)
 			if status != 200 || err != nil {
-				app.err.Printf("Failed to set password for ombi user \"%s\" (%d): %v", ombiUser["userName"], status, err)
+				app.err.Printf(lm.FailedChangePassword, lm.Ombi, ombiUser["userName"], err)
 				return
 			}
-			app.debug.Printf("Reset password for ombi user \"%s\"", ombiUser["userName"])
+			app.debug.Printf(lm.ChangePassword, lm.Ombi, ombiUser["userName"])
 		}()
 	}
 	cookie, err := gc.Cookie("user-refresh")
@@ -735,7 +735,7 @@ func (app *appContext) ChangeMyPassword(gc *gin.Context) {
 		app.invalidTokens = append(app.invalidTokens, cookie)
 		gc.SetCookie("refresh", "invalid", -1, "/my", gc.Request.URL.Hostname(), true, true)
 	} else {
-		app.debug.Printf("Couldn't get cookies: %s", err)
+		app.debug.Printf(lm.FailedGetCookies, "user-refresh", err)
 	}
 	respondBool(204, true, gc)
 }
@@ -761,7 +761,7 @@ func (app *appContext) GetMyReferral(gc *gin.Context) {
 		user, ok := app.storage.GetEmailsKey(gc.GetString("jfId"))
 		err = app.storage.db.Get(user.ReferralTemplateKey, &inv)
 		if !ok || err != nil || user.ReferralTemplateKey == "" {
-			app.debug.Printf("Ignoring referral request, couldn't find template.")
+			app.debug.Printf(lm.FailedGetReferralTemplate, user.ReferralTemplateKey, err)
 			respondBool(400, false, gc)
 			return
 		}
@@ -782,6 +782,7 @@ func (app *appContext) GetMyReferral(gc *gin.Context) {
 		//    If UseReferralExpiry is enabled, we delete it and return nothing.
 		app.storage.DeleteInvitesKey(inv.Code)
 		if inv.UseReferralExpiry {
+			app.debug.Printf(lm.DeleteOldReferral, inv.Code)
 			user, ok := app.storage.GetEmailsKey(gc.GetString("jfId"))
 			if ok {
 				user.ReferralTemplateKey = ""
@@ -791,6 +792,7 @@ func (app *appContext) GetMyReferral(gc *gin.Context) {
 			respondBool(400, false, gc)
 			return
 		}
+		app.debug.Printf(lm.RenewOldReferral, inv.Code)
 		inv.Code = GenerateInviteCode()
 		inv.Created = time.Now()
 		inv.ValidTill = inv.Created.Add(REFERRAL_EXPIRY_DAYS * 24 * time.Hour)

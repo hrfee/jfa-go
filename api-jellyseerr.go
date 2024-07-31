@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	lm "github.com/hrfee/jfa-go/logmessages"
 )
 
 // @Summary Get a list of Jellyseerr users.
@@ -15,14 +16,12 @@ import (
 // @Security Bearer
 // @tags Jellyseerr
 func (app *appContext) JellyseerrUsers(gc *gin.Context) {
-	app.debug.Println("Jellyseerr users requested")
 	users, err := app.js.GetUsers()
 	if err != nil {
-		app.err.Printf("Failed to get users from Jellyseerr: %v", err)
+		app.err.Printf(lm.FailedGetUsers, lm.Jellyseerr, err)
 		respond(500, "Couldn't get users", gc)
 		return
 	}
-	app.debug.Printf("Jellyseerr users retrieved: %d", len(users))
 	userlist := make([]ombiUser, len(users))
 	i := 0
 	for _, u := range users {
@@ -60,14 +59,14 @@ func (app *appContext) SetJellyseerrProfile(gc *gin.Context) {
 	}
 	u, err := app.js.UserByID(jellyseerrID)
 	if err != nil {
-		app.err.Printf("Couldn't get user from Jellyseerr: %v", err)
+		app.err.Printf(lm.FailedGetUsers, lm.Jellyseerr, err)
 		respond(500, "Couldn't get user", gc)
 		return
 	}
 	profile.Jellyseerr.User = u.UserTemplate
 	n, err := app.js.GetNotificationPreferencesByID(jellyseerrID)
 	if err != nil {
-		app.err.Printf("Couldn't get user's notification prefs from Jellyseerr: %v", err)
+		app.err.Printf(lm.FailedGetJellyseerrNotificationPrefs, err)
 		respond(500, "Couldn't get user notification prefs", gc)
 		return
 	}

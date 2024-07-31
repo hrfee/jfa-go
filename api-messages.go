@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/hrfee/jfa-go/jellyseerr"
+	lm "github.com/hrfee/jfa-go/logmessages"
 	"github.com/lithammer/shortuuid/v3"
 	"gopkg.in/ini.v1"
 )
@@ -134,7 +135,7 @@ func (app *appContext) GetCustomMessageTemplate(gc *gin.Context) {
 	emailAddress := app.storage.lang.Email[lang].Strings.get("emailAddress")
 	customMessage, ok := app.storage.GetCustomContentKey(id)
 	if !ok && id != "Announcement" {
-		app.err.Printf("Failed to get custom message with ID \"%s\"", id)
+		app.err.Printf(lm.FailedGetCustomMessage, id)
 		respondBool(400, false, gc)
 		return
 	}
@@ -328,7 +329,7 @@ func (app *appContext) TelegramAddUser(gc *gin.Context) {
 		jellyseerr.FieldTelegram:        tgUser.ChatID,
 		jellyseerr.FieldTelegramEnabled: tgUser.Contact,
 	}); err != nil {
-		app.err.Printf("Failed to sync contact methods with Jellyseerr: %v", err)
+		app.err.Printf(lm.FailedSyncContactMethods, lm.Jellyseerr, err)
 	}
 
 	linkExistingOmbiDiscordTelegram(app)
@@ -361,11 +362,7 @@ func (app *appContext) setContactMethods(req SetContactMethodsDTO, gc *gin.Conte
 		tgUser.Contact = req.Telegram
 		app.storage.SetTelegramKey(req.ID, tgUser)
 		if change {
-			msg := ""
-			if !req.Telegram {
-				msg = " not"
-			}
-			app.debug.Printf("Telegram: User \"%s\" will%s be notified through Telegram.", tgUser.Username, msg)
+			app.debug.Printf(lm.SetContactPrefForService, lm.Telegram, tgUser.Username, req.Telegram)
 			jsPrefs[jellyseerr.FieldTelegramEnabled] = req.Telegram
 		}
 	}
@@ -374,11 +371,7 @@ func (app *appContext) setContactMethods(req SetContactMethodsDTO, gc *gin.Conte
 		dcUser.Contact = req.Discord
 		app.storage.SetDiscordKey(req.ID, dcUser)
 		if change {
-			msg := ""
-			if !req.Discord {
-				msg = " not"
-			}
-			app.debug.Printf("Discord: User \"%s\" will%s be notified through Discord.", dcUser.Username, msg)
+			app.debug.Printf(lm.SetContactPrefForService, lm.Discord, dcUser.Username, req.Discord)
 			jsPrefs[jellyseerr.FieldDiscordEnabled] = req.Discord
 		}
 	}
@@ -387,11 +380,7 @@ func (app *appContext) setContactMethods(req SetContactMethodsDTO, gc *gin.Conte
 		mxUser.Contact = req.Matrix
 		app.storage.SetMatrixKey(req.ID, mxUser)
 		if change {
-			msg := ""
-			if !req.Matrix {
-				msg = " not"
-			}
-			app.debug.Printf("Matrix: User \"%s\" will%s be notified through Matrix.", mxUser.UserID, msg)
+			app.debug.Printf(lm.SetContactPrefForService, lm.Matrix, mxUser.UserID, req.Matrix)
 		}
 	}
 	if email, ok := app.storage.GetEmailsKey(req.ID); ok {
@@ -399,18 +388,14 @@ func (app *appContext) setContactMethods(req SetContactMethodsDTO, gc *gin.Conte
 		email.Contact = req.Email
 		app.storage.SetEmailsKey(req.ID, email)
 		if change {
-			msg := ""
-			if !req.Email {
-				msg = " not"
-			}
-			app.debug.Printf("\"%s\" will%s be notified via Email.", email.Addr, msg)
+			app.debug.Printf(lm.SetContactPrefForService, lm.Email, email.Addr, req.Email)
 			jsPrefs[jellyseerr.FieldEmailEnabled] = req.Email
 		}
 	}
 	if app.config.Section("jellyseerr").Key("enabled").MustBool(false) {
 		err := app.js.ModifyNotifications(req.ID, jsPrefs)
 		if err != nil {
-			app.err.Printf("Failed to sync contact prefs with Jellyseerr: %v", err)
+			app.err.Printf(lm.FailedSyncContactMethods, lm.Jellyseerr, err)
 		}
 	}
 	respondBool(200, true, gc)
@@ -555,7 +540,7 @@ func (app *appContext) MatrixSendPIN(gc *gin.Context) {
 func (app *appContext) MatrixCheckPIN(gc *gin.Context) {
 	code := gc.Param("invCode")
 	if _, ok := app.storage.GetInvitesKey(code); !ok {
-		app.debug.Println("Matrix: Invite code was invalid")
+		app.debug.Printf(lm.InvalidInviteCode, code)
 		respondBool(401, false, gc)
 		return
 	}
@@ -563,12 +548,12 @@ func (app *appContext) MatrixCheckPIN(gc *gin.Context) {
 	pin := gc.Param("pin")
 	user, ok := app.matrix.tokens[pin]
 	if !ok {
-		app.debug.Println("Matrix: PIN not found")
+		app.debug.Printf(lm.InvalidPIN, pin)
 		respondBool(200, false, gc)
 		return
 	}
 	if user.User.UserID != userID {
-		app.debug.Println("Matrix: User ID of PIN didn't match")
+		app.debug.Printf(lm.UnauthorizedPIN, pin)
 		respondBool(200, false, gc)
 		return
 	}
@@ -596,7 +581,7 @@ func (app *appContext) MatrixLogin(gc *gin.Context) {
 	}
 	token, err := app.matrix.generateAccessToken(req.Homeserver, req.Username, req.Password)
 	if err != nil {
-		app.err.Printf("Matrix: Failed to generate token: %v", err)
+		app.err.Printf(lm.FailedGenerateToken, err)
 		respond(401, "Unauthorized", gc)
 		return
 	}
@@ -607,7 +592,7 @@ func (app *appContext) MatrixLogin(gc *gin.Context) {
 	matrix.Key("token").SetValue(token)
 	matrix.Key("user_id").SetValue(req.Username)
 	if err := tempConfig.SaveTo(app.configPath); err != nil {
-		app.err.Printf("Failed to save config to \"%s\": %v", app.configPath, err)
+		app.err.Printf(lm.FailedWriting, app.configPath, err)
 		respondBool(500, false, gc)
 		return
 	}
@@ -631,7 +616,7 @@ func (app *appContext) MatrixConnect(gc *gin.Context) {
 	}
 	roomID, encrypted, err := app.matrix.CreateRoom(req.UserID)
 	if err != nil {
-		app.err.Printf("Matrix: Failed to create room: %v", err)
+		app.err.Printf(lm.FailedCreateRoom, err)
 		respondBool(500, false, gc)
 		return
 	}
@@ -701,7 +686,7 @@ func (app *appContext) DiscordConnect(gc *gin.Context) {
 		jellyseerr.FieldDiscord:        req.DiscordID,
 		jellyseerr.FieldDiscordEnabled: true,
 	}); err != nil {
-		app.err.Printf("Failed to sync contact methods with Jellyseerr: %v", err)
+		app.err.Printf(lm.FailedSyncContactMethods, lm.Jellyseerr, err)
 	}
 
 	app.storage.SetActivityKey(shortuuid.New(), Activity{
@@ -739,7 +724,7 @@ func (app *appContext) UnlinkDiscord(gc *gin.Context) {
 		jellyseerr.FieldDiscord:        jellyseerr.BogusIdentifier,
 		jellyseerr.FieldDiscordEnabled: false,
 	}); err != nil {
-		app.err.Printf("Failed to sync contact methods with Jellyseerr: %v", err)
+		app.err.Printf(lm.FailedSyncContactMethods, lm.Jellyseerr, err)
 	}
 
 	app.storage.SetActivityKey(shortuuid.New(), Activity{
@@ -775,7 +760,7 @@ func (app *appContext) UnlinkTelegram(gc *gin.Context) {
 		jellyseerr.FieldTelegram:        jellyseerr.BogusIdentifier,
 		jellyseerr.FieldTelegramEnabled: false,
 	}); err != nil {
-		app.err.Printf("Failed to sync contact methods with Jellyseerr: %v", err)
+		app.err.Printf(lm.FailedSyncContactMethods, lm.Jellyseerr, err)
 	}
 
 	app.storage.SetActivityKey(shortuuid.New(), Activity{

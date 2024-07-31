@@ -91,7 +91,7 @@ func (app *appContext) NewUserAdmin(gc *gin.Context) {
 		errors, code, err := app.ombi.NewUser(req.Username, req.Password, req.Email, profile.Ombi)
 		if err != nil || code != 200 {
 			app.err.Printf(lm.FailedCreateUser, lm.Ombi, req.Username, err)
-			app.debug.Printf(lm.AdditionalOmbiErrors, strings.Join(errors, ", "))
+			app.debug.Println("Errors reported by Ombi: " + strings.Join(errors, ", "))
 		} else {
 			app.info.Printf(lm.CreateUser, lm.Ombi, req.Username)
 		}
@@ -174,7 +174,7 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool, gc *gin.Context) 
 			}
 			if app.config.Section("discord").Key("require_unique").MustBool(false) && app.discord.UserExists(discordUser.ID) {
 				f = func(gc *gin.Context) {
-					app.debug.Printf(lm.FailedLinkUser, lm.Discord, discordUser.ID, req.Code, lm.AccountLinked)
+					app.debug.Printf(lm.FailedLinkUser, lm.Discord, "?", req.Code, lm.AccountLinked)
 					respond(400, "errorAccountLinked", gc)
 				}
 				success = false
@@ -183,7 +183,7 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool, gc *gin.Context) 
 			err := app.discord.ApplyRole(discordUser.ID)
 			if err != nil {
 				f = func(gc *gin.Context) {
-					app.err.Printf(lm.FailedLinkUser, lm.Discord, discordUser.ID, req.Code, fmt.Sprintf(lm.FailedSetDiscordMemberRole, err))
+					app.err.Printf("%s: New user failed: Failed to set member role: %v", req.Code, err)
 					respond(401, "error", gc)
 				}
 				success = false
@@ -208,11 +208,7 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool, gc *gin.Context) 
 			if !ok || !user.Verified {
 				matrixVerified = false
 				f = func(gc *gin.Context) {
-					uid := ""
-					if ok {
-						uid = user.User.UserID
-					}
-					app.info.Printf(lm.FailedLinkUser, lm.Matrix, uid, req.Code, fmt.Sprintf(lm.InvalidPIN, req.MatrixPIN))
+					app.info.Printf(lm.FailedLinkUser, lm.Matrix, "?", req.Code, fmt.Sprintf(lm.InvalidPIN, req.MatrixPIN))
 					respond(401, "errorInvalidPIN", gc)
 				}
 				success = false
@@ -220,7 +216,7 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool, gc *gin.Context) 
 			}
 			if app.config.Section("matrix").Key("require_unique").MustBool(false) && app.matrix.UserExists(user.User.UserID) {
 				f = func(gc *gin.Context) {
-					app.debug.Printf(lm.FailedLinkUser, lm.Matrix, user.User.UserID, req.Code, lm.AccountLinked)
+					app.debug.Printf("%s: New user failed: Matrix user already linked", req.Code)
 					respond(400, "errorAccountLinked", gc)
 				}
 				success = false
@@ -247,7 +243,7 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool, gc *gin.Context) 
 			tgToken, telegramVerified = app.telegram.TokenVerified(req.TelegramPIN)
 			if !telegramVerified {
 				f = func(gc *gin.Context) {
-					app.info.Printf(lm.FailedLinkUser, lm.Telegram, tgToken.Username, req.Code, fmt.Sprintf(lm.InvalidPIN, req.TelegramPIN))
+					app.info.Printf(lm.FailedLinkUser, lm.Telegram, "?", req.Code, fmt.Sprintf(lm.InvalidPIN, req.TelegramPIN))
 					respond(401, "errorInvalidPIN", gc)
 				}
 				success = false
@@ -255,7 +251,7 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool, gc *gin.Context) 
 			}
 			if app.config.Section("telegram").Key("require_unique").MustBool(false) && app.telegram.UserExists(tgToken.Username) {
 				f = func(gc *gin.Context) {
-					app.debug.Printf(lm.FailedLinkUser, lm.Telegram, tgToken.Username, req.Code, lm.AccountLinked)
+					app.debug.Printf("%s: New user failed: Telegram user already linked", req.Code)
 					respond(400, "errorAccountLinked", gc)
 				}
 				success = false
@@ -274,7 +270,7 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool, gc *gin.Context) 
 		key, err := tk.SignedString([]byte(os.Getenv("JFA_SECRET")))
 		if err != nil {
 			f = func(gc *gin.Context) {
-				app.info.Printf(lm.FailedSignJWT, err)
+				app.info.Printf("Failed to generate confirmation token: %v", err)
 				respond(500, "errorUnknown", gc)
 			}
 			success = false
@@ -292,15 +288,15 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool, gc *gin.Context) 
 		app.ConfirmationKeys[req.Code] = cKeys
 		app.confirmationKeysLock.Unlock()
 		f = func(gc *gin.Context) {
-			app.debug.Printf(lm.EmailConfirmationRequired, req.Username)
+			app.debug.Printf("%s: Email confirmation required", req.Code)
 			respond(401, "confirmEmail", gc)
 			msg, err := app.email.constructConfirmation(req.Code, req.Username, key, app, false)
 			if err != nil {
-				app.err.Printf(lm.FailedConstructConfirmationEmail, req.Code, err)
+				app.err.Printf("%s: Failed to construct confirmation email: %v", req.Code, err)
 			} else if err := app.email.send(msg, req.Email); err != nil {
-				app.err.Printf(lm.FailedSendConfirmationEmail, req.Code, req.Email, err)
+				app.err.Printf("%s: Failed to send user confirmation email: %v", req.Code, err)
 			} else {
-				app.err.Printf(lm.SentConfirmationEmail, req.Code, req.Email)
+				app.info.Printf("%s: Sent user confirmation email to \"%s\"", req.Code, req.Email)
 			}
 		}
 		success = false
@@ -310,7 +306,7 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool, gc *gin.Context) 
 	user, status, err := app.jf.NewUser(req.Username, req.Password)
 	if !(status == 200 || status == 204) || err != nil {
 		f = func(gc *gin.Context) {
-			app.err.Printf(lm.FailedCreateUser, lm.Jellyfin, req.Username, err)
+			app.err.Printf("%s New user failed (%d): %v", req.Code, status, err)
 			respond(401, app.storage.lang.Admin[app.storage.lang.chosenAdminLang].Notifications.get("errorUnknown"), gc)
 		}
 		success = false
@@ -324,7 +320,7 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool, gc *gin.Context) 
 				go func(addr string) {
 					msg, err := app.email.constructCreated(req.Code, req.Username, req.Email, invite, app, false)
 					if err != nil {
-						app.err.Printf(lm.FailedConstructCreationAdmin, req.Code, err)
+						app.err.Printf("%s: Failed to construct user creation notification: %v", req.Code, err)
 					} else {
 						// Check whether notify "addr" is an email address of Jellyfin ID
 						if strings.Contains(addr, "@") {
@@ -333,9 +329,9 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool, gc *gin.Context) 
 							err = app.sendByID(msg, addr)
 						}
 						if err != nil {
-							app.err.Printf(lm.FailedSendCreationAdmin, req.Code, addr, err)
+							app.err.Printf("%s: Failed to send user creation notification: %v", req.Code, err)
 						} else {
-							app.info.Printf(lm.SentCreationAdmin, req.Code, addr)
+							app.info.Printf("Sent user creation notification to %s", addr)
 						}
 					}
 				}(address)
@@ -377,22 +373,24 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool, gc *gin.Context) 
 
 	var profile Profile
 	if invite.Profile != "" {
-		app.debug.Printf(lm.ApplyProfile, invite.Profile)
+		app.debug.Printf("Applying settings from profile \"%s\"", invite.Profile)
 		var ok bool
 		profile, ok = app.storage.GetProfileKey(invite.Profile)
 		if !ok {
 			profile = app.storage.GetDefaultProfile()
 		}
+		app.debug.Printf("Applying policy from profile \"%s\"", invite.Profile)
 		status, err = app.jf.SetPolicy(id, profile.Policy)
 		if !((status == 200 || status == 204) && err == nil) {
-			app.err.Printf(lm.FailedApplyTemplate, "policy", lm.Jellyfin, id, err)
+			app.err.Printf("%s: Failed to set user policy (%d): %v", req.Code, status, err)
 		}
+		app.debug.Printf("Applying homescreen from profile \"%s\"", invite.Profile)
 		status, err = app.jf.SetConfiguration(id, profile.Configuration)
 		if (status == 200 || status == 204) && err == nil {
 			status, err = app.jf.SetDisplayPreferences(id, profile.Displayprefs)
 		}
 		if !((status == 200 || status == 204) && err == nil) {
-			app.err.Printf(lm.FailedApplyTemplate, "configuration", lm.Jellyfin, id, err)
+			app.err.Printf("%s: Failed to set configuration template (%d): %v", req.Code, status, err)
 		}
 		if app.config.Section("user_page").Key("enabled").MustBool(false) && app.config.Section("user_page").Key("referrals").MustBool(false) && profile.ReferralTemplateKey != "" {
 			emailStore.ReferralTemplateKey = profile.ReferralTemplateKey
@@ -456,23 +454,23 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool, gc *gin.Context) 
 				// Check if on the off chance, Ombi's user importer has already added the account.
 				ombiUser, status, err = app.getOmbiImportedUser(req.Username)
 				if status == 200 && err == nil {
-					app.info.Println(lm.Ombi + " " + lm.UserExists)
+					app.info.Println("Found existing Ombi user, applying changes")
 					accountExists = true
 					template["password"] = req.Password
 					status, err = app.applyOmbiProfile(ombiUser, template)
 					if status != 200 || err != nil {
-						app.err.Printf(lm.FailedApplyProfile, lm.Ombi, req.Username, err)
+						app.err.Printf("Failed to modify existing Ombi user (%d): %v\n", status, err)
 					}
 				} else {
-					app.info.Printf(lm.FailedCreateUser, lm.Ombi, req.Username, err)
-					app.debug.Printf(lm.AdditionalOmbiErrors, strings.Join(errors, ", "))
+					app.info.Printf("Failed to create Ombi user (%d): %s", code, err)
+					app.debug.Printf("Errors reported by Ombi: %s", strings.Join(errors, ", "))
 				}
 			} else {
 				ombiUser, status, err = app.getOmbiUser(id)
 				if status != 200 || err != nil {
-					app.err.Printf(lm.FailedGetUser, id, lm.Ombi, err)
+					app.err.Printf("Failed to get Ombi user (%d): %v", status, err)
 				} else {
-					app.info.Println(lm.CreateUser, lm.Ombi, id)
+					app.info.Println("Created Ombi user")
 					accountExists = true
 				}
 			}
@@ -489,11 +487,13 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool, gc *gin.Context) 
 					}
 					resp, status, err := app.ombi.SetNotificationPrefs(ombiUser, dID, tUser)
 					if !(status == 200 || status == 204) || err != nil {
-						app.err.Printf(lm.FailedSyncContactMethods, lm.Ombi, err)
-						app.debug.Printf(lm.AdditionalOmbiErrors, resp)
+						app.err.Printf("Failed to link Telegram/Discord to Ombi (%d): %v", status, err)
+						app.debug.Printf("Response: %v", resp)
 					}
 				}
 			}
+		} else {
+			app.debug.Printf("Skipping Ombi: Profile \"%s\" was empty", invite.Profile)
 		}
 	}
 	if invite.Profile != "" && app.config.Section("jellyseerr").Key("enabled").MustBool(false) {
@@ -501,23 +501,23 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool, gc *gin.Context) 
 			// Gets existing user (not possible) or imports the given user.
 			_, err := app.js.MustGetUser(id)
 			if err != nil {
-				app.err.Printf(lm.FailedCreateUser, lm.Jellyseerr, id, err)
+				app.err.Printf("Failed to create Jellyseerr user: %v", err)
 			} else {
-				app.info.Printf(lm.CreateUser, lm.Jellyseerr, id)
+				app.info.Println("Created Jellyseerr user")
 			}
 			err = app.js.ApplyTemplateToUser(id, profile.Jellyseerr.User)
 			if err != nil {
-				app.err.Printf(lm.FailedApplyTemplate, "user", lm.Jellyseerr, id, err)
+				app.err.Printf("Failed to apply Jellyseerr user template: %v\n", err)
 			}
 			err = app.js.ApplyNotificationsTemplateToUser(id, profile.Jellyseerr.Notifications)
 			if err != nil {
-				app.err.Printf(lm.FailedApplyTemplate, "notifications", lm.Jellyseerr, id, err)
+				app.err.Printf("Failed to apply Jellyseerr notifications template: %v\n", err)
 			}
 			contactMethods := map[jellyseerr.NotificationsField]any{}
 			if emailEnabled {
 				err = app.js.ModifyMainUserSettings(id, jellyseerr.MainUserSettings{Email: req.Email})
 				if err != nil {
-					app.err.Printf(lm.FailedSetEmailAddress, lm.Jellyseerr, id, err)
+					app.err.Printf("Failed to set Jellyseerr email address: %v\n", err)
 				} else {
 					contactMethods[jellyseerr.FieldEmailEnabled] = req.EmailContact
 				}
@@ -534,9 +534,11 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool, gc *gin.Context) 
 			if emailEnabled || discordVerified || telegramVerified {
 				err := app.js.ModifyNotifications(id, contactMethods)
 				if err != nil {
-					app.err.Printf(lm.FailedSyncContactMethods, lm.Jellyseerr, err)
+					app.err.Printf("Failed to sync contact methods with Jellyseerr: %v", err)
 				}
 			}
+		} else {
+			app.debug.Printf("Skipping Jellyseerr: Profile \"%s\" was empty", invite.Profile)
 		}
 	}
 	if matrixVerified {
@@ -549,13 +551,14 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool, gc *gin.Context) 
 	}
 	if (emailEnabled && app.config.Section("welcome_email").Key("enabled").MustBool(false) && req.Email != "") || telegramVerified || discordVerified || matrixVerified {
 		name := app.getAddressOrName(user.ID)
+		app.debug.Printf("%s: Sending welcome message to %s", req.Username, name)
 		msg, err := app.email.constructWelcome(req.Username, expiry, app, false)
 		if err != nil {
-			app.err.Printf(lm.FailedConstructWelcomeMessage, id, err)
+			app.err.Printf("%s: Failed to construct welcome message: %v", req.Username, err)
 		} else if err := app.sendByID(msg, user.ID); err != nil {
-			app.err.Printf(lm.FailedSendWelcomeMessage, id, req.Email, err)
+			app.err.Printf("%s: Failed to send welcome message: %v", req.Username, err)
 		} else {
-			app.info.Printf(lm.SentWelcomeMessage, id, req.Email)
+			app.info.Printf("%s: Sent welcome message to \"%s\"", req.Username, name)
 		}
 	}
 	app.jf.CacheExpiry = time.Now()
@@ -573,13 +576,14 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool, gc *gin.Context) 
 func (app *appContext) NewUser(gc *gin.Context) {
 	var req newUserDTO
 	gc.BindJSON(&req)
+	app.debug.Printf("%s: New user attempt", req.Code)
 	if app.config.Section("captcha").Key("enabled").MustBool(false) && !app.verifyCaptcha(req.Code, req.CaptchaID, req.CaptchaText, false) {
-		app.info.Printf(lm.FailedCreateUser, lm.Jellyfin, req.Username, lm.IncorrectCaptcha)
+		app.info.Printf("%s: New user failed: Captcha Incorrect", req.Code)
 		respond(400, "errorCaptcha", gc)
 		return
 	}
 	if !app.checkInvite(req.Code, false, "") {
-		app.info.Printf(lm.FailedCreateUser, lm.Jellyfin, req.Username, fmt.Sprintf(lm.InvalidInviteCode, req.Code))
+		app.info.Printf("%s New user failed: invalid code", req.Code)
 		respond(401, "errorInvalidCode", gc)
 		return
 	}
@@ -593,15 +597,18 @@ func (app *appContext) NewUser(gc *gin.Context) {
 	}
 	if !valid {
 		// 200 bcs idk what i did in js
+		app.info.Printf("%s: New user failed: Invalid password", req.Code)
 		gc.JSON(200, validation)
 		return
 	}
 	if emailEnabled {
 		if app.config.Section("email").Key("required").MustBool(false) && !strings.Contains(req.Email, "@") {
+			app.info.Printf("%s: New user failed: Email Required", req.Code)
 			respond(400, "errorNoEmail", gc)
 			return
 		}
 		if app.config.Section("email").Key("require_unique").MustBool(false) && req.Email != "" && app.EmailAddressExists(req.Email) {
+			app.info.Printf("%s: New user failed: Email already in use", req.Code)
 			respond(400, "errorEmailLinked", gc)
 			return
 		}
@@ -646,7 +653,7 @@ func (app *appContext) EnableDisableUsers(gc *gin.Context) {
 			msg, err = app.email.constructDisabled(req.Reason, app, false)
 		}
 		if err != nil {
-			app.err.Printf(lm.FailedConstructEnableDisableMessage, "?", err)
+			app.err.Printf("Failed to construct account enabled/disabled emails: %v", err)
 			sendMail = false
 		}
 	}
@@ -658,14 +665,14 @@ func (app *appContext) EnableDisableUsers(gc *gin.Context) {
 		user, status, err := app.jf.UserByID(userID, false)
 		if status != 200 || err != nil {
 			errors["GetUser"][userID] = fmt.Sprintf("%d %v", status, err)
-			app.err.Printf(lm.FailedGetUser, userID, lm.Jellyfin, err)
+			app.err.Printf("Failed to get user \"%s\" (%d): %v", userID, status, err)
 			continue
 		}
 		user.Policy.IsDisabled = !req.Enabled
 		status, err = app.jf.SetPolicy(userID, user.Policy)
 		if !(status == 200 || status == 204) || err != nil {
 			errors["SetPolicy"][userID] = fmt.Sprintf("%d %v", status, err)
-			app.err.Printf(lm.FailedApplyTemplate, "policy", lm.Jellyfin, userID, err)
+			app.err.Printf("Failed to set policy for user \"%s\" (%d): %v", userID, status, err)
 			continue
 		}
 
@@ -680,7 +687,7 @@ func (app *appContext) EnableDisableUsers(gc *gin.Context) {
 
 		if sendMail && req.Notify {
 			if err := app.sendByID(msg, userID); err != nil {
-				app.err.Printf(lm.FailedSendEnableDisableMessage, userID, "?", err)
+				app.err.Printf("Failed to send account enabled/disabled email: %v", err)
 				continue
 			}
 		}
@@ -713,7 +720,7 @@ func (app *appContext) DeleteUsers(gc *gin.Context) {
 	if sendMail {
 		msg, err = app.email.constructDeleted(req.Reason, app, false)
 		if err != nil {
-			app.err.Printf(lm.FailedConstructDeletionMessage, "?", err)
+			app.err.Printf("Failed to construct account deletion emails: %v", err)
 			sendMail = false
 		}
 	}
@@ -724,7 +731,7 @@ func (app *appContext) DeleteUsers(gc *gin.Context) {
 				if id, ok := ombiUser["id"]; ok {
 					status, err := app.ombi.DeleteUser(id.(string))
 					if err != nil || status != 200 {
-						app.err.Printf(lm.FailedDeleteUser, lm.Ombi, userID, err)
+						app.err.Printf("Failed to delete ombi user (%d): %v", status, err)
 						errors[userID] = fmt.Sprintf("Ombi: %d %v, ", status, err)
 					}
 				}
@@ -758,14 +765,14 @@ func (app *appContext) DeleteUsers(gc *gin.Context) {
 
 		if sendMail && req.Notify {
 			if err := app.sendByID(msg, userID); err != nil {
-				app.err.Printf(lm.FailedSendDeletionMessage, userID, "?", err)
+				app.err.Printf("Failed to send account deletion email: %v", err)
 			}
 		}
 	}
 	app.jf.CacheExpiry = time.Now()
 	if len(errors) == len(req.Users) {
 		respondBool(500, false, gc)
-		app.err.Printf(lm.FailedDeleteUsers, lm.Jellyfin, errors[req.Users[0]])
+		app.err.Printf("Account deletion failed: %s", errors[req.Users[0]])
 		return
 	} else if len(errors) != 0 {
 		gc.JSON(500, errors)
@@ -794,8 +801,10 @@ func (app *appContext) ExtendExpiry(gc *gin.Context) {
 		base := time.Now()
 		if expiry, ok := app.storage.GetUserExpiryKey(id); ok {
 			base = expiry.Expiry
+			app.debug.Printf("Expiry extended for \"%s\"", id)
+		} else {
+			app.debug.Printf("Created expiry for \"%s\"", id)
 		}
-		app.debug.Printf(lm.ExtendCreateExpiry, id)
 		expiry := UserExpiry{}
 		if req.Timestamp != 0 {
 			expiry.Expiry = time.Unix(req.Timestamp, 0)
@@ -811,11 +820,11 @@ func (app *appContext) ExtendExpiry(gc *gin.Context) {
 				}
 				msg, err := app.email.constructExpiryAdjusted(user.Name, exp, req.Reason, app, false)
 				if err != nil {
-					app.err.Printf(lm.FailedConstructExpiryAdjustmentMessage, uid, err)
+					app.err.Printf("%s: Failed to construct expiry adjustment notification: %v", uid, err)
 					return
 				}
 				if err := app.sendByID(msg, uid); err != nil {
-					app.err.Printf(lm.FailedSendExpiryAdjustmentMessage, uid, "?", err)
+					app.err.Printf("%s: Failed to send expiry adjustment notification: %v", uid, err)
 				}
 			}(id, expiry.Expiry)
 		}
@@ -858,17 +867,17 @@ func (app *appContext) EnableReferralForUsers(gc *gin.Context) {
 		profile, ok := app.storage.GetProfileKey(source)
 		err := app.storage.db.Get(profile.ReferralTemplateKey, &baseInv)
 		if !ok || profile.ReferralTemplateKey == "" || err != nil {
-			app.debug.Printf(lm.FailedGetReferralTemplate, profile.ReferralTemplateKey, err)
+			app.debug.Printf("Couldn't find template to source from")
 			respondBool(400, false, gc)
 			return
 
 		}
-		app.debug.Printf(lm.GetReferralTemplate, profile.ReferralTemplateKey)
+		app.debug.Printf("Found referral template in profile: %+v\n", profile.ReferralTemplateKey)
 	} else if mode == "invite" {
 		// Get the invite, and modify it to turn it into a referral
 		err := app.storage.db.Get(source, &baseInv)
 		if err != nil {
-			app.debug.Printf(lm.InvalidInviteCode, source)
+			app.debug.Printf("Couldn't find invite to source from")
 			respondBool(400, false, gc)
 			return
 		}
@@ -940,34 +949,33 @@ func (app *appContext) Announce(gc *gin.Context) {
 		for _, userID := range req.Users {
 			user, status, err := app.jf.UserByID(userID, false)
 			if status != 200 || err != nil {
-				app.err.Printf(lm.FailedGetUser, userID, lm.Jellyfin, err)
+				app.err.Printf("Failed to get user with ID \"%s\" (%d): %v", userID, status, err)
 				continue
 			}
 			msg, err := app.email.constructTemplate(req.Subject, req.Message, app, user.Name)
 			if err != nil {
-				app.err.Printf(lm.FailedConstructAnnouncementMessage, userID, err)
+				app.err.Printf("Failed to construct announcement message: %v", err)
 				respondBool(500, false, gc)
 				return
 			} else if err := app.sendByID(msg, userID); err != nil {
-				app.err.Printf(lm.FailedSendAnnouncementMessage, userID, "?", err)
+				app.err.Printf("Failed to send announcement message: %v", err)
 				respondBool(500, false, gc)
 				return
 			}
 		}
-		app.info.Printf(lm.SentAnnouncementMessage, userID, "?")
 	} else {
 		msg, err := app.email.constructTemplate(req.Subject, req.Message, app)
 		if err != nil {
-			app.err.Printf(lm.FailedConstructAnnouncementMessage, "*", err)
+			app.err.Printf("Failed to construct announcement messages: %v", err)
 			respondBool(500, false, gc)
 			return
 		} else if err := app.sendByID(msg, req.Users...); err != nil {
-			app.err.Printf(lm.FailedSendAnnouncementMessage, "*", "?", err)
+			app.err.Printf("Failed to send announcement messages: %v", err)
 			respondBool(500, false, gc)
 			return
 		}
-		app.info.Printf(lm.SentAnnouncementMessage, "*", "?")
 	}
+	app.info.Println("Sent announcement messages")
 	respondBool(200, true, gc)
 }
 
@@ -1055,6 +1063,7 @@ func (app *appContext) AdminPasswordReset(gc *gin.Context) {
 	var req AdminPasswordResetDTO
 	gc.BindJSON(&req)
 	if req.Users == nil || len(req.Users) == 0 {
+		app.debug.Println("Ignoring empty request for PWR")
 		respondBool(400, false, gc)
 		return
 	}
@@ -1065,7 +1074,7 @@ func (app *appContext) AdminPasswordReset(gc *gin.Context) {
 	for _, id := range req.Users {
 		pwr, err = app.GenInternalReset(id)
 		if err != nil {
-			app.err.Printf(lm.FailedGetUser, id, lm.Jellyfin, err)
+			app.err.Printf("Failed to get user from Jellyfin: %v", err)
 			respondBool(500, false, gc)
 			return
 		}
@@ -1091,13 +1100,13 @@ func (app *appContext) AdminPasswordReset(gc *gin.Context) {
 				}, app, false,
 			)
 			if err != nil {
-				app.err.Printf(lm.FailedConstructPWRMessage, id, err)
+				app.err.Printf("Failed to construct password reset message for \"%s\": %v", pwr.Username, err)
 				respondBool(500, false, gc)
 				return
 			} else if err := app.sendByID(msg, id); err != nil {
-				app.err.Printf(lm.FailedSendPWRMessage, id, sendAddress, err)
+				app.err.Printf("Failed to send password reset message to \"%s\": %v", sendAddress, err)
 			} else {
-				app.info.Printf(lm.SentPWRMessage, id, sendAddress)
+				app.info.Printf("Sent password reset message to \"%s\"", sendAddress)
 			}
 		}
 	}
@@ -1116,11 +1125,12 @@ func (app *appContext) AdminPasswordReset(gc *gin.Context) {
 // @Security Bearer
 // @tags Users
 func (app *appContext) GetUsers(gc *gin.Context) {
+	app.debug.Println("Users requested")
 	var resp getUsersDTO
 	users, status, err := app.jf.GetUsers(false)
 	resp.UserList = make([]respUser, len(users))
 	if !(status == 200 || status == 204) || err != nil {
-		app.err.Printf(lm.FailedGetUsers, lm.Jellyfin, err)
+		app.err.Printf("Failed to get users from Jellyfin (%d): %v", status, err)
 		respond(500, "Couldn't get users", gc)
 		return
 	}
@@ -1192,9 +1202,10 @@ func (app *appContext) GetUsers(gc *gin.Context) {
 func (app *appContext) SetAccountsAdmin(gc *gin.Context) {
 	var req setAccountsAdminDTO
 	gc.BindJSON(&req)
+	app.debug.Println("Admin modification requested")
 	users, status, err := app.jf.GetUsers(false)
 	if !(status == 200 || status == 204) || err != nil {
-		app.err.Printf(lm.FailedGetUsers, lm.Jellyfin, err)
+		app.err.Printf("Failed to get users from Jellyfin (%d): %v", status, err)
 		respond(500, "Couldn't get users", gc)
 		return
 	}
@@ -1207,9 +1218,9 @@ func (app *appContext) SetAccountsAdmin(gc *gin.Context) {
 			}
 			emailStore.Admin = admin
 			app.storage.SetEmailsKey(id, emailStore)
-			app.info.Printf(lm.UserAdminAdjusted, id, admin)
 		}
 	}
+	app.info.Println("Email list modified")
 	respondBool(204, true, gc)
 }
 
@@ -1224,9 +1235,10 @@ func (app *appContext) SetAccountsAdmin(gc *gin.Context) {
 func (app *appContext) ModifyLabels(gc *gin.Context) {
 	var req modifyEmailsDTO
 	gc.BindJSON(&req)
+	app.debug.Println("Label modification requested")
 	users, status, err := app.jf.GetUsers(false)
 	if !(status == 200 || status == 204) || err != nil {
-		app.err.Printf(lm.FailedGetUsers, lm.Jellyfin, err)
+		app.err.Printf("Failed to get users from Jellyfin (%d): %v", status, err)
 		respond(500, "Couldn't get users", gc)
 		return
 	}
@@ -1238,10 +1250,10 @@ func (app *appContext) ModifyLabels(gc *gin.Context) {
 				emailStore = oldEmail
 			}
 			emailStore.Label = label
-			app.debug.Println(lm.UserLabelAdjusted, id, label)
 			app.storage.SetEmailsKey(id, emailStore)
 		}
 	}
+	app.info.Println("Email list modified")
 	respondBool(204, true, gc)
 }
 
@@ -1263,21 +1275,21 @@ func (app *appContext) modifyEmail(jfID string, addr string) {
 			ombiUser["emailAddress"] = addr
 			code, err = app.ombi.ModifyUser(ombiUser)
 			if code != 200 || err != nil {
-				app.err.Printf(lm.FailedSetEmailAddress, lm.Ombi, jfID, err)
+				app.err.Printf("%s: Failed to change ombi email address (%d): %v", ombiUser["userName"].(string), code, err)
 			}
 		}
 	}
 	if app.config.Section("jellyseerr").Key("enabled").MustBool(false) {
 		err := app.js.ModifyMainUserSettings(jfID, jellyseerr.MainUserSettings{Email: addr})
 		if err != nil {
-			app.err.Printf(lm.FailedSetEmailAddress, lm.Jellyseerr, jfID, err)
+			app.err.Printf("Failed to set Jellyseerr email address: %v\n", err)
 		} else if contactPrefChanged {
 			contactMethods := map[jellyseerr.NotificationsField]any{
 				jellyseerr.FieldEmailEnabled: true,
 			}
 			err := app.js.ModifyNotifications(jfID, contactMethods)
 			if err != nil {
-				app.err.Printf(lm.FailedSyncContactMethods, lm.Jellyseerr, err)
+				app.err.Printf("Failed to sync contact methods with Jellyseerr: %v", err)
 			}
 		}
 	}
@@ -1294,9 +1306,10 @@ func (app *appContext) modifyEmail(jfID string, addr string) {
 func (app *appContext) ModifyEmails(gc *gin.Context) {
 	var req modifyEmailsDTO
 	gc.BindJSON(&req)
+	app.debug.Println("Email modification requested")
 	users, status, err := app.jf.GetUsers(false)
 	if !(status == 200 || status == 204) || err != nil {
-		app.err.Printf(lm.FailedGetUsers, lm.Jellyfin, err)
+		app.err.Printf("Failed to get users from Jellyfin (%d): %v", status, err)
 		respond(500, "Couldn't get users", gc)
 		return
 	}
@@ -1304,8 +1317,6 @@ func (app *appContext) ModifyEmails(gc *gin.Context) {
 		id := jfUser.ID
 		if address, ok := req[id]; ok {
 			app.modifyEmail(id, address)
-
-			app.info.Printf(lm.UserEmailAdjusted, gc.GetString("jfId"))
 
 			activityType := ActivityContactLinked
 			if address == "" {
@@ -1321,6 +1332,7 @@ func (app *appContext) ModifyEmails(gc *gin.Context) {
 			}, gc, false)
 		}
 	}
+	app.info.Println("Email list modified")
 	respondBool(200, true, gc)
 }
 
@@ -1336,8 +1348,7 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 	app.info.Println("User settings change requested")
 	var req userSettingsDTO
 	gc.BindJSON(&req)
-	applyingFromType := lm.Profile
-	applyingFromSource := "?"
+	applyingFrom := "profile"
 	var policy mediabrowser.Policy
 	var configuration mediabrowser.Configuration
 	var displayprefs map[string]interface{}
@@ -1348,21 +1359,18 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 		// Check profile exists & isn't empty
 		profile, ok := app.storage.GetProfileKey(req.Profile)
 		if !ok {
-			app.err.Printf(lm.FailedGetProfile, req.Profile)
+			app.err.Printf("Couldn't find profile \"%s\" or profile was empty", req.Profile)
 			respond(500, "Couldn't find profile", gc)
 			return
 		}
-		applyingFromSource = req.Profile
 		if req.Homescreen {
-			if profile.Homescreen {
-				configuration = profile.Configuration
-				displayprefs = profile.Displayprefs
-			} else {
-				req.Homescreen = false
-				app.err.Printf(lm.ProfileNoHomescreen, req.Profile)
+			if !profile.Homescreen {
+				app.err.Printf("No homescreen saved in profile \"%s\"", req.Profile)
 				respond(500, "No homescreen template available", gc)
 				return
 			}
+			configuration = profile.Configuration
+			displayprefs = profile.Displayprefs
 		}
 		if req.Policy {
 			policy = profile.Policy
@@ -1379,29 +1387,29 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 		}
 
 	} else if req.From == "user" {
-		applyingFromType = lm.User
+		applyingFrom = "user"
 		app.jf.CacheExpiry = time.Now()
 		user, status, err := app.jf.UserByID(req.ID, false)
 		if !(status == 200 || status == 204) || err != nil {
-			app.err.Printf(lm.FailedGetUser, req.ID, lm.Jellyfin, err)
+			app.err.Printf("Failed to get user from Jellyfin (%d): %v", status, err)
 			respond(500, "Couldn't get user", gc)
 			return
 		}
-		applyingFromSource = user.Name
+		applyingFrom = "\"" + user.Name + "\""
 		if req.Policy {
 			policy = user.Policy
 		}
 		if req.Homescreen {
 			displayprefs, status, err = app.jf.GetDisplayPreferences(req.ID)
 			if !(status == 200 || status == 204) || err != nil {
-				app.err.Printf(lm.FailedGetJellyfinDisplayPrefs, req.ID, err)
+				app.err.Printf("Failed to get DisplayPrefs (%d): %v", status, err)
 				respond(500, "Couldn't get displayprefs", gc)
 				return
 			}
 			configuration = user.Configuration
 		}
 	}
-	app.info.Printf(lm.ApplyingTemplatesFrom, applyingFromType, applyingFromSource, len(req.ApplyTo))
+	app.info.Printf("Applying settings to %d user(s) from %s", len(req.ApplyTo), applyingFrom)
 	errors := errorListDTO{
 		"policy":     map[string]string{},
 		"homescreen": map[string]string{},
@@ -1412,10 +1420,9 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 	and can crash and mess up its database. Issue #160 says this occurs when more
 	than 100 users are modified. A delay totalling 500ms between requests is used
 	if so. */
-	const requestDelayThreshold = 100
-	var shouldDelay bool = len(req.ApplyTo) >= requestDelayThreshold
+	var shouldDelay bool = len(req.ApplyTo) >= 100
 	if shouldDelay {
-		app.debug.Printf(lm.DelayingRequests, requestDelayThreshold)
+		app.debug.Println("Adding delay between requests for large batch")
 	}
 	for _, id := range req.ApplyTo {
 		var status int

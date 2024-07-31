@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	lm "github.com/hrfee/jfa-go/logmessages"
 )
 
 // @Summary Creates a backup of the database.
@@ -35,7 +36,7 @@ func (app *appContext) GetBackup(gc *gin.Context) {
 	ok := (strings.HasPrefix(fname, BACKUP_PREFIX) || strings.HasPrefix(fname, BACKUP_UPLOAD_PREFIX+BACKUP_PREFIX)) && strings.HasSuffix(fname, BACKUP_SUFFIX)
 	t, err := time.Parse(BACKUP_DATEFMT, strings.TrimSuffix(strings.TrimPrefix(strings.TrimPrefix(fname, BACKUP_UPLOAD_PREFIX), BACKUP_PREFIX), BACKUP_SUFFIX))
 	if !ok || err != nil || t.IsZero() {
-		app.debug.Printf("Ignoring backup DL request due to fname: %v\n", err)
+		app.debug.Printf(lm.IgnoreInvalidFilename, fname, err)
 		respondBool(400, false, gc)
 		return
 	}
@@ -83,7 +84,7 @@ func (app *appContext) RestoreLocalBackup(gc *gin.Context) {
 	ok := strings.HasPrefix(fname, BACKUP_PREFIX) && strings.HasSuffix(fname, BACKUP_SUFFIX)
 	t, err := time.Parse(BACKUP_DATEFMT, strings.TrimSuffix(strings.TrimPrefix(fname, BACKUP_PREFIX), BACKUP_SUFFIX))
 	if !ok || err != nil || t.IsZero() {
-		app.debug.Printf("Ignoring backup DL request due to fname: %v\n", err)
+		app.debug.Printf(lm.IgnoreInvalidFilename, fname, err)
 		respondBool(400, false, gc)
 		return
 	}
@@ -103,15 +104,15 @@ func (app *appContext) RestoreLocalBackup(gc *gin.Context) {
 func (app *appContext) RestoreBackup(gc *gin.Context) {
 	file, err := gc.FormFile("backups-file")
 	if err != nil {
-		app.err.Printf("Failed to get file from form data: %v\n", err)
+		app.err.Printf(lm.FailedGetUpload, err)
 		respondBool(400, false, gc)
 		return
 	}
-	app.debug.Printf("Got uploaded file \"%s\"\n", file.Filename)
+	app.debug.Printf(lm.GetUpload, file.Filename)
 	path := app.config.Section("backups").Key("path").String()
 	fullpath := filepath.Join(path, BACKUP_UPLOAD_PREFIX+BACKUP_PREFIX+time.Now().Local().Format(BACKUP_DATEFMT)+BACKUP_SUFFIX)
 	gc.SaveUploadedFile(file, fullpath)
-	app.debug.Printf("Saved to \"%s\"\n", fullpath)
+	app.debug.Printf(lm.Write, fullpath)
 	LOADBAK = fullpath
 	app.restart(gc)
 }

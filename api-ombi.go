@@ -5,6 +5,7 @@ import (
 	"net/url"
 
 	"github.com/gin-gonic/gin"
+	lm "github.com/hrfee/jfa-go/logmessages"
 	"github.com/hrfee/mediabrowser"
 )
 
@@ -66,10 +67,9 @@ func (app *appContext) getOmbiImportedUser(name string) (map[string]interface{},
 // @Security Bearer
 // @tags Ombi
 func (app *appContext) OmbiUsers(gc *gin.Context) {
-	app.debug.Println("Ombi users requested")
 	users, status, err := app.ombi.GetUsers()
 	if err != nil || status != 200 {
-		app.err.Printf("Failed to get users from Ombi (%d): %v", status, err)
+		app.err.Printf(lm.FailedGetUsers, lm.Ombi, err)
 		respond(500, "Couldn't get users", gc)
 		return
 	}
@@ -105,7 +105,7 @@ func (app *appContext) SetOmbiProfile(gc *gin.Context) {
 	}
 	template, code, err := app.ombi.TemplateByID(req.ID)
 	if err != nil || code != 200 || len(template) == 0 {
-		app.err.Printf("Couldn't get user from Ombi (%d): %v", code, err)
+		app.err.Printf(lm.FailedGetUsers, lm.Ombi, err)
 		respond(500, "Couldn't get user", gc)
 		return
 	}

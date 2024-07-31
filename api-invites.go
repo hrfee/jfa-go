@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	lm "github.com/hrfee/jfa-go/logmessages"
 	"github.com/itchyny/timefmt-go"
 	"github.com/lithammer/shortuuid/v3"
 	"github.com/timshannon/badgerhold/v4"
@@ -29,6 +30,7 @@ func GenerateInviteCode() string {
 	return inviteCode
 }
 
+// checkInvites performs general housekeeping on invites, i.e. deleting expired ones and cleaning captcha data.
 func (app *appContext) checkInvites() {
 	currentTime := time.Now()
 	for _, data := range app.storage.GetInvites() {
@@ -52,60 +54,11 @@ func (app *appContext) checkInvites() {
 		if !currentTime.After(expiry) {
 			continue
 		}
-
-		app.debug.Printf("Housekeeping: Deleting old invite %s", data.Code)
-
-		// Disable referrals for the user if UseReferralExpiry is enabled, so no new ones are made.
-		if data.IsReferral && data.UseReferralExpiry && data.ReferrerJellyfinID != "" {
-			user, ok := app.storage.GetEmailsKey(data.ReferrerJellyfinID)
-			if ok {
-				user.ReferralTemplateKey = ""
-				app.storage.SetEmailsKey(data.ReferrerJellyfinID, user)
-			}
-		}
-		notify := data.Notify
-		if emailEnabled && app.config.Section("notifications").Key("enabled").MustBool(false) && len(notify) != 0 {
-			app.debug.Printf("%s: Expiry notification", data.Code)
-			var wait sync.WaitGroup
-			for address, settings := range notify {
-				if !settings["notify-expiry"] {
-					continue
-				}
-				wait.Add(1)
-				go func(addr string) {
-					defer wait.Done()
-					msg, err := app.email.constructExpiry(data.Code, data, app, false)
-					if err != nil {
-						app.err.Printf("%s: Failed to construct expiry notification: %v", data.Code, err)
-					} else {
-						// Check whether notify "address" is an email address of Jellyfin ID
-						if strings.Contains(addr, "@") {
-							err = app.email.send(msg, addr)
-						} else {
-							err = app.sendByID(msg, addr)
-						}
-						if err != nil {
-							app.err.Printf("%s: Failed to send expiry notification: %v", data.Code, err)
-						} else {
-							app.info.Printf("Sent expiry notification to %s", addr)
-						}
-					}
-				}(address)
-			}
-			wait.Wait()
-		}
-		app.storage.DeleteInvitesKey(data.Code)
-
-		app.storage.SetActivityKey(shortuuid.New(), Activity{
-			Type:       ActivityDeleteInvite,
-			SourceType: ActivityDaemon,
-			InviteCode: data.Code,
-			Value:      data.Label,
-			Time:       time.Now(),
-		}, nil, false)
+		app.deleteExpiredInvite(data)
 	}
 }
 
+// checkInvite checks the validity of a specific invite, optionally removing it if invalid(ated).
 func (app *appContext) checkInvite(code string, used bool, username string) bool {
 	currentTime := time.Now()
 	inv, match := app.storage.GetInvitesKey(code)
@@ -114,54 +67,8 @@ func (app *appContext) checkInvite(code string, used bool, username string) bool
 	}
 	expiry := inv.ValidTill
 	if currentTime.After(expiry) {
-		app.debug.Printf("Housekeeping: Deleting old invite %s", code)
-		notify := inv.Notify
-		if emailEnabled && app.config.Section("notifications").Key("enabled").MustBool(false) && len(notify) != 0 {
-			app.debug.Printf("%s: Expiry notification", code)
-			var wait sync.WaitGroup
-			for address, settings := range notify {
-				if !settings["notify-expiry"] {
-					continue
-				}
-				wait.Add(1)
-				go func(addr string) {
-					defer wait.Done()
-					msg, err := app.email.constructExpiry(code, inv, app, false)
-					if err != nil {
-						app.err.Printf("%s: Failed to construct expiry notification: %v", code, err)
-					} else {
-						// Check whether notify "address" is an email address of Jellyfin ID
-						if strings.Contains(addr, "@") {
-							err = app.email.send(msg, addr)
-						} else {
-							err = app.sendByID(msg, addr)
-						}
-						if err != nil {
-							app.err.Printf("%s: Failed to send expiry notification: %v", code, err)
-						} else {
-							app.info.Printf("Sent expiry notification to %s", addr)
-						}
-					}
-				}(address)
-			}
-			wait.Wait()
-		}
-		if inv.IsReferral && inv.ReferrerJellyfinID != "" && inv.UseReferralExpiry {
-			user, ok := app.storage.GetEmailsKey(inv.ReferrerJellyfinID)
-			if ok {
-				user.ReferralTemplateKey = ""
-				app.storage.SetEmailsKey(inv.ReferrerJellyfinID, user)
-			}
-		}
+		app.deleteExpiredInvite(inv)
 		match = false
-		app.storage.DeleteInvitesKey(code)
-		app.storage.SetActivityKey(shortuuid.New(), Activity{
-			Type:       ActivityDeleteInvite,
-			SourceType: ActivityDaemon,
-			InviteCode: code,
-			Value:      inv.Label,
-			Time:       time.Now(),
-		}, nil, false)
 	} else if used {
 		del := false
 		newInv := inv
@@ -187,6 +94,67 @@ func (app *appContext) checkInvite(code string, used bool, username string) bool
 	return match
 }
 
+func (app *appContext) deleteExpiredInvite(data Invite) {
+	app.debug.Printf(lm.DeleteOldInvite, data.Code)
+
+	// Disable referrals for the user if UseReferralExpiry is enabled, so no new ones are made.
+	if data.IsReferral && data.UseReferralExpiry && data.ReferrerJellyfinID != "" {
+		user, ok := app.storage.GetEmailsKey(data.ReferrerJellyfinID)
+		if ok {
+			user.ReferralTemplateKey = ""
+			app.storage.SetEmailsKey(data.ReferrerJellyfinID, user)
+		}
+	}
+	wait := app.sendAdminExpiryNotification(data)
+	app.storage.DeleteInvitesKey(data.Code)
+
+	app.storage.SetActivityKey(shortuuid.New(), Activity{
+		Type:       ActivityDeleteInvite,
+		SourceType: ActivityDaemon,
+		InviteCode: data.Code,
+		Value:      data.Label,
+		Time:       time.Now(),
+	}, nil, false)
+
+	if wait != nil {
+		wait.Wait()
+	}
+}
+
+func (app *appContext) sendAdminExpiryNotification(data Invite) *sync.WaitGroup {
+	notify := data.Notify
+	if !emailEnabled || !app.config.Section("notifications").Key("enabled").MustBool(false) || len(notify) != 0 {
+		return nil
+	}
+	var wait sync.WaitGroup
+	for address, settings := range notify {
+		if !settings["notify-expiry"] {
+			continue
+		}
+		wait.Add(1)
+		go func(addr string) {
+			defer wait.Done()
+			msg, err := app.email.constructExpiry(data.Code, data, app, false)
+			if err != nil {
+				app.err.Printf(lm.FailedConstructExpiryAdmin, data.Code, err)
+			} else {
+				// Check whether notify "address" is an email address or Jellyfin ID
+				if strings.Contains(addr, "@") {
+					err = app.email.send(msg, addr)
+				} else {
+					err = app.sendByID(msg, addr)
+				}
+				if err != nil {
+					app.err.Printf(lm.FailedSendExpiryAdmin, data.Code, addr, err)
+				} else {
+					app.info.Printf(lm.SentExpiryAdmin, data.Code, addr)
+				}
+			}
+		}(address)
+	}
+	return &wait
+}
+
 // @Summary Create a new invite.
 // @Produce json
 // @Param generateInviteDTO body generateInviteDTO true "New invite request object"
@@ -196,7 +164,7 @@ func (app *appContext) checkInvite(code string, used bool, username string) bool
 // @tags Invites
 func (app *appContext) GenerateInvite(gc *gin.Context) {
 	var req generateInviteDTO
-	app.debug.Println("Generating new invite")
+	app.debug.Println(lm.GenerateInvite)
 	gc.BindJSON(&req)
 	currentTime := time.Now()
 	validTill := currentTime.AddDate(0, req.Months, req.Days)
@@ -230,13 +198,12 @@ func (app *appContext) GenerateInvite(gc *gin.Context) {
 	if req.SendTo != "" && app.config.Section("invite_emails").Key("enabled").MustBool(false) {
 		addressValid := false
 		discord := ""
-		app.debug.Printf("%s: Sending invite message", invite.Code)
 		if discordEnabled && (!strings.Contains(req.SendTo, "@") || strings.HasPrefix(req.SendTo, "@")) {
 			users := app.discord.GetUsers(req.SendTo)
 			if len(users) == 0 {
-				invite.SendTo = fmt.Sprintf("Failed: User not found: \"%s\"", req.SendTo)
+				invite.SendTo = fmt.Sprintf(lm.FailedSendToTooltipNoUser, req.SendTo)
 			} else if len(users) > 1 {
-				invite.SendTo = fmt.Sprintf("Failed: Multiple users found: \"%s\"", req.SendTo)
+				invite.SendTo = fmt.Sprintf(lm.FailedSendToTooltipMultiUser, req.SendTo)
 			} else {
 				invite.SendTo = req.SendTo
 				addressValid = true
@@ -249,8 +216,10 @@ func (app *appContext) GenerateInvite(gc *gin.Context) {
 		if addressValid {
 			msg, err := app.email.constructInvite(invite.Code, invite, app, false)
 			if err != nil {
-				invite.SendTo = fmt.Sprintf("Failed to send to %s", req.SendTo)
-				app.err.Printf("%s: Failed to construct invite message: %v", invite.Code, err)
+				// Slight misuse of the template
+				invite.SendTo = fmt.Sprintf(lm.FailedConstructInviteMessage, req.SendTo, err)
+
+				app.err.Printf(lm.FailedConstructInviteMessage, invite.Code, err)
 			} else {
 				var err error
 				if discord != "" {
@@ -259,10 +228,10 @@ func (app *appContext) GenerateInvite(gc *gin.Context) {
 					err = app.email.send(msg, req.SendTo)
 				}
 				if err != nil {
-					invite.SendTo = fmt.Sprintf("Failed to send to %s", req.SendTo)
-					app.err.Printf("%s: %s: %v", invite.Code, invite.SendTo, err)
+					invite.SendTo = fmt.Sprintf(lm.FailedSendInviteMessage, invite.Code, req.SendTo, err)
+					app.err.Println(invite.SendTo)
 				} else {
-					app.info.Printf("%s: Sent invite email to \"%s\"", invite.Code, req.SendTo)
+					app.info.Printf(lm.SentInviteMessage, invite.Code, req.SendTo)
 				}
 			}
 		}
@@ -297,7 +266,6 @@ func (app *appContext) GenerateInvite(gc *gin.Context) {
 // @Security Bearer
 // @tags Invites
 func (app *appContext) GetInvites(gc *gin.Context) {
-	app.debug.Println("Invites requested")
 	currentTime := time.Now()
 	app.checkInvites()
 	var invites []inviteDTO
@@ -332,7 +300,7 @@ func (app *appContext) GetInvites(gc *gin.Context) {
 				if err != nil {
 					date, err := timefmt.Parse(pair[1], app.datePattern+" "+app.timePattern)
 					if err != nil {
-						app.err.Printf("Failed to parse usedBy time: %v", err)
+						app.err.Printf(lm.FailedParseTime, err)
 					}
 					unix = date.Unix()
 				}
@@ -347,7 +315,6 @@ func (app *appContext) GetInvites(gc *gin.Context) {
 			invite.SendTo = inv.SendTo
 		}
 		if len(inv.Notify) != 0 {
-			// app.err.Printf("%s has notify section: %+v, you are %s\n", inv.Code, inv.Notify, gc.GetString("jfId"))
 			var addressOrID string
 			if app.config.Section("ui").Key("jellyfin_login").MustBool(false) {
 				addressOrID = gc.GetString("jfId")
@@ -397,10 +364,9 @@ func (app *appContext) GetInvites(gc *gin.Context) {
 func (app *appContext) SetProfile(gc *gin.Context) {
 	var req inviteProfileDTO
 	gc.BindJSON(&req)
-	app.debug.Printf("%s: Setting profile to \"%s\"", req.Invite, req.Profile)
 	// "" means "Don't apply profile"
 	if _, ok := app.storage.GetProfileKey(req.Profile); !ok && req.Profile != "" {
-		app.err.Printf("%s: Profile \"%s\" not found", req.Invite, req.Profile)
+		app.err.Printf(lm.FailedGetProfile, req.Profile)
 		respond(500, "Profile not found", gc)
 		return
 	}
@@ -424,11 +390,11 @@ func (app *appContext) SetNotify(gc *gin.Context) {
 	gc.BindJSON(&req)
 	changed := false
 	for code, settings := range req {
-		app.debug.Printf("%s: Notification settings change requested", code)
 		invite, ok := app.storage.GetInvitesKey(code)
 		if !ok {
-			app.err.Printf("%s Notification setting change failed: Invalid code", code)
-			respond(400, "Invalid invite code", gc)
+			msg := fmt.Sprintf(lm.InvalidInviteCode, code)
+			app.err.Println(msg)
+			respond(400, msg, gc)
 			return
 		}
 		var address string
@@ -436,9 +402,8 @@ func (app *appContext) SetNotify(gc *gin.Context) {
 		if jellyfinLogin {
 			var addressAvailable bool = app.getAddressOrName(gc.GetString("jfId")) != ""
 			if !addressAvailable {
-				app.err.Printf("%s: Couldn't find contact method for admin. Make sure one is set.", code)
-				app.debug.Printf("%s: User ID \"%s\"", code, gc.GetString("jfId"))
-				respond(500, "Missing user contact method", gc)
+				app.err.Printf(lm.FailedGetContactMethod, gc.GetString("jfId"))
+				respond(500, fmt.Sprintf(lm.FailedGetContactMethod, "admin"), gc)
 				return
 			}
 			address = gc.GetString("jfId")
@@ -453,15 +418,12 @@ func (app *appContext) SetNotify(gc *gin.Context) {
 		} /*else {
 		if _, ok := invite.Notify[address]["notify-expiry"]; !ok {
 		*/
-		if _, ok := settings["notify-expiry"]; ok && invite.Notify[address]["notify-expiry"] != settings["notify-expiry"] {
-			invite.Notify[address]["notify-expiry"] = settings["notify-expiry"]
-			app.debug.Printf("%s: Set \"notify-expiry\" to %t for %s", code, settings["notify-expiry"], address)
-			changed = true
-		}
-		if _, ok := settings["notify-creation"]; ok && invite.Notify[address]["notify-creation"] != settings["notify-creation"] {
-			invite.Notify[address]["notify-creation"] = settings["notify-creation"]
-			app.debug.Printf("%s: Set \"notify-creation\" to %t for %s", code, settings["notify-creation"], address)
-			changed = true
+		for _, notifyType := range []string{"notify-expiry", "notify-creation"} {
+			if _, ok := settings[notifyType]; ok && invite.Notify[address][notifyType] != settings[notifyType] {
+				invite.Notify[address][notifyType] = settings[notifyType]
+				app.debug.Printf(lm.SetAdminNotify, notifyType, settings[notifyType], address)
+				changed = true
+			}
 		}
 		if changed {
 			app.storage.SetInvitesKey(code, invite)
@@ -480,7 +442,6 @@ func (app *appContext) SetNotify(gc *gin.Context) {
 func (app *appContext) DeleteInvite(gc *gin.Context) {
 	var req deleteInviteDTO
 	gc.BindJSON(&req)
-	app.debug.Printf("%s: Deletion requested", req.Code)
 	inv, ok := app.storage.GetInvitesKey(req.Code)
 	if ok {
 		app.storage.DeleteInvitesKey(req.Code)
@@ -495,10 +456,10 @@ func (app *appContext) DeleteInvite(gc *gin.Context) {
 			Time:       time.Now(),
 		}, gc, false)
 
-		app.info.Printf("%s: Invite deleted", req.Code)
+		app.info.Printf(lm.DeleteInvite, req.Code)
 		respondBool(200, true, gc)
 		return
 	}
-	app.err.Printf("%s: Deletion failed: Invalid code", req.Code)
+	app.err.Printf(lm.FailedDeleteInvite, req.Code, "invalid code")
 	respond(400, "Code doesn't exist", gc)
 }

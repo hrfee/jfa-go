@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	lm "github.com/hrfee/jfa-go/logmessages"
 	"github.com/timshannon/badgerhold/v4"
 )
 
@@ -120,7 +121,7 @@ func (app *appContext) GetActivities(gc *gin.Context) {
 	err := app.storage.db.Find(&results, query)
 
 	if err != nil {
-		app.err.Printf("Failed to read activities from DB: %v\n", err)
+		app.err.Printf(lm.FailedDBReadActivities, err)
 	}
 
 	resp := GetActivitiesRespDTO{
