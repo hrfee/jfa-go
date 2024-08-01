@@ -6,6 +6,7 @@ import (
 	"time"
 
 	dg "github.com/bwmarrin/discordgo"
+	lm "github.com/hrfee/jfa-go/logmessages"
 	"github.com/timshannon/badgerhold/v4"
 )
 
@@ -92,13 +93,11 @@ func (d *DiscordDaemon) MustGetUser(channelID, userID, discrim, username string)
 }
 
 func (d *DiscordDaemon) run() {
-	d.bot.AddHandler(d.messageHandler)
-
 	d.bot.AddHandler(d.commandHandler)
 
 	d.bot.Identify.Intents = dg.IntentsGuildMessages | dg.IntentsDirectMessages | dg.IntentsGuildMembers | dg.IntentsGuildInvites
 	if err := d.bot.Open(); err != nil {
-		d.app.err.Printf("Discord: Failed to start daemon: %v", err)
+		d.app.err.Printf(lm.FailedStartDaemon, lm.Discord, err)
 		return
 	}
 	// Wait for everything to populate, it's slow sometimes.
@@ -116,7 +115,7 @@ func (d *DiscordDaemon) run() {
 	d.guildID = d.bot.State.Guilds[len(d.bot.State.Guilds)-1].ID
 	guild, err := d.bot.Guild(d.guildID)
 	if err != nil {
-		d.app.err.Printf("Discord: Failed to get guild: %v", err)
+		d.app.err.Printf(lm.FailedGetDiscordGuild, err)
 	}
 	d.serverChannelName = guild.Name
 	d.serverName = guild.Name
@@ -145,7 +144,7 @@ func (d *DiscordDaemon) ListRoles() (roles [][2]string, err error) {
 	var r []*dg.Role
 	r, err = d.bot.GuildRoles(d.guildID)
 	if err != nil {
-		d.app.err.Printf("Discord: Failed to get roles: %v", err)
+		d.app.err.Printf(lm.FailedGetDiscordRoles, err)
 		return
 	}
 	for _, role := range r {
@@ -173,20 +172,20 @@ func (d *DiscordDaemon) NewTempInvite(ageSeconds, maxUses int) (inviteURL, iconU
 	var inv *dg.Invite
 	var err error
 	if d.inviteChannelName == "" {
-		d.app.err.Println("Discord: Cannot create invite without channel specified in settings.")
+		d.app.err.Println(lm.FailedCreateDiscordInviteChannel, lm.InviteChannelEmpty)
 		return
 	}
 	if d.inviteChannelID == "" {
 		channels, err := d.bot.GuildChannels(d.guildID)
 		if err != nil {
-			d.app.err.Printf("Discord: Couldn't get channel list: %v", err)
+			d.app.err.Printf(lm.FailedGetDiscordChannels, err)
 			return
 		}
 		found := false
 		for _, channel := range channels {
 			// channel, err := d.bot.Channel(ch.ID)
 			// if err != nil {
-			// 	d.app.err.Printf("Discord: Couldn't get channel: %v", err)
+			// 	d.app.err.Printf(lm.FailedGetDiscordChannel, ch.ID, err)
 			// 	return
 			// }
 			if channel.Name == d.inviteChannelName {
@@ -196,13 +195,13 @@ func (d *DiscordDaemon) NewTempInvite(ageSeconds, maxUses int) (inviteURL, iconU
 			}
 		}
 		if !found {
-			d.app.err.Printf("Discord: Couldn't find invite channel \"%s\"", d.inviteChannelName)
+			d.app.err.Printf(lm.FailedGetDiscordChannel, d.InviteChannelName, lm.NotFound)
 			return
 		}
 	}
 	// channel, err := d.bot.Channel(d.inviteChannelID)
 	// if err != nil {
-	// 	d.app.err.Printf("Discord: Couldn't get invite channel: %v", err)
+	// 	d.app.err.Printf(lm.FailedGetDiscordChannel, d.inviteChannelID, err)
 	// 	return
 	// }
 	inv, err = d.bot.ChannelInviteCreate(d.inviteChannelID, dg.Invite{
@@ -214,13 +213,13 @@ func (d *DiscordDaemon) NewTempInvite(ageSeconds, maxUses int) (inviteURL, iconU
 		Temporary: false,
 	})
 	if err != nil {
-		d.app.err.Printf("Discord: Failed to create invite: %v", err)
+		d.app.err.Printf(lm.FailedGenerateDiscordInvite, err)
 		return
 	}
 	inviteURL = "https://discord.gg/" + inv.Code
 	guild, err := d.bot.Guild(d.guildID)
 	if err != nil {
-		d.app.err.Printf("Discord: Failed to get guild: %v", err)
+		d.app.err.Printf(lm.FailedGetDiscordGuild, err)
 		return
 	}
 	iconURL = guild.IconURL("256")
@@ -255,7 +254,7 @@ func (d *DiscordDaemon) GetUsers(username string) []*dg.Member {
 		1000,
 	)
 	if err != nil {
-		d.app.err.Printf("Discord: Failed to get members: %v", err)
+		d.app.err.Printf(lm.FailedGetDiscordGuildMembers, err)
 		return nil
 	}
 	hasDiscriminator := strings.Contains(username, "#")
@@ -285,7 +284,7 @@ func (d *DiscordDaemon) GetUsers(username string) []*dg.Member {
 func (d *DiscordDaemon) NewUser(ID string) (user DiscordUser, ok bool) {
 	u, err := d.bot.User(ID)
 	if err != nil {
-		d.app.err.Printf("Discord: Failed to get user: %v", err)
+		d.app.err.Printf(lm.FailedGetUser, ID, lm.Discord, err)
 		return
 	}
 	user.ID = ID
@@ -294,7 +293,7 @@ func (d *DiscordDaemon) NewUser(ID string) (user DiscordUser, ok bool) {
 	user.Discriminator = u.Discriminator
 	channel, err := d.bot.UserChannelCreate(ID)
 	if err != nil {
-		d.app.err.Printf("Discord: Failed to create DM channel: %v", err)
+		d.app.err.Printf(lm.FailedCreateDiscordDMChannel, ID, err)
 		return
 	}
 	user.ChannelID = channel.ID
@@ -381,7 +380,7 @@ func (d *DiscordDaemon) registerCommands() {
 	d.commandDescriptions[1].Options[0].Choices = make([]*dg.ApplicationCommandOptionChoice, len(d.app.storage.lang.Telegram))
 	i := 0
 	for code := range d.app.storage.lang.Telegram {
-		d.app.debug.Printf("Discord: registering lang choice \"%s\":\"%s\"\n", d.app.storage.lang.Telegram[code].Meta.Name, code)
+		d.app.debug.Printf(lm.RegisterDiscordChoice, lm.Lang, d.app.storage.lang.Telegram[code].Meta.Name+":"+code)
 		d.commandDescriptions[1].Options[0].Choices[i] = &dg.ApplicationCommandOptionChoice{
 			Name:  d.app.storage.lang.Telegram[code].Meta.Name,
 			Value: code,
@@ -392,7 +391,7 @@ func (d *DiscordDaemon) registerCommands() {
 	profiles := d.app.storage.GetProfiles()
 	d.commandDescriptions[3].Options[3].Choices = make([]*dg.ApplicationCommandOptionChoice, len(profiles))
 	for i, profile := range profiles {
-		d.app.debug.Printf("Discord: registering profile choice \"%s\"", profile.Name)
+		d.app.debug.Printf(lm.RegisterDiscordChoice, lm.Profile, profile.Name)
 		d.commandDescriptions[3].Options[3].Choices[i] = &dg.ApplicationCommandOptionChoice{
 			Name:  profile.Name,
 			Value: profile.Name,
@@ -409,9 +408,9 @@ func (d *DiscordDaemon) registerCommands() {
 	for i, cmd := range d.commandDescriptions {
 		command, err := d.bot.ApplicationCommandCreate(d.bot.State.User.ID, d.guildID, cmd)
 		if err != nil {
-			d.app.err.Printf("Discord: Cannot create command \"%s\": %v", cmd.Name, err)
+			d.app.err.Printf(lm.FailedRegisterDiscordCommand, cmd.Name, err)
 		} else {
-			d.app.debug.Printf("Discord: registered command \"%s\"", cmd.Name)
+			d.app.debug.Printf(lm.RegisterDiscordCommand, cmd.Name)
 			d.commandIDs[i] = command.ID
 		}
 	}
@@ -420,12 +419,12 @@ func (d *DiscordDaemon) registerCommands() {
 func (d *DiscordDaemon) deregisterCommands() {
 	existingCommands, err := d.bot.ApplicationCommands(d.bot.State.User.ID, d.guildID)
 	if err != nil {
-		d.app.err.Printf("Discord: Failed to get commands: %v", err)
+		d.app.err.Printf(lm.FailedGetDiscordCommands, err)
 		return
 	}
 	for _, cmd := range existingCommands {
 		if err := d.bot.ApplicationCommandDelete(d.bot.State.User.ID, d.guildID, cmd.ID); err != nil {
-			d.app.err.Printf("Discord: Failed to deregister command: %v", err)
+			d.app.err.Printf(lm.FailedDeregDiscordCommand, cmd.Name, err)
 		}
 	}
 }
@@ -436,7 +435,7 @@ func (d *DiscordDaemon) UpdateCommands() {
 	profiles := d.app.storage.GetProfiles()
 	d.commandDescriptions[3].Options[3].Choices = make([]*dg.ApplicationCommandOptionChoice, len(profiles))
 	for i, profile := range profiles {
-		d.app.debug.Printf("Discord: registering profile choice \"%s\"", profile.Name)
+		d.app.debug.Printf(lm.RegisterDiscordChoice, lm.Profile, profile.Name)
 		d.commandDescriptions[3].Options[3].Choices[i] = &dg.ApplicationCommandOptionChoice{
 			Name:  profile.Name,
 			Value: profile.Name,
@@ -444,7 +443,7 @@ func (d *DiscordDaemon) UpdateCommands() {
 	}
 	cmd, err := d.bot.ApplicationCommandEdit(d.bot.State.User.ID, d.guildID, d.commandIDs[3], d.commandDescriptions[3])
 	if err != nil {
-		d.app.err.Printf("Discord: Failed to update profile list: %v\n", err)
+		d.app.err.Printf(lm.FailedRegisterDiscordChoices, lm.Profile, err)
 	} else {
 		d.commandIDs[3] = cmd.ID
 	}
@@ -456,7 +455,8 @@ func (d *DiscordDaemon) commandHandler(s *dg.Session, i *dg.InteractionCreate) {
 			if d.channelID == "" {
 				channel, err := s.Channel(i.ChannelID)
 				if err != nil {
-					d.app.err.Printf("Discord: Couldn't get channel, will monitor all: %v", err)
+					d.app.err.Printf(lm.FailedGetDiscordChannel, i.ChannelID, err)
+					d.app.err.Println(lm.MonitorAllDiscordChannels)
 					d.channelName = ""
 				}
 				if channel.Name == d.channelName {
@@ -464,7 +464,7 @@ func (d *DiscordDaemon) commandHandler(s *dg.Session, i *dg.InteractionCreate) {
 				}
 			}
 			if d.channelID != i.ChannelID {
-				d.app.debug.Printf("Discord: Ignoring message as not in specified channel")
+				d.app.debug.Printf(lm.IgnoreOutOfChannelMessage, lm.Discord)
 				return
 			}
 		}
@@ -486,7 +486,7 @@ func (d *DiscordDaemon) commandHandler(s *dg.Session, i *dg.InteractionCreate) {
 func (d *DiscordDaemon) cmdStart(s *dg.Session, i *dg.InteractionCreate, lang string) {
 	channel, err := s.UserChannelCreate(i.Interaction.Member.User.ID)
 	if err != nil {
-		d.app.err.Printf("Discord: Failed to create private channel with \"%s\": %v", i.Interaction.Member.User.Username, err)
+		d.app.err.Printf(lm.FailedCreateDiscordDMChannel, i.Interaction.Member.User.ID, err)
 		return
 	}
 	user := d.MustGetUser(channel.ID, i.Interaction.Member.User.ID, i.Interaction.Member.User.Discriminator, i.Interaction.Member.User.Username)
@@ -503,7 +503,7 @@ func (d *DiscordDaemon) cmdStart(s *dg.Session, i *dg.InteractionCreate, lang st
 		},
 	})
 	if err != nil {
-		d.app.err.Printf("Discord: Failed to send reply: %v", err)
+		d.app.err.Printf(lm.FailedReply, lm.Discord, i.Interaction.Member.User.ID, err)
 		return
 	}
 }
@@ -521,7 +521,7 @@ func (d *DiscordDaemon) cmdPIN(s *dg.Session, i *dg.InteractionCreate, lang stri
 			},
 		})
 		if err != nil {
-			d.app.err.Printf("Discord: Failed to send message to \"%s\": %v", i.Interaction.Member.User.Username, err)
+			d.app.err.Printf(lm.FailedReply, lm.Discord, i.Interaction.Member.User.ID, err)
 		}
 		delete(d.tokens, pin)
 		return
@@ -535,7 +535,7 @@ func (d *DiscordDaemon) cmdPIN(s *dg.Session, i *dg.InteractionCreate, lang stri
 		},
 	})
 	if err != nil {
-		d.app.err.Printf("Discord: Failed to send message to \"%s\": %v", i.Interaction.Member.User.Username, err)
+		d.app.err.Printf(lm.FailedReply, lm.Discord, i.Interaction.Member.User.ID, err)
 	}
 	dcUser := d.users[i.Interaction.Member.User.ID]
 	dcUser.JellyfinID = user.JellyfinID
@@ -566,7 +566,7 @@ func (d *DiscordDaemon) cmdLang(s *dg.Session, i *dg.InteractionCreate, lang str
 			},
 		})
 		if err != nil {
-			d.app.err.Printf("Discord: Failed to send reply: %v", err)
+			d.app.err.Printf(lm.FailedReply, lm.Discord, i.Interaction.Member.User.ID, err)
 			return
 		}
 	}
@@ -575,7 +575,7 @@ func (d *DiscordDaemon) cmdLang(s *dg.Session, i *dg.InteractionCreate, lang str
 func (d *DiscordDaemon) cmdInvite(s *dg.Session, i *dg.InteractionCreate, lang string) {
 	channel, err := s.UserChannelCreate(i.Interaction.Member.User.ID)
 	if err != nil {
-		d.app.err.Printf("Discord: Failed to create private channel with \"%s\": %v", i.Interaction.Member.User.Username, err)
+		d.app.err.Printf(lm.FailedCreateDiscordDMChannel, i.Interaction.Member.User.ID, err)
 		return
 	}
 	requester := d.MustGetUser(channel.ID, i.Interaction.Member.User.ID, i.Interaction.Member.User.Discriminator, i.Interaction.Member.User.Username)
@@ -590,12 +590,9 @@ func (d *DiscordDaemon) cmdInvite(s *dg.Session, i *dg.InteractionCreate, lang s
 	//}
 	//	Check whether requestor is linked to the admin account
 	requesterEmail, ok := d.app.storage.GetEmailsKey(requester.JellyfinID)
-	if !ok {
-		d.app.err.Printf("Failed to verify admin")
-	}
-	if !requesterEmail.Admin {
-		d.app.err.Printf("User is not admin")
-		//add response message
+	if !(ok && requesterEmail.Admin) {
+		d.app.err.Printf(lm.FailedGenerateInvite, fmt.Sprintf(lm.NonAdminUser, requester.JellyfinID))
+		// FIXME: add response message
 		return
 	}
 
@@ -629,7 +626,7 @@ func (d *DiscordDaemon) cmdInvite(s *dg.Session, i *dg.InteractionCreate, lang s
 		ValidTill:     validTill,
 		UserLabel:     userLabel,
 		Profile:       "Default",
-		Label:         fmt.Sprintf("Discord: %s", RenderDiscordUsername(recipient)),
+		Label:         fmt.Sprintf("%s: %s", lm.Discord, RenderDiscordUsername(recipient)),
 	}
 	if profileName != "" {
 		if _, ok := d.app.storage.GetProfileKey(profileName); ok {
@@ -638,13 +635,12 @@ func (d *DiscordDaemon) cmdInvite(s *dg.Session, i *dg.InteractionCreate, lang s
 	}
 
 	if recipient != nil && d.app.config.Section("invite_emails").Key("enabled").MustBool(false) {
-		d.app.debug.Printf("%s: Sending invite message", invite.Code)
 		invname, err := d.bot.GuildMember(d.guildID, recipient.ID)
 		invite.SendTo = invname.User.Username
 		msg, err := d.app.email.constructInvite(invite.Code, invite, d.app, false)
 		if err != nil {
-			invite.SendTo = fmt.Sprintf("Failed to send to %s", RenderDiscordUsername(recipient))
-			d.app.err.Printf("%s: Failed to construct invite message: %v", invite.Code, err)
+			invite.SendTo = fmt.Sprintf(lm.FailedConstructInviteMessage, invite.Code, err)
+			d.app.err.Println(invite.SendTo)
 			err := s.InteractionRespond(i.Interaction, &dg.InteractionResponse{
 				Type: dg.InteractionResponseChannelMessageWithSource,
 				Data: &dg.InteractionResponseData{
@@ -653,14 +649,14 @@ func (d *DiscordDaemon) cmdInvite(s *dg.Session, i *dg.InteractionCreate, lang s
 				},
 			})
 			if err != nil {
-				d.app.err.Printf("Discord: Failed to send message to \"%s\": %v", RenderDiscordUsername(requester), err)
+				d.app.err.Printf(lm.FailedReply, lm.Discord, requester.ID, err)
 			}
 		} else {
 			var err error
 			err = d.app.discord.SendDM(msg, recipient.ID)
 			if err != nil {
-				invite.SendTo = fmt.Sprintf("Failed to send to %s", RenderDiscordUsername(recipient))
-				d.app.err.Printf("%s: %s: %v", invite.Code, invite.SendTo, err)
+				invite.SendTo = fmt.Sprintf(lm.FailedSendInviteMessage, invite.Code, RenderDiscordUsername(recipient), err)
+				d.app.err.Println(invite.SendTo)
 				err := s.InteractionRespond(i.Interaction, &dg.InteractionResponse{
 					Type: dg.InteractionResponseChannelMessageWithSource,
 					Data: &dg.InteractionResponseData{
@@ -669,10 +665,10 @@ func (d *DiscordDaemon) cmdInvite(s *dg.Session, i *dg.InteractionCreate, lang s
 					},
 				})
 				if err != nil {
-					d.app.err.Printf("Discord: Failed to send message to \"%s\": %v", RenderDiscordUsername(requester), err)
+					d.app.err.Printf(lm.FailedReply, lm.Discord, requester.ID, err)
 				}
 			} else {
-				d.app.info.Printf("%s: Sent invite email to \"%s\"", invite.Code, RenderDiscordUsername(recipient))
+				d.app.info.Printf(lm.SentInviteMessage, invite.Code, RenderDiscordUsername(recipient))
 				err := s.InteractionRespond(i.Interaction, &dg.InteractionResponse{
 					Type: dg.InteractionResponseChannelMessageWithSource,
 					Data: &dg.InteractionResponseData{
@@ -681,147 +677,13 @@ func (d *DiscordDaemon) cmdInvite(s *dg.Session, i *dg.InteractionCreate, lang s
 					},
 				})
 				if err != nil {
-					d.app.err.Printf("Discord: Failed to send message to \"%s\": %v", RenderDiscordUsername(requester), err)
+					d.app.err.Printf(lm.FailedReply, lm.Discord, requester.ID, err)
 				}
 			}
 		}
 	}
 	//if profile != "" {
 	d.app.storage.SetInvitesKey(invite.Code, invite)
-}
-
-func (d *DiscordDaemon) messageHandler(s *dg.Session, m *dg.MessageCreate) {
-	if m.GuildID != "" && d.channelName != "" {
-		if d.channelID == "" {
-			channel, err := s.Channel(m.ChannelID)
-			if err != nil {
-				d.app.err.Printf("Discord: Couldn't get channel, will monitor all: %v", err)
-				d.channelName = ""
-			}
-			if channel.Name == d.channelName {
-				d.channelID = channel.ID
-			}
-		}
-		if d.channelID != m.ChannelID {
-			d.app.debug.Printf("Discord: Ignoring message as not in specified channel")
-			return
-		}
-	}
-	if m.Author.ID == s.State.User.ID {
-		return
-	}
-	sects := strings.Split(m.Content, " ")
-	if len(sects) == 0 {
-		return
-	}
-	lang := d.app.storage.lang.chosenTelegramLang
-	if user, ok := d.users[m.Author.ID]; ok {
-		if _, ok := d.app.storage.lang.Telegram[user.Lang]; ok {
-			lang = user.Lang
-		}
-	}
-	switch msg := sects[0]; msg {
-	case "!" + d.app.config.Section("discord").Key("start_command").MustString("start"):
-		d.msgStart(s, m, lang)
-	case "!lang":
-		d.msgLang(s, m, sects, lang)
-	default:
-		d.msgPIN(s, m, sects, lang)
-	}
-}
-
-func (d *DiscordDaemon) msgStart(s *dg.Session, m *dg.MessageCreate, lang string) {
-	channel, err := s.UserChannelCreate(m.Author.ID)
-	if err != nil {
-		d.app.err.Printf("Discord: Failed to create private channel with \"%s\": %v", m.Author.Username, err)
-		return
-	}
-	user := d.MustGetUser(channel.ID, m.Author.ID, m.Author.Discriminator, m.Author.Username)
-	d.users[m.Author.ID] = user
-
-	_, err = d.bot.ChannelMessageSendReply(m.ChannelID, d.app.storage.lang.Telegram[lang].Strings.get("discordDMs"), m.Reference())
-	if err != nil {
-		d.app.err.Printf("Discord: Failed to send reply to \"%s\": %v", m.Author.Username, err)
-		return
-	}
-
-	content := d.app.storage.lang.Telegram[lang].Strings.get("startMessage") + "\n"
-	content += d.app.storage.lang.Telegram[lang].Strings.template("languageMessage", tmpl{"command": "!lang"})
-	_, err = s.ChannelMessageSend(channel.ID, content)
-	if err != nil {
-		d.app.err.Printf("Discord: Failed to send message to \"%s\": %v", m.Author.Username, err)
-		return
-	}
-}
-
-func (d *DiscordDaemon) msgLang(s *dg.Session, m *dg.MessageCreate, sects []string, lang string) {
-	if len(sects) == 1 {
-		list := "!lang <lang>\n"
-		for code := range d.app.storage.lang.Telegram {
-			list += fmt.Sprintf("%s: %s\n", code, d.app.storage.lang.Telegram[code].Meta.Name)
-		}
-		_, err := s.ChannelMessageSendReply(
-			m.ChannelID,
-			list,
-			m.Reference(),
-		)
-		if err != nil {
-			d.app.err.Printf("Discord: Failed to send message to \"%s\": %v", m.Author.Username, err)
-		}
-		return
-	}
-	if _, ok := d.app.storage.lang.Telegram[sects[1]]; ok {
-		var user DiscordUser
-		for _, u := range d.app.storage.GetDiscord() {
-			if u.ID == m.Author.ID {
-				u.Lang = sects[1]
-				d.app.storage.SetDiscordKey(u.JellyfinID, u)
-				user = u
-				break
-			}
-		}
-		d.users[m.Author.ID] = user
-	}
-}
-
-func (d *DiscordDaemon) msgPIN(s *dg.Session, m *dg.MessageCreate, sects []string, lang string) {
-	if _, ok := d.users[m.Author.ID]; ok {
-		channel, err := s.Channel(m.ChannelID)
-		if err != nil {
-			d.app.err.Printf("Discord: Failed to get channel: %v", err)
-			return
-		}
-		if channel.Type != dg.ChannelTypeDM {
-			d.app.debug.Println("Discord: Ignoring message as not a DM")
-			return
-		}
-	} else {
-		d.app.debug.Println("Discord: Ignoring message as user was not found")
-		return
-	}
-	user, ok := d.tokens[sects[0]]
-	if !ok || time.Now().After(user.Expiry) {
-		_, err := s.ChannelMessageSend(
-			m.ChannelID,
-			d.app.storage.lang.Telegram[lang].Strings.get("invalidPIN"),
-		)
-		if err != nil {
-			d.app.err.Printf("Discord: Failed to send message to \"%s\": %v", m.Author.Username, err)
-		}
-		delete(d.tokens, sects[0])
-		return
-	}
-	_, err := s.ChannelMessageSend(
-		m.ChannelID,
-		d.app.storage.lang.Telegram[lang].Strings.get("pinSuccess"),
-	)
-	if err != nil {
-		d.app.err.Printf("Discord: Failed to send message to \"%s\": %v", m.Author.Username, err)
-	}
-	dcUser := d.users[m.Author.ID]
-	dcUser.JellyfinID = user.JellyfinID
-	d.verifiedTokens[sects[0]] = dcUser
-	delete(d.tokens, sects[0])
 }
 
 func (d *DiscordDaemon) SendDM(message *Message, userID ...string) error {
