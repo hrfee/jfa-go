@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"html/template"
 	"io"
 	"io/fs"
@@ -16,6 +17,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 	"github.com/gomarkdown/markdown"
+	lm "github.com/hrfee/jfa-go/logmessages"
 	"github.com/hrfee/mediabrowser"
 	"github.com/lithammer/shortuuid/v3"
 	"github.com/steambap/captcha"
@@ -66,10 +68,9 @@ func (app *appContext) pushResources(gc *gin.Context, page Page) {
 		toPush = []string{}
 	}
 	if pusher := gc.Writer.Pusher(); pusher != nil {
-		app.debug.Println("Using HTTP2 Server push")
 		for _, f := range toPush {
 			if err := pusher.Push(app.URLBase+f, nil); err != nil {
-				app.debug.Printf("Failed HTTP2 ServerPush of \"%s\": %+v", f, err)
+				app.debug.Printf(lm.FailedServerPush, err)
 			}
 		}
 	}
@@ -139,13 +140,13 @@ func (app *appContext) AdminPage(gc *gin.Context) {
 	var license string
 	l, err := fs.ReadFile(localFS, "LICENSE")
 	if err != nil {
-		app.debug.Printf("Failed to load LICENSE: %s", err)
+		app.debug.Printf(lm.FailedReading, "LICENSE", err)
 		license = ""
 	}
 	license = string(l)
 	fontLicense, err := fs.ReadFile(localFS, filepath.Join("web", "fonts", "OFL.txt"))
 	if err != nil {
-		app.debug.Printf("Failed to load OFL.txt: %s", err)
+		app.debug.Printf(lm.FailedReading, "fontLicense", err)
 	}
 
 	license += "---Hanken Grotesk---\n\n"
@@ -312,7 +313,7 @@ func (app *appContext) ResetPassword(gc *gin.Context) {
 	defer gcHTML(gc, http.StatusOK, "password-reset.html", data)
 	// If it's a bot, pretend to be a success so the preview is nice.
 	if isBot {
-		app.debug.Println("PWR: Ignoring magic link visit from bot")
+		app.debug.Println(lm.IgnoreBotPWR)
 		data["success"] = true
 		data["pin"] = "NO-BO-TS"
 		return
@@ -338,13 +339,13 @@ func (app *appContext) ResetPassword(gc *gin.Context) {
 	if !isInternal && !setPassword {
 		resp, status, err = app.jf.ResetPassword(pin)
 	} else if time.Now().After(pwr.Expiry) {
-		app.debug.Printf("Ignoring PWR request due to expired internal PIN: %s", pin)
+		app.debug.Printf(lm.FailedChangePassword, lm.Jellyfin, "?", fmt.Sprintf(lm.ExpiredPIN, pin))
 		app.NoRouteHandler(gc)
 		return
 	} else {
 		status, err = app.jf.ResetPasswordAdmin(pwr.ID)
 		if !(status == 200 || status == 204) || err != nil {
-			app.err.Printf("Password Reset failed (%d): %v", status, err)
+			app.err.Printf(lm.FailedChangePassword, lm.Jellyfin, "?", err)
 		} else {
 			status, err = app.jf.SetPassword(pwr.ID, "", pin)
 		}
@@ -358,7 +359,7 @@ func (app *appContext) ResetPassword(gc *gin.Context) {
 			username = resp.UsersReset[0]
 		}
 	} else {
-		app.err.Printf("Password Reset failed (%d): %v", status, err)
+		app.err.Printf(lm.FailedChangePassword, lm.Jellyfin, "?", err)
 	}
 
 	// Only log PWRs we know the user for.
@@ -378,21 +379,21 @@ func (app *appContext) ResetPassword(gc *gin.Context) {
 	if app.config.Section("ombi").Key("enabled").MustBool(false) {
 		jfUser, status, err := app.jf.UserByName(username, false)
 		if status != 200 || err != nil {
-			app.err.Printf("Failed to get user \"%s\" from jellyfin/emby (%d): %v", username, status, err)
+			app.err.Printf(lm.FailedGetUser, username, lm.Jellyfin, err)
 			return
 		}
 		ombiUser, status, err := app.getOmbiUser(jfUser.ID)
 		if status != 200 || err != nil {
-			app.err.Printf("Failed to get user \"%s\" from ombi (%d): %v", username, status, err)
+			app.err.Printf(lm.FailedGetUser, username, lm.Ombi, err)
 			return
 		}
 		ombiUser["password"] = pin
 		status, err = app.ombi.ModifyUser(ombiUser)
 		if status != 200 || err != nil {
-			app.err.Printf("Failed to set password for ombi user \"%s\" (%d): %v", ombiUser["userName"], status, err)
+			app.err.Printf(lm.FailedChangePassword, lm.Ombi, ombiUser["userName"], err)
 			return
 		}
-		app.debug.Printf("Reset password for ombi user \"%s\"", ombiUser["userName"])
+		app.debug.Printf(lm.ChangePassword, lm.Ombi, ombiUser["userName"])
 	}
 }
 
@@ -460,7 +461,7 @@ func (app *appContext) GenCaptcha(gc *gin.Context) {
 	}
 	capt, err := captcha.New(300, 100)
 	if err != nil {
-		app.err.Printf("Failed to generate captcha: %v", err)
+		app.err.Printf(lm.FailedGenerateCaptcha, err)
 		respondBool(500, false, gc)
 		return
 	}
@@ -470,7 +471,7 @@ func (app *appContext) GenCaptcha(gc *gin.Context) {
 	captchaID := genAuthToken()
 	var buf bytes.Buffer
 	if err := capt.WriteImage(bufio.NewWriter(&buf)); err != nil {
-		app.err.Printf("Failed to render captcha: %v", err)
+		app.err.Printf(lm.FailedGenerateCaptcha, err)
 		respondBool(500, false, gc)
 		return
 	}
@@ -503,8 +504,12 @@ func (app *appContext) verifyCaptcha(code, id, text string, isPWR bool) bool {
 		ok := true
 		if !isPWR {
 			inv, ok := app.storage.GetInvitesKey(code)
-			if !ok || (!isPWR && inv.Captchas == nil) {
-				app.debug.Printf("Couldn't find invite \"%s\"", code)
+			if !ok {
+				app.debug.Printf(lm.InvalidInviteCode, code)
+				return false
+			}
+			if !isPWR && inv.Captchas == nil {
+				app.debug.Printf(lm.CaptchaNotFound, id, code)
 				return false
 			}
 			c, ok = inv.Captchas[id]
@@ -512,7 +517,7 @@ func (app *appContext) verifyCaptcha(code, id, text string, isPWR bool) bool {
 			c, ok = app.pwrCaptchas[code]
 		}
 		if !ok {
-			app.debug.Printf("Couldn't find Captcha \"%s\"", id)
+			app.debug.Printf(lm.CaptchaNotFound, id, code)
 			return false
 		}
 		return strings.ToLower(c.Answer) == strings.ToLower(text)
@@ -534,8 +539,11 @@ func (app *appContext) verifyCaptcha(code, id, text string, isPWR bool) bool {
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
 	resp, err := http.DefaultClient.Do(req)
-	if err != nil || resp.StatusCode != 200 {
-		app.err.Printf("Failed to read reCAPTCHA status (%d): %+v\n", resp.Status, err)
+	if err == nil && resp.StatusCode != 200 {
+		err = fmt.Errorf("failed (error %d)", resp.StatusCode)
+	}
+	if err != nil {
+		app.err.Printf(lm.FailedVerifyReCAPTCHA, err)
 		return false
 	}
 	defer resp.Body.Close()
@@ -543,18 +551,19 @@ func (app *appContext) verifyCaptcha(code, id, text string, isPWR bool) bool {
 	body, err := io.ReadAll(resp.Body)
 	err = json.Unmarshal(body, &data)
 	if err != nil {
-		app.err.Printf("Failed to unmarshal reCAPTCHA response: %+v\n", err)
+		app.err.Printf(lm.FailedVerifyReCAPTCHA, err)
 		return false
 	}
 
 	hostname := app.config.Section("captcha").Key("recaptcha_hostname").MustString("")
 	if strings.ToLower(data.Hostname) != strings.ToLower(hostname) && data.Hostname != "" {
-		app.debug.Printf("Invalidating reCAPTCHA request: Hostnames didn't match (Wanted \"%s\", got \"%s\"\n", hostname, data.Hostname)
+		err = fmt.Errorf(lm.InvalidHostname, hostname, data.Hostname)
+		app.err.Printf(lm.FailedVerifyReCAPTCHA, err)
 		return false
 	}
 
 	if len(data.ErrorCodes) > 0 {
-		app.err.Printf("reCAPTCHA returned errors: %+v\n", data.ErrorCodes)
+		app.err.Printf(lm.AdditionalErrors, lm.ReCAPTCHA, data.ErrorCodes)
 		return false
 	}
 
@@ -651,20 +660,19 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 		token, err := jwt.Parse(key, checkToken)
 		if err != nil {
 			fail()
-			app.err.Printf("Failed to parse key: %s", err)
+			app.debug.Printf(lm.FailedParseJWT, err)
 			return
 		}
 		claims, ok := token.Claims.(jwt.MapClaims)
 		expiry := time.Unix(int64(claims["exp"].(float64)), 0)
 		if !(ok && token.Valid && claims["invite"].(string) == code && claims["type"].(string) == "confirmation" && expiry.After(time.Now())) {
 			fail()
-			app.debug.Printf("Invalid key")
+			app.debug.Printf(lm.InvalidJWT)
 			return
 		}
 		f, success := app.newUser(req, true, gc)
 		if !success {
-			app.err.Printf("Failed to create new user")
-			// Not meant for us. Calling this will be a mess, but at least it might give us some information.
+			// Not meant for us. Calling this is bad but at least gives us log output.
 			f(gc)
 			fail()
 			return

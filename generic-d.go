@@ -1,6 +1,10 @@
 package main
 
-import "time"
+import (
+	"time"
+
+	lm "github.com/hrfee/jfa-go/logmessages"
+)
 
 // https://bbengfort.github.io/snippets/2016/06/26/background-work-goroutines-timer.html THANKS
 
@@ -36,7 +40,7 @@ func NewGenericDaemon(interval time.Duration, app *appContext, jobs ...func(app 
 func (d *GenericDaemon) Name(name string) { d.name = name }
 
 func (d *GenericDaemon) run() {
-	d.app.info.Printf("%s started", d.name)
+	d.app.info.Printf(lm.StartDaemon, d.name)
 	for {
 		select {
 		case <-d.ShutdownChannel:

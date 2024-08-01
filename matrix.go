@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/gomarkdown/markdown"
+	lm "github.com/hrfee/jfa-go/logmessages"
 	"github.com/timshannon/badgerhold/v4"
 	"maunium.net/go/mautrix"
 	"maunium.net/go/mautrix/event"
@@ -118,13 +119,13 @@ func (d *MatrixDaemon) generateAccessToken(homeserver, username, password string
 
 func (d *MatrixDaemon) run() {
 	startTime := d.start
-	d.app.info.Println("Starting Matrix bot daemon")
+	d.app.info.Println(lm.StartDaemon, lm.Matrix)
 	syncer := d.bot.Syncer.(*mautrix.DefaultSyncer)
 	HandleSyncerCrypto(startTime, d, syncer)
 	syncer.OnEventType(event.EventMessage, d.handleMessage)
 
 	if err := d.bot.Sync(); err != nil {
-		d.app.err.Printf("Matrix sync failed: %v", err)
+		d.app.err.Printf(lm.FailedSyncMatrix, err)
 	}
 }
 
@@ -170,7 +171,7 @@ func (d *MatrixDaemon) commandLang(evt *event.Event, code, lang string) {
 			list,
 		)
 		if err != nil {
-			d.app.err.Printf("Matrix: Failed to send message to \"%s\": %v", evt.Sender, err)
+			d.app.err.Printf(lm.FailedReply, lm.Matrix, evt.Sender, err)
 		}
 		return
 	}
@@ -203,7 +204,7 @@ func (d *MatrixDaemon) CreateRoom(userID string) (roomID id.RoomID, encrypted bo
 func (d *MatrixDaemon) SendStart(userID string) (ok bool) {
 	roomID, encrypted, err := d.CreateRoom(userID)
 	if err != nil {
-		d.app.err.Printf("Failed to create room for user \"%s\": %v", userID, err)
+		d.app.err.Printf(lm.FailedCreateMatrixRoom, userID, err)
 		return
 	}
 	lang := "en-us"
@@ -226,7 +227,7 @@ func (d *MatrixDaemon) SendStart(userID string) (ok bool) {
 		roomID,
 	)
 	if err != nil {
-		d.app.err.Printf("Matrix: Failed to send welcome message to \"%s\": %v", userID, err)
+		d.app.err.Printf(lm.FailedMessage, lm.Matrix, userID, err)
 		return
 	}
 	ok = true

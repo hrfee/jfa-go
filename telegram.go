@@ -7,6 +7,7 @@ import (
 	"time"
 
 	tg "github.com/go-telegram-bot-api/telegram-bot-api"
+	lm "github.com/hrfee/jfa-go/logmessages"
 	"github.com/timshannon/badgerhold/v4"
 )
 
@@ -96,12 +97,12 @@ func (t *TelegramDaemon) NewAssignedAuthToken(id string) string {
 }
 
 func (t *TelegramDaemon) run() {
-	t.app.info.Println("Starting Telegram bot daemon")
+	t.app.info.Println(lm.StartDaemon, lm.Telegram)
 	u := tg.NewUpdate(0)
 	u.Timeout = 60
 	updates, err := t.bot.GetUpdatesChan(u)
 	if err != nil {
-		t.app.err.Printf("Failed to start Telegram daemon: %v", err)
+		t.app.err.Printf(lm.FailedStartDaemon, lm.Telegram, err)
 		telegramEnabled = false
 		return
 	}
@@ -199,7 +200,7 @@ func (t *TelegramDaemon) commandStart(upd *tg.Update, sects []string, lang strin
 	content += t.app.storage.lang.Telegram[lang].Strings.template("languageMessage", tmpl{"command": "/lang"})
 	err := t.Reply(upd, content)
 	if err != nil {
-		t.app.err.Printf("Telegram: Failed to send message to \"%s\": %v", upd.Message.From.UserName, err)
+		t.app.err.Printf(lm.FailedReply, lm.Telegram, upd.Message.From.UserName, err)
 	}
 }
 
@@ -211,7 +212,7 @@ func (t *TelegramDaemon) commandLang(upd *tg.Update, sects []string, lang string
 		}
 		err := t.Reply(upd, list)
 		if err != nil {
-			t.app.err.Printf("Telegram: Failed to send message to \"%s\": %v", upd.Message.From.UserName, err)
+			t.app.err.Printf(lm.FailedReply, lm.Telegram, upd.Message.From.UserName, err)
 		}
 		return
 	}
@@ -232,14 +233,14 @@ func (t *TelegramDaemon) commandPIN(upd *tg.Update, sects []string, lang string)
 	if !ok || time.Now().After(token.Expiry) {
 		err := t.QuoteReply(upd, t.app.storage.lang.Telegram[lang].Strings.get("invalidPIN"))
 		if err != nil {
-			t.app.err.Printf("Telegram: Failed to send message to \"%s\": %v", upd.Message.From.UserName, err)
+			t.app.err.Printf(lm.FailedReply, lm.Telegram, upd.Message.From.UserName, err)
 		}
 		delete(t.tokens, upd.Message.Text)
 		return
 	}
 	err := t.QuoteReply(upd, t.app.storage.lang.Telegram[lang].Strings.get("pinSuccess"))
 	if err != nil {
-		t.app.err.Printf("Telegram: Failed to send message to \"%s\": %v", upd.Message.From.UserName, err)
+		t.app.err.Printf(lm.FailedReply, lm.Telegram, upd.Message.From.UserName, err)
 	}
 	t.verifiedTokens[upd.Message.Text] = TelegramVerifiedToken{
 		ChatID:     upd.Message.Chat.ID,

@@ -9,6 +9,8 @@ import (
 	"gopkg.in/ini.v1"
 )
 
+// NOTE: This is the one file where log messages are not part of logmessages/logmessages.go
+
 func runMigrations(app *appContext) {
 	migrateProfiles(app)
 	migrateBootstrap(app)

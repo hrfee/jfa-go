@@ -91,7 +91,7 @@ func (app *appContext) NewUserAdmin(gc *gin.Context) {
 		errors, code, err := app.ombi.NewUser(req.Username, req.Password, req.Email, profile.Ombi)
 		if err != nil || code != 200 {
 			app.err.Printf(lm.FailedCreateUser, lm.Ombi, req.Username, err)
-			app.debug.Printf(lm.AdditionalOmbiErrors, strings.Join(errors, ", "))
+			app.debug.Printf(lm.AdditionalErrors, lm.Ombi, strings.Join(errors, ", "))
 		} else {
 			app.info.Printf(lm.CreateUser, lm.Ombi, req.Username)
 		}
@@ -465,7 +465,7 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool, gc *gin.Context) 
 					}
 				} else {
 					app.info.Printf(lm.FailedCreateUser, lm.Ombi, req.Username, err)
-					app.debug.Printf(lm.AdditionalOmbiErrors, strings.Join(errors, ", "))
+					app.debug.Printf(lm.AdditionalErrors, lm.Ombi, strings.Join(errors, ", "))
 				}
 			} else {
 				ombiUser, status, err = app.getOmbiUser(id)
@@ -490,7 +490,7 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool, gc *gin.Context) 
 					resp, status, err := app.ombi.SetNotificationPrefs(ombiUser, dID, tUser)
 					if !(status == 200 || status == 204) || err != nil {
 						app.err.Printf(lm.FailedSyncContactMethods, lm.Ombi, err)
-						app.debug.Printf(lm.AdditionalOmbiErrors, resp)
+						app.debug.Printf(lm.AdditionalErrors, lm.Ombi, resp)
 					}
 				}
 			}

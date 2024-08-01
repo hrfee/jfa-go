@@ -1,10 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	lm "github.com/hrfee/jfa-go/logmessages"
 	"github.com/hrfee/mediabrowser"
 	"github.com/itchyny/timefmt-go"
 	"github.com/lithammer/shortuuid/v3"
@@ -122,14 +124,14 @@ func (app *appContext) ResetSetPassword(gc *gin.Context) {
 		}
 	}
 	if !valid || req.PIN == "" {
-		app.info.Printf("%s: Password reset failed: Invalid password", req.PIN)
+		app.info.Printf(lm.FailedChangePassword, lm.Jellyfin, "?", lm.InvalidPassword)
 		gc.JSON(400, validation)
 		return
 	}
 	isInternal := false
 
 	if captcha && !app.verifyCaptcha(req.PIN, req.PIN, req.CaptchaText, true) {
-		app.info.Printf("%s: PWR Failed: Captcha Incorrect", req.PIN)
+		app.info.Printf(lm.FailedChangePassword, lm.Jellyfin, "?", lm.IncorrectCaptcha)
 		respond(400, "errorCaptcha", gc)
 		return
 	}
@@ -138,7 +140,7 @@ func (app *appContext) ResetSetPassword(gc *gin.Context) {
 	if reset, ok := app.internalPWRs[req.PIN]; ok {
 		isInternal = true
 		if time.Now().After(reset.Expiry) {
-			app.info.Printf("Password reset failed: PIN \"%s\" has expired", reset.PIN)
+			app.info.Printf(lm.FailedChangePassword, lm.Jellyfin, "?", fmt.Sprintf(lm.ExpiredPIN, reset.PIN))
 			respondBool(401, false, gc)
 			delete(app.internalPWRs, req.PIN)
 			return
@@ -148,7 +150,7 @@ func (app *appContext) ResetSetPassword(gc *gin.Context) {
 
 		status, err := app.jf.ResetPasswordAdmin(userID)
 		if !(status == 200 || status == 204) || err != nil {
-			app.err.Printf("Password Reset failed (%d): %v", status, err)
+			app.err.Printf(lm.FailedChangePassword, lm.Jellyfin, userID, err)
 			respondBool(status, false, gc)
 			return
 		}
@@ -156,7 +158,7 @@ func (app *appContext) ResetSetPassword(gc *gin.Context) {
 	} else {
 		resp, status, err := app.jf.ResetPassword(req.PIN)
 		if status != 200 || err != nil || !resp.Success {
-			app.err.Printf("Password Reset failed (%d): %v", status, err)
+			app.err.Printf(lm.FailedChangePassword, lm.Jellyfin, userID, err)
 			respondBool(status, false, gc)
 			return
 		}
@@ -176,7 +178,7 @@ func (app *appContext) ResetSetPassword(gc *gin.Context) {
 		user, status, err = app.jf.UserByName(username, false)
 	}
 	if status != 200 || err != nil {
-		app.err.Printf("Failed to get user \"%s\" (%d): %v", username, status, err)
+		app.err.Printf(lm.FailedGetUser, userID, lm.Jellyfin, err)
 		respondBool(500, false, gc)
 		return
 	}
@@ -195,31 +197,33 @@ func (app *appContext) ResetSetPassword(gc *gin.Context) {
 	}
 	status, err = app.jf.SetPassword(user.ID, prevPassword, req.Password)
 	if !(status == 200 || status == 204) || err != nil {
-		app.err.Printf("Failed to change password for \"%s\" (%d): %v", username, status, err)
+		app.err.Printf(lm.FailedChangePassword, lm.Jellyfin, user.ID, err)
 		respondBool(500, false, gc)
 		return
 	}
 	if app.config.Section("ombi").Key("enabled").MustBool(false) {
-		// Silently fail for changing ombi passwords
+		// This makes no sense so has been commented out.
+		// It probably did at some point in the past.
+		/* Silently fail for changing ombi passwords
 		if (status != 200 && status != 204) || err != nil {
-			app.err.Printf("Failed to get user \"%s\" from jellyfin/emby (%d): %v", username, status, err)
+			app.err.Printf(lm.FailedGetUser, user.ID, lm.Jellyfin, err)
 			respondBool(200, true, gc)
 			return
-		}
+		} */
 		ombiUser, status, err := app.getOmbiUser(user.ID)
 		if status != 200 || err != nil {
-			app.err.Printf("Failed to get user \"%s\" from ombi (%d): %v", username, status, err)
+			app.err.Printf(lm.FailedGetUser, user.ID, lm.Ombi, err)
 			respondBool(200, true, gc)
 			return
 		}
 		ombiUser["password"] = req.Password
 		status, err = app.ombi.ModifyUser(ombiUser)
 		if status != 200 || err != nil {
-			app.err.Printf("Failed to set password for ombi user \"%s\" (%d): %v", ombiUser["userName"], status, err)
+			app.err.Printf(lm.FailedChangePassword, lm.Ombi, user.ID, err)
 			respondBool(200, true, gc)
 			return
 		}
-		app.debug.Printf("Reset password for ombi user \"%s\"", ombiUser["userName"])
+		app.debug.Printf(lm.ChangePassword, lm.Ombi, user.ID)
 	}
 	respondBool(200, true, gc)
 }
@@ -231,7 +235,6 @@ func (app *appContext) ResetSetPassword(gc *gin.Context) {
 // @Security Bearer
 // @tags Configuration
 func (app *appContext) GetConfig(gc *gin.Context) {
-	app.info.Println("Config requested")
 	resp := app.configBase
 	// Load language options
 	formOptions := app.storage.lang.User.getOptions()
@@ -341,7 +344,6 @@ func (app *appContext) GetConfig(gc *gin.Context) {
 // @Security Bearer
 // @tags Configuration
 func (app *appContext) ModifyConfig(gc *gin.Context) {
-	app.info.Println("Config modification requested")
 	var req configDTO
 	gc.BindJSON(&req)
 	// Load a new config, as we set various default values in app.config that shouldn't be stored.
@@ -366,26 +368,18 @@ func (app *appContext) ModifyConfig(gc *gin.Context) {
 	}
 	tempConfig.Section("").Key("first_run").SetValue("false")
 	if err := tempConfig.SaveTo(app.configPath); err != nil {
-		app.err.Printf("Failed to save config to \"%s\": %v", app.configPath, err)
+		app.err.Printf(lm.FailedWriting, app.configPath, err)
 		respond(500, err.Error(), gc)
 		return
 	}
-	app.debug.Println("Config saved")
+	app.info.Printf(lm.ModifyConfig, app.configPath)
 	gc.JSON(200, map[string]bool{"success": true})
 	if req["restart-program"] != nil && req["restart-program"].(bool) {
-		app.info.Println("Restarting...")
-		if TRAY {
-			TRAYRESTART <- true
-		} else {
-			RESTART <- true
-		}
-		// Safety Sleep (Ensure shutdown tasks get done)
-		time.Sleep(time.Second)
+		app.Restart()
 	}
 	app.loadConfig()
 	// Reinitialize password validator on config change, as opposed to every applicable request like in python.
 	if _, ok := req["password_validation"]; ok {
-		app.debug.Println("Reinitializing validator")
 		validatorConf := ValidatorConf{
 			"length":    app.config.Section("password_validation").Key("min_length").MustInt(0),
 			"uppercase": app.config.Section("password_validation").Key("upper").MustInt(0),
@@ -425,12 +419,13 @@ func (app *appContext) CheckUpdate(gc *gin.Context) {
 // @tags Configuration
 func (app *appContext) ApplyUpdate(gc *gin.Context) {
 	if !app.update.CanUpdate {
-		respond(400, "Update is manual", gc)
+		app.info.Printf(lm.FailedApplyUpdate, lm.UpdateManual)
+		respond(400, lm.UpdateManual, gc)
 		return
 	}
 	err := app.update.update()
 	if err != nil {
-		app.err.Printf("Failed to apply update: %v", err)
+		app.err.Printf(lm.FailedApplyUpdate, err)
 		respondBool(500, false, gc)
 		return
 	}
@@ -452,8 +447,9 @@ func (app *appContext) ApplyUpdate(gc *gin.Context) {
 func (app *appContext) Logout(gc *gin.Context) {
 	cookie, err := gc.Cookie("refresh")
 	if err != nil {
-		app.debug.Printf("Couldn't get cookies: %s", err)
-		respond(500, "Couldn't fetch cookies", gc)
+		msg := fmt.Sprintf(lm.FailedGetCookies, "refresh", err)
+		app.debug.Println(msg)
+		respond(500, msg, gc)
 		return
 	}
 	app.invalidTokens = append(app.invalidTokens, cookie)
@@ -526,11 +522,7 @@ func (app *appContext) ServeLang(gc *gin.Context) {
 // @Security Bearer
 // @tags Other
 func (app *appContext) restart(gc *gin.Context) {
-	app.info.Println("Restarting...")
-	err := app.Restart()
-	if err != nil {
-		app.err.Printf("Couldn't restart, try restarting manually: %v", err)
-	}
+	app.Restart()
 }
 
 // @Summary Returns the last 100 lines of the log.
@@ -544,6 +536,7 @@ func (app *appContext) GetLog(gc *gin.Context) {
 
 // no need to syscall.exec anymore!
 func (app *appContext) Restart() error {
+	app.info.Println(lm.Restarting)
 	if TRAY {
 		TRAYRESTART <- true
 	} else {

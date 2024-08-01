@@ -5,20 +5,21 @@ import (
 	"time"
 
 	"github.com/hrfee/jfa-go/jellyseerr"
+	lm "github.com/hrfee/jfa-go/logmessages"
 )
 
 func (app *appContext) SynchronizeJellyseerrUser(jfID string) {
 	user, imported, err := app.js.GetOrImportUser(jfID)
 	if err != nil {
-		app.debug.Printf("Failed to get or trigger import for Jellyseerr (user \"%s\"): %v", jfID, err)
+		app.debug.Printf(lm.FailedMustGetJellyseerrUser, jfID, err)
 		return
 	}
 	if imported {
-		app.debug.Printf("Jellyseerr: Triggered import for Jellyfin user \"%s\" (ID %d)", jfID, user.ID)
+		app.debug.Printf(lm.ImportJellyseerrUser, jfID, user.ID)
 	}
 	notif, err := app.js.GetNotificationPreferencesByID(user.ID)
 	if err != nil {
-		app.debug.Printf("Failed to get notification prefs for Jellyseerr (user \"%s\"): %v", jfID, err)
+		app.debug.Printf(lm.FailedGetJellyseerrNotificationPrefs, jfID, err)
 		return
 	}
 
@@ -27,7 +28,7 @@ func (app *appContext) SynchronizeJellyseerrUser(jfID string) {
 	if ok && email.Addr != "" && user.Email != email.Addr {
 		err = app.js.ModifyMainUserSettings(jfID, jellyseerr.MainUserSettings{Email: email.Addr})
 		if err != nil {
-			app.err.Printf("Failed to set Jellyseerr email address: %v\n", err)
+			app.err.Printf(lm.FailedSetEmailAddress, lm.Jellyseerr, jfID, err)
 		} else {
 			contactMethods[jellyseerr.FieldEmailEnabled] = email.Contact
 		}
@@ -51,7 +52,7 @@ func (app *appContext) SynchronizeJellyseerrUser(jfID string) {
 	if len(contactMethods) != 0 {
 		err := app.js.ModifyNotifications(jfID, contactMethods)
 		if err != nil {
-			app.err.Printf("Failed to sync contact methods with Jellyseerr: %v", err)
+			app.err.Printf(lm.FailedSyncContactMethods, lm.Jellyseerr, err)
 		}
 	}
 }
@@ -59,7 +60,7 @@ func (app *appContext) SynchronizeJellyseerrUser(jfID string) {
 func (app *appContext) SynchronizeJellyseerrUsers() {
 	users, status, err := app.jf.GetUsers(false)
 	if err != nil || status != 200 {
-		app.err.Printf("Failed to get users (%d): %s", status, err)
+		app.err.Printf(lm.FailedGetUsers, lm.Jellyfin, err)
 		return
 	}
 	// I'm sure Jellyseerr can handle it,

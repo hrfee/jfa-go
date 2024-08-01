@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/dgraph-io/badger/v3"
+	lm "github.com/hrfee/jfa-go/logmessages"
 	"github.com/hrfee/mediabrowser"
 	"github.com/timshannon/badgerhold/v4"
 )
@@ -12,7 +13,7 @@ import (
 // meant to be called with other such housekeeping functions, so assumes
 // the user cache is fresh.
 func (app *appContext) clearEmails() {
-	app.debug.Println("Housekeeping: removing unused email addresses")
+	app.debug.Println(lm.HousekeepingEmail)
 	emails := app.storage.GetEmails()
 	for _, email := range emails {
 		_, _, err := app.jf.UserByID(email.JellyfinID, false)
@@ -28,7 +29,7 @@ func (app *appContext) clearEmails() {
 
 // clearDiscord does the same as clearEmails, but for Discord Users.
 func (app *appContext) clearDiscord() {
-	app.debug.Println("Housekeeping: removing unused Discord IDs")
+	app.debug.Println(lm.HousekeepingDiscord)
 	discordUsers := app.storage.GetDiscord()
 	for _, discordUser := range discordUsers {
 		_, _, err := app.jf.UserByID(discordUser.JellyfinID, false)
@@ -44,7 +45,7 @@ func (app *appContext) clearDiscord() {
 
 // clearMatrix does the same as clearEmails, but for Matrix Users.
 func (app *appContext) clearMatrix() {
-	app.debug.Println("Housekeeping: removing unused Matrix IDs")
+	app.debug.Println(lm.HousekeepingMatrix)
 	matrixUsers := app.storage.GetMatrix()
 	for _, matrixUser := range matrixUsers {
 		_, _, err := app.jf.UserByID(matrixUser.JellyfinID, false)
@@ -60,7 +61,7 @@ func (app *appContext) clearMatrix() {
 
 // clearTelegram does the same as clearEmails, but for Telegram Users.
 func (app *appContext) clearTelegram() {
-	app.debug.Println("Housekeeping: removing unused Telegram IDs")
+	app.debug.Println(lm.HousekeepingTelegram)
 	telegramUsers := app.storage.GetTelegram()
 	for _, telegramUser := range telegramUsers {
 		_, _, err := app.jf.UserByID(telegramUser.JellyfinID, false)
@@ -75,7 +76,7 @@ func (app *appContext) clearTelegram() {
 }
 
 func (app *appContext) clearPWRCaptchas() {
-	app.debug.Println("Housekeeping: Clearing old PWR Captchas")
+	app.debug.Println(lm.HousekeepingCaptcha)
 	captchas := map[string]Captcha{}
 	for k, capt := range app.pwrCaptchas {
 		if capt.Generated.Add(CAPTCHA_VALIDITY * time.Second).After(time.Now()) {
@@ -86,7 +87,7 @@ func (app *appContext) clearPWRCaptchas() {
 }
 
 func (app *appContext) clearActivities() {
-	app.debug.Println("Housekeeping: Cleaning up Activity log...")
+	app.debug.Println(lm.HousekeepingActivity)
 	keepCount := app.config.Section("activity_log").Key("keep_n_records").MustInt(1000)
 	maxAgeDays := app.config.Section("activity_log").Key("delete_after_days").MustInt(90)
 	minAge := time.Now().AddDate(0, 0, -maxAgeDays)
@@ -103,7 +104,7 @@ func (app *appContext) clearActivities() {
 		}
 	}
 	if err == badger.ErrTxnTooBig {
-		app.debug.Printf("Activities: Delete txn was too big, doing it manually.")
+		app.debug.Printf(lm.AcitivityLogTxnTooBig)
 		list := []Activity{}
 		if errorSource == 0 {
 			app.storage.db.Find(&list, badgerhold.Where("Time").Lt(minAge))
@@ -119,7 +120,7 @@ func (app *appContext) clearActivities() {
 func newHousekeepingDaemon(interval time.Duration, app *appContext) *GenericDaemon {
 	d := NewGenericDaemon(interval, app,
 		func(app *appContext) {
-			app.debug.Println("Housekeeping: Checking for expired invites")
+			app.debug.Println(lm.HousekeepingInvites)
 			app.checkInvites()
 		},
 		func(app *appContext) { app.clearActivities() },

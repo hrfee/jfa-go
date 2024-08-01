@@ -20,6 +20,7 @@ import (
 	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/html"
 	"github.com/hrfee/jfa-go/easyproxy"
+	lm "github.com/hrfee/jfa-go/logmessages"
 	"github.com/hrfee/mediabrowser"
 	"github.com/itchyny/timefmt-go"
 	"github.com/mailgun/mailgun-go/v4"
@@ -95,7 +96,7 @@ func NewEmailer(app *appContext) *Emailer {
 		authType := sMail.AuthType(app.config.Section("smtp").Key("auth_type").MustInt(4))
 		err := emailer.NewSMTP(app.config.Section("smtp").Key("server").String(), app.config.Section("smtp").Key("port").MustInt(465), username, password, sslTLS, app.config.Section("smtp").Key("ssl_cert").MustString(""), app.config.Section("smtp").Key("hello_hostname").String(), app.config.Section("smtp").Key("cert_validation").MustBool(true), authType, proxyConf)
 		if err != nil {
-			app.err.Printf("Error while initiating SMTP mailer: %v", err)
+			app.err.Printf(lm.FailedInitSMTP, err)
 		}
 	} else if method == "mailgun" {
 		emailer.NewMailgun(app.config.Section("mailgun").Key("api_url").String(), app.config.Section("mailgun").Key("api_key").String())
@@ -580,7 +581,7 @@ func (emailer *Emailer) resetValues(pwr PasswordReset, app *appContext, noSub bo
 				// Only used in html email.
 				template["pin_code"] = pwr.Pin
 			} else {
-				app.info.Println("Couldn't generate PWR link: %v", err)
+				app.info.Println(lm.FailedGeneratePWRLink, err)
 				template["pin"] = pwr.Pin
 			}
 		} else {

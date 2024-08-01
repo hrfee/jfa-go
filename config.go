@@ -7,8 +7,10 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/hrfee/jfa-go/easyproxy"
+	lm "github.com/hrfee/jfa-go/logmessages"
 	"gopkg.in/ini.v1"
 )
 
@@ -140,7 +142,7 @@ func (app *appContext) loadConfig() error {
 		}
 	}
 	if allDisabled {
-		fmt.Println("SETALLTRUE")
+		app.info.Println(lm.EnableAllPWRMethods)
 		for _, v := range pwrMethods {
 			app.config.Section("user_page").Key(v).SetValue("true")
 		}
@@ -175,9 +177,15 @@ func (app *appContext) loadConfig() error {
 		app.proxyConfig.Password = app.config.Section("advanced").Key("proxy_password").MustString("")
 		app.proxyTransport, err = easyproxy.NewTransport(app.proxyConfig)
 		if err != nil {
-			app.err.Printf("Failed to initialize Proxy: %v\n", err)
+			app.err.Printf(lm.FailedInitProxy, app.proxyConfig.Addr, err)
+			// As explained in lm.FailedInitProxy, sleep here might grab the admin's attention,
+			// Since we don't crash on this failing.
+			time.Sleep(15 * time.Second)
+			app.proxyEnabled = false
+		} else {
+			app.proxyEnabled = true
+			app.info.Printf(lm.InitProxy, app.proxyConfig.Addr)
 		}
-		app.proxyEnabled = true
 	}
 
 	app.MustSetValue("updates", "enabled", "true")

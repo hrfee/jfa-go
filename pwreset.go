@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/fsnotify/fsnotify"
+	lm "github.com/hrfee/jfa-go/logmessages"
 )
 
 // GenInternalReset generates a local password reset PIN, for use with the PWR option on the Admin page.
@@ -39,16 +40,16 @@ func (app *appContext) GenResetLink(pin string) (string, error) {
 }
 
 func (app *appContext) StartPWR() {
-	app.info.Println("Starting password reset daemon")
+	app.info.Println(lm.StartDaemon, "PWR")
 	path := app.config.Section("password_resets").Key("watch_directory").String()
 	if _, err := os.Stat(path); os.IsNotExist(err) {
-		app.err.Printf("Failed to start password reset daemon: Directory \"%s\" doesn't exist", path)
+		app.err.Printf(lm.FailedStartDaemon, "PWR", fmt.Sprintf(lm.PathNotFound, path))
 		return
 	}
 
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		app.err.Printf("Couldn't initialise password reset daemon")
+		app.err.Printf(lm.FailedStartDaemon, "PWR", err)
 		return
 	}
 	defer watcher.Close()
@@ -56,7 +57,7 @@ func (app *appContext) StartPWR() {
 	go pwrMonitor(app, watcher)
 	err = watcher.Add(path)
 	if err != nil {
-		app.err.Printf("Failed to start password reset daemon: %s", err)
+		app.err.Printf(lm.FailedStartDaemon, "PWR", err)
 	}
 
 	waitForRestart()
@@ -84,43 +85,36 @@ func pwrMonitor(app *appContext, watcher *fsnotify.Watcher) {
 				var pwr PasswordReset
 				data, err := os.ReadFile(event.Name)
 				if err != nil {
-					app.debug.Printf("PWR: Failed to read file: %v", err)
+					app.debug.Printf(lm.FailedReading, event.Name, err)
 					return
 				}
 				err = json.Unmarshal(data, &pwr)
 				if len(pwr.Pin) == 0 || err != nil {
-					app.debug.Printf("PWR: Failed to read PIN: %v", err)
+					app.debug.Printf(lm.FailedReading, event.Name, err)
 					continue
 				}
 				app.info.Printf("New password reset for user \"%s\"", pwr.Username)
 				if currentTime := time.Now(); pwr.Expiry.After(currentTime) {
 					user, status, err := app.jf.UserByName(pwr.Username, false)
-					if !(status == 200 || status == 204) || err != nil {
-						app.err.Printf("Failed to get users from Jellyfin: Code %d", status)
-						app.debug.Printf("Error: %s", err)
+					if !(status == 200 || status == 204) || err != nil || user.ID == "" {
+						app.err.Printf(lm.FailedGetUser, pwr.Username, lm.Jellyfin, err)
 						return
 					}
 					uid := user.ID
-					if uid == "" {
-						app.err.Printf("Couldn't get user ID for user \"%s\"", pwr.Username)
-						return
-					}
 					name := app.getAddressOrName(uid)
 					if name != "" {
 						msg, err := app.email.constructReset(pwr, app, false)
 
 						if err != nil {
-							app.err.Printf("Failed to construct password reset message for \"%s\"", pwr.Username)
-							app.debug.Printf("%s: Error: %s", pwr.Username, err)
+							app.err.Printf(lm.FailedConstructPWRMessage, pwr.Username, err)
 						} else if err := app.sendByID(msg, uid); err != nil {
-							app.err.Printf("Failed to send password reset message to \"%s\"", name)
-							app.debug.Printf("%s: Error: %s", pwr.Username, err)
+							app.err.Printf(lm.FailedSendPWRMessage, pwr.Username, name, err)
 						} else {
-							app.info.Printf("Sent password reset message to \"%s\"", name)
+							app.err.Printf(lm.SentPWRMessage, pwr.Username, name)
 						}
 					}
 				} else {
-					app.err.Printf("Password reset for user \"%s\" has already expired (%s). Check your time settings.", pwr.Username, pwr.Expiry)
+					app.err.Printf(lm.PWRExpired, pwr.Username, pwr.Expiry)
 				}
 
 			}
@@ -128,7 +122,7 @@ func pwrMonitor(app *appContext, watcher *fsnotify.Watcher) {
 			if !ok {
 				return
 			}
-			app.err.Printf("Password reset daemon: %s", err)
+			app.err.Printf(lm.FailedStartDaemon, "PWR", err)
 		}
 	}
 }

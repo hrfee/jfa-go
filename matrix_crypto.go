@@ -1,10 +1,13 @@
+//go:build e2ee
 // +build e2ee
 
 package main
 
 import (
+	"fmt"
 	"strings"
 
+	lm "github.com/hrfee/jfa-go/logmessages"
 	"maunium.net/go/mautrix"
 	"maunium.net/go/mautrix/crypto"
 	"maunium.net/go/mautrix/event"
@@ -65,22 +68,22 @@ type olmLogger struct {
 }
 
 func (o olmLogger) Error(message string, args ...interface{}) {
-	o.app.err.Printf("OLM: "+message+"\n", args)
+	o.app.err.Printf(lm.MatrixOlmLog, fmt.Sprintf(message, args))
 }
 
 func (o olmLogger) Warn(message string, args ...interface{}) {
-	o.app.info.Printf("OLM: "+message+"\n", args)
+	o.app.info.Printf(lm.MatrixOlmLog, fmt.Sprintf(message, args))
 }
 
 func (o olmLogger) Debug(message string, args ...interface{}) {
-	o.app.debug.Printf("OLM: "+message+"\n", args)
+	o.app.debug.Printf(lm.MatrixOlmLog, fmt.Sprintf(message, args))
 }
 
 func (o olmLogger) Trace(message string, args ...interface{}) {
 	if strings.HasPrefix(message, "Got membership state event") {
 		return
 	}
-	o.app.debug.Printf("OLM [TRACE]: "+message+"\n", args)
+	o.app.debug.Printf(lm.MatrixOlmTracelog, fmt.Sprintf(message, args))
 }
 
 func InitMatrixCrypto(d *MatrixDaemon) (err error) {
@@ -155,7 +158,7 @@ func HandleSyncerCrypto(startTime int64, d *MatrixDaemon, syncer *mautrix.Defaul
 		// 	return
 		// }
 		if err != nil {
-			d.app.err.Printf("Failed to decrypt Matrix message: %v", err)
+			d.app.err.Printf(lm.FailedDecryptMatrixMessage, err)
 			return
 		}
 		d.handleMessage(source, decrypted)
@@ -180,7 +183,7 @@ func EncryptRoom(d *MatrixDaemon, room *mautrix.RespCreateRoom, userID id.UserID
 	if err == nil {
 		encrypted = true
 	} else {
-		d.app.debug.Printf("Matrix: Failed to enable encryption in room: %v", err)
+		d.app.debug.Printf(lm.FailedEnableMatrixEncryption, room.RoomID, err)
 		return
 	}
 	d.isEncrypted[room.RoomID] = encrypted

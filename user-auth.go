@@ -1,9 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	lm "github.com/hrfee/jfa-go/logmessages"
 )
 
 func (app *appContext) userAuth() gin.HandlerFunc {
@@ -13,7 +15,7 @@ func (app *appContext) userAuth() gin.HandlerFunc {
 func (app *appContext) userAuthenticate(gc *gin.Context) {
 	jellyfinLogin := app.config.Section("ui").Key("jellyfin_login").MustBool(true)
 	if !jellyfinLogin {
-		app.err.Println("Enable Jellyfin Login to use the User Page feature.")
+		app.err.Printf(lm.FailedAuthRequest, lm.UserPageRequiresJellyfinAuth)
 		respond(500, "Contact Admin", gc)
 		return
 	}
@@ -27,7 +29,6 @@ func (app *appContext) userAuthenticate(gc *gin.Context) {
 
 	gc.Set("jfId", jfID)
 	gc.Set("userMode", true)
-	app.debug.Println("Auth succeeded")
 	gc.Next()
 }
 
@@ -41,11 +42,11 @@ func (app *appContext) userAuthenticate(gc *gin.Context) {
 // @Security getUserTokenAuth
 func (app *appContext) getUserTokenLogin(gc *gin.Context) {
 	if !app.config.Section("ui").Key("jellyfin_login").MustBool(true) {
-		app.err.Println("Enable Jellyfin Login to use the User Page feature.")
+		app.err.Printf(lm.FailedAuthRequest, lm.UserPageRequiresJellyfinAuth)
 		respond(500, "Contact Admin", gc)
 		return
 	}
-	app.logIpInfo(gc, true, "UserToken requested (login attempt)")
+	app.logIpInfo(gc, true, fmt.Sprintf(lm.RequestingToken, lm.UserTokenLoginAttempt))
 	username, password, ok := app.decodeValidateLoginHeader(gc, true)
 	if !ok {
 		return
@@ -58,12 +59,11 @@ func (app *appContext) getUserTokenLogin(gc *gin.Context) {
 
 	token, refresh, err := CreateToken(user.ID, user.ID, false)
 	if err != nil {
-		app.err.Printf("getUserToken failed: Couldn't generate user token (%s)", err)
+		app.err.Printf(lm.FailedGenerateToken, err)
 		respond(500, "Couldn't generate user token", gc)
 		return
 	}
 
-	app.debug.Printf("Token generated for non-admin user \"%s\"", username)
 	uri := "/my"
 	if strings.HasPrefix(gc.Request.RequestURI, app.URLBase) {
 		uri = "/accounts/my"
@@ -81,12 +81,12 @@ func (app *appContext) getUserTokenLogin(gc *gin.Context) {
 func (app *appContext) getUserTokenRefresh(gc *gin.Context) {
 	jellyfinLogin := app.config.Section("ui").Key("jellyfin_login").MustBool(true)
 	if !jellyfinLogin {
-		app.err.Println("Enable Jellyfin Login to use the User Page feature.")
+		app.err.Printf(lm.FailedAuthRequest, lm.UserPageRequiresJellyfinAuth)
 		respond(500, "Contact Admin", gc)
 		return
 	}
 
-	app.logIpInfo(gc, true, "UserToken request (refresh token)")
+	app.logIpInfo(gc, true, fmt.Sprintf(lm.RequestingToken, lm.UserTokenRefresh))
 	claims, ok := app.decodeValidateRefreshCookie(gc, "user-refresh")
 	if !ok {
 		return
@@ -96,7 +96,7 @@ func (app *appContext) getUserTokenRefresh(gc *gin.Context) {
 
 	jwt, refresh, err := CreateToken(jfID, jfID, false)
 	if err != nil {
-		app.err.Printf("getUserToken failed: Couldn't generate user token (%s)", err)
+		app.err.Printf(lm.FailedGenerateToken, err)
 		respond(500, "Couldn't generate user token", gc)
 		return
 	}

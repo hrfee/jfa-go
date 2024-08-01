@@ -11,6 +11,7 @@ import (
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
+	lm "github.com/hrfee/jfa-go/logmessages"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
@@ -21,17 +22,17 @@ func (app *appContext) loadHTML(router *gin.Engine) {
 	templatePath := "html"
 	htmlFiles, err := fs.ReadDir(localFS, templatePath)
 	if err != nil {
-		app.err.Fatalf("Couldn't access template directory: \"%s\"", templatePath)
+		app.err.Fatalf(lm.FailedReading, templatePath, err)
 		return
 	}
 	loadInternal := []string{}
 	loadExternal := []string{}
 	for _, f := range htmlFiles {
 		if _, err := os.Stat(filepath.Join(customPath, f.Name())); os.IsNotExist(err) {
-			app.debug.Printf("Using default \"%s\"", f.Name())
+			app.debug.Printf(lm.UseDefaultHTML, f.Name())
 			loadInternal = append(loadInternal, FSJoin(templatePath, f.Name()))
 		} else {
-			app.info.Printf("Using custom \"%s\"", f.Name())
+			app.info.Printf(lm.UseCustomHTML, f.Name())
 			loadExternal = append(loadExternal, filepath.Join(filepath.Join(customPath, f.Name())))
 		}
 	}
@@ -39,13 +40,13 @@ func (app *appContext) loadHTML(router *gin.Engine) {
 	if len(loadInternal) != 0 {
 		tmpl, err = template.ParseFS(localFS, loadInternal...)
 		if err != nil {
-			app.err.Fatalf("Failed to load templates: %v", err)
+			app.err.Fatalf(lm.FailedLoadTemplates, lm.Internal, err)
 		}
 	}
 	if len(loadExternal) != 0 {
 		tmpl, err = tmpl.ParseFiles(loadExternal...)
 		if err != nil {
-			app.err.Fatalf("Failed to load external templates: %v", err)
+			app.err.Fatalf(lm.FailedLoadTemplates, lm.External, err)
 		}
 	}
 	router.SetHTMLTemplate(tmpl)
@@ -96,7 +97,7 @@ func (app *appContext) loadRouter(address string, debug bool) *gin.Engine {
 	router.Use(static.Serve("/", app.webFS))
 	router.NoRoute(app.NoRouteHandler)
 	if *PPROF {
-		app.debug.Println("Loading pprof")
+		app.debug.Println(lm.RegisterPprof)
 		pprof.Register(router)
 	}
 	SRV = &http.Server{
@@ -165,7 +166,7 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 		}
 	}
 	if *SWAGGER {
-		app.info.Print(warning("\n\nWARNING: Swagger should not be used on a public instance.\n\n"))
+		app.info.Print(warning(lm.SwaggerWarning))
 		for _, p := range routePrefixes {
 			router.GET(p+"/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 		}

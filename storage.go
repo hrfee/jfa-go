@@ -13,6 +13,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/hrfee/jfa-go/jellyseerr"
 	"github.com/hrfee/jfa-go/logger"
+	lm "github.com/hrfee/jfa-go/logmessages"
 	"github.com/hrfee/mediabrowser"
 	"github.com/timshannon/badgerhold/v4"
 	"gopkg.in/ini.v1"
@@ -175,10 +176,10 @@ func (app *appContext) ConnectDB() {
 	opts.ValueDir = app.storage.db_path
 	db, err := badgerhold.Open(opts)
 	if err != nil {
-		app.err.Fatalf("Failed to open db \"%s\": %v", app.storage.db_path, err)
+		app.err.Fatalf(lm.FailedConnectDB, app.storage.db_path, err)
 	}
 	app.storage.db = db
-	app.info.Printf("Connected to DB \"%s\"", app.storage.db_path)
+	app.info.Printf(lm.ConnectDB, app.storage.db_path)
 }
 
 // GetEmails returns a copy of the store.

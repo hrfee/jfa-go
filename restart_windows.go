@@ -1,7 +1,11 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+
+	lm "github.com/hrfee/jfa-go/logmessages"
+)
 
 func (app *appContext) HardRestart() error {
-	return fmt.Errorf("hard restarts not available on windows")
+	return fmt.Errorf(lm.FailedHardRestartWindows)
 }

@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/hrfee/jfa-go/easyproxy"
+	lm "github.com/hrfee/jfa-go/logmessages"
 	"github.com/hrfee/mediabrowser"
 )
 
@@ -104,7 +105,7 @@ func (app *appContext) TestJF(gc *gin.Context) {
 		case 404:
 			msg = "error404"
 		}
-		app.info.Printf("Auth failed with code %d (%s)", status, err)
+		app.err.Printf(lm.FailedAuthJellyfin, req.Server, status, err)
 		if msg != "" {
 			respond(status, msg, gc)
 		} else {

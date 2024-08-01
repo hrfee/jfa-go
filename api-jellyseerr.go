@@ -66,7 +66,7 @@ func (app *appContext) SetJellyseerrProfile(gc *gin.Context) {
 	profile.Jellyseerr.User = u.UserTemplate
 	n, err := app.js.GetNotificationPreferencesByID(jellyseerrID)
 	if err != nil {
-		app.err.Printf(lm.FailedGetJellyseerrNotificationPrefs, err)
+		app.err.Printf(lm.FailedGetJellyseerrNotificationPrefs, gc.Param("id"), err)
 		respond(500, "Couldn't get user notification prefs", gc)
 		return
 	}

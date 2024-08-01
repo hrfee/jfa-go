@@ -16,6 +16,8 @@ import (
 	"strings"
 	"time"
 
+	lm "github.com/hrfee/jfa-go/logmessages"
+
 	"github.com/hrfee/jfa-go/common"
 )
 
@@ -560,15 +562,16 @@ func (app *appContext) checkForUpdates() {
 				if err != nil && strings.Contains(err.Error(), "strconv.ParseInt") {
 					app.err.Println("No new updates available.")
 				} else if status != -1 { // -1 means updates disabled, we don't need to log it.
-					app.err.Printf("Failed to get latest tag (%d): %v", status, err)
+					app.err.Printf(lm.FailedGetUpdateTag, err)
 				}
 				return
 			}
 			if tag != app.tag && tag.IsNew() {
-				app.info.Println("Update found")
+				app.info.Println(lm.FoundUpdate)
+				app.debug.Printf(lm.UpdateTagDetails, tag)
 				update, status, err := app.updater.GetUpdate(tag)
 				if status != 200 || err != nil {
-					app.err.Printf("Failed to get update (%d): %v", status, err)
+					app.err.Printf(lm.FailedGetUpdate, err)
 					return
 				}
 				app.tag = tag

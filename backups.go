@@ -7,6 +7,8 @@ import (
 	"sort"
 	"strings"
 	"time"
+
+	lm "github.com/hrfee/jfa-go/logmessages"
 )
 
 const (
@@ -60,12 +62,12 @@ func (app *appContext) getBackups() *BackupList {
 	path := app.config.Section("backups").Key("path").String()
 	err := os.MkdirAll(path, 0755)
 	if err != nil {
-		app.err.Printf("Failed to create backup directory \"%s\": %v\n", path, err)
+		app.err.Printf(lm.FailedCreateDir, path, err)
 		return nil
 	}
 	items, err := os.ReadDir(path)
 	if err != nil {
-		app.err.Printf("Failed to read backup directory \"%s\": %v\n", path, err)
+		app.err.Printf(lm.FailedReading, path, err)
 		return nil
 	}
 	backups := &BackupList{}
@@ -78,7 +80,7 @@ func (app *appContext) getBackups() *BackupList {
 		}
 		t, err := time.Parse(BACKUP_DATEFMT, strings.TrimSuffix(strings.TrimPrefix(strings.TrimPrefix(item.Name(), BACKUP_UPLOAD_PREFIX), BACKUP_PREFIX), BACKUP_SUFFIX))
 		if err != nil {
-			app.debug.Printf("Failed to parse backup filename \"%s\": %v\n", item.Name(), err)
+			app.debug.Printf(lm.FailedParseTime, err)
 			continue
 		}
 		backups.dates[i] = t
@@ -101,36 +103,36 @@ func (app *appContext) makeBackup() (fileDetails CreateBackupDTO) {
 		sort.Sort(backups)
 		for _, item := range backups.files[:toDelete] {
 			fullpath := filepath.Join(path, item.Name())
-			app.debug.Printf("Deleting old backup \"%s\"\n", item.Name())
 			err := os.Remove(fullpath)
 			if err != nil {
-				app.err.Printf("Failed to delete old backup \"%s\": %v\n", fullpath, err)
+				app.err.Printf(lm.FailedDeleteOldBackup, fullpath, err)
 				return
 			}
+			app.debug.Printf(lm.DeleteOldBackup, fullpath)
 		}
 	}
 	fullpath := filepath.Join(path, fname)
 	f, err := os.Create(fullpath)
 	if err != nil {
-		app.err.Printf("Failed to open backup file \"%s\": %v\n", fullpath, err)
+		app.err.Printf(lm.FailedOpen, fullpath, err)
 		return
 	}
 	defer f.Close()
 	_, err = app.storage.db.Badger().Backup(f, 0)
 	if err != nil {
-		app.err.Printf("Failed to create backup: %v\n", err)
+		app.err.Printf(lm.FailedCreateBackup, err)
 		return
 	}
 
 	fstat, err := f.Stat()
 	if err != nil {
-		app.err.Printf("Failed to get info on new backup: %v\n", err)
+		app.err.Printf(lm.FailedStat, fullpath, err)
 		return
 	}
 	fileDetails.Size = fileSize(fstat.Size())
 	fileDetails.Name = fname
 	fileDetails.Path = fullpath
-	// fmt.Printf("Created backup %+v\n", fileDetails)
+	app.debug.Printf(lm.CreateBackup, fileDetails)
 	return
 }
 
@@ -139,25 +141,25 @@ func (app *appContext) loadPendingBackup() {
 		return
 	}
 	oldPath := filepath.Join(app.dataPath, "db-"+string(time.Now().Unix())+"-pre-"+filepath.Base(LOADBAK))
-	app.info.Printf("Moving existing database to \"%s\"\n", oldPath)
 	err := os.Rename(app.storage.db_path, oldPath)
 	if err != nil {
-		app.err.Fatalf("Failed to move existing database: %v\n", err)
+		app.err.Fatalf(lm.FailedMoveOldDB, oldPath, err)
 	}
+	app.info.Printf(lm.MoveOldDB, oldPath)
 
 	app.ConnectDB()
 	defer app.storage.db.Close()
 
 	f, err := os.Open(LOADBAK)
 	if err != nil {
-		app.err.Fatalf("Failed to open backup file \"%s\": %v\n", LOADBAK, err)
+		app.err.Fatalf(lm.FailedOpen, LOADBAK, err)
 	}
 	err = app.storage.db.Badger().Load(f, 256)
 	f.Close()
 	if err != nil {
-		app.err.Fatalf("Failed to restore backup file \"%s\": %v\n", LOADBAK, err)
+		app.err.Fatalf(lm.FailedRestoreDB, LOADBAK, err)
 	}
-	app.info.Printf("Restored backup \"%s\".", LOADBAK)
+	app.info.Printf(lm.RestoreDB, LOADBAK)
 	LOADBAK = ""
 }
 
@@ -165,7 +167,6 @@ func newBackupDaemon(app *appContext) *GenericDaemon {
 	interval := time.Duration(app.config.Section("backups").Key("every_n_minutes").MustInt(1440)) * time.Minute
 	d := NewGenericDaemon(interval, app,
 		func(app *appContext) {
-			app.debug.Println("Backups: Creating backup")
 			app.makeBackup()
 		},
 	)
