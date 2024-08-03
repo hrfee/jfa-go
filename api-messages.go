@@ -431,7 +431,7 @@ func (app *appContext) TelegramVerifiedInvite(gc *gin.Context) {
 	pin := gc.Param("pin")
 	token, ok := app.telegram.TokenVerified(pin)
 	if ok && app.config.Section("telegram").Key("require_unique").MustBool(false) && app.telegram.UserExists(token.Username) {
-		app.discord.DeleteVerifiedUser(pin)
+		app.discord.DeleteVerifiedToken(pin)
 		respondBool(400, false, gc)
 		return
 	}
@@ -454,7 +454,7 @@ func (app *appContext) DiscordVerifiedInvite(gc *gin.Context) {
 	}
 	pin := gc.Param("pin")
 	user, ok := app.discord.UserVerified(pin)
-	if ok && app.config.Section("discord").Key("require_unique").MustBool(false) && app.discord.UserExists(user.ID) {
+	if ok && app.config.Section("discord").Key("require_unique").MustBool(false) && app.discord.UserExists(user.MethodID().(string)) {
 		delete(app.discord.verifiedTokens, pin)
 		respondBool(400, false, gc)
 		return
@@ -472,7 +472,7 @@ func (app *appContext) DiscordVerifiedInvite(gc *gin.Context) {
 // @Router /invite/{invCode}/discord/invite [get]
 // @tags Other
 func (app *appContext) DiscordServerInvite(gc *gin.Context) {
-	if app.discord.inviteChannelName == "" {
+	if app.discord.InviteChannel.Name == "" {
 		respondBool(400, false, gc)
 		return
 	}

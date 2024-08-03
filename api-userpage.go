@@ -292,7 +292,7 @@ func (app *appContext) ModifyMyEmail(gc *gin.Context) {
 // @Security Bearer
 // @tags User Page
 func (app *appContext) MyDiscordServerInvite(gc *gin.Context) {
-	if app.discord.inviteChannelName == "" {
+	if app.discord.InviteChannel.Name == "" {
 		respondBool(400, false, gc)
 		return
 	}
@@ -340,7 +340,7 @@ func (app *appContext) GetMyPIN(gc *gin.Context) {
 func (app *appContext) MyDiscordVerifiedInvite(gc *gin.Context) {
 	pin := gc.Param("pin")
 	dcUser, ok := app.discord.AssignedUserVerified(pin, gc.GetString("jfId"))
-	app.discord.DeleteVerifiedUser(pin)
+	app.discord.DeleteVerifiedToken(pin)
 	if !ok {
 		respondBool(200, false, gc)
 		return

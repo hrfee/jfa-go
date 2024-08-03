@@ -237,7 +237,7 @@ func (app *appContext) MyUserPage(gc *gin.Context) {
 			"server_channel": app.discord.serverChannelName,
 		}))
 		data["discordServerName"] = app.discord.serverName
-		data["discordInviteLink"] = app.discord.inviteChannelName != ""
+		data["discordInviteLink"] = app.discord.InviteChannel.Name != ""
 	}
 	if data["linkResetEnabled"].(bool) {
 		data["resetPasswordUsername"] = app.config.Section("user_page").Key("allow_pwr_username").MustBool(true)
@@ -616,13 +616,108 @@ func (app *appContext) VerifyCaptcha(gc *gin.Context) {
 	return
 }
 
+func (app *appContext) NewUserFromConfirmationKey(invite Invite, key string, lang string, gc *gin.Context) {
+	fail := func() {
+		gcHTML(gc, 404, "404.html", gin.H{
+			"urlBase":        app.getURLBase(gc),
+			"cssClass":       app.cssClass,
+			"cssVersion":     cssVersion,
+			"contactMessage": app.config.Section("ui").Key("contact_message").String(),
+		})
+	}
+	var req newUserDTO
+	if app.ConfirmationKeys == nil {
+		fail()
+		return
+	}
+
+	invKeys, ok := app.ConfirmationKeys[invite.Code]
+	if !ok {
+		fail()
+		return
+	}
+	req, ok = invKeys[key]
+	if !ok {
+		fail()
+		return
+	}
+	token, err := jwt.Parse(key, checkToken)
+	if err != nil {
+		fail()
+		app.debug.Printf(lm.FailedParseJWT, err)
+		return
+	}
+	claims, ok := token.Claims.(jwt.MapClaims)
+	expiry := time.Unix(int64(claims["exp"].(float64)), 0)
+	if !(ok && token.Valid && claims["invite"].(string) == invite.Code && claims["type"].(string) == "confirmation" && expiry.After(time.Now())) {
+		fail()
+		app.debug.Printf(lm.InvalidJWT)
+		return
+	}
+
+	sourceType, source := invite.Source()
+
+	var profile *Profile = nil
+	if invite.Profile != "" {
+		p, ok := app.storage.GetProfileKey(invite.Profile)
+		if !ok {
+			app.debug.Printf(lm.FailedGetProfile+lm.FallbackToDefault, invite.Profile)
+			p = app.storage.GetDefaultProfile()
+		}
+		profile = &p
+	}
+
+	nu := app.NewUserPostVerification(NewUserParams{
+		Req:                 req,
+		SourceType:          sourceType,
+		Source:              source,
+		ContextForIPLogging: gc,
+		Profile:             profile,
+	})
+	if !nu.Success {
+		nu.Log()
+	}
+	if !nu.Created {
+		respond(nu.Status, nu.Message, gc)
+		fail()
+		return
+	}
+	app.checkInvite(req.Code, true, req.Username)
+
+	jfLink := app.config.Section("ui").Key("redirect_url").String()
+	if app.config.Section("ui").Key("auto_redirect").MustBool(false) {
+		gc.Redirect(301, jfLink)
+	} else {
+		gcHTML(gc, http.StatusOK, "create-success.html", gin.H{
+			"urlBase":        app.getURLBase(gc),
+			"cssClass":       app.cssClass,
+			"cssVersion":     cssVersion,
+			"strings":        app.storage.lang.User[lang].Strings,
+			"successMessage": app.config.Section("ui").Key("success_message").String(),
+			"contactMessage": app.config.Section("ui").Key("contact_message").String(),
+			"jfLink":         jfLink,
+		})
+	}
+	app.confirmationKeysLock.Lock()
+	// Re-fetch invKeys just incase an update occurred
+	invKeys, ok = app.ConfirmationKeys[invite.Code]
+	if !ok {
+		fail()
+		return
+	}
+	delete(invKeys, key)
+	app.ConfirmationKeys[invite.Code] = invKeys
+	app.confirmationKeysLock.Unlock()
+	return
+}
+
 func (app *appContext) InviteProxy(gc *gin.Context) {
 	app.pushResources(gc, FormPage)
-	code := gc.Param("invCode")
 	lang := app.getLang(gc, FormPage, app.storage.lang.chosenUserLang)
+
 	/* Don't actually check if the invite is valid, just if it exists, just so the page loads quicker. Invite is actually checked on submit anyway. */
 	// if app.checkInvite(code, false, "") {
-	inv, ok := app.storage.GetInvitesKey(code)
+	invite, ok := app.storage.GetInvitesKey(gc.Param("invCode"))
 	if !ok {
 		gcHTML(gc, 404, "invalidCode.html", gin.H{
 			"urlBase":        app.getURLBase(gc),
@@ -632,75 +727,13 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 		})
 		return
 	}
-	if key := gc.Query("key"); key != "" && app.config.Section("email_confirmation").Key("enabled").MustBool(false) {
-		fail := func() {
-			gcHTML(gc, 404, "404.html", gin.H{
-				"urlBase":        app.getURLBase(gc),
-				"cssClass":       app.cssClass,
-				"cssVersion":     cssVersion,
-				"contactMessage": app.config.Section("ui").Key("contact_message").String(),
-			})
-		}
-		var req newUserDTO
-		if app.ConfirmationKeys == nil {
-			fail()
-			return
-		}
 
-		invKeys, ok := app.ConfirmationKeys[code]
-		if !ok {
-			fail()
-			return
-		}
-		req, ok = invKeys[key]
-		if !ok {
-			fail()
-			return
-		}
-		token, err := jwt.Parse(key, checkToken)
-		if err != nil {
-			fail()
-			app.debug.Printf(lm.FailedParseJWT, err)
-			return
-		}
-		claims, ok := token.Claims.(jwt.MapClaims)
-		expiry := time.Unix(int64(claims["exp"].(float64)), 0)
-		if !(ok && token.Valid && claims["invite"].(string) == code && claims["type"].(string) == "confirmation" && expiry.After(time.Now())) {
-			fail()
-			app.debug.Printf(lm.InvalidJWT)
-			return
-		}
-		f, success := app.newUser(req, true, gc)
-		if !success {
-			// Not meant for us. Calling this is bad but at least gives us log output.
-			f(gc)
-			fail()
-			return
-		}
-		jfLink := app.config.Section("ui").Key("redirect_url").String()
-		if app.config.Section("ui").Key("auto_redirect").MustBool(false) {
-			gc.Redirect(301, jfLink)
-		} else {
-			gcHTML(gc, http.StatusOK, "create-success.html", gin.H{
-				"urlBase":        app.getURLBase(gc),
-				"cssClass":       app.cssClass,
-				"cssVersion":     cssVersion,
-				"strings":        app.storage.lang.User[lang].Strings,
-				"successMessage": app.config.Section("ui").Key("success_message").String(),
-				"contactMessage": app.config.Section("ui").Key("contact_message").String(),
-				"jfLink":         jfLink,
-			})
-		}
-		delete(invKeys, key)
-		app.confirmationKeysLock.Lock()
-		app.ConfirmationKeys[code] = invKeys
-		app.confirmationKeysLock.Unlock()
+	if key := gc.Query("key"); key != "" && app.config.Section("email_confirmation").Key("enabled").MustBool(false) {
+		app.NewUserFromConfirmationKey(invite, key, lang, gc)
 		return
 	}
-	email := ""
-	if invite, ok := app.storage.GetInvitesKey(code); ok {
-		email = invite.SendTo
-	}
+
+	email := invite.SendTo
 	if strings.Contains(email, "Failed") || !strings.Contains(email, "@") {
 		email = ""
 	}
@@ -715,8 +748,8 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 	userPageAddress += "/my/account"
 
 	fromUser := ""
-	if inv.ReferrerJellyfinID != "" {
-		sender, status, err := app.jf.UserByID(inv.ReferrerJellyfinID, false)
+	if invite.ReferrerJellyfinID != "" {
+		sender, status, err := app.jf.UserByID(invite.ReferrerJellyfinID, false)
 		if status == 200 && err == nil {
 			fromUser = sender.Name
 		}
@@ -738,13 +771,13 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 		"strings":            app.storage.lang.User[lang].Strings,
 		"validationStrings":  app.storage.lang.User[lang].validationStringsJSON,
 		"notifications":      app.storage.lang.User[lang].notificationsJSON,
-		"code":               code,
+		"code":               invite.Code,
 		"confirmation":       app.config.Section("email_confirmation").Key("enabled").MustBool(false),
-		"userExpiry":         inv.UserExpiry,
-		"userExpiryMonths":   inv.UserMonths,
-		"userExpiryDays":     inv.UserDays,
-		"userExpiryHours":    inv.UserHours,
-		"userExpiryMinutes":  inv.UserMinutes,
+		"userExpiry":         invite.UserExpiry,
+		"userExpiryMonths":   invite.UserMonths,
+		"userExpiryDays":     invite.UserDays,
+		"userExpiryHours":    invite.UserHours,
+		"userExpiryMinutes":  invite.UserMinutes,
 		"userExpiryMessage":  app.storage.lang.User[lang].Strings.get("yourAccountIsValidUntil"),
 		"langName":           lang,
 		"passwordReset":      false,
@@ -779,7 +812,7 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 			"server_channel": app.discord.serverChannelName,
 		}))
 		data["discordServerName"] = app.discord.serverName
-		data["discordInviteLink"] = app.discord.inviteChannelName != ""
+		data["discordInviteLink"] = app.discord.InviteChannel.Name != ""
 	}
 	if msg, ok := app.storage.GetCustomContentKey("PostSignupCard"); ok && msg.Enabled {
 		data["customSuccessCard"] = true

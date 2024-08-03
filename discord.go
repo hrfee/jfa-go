@@ -11,21 +11,21 @@ import (
 )
 
 type DiscordDaemon struct {
-	Stopped                                                    bool
-	ShutdownChannel                                            chan string
-	bot                                                        *dg.Session
-	username                                                   string
-	tokens                                                     map[string]VerifToken  // Map of pins to tokens.
-	verifiedTokens                                             map[string]DiscordUser // Map of token pins to discord users.
-	channelID, channelName, inviteChannelID, inviteChannelName string
-	guildID                                                    string
-	serverChannelName, serverName                              string
-	users                                                      map[string]DiscordUser // Map of user IDs to users. Added to on first interaction, and loaded from app.storage.discord on start.
-	roleID                                                     string
-	app                                                        *appContext
-	commandHandlers                                            map[string]func(s *dg.Session, i *dg.InteractionCreate, lang string)
-	commandIDs                                                 []string
-	commandDescriptions                                        []*dg.ApplicationCommand
+	Stopped                       bool
+	ShutdownChannel               chan string
+	bot                           *dg.Session
+	username                      string
+	tokens                        map[string]VerifToken  // Map of pins to tokens.
+	verifiedTokens                map[string]DiscordUser // Map of token pins to discord users.
+	Channel, InviteChannel        struct{ ID, Name string }
+	guildID                       string
+	serverChannelName, serverName string
+	users                         map[string]DiscordUser // Map of user IDs to users. Added to on first interaction, and loaded from app.storage.discord on start.
+	roleID                        string
+	app                           *appContext
+	commandHandlers               map[string]func(s *dg.Session, i *dg.InteractionCreate, lang string)
+	commandIDs                    []string
+	commandDescriptions           []*dg.ApplicationCommand
 }
 
 func newDiscordDaemon(app *appContext) (*DiscordDaemon, error) {
@@ -120,12 +120,12 @@ func (d *DiscordDaemon) run() {
 	d.serverChannelName = guild.Name
 	d.serverName = guild.Name
 	if channel := d.app.config.Section("discord").Key("channel").String(); channel != "" {
-		d.channelName = channel
+		d.Channel.Name = channel
 		d.serverChannelName += "/" + channel
 	}
 	if d.app.config.Section("discord").Key("provide_invite").MustBool(false) {
 		if invChannel := d.app.config.Section("discord").Key("invite_channel").String(); invChannel != "" {
-			d.inviteChannelName = invChannel
+			d.InviteChannel.Name = invChannel
 		}
 	}
 	err = d.bot.UpdateGameStatus(0, "/"+d.app.config.Section("discord").Key("start_command").MustString("start"))
@@ -171,11 +171,11 @@ func (d *DiscordDaemon) ApplyRole(userID string) error {
 func (d *DiscordDaemon) NewTempInvite(ageSeconds, maxUses int) (inviteURL, iconURL string) {
 	var inv *dg.Invite
 	var err error
-	if d.inviteChannelName == "" {
+	if d.InviteChannel.Name == "" {
 		d.app.err.Println(lm.FailedCreateDiscordInviteChannel, lm.InviteChannelEmpty)
 		return
 	}
-	if d.inviteChannelID == "" {
+	if d.InviteChannel.ID == "" {
 		channels, err := d.bot.GuildChannels(d.guildID)
 		if err != nil {
 			d.app.err.Printf(lm.FailedGetDiscordChannels, err)
@@ -188,14 +188,14 @@ func (d *DiscordDaemon) NewTempInvite(ageSeconds, maxUses int) (inviteURL, iconU
 			// 	d.app.err.Printf(lm.FailedGetDiscordChannel, ch.ID, err)
 			// 	return
 			// }
-			if channel.Name == d.inviteChannelName {
-				d.inviteChannelID = channel.ID
+			if channel.Name == d.InviteChannel.Name {
+				d.InviteChannel.ID = channel.ID
 				found = true
 				break
 			}
 		}
 		if !found {
-			d.app.err.Printf(lm.FailedGetDiscordChannel, d.InviteChannelName, lm.NotFound)
+			d.app.err.Printf(lm.FailedGetDiscordChannel, d.InviteChannel.Name, lm.NotFound)
 			return
 		}
 	}
@@ -204,7 +204,7 @@ func (d *DiscordDaemon) NewTempInvite(ageSeconds, maxUses int) (inviteURL, iconU
 	// 	d.app.err.Printf(lm.FailedGetDiscordChannel, d.inviteChannelID, err)
 	// 	return
 	// }
-	inv, err = d.bot.ChannelInviteCreate(d.inviteChannelID, dg.Invite{
+	inv, err = d.bot.ChannelInviteCreate(d.InviteChannel.ID, dg.Invite{
 		// Guild:   d.bot.State.Guilds[len(d.bot.State.Guilds)-1],
 		// Channel: channel,
 		// Inviter: d.bot.State.User,
@@ -451,19 +451,19 @@ func (d *DiscordDaemon) UpdateCommands() {
 
 func (d *DiscordDaemon) commandHandler(s *dg.Session, i *dg.InteractionCreate) {
 	if h, ok := d.commandHandlers[i.ApplicationCommandData().Name]; ok {
-		if i.GuildID != "" && d.channelName != "" {
-			if d.channelID == "" {
+		if i.GuildID != "" && d.Channel.Name != "" {
+			if d.Channel.ID == "" {
 				channel, err := s.Channel(i.ChannelID)
 				if err != nil {
 					d.app.err.Printf(lm.FailedGetDiscordChannel, i.ChannelID, err)
 					d.app.err.Println(lm.MonitorAllDiscordChannels)
-					d.channelName = ""
+					d.Channel.Name = ""
 				}
-				if channel.Name == d.channelName {
-					d.channelID = channel.ID
+				if channel.Name == d.Channel.Name {
+					d.Channel.ID = channel.ID
 				}
 			}
-			if d.channelID != i.ChannelID {
+			if d.Channel.ID != i.ChannelID {
 				d.app.debug.Printf(lm.IgnoreOutOfChannelMessage, lm.Discord)
 				return
 			}
@@ -739,10 +739,10 @@ func (d *DiscordDaemon) Send(message *Message, channelID ...string) error {
 }
 
 // UserVerified returns whether or not a token with the given PIN has been verified, and the user itself.
-func (d *DiscordDaemon) UserVerified(pin string) (user DiscordUser, ok bool) {
-	user, ok = d.verifiedTokens[pin]
+func (d *DiscordDaemon) UserVerified(pin string) (ContactMethodUser, bool) {
+	u, ok := d.verifiedTokens[pin]
 	// delete(d.verifiedTokens, pin)
-	return
+	return &u, ok
 }
 
 // AssignedUserVerified returns whether or not a user with the given PIN has been verified, and the token itself.
@@ -762,7 +762,44 @@ func (d *DiscordDaemon) UserExists(id string) bool {
 	return err != nil || c > 0
 }
 
-// DeleteVerifiedUser removes the token with the given PIN.
-func (d *DiscordDaemon) DeleteVerifiedUser(pin string) {
-	delete(d.verifiedTokens, pin)
+// Exists returns whether or not the given user exists.
+func (d *DiscordDaemon) Exists(user ContactMethodUser) bool {
+	return d.UserExists(user.MethodID().(string))
+}
+
+// DeleteVerifiedToken removes the token with the given PIN.
+func (d *DiscordDaemon) DeleteVerifiedToken(PIN string) {
+	delete(d.verifiedTokens, PIN)
+}
+
+func (d *DiscordDaemon) PIN(req newUserDTO) string { return req.DiscordPIN }
+
+func (d *DiscordDaemon) Name() string { return lm.Discord }
+
+func (d *DiscordDaemon) Required() bool {
+	return d.app.config.Section("discord").Key("required").MustBool(false)
+}
+
+func (d *DiscordDaemon) UniqueRequired() bool {
+	return d.app.config.Section("discord").Key("require_unique").MustBool(false)
+}
+
+func (d *DiscordDaemon) PostVerificationTasks(PIN string, u ContactMethodUser) error {
+	err := d.ApplyRole(u.MethodID().(string))
+	if err != nil {
+		return fmt.Errorf(lm.FailedSetDiscordMemberRole, err)
+	}
+	return err
+}
+
+func (d *DiscordUser) Name() string                          { return RenderDiscordUsername(*d) }
+func (d *DiscordUser) SetMethodID(id any)                    { d.ID = id.(string) }
+func (d *DiscordUser) MethodID() any                         { return d.ID }
+func (d *DiscordUser) SetJellyfin(id string)                 { d.JellyfinID = id }
+func (d *DiscordUser) Jellyfin() string                      { return d.JellyfinID }
+func (d *DiscordUser) SetAllowContactFromDTO(req newUserDTO) { d.Contact = req.DiscordContact }
+func (d *DiscordUser) SetAllowContact(contact bool)          { d.Contact = contact }
+func (d *DiscordUser) AllowContact() bool                    { return d.Contact }
+func (d *DiscordUser) Store(st *Storage) {
+	st.SetDiscordKey(d.Jellyfin(), *d)
 }

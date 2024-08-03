@@ -104,7 +104,7 @@ func (app *appContext) clearActivities() {
 		}
 	}
 	if err == badger.ErrTxnTooBig {
-		app.debug.Printf(lm.AcitivityLogTxnTooBig)
+		app.debug.Printf(lm.ActivityLogTxnTooBig)
 		list := []Activity{}
 		if errorSource == 0 {
 			app.storage.db.Find(&list, badgerhold.Where("Time").Lt(minAge))

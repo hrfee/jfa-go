@@ -509,6 +509,15 @@ func (st *Storage) GetDefaultProfile() Profile {
 	return defaultProfile
 }
 
+// MustGetProfileKey returns the profile at key k, or if missing, the default profile.
+func (st *Storage) MustGetProfileKey(k string) Profile {
+	p, ok := st.GetProfileKey(k)
+	if !ok {
+		p = st.GetDefaultProfile()
+	}
+	return p
+}
+
 // GetCustomContent returns a copy of the store.
 func (st *Storage) GetCustomContent() []CustomContent {
 	result := []CustomContent{}
@@ -584,12 +593,35 @@ func (st *Storage) DeleteActivityKey(k string) {
 	st.db.Delete(k, Activity{})
 }
 
-type TelegramUser struct {
-	JellyfinID string `badgerhold:"key"`
-	ChatID     int64  `badgerhold:"index"`
-	Username   string `badgerhold:"index"`
-	Lang       string
-	Contact    bool // Whether to contact through telegram or not
+type ThirdPartyService interface {
+	// ok implies user imported, err can be any issue that occurs during
+	ImportUser(jellyfinID string, req newUserDTO, profile Profile) (err error, ok bool)
+	AddContactMethods(jellyfinID string, req newUserDTO, discord *DiscordUser, telegram *TelegramUser) (err error)
+	Enabled(app *appContext, profile *Profile) bool
+	Name() string
+}
+
+type ContactMethodLinker interface {
+	PIN(req newUserDTO) string
+	Name() string
+	Required() bool
+	UniqueRequired() bool
+	UserVerified(PIN string) (ContactMethodUser, bool)
+	PostVerificationTasks(PIN string, u ContactMethodUser) error
+	DeleteVerifiedToken(PIN string)
+	Exists(ContactMethodUser) bool
+}
+
+type ContactMethodUser interface {
+	SetMethodID(id any)
+	MethodID() any
+	Name() string
+	SetJellyfin(id string)
+	Jellyfin() string
+	SetAllowContactFromDTO(req newUserDTO)
+	SetAllowContact(contact bool)
+	AllowContact() bool
+	Store(st *Storage)
 }
 
 type DiscordUser struct {
@@ -600,6 +632,24 @@ type DiscordUser struct {
 	Lang          string
 	Contact       bool
 	JellyfinID    string `json:"-" badgerhold:"key"`
+}
+
+type TelegramUser struct {
+	TelegramVerifiedToken
+	JellyfinID string `badgerhold:"key"`
+	ChatID     int64  `badgerhold:"index"`
+	Username   string `badgerhold:"index"`
+	Lang       string
+	Contact    bool // Whether to contact through telegram or not
+}
+
+type MatrixUser struct {
+	RoomID     string
+	Encrypted  bool
+	UserID     string
+	Lang       string
+	Contact    bool
+	JellyfinID string `badgerhold:"key"`
 }
 
 type EmailAddress struct {
@@ -684,6 +734,16 @@ type Invite struct {
 	IsReferral         bool                       `json:"is_referral" badgerhold:"index"`
 	ReferrerJellyfinID string                     `json:"referrer_id"`
 	UseReferralExpiry  bool                       `json:"use_referral_expiry"`
+}
+
+func (invite Invite) Source() (ActivitySource, string) {
+	sourceType := ActivityAnon
+	source := ""
+	if invite.ReferrerJellyfinID != "" {
+		sourceType = ActivityUser
+		source = invite.ReferrerJellyfinID
+	}
+	return sourceType, source
 }
 
 type Captcha struct {

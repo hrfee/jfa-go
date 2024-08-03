@@ -32,15 +32,6 @@ type UnverifiedUser struct {
 	User     *MatrixUser
 }
 
-type MatrixUser struct {
-	RoomID     string
-	Encrypted  bool
-	UserID     string
-	Lang       string
-	Contact    bool
-	JellyfinID string `badgerhold:"key"`
-}
-
 var matrixFilter = mautrix.Filter{
 	Room: mautrix.RoomFilter{
 		Timeline: mautrix.FilterPart{
@@ -277,6 +268,57 @@ func (d *MatrixDaemon) UserExists(userID string) bool {
 	return err != nil || c > 0
 }
 
+// Exists returns whether or not the given user exists.
+func (d *MatrixDaemon) Exists(user ContactMethodUser) bool {
+	return d.UserExists(user.Name())
+}
+
 // User enters ID on sign-up, a PIN is sent to them. They enter it on sign-up.
 
 // Message the user first, to avoid E2EE by default
+
+func (d *MatrixDaemon) PIN(req newUserDTO) string { return req.MatrixPIN }
+
+func (d *MatrixDaemon) Name() string { return lm.Matrix }
+
+func (d *MatrixDaemon) Required() bool {
+	return d.app.config.Section("telegram").Key("required").MustBool(false)
+}
+
+func (d *MatrixDaemon) UniqueRequired() bool {
+	return d.app.config.Section("telegram").Key("require_unique").MustBool(false)
+}
+
+// TokenVerified returns whether or not a token with the given PIN has been verified, and the token itself.
+func (d *MatrixDaemon) TokenVerified(pin string) (token UnverifiedUser, ok bool) {
+	token, ok = d.tokens[pin]
+	// delete(t.verifiedTokens, pin)
+	return
+}
+
+// DeleteVerifiedToken removes the token with the given PIN.
+func (d *MatrixDaemon) DeleteVerifiedToken(PIN string) {
+	delete(d.tokens, PIN)
+}
+
+func (d *MatrixDaemon) UserVerified(PIN string) (ContactMethodUser, bool) {
+	token, ok := d.TokenVerified(PIN)
+	if !ok {
+		return &MatrixUser{}, false
+	}
+	return token.User, ok
+}
+
+func (d *MatrixDaemon) PostVerificationTasks(string, ContactMethodUser) error { return nil }
+
+func (m *MatrixUser) Name() string                          { return m.UserID }
+func (m *MatrixUser) SetMethodID(id any)                    { m.UserID = id.(string) }
+func (m *MatrixUser) MethodID() any                         { return m.UserID }
+func (m *MatrixUser) SetJellyfin(id string)                 { m.JellyfinID = id }
+func (m *MatrixUser) Jellyfin() string                      { return m.JellyfinID }
+func (m *MatrixUser) SetAllowContactFromDTO(req newUserDTO) { m.Contact = req.MatrixContact }
+func (m *MatrixUser) SetAllowContact(contact bool)          { m.Contact = contact }
+func (m *MatrixUser) AllowContact() bool                    { return m.Contact }
+func (m *MatrixUser) Store(st *Storage) {
+	st.SetMatrixKey(m.Jellyfin(), *m)
+}

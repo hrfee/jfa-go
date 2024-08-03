@@ -1,10 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"net/url"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hrfee/jfa-go/jellyseerr"
 	lm "github.com/hrfee/jfa-go/logmessages"
 )
 
@@ -96,4 +98,68 @@ func (app *appContext) DeleteJellyseerrProfile(gc *gin.Context) {
 	profile.Jellyseerr.Enabled = false
 	app.storage.SetProfileKey(profileName, profile)
 	respondBool(204, true, gc)
+}
+
+type JellyseerrWrapper struct {
+	*jellyseerr.Jellyseerr
+}
+
+func (js *JellyseerrWrapper) ImportUser(jellyfinID string, req newUserDTO, profile Profile) (err error, ok bool) {
+	// Gets existing user (not possible) or imports the given user.
+	_, err = js.MustGetUser(jellyfinID)
+	if err != nil {
+		return
+	}
+	ok = true
+	err = js.ApplyTemplateToUser(jellyfinID, profile.Jellyseerr.User)
+	if err != nil {
+		err = fmt.Errorf(lm.FailedApplyTemplate, "user", lm.Jellyseerr, jellyfinID, err)
+		return
+	}
+	err = js.ApplyNotificationsTemplateToUser(jellyfinID, profile.Jellyseerr.Notifications)
+	if err != nil {
+		err = fmt.Errorf(lm.FailedApplyTemplate, "notifications", lm.Jellyseerr, jellyfinID, err)
+		return
+	}
+	return
+}
+
+func (js *JellyseerrWrapper) AddContactMethods(jellyfinID string, req newUserDTO, discord *DiscordUser, telegram *TelegramUser) (err error) {
+	_, err = js.MustGetUser(jellyfinID)
+	if err != nil {
+		return
+	}
+	contactMethods := map[jellyseerr.NotificationsField]any{}
+	if emailEnabled {
+		err = js.ModifyMainUserSettings(jellyfinID, jellyseerr.MainUserSettings{Email: req.Email})
+		if err != nil {
+			// FIXME: This is a little ugly, considering all other errors are unformatted
+			err = fmt.Errorf(lm.FailedSetEmailAddress, lm.Jellyseerr, jellyfinID, err)
+			return
+		} else {
+			contactMethods[jellyseerr.FieldEmailEnabled] = req.EmailContact
+		}
+	}
+	if discordEnabled && discord != nil {
+		contactMethods[jellyseerr.FieldDiscord] = discord.ID
+		contactMethods[jellyseerr.FieldDiscordEnabled] = req.DiscordContact
+	}
+	if telegramEnabled && discord != nil {
+		contactMethods[jellyseerr.FieldTelegram] = telegram.ChatID
+		contactMethods[jellyseerr.FieldTelegramEnabled] = req.TelegramContact
+	}
+	if len(contactMethods) > 0 {
+		err = js.ModifyNotifications(jellyfinID, contactMethods)
+		if err != nil {
+			// app.err.Printf(lm.FailedSyncContactMethods, lm.Jellyseerr, err)
+			return
+		}
+	}
+	return
+}
+
+func (js *JellyseerrWrapper) Name() string { return lm.Jellyseerr }
+
+func (js *JellyseerrWrapper) Enabled(app *appContext, profile *Profile) bool {
+	return profile != nil && profile.Jellyseerr.Enabled && app.config.Section("jellyseerr").Key("enabled").MustBool(false)
 }

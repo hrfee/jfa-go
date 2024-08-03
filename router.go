@@ -135,7 +135,7 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 		router.GET(p+"/lang/:page/:file", app.ServeLang)
 		router.GET(p+"/token/login", app.getTokenLogin)
 		router.GET(p+"/token/refresh", app.getTokenRefresh)
-		router.POST(p+"/newUser", app.NewUser)
+		router.POST(p+"/newUser", app.NewUserFromInvite)
 		router.Use(static.Serve(p+"/invite/", app.webFS))
 		router.GET(p+"/invite/:invCode", app.InviteProxy)
 		if app.config.Section("captcha").Key("enabled").MustBool(false) {
@@ -182,7 +182,7 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 		router.POST(p+"/logout", app.Logout)
 		api.DELETE(p+"/users", app.DeleteUsers)
 		api.GET(p+"/users", app.GetUsers)
-		api.POST(p+"/users", app.NewUserAdmin)
+		api.POST(p+"/users", app.NewUserFromAdmin)
 		api.POST(p+"/users/extend", app.ExtendExpiry)
 		api.DELETE(p+"/users/:id/expiry", app.RemoveExpiry)
 		api.POST(p+"/users/enable", app.EnableDisableUsers)

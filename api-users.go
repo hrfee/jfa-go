@@ -23,7 +23,7 @@ import (
 // @Router /users [post]
 // @Security Bearer
 // @tags Users
-func (app *appContext) NewUserAdmin(gc *gin.Context) {
+func (app *appContext) NewUserFromAdmin(gc *gin.Context) {
 	respondUser := func(code int, user, email bool, msg string, gc *gin.Context) {
 		resp := newUserResponse{
 			User:  user,
@@ -35,263 +35,143 @@ func (app *appContext) NewUserAdmin(gc *gin.Context) {
 	}
 	var req newUserDTO
 	gc.BindJSON(&req)
-	existingUser, _, _ := app.jf.UserByName(req.Username, false)
-	if existingUser.Name != "" {
-		msg := lm.UserExists
-		app.info.Printf(lm.FailedCreateUser, lm.Jellyfin, req.Username, msg)
-		respondUser(401, false, false, msg, gc)
-		return
-	}
-	user, status, err := app.jf.NewUser(req.Username, req.Password)
-	if !(status == 200 || status == 204) || err != nil {
-		app.err.Printf(lm.FailedCreateUser, lm.Jellyfin, req.Username, err)
-		respondUser(401, false, false, err.Error(), gc)
-		return
-	}
-	id := user.ID
-
-	// Record activity
-	app.storage.SetActivityKey(shortuuid.New(), Activity{
-		Type:       ActivityCreation,
-		UserID:     id,
-		SourceType: ActivityAdmin,
-		Source:     gc.GetString("jfId"),
-		Value:      user.Name,
-		Time:       time.Now(),
-	}, gc, false)
 
 	profile := app.storage.GetDefaultProfile()
-	if req.Profile != "" && req.Profile != "none" {
-		if p, ok := app.storage.GetProfileKey(req.Profile); ok {
-			profile = p
-		} else {
-			app.debug.Printf(lm.FailedGetProfile+lm.FallbackToDefault, req.Profile)
-		}
+	nu := app.NewUserPostVerification(NewUserParams{
+		Req:                 req,
+		SourceType:          ActivityAdmin,
+		Source:              gc.GetString("jfId"),
+		ContextForIPLogging: gc,
+		Profile:             &profile,
+	})
+	if !nu.Success {
+		nu.Log()
+	}
 
-		status, err = app.jf.SetPolicy(id, profile.Policy)
-		if !(status == 200 || status == 204 || err == nil) {
-			app.err.Printf(lm.FailedApplyTemplate, "policy", lm.Jellyfin, req.Username, err)
-		}
-		status, err = app.jf.SetConfiguration(id, profile.Configuration)
-		if (status == 200 || status == 204) && err == nil {
-			status, err = app.jf.SetDisplayPreferences(id, profile.Displayprefs)
-		}
-		if !((status == 200 || status == 204) && err == nil) {
-			app.err.Printf(lm.FailedApplyTemplate, "configuration", lm.Jellyfin, req.Username, err)
-		}
+	welcomeMessageSentIfNecessary := true
+	if nu.Created {
+		welcomeMessageSentIfNecessary = app.WelcomeNewUser(nu.User, time.Time{})
 	}
-	app.jf.CacheExpiry = time.Now()
-	if emailEnabled {
-		app.storage.SetEmailsKey(id, EmailAddress{Addr: req.Email, Contact: true})
-	}
-	if app.config.Section("ombi").Key("enabled").MustBool(false) {
-		if profile.Ombi == nil {
-			profile.Ombi = map[string]interface{}{}
-		}
-		errors, code, err := app.ombi.NewUser(req.Username, req.Password, req.Email, profile.Ombi)
-		if err != nil || code != 200 {
-			app.err.Printf(lm.FailedCreateUser, lm.Ombi, req.Username, err)
-			app.debug.Printf(lm.AdditionalErrors, lm.Ombi, strings.Join(errors, ", "))
-		} else {
-			app.info.Printf(lm.CreateUser, lm.Ombi, req.Username)
-		}
-	}
-	if app.config.Section("jellyseerr").Key("enabled").MustBool(false) {
-		// Gets existing user (not possible) or imports the given user.
-		_, err := app.js.MustGetUser(id)
-		if err != nil {
-			app.err.Printf(lm.FailedCreateUser, lm.Jellyseerr, req.Username, err)
-		} else {
-			app.info.Printf(lm.CreateUser, lm.Jellyseerr, req.Username)
-		}
-		err = app.js.ApplyTemplateToUser(id, profile.Jellyseerr.User)
-		if err != nil {
-			app.err.Printf(lm.FailedApplyTemplate, "user", lm.Jellyseerr, req.Username, err)
-		}
-		err = app.js.ApplyNotificationsTemplateToUser(id, profile.Jellyseerr.Notifications)
-		if err != nil {
-			app.err.Printf(lm.FailedApplyTemplate, "notifications", lm.Jellyseerr, req.Username, err)
-		}
-		if emailEnabled {
-			err = app.js.ModifyUser(id, map[jellyseerr.UserField]any{jellyseerr.FieldEmail: req.Email})
-			if err != nil {
-				app.err.Printf(lm.FailedSetEmailAddress, lm.Jellyseerr, id, err)
-			}
-		}
-	}
-	if emailEnabled && app.config.Section("welcome_email").Key("enabled").MustBool(false) && req.Email != "" {
-		msg, err := app.email.constructWelcome(req.Username, time.Time{}, app, false)
-		if err != nil {
-			app.err.Printf(lm.FailedConstructWelcomeMessage, id, err)
-			respondUser(500, true, false, err.Error(), gc)
-			return
-		} else if err := app.email.send(msg, req.Email); err != nil {
-			app.err.Printf(lm.FailedSendWelcomeMessage, req.Username, req.Email, err)
-			respondUser(500, true, false, err.Error(), gc)
-			return
-		} else {
-			app.info.Printf(lm.SentWelcomeMessage, req.Username, req.Email)
-		}
-	}
-	respondUser(200, true, true, "", gc)
+
+	respondUser(nu.Status, nu.Created, welcomeMessageSentIfNecessary, nu.Message, gc)
 }
 
-type errorFunc func(gc *gin.Context)
+// @Summary Creates a new Jellyfin user via invite code
+// @Produce json
+// @Param newUserDTO body newUserDTO true "New user request object"
+// @Success 200 {object} PasswordValidation
+// @Failure 400 {object} PasswordValidation
+// @Router /newUser [post]
+// @tags Users
+func (app *appContext) NewUserFromInvite(gc *gin.Context) {
+	/*
+		-- STEPS --
+		- Validate CAPTCHA
+		- Validate Invite
+		- Validate Password
+		- a) Discord  (Require, Verify, ExistingUser, ApplyRole)
+		  b) Telegram (Require, Verify, ExistingUser)
+		  c) Matrix   (Require, Verify, ExistingUser)
+		  d) Email    (Require, Verify, ExistingUser) (only occurs here, PWRs are sent by mail so do this on their own, kinda)
+	*/
+	var req newUserDTO
+	gc.BindJSON(&req)
 
-// Used on the form & when a users email has been confirmed.
-func (app *appContext) newUser(req newUserDTO, confirmed bool, gc *gin.Context) (f errorFunc, success bool) {
-	existingUser, _, _ := app.jf.UserByName(req.Username, false)
-	if existingUser.Name != "" {
-		f = func(gc *gin.Context) {
-			msg := lm.UserExists
-			app.info.Printf(lm.FailedCreateUser, lm.Jellyfin, req.Username, msg)
-			respond(401, "errorUserExists", gc)
-		}
-		success = false
+	// Validate CAPTCHA
+	if app.config.Section("captcha").Key("enabled").MustBool(false) && !app.verifyCaptcha(req.Code, req.CaptchaID, req.CaptchaText, false) {
+		app.info.Printf(lm.FailedCreateUser, lm.Jellyfin, req.Username, lm.IncorrectCaptcha)
+		respond(400, "errorCaptcha", gc)
 		return
 	}
-	var discordUser DiscordUser
-	discordVerified := false
-	if discordEnabled {
-		if req.DiscordPIN == "" {
-			if app.config.Section("discord").Key("required").MustBool(false) {
-				f = func(gc *gin.Context) {
-					app.info.Printf(lm.FailedLinkUser, lm.Discord, "?", req.Code, lm.AccountUnverified)
-					respond(401, "errorDiscordVerification", gc)
-				}
-				success = false
+	// Validate Invite
+	if !app.checkInvite(req.Code, false, "") {
+		app.info.Printf(lm.FailedCreateUser, lm.Jellyfin, req.Username, fmt.Sprintf(lm.InvalidInviteCode, req.Code))
+		respond(401, "errorInvalidCode", gc)
+		return
+	}
+	// Validate Password
+	validation := app.validator.validate(req.Password)
+	valid := true
+	for _, val := range validation {
+		if !val {
+			valid = false
+			break
+		}
+	}
+	if !valid {
+		// 200 bcs idk what i did in js
+		gc.JSON(200, validation)
+		return
+	}
+	completeContactMethods := make([]struct {
+		Verified bool
+		PIN      string
+		User     ContactMethodUser
+	}, len(app.contactMethods))
+	for i, cm := range app.contactMethods {
+		completeContactMethods[i].PIN = cm.PIN(req)
+		if completeContactMethods[i].PIN == "" {
+			if cm.Required() {
+				app.info.Printf(lm.FailedLinkUser, cm.Name(), "?", req.Code, lm.AccountUnverified)
+				respond(401, fmt.Sprintf("error%sVerification", cm.Name()), gc)
 				return
 			}
 		} else {
-			discordUser, discordVerified = app.discord.UserVerified(req.DiscordPIN)
-			if !discordVerified {
-				f = func(gc *gin.Context) {
-					app.info.Printf(lm.FailedLinkUser, lm.Discord, "?", req.Code, fmt.Sprintf(lm.InvalidPIN, req.DiscordPIN))
-					respond(401, "errorInvalidPIN", gc)
-				}
-				success = false
+			completeContactMethods[i].User, completeContactMethods[i].Verified = cm.UserVerified(completeContactMethods[i].PIN)
+			if !completeContactMethods[i].Verified {
+				app.info.Printf(lm.FailedLinkUser, cm.Name(), "?", req.Code, fmt.Sprintf(lm.InvalidPIN, completeContactMethods[i].PIN))
+				respond(401, "errorInvalidPIN", gc)
 				return
 			}
-			if app.config.Section("discord").Key("require_unique").MustBool(false) && app.discord.UserExists(discordUser.ID) {
-				f = func(gc *gin.Context) {
-					app.debug.Printf(lm.FailedLinkUser, lm.Discord, discordUser.ID, req.Code, lm.AccountLinked)
-					respond(400, "errorAccountLinked", gc)
-				}
-				success = false
+			if cm.UniqueRequired() && cm.Exists(completeContactMethods[i].User) {
+				app.debug.Printf(lm.FailedLinkUser, cm.Name(), completeContactMethods[i].User.Name(), req.Code, lm.AccountLinked)
+				respond(400, "errorAccountLinked", gc)
 				return
 			}
-			err := app.discord.ApplyRole(discordUser.ID)
-			if err != nil {
-				f = func(gc *gin.Context) {
-					app.err.Printf(lm.FailedLinkUser, lm.Discord, discordUser.ID, req.Code, fmt.Sprintf(lm.FailedSetDiscordMemberRole, err))
-					respond(401, "error", gc)
-				}
-				success = false
-				return
+			if err := cm.PostVerificationTasks(completeContactMethods[i].PIN, completeContactMethods[i].User); err != nil {
+				app.err.Printf(lm.FailedLinkUser, cm.Name(), completeContactMethods[i].User.Name(), req.Code, err)
 			}
 		}
 	}
-	var matrixUser MatrixUser
-	matrixVerified := false
-	if matrixEnabled {
-		if req.MatrixPIN == "" {
-			if app.config.Section("matrix").Key("required").MustBool(false) {
-				f = func(gc *gin.Context) {
-					app.info.Printf(lm.FailedLinkUser, lm.Matrix, "?", req.Code, lm.AccountUnverified)
-					respond(401, "errorMatrixVerification", gc)
-				}
-				success = false
-				return
-			}
-		} else {
-			user, ok := app.matrix.tokens[req.MatrixPIN]
-			if !ok || !user.Verified {
-				matrixVerified = false
-				f = func(gc *gin.Context) {
-					uid := ""
-					if ok {
-						uid = user.User.UserID
-					}
-					app.info.Printf(lm.FailedLinkUser, lm.Matrix, uid, req.Code, fmt.Sprintf(lm.InvalidPIN, req.MatrixPIN))
-					respond(401, "errorInvalidPIN", gc)
-				}
-				success = false
-				return
-			}
-			if app.config.Section("matrix").Key("require_unique").MustBool(false) && app.matrix.UserExists(user.User.UserID) {
-				f = func(gc *gin.Context) {
-					app.debug.Printf(lm.FailedLinkUser, lm.Matrix, user.User.UserID, req.Code, lm.AccountLinked)
-					respond(400, "errorAccountLinked", gc)
-				}
-				success = false
-				return
-			}
-			matrixVerified = user.Verified
-			matrixUser = *user.User
-
-		}
-	}
-	var tgToken TelegramVerifiedToken
-	telegramVerified := false
-	if telegramEnabled {
-		if req.TelegramPIN == "" {
-			if app.config.Section("telegram").Key("required").MustBool(false) {
-				f = func(gc *gin.Context) {
-					app.info.Printf(lm.FailedLinkUser, lm.Telegram, "?", req.Code, lm.AccountUnverified)
-					respond(401, "errorTelegramVerification", gc)
-				}
-				success = false
-				return
-			}
-		} else {
-			tgToken, telegramVerified = app.telegram.TokenVerified(req.TelegramPIN)
-			if !telegramVerified {
-				f = func(gc *gin.Context) {
-					app.info.Printf(lm.FailedLinkUser, lm.Telegram, tgToken.Username, req.Code, fmt.Sprintf(lm.InvalidPIN, req.TelegramPIN))
-					respond(401, "errorInvalidPIN", gc)
-				}
-				success = false
-				return
-			}
-			if app.config.Section("telegram").Key("require_unique").MustBool(false) && app.telegram.UserExists(tgToken.Username) {
-				f = func(gc *gin.Context) {
-					app.debug.Printf(lm.FailedLinkUser, lm.Telegram, tgToken.Username, req.Code, lm.AccountLinked)
-					respond(400, "errorAccountLinked", gc)
-				}
-				success = false
-				return
-			}
-		}
-	}
-	if emailEnabled && app.config.Section("email_confirmation").Key("enabled").MustBool(false) && !confirmed {
-		claims := jwt.MapClaims{
-			"valid":  true,
-			"invite": req.Code,
-			"exp":    time.Now().Add(30 * time.Minute).Unix(),
-			"type":   "confirmation",
-		}
-		tk := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-		key, err := tk.SignedString([]byte(os.Getenv("JFA_SECRET")))
-		if err != nil {
-			f = func(gc *gin.Context) {
-				app.info.Printf(lm.FailedSignJWT, err)
-				respond(500, "errorUnknown", gc)
-			}
-			success = false
+	// Email (FIXME: Potentially make this a ContactMethodLinker)
+	if emailEnabled {
+		// Require
+		if app.config.Section("email").Key("required").MustBool(false) && !strings.Contains(req.Email, "@") {
+			respond(400, "errorNoEmail", gc)
 			return
 		}
-		if app.ConfirmationKeys == nil {
-			app.ConfirmationKeys = map[string]map[string]newUserDTO{}
+		// ExistingUser
+		if app.config.Section("email").Key("require_unique").MustBool(false) && req.Email != "" && app.EmailAddressExists(req.Email) {
+			respond(400, "errorEmailLinked", gc)
+			return
 		}
-		cKeys, ok := app.ConfirmationKeys[req.Code]
-		if !ok {
-			cKeys = map[string]newUserDTO{}
-		}
-		cKeys[key] = req
-		app.confirmationKeysLock.Lock()
-		app.ConfirmationKeys[req.Code] = cKeys
-		app.confirmationKeysLock.Unlock()
-		f = func(gc *gin.Context) {
+		// Verify
+		if app.config.Section("email_confirmation").Key("enabled").MustBool(false) {
+			claims := jwt.MapClaims{
+				"valid":  true,
+				"invite": req.Code,
+				"exp":    time.Now().Add(30 * time.Minute).Unix(),
+				"type":   "confirmation",
+			}
+			tk := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+			key, err := tk.SignedString([]byte(os.Getenv("JFA_SECRET")))
+			if err != nil {
+				app.err.Printf(lm.FailedSignJWT, err)
+				respond(500, "errorUnknown", gc)
+				return
+			}
+			if app.ConfirmationKeys == nil {
+				app.ConfirmationKeys = map[string]map[string]newUserDTO{}
+			}
+			cKeys, ok := app.ConfirmationKeys[req.Code]
+			if !ok {
+				cKeys = map[string]newUserDTO{}
+			}
+			cKeys[key] = req
+			app.confirmationKeysLock.Lock()
+			app.ConfirmationKeys[req.Code] = cKeys
+			app.confirmationKeysLock.Unlock()
+
 			app.debug.Printf(lm.EmailConfirmationRequired, req.Username)
 			respond(401, "confirmEmail", gc)
 			msg, err := app.email.constructConfirmation(req.Code, req.Username, key, app, false)
@@ -302,25 +182,76 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool, gc *gin.Context) 
 			} else {
 				app.err.Printf(lm.SentConfirmationEmail, req.Code, req.Email)
 			}
+			return
 		}
-		success = false
-		return
 	}
 
-	user, status, err := app.jf.NewUser(req.Username, req.Password)
-	if !(status == 200 || status == 204) || err != nil {
-		f = func(gc *gin.Context) {
-			app.err.Printf(lm.FailedCreateUser, lm.Jellyfin, req.Username, err)
-			respond(401, app.storage.lang.Admin[app.storage.lang.chosenAdminLang].Notifications.get("errorUnknown"), gc)
+	invite, _ := app.storage.GetInvitesKey(req.Code)
+
+	sourceType, source := invite.Source()
+
+	var profile *Profile = nil
+	if invite.Profile != "" {
+		p, ok := app.storage.GetProfileKey(invite.Profile)
+		if !ok {
+			app.debug.Printf(lm.FailedGetProfile+lm.FallbackToDefault, invite.Profile)
+			p = app.storage.GetDefaultProfile()
 		}
-		success = false
+		profile = &p
+	}
+
+	// FIXME: Use NewUserPostVerification
+	nu := app.NewUserPostVerification(NewUserParams{
+		Req:                 req,
+		SourceType:          sourceType,
+		Source:              source,
+		ContextForIPLogging: gc,
+		Profile:             profile,
+	})
+	if !nu.Success {
+		nu.Log()
+	}
+	if !nu.Created {
+		respond(nu.Status, nu.Message, gc)
 		return
 	}
-	invite, _ := app.storage.GetInvitesKey(req.Code)
 	app.checkInvite(req.Code, true, req.Username)
-	if emailEnabled && app.config.Section("notifications").Key("enabled").MustBool(false) {
-		for address, settings := range invite.Notify {
-			if settings["notify-creation"] {
+
+	nonEmailContactMethodEnabled := false
+	for i, c := range completeContactMethods {
+		if c.Verified {
+			c.User.SetAllowContactFromDTO(req)
+			if c.User.AllowContact() {
+				nonEmailContactMethodEnabled = true
+			}
+			app.contactMethods[i].DeleteVerifiedToken(c.PIN)
+			c.User.Store(&(app.storage))
+		}
+	}
+
+	referralsEnabled := profile != nil && profile.ReferralTemplateKey != "" && app.config.Section("user_page").Key("enabled").MustBool(false) && app.config.Section("user_page").Key("referrals").MustBool(false)
+
+	if (emailEnabled && req.Email != "") || invite.UserLabel != "" || referralsEnabled {
+		emailStore := EmailAddress{
+			Addr:                req.Email,
+			Contact:             (req.Email != ""),
+			Label:               invite.UserLabel,
+			ReferralTemplateKey: profile.ReferralTemplateKey,
+		}
+		/// Ensures at least one contact method is enabled.
+		if nonEmailContactMethodEnabled {
+			emailStore.Contact = req.EmailContact
+		}
+		app.storage.SetEmailsKey(nu.User.ID, emailStore)
+	}
+	if emailEnabled {
+		if app.config.Section("notifications").Key("enabled").MustBool(false) {
+			for address, settings := range invite.Notify {
+				if !settings["notify-creation"] {
+					continue
+				}
+				// FIXME: Forgot how "go" works, but these might get killed if not finished
+				// before we do?
 				go func(addr string) {
 					msg, err := app.email.constructCreated(req.Code, req.Username, req.Email, invite, app, false)
 					if err != nil {
@@ -342,275 +273,62 @@ func (app *appContext) newUser(req newUserDTO, confirmed bool, gc *gin.Context) 
 			}
 		}
 	}
-	id := user.ID
 
-	// Record activity
-	sourceType := ActivityAnon
-	source := ""
-	if invite.ReferrerJellyfinID != "" {
-		sourceType = ActivityUser
-		source = invite.ReferrerJellyfinID
-	}
-
-	app.storage.SetActivityKey(shortuuid.New(), Activity{
-		Type:       ActivityCreation,
-		UserID:     id,
-		SourceType: sourceType,
-		Source:     source,
-		InviteCode: invite.Code,
-		Value:      user.Name,
-		Time:       time.Now(),
-	}, gc, true)
-
-	emailStore := EmailAddress{
-		Addr:    req.Email,
-		Contact: (req.Email != ""),
-	}
-	// Only allow disabling of email contact if some other method is available.
-	if req.DiscordContact || req.TelegramContact || req.MatrixContact {
-		emailStore.Contact = req.EmailContact
-	}
-
-	if invite.UserLabel != "" {
-		emailStore.Label = invite.UserLabel
-	}
-
-	var profile Profile
-	if invite.Profile != "" {
-		app.debug.Printf(lm.ApplyProfile, invite.Profile)
-		var ok bool
-		profile, ok = app.storage.GetProfileKey(invite.Profile)
-		if !ok {
-			profile = app.storage.GetDefaultProfile()
-		}
-		status, err = app.jf.SetPolicy(id, profile.Policy)
-		if !((status == 200 || status == 204) && err == nil) {
-			app.err.Printf(lm.FailedApplyTemplate, "policy", lm.Jellyfin, id, err)
-		}
-		status, err = app.jf.SetConfiguration(id, profile.Configuration)
-		if (status == 200 || status == 204) && err == nil {
-			status, err = app.jf.SetDisplayPreferences(id, profile.Displayprefs)
-		}
-		if !((status == 200 || status == 204) && err == nil) {
-			app.err.Printf(lm.FailedApplyTemplate, "configuration", lm.Jellyfin, id, err)
-		}
-		if app.config.Section("user_page").Key("enabled").MustBool(false) && app.config.Section("user_page").Key("referrals").MustBool(false) && profile.ReferralTemplateKey != "" {
-			emailStore.ReferralTemplateKey = profile.ReferralTemplateKey
-			// Store here, just incase email are disabled (whether this is even possible, i don't know)
-			app.storage.SetEmailsKey(id, emailStore)
-
-			// If UseReferralExpiry is enabled, create the ref now so the clock starts ticking
-			refInv := Invite{}
-			err = app.storage.db.Get(profile.ReferralTemplateKey, &refInv)
-			if refInv.UseReferralExpiry {
-				refInv.Code = GenerateInviteCode()
-				expiryDelta := refInv.ValidTill.Sub(refInv.Created)
-				refInv.Created = time.Now()
-				refInv.ValidTill = refInv.Created.Add(expiryDelta)
-				refInv.IsReferral = true
-				refInv.ReferrerJellyfinID = id
-				app.storage.SetInvitesKey(refInv.Code, refInv)
-			}
+	if referralsEnabled {
+		refInv := Invite{}
+		/*err := */ app.storage.db.Get(profile.ReferralTemplateKey, &refInv)
+		// If UseReferralExpiry is enabled, create the ref now so the clock starts ticking
+		if refInv.UseReferralExpiry {
+			refInv.Code = GenerateInviteCode()
+			expiryDelta := refInv.ValidTill.Sub(refInv.Created)
+			refInv.Created = time.Now()
+			refInv.ValidTill = refInv.Created.Add(expiryDelta)
+			refInv.IsReferral = true
+			refInv.ReferrerJellyfinID = nu.User.ID
+			app.storage.SetInvitesKey(refInv.Code, refInv)
 		}
 	}
-	// if app.config.Section("password_resets").Key("enabled").MustBool(false) {
-	if req.Email != "" || invite.UserLabel != "" {
-		app.storage.SetEmailsKey(id, emailStore)
-	}
+
 	expiry := time.Time{}
 	if invite.UserExpiry {
 		expiry = time.Now().AddDate(0, invite.UserMonths, invite.UserDays).Add(time.Duration((60*invite.UserHours)+invite.UserMinutes) * time.Minute)
-		app.storage.SetUserExpiryKey(id, UserExpiry{Expiry: expiry})
+		app.storage.SetUserExpiryKey(nu.User.ID, UserExpiry{Expiry: expiry})
 	}
-	if discordVerified {
-		discordUser.Contact = req.DiscordContact
-		if app.storage.deprecatedDiscord == nil {
-			app.storage.deprecatedDiscord = discordStore{}
-		}
-		// Note we don't log an activity here, since it's part of creating a user.
-		app.storage.SetDiscordKey(user.ID, discordUser)
-		delete(app.discord.verifiedTokens, req.DiscordPIN)
-	}
-	if telegramVerified {
-		tgUser := TelegramUser{
-			ChatID:   tgToken.ChatID,
-			Username: tgToken.Username,
-			Contact:  req.TelegramContact,
-		}
-		if lang, ok := app.telegram.languages[tgToken.ChatID]; ok {
-			tgUser.Lang = lang
-		}
-		if app.storage.deprecatedTelegram == nil {
-			app.storage.deprecatedTelegram = telegramStore{}
-		}
-		app.telegram.DeleteVerifiedToken(req.TelegramPIN)
-		app.storage.SetTelegramKey(user.ID, tgUser)
-	}
-	if invite.Profile != "" && app.config.Section("ombi").Key("enabled").MustBool(false) {
-		if profile.Ombi != nil && len(profile.Ombi) != 0 {
-			template := profile.Ombi
-			errors, code, err := app.ombi.NewUser(req.Username, req.Password, req.Email, template)
-			accountExists := false
-			var ombiUser map[string]interface{}
-			if err != nil || code != 200 {
-				// Check if on the off chance, Ombi's user importer has already added the account.
-				ombiUser, status, err = app.getOmbiImportedUser(req.Username)
-				if status == 200 && err == nil {
-					app.info.Println(lm.Ombi + " " + lm.UserExists)
-					accountExists = true
-					template["password"] = req.Password
-					status, err = app.applyOmbiProfile(ombiUser, template)
-					if status != 200 || err != nil {
-						app.err.Printf(lm.FailedApplyProfile, lm.Ombi, req.Username, err)
-					}
-				} else {
-					app.info.Printf(lm.FailedCreateUser, lm.Ombi, req.Username, err)
-					app.debug.Printf(lm.AdditionalErrors, lm.Ombi, strings.Join(errors, ", "))
-				}
-			} else {
-				ombiUser, status, err = app.getOmbiUser(id)
-				if status != 200 || err != nil {
-					app.err.Printf(lm.FailedGetUser, id, lm.Ombi, err)
-				} else {
-					app.info.Println(lm.CreateUser, lm.Ombi, id)
-					accountExists = true
-				}
-			}
-			if accountExists {
-				if discordVerified || telegramVerified {
-					dID := ""
-					tUser := ""
-					if discordVerified {
-						dID = discordUser.ID
-					}
-					if telegramVerified {
-						u, _ := app.storage.GetTelegramKey(user.ID)
-						tUser = u.Username
-					}
-					resp, status, err := app.ombi.SetNotificationPrefs(ombiUser, dID, tUser)
-					if !(status == 200 || status == 204) || err != nil {
-						app.err.Printf(lm.FailedSyncContactMethods, lm.Ombi, err)
-						app.debug.Printf(lm.AdditionalErrors, lm.Ombi, resp)
-					}
-				}
-			}
-		}
-	}
-	if invite.Profile != "" && app.config.Section("jellyseerr").Key("enabled").MustBool(false) {
-		if profile.Jellyseerr.Enabled {
-			// Gets existing user (not possible) or imports the given user.
-			_, err := app.js.MustGetUser(id)
-			if err != nil {
-				app.err.Printf(lm.FailedCreateUser, lm.Jellyseerr, id, err)
-			} else {
-				app.info.Printf(lm.CreateUser, lm.Jellyseerr, id)
-			}
-			err = app.js.ApplyTemplateToUser(id, profile.Jellyseerr.User)
-			if err != nil {
-				app.err.Printf(lm.FailedApplyTemplate, "user", lm.Jellyseerr, id, err)
-			}
-			err = app.js.ApplyNotificationsTemplateToUser(id, profile.Jellyseerr.Notifications)
-			if err != nil {
-				app.err.Printf(lm.FailedApplyTemplate, "notifications", lm.Jellyseerr, id, err)
-			}
-			contactMethods := map[jellyseerr.NotificationsField]any{}
-			if emailEnabled {
-				err = app.js.ModifyMainUserSettings(id, jellyseerr.MainUserSettings{Email: req.Email})
-				if err != nil {
-					app.err.Printf(lm.FailedSetEmailAddress, lm.Jellyseerr, id, err)
-				} else {
-					contactMethods[jellyseerr.FieldEmailEnabled] = req.EmailContact
-				}
-			}
-			if discordVerified {
-				contactMethods[jellyseerr.FieldDiscord] = discordUser.ID
-				contactMethods[jellyseerr.FieldDiscordEnabled] = req.DiscordContact
-			}
-			if telegramVerified {
-				u, _ := app.storage.GetTelegramKey(user.ID)
-				contactMethods[jellyseerr.FieldTelegram] = u.ChatID
-				contactMethods[jellyseerr.FieldTelegramEnabled] = req.TelegramContact
-			}
-			if emailEnabled || discordVerified || telegramVerified {
-				err := app.js.ModifyNotifications(id, contactMethods)
-				if err != nil {
-					app.err.Printf(lm.FailedSyncContactMethods, lm.Jellyseerr, err)
-				}
-			}
-		}
-	}
-	if matrixVerified {
-		matrixUser.Contact = req.MatrixContact
-		delete(app.matrix.tokens, req.MatrixPIN)
-		if app.storage.deprecatedMatrix == nil {
-			app.storage.deprecatedMatrix = matrixStore{}
-		}
-		app.storage.SetMatrixKey(user.ID, matrixUser)
-	}
-	if (emailEnabled && app.config.Section("welcome_email").Key("enabled").MustBool(false) && req.Email != "") || telegramVerified || discordVerified || matrixVerified {
-		name := app.getAddressOrName(user.ID)
-		msg, err := app.email.constructWelcome(req.Username, expiry, app, false)
-		if err != nil {
-			app.err.Printf(lm.FailedConstructWelcomeMessage, id, err)
-		} else if err := app.sendByID(msg, user.ID); err != nil {
-			app.err.Printf(lm.FailedSendWelcomeMessage, id, req.Email, err)
-		} else {
-			app.info.Printf(lm.SentWelcomeMessage, id, req.Email)
-		}
-	}
-	app.jf.CacheExpiry = time.Now()
-	success = true
-	return
-}
 
-// @Summary Creates a new Jellyfin user via invite code
-// @Produce json
-// @Param newUserDTO body newUserDTO true "New user request object"
-// @Success 200 {object} PasswordValidation
-// @Failure 400 {object} PasswordValidation
-// @Router /newUser [post]
-// @tags Users
-func (app *appContext) NewUser(gc *gin.Context) {
-	var req newUserDTO
-	gc.BindJSON(&req)
-	if app.config.Section("captcha").Key("enabled").MustBool(false) && !app.verifyCaptcha(req.Code, req.CaptchaID, req.CaptchaText, false) {
-		app.info.Printf(lm.FailedCreateUser, lm.Jellyfin, req.Username, lm.IncorrectCaptcha)
-		respond(400, "errorCaptcha", gc)
-		return
-	}
-	if !app.checkInvite(req.Code, false, "") {
-		app.info.Printf(lm.FailedCreateUser, lm.Jellyfin, req.Username, fmt.Sprintf(lm.InvalidInviteCode, req.Code))
-		respond(401, "errorInvalidCode", gc)
-		return
-	}
-	validation := app.validator.validate(req.Password)
-	valid := true
-	for _, val := range validation {
-		if !val {
-			valid = false
-			break
+	var discordUser *DiscordUser = nil
+	var telegramUser *TelegramUser = nil
+	if app.ombi.Enabled(app, profile) || app.js.Enabled(app, profile) {
+		// FIXME: figure these out in a nicer way? this relies on the current ordering,
+		// which may not be fixed.
+		if discordEnabled {
+			discordUser = completeContactMethods[0].User.(*DiscordUser)
+			if telegramEnabled {
+				telegramUser = completeContactMethods[1].User.(*TelegramUser)
+			}
+		} else if telegramEnabled {
+			telegramUser = completeContactMethods[0].User.(*TelegramUser)
 		}
 	}
-	if !valid {
-		// 200 bcs idk what i did in js
-		gc.JSON(200, validation)
-		return
-	}
-	if emailEnabled {
-		if app.config.Section("email").Key("required").MustBool(false) && !strings.Contains(req.Email, "@") {
-			respond(400, "errorNoEmail", gc)
-			return
+
+	for _, tps := range app.thirdPartyServices {
+		if !tps.Enabled(app, profile) {
+			continue
 		}
-		if app.config.Section("email").Key("require_unique").MustBool(false) && req.Email != "" && app.EmailAddressExists(req.Email) {
-			respond(400, "errorEmailLinked", gc)
-			return
+		// User already created, now we can link contact methods
+		err := tps.AddContactMethods(nu.User.ID, req, discordUser, telegramUser)
+		if err != nil {
+			app.err.Printf(lm.FailedSyncContactMethods, tps.Name(), err)
 		}
 	}
-	f, success := app.newUser(req, false, gc)
+
+	app.WelcomeNewUser(nu.User, expiry)
+
+	/*responseFunc, logFunc, success := app.NewUser(req, false, gc)
 	if !success {
-		f(gc)
+		logFunc()
+		responseFunc(gc)
 		return
-	}
+	}*/
 	code := 200
 	for _, val := range validation {
 		if !val {
@@ -954,7 +672,7 @@ func (app *appContext) Announce(gc *gin.Context) {
 				return
 			}
 		}
-		app.info.Printf(lm.SentAnnouncementMessage, userID, "?")
+		// app.info.Printf(lm.SentAnnouncementMessage, "*", "?")
 	} else {
 		msg, err := app.email.constructTemplate(req.Subject, req.Message, app)
 		if err != nil {
@@ -966,8 +684,9 @@ func (app *appContext) Announce(gc *gin.Context) {
 			respondBool(500, false, gc)
 			return
 		}
-		app.info.Printf(lm.SentAnnouncementMessage, "*", "?")
+		// app.info.Printf(lm.SentAnnouncementMessage, "*", "?")
 	}
+	app.info.Printf(lm.SentAnnouncementMessage, "*", "?")
 	respondBool(200, true, gc)
 }
 
@@ -1455,7 +1174,7 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 				// newUser["userName"] = user["userName"]
 				// newUser["alias"] = user["alias"]
 				// newUser["emailAddress"] = user["emailAddress"]
-				status, err = app.applyOmbiProfile(user, ombi)
+				status, err = app.ombi.applyProfile(user, ombi)
 				if status != 200 || err != nil {
 					errorString += fmt.Sprintf("Apply %d: %v ", status, err)
 				}

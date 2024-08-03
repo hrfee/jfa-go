@@ -1,19 +1,18 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"net/url"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	lm "github.com/hrfee/jfa-go/logmessages"
+	"github.com/hrfee/jfa-go/ombi"
 	"github.com/hrfee/mediabrowser"
 )
 
 func (app *appContext) getOmbiUser(jfID string) (map[string]interface{}, int, error) {
-	ombiUsers, code, err := app.ombi.GetUsers()
-	if err != nil || code != 200 {
-		return nil, code, err
-	}
 	jfUser, code, err := app.jf.UserByID(jfID, false)
 	if err != nil || code != 200 {
 		return nil, code, err
@@ -22,6 +21,14 @@ func (app *appContext) getOmbiUser(jfID string) (map[string]interface{}, int, er
 	email := ""
 	if e, ok := app.storage.GetEmailsKey(jfID); ok {
 		email = e.Addr
+	}
+	return app.ombi.getUser(username, email)
+}
+
+func (ombi *OmbiWrapper) getUser(username string, email string) (map[string]interface{}, int, error) {
+	ombiUsers, code, err := ombi.GetUsers()
+	if err != nil || code != 200 {
+		return nil, code, err
 	}
 	for _, ombiUser := range ombiUsers {
 		ombiAddr := ""
@@ -32,13 +39,13 @@ func (app *appContext) getOmbiUser(jfID string) (map[string]interface{}, int, er
 			return ombiUser, code, err
 		}
 	}
-	return nil, 400, fmt.Errorf("couldn't find user")
+	return nil, 400, errors.New(lm.NotFound)
 }
 
 // Returns a user with the given name who has been imported from Jellyfin/Emby by Ombi
-func (app *appContext) getOmbiImportedUser(name string) (map[string]interface{}, int, error) {
+func (ombi *OmbiWrapper) getImportedUser(name string) (map[string]interface{}, int, error) {
 	// Ombi User Types: 3/4 = Emby, 5 = Jellyfin
-	ombiUsers, code, err := app.ombi.GetUsers()
+	ombiUsers, code, err := ombi.GetUsers()
 	if err != nil || code != 200 {
 		return nil, code, err
 	}
@@ -136,7 +143,11 @@ func (app *appContext) DeleteOmbiProfile(gc *gin.Context) {
 	respondBool(204, true, gc)
 }
 
-func (app *appContext) applyOmbiProfile(user map[string]interface{}, profile map[string]interface{}) (status int, err error) {
+type OmbiWrapper struct {
+	*ombi.Ombi
+}
+
+func (ombi *OmbiWrapper) applyProfile(user map[string]interface{}, profile map[string]interface{}) (status int, err error) {
 	for k, v := range profile {
 		switch v.(type) {
 		case map[string]interface{}, []interface{}:
@@ -147,6 +158,66 @@ func (app *appContext) applyOmbiProfile(user map[string]interface{}, profile map
 			}
 		}
 	}
-	status, err = app.ombi.ModifyUser(user)
+	status, err = ombi.ModifyUser(user)
 	return
+}
+
+func (ombi *OmbiWrapper) ImportUser(jellyfinID string, req newUserDTO, profile Profile) (err error, ok bool) {
+	errors, code, err := ombi.NewUser(req.Username, req.Password, req.Email, profile.Ombi)
+	var ombiUser map[string]interface{}
+	var status int
+	if err != nil || code != 200 {
+		// Check if on the off chance, Ombi's user importer has already added the account.
+		ombiUser, status, err = ombi.getImportedUser(req.Username)
+		if status == 200 && err == nil {
+			// app.info.Println(lm.Ombi + " " + lm.UserExists)
+			profile.Ombi["password"] = req.Password
+			status, err = ombi.applyProfile(ombiUser, profile.Ombi)
+			if status != 200 || err != nil {
+				err = fmt.Errorf(lm.FailedApplyProfile, lm.Ombi, req.Username, err)
+			}
+		} else {
+			if len(errors) != 0 {
+				err = fmt.Errorf("%v, %s", err, strings.Join(errors, ", "))
+			}
+			return
+		}
+	}
+	ok = true
+	return
+}
+
+func (ombi *OmbiWrapper) AddContactMethods(jellyfinID string, req newUserDTO, discord *DiscordUser, telegram *TelegramUser) (err error) {
+	var ombiUser map[string]interface{}
+	var status int
+	ombiUser, status, err = ombi.getUser(req.Username, req.Email)
+	if status != 200 || err != nil {
+		return
+	}
+	if discordEnabled || telegramEnabled {
+		dID := ""
+		tUser := ""
+		if discord != nil {
+			dID = discord.ID
+		}
+		if telegram != nil {
+			tUser = telegram.Username
+		}
+		var resp string
+		var status int
+		resp, status, err = ombi.SetNotificationPrefs(ombiUser, dID, tUser)
+		if !(status == 200 || status == 204) || err != nil {
+			if resp != "" {
+				err = fmt.Errorf("%v, %s", err, resp)
+			}
+			return
+		}
+	}
+	return
+}
+
+func (ombi *OmbiWrapper) Name() string { return lm.Ombi }
+
+func (ombi *OmbiWrapper) Enabled(app *appContext, profile *Profile) bool {
+	return profile != nil && profile.Ombi != nil && len(profile.Ombi) != 0 && app.config.Section("ombi").Key("enabled").MustBool(false)
 }

@@ -115,7 +115,7 @@ const (
 	FailedGetJellyseerrNotificationPrefs = "Failed to get user \"%s\"'s notification prefs from " + Jellyseerr + ": %v"
 	FailedSyncContactMethods             = "Failed to sync contact methods with %s: %v"
 	ImportJellyseerrUser                 = "Triggered import for " + Jellyseerr + " user \"%s\" (New ID: %d)"
-	FailedMustGetJellyseerrUser          = "Failed to get or trigger import for " + Jellyseerr + " user \"%s\": %v"
+	FailedImportUser                     = "Failed to get or trigger import for %s user \"%s\": %v"
 
 	// api-messages.go
 	FailedGetCustomMessage   = "Failed to get custom message \"%s\""

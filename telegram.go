@@ -16,9 +16,27 @@ const (
 )
 
 type TelegramVerifiedToken struct {
-	ChatID     int64
-	Username   string
-	JellyfinID string // optional, for ensuring a user-requested change is only accessed by them.
+	JellyfinID string `badgerhold:"key"` // optional, for ensuring a user-requested change is only accessed by them.
+	ChatID     int64  `badgerhold:"index"`
+	Username   string `badgerhold:"index"`
+}
+
+func (tv TelegramVerifiedToken) ToUser() *TelegramUser {
+	return &TelegramUser{
+		TelegramVerifiedToken: tv,
+	}
+}
+
+func (t *TelegramVerifiedToken) Name() string                 { return t.Username }
+func (t *TelegramVerifiedToken) SetMethodID(id any)           { t.ChatID = id.(int64) }
+func (t *TelegramVerifiedToken) MethodID() any                { return t.ChatID }
+func (t *TelegramVerifiedToken) SetJellyfin(id string)        { t.JellyfinID = id }
+func (t *TelegramVerifiedToken) Jellyfin() string             { return t.JellyfinID }
+func (t *TelegramUser) SetAllowContactFromDTO(req newUserDTO) { t.Contact = req.TelegramContact }
+func (t *TelegramUser) SetAllowContact(contact bool)          { t.Contact = contact }
+func (t *TelegramUser) AllowContact() bool                    { return t.Contact }
+func (t *TelegramUser) Store(st *Storage) {
+	st.SetTelegramKey(t.Jellyfin(), *t)
 }
 
 // VerifToken stores details about a pending user verification token.
@@ -274,7 +292,39 @@ func (t *TelegramDaemon) UserExists(username string) bool {
 	return err != nil || c > 0
 }
 
-// DeleteVerifiedToken removes the token with the given PIN.
-func (t *TelegramDaemon) DeleteVerifiedToken(pin string) {
-	delete(t.verifiedTokens, pin)
+// Exists returns whether or not the given user exists.
+func (t *TelegramDaemon) Exists(user ContactMethodUser) bool {
+	return t.UserExists(user.Name())
 }
+
+// DeleteVerifiedToken removes the token with the given PIN.
+func (t *TelegramDaemon) DeleteVerifiedToken(PIN string) {
+	delete(t.verifiedTokens, PIN)
+}
+
+func (t *TelegramDaemon) PIN(req newUserDTO) string { return req.TelegramPIN }
+
+func (t *TelegramDaemon) Name() string { return lm.Telegram }
+
+func (t *TelegramDaemon) Required() bool {
+	return t.app.config.Section("telegram").Key("required").MustBool(false)
+}
+
+func (t *TelegramDaemon) UniqueRequired() bool {
+	return t.app.config.Section("telegram").Key("require_unique").MustBool(false)
+}
+
+func (t *TelegramDaemon) UserVerified(PIN string) (ContactMethodUser, bool) {
+	token, ok := t.TokenVerified(PIN)
+	if !ok {
+		return &TelegramUser{}, false
+	}
+	tu := token.ToUser()
+	if lang, ok := t.languages[tu.ChatID]; ok {
+		tu.Lang = lang
+	}
+
+	return tu, ok
+}
+
+func (t *TelegramDaemon) PostVerificationTasks(string, ContactMethodUser) error { return nil }

@@ -11,7 +11,7 @@ import (
 func (app *appContext) SynchronizeJellyseerrUser(jfID string) {
 	user, imported, err := app.js.GetOrImportUser(jfID)
 	if err != nil {
-		app.debug.Printf(lm.FailedMustGetJellyseerrUser, jfID, err)
+		app.debug.Printf(lm.FailedImportUser, lm.Jellyseerr, jfID, err)
 		return
 	}
 	if imported {

@@ -102,8 +102,9 @@ type appContext struct {
 	// Keeping jf name because I can't think of a better one
 	jf                   *mediabrowser.MediaBrowser
 	authJf               *mediabrowser.MediaBrowser
-	ombi                 *ombi.Ombi
-	js                   *jellyseerr.Jellyseerr
+	ombi                 *OmbiWrapper
+	js                   *JellyseerrWrapper
+	thirdPartyServices   []ThirdPartyService
 	datePattern          string
 	timePattern          string
 	storage              Storage
@@ -112,6 +113,7 @@ type appContext struct {
 	telegram             *TelegramDaemon
 	discord              *DiscordDaemon
 	matrix               *MatrixDaemon
+	contactMethods       []ContactMethodLinker
 	info, debug, err     *logger.Logger
 	host                 string
 	port                 int
@@ -349,27 +351,32 @@ func start(asDaemon, firstCall bool) {
 		}
 		address = fmt.Sprintf("%s:%d", app.host, app.port)
 
+		// NOTE: As of writing this, the order in app.thirdPartServices doesn't matter,
+		// but in future it might (like app.contactMethods does), so append to the end!
 		if app.config.Section("ombi").Key("enabled").MustBool(false) {
+			app.ombi = &OmbiWrapper{}
 			app.debug.Printf(lm.UsingOmbi)
 			ombiServer := app.config.Section("ombi").Key("server").String()
-			app.ombi = ombi.NewOmbi(
+			app.ombi.Ombi = ombi.NewOmbi(
 				ombiServer,
 				app.config.Section("ombi").Key("api_key").String(),
 				common.NewTimeoutHandler("Ombi", ombiServer, true),
 			)
-
+			app.thirdPartyServices = append(app.thirdPartyServices, app.ombi)
 		}
 
 		if app.config.Section("jellyseerr").Key("enabled").MustBool(false) {
+			app.js = &JellyseerrWrapper{}
 			app.debug.Printf(lm.UsingJellyseerr)
 			jellyseerrServer := app.config.Section("jellyseerr").Key("server").String()
-			app.js = jellyseerr.NewJellyseerr(
+			app.js.Jellyseerr = jellyseerr.NewJellyseerr(
 				jellyseerrServer,
 				app.config.Section("jellyseerr").Key("api_key").String(),
 				common.NewTimeoutHandler("Jellyseerr", jellyseerrServer, true),
 			)
 			app.js.AutoImportUsers = app.config.Section("jellyseerr").Key("import_existing").MustBool(false)
 			// app.js.LogRequestBodies = true
+			app.thirdPartyServices = append(app.thirdPartyServices, app.js)
 
 		}
 
@@ -511,17 +518,8 @@ func start(asDaemon, firstCall bool) {
 			defer backupDaemon.Shutdown()
 		}
 
-		if telegramEnabled {
-			app.telegram, err = newTelegramDaemon(app)
-			if err != nil {
-				app.err.Printf(lm.FailedInitTelegram, err)
-				telegramEnabled = false
-			} else {
-				app.debug.Println(lm.InitTelegram)
-				go app.telegram.run()
-				defer app.telegram.Shutdown()
-			}
-		}
+		// NOTE: The order in which these are placed in app.contactMethods matters.
+		// Add new ones to the end.
 		if discordEnabled {
 			app.discord, err = newDiscordDaemon(app)
 			if err != nil {
@@ -531,6 +529,19 @@ func start(asDaemon, firstCall bool) {
 				app.debug.Println(lm.InitDiscord)
 				go app.discord.run()
 				defer app.discord.Shutdown()
+				app.contactMethods = append(app.contactMethods, app.discord)
+			}
+		}
+		if telegramEnabled {
+			app.telegram, err = newTelegramDaemon(app)
+			if err != nil {
+				app.err.Printf(lm.FailedInitTelegram, err)
+				telegramEnabled = false
+			} else {
+				app.debug.Println(lm.InitTelegram)
+				go app.telegram.run()
+				defer app.telegram.Shutdown()
+				app.contactMethods = append(app.contactMethods, app.telegram)
 			}
 		}
 		if matrixEnabled {
@@ -542,6 +553,7 @@ func start(asDaemon, firstCall bool) {
 				app.debug.Println(lm.InitMatrix)
 				go app.matrix.run()
 				defer app.matrix.Shutdown()
+				app.contactMethods = append(app.contactMethods, app.matrix)
 			}
 		}
 	} else {

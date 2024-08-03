@@ -31,7 +31,7 @@ type newUserDTO struct {
 
 type newUserResponse struct {
 	User  bool   `json:"user" binding:"required"` // Whether user was created successfully
-	Email bool   `json:"email"`                   // Whether welcome email was successfully sent (always true if feature is disabled
+	Email bool   `json:"email"`                   // Whether welcome email was successfully sent (always true if feature is disabled)
 	Error string `json:"error"`                   // Optional error message.
 }
 
