@@ -1,0 +1,88 @@
+{
+    "meta": {
+        "name": "کوردی سۆرانی"
+    },
+    "strings": {
+        "pageTitle": "دروستکردنی هەژماری جێڵیفن",
+        "createAccountHeader": "دروستکردنی هەژمار",
+        "accountDetails": "زانیارییەکان",
+        "emailAddress": "ئیمەیل",
+        "username": "ناوی بەکارهێنەر",
+        "oldPassword": "وشەی نهێنی کۆن",
+        "newPassword": "وشەی نهێنی نوێ",
+        "password": "وشەی نهێنی",
+        "reEnterPassword": "دووبارە وشەی نهێنی بنووسەوە",
+        "reEnterPasswordInvalid": "وشە نهێنییەکان یەک ناگرن.",
+        "createAccountButton": "هەژمار دروستبکە",
+        "passwordRequirementsHeader": "داواکارییەکانی وشەی نهێنی",
+        "successHeader": "سەرکەوت!",
+        "confirmationRequired": "دووپاتکردنەوەی ئیمەیل داواکراوە",
+        "confirmationRequiredMessage": "تکایە سەیری نامەکانی ئیمەیلەکەت بکە بۆ دووپاتکردنەوەی ناونیشانەکەت.",
+        "yourAccountIsValidUntil": "هەژمارەکەت تاکو {date} کاردەکات.",
+        "sendPIN": "ئەم ژمارە نهێنییەی خوارەوە بۆ بۆتەکە بنێرە، پاشان وەرەوە بۆ پەیوەستکردنی هەژمارەکەت.",
+        "sendPINDiscord": "‏{command} لە چەناڵی {server_channel}ی دیسکۆردەکەت بنوسە، پاشان ئەم ژمارە نهێنییەی خوارەوە بنێرە.",
+        "matrixEnterUser": "",
+        "welcomeUser": "‏{user}، بەخێربێیت!",
+        "addContactMethod": "",
+        "editContactMethod": "",
+        "joinTheServer": "",
+        "customMessagePlaceholderHeader": "",
+        "customMessagePlaceholderContent": "",
+        "userPageSuccessMessage": "",
+        "resetPassword": "",
+        "resetPasswordThroughJellyfin": "",
+        "resetPasswordThroughLink": "",
+        "resetPasswordThroughLinkStart": "",
+        "resetPasswordThroughLinkEnd": "",
+        "resetPasswordUsername": "",
+        "resetPasswordEmail": "",
+        "resetPasswordContactMethod": "",
+        "resetSent": "",
+        "resetSentDescription": "",
+        "changePassword": "",
+        "referralsDescription": "",
+        "referralsWithExpiryDescription": "",
+        "copyReferral": "",
+        "invitedBy": ""
+    },
+    "notifications": {
+        "errorUserExists": "",
+        "errorInvalidCode": "",
+        "errorAccountLinked": "",
+        "errorEmailLinked": "",
+        "errorTelegramVerification": "",
+        "errorDiscordVerification": "",
+        "errorMatrixVerification": "",
+        "errorInvalidPIN": "",
+        "errorUnknown": "",
+        "errorNoEmail": "",
+        "errorCaptcha": "",
+        "errorPassword": "",
+        "errorNoMatch": "",
+        "errorOldPassword": "",
+        "passwordChanged": "",
+        "verified": ""
+    },
+    "validationStrings": {
+        "length": {
+            "singular": "",
+            "plural": ""
+        },
+        "uppercase": {
+            "singular": "",
+            "plural": ""
+        },
+        "lowercase": {
+            "singular": "",
+            "plural": ""
+        },
+        "number": {
+            "singular": "",
+            "plural": ""
+        },
+        "special": {
+            "singular": "",
+            "plural": ""
+        }
+    }
+}
