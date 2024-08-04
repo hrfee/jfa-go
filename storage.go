@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/fs"
 	"log"
 	"os"
@@ -779,22 +780,27 @@ type Lang struct {
 func (st *Storage) loadLang(filesystems ...fs.FS) (err error) {
 	err = st.loadLangCommon(filesystems...)
 	if err != nil {
+		err = fmt.Errorf("common: %v", err)
 		return
 	}
 	err = st.loadLangAdmin(filesystems...)
 	if err != nil {
+		err = fmt.Errorf("admin: %v", err)
 		return
 	}
 	err = st.loadLangEmail(filesystems...)
 	if err != nil {
+		err = fmt.Errorf("email: %v", err)
 		return
 	}
 	err = st.loadLangUser(filesystems...)
 	if err != nil {
+		err = fmt.Errorf("user: %v", err)
 		return
 	}
 	err = st.loadLangPWR(filesystems...)
 	if err != nil {
+		err = fmt.Errorf("pwr: %v", err)
 		return
 	}
 	err = st.loadLangTelegram(filesystems...)
