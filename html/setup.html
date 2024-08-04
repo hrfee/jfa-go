@@ -246,6 +246,7 @@
             <div class="card ~neutral @low mb-2 unfocused">
                 <span class="heading">{{ .lang.Ombi.title }}</span>
                 <p class="content my-2">{{ .lang.Ombi.description }}</p>
+                <aside class="aside ~warning my-2" id="ombi-stability-warning">{{ .lang.Ombi.stabilityWarning }}</aside>
                 <label class="row switch pb-4">
                     <input type="checkbox" class="mr-2" id="ombi-enabled"><span>{{ .lang.Strings.enabled }}</span>
                 </label>
@@ -257,6 +258,23 @@
                     <span class="mt-4">{{ .lang.Strings.apiKey }}</span>
                     <input type="text" class="input ~neutral @low mt-4" id="ombi-api_key">
                     <p class="support mb-2 mt-1">{{ .lang.Ombi.apiKeyNotice }}</p>
+                </label>
+                <span class="heading">{{ .lang.Jellyseerr.title }}</span>
+                <p class="content my-2">{{ .lang.Jellyseerr.description }}</p>
+                <label class="row switch pb-4">
+                    <input type="checkbox" class="mr-2" id="jellyseerr-enabled"><span>{{ .lang.Strings.enabled }}</span>
+                </label>
+                <label class="label">
+                    <span class="mt-4">{{ .lang.Strings.serverAddress }}</span>
+                    <input type="url" class="input ~neutral @low mt-4 mb-2" id="jellyseerr-server" placeholder="https://jellyseerr.jellyf.in:5055">
+                </label>
+                <label class="label">
+                    <span class="mt-4">{{ .lang.Strings.apiKey }}</span>
+                    <input type="text" class="input ~neutral @low mt-4" id="jellyseerr-api_key">
+                </label>
+                <label class="row switch pb-4">
+                    <input type="checkbox" class="mr-2" id="jellyseerr-import_existing"><span>{{ .lang.Jellyseerr.importExisting }}</span>
+                    <p class="support mb-2 mt-1">{{ .lang.Jellyseerr.importExistingDescription }}</p>
                 </label>
                 <section class="section ~neutral banner footer flex flex-row justify-between middle">
                     <span class="button ~neutral @low back">{{ .lang.Strings.back }}</span>
@@ -423,6 +441,7 @@
             <div id="password-resets" class="card ~neutral @low mb-2 unfocused related-to-email">
                 <span class="heading">{{ .lang.PasswordResets.title }}</span>
                 <p class="content my-2">{{ .lang.PasswordResets.description }}</p>
+                <p class="content my-2" id="password_resets-more-info">{{ .lang.PasswordResets.moreInfo }}</p>
                 <label class="row switch pb-4">
                     <input type="checkbox" class="mr-2" id="password_resets-enabled"><span>{{ .lang.Strings.enabled }}</span>
                 </label>
@@ -541,4 +560,3 @@
         <script src="js/setup.js" type="module"></script>
     </body>
 </html>
-

@@ -47,7 +47,7 @@
         "title": "General",
         "listenAddress": "Listen Address",
         "urlBase": "URL Base",
-        "urlBaseNotice": "Only needed if using a reverse proxy on a subdomain (e.g 'jellyf.in/accounts').",
+        "urlBaseNotice": "Only needed if using a reverse proxy on a subfolder (e.g 'jellyf.in/accounts').",
         "lightTheme": "Light",
         "darkTheme": "Dark",
         "useHTTPS": "Use HTTPS",
@@ -94,7 +94,13 @@
     "ombi": {
         "title": "Ombi",
         "description": "By connecting to Ombi, both a Jellyfin and Ombi account will be created when a user joins through jfa-go. After setup is finished, go to Settings to set a default profile for new ombi users.",
-        "apiKeyNotice": "Find this in the first tab of Ombi settings."
+        "apiKeyNotice": "Find this in the first tab of Ombi settings.",
+        "stabilityWarning": "Warning: Ombi integration is unstable, and can cause issues. Jellyseerr is recommended instead. See {n} for more info."
+    },
+    "jellyseerr": {
+        "title": "Jellyseerr",
+        "description": "Jellyseerr is an alternative to Ombi, and integrates with jfa-go slightly better. Again, after setup is finished, go to Settings to create a profile and add a template for new Jellyseerr accounts.",
+        "importExistingDescription": "If enabled, your existing users will have contact details and preferences from jfa-go synchronized."
     },
     "messages": {
         "title": "Messages",
@@ -134,6 +140,7 @@
     "passwordResets": {
         "title": "Password Resets",
         "description": "When a user tries to reset their password, Jellyfin creates a file named 'passwordreset-*.json' which contains a PIN. jfa-go reads the file and sends the PIN to the user. If you enabled the \"User Page\" feature, a reset can also be performed there, given a username, email, or contact method.",
+        "moreInfo": "More information about the different ways of resetting passwords can be found on {n}.",
         "pathToJellyfin": "Path to Jellyfin configuration directory",
         "pathToJellyfinNotice": "If you don't know where this is, try resetting your password in Jellyfin. A popup with '<path to jellyfin>/passwordreset-*.json' will appear. This is not necessary if you only want to use self-service password resets through the \"User Page\".",
         "resetLinks": "Send a link instead of a PIN",

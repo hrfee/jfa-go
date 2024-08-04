@@ -221,12 +221,16 @@ class LangSelect extends Select {
     }
 }
 
+const replaceLink = (elName: string, sect: string, name: string, url: string, text: string) => html(elName, window.lang.var(sect, name, `<a class="underline" target="_blank" href="${url}">${text}</a>`));
+
 window.lang = new lang(window.langFile as LangFile);
-html("language-description", window.lang.var("language", "description", `<a target="_blank" href="https://weblate.jfa-go.com">Weblate</a>`));
-html("email-description", window.lang.var("email", "description", `<a target="_blank" href="https://mailgun.com">Mailgun</a>`));
-html("email-dateformat-notice", window.lang.var("email", "dateFormatNotice", `<a target="_blank" href="https://strftime.ninja/">strftime.ninja</a>`));
-html("updates-description", window.lang.var("updates", "description", `<a target="_blank" href="https://builds.hrfee.dev/view/hrfee/jfa-go">buildrone</a>`));
-html("messages-description", window.lang.var("messages", "description", `<a target="_blank" href="https://wiki.jfa-go.com">Wiki</a>`));
+replaceLink("language-description", "language", "description", "https://weblate.jfa-go.com", "Weblate");
+replaceLink("email-description", "email", "description", "https://mailgun.com", "Mailgun");
+replaceLink("email-dateformat-notice", "email", "dateFormatNotice", "https://strftime.timpetricola.com/", "strftime.timpetricola.com");
+replaceLink("updates-description", "updates", "description", "https://builds.hrfee.dev/view/hrfee/jfa-go", "buildrone");
+replaceLink("messages-description", "messages", "description", "https://wiki.jfa-go.com", "Wiki");
+replaceLink("password_resets-more-info", "passwordResets", "moreInfo", "https://wiki.jfa-go.com/docs/pwr/", "wiki.jfa-go.com");
+replaceLink("ombi-stability-warning", "ombi", "stabilityWarning", "https://wiki.jfa-go.com/docs/ombi/", "wiki.jfa-go.com");
 
 const settings = {
     "jellyfin": {
@@ -317,6 +321,12 @@ const settings = {
         "enabled": new Checkbox(get("ombi-enabled"), "", false, "ombi", "enabled"),
         "server": new Input(get("ombi-server"), "", "", "enabled", true, "ombi"),
         "api_key": new Input(get("ombi-api_key"), "", "", "enabled", true, "ombi")
+    },
+    "jellyseerr": {
+        "enabled": new Checkbox(get("jellyseerr-enabled"), "", false, "jellyseerr", "enabled"),
+        "server": new Input(get("jellyseerr-server"), "", "", "enabled", true, "jellyseerr"),
+        "api_key": new Input(get("jellyseerr-api_key"), "", "", "enabled", true, "jellyseerr"),
+        "import_existing": new Checkbox(get("jellyseerr-import_existing"), "enabled", true, "jellyseerr", "import_existing")
     },
     "advanced": {
         "tls": new Checkbox(get("advanced-tls"), "", false, "advanced", "tls"),
