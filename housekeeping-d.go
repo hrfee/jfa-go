@@ -131,7 +131,7 @@ func newHousekeepingDaemon(interval time.Duration, app *appContext) *GenericDaem
 	d.Name("Housekeeping daemon")
 
 	clearEmail := app.config.Section("email").Key("require_unique").MustBool(false)
-	clearDiscord := app.config.Section("discord").Key("require_unique").MustBool(false)
+	clearDiscord := app.config.Section("discord").Key("require_unique").MustBool(false) || app.config.Section("discord").Key("disable_enable_role").MustBool(false)
 	clearTelegram := app.config.Section("telegram").Key("require_unique").MustBool(false)
 	clearMatrix := app.config.Section("matrix").Key("require_unique").MustBool(false)
 	clearPWR := app.config.Section("captcha").Key("enabled").MustBool(false) && !app.config.Section("captcha").Key("recaptcha").MustBool(false)
