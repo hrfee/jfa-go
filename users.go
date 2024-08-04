@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -152,5 +153,61 @@ func (app *appContext) WelcomeNewUser(user mediabrowser.User, expiry time.Time) 
 		app.info.Printf(lm.SentWelcomeMessage, user.ID, name)
 		failed = false
 	}
+	return
+}
+
+func (app *appContext) SetUserDisabled(user mediabrowser.User, disabled bool) (err error, change bool, activityType ActivityType) {
+	activityType = ActivityEnabled
+	if disabled {
+		activityType = ActivityDisabled
+	}
+	change = user.Policy.IsDisabled != disabled
+	user.Policy.IsDisabled = disabled
+
+	var status int
+	status, err = app.jf.SetPolicy(user.ID, user.Policy)
+	if !(status == 200 || status == 204) && err == nil {
+		err = fmt.Errorf("failed (code %d)", status)
+	}
+	if err != nil {
+		return
+	}
+
+	if app.discord != nil && app.config.Section("discord").Key("disable_enable_role").MustBool(false) {
+		// FIXME: Un-apply role
+	}
+	return
+}
+
+func (app *appContext) DeleteUser(user mediabrowser.User) (err error, deleted bool) {
+	var status int
+	if app.ombi != nil {
+		var tpUser map[string]any
+		tpUser, status, err = app.getOmbiUser(user.ID)
+		if status == 200 && err == nil {
+			if id, ok := tpUser["id"]; ok {
+				status, err = app.ombi.DeleteUser(id.(string))
+				if status != 200 && err == nil {
+					err = fmt.Errorf("failed (code %d)", status)
+				}
+				if err != nil {
+					app.err.Printf(lm.FailedDeleteUser, lm.Ombi, user.ID, err)
+				}
+			}
+		}
+	}
+
+	if app.discord != nil && app.config.Section("discord").Key("disable_enable_role").MustBool(false) {
+		// FIXME: Un-apply role
+	}
+
+	status, err = app.jf.DeleteUser(user.ID)
+	if status != 200 && status != 204 && err == nil {
+		err = fmt.Errorf("failed (code %d)", status)
+	}
+	if err != nil {
+		return
+	}
+	deleted = true
 	return
 }

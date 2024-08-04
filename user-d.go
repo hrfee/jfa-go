@@ -72,14 +72,20 @@ func (app *appContext) checkUsers() {
 			}
 
 			if mode == "delete" {
-				status, err = app.jf.DeleteUser(id)
+				deleted := false
+				err, deleted = app.DeleteUser(user)
+				// Silence unimportant errors
+				if deleted {
+					err = nil
+				}
 				activity.Type = ActivityDeletion
+				// Store the user name, since there's no longer a user ID to reference back to
 				activity.Value = user.Name
 			} else if mode == "disable" {
-				user.Policy.IsDisabled = true
 				// Admins can't be disabled
+				// so they're not an admin anymore, sorry
 				user.Policy.IsAdministrator = false
-				status, err = app.jf.SetPolicy(id, user.Policy)
+				err, _, _ = app.SetUserDisabled(user, true)
 				activity.Type = ActivityDisabled
 			}
 			if !(status == 200 || status == 204) || err != nil {

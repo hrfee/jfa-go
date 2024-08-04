@@ -381,30 +381,29 @@ func (app *appContext) EnableDisableUsers(gc *gin.Context) {
 	for _, userID := range req.Users {
 		user, status, err := app.jf.UserByID(userID, false)
 		if status != 200 || err != nil {
-			errors["GetUser"][userID] = fmt.Sprintf("%d %v", status, err)
-			app.err.Printf(lm.FailedGetUser, userID, lm.Jellyfin, err)
+			errors["GetUser"][user.ID] = fmt.Sprintf("%d %v", status, err)
+			app.err.Printf(lm.FailedGetUser, user.ID, lm.Jellyfin, err)
 			continue
 		}
-		user.Policy.IsDisabled = !req.Enabled
-		status, err = app.jf.SetPolicy(userID, user.Policy)
-		if !(status == 200 || status == 204) || err != nil {
-			errors["SetPolicy"][userID] = fmt.Sprintf("%d %v", status, err)
-			app.err.Printf(lm.FailedApplyTemplate, "policy", lm.Jellyfin, userID, err)
+		err, _, _ = app.SetUserDisabled(user, !req.Enabled)
+		if err != nil {
+			errors["SetPolicy"][user.ID] = err.Error()
+			app.err.Printf(lm.FailedApplyTemplate, "policy", lm.Jellyfin, user.ID, err)
 			continue
 		}
 
 		// Record activity
 		app.storage.SetActivityKey(shortuuid.New(), Activity{
 			Type:       activityType,
-			UserID:     userID,
+			UserID:     user.ID,
 			SourceType: ActivityAdmin,
 			Source:     gc.GetString("jfId"),
 			Time:       time.Now(),
 		}, gc, false)
 
 		if sendMail && req.Notify {
-			if err := app.sendByID(msg, userID); err != nil {
-				app.err.Printf(lm.FailedSendEnableDisableMessage, userID, "?", err)
+			if err := app.sendByID(msg, user.ID); err != nil {
+				app.err.Printf(lm.FailedSendEnableDisableMessage, user.ID, "?", err)
 				continue
 			}
 		}
@@ -430,7 +429,6 @@ func (app *appContext) DeleteUsers(gc *gin.Context) {
 	var req deleteUserDTO
 	gc.BindJSON(&req)
 	errors := map[string]string{}
-	ombiEnabled := app.config.Section("ombi").Key("enabled").MustBool(false)
 	sendMail := messagesEnabled
 	var msg *Message
 	var err error
@@ -442,46 +440,41 @@ func (app *appContext) DeleteUsers(gc *gin.Context) {
 		}
 	}
 	for _, userID := range req.Users {
-		if ombiEnabled {
-			ombiUser, code, err := app.getOmbiUser(userID)
-			if code == 200 && err == nil {
-				if id, ok := ombiUser["id"]; ok {
-					status, err := app.ombi.DeleteUser(id.(string))
-					if err != nil || status != 200 {
-						app.err.Printf(lm.FailedDeleteUser, lm.Ombi, userID, err)
-						errors[userID] = fmt.Sprintf("Ombi: %d %v, ", status, err)
-					}
-				}
-			}
+		user, status, err := app.jf.UserByID(userID, false)
+		if status != 200 && err == nil {
+			err = fmt.Errorf("failed (code %d)", status)
+		}
+		if err != nil {
+			app.err.Printf(lm.FailedGetUser, user.ID, lm.Jellyfin, err)
+			errors[userID] = err.Error()
 		}
 
-		username := ""
-		if user, status, err := app.jf.UserByID(userID, false); status == 200 && err == nil {
-			username = user.Name
-		}
-
-		status, err := app.jf.DeleteUser(userID)
-		if !(status == 200 || status == 204) || err != nil {
-			msg := fmt.Sprintf("%d: %v", status, err)
-			if _, ok := errors[userID]; !ok {
-				errors[userID] = msg
+		deleted := false
+		err, deleted = app.DeleteUser(user)
+		if err != nil {
+			if _, ok := errors[user.ID]; !ok {
+				errors[user.ID] = err.Error() + " "
 			} else {
-				errors[userID] += msg
+				errors[user.ID] += err.Error() + " "
 			}
 		}
 
-		// Record activity
-		app.storage.SetActivityKey(shortuuid.New(), Activity{
-			Type:       ActivityDeletion,
-			UserID:     userID,
-			SourceType: ActivityAdmin,
-			Source:     gc.GetString("jfId"),
-			Value:      username,
-			Time:       time.Now(),
-		}, gc, false)
+		if deleted {
+			// Record activity
+			app.storage.SetActivityKey(shortuuid.New(), Activity{
+				Type:       ActivityDeletion,
+				UserID:     userID,
+				SourceType: ActivityAdmin,
+				Source:     gc.GetString("jfId"),
+				Value:      user.Name,
+				Time:       time.Now(),
+			}, gc, false)
+		}
 
+		// Contact details are stored separately and periodically removed,
+		// putting this here is hoping the daemon doesn't beat us.
 		if sendMail && req.Notify {
-			if err := app.sendByID(msg, userID); err != nil {
+			if err := app.sendByID(msg, user.ID); err != nil {
 				app.err.Printf(lm.FailedSendDeletionMessage, userID, "?", err)
 			}
 		}
