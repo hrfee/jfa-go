@@ -787,7 +787,7 @@ func main() {
 			fmt.Printf(lm.FailedReading+"\n", SYSTEMD_SERVICE, err)
 			os.Exit(1)
 		}
-		absPath, err := filepath.Abs(os.Args[0])
+		absPath, err := os.Executable()
 		if err != nil {
 			absPath = os.Args[0]
 		}
