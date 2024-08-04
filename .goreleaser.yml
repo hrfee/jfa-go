@@ -11,6 +11,7 @@ before:
     - go mod download
     - rm -rf data/web
     - mkdir -p data/web/css
+    - cp images/banner.svg static/banner.svg
     - bash -c 'cp -r static/* data/web/'
     - npm install
     - npm install esbuild

@@ -167,6 +167,7 @@ copy:
 	mv $(DATA)/crash.html $(DATA)/html/
 	$(info copying static data)
 	mkdir -p $(DATA)/web
+	cp images/banner.svg static/banner.svg
 	cp -r static/* $(DATA)/web/
 	$(info copying systemd service)
 	cp jfa-go.service $(DATA)/
