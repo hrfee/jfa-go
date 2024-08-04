@@ -21,7 +21,7 @@ export function toDateString(date: Date): string {
     return date.toLocaleDateString(locale, args1) + " " + date.toLocaleString(locale, args2);
 }
 
-export const _get = (url: string, data: Object, onreadystatechange: (req: XMLHttpRequest) => void): void => {
+export const _get = (url: string, data: Object, onreadystatechange: (req: XMLHttpRequest) => void, noConnectionError: boolean = false): void => {
     let req = new XMLHttpRequest();
     if (window.URLBase) { url = window.URLBase + url; }
     req.open("GET", url, true);
@@ -30,7 +30,7 @@ export const _get = (url: string, data: Object, onreadystatechange: (req: XMLHtt
     req.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
     req.onreadystatechange = () => {
         if (req.status == 0) {
-            window.notifications.connectionError();
+            if (!noConnectionError) window.notifications.connectionError();
             return;
         } else if (req.status == 401) {
             window.notifications.customError("401Error", window.lang.notif("error401Unauthorized"));
@@ -65,7 +65,7 @@ export const _upload = (url: string, formData: FormData): void => {
     req.send(formData);
 };
 
-export const _post = (url: string, data: Object, onreadystatechange: (req: XMLHttpRequest) => void, response?: boolean, statusHandler?: (req: XMLHttpRequest) => void): void => {
+export const _post = (url: string, data: Object, onreadystatechange: (req: XMLHttpRequest) => void, response?: boolean, statusHandler?: (req: XMLHttpRequest) => void, noConnectionError: boolean = false): void => {
     let req = new XMLHttpRequest();
     req.open("POST", window.URLBase + url, true);
     if (response) {
@@ -76,7 +76,7 @@ export const _post = (url: string, data: Object, onreadystatechange: (req: XMLHt
     req.onreadystatechange = () => {
         if (statusHandler) { statusHandler(req); }
         else if (req.status == 0) {
-            window.notifications.connectionError();
+            if (!noConnectionError) window.notifications.connectionError();
             return;
         } else if (req.status == 401) {
             window.notifications.customError("401Error", window.lang.notif("error401Unauthorized"));
@@ -86,14 +86,14 @@ export const _post = (url: string, data: Object, onreadystatechange: (req: XMLHt
     req.send(JSON.stringify(data));
 };
 
-export function _delete(url: string, data: Object, onreadystatechange: (req: XMLHttpRequest) => void): void {
+export function _delete(url: string, data: Object, onreadystatechange: (req: XMLHttpRequest) => void, noConnectionError: boolean = false): void {
     let req = new XMLHttpRequest();
     req.open("DELETE", window.URLBase + url, true);
     req.setRequestHeader("Authorization", "Bearer " + window.token);
     req.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
     req.onreadystatechange = () => {
         if (req.status == 0) {
-            window.notifications.connectionError();
+            if (!noConnectionError) window.notifications.connectionError();
             return;
         } else if (req.status == 401) {
             window.notifications.customError("401Error", window.lang.notif("error401Unauthorized"));

@@ -88,5 +88,5 @@ export const loadLangSelector = (page: string) => {
             }
             list.innerHTML = innerHTML;
         }
-    });
+    }, true);
 };
