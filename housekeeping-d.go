@@ -32,7 +32,7 @@ func (app *appContext) clearDiscord() {
 	app.debug.Println(lm.HousekeepingDiscord)
 	discordUsers := app.storage.GetDiscord()
 	for _, discordUser := range discordUsers {
-		_, _, err := app.jf.UserByID(discordUser.JellyfinID, false)
+		user, _, err := app.jf.UserByID(discordUser.JellyfinID, false)
 		// Make sure the user doesn't exist, and no other error has occured
 		switch err.(type) {
 		case mediabrowser.ErrUserNotFound:
@@ -40,6 +40,9 @@ func (app *appContext) clearDiscord() {
 			app.discord.RemoveRole(discordUser.MethodID().(string))
 			app.storage.DeleteDiscordKey(discordUser.JellyfinID)
 		default:
+			if user.Policy.IsDisabled {
+				app.discord.RemoveRole(discordUser.MethodID().(string))
+			}
 			continue
 		}
 	}
