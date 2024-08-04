@@ -1120,6 +1120,15 @@
                     "value": "",
                     "description": "Add the selected role to a user when they sign up."
                 },
+                "disable_enable_role": {
+                    "name": "Remove/add role on user enable/disable/deletion",
+                    "required": false,
+                    "requires_restart": true,
+                    "depends_true": "apply_role",
+                    "type": "bool",
+                    "value": false,
+                    "description": "When a user is disabled or deleted, remove the Discord role, and when re-enabled, add it back."
+                },
                 "language": {
                     "name": "Language",
                     "required": false,

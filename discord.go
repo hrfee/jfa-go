@@ -167,6 +167,24 @@ func (d *DiscordDaemon) ApplyRole(userID string) error {
 	return d.bot.GuildMemberRoleAdd(d.guildID, userID, d.roleID)
 }
 
+// RemoveRole removes the member role to the given user if set.
+func (d *DiscordDaemon) RemoveRole(userID string) error {
+	if d.roleID == "" {
+		return nil
+	}
+	return d.bot.GuildMemberRoleRemove(d.guildID, userID, d.roleID)
+}
+
+// SetRoleDisabled removes the role if "disabled", and applies if "!disabled".
+func (d *DiscordDaemon) SetRoleDisabled(userID string, disabled bool) (err error) {
+	if disabled {
+		err = d.RemoveRole(userID)
+	} else {
+		err = d.ApplyRole(userID)
+	}
+	return
+}
+
 // NewTempInvite creates an invite link, and returns the invite URL, as well as the URL for the server icon.
 func (d *DiscordDaemon) NewTempInvite(ageSeconds, maxUses int) (inviteURL, iconURL string) {
 	var inv *dg.Invite

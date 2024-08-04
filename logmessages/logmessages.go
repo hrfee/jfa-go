@@ -167,7 +167,7 @@ const (
 	UserExists                 = "user already exists"
 	AccountLinked              = "account already linked and require_unique enabled"
 	AccountUnverified          = "unverified"
-	FailedSetDiscordMemberRole = "Failed to set " + Discord + " member role: %v"
+	FailedSetDiscordMemberRole = "Failed to apply/remove " + Discord + " member role: %v"
 
 	FailedSetEmailAddress = "Failed to set email address for %s user \"%s\": %v"
 

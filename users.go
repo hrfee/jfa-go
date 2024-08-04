@@ -174,7 +174,12 @@ func (app *appContext) SetUserDisabled(user mediabrowser.User, disabled bool) (e
 	}
 
 	if app.discord != nil && app.config.Section("discord").Key("disable_enable_role").MustBool(false) {
-		// FIXME: Un-apply role
+		cmUser, ok := app.storage.GetDiscordKey(user.ID)
+		if ok {
+			if err := app.discord.SetRoleDisabled(cmUser.MethodID().(string), disabled); err != nil {
+				app.err.Printf(lm.FailedSetDiscordMemberRole, err)
+			}
+		}
 	}
 	return
 }
@@ -198,7 +203,12 @@ func (app *appContext) DeleteUser(user mediabrowser.User) (err error, deleted bo
 	}
 
 	if app.discord != nil && app.config.Section("discord").Key("disable_enable_role").MustBool(false) {
-		// FIXME: Un-apply role
+		cmUser, ok := app.storage.GetDiscordKey(user.ID)
+		if ok {
+			if err := app.discord.RemoveRole(cmUser.MethodID().(string)); err != nil {
+				app.err.Printf(lm.FailedSetDiscordMemberRole, err)
+			}
+		}
 	}
 
 	status, err = app.jf.DeleteUser(user.ID)

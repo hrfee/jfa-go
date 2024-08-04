@@ -36,6 +36,8 @@ func (app *appContext) clearDiscord() {
 		// Make sure the user doesn't exist, and no other error has occured
 		switch err.(type) {
 		case mediabrowser.ErrUserNotFound:
+			// Remove role in case their account was deleted oustide of jfa-go
+			app.discord.RemoveRole(discordUser.MethodID().(string))
 			app.storage.DeleteDiscordKey(discordUser.JellyfinID)
 		default:
 			continue
