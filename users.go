@@ -48,31 +48,7 @@ type NewUserData struct {
 	Log     func()
 }
 
-// FIXME: First load of steps are going in NewUserFromInvite, because they're only used there.
-// Make an interface{} for Require/Verify/ExistingUser which all contact daemons respect, then loop through!
-/*
--- STEPS --
-- Validate Invite
-- Validate CAPTCHA
-- Validate Password
-- a) Discord  (Require, Verify, ExistingUser, ApplyRole)
-  b) Telegram (Require, Verify, ExistingUser)
-  c) Matrix   (Require, Verify, ExistingUser)
-  d) Email    (Require, Verify, ExistingUser)
-* Check for existing user
-* Generate JF user
-- Delete Invite
-* Store Activity
-* Store Email
-- Store Discord/Telegram/Matrix/Label
-- Notify Admin (Doesn't really matter when this happens)
-* Apply Profile
-* Generate JS, Ombi Users, apply profiles
-* Send Welcome Email
-
-
-*/
-
+// Called after a new-user-creating route has done pre-steps (veryfing contact methods for example).
 func (app *appContext) NewUserPostVerification(p NewUserParams) (out NewUserData) {
 	// Some helper functions which will behave as our app.info/error/debug
 	deferLogInfo := func(s string, args ...any) {
