@@ -53,6 +53,7 @@ endif
 DEBUG ?= off
 ifeq ($(DEBUG), on)
 	SOURCEMAP := --sourcemap
+	MINIFY := 
 	TYPECHECK := npx tsc -noEmit --project ts/tsconfig.json
 	# jank
 	COPYTS := rm -r $(DATA)/web/js/ts; cp -r tempts $(DATA)/web/js/ts
@@ -61,6 +62,7 @@ ifeq ($(DEBUG), on)
 else
 	LDFLAGS := -s -w $(LDFLAGS)
 	SOURCEMAP :=
+	MINIFY := --minify
 	COPYTS :=
 	TYPECHECK :=
 	UNCSS := npx tailwindcss -i $(DATA)/web/css/bundle.css -o $(DATA)/bundle.css --content "html/crash.html"
@@ -118,13 +120,13 @@ typescript:
 	scripts/dark-variant.sh tempts/modules
 	$(info compiling typescript)
 	mkdir -p $(DATA)/web/js
-	$(ESBUILD) --target=es6 --bundle tempts/admin.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/admin.js --minify
-	$(ESBUILD) --target=es6 --bundle tempts/user.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/user.js --minify
-	$(ESBUILD) --target=es6 --bundle tempts/pwr.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/pwr.js --minify
-	$(ESBUILD) --target=es6 --bundle tempts/pwr-pin.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/pwr-pin.js --minify
-	$(ESBUILD) --target=es6 --bundle tempts/form.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/form.js --minify
-	$(ESBUILD) --target=es6 --bundle tempts/setup.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/setup.js --minify
-	$(ESBUILD) --target=es6 --bundle tempts/crash.ts --outfile=./$(DATA)/crash.js --minify
+	$(ESBUILD) --target=es6 --bundle tempts/admin.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/admin.js $(MINIFY)
+	$(ESBUILD) --target=es6 --bundle tempts/user.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/user.js $(MINIFY)
+	$(ESBUILD) --target=es6 --bundle tempts/pwr.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/pwr.js $(MINIFY)
+	$(ESBUILD) --target=es6 --bundle tempts/pwr-pin.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/pwr-pin.js $(MINIFY)
+	$(ESBUILD) --target=es6 --bundle tempts/form.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/form.js $(MINIFY)
+	$(ESBUILD) --target=es6 --bundle tempts/setup.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/setup.js $(MINIFY)
+	$(ESBUILD) --target=es6 --bundle tempts/crash.ts --outfile=./$(DATA)/crash.js $(MINIFY)
 	$(COPYTS)
 
 swagger:
