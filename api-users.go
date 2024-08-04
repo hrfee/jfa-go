@@ -37,6 +37,11 @@ func (app *appContext) NewUserFromAdmin(gc *gin.Context) {
 	gc.BindJSON(&req)
 
 	profile := app.storage.GetDefaultProfile()
+	if req.Profile != "" && req.Profile != "none" {
+		if p, ok := app.storage.GetProfileKey(req.Profile); ok {
+			profile = p
+		}
+	}
 	nu := app.NewUserPostVerification(NewUserParams{
 		Req:                 req,
 		SourceType:          ActivityAdmin,
@@ -225,6 +230,7 @@ func (app *appContext) NewUserFromInvite(gc *gin.Context) {
 				nonEmailContactMethodEnabled = true
 			}
 			app.contactMethods[i].DeleteVerifiedToken(c.PIN)
+			c.User.SetJellyfin(nu.User.ID)
 			c.User.Store(&(app.storage))
 		}
 	}
