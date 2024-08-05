@@ -1797,6 +1797,15 @@
                     "value": "disable_user",
                     "description": "Whether to delete or disable users on expiry."
                 },
+                "delete_expired_after_days": {
+                    "name": "Delete expired accounts after (days)",
+                    "required": false,
+                    "requires_restart": false,
+                    "type": "number",
+                    "value": 0,
+                    "depends_true": "behaviour",
+                    "description": "When set, user accounts will be deleted this many days after expiring (if \"Behaviour\" is \"Disable user\"). Set to 0 to disable."
+                },
                 "send_email": {
                     "name": "Send email",
                     "required": false,

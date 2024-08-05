@@ -63,8 +63,9 @@ type Activity struct {
 }
 
 type UserExpiry struct {
-	JellyfinID string `badgerhold:"key"`
-	Expiry     time.Time
+	JellyfinID        string `badgerhold:"key"`
+	Expiry            time.Time
+	DeleteAfterPeriod bool // Whether or not to further disable the user later on
 }
 
 type DebugLogAction int
