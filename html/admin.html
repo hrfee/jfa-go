@@ -535,7 +535,7 @@
             </form>
         </div>
         <div id="notification-box"></div>
-        <div class="top-4 left-4 absolute flex flex-row gap-2">
+        <div class="top-[2%] left-[2%] lg:top-4 lg:left-4 absolute flex flex-row gap-2">
             <span class="dropdown z-[11]" tabindex="0" id="lang-dropdown">
                 <span class="button ~urge dropdown-button">
                     <i class="ri-global-line"></i>
@@ -558,7 +558,7 @@
             <span class="button ~warning" alt="{{ .strings.theme }}" id="button-theme"><i class="ri-sun-line"></i></span>
         </div>
         {{ if .userPageEnabled }}
-            <div class="top-4 right-4 absolute">
+            <div class="top-[2%] lg:top-4 right-[2%] lg:right-4 absolute">
                 <a class="button ~info" href="{{ .urlBase }}/my/account"><i class="ri-account-circle-fill mr-2"></i>{{ .strings.myAccount }}</a>
             </div>
         {{ end }}
@@ -895,7 +895,7 @@
                 </div>
             </div>
             <div id="tab-settings" class="unfocused">
-                <div class="card @low dark:~d_neutral settings overflow">
+                <div class="card @low dark:~d_neutral settings overflow flex flex-col gap-2">
                     <div class="flex flex-col md:flex-row align-middle gap-2">
                         <div class="flex flex-row align-middle justify-between md:justify-normal">
                             <span class="heading">{{ .strings.settings }}</span>
@@ -912,16 +912,18 @@
                         </div>
                     </div>
                     <div class="flex flex-col md:flex-row gap-3">
-                        <div class="card @low dark:~d_neutral col" id="settings-sidebar">
+                        <div class="md:card @low dark:~d_neutral flex md:flex flex-col gap-2 flex-1" id="settings-sidebar">
                             <div class="flex flex-row justify-between">
-                                <input type="search" class="field ~neutral @low input settings-section-button justify-between mb-2" id="settings-search" placeholder="{{ .strings.search }}">
-                                <button class="button ~neutral @low center -ml-10 rounded-s-none mb-2 settings-search-clear" aria-label="{{ .strings.clearSearch }}" text="{{ .strings.clearSearch }}"><i class="ri-close-line"></i></button>
+                                <input type="search" class="field ~neutral @low input settings-section-button justify-between" id="settings-search" placeholder="{{ .strings.search }}">
+                                <button class="button ~neutral @low center -ml-10 rounded-s-none settings-search-clear" aria-label="{{ .strings.clearSearch }}" text="{{ .strings.clearSearch }}"><i class="ri-close-line"></i></button>
                             </div>
-                            <aside class="aside sm ~urge dark:~d_info mb-2 @low" id="settings-message">Note: <span class="badge ~critical">*</span> indicates a required field, <span class="badge ~info dark:~d_warning">R</span> indicates changes require a restart.</aside> 
-                            <span class="button ~neutral @low settings-section-button justify-between mb-2" id="setting-about"><span class="flex">{{ .strings.aboutProgram }} <i class="ri-information-line ml-2"></i></span></span>
-                            <span class="button ~neutral @low settings-section-button justify-between mb-2" id="setting-profiles"><span class="flex">{{ .strings.userProfiles }} <i class="ri-user-line ml-2"></i></span></span>
+                            <aside class="aside sm ~urge dark:~d_info @low" id="settings-message">Note: <span class="badge ~critical">*</span> indicates a required field, <span class="badge ~info dark:~d_warning">R</span> indicates changes require a restart.</aside>
+                            <div id="settings-loader" class="flex flex-row gap-2">
+                                <span class="button ~neutral @low settings-section-button justify-center grow" id="setting-about"><span class="flex">{{ .strings.aboutProgram }} <i class="ri-information-line ml-2"></i></span></span>
+                                <span class="button ~neutral @low settings-section-button justify-center grow" id="setting-profiles"><span class="flex">{{ .strings.userProfiles }} <i class="ri-user-line ml-2"></i></span></span>
+                            </div>
                         </div>
-                        <div class="card ~neutral @low col overflow" id="settings-panel">
+                        <div class="card ~neutral @low overflow flex-1" id="settings-panel">
                             <div class="settings-section unfocused h-[100%]" id="settings-not-found">
                                 <div class="flex flex-col h-[100%] justify-center items-center">
                                     <span class="text-2xl font-medium italic mb-2">{{ .strings.noResultsFound }}</span>

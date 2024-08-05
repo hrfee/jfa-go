@@ -627,6 +627,8 @@ export class settingsList {
     private _saveNoRestart = document.getElementById("settings-apply-no-restart") as HTMLSpanElement;
     private _saveRestart = document.getElementById("settings-apply-restart") as HTMLSpanElement;
 
+    private _loader = document.getElementById("settings-loader") as HTMLDivElement;
+    
     private _panel = document.getElementById("settings-panel") as HTMLDivElement;
     private _sidebar = document.getElementById("settings-sidebar") as HTMLDivElement;
     private _visibleSection: string;
@@ -650,7 +652,7 @@ export class settingsList {
         this._sections[name] = section;
         this._panel.appendChild(this._sections[name].asElement());
         const button = document.createElement("span") as HTMLSpanElement;
-        button.classList.add("button", "~neutral", "@low", "settings-section-button", "justify-between", "mb-2");
+        button.classList.add("button", "~neutral", "@low", "settings-section-button", "justify-between");
         button.textContent = s.meta.name;
         if (subButton) { button.appendChild(subButton); }
         button.onclick = () => { this._showPanel(name); };
@@ -905,63 +907,73 @@ export class settingsList {
         window.modals.matrix.show();
     }
 
-    reload = () => _get("/config", null, (req: XMLHttpRequest) => {
-        if (req.readyState == 4) {
-            if (req.status != 200) {
-                window.notifications.customError("settingsLoadError", window.lang.notif("errorLoadSettings"));
-                return;
-            }
-            this._settings = req.response as Settings;
-            for (let name of this._settings.order) {
-                if (name in this._sections) {
-                    this._sections[name].update(this._settings.sections[name]);
-                } else {
-                    if (name == "messages" || name == "user_page") {
-                        const editButton = document.createElement("div");
-                        editButton.classList.add("tooltip", "left");
-                        editButton.innerHTML = `
-                        <span class="button ~neutral @low">
-                            <i class="icon ri-edit-line"></i>
-                        </span>
-                        <span class="content sm">
-                        ${window.lang.get("strings", "customizeMessages")}
-                        </span>
-                        `;
-                        (editButton.querySelector("span.button") as HTMLSpanElement).onclick = () => {
-                            this._messageEditor.showList(name == "messages" ? "email" : "user");
-                        };
-                        this.addSection(name, this._settings.sections[name], editButton);
-                    } else if (name == "updates") {
-                        const icon = document.createElement("span") as HTMLSpanElement;
-                        if (window.updater.updateAvailable) {
-                            icon.classList.add("button", "~urge");
-                            icon.innerHTML = `<i class="ri-download-line" title="${window.lang.strings("update")}"></i>`;
-                            icon.onclick = () => window.updater.checkForUpdates(window.modals.updateInfo.show);
-                        }
-                        this.addSection(name, this._settings.sections[name], icon);
-                    } else if (name == "matrix" && !window.matrixEnabled) {
-                        const addButton = document.createElement("div");
-                        addButton.classList.add("tooltip", "left");
-                        addButton.innerHTML = `
-                        <span class="button ~neutral @low">+</span>
-                        <span class="content sm">
-                        ${window.lang.strings("linkMatrix")}
-                        </span>
-                        `;
-                        (addButton.querySelector("span.button") as HTMLSpanElement).onclick = this._addMatrix;
-                        this.addSection(name, this._settings.sections[name], addButton);
+    reload = () => {
+        for (let i = 0; i < this._loader.children.length; i++) {
+            this._loader.children[i].classList.add("invisible");
+        }
+        addLoader(this._loader, false, true);
+        _get("/config", null, (req: XMLHttpRequest) => {
+            if (req.readyState == 4) {
+                if (req.status != 200) {
+                    window.notifications.customError("settingsLoadError", window.lang.notif("errorLoadSettings"));
+                    return;
+                }
+                this._settings = req.response as Settings;
+                for (let name of this._settings.order) {
+                    if (name in this._sections) {
+                        this._sections[name].update(this._settings.sections[name]);
                     } else {
-                        this.addSection(name, this._settings.sections[name]);
+                        if (name == "messages" || name == "user_page") {
+                            const editButton = document.createElement("div");
+                            editButton.classList.add("tooltip", "left");
+                            editButton.innerHTML = `
+                            <span class="button ~neutral @low">
+                                <i class="icon ri-edit-line"></i>
+                            </span>
+                            <span class="content sm">
+                            ${window.lang.get("strings", "customizeMessages")}
+                            </span>
+                            `;
+                            (editButton.querySelector("span.button") as HTMLSpanElement).onclick = () => {
+                                this._messageEditor.showList(name == "messages" ? "email" : "user");
+                            };
+                            this.addSection(name, this._settings.sections[name], editButton);
+                        } else if (name == "updates") {
+                            const icon = document.createElement("span") as HTMLSpanElement;
+                            if (window.updater.updateAvailable) {
+                                icon.classList.add("button", "~urge");
+                                icon.innerHTML = `<i class="ri-download-line" title="${window.lang.strings("update")}"></i>`;
+                                icon.onclick = () => window.updater.checkForUpdates(window.modals.updateInfo.show);
+                            }
+                            this.addSection(name, this._settings.sections[name], icon);
+                        } else if (name == "matrix" && !window.matrixEnabled) {
+                            const addButton = document.createElement("div");
+                            addButton.classList.add("tooltip", "left");
+                            addButton.innerHTML = `
+                            <span class="button ~neutral @low">+</span>
+                            <span class="content sm">
+                            ${window.lang.strings("linkMatrix")}
+                            </span>
+                            `;
+                            (addButton.querySelector("span.button") as HTMLSpanElement).onclick = this._addMatrix;
+                            this.addSection(name, this._settings.sections[name], addButton);
+                        } else {
+                            this.addSection(name, this._settings.sections[name]);
+                        }
                     }
                 }
+                removeLoader(this._loader);
+                for (let i = 0; i < this._loader.children.length; i++) {
+                    this._loader.children[i].classList.remove("invisible");
+                }
+                this._showPanel(this._settings.order[0]);
+                document.dispatchEvent(new CustomEvent("settings-loaded"));
+                document.dispatchEvent(new CustomEvent("settings-advancedState", { detail: false }));
+                this._saveButton.classList.add("unfocused");
+                this._needsRestart = false;
             }
-            this._showPanel(this._settings.order[0]);
-            document.dispatchEvent(new CustomEvent("settings-loaded"));
-            document.dispatchEvent(new CustomEvent("settings-advancedState", { detail: false }));
-            this._saveButton.classList.add("unfocused");
-            this._needsRestart = false;
-        }
-    })
+        })
+    };
 
     // FIXME: Search "About" & "User profiles", pseudo-search "User profiles" for things like "Ombi", "Referrals", etc.
     search = (query: string) => {
