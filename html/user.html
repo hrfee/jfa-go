@@ -79,7 +79,7 @@
         {{ template "login-modal.html" . }}
         {{ template "account-linking.html" . }}
         <div id="notification-box"></div>
-        <div class="top-[2%] lg:top-4 left-[2%] lg:left-4 absolute">
+        <div class="top-2 left-2 absolute">
             <span class="dropdown" tabindex="0" id="lang-dropdown">
                 <span class="button ~urge dropdown-button">
                     <i class="ri-global-line"></i>
@@ -102,10 +102,10 @@
             <span class="button ~warning" alt="{{ .strings.theme }}" id="button-theme"><i class="ri-sun-line"></i></span>
             <span class="button ~critical @low mb-4 unfocused" id="logout-button">{{ .strings.logout }}</span>
         </div>
-        <div class="top-[2%] lg:top-4 right-[2%] lg:right-4 absolute">
+        <div class="top-2 right-2 absolute">
             <a class="button ~info unfocused" href="/" id="admin-back-button"><i class="ri-arrow-left-fill mr-2"></i>{{ .strings.admin }}</a>
         </div>
-        <div class="page-container unfocused">
+        <div class="page-container m-2 lg:my-20 lg:mx-64 unfocused">
             <div class="card @low dark:~d_neutral mb-4" id="card-user">
                 <span class="heading mb-2"></span>
             </div>

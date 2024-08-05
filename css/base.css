@@ -62,17 +62,6 @@ html:not(.dark) .card.\@low:not(.\~neutral):not(.\~positive):not(.\~urge):not(.\
   display: initial;
 }
 
-.page-container {
-    margin: 5% 20% 5% 20%;
-}
-
-@media (max-width: 1024px) {
-    .page-container {
-        margin: 2%;
-        margin-top: 5rem;
-    }
-}
-
 @media screen and (max-width: 1024px) {
     :root {
         font-size: 0.9rem;

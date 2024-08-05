@@ -535,58 +535,56 @@
             </form>
         </div>
         <div id="notification-box"></div>
-        <div class="top-[2%] left-[2%] lg:top-4 lg:left-4 absolute flex flex-row gap-2">
-            <span class="dropdown z-[11]" tabindex="0" id="lang-dropdown">
-                <span class="button ~urge dropdown-button">
-                    <i class="ri-global-line"></i>
-                    <span class="ml-2 chev"></span>
-                </span>
-                <div class="dropdown-display">
-                    <div class="card ~neutral @low">
-                        <label class="switch pb-4">
-                            <input type="radio" name="lang-time" id="lang-12h">
-                            <span>{{ .strings.time12h }}</span>
-                        </label>
-                        <label class="switch pb-4">
-                            <input type="radio" name="lang-time" id="lang-24h">
-                            <span>{{ .strings.time24h }}</span>
-                        </label>
-                        <div id="lang-list"></div>
-                    </div>
+        <div class="page-container m-2 lg:my-20 lg:mx-64 flex flex-col gap-4">
+            <div class="top-2 inset-x-2 lg:absolute flex flex-row justify-between">
+                <div class="flex flex-row gap-2">
+                    <span class="dropdown z-[11]" tabindex="0" id="lang-dropdown">
+                        <span class="button ~urge dropdown-button">
+                            <i class="ri-global-line"></i>
+                            <span class="ml-2 chev"></span>
+                        </span>
+                        <div class="dropdown-display">
+                            <div class="card ~neutral @low">
+                                <label class="switch pb-4">
+                                    <input type="radio" name="lang-time" id="lang-12h">
+                                    <span>{{ .strings.time12h }}</span>
+                                </label>
+                                <label class="switch pb-4">
+                                    <input type="radio" name="lang-time" id="lang-24h">
+                                    <span>{{ .strings.time24h }}</span>
+                                </label>
+                                <div id="lang-list"></div>
+                            </div>
+                        </div>
+                    </span>
+                    <span class="button ~warning" alt="{{ .strings.theme }}" id="button-theme"><i class="ri-sun-line"></i></span>
                 </div>
-            </span>
-            <span class="button ~warning" alt="{{ .strings.theme }}" id="button-theme"><i class="ri-sun-line"></i></span>
-        </div>
-        {{ if .userPageEnabled }}
-            <div class="top-[2%] lg:top-4 right-[2%] lg:right-4 absolute">
-                <a class="button ~info" href="{{ .urlBase }}/my/account"><i class="ri-account-circle-fill mr-2"></i>{{ .strings.myAccount }}</a>
-            </div>
-        {{ end }}
-        <div class="page-container">
-            <div class="mb-4">
-                <header>
-                    <div class="flex flex-row overflow-x-scroll items-center">
-                        <span id="button-tab-invites" class="text-3xl button portal ~neutral dark:~d_neutral @low mr-2 mb-2 px-5">{{ .strings.invites }}</span>
-                        <span id="button-tab-accounts" class="text-3xl button portal ~neutral dark:~d_neutral @low mr-2 mb-2 px-5">{{ .strings.accounts }}</span>
-                        <span id="button-tab-activity" class="text-3xl button portal ~neutral dark:~d_neutral @low mr-2 mb-2 px-5">{{ .strings.activity }}</span>
-                        <span id="button-tab-settings" class="text-3xl button portal ~neutral dark:~d_neutral @low mr-2 mb-2 px-5">{{ .strings.settings }}</span>
-                    </div>
-                </header>
-            </div>
-            <div class="mb-4">
-                <div>
-                    <span class="button ~critical @low mb-4 unfocused" id="logout-button">{{ .strings.logout }}</span>
+                <div class="flex flex-row gap-2">
+                    <span class="button ~critical @low unfocused" id="logout-button">{{ .strings.logout }}</span>
+                    {{ if .userPageEnabled }}
+                        <div class="">
+                            <a class="button ~info" href="{{ .urlBase }}/my/account"><i class="ri-account-circle-fill mr-2"></i>{{ .strings.myAccount }}</a>
+                        </div>
+                    {{ end }}
                 </div>
             </div>
-            <div id="tab-invites">
-                <div class="card @low invites dark:~d_neutral mb-4 overflow-visible">
+            <header>
+                <div class="flex flex-row overflow-x-scroll items-center gap-2">
+                    <span id="button-tab-invites"  class="text-3xl button portal ~neutral dark:~d_neutral @low px-5">{{ .strings.invites }}</span>
+                    <span id="button-tab-accounts" class="text-3xl button portal ~neutral dark:~d_neutral @low px-5">{{ .strings.accounts }}</span>
+                    <span id="button-tab-activity" class="text-3xl button portal ~neutral dark:~d_neutral @low px-5">{{ .strings.activity }}</span>
+                    <span id="button-tab-settings" class="text-3xl button portal ~neutral dark:~d_neutral @low px-5">{{ .strings.settings }}</span>
+                </div>
+            </header>
+            <div id="tab-invites" class="flex flex-col gap-4">
+                <div class="card @low dark:~d_neutral flex flex-col gap-2 overflow-visible invites">
                     <span class="heading">{{ .strings.invites }}</span>
-                    <div id="invites" class="mt-2"></div>
+                    <div id="invites"></div>
                 </div>
-                <div class="card @low dark:~d_neutral">
+                <div class="card @low dark:~d_neutral flex flex-col gap-2">
                     <span class="heading">{{ .strings.create }}</span>
-                    <div class="flex flex-col md:flex-row gap-3 mt-2" id="create-inv">
-                        <div class="card ~neutral @low flex flex-col gap-2 grow">
+                    <div class="flex flex-col md:flex-row gap-3" id="create-inv">
+                        <div class="card ~neutral @low flex flex-col gap-2 flex-1">
                             <div class="flex flex-row gap-2">
                                 <label class="w-1/2">
                                     <input type="radio" name="duration" class="unfocused" id="radio-inv-duration" checked>
@@ -694,7 +692,7 @@
                                 <input type="text" id="create-user-label" class="input ~neutral @low">
                             </div>
                         </div>
-                        <div class="card ~neutral @low flex flex-col justify-between gap-2 grow">
+                        <div class="card ~neutral @low flex flex-col justify-between gap-2 flex-1">
                             <div class="flex flex-col gap-2">
                                 <div class="flex flex-col gap-4">
                                     <label class="label supra" for="create-uses">{{ .strings.inviteNumberOfUses }}</label>
@@ -738,7 +736,7 @@
                     </div>
                 </div>
             </div>
-            <div id="tab-accounts" class="unfocused">
+            <div id="tab-accounts" class="flex flex-col gap-4 unfocused">
                 <div class="card @low dark:~d_neutral accounts mb-4 overflow-visible">
                     <div id="accounts-filter-dropdown" class="dropdown manual z-10 w-full">
                         <div class="flex flex-col md:flex-row align-middle gap-2">
@@ -837,7 +835,7 @@
                     </div>
                 </div>
             </div>
-            <div id="tab-activity" class="unfocused">
+            <div id="tab-activity" class="flex flex-col gap-4 unfocused">
                 <div class="card @low dark:~d_neutral activity mb-4 overflow-visible">
                     <div id="activity-filter-dropdown" class="dropdown manual z-10 w-full" tabindex="0">
                         <div class="flex flex-col md:flex-row align-middle gap-2">
@@ -894,7 +892,7 @@
                     </div>
                 </div>
             </div>
-            <div id="tab-settings" class="unfocused">
+            <div id="tab-settings" class="flex flex-col gap-4 unfocused">
                 <div class="card @low dark:~d_neutral settings overflow flex flex-col gap-2">
                     <div class="flex flex-col md:flex-row align-middle gap-2">
                         <div class="flex flex-row align-middle justify-between md:justify-normal">
