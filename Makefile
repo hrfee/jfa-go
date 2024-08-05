@@ -1,3 +1,7 @@
+.PHONY: configuration email typescript swagger copy compile compress tailwind bundle-css inline-css variants-html install clean npm config-description config-default
+
+all: compile
+
 GOESBUILD ?= off
 ifeq ($(GOESBUILD), on)
 	ESBUILD := esbuild
@@ -7,6 +11,7 @@ endif
 GOBINARY ?= go
 
 CSSVERSION ?= v3
+CSS_BUNDLE = $(DATA)/web/css/$(CSSVERSION)bundle.css
 
 VERSION ?= $(shell git describe --exact-match HEAD 2> /dev/null || echo vgit)
 VERSION := $(shell echo $(VERSION) | sed 's/v//g')
@@ -57,7 +62,7 @@ ifeq ($(DEBUG), on)
 	TYPECHECK := npx tsc -noEmit --project ts/tsconfig.json
 	# jank
 	COPYTS := rm -r $(DATA)/web/js/ts; cp -r tempts $(DATA)/web/js/ts
-	UNCSS := cp $(DATA)/web/css/bundle.css $(DATA)/bundle.css
+	UNCSS := cp $(CSS_BUNDLE) $(DATA)/bundle.css
 	# TAILWIND := --content ""
 else
 	LDFLAGS := -s -w $(LDFLAGS)
@@ -65,7 +70,7 @@ else
 	MINIFY := --minify
 	COPYTS :=
 	TYPECHECK :=
-	UNCSS := npx tailwindcss -i $(DATA)/web/css/bundle.css -o $(DATA)/bundle.css --content "html/crash.html"
+	UNCSS := npx tailwindcss -i $(CSS_BUNDLE) -o $(DATA)/bundle.css --content "html/crash.html"
 	# UNCSS := npx uncss $(DATA)/crash.html --csspath web/css --output $(DATA)/bundle.css
 	TAILWIND :=
 endif
@@ -96,77 +101,104 @@ else
 	SWAGINSTALL :=
 endif
 
-npm:
-	$(info installing npm dependencies)
-	npm install $(NPMOPTS)
+CONFIG_BASE = config/config-base.json
 
-configuration:
+CONFIG_DESCRIPTION = $(DATA)/config-base.json
+CONFIG_DEFAULT = $(DATA)/config-default.ini
+$(CONFIG_DESCRIPTION) &: $(CONFIG_BASE)
 	$(info Fixing config-base)
 	-mkdir -p $(DATA)
 	python3 scripts/enumerate_config.py -i config/config-base.json -o $(DATA)/config-base.json
+
+$(CONFIG_DEFAULT) &: $(CONFIG_BASE)
 	$(info Generating config-default.ini)
 	python3 scripts/generate_ini.py -i config/config-base.json -o $(DATA)/config-default.ini
 
-email:
+configuration: $(CONFIG_DESCRIPTION) $(CONFIG_DEFAULT)
+
+EMAIL_SRC_MJML = $(wildcard mail/*.mjml)
+EMAIL_SRC_TXT = $(wildcard mail/*.txt)
+EMAIL_DATA_MJML = $(EMAIL_SRC_MJML:mail/%=data/%)
+EMAIL_HTML = $(EMAIL_DATA_MJML:.mjml=.html)
+EMAIL_TXT = $(EMAIL_SRC_TXT:mail/%=data/%)
+EMAIL_ALL = $(EMAIL_HTML) $(EMAIL_TXT)
+EMAIL_TARGET = mail/confirmation.html
+$(EMAIL_TARGET): $(EMAIL_SRC_MJML) $(EMAIL_SRC_TXT)
 	$(info Generating email html)
 	python3 scripts/compile_mjml.py -o $(DATA)/
 
-typescript:
+TYPESCRIPT_FULLSRC = $(shell find ts/ -type f -name "*.ts")
+TYPESCRIPT_SRC = $(wildcard ts/*.ts)
+TYPESCRIPT_TEMPSRC = $(TYPESCRIPT_SRC:ts/%=tempts/%)
+# TYPESCRIPT_TARGET = $(patsubst %.ts,%.js,$(subst tempts/,./$(DATA)/web/js/,$(TYPESCRIPT_TEMPSRC)))
+TYPESCRIPT_TARGET = $(DATA)/web/js/admin.js
+$(TYPESCRIPT_TARGET): $(TYPESCRIPT_FULLSRC) ts/tsconfig.json
 	$(TYPECHECK)
-	$(adding dark variants to typescript)
 	rm -rf tempts
 	cp -r ts tempts
+	$(adding dark variants to typescript)
 	scripts/dark-variant.sh tempts
 	scripts/dark-variant.sh tempts/modules
 	$(info compiling typescript)
 	mkdir -p $(DATA)/web/js
-	$(ESBUILD) --target=es6 --bundle tempts/admin.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/admin.js $(MINIFY)
-	$(ESBUILD) --target=es6 --bundle tempts/user.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/user.js $(MINIFY)
-	$(ESBUILD) --target=es6 --bundle tempts/pwr.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/pwr.js $(MINIFY)
-	$(ESBUILD) --target=es6 --bundle tempts/pwr-pin.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/pwr-pin.js $(MINIFY)
-	$(ESBUILD) --target=es6 --bundle tempts/form.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/form.js $(MINIFY)
-	$(ESBUILD) --target=es6 --bundle tempts/setup.ts $(SOURCEMAP) --outfile=./$(DATA)/web/js/setup.js $(MINIFY)
-	$(ESBUILD) --target=es6 --bundle tempts/crash.ts --outfile=./$(DATA)/crash.js $(MINIFY)
+	$(foreach tempsrc,$(TYPESCRIPT_TEMPSRC),$(ESBUILD) --target=es6 --bundle $(tempsrc) $(SOURCEMAP) --outfile=$(patsubst %.ts,%.js,$(subst tempts/,./$(DATA)/web/js/,$(tempsrc))) $(MINIFY);)
+	mv $(DATA)/web/js/crash.js $(DATA)/
 	$(COPYTS)
 
-swagger:
+SWAGGER_SRC = $(wildcard api*.go) $(wildcard *auth.go) views.go
+SWAGGER_TARGET = docs/docs.go
+$(SWAGGER_TARGET): $(SWAGGER_SRC)
 	$(SWAGINSTALL)
 	swag init -g main.go
 
-compile:
-	$(info Downloading deps)
-	$(GOBINARY) mod download
-	$(info Building)
-	mkdir -p build
-	$(GOBINARY) build $(RACEDETECTOR) -ldflags="$(LDFLAGS)" $(TAGS) -o build/jfa-go
-
-compress:
-	upx --lzma build/jfa-go
-
-bundle-css:
-	mkdir -p $(DATA)/web/css
-	$(info copying fonts)
-	cp -r node_modules/remixicon/fonts/remixicon.css node_modules/remixicon/fonts/remixicon.woff2 $(DATA)/web/css/
-	$(info bundling css)
-	$(ESBUILD) --bundle css/base.css --outfile=$(DATA)/web/css/bundle.css --external:remixicon.css --external:../fonts/hanken* --minify
-	npx tailwindcss -i $(DATA)/web/css/bundle.css -o $(DATA)/web/css/bundle.css $(TAILWIND)
-	# npx postcss -o $(DATA)/web/css/bundle.css $(DATA)/web/css/bundle.css
-
-inline-css:
-	cp html/crash.html $(DATA)/crash.html
-	$(UNCSS)
-	node scripts/inline.js root $(DATA) $(DATA)/crash.html $(DATA)/crash.html
-	rm $(DATA)/bundle.css
-
-variants-html:
+VARIANTS_SRC = $(wildcard html/*.html)
+VARIANTS_TARGET = $(DATA)/html/admin.html
+$(VARIANTS_TARGET): $(VARIANTS_SRC)
 	$(info copying html)
 	cp -r html $(DATA)/
 	$(info adding dark variants to html)
 	node scripts/missing-colors.js html $(DATA)/html
 
-copy:
+ICON_SRC = node_modules/remixicon/fonts/remixicon.css node_modules/remixicon/fonts/remixicon.woff2
+ICON_TARGET = $(ICON_SRC:node_modules/remixicon/fonts/%=$(DATA)/web/css/%)
+CSS_SRC = $(wildcard css/*.css)
+CSS_TARGET = $(DATA)/web/css/part-bundle.css
+CSS_FULLTARGET = $(CSS_BUNDLE)
+ALL_CSS_SRC = $(ICON_SRC) $(CSS_SRC)
+ALL_CSS_TARGET = $(ICON_TARGET)
+
+$(CSS_FULLTARGET): $(TYPESCRIPT_TARGET) $(VARIANTS_TARGET) $(ALL_CSS_SRC) $(wildcard html/*.html)
+	mkdir -p $(DATA)/web/css
+	$(info copying fonts)
+	cp -r node_modules/remixicon/fonts/remixicon.css node_modules/remixicon/fonts/remixicon.woff2 $(DATA)/web/css/
+	$(info bundling css)
+	$(ESBUILD) --bundle css/base.css --outfile=$(CSS_TARGET) --external:remixicon.css --external:../fonts/hanken* --minify
+
+	npx tailwindcss -i $(CSS_TARGET) -o $(CSS_FULLTARGET) $(TAILWIND)
+	rm $(CSS_TARGET)
+	# mv $(CSS_BUNDLE) $(DATA)/web/css/$(CSSVERSION)bundle.css
+	# npx postcss -o $(CSS_TARGET) $(CSS_TARGET)
+
+bundle-css: tailwind
+
+INLINE_SRC = html/crash.html
+INLINE_TARGET = $(DATA)/crash.html
+$(INLINE_TARGET): $(CSS_FULLTARGET) $(INLINE_SRC)
+	cp html/crash.html $(DATA)/crash.html
+	$(UNCSS) # generates $(DATA)/bundle.css for us
+	node scripts/inline.js root $(DATA) $(DATA)/crash.html $(DATA)/crash.html
+	rm $(DATA)/bundle.css
+
+LANG_SRC = $(shell find ./lang)
+LANG_TARGET = $(LANG_SRC:lang/%=$(DATA)/lang/%)
+STATIC_SRC = $(wildcard static/*)
+STATIC_TARGET = $(STATIC_SRC:static/%=$(DATA)/web/%)
+COPY_SRC = images/banner.svg jfa-go.service LICENSE $(LANG_SRC) $(STATIC_SRC)
+COPY_TARGET = $(DATA)/jfa-go.service
+# $(DATA)/LICENSE $(LANG_TARGET) $(STATIC_TARGET) $(DATA)/web/css/$(CSSVERSION)bundle.css
+$(COPY_TARGET): $(INLINE_TARGET) $(STATIC_SRC)
 	$(info copying crash page)
-	mv $(DATA)/crash.html $(DATA)/html/
+	cp $(DATA)/crash.html $(DATA)/html/
 	$(info copying static data)
 	mkdir -p $(DATA)/web
 	cp images/banner.svg static/banner.svg
@@ -176,7 +208,20 @@ copy:
 	$(info copying language files)
 	cp -r lang $(DATA)/
 	cp LICENSE $(DATA)/
-	mv $(DATA)/web/css/bundle.css $(DATA)/web/css/$(CSSVERSION)bundle.css
+
+GO_SRC = $(shell find ./ -name "*.go")
+GO_TARGET = build/jfa-go
+$(GO_TARGET): $(CONFIG_DESCRIPTION) $(CONFIG_DEFAULT) $(EMAIL_TARGET) $(COPY_TARGET) $(SWAGGER_TARGET) $(GO_SRC)
+	$(info Downloading deps)
+	$(GOBINARY) mod download
+	$(info Building)
+	mkdir -p build
+	$(GOBINARY) build $(RACEDETECTOR) -ldflags="$(LDFLAGS)" $(TAGS) -o $(GO_TARGET)
+
+compile: $(GO_TARGET)
+
+compress:
+	upx --lzma build/jfa-go
 
 # internal-files:
 # 	python3 scripts/embed.py internal
@@ -197,6 +242,6 @@ clean:
 	-rm docs/docs.go docs/swagger.json docs/swagger.yaml
 	go clean
 
-quick: configuration typescript variants-html bundle-css inline-css copy compile
-
-all: configuration npm email typescript variants-html bundle-css inline-css swagger copy compile
+npm:
+	$(info installing npm dependencies)
+	npm install $(NPMOPTS)
