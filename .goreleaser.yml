@@ -8,46 +8,8 @@ release:
     name_template: "v{{.Version}}"
 before:
   hooks:
-    - go mod download
-    - rm -rf data/web
-    - mkdir -p data/web/css
-    - cp images/banner.svg static/banner.svg
-    - bash -c 'cp -r static/* data/web/'
-    - npm install
-    - npm install esbuild
-    - cp node_modules/remixicon/fonts/remixicon.css node_modules/remixicon/fonts/remixicon.woff2 data/web/css/
-    - cp -r html data/
-    - node scripts/missing-colors.js html data/html
-    - cp -r lang data/
-    - cp LICENSE data/
-    - cp jfa-go.service data/
-    - python3 scripts/enumerate_config.py -i config/config-base.json -o data/config-base.json
-    - python3 scripts/generate_ini.py -i config/config-base.json -o data/config-default.ini
-    - python3 scripts/compile_mjml.py -o data/
-    - rm -rf tempts
-    - cp -r ts tempts
-    - scripts/dark-variant.sh tempts
-    - scripts/dark-variant.sh tempts/modules
-    - mkdir -p data/web/js
-    - npx esbuild --target=es6 --bundle tempts/admin.ts {{.Env.JFA_GO_SOURCEMAP}} --outfile=./data/web/js/admin.js {{.Env.JFA_GO_MINIFY}}
-    - npx esbuild --target=es6 --bundle tempts/user.ts {{.Env.JFA_GO_SOURCEMAP}} --outfile=./data/web/js/user.js {{.Env.JFA_GO_MINIFY}}
-    - npx esbuild --target=es6 --bundle tempts/pwr.ts {{.Env.JFA_GO_SOURCEMAP}} --outfile=./data/web/js/pwr.js {{.Env.JFA_GO_MINIFY}}
-    - npx esbuild --target=es6 --bundle tempts/pwr-pin.ts {{.Env.JFA_GO_SOURCEMAP}} --outfile=./data/web/js/pwr-pin.js {{.Env.JFA_GO_MINIFY}}
-    - npx esbuild --target=es6 --bundle tempts/form.ts {{.Env.JFA_GO_SOURCEMAP}} --outfile=./data/web/js/form.js {{.Env.JFA_GO_MINIFY}}
-    - npx esbuild --target=es6 --bundle tempts/setup.ts {{.Env.JFA_GO_SOURCEMAP}} --outfile=./data/web/js/setup.js {{.Env.JFA_GO_MINIFY}}
-    - npx esbuild --target=es6 --bundle tempts/crash.ts {{.Env.JFA_GO_SOURCEMAP}} --outfile=./data/crash.js {{.Env.JFA_GO_MINIFY}}
-    - bash -c "{{.Env.JFA_GO_COPYTS}}"
-    - rm -r tempts
-    - npx esbuild --bundle css/base.css --outfile=./data/web/css/bundle.css --external:remixicon.css --external:../fonts/hanken* --minify
-    - cp html/crash.html data/
-    - npx tailwindcss -i data/web/css/bundle.css -o data/bundle.css --content "html/crash.html"
-    - node scripts/inline.js root data data/crash.html data/crash.html
-    - rm data/bundle.css
-    - npx tailwindcss -i data/web/css/bundle.css -o data/web/css/bundle.css
-    - mv data/crash.html data/html/
-    - go install github.com/swaggo/swag/cmd/swag@latest
-    - swag init -g main.go
-    - mv data/web/css/bundle.css data/web/css/{{.Env.JFA_GO_CSS_VERSION}}bundle.css
+    - npm i
+    - make precompile INTERNAL=on
 builds:
     - id: notray
       dir: ./

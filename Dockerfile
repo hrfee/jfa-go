@@ -9,7 +9,7 @@ COPY . /opt/build
 #     && apt-get install build-essential python3-pip -y \
 #     && (curl -sL https://deb.nodesource.com/setup_current.x | bash -) \
 #     && apt-get install nodejs
-RUN (cd /opt/build; npm i; make precompile INTERNAL=off GOESBUILD=on) \
+RUN (cd /opt/build; npm i; make precompile INTERNAL=off GOESBUILD=off) \
     && sed -i 's#id="password_resets-watch_directory" placeholder="/config/jellyfin"#id="password_resets-watch_directory" value="/jf" disabled#g' /opt/build/build/data/html/setup.html
 
 FROM --platform=$BUILDPLATFORM docker.io/golang:latest AS build
