@@ -1,4 +1,4 @@
-.PHONY: configuration email typescript swagger copy compile compress tailwind bundle-css inline-css variants-html install clean npm config-description config-default
+.PHONY: configuration email typescript swagger copy compile compress tailwind bundle-css inline-css variants-html install clean npm config-description config-default precompile
 
 all: compile
 
@@ -208,6 +208,8 @@ $(COPY_TARGET): $(INLINE_TARGET) $(STATIC_SRC)
 	$(info copying language files)
 	cp -r lang $(DATA)/
 	cp LICENSE $(DATA)/
+
+precompile: $(CONFIG_DESCRIPTION) $(CONFIG_DEFAULT) $(EMAIL_TARGET) $(COPY_TARGET) $(SWAGGER_TARGET)
 
 GO_SRC = $(shell find ./ -name "*.go")
 GO_TARGET = build/jfa-go

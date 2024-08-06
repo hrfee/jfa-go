@@ -17,6 +17,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 	"github.com/gomarkdown/markdown"
+	"github.com/hrfee/jfa-go/common"
 	lm "github.com/hrfee/jfa-go/logmessages"
 	"github.com/hrfee/mediabrowser"
 	"github.com/lithammer/shortuuid/v3"
@@ -538,9 +539,7 @@ func (app *appContext) verifyCaptcha(code, id, text string, isPWR bool) bool {
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
 	resp, err := http.DefaultClient.Do(req)
-	if err == nil && resp.StatusCode != 200 {
-		err = fmt.Errorf("failed (error %d)", resp.StatusCode)
-	}
+	err = common.GenericErr(resp.StatusCode, err)
 	if err != nil {
 		app.err.Printf(lm.FailedVerifyReCAPTCHA, err)
 		return false

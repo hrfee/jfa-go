@@ -499,7 +499,6 @@ func (app *appContext) DeleteUsers(gc *gin.Context) {
 func (app *appContext) ExtendExpiry(gc *gin.Context) {
 	var req extendExpiryDTO
 	gc.BindJSON(&req)
-	app.info.Printf("Expiry extension requested for %d user(s)", len(req.Users))
 	if req.Months <= 0 && req.Days <= 0 && req.Hours <= 0 && req.Minutes <= 0 && req.Timestamp <= 0 {
 		respondBool(400, false, gc)
 		return
