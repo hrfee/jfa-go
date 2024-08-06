@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hrfee/jfa-go/common"
+	co "github.com/hrfee/jfa-go/common"
 )
 
 const (
@@ -28,13 +28,13 @@ type Jellyseerr struct {
 	userCache        map[string]User // Map of jellyfin IDs to users
 	cacheExpiry      time.Time
 	cacheLength      time.Duration
-	timeoutHandler   common.TimeoutHandler
+	timeoutHandler   co.TimeoutHandler
 	LogRequestBodies bool
 	AutoImportUsers  bool
 }
 
 // NewJellyseerr returns an Ombi object.
-func NewJellyseerr(server, key string, timeoutHandler common.TimeoutHandler) *Jellyseerr {
+func NewJellyseerr(server, key string, timeoutHandler co.TimeoutHandler) *Jellyseerr {
 	if !strings.HasSuffix(server, API_SUFFIX) {
 		server = server + API_SUFFIX
 	}
@@ -82,25 +82,23 @@ func (js *Jellyseerr) req(mode string, uri string, data any, queryParams url.Val
 		}
 	}
 	resp, err := js.httpClient.Do(req)
-	reqFailed := err != nil || !(resp.StatusCode == 200 || resp.StatusCode == 201)
+	err = co.GenericErr(resp.StatusCode, err)
 	defer js.timeoutHandler()
 	var responseText string
 	defer resp.Body.Close()
-	if response || reqFailed {
+	if response || err != nil {
 		responseText, err = js.decodeResp(resp)
 		if err != nil {
 			return responseText, resp.StatusCode, err
 		}
 	}
-	if reqFailed {
+	if err != nil {
 		var msg ErrorDTO
 		err = json.Unmarshal([]byte(responseText), &msg)
 		if err != nil {
 			return responseText, resp.StatusCode, err
 		}
-		if msg.Message == "" {
-			err = fmt.Errorf("failed (error %d)", resp.StatusCode)
-		} else {
+		if msg.Message != "" {
 			err = fmt.Errorf("got %d: %s", resp.StatusCode, msg.Message)
 		}
 		return responseText, resp.StatusCode, err
@@ -145,13 +143,10 @@ func (js *Jellyseerr) ImportFromJellyfin(jfIDs ...string) ([]User, error) {
 	params := map[string]interface{}{
 		"jellyfinUserIds": jfIDs,
 	}
-	resp, status, err := js.post(js.server+"/user/import-from-jellyfin", params, true)
+	resp, _, err := js.post(js.server+"/user/import-from-jellyfin", params, true)
 	var data []User
 	if err != nil {
 		return data, err
-	}
-	if status != 200 && status != 201 {
-		return data, fmt.Errorf("failed (error %d)", status)
 	}
 	err = json.Unmarshal([]byte(resp), &data)
 	for _, u := range data {
@@ -197,15 +192,11 @@ func (js *Jellyseerr) getUserPage(page int) (GetUsersDTO, error) {
 	if js.LogRequestBodies {
 		fmt.Printf("Jellyseerr API Client: Sending with URL params \"%+v\"\n", params)
 	}
-	resp, status, err := js.get(js.server+"/user", nil, params)
+	resp, _, err := js.get(js.server+"/user", nil, params)
 	var data GetUsersDTO
-	if status != 200 {
-		return data, fmt.Errorf("failed (error %d)", status)
+	if err == nil {
+		err = json.Unmarshal([]byte(resp), &data)
 	}
-	if err != nil {
-		return data, err
-	}
-	err = json.Unmarshal([]byte(resp), &data)
 	return data, err
 }
 
@@ -261,12 +252,9 @@ func (js *Jellyseerr) getUser(jfID string) (User, error) {
 }
 
 func (js *Jellyseerr) Me() (User, error) {
-	resp, status, err := js.get(js.server+"/auth/me", nil, url.Values{})
+	resp, _, err := js.get(js.server+"/auth/me", nil, url.Values{})
 	var data User
 	data.ID = -1
-	if status != 200 {
-		return data, fmt.Errorf("failed (error %d)", status)
-	}
 	if err != nil {
 		return data, err
 	}
@@ -281,12 +269,9 @@ func (js *Jellyseerr) GetPermissions(jfID string) (Permissions, error) {
 		return data.Permissions, err
 	}
 
-	resp, status, err := js.get(fmt.Sprintf(js.server+"/user/%d/settings/permissions", u.ID), nil, url.Values{})
+	resp, _, err := js.get(fmt.Sprintf(js.server+"/user/%d/settings/permissions", u.ID), nil, url.Values{})
 	if err != nil {
 		return data.Permissions, err
-	}
-	if status != 200 {
-		return data.Permissions, fmt.Errorf("failed (error %d)", status)
 	}
 	err = json.Unmarshal([]byte(resp), &data)
 	return data.Permissions, err
@@ -298,12 +283,9 @@ func (js *Jellyseerr) SetPermissions(jfID string, perm Permissions) error {
 		return err
 	}
 
-	_, status, err := js.post(fmt.Sprintf(js.server+"/user/%d/settings/permissions", u.ID), permissionsDTO{Permissions: perm}, false)
+	_, _, err = js.post(fmt.Sprintf(js.server+"/user/%d/settings/permissions", u.ID), permissionsDTO{Permissions: perm}, false)
 	if err != nil {
 		return err
-	}
-	if status != 200 && status != 201 {
-		return fmt.Errorf("failed (error %d)", status)
 	}
 	u.Permissions = perm
 	js.userCache[jfID] = u
@@ -316,12 +298,9 @@ func (js *Jellyseerr) ApplyTemplateToUser(jfID string, tmpl UserTemplate) error 
 		return err
 	}
 
-	_, status, err := js.put(fmt.Sprintf(js.server+"/user/%d", u.ID), tmpl, false)
+	_, _, err = js.put(fmt.Sprintf(js.server+"/user/%d", u.ID), tmpl, false)
 	if err != nil {
 		return err
-	}
-	if status != 200 && status != 201 {
-		return fmt.Errorf("failed (error %d)", status)
 	}
 	u.UserTemplate = tmpl
 	js.userCache[jfID] = u
@@ -337,12 +316,9 @@ func (js *Jellyseerr) ModifyUser(jfID string, conf map[UserField]any) error {
 		return err
 	}
 
-	_, status, err := js.put(fmt.Sprintf(js.server+"/user/%d", u.ID), conf, false)
+	_, _, err = js.put(fmt.Sprintf(js.server+"/user/%d", u.ID), conf, false)
 	if err != nil {
 		return err
-	}
-	if status != 200 && status != 201 {
-		return fmt.Errorf("failed (error %d)", status)
 	}
 	// Lazily just invalidate the cache.
 	js.cacheExpiry = time.Now()
@@ -355,10 +331,7 @@ func (js *Jellyseerr) DeleteUser(jfID string) error {
 		return err
 	}
 
-	status, err := js.delete(fmt.Sprintf(js.server+"/user/%d", u.ID), nil)
-	if status != 200 && status != 201 {
-		return fmt.Errorf("failed (error %d)", status)
-	}
+	_, err = js.delete(fmt.Sprintf(js.server+"/user/%d", u.ID), nil)
 	if err != nil {
 		return err
 	}
@@ -376,12 +349,9 @@ func (js *Jellyseerr) GetNotificationPreferences(jfID string) (Notifications, er
 
 func (js *Jellyseerr) GetNotificationPreferencesByID(jellyseerrID int64) (Notifications, error) {
 	var data Notifications
-	resp, status, err := js.get(fmt.Sprintf(js.server+"/user/%d/settings/notifications", jellyseerrID), nil, url.Values{})
+	resp, _, err := js.get(fmt.Sprintf(js.server+"/user/%d/settings/notifications", jellyseerrID), nil, url.Values{})
 	if err != nil {
 		return data, err
-	}
-	if status != 200 {
-		return data, fmt.Errorf("failed (error %d)", status)
 	}
 	err = json.Unmarshal([]byte(resp), &data)
 	return data, err
@@ -397,12 +367,9 @@ func (js *Jellyseerr) ApplyNotificationsTemplateToUser(jfID string, tmpl Notific
 		return err
 	}
 
-	_, status, err := js.post(fmt.Sprintf(js.server+"/user/%d/settings/notifications", u.ID), tmpl, false)
+	_, _, err = js.post(fmt.Sprintf(js.server+"/user/%d/settings/notifications", u.ID), tmpl, false)
 	if err != nil {
 		return err
-	}
-	if status != 200 && status != 201 {
-		return fmt.Errorf("failed (error %d)", status)
 	}
 	return nil
 }
@@ -413,12 +380,9 @@ func (js *Jellyseerr) ModifyNotifications(jfID string, conf map[NotificationsFie
 		return err
 	}
 
-	_, status, err := js.post(fmt.Sprintf(js.server+"/user/%d/settings/notifications", u.ID), conf, false)
+	_, _, err = js.post(fmt.Sprintf(js.server+"/user/%d/settings/notifications", u.ID), conf, false)
 	if err != nil {
 		return err
-	}
-	if status != 200 && status != 201 {
-		return fmt.Errorf("failed (error %d)", status)
 	}
 	return nil
 }
@@ -429,11 +393,8 @@ func (js *Jellyseerr) GetUsers() (map[string]User, error) {
 }
 
 func (js *Jellyseerr) UserByID(jellyseerrID int64) (User, error) {
-	resp, status, err := js.get(js.server+fmt.Sprintf("/user/%d", jellyseerrID), nil, url.Values{})
+	resp, _, err := js.get(js.server+fmt.Sprintf("/user/%d", jellyseerrID), nil, url.Values{})
 	var data User
-	if status != 200 {
-		return data, fmt.Errorf("failed (error %d)", status)
-	}
 	if err != nil {
 		return data, err
 	}
@@ -447,12 +408,9 @@ func (js *Jellyseerr) ModifyMainUserSettings(jfID string, conf MainUserSettings)
 		return err
 	}
 
-	_, status, err := js.post(fmt.Sprintf(js.server+"/user/%d/settings/main", u.ID), conf, false)
+	_, _, err = js.post(fmt.Sprintf(js.server+"/user/%d/settings/main", u.ID), conf, false)
 	if err != nil {
 		return err
-	}
-	if status != 200 && status != 201 {
-		return fmt.Errorf("failed (error %d)", status)
 	}
 	// Lazily just invalidate the cache.
 	js.cacheExpiry = time.Now()

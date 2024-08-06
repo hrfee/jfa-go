@@ -91,19 +91,22 @@ func (app *appContext) TestJF(gc *gin.Context) {
 		tempjf.SetTransport(transport)
 	}
 
-	user, status, err := tempjf.Authenticate(req.Username, req.Password)
-	if !(status == 200 || status == 204) || err != nil {
+	user, err := tempjf.Authenticate(req.Username, req.Password)
+	if err != nil {
 		msg := ""
-		switch status {
-		case 0:
-			msg = "errorConnectionRefused"
-			status = 500
-		case 401:
+		status := 500
+		switch err.(type) {
+		case mediabrowser.ErrUnauthorized:
 			msg = "errorInvalidUserPass"
-		case 403:
+			status = 401
+		case mediabrowser.ErrForbidden:
 			msg = "errorUserDisabled"
-		case 404:
+			status = 403
+		case mediabrowser.ErrNotFound:
 			msg = "error404"
+			status = 404
+		default:
+			msg = "errorConnectionRefused"
 		}
 		app.err.Printf(lm.FailedAuthJellyfin, req.Server, status, err)
 		if msg != "" {

@@ -58,8 +58,8 @@ func (app *appContext) SynchronizeJellyseerrUser(jfID string) {
 }
 
 func (app *appContext) SynchronizeJellyseerrUsers() {
-	users, status, err := app.jf.GetUsers(false)
-	if err != nil || status != 200 {
+	users, err := app.jf.GetUsers(false)
+	if err != nil {
 		app.err.Printf(lm.FailedGetUsers, lm.Jellyfin, err)
 		return
 	}

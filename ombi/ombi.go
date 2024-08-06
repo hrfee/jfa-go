@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hrfee/jfa-go/common"
+	co "github.com/hrfee/jfa-go/common"
 )
 
 const (
@@ -26,11 +26,11 @@ type Ombi struct {
 	userCache      []map[string]interface{}
 	cacheExpiry    time.Time
 	cacheLength    int
-	timeoutHandler common.TimeoutHandler
+	timeoutHandler co.TimeoutHandler
 }
 
 // NewOmbi returns an Ombi object.
-func NewOmbi(server, key string, timeoutHandler common.TimeoutHandler) *Ombi {
+func NewOmbi(server, key string, timeoutHandler co.TimeoutHandler) *Ombi {
 	return &Ombi{
 		server: server,
 		key:    key,
@@ -133,17 +133,19 @@ func (ombi *Ombi) put(url string, data map[string]interface{}, response bool) (s
 }
 
 // ModifyUser applies the given modified user object to the corresponding user.
-func (ombi *Ombi) ModifyUser(user map[string]interface{}) (status int, err error) {
+func (ombi *Ombi) ModifyUser(user map[string]interface{}) (err error) {
 	if _, ok := user["id"]; !ok {
 		err = fmt.Errorf("No ID provided")
 		return
 	}
+	var status int
 	_, status, err = ombi.put(ombi.server+"/api/v1/Identity/", user, false)
+	err = co.GenericErr(status, err)
 	return
 }
 
 // DeleteUser deletes the user corresponding to the given ID.
-func (ombi *Ombi) DeleteUser(id string) (code int, err error) {
+func (ombi *Ombi) DeleteUser(id string) (err error) {
 	url := fmt.Sprintf("%s/api/v1/Identity/%s", ombi.server, id)
 	req, _ := http.NewRequest("DELETE", url, nil)
 	req.Header.Add("Content-Type", "application/json")
@@ -152,18 +154,19 @@ func (ombi *Ombi) DeleteUser(id string) (code int, err error) {
 	}
 	resp, err := ombi.httpClient.Do(req)
 	defer ombi.timeoutHandler()
-	return resp.StatusCode, err
+	return co.GenericErr(resp.StatusCode, err)
 }
 
 // UserByID returns the user corresponding to the provided ID.
-func (ombi *Ombi) UserByID(id string) (result map[string]interface{}, code int, err error) {
+func (ombi *Ombi) UserByID(id string) (result map[string]interface{}, err error) {
 	resp, code, err := ombi.getJSON(fmt.Sprintf("%s/api/v1/Identity/User/%s", ombi.server, id), nil)
+	err = co.GenericErr(code, err)
 	json.Unmarshal([]byte(resp), &result)
 	return
 }
 
 // GetUsers returns all users on the Ombi instance.
-func (ombi *Ombi) GetUsers() ([]map[string]interface{}, int, error) {
+func (ombi *Ombi) GetUsers() ([]map[string]interface{}, error) {
 	if time.Now().After(ombi.cacheExpiry) {
 		resp, code, err := ombi.getJSON(fmt.Sprintf("%s/api/v1/Identity/Users", ombi.server), nil)
 		var result []map[string]interface{}
@@ -172,9 +175,10 @@ func (ombi *Ombi) GetUsers() ([]map[string]interface{}, int, error) {
 		if (code == 200 || code == 204) && err == nil {
 			ombi.cacheExpiry = time.Now().Add(time.Minute * time.Duration(ombi.cacheLength))
 		}
-		return result, code, err
+		err = co.GenericErr(code, err)
+		return result, err
 	}
-	return ombi.userCache, 200, nil
+	return ombi.userCache, nil
 }
 
 // Strip these from a user when saving as a template.
@@ -190,9 +194,9 @@ var stripFromOmbi = []string{
 }
 
 // TemplateByID returns a template based on the user corresponding to the provided ID's settings.
-func (ombi *Ombi) TemplateByID(id string) (result map[string]interface{}, code int, err error) {
-	result, code, err = ombi.UserByID(id)
-	if err != nil || code != 200 {
+func (ombi *Ombi) TemplateByID(id string) (result map[string]interface{}, err error) {
+	result, err = ombi.UserByID(id)
+	if err != nil {
 		return
 	}
 	for _, key := range stripFromOmbi {
@@ -209,24 +213,25 @@ func (ombi *Ombi) TemplateByID(id string) (result map[string]interface{}, code i
 }
 
 // NewUser creates a new user with the given username, password and email address.
-func (ombi *Ombi) NewUser(username, password, email string, template map[string]interface{}) ([]string, int, error) {
+func (ombi *Ombi) NewUser(username, password, email string, template map[string]interface{}) ([]string, error) {
 	url := fmt.Sprintf("%s/api/v1/Identity", ombi.server)
 	user := template
 	user["userName"] = username
 	user["password"] = password
 	user["emailAddress"] = email
 	resp, code, err := ombi.post(url, user, true)
+	err = co.GenericErr(code, err)
 	var data map[string]interface{}
 	json.Unmarshal([]byte(resp), &data)
-	if err != nil || code != 200 {
+	if err != nil {
 		var lst []string
 		if data["errors"] != nil {
 			lst = data["errors"].([]string)
 		}
-		return lst, code, err
+		return lst, err
 	}
 	ombi.cacheExpiry = time.Now()
-	return nil, code, err
+	return nil, err
 }
 
 type NotificationPref struct {
@@ -236,7 +241,7 @@ type NotificationPref struct {
 	Enabled bool   `json:"enabled"`
 }
 
-func (ombi *Ombi) SetNotificationPrefs(user map[string]interface{}, discordID, telegramUser string) (result string, code int, err error) {
+func (ombi *Ombi) SetNotificationPrefs(user map[string]interface{}, discordID, telegramUser string) (result string, err error) {
 	id := user["id"].(string)
 	url := fmt.Sprintf("%s/api/v1/Identity/NotificationPreferences", ombi.server)
 	data := []NotificationPref{}
@@ -246,6 +251,8 @@ func (ombi *Ombi) SetNotificationPrefs(user map[string]interface{}, discordID, t
 	if telegramUser != "" {
 		data = append(data, NotificationPref{NotifAgentTelegram, id, telegramUser, true})
 	}
+	var code int
 	result, code, err = ombi.send("POST", url, data, true, map[string]string{"UserName": user["userName"].(string)})
+	err = co.GenericErr(code, err)
 	return
 }

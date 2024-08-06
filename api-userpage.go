@@ -29,8 +29,8 @@ func (app *appContext) MyDetails(gc *gin.Context) {
 		Id: gc.GetString("jfId"),
 	}
 
-	user, status, err := app.jf.UserByID(resp.Id, false)
-	if status != 200 || err != nil {
+	user, err := app.jf.UserByID(resp.Id, false)
+	if err != nil {
 		app.err.Printf(lm.FailedGetUsers, lm.Jellyfin, err)
 		respond(500, "Failed to get user", gc)
 		return
@@ -259,9 +259,9 @@ func (app *appContext) ModifyMyEmail(gc *gin.Context) {
 	}
 
 	if emailEnabled && app.config.Section("email_confirmation").Key("enabled").MustBool(false) {
-		user, status, err := app.jf.UserByID(id, false)
+		user, err := app.jf.UserByID(id, false)
 		name := ""
-		if status == 200 && err == nil {
+		if err == nil {
 			name = user.Name
 		}
 		app.debug.Printf(lm.EmailConfirmationRequired, id)
@@ -688,20 +688,20 @@ func (app *appContext) ChangeMyPassword(gc *gin.Context) {
 			return
 		}
 	}
-	user, status, err := app.jf.UserByID(gc.GetString("jfId"), false)
-	if status != 200 || err != nil {
+	user, err := app.jf.UserByID(gc.GetString("jfId"), false)
+	if err != nil {
 		app.err.Printf(lm.FailedGetUser, gc.GetString("jfId"), lm.Jellyfin, err)
 		respondBool(500, false, gc)
 		return
 	}
 	// Authenticate as user to confirm old password.
-	user, status, err = app.authJf.Authenticate(user.Name, req.Old)
-	if status != 200 || err != nil {
+	user, err = app.authJf.Authenticate(user.Name, req.Old)
+	if err != nil {
 		respondBool(401, false, gc)
 		return
 	}
-	status, err = app.jf.SetPassword(gc.GetString("jfId"), req.Old, req.New)
-	if (status != 200 && status != 204) || err != nil {
+	err = app.jf.SetPassword(gc.GetString("jfId"), req.Old, req.New)
+	if err != nil {
 		respondBool(500, false, gc)
 		return
 	}
@@ -716,14 +716,14 @@ func (app *appContext) ChangeMyPassword(gc *gin.Context) {
 
 	if app.config.Section("ombi").Key("enabled").MustBool(false) {
 		func() {
-			ombiUser, status, err := app.getOmbiUser(gc.GetString("jfId"))
-			if status != 200 || err != nil {
+			ombiUser, err := app.getOmbiUser(gc.GetString("jfId"))
+			if err != nil {
 				app.err.Printf(lm.FailedGetUser, user.Name, lm.Ombi, err)
 				return
 			}
 			ombiUser["password"] = req.New
-			status, err = app.ombi.ModifyUser(ombiUser)
-			if status != 200 || err != nil {
+			err = app.ombi.ModifyUser(ombiUser)
+			if err != nil {
 				app.err.Printf(lm.FailedChangePassword, lm.Ombi, ombiUser["userName"], err)
 				return
 			}

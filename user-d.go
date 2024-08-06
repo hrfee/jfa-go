@@ -24,8 +24,8 @@ func (app *appContext) checkUsers() {
 	}
 
 	app.info.Println(lm.CheckUserExpiries)
-	users, status, err := app.jf.GetUsers(false)
-	if err != nil || status != 200 {
+	users, err := app.jf.GetUsers(false)
+	if err != nil {
 		app.err.Printf(lm.FailedGetUsers, lm.Jellyfin, err)
 		return
 	}
@@ -89,7 +89,7 @@ func (app *appContext) checkUsers() {
 			err, _, _ = app.SetUserDisabled(user, true)
 			activity.Type = ActivityDisabled
 		}
-		if !(status == 200 || status == 204) || err != nil {
+		if err != nil {
 			app.err.Printf(lm.FailedDeleteOrDisableExpiredUser, user.ID, err)
 			continue
 		}

@@ -45,7 +45,7 @@ const (
 
 	UsingTLS = "Using TLS/HTTP2"
 
-	UsingOmbi         = "Starting " + " + Ombi + " + " client"
+	UsingOmbi         = "Starting " + Ombi + " client"
 	UsingJellyseerr   = "Starting " + Jellyseerr + " client"
 	UsingEmby         = "Using Emby server type (EXPERIMENTAL: PWRs are not available, and support is limited.)"
 	UsingJellyfin     = "Using " + Jellyfin + " server type"
@@ -54,6 +54,13 @@ const (
 
 	AuthJellyfin       = "Authenticated with " + Jellyfin + " @ \"%s\""
 	FailedAuthJellyfin = "Failed to authenticate with " + Jellyfin + " @ \"%s\" (code %d): %v"
+	FailedAuth         = "Failed to authenticate with %s @ \"%s\" (code %d): %v"
+
+	Unauthorized          = "unauthorized, check credentials"
+	Forbidden             = "forbidden, the user may not have correct permissions"
+	NotFound              = "not found"
+	TimedOut              = "timed out"
+	FailedGenericWithCode = "failed (code %d)"
 
 	InitDiscord        = "Initialized Discord daemon"
 	FailedInitDiscord  = "Failed to initialize Discord daemon: %v"
@@ -213,7 +220,6 @@ const (
 	FailedGetDiscordChannel          = "Failed to get " + Discord + " channel \"%s\": %v"
 	MonitorAllDiscordChannels        = "Will monitor all " + Discord + " channels"
 	FailedCreateDiscordDMChannel     = "Failed to create " + Discord + " private DM channel with \"%s\": %v"
-	NotFound                         = "not found"
 	RegisterDiscordChoice            = "Registered " + Discord + " %s choice \"%s\""
 	FailedRegisterDiscordChoices     = "Failed to register " + Discord + " %s choices: %v"
 	FailedDeregDiscordChoice         = "Failed to deregister " + Discord + " %s choice \"%s\": %v"

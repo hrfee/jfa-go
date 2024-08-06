@@ -333,26 +333,25 @@ func (app *appContext) ResetPassword(gc *gin.Context) {
 	// 	data["pin"] = pin
 	// }
 	var resp mediabrowser.PasswordResetResponse
-	var status int
 	var err error
 	var username string
 	if !isInternal && !setPassword {
-		resp, status, err = app.jf.ResetPassword(pin)
+		resp, err = app.jf.ResetPassword(pin)
 	} else if time.Now().After(pwr.Expiry) {
 		app.debug.Printf(lm.FailedChangePassword, lm.Jellyfin, "?", fmt.Sprintf(lm.ExpiredPIN, pin))
 		app.NoRouteHandler(gc)
 		return
 	} else {
-		status, err = app.jf.ResetPasswordAdmin(pwr.ID)
-		if !(status == 200 || status == 204) || err != nil {
+		err = app.jf.ResetPasswordAdmin(pwr.ID)
+		if err != nil {
 			app.err.Printf(lm.FailedChangePassword, lm.Jellyfin, "?", err)
 		} else {
-			status, err = app.jf.SetPassword(pwr.ID, "", pin)
+			err = app.jf.SetPassword(pwr.ID, "", pin)
 		}
 		username = pwr.Username
 	}
 
-	if (status == 200 || status == 204) && err == nil && (isInternal || resp.Success) {
+	if err == nil && (isInternal || resp.Success) {
 		data["success"] = true
 		data["pin"] = pin
 		if !isInternal {
@@ -364,8 +363,8 @@ func (app *appContext) ResetPassword(gc *gin.Context) {
 
 	// Only log PWRs we know the user for.
 	if username != "" {
-		jfUser, status, err := app.jf.UserByName(username, false)
-		if err == nil && status == 200 {
+		jfUser, err := app.jf.UserByName(username, false)
+		if err == nil {
 			app.storage.SetActivityKey(shortuuid.New(), Activity{
 				Type:       ActivityResetPassword,
 				UserID:     jfUser.ID,
@@ -377,19 +376,19 @@ func (app *appContext) ResetPassword(gc *gin.Context) {
 	}
 
 	if app.config.Section("ombi").Key("enabled").MustBool(false) {
-		jfUser, status, err := app.jf.UserByName(username, false)
-		if status != 200 || err != nil {
+		jfUser, err := app.jf.UserByName(username, false)
+		if err != nil {
 			app.err.Printf(lm.FailedGetUser, username, lm.Jellyfin, err)
 			return
 		}
-		ombiUser, status, err := app.getOmbiUser(jfUser.ID)
-		if status != 200 || err != nil {
+		ombiUser, err := app.getOmbiUser(jfUser.ID)
+		if err != nil {
 			app.err.Printf(lm.FailedGetUser, username, lm.Ombi, err)
 			return
 		}
 		ombiUser["password"] = pin
-		status, err = app.ombi.ModifyUser(ombiUser)
-		if status != 200 || err != nil {
+		err = app.ombi.ModifyUser(ombiUser)
+		if err != nil {
 			app.err.Printf(lm.FailedChangePassword, lm.Ombi, ombiUser["userName"], err)
 			return
 		}
@@ -749,8 +748,8 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 
 	fromUser := ""
 	if invite.ReferrerJellyfinID != "" {
-		sender, status, err := app.jf.UserByID(invite.ReferrerJellyfinID, false)
-		if status == 200 && err == nil {
+		sender, err := app.jf.UserByID(invite.ReferrerJellyfinID, false)
+		if err == nil {
 			fromUser = sender.Name
 		}
 	}

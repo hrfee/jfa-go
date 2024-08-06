@@ -154,8 +154,8 @@ func test(app *appContext) {
 	for n, v := range settings {
 		fmt.Println(n, ":", v)
 	}
-	users, status, err := app.jf.GetUsers(false)
-	fmt.Printf("GetUsers: code %d err %s maplength %d\n", status, err, len(users))
+	users, err := app.jf.GetUsers(false)
+	fmt.Printf("GetUsers: err %s maplength %d\n", err, len(users))
 	fmt.Printf("View output? [y/n]: ")
 	var choice string
 	fmt.Scanln(&choice)
@@ -166,8 +166,8 @@ func test(app *appContext) {
 	fmt.Printf("Enter a user to grab: ")
 	var username string
 	fmt.Scanln(&username)
-	user, status, err := app.jf.UserByName(username, false)
-	fmt.Printf("UserByName (%s): code %d err %s", username, status, err)
+	user, err := app.jf.UserByName(username, false)
+	fmt.Printf("UserByName (%s): code %d err %s", username, err)
 	out, _ := json.MarshalIndent(user, "", "  ")
 	fmt.Print(string(out))
 }
@@ -436,8 +436,8 @@ func start(asDaemon, firstCall bool) {
 			RetryGap:    time.Duration(app.config.Section("advanced").Key("auth_retry_gap").MustInt(10)) * time.Second,
 			LogFailures: true,
 		}
-		_, status, err = app.jf.MustAuthenticate(app.config.Section("jellyfin").Key("username").String(), app.config.Section("jellyfin").Key("password").String(), retryOpts)
-		if status != 200 || err != nil {
+		_, err = app.jf.MustAuthenticate(app.config.Section("jellyfin").Key("username").String(), app.config.Section("jellyfin").Key("password").String(), retryOpts)
+		if err != nil {
 			app.err.Fatalf(lm.FailedAuthJellyfin, server, status, err)
 		}
 		app.info.Printf(lm.AuthJellyfin, server)

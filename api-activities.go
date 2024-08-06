@@ -144,13 +144,13 @@ func (app *appContext) GetActivities(gc *gin.Context) {
 		if act.Type == ActivityDeletion || act.Type == ActivityCreation {
 			resp.Activities[i].Username = act.Value
 			resp.Activities[i].Value = ""
-		} else if user, status, err := app.jf.UserByID(act.UserID, false); status == 200 && err == nil {
+		} else if user, err := app.jf.UserByID(act.UserID, false); err == nil {
 			resp.Activities[i].Username = user.Name
 		}
 
 		if (act.SourceType == ActivityUser || act.SourceType == ActivityAdmin) && act.Source != "" {
-			user, status, err := app.jf.UserByID(act.Source, false)
-			if status == 200 && err == nil {
+			user, err := app.jf.UserByID(act.Source, false)
+			if err == nil {
 				resp.Activities[i].SourceUsername = user.Name
 			}
 		}

@@ -379,9 +379,9 @@ func (app *appContext) EnableDisableUsers(gc *gin.Context) {
 		activityType = ActivityEnabled
 	}
 	for _, userID := range req.Users {
-		user, status, err := app.jf.UserByID(userID, false)
-		if status != 200 || err != nil {
-			errors["GetUser"][user.ID] = fmt.Sprintf("%d %v", status, err)
+		user, err := app.jf.UserByID(userID, false)
+		if err != nil {
+			errors["GetUser"][user.ID] = err.Error()
 			app.err.Printf(lm.FailedGetUser, user.ID, lm.Jellyfin, err)
 			continue
 		}
@@ -440,10 +440,7 @@ func (app *appContext) DeleteUsers(gc *gin.Context) {
 		}
 	}
 	for _, userID := range req.Users {
-		user, status, err := app.jf.UserByID(userID, false)
-		if status != 200 && err == nil {
-			err = fmt.Errorf("failed (code %d)", status)
-		}
+		user, err := app.jf.UserByID(userID, false)
 		if err != nil {
 			app.err.Printf(lm.FailedGetUser, user.ID, lm.Jellyfin, err)
 			errors[userID] = err.Error()
@@ -522,8 +519,8 @@ func (app *appContext) ExtendExpiry(gc *gin.Context) {
 		app.storage.SetUserExpiryKey(id, expiry)
 		if messagesEnabled && req.Notify {
 			go func(uid string, exp time.Time) {
-				user, status, err := app.jf.UserByID(uid, false)
-				if status != 200 || err != nil {
+				user, err := app.jf.UserByID(uid, false)
+				if err != nil {
 					return
 				}
 				msg, err := app.email.constructExpiryAdjusted(user.Name, exp, req.Reason, app, false)
@@ -655,8 +652,8 @@ func (app *appContext) Announce(gc *gin.Context) {
 	unique := strings.Contains(req.Message, "{username}")
 	if unique {
 		for _, userID := range req.Users {
-			user, status, err := app.jf.UserByID(userID, false)
-			if status != 200 || err != nil {
+			user, err := app.jf.UserByID(userID, false)
+			if err != nil {
 				app.err.Printf(lm.FailedGetUser, userID, lm.Jellyfin, err)
 				continue
 			}
@@ -835,9 +832,9 @@ func (app *appContext) AdminPasswordReset(gc *gin.Context) {
 // @tags Users
 func (app *appContext) GetUsers(gc *gin.Context) {
 	var resp getUsersDTO
-	users, status, err := app.jf.GetUsers(false)
+	users, err := app.jf.GetUsers(false)
 	resp.UserList = make([]respUser, len(users))
-	if !(status == 200 || status == 204) || err != nil {
+	if err != nil {
 		app.err.Printf(lm.FailedGetUsers, lm.Jellyfin, err)
 		respond(500, "Couldn't get users", gc)
 		return
@@ -910,8 +907,8 @@ func (app *appContext) GetUsers(gc *gin.Context) {
 func (app *appContext) SetAccountsAdmin(gc *gin.Context) {
 	var req setAccountsAdminDTO
 	gc.BindJSON(&req)
-	users, status, err := app.jf.GetUsers(false)
-	if !(status == 200 || status == 204) || err != nil {
+	users, err := app.jf.GetUsers(false)
+	if err != nil {
 		app.err.Printf(lm.FailedGetUsers, lm.Jellyfin, err)
 		respond(500, "Couldn't get users", gc)
 		return
@@ -942,8 +939,8 @@ func (app *appContext) SetAccountsAdmin(gc *gin.Context) {
 func (app *appContext) ModifyLabels(gc *gin.Context) {
 	var req modifyEmailsDTO
 	gc.BindJSON(&req)
-	users, status, err := app.jf.GetUsers(false)
-	if !(status == 200 || status == 204) || err != nil {
+	users, err := app.jf.GetUsers(false)
+	if err != nil {
 		app.err.Printf(lm.FailedGetUsers, lm.Jellyfin, err)
 		respond(500, "Couldn't get users", gc)
 		return
@@ -976,11 +973,11 @@ func (app *appContext) modifyEmail(jfID string, addr string) {
 	emailStore.Addr = addr
 	app.storage.SetEmailsKey(jfID, emailStore)
 	if app.config.Section("ombi").Key("enabled").MustBool(false) {
-		ombiUser, code, err := app.getOmbiUser(jfID)
-		if code == 200 && err == nil {
+		ombiUser, err := app.getOmbiUser(jfID)
+		if err == nil {
 			ombiUser["emailAddress"] = addr
-			code, err = app.ombi.ModifyUser(ombiUser)
-			if code != 200 || err != nil {
+			err = app.ombi.ModifyUser(ombiUser)
+			if err != nil {
 				app.err.Printf(lm.FailedSetEmailAddress, lm.Ombi, jfID, err)
 			}
 		}
@@ -1012,8 +1009,8 @@ func (app *appContext) modifyEmail(jfID string, addr string) {
 func (app *appContext) ModifyEmails(gc *gin.Context) {
 	var req modifyEmailsDTO
 	gc.BindJSON(&req)
-	users, status, err := app.jf.GetUsers(false)
-	if !(status == 200 || status == 204) || err != nil {
+	users, err := app.jf.GetUsers(false)
+	if err != nil {
 		app.err.Printf(lm.FailedGetUsers, lm.Jellyfin, err)
 		respond(500, "Couldn't get users", gc)
 		return
@@ -1099,8 +1096,8 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 	} else if req.From == "user" {
 		applyingFromType = lm.User
 		app.jf.CacheExpiry = time.Now()
-		user, status, err := app.jf.UserByID(req.ID, false)
-		if !(status == 200 || status == 204) || err != nil {
+		user, err := app.jf.UserByID(req.ID, false)
+		if err != nil {
 			app.err.Printf(lm.FailedGetUser, req.ID, lm.Jellyfin, err)
 			respond(500, "Couldn't get user", gc)
 			return
@@ -1110,8 +1107,8 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 			policy = user.Policy
 		}
 		if req.Homescreen {
-			displayprefs, status, err = app.jf.GetDisplayPreferences(req.ID)
-			if !(status == 200 || status == 204) || err != nil {
+			displayprefs, err = app.jf.GetDisplayPreferences(req.ID)
+			if err != nil {
 				app.err.Printf(lm.FailedGetJellyfinDisplayPrefs, req.ID, err)
 				respond(500, "Couldn't get displayprefs", gc)
 				return
@@ -1136,26 +1133,25 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 		app.debug.Printf(lm.DelayingRequests, requestDelayThreshold)
 	}
 	for _, id := range req.ApplyTo {
-		var status int
 		var err error
 		if req.Policy {
-			status, err = app.jf.SetPolicy(id, policy)
-			if !(status == 200 || status == 204) || err != nil {
-				errors["policy"][id] = fmt.Sprintf("%d: %s", status, err)
+			err = app.jf.SetPolicy(id, policy)
+			if err != nil {
+				errors["policy"][id] = err.Error()
 			}
 		}
 		if shouldDelay {
 			time.Sleep(250 * time.Millisecond)
 		}
 		if req.Homescreen {
-			status, err = app.jf.SetConfiguration(id, configuration)
+			err = app.jf.SetConfiguration(id, configuration)
 			errorString := ""
-			if !(status == 200 || status == 204) || err != nil {
-				errorString += fmt.Sprintf("Configuration %d: %v ", status, err)
+			if err != nil {
+				errorString += fmt.Sprintf("Configuration: %v", err)
 			} else {
-				status, err = app.jf.SetDisplayPreferences(id, displayprefs)
-				if !(status == 200 || status == 204) || err != nil {
-					errorString += fmt.Sprintf("Displayprefs %d: %v ", status, err)
+				err = app.jf.SetDisplayPreferences(id, displayprefs)
+				if err != nil {
+					errorString += fmt.Sprintf("Displayprefs;) %v ", err)
 				}
 			}
 			if errorString != "" {
@@ -1164,18 +1160,18 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 		}
 		if ombi != nil {
 			errorString := ""
-			user, status, err := app.getOmbiUser(id)
-			if status != 200 || err != nil {
-				errorString += fmt.Sprintf("Ombi GetUser %d: %v ", status, err)
+			user, err := app.getOmbiUser(id)
+			if err != nil {
+				errorString += fmt.Sprintf("Ombi GetUser: %v ", err)
 			} else {
 				// newUser := ombi
 				// newUser["id"] = user["id"]
 				// newUser["userName"] = user["userName"]
 				// newUser["alias"] = user["alias"]
 				// newUser["emailAddress"] = user["emailAddress"]
-				status, err = app.ombi.applyProfile(user, ombi)
-				if status != 200 || err != nil {
-					errorString += fmt.Sprintf("Apply %d: %v ", status, err)
+				err = app.ombi.applyProfile(user, ombi)
+				if err != nil {
+					errorString += fmt.Sprintf("Apply: %v ", err)
 				}
 			}
 			if errorString != "" {

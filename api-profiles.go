@@ -84,8 +84,8 @@ func (app *appContext) CreateProfile(gc *gin.Context) {
 	var req newProfileDTO
 	gc.BindJSON(&req)
 	app.jf.CacheExpiry = time.Now()
-	user, status, err := app.jf.UserByID(req.ID, false)
-	if !(status == 200 || status == 204) || err != nil {
+	user, err := app.jf.UserByID(req.ID, false)
+	if err != nil {
 		app.err.Printf(lm.FailedGetUsers, lm.Jellyfin, err)
 		respond(500, "Couldn't get user", gc)
 		return
@@ -98,8 +98,8 @@ func (app *appContext) CreateProfile(gc *gin.Context) {
 	app.debug.Printf(lm.CreateProfileFromUser, user.Name)
 	if req.Homescreen {
 		profile.Configuration = user.Configuration
-		profile.Displayprefs, status, err = app.jf.GetDisplayPreferences(req.ID)
-		if !(status == 200 || status == 204) || err != nil {
+		profile.Displayprefs, err = app.jf.GetDisplayPreferences(req.ID)
+		if err != nil {
 			app.err.Printf(lm.FailedGetJellyfinDisplayPrefs, req.ID, err)
 			respond(500, "Couldn't get displayprefs", gc)
 			return

@@ -185,14 +185,14 @@ func linkExistingOmbiDiscordTelegram(app *appContext) error {
 		idList[user.JellyfinID] = vals
 	}
 	for jfID, ids := range idList {
-		ombiUser, status, err := app.getOmbiUser(jfID)
-		if status != 200 || err != nil {
-			app.debug.Printf("Failed to get Ombi user with Discord/Telegram \"%s\"/\"%s\" (%d): %v", ids[0], ids[1], status, err)
+		ombiUser, err := app.getOmbiUser(jfID)
+		if err != nil {
+			app.debug.Printf("Failed to get Ombi user with Discord/Telegram \"%s\"/\"%s\": %v", ids[0], ids[1], err)
 			continue
 		}
-		_, status, err = app.ombi.SetNotificationPrefs(ombiUser, ids[0], ids[1])
-		if status != 200 || err != nil {
-			app.debug.Printf("Failed to set prefs for Ombi user \"%s\" (%d): %v", ombiUser["userName"].(string), status, err)
+		_, err = app.ombi.SetNotificationPrefs(ombiUser, ids[0], ids[1])
+		if err != nil {
+			app.debug.Printf("Failed to set prefs for Ombi user \"%s\": %v", ombiUser["userName"].(string), err)
 			continue
 		}
 	}

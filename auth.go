@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -166,19 +167,19 @@ func (app *appContext) decodeValidateLoginHeader(gc *gin.Context, userpage bool)
 
 func (app *appContext) validateJellyfinCredentials(username, password string, gc *gin.Context, userpage bool) (user mediabrowser.User, ok bool) {
 	ok = false
-	user, status, err := app.authJf.Authenticate(username, password)
-	if status != 200 || err != nil {
-		if status == 401 || status == 400 {
+	user, err := app.authJf.Authenticate(username, password)
+	if err != nil {
+		if errors.Is(err, mediabrowser.ErrUnauthorized{}) {
 			app.logIpInfo(gc, userpage, fmt.Sprintf(lm.FailedAuthRequest, lm.InvalidUserOrPass))
 			respond(401, "Unauthorized", gc)
 			return
 		}
-		if status == 403 {
+		if errors.Is(err, mediabrowser.ErrForbidden{}) {
 			app.logIpInfo(gc, userpage, fmt.Sprintf(lm.FailedAuthRequest, lm.UserDisabled))
 			respond(403, "yourAccountWasDisabled", gc)
 			return
 		}
-		app.authLog(fmt.Sprintf(lm.FailedAuthJellyfin, app.jf.Server, status, err))
+		app.authLog(fmt.Sprintf(lm.FailedAuthJellyfin, app.jf.Server, err))
 		respond(500, "Jellyfin error", gc)
 		return
 	}

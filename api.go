@@ -148,18 +148,18 @@ func (app *appContext) ResetSetPassword(gc *gin.Context) {
 		userID = reset.ID
 		username = reset.Username
 
-		status, err := app.jf.ResetPasswordAdmin(userID)
-		if !(status == 200 || status == 204) || err != nil {
+		err := app.jf.ResetPasswordAdmin(userID)
+		if err != nil {
 			app.err.Printf(lm.FailedChangePassword, lm.Jellyfin, userID, err)
-			respondBool(status, false, gc)
+			respondBool(500, false, gc)
 			return
 		}
 		delete(app.internalPWRs, req.PIN)
 	} else {
-		resp, status, err := app.jf.ResetPassword(req.PIN)
-		if status != 200 || err != nil || !resp.Success {
+		resp, err := app.jf.ResetPassword(req.PIN)
+		if err != nil || !resp.Success {
 			app.err.Printf(lm.FailedChangePassword, lm.Jellyfin, userID, err)
-			respondBool(status, false, gc)
+			respondBool(500, false, gc)
 			return
 		}
 		if req.Password == "" || len(resp.UsersReset) == 0 {
@@ -170,14 +170,13 @@ func (app *appContext) ResetSetPassword(gc *gin.Context) {
 	}
 
 	var user mediabrowser.User
-	var status int
 	var err error
 	if isInternal {
-		user, status, err = app.jf.UserByID(userID, false)
+		user, err = app.jf.UserByID(userID, false)
 	} else {
-		user, status, err = app.jf.UserByName(username, false)
+		user, err = app.jf.UserByName(username, false)
 	}
-	if status != 200 || err != nil {
+	if err != nil {
 		app.err.Printf(lm.FailedGetUser, userID, lm.Jellyfin, err)
 		respondBool(500, false, gc)
 		return
@@ -195,8 +194,8 @@ func (app *appContext) ResetSetPassword(gc *gin.Context) {
 	if isInternal {
 		prevPassword = ""
 	}
-	status, err = app.jf.SetPassword(user.ID, prevPassword, req.Password)
-	if !(status == 200 || status == 204) || err != nil {
+	err = app.jf.SetPassword(user.ID, prevPassword, req.Password)
+	if err != nil {
 		app.err.Printf(lm.FailedChangePassword, lm.Jellyfin, user.ID, err)
 		respondBool(500, false, gc)
 		return
@@ -210,15 +209,15 @@ func (app *appContext) ResetSetPassword(gc *gin.Context) {
 			respondBool(200, true, gc)
 			return
 		} */
-		ombiUser, status, err := app.getOmbiUser(user.ID)
-		if status != 200 || err != nil {
+		ombiUser, err := app.getOmbiUser(user.ID)
+		if err != nil {
 			app.err.Printf(lm.FailedGetUser, user.ID, lm.Ombi, err)
 			respondBool(200, true, gc)
 			return
 		}
 		ombiUser["password"] = req.Password
-		status, err = app.ombi.ModifyUser(ombiUser)
-		if status != 200 || err != nil {
+		err = app.ombi.ModifyUser(ombiUser)
+		if err != nil {
 			app.err.Printf(lm.FailedChangePassword, lm.Ombi, user.ID, err)
 			respondBool(200, true, gc)
 			return

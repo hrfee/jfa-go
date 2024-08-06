@@ -211,7 +211,7 @@ $(COPY_TARGET): $(INLINE_TARGET) $(STATIC_SRC)
 
 GO_SRC = $(shell find ./ -name "*.go")
 GO_TARGET = build/jfa-go
-$(GO_TARGET): $(CONFIG_DESCRIPTION) $(CONFIG_DEFAULT) $(EMAIL_TARGET) $(COPY_TARGET) $(SWAGGER_TARGET) $(GO_SRC)
+$(GO_TARGET): $(CONFIG_DESCRIPTION) $(CONFIG_DEFAULT) $(EMAIL_TARGET) $(COPY_TARGET) $(SWAGGER_TARGET) $(GO_SRC) go.mod go.sum
 	$(info Downloading deps)
 	$(GOBINARY) mod download
 	$(info Building)

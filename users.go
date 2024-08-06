@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -68,7 +67,7 @@ func (app *appContext) NewUserPostVerification(p NewUserParams) (out NewUserData
 		}
 	}
 
-	existingUser, _, _ := app.jf.UserByName(p.Req.Username, false)
+	existingUser, _ := app.jf.UserByName(p.Req.Username, false)
 	if existingUser.Name != "" {
 		out.Message = lm.UserExists
 		deferLogInfo(lm.FailedCreateUser, lm.Jellyfin, p.Req.Username, out.Message)
@@ -76,10 +75,9 @@ func (app *appContext) NewUserPostVerification(p NewUserParams) (out NewUserData
 		return
 	}
 
-	var status int
 	var err error
-	out.User, status, err = app.jf.NewUser(p.Req.Username, p.Req.Password)
-	if !(status == 200 || status == 204) || err != nil {
+	out.User, err = app.jf.NewUser(p.Req.Username, p.Req.Password)
+	if err != nil {
 		out.Message = err.Error()
 		deferLogError(lm.FailedCreateUser, lm.Jellyfin, p.Req.Username, out.Message)
 		out.Status = 401
@@ -100,15 +98,15 @@ func (app *appContext) NewUserPostVerification(p NewUserParams) (out NewUserData
 	}, p.ContextForIPLogging, (p.SourceType != ActivityAdmin))
 
 	if p.Profile != nil {
-		status, err = app.jf.SetPolicy(out.User.ID, p.Profile.Policy)
-		if !((status == 200 || status == 204) && err == nil) {
+		err = app.jf.SetPolicy(out.User.ID, p.Profile.Policy)
+		if err != nil {
 			app.err.Printf(lm.FailedApplyTemplate, "policy", lm.Jellyfin, out.User.ID, err)
 		}
-		status, err = app.jf.SetConfiguration(out.User.ID, p.Profile.Configuration)
-		if (status == 200 || status == 204) && err == nil {
-			status, err = app.jf.SetDisplayPreferences(out.User.ID, p.Profile.Displayprefs)
+		err = app.jf.SetConfiguration(out.User.ID, p.Profile.Configuration)
+		if err == nil {
+			err = app.jf.SetDisplayPreferences(out.User.ID, p.Profile.Displayprefs)
 		}
-		if !((status == 200 || status == 204) && err == nil) {
+		if err != nil {
 			app.err.Printf(lm.FailedApplyTemplate, "configuration", lm.Jellyfin, out.User.ID, err)
 		}
 
@@ -164,11 +162,7 @@ func (app *appContext) SetUserDisabled(user mediabrowser.User, disabled bool) (e
 	change = user.Policy.IsDisabled != disabled
 	user.Policy.IsDisabled = disabled
 
-	var status int
-	status, err = app.jf.SetPolicy(user.ID, user.Policy)
-	if !(status == 200 || status == 204) && err == nil {
-		err = fmt.Errorf("failed (code %d)", status)
-	}
+	err = app.jf.SetPolicy(user.ID, user.Policy)
 	if err != nil {
 		return
 	}
@@ -185,16 +179,12 @@ func (app *appContext) SetUserDisabled(user mediabrowser.User, disabled bool) (e
 }
 
 func (app *appContext) DeleteUser(user mediabrowser.User) (err error, deleted bool) {
-	var status int
 	if app.ombi != nil {
 		var tpUser map[string]any
-		tpUser, status, err = app.getOmbiUser(user.ID)
-		if status == 200 && err == nil {
+		tpUser, err = app.getOmbiUser(user.ID)
+		if err == nil {
 			if id, ok := tpUser["id"]; ok {
-				status, err = app.ombi.DeleteUser(id.(string))
-				if status != 200 && err == nil {
-					err = fmt.Errorf("failed (code %d)", status)
-				}
+				err = app.ombi.DeleteUser(id.(string))
 				if err != nil {
 					app.err.Printf(lm.FailedDeleteUser, lm.Ombi, user.ID, err)
 				}
@@ -211,10 +201,7 @@ func (app *appContext) DeleteUser(user mediabrowser.User) (err error, deleted bo
 		}
 	}
 
-	status, err = app.jf.DeleteUser(user.ID)
-	if status != 200 && status != 204 && err == nil {
-		err = fmt.Errorf("failed (code %d)", status)
-	}
+	err = app.jf.DeleteUser(user.ID)
 	if err != nil {
 		return
 	}

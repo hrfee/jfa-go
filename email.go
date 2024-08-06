@@ -968,11 +968,10 @@ func (app *appContext) getAddressOrName(jfID string) string {
 // returns "" if none found. returns only the first match, might be an issue if there are users with the same contact method usernames.
 func (app *appContext) ReverseUserSearch(address string, matchUsername, matchEmail, matchContactMethod bool) (user mediabrowser.User, ok bool) {
 	ok = false
-	var status int
 	var err error = nil
 	if matchUsername {
-		user, status, err = app.jf.UserByName(address, false)
-		if status == 200 && err == nil {
+		user, err = app.jf.UserByName(address, false)
+		if err == nil {
 			ok = true
 			return
 		}
@@ -983,8 +982,8 @@ func (app *appContext) ReverseUserSearch(address string, matchUsername, matchEma
 		err = app.storage.db.Find(&emailAddresses, badgerhold.Where("Addr").Eq(address))
 		if err == nil && len(emailAddresses) > 0 {
 			for _, emailUser := range emailAddresses {
-				user, status, err = app.jf.UserByID(emailUser.JellyfinID, false)
-				if status == 200 && err == nil {
+				user, err = app.jf.UserByID(emailUser.JellyfinID, false)
+				if err == nil {
 					ok = true
 					return
 				}
@@ -997,8 +996,8 @@ func (app *appContext) ReverseUserSearch(address string, matchUsername, matchEma
 	if matchContactMethod {
 		for _, dcUser := range app.storage.GetDiscord() {
 			if RenderDiscordUsername(dcUser) == strings.ToLower(address) {
-				user, status, err = app.jf.UserByID(dcUser.JellyfinID, false)
-				if status == 200 && err == nil {
+				user, err = app.jf.UserByID(dcUser.JellyfinID, false)
+				if err == nil {
 					ok = true
 					return
 				}
@@ -1009,8 +1008,8 @@ func (app *appContext) ReverseUserSearch(address string, matchUsername, matchEma
 		err = app.storage.db.Find(&telegramUsers, badgerhold.Where("Username").Eq(tgUsername))
 		if err == nil && len(telegramUsers) > 0 {
 			for _, telegramUser := range telegramUsers {
-				user, status, err = app.jf.UserByID(telegramUser.JellyfinID, false)
-				if status == 200 && err == nil {
+				user, err = app.jf.UserByID(telegramUser.JellyfinID, false)
+				if err == nil {
 					ok = true
 					return
 				}
@@ -1020,8 +1019,8 @@ func (app *appContext) ReverseUserSearch(address string, matchUsername, matchEma
 		err = app.storage.db.Find(&matrixUsers, badgerhold.Where("UserID").Eq(address))
 		if err == nil && len(matrixUsers) > 0 {
 			for _, matrixUser := range matrixUsers {
-				user, status, err = app.jf.UserByID(matrixUser.JellyfinID, false)
-				if status == 200 && err == nil {
+				user, err = app.jf.UserByID(matrixUser.JellyfinID, false)
+				if err == nil {
 					ok = true
 					return
 				}

@@ -1,34 +1,35 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"net/url"
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hrfee/jfa-go/common"
 	lm "github.com/hrfee/jfa-go/logmessages"
 	"github.com/hrfee/jfa-go/ombi"
 	"github.com/hrfee/mediabrowser"
 )
 
-func (app *appContext) getOmbiUser(jfID string) (map[string]interface{}, int, error) {
-	jfUser, code, err := app.jf.UserByID(jfID, false)
-	if err != nil || code != 200 {
-		return nil, code, err
+func (app *appContext) getOmbiUser(jfID string) (map[string]interface{}, error) {
+	jfUser, err := app.jf.UserByID(jfID, false)
+	if err != nil {
+		return nil, err
 	}
 	username := jfUser.Name
 	email := ""
 	if e, ok := app.storage.GetEmailsKey(jfID); ok {
 		email = e.Addr
 	}
-	return app.ombi.getUser(username, email)
+	user, err := app.ombi.getUser(username, email)
+	return user, err
 }
 
-func (ombi *OmbiWrapper) getUser(username string, email string) (map[string]interface{}, int, error) {
-	ombiUsers, code, err := ombi.GetUsers()
-	if err != nil || code != 200 {
-		return nil, code, err
+func (ombi *OmbiWrapper) getUser(username string, email string) (map[string]interface{}, error) {
+	ombiUsers, err := ombi.GetUsers()
+	if err != nil {
+		return nil, err
 	}
 	for _, ombiUser := range ombiUsers {
 		ombiAddr := ""
@@ -36,18 +37,19 @@ func (ombi *OmbiWrapper) getUser(username string, email string) (map[string]inte
 			ombiAddr = a.(string)
 		}
 		if ombiUser["userName"].(string) == username || (ombiAddr == email && email != "") {
-			return ombiUser, code, err
+			return ombiUser, err
 		}
 	}
-	return nil, 400, errors.New(lm.NotFound)
+	// Gets a generic "not found" type error
+	return nil, common.GenericErr(404, err)
 }
 
 // Returns a user with the given name who has been imported from Jellyfin/Emby by Ombi
-func (ombi *OmbiWrapper) getImportedUser(name string) (map[string]interface{}, int, error) {
+func (ombi *OmbiWrapper) getImportedUser(name string) (map[string]interface{}, error) {
 	// Ombi User Types: 3/4 = Emby, 5 = Jellyfin
-	ombiUsers, code, err := ombi.GetUsers()
-	if err != nil || code != 200 {
-		return nil, code, err
+	ombiUsers, err := ombi.GetUsers()
+	if err != nil {
+		return nil, err
 	}
 	for _, ombiUser := range ombiUsers {
 		if ombiUser["userName"].(string) == name {
@@ -60,10 +62,11 @@ func (ombi *OmbiWrapper) getImportedUser(name string) (map[string]interface{}, i
 			} else if uType != 3 && uType != 4 { // Emby
 				continue
 			}
-			return ombiUser, code, err
+			return ombiUser, err
 		}
 	}
-	return nil, 400, fmt.Errorf("couldn't find user")
+	// Gets a generic "not found" type error
+	return nil, common.GenericErr(404, err)
 }
 
 // @Summary Get a list of Ombi users.
@@ -74,8 +77,8 @@ func (ombi *OmbiWrapper) getImportedUser(name string) (map[string]interface{}, i
 // @Security Bearer
 // @tags Ombi
 func (app *appContext) OmbiUsers(gc *gin.Context) {
-	users, status, err := app.ombi.GetUsers()
-	if err != nil || status != 200 {
+	users, err := app.ombi.GetUsers()
+	if err != nil {
 		app.err.Printf(lm.FailedGetUsers, lm.Ombi, err)
 		respond(500, "Couldn't get users", gc)
 		return
@@ -110,8 +113,8 @@ func (app *appContext) SetOmbiProfile(gc *gin.Context) {
 		respondBool(400, false, gc)
 		return
 	}
-	template, code, err := app.ombi.TemplateByID(req.ID)
-	if err != nil || code != 200 || len(template) == 0 {
+	template, err := app.ombi.TemplateByID(req.ID)
+	if err != nil || len(template) == 0 {
 		app.err.Printf(lm.FailedGetUsers, lm.Ombi, err)
 		respond(500, "Couldn't get user", gc)
 		return
@@ -147,7 +150,7 @@ type OmbiWrapper struct {
 	*ombi.Ombi
 }
 
-func (ombi *OmbiWrapper) applyProfile(user map[string]interface{}, profile map[string]interface{}) (status int, err error) {
+func (ombi *OmbiWrapper) applyProfile(user map[string]interface{}, profile map[string]interface{}) (err error) {
 	for k, v := range profile {
 		switch v.(type) {
 		case map[string]interface{}, []interface{}:
@@ -158,22 +161,21 @@ func (ombi *OmbiWrapper) applyProfile(user map[string]interface{}, profile map[s
 			}
 		}
 	}
-	status, err = ombi.ModifyUser(user)
+	err = ombi.ModifyUser(user)
 	return
 }
 
 func (ombi *OmbiWrapper) ImportUser(jellyfinID string, req newUserDTO, profile Profile) (err error, ok bool) {
-	errors, code, err := ombi.NewUser(req.Username, req.Password, req.Email, profile.Ombi)
+	errors, err := ombi.NewUser(req.Username, req.Password, req.Email, profile.Ombi)
 	var ombiUser map[string]interface{}
-	var status int
-	if err != nil || code != 200 {
+	if err != nil {
 		// Check if on the off chance, Ombi's user importer has already added the account.
-		ombiUser, status, err = ombi.getImportedUser(req.Username)
-		if status == 200 && err == nil {
+		ombiUser, err = ombi.getImportedUser(req.Username)
+		if err == nil {
 			// app.info.Println(lm.Ombi + " " + lm.UserExists)
 			profile.Ombi["password"] = req.Password
-			status, err = ombi.applyProfile(ombiUser, profile.Ombi)
-			if status != 200 || err != nil {
+			err = ombi.applyProfile(ombiUser, profile.Ombi)
+			if err != nil {
 				err = fmt.Errorf(lm.FailedApplyProfile, lm.Ombi, req.Username, err)
 			}
 		} else {
@@ -189,9 +191,8 @@ func (ombi *OmbiWrapper) ImportUser(jellyfinID string, req newUserDTO, profile P
 
 func (ombi *OmbiWrapper) AddContactMethods(jellyfinID string, req newUserDTO, discord *DiscordUser, telegram *TelegramUser) (err error) {
 	var ombiUser map[string]interface{}
-	var status int
-	ombiUser, status, err = ombi.getUser(req.Username, req.Email)
-	if status != 200 || err != nil {
+	ombiUser, err = ombi.getUser(req.Username, req.Email)
+	if err != nil {
 		return
 	}
 	if discordEnabled || telegramEnabled {
@@ -204,9 +205,8 @@ func (ombi *OmbiWrapper) AddContactMethods(jellyfinID string, req newUserDTO, di
 			tUser = telegram.Username
 		}
 		var resp string
-		var status int
-		resp, status, err = ombi.SetNotificationPrefs(ombiUser, dID, tUser)
-		if !(status == 200 || status == 204) || err != nil {
+		resp, err = ombi.SetNotificationPrefs(ombiUser, dID, tUser)
+		if err != nil {
 			if resp != "" {
 				err = fmt.Errorf("%v, %s", err, resp)
 			}
