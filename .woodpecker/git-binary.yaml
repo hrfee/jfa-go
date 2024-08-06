@@ -12,14 +12,6 @@ clone:
             depth: 0
 
 steps:
-  - name: redoc
-    image: docker.io/hrfee/jfa-go-build-docker:latest
-    environment:
-        REDOC_SSH_ID:
-            from_secret: REDOC_SSH_ID
-    commands:
-      - sh -c "echo \"$REDOC_SSH_ID\" > /tmp/id_redoc && chmod 600 /tmp/id_redoc"
-      - bash -c 'sftp -P 3625 -i /tmp/id_redoc -o StrictHostKeyChecking=no redoc@api.jfa-go.com:/home/redoc <<< $"put docs/swagger.json jfa-go.json"'
   - name: build
     image: docker.io/hrfee/jfa-go-build-docker:latest
     environment:
@@ -30,6 +22,14 @@ steps:
       - curl -sfL https://goreleaser.com/static/run > goreleaser
       - chmod +x goreleaser
       - ./scripts/version.sh ./goreleaser --snapshot --skip=publish --clean
+  - name: redoc
+    image: docker.io/hrfee/jfa-go-build-docker:latest
+    environment:
+        REDOC_SSH_ID:
+            from_secret: REDOC_SSH_ID
+    commands:
+      - sh -c "echo \"$REDOC_SSH_ID\" > /tmp/id_redoc && chmod 600 /tmp/id_redoc"
+      - bash -c 'sftp -P 3625 -i /tmp/id_redoc -o StrictHostKeyChecking=no redoc@api.jfa-go.com:/home/redoc <<< $"put docs/swagger.json jfa-go.json"'
   - name: deb-repo
     image: docker.io/hrfee/jfa-go-build-docker:latest
     environment:
