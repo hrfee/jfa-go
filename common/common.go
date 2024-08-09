@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net/http"
 
 	lm "github.com/hrfee/jfa-go/logmessages"
 )
@@ -70,4 +71,9 @@ func GenericErr(status int, err error) error {
 	default:
 		return ErrUnknown{code: status}
 	}
+}
+
+type ConfigurableTransport interface {
+	// SetTransport sets the http.Transport to use for requests. Can be used to set a proxy.
+	SetTransport(t *http.Transport)
 }

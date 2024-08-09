@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"net/http"
 	"strings"
 	"time"
 
@@ -82,6 +83,11 @@ func newTelegramDaemon(app *appContext) (*TelegramDaemon, error) {
 		}
 	}
 	return td, nil
+}
+
+// SetTransport sets the http.Transport to use for requests. Can be used to set a proxy.
+func (d *TelegramDaemon) SetTransport(t *http.Transport) {
+	d.bot.Client.Transport = t
 }
 
 func genAuthToken() string {

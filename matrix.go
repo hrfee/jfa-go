@@ -1,7 +1,9 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"net/http"
 	"strings"
 	"time"
 
@@ -87,6 +89,11 @@ func newMatrixDaemon(app *appContext) (d *MatrixDaemon, err error) {
 	return
 }
 
+// SetTransport sets the http.Transport to use for requests. Can be used to set a proxy.
+func (d *MatrixDaemon) SetTransport(t *http.Transport) {
+	d.bot.Client.Transport = t
+}
+
 func (d *MatrixDaemon) generateAccessToken(homeserver, username, password string) (string, error) {
 	req := &mautrix.ReqLogin{
 		Type: mautrix.AuthTypePassword,
@@ -101,7 +108,7 @@ func (d *MatrixDaemon) generateAccessToken(homeserver, username, password string
 	if err != nil {
 		return "", err
 	}
-	resp, err := bot.Login(req)
+	resp, err := bot.Login(context.TODO(), req)
 	if err != nil {
 		return "", err
 	}
@@ -127,7 +134,7 @@ func (d *MatrixDaemon) Shutdown() {
 	close(d.ShutdownChannel)
 }
 
-func (d *MatrixDaemon) handleMessage(source mautrix.EventSource, evt *event.Event) {
+func (d *MatrixDaemon) handleMessage(ctx context.Context, evt *event.Event) {
 	if evt.Timestamp < d.start {
 		return
 	}
@@ -158,6 +165,7 @@ func (d *MatrixDaemon) commandLang(evt *event.Event, code, lang string) {
 			list += fmt.Sprintf("%s: %s\n", c, d.app.storage.lang.Telegram[c].Meta.Name)
 		}
 		_, err := d.bot.SendText(
+			context.TODO(),
 			evt.RoomID,
 			list,
 		)
@@ -178,7 +186,7 @@ func (d *MatrixDaemon) commandLang(evt *event.Event, code, lang string) {
 
 func (d *MatrixDaemon) CreateRoom(userID string) (roomID id.RoomID, encrypted bool, err error) {
 	var room *mautrix.RespCreateRoom
-	room, err = d.bot.CreateRoom(&mautrix.ReqCreateRoom{
+	room, err = d.bot.CreateRoom(context.TODO(), &mautrix.ReqCreateRoom{
 		Visibility: "private",
 		Invite:     []id.UserID{id.UserID(userID)},
 		Topic:      d.app.config.Section("matrix").Key("topic").String(),
@@ -229,13 +237,13 @@ func (d *MatrixDaemon) sendToRoom(content *event.MessageEventContent, roomID id.
 	if encrypted, ok := d.isEncrypted[roomID]; ok && encrypted {
 		err = SendEncrypted(d, content, roomID)
 	} else {
-		_, err = d.bot.SendMessageEvent(roomID, event.EventMessage, content, mautrix.ReqSendEvent{})
+		_, err = d.bot.SendMessageEvent(context.TODO(), roomID, event.EventMessage, content, mautrix.ReqSendEvent{})
 	}
 	return
 }
 
 func (d *MatrixDaemon) send(content *event.MessageEventContent, roomID id.RoomID) (err error) {
-	_, err = d.bot.SendMessageEvent(roomID, event.EventMessage, content, mautrix.ReqSendEvent{})
+	_, err = d.bot.SendMessageEvent(context.TODO(), roomID, event.EventMessage, content, mautrix.ReqSendEvent{})
 	return
 }
 

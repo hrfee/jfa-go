@@ -46,6 +46,11 @@ func NewOmbi(server, key string, timeoutHandler co.TimeoutHandler) *Ombi {
 	}
 }
 
+// SetTransport sets the http.Transport to use for requests. Can be used to set a proxy.
+func (ombi *Ombi) SetTransport(t *http.Transport) {
+	ombi.httpClient.Transport = t
+}
+
 // does a GET and returns the response as a string.
 func (ombi *Ombi) getJSON(url string, params map[string]string) (string, int, error) {
 	if ombi.key == "" {

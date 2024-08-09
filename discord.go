@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 	"strings"
 	"time"
 
@@ -58,6 +59,11 @@ func newDiscordDaemon(app *appContext) (*DiscordDaemon, error) {
 	}
 
 	return dd, nil
+}
+
+// SetTransport sets the http.Transport to use for requests. Can be used to set a proxy.
+func (d *DiscordDaemon) SetTransport(t *http.Transport) {
+	d.bot.Client.Transport = t
 }
 
 // NewAuthToken generates an 8-character pin in the form "A1-2B-CD".

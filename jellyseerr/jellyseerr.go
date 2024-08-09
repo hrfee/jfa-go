@@ -55,6 +55,11 @@ func NewJellyseerr(server, key string, timeoutHandler co.TimeoutHandler) *Jellys
 	}
 }
 
+// SetTransport sets the http.Transport to use for requests. Can be used to set a proxy.
+func (js *Jellyseerr) SetTransport(t *http.Transport) {
+	js.httpClient.Transport = t
+}
+
 func (js *Jellyseerr) req(mode string, uri string, data any, queryParams url.Values, headers map[string]string, response bool) (string, int, error) {
 	var params []byte
 	if data != nil {

@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hrfee/jfa-go/common"
 	"github.com/hrfee/jfa-go/jellyseerr"
 	"github.com/hrfee/jfa-go/logger"
 	lm "github.com/hrfee/jfa-go/logmessages"
@@ -596,6 +597,7 @@ func (st *Storage) DeleteActivityKey(k string) {
 }
 
 type ThirdPartyService interface {
+	common.ConfigurableTransport
 	// ok implies user imported, err can be any issue that occurs during
 	ImportUser(jellyfinID string, req newUserDTO, profile Profile) (err error, ok bool)
 	AddContactMethods(jellyfinID string, req newUserDTO, discord *DiscordUser, telegram *TelegramUser) (err error)
@@ -604,6 +606,7 @@ type ThirdPartyService interface {
 }
 
 type ContactMethodLinker interface {
+	common.ConfigurableTransport
 	PIN(req newUserDTO) string
 	Name() string
 	Required() bool

@@ -426,10 +426,6 @@ func start(asDaemon, firstCall bool) {
 			app.jf.Verbose = true
 		}
 
-		if app.proxyEnabled {
-			app.jf.SetTransport(app.proxyTransport)
-		}
-
 		var status int
 		retryOpts := mediabrowser.MustAuthenticateOptions{
 			RetryCount:  app.config.Section("advanced").Key("auth_retry_count").MustInt(6),
@@ -463,6 +459,7 @@ func start(asDaemon, firstCall bool) {
 		}
 
 		// Since email depends on language, the email reload in loadConfig won't work first time.
+		// Email also handles its own proxying, as (SMTP atleast) doesn't use a HTTP transport.
 		app.email = NewEmailer(app)
 		app.loadStrftime()
 
@@ -520,6 +517,7 @@ func start(asDaemon, firstCall bool) {
 
 		// NOTE: The order in which these are placed in app.contactMethods matters.
 		// Add new ones to the end.
+		// FIXME: Add proxies.
 		if discordEnabled {
 			app.discord, err = newDiscordDaemon(app)
 			if err != nil {
@@ -554,6 +552,16 @@ func start(asDaemon, firstCall bool) {
 				go app.matrix.run()
 				defer app.matrix.Shutdown()
 				app.contactMethods = append(app.contactMethods, app.matrix)
+			}
+		}
+
+		if app.proxyEnabled {
+			app.jf.SetTransport(app.proxyTransport)
+			for _, c := range app.thirdPartyServices {
+				c.SetTransport(app.proxyTransport)
+			}
+			for _, c := range app.contactMethods {
+				c.SetTransport(app.proxyTransport)
 			}
 		}
 	} else {
