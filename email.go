@@ -10,6 +10,7 @@ import (
 	"html/template"
 	"io"
 	"io/fs"
+	"net/http"
 	"net/url"
 	"os"
 	"strconv"
@@ -99,7 +100,7 @@ func NewEmailer(app *appContext) *Emailer {
 			app.err.Printf(lm.FailedInitSMTP, err)
 		}
 	} else if method == "mailgun" {
-		emailer.NewMailgun(app.config.Section("mailgun").Key("api_url").String(), app.config.Section("mailgun").Key("api_key").String())
+		emailer.NewMailgun(app.config.Section("mailgun").Key("api_url").String(), app.config.Section("mailgun").Key("api_key").String(), app.proxyTransport)
 	} else if method == "dummy" {
 		emailer.sender = &DummyClient{}
 	}
@@ -201,9 +202,13 @@ type Mailgun struct {
 }
 
 // NewMailgun returns a Mailgun emailClient.
-func (emailer *Emailer) NewMailgun(url, key string) {
+func (emailer *Emailer) NewMailgun(url, key string, transport *http.Transport) {
 	sender := &Mailgun{
 		client: mailgun.NewMailgun(strings.Split(emailer.fromAddr, "@")[1], key),
+	}
+	if transport != nil {
+		cli := sender.client.Client()
+		cli.Transport = transport
 	}
 	// Mailgun client takes the base url, so we need to trim off the end (e.g 'v3/messages')
 	if strings.Contains(url, "messages") {
