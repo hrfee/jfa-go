@@ -26,8 +26,8 @@ builds:
       dir: ./
       env:
         - CGO_ENABLED=1
-        - CC={{ if eq .Arch "amd64" }}x86_64{{ else }}{{ .Arch }}{{ end }}-linux-gnu{{ if eq .Arch "arm" }}eabihf{{ end }}-gcc
-        - CXX={{ if eq .Arch "amd64" }}x86_64{{ else }}{{ .Arch }}{{ end }}-linux-gnu{{ if eq .Arch "arm" }}eabihf{{ end }}-gcc
+        - CC={{ if eq .Arch "amd64" }}x86_64{{ else if eq .Arch "arm64" }}aarch64{{ else }}{{ .Arch }}{{ end }}-linux-gnu{{ if eq .Arch "arm" }}eabihf{{ end }}-gcc
+        - CXX={{ if eq .Arch "amd64" }}x86_64{{ else if eq .Arch "arm64" }}aarch64{{ else }}{{ .Arch }}{{ end }}-linux-gnu{{ if eq .Arch "arm" }}eabihf{{ end }}-gcc
         - GOARM={{ if eq .Arch "arm" }}7{{ end }}
       flags:
         - -tags=e2ee

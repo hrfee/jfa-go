@@ -12,19 +12,19 @@ COPY . /opt/build
 RUN (cd /opt/build; npm i; make precompile INTERNAL=off GOESBUILD=off) \
     && sed -i 's#id="password_resets-watch_directory" placeholder="/config/jellyfin"#id="password_resets-watch_directory" value="/jf" disabled#g' /opt/build/build/data/html/setup.html
 
-FROM --platform=$BUILDPLATFORM docker.io/golang:latest AS build
 ARG TARGETARCH
 ENV GOARCH=$TARGETARCH
 ARG BUILT_BY
 ENV BUILTBY=$BUILT_BY
 
-COPY --from=support /opt/build /opt/build
+RUN apt-get update -y && apt-get install libolm-dev -y
 
 RUN (cd /opt/build; make compile INTERNAL=off UPDATER=docker)
 
-FROM golang:latest
+FROM golang:bookworm
 
-COPY --from=build /opt/build/build /opt/jfa-go
+RUN apt-get update -y && apt-get install libolm-dev -y
+COPY --from=support /opt/build/build /opt/jfa-go
 
 EXPOSE 8056
 EXPOSE 8057
