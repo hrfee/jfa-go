@@ -13,14 +13,28 @@ before:
 builds:
     - id: notray
       dir: ./
+      ldflags:
+        - -X main.version={{.Env.JFA_GO_VERSION}} -X main.commit={{.ShortCommit}} -X main.updater=binary {{.Env.JFA_GO_STRIP}} -X main.cssVersion={{.Env.JFA_GO_CSS_VERSION}} -X main.buildTimeUnix={{.Env.JFA_GO_BUILD_TIME}} -X main.builtBy="{{.Env.JFA_GO_BUILT_BY}}"
+      goos:
+        - darwin
+        - windows
+      goarch:
+        - arm
+        - arm64
+        - amd64
+    - id: notray-e2ee
+      dir: ./
       env:
-        - CGO_ENABLED=0
+        - CGO_ENABLED=1
+        - CC={{ if eq .Arch "amd64" }}x86_64{{ else }}{{ .Arch }}{{ end }}-linux-gnu{{ if eq .Arch "arm" }}eabihf{{ end }}-gcc
+        - CXX={{ if eq .Arch "amd64" }}x86_64{{ else }}{{ .Arch }}{{ end }}-linux-gnu{{ if eq .Arch "arm" }}eabihf{{ end }}-gcc
+        - GOARM={{ if eq .Arch "arm" }}7{{ end }}
+      flags:
+        - -tags=e2ee
       ldflags:
         - -X main.version={{.Env.JFA_GO_VERSION}} -X main.commit={{.ShortCommit}} -X main.updater=binary {{.Env.JFA_GO_STRIP}} -X main.cssVersion={{.Env.JFA_GO_CSS_VERSION}} -X main.buildTimeUnix={{.Env.JFA_GO_BUILD_TIME}} -X main.builtBy="{{.Env.JFA_GO_BUILT_BY}}"
       goos:
         - linux
-        - darwin
-        - windows
       goarch:
         - arm
         - arm64
@@ -32,7 +46,7 @@ builds:
         - CC=x86_64-w64-mingw32-gcc
         - CXX=x86_64-w64-mingw32-g++
       flags:
-        - -tags=tray
+        - -tags=tray,e2ee
       ldflags:
         - -X main.version={{.Env.JFA_GO_VERSION}} -X main.commit={{.ShortCommit}} -X main.updater=binary {{.Env.JFA_GO_STRIP}} -X main.cssVersion={{.Env.JFA_GO_CSS_VERSION}} -X main.buildTimeUnix={{.Env.JFA_GO_BUILD_TIME}} -X main.builtBy="{{.Env.JFA_GO_BUILT_BY}}" -H=windowsgui
       goos:
@@ -47,7 +61,7 @@ builds:
         - CXX=x86_64-linux-gnu-gcc
         - PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:$PKG_CONFIG_PATH
       flags:
-        - -tags=tray
+        - -tags=tray,e2ee
       ldflags:
         - -X main.version={{.Env.JFA_GO_VERSION}} -X main.commit={{.ShortCommit}} -X main.updater=binary {{.Env.JFA_GO_STRIP}} -X main.cssVersion={{.Env.JFA_GO_CSS_VERSION}} -X main.buildTimeUnix={{.Env.JFA_GO_BUILD_TIME}} -X main.builtBy="{{.Env.JFA_GO_BUILT_BY}}"
       goos:
@@ -78,6 +92,7 @@ archives:
   - id: notray
     builds:
         - notray
+        - notray-e2ee
     format: zip
     name_template: >-
       {{ .ProjectName }}_{{ .Version }}_

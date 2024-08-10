@@ -30,7 +30,7 @@ endif
 
 INTERNAL ?= on
 TRAY ?= off
-E2EE ?= off
+E2EE ?= on
 TAGS := -tags "
 
 ifeq ($(INTERNAL), on)
