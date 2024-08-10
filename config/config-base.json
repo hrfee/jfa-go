@@ -326,7 +326,8 @@
                     "requires_restart": true,
                     "type": "bool",
                     "value": false,
-                    "description": "Enable TLS."
+                    "description": "Serve application over TLS, with HTTP2 preload.",
+                    "wiki_link": "https://wiki.jfa-go.com/docs/tls/"
                 },
                 "tls_port": {
                     "name": "TLS Port",
@@ -567,7 +568,8 @@
             "order": [],
             "meta": {
                 "name": "Captcha",
-                "description": "Settings related to user creation CAPTCHAs."
+                "description": "Settings related to user creation CAPTCHAs.",
+                "wiki_link": "https://wiki.jfa-go.com/docs/captcha/"
             },
             "settings": {
                 "enabled": {
@@ -766,7 +768,8 @@
             "order": [],
             "meta": {
                 "name": "Messages/Notifications",
-                "description": "General settings for emails/messages."
+                "description": "General settings for emails/messages.",
+                "wiki_link": "https://wiki.jfa-go.com/docs/emails/"
             },
             "settings": {
                 "enabled": {
@@ -1026,7 +1029,8 @@
             "order": [],
             "meta": {
                 "name": "Discord",
-                "description": "Settings for Discord invites/signup/notifications"
+                "description": "Settings for Discord invites/signup/notifications",
+                "wiki_link": "https://wiki.jfa-go.com/docs/bots/discord/"
             },
             "settings": {
                 "enabled": {
@@ -1147,7 +1151,8 @@
             "order": [],
             "meta": {
                 "name": "Telegram",
-                "description": "Settings for Telegram signup/notifications. See the jfa-go wiki for info on setting this up."
+                "description": "Settings for Telegram signup/notifications. See the jfa-go wiki for info on setting this up.",
+                "wiki_link": "https://wiki.jfa-go.com/docs/bots/telegram/"
             },
             "settings": {
                 "enabled": {
@@ -1211,7 +1216,8 @@
             "order": [],
             "meta": {
                 "name": "Matrix",
-                "description": "Settings for Matrix invites/signup/notifications. See the jfa-go wiki for info on setting this up."
+                "description": "Settings for Matrix invites/signup/notifications. See the jfa-go wiki for info on setting this up.",
+                "wiki_link": "https://wiki.jfa-go.com/docs/bots/matrix/"
             },
             "settings": {
                 "enabled": {
@@ -1313,7 +1319,8 @@
             "meta": {
                 "name": "Password Resets",
                 "description": "Settings for the password reset handler.",
-                "depends_true": "messages|enabled"
+                "depends_true": "messages|enabled",
+                "wiki_link": "https://wiki.jfa-go.com/docs/pwr/"
             },
             "settings": {
                 "enabled": {
@@ -1330,7 +1337,7 @@
                     "value": "",
                     "depends_true": "enabled",
                     "required": "false",
-                    "description": "There are multiple ways password resets can be set up. See the <a href=\"https://wiki.jfa-go.com/docs/pwr/\" target=\"_blank\">wiki page</a> for more information."
+                    "description": "There are multiple ways password resets can be set up. See the wiki page for more information."
                 },
                 "watch_directory": {
                     "name": "Jellyfin directory",
@@ -1499,8 +1506,8 @@
         "notifications": {
             "order": [],
             "meta": {
-                "name": "Notifications",
-                "description": "Notification related settings.",
+                "name": "Admin invite notifications",
+                "description": "Allows toggling \"user created\" and \"invite expired\" notifications to be sent to the admin per-invite.",
                 "depends_true": "messages|enabled"
             },
             "settings": {
@@ -1558,7 +1565,8 @@
             "order": [],
             "meta": {
                 "name": "Ombi Integration",
-                "description": "Connect to Ombi to automatically create both Ombi and Jellyfin accounts for new users. You'll need to add a ombi template to an existing User Profile for accounts to be created, which you can do by refreshing then checking Settings > User Profiles. To handle password resets for Ombi & Jellyfin, enable \"Use reset link instead of PIN\"."
+                "description": "Connect to Ombi to automatically create both Ombi and Jellyfin accounts for new users. You'll need to add a ombi template to an existing User Profile for accounts to be created, which you can do by refreshing then checking Settings > User Profiles. To handle password resets for Ombi & Jellyfin, enable \"Use reset link instead of PIN\".",
+                "wiki_link": "https://wiki.jfa-go.com/docs/ombi/"
             },
             "settings": {
                 "enabled": {
@@ -1653,7 +1661,8 @@
             "order": [],
             "meta": {
                 "name": "Backups",
-                "description": "Settings for database backups. Press the \"Backups\" button above to create, download and restore backups."
+                "description": "Settings for database backups. Press the \"Backups\" button above to create, download and restore backups.",
+                "wiki_link": "https://wiki.jfa-go.com/docs/backups/"
             },
             "settings": {
                 "enabled": {

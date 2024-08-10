@@ -19,6 +19,7 @@ interface Meta {
     advanced?: boolean;
     depends_true?: string;
     depends_false?: string;
+    wiki_link?: string;
 }
 
 interface Setting {
@@ -31,6 +32,7 @@ interface Setting {
     value: string | boolean | number;
     depends_true?: string;
     depends_false?: string;
+    wiki_link?: string;
 
     asElement: () => HTMLElement;
     update: (s: Setting) => void;
@@ -555,10 +557,19 @@ class sectionPanel {
         this._section = document.createElement("div") as HTMLDivElement;
         this._section.classList.add("settings-section", "unfocused");
         this._section.setAttribute("data-section", sectionName);
-        this._section.innerHTML = `
-        <span class="heading">${s.meta.name}</span>
+        let innerHTML = `
+        <div class="flex flex-row justify-between">
+            <span class="heading">${s.meta.name}</span>
+        `;
+        if (s.meta.wiki_link) {
+            innerHTML += `<a class="button ~urge dark:~d_info @low justify-center" target="_blank" href="${s.meta.wiki_link}" title="${window.lang.strings("wiki")}"><i class="ri-book-shelf-line"></i></a>`;
+        }
+
+        innerHTML += `
+        </div>
         <p class="support lg my-2 settings-section-description">${s.meta.description}</p>
         `;
+        this._section.innerHTML = innerHTML;
 
         this.update(s);
     }

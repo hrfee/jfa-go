@@ -214,6 +214,7 @@ type meta struct {
 	Advanced     bool   `json:"advanced,omitempty"`
 	DependsTrue  string `json:"depends_true,omitempty"`
 	DependsFalse string `json:"depends_false,omitempty"`
+	WikiLink     string `json:"wiki_link,omitempty"`
 }
 
 type setting struct {
