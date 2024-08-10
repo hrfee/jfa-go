@@ -170,5 +170,6 @@ func newBackupDaemon(app *appContext) *GenericDaemon {
 			app.makeBackup()
 		},
 	)
+	d.Name("Backup")
 	return d
 }

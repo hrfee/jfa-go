@@ -2,9 +2,11 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/gomarkdown/markdown"
@@ -15,18 +17,23 @@ import (
 	"maunium.net/go/mautrix/id"
 )
 
+var (
+	DEVICE_ID = id.DeviceID("jfa-go")
+)
+
 type MatrixDaemon struct {
-	Stopped         bool
-	ShutdownChannel chan string
-	bot             *mautrix.Client
-	userID          id.UserID
-	tokens          map[string]UnverifiedUser // Map of tokens to users
-	languages       map[id.RoomID]string      // Map of roomIDs to language codes
-	Encryption      bool
-	isEncrypted     map[id.RoomID]bool
-	crypto          Crypto
-	app             *appContext
-	start           int64
+	Stopped      bool
+	bot          *mautrix.Client
+	userID       id.UserID
+	homeserver   string
+	tokens       map[string]UnverifiedUser // Map of tokens to users
+	languages    map[id.RoomID]string      // Map of roomIDs to language codes
+	Encryption   bool
+	crypto       *Crypto
+	app          *appContext
+	start        int64
+	cancellation sync.WaitGroup
+	cancel       context.CancelFunc
 }
 
 type UnverifiedUser struct {
@@ -57,23 +64,33 @@ var matrixFilter = mautrix.Filter{
 	},
 }
 
+func (d *MatrixDaemon) renderUserID(uid id.UserID) id.UserID {
+	if uid[0] != '@' {
+		uid = "@" + uid
+	}
+	if !strings.ContainsRune(string(uid), ':') {
+		uid = id.UserID(string(uid) + ":" + d.homeserver)
+	}
+	return uid
+}
+
 func newMatrixDaemon(app *appContext) (d *MatrixDaemon, err error) {
 	matrix := app.config.Section("matrix")
-	homeserver := matrix.Key("homeserver").String()
 	token := matrix.Key("token").String()
 	d = &MatrixDaemon{
-		ShutdownChannel: make(chan string),
-		userID:          id.UserID(matrix.Key("user_id").String()),
-		tokens:          map[string]UnverifiedUser{},
-		languages:       map[id.RoomID]string{},
-		isEncrypted:     map[id.RoomID]bool{},
-		app:             app,
-		start:           time.Now().UnixNano() / 1e6,
+		userID:     id.UserID(matrix.Key("user_id").String()),
+		homeserver: matrix.Key("homeserver").String(),
+		tokens:     map[string]UnverifiedUser{},
+		languages:  map[id.RoomID]string{},
+		app:        app,
+		start:      time.Now().UnixNano() / 1e6,
 	}
-	d.bot, err = mautrix.NewClient(homeserver, d.userID, token)
+	d.userID = d.renderUserID(d.userID)
+	d.bot, err = mautrix.NewClient(d.homeserver, d.userID, token)
 	if err != nil {
 		return
 	}
+	d.bot.DeviceID = DEVICE_ID
 	// resp, err := d.bot.CreateFilter(&matrixFilter)
 	// if err != nil {
 	// 	return
@@ -83,7 +100,6 @@ func newMatrixDaemon(app *appContext) (d *MatrixDaemon, err error) {
 		if user.Lang != "" {
 			d.languages[id.RoomID(user.RoomID)] = user.Lang
 		}
-		d.isEncrypted[id.RoomID(user.RoomID)] = user.Encrypted
 	}
 	err = InitMatrixCrypto(d)
 	return
@@ -102,7 +118,7 @@ func (d *MatrixDaemon) generateAccessToken(homeserver, username, password string
 			User: username,
 		},
 		Password: password,
-		DeviceID: id.DeviceID("jfa-go-" + commit),
+		DeviceID: DEVICE_ID,
 	}
 	bot, err := mautrix.NewClient(homeserver, id.UserID(username), "")
 	if err != nil {
@@ -116,22 +132,25 @@ func (d *MatrixDaemon) generateAccessToken(homeserver, username, password string
 }
 
 func (d *MatrixDaemon) run() {
-	startTime := d.start
-	d.app.info.Println(lm.StartDaemon, lm.Matrix)
 	syncer := d.bot.Syncer.(*mautrix.DefaultSyncer)
-	HandleSyncerCrypto(startTime, d, syncer)
 	syncer.OnEventType(event.EventMessage, d.handleMessage)
 
-	if err := d.bot.Sync(); err != nil {
+	d.app.info.Printf(lm.StartDaemon, lm.Matrix)
+
+	var syncCtx context.Context
+	syncCtx, d.cancel = context.WithCancel(context.Background())
+	d.cancellation.Add(1)
+
+	if err := d.bot.SyncWithContext(syncCtx); err != nil && !errors.Is(err, context.Canceled) {
 		d.app.err.Printf(lm.FailedSyncMatrix, err)
 	}
+	d.cancellation.Done()
 }
 
 func (d *MatrixDaemon) Shutdown() {
-	CryptoShutdown(d)
-	d.bot.StopSync()
+	d.cancel()
+	d.cancellation.Wait()
 	d.Stopped = true
-	close(d.ShutdownChannel)
 }
 
 func (d *MatrixDaemon) handleMessage(ctx context.Context, evt *event.Event) {
@@ -184,7 +203,7 @@ func (d *MatrixDaemon) commandLang(evt *event.Event, code, lang string) {
 	}
 }
 
-func (d *MatrixDaemon) CreateRoom(userID string) (roomID id.RoomID, encrypted bool, err error) {
+func (d *MatrixDaemon) CreateRoom(userID string) (roomID id.RoomID, err error) {
 	var room *mautrix.RespCreateRoom
 	room, err = d.bot.CreateRoom(context.TODO(), &mautrix.ReqCreateRoom{
 		Visibility: "private",
@@ -195,13 +214,14 @@ func (d *MatrixDaemon) CreateRoom(userID string) (roomID id.RoomID, encrypted bo
 	if err != nil {
 		return
 	}
-	encrypted = EncryptRoom(d, room, id.UserID(userID))
+	// encrypted = EncryptRoom(d, room, id.UserID(userID))
 	roomID = room.RoomID
+	err = EncryptRoom(d, roomID)
 	return
 }
 
 func (d *MatrixDaemon) SendStart(userID string) (ok bool) {
-	roomID, encrypted, err := d.CreateRoom(userID)
+	roomID, err := d.CreateRoom(userID)
 	if err != nil {
 		d.app.err.Printf(lm.FailedCreateMatrixRoom, userID, err)
 		return
@@ -211,10 +231,9 @@ func (d *MatrixDaemon) SendStart(userID string) (ok bool) {
 	d.tokens[pin] = UnverifiedUser{
 		false,
 		&MatrixUser{
-			RoomID:    string(roomID),
-			UserID:    userID,
-			Lang:      lang,
-			Encrypted: encrypted,
+			RoomID: string(roomID),
+			UserID: userID,
+			Lang:   lang,
 		},
 	}
 	err = d.sendToRoom(
@@ -234,12 +253,13 @@ func (d *MatrixDaemon) SendStart(userID string) (ok bool) {
 }
 
 func (d *MatrixDaemon) sendToRoom(content *event.MessageEventContent, roomID id.RoomID) (err error) {
-	if encrypted, ok := d.isEncrypted[roomID]; ok && encrypted {
+	return d.send(content, roomID)
+	/*if encrypted, ok := d.isEncrypted[roomID]; ok && encrypted {
 		err = SendEncrypted(d, content, roomID)
 	} else {
 		_, err = d.bot.SendMessageEvent(context.TODO(), roomID, event.EventMessage, content, mautrix.ReqSendEvent{})
 	}
-	return
+	return*/
 }
 
 func (d *MatrixDaemon) send(content *event.MessageEventContent, roomID id.RoomID) (err error) {

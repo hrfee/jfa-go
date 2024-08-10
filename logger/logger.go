@@ -84,6 +84,18 @@ func (l *Logger) Printf(format string, v ...interface{}) {
 	l.logger.Print(out)
 }
 
+func (l *Logger) PrintfCustomLevel(level int, format string, v ...interface{}) {
+	if l.empty {
+		return
+	}
+	var out string
+	if l.shortfile {
+		out = Lshortfile(level)
+	}
+	out += " " + l.printer.Sprintf(format, v...)
+	l.logger.Print(out)
+}
+
 func (l *Logger) Print(v ...interface{}) {
 	if l.empty {
 		return

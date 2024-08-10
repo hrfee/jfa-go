@@ -650,7 +650,6 @@ type TelegramUser struct {
 
 type MatrixUser struct {
 	RoomID     string
-	Encrypted  bool
 	UserID     string
 	Lang       string
 	Contact    bool

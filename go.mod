@@ -45,6 +45,7 @@ require (
 	github.com/itchyny/timefmt-go v0.1.6
 	github.com/lithammer/shortuuid/v3 v3.0.7
 	github.com/mailgun/mailgun-go/v4 v4.14.0
+	github.com/mattn/go-sqlite3 v1.14.22
 	github.com/robert-nix/ansihtml v1.0.1
 	github.com/steambap/captcha v1.4.1
 	github.com/swaggo/files v1.0.1

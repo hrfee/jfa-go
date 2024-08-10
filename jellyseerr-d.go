@@ -77,6 +77,6 @@ func newJellyseerrDaemon(interval time.Duration, app *appContext) *GenericDaemon
 			app.SynchronizeJellyseerrUsers()
 		},
 	)
-	d.Name("Jellyseerr import daemon")
+	d.Name("Jellyseerr import")
 	return d
 }

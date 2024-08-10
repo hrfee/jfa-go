@@ -614,20 +614,18 @@ func (app *appContext) MatrixConnect(gc *gin.Context) {
 	if app.storage.GetMatrix() == nil {
 		app.storage.deprecatedMatrix = matrixStore{}
 	}
-	roomID, encrypted, err := app.matrix.CreateRoom(req.UserID)
+	roomID, err := app.matrix.CreateRoom(req.UserID)
 	if err != nil {
 		app.err.Printf(lm.FailedCreateRoom, err)
 		respondBool(500, false, gc)
 		return
 	}
 	app.storage.SetMatrixKey(req.JellyfinID, MatrixUser{
-		UserID:    req.UserID,
-		RoomID:    string(roomID),
-		Lang:      "en-us",
-		Contact:   true,
-		Encrypted: encrypted,
+		UserID:  req.UserID,
+		RoomID:  string(roomID),
+		Lang:    "en-us",
+		Contact: true,
 	})
-	app.matrix.isEncrypted[roomID] = encrypted
 	respondBool(200, true, gc)
 }
 

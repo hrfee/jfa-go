@@ -43,7 +43,7 @@ func (app *appContext) webAuth() gin.HandlerFunc {
 	return app.authenticate
 }
 
-func (app *appContext) authLog(v any) { app.debug.Printf(lm.FailedAuthRequest, v) }
+func (app *appContext) authLog(v any) { app.debug.PrintfCustomLevel(4, lm.FailedAuthRequest, v) }
 
 // CreateToken returns a web token as well as a refresh token, which can be used to obtain new tokens.
 func CreateToken(userId, jfId string, admin bool) (string, string, error) {
@@ -270,7 +270,7 @@ func (app *appContext) decodeValidateRefreshCookie(gc *gin.Context, cookieName s
 	}
 	token, err := jwt.Parse(cookie, checkToken)
 	if err != nil {
-		app.authLog(lm.FailedParseJWT)
+		app.authLog(fmt.Sprintf(lm.FailedParseJWT, err))
 		respond(400, lm.InvalidJWT, gc)
 		return
 	}

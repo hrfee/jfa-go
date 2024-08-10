@@ -40,7 +40,7 @@ func (app *appContext) GenResetLink(pin string) (string, error) {
 }
 
 func (app *appContext) StartPWR() {
-	app.info.Println(lm.StartDaemon, "PWR")
+	app.info.Printf(lm.StartDaemon, "PWR")
 	path := app.config.Section("password_resets").Key("watch_directory").String()
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		app.err.Printf(lm.FailedStartDaemon, "PWR", fmt.Sprintf(lm.PathNotFound, path))
