@@ -124,7 +124,7 @@ nfpms:
     vendor: hrfee.dev
     version_metadata: git
     builds:
-      - notray
+      - notray-e2ee
     contents:
       - src: ./LICENSE
         dst: /usr/share/licenses/jfa-go
