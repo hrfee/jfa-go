@@ -59,7 +59,7 @@ jfa-go is a user management app for [Jellyfin](https://github.com/jellyfin/jelly
 
 **Note**: `TrayIcon` builds include a tray icon to start/stop/restart, and an option to automatically start when you log-in to your computer. For Linux users, these builds depend on the `libappindicator3-1`/`libappindicator-gtk3`/`libappindicator` package for Debian/Ubuntu, Fedora, and Alpine respectively.
 
-`MatrixE2EE` builds (and Linux `TrayIcon` builds) include support for end-to-end encryption for the Matrix bots, but require the `libolm(-dev)` dependency. `.deb/.rpm/.apk` packages list this dependency, and docker images include it.
+`MatrixE2EE` builds (and Linux `TrayIcon` builds) include support for end-to-end encryption for the Matrix bot, but require the `libolm(-dev)` dependency. `.deb/.rpm/.apk` packages list this dependency, and docker images include it.
 
 ##### [Docker](https://hub.docker.com/r/hrfee/jfa-go)
 ```sh

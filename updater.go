@@ -363,11 +363,17 @@ func getBuildName() string {
 	if arch == "" {
 		return ""
 	}
-	tray := ""
-	if TRAY {
-		tray = "TrayIcon_"
+	// Tray builds always have E2EE but aren't labelled as so,
+	// hence the specific ordering here.
+	subtype := ""
+	if MatrixE2EE() {
+		subtype = "MatrixE2EE_"
 	}
-	return tray + operatingSystem + "_" + arch
+	if TRAY {
+		subtype = "TrayIcon_"
+	}
+
+	return subtype + operatingSystem + "_" + arch
 }
 
 func (ud *Updater) downloadInternal(assets *[]GHAsset, tag Tag) (applyUpdate ApplyUpdate, status int, err error) {
