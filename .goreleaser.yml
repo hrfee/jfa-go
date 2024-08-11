@@ -18,6 +18,7 @@ builds:
       ldflags:
         - -X main.version={{.Env.JFA_GO_VERSION}} -X main.commit={{.ShortCommit}} -X main.updater={{.Env.JFA_GO_UPDATER}} {{.Env.JFA_GO_STRIP}} -X main.cssVersion={{.Env.JFA_GO_CSS_VERSION}} -X main.buildTimeUnix={{.Env.JFA_GO_BUILD_TIME}} -X main.builtBy="{{.Env.JFA_GO_BUILT_BY}}"
       goos:
+        - linux
         - darwin
         - windows
       goarch:
@@ -95,10 +96,19 @@ archives:
   - id: notray
     builds:
         - notray
-        - notray-e2ee
     format: zip
     name_template: >-
       {{ .ProjectName }}_{{ .Version }}_
+      {{- if eq .Os "darwin" }}macOS
+      {{- else }}{{- title .Os }}{{ end }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else }}{{ .Arch }}{{ end }}
+  - id: notray-e2ee
+    builds:
+        - notray-e2ee
+    format: zip
+    name_template: >-
+      {{ .ProjectName }}_{{ .Version }}_MatrixE2EE_
       {{- if eq .Os "darwin" }}macOS
       {{- else }}{{- title .Os }}{{ end }}_
       {{- if eq .Arch "amd64" }}x86_64
@@ -132,6 +142,16 @@ nfpms:
       - apk
       - deb
       - rpm
+    overrides:
+        deb:
+            dependencies:
+                - libolm-dev
+        rpm:
+            dependencies:
+                - libolm 
+        apk:
+            dependencies:
+                - olm
   - id: tray
     file_name_template: '{{ .ProjectName }}{{ if .IsSnapshot }}-git{{ end }}_TrayIcon_{{ .Arch }}_{{ if .IsSnapshot }}{{ .ShortCommit }}{{ else }}v{{ .Version }}{{ end }}'
     package_name: jfa-go-tray
@@ -158,9 +178,12 @@ nfpms:
                 - jfa-go
             dependencies:
                 - libayatana-appindicator
+                - libolm-dev
         rpm:
             dependencies:
                 - libappindicator-gtk3
+                - libolm 
         apk:
             dependencies:
                 - libayatana-appindicator
+                - olm
