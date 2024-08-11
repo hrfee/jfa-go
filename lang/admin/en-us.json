@@ -146,6 +146,7 @@
         "postSignupCardDescription": "Card shown to user after signing up. Overrides \"Success Message\". Overriden by \"Auto redirect on success\" setting.",
         "buildTime": "Build Time",  
         "builtBy": "Built By",
+        "buildTags": "Build Tags",
         "loginNotAdmin": "Not an Admin?",
         "referrer": "Referrer",
         "accountLinked": "{contactMethod} linked: {user}",

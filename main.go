@@ -60,6 +60,7 @@ var (
 	commit               string
 	buildTimeUnix        string
 	builtBy              string
+	buildTags            []string
 	_LOADBAK             *string
 	LOADBAK              = ""
 )
@@ -740,6 +741,11 @@ func printVersion() {
 const SYSTEMD_SERVICE = "jfa-go.service"
 
 func main() {
+	// Generate list of "-tags" for about page.
+	BuildTagsE2EE()
+	BuildTagsTray()
+	BuildTagsExternal()
+
 	f, err := logOutput()
 	if err != nil {
 		fmt.Printf(lm.FailedLogging, err)

@@ -7,6 +7,8 @@ import "maunium.net/go/mautrix/id"
 
 type Crypto struct{}
 
+func BuildTagsE2EE() {}
+
 func MatrixE2EE() bool { return false }
 
 func InitMatrixCrypto(d *MatrixDaemon) (err error) {

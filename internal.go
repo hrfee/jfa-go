@@ -1,3 +1,4 @@
+//go:build !external
 // +build !external
 
 package main
@@ -9,6 +10,8 @@ import (
 )
 
 const binaryType = "internal"
+
+func BuildTagsExternal() {}
 
 //go:embed data data/html data/web data/web/css data/web/js
 var loFS embed.FS

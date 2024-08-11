@@ -1,3 +1,4 @@
+//go:build external
 // +build external
 
 package main
@@ -11,6 +12,8 @@ import (
 )
 
 const binaryType = "external"
+
+func BuildTagsExternal() { buildTags = append(buildTags, "external") }
 
 var localFS dirFS
 var langFS dirFS

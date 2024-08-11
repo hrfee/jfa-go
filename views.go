@@ -174,6 +174,7 @@ func (app *appContext) AdminPage(gc *gin.Context) {
 		"commit":            commit,
 		"buildTime":         buildTime,
 		"builtBy":           builtBy,
+		"buildTags":         buildTags,
 		"username":          !app.config.Section("email").Key("no_username").MustBool(false),
 		"strings":           app.storage.lang.Admin[lang].Strings,
 		"quantityStrings":   app.storage.lang.Admin[lang].QuantityStrings,

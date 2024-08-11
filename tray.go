@@ -15,6 +15,10 @@ import (
 
 var TRAY = true
 
+func BuildTagsTray() {
+	buildTags = append(buildTags, "tray")
+}
+
 func RunTray() {
 	systray.Run(onReady, onExit)
 }

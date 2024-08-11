@@ -16,6 +16,10 @@ type Crypto struct {
 	helper *cryptohelper.CryptoHelper
 }
 
+func BuildTagsE2EE() {
+	buildTags = append(buildTags, "e2ee")
+}
+
 func MatrixE2EE() bool { return true }
 
 func InitMatrixCrypto(d *MatrixDaemon) error {
