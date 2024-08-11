@@ -1311,6 +1311,14 @@
                     "type": "bool",
                     "value": true,
                     "description": "Enable end-to-end encryption for messages."
+                },
+                "e2ee_note": {
+                    "name": "End-to-end encryption:",
+                    "type": "note",
+                    "value": "",
+                    "depends_true": "enabled",
+                    "required": "false",
+                    "description": "If the setting is not visible to you, your jfa-go version does not include the feature. See the wiki for more information."
                 }
             }
         },
