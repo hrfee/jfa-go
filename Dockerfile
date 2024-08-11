@@ -16,7 +16,7 @@ FROM golang:bookworm AS final
 ARG TARGETARCH
 
 COPY --from=support /opt/build/dist/*_linux_${TARGETARCH}* /opt/jfa-go
-COPY --from=support /opt/build/build/data /opt/jfa-go/
+COPY --from=support /opt/build/build/data /opt/jfa-go/data
 
 RUN apt-get update -y && apt-get install libolm-dev -y
 
