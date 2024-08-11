@@ -16,7 +16,7 @@ builds:
       flags:
         - -tags={{ .Env.JFA_GO_TAG }}
       ldflags:
-        - -X main.version={{.Env.JFA_GO_VERSION}} -X main.commit={{.ShortCommit}} -X main.updater=binary {{.Env.JFA_GO_STRIP}} -X main.cssVersion={{.Env.JFA_GO_CSS_VERSION}} -X main.buildTimeUnix={{.Env.JFA_GO_BUILD_TIME}} -X main.builtBy="{{.Env.JFA_GO_BUILT_BY}}"
+        - -X main.version={{.Env.JFA_GO_VERSION}} -X main.commit={{.ShortCommit}} -X main.updater={{.Env.JFA_GO_UPDATER}} {{.Env.JFA_GO_STRIP}} -X main.cssVersion={{.Env.JFA_GO_CSS_VERSION}} -X main.buildTimeUnix={{.Env.JFA_GO_BUILD_TIME}} -X main.builtBy="{{.Env.JFA_GO_BUILT_BY}}"
       goos:
         - darwin
         - windows
@@ -35,7 +35,7 @@ builds:
       flags:
         - -tags=e2ee,{{ .Env.JFA_GO_TAG }}
       ldflags:
-        - -X main.version={{.Env.JFA_GO_VERSION}} -X main.commit={{.ShortCommit}} -X main.updater=binary {{.Env.JFA_GO_STRIP}} -X main.cssVersion={{.Env.JFA_GO_CSS_VERSION}} -X main.buildTimeUnix={{.Env.JFA_GO_BUILD_TIME}} -X main.builtBy="{{.Env.JFA_GO_BUILT_BY}}"
+        - -X main.version={{.Env.JFA_GO_VERSION}} -X main.commit={{.ShortCommit}} -X main.updater={{.Env.JFA_GO_UPDATER}} {{.Env.JFA_GO_STRIP}} -X main.cssVersion={{.Env.JFA_GO_CSS_VERSION}} -X main.buildTimeUnix={{.Env.JFA_GO_BUILD_TIME}} -X main.builtBy="{{.Env.JFA_GO_BUILT_BY}}"
       goos:
         - linux
       goarch:
@@ -51,7 +51,7 @@ builds:
       flags:
         - -tags=tray,{{ .Env.JFA_GO_TAG }}
       ldflags:
-        - -X main.version={{.Env.JFA_GO_VERSION}} -X main.commit={{.ShortCommit}} -X main.updater=binary {{.Env.JFA_GO_STRIP}} -X main.cssVersion={{.Env.JFA_GO_CSS_VERSION}} -X main.buildTimeUnix={{.Env.JFA_GO_BUILD_TIME}} -X main.builtBy="{{.Env.JFA_GO_BUILT_BY}}" -H=windowsgui
+        - -X main.version={{.Env.JFA_GO_VERSION}} -X main.commit={{.ShortCommit}} -X main.updater={{.Env.JFA_GO_UPDATER}} {{.Env.JFA_GO_STRIP}} -X main.cssVersion={{.Env.JFA_GO_CSS_VERSION}} -X main.buildTimeUnix={{.Env.JFA_GO_BUILD_TIME}} -X main.builtBy="{{.Env.JFA_GO_BUILT_BY}}" -H=windowsgui
       goos:
         - windows
       goarch:
@@ -66,7 +66,7 @@ builds:
       flags:
         - -tags=tray,e2ee,{{ .Env.JFA_GO_TAG }}
       ldflags:
-        - -X main.version={{.Env.JFA_GO_VERSION}} -X main.commit={{.ShortCommit}} -X main.updater=binary {{.Env.JFA_GO_STRIP}} -X main.cssVersion={{.Env.JFA_GO_CSS_VERSION}} -X main.buildTimeUnix={{.Env.JFA_GO_BUILD_TIME}} -X main.builtBy="{{.Env.JFA_GO_BUILT_BY}}"
+        - -X main.version={{.Env.JFA_GO_VERSION}} -X main.commit={{.ShortCommit}} -X main.updater={{.Env.JFA_GO_UPDATER}} {{.Env.JFA_GO_STRIP}} -X main.cssVersion={{.Env.JFA_GO_CSS_VERSION}} -X main.buildTimeUnix={{.Env.JFA_GO_BUILD_TIME}} -X main.builtBy="{{.Env.JFA_GO_BUILT_BY}}"
       goos:
         - linux
       goarch:

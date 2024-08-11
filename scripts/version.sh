@@ -24,6 +24,13 @@ else
     export JFA_GO_TAG="external"
 fi
 
+if [[ -z "${UPDATER}" ]]; then
+    export UPDATER=on
+    export JFA_GO_UPDATER=binary
+else
+    export JFA_GO_UPDATER=$UPDATER
+fi
+
 JFA_GO_VERSION=$(git describe --exact-match HEAD 2> /dev/null || echo 'vgit')
 TIMEOUT=60m
 
