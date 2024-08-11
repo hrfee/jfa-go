@@ -9,10 +9,12 @@ release:
 before:
   hooks:
     - npm i
-    - make precompile INTERNAL=on
+    - make precompile
 builds:
     - id: notray
       dir: ./
+      flags:
+        - -tags={{ .Env.JFA_GO_TAG }}
       ldflags:
         - -X main.version={{.Env.JFA_GO_VERSION}} -X main.commit={{.ShortCommit}} -X main.updater=binary {{.Env.JFA_GO_STRIP}} -X main.cssVersion={{.Env.JFA_GO_CSS_VERSION}} -X main.buildTimeUnix={{.Env.JFA_GO_BUILD_TIME}} -X main.builtBy="{{.Env.JFA_GO_BUILT_BY}}"
       goos:
@@ -28,9 +30,10 @@ builds:
         - CGO_ENABLED=1
         - CC={{ if eq .Arch "amd64" }}x86_64{{ else if eq .Arch "arm64" }}aarch64{{ else }}{{ .Arch }}{{ end }}-linux-gnu{{ if eq .Arch "arm" }}eabihf{{ end }}-gcc
         - CXX={{ if eq .Arch "amd64" }}x86_64{{ else if eq .Arch "arm64" }}aarch64{{ else }}{{ .Arch }}{{ end }}-linux-gnu{{ if eq .Arch "arm" }}eabihf{{ end }}-gcc
+        - PKG_CONFIG_PATH=/usr/lib/{{ if eq .Arch "amd64" }}x86_64{{ else if eq .Arch "arm64" }}aarch64{{ else }}{{ .Arch }}{{ end }}-linux-gnu{{ if eq .Arch "arm" }}eabihf{{ end }}/pkgconfig:$PKG_CONFIG_PATH
         - GOARM={{ if eq .Arch "arm" }}7{{ end }}
       flags:
-        - -tags=e2ee
+        - -tags=e2ee,{{ .Env.JFA_GO_TAG }}
       ldflags:
         - -X main.version={{.Env.JFA_GO_VERSION}} -X main.commit={{.ShortCommit}} -X main.updater=binary {{.Env.JFA_GO_STRIP}} -X main.cssVersion={{.Env.JFA_GO_CSS_VERSION}} -X main.buildTimeUnix={{.Env.JFA_GO_BUILD_TIME}} -X main.builtBy="{{.Env.JFA_GO_BUILT_BY}}"
       goos:
@@ -46,7 +49,7 @@ builds:
         - CC=x86_64-w64-mingw32-gcc
         - CXX=x86_64-w64-mingw32-g++
       flags:
-        - -tags=tray,e2ee
+        - -tags=tray,{{ .Env.JFA_GO_TAG }}
       ldflags:
         - -X main.version={{.Env.JFA_GO_VERSION}} -X main.commit={{.ShortCommit}} -X main.updater=binary {{.Env.JFA_GO_STRIP}} -X main.cssVersion={{.Env.JFA_GO_CSS_VERSION}} -X main.buildTimeUnix={{.Env.JFA_GO_BUILD_TIME}} -X main.builtBy="{{.Env.JFA_GO_BUILT_BY}}" -H=windowsgui
       goos:
@@ -59,9 +62,9 @@ builds:
         - CGO_ENABLED=1
         - CC=x86_64-linux-gnu-gcc
         - CXX=x86_64-linux-gnu-gcc
-        - PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:$PKG_CONFIG_PATH
+        - PKG_CONFIG_PATH=/usr/lib/{{ if eq .Arch "amd64" }}x86_64{{ else if eq .Arch "arm64" }}aarch64{{ else }}{{ .Arch }}{{ end }}-linux-gnu{{ if eq .Arch "arm" }}eabihf{{ end }}/pkgconfig:$PKG_CONFIG_PATH
       flags:
-        - -tags=tray,e2ee
+        - -tags=tray,e2ee,{{ .Env.JFA_GO_TAG }}
       ldflags:
         - -X main.version={{.Env.JFA_GO_VERSION}} -X main.commit={{.ShortCommit}} -X main.updater=binary {{.Env.JFA_GO_STRIP}} -X main.cssVersion={{.Env.JFA_GO_CSS_VERSION}} -X main.buildTimeUnix={{.Env.JFA_GO_BUILD_TIME}} -X main.builtBy="{{.Env.JFA_GO_BUILT_BY}}"
       goos:

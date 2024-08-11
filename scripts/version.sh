@@ -15,6 +15,15 @@ else
     export JFA_GO_MINIFY=""
 fi
 
+if [[ -z "${INTERNAL}" ]]; then
+    export INTERNAL=on
+fi
+if [[ "${INTERNAL}" == "on" ]]; then
+    export JFA_GO_TAG=""
+else
+    export JFA_GO_TAG="external"
+fi
+
 JFA_GO_VERSION=$(git describe --exact-match HEAD 2> /dev/null || echo 'vgit')
 TIMEOUT=60m
 
