@@ -110,8 +110,13 @@
                         </label>
                         <label class="label">
                             <span class="mt-4">{{ .lang.General.urlBase }} ({{ .lang.Strings.optional }})</span>
-                            <input type="url" class="input ~neutral @low mt-4" id="ui-url_base">
+                            <input type="text" class="input ~neutral @low mt-4" id="ui-url_base" placeholder="/mysubfolder">
                             <p class="support mb-2 mt-1">{{ .lang.General.urlBaseNotice }}</p>
+                        </label>
+                        <label class="label">
+                            <span class="mt-4">{{ .lang.General.externalURL }}</span>
+                            <input type="text" class="input ~neutral @low mt-4" id="ui-jfa_url" placeholder="https://jellyf.in/mysubfolder">
+                            <p class="support mb-2 mt-1">{{ .lang.General.externalURLNotice }}</p>
                         </label>
                         <label class="label">
                             <span>{{ .lang.Strings.theme }}</span>
@@ -422,10 +427,6 @@
                 <p class="content my-2">{{ .lang.InviteEmails.description }}</p>
                 <label class="row switch pb-4">
                     <input type="checkbox" class="mr-2" id="invite_emails-enabled"><span>{{ .lang.Strings.enabled }}</span>
-                </label>
-                <label class="label">
-                    <span class="mt-4">{{ .lang.Strings.URL }}</span>
-                    <input type="url" class="input ~neutral @low mt-4 mb-2" id="invite_emails-url_base" placeholder="https://accounts.jellyf.in/invite">
                 </label>
                 <label class="label">
                     <span class="mt-4">{{ .lang.Strings.emailSubject }}</span>

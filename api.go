@@ -322,15 +322,6 @@ func (app *appContext) GetConfig(gc *gin.Context) {
 	resp.Sections["discord"].Settings["language"] = tl
 	resp.Sections["matrix"].Settings["language"] = tl
 
-	// if setting := resp.Sections["invite_emails"].Settings["url_base"]; setting.Value == "" {
-	// 	setting.Value = strings.TrimSuffix(resp.Sections["password_resets"].Settings["url_base"].Value.(string), "/invite")
-	// 	resp.Sections["invite_emails"].Settings["url_base"] = setting
-	// }
-	// if setting := resp.Sections["password_resets"].Settings["url_base"]; setting.Value == "" {
-	// 	setting.Value = strings.TrimSuffix(resp.Sections["invite_emails"].Settings["url_base"].Value.(string), "/invite")
-	// 	resp.Sections["password_resets"].Settings["url_base"] = setting
-	// }
-
 	gc.JSON(200, resp)
 }
 

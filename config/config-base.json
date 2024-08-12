@@ -257,6 +257,15 @@
                     "value": "",
                     "description": "URL base for when running jfa-go with a reverse proxy in a subfolder. include preceding /, e.g \"/accounts\"."
                 },
+                "jfa_url": {
+                    "name": "External jfa-go URL",
+                    "required": true,
+                    "requires_restart": false,
+                    "depends_true": "enabled",
+                    "type": "text",
+                    "value": "http://accounts.jellyf.in:8056",
+                    "description": "The URL at which the jfa-go root (admin page) is accessible, including the subfolder if you use one. This is necessary because using a reverse proxy means the program has no way of knowing the URL itself."
+                },
                 "redirect_url": {
                     "name": "Form success redirect URL",
                     "required": false,
@@ -1375,13 +1384,22 @@
                     "description": "Instead of automatically setting the user's password to the PIN, allow them to set a new password through the reset link."
                 },
                 "url_base": {
-                    "name": "URL Base",
+                    "name": "External jfa-go URL",
                     "required": true,
                     "requires_restart": false,
                     "depends_true": "link_reset",
                     "type": "text",
                     "value": "http://accounts.jellyf.in:8056",
-                    "description": "Base URL for jfa-go. You can leave this if you have one set in \"Invite Emails\". This is necessary because using a reverse proxy means the program has no way of knowing the URL itself."
+                    "description": "The URL at which the jfa-go admin page is accessible, including the subfolder if you use one. You can leave this if you have one set in \"Invite Emails\". This is necessary because using a reverse proxy means the program has no way of knowing the URL itself.",
+                    "deprecated": true
+                },
+                "jfa_url": {
+                    "name": "Generating Reset Links:",
+                    "type": "note",
+                    "value": "",
+                    "depends_true": "link_reset",
+                    "required": "false",
+                    "description": "Set the \"External jfa-go URL\" in General so that links to jfa-go can be made."
                 },
                 "language": {
                     "name": "Default reset link language",
@@ -1471,13 +1489,22 @@
                     "description": "Subject of invite emails."
                 },
                 "url_base": {
-                    "name": "URL Base",
+                    "name": "External jfa-go URL",
                     "required": true,
                     "requires_restart": false,
                     "depends_true": "enabled",
                     "type": "text",
                     "value": "http://accounts.jellyf.in:8056",
-                    "description": "Base URL for jfa-go. This is necessary because using a reverse proxy means the program has no way of knowing the URL itself."
+                    "description": "The URL at which the jfa-go root (admin page) is accessible, including the subfolder if you use one. You can leave this if you have one set in \"Invite Emails\". This is necessary because using a reverse proxy means the program has no way of knowing the URL itself.",
+                    "deprecated": true
+                },
+                "jfa_url": {
+                    "name": "Generating Links:",
+                    "type": "note",
+                    "value": "",
+                    "depends_true": "enabled",
+                    "required": "false",
+                    "description": "Set the \"External jfa-go URL\" in General so that links to jfa-go can be made."
                 }
             }
         },

@@ -249,6 +249,7 @@ const settings = {
         "host": new Input(get("ui-host")),
         "port": new Input(get("ui-port")),
         "url_base": new Input(get("ui-url_base")),
+        "jfa_url": new Input(get("ui-jfa_url")),
         "theme": new Select(get("ui-theme")),
         "language-form": new LangSelect("form", get("ui-language-form")),
         "language-admin": new LangSelect("admin", get("ui-language-admin")),
@@ -304,7 +305,6 @@ const settings = {
     "invite_emails": {
         "enabled": new Checkbox(get("invite_emails-enabled"), "", false, "invite_emails", "enabled"),
         "subject": new Input(get("invite_emails-subject"), "", "", "enabled", true, "invite_emails"),
-        "url_base": new Input(get("invite_emails-url_base"), "", "", "enabled", true, "invite_emails")
     },
     "mailgun": {
         "api_url": new Input(get("mailgun-api_url")),

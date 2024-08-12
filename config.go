@@ -55,7 +55,16 @@ func (app *appContext) loadConfig() error {
 	for _, key := range []string{"matrix_sql"} {
 		app.config.Section("files").Key(key).SetValue(app.config.Section("files").Key(key).MustString(filepath.Join(app.dataPath, (key + ".db"))))
 	}
+
 	app.URLBase = strings.TrimSuffix(app.config.Section("ui").Key("url_base").MustString(""), "/")
+	if app.URLBase == "/invite" || app.URLBase == "/accounts" || app.URLBase == "/settings" || app.URLBase == "/activity" {
+		app.err.Printf(lm.BadURLBase, app.URLBase)
+	}
+	app.ExternalHost = strings.TrimSuffix(strings.TrimSuffix(app.config.Section("ui").Key("jfa_url").MustString(""), "/invite"), "/")
+	if !strings.HasSuffix(app.ExternalHost, app.URLBase) {
+		app.err.Println(lm.NoURLSuffix)
+	}
+
 	app.config.Section("email").Key("no_username").SetValue(strconv.FormatBool(app.config.Section("email").Key("no_username").MustBool(false)))
 
 	app.MustSetValue("password_resets", "email_html", "jfa-go:"+"email.html")
@@ -127,12 +136,6 @@ func (app *appContext) loadConfig() error {
 
 	LOGIP = app.config.Section("advanced").Key("log_ips").MustBool(false)
 	LOGIPU = app.config.Section("advanced").Key("log_ips_users").MustBool(false)
-
-	// These two settings are pretty much the same
-	url1 := app.config.Section("invite_emails").Key("url_base").String()
-	url2 := app.config.Section("password_resets").Key("url_base").String()
-	app.MustSetValue("password_resets", "url_base", strings.TrimSuffix(url1, "/invite"))
-	app.MustSetValue("invite_emails", "url_base", url2)
 
 	pwrMethods := []string{"allow_pwr_username", "allow_pwr_email", "allow_pwr_contact_method"}
 	allDisabled := true

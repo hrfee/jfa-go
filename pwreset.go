@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -29,10 +30,10 @@ func (app *appContext) GenInternalReset(userID string) (InternalPWR, error) {
 
 // GenResetLink generates and returns a password reset link.
 func (app *appContext) GenResetLink(pin string) (string, error) {
-	url := app.config.Section("password_resets").Key("url_base").String()
+	url := app.ExternalHost
 	var pinLink string
 	if url == "" {
-		return pinLink, fmt.Errorf("disabled as no URL Base provided. Set in Settings > Password Resets.")
+		return pinLink, errors.New(lm.NoExternalHost)
 	}
 	// Strip /invite from end of this URL, ik it's ugly.
 	pinLink = fmt.Sprintf("%s/reset?pin=%s", url, pin)

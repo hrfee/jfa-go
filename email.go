@@ -325,17 +325,11 @@ func (emailer *Emailer) confirmationValues(code, username, key string, app *appC
 		}
 	} else {
 		message := app.config.Section("messages").Key("message").String()
-		inviteLink := app.config.Section("invite_emails").Key("url_base").String()
+		inviteLink := app.ExternalHost
 		if code == "" { // Personal email change
-			if strings.HasSuffix(inviteLink, "/invite") {
-				inviteLink = strings.TrimSuffix(inviteLink, "/invite")
-			}
 			inviteLink = fmt.Sprintf("%s/my/confirm/%s", inviteLink, url.PathEscape(key))
 		} else { // Invite email confirmation
-			if !strings.HasSuffix(inviteLink, "/invite") {
-				inviteLink += "/invite"
-			}
-			inviteLink = fmt.Sprintf("%s/%s?key=%s", inviteLink, code, url.PathEscape(key))
+			inviteLink = fmt.Sprintf("%s/invite/%s?key=%s", inviteLink, code, url.PathEscape(key))
 		}
 		template["helloUser"] = emailer.lang.Strings.template("helloUser", tmpl{"username": username})
 		template["confirmationURL"] = inviteLink
@@ -399,11 +393,7 @@ func (emailer *Emailer) inviteValues(code string, invite Invite, app *appContext
 	expiry := invite.ValidTill
 	d, t, expiresIn := emailer.formatExpiry(expiry, false, app.datePattern, app.timePattern)
 	message := app.config.Section("messages").Key("message").String()
-	inviteLink := app.config.Section("invite_emails").Key("url_base").String()
-	if !strings.HasSuffix(inviteLink, "/invite") {
-		inviteLink += "/invite"
-	}
-	inviteLink = fmt.Sprintf("%s/%s", inviteLink, code)
+	inviteLink := fmt.Sprintf("%s/invite/%s", app.ExternalHost, code)
 	template := map[string]interface{}{
 		"hello":              emailer.lang.InviteEmail.get("hello"),
 		"youHaveBeenInvited": emailer.lang.InviteEmail.get("youHaveBeenInvited"),

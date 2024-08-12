@@ -14,6 +14,7 @@ import (
 func runMigrations(app *appContext) {
 	migrateProfiles(app)
 	migrateBootstrap(app)
+	migrateExternalURL(app)
 	migrateEmailStorage(app)
 	migrateNotificationMethods(app)
 	linkExistingOmbiDiscordTelegram(app)
@@ -463,3 +464,37 @@ func intialiseCustomContent(app *appContext) {
 // 		}
 // 	}
 // }
+
+// Migrate poorly-named and duplicate "url_base" settings to the single "external jfa-go URL" setting.
+func migrateExternalURL(app *appContext) {
+	tempConfig, _ := ini.Load(app.configPath)
+	err := tempConfig.SaveTo(app.configPath + "_" + commit + ".bak")
+	if err != nil {
+		app.err.Fatalf("Failed to backup config: %v", err)
+		return
+	}
+	url1 := app.config.Section("password_resets").Key("url_base").String()
+	url2 := app.config.Section("invite_emails").Key("url_base").String()
+	if tempConfig.Section("ui").Key("jfa_url").String() != "" || (url1 == "" && url2 == "") {
+		return
+	}
+
+	preferred := url1
+	// the PWR setting (url1) is preferred, as it has always been defined as the URL root, while
+	// the invite email setting (url2) once asked for "/invite" at the end.
+	if url1 == "" {
+		preferred = strings.TrimSuffix(url2, "/invite")
+	}
+
+	fmt.Println(warning("The duplicate URL Base settings in \"Invite emails\" and \"Password Resets\" have been merged into General > External jfa-go URL. A backup config has been made."))
+
+	tempConfig.Section("ui").Key("jfa_url").SetValue(preferred)
+	app.config.Section("password_resets").DeleteKey("url_base")
+	app.config.Section("invite_emails").DeleteKey("url_base")
+
+	err = tempConfig.SaveTo(app.configPath)
+	if err != nil {
+		app.err.Fatalf("Failed to save new config: %v", err)
+		return
+	}
+}

@@ -33,6 +33,7 @@ interface Setting {
     depends_true?: string;
     depends_false?: string;
     wiki_link?: string;
+    deprecated?: boolean;
 
     asElement: () => HTMLElement;
     update: (s: Setting) => void;
@@ -579,6 +580,7 @@ class sectionPanel {
             if (name in this._settings) {
                 this._settings[name].update(setting);
             } else {
+                if (setting.deprecated) continue;
                 switch (setting.type) {
                     case "text":
                         setting = new DOMText(setting, this._sectionName, name);

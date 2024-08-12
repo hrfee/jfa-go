@@ -740,11 +740,7 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 	discord := discordEnabled && app.config.Section("discord").Key("show_on_reg").MustBool(true)
 	matrix := matrixEnabled && app.config.Section("matrix").Key("show_on_reg").MustBool(true)
 
-	userPageAddress := app.config.Section("invite_emails").Key("url_base").String()
-	if userPageAddress == "" {
-		userPageAddress = app.config.Section("password_resets").Key("url_base").String()
-	}
-	userPageAddress += "/my/account"
+	userPageAddress := fmt.Sprintf("%s/my/account", app.ExternalHost)
 
 	fromUser := ""
 	if invite.ReferrerJellyfinID != "" {

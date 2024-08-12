@@ -207,6 +207,9 @@ const (
 	EnableAllPWRMethods = "No PWR method preferences set in [user_page], all will be enabled"
 	InitProxy           = "Initialized proxy @ \"%s\""
 	FailedInitProxy     = "Failed to initialize proxy @ \"%s\": %v\nStartup will pause for a bit to grab your attention."
+	NoURLSuffix         = `Warning: Given "jfa_url"/"External jfa-go URL" value does not include "url_base" value!`
+	BadURLBase          = `Warning: Given URL Base "%s" may conflict with the applications subpaths.`
+	NoExternalHost      = `No "External jfa-go URL" provided, set one in Settings > General.`
 
 	// discord.go
 	StartDaemon                      = "Started %s daemon"

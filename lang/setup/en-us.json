@@ -48,6 +48,8 @@
         "listenAddress": "Listen Address",
         "urlBase": "URL Base",
         "urlBaseNotice": "Only needed if using a reverse proxy on a subfolder (e.g 'jellyf.in/accounts').",
+        "externalURL": "External jfa-go URL",
+        "externalURLNotice": "The URL you'll be accessing jfa-go from. Used to generate links for things like password resets. Make sure to include the above URL base if you set one.",
         "lightTheme": "Light",
         "darkTheme": "Dark",
         "useHTTPS": "Use HTTPS",
