@@ -64,11 +64,13 @@ func (app *appContext) getUserTokenLogin(gc *gin.Context) {
 		return
 	}
 
+	// host := gc.Request.URL.Hostname()
+	host := app.ExternalDomain
 	uri := "/my"
 	if strings.HasPrefix(gc.Request.RequestURI, app.URLBase) {
 		uri = "/accounts/my"
 	}
-	gc.SetCookie("user-refresh", refresh, REFRESH_TOKEN_VALIDITY_SEC, uri, gc.Request.URL.Hostname(), true, true)
+	gc.SetCookie("user-refresh", refresh, REFRESH_TOKEN_VALIDITY_SEC, uri, host, true, true)
 	gc.JSON(200, getTokenDTO{token})
 }
 
@@ -101,6 +103,8 @@ func (app *appContext) getUserTokenRefresh(gc *gin.Context) {
 		return
 	}
 
-	gc.SetCookie("user-refresh", refresh, REFRESH_TOKEN_VALIDITY_SEC, "/my", gc.Request.URL.Hostname(), true, true)
+	// host := gc.Request.URL.Hostname()
+	host := app.ExternalDomain
+	gc.SetCookie("user-refresh", refresh, REFRESH_TOKEN_VALIDITY_SEC, "/my", host, true, true)
 	gc.JSON(200, getTokenDTO{jwt})
 }

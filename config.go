@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io/fs"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -60,9 +61,16 @@ func (app *appContext) loadConfig() error {
 	if app.URLBase == "/invite" || app.URLBase == "/accounts" || app.URLBase == "/settings" || app.URLBase == "/activity" {
 		app.err.Printf(lm.BadURLBase, app.URLBase)
 	}
-	app.ExternalHost = strings.TrimSuffix(strings.TrimSuffix(app.config.Section("ui").Key("jfa_url").MustString(""), "/invite"), "/")
-	if !strings.HasSuffix(app.ExternalHost, app.URLBase) {
+	app.ExternalURI = strings.TrimSuffix(strings.TrimSuffix(app.config.Section("ui").Key("jfa_url").MustString(""), "/invite"), "/")
+	if !strings.HasSuffix(app.ExternalURI, app.URLBase) {
 		app.err.Println(lm.NoURLSuffix)
+	}
+	if app.ExternalURI == "" {
+		app.err.Println(lm.NoExternalHost + lm.LoginWontSave)
+	}
+	u, err := url.Parse(app.ExternalURI)
+	if err == nil {
+		app.ExternalDomain = u.Hostname()
 	}
 
 	app.config.Section("email").Key("no_username").SetValue(strconv.FormatBool(app.config.Section("email").Key("no_username").MustBool(false)))

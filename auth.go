@@ -248,7 +248,9 @@ func (app *appContext) getTokenLogin(gc *gin.Context) {
 		respond(500, "Couldn't generate token", gc)
 		return
 	}
-	host := gc.Request.URL.Hostname()
+	// host := gc.Request.URL.Hostname()
+	host := app.ExternalDomain
+
 	gc.SetCookie("refresh", refresh, REFRESH_TOKEN_VALIDITY_SEC, "/", host, true, true)
 	gc.JSON(200, getTokenDTO{token})
 }
@@ -307,7 +309,8 @@ func (app *appContext) getTokenRefresh(gc *gin.Context) {
 		respond(500, "Couldn't generate token", gc)
 		return
 	}
-	host := gc.Request.URL.Hostname()
+	// host := gc.Request.URL.Hostname()
+	host := app.ExternalDomain
 	gc.SetCookie("refresh", refresh, REFRESH_TOKEN_VALIDITY_SEC, "/", host, true, true)
 	gc.JSON(200, getTokenDTO{jwt})
 }

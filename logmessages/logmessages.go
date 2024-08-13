@@ -210,6 +210,7 @@ const (
 	NoURLSuffix         = `Warning: Given "jfa_url"/"External jfa-go URL" value does not include "url_base" value!`
 	BadURLBase          = `Warning: Given URL Base "%s" may conflict with the applications subpaths.`
 	NoExternalHost      = `No "External jfa-go URL" provided, set one in Settings > General.`
+	LoginWontSave       = ` Your login won't save until you do.`
 
 	// discord.go
 	StartDaemon                      = "Started %s daemon"

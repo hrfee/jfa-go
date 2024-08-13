@@ -101,36 +101,36 @@ type appContext struct {
 	adminUsers     []User
 	invalidTokens  []string
 	// Keeping jf name because I can't think of a better one
-	jf                    *mediabrowser.MediaBrowser
-	authJf                *mediabrowser.MediaBrowser
-	ombi                  *OmbiWrapper
-	js                    *JellyseerrWrapper
-	thirdPartyServices    []ThirdPartyService
-	datePattern           string
-	timePattern           string
-	storage               Storage
-	validator             Validator
-	email                 *Emailer
-	telegram              *TelegramDaemon
-	discord               *DiscordDaemon
-	matrix                *MatrixDaemon
-	contactMethods        []ContactMethodLinker
-	info, debug, err      *logger.Logger
-	host                  string
-	port                  int
-	version               string
-	URLBase, ExternalHost string
-	updater               *Updater
-	newUpdate             bool // Whether whatever's in update is new.
-	tag                   Tag
-	update                Update
-	proxyEnabled          bool
-	proxyTransport        *http.Transport
-	proxyConfig           easyproxy.ProxyConfig
-	internalPWRs          map[string]InternalPWR
-	pwrCaptchas           map[string]Captcha
-	ConfirmationKeys      map[string]map[string]newUserDTO // Map of invite code to jwt to request
-	confirmationKeysLock  sync.Mutex
+	jf                                   *mediabrowser.MediaBrowser
+	authJf                               *mediabrowser.MediaBrowser
+	ombi                                 *OmbiWrapper
+	js                                   *JellyseerrWrapper
+	thirdPartyServices                   []ThirdPartyService
+	datePattern                          string
+	timePattern                          string
+	storage                              Storage
+	validator                            Validator
+	email                                *Emailer
+	telegram                             *TelegramDaemon
+	discord                              *DiscordDaemon
+	matrix                               *MatrixDaemon
+	contactMethods                       []ContactMethodLinker
+	info, debug, err                     *logger.Logger
+	host                                 string
+	port                                 int
+	version                              string
+	URLBase, ExternalURI, ExternalDomain string
+	updater                              *Updater
+	newUpdate                            bool // Whether whatever's in update is new.
+	tag                                  Tag
+	update                               Update
+	proxyEnabled                         bool
+	proxyTransport                       *http.Transport
+	proxyConfig                          easyproxy.ProxyConfig
+	internalPWRs                         map[string]InternalPWR
+	pwrCaptchas                          map[string]Captcha
+	ConfirmationKeys                     map[string]map[string]newUserDTO // Map of invite code to jwt to request
+	confirmationKeysLock                 sync.Mutex
 }
 
 func generateSecret(length int) (string, error) {

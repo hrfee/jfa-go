@@ -325,7 +325,7 @@ func (emailer *Emailer) confirmationValues(code, username, key string, app *appC
 		}
 	} else {
 		message := app.config.Section("messages").Key("message").String()
-		inviteLink := app.ExternalHost
+		inviteLink := app.ExternalURI
 		if code == "" { // Personal email change
 			inviteLink = fmt.Sprintf("%s/my/confirm/%s", inviteLink, url.PathEscape(key))
 		} else { // Invite email confirmation
@@ -393,7 +393,7 @@ func (emailer *Emailer) inviteValues(code string, invite Invite, app *appContext
 	expiry := invite.ValidTill
 	d, t, expiresIn := emailer.formatExpiry(expiry, false, app.datePattern, app.timePattern)
 	message := app.config.Section("messages").Key("message").String()
-	inviteLink := fmt.Sprintf("%s/invite/%s", app.ExternalHost, code)
+	inviteLink := fmt.Sprintf("%s/invite/%s", app.ExternalURI, code)
 	template := map[string]interface{}{
 		"hello":              emailer.lang.InviteEmail.get("hello"),
 		"youHaveBeenInvited": emailer.lang.InviteEmail.get("youHaveBeenInvited"),
