@@ -130,6 +130,11 @@ type Updater struct {
 	binary                                     string
 }
 
+// SetTransport sets the http.Transport to use for requests. Can be used to set a proxy.
+func (ud *Updater) SetTransport(t *http.Transport) {
+	ud.httpClient.Transport = t
+}
+
 func newUpdater(buildroneURL, namespace, repo, version, commit, buildType string) *Updater {
 	// fmt.Printf(`Updater intializing with "%s", "%s", "%s", "%s", "%s", "%s"\n`, buildroneURL, namespace, repo, version, commit, buildType)
 	bType := off

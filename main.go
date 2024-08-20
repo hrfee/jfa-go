@@ -557,6 +557,7 @@ func start(asDaemon, firstCall bool) {
 		}
 
 		if app.proxyEnabled {
+			app.updater.SetTransport(app.proxyTransport)
 			app.jf.SetTransport(app.proxyTransport)
 			for _, c := range app.thirdPartyServices {
 				c.SetTransport(app.proxyTransport)
@@ -682,7 +683,7 @@ func flagPassed(name string) (found bool) {
 }
 
 // @title jfa-go internal API
-// @version 0.5.1
+// @version 0.5.2
 // @description API for the jfa-go frontend
 // @contact.name Harvey Tindall
 // @contact.email hrfee@hrfee.dev
