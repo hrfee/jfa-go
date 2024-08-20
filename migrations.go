@@ -60,7 +60,7 @@ func migrateBootstrap(app *appContext) {
 }
 
 func migrateEmailConfig(app *appContext) {
-	tempConfig, _ := ini.Load(app.configPath)
+	tempConfig, _ := ini.ShadowLoad(app.configPath)
 	fmt.Println(warning("Part of your email configuration will be migrated to the new \"messages\" section.\nA backup will be made."))
 	err := tempConfig.SaveTo(app.configPath + "_" + commit + ".bak")
 	if err != nil {
@@ -111,7 +111,7 @@ func migrateEmailStorage(app *appContext) error {
 			return fmt.Errorf("email address was type %T, not string: \"%+v\"\n", addr, addr)
 		}
 	}
-	config, err := ini.Load(app.configPath)
+	config, err := ini.ShadowLoad(app.configPath)
 	if err != nil {
 		return err
 	}
@@ -467,7 +467,7 @@ func intialiseCustomContent(app *appContext) {
 
 // Migrate poorly-named and duplicate "url_base" settings to the single "external jfa-go URL" setting.
 func migrateExternalURL(app *appContext) {
-	tempConfig, _ := ini.Load(app.configPath)
+	tempConfig, _ := ini.ShadowLoad(app.configPath)
 	err := tempConfig.SaveTo(app.configPath + "_" + commit + ".bak")
 	if err != nil {
 		app.err.Fatalf("Failed to backup config: %v", err)

@@ -232,7 +232,7 @@ func start(asDaemon, firstCall bool) {
 			app.err.Fatalf(lm.FailedCopyConfig, app.configPath, err)
 		}
 		app.info.Printf(lm.CopyConfig, app.configPath)
-		tempConfig, _ := ini.Load(app.configPath)
+		tempConfig, _ := ini.ShadowLoad(app.configPath)
 		tempConfig.Section("").Key("first_run").SetValue("true")
 		tempConfig.SaveTo(app.configPath)
 	}

@@ -585,7 +585,7 @@ func (app *appContext) MatrixLogin(gc *gin.Context) {
 		respond(401, "Unauthorized", gc)
 		return
 	}
-	tempConfig, _ := ini.Load(app.configPath)
+	tempConfig, _ := ini.ShadowLoad(app.configPath)
 	matrix := tempConfig.Section("matrix")
 	matrix.Key("enabled").SetValue("true")
 	matrix.Key("homeserver").SetValue(req.Homeserver)

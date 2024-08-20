@@ -290,6 +290,8 @@ func (app *appContext) GetConfig(gc *gin.Context) {
 			val := app.config.Section(sectName).Key(settingName)
 			s := resp.Sections[sectName].Settings[settingName]
 			switch setting.Type {
+			case "list":
+				s.Value = val.StringsWithShadows("|")
 			case "text", "email", "select", "password", "note":
 				s.Value = val.MustString("")
 			case "number":
@@ -327,7 +329,7 @@ func (app *appContext) GetConfig(gc *gin.Context) {
 
 // @Summary Modify app config.
 // @Produce json
-// @Param appConfig body configDTO true "Config split into sections as in config.ini, all values as strings."
+// @Param appConfig body configDTO true "Config split into sections as in config.ini, all values as strings (lists split with | delimiter)."
 // @Success 200 {object} boolResponse
 // @Failure 500 {object} stringResponse
 // @Router /config [post]
@@ -337,7 +339,7 @@ func (app *appContext) ModifyConfig(gc *gin.Context) {
 	var req configDTO
 	gc.BindJSON(&req)
 	// Load a new config, as we set various default values in app.config that shouldn't be stored.
-	tempConfig, _ := ini.Load(app.configPath)
+	tempConfig, _ := ini.ShadowLoad(app.configPath)
 	for section, settings := range req {
 		if section != "restart-program" {
 			_, err := tempConfig.GetSection(section)
@@ -350,6 +352,15 @@ func (app *appContext) ModifyConfig(gc *gin.Context) {
 				}
 				if (section == "discord" || section == "matrix") && setting == "language" {
 					tempConfig.Section("telegram").Key("language").SetValue(value.(string))
+				} else if app.configBase.Sections[section].Settings[setting].Type == "list" {
+					splitValues := strings.Split(value.(string), "|")
+					for i, v := range splitValues {
+						if i == 0 {
+							tempConfig.Section(section).Key(setting).SetValue(v)
+						} else {
+							tempConfig.Section(section).Key(setting).AddShadow(v)
+						}
+					}
 				} else if value.(string) != app.config.Section(section).Key(setting).MustString("") {
 					tempConfig.Section(section).Key(setting).SetValue(value.(string))
 				}

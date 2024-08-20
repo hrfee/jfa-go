@@ -36,7 +36,7 @@ func (app *appContext) MustSetValue(section, key, val string) {
 
 func (app *appContext) loadConfig() error {
 	var err error
-	app.config, err = ini.Load(app.configPath)
+	app.config, err = ini.ShadowLoad(app.configPath)
 	if err != nil {
 		return err
 	}
