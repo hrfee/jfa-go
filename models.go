@@ -1,6 +1,8 @@
 package main
 
-import "time"
+import (
+	"time"
+)
 
 type stringResponse struct {
 	Response string `json:"response" example:"message"`

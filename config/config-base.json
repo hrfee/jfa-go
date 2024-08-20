@@ -2017,6 +2017,24 @@
                 }
             }
         },
+        "webhooks": {
+            "order": [],
+            "meta": {
+                "name": "Webhooks",
+                "description": "jfa-go will send a POST request to these URLs when an event occurs, with relevant information. Request information is logged when debug logging is enabled.",
+                "wiki_link": "https://wiki.jfa-go.com/docs/webhooks/"
+            },
+            "settings": {
+                "created": {
+                    "name": "User Created",
+                    "required": false,
+                    "requires_restart": false,
+                    "type": "list",
+                    "value": "",
+                    "description": "URLs to hit when an account is created through jfa-go. Sends a `respUser` object."
+                }
+            }
+        },
         "files": {
             "order": [],
             "meta": {

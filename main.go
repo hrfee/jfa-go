@@ -121,6 +121,7 @@ type appContext struct {
 	version                              string
 	URLBase, ExternalURI, ExternalDomain string
 	updater                              *Updater
+	webhooks                             *WebhookSender
 	newUpdate                            bool // Whether whatever's in update is new.
 	tag                                  Tag
 	update                               Update
@@ -556,8 +557,14 @@ func start(asDaemon, firstCall bool) {
 			}
 		}
 
+		// Non-consequential if we don't need it
+		app.webhooks = NewWebhookSender(
+			common.NewTimeoutHandler("Webhook", "?", true),
+			app.debug,
+		)
+
+		// Updater proxy set in config.go, don't worry!
 		if app.proxyEnabled {
-			app.updater.SetTransport(app.proxyTransport)
 			app.jf.SetTransport(app.proxyTransport)
 			for _, c := range app.thirdPartyServices {
 				c.SetTransport(app.proxyTransport)

@@ -218,7 +218,7 @@ class DOMList extends DOMInput implements SList {
         const addDummy = () => {
             const dummyRow = this.inputRow();
             const input = dummyRow.querySelector("input") as HTMLInputElement;
-            input.placeholder = window.lang.strings("Add");
+            input.placeholder = window.lang.strings("add");
             const onDummyChange = () => {
                 if (!(input.value)) return;
                 addDummy();

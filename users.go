@@ -1,6 +1,7 @@
 package main
 
 import (
+	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -49,7 +50,8 @@ type NewUserData struct {
 }
 
 // Called after a new-user-creating route has done pre-steps (veryfing contact methods for example).
-func (app *appContext) NewUserPostVerification(p NewUserParams) (out NewUserData) {
+func (app *appContext) NewUserPostVerification(p NewUserParams) (out NewUserData, pendingTasks *sync.WaitGroup) {
+	pendingTasks = &sync.WaitGroup{}
 	// Some helper functions which will behave as our app.info/error/debug
 	deferLogInfo := func(s string, args ...any) {
 		out.Log = func() {
@@ -124,7 +126,19 @@ func (app *appContext) NewUserPostVerification(p NewUserParams) (out NewUserData
 		}
 	}
 
-	// Welcome email is sent by each user of this method separately..
+	webhookURIs := app.config.Section("webhooks").Key("created").StringsWithShadows("|")
+	if len(webhookURIs) != 0 {
+		summary := app.userSummary(out.User)
+		for _, uri := range webhookURIs {
+			go func() {
+				pendingTasks.Add(1)
+				app.webhooks.Send(uri, summary)
+				pendingTasks.Done()
+			}()
+		}
+	}
+
+	// Welcome email is sent by each user of this method separately.
 
 	out.Status = 200
 	out.Success = true

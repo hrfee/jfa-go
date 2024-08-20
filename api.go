@@ -354,6 +354,8 @@ func (app *appContext) ModifyConfig(gc *gin.Context) {
 					tempConfig.Section("telegram").Key("language").SetValue(value.(string))
 				} else if app.configBase.Sections[section].Settings[setting].Type == "list" {
 					splitValues := strings.Split(value.(string), "|")
+					// Delete the key first to get rid of any shadow values
+					tempConfig.Section(section).DeleteKey(setting)
 					for i, v := range splitValues {
 						if i == 0 {
 							tempConfig.Section(section).Key(setting).SetValue(v)

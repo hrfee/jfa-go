@@ -666,7 +666,7 @@ func (app *appContext) NewUserFromConfirmationKey(invite Invite, key string, lan
 		profile = &p
 	}
 
-	nu := app.NewUserPostVerification(NewUserParams{
+	nu /*wg*/, _ := app.NewUserPostVerification(NewUserParams{
 		Req:                 req,
 		SourceType:          sourceType,
 		Source:              source,
@@ -707,6 +707,9 @@ func (app *appContext) NewUserFromConfirmationKey(invite Invite, key string, lan
 	delete(invKeys, key)
 	app.ConfirmationKeys[invite.Code] = invKeys
 	app.confirmationKeysLock.Unlock()
+
+	// These don't need to complete anytime soon
+	// wg.Wait()
 	return
 }
 

@@ -42,7 +42,7 @@ func (app *appContext) NewUserFromAdmin(gc *gin.Context) {
 			profile = p
 		}
 	}
-	nu := app.NewUserPostVerification(NewUserParams{
+	nu /*wg*/, _ := app.NewUserPostVerification(NewUserParams{
 		Req:                 req,
 		SourceType:          ActivityAdmin,
 		Source:              gc.GetString("jfId"),
@@ -59,6 +59,8 @@ func (app *appContext) NewUserFromAdmin(gc *gin.Context) {
 	}
 
 	respondUser(nu.Status, nu.Created, welcomeMessageSentIfNecessary, nu.Message, gc)
+	// These don't need to complete anytime soon
+	// wg.Wait()
 }
 
 // @Summary Creates a new Jellyfin user via invite code
@@ -205,8 +207,7 @@ func (app *appContext) NewUserFromInvite(gc *gin.Context) {
 		profile = &p
 	}
 
-	// FIXME: Use NewUserPostVerification
-	nu := app.NewUserPostVerification(NewUserParams{
+	nu /*wg*/, _ := app.NewUserPostVerification(NewUserParams{
 		Req:                 req,
 		SourceType:          sourceType,
 		Source:              source,
@@ -341,7 +342,10 @@ func (app *appContext) NewUserFromInvite(gc *gin.Context) {
 			code = 400
 		}
 	}
+
 	gc.JSON(code, validation)
+	// These don't need to complete anytime soon
+	// wg.Wait()
 }
 
 // @Summary Enable/Disable a list of users, optionally notifying them why.
@@ -822,6 +826,60 @@ func (app *appContext) AdminPasswordReset(gc *gin.Context) {
 	respondBool(204, true, gc)
 }
 
+func (app *appContext) userSummary(jfUser mediabrowser.User) respUser {
+	adminOnly := app.config.Section("ui").Key("admin_only").MustBool(true)
+	allowAll := app.config.Section("ui").Key("allow_all").MustBool(false)
+	referralsEnabled := app.config.Section("user_page").Key("referrals").MustBool(false)
+	user := respUser{
+		ID:               jfUser.ID,
+		Name:             jfUser.Name,
+		Admin:            jfUser.Policy.IsAdministrator,
+		Disabled:         jfUser.Policy.IsDisabled,
+		ReferralsEnabled: false,
+	}
+	if !jfUser.LastActivityDate.IsZero() {
+		user.LastActive = jfUser.LastActivityDate.Unix()
+	}
+	if email, ok := app.storage.GetEmailsKey(jfUser.ID); ok {
+		user.Email = email.Addr
+		user.NotifyThroughEmail = email.Contact
+		user.Label = email.Label
+		user.AccountsAdmin = (app.jellyfinLogin) && (email.Admin || (adminOnly && jfUser.Policy.IsAdministrator) || allowAll)
+	}
+	expiry, ok := app.storage.GetUserExpiryKey(jfUser.ID)
+	if ok {
+		user.Expiry = expiry.Expiry.Unix()
+	}
+	if tgUser, ok := app.storage.GetTelegramKey(jfUser.ID); ok {
+		user.Telegram = tgUser.Username
+		user.NotifyThroughTelegram = tgUser.Contact
+	}
+	if mxUser, ok := app.storage.GetMatrixKey(jfUser.ID); ok {
+		user.Matrix = mxUser.UserID
+		user.NotifyThroughMatrix = mxUser.Contact
+	}
+	if dcUser, ok := app.storage.GetDiscordKey(jfUser.ID); ok {
+		user.Discord = RenderDiscordUsername(dcUser)
+		// user.Discord = dcUser.Username + "#" + dcUser.Discriminator
+		user.DiscordID = dcUser.ID
+		user.NotifyThroughDiscord = dcUser.Contact
+	}
+	// FIXME: Send referral data
+	referrerInv := Invite{}
+	if referralsEnabled {
+		// 1. Directly attached invite.
+		err := app.storage.db.FindOne(&referrerInv, badgerhold.Where("ReferrerJellyfinID").Eq(jfUser.ID))
+		if err == nil {
+			user.ReferralsEnabled = true
+			// 2. Referrals via profile template. Shallow check, doesn't look for the thing in the database.
+		} else if email, ok := app.storage.GetEmailsKey(jfUser.ID); ok && email.ReferralTemplateKey != "" {
+			user.ReferralsEnabled = true
+		}
+	}
+	return user
+
+}
+
 // @Summary Get a list of Jellyfin users.
 // @Produce json
 // @Success 200 {object} getUsersDTO
@@ -838,57 +896,9 @@ func (app *appContext) GetUsers(gc *gin.Context) {
 		respond(500, "Couldn't get users", gc)
 		return
 	}
-	adminOnly := app.config.Section("ui").Key("admin_only").MustBool(true)
-	allowAll := app.config.Section("ui").Key("allow_all").MustBool(false)
-	referralsEnabled := app.config.Section("user_page").Key("referrals").MustBool(false)
 	i := 0
 	for _, jfUser := range users {
-		user := respUser{
-			ID:               jfUser.ID,
-			Name:             jfUser.Name,
-			Admin:            jfUser.Policy.IsAdministrator,
-			Disabled:         jfUser.Policy.IsDisabled,
-			ReferralsEnabled: false,
-		}
-		if !jfUser.LastActivityDate.IsZero() {
-			user.LastActive = jfUser.LastActivityDate.Unix()
-		}
-		if email, ok := app.storage.GetEmailsKey(jfUser.ID); ok {
-			user.Email = email.Addr
-			user.NotifyThroughEmail = email.Contact
-			user.Label = email.Label
-			user.AccountsAdmin = (app.jellyfinLogin) && (email.Admin || (adminOnly && jfUser.Policy.IsAdministrator) || allowAll)
-		}
-		expiry, ok := app.storage.GetUserExpiryKey(jfUser.ID)
-		if ok {
-			user.Expiry = expiry.Expiry.Unix()
-		}
-		if tgUser, ok := app.storage.GetTelegramKey(jfUser.ID); ok {
-			user.Telegram = tgUser.Username
-			user.NotifyThroughTelegram = tgUser.Contact
-		}
-		if mxUser, ok := app.storage.GetMatrixKey(jfUser.ID); ok {
-			user.Matrix = mxUser.UserID
-			user.NotifyThroughMatrix = mxUser.Contact
-		}
-		if dcUser, ok := app.storage.GetDiscordKey(jfUser.ID); ok {
-			user.Discord = RenderDiscordUsername(dcUser)
-			// user.Discord = dcUser.Username + "#" + dcUser.Discriminator
-			user.DiscordID = dcUser.ID
-			user.NotifyThroughDiscord = dcUser.Contact
-		}
-		// FIXME: Send referral data
-		referrerInv := Invite{}
-		if referralsEnabled {
-			// 1. Directly attached invite.
-			err := app.storage.db.FindOne(&referrerInv, badgerhold.Where("ReferrerJellyfinID").Eq(jfUser.ID))
-			if err == nil {
-				user.ReferralsEnabled = true
-				// 2. Referrals via profile template. Shallow check, doesn't look for the thing in the database.
-			} else if email, ok := app.storage.GetEmailsKey(jfUser.ID); ok && email.ReferralTemplateKey != "" {
-				user.ReferralsEnabled = true
-			}
-		}
+		user := app.userSummary(jfUser)
 		resp.UserList[i] = user
 		i++
 	}

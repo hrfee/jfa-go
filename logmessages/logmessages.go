@@ -307,6 +307,9 @@ const (
 	CaptchaNotFound       = "Captcha \"%s\" not found in invite \"%s\""
 	FailedVerifyReCAPTCHA = "Failed to verify reCAPTCHA: %v"
 	InvalidHostname       = "invalid hostname (wanted \"%s\", got \"%s\")"
+
+	// webhooks.go
+	WebhookRequest = "Webhook request send to \"%s\" (%d): %v"
 )
 
 const (
