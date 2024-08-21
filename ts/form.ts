@@ -289,7 +289,7 @@ const create = (event: SubmitEvent) => {
             send.captcha_text = captcha.input.value;
         }
     }
-    _post("/newUser", send, (req: XMLHttpRequest) => {
+    _post("/user/invite", send, (req: XMLHttpRequest) => {
         if (req.readyState != 4) return;
         removeLoader(submitSpan);
         let vals = req.response as ValidatorRespDTO;

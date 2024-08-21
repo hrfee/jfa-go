@@ -9,7 +9,34 @@ import (
 	"github.com/timshannon/badgerhold/v4"
 )
 
-// @Summary Get a list of profiles
+// @Summary Get the names of all available profile.
+// @Produce json
+// @Success 200 {object} getProfileNamesDTO
+// @Router /profiles/names [get]
+// @Security Bearer
+// @tags Profiles & Settings
+func (app *appContext) GetProfileNames(gc *gin.Context) {
+	fullProfileList := app.storage.GetProfiles()
+	profiles := make([]string, len(fullProfileList))
+	if len(profiles) != 0 {
+		defaultProfile := app.storage.GetDefaultProfile()
+		profiles[0] = defaultProfile.Name
+		i := 1
+		if len(fullProfileList) > 1 {
+			app.storage.db.ForEach(badgerhold.Where("Name").Ne(profiles[0]), func(p *Profile) error {
+				profiles[i] = p.Name
+				i++
+				return nil
+			})
+		}
+	}
+	resp := getProfileNamesDTO{
+		Profiles: profiles,
+	}
+	gc.JSON(200, resp)
+}
+
+// @Summary Get all available profiles, indexed by their names.
 // @Produce json
 // @Success 200 {object} getProfilesDTO
 // @Router /profiles [get]

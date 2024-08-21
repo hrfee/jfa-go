@@ -88,6 +88,10 @@ type getProfilesDTO struct {
 	DefaultProfile string                `json:"default_profile"`
 }
 
+type getProfileNamesDTO struct {
+	Profiles []string `json:"profiles"` // List of profiles (name only)
+}
+
 type profileChangeDTO struct {
 	Name string `json:"name" example:"DefaultProfile" binding:"required"` // Name of the profile
 }
@@ -123,8 +127,7 @@ type inviteDTO struct {
 }
 
 type getInvitesDTO struct {
-	Profiles []string    `json:"profiles"` // List of profiles (name only)
-	Invites  []inviteDTO `json:"invites"`  // List of invites
+	Invites []inviteDTO `json:"invites"` // List of invites
 }
 
 // fake DTO, if i actually used this the code would be a lot longer

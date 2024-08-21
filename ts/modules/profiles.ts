@@ -1,5 +1,13 @@
 import { _get, _post, _delete, toggleLoader } from "../modules/common.js";
 
+export const profileLoadEvent = new CustomEvent("profileLoadEvent");
+export const reloadProfileNames = (then?: () => void) => _get("/profiles/names", null, (req: XMLHttpRequest) => {
+    if (req.readyState != 4) return;
+    window.availableProfiles = req.response["profiles"];
+    document.dispatchEvent(profileLoadEvent);
+    if (then) then();
+});
+
 interface Profile {
     admin: boolean;
     libraries: string;

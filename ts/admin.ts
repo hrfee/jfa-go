@@ -6,7 +6,7 @@ import { inviteList, createInvite } from "./modules/invites.js";
 import { accountsList } from "./modules/accounts.js";
 import { settingsList } from "./modules/settings.js";
 import { activityList } from "./modules/activity.js";
-import { ProfileEditor } from "./modules/profiles.js";
+import { ProfileEditor, reloadProfileNames } from "./modules/profiles.js";
 import { _get, _post, notificationBox, whichAnimationEvent, bindManualDropdowns } from "./modules/common.js";
 import { Updater } from "./modules/update.js";
 import { Login } from "./modules/login.js";
@@ -187,7 +187,7 @@ login.onLogin = () => {
     console.log("Logged in.");
     window.updater = new Updater();
     // FIXME: Decide whether to autoload activity or not
-    window.invites.reload()
+    reloadProfileNames();
     setInterval(() => { window.invites.reload(); accounts.reload(); }, 30*1000);
     const currentTab = window.tabs.current;
     switch (currentTab) {

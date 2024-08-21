@@ -86,7 +86,7 @@ func activitySourceToString(v ActivitySource) string {
 	return "anon"
 }
 
-// @Summary Get the requested set of activities, Paginated, filtered and sorted.
+// @Summary Get the requested set of activities, Paginated, filtered and sorted. Is a POST because of some issues I was having, ideally should be a GET.
 // @Produce json
 // @Param GetActivitiesDTO body GetActivitiesDTO true "search parameters"
 // @Success 200 {object} GetActivitiesRespDTO

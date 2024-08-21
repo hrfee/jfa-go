@@ -1128,7 +1128,7 @@ export class accountsList {
             }
         }
         toggleLoader(button);
-        _post("/users", send, (req: XMLHttpRequest) => {
+        _post("/user", send, (req: XMLHttpRequest) => {
             if (req.readyState == 4) {
                 toggleLoader(button);
                 if (req.status == 200 || (req.response["user"] as boolean)) {

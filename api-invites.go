@@ -11,7 +11,6 @@ import (
 	lm "github.com/hrfee/jfa-go/logmessages"
 	"github.com/itchyny/timefmt-go"
 	"github.com/lithammer/shortuuid/v3"
-	"github.com/timshannon/badgerhold/v4"
 )
 
 const (
@@ -332,23 +331,8 @@ func (app *appContext) GetInvites(gc *gin.Context) {
 		}
 		invites = append(invites, invite)
 	}
-	fullProfileList := app.storage.GetProfiles()
-	profiles := make([]string, len(fullProfileList))
-	if len(profiles) != 0 {
-		defaultProfile := app.storage.GetDefaultProfile()
-		profiles[0] = defaultProfile.Name
-		i := 1
-		if len(fullProfileList) > 1 {
-			app.storage.db.ForEach(badgerhold.Where("Name").Ne(profiles[0]), func(p *Profile) error {
-				profiles[i] = p.Name
-				i++
-				return nil
-			})
-		}
-	}
 	resp := getInvitesDTO{
-		Profiles: profiles,
-		Invites:  invites,
+		Invites: invites,
 	}
 	gc.JSON(200, resp)
 }
@@ -360,7 +344,7 @@ func (app *appContext) GetInvites(gc *gin.Context) {
 // @Failure 500 {object} stringResponse
 // @Router /invites/profile [post]
 // @Security Bearer
-// @tags Profiles & Settings
+// @tags Invites
 func (app *appContext) SetProfile(gc *gin.Context) {
 	var req inviteProfileDTO
 	gc.BindJSON(&req)

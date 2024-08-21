@@ -1,5 +1,6 @@
 import { _get, _post, _delete, toClipboard, toggleLoader, toDateString } from "../modules/common.js";
 import { DiscordUser, newDiscordSearch } from "../modules/discord.js";
+import { reloadProfileNames }  from "../modules/profiles.js";
 
 class DOMInvite implements Invite {
     updateNotify = (checkbox: HTMLInputElement) => {
@@ -431,7 +432,6 @@ export class inviteList implements inviteList {
     private _list: HTMLDivElement;
     private _empty: boolean;
     // since invite reload sends profiles, this event it broadcast so the createInvite object can load them.
-    private _profileLoadEvent = new CustomEvent("profileLoadEvent");
 
     invites: { [code: string]: DOMInvite };
 
@@ -502,13 +502,9 @@ export class inviteList implements inviteList {
         this._list.appendChild(domInv.asElement());
     }
 
-    reload = (callback?: () => void) => _get("/invites", null, (req: XMLHttpRequest) => {
+    reload = (callback?: () => void) => reloadProfileNames(() => _get("/invites", null, (req: XMLHttpRequest) => {
         if (req.readyState == 4) {
             let data = req.response;
-            if (req.status == 200) {
-                window.availableProfiles = data["profiles"];
-                document.dispatchEvent(this._profileLoadEvent);
-            }
             if (data["invites"] === undefined || data["invites"] == null || data["invites"].length == 0) {
                 this.empty = true;
                 return;
@@ -534,7 +530,7 @@ export class inviteList implements inviteList {
 
             if (callback) callback();
         }
-    })
+    }));
 }
 
 export const inviteURLEvent = (id: string) => { return new CustomEvent(inviteList._inviteURLEvent, {"detail": id}) };

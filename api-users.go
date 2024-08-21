@@ -20,7 +20,7 @@ import (
 // @Produce json
 // @Param newUserDTO body newUserDTO true "New user request object"
 // @Success 200
-// @Router /users [post]
+// @Router /user [post]
 // @Security Bearer
 // @tags Users
 func (app *appContext) NewUserFromAdmin(gc *gin.Context) {
@@ -68,7 +68,7 @@ func (app *appContext) NewUserFromAdmin(gc *gin.Context) {
 // @Param newUserDTO body newUserDTO true "New user request object"
 // @Success 200 {object} PasswordValidation
 // @Failure 400 {object} PasswordValidation
-// @Router /newUser [post]
+// @Router /user/invite [post]
 // @tags Users
 func (app *appContext) NewUserFromInvite(gc *gin.Context) {
 	/*
@@ -709,7 +709,7 @@ func (app *appContext) SaveAnnounceTemplate(gc *gin.Context) {
 	respondBool(200, true, gc)
 }
 
-// @Summary Save an announcement as a template for use or editing later.
+// @Summary Gets the names of each available announcement template.
 // @Produce json
 // @Success 200 {object} getAnnouncementsDTO
 // @Router /users/announce [get]
