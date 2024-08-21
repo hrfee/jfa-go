@@ -33,7 +33,7 @@ function fixHTML(infile, outfile) {
         }
     }
     let doc = new parser.load(f);
-    for (let item of ["badge", "chip", "shield", "input", "table", "button", "portal", "select", "aside", "card", "field", "textarea"]) {
+    for (let item of ["badge", "chip", "shield", "input", "table", "button", "portal", "select", "aside", "card", "field", "textarea", "section"]) {
         let items = doc("."+item);
         items.each((i, elem) => {
             let hasColor = false;
@@ -50,8 +50,8 @@ function fixHTML(infile, outfile) {
             }
             if (!hasColor) {
                 if (!hasDark(doc(elem))) {
-                    // card without ~neutral look different than with.
-                    if (item != "card") doc(elem).addClass("~neutral");
+                    // card (and sections in sectioned cards) without ~neutral look different than with.
+                    if (item != "card" && item != "section") doc(elem).addClass("~neutral");
                     doc(elem).addClass("dark:~d_neutral");
                 }
             }

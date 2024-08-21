@@ -18,6 +18,8 @@
 
     --bg-light: #fff;
     --bg-dark: #101010;
+
+    color-scheme: light;
 }
 
 .light {
@@ -26,6 +28,7 @@
 
 .dark {
     --settings-section-button-filter: 80%;
+    color-scheme: dark !important;
 }
 
 .dark body {
@@ -456,3 +459,14 @@ input[type="checkbox" i], [class^="ri-"], [class*=" ri-"], .ri-refresh-line:befo
     margin-bottom: -0.5rem;
     padding-bottom: 0.5rem;
 }
+
+section.section:not(.\~neutral) {
+    background-color: inherit;
+}
+
+@layer components {
+    .switch input {
+        @apply mr-1;
+    }
+}
+

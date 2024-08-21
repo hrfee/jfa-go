@@ -1,6 +1,7 @@
 export class ThemeManager {
 
     private _themeButton: HTMLElement = null;
+    private _metaTag: HTMLMetaElement;
     
     private _beforeTransition = () => {
         const doc = document.documentElement;
@@ -45,6 +46,7 @@ export class ThemeManager {
     }
 
     constructor(button?: HTMLElement) {
+        this._metaTag = document.querySelector("meta[name=color-scheme]") as HTMLMetaElement;
         const theme = localStorage.getItem("theme");
         if (theme == "dark") {
             this._enable(true);
@@ -54,18 +56,22 @@ export class ThemeManager {
             this._enable(true);
         }
 
-        if (arguments.length == 1)
+        if (button)
             this.bindButton(button);
     }
 
     private _toggle = () => {
+        let metaValue = "light dark";
         this._beforeTransition();
         if (!document.documentElement.classList.contains('dark')) {
             document.documentElement.classList.add('dark');
+            metaValue = "dark light";
         } else {
             document.documentElement.classList.remove('dark');
         }
         localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? "dark" : "light");
+        
+        // this._metaTag.setAttribute("content", metaValue);
     };
 
     private _enable = (dark: boolean) => {
@@ -80,6 +86,8 @@ export class ThemeManager {
             document.documentElement.classList.remove(opposite);
         }
         document.documentElement.classList.add(mode);
+
+        // this._metaTag.setAttribute("content", `${mode} ${opposite}`);
     };
 
     enable = (dark: boolean) => {

@@ -102,6 +102,7 @@
     "jellyseerr": {
         "title": "Jellyseerr",
         "description": "Jellyseerr is an alternative to Ombi, and integrates with jfa-go slightly better. Again, after setup is finished, go to Settings to create a profile and add a template for new Jellyseerr accounts.",
+        "importExisting": "Import existing users",
         "importExistingDescription": "If enabled, your existing users will have contact details and preferences from jfa-go synchronized."
     },
     "messages": {
@@ -164,6 +165,7 @@
     "helpMessages": {
         "title": "Help Messages",
         "description": "These messages will display in the account creation page and in some emails.",
+        "markdownMessageNotice": "Contents of some emails, pages and messages can be customized further with markdown in Settings.",
         "contactMessage": "Contact Message",
         "contactMessageNotice": "Displays at the bottom of all pages except admin.",
         "helpMessage": "Help Message",

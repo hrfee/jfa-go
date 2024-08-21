@@ -1,5 +1,6 @@
 import { _get, _post, toggleLoader, notificationBox } from "./modules/common.js";
 import { lang, LangFile, loadLangSelector } from "./modules/lang.js";
+import { ThemeManager } from "./modules/theme.js";
 
 interface sWindow extends Window {
     messages: {};
@@ -8,6 +9,7 @@ interface sWindow extends Window {
 declare var window: sWindow;
 window.URLBase = "";
 
+const theme = new ThemeManager(document.getElementById("button-theme"));
 
 window.notifications = new notificationBox(document.getElementById('notification-box') as HTMLDivElement, 5);
 
@@ -68,7 +70,16 @@ class Checkbox {
     constructor(el: HTMLElement, depends?: string, dependsTrue?: boolean, section?: string, setting?: string) {
         this._el = el as HTMLInputElement;
         this._hideEl = this._el as HTMLElement;
-        if (this._hideEl.parentElement.tagName == "LABEL") { this._hideEl = this._hideEl.parentElement; }
+        if (this._hideEl.parentElement.tagName == "LABEL") {
+            this._hideEl = this._hideEl.parentElement;
+        } else if (this._hideEl.parentElement.classList.contains("switch")) {
+            if (this._hideEl.parentElement.parentElement.tagName == "LABEL") {
+                this._hideEl = this._hideEl.parentElement.parentElement;
+            } else {
+                this._hideEl = this._hideEl.parentElement;
+            }
+        }
+
         if (section && setting) {
             this._section = section;
             this._setting = setting;
@@ -86,11 +97,11 @@ class Checkbox {
             });
         }
 
-        if (this._el.hasAttribute("checked")) {
+        /* if (this._el.hasAttribute("checked")) {
             this._el.checked = true;
         } else {
             this._el.checked = false;
-        }
+        } */
         this.broadcast();
     }
 }
@@ -217,7 +228,7 @@ class LangSelect extends Select {
                 }
                 this.value = "en-us";
             }
-        });
+        }, true);
     }
 }
 
@@ -448,23 +459,32 @@ settings["email"]["method"].onchange = emailMethodChange;
 settings["messages"]["enabled"].onchange = emailMethodChange;
 emailMethodChange();
 
+const getParentCard = (el: HTMLElement): HTMLDivElement => {
+    let pEl = el.parentElement;
+    while (pEl.tagName != "html") {
+        if (pEl.classList.contains("card")) return pEl as HTMLDivElement;
+        pEl = pEl.parentElement;
+    }
+    return pEl as HTMLDivElement;
+};
+
 const jellyfinLoginAccessChange = () => {
     const adminOnly = settings["ui"]["admin_only"].value == "true";
     const allowAll  = settings["ui"]["allow_all"].value == "true";
     const adminOnlyEl = document.getElementById("ui-admin_only") as HTMLInputElement;
-    const allowAllEls = [document.getElementById("ui-allow_all"), document.getElementById("description-ui-allow_all")];
-    const nextButton = adminOnlyEl.parentElement.parentElement.parentElement.querySelector("span.next") as HTMLSpanElement;
+    const allowAllEl = document.getElementById("ui-allow_all") as HTMLInputElement;
+    const nextButton = getParentCard(adminOnlyEl).querySelector("span.next") as HTMLSpanElement;
     if (adminOnly && !allowAll) {
-        (allowAllEls[0] as HTMLInputElement).disabled = true;
+        allowAllEl.disabled = true;
         adminOnlyEl.disabled = false;
         nextButton.removeAttribute("disabled");
     } else if (!adminOnly && allowAll) {
         adminOnlyEl.disabled = true;
-        (allowAllEls[0] as HTMLInputElement).disabled = false;
+        allowAllEl.disabled = false;
         nextButton.removeAttribute("disabled");
     } else { 
         adminOnlyEl.disabled = false;
-        (allowAllEls[0] as HTMLInputElement).disabled = false;
+        allowAllEl.disabled = false;
         nextButton.setAttribute("disabled", "true")
     }
 };
@@ -495,18 +515,17 @@ for (let section in settings) {
 
 const pageNames: string[][] = [];
 
-window.history.replaceState("welcome", "Setup - jfa-go");
+(() => {
+    const pushState = window.history.pushState;
+    window.history.pushState = function (data: any, __: string, _: string | URL) {
+        pushState.apply(window.history, arguments);
+        let ev = { state: data as string } as PopStateEvent;
+        window.onpopstate(ev);
+    };
+})();
 
-const changePage = (title: string, pageTitle: string) => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const lang = urlParams.get("lang");
-    let page = "/#" + title;
-    if (lang) { page += "?lang=" + lang; }
-    window.history.pushState(title || "welcome", pageTitle, page);
-};
-const cards = Array.from(document.getElementById("page-container").getElementsByClassName("card")) as Array<HTMLDivElement>;
-(window as any).cards = cards;
 window.onpopstate = (event: PopStateEvent) => {
+    console.log("CALLLLLLLL", event);
     if (event.state === "welcome") {
         cards[0].classList.remove("unfocused");
         for (let i = 1; i < cards.length; i++) { cards[i].classList.add("unfocused"); }
@@ -519,6 +538,35 @@ window.onpopstate = (event: PopStateEvent) => {
             cards[i].classList.add("unfocused");
         }
     }
+};
+
+const cards = Array.from(document.getElementsByClassName("page-container")[0].querySelectorAll(".card.sectioned")) as Array<HTMLDivElement>;
+(window as any).cards = cards;
+
+const changePageToIndex = (title: string, pageTitle: string, i: number) => {
+    cards[i].classList.remove("unfocused");
+    const urlParams = new URLSearchParams(window.location.search);
+    const lang = urlParams.get("lang");
+    let page = "/#" + title;
+    if (lang) { page += "?lang=" + lang; }
+    console.log("pushing", title, pageTitle, page);
+    window.history.pushState(title || "welcome", pageTitle, page);
+};
+
+const changePage = (title: string, pageTitle: string) => {
+    let found = false;
+    for (let i = 0; i < cards.length; i++) {
+        if (!found && pageNames[i][0] == title && !(cards[i].classList.contains("hidden"))) {
+            found = true;
+            changePageToIndex(title, pageTitle, i);
+        } else {
+            cards[i].classList.add("unfocused");
+        }
+    }
+    if (!found) {
+        changePageToIndex(title, pageTitle, 0);
+    }
+    window.scrollTo(0, 0);
 };
 
 (() => {
@@ -534,35 +582,33 @@ window.onpopstate = (event: PopStateEvent) => {
         let pageTitle = titleEl.textContent + " - jfa-go";
         pageNames.push([title, pageTitle]);
         if (back) { back.addEventListener("click", () => {
-            let found = false;
             for (let ind = cards.length - 1; ind >= 0; ind--) {
-                cards[ind].classList.add("unfocused");
-                if (ind < i && !(cards[ind].classList.contains("hidden")) && !found) {
-                    cards[ind].classList.remove("unfocused");
+                if (ind < i && !(cards[ind].classList.contains("hidden"))) {
                     changePage(pageNames[ind][0], pageNames[ind][1]);
-                    found = true;
+                    break;
                 }
             }
-            window.scrollTo(0, 0);
         }); }
         if (next) {
             const func = () => {
                 if (next.hasAttribute("disabled")) return;
-                let found = false;
                 for (let ind = 0; ind < cards.length; ind++) {
-                    cards[ind].classList.add("unfocused");
-                    if (ind > i && !(cards[ind].classList.contains("hidden")) && !found) {
-                        cards[ind].classList.remove("unfocused");
+                    if (ind > i && !(cards[ind].classList.contains("hidden"))) {
                         changePage(pageNames[ind][0], pageNames[ind][1]);
-                        found = true;
+                        break;
                     }
                 }
-                window.scrollTo(0, 0);
             };
             next.addEventListener("click", func)
         }
     }
 })();
+
+(() => {
+    let initialLocation = window.location.hash.replace("#", "") || "welcome";
+    changePage(initialLocation, "Setup - jfa-go");
+})();
+// window.history.replaceState("welcome", "Setup - jfa-go",);
 
 (() => {
     const button = document.getElementById("jellyfin-test-connection") as HTMLSpanElement;
