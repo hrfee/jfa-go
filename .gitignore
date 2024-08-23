@@ -26,3 +26,4 @@ scripts/langmover/lang2
 scripts/langmover/out
 tinyproxy.conf
 static/banner.svg
+start.sh

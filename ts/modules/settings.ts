@@ -62,8 +62,17 @@ class DOMInput {
     protected _section: string;
     protected _name: string;
 
-    hide = () => this._input.parentElement.classList.add("unfocused");
-    show = () => this._input.parentElement.classList.remove("unfocused");
+    hide = () => {
+        this._input.parentElement.classList.add("unfocused");
+        const event = new CustomEvent(`settings-${this._section}-${this._name}`, { "detail": false })
+        document.dispatchEvent(event);
+
+    };
+    show = () => {
+        this._input.parentElement.classList.remove("unfocused");
+        const event = new CustomEvent(`settings-${this._section}-${this._name}`, { "detail": this.valueAsString() })
+        document.dispatchEvent(event);
+    };
 
     private _advancedListener = (event: settingsBoolEvent) => {
         if (!Boolean(event.detail)) {
@@ -123,7 +132,9 @@ class DOMInput {
 
     onValueChange = () => {
         const event = new CustomEvent(`settings-${this._section}-${this._name}`, { "detail": this.valueAsString() })
+        const setEvent = new CustomEvent(`settings-set-${this._section}-${this._name}`, { "detail": this.valueAsString() })
         document.dispatchEvent(event);
+        document.dispatchEvent(setEvent);
         if (this.requires_restart) { document.dispatchEvent(new CustomEvent("settings-requires-restart")); }
     };
 
@@ -311,9 +322,19 @@ class DOMBool implements SBool {
     private _restart: HTMLSpanElement;
     type: string = "bool";
     private _advanced: boolean;
+    protected _section: string;
+    protected _name: string;
     
-    hide = () => this._input.parentElement.classList.add("unfocused");
-    show = () => this._input.parentElement.classList.remove("unfocused");
+    hide = () => {
+		this._input.parentElement.classList.add("unfocused");
+        const event = new CustomEvent(`settings-${this._section}-${this._name}`, { "detail": false })
+        document.dispatchEvent(event);
+	};
+    show = () => {
+		this._input.parentElement.classList.remove("unfocused");
+        const event = new CustomEvent(`settings-${this._section}-${this._name}`, { "detail": this.valueAsString() })
+        document.dispatchEvent(event);
+	};
 
     private _advancedListener = (event: settingsBoolEvent) => {
         if (!Boolean(event.detail)) {
@@ -375,6 +396,8 @@ class DOMBool implements SBool {
     set value(state: boolean) { this._input.checked = state; }
     
     constructor(setting: SBool, section: string, name: string) {
+        this._section = section;
+        this._name = name;
         this._container = document.createElement("div");
         this._container.classList.add("setting");
         this._container.setAttribute("data-name", name)
@@ -394,7 +417,9 @@ class DOMBool implements SBool {
         this._input = this._container.querySelector("input[type=checkbox]") as HTMLInputElement;
         const onValueChange = () => {
             const event = new CustomEvent(`settings-${section}-${name}`, { "detail": this.valueAsString() })
+            const setEvent = new CustomEvent(`settings-set-${section}-${name}`, { "detail": this.valueAsString() })
             document.dispatchEvent(event);
+            document.dispatchEvent(setEvent);
         };
         this._input.onchange = () => { 
             onValueChange();
@@ -406,7 +431,9 @@ class DOMBool implements SBool {
             let dependant = splitDependant(section, setting.depends_true || setting.depends_false);
             let state = true;
             if (setting.depends_false) { state = false; }
+            console.log(`I, ${section}-${name}, am adding a listener for ${dependant[0]}-${dependant[1]}`);
             document.addEventListener(`settings-${dependant[0]}-${dependant[1]}`, (event: settingsBoolEvent) => {
+                console.log(`I, ${section}-${name}, was triggered by a listener for ${dependant[0]}-${dependant[1]}`);
                 if (Boolean(event.detail) !== state) {
                     this.hide();
                 } else {
@@ -441,9 +468,19 @@ class DOMSelect implements SSelect {
     private _options: string[][];
     type: string = "bool";
     private _advanced: boolean;
+    protected _section: string;
+    protected _name: string;
 
-    hide = () => this._container.classList.add("unfocused");
-    show = () => this._container.classList.remove("unfocused");
+    hide = () => {
+		this._container.classList.add("unfocused");
+        const event = new CustomEvent(`settings-${this._section}-${this._name}`, { "detail": false })
+        document.dispatchEvent(event);
+	};
+    show = () => {
+		this._container.classList.remove("unfocused");
+        const event = new CustomEvent(`settings-${this._section}-${this._name}`, { "detail": this.valueAsString() })
+        document.dispatchEvent(event);
+	};
 
     private _advancedListener = (event: settingsBoolEvent) => {
         if (!Boolean(event.detail)) {
@@ -515,6 +552,8 @@ class DOMSelect implements SSelect {
     }
 
     constructor(setting: SSelect, section: string, name: string) {
+        this._section = section;
+        this._name = name;
         this._options = [];
         this._container = document.createElement("div");
         this._container.classList.add("setting");
@@ -548,8 +587,10 @@ class DOMSelect implements SSelect {
             });
         }
         const onValueChange = () => {
-            const event = new CustomEvent(`settings-${section}-${name}`, { "detail": this.valueAsString() })
+            const event = new CustomEvent(`settings-${section}-${name}`, { "detail": this.valueAsString() });
+            const setEvent = new CustomEvent(`settings-${section}-${name}`, { "detail": this.valueAsString() });
             document.dispatchEvent(event);
+            document.dispatchEvent(setEvent);
             if (this.requires_restart) { document.dispatchEvent(new CustomEvent("settings-requires-restart")); }
         };
         this._select.onchange = onValueChange;
@@ -588,8 +629,14 @@ class DOMNote implements SNote {
     type: string = "note";
     private _style: string;
 
-    hide = () => this._container.classList.add("unfocused");
-    show = () => this._container.classList.remove("unfocused");
+    hide = () => {
+		this._container.classList.add("unfocused");
+        // We're a note, no one depends on us so we don't need to broadcast a state change.
+	};
+    show = () => {
+		this._container.classList.remove("unfocused");
+        // We're a note, no one depends on us so we don't need to broadcast a state change.
+	};
 
     get name(): string { return this._name.textContent; }
     set name(n: string) { this._name.textContent = n; }
@@ -724,7 +771,9 @@ class sectionPanel {
                 }
                 if (setting.type != "note") {
                     this.values[name] = ""+setting.value;
-                    document.addEventListener(`settings-${this._sectionName}-${name}`, (event: CustomEvent) => {
+                    // settings-section-name: Implies the setting changed or was shown/hidden.
+                    // settings-set-section-name: Implies the setting changed.
+                    document.addEventListener(`settings-set-${this._sectionName}-${name}`, (event: CustomEvent) => {
                         // const oldValue = this.values[name];
                         this.values[name] = event.detail;
                         document.dispatchEvent(new CustomEvent("settings-section-changed"));
