@@ -2,6 +2,12 @@ import { _get, _post, _delete, _download, _upload, toggleLoader, addLoader, remo
 import { Marked } from "@ts-stack/markdown";
 import { stripMarkdown } from "../modules/stripmd.js";
 
+const toBool = (s: string): boolean => {
+    let b = Boolean(s);
+    if (s == "false") b = false;
+    return b;
+}
+
 interface BackupDTO {
     size: string;
     name: string;
@@ -9,8 +15,8 @@ interface BackupDTO {
     date: number;
 }
 
-interface settingsBoolEvent extends Event { 
-    detail: boolean;
+interface settingsChangedEvent extends Event { 
+    detail: string;
 }
 
 interface Meta {
@@ -52,7 +58,8 @@ const splitDependant = (section: string, dep: string): string[] => {
     return parts
 };
 
-class DOMInput {
+class DOMSetting {
+    protected _hideEl: HTMLElement;
     protected _input: HTMLInputElement;
     protected _container: HTMLDivElement;
     protected _tooltip: HTMLDivElement;
@@ -63,19 +70,19 @@ class DOMInput {
     protected _name: string;
 
     hide = () => {
-        this._input.parentElement.classList.add("unfocused");
+        this._hideEl.classList.add("unfocused");
         const event = new CustomEvent(`settings-${this._section}-${this._name}`, { "detail": false })
         document.dispatchEvent(event);
 
     };
     show = () => {
-        this._input.parentElement.classList.remove("unfocused");
+        this._hideEl.classList.remove("unfocused");
         const event = new CustomEvent(`settings-${this._section}-${this._name}`, { "detail": this.valueAsString() })
         document.dispatchEvent(event);
     };
 
-    private _advancedListener = (event: settingsBoolEvent) => {
-        if (!Boolean(event.detail)) {
+    private _advancedListener = (event: settingsChangedEvent) => {
+        if (!toBool(event.detail)) {
             this.hide();
         } else {
             this.show();
@@ -109,9 +116,11 @@ class DOMInput {
     get required(): boolean { return this._required.classList.contains("badge"); }
     set required(state: boolean) {
         if (state) {
+            this._required.classList.remove("unfocused");
             this._required.classList.add("badge", "~critical");
             this._required.textContent = "*";
         } else {
+            this._required.classList.add("unfocused");
             this._required.classList.remove("badge", "~critical");
             this._required.textContent = "";
         }
@@ -120,9 +129,11 @@ class DOMInput {
     get requires_restart(): boolean { return this._restart.classList.contains("badge"); }
     set requires_restart(state: boolean) {
         if (state) {
+            this._restart.classList.remove("unfocused");
             this._restart.classList.add("badge", "~info", "dark:~d_warning");
             this._restart.textContent = "R";
         } else {
+            this._restart.classList.add("unfocused");
             this._restart.classList.remove("badge", "~info", "dark:~d_warning");
             this._restart.textContent = "";
         }
@@ -138,35 +149,38 @@ class DOMInput {
         if (this.requires_restart) { document.dispatchEvent(new CustomEvent("settings-requires-restart")); }
     };
 
-    constructor(inputType: string, setting: Setting, section: string, name: string, customInput?: string) {
+    constructor(input: string, setting: Setting, section: string, name: string, inputOnTop: boolean = false) {
         this._section = section;
         this._name = name;
         this._container = document.createElement("div");
         this._container.classList.add("setting");
-        this._container.setAttribute("data-name", name)
-        const defaultInput = `
-            <input type="${inputType}" class="input setting-input ~neutral @low mt-2 mb-2">
-        `;
+        this._container.setAttribute("data-name", name);
         this._container.innerHTML = `
-        <label class="label">
-            <span class="setting-label"></span> <span class="setting-required"></span> <span class="setting-restart"></span>
-            <div class="setting-tooltip tooltip right unfocused">
-                <i class="icon ri-information-line"></i>
-                <span class="content sm"></span>
+        <label class="label flex flex-col gap-2">
+            ${inputOnTop ? input : ""}
+            <div class="flex flex-row gap-2 items-baseline">
+                <span class="setting-label"></span>
+                <div class="setting-tooltip tooltip right unfocused">
+                    <i class="icon ri-information-line align-baseline"></i>
+                    <span class="content sm"></span>
+                </div>
+                <span class="setting-required unfocused"></span>
+                <span class="setting-restart unfocused"></span>
             </div>
-            ${customInput ? customInput : defaultInput}
+            ${inputOnTop ? "" : input}
         </label>
         `;
         this._tooltip = this._container.querySelector("div.setting-tooltip") as HTMLDivElement;
         this._required = this._container.querySelector("span.setting-required") as HTMLSpanElement;
         this._restart = this._container.querySelector("span.setting-restart") as HTMLSpanElement;
+        // "input" variable should supply the HTML of an element with class "setting-input"
         this._input = this._container.querySelector(".setting-input") as HTMLInputElement;
         if (setting.depends_false || setting.depends_true) {
             let dependant = splitDependant(section, setting.depends_true || setting.depends_false);
             let state = true;
             if (setting.depends_false) { state = false; }
-            document.addEventListener(`settings-${dependant[0]}-${dependant[1]}`, (event: settingsBoolEvent) => {
-                if (Boolean(event.detail) !== state) {
+            document.addEventListener(`settings-${dependant[0]}-${dependant[1]}`, (event: settingsChangedEvent) => {
+                if (toBool(event.detail) !== state) {
                     this.hide();
                 } else {
                     this.show();
@@ -174,13 +188,14 @@ class DOMInput {
             });
         }
         this._input.onchange = this.onValueChange;
-        this.update(setting);
+        document.addEventListener(`settings-loaded`, this.onValueChange);
+        this._hideEl = this._container;
     }
 
     get value(): any { return this._input.value; }
     set value(v: any) { this._input.value = v; }
 
-    update = (s: Setting) => {
+    update(s: Setting) {
         this.name = s.name;
         this.description = s.description;
         this.required = s.required;
@@ -192,6 +207,17 @@ class DOMInput {
     asElement = (): HTMLDivElement => { return this._container; }
 }
 
+class DOMInput extends DOMSetting {
+    constructor(inputType: string, setting: Setting, section: string, name: string) {
+        super(
+            `<input type="${inputType}" class="input setting-input ~neutral @low">`,
+            setting, section, name,
+        );
+        // this._hideEl = this._input.parentElement;
+        this.update(setting);
+    }
+}
+
 interface SText extends Setting {
     value: string;
 }
@@ -200,85 +226,6 @@ class DOMText extends DOMInput implements SText {
     type: string = "text";
     get value(): string { return this._input.value }
     set value(v: string) { this._input.value = v; }
-}
-
-interface SList extends Setting {
-    value: string[];
-}
-
-class DOMList extends DOMInput implements SList {
-    protected _inputs: HTMLDivElement;
-    type: string = "list";
-    
-    valueAsString = (): string => { return this.value.join("|"); };
-
-    get value(): string[] {
-        let values = [];
-        const inputs = this._input.querySelectorAll("input") as NodeListOf<HTMLInputElement>;
-        for (let i in inputs) {
-            if (inputs[i].value) values.push(inputs[i].value);
-        }
-        return values;
-    }
-    set value(v: string[]) {
-        this._input.textContent = ``;
-        for (let val of v) {
-            let input = this.inputRow(val);
-            this._input.appendChild(input);
-        }
-        const addDummy = () => {
-            const dummyRow = this.inputRow();
-            const input = dummyRow.querySelector("input") as HTMLInputElement;
-            input.placeholder = window.lang.strings("add");
-            const onDummyChange = () => {
-                if (!(input.value)) return;
-                addDummy();
-                input.removeEventListener("change", onDummyChange);
-                input.placeholder = ``;
-            }
-            input.addEventListener("change", onDummyChange);
-            this._input.appendChild(dummyRow);
-        };
-        addDummy();
-    }
-
-    private inputRow(v: string = ""): HTMLDivElement {
-        let container = document.createElement("div") as HTMLDivElement;
-        container.classList.add("flex", "flex-row", "justify-between");
-        container.innerHTML = `
-            <input type="text" class="input ~neutral @low">
-            <button class="button ~neutral @low center -ml-10 rounded-s-none aria-label="${window.lang.strings("delete")}" title="${window.lang.strings("delete")}">
-                <i class="ri-close-line"></i>
-            </button>
-        `;
-        const input = container.querySelector("input") as HTMLInputElement;
-        input.value = v;
-        input.onchange = this.onValueChange;
-        const removeRow = container.querySelector("button") as HTMLButtonElement;
-        removeRow.onclick = () => {
-            if (!(container.nextElementSibling)) return;
-            container.remove();
-            this.onValueChange();
-        }
-        return container;
-    }
-
-    update = (s: Setting) => {
-        this.name = s.name;
-        this.description = s.description;
-        this.required = s.required;
-        this.requires_restart = s.requires_restart;
-        this.value = s.value as string[];
-        this.advanced = s.advanced;
-    }
-    
-    asElement = (): HTMLDivElement => { return this._container; }
-
-    constructor(setting: Setting, section: string, name: string) {
-        super("list", setting, section, name,
-            `<div class="setting-input flex flex-col gap-2 mt-2 mb-2"></div>`
-        );
-    }
 }
 
 interface SPassword extends Setting {
@@ -311,235 +258,107 @@ class DOMNumber extends DOMInput implements SNumber {
     set value(v: number) { this._input.value = ""+v; }
 }
 
+interface SList extends Setting {
+    value: string[];
+}
+class DOMList extends DOMSetting implements SList {
+    protected _inputs: HTMLDivElement;
+    type: string = "list";
+    
+    valueAsString = (): string => { return this.value.join("|"); };
+
+    get value(): string[] {
+        let values = [];
+        const inputs = this._input.querySelectorAll("input") as NodeListOf<HTMLInputElement>;
+        for (let i in inputs) {
+            if (inputs[i].value) values.push(inputs[i].value);
+        }
+        return values;
+    }
+    set value(v: string[]) {
+        this._input.textContent = ``;
+        for (let val of v) {
+            let input = this.inputRow(val);
+            this._input.appendChild(input);
+        }
+        const addDummy = () => {
+            const dummyRow = this.inputRow();
+            const input = dummyRow.querySelector("input") as HTMLInputElement;
+            input.placeholder = window.lang.strings("add");
+            const onDummyChange = () => {
+                if (!(input.value)) return;
+                addDummy();
+                input.removeEventListener("change", onDummyChange);
+                input.removeEventListener("keyup", onDummyChange);
+                input.placeholder = ``;
+            }
+            input.addEventListener("change", onDummyChange);
+            input.addEventListener("keyup", onDummyChange);
+            this._input.appendChild(dummyRow);
+        };
+        addDummy();
+    }
+
+    private inputRow(v: string = ""): HTMLDivElement {
+        let container = document.createElement("div") as HTMLDivElement;
+        container.classList.add("flex", "flex-row", "justify-between");
+        container.innerHTML = `
+            <input type="text" class="input ~neutral @low">
+            <button class="button ~neutral @low center -ml-10 rounded-s-none aria-label="${window.lang.strings("delete")}" title="${window.lang.strings("delete")}">
+                <i class="ri-close-line"></i>
+            </button>
+        `;
+        const input = container.querySelector("input") as HTMLInputElement;
+        input.value = v;
+        input.onchange = this.onValueChange;
+        const removeRow = container.querySelector("button") as HTMLButtonElement;
+        removeRow.onclick = () => {
+            if (!(container.nextElementSibling)) return;
+            container.remove();
+            this.onValueChange();
+        }
+        return container;
+    }
+    
+    constructor(setting: Setting, section: string, name: string) {
+        super(
+            `<div class="setting-input flex flex-col gap-2"></div>`,
+            setting, section, name,
+        );
+        // this._hideEl = this._input.parentElement;
+        this.update(setting);
+    }
+}
+
 interface SBool extends Setting {
     value: boolean;
 }
-class DOMBool implements SBool {
-    protected _input: HTMLInputElement;
-    private _container: HTMLDivElement;
-    private _tooltip: HTMLDivElement;
-    private _required: HTMLSpanElement;
-    private _restart: HTMLSpanElement;
+class DOMBool extends DOMSetting implements SBool {
     type: string = "bool";
-    private _advanced: boolean;
-    protected _section: string;
-    protected _name: string;
-    
-    hide = () => {
-		this._input.parentElement.classList.add("unfocused");
-        const event = new CustomEvent(`settings-${this._section}-${this._name}`, { "detail": false })
-        document.dispatchEvent(event);
-	};
-    show = () => {
-		this._input.parentElement.classList.remove("unfocused");
-        const event = new CustomEvent(`settings-${this._section}-${this._name}`, { "detail": this.valueAsString() })
-        document.dispatchEvent(event);
-	};
-
-    private _advancedListener = (event: settingsBoolEvent) => {
-        if (!Boolean(event.detail)) {
-            this.hide();
-        } else {
-            this.show();
-        }
-    }
-
-    get advanced(): boolean { return this._advanced; }
-    set advanced(advanced: boolean) {
-        this._advanced = advanced;
-        if (advanced) {
-            document.addEventListener("settings-advancedState", this._advancedListener);
-        } else {
-            document.removeEventListener("settings-advancedState", this._advancedListener);
-        }
-    }
-
-    get name(): string { return this._container.querySelector("span.setting-label").textContent; }
-    set name(n: string) { this._container.querySelector("span.setting-label").textContent = n; }
-
-    get description(): string { return this._tooltip.querySelector("span.content").textContent; } 
-    set description(d: string) {
-        const content = this._tooltip.querySelector("span.content") as HTMLSpanElement;
-        content.textContent = d;
-        if (d == "") {
-            this._tooltip.classList.add("unfocused");
-        } else {
-            this._tooltip.classList.remove("unfocused");
-        }
-    }
-
-    get required(): boolean { return this._required.classList.contains("badge"); }
-    set required(state: boolean) {
-        if (state) {
-            this._required.classList.add("badge", "~critical");
-            this._required.textContent = "*";
-        } else {
-            this._required.classList.remove("badge", "~critical");
-            this._required.textContent = "";
-        }
-    }
-    
-    get requires_restart(): boolean { return this._restart.classList.contains("badge"); }
-    set requires_restart(state: boolean) {
-        if (state) {
-            this._restart.classList.add("badge", "~info", "dark:~d_warning");
-            this._restart.textContent = "R";
-        } else {
-            this._restart.classList.remove("badge", "~info", "dark:~d_warning");
-            this._restart.textContent = "";
-        }
-    }
-
-    valueAsString = (): string => { return ""+this.value; };
 
     get value(): boolean { return this._input.checked; }
     set value(state: boolean) { this._input.checked = state; }
     
     constructor(setting: SBool, section: string, name: string) {
-        this._section = section;
-        this._name = name;
-        this._container = document.createElement("div");
-        this._container.classList.add("setting");
-        this._container.setAttribute("data-name", name)
-        this._container.innerHTML = `
-        <label class="switch mb-2">
-            <input type="checkbox">
-            <span class="setting-label"></span> <span class="setting-required"></span> <span class="setting-restart"></span>
-            <div class="setting-tooltip tooltip right unfocused">
-                <i class="icon ri-information-line"></i>
-                <span class="content sm"></span>
-            </div>
-        </label>
-        `;
-        this._tooltip = this._container.querySelector("div.setting-tooltip") as HTMLDivElement;
-        this._required = this._container.querySelector("span.setting-required") as HTMLSpanElement;
-        this._restart = this._container.querySelector("span.setting-restart") as HTMLSpanElement;
-        this._input = this._container.querySelector("input[type=checkbox]") as HTMLInputElement;
-        const onValueChange = () => {
-            const event = new CustomEvent(`settings-${section}-${name}`, { "detail": this.valueAsString() })
-            const setEvent = new CustomEvent(`settings-set-${section}-${name}`, { "detail": this.valueAsString() })
-            document.dispatchEvent(event);
-            document.dispatchEvent(setEvent);
-        };
-        this._input.onchange = () => { 
-            onValueChange();
-            if (this.requires_restart) { document.dispatchEvent(new CustomEvent("settings-requires-restart")); }
-        };
-        document.addEventListener(`settings-loaded`, onValueChange);
-
-        if (setting.depends_false || setting.depends_true) {
-            let dependant = splitDependant(section, setting.depends_true || setting.depends_false);
-            let state = true;
-            if (setting.depends_false) { state = false; }
-            console.log(`I, ${section}-${name}, am adding a listener for ${dependant[0]}-${dependant[1]}`);
-            document.addEventListener(`settings-${dependant[0]}-${dependant[1]}`, (event: settingsBoolEvent) => {
-                console.log(`I, ${section}-${name}, was triggered by a listener for ${dependant[0]}-${dependant[1]}`);
-                if (Boolean(event.detail) !== state) {
-                    this.hide();
-                } else {
-                    this.show();
-                }
-            });
-        }
+        super(
+            `<input type="checkbox" class="setting-input">`,
+            setting, section, name, true,
+        );
+        const label = this._container.getElementsByTagName("LABEL")[0];
+        label.classList.remove("flex-col");
+        label.classList.add("flex-row");
+        // this._hideEl = this._input.parentElement;
         this.update(setting);
     }
-    update = (s: SBool) => {
-        this.name = s.name;
-        this.description = s.description;
-        this.required = s.required;
-        this.requires_restart = s.requires_restart;
-        this.value = s.value;
-        this.advanced = s.advanced;
-    }
-    
-    asElement = (): HTMLDivElement => { return this._container; }
 }
 
 interface SSelect extends Setting {
     options: string[][];
     value: string;
 }
-class DOMSelect implements SSelect {
-    protected _select: HTMLSelectElement;
-    private _container: HTMLDivElement;
-    private _tooltip: HTMLDivElement;
-    private _required: HTMLSpanElement;
-    private _restart: HTMLSpanElement;
-    private _options: string[][];
+class DOMSelect extends DOMSetting implements SSelect {
     type: string = "bool";
-    private _advanced: boolean;
-    protected _section: string;
-    protected _name: string;
-
-    hide = () => {
-		this._container.classList.add("unfocused");
-        const event = new CustomEvent(`settings-${this._section}-${this._name}`, { "detail": false })
-        document.dispatchEvent(event);
-	};
-    show = () => {
-		this._container.classList.remove("unfocused");
-        const event = new CustomEvent(`settings-${this._section}-${this._name}`, { "detail": this.valueAsString() })
-        document.dispatchEvent(event);
-	};
-
-    private _advancedListener = (event: settingsBoolEvent) => {
-        if (!Boolean(event.detail)) {
-            this.hide();
-        } else {
-            this.show();
-        }
-    }
-
-    get advanced(): boolean { return this._advanced; }
-    set advanced(advanced: boolean) {
-        this._advanced = advanced;
-        if (advanced) {
-            document.addEventListener("settings-advancedState", this._advancedListener);
-        } else {
-            document.removeEventListener("settings-advancedState", this._advancedListener);
-        }
-    }
-
-    get name(): string { return this._container.querySelector("span.setting-label").textContent; }
-    set name(n: string) { this._container.querySelector("span.setting-label").textContent = n; }
-
-    get description(): string { return this._tooltip.querySelector("span.content").textContent; } 
-    set description(d: string) {
-        const content = this._tooltip.querySelector("span.content") as HTMLSpanElement;
-        content.textContent = d;
-        if (d == "") {
-            this._tooltip.classList.add("unfocused");
-        } else {
-            this._tooltip.classList.remove("unfocused");
-        }
-    }
-
-    get required(): boolean { return this._required.classList.contains("badge"); }
-    set required(state: boolean) {
-        if (state) {
-            this._required.classList.add("badge", "~critical");
-            this._required.textContent = "*";
-        } else {
-            this._required.classList.remove("badge", "~critical");
-            this._required.textContent = "";
-        }
-    }
-    
-    get requires_restart(): boolean { return this._restart.classList.contains("badge"); }
-    set requires_restart(state: boolean) {
-        if (state) {
-            this._restart.classList.add("badge", "~info", "dark:~d_warning");
-            this._restart.textContent = "R";
-        } else {
-            this._restart.classList.remove("badge", "~info", "dark:~d_warning");
-            this._restart.textContent = "";
-        }
-    }
-
-    valueAsString = (): string => { return ""+this.value; };
-
-    get value(): string { return this._select.value; }
-    set value(v: string) { this._select.value = v; }
+    private _options: string[][];
 
     get options(): string[][] { return this._options; }
     set options(opt: string[][]) {
@@ -548,98 +367,47 @@ class DOMSelect implements SSelect {
         for (let option of this._options) {
             innerHTML += `<option value="${option[0]}">${option[1]}</option>`;
         }
-        this._select.innerHTML = innerHTML;
+        this._input.innerHTML = innerHTML;
     }
+
+    update(s: SSelect) {
+        this.options = s.options;
+        super.update(s);
+    };
 
     constructor(setting: SSelect, section: string, name: string) {
-        this._section = section;
-        this._name = name;
-        this._options = [];
-        this._container = document.createElement("div");
-        this._container.classList.add("setting");
-        this._container.setAttribute("data-name", name)
-        this._container.innerHTML = `
-        <label class="label">
-            <span class="setting-label"></span> <span class="setting-required"></span> <span class="setting-restart"></span>
-            <div class="setting-tooltip tooltip right unfocused">
-                <i class="icon ri-information-line"></i>
-                <span class="content sm"></span>
-            </div>
-            <div class="select ~neutral @low mt-2 mb-2">
-                <select class="settings-select"></select>
-            </div>
-        </label>
-        `;
-        this._tooltip = this._container.querySelector("div.setting-tooltip") as HTMLDivElement;
-        this._required = this._container.querySelector("span.setting-required") as HTMLSpanElement;
-        this._restart = this._container.querySelector("span.setting-restart") as HTMLSpanElement;
-        this._select = this._container.querySelector("select.settings-select") as HTMLSelectElement;
-        if (setting.depends_false || setting.depends_true) {
-            let dependant = splitDependant(section, setting.depends_true || setting.depends_false);
-            let state = true;
-            if (setting.depends_false) { state = false; }
-            document.addEventListener(`settings-${dependant[0]}-${dependant[1]}`, (event: settingsBoolEvent) => {
-                if (Boolean(event.detail) !== state) {
-                    this.hide();
-                } else {
-                    this.show();
-                }
-            });
-        }
-        const onValueChange = () => {
-            const event = new CustomEvent(`settings-${section}-${name}`, { "detail": this.valueAsString() });
-            const setEvent = new CustomEvent(`settings-${section}-${name}`, { "detail": this.valueAsString() });
-            document.dispatchEvent(event);
-            document.dispatchEvent(setEvent);
-            if (this.requires_restart) { document.dispatchEvent(new CustomEvent("settings-requires-restart")); }
-        };
-        this._select.onchange = onValueChange;
-        document.addEventListener(`settings-loaded`, onValueChange);
-
-        const message = document.getElementById("settings-message") as HTMLElement;
-        message.innerHTML = window.lang.var("strings",
-                                            "settingsRequiredOrRestartMessage",
-                                            `<span class="badge ~critical">*</span>`,
-                                            `<span class="badge ~info dark:~d_warning">R</span>`
+        super(
+            `<div class="select ~neutral @low">
+                <select class="setting-select setting-input"></select>
+            </div>`,
+            setting, section, name,
         );
-
+        this._options = [];
+        // this._hideEl = this._container;
         this.update(setting);
     }
-    update = (s: SSelect) => {
-        this.name = s.name;
-        this.description = s.description;
-        this.required = s.required;
-        this.requires_restart = s.requires_restart;
-        this.options = s.options;
-        this.value = s.value;
-    }
-
-    asElement = (): HTMLDivElement => { return this._container; }
 }
 
 interface SNote extends Setting {
     value: string;
     style?: string;
 }
-class DOMNote implements SNote {
-    private _container: HTMLDivElement;
-    private _aside: HTMLElement;
-    private _name: HTMLElement;
+class DOMNote extends DOMSetting implements SNote {
+    private _nameEl: HTMLElement;
     private _description: HTMLElement;
     type: string = "note";
     private _style: string;
 
+    // We're a note, no one depends on us so we don't need to broadcast a state change.
     hide = () => {
 		this._container.classList.add("unfocused");
-        // We're a note, no one depends on us so we don't need to broadcast a state change.
 	};
     show = () => {
 		this._container.classList.remove("unfocused");
-        // We're a note, no one depends on us so we don't need to broadcast a state change.
 	};
 
-    get name(): string { return this._name.textContent; }
-    set name(n: string) { this._name.textContent = n; }
+    get name(): string { return this._nameEl.textContent; }
+    set name(n: string) { this._nameEl.textContent = n; }
 
     get description(): string { return this._description.textContent; }
     set description(d: string) {
@@ -649,51 +417,37 @@ class DOMNote implements SNote {
     valueAsString = (): string => { return ""; };
 
     get value(): string { return ""; }
-    set value(v: string) { return; }
+    set value(_: string) { return; }
     
     get required(): boolean { return false; }
-    set required(v: boolean) { return; }
+    set required(_: boolean) { return; }
     
     get requires_restart(): boolean { return false; }
-    set requires_restart(v: boolean) { return; }
+    set requires_restart(_: boolean) { return; }
 
     get style(): string { return this._style; }
     set style(s: string) {
-        this._aside.classList.remove("~" + this._style);
+        this._input.classList.remove("~" + this._style);
         this._style = s;
-        this._aside.classList.add("~" + this._style);
+        this._input.classList.add("~" + this._style);
     }
     
     constructor(setting: SNote, section: string) {
-        this._container = document.createElement("div");
-        this._container.classList.add("setting");
-        this._container.innerHTML = `
-        <aside class="aside my-2">
-            <span class="font-bold setting-name"></span>
-            <span class="content setting-description">
-        </aside>
-        `;
-        this._name = this._container.querySelector(".setting-name");
+        super(
+            `
+            <aside class="aside setting-input">
+                <span class="font-bold setting-name"></span>
+                <span class="content setting-description">
+            </aside>
+            `, setting, section, "",
+        );
+        // this._hideEl = this._container;
+        this._nameEl = this._container.querySelector(".setting-name");
         this._description = this._container.querySelector(".setting-description");
-        this._aside = this._container.querySelector("aside");
-
-        if (setting.depends_false || setting.depends_true) {
-            let dependant = splitDependant(section, setting.depends_true || setting.depends_false);
-            let state = true;
-            if (setting.depends_false) { state = false; }
-            document.addEventListener(`settings-${dependant[0]}-${dependant[1]}`, (event: settingsBoolEvent) => {
-                if (Boolean(event.detail) !== state) {
-                    this.hide();
-                } else {
-                    this.show();
-                }
-            });
-        }
-
         this.update(setting);
     }
 
-    update = (s: SNote) => {
+    update(s: SNote) {
         this.name = s.name;
         this.description = s.description;
         this.style = ("style" in s && s.style) ? s.style : "info";
@@ -718,7 +472,7 @@ class sectionPanel {
         this._sectionName = sectionName;
         this._settings = {};
         this._section = document.createElement("div") as HTMLDivElement;
-        this._section.classList.add("settings-section", "unfocused");
+        this._section.classList.add("settings-section", "unfocused", "flex", "flex-col", "gap-2");
         this._section.setAttribute("data-section", sectionName);
         let innerHTML = `
         <div class="flex flex-row justify-between">
@@ -730,7 +484,7 @@ class sectionPanel {
 
         innerHTML += `
         </div>
-        <p class="support lg my-2 settings-section-description">${s.meta.description}</p>
+        <p class="support lg settings-section-description">${s.meta.description}</p>
         `;
         this._section.innerHTML = innerHTML;
 
@@ -840,9 +594,8 @@ export class settingsList {
             let dependant = splitDependant(name, s.meta.depends_true || s.meta.depends_false);
             let state = true;
             if (s.meta.depends_false) { state = false; }
-            document.addEventListener(`settings-${dependant[0]}-${dependant[1]}`, (event: settingsBoolEvent) => {
-
-                if (Boolean(event.detail) !== state) {
+            document.addEventListener(`settings-${dependant[0]}-${dependant[1]}`, (event: settingsChangedEvent) => {
+                if (toBool(event.detail) !== state) {
                     button.classList.add("unfocused");
                     document.dispatchEvent(new CustomEvent(`settings-${name}`, { detail: false }));
                 } else {
@@ -850,16 +603,16 @@ export class settingsList {
                     document.dispatchEvent(new CustomEvent(`settings-${name}`, { detail: true }));
                 }
             });
-            document.addEventListener(`settings-${dependant[0]}`, (event: settingsBoolEvent) => {
-                if (Boolean(event.detail) !== state) {
+            document.addEventListener(`settings-${dependant[0]}`, (event: settingsChangedEvent) => {
+                if (toBool(event.detail) !== state) {
                     button.classList.add("unfocused");
                     document.dispatchEvent(new CustomEvent(`settings-${name}`, { detail: false }));
                 }
             }); 
         }
         if (s.meta.advanced) {
-            document.addEventListener("settings-advancedState", (event: settingsBoolEvent) => {
-                if (!Boolean(event.detail)) {
+            document.addEventListener("settings-advancedState", (event: settingsChangedEvent) => {
+                if (!toBool(event.detail)) {
                     button.classList.add("unfocused");
                 } else {
                     button.classList.remove("unfocused");
@@ -1051,6 +804,14 @@ export class settingsList {
                 this._searchbox.oninput(null);
             };
         };
+
+        // What possessed me to put this in the DOMSelect constructor originally? like what????????
+        const message = document.getElementById("settings-message") as HTMLElement;
+        message.innerHTML = window.lang.var("strings",
+                                            "settingsRequiredOrRestartMessage",
+                                            `<span class="badge ~critical">*</span>`,
+                                            `<span class="badge ~info dark:~d_warning">R</span>`
+        );
     }
 
     private _addMatrix = () => {
@@ -1327,7 +1088,7 @@ class MessageEditor {
                 let innerHTML = '';
                 for (let i = 0; i < this._templ.variables.length; i++) {
                     let ci = i % colors.length;
-                    innerHTML += '<span class="button ~' + colors[ci] +' @low mb-4" style="margin-left: 0.25rem; margin-right: 0.25rem;"></span>'
+                    innerHTML += '<span class="button ~' + colors[ci] +' @low"></span>'
                 }
                 if (this._templ.variables.length == 0) {
                     this._variablesLabel.classList.add("unfocused");

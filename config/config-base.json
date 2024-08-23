@@ -896,11 +896,20 @@
                     "value": false,
                     "description": "Send emails as plain text instead of HTML."
                 },
+                "collect": {
+                    "name": "Collect on sign-up",
+                    "required": false,
+                    "requires_restart": false,
+                    "depends_true": "method",
+                    "type": "bool",
+                    "value": true,
+                    "description": "Ask for an email address on the sign-up form."
+                },
                 "required": {
                     "name": "Require on sign-up",
                     "required": false,
                     "requires_restart": false,
-                    "depends_true": "method",
+                    "depends_true": "collect",
                     "type": "bool",
                     "value": false,
                     "description": "Require an email address on sign-up."
@@ -909,6 +918,7 @@
                     "name": "Require unique address",
                     "required": false,
                     "requires_restart": true,
+                    "depends_true": "method",
                     "type": "bool",
                     "value": false,
                     "description": "Disables using the same address on multiple accounts."
