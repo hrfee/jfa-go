@@ -251,6 +251,7 @@ func (app *appContext) getTokenLogin(gc *gin.Context) {
 	// host := gc.Request.URL.Hostname()
 	host := app.ExternalDomain
 
+	// Before you think this is broken: the first "true" arg is for "secure", i.e. only HTTPS!
 	gc.SetCookie("refresh", refresh, REFRESH_TOKEN_VALIDITY_SEC, "/", host, true, true)
 	gc.JSON(200, getTokenDTO{token})
 }
