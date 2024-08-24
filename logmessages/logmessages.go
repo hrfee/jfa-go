@@ -175,6 +175,7 @@ const (
 	AccountLinked              = "account already linked and require_unique enabled"
 	AccountUnverified          = "unverified"
 	FailedSetDiscordMemberRole = "Failed to apply/remove " + Discord + " member role: %v"
+	InvalidChar                = "Invalid character '%c'"
 
 	FailedSetEmailAddress = "Failed to set email address for %s user \"%s\": %v"
 

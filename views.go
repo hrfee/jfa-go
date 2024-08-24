@@ -677,7 +677,7 @@ func (app *appContext) NewUserFromConfirmationKey(invite Invite, key string, lan
 		nu.Log()
 	}
 	if !nu.Created {
-		respond(nu.Status, nu.Message, gc)
+		// respond(nu.Status, nu.Message, gc)
 		fail()
 		return
 	}

@@ -48,7 +48,8 @@
         "errorConnection": "Couldn't connect to jfa-go.",
         "errorUnknown": "Unknown error.",
         "error401Unauthorized": "Unauthorized. Try refreshing the page.",
-        "errorSaveSettings": "Couldn't save settings."
+        "errorSaveSettings": "Couldn't save settings.",
+        "errorSpecialSymbols": "Field cannot contain special symbols."
     },
     "quantityStrings": {
         "year": {

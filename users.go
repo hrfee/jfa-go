@@ -1,10 +1,13 @@
 package main
 
 import (
+	"fmt"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hrfee/jfa-go/logger"
 	lm "github.com/hrfee/jfa-go/logmessages"
 	"github.com/hrfee/mediabrowser"
 	"github.com/lithammer/shortuuid/v3"
@@ -53,9 +56,11 @@ type NewUserData struct {
 func (app *appContext) NewUserPostVerification(p NewUserParams) (out NewUserData, pendingTasks *sync.WaitGroup) {
 	pendingTasks = &sync.WaitGroup{}
 	// Some helper functions which will behave as our app.info/error/debug
+	// And make sure we capture the correct caller location.
 	deferLogInfo := func(s string, args ...any) {
+		loc := logger.Lshortfile(2)
 		out.Log = func() {
-			app.info.Printf(s, args)
+			app.info.PrintfNoFile(loc+" "+s, args...)
 		}
 	}
 	/* deferLogDebug := func(s string, args ...any) {
@@ -64,9 +69,17 @@ func (app *appContext) NewUserPostVerification(p NewUserParams) (out NewUserData
 		}
 	} */
 	deferLogError := func(s string, args ...any) {
+		loc := logger.Lshortfile(2)
 		out.Log = func() {
-			app.err.Printf(s, args)
+			app.err.PrintfNoFile(loc+" "+s, args...)
 		}
+	}
+
+	if strings.ContainsRune(p.Req.Username, '+') {
+		deferLogError(lm.FailedCreateUser, lm.Jellyfin, p.Req.Username, fmt.Sprintf(lm.InvalidChar, '+'))
+		out.Status = 400
+		out.Message = "errorSpecialSymbols"
+		return
 	}
 
 	existingUser, _ := app.jf.UserByName(p.Req.Username, false)

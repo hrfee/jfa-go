@@ -52,6 +52,14 @@ func lshortfile() string {
 	return Lshortfile(3)
 }
 
+func LshortfileTree() string {
+	out := ""
+	for i := 6; i >= 0; i-- {
+		out += strconv.Itoa(i) + ":" + Lshortfile(i) + " "
+	}
+	return out
+}
+
 func NewLogger(out io.Writer, prefix string, flag int, color c.Attribute) (l *Logger) {
 	l = &Logger{}
 	// Use reimplemented Lshortfile since wrapping the log functions messes them up
@@ -94,6 +102,13 @@ func (l *Logger) PrintfCustomLevel(level int, format string, v ...interface{}) {
 	}
 	out += " " + l.printer.Sprintf(format, v...)
 	l.logger.Print(out)
+}
+
+func (l *Logger) PrintfNoFile(format string, v ...interface{}) {
+	if l.empty {
+		return
+	}
+	l.logger.Print(l.printer.Sprintf(format, v...))
 }
 
 func (l *Logger) Print(v ...interface{}) {

@@ -176,12 +176,31 @@ const rePasswordField = document.getElementById("create-reenter-password") as HT
 
 let captcha = new Captcha(window.code, window.captcha, window.reCAPTCHA, false);
 
+const clearSubmitButton = () => {
+    submitInput.setCustomValidity("");
+    submitSpan.title = "";
+};
+
+const invalidMessage = (el: HTMLInputElement, msg: string) => {
+    el.setCustomValidity(msg);
+    submitInput.setCustomValidity(msg);
+    submitSpan.title = msg;
+};
+
 function _baseValidator(oncomplete: (valid: boolean) => void, captchaValid: boolean): void {
+    clearSubmitButton();
     if (window.emailRequired) {
         if (!emailField.value.includes("@")) {
             oncomplete(false);
             return;
         }
+    }
+    usernameField.setCustomValidity("");
+    // Jellyfin doesn't like having "+" in the username field
+    if (usernameField.value.includes("+")) {
+        invalidMessage(usernameField, window.messages["errorSpecialSymbols"]);
+        oncomplete(false);
+        return;
     }
     if (window.discordEnabled && window.discordRequired && !discordVerified) {
         oncomplete(false);

@@ -1138,7 +1138,12 @@ export class accountsList {
                         console.log("User created, but welcome email failed");
                     }
                 } else {
-                    window.notifications.customError("addUser", window.lang.var("notifications", "errorUserCreated", `"${send['username']}"`));
+                    let msg = window.lang.var("notifications", "errorUserCreated", `"${send['username']}"`);
+                    if ("error" in req.response) {
+                        let realError = window.lang.notif(req.response["error"]);
+                        if (realError) msg = realError;
+                    }
+                    window.notifications.customError("addUser", msg);
                 }
                 if (req.response["error"] as String) {
                     console.log(req.response["error"]);

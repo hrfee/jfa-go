@@ -5,8 +5,9 @@ import (
 )
 
 type stringResponse struct {
-	Response string `json:"response" example:"message"`
-	Error    string `json:"error" example:"errorDescription"`
+	Response  string `json:"response" example:"message"`
+	ErrorText string `json:"error" example:"No special symbols allowed."`
+	ErrorCode string `json:"error_code" example:"errorSpecialSymbols"`
 }
 
 type boolResponse struct {
