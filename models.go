@@ -5,9 +5,9 @@ import (
 )
 
 type stringResponse struct {
-	Response  string `json:"response" example:"message"`
-	ErrorText string `json:"error" example:"No special symbols allowed."`
-	ErrorCode string `json:"error_code" example:"errorSpecialSymbols"`
+	Response             string `json:"response" example:"message"`
+	Error/*Text*/ string        `json:"error" example:"No special symbols allowed."`
+	// ErrorCode string `json:"error_code" example:"errorSpecialSymbols"`
 }
 
 type boolResponse struct {
