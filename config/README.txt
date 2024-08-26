@@ -1,0 +1,1 @@
+The two python scripts here, `config-json-to-new-yaml.py` and `gen-rough-schema.py` were used to convert the old format, which was stored in a JSON file, to the new format in YAML. The latter script is used to get the possible values for settings and sections, so they could be properly defined in common/config.go.

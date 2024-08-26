@@ -108,7 +108,6 @@ CONFIG_DEFAULT = $(DATA)/config-default.ini
 # $(CONFIG_DESCRIPTION) &: $(CONFIG_BASE)
 # 	$(info Fixing config-base)
 # 	-mkdir -p $(DATA)
-# 	python3 scripts/enumerate_config.py -i config/config-base.json -o $(DATA)/config-base.json
 
 $(DATA):
 	mkdir -p $(DATA)
@@ -128,7 +127,9 @@ EMAIL_ALL = $(EMAIL_HTML) $(EMAIL_TXT)
 EMAIL_TARGET = mail/confirmation.html
 $(EMAIL_TARGET): $(EMAIL_SRC_MJML) $(EMAIL_SRC_TXT)
 	$(info Generating email html)
-	python3 scripts/compile_mjml.py -o $(DATA)/
+	npx mjml mail/*.mjml -o $(DATA)/
+	$(info Copying plaintext mail)
+	cp mail/*.txt $(DATA)/
 
 TYPESCRIPT_FULLSRC = $(shell find ts/ -type f -name "*.ts")
 TYPESCRIPT_SRC = $(wildcard ts/*.ts)
@@ -227,15 +228,6 @@ compile: $(GO_TARGET)
 
 compress:
 	upx --lzma build/jfa-go
-
-# internal-files:
-# 	python3 scripts/embed.py internal
-# 
-# external-files:
-# 	python3 scripts/embed.py external
-# 	-mkdir -p build
-# 	$(info copying internal data into build/)
-# 	cp -r data build/
 
 install:
 	cp -r build $(DESTDIR)/jfa-go
