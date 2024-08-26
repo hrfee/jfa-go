@@ -1,0 +1,1577 @@
+sections:
+- section: updates
+  meta:
+    name: Updates
+    description: Settings for update notifications and release channel.
+  settings:
+  - setting: enabled
+    name: Enabled
+    required: true
+    requires_restart: true
+    type: bool
+    value: true
+    description: Enable/disable updating notifications and downloading/applying updates.
+  - setting: channel
+    name: Release Channel
+    required: true
+    type: select
+    options:
+    - ["stable", "Stable"]
+    - ["unstable", "Unstable"]
+    description: Release channel for updates.
+- section: jellyfin
+  meta:
+    name: Jellyfin
+    description: Settings for connecting to Jellyfin
+  settings:
+  - setting: username
+    name: Jellyfin Username
+    required: true
+    requires_restart: true
+    type: text
+    value: username
+    description: It is recommended to create a limited admin account for this program.
+  - setting: password
+    name: Jellyfin Password
+    required: true
+    requires_restart: true
+    type: password
+    value: password
+  - setting: server
+    name: Server address
+    required: true
+    requires_restart: true
+    type: text
+    value: http://jellyfin.local:8096
+    description: Jellyfin server address. Can be public, or local for security purposes.
+  - setting: public_server
+    name: Public address
+    type: text
+    value: https://jellyf.in:443
+    description: Publicly accessible Jellyfin address for invite form. Leave blank
+      to reuse the above address.
+  - setting: client
+    name: Client Name
+    required: true
+    requires_restart: true
+    advanced: true
+    type: text
+    value: jfa-go
+    description: The name of the client that will show up in the Jellyfin dashboard.
+  - setting: cache_timeout
+    name: User cache timeout (minutes)
+    requires_restart: true
+    advanced: true
+    type: number
+    value: 30
+    description: Timeout of user cache in minutes. Set to 0 to disable.
+  - setting: type
+    name: Server type
+    requires_restart: true
+    type: select
+    options:
+    - ["jellyfin", "Jellyfin"]
+    - ["emby", "Emby"]
+    value: jellyfin
+    description: 'Note: Emby integration works but is missing some features, such
+      as Password Resets.'
+  - setting: substitute_jellyfin_strings
+    name: Substitute occurrences of "Jellyfin"
+    requires_restart: true
+    type: text
+    description: Optionally substitute occurrences of "Jellyfin" in the account creation
+      form and emails with this. May result in bad grammar.
+- section: ui
+  meta:
+    name: General
+    description: Settings related to the UI and program functionality.
+  settings:
+  - setting: language-form
+    name: Default Form Language
+    requires_restart: true
+    type: select
+    options:
+    - ["en-us", "English (US)"]
+    value: en-us
+    description: Default Account Form Language. Visit weblate.jfa-go.com if you'd
+      like to translate.
+  - setting: language-admin
+    name: Default Admin Language
+    requires_restart: true
+    type: select
+    options:
+    - ["en-us", "English (US)"]
+    value: en-us
+    description: Default Admin page Language. Settings has not been translated. Visit
+      weblate.jfa-go.com if you'd like to translate.
+  - setting: theme
+    name: Default Look
+    requires_restart: true
+    type: select
+    options:
+    - ["Jellyfin (Dark)", "Jellyfin (Dark)"]
+    - ["Default (Light)", "Default (Light)"]
+    value: Jellyfin (Dark)
+    description: Default appearance for all users.
+  - setting: host
+    name: Address
+    required: true
+    requires_restart: true
+    type: text
+    value: 0.0.0.0
+    description: Set 0.0.0.0 to run on localhost
+  - setting: port
+    name: Port
+    required: true
+    requires_restart: true
+    type: number
+    value: 8056
+  - setting: jellyfin_login
+    name: Use Jellyfin for authentication
+    requires_restart: true
+    type: bool
+    value: true
+    description: Enable this to use Jellyfin users instead of the below username and
+      pw.
+  - setting: admin_only
+    name: Allow admin users only on "Admin" pages
+    requires_restart: true
+    depends_true: jellyfin_login
+    type: bool
+    value: true
+    description: Allows only admin users on Jellyfin to access the admin page. Doesn't
+      apply to the "My Accounts" page.
+  - setting: allow_all
+    name: Allow all users to login to "Admin" pages
+    requires_restart: true
+    depends_true: jellyfin_login
+    type: bool
+    value: false
+    description: Allow all Jellyfin users to access jfa-go. Not recommended, add individual
+      users in the Accounts tab instead. Doesn't apply to the "My Accounts" page.
+  - setting: username
+    name: Web Username
+    required: true
+    requires_restart: true
+    depends_false: jellyfin_login
+    type: text
+    value: your username
+    description: Username for admin page (Leave blank if using jellyfin_login)
+  - setting: password
+    name: Web Password
+    required: true
+    requires_restart: true
+    depends_false: jellyfin_login
+    type: password
+    value: your password
+    description: Password for admin page (Leave blank if using jellyfin_login)
+  - setting: email
+    name: Admin email address
+    depends_false: jellyfin_login
+    type: text
+    value: example@example.com
+    description: Address to send notifications to (Leave blank if using jellyfin_login)
+  - setting: debug
+    name: Debug logging
+    requires_restart: true
+    type: bool
+    value: false
+    description: Enables debug logging and exposes pprof as a route (Don't use in
+      production!)
+  - setting: contact_message
+    name: Contact message
+    type: text
+    value: Need help? contact me.
+    description: Displayed at bottom of all pages except admin
+  - setting: help_message
+    name: Help message
+    type: text
+    value: Enter your details to create an account.
+    description: Displayed at top of invite form.
+  - setting: success_message
+    name: Success message
+    type: text
+    value: Your account has been created. Click below to continue to Jellyfin.
+    description: Displayed when a user creates an account. Use the "post-signup card"
+      in the Message editor for more control.
+  - setting: url_base
+    name: Reverse Proxy subfolder
+    requires_restart: true
+    type: text
+    description: URL base for when running jfa-go with a reverse proxy in a subfolder.
+      include preceding /, e.g "/accounts".
+  - setting: jfa_url
+    name: External jfa-go URL
+    required: true
+    depends_true: enabled
+    type: text
+    value: http://accounts.jellyf.in:8056
+    description: The URL at which the jfa-go root (admin page) is accessible, including
+      the subfolder if you use one. This is necessary because using a reverse proxy
+      means the program has no way of knowing the URL itself.
+  - setting: redirect_url
+    name: Form success redirect URL
+    type: text
+    advanced: true
+    description: Set a different URL for the sign-up form to redirect the user to
+      when they've signed up. Default to 'Public Server' or 'Server' in the Jellyfin
+      tab.
+  - setting: auto_redirect
+    name: Auto redirect on success
+    requires_restart: true
+    type: bool
+    value: false
+    advanced: true
+    description: Navigate directly to the above URL instead of needing the user to
+      click "Continue". Overrides the post-signup card.
+  - setting: login_appearance
+    name: Login screen appearance
+    type: select
+    options:
+    - ["clear", "Transparent"]
+    - ["opaque", "Opaque"]
+    value: clear
+    description: Appearance of the Admin login screen.
+- section: advanced
+  meta:
+    name: Advanced
+    description: Advanced settings.
+    advanced: true
+  settings:
+  - setting: log_ips
+    name: Log IPs accessing Admin Page
+    requires_restart: true
+    type: bool
+    value: false
+    description: Log IP addresses of admins and admin page requests in console and
+      in activities. See notice below on legality.
+  - setting: log_ips_users
+    name: Log IPs accessing User Page
+    requires_restart: true
+    type: bool
+    value: false
+    description: Log IP addresses of users in console and in activities. See notice
+      below on legality.
+  - setting: ip_note
+    name: 'Logging IPs:'
+    type: note
+    required: false
+    description: Logging IP addresses through jfa-go may violate GDPR or other privacy
+      regulations, as IPs are linked to account information. Enable at your own risk.
+  - setting: tls
+    name: TLS/HTTP2
+    requires_restart: true
+    type: bool
+    value: false
+    description: Serve application over TLS, with HTTP2 preload.
+    wiki_link: https://wiki.jfa-go.com/docs/tls/
+  - setting: tls_port
+    name: TLS Port
+    depends_true: tls
+    requires_restart: true
+    type: number
+    value: 8057
+    description: Port to run TLS server on
+  - setting: tls_cert
+    name: Path to TLS Certificate
+    depends_true: tls
+    requires_restart: true
+    type: text
+    description: Path to .crt file. See jfa-go wiki for more info.
+  - setting: tls_key
+    name: Path to TLS Key file
+    depends_true: tls
+    requires_restart: true
+    type: text
+    description: Path to .key file. See jfa-go wiki for more info.
+  - setting: auth_retry_count
+    name: Initial auth retry count
+    requires_restart: true
+    type: number
+    value: 6
+    description: Number of times to retry initial connection to Jellyfin before failing.
+  - setting: auth_retry_gap
+    name: Initial auth retry gap (seconds)
+    requires_restart: true
+    type: number
+    value: 10
+    description: Duration in seconds to wait between connection retries.
+  - setting: proxy
+    name: Use Proxy
+    requires_restart: true
+    type: bool
+    value: false
+    description: Whether or not to use a HTTP/SOCKS5 Proxy.
+  - setting: proxy_protocol
+    name: Proxy Protocol
+    depends_true: proxy
+    requires_restart: true
+    type: select
+    options:
+    - ["http", "HTTP"]
+    - ["socks", "SOCKS5"]
+    value: http
+    description: Protocol to use for proxy connection.
+  - setting: proxy_address
+    name: Proxy Address
+    depends_true: proxy
+    requires_restart: true
+    type: text
+    description: Proxy address, including port.
+  - setting: proxy_user
+    name: Proxy Username
+    depends_true: proxy
+    requires_restart: true
+    type: text
+    description: Leave blank for no Authentication.
+  - setting: proxy_password
+    name: Proxy Password
+    depends_true: proxy
+    requires_restart: true
+    type: password
+    description: Leave blank for no Authentication.
+  - setting: debug_log_emails
+    name: 'Debug Storage Logging: Emails'
+    requires_restart: true
+    type: select
+    options:
+    - ["none", "None"]
+    - ["all", "All Writes"]
+    - ["deletion", "Deletion Only*"]
+    value: none
+    description: 'Extra debug logging for writes to the database. *: Deletion also
+      includes blanking out major fields, e.g. an email address.'
+  - setting: debug_log_discord
+    name: 'Debug Storage Logging: Discord'
+    requires_restart: true
+    type: select
+    options:
+    - ["none", "None"]
+    - ["all", "All Writes"]
+    - ["deletion", "Deletion Only*"]
+    value: none
+    description: 'Extra debug logging for writes to the database. *: Deletion also
+      includes blanking out major fields, e.g. an email address.'
+  - setting: debug_log_telegram
+    name: 'Debug Storage Logging: Telegram'
+    requires_restart: true
+    type: select
+    options:
+    - ["none", "None"]
+    - ["all", "All Writes"]
+    - ["deletion", "Deletion Only*"]
+    value: none
+    description: 'Extra debug logging for writes to the database. *: Deletion also
+      includes blanking out major fields, e.g. an email address.'
+  - setting: debug_log_matrix
+    name: 'Debug Storage Logging: Matrix'
+    requires_restart: true
+    type: select
+    options:
+    - ["none", "None"]
+    - ["all", "All Writes"]
+    - ["deletion", "Deletion Only*"]
+    value: none
+    description: 'Extra debug logging for writes to the database. *: Deletion also
+      includes blanking out major fields, e.g. an email address.'
+  - setting: debug_log_invites
+    name: 'Debug Storage Logging: Invites'
+    requires_restart: true
+    type: select
+    options:
+    - ["none", "None"]
+    - ["all", "All Writes"]
+    - ["deletion", "Deletion Only*"]
+    value: none
+    description: 'Extra debug logging for writes to the database. *: Deletion also
+      includes blanking out major fields, e.g. an email address.'
+  - setting: debug_log_announcements
+    name: 'Debug Storage Logging: Announcements'
+    requires_restart: true
+    type: select
+    options:
+    - ["none", "None"]
+    - ["all", "All Writes"]
+    - ["deletion", "Deletion Only*"]
+    value: none
+    description: 'Extra debug logging for writes to the database. *: Deletion also
+      includes blanking out major fields, e.g. an email address.'
+  - setting: debug_log_expiries
+    name: 'Debug Storage Logging: User Expiries'
+    requires_restart: true
+    type: select
+    options:
+    - ["none", "None"]
+    - ["all", "All Writes"]
+    - ["deletion", "Deletion Only*"]
+    value: none
+    description: 'Extra debug logging for writes to the database. *: Deletion also
+      includes blanking out major fields, e.g. an email address.'
+  - setting: debug_log_profiles
+    name: 'Debug Storage Logging: Profiles'
+    requires_restart: true
+    type: select
+    options:
+    - ["none", "None"]
+    - ["all", "All Writes"]
+    - ["deletion", "Deletion Only*"]
+    value: none
+    description: 'Extra debug logging for writes to the database. *: Deletion also
+      includes blanking out major fields, e.g. an email address.'
+  - setting: debug_log_custom_content
+    name: 'Debug Storage Logging: Custom Message Content'
+    requires_restart: true
+    type: select
+    options:
+    - ["none", "None"]
+    - ["all", "All Writes"]
+    - ["deletion", "Deletion Only*"]
+    value: none
+    description: 'Extra debug logging for writes to the database. *: Deletion also
+      includes blanking out major fields, e.g. an email address.'
+- section: activity_log
+  meta:
+    name: Activity Log
+    description: Settings for data retention of the activity log.
+  settings:
+  - setting: keep_n_records
+    name: Number of records to keep
+    requires_restart: true
+    type: number
+    value: 1000
+    description: How many of the most recent activities to keep. Set to 0 to disable.
+  - setting: delete_after_days
+    name: 'Delete activities older than (days):'
+    requires_restart: true
+    type: number
+    value: 90
+    description: If an activity was created this many days ago, it will be deleted.
+      Set to 0 to disable.
+- section: captcha
+  meta:
+    name: Captcha
+    description: Settings related to user creation CAPTCHAs.
+    wiki_link: https://wiki.jfa-go.com/docs/captcha/
+  settings:
+  - setting: enabled
+    name: Enabled
+    requires_restart: true
+    type: bool
+    value: false
+    description: Enable a CAPTCHA on the account creation form.
+  - setting: recaptcha
+    name: Use Google reCAPTCHA
+    requires_restart: true
+    type: bool
+    depends_true: enabled
+    value: false
+    description: More reliable, but requires some setup. See jfa-go wiki for more
+      info.
+  - setting: recaptcha_site_key
+    name: reCAPTCHA Site Key
+    requires_restart: true
+    type: text
+    depends_true: recaptcha
+    description: Site Key, see jfa-go wiki for how to acquire one.
+  - setting: recaptcha_secret_key
+    name: reCAPTCHA Secret Key
+    requires_restart: true
+    type: text
+    depends_true: recaptcha
+    description: Secret Key, see jfa-go wiki for how to acquire one.
+  - setting: recaptcha_hostname
+    name: Hostname
+    requires_restart: true
+    type: text
+    depends_true: recaptcha
+    description: Public host-name of jfa-go, e.g. "site.com". Don't include any subpaths.
+- section: user_page
+  meta:
+    name: User Page/"My Account"
+    description: The User Page (My Account) allows users to access and modify info
+      directly, such as changing/adding contact methods, seeing their expiry date,
+      sending referrals or changing their password. Password resets can also be initiated
+      from here, given a contact method or username. Access control settings set in
+      "General" do not apply to this page, nor does "Access jfa-go" in the Accounts
+      tab.
+    depends_true: ui|jellyfin_login
+  settings:
+  - setting: enabled
+    name: Enabled
+    requires_restart: true
+    type: bool
+    value: true
+  - setting: jellyfin_login_note
+    name: 'Note:'
+    type: note
+    depends_true: enabled
+    required: false
+    description: Jellyfin Login must be enabled to use this feature, and password
+      resets with a link must be enabled for self-service.
+    style: critical
+  - setting: edit_note
+    name: 'Message Cards:'
+    type: note
+    depends_true: enabled
+    required: false
+    description: Click the edit icon next to the "User Page" Setting to add custom
+      Markdown messages that will be shown to the user. Note message cards are not
+      private, little effort is required for anyone to view them.
+  - setting: show_link
+    name: Show Link on Admin Login page
+    depends_true: enabled
+    type: bool
+    value: true
+    description: Whether or not to show a link to the "My Account" page on the admin
+      login screen, to direct lost users.
+  - setting: referrals
+    name: User Referrals
+    requires_restart: true
+    depends_true: enabled
+    type: bool
+    value: true
+    description: Users are given their own "invite" to send to others.
+  - setting: referrals_note
+    name: 'Using Referrals:'
+    type: note
+    depends_true: referrals
+    required: false
+    description: Create an invite with your desired settings, then either assign it
+      to a user in the accounts tab, or to a profile in settings.
+  - setting: allow_pwr_username
+    name: Allow PWR with username
+    requires_restart: true
+    depends_true: enabled
+    type: bool
+    value: true
+    description: Allow users to start a Password Reset by inputting their username.
+  - setting: allow_pwr_email
+    name: Allow PWR with email address
+    requires_restart: true
+    depends_true: enabled
+    type: bool
+    value: true
+    description: Allow users to start a Password Reset by inputting their email address.
+  - setting: allow_pwr_contact_method
+    name: Allow PWR with Discord/Telegram/Matrix
+    requires_restart: true
+    depends_true: enabled
+    type: bool
+    value: true
+    description: Allow users to start a Password Reset by inputting their Discord/Telegram/Matrix
+      username/id.
+  - setting: pwr_note
+    name: 'PWR Methods:'
+    type: note
+    depends_true: enabled
+    required: false
+    description: Select at least one PWR initiation method. If none are selected,
+      all will be enabled.
+- section: password_validation
+  meta:
+    name: Password Validation
+    description: Password validation (minimum length, etc.)
+  settings:
+  - setting: enabled
+    name: Enabled
+    type: bool
+    value: true
+  - setting: min_length
+    name: Minimum Length
+    depends_true: enabled
+    type: text
+    value: '8'
+  - setting: upper
+    name: Minimum uppercase characters
+    depends_true: enabled
+    type: text
+    value: '1'
+  - setting: lower
+    name: Minimum lowercase characters
+    depends_true: enabled
+    type: text
+    value: '0'
+  - setting: number
+    name: Minimum number count
+    depends_true: enabled
+    type: text
+    value: '1'
+  - setting: special
+    name: Minimum number of special characters
+    depends_true: enabled
+    type: text
+    value: '0'
+- section: messages
+  meta:
+    name: Messages/Notifications
+    description: General settings for emails/messages.
+    wiki_link: https://wiki.jfa-go.com/docs/emails/
+  settings:
+  - setting: enabled
+    name: Enabled
+    required: true
+    requires_restart: true
+    type: bool
+    value: true
+    description: Enable the sending of emails/messages such as password resets, announcements,
+      etc.
+  - setting: use_24h
+    name: Use 24h time
+    depends_true: method
+    type: bool
+    value: true
+  - setting: date_format
+    name: Date format
+    advanced: true
+    depends_true: method
+    type: text
+    value: '%d/%m/%y'
+    description: Date format used in emails. Follows datetime.strftime format.
+  - setting: message
+    name: Help message
+    depends_true: method
+    type: text
+    value: Need help? contact me.
+    description: Message displayed at bottom of emails.
+  - setting: edit_note
+    name: 'Customize Messages:'
+    type: note
+    depends_true: enabled
+    required: false
+    description: Click the edit icon next to the "Messages/Notifications" Setting
+      to customize the messages sent to users with Markdown.
+- section: email
+  meta:
+    name: Email
+    description: General email settings.
+    depends_true: messages|enabled
+  settings:
+  - setting: language
+    name: Email Language
+    depends_true: method
+    type: select
+    options:
+    - ["en-us", "English (US)"]
+    value: en-us
+    description: Default email language. Submit a PR on github if you'd like to translate.
+  - setting: no_username
+    name: Use email addresses as username
+    depends_true: method
+    type: bool
+    value: false
+    description: Use email address from invite form as username on Jellyfin.
+  - setting: method
+    name: Email method
+    type: select
+    options:
+    - ["", "Disabled"]
+    - ["smtp", "SMTP"]
+    - ["mailgun", "Mailgun"]
+    value: smtp
+    description: Method of sending email to use.
+  - setting: address
+    name: Sent from (address)
+    depends_true: method
+    type: email
+    value: jellyfin@jellyf.in
+    description: Address to send emails from
+  - setting: from
+    name: Sent from (name)
+    depends_true: method
+    type: text
+    value: Jellyfin
+    description: The name of the sender
+  - setting: plaintext
+    name: Send emails as plain text
+    advanced: true
+    depends_true: method
+    type: bool
+    value: false
+    description: Send emails as plain text instead of HTML.
+  - setting: collect
+    name: Collect on sign-up
+    depends_true: method
+    type: bool
+    value: true
+    description: Ask for an email address on the sign-up form.
+  - setting: required
+    name: Require on sign-up
+    depends_true: collect
+    type: bool
+    value: false
+    description: Require an email address on sign-up.
+  - setting: require_unique
+    name: Require unique address
+    requires_restart: true
+    depends_true: method
+    type: bool
+    value: false
+    description: Disables using the same address on multiple accounts.
+- section: mailgun
+  meta:
+    name: Mailgun (Email)
+    description: Mailgun API connection settings
+    depends_true: email|method
+  settings:
+  - setting: api_url
+    name: API URL
+    type: text
+    value: https://api.mailgun.net...
+  - setting: api_key
+    name: API Key
+    type: text
+    value: your api key
+- section: smtp
+  meta:
+    name: SMTP (Email)
+    description: SMTP Server connection settings.
+    depends_true: email|method
+  settings:
+  - setting: username
+    name: Username
+    type: text
+    description: Username for SMTP. Leave blank to user send from address as username.
+  - setting: encryption
+    name: Encryption Method
+    type: select
+    options:
+    - ["ssl_tls", "SSL/TLS"]
+    - ["starttls", "STARTTLS"]
+    value: starttls
+    description: Your email provider should provide different ports for each encryption
+      method. Generally 465 for ssl_tls, 587 for starttls.
+  - setting: server
+    name: Server address
+    type: text
+    value: smtp.jellyf.in
+    description: SMTP Server address.
+  - setting: port
+    name: Port
+    type: number
+    value: 465
+  - setting: password
+    name: Password
+    type: password
+    value: smtp password
+  - setting: hello_hostname
+    name: HELLO Hostname
+    advanced: true
+    type: text
+    value: localhost
+    description: Hostname sent when sending HELLO to the SMTP server. Some servers
+      don't like the default "localhost" value, such as smtp-relay.gmail.com.
+  - setting: ssl_cert
+    name: Path to custom SSL certificate
+    advanced: true
+    type: text
+    description: Use if your SMTP server's SSL Certificate is not trusted by the system.
+  - setting: cert_validation
+    name: Verify certificate
+    advanced: true
+    type: bool
+    value: true
+    description: Warning, disabling this makes you much more vulnerable to man-in-the-middle
+      attacks
+  - setting: auth_type
+    name: Authentication type
+    advanced: false
+    type: select
+    options:
+    - ["0", "Plain"]
+    - ["1", "Login"]
+    - ["2", "CRAM-MD5"]
+    - ["3", "None"]
+    - ["4", "Auto"]
+    value: 4
+    description: SMTP authentication method
+- section: discord
+  meta:
+    name: Discord
+    description: Settings for Discord invites/signup/notifications
+    wiki_link: https://wiki.jfa-go.com/docs/bots/discord/
+  settings:
+  - setting: enabled
+    name: Enabled
+    requires_restart: true
+    type: bool
+    value: false
+    description: "Enable signup verification through Discord and the sending of notifications
+      through it.\nSee the jfa-go wiki for setting up a bot."
+  - setting: show_on_reg
+    name: Show on user registration
+    requires_restart: true
+    type: bool
+    depends_true: enabled
+    value: true
+    description: Allow users to link their Discord on the registration page.
+  - setting: required
+    name: Require on sign-up
+    requires_restart: true
+    depends_true: enabled
+    type: bool
+    value: false
+    description: Require Discord connection on sign-up. See the jfa-go wiki for info
+      on setting this up.
+  - setting: require_unique
+    name: Require unique user
+    requires_restart: true
+    type: bool
+    value: false
+    description: Disables using the same user on multiple Jellyfin accounts.
+  - setting: token
+    name: API Token
+    requires_restart: true
+    depends_true: enabled
+    type: text
+    description: Discord Bot API Token.
+  - setting: start_command
+    name: Start command
+    requires_restart: true
+    depends_true: enabled
+    type: text
+    value: start
+    description: Command to start the user verification process.
+  - setting: channel
+    name: Channel to monitor
+    requires_restart: true
+    depends_true: enabled
+    type: text
+    description: Only listen to commands in specified channel. Leave blank to monitor
+      all.
+  - setting: provide_invite
+    name: Provide server invite
+    requires_restart: true
+    depends_true: enabled
+    type: bool
+    value: false
+    description: Generate a one-time discord server invite for the account creation
+      form. Required Bot permission "Create instant invite", you may need to re-add
+      the bot to your server after.
+  - setting: invite_channel
+    name: Invite channel
+    requires_restart: true
+    depends_true: provide_invite
+    type: text
+    description: Channel to invite new users to.
+  - setting: apply_role
+    name: Apply Role on connection
+    requires_restart: true
+    depends_true: enabled
+    type: select
+    options:
+    - ["", "None"]
+    description: Add the selected role to a user when they sign up.
+  - setting: disable_enable_role
+    name: Remove/add role on user enable/disable/deletion
+    requires_restart: true
+    depends_true: apply_role
+    type: bool
+    value: false
+    description: When a user is disabled or deleted, remove the Discord role, and
+      when re-enabled, add it back.
+  - setting: language
+    name: Language
+    depends_true: enabled
+    type: select
+    options:
+    - ["en-us", "English (US)"]
+    value: en-us
+    description: Default Discord message language. Visit weblate if you'd like to
+      translate.
+- section: telegram
+  meta:
+    name: Telegram
+    description: Settings for Telegram signup/notifications. See the jfa-go wiki for
+      info on setting this up.
+    wiki_link: https://wiki.jfa-go.com/docs/bots/telegram/
+  settings:
+  - setting: enabled
+    name: Enabled
+    requires_restart: true
+    type: bool
+    value: false
+    description: "Enable signup verification through Telegram and the sending of notifications
+      through it.\nSee the jfa-go wiki for setting up a bot."
+  - setting: show_on_reg
+    name: Show on user registration
+    requires_restart: true
+    type: bool
+    depends_true: enabled
+    value: true
+    description: Allow users to link their Telegram on the registration page.
+  - setting: required
+    name: Require on sign-up
+    requires_restart: true
+    depends_true: enabled
+    type: bool
+    value: false
+    description: Require telegram connection on sign-up.
+  - setting: require_unique
+    name: Require unique user
+    requires_restart: true
+    type: bool
+    value: false
+    description: Disables using the same user on multiple Jellyfin accounts.
+  - setting: token
+    name: API Token
+    requires_restart: true
+    depends_true: enabled
+    type: text
+    description: Telegram Bot API Token.
+  - setting: language
+    name: Language
+    depends_true: enabled
+    type: select
+    options:
+    - ["en-us", "English (US)"]
+    value: en-us
+    description: Default telegram message language. Visit weblate if you'd like to
+      translate.
+- section: matrix
+  meta:
+    name: Matrix
+    description: Settings for Matrix invites/signup/notifications. See the jfa-go
+      wiki for info on setting this up.
+    wiki_link: https://wiki.jfa-go.com/docs/bots/matrix/
+  settings:
+  - setting: enabled
+    name: Enabled
+    requires_restart: true
+    type: bool
+    value: false
+    description: "Enable signup verification through Matrix and the sending of notifications
+      through it.\nSee the jfa-go wiki for setting up a bot."
+  - setting: show_on_reg
+    name: Show on user registration
+    requires_restart: true
+    type: bool
+    depends_true: enabled
+    value: true
+    description: Allow users to link their Matrix on the registration page.
+  - setting: required
+    name: Require on sign-up
+    requires_restart: true
+    depends_true: enabled
+    type: bool
+    value: false
+    description: Require Matrix connection on sign-up.
+  - setting: require_unique
+    name: Require unique user
+    requires_restart: true
+    type: bool
+    value: false
+    description: Disables using the same user on multiple Jellyfin accounts.
+  - setting: homeserver
+    name: Home Server URL
+    requires_restart: true
+    depends_true: enabled
+    type: text
+    description: Matrix Home server URL.
+  - setting: token
+    name: Access Token
+    requires_restart: true
+    depends_true: enabled
+    type: text
+    description: Matrix Bot API Token.
+  - setting: user_id
+    name: Bot User ID
+    requires_restart: true
+    depends_true: enabled
+    type: text
+    description: 'User ID of bot account (Example: @jfa-bot:riot.im)'
+  - setting: topic
+    name: Chat topic
+    requires_restart: true
+    depends_true: enabled
+    type: text
+    value: Jellyfin notifications
+    description: Topic of Matrix private chats.
+  - setting: language
+    name: Language
+    depends_true: enabled
+    type: select
+    options:
+    - ["en-us", "English (US)"]
+    value: en-us
+    description: Default Matrix message language. Visit weblate if you'd like to translate.
+  - setting: encryption
+    name: End-to-end encryption
+    requires_restart: true
+    depends_true: enabled
+    advanced: false
+    type: bool
+    value: true
+    description: Enable end-to-end encryption for messages.
+  - setting: e2ee_note
+    name: 'End-to-end encryption:'
+    type: note
+    depends_true: enabled
+    required: false
+    description: If the setting is not visible to you, your jfa-go version does not
+      include the feature. See the wiki for more information.
+- section: password_resets
+  meta:
+    name: Password Resets
+    description: Settings for the password reset handler.
+    depends_true: messages|enabled
+    wiki_link: https://wiki.jfa-go.com/docs/pwr/
+  settings:
+  - setting: enabled
+    name: Enabled
+    requires_restart: true
+    type: bool
+    value: true
+    description: Enable to store provided email addresses, monitor Jellyfin directory
+      for pw-resets, and send reset pins
+  - setting: pwr_note
+    name: 'Setup:'
+    type: note
+    depends_true: enabled
+    required: false
+    description: There are multiple ways password resets can be set up. See the wiki
+      page for more information.
+  - setting: watch_directory
+    name: Jellyfin directory
+    requires_restart: true
+    depends_true: enabled
+    type: text
+    value: /path/to/jellyfin
+    description: Path to the folder Jellyfin puts password-reset files.
+  - setting: link_reset
+    name: Use reset link instead of PIN (Required for Ombi)
+    requires_restart: true
+    depends_true: enabled
+    type: bool
+    value: false
+    description: Send users a link to reset their password instead of a PIN. Must
+      be enabled to reset Ombi password at the same time as the Jellyfin password.
+  - setting: set_password
+    name: Set password through link
+    requires_restart: true
+    depends_true: link_reset
+    type: bool
+    value: false
+    description: Instead of automatically setting the user's password to the PIN,
+      allow them to set a new password through the reset link.
+  - setting: url_base
+    name: External jfa-go URL
+    required: true
+    depends_true: link_reset
+    type: text
+    value: http://accounts.jellyf.in:8056
+    description: The URL at which the jfa-go admin page is accessible, including the
+      subfolder if you use one. You can leave this if you have one set in "Invite
+      Emails". This is necessary because using a reverse proxy means the program has
+      no way of knowing the URL itself.
+    deprecated: true
+  - setting: jfa_url
+    name: 'Generating Reset Links:'
+    type: note
+    depends_true: link_reset
+    required: false
+    description: Set the "External jfa-go URL" in General so that links to jfa-go
+      can be made.
+  - setting: language
+    name: Default reset link language
+    requires_restart: true
+    depends_true: link_reset
+    type: select
+    options:
+    - ["en-us", "English (US)"]
+    value: en-us
+    description: Default language for password reset success screen.
+  - setting: email_html
+    name: Custom email (HTML)
+    advanced: true
+    depends_true: enabled
+    type: text
+    description: Path to custom email html
+  - setting: email_text
+    name: Custom email (plaintext)
+    advanced: true
+    depends_true: enabled
+    type: text
+    description: Path to custom email in plain text
+  - setting: subject
+    name: Email subject
+    depends_true: enabled
+    type: text
+    description: Subject of password reset emails.
+- section: invite_emails
+  meta:
+    name: Invite emails
+    description: Settings for sending invites directly to users.
+    depends_true: email|method
+  settings:
+  - setting: enabled
+    name: Enabled
+    type: bool
+    value: true
+  - setting: email_html
+    name: Custom email (HTML)
+    advanced: true
+    depends_true: enabled
+    type: text
+    description: Path to custom email HTML
+  - setting: email_text
+    name: Custom email (plaintext)
+    advanced: true
+    depends_true: enabled
+    type: text
+    description: Path to custom email in plain text
+  - setting: subject
+    name: Email subject
+    required: true
+    depends_true: enabled
+    type: text
+    description: Subject of invite emails.
+  - setting: url_base
+    name: External jfa-go URL
+    required: true
+    depends_true: enabled
+    type: text
+    value: http://accounts.jellyf.in:8056
+    description: The URL at which the jfa-go root (admin page) is accessible, including
+      the subfolder if you use one. You can leave this if you have one set in "Invite
+      Emails". This is necessary because using a reverse proxy means the program has
+      no way of knowing the URL itself.
+    deprecated: true
+  - setting: jfa_url
+    name: 'Generating Links:'
+    type: note
+    depends_true: enabled
+    required: false
+    description: Set the "External jfa-go URL" in General so that links to jfa-go
+      can be made.
+- section: template_email
+  meta:
+    name: Custom email template
+    description: Settings for the template used for announcements & custom messages.
+      HTML should include {{ .text }}, Plaintext should include {{ .plaintext }},
+      and either can have {{ .message }} to include the contact message.
+    advanced: true
+  settings:
+  - setting: email_html
+    name: Custom template email (HTML)
+    advanced: true
+    depends_true: enabled
+    type: text
+    description: Path to custom email HTML template for announcements/custom messages.
+  - setting: email_text
+    name: Custom template email (plaintext)
+    advanced: true
+    depends_true: enabled
+    type: text
+    description: Path to custom email text template for announcements/custom messages.
+- section: notifications
+  meta:
+    name: Admin invite notifications
+    description: Allows toggling "user created" and "invite expired" notifications
+      to be sent to the admin per-invite.
+    depends_true: messages|enabled
+  settings:
+  - setting: enabled
+    name: Enabled
+    required: false
+    requires_restart: true
+    type: bool
+    value: true
+    description: Enabling adds optional toggles to invites to notify on expiry and
+      user creation.
+  - setting: expiry_html
+    name: Expiry email (HTML)
+    advanced: true
+    depends_true: enabled
+    type: text
+    description: Path to expiry notification email HTML.
+  - setting: expiry_text
+    name: Expiry email (Plaintext)
+    requires_restart: false
+    advanced: true
+    depends_true: enabled
+    type: text
+    description: Path to expiry notification email in plaintext.
+  - setting: created_html
+    name: User created email (HTML)
+    advanced: true
+    depends_true: enabled
+    type: text
+    description: Path to user creation notification email HTML.
+  - setting: created_text
+    name: User created email (Plaintext)
+    advanced: true
+    depends_true: enabled
+    type: text
+    description: Path to user creation notification email in plaintext.
+- section: ombi
+  meta:
+    name: Ombi Integration
+    description: Connect to Ombi to automatically create both Ombi and Jellyfin accounts
+      for new users. You'll need to add a ombi template to an existing User Profile
+      for accounts to be created, which you can do by refreshing then checking Settings
+      > User Profiles. To handle password resets for Ombi & Jellyfin, enable "Use
+      reset link instead of PIN".
+    wiki_link: https://wiki.jfa-go.com/docs/ombi/
+  settings:
+  - setting: enabled
+    name: Enabled
+    requires_restart: true
+    type: bool
+    value: false
+    description: Enable to create an Ombi account for new Jellyfin users
+  - setting: server
+    name: URL
+    requires_restart: true
+    type: text
+    value: localhost:5000
+    depends_true: enabled
+    description: Ombi server URL, including http(s)://.
+  - setting: api_key
+    name: API Key
+    requires_restart: true
+    type: text
+    depends_true: enabled
+    description: API Key. Get this from the first tab in Ombi settings.
+- section: jellyseerr
+  meta:
+    name: Jellyseerr Integration
+    description: Connect to Jellyseerr to automatically trigger the import of users
+      on account creation, and to automatically link contact methods (email, discord
+      and telegram). A template must be added to a User Profile for accounts to be
+      created.
+  settings:
+  - setting: enabled
+    name: Enabled
+    requires_restart: true
+    type: bool
+    value: false
+    description: Enable the Jellyseerr integration.
+  - setting: usertype_note
+    name: 'Password Changes:'
+    type: note
+    depends_true: enabled
+    required: false
+    description: Ensure existing users on Jellyseerr are "Jellyfin User"s not "Local
+      User"s, as password changes are not synced with Jellyseerr.
+  - setting: server
+    name: URL
+    requires_restart: true
+    type: text
+    value: localhost:5000
+    depends_true: enabled
+    description: Jellyseerr server URL.
+  - setting: api_key
+    name: API Key
+    requires_restart: true
+    type: text
+    depends_true: enabled
+    description: API Key. Get this from the first tab in Jellyseerr's settings.
+  - setting: import_existing
+    name: Import existing users to Jellyseerr
+    requires_restart: true
+    type: bool
+    value: false
+    depends_true: enabled
+    description: Existing users (and those created outside jfa-go) will have their
+      contact info imported to Jellyseerr.
+  - setting: constraints_note
+    name: 'Unique Emails:'
+    type: note
+    depends_true: import_existing
+    required: false
+    description: Jellyseerr requires email addresses to be unique. If this is not
+      the case, you may see errors in jfa-go's logs. You can require unique addresses
+      in Settings > Email.
+- section: backups
+  meta:
+    name: Backups
+    description: Settings for database backups. Press the "Backups" button above to
+      create, download and restore backups.
+    wiki_link: https://wiki.jfa-go.com/docs/backups/
+  settings:
+  - setting: enabled
+    name: Scheduled Backups
+    requires_restart: true
+    type: bool
+    value: false
+    description: Enable to generate database backups on a schedule.
+  - setting: path
+    name: Backup Path
+    requires_restart: true
+    type: text
+    description: Path to directory to store backups in. defaults to <data_directory>/backups.
+  - setting: every_n_minutes
+    name: Backup frequency (Minutes)
+    requires_restart: true
+    depends_true: enabled
+    type: number
+    value: 1440
+    description: Backup after this many minutes has passed since the last. Resets
+      every restart.
+  - setting: keep_n_backups
+    name: Number of backups to keep
+    requires_restart: true
+    type: number
+    value: 20
+    description: Number of most recent backups to keep. Once this is hit, the oldest
+      backup will be deleted before doing a new one.
+- section: welcome_email
+  meta:
+    name: Welcome Message
+    description: Optionally send a welcome message to new users with the Jellyfin
+      URL and their username.
+    depends_true: messages|enabled
+  settings:
+  - setting: enabled
+    name: Enabled
+    requires_restart: true
+    type: bool
+    value: false
+    description: Enable to send welcome emails to new users.
+  - setting: subject
+    name: Email subject
+    type: text
+    description: Subject of welcome emails.
+  - setting: email_html
+    name: Custom email (HTML)
+    advanced: true
+    type: text
+    description: Path to custom email html
+  - setting: email_text
+    name: Custom email (plaintext)
+    advanced: true
+    type: text
+    description: Path to custom email in plain text
+- section: email_confirmation
+  meta:
+    name: Email confirmation
+    description: If enabled, a user will be sent an email confirmation link to ensure
+      their password is right before they can make an account.
+    depends_true: email|method
+  settings:
+  - setting: enabled
+    name: Enabled
+    requires_restart: true
+    type: bool
+    value: false
+  - setting: subject
+    name: Email subject
+    type: text
+    description: Subject of email confirmation emails.
+  - setting: email_html
+    name: Custom email (HTML)
+    advanced: true
+    type: text
+    description: Path to custom email html
+  - setting: email_text
+    name: Custom email (plaintext)
+    advanced: true
+    type: text
+    description: Path to custom email in plain text
+- section: user_expiry
+  meta:
+    name: User Expiry
+    description: When set on an invite, users will be deleted or disabled a specified
+      amount of time after they create their account. Expiries can also be set and
+      extended for invididual users, optionally with a message why.
+  settings:
+  - setting: behaviour
+    name: Behaviour
+    type: select
+    options:
+    - ["delete_user", "Delete user"]
+    - ["disable_user", "Disable user"]
+    value: disable_user
+    description: Whether to delete or disable users on expiry.
+  - setting: delete_expired_after_days
+    name: Delete expired accounts after (days)
+    type: number
+    value: 0
+    depends_true: behaviour
+    description: When set, user accounts will be deleted this many days after expiring
+      (if "Behaviour" is "Disable user"). Set to 0 to disable.
+  - setting: send_email
+    name: Send email
+    type: bool
+    value: true
+    depends_true: messages|enabled
+    description: Send an email when a user's account expires.
+  - setting: subject
+    name: Email subject
+    depends_true: messages|enabled
+    type: text
+    description: Subject of user expiry emails.
+  - setting: email_html
+    name: Custom email (HTML)
+    advanced: true
+    depends_true: messages|enabled
+    type: text
+    description: Path to custom email html
+  - setting: email_text
+    name: Custom email (plaintext)
+    advanced: true
+    depends_true: messages|enabled
+    type: text
+    description: Path to custom email in plain text
+  - setting: adjustment_subject
+    name: 'Adjustment: email subject'
+    depends_true: messages|enabled
+    type: text
+    description: Subject of adjustment emails, sent optionally when setting/extending
+      an expiry.
+  - setting: adjustment_email_html
+    name: 'Adjustment: Custom email (HTML)'
+    advanced: true
+    depends_true: messages|enabled
+    type: text
+    description: Path to custom email html
+  - setting: adjustment_email_text
+    name: 'Adjustment: Custom email (plaintext)'
+    advanced: true
+    depends_true: messages|enabled
+    type: text
+    description: Path to custom email in plain text
+- section: disable_enable
+  meta:
+    name: Account Disabling/Enabling
+    description: Subject/email files for account disabling/enabling emails.
+    depends_true: messages|enabled
+  settings:
+  - setting: subject_disabled
+    name: Email subject (Disabled)
+    type: text
+    description: Subject of account disabling emails.
+  - setting: subject_enabled
+    name: Email subject (Enabled)
+    type: text
+    description: Subject of account enabling emails.
+  - setting: disabled_html
+    name: Custom disabling email (HTML)
+    advanced: true
+    type: text
+    description: Path to custom email html
+  - setting: disabled_text
+    name: Custom disabling email (plaintext)
+    advanced: true
+    type: text
+    description: Path to custom email in plain text
+  - setting: enabled_html
+    name: Custom enabling email (HTML)
+    advanced: true
+    type: text
+    description: Path to custom email html
+  - setting: enabled_text
+    name: Custom enabling email (plaintext)
+    advanced: true
+    type: text
+    description: Path to custom email in plain text
+- section: deletion
+  meta:
+    name: Account Deletion
+    description: Subject/email files for account deletion emails.
+    depends_true: messages|enabled
+  settings:
+  - setting: subject
+    name: Email subject
+    type: text
+    description: Subject of account deletion emails.
+  - setting: email_html
+    name: Custom email (HTML)
+    advanced: true
+    type: text
+    description: Path to custom email html
+  - setting: email_text
+    name: Custom email (plaintext)
+    advanced: true
+    type: text
+    description: Path to custom email in plain text
+- section: webhooks
+  meta:
+    name: Webhooks
+    description: jfa-go will send a POST request to these URLs when an event occurs,
+      with relevant information. Request information is logged when debug logging
+      is enabled.
+    wiki_link: https://wiki.jfa-go.com/docs/webhooks/
+  settings:
+  - setting: created
+    name: User Created
+    type: list
+    description: URLs to hit when an account is created through jfa-go. Sends a `respUser`
+      object.
+- section: files
+  meta:
+    name: File Storage
+    description: Optional settings for changing storage locations.
+    advanced: true
+  settings:
+  - setting: invites
+    name: Invite Storage
+    requires_restart: true
+    type: text
+    description: Location of stored invites (json).
+  - setting: password_resets
+    name: Password Resets
+    requires_restart: true
+    type: text
+    description: Location of stored non-Jellyfin password resets (json).
+  - setting: emails
+    name: Email Addresses
+    requires_restart: true
+    type: text
+    description: Location of stored email addresses (json).
+  - setting: users
+    name: User storage
+    type: text
+    description: Stores users temporarily when a user expiry is set.
+  - setting: ombi_template
+    name: Ombi user template
+    type: text
+    description: Location of stored Ombi user template.
+  - setting: user_profiles
+    name: User Profiles
+    requires_restart: true
+    type: text
+    description: Location of stored user profiles (encompasses template and configuration
+      and displayprefs) (json)
+  - setting: html_templates
+    name: Custom HTML Template Directory
+    requires_restart: true
+    type: text
+    description: Path to directory containing custom versions of web ui pages. See
+      wiki for more info.
+  - setting: lang_files
+    name: Custom language files directory
+    requires_restart: true
+    type: text
+    description: The path to a directory which following the same form as the internal
+      'lang/' directory. See GitHub for more info.
+  - setting: custom_emails
+    name: Custom email content
+    type: text
+    description: JSON file generated by program in settings, different from email_html/email_text.
+      See wiki for more info.
+  - setting: custom_user_page_content
+    name: Custom user page content
+    type: text
+    description: JSON file generated by program in settings, containing user page
+      messages. See wiki for more info.
+  - setting: telegram_users
+    name: Telegram users
+    type: text
+    description: Stores telegram user IDs and language preferences.
+  - setting: matrix_users
+    name: Matrix users
+    type: text
+    description: Stores matrix user IDs and language preferences.
+  - setting: matrix_sql
+    name: Matrix encryption DB
+    type: text
+    description: Stores cryptographic material for Matrix end-to-end encryption.
+  - setting: discord_users
+    name: Discord users
+    type: text
+    description: Stores discord user IDs and language preferences.
+  - setting: announcements
+    name: Announcement templates
+    type: text
+    description: Stores custom announcement templates.

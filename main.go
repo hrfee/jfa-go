@@ -32,6 +32,7 @@ import (
 	"github.com/hrfee/mediabrowser"
 	"github.com/lithammer/shortuuid/v3"
 	"gopkg.in/ini.v1"
+	"gopkg.in/yaml.v3"
 )
 
 var (
@@ -93,7 +94,8 @@ type appContext struct {
 	config         *ini.File
 	configPath     string
 	configBasePath string
-	configBase     settings
+	configBase     common.Config
+	patchedConfig  common.Config
 	dataPath       string
 	webFS          httpFS
 	cssClass       string // Default theme, "light"|"dark".
@@ -388,9 +390,11 @@ func start(asDaemon, firstCall bool) {
 		defer app.storage.db.Close()
 
 		// Read config-base for settings on web.
-		app.configBasePath = "config-base.json"
+		app.configBasePath = "config-base.yaml"
 		configBase, _ := fs.ReadFile(localFS, app.configBasePath)
-		json.Unmarshal(configBase, &app.configBase)
+		yaml.Unmarshal(configBase, &app.configBase)
+		// copy it to app.patchedConfig, and patch in settings from app.config, and language stuff.
+		app.PatchConfigBase()
 
 		secret, err := generateSecret(16)
 		if err != nil {

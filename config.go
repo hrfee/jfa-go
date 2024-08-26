@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hrfee/jfa-go/common"
 	"github.com/hrfee/jfa-go/easyproxy"
 	lm "github.com/hrfee/jfa-go/logmessages"
 	"gopkg.in/ini.v1"
@@ -249,4 +250,99 @@ func (app *appContext) loadConfig() error {
 	app.email = NewEmailer(app)
 
 	return nil
+}
+
+func (app *appContext) PatchConfigBase() {
+	conf := app.configBase
+	// Load language options
+	formOptions := app.storage.lang.User.getOptions()
+	pwrOptions := app.storage.lang.PasswordReset.getOptions()
+	adminOptions := app.storage.lang.Admin.getOptions()
+	emailOptions := app.storage.lang.Email.getOptions()
+	telegramOptions := app.storage.lang.Email.getOptions()
+
+	for i, section := range app.configBase.Sections {
+		if section.Section == "updates" && updater == "" {
+			section.Meta.Disabled = true
+		}
+		for j, setting := range section.Settings {
+			if section.Section == "ui" {
+				if setting.Setting == "language-form" {
+					setting.Options = formOptions
+					setting.Value = "en-us"
+				} else if setting.Setting == "language-admin" {
+					setting.Options = adminOptions
+					setting.Value = "en-us"
+				}
+			} else if section.Section == "password_resets" {
+				if setting.Setting == "language" {
+					setting.Options = pwrOptions
+					setting.Value = "en-us"
+				}
+			} else if section.Section == "email" {
+				if setting.Setting == "language" {
+					setting.Options = emailOptions
+					setting.Value = "en-us"
+				}
+			} else if section.Section == "telegram" {
+				if setting.Setting == "language" {
+					setting.Options = telegramOptions
+					setting.Value = "en-us"
+				}
+			} else if section.Section == "smtp" {
+				if setting.Setting == "ssl_cert" && PLATFORM == "windows" {
+					// Not accurate but the effect is hiding the option, which we want.
+					setting.Deprecated = true
+				}
+			} else if section.Section == "matrix" {
+				if setting.Setting == "encryption" && !MatrixE2EE() {
+					// Not accurate but the effect is hiding the option, which we want.
+					setting.Deprecated = true
+				}
+			}
+			val := app.config.Section(section.Section).Key(setting.Setting)
+			switch setting.Type {
+			case "list":
+				setting.Value = val.StringsWithShadows("|")
+			case "text", "email", "select", "password", "note":
+				setting.Value = val.MustString("")
+			case "number":
+				setting.Value = val.MustInt(0)
+			case "bool":
+				setting.Value = val.MustBool(false)
+			}
+			section.Settings[j] = setting
+		}
+		conf.Sections[i] = section
+	}
+	app.patchedConfig = conf
+}
+
+func (app *appContext) PatchConfigDiscordRoles() {
+	if !discordEnabled {
+		return
+	}
+	r, err := app.discord.ListRoles()
+	if err != nil {
+		return
+	}
+	roles := make([]common.Option, len(r)+1)
+	roles[0] = common.Option{"", "None"}
+	for i, role := range r {
+		roles[i+1] = role
+	}
+
+	for i, section := range app.patchedConfig.Sections {
+		if section.Section != "discord" {
+			continue
+		}
+		for j, setting := range section.Settings {
+			if setting.Setting != "apply_role" {
+				continue
+			}
+			setting.Options = roles
+			section.Settings[j] = setting
+		}
+		app.patchedConfig.Sections[i] = section
+	}
 }

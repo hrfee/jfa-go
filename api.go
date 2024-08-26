@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hrfee/jfa-go/common"
 	lm "github.com/hrfee/jfa-go/logmessages"
 	"github.com/hrfee/mediabrowser"
 	"github.com/itchyny/timefmt-go"
@@ -229,102 +230,15 @@ func (app *appContext) ResetSetPassword(gc *gin.Context) {
 
 // @Summary Get jfa-go configuration.
 // @Produce json
-// @Success 200 {object} settings "Uses the same format as config-base.json"
+// @Success 200 {object} common.Config "Uses the same format as config-base.json"
 // @Router /config [get]
 // @Security Bearer
 // @tags Configuration
 func (app *appContext) GetConfig(gc *gin.Context) {
-	resp := app.configBase
-	// Load language options
-	formOptions := app.storage.lang.User.getOptions()
-	fl := resp.Sections["ui"].Settings["language-form"]
-	fl.Options = formOptions
-	fl.Value = app.config.Section("ui").Key("language-form").MustString("en-us")
-	pwrOptions := app.storage.lang.PasswordReset.getOptions()
-	pl := resp.Sections["password_resets"].Settings["language"]
-	pl.Options = pwrOptions
-	pl.Value = app.config.Section("password_resets").Key("language").MustString("en-us")
-	adminOptions := app.storage.lang.Admin.getOptions()
-	al := resp.Sections["ui"].Settings["language-admin"]
-	al.Options = adminOptions
-	al.Value = app.config.Section("ui").Key("language-admin").MustString("en-us")
-	emailOptions := app.storage.lang.Email.getOptions()
-	el := resp.Sections["email"].Settings["language"]
-	el.Options = emailOptions
-	el.Value = app.config.Section("email").Key("language").MustString("en-us")
-	telegramOptions := app.storage.lang.Email.getOptions()
-	tl := resp.Sections["telegram"].Settings["language"]
-	tl.Options = telegramOptions
-	tl.Value = app.config.Section("telegram").Key("language").MustString("en-us")
-	if updater == "" {
-		delete(resp.Sections, "updates")
-		for i, v := range resp.Order {
-			if v == "updates" {
-				resp.Order = append(resp.Order[:i], resp.Order[i+1:]...)
-				break
-			}
-		}
-	}
-	if PLATFORM == "windows" {
-		delete(resp.Sections["smtp"].Settings, "ssl_cert")
-		for i, v := range resp.Sections["smtp"].Order {
-			if v == "ssl_cert" {
-				sect := resp.Sections["smtp"]
-				sect.Order = append(sect.Order[:i], sect.Order[i+1:]...)
-				resp.Sections["smtp"] = sect
-			}
-		}
-	}
-	if !MatrixE2EE() {
-		delete(resp.Sections["matrix"].Settings, "encryption")
-		for i, v := range resp.Sections["matrix"].Order {
-			if v == "encryption" {
-				sect := resp.Sections["matrix"]
-				sect.Order = append(sect.Order[:i], sect.Order[i+1:]...)
-				resp.Sections["matrix"] = sect
-			}
-		}
-	}
-	for sectName, section := range resp.Sections {
-		for settingName, setting := range section.Settings {
-			val := app.config.Section(sectName).Key(settingName)
-			s := resp.Sections[sectName].Settings[settingName]
-			switch setting.Type {
-			case "list":
-				s.Value = val.StringsWithShadows("|")
-			case "text", "email", "select", "password", "note":
-				s.Value = val.MustString("")
-			case "number":
-				s.Value = val.MustInt(0)
-			case "bool":
-				s.Value = val.MustBool(false)
-			}
-			resp.Sections[sectName].Settings[settingName] = s
-		}
-	}
 	if discordEnabled {
-		r, err := app.discord.ListRoles()
-		if err == nil {
-			roles := make([][2]string, len(r)+1)
-			roles[0] = [2]string{"", "None"}
-			for i, role := range r {
-				roles[i+1] = role
-			}
-			s := resp.Sections["discord"].Settings["apply_role"]
-			s.Options = roles
-			resp.Sections["discord"].Settings["apply_role"] = s
-		}
+		app.PatchConfigDiscordRoles()
 	}
-
-	resp.Sections["ui"].Settings["language-form"] = fl
-	resp.Sections["ui"].Settings["language-admin"] = al
-	resp.Sections["email"].Settings["language"] = el
-	resp.Sections["password_resets"].Settings["language"] = pl
-	resp.Sections["telegram"].Settings["language"] = tl
-	resp.Sections["discord"].Settings["language"] = tl
-	resp.Sections["matrix"].Settings["language"] = tl
-
-	gc.JSON(200, resp)
+	gc.JSON(200, app.patchedConfig)
 }
 
 // @Summary Modify app config.
@@ -340,35 +254,46 @@ func (app *appContext) ModifyConfig(gc *gin.Context) {
 	gc.BindJSON(&req)
 	// Load a new config, as we set various default values in app.config that shouldn't be stored.
 	tempConfig, _ := ini.ShadowLoad(app.configPath)
-	for section, settings := range req {
-		if section != "restart-program" {
-			_, err := tempConfig.GetSection(section)
-			if err != nil {
-				tempConfig.NewSection(section)
+	for _, section := range app.configBase.Sections {
+		ns, ok := req[section.Section]
+		if !ok {
+			continue
+		}
+		newSection := ns.(map[string]any)
+		iniSection, err := tempConfig.GetSection(section.Section)
+		if err != nil {
+			iniSection, _ = tempConfig.NewSection(section.Section)
+		}
+		for _, setting := range section.Settings {
+			newValue, ok := newSection[setting.Setting]
+			if !ok {
+				continue
 			}
-			for setting, value := range settings.(map[string]interface{}) {
-				if section == "email" && setting == "method" && value == "disabled" {
-					value = ""
-				}
-				if (section == "discord" || section == "matrix") && setting == "language" {
-					tempConfig.Section("telegram").Key("language").SetValue(value.(string))
-				} else if app.configBase.Sections[section].Settings[setting].Type == "list" {
-					splitValues := strings.Split(value.(string), "|")
-					// Delete the key first to get rid of any shadow values
-					tempConfig.Section(section).DeleteKey(setting)
-					for i, v := range splitValues {
-						if i == 0 {
-							tempConfig.Section(section).Key(setting).SetValue(v)
-						} else {
-							tempConfig.Section(section).Key(setting).AddShadow(v)
-						}
+			// Patch disabled to actually be an empty string
+			if section.Section == "email" && setting.Setting == "method" && newValue == "disabled" {
+				newValue = ""
+			}
+			// Copy language preference for chatbots to root one in "telegram"
+			if (section.Section == "discord" || section.Section == "matrix") && setting.Setting == "language" {
+				iniSection.Key("language").SetValue(newValue.(string))
+			} else if setting.Type == common.ListType {
+				splitValues := strings.Split(newValue.(string), "|")
+				// Delete the key first to get rid of any shadow values
+				iniSection.DeleteKey(setting.Setting)
+				for i, v := range splitValues {
+					if i == 0 {
+						iniSection.Key(setting.Setting).SetValue(v)
+					} else {
+						iniSection.Key(setting.Setting).AddShadow(v)
 					}
-				} else if value.(string) != app.config.Section(section).Key(setting).MustString("") {
-					tempConfig.Section(section).Key(setting).SetValue(value.(string))
 				}
+
+			} else if newValue.(string) != iniSection.Key(setting.Setting).MustString("") {
+				iniSection.Key(setting.Setting).SetValue(newValue.(string))
 			}
 		}
 	}
+
 	tempConfig.Section("").Key("first_run").SetValue("false")
 	if err := tempConfig.SaveTo(app.configPath); err != nil {
 		app.err.Printf(lm.FailedWriting, app.configPath, err)
@@ -381,6 +306,8 @@ func (app *appContext) ModifyConfig(gc *gin.Context) {
 		app.Restart()
 	}
 	app.loadConfig()
+	// Patch new settings for next GetConfig
+	app.PatchConfigBase()
 	// Reinitialize password validator on config change, as opposed to every applicable request like in python.
 	if _, ok := req["password_validation"]; ok {
 		validatorConf := ValidatorConf{

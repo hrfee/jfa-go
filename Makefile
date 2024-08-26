@@ -1,4 +1,4 @@
-.PHONY: configuration email typescript swagger copy compile compress tailwind bundle-css inline-css variants-html install clean npm config-description config-default precompile
+.PHONY: configuration email typescript swagger copy compile compress inline-css variants-html install clean npm config-description config-default precompile
 
 all: compile
 
@@ -101,20 +101,23 @@ else
 	SWAGINSTALL :=
 endif
 
-CONFIG_BASE = config/config-base.json
+CONFIG_BASE = config/config-base.yaml
 
-CONFIG_DESCRIPTION = $(DATA)/config-base.json
+# CONFIG_DESCRIPTION = $(DATA)/config-base.json
 CONFIG_DEFAULT = $(DATA)/config-default.ini
-$(CONFIG_DESCRIPTION) &: $(CONFIG_BASE)
-	$(info Fixing config-base)
-	-mkdir -p $(DATA)
-	python3 scripts/enumerate_config.py -i config/config-base.json -o $(DATA)/config-base.json
+# $(CONFIG_DESCRIPTION) &: $(CONFIG_BASE)
+# 	$(info Fixing config-base)
+# 	-mkdir -p $(DATA)
+# 	python3 scripts/enumerate_config.py -i config/config-base.json -o $(DATA)/config-base.json
 
-$(CONFIG_DEFAULT) &: $(CONFIG_BASE)
+$(DATA):
+	mkdir -p $(DATA)
+
+$(CONFIG_DEFAULT): $(DATA) $(CONFIG_BASE)
 	$(info Generating config-default.ini)
-	python3 scripts/generate_ini.py -i config/config-base.json -o $(DATA)/config-default.ini
+	go run scripts/ini/main.go -in $(CONFIG_BASE) -out $(DATA)/config-default.ini
 
-configuration: $(CONFIG_DESCRIPTION) $(CONFIG_DEFAULT)
+configuration: $(CONFIG_DEFAULT)
 
 EMAIL_SRC_MJML = $(wildcard mail/*.mjml)
 EMAIL_SRC_TXT = $(wildcard mail/*.txt)
@@ -179,8 +182,6 @@ $(CSS_FULLTARGET): $(TYPESCRIPT_TARGET) $(VARIANTS_TARGET) $(ALL_CSS_SRC) $(wild
 	# mv $(CSS_BUNDLE) $(DATA)/web/css/$(CSSVERSION)bundle.css
 	# npx postcss -o $(CSS_TARGET) $(CSS_TARGET)
 
-bundle-css: tailwind
-
 INLINE_SRC = html/crash.html
 INLINE_TARGET = $(DATA)/crash.html
 $(INLINE_TARGET): $(CSS_FULLTARGET) $(INLINE_SRC)
@@ -197,6 +198,8 @@ COPY_SRC = images/banner.svg jfa-go.service LICENSE $(LANG_SRC) $(STATIC_SRC)
 COPY_TARGET = $(DATA)/jfa-go.service
 # $(DATA)/LICENSE $(LANG_TARGET) $(STATIC_TARGET) $(DATA)/web/css/$(CSSVERSION)bundle.css
 $(COPY_TARGET): $(INLINE_TARGET) $(STATIC_SRC) $(LANG_SRC)
+	$(info copying $(CONFIG_BASE))
+	cp $(CONFIG_BASE) $(DATA)/
 	$(info copying crash page)
 	cp $(DATA)/crash.html $(DATA)/html/
 	$(info copying static data)
@@ -209,11 +212,11 @@ $(COPY_TARGET): $(INLINE_TARGET) $(STATIC_SRC) $(LANG_SRC)
 	cp -r lang $(DATA)/
 	cp LICENSE $(DATA)/
 
-precompile: $(CONFIG_DESCRIPTION) $(CONFIG_DEFAULT) $(EMAIL_TARGET) $(COPY_TARGET) $(SWAGGER_TARGET)
+precompile: $(CONFIG_DEFAULT) $(EMAIL_TARGET) $(COPY_TARGET) $(SWAGGER_TARGET)
 
 GO_SRC = $(shell find ./ -name "*.go")
 GO_TARGET = build/jfa-go
-$(GO_TARGET): $(CONFIG_DESCRIPTION) $(CONFIG_DEFAULT) $(EMAIL_TARGET) $(COPY_TARGET) $(SWAGGER_TARGET) $(GO_SRC) go.mod go.sum
+$(GO_TARGET): $(CONFIG_DEFAULT) $(EMAIL_TARGET) $(COPY_TARGET) $(SWAGGER_TARGET) $(GO_SRC) go.mod go.sum
 	$(info Downloading deps)
 	$(GOBINARY) mod download
 	$(info Building)

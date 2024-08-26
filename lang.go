@@ -1,5 +1,7 @@
 package main
 
+import "github.com/hrfee/jfa-go/common"
+
 type langMeta struct {
 	Name string `json:"name"`
 	// Language to fall back on if strings are missing. Defaults to en-us.
@@ -13,11 +15,11 @@ type quantityString struct {
 
 type adminLangs map[string]adminLang
 
-func (ls *adminLangs) getOptions() [][2]string {
-	opts := make([][2]string, len(*ls))
+func (ls *adminLangs) getOptions() []common.Option {
+	opts := make([]common.Option, len(*ls))
 	i := 0
 	for key, lang := range *ls {
-		opts[i] = [2]string{key, lang.Meta.Name}
+		opts[i] = common.Option{key, lang.Meta.Name}
 		i++
 	}
 	return opts
@@ -42,11 +44,11 @@ type adminLang struct {
 
 type userLangs map[string]userLang
 
-func (ls *userLangs) getOptions() [][2]string {
-	opts := make([][2]string, len(*ls))
+func (ls *userLangs) getOptions() []common.Option {
+	opts := make([]common.Option, len(*ls))
 	i := 0
 	for key, lang := range *ls {
-		opts[i] = [2]string{key, lang.Meta.Name}
+		opts[i] = common.Option{key, lang.Meta.Name}
 		i++
 	}
 	return opts
@@ -65,11 +67,11 @@ type userLang struct {
 
 type pwrLangs map[string]pwrLang
 
-func (ls *pwrLangs) getOptions() [][2]string {
-	opts := make([][2]string, len(*ls))
+func (ls *pwrLangs) getOptions() []common.Option {
+	opts := make([]common.Option, len(*ls))
 	i := 0
 	for key, lang := range *ls {
-		opts[i] = [2]string{key, lang.Meta.Name}
+		opts[i] = common.Option{key, lang.Meta.Name}
 		i++
 	}
 	return opts
@@ -82,11 +84,11 @@ type pwrLang struct {
 
 type emailLangs map[string]emailLang
 
-func (ls *emailLangs) getOptions() [][2]string {
-	opts := make([][2]string, len(*ls))
+func (ls *emailLangs) getOptions() []common.Option {
+	opts := make([]common.Option, len(*ls))
 	i := 0
 	for key, lang := range *ls {
-		opts[i] = [2]string{key, lang.Meta.Name}
+		opts[i] = common.Option{key, lang.Meta.Name}
 		i++
 	}
 	return opts
@@ -135,11 +137,11 @@ type setupLang struct {
 	JSON               string
 }
 
-func (ls *setupLangs) getOptions() [][2]string {
-	opts := make([][2]string, len(*ls))
+func (ls *setupLangs) getOptions() []common.Option {
+	opts := make([]common.Option, len(*ls))
 	i := 0
 	for key, lang := range *ls {
-		opts[i] = [2]string{key, lang.Meta.Name}
+		opts[i] = common.Option{key, lang.Meta.Name}
 		i++
 	}
 	return opts
@@ -152,11 +154,11 @@ type telegramLang struct {
 	Strings langSection `json:"strings"`
 }
 
-func (ts *telegramLangs) getOptions() [][2]string {
-	opts := make([][2]string, len(*ts))
+func (ts *telegramLangs) getOptions() []common.Option {
+	opts := make([]common.Option, len(*ts))
 	i := 0
 	for key, lang := range *ts {
-		opts[i] = [2]string{key, lang.Meta.Name}
+		opts[i] = common.Option{key, lang.Meta.Name}
 		i++
 	}
 	return opts

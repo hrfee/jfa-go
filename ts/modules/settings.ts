@@ -19,20 +19,33 @@ interface settingsChangedEvent extends Event {
     detail: string;
 }
 
+type SettingType = string;
+
+const BoolType: SettingType = "bool";
+const SelectType: SettingType = "select";
+const TextType: SettingType = "text";
+const PasswordType: SettingType = "password";
+const NumberType: SettingType = "number";
+const NoteType: SettingType = "note";
+const EmailType: SettingType = "email";
+const ListType: SettingType = "list";
+
 interface Meta {
     name: string;
     description: string;
     advanced?: boolean;
+    disabled?: boolean;
     depends_true?: string;
     depends_false?: string;
     wiki_link?: string;
 }
 
 interface Setting {
+    setting: string;
     name: string;
     description: string;
-    required: boolean;
-    requires_restart: boolean;
+    required?: boolean;
+    requires_restart?: boolean;
     advanced?: boolean;
     type: string;
     value: string | boolean | number | string[];
@@ -67,17 +80,17 @@ class DOMSetting {
     protected _restart: HTMLSpanElement;
     protected _advanced: boolean;
     protected _section: string;
-    protected _name: string;
+    setting: string;
 
     hide = () => {
         this._hideEl.classList.add("unfocused");
-        const event = new CustomEvent(`settings-${this._section}-${this._name}`, { "detail": false })
+        const event = new CustomEvent(`settings-${this._section}-${this.setting}`, { "detail": false })
         document.dispatchEvent(event);
 
     };
     show = () => {
         this._hideEl.classList.remove("unfocused");
-        const event = new CustomEvent(`settings-${this._section}-${this._name}`, { "detail": this.valueAsString() })
+        const event = new CustomEvent(`settings-${this._section}-${this.setting}`, { "detail": this.valueAsString() })
         document.dispatchEvent(event);
     };
 
@@ -142,8 +155,8 @@ class DOMSetting {
     valueAsString = (): string => { return ""+this.value; };
 
     onValueChange = () => {
-        const event = new CustomEvent(`settings-${this._section}-${this._name}`, { "detail": this.valueAsString() })
-        const setEvent = new CustomEvent(`settings-set-${this._section}-${this._name}`, { "detail": this.valueAsString() })
+        const event = new CustomEvent(`settings-${this._section}-${this.setting}`, { "detail": this.valueAsString() })
+        const setEvent = new CustomEvent(`settings-set-${this._section}-${this.setting}`, { "detail": this.valueAsString() })
         document.dispatchEvent(event);
         document.dispatchEvent(setEvent);
         if (this.requires_restart) { document.dispatchEvent(new CustomEvent("settings-requires-restart")); }
@@ -151,7 +164,7 @@ class DOMSetting {
 
     constructor(input: string, setting: Setting, section: string, name: string, inputOnTop: boolean = false) {
         this._section = section;
-        this._name = name;
+        this.setting = name;
         this._container = document.createElement("div");
         this._container.classList.add("setting");
         this._container.setAttribute("data-name", name);
@@ -223,7 +236,7 @@ interface SText extends Setting {
 }
 class DOMText extends DOMInput implements SText {
     constructor(setting: Setting, section: string, name: string) { super("text", setting, section, name); }
-    type: string = "text";
+    type: SettingType = TextType;
     get value(): string { return this._input.value }
     set value(v: string) { this._input.value = v; }
 }
@@ -233,7 +246,7 @@ interface SPassword extends Setting {
 }
 class DOMPassword extends DOMInput implements SPassword {
     constructor(setting: Setting, section: string, name: string) { super("password", setting, section, name); }
-    type: string = "password";
+    type: SettingType = PasswordType;
     get value(): string { return this._input.value }
     set value(v: string) { this._input.value = v; }
 }
@@ -243,7 +256,7 @@ interface SEmail extends Setting {
 }
 class DOMEmail extends DOMInput implements SEmail {
     constructor(setting: Setting, section: string, name: string) { super("email", setting, section, name); }
-    type: string = "email";
+    type: SettingType = EmailType;
     get value(): string { return this._input.value }
     set value(v: string) { this._input.value = v; }
 }
@@ -253,7 +266,7 @@ interface SNumber extends Setting {
 }
 class DOMNumber extends DOMInput implements SNumber {
     constructor(setting: Setting, section: string, name: string) { super("number", setting, section, name); }
-    type: string = "number";
+    type: SettingType = NumberType;
     get value(): number { return +this._input.value; }
     set value(v: number) { this._input.value = ""+v; }
 }
@@ -263,7 +276,7 @@ interface SList extends Setting {
 }
 class DOMList extends DOMSetting implements SList {
     protected _inputs: HTMLDivElement;
-    type: string = "list";
+    type: SettingType = ListType;
     
     valueAsString = (): string => { return this.value.join("|"); };
 
@@ -334,7 +347,7 @@ interface SBool extends Setting {
     value: boolean;
 }
 class DOMBool extends DOMSetting implements SBool {
-    type: string = "bool";
+    type: SettingType = BoolType;
 
     get value(): boolean { return this._input.checked; }
     set value(state: boolean) { this._input.checked = state; }
@@ -357,7 +370,7 @@ interface SSelect extends Setting {
     value: string;
 }
 class DOMSelect extends DOMSetting implements SSelect {
-    type: string = "bool";
+    type: SettingType = SelectType;
     private _options: string[][];
 
     get options(): string[][] { return this._options; }
@@ -395,7 +408,7 @@ interface SNote extends Setting {
 class DOMNote extends DOMSetting implements SNote {
     private _nameEl: HTMLElement;
     private _description: HTMLElement;
-    type: string = "note";
+    type: SettingType = NoteType;
     private _style: string;
 
     // We're a note, no one depends on us so we don't need to broadcast a state change.
@@ -457,9 +470,9 @@ class DOMNote extends DOMSetting implements SNote {
 }
 
 interface Section {
+    section: string;
     meta: Meta;
-    order: string[];
-    settings: { [settingName: string]: Setting };
+    settings: Setting[];
 }
 
 class sectionPanel {
@@ -491,50 +504,49 @@ class sectionPanel {
         this.update(s);
     }
     update = (s: Section) => {
-        for (let name of s.order) {
-            let setting: Setting = s.settings[name];
-            if (name in this._settings) {
-                this._settings[name].update(setting);
+        for (let setting of s.settings) {
+            if (setting.setting in this._settings) {
+                this._settings[setting.setting].update(setting);
             } else {
                 if (setting.deprecated) continue;
                 switch (setting.type) {
-                    case "text":
-                        setting = new DOMText(setting, this._sectionName, name);
+                    case TextType:
+                        setting = new DOMText(setting, this._sectionName, setting.setting);
                         break;
-                    case "password":
-                        setting = new DOMPassword(setting, this._sectionName, name);
+                    case PasswordType:
+                        setting = new DOMPassword(setting, this._sectionName, setting.setting);
                         break;
-                    case "email":
-                        setting = new DOMEmail(setting, this._sectionName, name);
+                    case EmailType:
+                        setting = new DOMEmail(setting, this._sectionName, setting.setting);
                         break;
-                    case "number":
-                        setting = new DOMNumber(setting, this._sectionName, name);
+                    case NumberType:
+                        setting = new DOMNumber(setting, this._sectionName, setting.setting);
                         break;
-                    case "bool":
-                        setting = new DOMBool(setting as SBool, this._sectionName, name);
+                    case BoolType:
+                        setting = new DOMBool(setting as SBool, this._sectionName, setting.setting);
                         break;
-                    case "select":
-                        setting = new DOMSelect(setting as SSelect, this._sectionName, name);
+                    case SelectType:
+                        setting = new DOMSelect(setting as SSelect, this._sectionName, setting.setting);
                         break;
-                    case "note":
+                    case NoteType:
                         setting = new DOMNote(setting as SNote, this._sectionName);
                         break;
-                    case "list":
-                        setting = new DOMList(setting as SList, this._sectionName, name);
+                    case ListType:
+                        setting = new DOMList(setting as SList, this._sectionName, setting.setting);
                         break;
                 }
                 if (setting.type != "note") {
-                    this.values[name] = ""+setting.value;
+                    this.values[setting.setting] = ""+setting.value;
                     // settings-section-name: Implies the setting changed or was shown/hidden.
                     // settings-set-section-name: Implies the setting changed.
-                    document.addEventListener(`settings-set-${this._sectionName}-${name}`, (event: CustomEvent) => {
+                    document.addEventListener(`settings-set-${this._sectionName}-${setting.setting}`, (event: CustomEvent) => {
                         // const oldValue = this.values[name];
-                        this.values[name] = event.detail;
+                        this.values[setting.setting] = event.detail;
                         document.dispatchEvent(new CustomEvent("settings-section-changed"));
                     });
                 }
                 this._section.appendChild(setting.asElement());
-                this._settings[name] = setting;
+                this._settings[setting.setting] = setting;
             }
         }
     }
@@ -552,8 +564,7 @@ class sectionPanel {
 }
 
 interface Settings {
-    order: string[];
-    sections: { [sectionName: string]: Section };
+    sections: Section[];
 }
 
 export class settingsList {
@@ -854,65 +865,65 @@ export class settingsList {
         }
         addLoader(this._loader, false, true);
         _get("/config", null, (req: XMLHttpRequest) => {
-            if (req.readyState == 4) {
-                if (req.status != 200) {
-                    window.notifications.customError("settingsLoadError", window.lang.notif("errorLoadSettings"));
-                    return;
-                }
-                this._settings = req.response as Settings;
-                for (let name of this._settings.order) {
-                    if (name in this._sections) {
-                        this._sections[name].update(this._settings.sections[name]);
-                    } else {
-                        if (name == "messages" || name == "user_page") {
-                            const editButton = document.createElement("div");
-                            editButton.classList.add("tooltip", "left");
-                            editButton.innerHTML = `
-                            <span class="button ~neutral @low">
-                                <i class="icon ri-edit-line"></i>
-                            </span>
-                            <span class="content sm">
-                            ${window.lang.get("strings", "customizeMessages")}
-                            </span>
-                            `;
-                            (editButton.querySelector("span.button") as HTMLSpanElement).onclick = () => {
-                                this._messageEditor.showList(name == "messages" ? "email" : "user");
-                            };
-                            this.addSection(name, this._settings.sections[name], editButton);
-                        } else if (name == "updates") {
-                            const icon = document.createElement("span") as HTMLSpanElement;
-                            if (window.updater.updateAvailable) {
-                                icon.classList.add("button", "~urge");
-                                icon.innerHTML = `<i class="ri-download-line" title="${window.lang.strings("update")}"></i>`;
-                                icon.onclick = () => window.updater.checkForUpdates(window.modals.updateInfo.show);
-                            }
-                            this.addSection(name, this._settings.sections[name], icon);
-                        } else if (name == "matrix" && !window.matrixEnabled) {
-                            const addButton = document.createElement("div");
-                            addButton.classList.add("tooltip", "left");
-                            addButton.innerHTML = `
-                            <span class="button ~neutral @low">+</span>
-                            <span class="content sm">
-                            ${window.lang.strings("linkMatrix")}
-                            </span>
-                            `;
-                            (addButton.querySelector("span.button") as HTMLSpanElement).onclick = this._addMatrix;
-                            this.addSection(name, this._settings.sections[name], addButton);
-                        } else {
-                            this.addSection(name, this._settings.sections[name]);
+            if (req.readyState != 4) return;
+            if (req.status != 200) {
+                window.notifications.customError("settingsLoadError", window.lang.notif("errorLoadSettings"));
+                return;
+            }
+            this._settings = req.response as Settings;
+            for (let section of this._settings.sections) {
+                if (section.meta.disabled) continue;
+                if (section.section in this._sections) {
+                    this._sections[section.section].update(section);
+                } else {
+                    if (section.section == "messages" || section.section == "user_page") {
+                        const editButton = document.createElement("div");
+                        editButton.classList.add("tooltip", "left");
+                        editButton.innerHTML = `
+                        <span class="button ~neutral @low">
+                            <i class="icon ri-edit-line"></i>
+                        </span>
+                        <span class="content sm">
+                        ${window.lang.get("strings", "customizeMessages")}
+                        </span>
+                        `;
+                        (editButton.querySelector("span.button") as HTMLSpanElement).onclick = () => {
+                            this._messageEditor.showList(section.section == "messages" ? "email" : "user");
+                        };
+                        this.addSection(section.section, section, editButton);
+                    } else if (section.section == "updates") {
+                        const icon = document.createElement("span") as HTMLSpanElement;
+                        if (window.updater.updateAvailable) {
+                            icon.classList.add("button", "~urge");
+                            icon.innerHTML = `<i class="ri-download-line" title="${window.lang.strings("update")}"></i>`;
+                            icon.onclick = () => window.updater.checkForUpdates(window.modals.updateInfo.show);
                         }
+                        this.addSection(section.section, section, icon);
+                    } else if (section.section == "matrix" && !window.matrixEnabled) {
+                        const addButton = document.createElement("div");
+                        addButton.classList.add("tooltip", "left");
+                        addButton.innerHTML = `
+                        <span class="button ~neutral @low">+</span>
+                        <span class="content sm">
+                        ${window.lang.strings("linkMatrix")}
+                        </span>
+                        `;
+                        (addButton.querySelector("span.button") as HTMLSpanElement).onclick = this._addMatrix;
+                        this.addSection(section.section, section, addButton);
+                    } else {
+                        this.addSection(section.section, section);
                     }
                 }
-                removeLoader(this._loader);
-                for (let i = 0; i < this._loader.children.length; i++) {
-                    this._loader.children[i].classList.remove("invisible");
-                }
-                this._showPanel(this._settings.order[0]);
-                document.dispatchEvent(new CustomEvent("settings-loaded"));
-                document.dispatchEvent(new CustomEvent("settings-advancedState", { detail: false }));
-                this._saveButton.classList.add("unfocused");
-                this._needsRestart = false;
             }
+            removeLoader(this._loader);
+            for (let i = 0; i < this._loader.children.length; i++) {
+                this._loader.children[i].classList.remove("invisible");
+            }
+            this._showPanel(this._settings.sections[0].section);
+            document.dispatchEvent(new CustomEvent("settings-loaded"));
+            document.dispatchEvent(new CustomEvent("settings-advancedState", { detail: false }));
+            this._saveButton.classList.add("unfocused");
+            this._needsRestart = false;
         })
     };
 
@@ -923,31 +934,31 @@ export class settingsList {
         if (query.replace(/\s+/g, "") == "") query = "";
 
         let firstVisibleSection = "";
-        for (let section of this._settings.order) {
+        for (let section of this._settings.sections) {
 
-            let dependencyCard = this._sections[section].asElement().querySelector(".settings-dependency-message");
+            let dependencyCard = this._sections[section.section].asElement().querySelector(".settings-dependency-message");
             if (dependencyCard) dependencyCard.remove();
             dependencyCard = null;
             let dependencyList = null;
 
             // hide button, unhide if matched
-            this._buttons[section].classList.add("unfocused");
+            this._buttons[section.section].classList.add("unfocused");
 
             let matchedSection = false;
 
-            if (section.toLowerCase().includes(query) ||
-                this._settings.sections[section].meta.name.toLowerCase().includes(query) ||
-                this._settings.sections[section].meta.description.toLowerCase().includes(query)) {
-                if ((this._settings.sections[section].meta.advanced && this._advanced) || !(this._settings.sections[section].meta.advanced)) {
-                    this._buttons[section].classList.remove("unfocused");
-                    firstVisibleSection = firstVisibleSection || section;
+            if (section.section.toLowerCase().includes(query) ||
+                section.meta.name.toLowerCase().includes(query) ||
+                section.meta.description.toLowerCase().includes(query)) {
+                if ((section.meta.advanced && this._advanced) || !(section.meta.advanced)) {
+                    this._buttons[section.section].classList.remove("unfocused");
+                    firstVisibleSection = firstVisibleSection || section.section;
                     matchedSection = true;
                 }
             }
-            const sectionElement = this._sections[section].asElement();
-            for (let setting of this._settings.sections[section].order) {
-                if (this._settings.sections[section].settings[setting].type == "note") continue;
-                const element = sectionElement.querySelector(`div[data-name="${setting}"]`) as HTMLElement;
+            const sectionElement = this._sections[section.section].asElement();
+            for (let setting of section.settings) {
+                if (setting.type == "note") continue;
+                const element = sectionElement.querySelector(`div[data-name="${setting.setting}"]`) as HTMLElement;
 
                 // If we match the whole section, don't bother searching settings.
                 if (matchedSection) {
@@ -959,17 +970,17 @@ export class settingsList {
                 // element.classList.remove("-mx-2", "my-2", "p-2", "aside", "~neutral", "@low");
                 element.classList.add("opacity-50", "pointer-events-none");
                 element.setAttribute("aria-disabled", "true");
-                if (setting.toLowerCase().includes(query) ||
-                    this._settings.sections[section].settings[setting].name.toLowerCase().includes(query) ||
-                    this._settings.sections[section].settings[setting].description.toLowerCase().includes(query) ||
-                    String(this._settings.sections[section].settings[setting].value).toLowerCase().includes(query)) {
-                    if ((this._settings.sections[section].meta.advanced && this._advanced) || !(this._settings.sections[section].meta.advanced)) {
-                        this._buttons[section].classList.remove("unfocused");
-                        firstVisibleSection = firstVisibleSection || section;
+                if (setting.setting.toLowerCase().includes(query) ||
+                    setting.name.toLowerCase().includes(query) ||
+                    setting.description.toLowerCase().includes(query) ||
+                    String(setting.value).toLowerCase().includes(query)) {
+                    if ((section.meta.advanced && this._advanced) || !(section.meta.advanced)) {
+                        this._buttons[section.section].classList.remove("unfocused");
+                        firstVisibleSection = firstVisibleSection || section.section;
                     }
                     const shouldShow = (query != "" &&
-                                    ((this._settings.sections[section].settings[setting].advanced && this._advanced) ||
-                                    !(this._settings.sections[section].settings[setting].advanced)));
+                                    ((setting.advanced && this._advanced) ||
+                                    !(setting.advanced)));
                     if (shouldShow || query == "") {
                         // element.classList.add("-mx-2", "my-2", "p-2", "aside", "~neutral", "@low");
                         element.classList.remove("opacity-50", "pointer-events-none");
@@ -989,21 +1000,21 @@ export class settingsList {
                             `;
                             dependencyList = dependencyCard.querySelector(".settings-dependency-list") as HTMLUListElement;
                             // Insert it right after the description
-                            this._sections[section].asElement().insertBefore(dependencyCard, this._sections[section].asElement().querySelector(".settings-section-description").nextElementSibling);
+                            this._sections[section.section].asElement().insertBefore(dependencyCard, this._sections[section.section].asElement().querySelector(".settings-section-description").nextElementSibling);
                         }
                         const li = document.createElement("li");
                         if (shouldShow) {
-                            const depCode = this._settings.sections[section].settings[setting].depends_true || this._settings.sections[section].settings[setting].depends_false;
-                            const dep = splitDependant(section, depCode);
+                            const depCode = setting.depends_true || setting.depends_false;
+                            const dep = splitDependant(section.section, depCode);
 
                             let depName = this._settings.sections[dep[0]].settings[dep[1]].name;
-                            if (dep[0] != section) {
+                            if (dep[0] != section.section) {
                                 depName = this._settings.sections[dep[0]].meta.name + " > " + depName;
                             }
 
-                            li.textContent = window.lang.strings("settingsDependsOn").replace("{setting}", `"`+this._settings.sections[section].settings[setting].name+`"`).replace("{dependency}", `"`+depName+`"`);
+                            li.textContent = window.lang.strings("settingsDependsOn").replace("{setting}", `"`+setting.name+`"`).replace("{dependency}", `"`+depName+`"`);
                         } else {
-                            li.textContent = window.lang.strings("settingsAdvancedMode").replace("{setting}", `"`+this._settings.sections[section].settings[setting].name+`"`);
+                            li.textContent = window.lang.strings("settingsAdvancedMode").replace("{setting}", `"`+setting.name+`"`);
                         }
                         dependencyList.appendChild(li);
                     }
