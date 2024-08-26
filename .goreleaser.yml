@@ -116,7 +116,7 @@ archives:
 checksum:
     name_template: 'checksums.txt'
 snapshot:
-    name_template: "0.0.0-{{ .Env.JFA_GO_NFPM_EPOCH }}"
+    version_template: "0.0.0-{{ .Env.JFA_GO_NFPM_EPOCH }}"
 changelog:
     sort: asc
     filters:
