@@ -1,6 +1,8 @@
 module github.com/hrfee/jfa-go
 
-go 1.22.4
+go 1.22
+
+toolchain go1.22.4
 
 replace github.com/hrfee/jfa-go/docs => ./docs
 
@@ -33,18 +35,18 @@ require (
 	github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/gomarkdown/markdown v0.0.0-20240730141124-034f12af3bf6
-	github.com/hrfee/jfa-go/common v0.0.0-20240806200606-6308db495a0a
-	github.com/hrfee/jfa-go/docs v0.0.0-20240806200606-6308db495a0a
-	github.com/hrfee/jfa-go/easyproxy v0.0.0-20240806200606-6308db495a0a
-	github.com/hrfee/jfa-go/jellyseerr v0.0.0-20240806200606-6308db495a0a
-	github.com/hrfee/jfa-go/linecache v0.0.0-20240806200606-6308db495a0a
-	github.com/hrfee/jfa-go/logger v0.0.0-20240806200606-6308db495a0a
-	github.com/hrfee/jfa-go/logmessages v0.0.0-20240806200606-6308db495a0a
-	github.com/hrfee/jfa-go/ombi v0.0.0-20240806200606-6308db495a0a
+	github.com/hrfee/jfa-go/common v0.0.0-20240824141650-fcdd4e451882
+	github.com/hrfee/jfa-go/docs v0.0.0-20240824141650-fcdd4e451882
+	github.com/hrfee/jfa-go/easyproxy v0.0.0-20240824141650-fcdd4e451882
+	github.com/hrfee/jfa-go/jellyseerr v0.0.0-20240824141650-fcdd4e451882
+	github.com/hrfee/jfa-go/linecache v0.0.0-20240824141650-fcdd4e451882
+	github.com/hrfee/jfa-go/logger v0.0.0-20240824141650-fcdd4e451882
+	github.com/hrfee/jfa-go/logmessages v0.0.0-20240824141650-fcdd4e451882
+	github.com/hrfee/jfa-go/ombi v0.0.0-20240824141650-fcdd4e451882
 	github.com/hrfee/mediabrowser v0.3.18
 	github.com/itchyny/timefmt-go v0.1.6
 	github.com/lithammer/shortuuid/v3 v3.0.7
-	github.com/mailgun/mailgun-go/v4 v4.14.0
+	github.com/mailgun/mailgun-go/v4 v4.15.0
 	github.com/mattn/go-sqlite3 v1.14.22
 	github.com/robert-nix/ansihtml v1.0.1
 	github.com/steambap/captcha v1.4.1
@@ -54,7 +56,8 @@ require (
 	github.com/writeas/go-strip-markdown v2.0.1+incompatible
 	github.com/xhit/go-simple-mail/v2 v2.16.0
 	gopkg.in/ini.v1 v1.67.0
-	maunium.net/go/mautrix v0.19.0
+	gopkg.in/yaml.v3 v3.0.1
+	maunium.net/go/mautrix v0.20.0
 )
 
 require (
@@ -110,7 +113,8 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/oxtoacart/bpool v0.0.0-20190530202638-03653db5a59c // indirect
-	github.com/pelletier/go-toml/v2 v2.2.2 // indirect
+	github.com/pelletier/go-toml/v2 v2.2.3 // indirect
+	github.com/petermattis/goid v0.0.0-20240813172612-4fcff4a6cae7 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/rs/zerolog v1.33.0 // indirect
 	github.com/swaggo/swag v1.16.3 // indirect
@@ -122,21 +126,20 @@ require (
 	github.com/toorop/go-dkim v0.0.0-20240103092955-90b7d1423f92 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.12 // indirect
-	go.mau.fi/util v0.6.0 // indirect
+	go.mau.fi/util v0.7.0 // indirect
 	go.opencensus.io v0.24.0 // indirect
-	go.opentelemetry.io/otel v1.28.0 // indirect
-	go.opentelemetry.io/otel/metric v1.28.0 // indirect
-	go.opentelemetry.io/otel/trace v1.28.0 // indirect
+	go.opentelemetry.io/otel v1.29.0 // indirect
+	go.opentelemetry.io/otel/metric v1.29.0 // indirect
+	go.opentelemetry.io/otel/trace v1.29.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
 	golang.org/x/arch v0.9.0 // indirect
 	golang.org/x/crypto v0.26.0 // indirect
-	golang.org/x/exp v0.0.0-20240808152545-0cdaa3abc0fa // indirect
+	golang.org/x/exp v0.0.0-20240823005443-9b4947da3948 // indirect
 	golang.org/x/image v0.19.0 // indirect
 	golang.org/x/net v0.28.0 // indirect
 	golang.org/x/sys v0.24.0 // indirect
 	golang.org/x/text v0.17.0 // indirect
 	golang.org/x/tools v0.24.0 // indirect
 	google.golang.org/protobuf v1.34.2 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

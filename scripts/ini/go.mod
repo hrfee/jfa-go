@@ -2,7 +2,7 @@ module github.com/hrfee/jfa-go/scripts/ini
 
 replace github.com/hrfee/jfa-go/common => ../../common
 
-go 1.22.4
+go 1.18
 
 require (
 	github.com/hrfee/jfa-go/common v0.0.0-20240824141650-fcdd4e451882 // indirect
