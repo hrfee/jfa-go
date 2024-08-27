@@ -525,7 +525,6 @@ const pageNames: string[][] = [];
 })();
 
 window.onpopstate = (event: PopStateEvent) => {
-    console.log("CALLLLLLLL", event);
     if (event.state === "welcome") {
         cards[0].classList.remove("unfocused");
         for (let i = 1; i < cards.length; i++) { cards[i].classList.add("unfocused"); }

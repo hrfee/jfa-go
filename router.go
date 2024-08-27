@@ -159,6 +159,7 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 		}
 		if userPageEnabled {
 			router.GET(p+"/my/account", app.MyUserPage)
+			router.GET(p+"/my/account/password/reset", app.MyUserPage)
 			router.GET(p+"/my/token/login", app.getUserTokenLogin)
 			router.GET(p+"/my/token/refresh", app.getUserTokenRefresh)
 			router.GET(p+"/my/confirm/:jwt", app.ConfirmMyAction)

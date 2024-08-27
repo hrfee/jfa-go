@@ -2,7 +2,7 @@ declare interface Modal {
     modal: HTMLElement;
     closeButton: HTMLSpanElement
     show: () => void;
-    close: (event?: Event) => void;
+    close: (event?: Event, noDispatch?: boolean) => void;
     toggle: () => void;
     onopen: (f: () => void) => void;
     onclose: (f: () => void) => void;

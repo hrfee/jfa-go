@@ -50,17 +50,35 @@ window.modals = {} as Modals;
     if (window.pwrEnabled) {
         window.modals.pwr = new Modal(document.getElementById("modal-pwr"), false);
         window.modals.pwr.onclose = () => {
-            window.modals.login.show();
+            window.history.pushState("", "", window.location.pathname.replace("/password/reset", ""));
         };
         const resetButton = document.getElementById("modal-login-pwr");
         resetButton.onclick = () => {
-            const usernameInput = document.getElementById("login-user") as HTMLInputElement;
-            const input = document.getElementById("pwr-address") as HTMLInputElement;
-            input.value = usernameInput.value;
-            window.modals.login.close();
-            window.modals.pwr.show();
+            window.history.pushState("reset", "", window.location.pathname+"/password/reset");
         }
+
+        window.onpopstate = (event: PopStateEvent) => {
+            if ((event.state == "reset" || window.location.pathname.includes("/password/reset")) && window.pwrEnabled) {
+                const usernameInput = document.getElementById("login-user") as HTMLInputElement;
+                const input = document.getElementById("pwr-address") as HTMLInputElement;
+                input.value = usernameInput.value;
+                window.modals.login.close();
+                window.modals.pwr.show();
+            } else {
+                window.modals.pwr.close(null, true);
+                if (!login.loggedIn) login.login("", "");
+            }
+        };
     }
+})();
+
+(() => {
+    const pushState = window.history.pushState;
+    window.history.pushState = function (data: any, __: string, _: string | URL) {
+        pushState.apply(window.history, arguments);
+        let ev = { state: data as string } as PopStateEvent;
+        window.onpopstate(ev);
+    };
 })();
 
 window.notifications = new notificationBox(document.getElementById('notification-box') as HTMLDivElement, 5);
@@ -780,4 +798,8 @@ const generatePermutations = (xs: number[]): [number[], number[]][] => {
 
 login.bindLogout(document.getElementById("logout-button"));
 
-login.login("", "");
+(() => {
+    let data = "";
+    if (window.location.pathname.endsWith("/password/reset")) data = "reset";
+    window.history.pushState(data, "", window.location.pathname);
+})();

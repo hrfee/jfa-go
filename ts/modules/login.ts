@@ -2,6 +2,7 @@ import { Modal } from "../modules/modal.js";
 import { toggleLoader, _post } from "../modules/common.js";
 
 export class Login {
+    loggedIn: boolean = false;
     private _modal: Modal;
     private _form: HTMLFormElement;
     private _url: string;
@@ -91,6 +92,7 @@ export class Login {
                 } else {
                     const data = req.response;
                     window.token = data["token"];
+                    this.loggedIn = true;
                     if (this._onLogin) {
                         this._onLogin(username, password);
                     }
