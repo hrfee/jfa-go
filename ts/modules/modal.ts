@@ -20,7 +20,9 @@ export class Modal implements Modal {
             });
         }
     }
-    close = (event?: Event) => {
+    close = (event?: Event, noDispatch?: boolean) => {
+        // If we don't check we can mess up a closed modal.
+        if (!this.modal.classList.contains("block") && !this.modal.classList.contains("animate-fade-in")) return;
         if (event) {
             event.preventDefault();
         }
@@ -30,8 +32,8 @@ export class Modal implements Modal {
         const listenerFunc = () => {
             modal.classList.remove('block');
             modal.classList.remove('animate-fade-out');
-            modal.removeEventListener(window.animationEvent, listenerFunc);
-            document.dispatchEvent(this.closeEvent);
+            modal.removeEventListener(window.animationEvent, listenerFunc)
+            if (!noDispatch) document.dispatchEvent(this.closeEvent);
         };
         this.modal.addEventListener(window.animationEvent, listenerFunc, false);
     }
