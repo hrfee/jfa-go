@@ -5,6 +5,7 @@ import { _get, _post, _delete, notificationBox, whichAnimationEvent, toDateStrin
 import { Login } from "./modules/login.js";
 import { Discord, Telegram, Matrix, ServiceConfiguration, MatrixConfiguration } from "./modules/account-linking.js";
 import { Validator, ValidatorConf, ValidatorRespDTO } from "./modules/validator.js";
+import { PageManager } from "./modules/pages.js";
 
 interface userWindow extends Window {
     jellyfinID: string;
@@ -21,6 +22,8 @@ interface userWindow extends Window {
     referralsEnabled: boolean;
 }
 
+const basePath = window.location.pathname.replace("/password/reset", "");
+
 declare var window: userWindow;
 
 const theme = new ThemeManager(document.getElementById("button-theme"));
@@ -34,6 +37,27 @@ window.animationEvent = whichAnimationEvent();
 window.token = "";
 
 window.modals = {} as Modals;
+
+let pages = new PageManager({
+    hideOthersOnPageShow: true,
+    defaultName: "",
+    defaultTitle: document.title,
+});
+
+pages.setPage({
+    name: "",
+    title: document.title,
+    url: basePath,
+    show: () => {
+        if (!login.loggedIn) login.login("", "");
+        return true;
+    },
+    hide: () => {
+        window.modals.login.close();
+        return true;
+    },
+    shouldSkip: () => false,
+});
 
 (() => {
     window.modals.login = new Modal(document.getElementById("modal-login"), true);
@@ -49,36 +73,32 @@ window.modals = {} as Modals;
     }
     if (window.pwrEnabled) {
         window.modals.pwr = new Modal(document.getElementById("modal-pwr"), false);
-        window.modals.pwr.onclose = () => {
-            window.history.pushState("", "", window.location.pathname.replace("/password/reset", ""));
-        };
-        const resetButton = document.getElementById("modal-login-pwr");
-        resetButton.onclick = () => {
-            window.history.pushState("reset", "", window.location.pathname+"/password/reset");
-        }
-
-        window.onpopstate = (event: PopStateEvent) => {
-            if ((event.state == "reset" || window.location.pathname.includes("/password/reset")) && window.pwrEnabled) {
+        pages.setPage({
+            name: "reset",
+            title: document.title,
+            url: basePath+"/password/reset",
+            show: () => {
                 const usernameInput = document.getElementById("login-user") as HTMLInputElement;
                 const input = document.getElementById("pwr-address") as HTMLInputElement;
                 input.value = usernameInput.value;
-                window.modals.login.close();
                 window.modals.pwr.show();
-            } else {
+                return true;
+            },
+            hide: () => {
+                // Don't recursively run this through the onclose event
                 window.modals.pwr.close(null, true);
-                if (!login.loggedIn) login.login("", "");
-            }
+                return true;
+            },
+            shouldSkip: () => false,
+        });
+        window.modals.pwr.onclose = () => {
+            pages.load("");
         };
+        const resetButton = document.getElementById("modal-login-pwr");
+        resetButton.onclick = () => {
+            pages.load("reset");
+        }
     }
-})();
-
-(() => {
-    const pushState = window.history.pushState;
-    window.history.pushState = function (data: any, __: string, _: string | URL) {
-        pushState.apply(window.history, arguments);
-        let ev = { state: data as string } as PopStateEvent;
-        window.onpopstate(ev);
-    };
 })();
 
 window.notifications = new notificationBox(document.getElementById('notification-box') as HTMLDivElement, 5);
@@ -798,8 +818,4 @@ const generatePermutations = (xs: number[]): [number[], number[]][] => {
 
 login.bindLogout(document.getElementById("logout-button"));
 
-(() => {
-    let data = "";
-    if (window.location.pathname.endsWith("/password/reset")) data = "reset";
-    window.history.pushState(data, "", window.location.pathname);
-})();
+pages.load(window.location.pathname.endsWith("/password/reset") ? "reset" : "");

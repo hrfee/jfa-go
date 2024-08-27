@@ -1,6 +1,7 @@
 import { _get, _post, toggleLoader, notificationBox } from "./modules/common.js";
 import { lang, LangFile, loadLangSelector } from "./modules/lang.js";
 import { ThemeManager } from "./modules/theme.js";
+import { PageManager } from "./modules/pages.js";
 
 interface sWindow extends Window {
     messages: {};
@@ -18,6 +19,8 @@ const get = (id: string): HTMLElement => document.getElementById(id);
 const text = (id: string, val: string) => { document.getElementById(id).textContent = val; };
 const html = (id: string, val: string) => { document.getElementById(id).innerHTML = val; };
 
+
+// FIXME: Reuse setting types from ts/modules/settings.ts
 interface boolEvent extends Event {
     detail: boolean;
 }
@@ -513,60 +516,14 @@ for (let section in settings) {
     }
 }
 
-const pageNames: string[][] = [];
-
-(() => {
-    const pushState = window.history.pushState;
-    window.history.pushState = function (data: any, __: string, _: string | URL) {
-        pushState.apply(window.history, arguments);
-        let ev = { state: data as string } as PopStateEvent;
-        window.onpopstate(ev);
-    };
-})();
-
-window.onpopstate = (event: PopStateEvent) => {
-    if (event.state === "welcome") {
-        cards[0].classList.remove("unfocused");
-        for (let i = 1; i < cards.length; i++) { cards[i].classList.add("unfocused"); }
-        return;
-    }
-    for (let i = 0; i < cards.length; i++) {
-        if (event.state === pageNames[i][0]) {
-            cards[i].classList.remove("unfocused");
-        } else {
-            cards[i].classList.add("unfocused");
-        }
-    }
-};
+let pages = new PageManager({
+    hideOthersOnPageShow: true,
+    defaultName: "welcome",
+    defaultTitle: "Setup - jfa-go",
+});
 
 const cards = Array.from(document.getElementsByClassName("page-container")[0].querySelectorAll(".card.sectioned")) as Array<HTMLDivElement>;
 (window as any).cards = cards;
-
-const changePageToIndex = (title: string, pageTitle: string, i: number) => {
-    cards[i].classList.remove("unfocused");
-    const urlParams = new URLSearchParams(window.location.search);
-    const lang = urlParams.get("lang");
-    let page = "/#" + title;
-    if (lang) { page += "?lang=" + lang; }
-    console.log("pushing", title, pageTitle, page);
-    window.history.pushState(title || "welcome", pageTitle, page);
-};
-
-const changePage = (title: string, pageTitle: string) => {
-    let found = false;
-    for (let i = 0; i < cards.length; i++) {
-        if (!found && pageNames[i][0] == title && !(cards[i].classList.contains("hidden"))) {
-            found = true;
-            changePageToIndex(title, pageTitle, i);
-        } else {
-            cards[i].classList.add("unfocused");
-        }
-    }
-    if (!found) {
-        changePageToIndex(title, pageTitle, 0);
-    }
-    window.scrollTo(0, 0);
-};
 
 (() => {
     for (let i = 0; i < cards.length; i++) {
@@ -578,36 +535,29 @@ const changePage = (title: string, pageTitle: string) => {
         if (titleEl.classList.contains("welcome")) {
             title = "";
         }
-        let pageTitle = titleEl.textContent + " - jfa-go";
-        pageNames.push([title, pageTitle]);
-        if (back) { back.addEventListener("click", () => {
-            for (let ind = cards.length - 1; ind >= 0; ind--) {
-                if (ind < i && !(cards[ind].classList.contains("hidden"))) {
-                    changePage(pageNames[ind][0], pageNames[ind][1]);
-                    break;
-                }
-            }
-        }); }
-        if (next) {
-            const func = () => {
-                if (next.hasAttribute("disabled")) return;
-                for (let ind = 0; ind < cards.length; ind++) {
-                    if (ind > i && !(cards[ind].classList.contains("hidden"))) {
-                        changePage(pageNames[ind][0], pageNames[ind][1]);
-                        break;
-                    }
-                }
-            };
-            next.addEventListener("click", func)
-        }
+        pages.setPage({
+            name: title,
+            title: titleEl.textContent + " - jfa-go",
+            url: "/#" + title,
+            show: () => {
+                cards[i].classList.remove("unfocused");
+                return true;
+            },
+            hide: () => {
+                cards[i].classList.add("unfocused");
+                return true;
+            },
+            shouldSkip: () => {
+                return cards[i].classList.contains("hidden");
+            },
+        });
+        if (back) back.addEventListener("click", () => pages.prev(title));
+        if (next) next.addEventListener("click", () => {
+            if (next.hasAttribute("disabled")) return;
+            pages.next(title);
+        });
     }
 })();
-
-(() => {
-    let initialLocation = window.location.hash.replace("#", "") || "welcome";
-    changePage(initialLocation, "Setup - jfa-go");
-})();
-// window.history.replaceState("welcome", "Setup - jfa-go",);
 
 (() => {
     const button = document.getElementById("jellyfin-test-connection") as HTMLSpanElement;
@@ -665,3 +615,5 @@ const changePage = (title: string, pageTitle: string) => {
 })();
 
 loadLangSelector("setup");
+
+pages.load(window.location.hash.replace("#", ""));
