@@ -1,7 +1,7 @@
 import { ThemeManager } from "./modules/theme.js";
 import { lang, LangFile, loadLangSelector } from "./modules/lang.js";
 import { Modal } from "./modules/modal.js";
-import { Tabs } from "./modules/tabs.js";
+import { Tabs, Tab } from "./modules/tabs.js";
 import { inviteList, createInvite } from "./modules/invites.js";
 import { accountsList } from "./modules/accounts.js";
 import { settingsList } from "./modules/settings.js";
@@ -120,21 +120,41 @@ window.notifications = new notificationBox(document.getElementById('notification
     userSelect.classList.toggle('unfocused');
 }*/
 
+// Determine if url references an invite or account
+let isInviteURL = window.invites.isInviteURL();
+let isAccountURL = accounts.isAccountURL();
+
 // load tabs
-const tabs: { url: string, reloader: () => void }[] = [
+const tabs: { id: string, url: string, reloader: () => void }[] = [
     {
-        url: "invites",
-        reloader: window.invites.reload
+        id: "invites",
+        url: "",
+        reloader: () => window.invites.reload(() => {
+            if (isInviteURL) {
+                window.invites.loadInviteURL();
+                // Don't keep loading the same item on every tab refresh
+                isInviteURL = false;
+            }
+        }),
     },
     {
+        id: "accounts",
         url: "accounts",
-        reloader: accounts.reload
+        reloader: () => accounts.reload(() => {
+            if (isAccountURL) {
+                accounts.loadAccountURL();
+                // Don't keep loading the same item on every tab refresh
+                isAccountURL = false;
+            }
+        }),
     },
     {
+        id: "activity",
         url: "activity",
         reloader: activity.reload
     },
     {
+        id: "settings",
         url: "settings",
         reloader: settings.reload
     }
@@ -145,41 +165,20 @@ const defaultTab = tabs[0];
 window.tabs = new Tabs();
 
 for (let tab of tabs) {
-    window.tabs.addTab(tab.url, null, tab.reloader);
-    if (window.location.pathname == window.URLBase + "/" + tab.url) {
+    window.tabs.addTab(tab.id, tab.url, null, tab.reloader);
+}
+
+let matchedTab = false
+for (let tab of tabs) {
+    if (window.location.pathname.startsWith(window.URLBase + "/" + tab.url)) {
         window.tabs.switch(tab.url, true);
+        matchedTab = true;
     }
 }
-
-let isInviteURL = window.invites.isInviteURL();
-let isAccountURL = accounts.isAccountURL();
-
 // Default tab
-if ((window.URLBase + "/").includes(window.location.pathname)) {
-    window.tabs.switch(defaultTab.url, true);
-}
-
-document.addEventListener("tab-change", (event: CustomEvent) => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const lang = urlParams.get('lang');
-    let tab = window.URLBase + "/" + event.detail;
-    if (event.detail == "") {
-        tab = window.location.pathname;
-    } else if (tab == window.URLBase + "/invites") {
-        if (window.location.pathname == window.URLBase + "/") {
-            tab = window.URLBase + "/";
-        } else if (window.URLBase) { tab = window.URLBase; }
-        else { tab = "../"; }
-    }
-    if (lang) {
-        tab += "?lang=" + lang
-    }
-    window.history.pushState(event.detail, "Admin - jfa-go", tab);
-});
-
-window.onpopstate = (event: PopStateEvent) => {
-    console.log(event.state);
-    window.tabs.switch(event.state);
+// if ((window.URLBase + "/").includes(window.location.pathname)) {
+if (!matchedTab) {
+    window.tabs.switch("", true);
 }
 
 const login = new Login(window.modals.login as Modal, "/", window.loginAppearance);
@@ -189,35 +188,8 @@ login.onLogin = () => {
     // FIXME: Decide whether to autoload activity or not
     reloadProfileNames();
     setInterval(() => { window.invites.reload(); accounts.reload(); }, 30*1000);
-    const currentTab = window.tabs.current;
-    switch (currentTab) {
-        case "invites":
-            window.invites.reload();
-            break;
-        case "accounts":
-            accounts.reload();
-            break;
-        case "settings":
-            settings.reload();
-            break;
-        case "activity": // FIXME: fix URL clash with route
-            activity.reload();
-            break;
-        default:
-            console.log(isAccountURL, isInviteURL);
-            if (isInviteURL) {
-                window.invites.reload(() => {
-                    window.invites.loadInviteURL();
-                    window.tabs.switch("invites", false, true);
-                });
-            } else if (isAccountURL) {
-                accounts.reload(() => {
-                    accounts.loadAccountURL(); 
-                    window.tabs.switch("accounts", false, true);
-                });
-            }
-            break;
-    }
+    // Triggers pre and post funcs, even though we're already on that page
+    window.tabs.switch(window.tabs.current);
 }
 
 bindManualDropdowns();

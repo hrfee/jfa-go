@@ -32,24 +32,21 @@ export class PageManager {
 
     private _onpopstate = (event: PopStateEvent) => {
         let name = event.state;
-        if (!(event.state in this.pages)) {
+        if (!this.pages.has(event.state)) {
             name = this.pageList[0]
         }
-        let success = this.pages[name].show();
+        let success = this.pages.get(name).show();
         if (!success) {
-            console.log("failed");
             return;
         }
         if (!(this.hideOthers)) {
-            console.log("shoudln't hide others");
             return;
         }
         for (let k of this.pageList) {
             if (name != k) {
-                this.pages[k].hide();
+                this.pages.get(k).hide();
             }
         }
-        console.log("loop ended", this);
     }
 
     constructor(c: PageConfig) {
@@ -65,42 +62,39 @@ export class PageManager {
 
     setPage(p: Page) {
         p.index = this.pageList.length;
-        this.pages[p.name] = p;
+        this.pages.set(p.name, p);
         this.pageList.push(p.name);
     }
 
     load(name: string = "") {
-        if (!(name in this.pages)) return window.history.pushState(name || this.defaultName, this.defaultTitle, "")
-        const p = this.pages[name];
+        if (!this.pages.has(name)) return window.history.pushState(name || this.defaultName, this.defaultTitle, "")
+        const p = this.pages.get(name);
         this.loadPage(p);
     }
 
     loadPage (p: Page) {
-        window.history.pushState(p.name || this.defaultName, p.title, p.url);
+        window.history.pushState(p.name || this.defaultName, p.title, p.url + window.location.search);
     }
 
     prev(name: string = "") {
-        if (!(name in this.pages)) return console.error(`previous page ${name} not found`);
-        let p = this.pages[name];
+        if (!this.pages.has(name)) return console.error(`previous page ${name} not found`);
+        let p = this.pages.get(name);
         let shouldSkip = true;
         while (shouldSkip && p.index > 0) {
-            p = this.pages[this.pageList[p.index-1]];
+            p = this.pages.get(this.pageList[p.index-1]);
             shouldSkip = p.shouldSkip();
         }
         this.loadPage(p);
     } 
     
     next(name: string = "") {
-        if (!(name in this.pages)) return console.error(`previous page ${name} not found`);
-        let p = this.pages[name];
-        console.log("next", name, p);
-        console.log("pages", this.pages, this.pageList);
+        if (!this.pages.has(name)) return console.error(`previous page ${name} not found`);
+        let p = this.pages.get(name);
         let shouldSkip = true;
         while (shouldSkip && p.index < this.pageList.length) {
-            p = this.pages[this.pageList[p.index+1]];
+            p = this.pages.get(this.pageList[p.index+1]);
             shouldSkip = p.shouldSkip();
         }
-        console.log("next ended with", p);
         this.loadPage(p);
     } 
 };

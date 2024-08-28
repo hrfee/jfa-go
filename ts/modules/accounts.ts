@@ -1804,10 +1804,16 @@ export class accountsList {
         this.focusAccount(event.detail);
     });
 
-    isAccountURL = () => { return window.location.pathname.startsWith(window.URLBase + "/accounts/user/"); }
+    // FIXME: Use Query Param! so it doesn't get cleared by pages.ts.
+    isAccountURL = () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const userID = urlParams.get("user");
+        return Boolean(userID);
+    }
 
     loadAccountURL = () => {
-        let userID = window.location.pathname.split(window.URLBase + "/accounts/user/")[1].split("?lang")[0];
+        const urlParams = new URLSearchParams(window.location.search);
+        const userID = urlParams.get("user");
         this.focusAccount(userID);
     }
 

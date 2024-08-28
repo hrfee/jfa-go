@@ -79,19 +79,9 @@ declare interface NotificationBox {
 
 declare interface Tabs {
     current: string;
-    tabs: Array<Tab>;
-    addTab: (tabID: string, preFunc?: () => void, postFunc?: () => void) => void;
+    addTab: (tabID: string, url: string, preFunc?: () => void, postFunc?: () => void) => void;
     switch: (tabID: string, noRun?: boolean, keepURL?: boolean) => void;
 }
-
-declare interface Tab {
-    tabID: string;
-    tabEl: HTMLDivElement;
-    buttonEl: HTMLSpanElement;
-    preFunc?: () => void;
-    postFunc?: () => void;
-}
-
 
 declare interface Modals {
     about: Modal;

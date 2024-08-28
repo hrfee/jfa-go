@@ -110,17 +110,16 @@ CONFIG_DEFAULT = $(DATA)/config-default.ini
 # 	-mkdir -p $(DATA)
 
 $(DATA):
-	mkdir -p $(DATA)/web/js
-	mkdir -p $(DATA)/web/css
+	mkdir -p $(DATA)
 
-$(CONFIG_DEFAULT): $(CONFIG_BASE)
+$(CONFIG_DEFAULT): $(DATA) $(CONFIG_BASE)
 	$(info Generating config-default.ini)
 	go run scripts/ini/main.go -in $(CONFIG_BASE) -out $(DATA)/config-default.ini
 
 configuration: $(CONFIG_DEFAULT)
 
 EMAIL_SRC = $(wildcard mail/*)
-EMAIL_TARGET = $(DATA)/confirmation.html
+EMAIL_TARGET = mail/confirmation.html
 $(EMAIL_TARGET): $(EMAIL_SRC)
 	$(info Generating email html)
 	npx mjml mail/*.mjml -o $(DATA)/
@@ -140,6 +139,7 @@ $(TYPESCRIPT_TARGET): $(TYPESCRIPT_FULLSRC) ts/tsconfig.json
 	scripts/dark-variant.sh tempts
 	scripts/dark-variant.sh tempts/modules
 	$(info compiling typescript)
+	mkdir -p $(DATA)/web/js
 	$(foreach tempsrc,$(TYPESCRIPT_TEMPSRC),$(ESBUILD) --target=es6 --bundle $(tempsrc) $(SOURCEMAP) --outfile=$(patsubst %.ts,%.js,$(subst tempts/,./$(DATA)/web/js/,$(tempsrc))) $(MINIFY);)
 	mv $(DATA)/web/js/crash.js $(DATA)/
 	$(COPYTS)
@@ -167,6 +167,7 @@ ALL_CSS_SRC = $(ICON_SRC) $(CSS_SRC)
 ALL_CSS_TARGET = $(ICON_TARGET)
 
 $(CSS_FULLTARGET): $(TYPESCRIPT_TARGET) $(VARIANTS_TARGET) $(ALL_CSS_SRC) $(wildcard html/*.html)
+	mkdir -p $(DATA)/web/css
 	$(info copying fonts)
 	cp -r node_modules/remixicon/fonts/remixicon.css node_modules/remixicon/fonts/remixicon.woff2 $(DATA)/web/css/
 	$(info bundling css)
@@ -198,6 +199,7 @@ $(COPY_TARGET): $(INLINE_TARGET) $(STATIC_SRC) $(LANG_SRC)
 	$(info copying crash page)
 	cp $(DATA)/crash.html $(DATA)/html/
 	$(info copying static data)
+	mkdir -p $(DATA)/web
 	cp images/banner.svg static/banner.svg
 	cp -r static/* $(DATA)/web/
 	$(info copying systemd service)
@@ -206,11 +208,11 @@ $(COPY_TARGET): $(INLINE_TARGET) $(STATIC_SRC) $(LANG_SRC)
 	cp -r lang $(DATA)/
 	cp LICENSE $(DATA)/
 
-precompile: $(DATA) $(CONFIG_DEFAULT) $(EMAIL_TARGET) $(COPY_TARGET) $(SWAGGER_TARGET)
+precompile: $(CONFIG_DEFAULT) $(EMAIL_TARGET) $(COPY_TARGET) $(SWAGGER_TARGET)
 
 GO_SRC = $(shell find ./ -name "*.go")
 GO_TARGET = build/jfa-go
-$(GO_TARGET): $(DATA) $(CONFIG_DEFAULT) $(EMAIL_TARGET) $(COPY_TARGET) $(SWAGGER_TARGET) $(GO_SRC) go.mod go.sum
+$(GO_TARGET): $(CONFIG_DEFAULT) $(EMAIL_TARGET) $(COPY_TARGET) $(SWAGGER_TARGET) $(GO_SRC) go.mod go.sum
 	$(info Downloading deps)
 	$(GOBINARY) mod download
 	$(info Building)

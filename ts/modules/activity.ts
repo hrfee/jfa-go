@@ -64,17 +64,17 @@ export class Activity implements activity, SearchableItem {
     }
 
     _genUserLink = (): string => {
-        return `<span role="link" tabindex="0" class="hover:underline cursor-pointer activity-pseudo-link-user" data-id="${this._act.user_id}" data-href="${this._urlBase}accounts/user/${this._act.user_id}">${this._genUserText()}</span>`;
+        return `<a role="link" tabindex="0" class="hover:underline cursor-pointer activity-pseudo-link-user" data-id="${this._act.user_id}" href="${this._urlBase}accounts?user=${this._act.user_id}">${this._genUserText()}</a>`;
     }
         
     _genSrcUserLink = (): string => {
-        return `<span role="link" tabindex="0" class="hover:underline cursor-pointer activity-pseudo-link-user" data-id="${this._act.user_id}" data-href="${this._urlBase}accounts/user/${this._act.source}">${this._genSrcUserText()}</span>`;
+        return `<a role="link" tabindex="0" class="hover:underline cursor-pointer activity-pseudo-link-user" data-id="${this._act.user_id}" href="${this._urlBase}accounts?user=${this._act.source}">${this._genSrcUserText()}</a>`;
     }
 
     private _renderInvText = (): string => { return `<span class="font-medium font-mono">${this.value || this.invite_code || "???"}</span>`; }
 
     private _genInvLink = (): string => {
-        return `<span role="link" tabindex="0" class="hover:underline cursor-pointer activity-pseudo-link-invite" data-id="${this.invite_code}" data-href="${this._urlBase}invites/${this.invite_code}">${this._renderInvText()}</span>`;
+        return `<a role="link" tabindex="0" class="hover:underline cursor-pointer activity-pseudo-link-invite" data-id="${this.invite_code}" href="${this._urlBase}?invite=${this.invite_code}">${this._renderInvText()}</a>`;
     }
 
 
@@ -307,17 +307,17 @@ export class Activity implements activity, SearchableItem {
         const pseudoInvites = this._card.getElementsByClassName("activity-pseudo-link-invite") as HTMLCollectionOf<HTMLAnchorElement>;
 
         for (let i = 0; i < pseudoUsers.length; i++) {
-            const navigate = (event: Event) => {
+            /*const navigate = (event: Event) => {
                 event.preventDefault()
                 window.tabs.switch("accounts");
                 document.dispatchEvent(accountURLEvent(pseudoUsers[i].getAttribute("data-id")));
                 window.history.pushState(null, document.title, pseudoUsers[i].getAttribute("data-href"));
             }
             pseudoUsers[i].onclick = navigate;
-            pseudoUsers[i].onkeydown = navigate;
+            pseudoUsers[i].onkeydown = navigate;*/
         }
         for (let i = 0; i < pseudoInvites.length; i++) {
-            const navigate = (event: Event) => {
+            /*const navigate = (event: Event) => {
                 event.preventDefault();
                 window.invites.reload(() => {
                     window.tabs.switch("invites");
@@ -326,7 +326,7 @@ export class Activity implements activity, SearchableItem {
                 });
             }
             pseudoInvites[i].onclick = navigate;
-            pseudoInvites[i].onkeydown = navigate;
+            pseudoInvites[i].onkeydown = navigate;*/
         }
     }
 

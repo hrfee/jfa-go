@@ -636,6 +636,7 @@ export class settingsList {
     }
 
     private _showPanel = (name: string) => {
+        console.log("showing", name);
         for (let n in this._sections) {
             if (n == name) {
                 this._sections[name].visible = true;
@@ -919,7 +920,11 @@ export class settingsList {
             for (let i = 0; i < this._loader.children.length; i++) {
                 this._loader.children[i].classList.remove("invisible");
             }
-            this._showPanel(this._settings.sections[0].section);
+            for (let s of this._settings.sections) {
+                if (s.meta.disabled) continue;
+                this._showPanel(s.section);
+                break;
+            }
             document.dispatchEvent(new CustomEvent("settings-loaded"));
             document.dispatchEvent(new CustomEvent("settings-advancedState", { detail: false }));
             this._saveButton.classList.add("unfocused");

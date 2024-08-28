@@ -448,10 +448,15 @@ export class inviteList implements inviteList {
         this.focusInvite(event.detail);
     })
 
-    isInviteURL = () => { return window.location.pathname.startsWith(window.URLBase + "/invites/"); }
+    isInviteURL = () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const inviteCode = urlParams.get("invite");
+        return Boolean(inviteCode);
+    }
 
     loadInviteURL = () => {
-        let inviteCode = window.location.pathname.split(window.URLBase + "/invites/")[1].split("?lang")[0];
+        const urlParams = new URLSearchParams(window.location.search);
+        const inviteCode = urlParams.get("invite");
         this.focusInvite(inviteCode, window.lang.notif("errorInviteNotFound"));
     }
 
