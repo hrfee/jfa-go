@@ -962,7 +962,7 @@ func (app *appContext) ModifyLabels(gc *gin.Context) {
 				emailStore = oldEmail
 			}
 			emailStore.Label = label
-			app.debug.Println(lm.UserLabelAdjusted, id, label)
+			app.debug.Printf(lm.UserLabelAdjusted, id, label)
 			app.storage.SetEmailsKey(id, emailStore)
 		}
 	}

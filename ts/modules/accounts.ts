@@ -4,6 +4,8 @@ import { Marked } from "@ts-stack/markdown";
 import { stripMarkdown } from "../modules/stripmd.js";
 import { DiscordUser, newDiscordSearch } from "../modules/discord.js";
 import { Search, SearchConfiguration, QueryType, SearchableItem } from "../modules/search.js";
+import { HiddenInputField } from "./ui.js";
+
 const dateParser = require("any-date-parser");
 
 interface User {
@@ -48,9 +50,9 @@ class user implements User, SearchableItem {
     private _admin: HTMLSpanElement;
     private _disabled: HTMLSpanElement;
     private _email: HTMLInputElement;
+    private _emailEditor: HiddenInputField;
     private _notifyEmail: boolean;
     private _emailAddress: string;
-    private _emailEditButton: HTMLElement;
     private _telegram: HTMLTableDataCellElement;
     private _telegramUsername: string;
     private _notifyTelegram: boolean;
@@ -67,8 +69,8 @@ class user implements User, SearchableItem {
     private _lastActiveUnix: number;
     private _notifyDropdown: HTMLDivElement;
     private _label: HTMLInputElement;
+    private _labelEditor: HiddenInputField;
     private _userLabel: string;
-    private _labelEditButton: HTMLElement;
     private _accounts_admin: HTMLInputElement
     private _selected: boolean;
     private _referralsEnabled: boolean;
@@ -110,10 +112,10 @@ class user implements User, SearchableItem {
     get admin(): boolean { return this._admin.classList.contains("chip"); }
     set admin(state: boolean) {
         if (state) {
-            this._admin.classList.add("chip", "~info", "ml-4");
+            this._admin.classList.add("chip", "~info");
             this._admin.textContent = window.lang.strings("admin");
         } else {
-            this._admin.classList.remove("chip", "~info", "ml-4");
+            this._admin.classList.remove("chip", "~info");
             this._admin.textContent = "";
         }
     }
@@ -133,10 +135,10 @@ class user implements User, SearchableItem {
     get disabled(): boolean { return this._disabled.classList.contains("chip"); }
     set disabled(state: boolean) {
         if (state) {
-            this._disabled.classList.add("chip", "~warning", "ml-4");
+            this._disabled.classList.add("chip", "~warning");
             this._disabled.textContent = window.lang.strings("disabled");
         } else {
-            this._disabled.classList.remove("chip", "~warning", "ml-4");
+            this._disabled.classList.remove("chip", "~warning");
             this._disabled.textContent = "";
         }
     }
@@ -144,12 +146,7 @@ class user implements User, SearchableItem {
     get email(): string { return this._emailAddress; }
     set email(value: string) {
         this._emailAddress = value;
-        const input = this._email.querySelector("input");
-        if (input) {
-            input.value = value;
-        } else {
-            this._email.textContent = value;
-        }
+        this._emailEditor.value = value;
         const lastNotifyMethod = this.lastNotifyMethod() == "email";
         if (!value) {
             this._notifyDropdown.querySelector(".accounts-area-email").classList.add("unfocused");
@@ -468,14 +465,7 @@ class user implements User, SearchableItem {
     get label(): string { return this._userLabel; }
     set label(l: string) {
         this._userLabel = l ? l : "";
-        this._label.innerHTML = l ? l : "";
-        this._labelEditButton.classList.add("ri-edit-line");
-        this._labelEditButton.classList.remove("ri-check-line");
-        if (!l) {
-            this._label.classList.remove("chip", "~gray");
-        } else {
-            this._label.classList.add("chip", "~gray", "mr-2");
-        }
+        this._labelEditor.value = l ? l : "";
     }
 
     matchesSearch = (query: string): boolean => {
@@ -498,7 +488,12 @@ class user implements User, SearchableItem {
         this._row = document.createElement("tr") as HTMLTableRowElement;
         let innerHTML = `
             <td><input type="checkbox" class="accounts-select-user" value=""></td>
-            <td><div class="table-inline"><span class="accounts-username py-2 mr-2"></span><span class="accounts-label-container ml-2"></span> <i class="icon ri-edit-line accounts-label-edit"></i> <span class="accounts-admin"></span> <span class="accounts-disabled"></span></span></div></td>
+            <td><div class="flex flex-row gap-2 items-center">
+                <span class="accounts-username"></span>
+                <span class="accounts-label-container" title="${window.lang.strings("label")}"></span>
+                <span class="accounts-admin"></span>
+                <span class="accounts-disabled"></span></span>
+            </div></td>
         `;
         if (window.jellyfinLogin) {
             innerHTML += `
@@ -506,7 +501,9 @@ class user implements User, SearchableItem {
             `;
         }
         innerHTML += `
-            <td><div class="table-inline"><i class="icon ri-edit-line accounts-email-edit"></i><span class="accounts-email-container ml-2"></span></div></td>
+            <td><div class="flex flex-row gap-2 items-center">
+                <span class="accounts-email-container" title="${window.lang.strings("emailAddress")}"></span>
+            </div></td>
         `;
         if (window.telegramEnabled) {
             innerHTML += `
@@ -534,21 +531,32 @@ class user implements User, SearchableItem {
         `;
         this._row.innerHTML = innerHTML;
         const emailEditor = `<input type="email" class="input ~neutral @low stealth-input">`;
-        const labelEditor = `<input type="text" class="field ~neutral @low stealth-input">`;
         this._check = this._row.querySelector("input[type=checkbox].accounts-select-user") as HTMLInputElement;
         this._accounts_admin = this._row.querySelector("input[type=checkbox].accounts-access-jfa") as HTMLInputElement;
         this._username = this._row.querySelector(".accounts-username") as HTMLSpanElement;
         this._admin = this._row.querySelector(".accounts-admin") as HTMLSpanElement;
         this._disabled = this._row.querySelector(".accounts-disabled") as HTMLSpanElement;
         this._email = this._row.querySelector(".accounts-email-container") as HTMLInputElement;
-        this._emailEditButton = this._row.querySelector(".accounts-email-edit") as HTMLElement;
+        this._emailEditor = new HiddenInputField({
+            container: this._email,
+            onSet: this._updateEmail,
+            customContainerHTML: `<span class="hidden-input-content"></span>`,
+            buttonOnLeft: true,
+            clickAwayShouldSave: false,
+        });
         this._telegram = this._row.querySelector(".accounts-telegram") as HTMLTableDataCellElement;
         this._discord = this._row.querySelector(".accounts-discord") as HTMLTableDataCellElement;
         this._matrix = this._row.querySelector(".accounts-matrix") as HTMLTableDataCellElement;
         this._expiry = this._row.querySelector(".accounts-expiry") as HTMLTableDataCellElement;
         this._lastActive = this._row.querySelector(".accounts-last-active") as HTMLTableDataCellElement;
         this._label = this._row.querySelector(".accounts-label-container") as HTMLInputElement;
-        this._labelEditButton = this._row.querySelector(".accounts-label-edit") as HTMLElement;
+        this._labelEditor = new HiddenInputField({
+            container: this._label,
+            onSet: this._updateLabel,
+            customContainerHTML: `<span class="chip ~gray hidden-input-content"></span>`,
+            clickAwayShouldSave: false,
+        });
+
         this._check.onchange = () => { this.selected = this._check.checked; }
         
         if (window.jellyfinLogin) {
@@ -573,66 +581,6 @@ class user implements User, SearchableItem {
 
         this._notifyDropdown = this._constructDropdown();
 
-        const toggleEmailInput = () => {
-            if (this._emailEditButton.classList.contains("ri-edit-line")) {
-                this._email.innerHTML = emailEditor;
-                this._email.querySelector("input").value = this._emailAddress;
-                this._email.classList.remove("ml-2");
-            } else {
-                this._email.textContent = this._emailAddress;
-                this._email.classList.add("ml-2");
-            }
-            this._emailEditButton.classList.toggle("ri-check-line");
-            this._emailEditButton.classList.toggle("ri-edit-line");
-        };
-        const emailClickListener = (event: Event) => {
-            if (!(event.target instanceof HTMLElement && (this._email.contains(event.target) || this._emailEditButton.contains(event.target)))) {
-                toggleEmailInput();
-                this.email = this.email;
-                document.removeEventListener("click", emailClickListener);
-            }
-        };
-        this._emailEditButton.onclick = () => {
-            if (this._emailEditButton.classList.contains("ri-edit-line")) {
-                document.addEventListener('click', emailClickListener);
-            } else {
-                this._updateEmail();
-                document.removeEventListener('click', emailClickListener);
-            }
-            toggleEmailInput();
-        };
-        
-        const toggleLabelInput = () => {
-            if (this._labelEditButton.classList.contains("ri-edit-line")) {
-                this._label.innerHTML = labelEditor;
-                const input = this._label.querySelector("input");
-                input.value = this._userLabel;
-                input.placeholder = window.lang.strings("label");
-                this._label.classList.remove("ml-2");
-                this._labelEditButton.classList.add("ri-check-line");
-                this._labelEditButton.classList.remove("ri-edit-line");
-            } else {
-                this._updateLabel();
-                this._email.classList.add("ml-2");
-            }
-        };
-        
-        const labelClickListener = (event: Event) => {
-            if (!(event.target instanceof HTMLElement && (this._label.contains(event.target) || this._labelEditButton.contains(event.target)))) {
-                toggleLabelInput();
-                document.removeEventListener("click", labelClickListener);
-            }
-        };
-
-        this._labelEditButton.onclick = () => {
-            if (this._labelEditButton.classList.contains("ri-edit-line")) {
-                document.addEventListener('click', labelClickListener);
-            } else {
-                document.removeEventListener('click', labelClickListener);
-            }
-            toggleLabelInput();
-        };
-
         this.update(user);
         
         document.addEventListener("timefmt-change", () => {
@@ -642,14 +590,12 @@ class user implements User, SearchableItem {
     }
     
     private _updateLabel = () => {
-        let oldLabel = this.label;
-        this.label = this._label.querySelector("input").value;
         let send = {};
-        send[this.id] = this.label;
+        send[this.id] = this._labelEditor.value;
         _post("/users/labels", send, (req: XMLHttpRequest) => {
             if (req.readyState == 4) {
                 if (req.status != 204) {
-                    this.label = oldLabel;
+                    this.label = this._labelEditor.previous;
                     window.notifications.customError("labelChanged", window.lang.notif("errorUnknown"));
                 }
             }
@@ -657,16 +603,14 @@ class user implements User, SearchableItem {
     };
 
     private _updateEmail = () => {
-        let oldEmail = this.email;
-        this.email = this._email.querySelector("input").value;
         let send = {};
-        send[this.id] = this.email;
+        send[this.id] = this._emailEditor.value;
         _post("/users/emails", send, (req: XMLHttpRequest) => {
             if (req.readyState == 4) {
                 if (req.status == 200) {
                     window.notifications.customSuccess("emailChanged", window.lang.var("notifications", "changedEmailAddress", `"${this.name}"`));
                 } else {
-                    this.email = oldEmail;
+                    this.email = this._emailEditor.previous;
                     window.notifications.customError("emailChanged", window.lang.var("notifications", "errorChangedEmailAddress", `"${this.name}"`)); 
                 }
             }
