@@ -142,7 +142,6 @@ $(TYPESCRIPT_TARGET): $(TYPESCRIPT_FULLSRC) ts/tsconfig.json
 	scripts/dark-variant.sh tempts/modules
 	$(info compiling typescript)
 	$(foreach tempsrc,$(TYPESCRIPT_TEMPSRC),$(ESBUILD) --target=es6 --bundle $(tempsrc) $(SOURCEMAP) --outfile=$(patsubst %.ts,%.js,$(subst tempts/,./$(DATA)/web/js/,$(tempsrc))) $(MINIFY);)
-	mv $(DATA)/web/js/crash.js $(DATA)/
 	$(COPYTS)
 
 SWAGGER_SRC = $(wildcard api*.go) $(wildcard *auth.go) views.go
