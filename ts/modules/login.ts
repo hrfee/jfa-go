@@ -1,5 +1,5 @@
 import { Modal } from "../modules/modal.js";
-import { toggleLoader, _post } from "../modules/common.js";
+import { toggleLoader, _post, unicodeB64Encode } from "../modules/common.js";
 
 export class Login {
     loggedIn: boolean = false;
@@ -68,7 +68,7 @@ export class Login {
         const refresh = (username == "" && password == "");
         req.open("GET", this._url + (refresh ? "token/refresh" : "token/login"), true);
         if (!refresh) {
-            req.setRequestHeader("Authorization", "Basic " + btoa(username + ":" + password));
+            req.setRequestHeader("Authorization", "Basic " + unicodeB64Encode(username + ":" + password));
         }
         req.onreadystatechange = ((req: XMLHttpRequest, _: Event): any => {
             if (req.readyState == 4) {

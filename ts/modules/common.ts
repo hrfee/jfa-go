@@ -291,3 +291,16 @@ export function bindManualDropdowns() {
         };
     }
 }
+
+export function unicodeB64Decode(s: string): string {
+    const decoded = atob(s);
+    const byteArray = Uint8Array.from(decoded, (m) => m.codePointAt(0));
+    const toUnicode = new TextDecoder().decode(byteArray);
+    return toUnicode;
+}
+
+export function unicodeB64Encode(s: string): string {
+    const encoded = new TextEncoder().encode(s);
+    const bin = String.fromCodePoint(...encoded);
+    return btoa(bin);
+}
