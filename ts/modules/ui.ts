@@ -27,7 +27,7 @@ export class HiddenInputField {
             this._c.input = `<input type="text" class="field ~neutral @low max-w-24 hidden-input-input">`;
         }
         this._c.container.innerHTML = `
-        <div class="flex flex-row gap-2 items-center">
+        <div class="flex flex-row gap-2 items-baseline">
             ${this._c.buttonOnLeft ? "" : this._c.input}
             ${this._c.buttonOnLeft ? "" : this._c.customContainerHTML}
             <i class="hidden-input-toggle"></i>

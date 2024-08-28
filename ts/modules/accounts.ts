@@ -112,10 +112,10 @@ class user implements User, SearchableItem {
     get admin(): boolean { return this._admin.classList.contains("chip"); }
     set admin(state: boolean) {
         if (state) {
-            this._admin.classList.add("chip", "~info");
+            this._admin.classList.remove("hidden")
             this._admin.textContent = window.lang.strings("admin");
         } else {
-            this._admin.classList.remove("chip", "~info");
+            this._admin.classList.add("hidden")
             this._admin.textContent = "";
         }
     }
@@ -135,10 +135,10 @@ class user implements User, SearchableItem {
     get disabled(): boolean { return this._disabled.classList.contains("chip"); }
     set disabled(state: boolean) {
         if (state) {
-            this._disabled.classList.add("chip", "~warning");
+            this._disabled.classList.remove("hidden")
             this._disabled.textContent = window.lang.strings("disabled");
         } else {
-            this._disabled.classList.remove("chip", "~warning");
+            this._disabled.classList.add("hidden")
             this._disabled.textContent = "";
         }
     }
@@ -185,7 +185,7 @@ class user implements User, SearchableItem {
         if (!telegram && !discord && !matrix && !email) return;
         let innerHTML = `
         <i class="icon ri-settings-2-line ml-2 dropdown-button"></i>
-        <div class="dropdown manual">
+        <div class="dropdown manual over-top">
             <div class="dropdown-display lg">
                 <div class="card ~neutral @low">
                     <div class="supra sm mb-2">${window.lang.strings("contactThrough")}</div>
@@ -486,13 +486,16 @@ class user implements User, SearchableItem {
 
     constructor(user: User) {
         this._row = document.createElement("tr") as HTMLTableRowElement;
+        this._row.classList.add("border-b", "border-dashed", "dark:border-dotted", "dark:border-stone-700");
         let innerHTML = `
             <td><input type="checkbox" class="accounts-select-user" value=""></td>
             <td><div class="flex flex-row gap-2 items-center">
                 <span class="accounts-username"></span>
-                <span class="accounts-label-container" title="${window.lang.strings("label")}"></span>
-                <span class="accounts-admin"></span>
-                <span class="accounts-disabled"></span></span>
+                <div class="flex flex-row gap-2 items-baseline">
+                    <span class="accounts-label-container" title="${window.lang.strings("label")}"></span>
+                    <span class="accounts-admin chip ~info hidden"></span>
+                    <span class="accounts-disabled chip ~warning hidden"></span></span>
+                </div>
             </div></td>
         `;
         if (window.jellyfinLogin) {
@@ -501,7 +504,7 @@ class user implements User, SearchableItem {
             `;
         }
         innerHTML += `
-            <td><div class="flex flex-row gap-2 items-center">
+            <td><div class="flex flex-row gap-2 items-baseline">
                 <span class="accounts-email-container" title="${window.lang.strings("emailAddress")}"></span>
             </div></td>
         `;
@@ -554,6 +557,7 @@ class user implements User, SearchableItem {
             container: this._label,
             onSet: this._updateLabel,
             customContainerHTML: `<span class="chip ~gray hidden-input-content"></span>`,
+            buttonOnLeft: true,
             clickAwayShouldSave: false,
         });
 
