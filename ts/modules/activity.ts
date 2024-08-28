@@ -46,14 +46,16 @@ export class Activity implements activity, SearchableItem {
     private _delete: HTMLElement;
     private _ip: HTMLElement;
     private _act: activity;
-    private _urlBase: string = ((): string => {
+    /* private _urlBase: string = ((): string => {
         let link = window.location.href;
         for (let split of ["#", "?", "/activity"]) {
             link = link.split(split)[0];
         }
         if (link.slice(-1) != "/") { link += "/"; }
+        // FIXME: I should probably just be using window.URLBase, but incase thats not right, i'll put this warning here
+        if (link != window.URLBase) console.error(`URL Bases don't match: "${link}" != "${window.URLBase}"`);
         return link;
-    })();
+    })(); */
 
     _genUserText = (): string => {
         return `<span class="font-medium">${this._act.username || this._act.user_id.substring(0, 5)}</span>`;
@@ -64,17 +66,17 @@ export class Activity implements activity, SearchableItem {
     }
 
     _genUserLink = (): string => {
-        return `<a role="link" tabindex="0" class="hover:underline cursor-pointer activity-pseudo-link-user" data-id="${this._act.user_id}" href="${this._urlBase}accounts?user=${this._act.user_id}">${this._genUserText()}</a>`;
+        return `<a role="link" tabindex="0" class="hover:underline cursor-pointer activity-pseudo-link-user" data-id="${this._act.user_id}" href="${window.URLBase}/accounts?user=${this._act.user_id}">${this._genUserText()}</a>`;
     }
         
     _genSrcUserLink = (): string => {
-        return `<a role="link" tabindex="0" class="hover:underline cursor-pointer activity-pseudo-link-user" data-id="${this._act.user_id}" href="${this._urlBase}accounts?user=${this._act.source}">${this._genSrcUserText()}</a>`;
+        return `<a role="link" tabindex="0" class="hover:underline cursor-pointer activity-pseudo-link-user" data-id="${this._act.user_id}" href="${window.URLBase}/accounts?user=${this._act.source}">${this._genSrcUserText()}</a>`;
     }
 
     private _renderInvText = (): string => { return `<span class="font-medium font-mono">${this.value || this.invite_code || "???"}</span>`; }
 
     private _genInvLink = (): string => {
-        return `<a role="link" tabindex="0" class="hover:underline cursor-pointer activity-pseudo-link-invite" data-id="${this.invite_code}" href="${this._urlBase}?invite=${this.invite_code}">${this._renderInvText()}</a>`;
+        return `<a role="link" tabindex="0" class="hover:underline cursor-pointer activity-pseudo-link-invite" data-id="${this.invite_code}" href="${window.URLBase}/?invite=${this.invite_code}">${this._renderInvText()}</a>`;
     }
 
 
