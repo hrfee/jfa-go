@@ -1,6 +1,5 @@
 .PHONY: configuration email typescript swagger copy compile compress inline-css variants-html install clean npm config-description config-default precompile
-
-all: compile
+.DEFAULT_GOAL := all
 
 GOESBUILD ?= off
 ifeq ($(GOESBUILD), on)
@@ -35,9 +34,11 @@ TAGS := -tags "
 
 ifeq ($(INTERNAL), on)
 	DATA := data
+	COMPDEPS := $(BUILDDEPS)
 else
 	DATA := build/data
 	TAGS := $(TAGS) external
+	COMPDEPS :=
 endif
 
 ifeq ($(TRAY), on)
@@ -206,21 +207,27 @@ $(COPY_TARGET): $(INLINE_TARGET) $(STATIC_SRC) $(LANG_SRC)
 	cp -r lang $(DATA)/
 	cp LICENSE $(DATA)/
 
-precompile: $(DATA) $(CONFIG_DEFAULT) $(EMAIL_TARGET) $(COPY_TARGET) $(SWAGGER_TARGET)
+BUILDDEPS := $(DATA) $(CONFIG_DEFAULT) $(EMAIL_TARGET) $(COPY_TARGET) $(SWAGGER_TARGET) 
+precompile: $(BUILDDEPS)
+
+COMPDEPS =
+ifeq ($(INTERNAL), on)
+	COMPDEPS = $(BUILDDEPS)
+endif
 
 GO_SRC = $(shell find ./ -name "*.go")
-GO_TARGET = build/jfa-go
-$(GO_TARGET): $(DATA) $(CONFIG_DEFAULT) $(EMAIL_TARGET) $(COPY_TARGET) $(SWAGGER_TARGET) $(GO_SRC) go.mod go.sum
+GO_TARGET = build/jfa-go 
+$(GO_TARGET): $(COMPDEPS) $(SWAGGER_TARGET) $(GO_SRC) go.mod go.sum
 	$(info Downloading deps)
 	$(GOBINARY) mod download
 	$(info Building)
 	mkdir -p build
 	$(GOBINARY) build $(RACEDETECTOR) -ldflags="$(LDFLAGS)" $(TAGS) -o $(GO_TARGET)
 
-compile: $(GO_TARGET)
+all: $(BUILDDEPS) $(GO_TARGET)
 
 compress:
-	upx --lzma build/jfa-go
+	upx --lzma $(GO_TARGET)
 
 install:
 	cp -r build $(DESTDIR)/jfa-go
