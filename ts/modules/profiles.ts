@@ -285,7 +285,6 @@ export class ProfileEditor {
 
             let innerHTML = "";
             let invites = req.response["invites"] as Array<Invite>;
-            window.availableProfiles = req.response["profiles"];
             if (invites) {
                 for (let inv of invites) {
                     let name = inv.code;
