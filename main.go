@@ -429,9 +429,11 @@ func start(asDaemon, firstCall bool) {
 		if err != nil {
 			app.err.Fatalf(lm.FailedAuthJellyfin, server, -1, err)
 		}
-		if debugMode {
+		/*if debugMode {
 			app.jf.Verbose = true
-		}
+		}*/
+		// It's probably best we leave this on
+		app.jf.Verbose = true
 
 		var status int
 		retryOpts := mediabrowser.MustAuthenticateOptions{

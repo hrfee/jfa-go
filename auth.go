@@ -169,17 +169,16 @@ func (app *appContext) validateJellyfinCredentials(username, password string, gc
 	ok = false
 	user, err := app.authJf.Authenticate(username, password)
 	if err != nil {
-		if errors.Is(err, mediabrowser.ErrUnauthorized{}) {
+		if errors.As(err, &mediabrowser.ErrUnauthorized{}) {
 			app.logIpInfo(gc, userpage, fmt.Sprintf(lm.FailedAuthRequest, lm.InvalidUserOrPass))
 			respond(401, "Unauthorized", gc)
 			return
-		}
-		if errors.Is(err, mediabrowser.ErrForbidden{}) {
+		} else if errors.As(err, &mediabrowser.ErrForbidden{}) {
 			app.logIpInfo(gc, userpage, fmt.Sprintf(lm.FailedAuthRequest, lm.UserDisabled))
 			respond(403, "yourAccountWasDisabled", gc)
 			return
 		}
-		app.authLog(fmt.Sprintf(lm.FailedAuthJellyfin, app.jf.Server, err))
+		app.authLog(fmt.Sprintf(lm.FailedAuthJellyfin, app.jf.Server, 0, err))
 		respond(500, "Jellyfin error", gc)
 		return
 	}

@@ -24,7 +24,7 @@ replace github.com/hrfee/jfa-go/jellyseerr => ./jellyseerr
 
 require (
 	github.com/bwmarrin/discordgo v0.28.1
-	github.com/dgraph-io/badger/v3 v3.2103.5
+	github.com/dgraph-io/badger/v4 v4.3.0
 	github.com/emersion/go-autostart v0.0.0-20210130080809-00ed301c8e9a
 	github.com/fatih/color v1.17.0
 	github.com/fsnotify/fsnotify v1.7.0
@@ -35,15 +35,15 @@ require (
 	github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/gomarkdown/markdown v0.0.0-20240730141124-034f12af3bf6
-	github.com/hrfee/jfa-go/common v0.0.0-20240824141650-fcdd4e451882
-	github.com/hrfee/jfa-go/docs v0.0.0-20240824141650-fcdd4e451882
-	github.com/hrfee/jfa-go/easyproxy v0.0.0-20240824141650-fcdd4e451882
-	github.com/hrfee/jfa-go/jellyseerr v0.0.0-20240824141650-fcdd4e451882
-	github.com/hrfee/jfa-go/linecache v0.0.0-20240824141650-fcdd4e451882
-	github.com/hrfee/jfa-go/logger v0.0.0-20240824141650-fcdd4e451882
-	github.com/hrfee/jfa-go/logmessages v0.0.0-20240824141650-fcdd4e451882
-	github.com/hrfee/jfa-go/ombi v0.0.0-20240824141650-fcdd4e451882
-	github.com/hrfee/mediabrowser v0.3.18
+	github.com/hrfee/jfa-go/common v0.0.0-20240829123003-65662c57bc2a
+	github.com/hrfee/jfa-go/docs v0.0.0-20240829123003-65662c57bc2a
+	github.com/hrfee/jfa-go/easyproxy v0.0.0-20240829123003-65662c57bc2a
+	github.com/hrfee/jfa-go/jellyseerr v0.0.0-20240829123003-65662c57bc2a
+	github.com/hrfee/jfa-go/linecache v0.0.0-20240829123003-65662c57bc2a
+	github.com/hrfee/jfa-go/logger v0.0.0-20240829123003-65662c57bc2a
+	github.com/hrfee/jfa-go/logmessages v0.0.0-20240829123003-65662c57bc2a
+	github.com/hrfee/jfa-go/ombi v0.0.0-20240829123003-65662c57bc2a
+	github.com/hrfee/mediabrowser v0.3.20
 	github.com/itchyny/timefmt-go v0.1.6
 	github.com/lithammer/shortuuid/v3 v3.0.7
 	github.com/mailgun/mailgun-go/v4 v4.15.0
@@ -62,14 +62,12 @@ require (
 
 require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
-	github.com/bytedance/sonic v1.12.1 // indirect
+	github.com/bytedance/sonic v1.12.2 // indirect
 	github.com/bytedance/sonic/loader v0.2.0 // indirect
-	github.com/cespare/xxhash v1.1.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/cloudwego/base64x v0.1.4 // indirect
 	github.com/cloudwego/iasm v0.2.0 // indirect
-	github.com/dgraph-io/badger/v4 v4.2.0 // indirect
-	github.com/dgraph-io/ristretto v0.1.1 // indirect
+	github.com/dgraph-io/ristretto v0.1.2-0.20240116140435-c67e07994f91 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.5 // indirect
 	github.com/getlantern/context v0.0.0-20220418194847-3d5e7a086201 // indirect
@@ -94,10 +92,8 @@ require (
 	github.com/goccy/go-json v0.10.3 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
-	github.com/golang/glog v1.2.2 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
-	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/flatbuffers v24.3.25+incompatible // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/websocket v1.5.3 // indirect
