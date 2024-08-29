@@ -262,7 +262,12 @@ func (app *appContext) ModifyConfig(gc *gin.Context) {
 		newSection := ns.(map[string]any)
 		iniSection, err := tempConfig.GetSection(section.Section)
 		if err != nil {
-			iniSection, _ = tempConfig.NewSection(section.Section)
+			iniSection, err = tempConfig.NewSection(section.Section)
+			if err != nil {
+				app.err.Printf(lm.FailedModifyConfig, app.configPath, err)
+				respond(500, err.Error(), gc)
+				return
+			}
 		}
 		for _, setting := range section.Settings {
 			newValue, ok := newSection[setting.Setting]

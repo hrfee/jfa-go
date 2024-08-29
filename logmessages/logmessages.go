@@ -28,11 +28,12 @@ const (
 	FailedStat      = "Failed to stat \"%s\": %v"
 	PathNotFound    = "Path \"%s\" not found"
 
-	CopyConfig       = "Copied default configuration to \"%s\""
-	FailedCopyConfig = "Failed to copy default configuration to \"%s\": %v"
-	LoadConfig       = "Loaded config file \"%s\""
-	FailedLoadConfig = "Failed to load config file \"%s\": %v"
-	ModifyConfig     = "Config saved to \"%s\""
+	CopyConfig         = "Copied default configuration to \"%s\""
+	FailedCopyConfig   = "Failed to copy default configuration to \"%s\": %v"
+	LoadConfig         = "Loaded config file \"%s\""
+	FailedLoadConfig   = "Failed to load config file \"%s\": %v"
+	ModifyConfig       = "Config saved to \"%s\""
+	FailedModifyConfig = "Failed to modify config file \"%s\": %v"
 
 	SocketPath          = "Socket Path: \"%s\""
 	FailedSocketConnect = "Couldn't establish socket connection at \"%s\": %v"

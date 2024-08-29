@@ -327,6 +327,11 @@ func start(asDaemon, firstCall bool) {
 		app.info.Fatalf(lm.FailedLangLoad, err)
 	}
 
+	// Read config-base for settings on web.
+	app.configBasePath = "config-base.yaml"
+	configBase, _ := fs.ReadFile(localFS, app.configBasePath)
+	yaml.Unmarshal(configBase, &app.configBase)
+
 	if !firstRun {
 		app.host = app.config.Section("ui").Key("host").String()
 		if app.config.Section("advanced").Key("tls").MustBool(false) {
@@ -389,10 +394,6 @@ func start(asDaemon, firstCall bool) {
 		app.ConnectDB()
 		defer app.storage.db.Close()
 
-		// Read config-base for settings on web.
-		app.configBasePath = "config-base.yaml"
-		configBase, _ := fs.ReadFile(localFS, app.configBasePath)
-		yaml.Unmarshal(configBase, &app.configBase)
 		// copy it to app.patchedConfig, and patch in settings from app.config, and language stuff.
 		app.PatchConfigBase()
 
