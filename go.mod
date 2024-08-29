@@ -43,7 +43,7 @@ require (
 	github.com/hrfee/jfa-go/logger v0.0.0-20240829123003-65662c57bc2a
 	github.com/hrfee/jfa-go/logmessages v0.0.0-20240829123003-65662c57bc2a
 	github.com/hrfee/jfa-go/ombi v0.0.0-20240829123003-65662c57bc2a
-	github.com/hrfee/mediabrowser v0.3.20
+	github.com/hrfee/mediabrowser v0.3.21
 	github.com/itchyny/timefmt-go v0.1.6
 	github.com/lithammer/shortuuid/v3 v3.0.7
 	github.com/mailgun/mailgun-go/v4 v4.15.0
