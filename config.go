@@ -97,6 +97,7 @@ func (app *appContext) loadConfig() error {
 	app.MustSetValue("smtp", "hello_hostname", "localhost")
 	app.MustSetValue("smtp", "cert_validation", "true")
 	app.MustSetValue("smtp", "auth_type", "4")
+	app.MustSetValue("smtp", "port", "465")
 
 	app.MustSetValue("activity_log", "keep_n_records", "1000")
 	app.MustSetValue("activity_log", "delete_after_days", "90")
@@ -150,6 +151,9 @@ func (app *appContext) loadConfig() error {
 
 	app.MustSetValue("advanced", "auth_retry_count", "6")
 	app.MustSetValue("advanced", "auth_retry_gap", "10")
+
+	app.MustSetValue("ui", "port", "8056")
+	app.MustSetValue("advanced", "tls_port", "8057")
 
 	pwrMethods := []string{"allow_pwr_username", "allow_pwr_email", "allow_pwr_contact_method"}
 	allDisabled := true
