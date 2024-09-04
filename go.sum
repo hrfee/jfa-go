@@ -212,6 +212,8 @@ github.com/gorilla/websocket v1.5.3/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/ad
 github.com/hashicorp/hcl v1.0.0/go.mod h1:E5yfLk+7swimpb2L/Alb/PJmXilQ/rhwaUYs4T20WEQ=
 github.com/hrfee/mediabrowser v0.3.22 h1:+BiSE+GlzTZEazyuLvLyhI3nRbrR8DnocgAHEusBh14=
 github.com/hrfee/mediabrowser v0.3.22/go.mod h1:PnHZbdxmbv1wCVdAQyM7nwPwpVj9fdKx2EcET7sAk+U=
+github.com/hrfee/mediabrowser v0.3.23 h1:y1Sd4pSpFCWPTlp7exlPhCYIa3jN7UxxsBEHjVQJrI4=
+github.com/hrfee/mediabrowser v0.3.23/go.mod h1:PnHZbdxmbv1wCVdAQyM7nwPwpVj9fdKx2EcET7sAk+U=
 github.com/inconshreveable/mousetrap v1.0.0/go.mod h1:PxqpIevigyE2G7u3NXJIT2ANytuPF1OarO4DADm73n8=
 github.com/itchyny/timefmt-go v0.1.6 h1:ia3s54iciXDdzWzwaVKXZPbiXzxxnv1SPGFfM/myJ5Q=
 github.com/itchyny/timefmt-go v0.1.6/go.mod h1:RRDZYC5s9ErkjQvTvvU7keJjxUYzIISJGxm9/mAERQg=

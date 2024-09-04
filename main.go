@@ -446,6 +446,7 @@ func start(asDaemon, firstCall bool) {
 			app.err.Fatalf(lm.FailedAuthJellyfin, server, status, err)
 		}
 		app.info.Printf(lm.AuthJellyfin, server)
+		app.debug.Printf(lm.AsUser, app.jf.Username)
 
 		runMigrations(app)
 

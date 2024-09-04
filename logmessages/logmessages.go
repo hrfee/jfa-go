@@ -54,6 +54,7 @@ const (
 	UsingLocalAuth    = "Using local username/pw authentication (NOT RECOMMENDED)"
 
 	AuthJellyfin       = "Authenticated with " + Jellyfin + " @ \"%s\""
+	AsUser             = "As user \"%s\""
 	FailedAuthJellyfin = "Failed to authenticate with " + Jellyfin + " @ \"%s\" (code %d): %v"
 	FailedAuth         = "Failed to authenticate with %s @ \"%s\" (code %d): %v"
 
