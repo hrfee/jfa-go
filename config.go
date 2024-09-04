@@ -148,6 +148,9 @@ func (app *appContext) loadConfig() error {
 	LOGIP = app.config.Section("advanced").Key("log_ips").MustBool(false)
 	LOGIPU = app.config.Section("advanced").Key("log_ips_users").MustBool(false)
 
+	app.MustSetValue("advanced", "auth_retry_count", "6")
+	app.MustSetValue("advanced", "auth_retry_gap", "10")
+
 	pwrMethods := []string{"allow_pwr_username", "allow_pwr_email", "allow_pwr_contact_method"}
 	allDisabled := true
 	for _, v := range pwrMethods {
