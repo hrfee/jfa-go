@@ -132,7 +132,7 @@ class user implements User, SearchableItem {
         }
     }
 
-    get disabled(): boolean { return this._disabled.classList.contains("chip"); }
+    get disabled(): boolean { return !(this._disabled.classList.contains("hidden")); }
     set disabled(state: boolean) {
         if (state) {
             this._disabled.classList.remove("hidden")
