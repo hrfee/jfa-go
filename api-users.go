@@ -187,7 +187,7 @@ func (app *appContext) NewUserFromInvite(gc *gin.Context) {
 			} else if err := app.email.send(msg, req.Email); err != nil {
 				app.err.Printf(lm.FailedSendConfirmationEmail, req.Code, req.Email, err)
 			} else {
-				app.err.Printf(lm.SentConfirmationEmail, req.Code, req.Email)
+				app.debug.Printf(lm.SentConfirmationEmail, req.Code, req.Email)
 			}
 			return
 		}
@@ -240,10 +240,12 @@ func (app *appContext) NewUserFromInvite(gc *gin.Context) {
 
 	if (emailEnabled && req.Email != "") || invite.UserLabel != "" || referralsEnabled {
 		emailStore := EmailAddress{
-			Addr:                req.Email,
-			Contact:             (req.Email != ""),
-			Label:               invite.UserLabel,
-			ReferralTemplateKey: profile.ReferralTemplateKey,
+			Addr:    req.Email,
+			Contact: (req.Email != ""),
+			Label:   invite.UserLabel,
+		}
+		if profile != nil {
+			profile.ReferralTemplateKey = profile.ReferralTemplateKey
 		}
 		/// Ensures at least one contact method is enabled.
 		if nonEmailContactMethodEnabled {
@@ -257,8 +259,6 @@ func (app *appContext) NewUserFromInvite(gc *gin.Context) {
 				if !settings["notify-creation"] {
 					continue
 				}
-				// FIXME: Forgot how "go" works, but these might get killed if not finished
-				// before we do?
 				go func(addr string) {
 					msg, err := app.email.constructCreated(req.Code, req.Username, req.Email, invite, app, false)
 					if err != nil {
@@ -273,7 +273,7 @@ func (app *appContext) NewUserFromInvite(gc *gin.Context) {
 						if err != nil {
 							app.err.Printf(lm.FailedSendCreationAdmin, req.Code, addr, err)
 						} else {
-							app.info.Printf(lm.SentCreationAdmin, req.Code, addr)
+							app.debug.Printf(lm.SentCreationAdmin, req.Code, addr)
 						}
 					}
 				}(address)
