@@ -110,11 +110,7 @@ func (app *appContext) NewUserFromInvite(gc *gin.Context) {
 		gc.JSON(200, validation)
 		return
 	}
-	completeContactMethods := make([]struct {
-		Verified bool
-		PIN      string
-		User     ContactMethodUser
-	}, len(app.contactMethods))
+	completeContactMethods := make([]ContactMethodKey, len(app.contactMethods))
 	for i, cm := range app.contactMethods {
 		completeContactMethods[i].PIN = cm.PIN(req)
 		if completeContactMethods[i].PIN == "" {
@@ -168,13 +164,16 @@ func (app *appContext) NewUserFromInvite(gc *gin.Context) {
 				return
 			}
 			if app.ConfirmationKeys == nil {
-				app.ConfirmationKeys = map[string]map[string]newUserDTO{}
+				app.ConfirmationKeys = map[string]map[string]ConfirmationKey{}
 			}
 			cKeys, ok := app.ConfirmationKeys[req.Code]
 			if !ok {
-				cKeys = map[string]newUserDTO{}
+				cKeys = map[string]ConfirmationKey{}
 			}
-			cKeys[key] = req
+			cKeys[key] = ConfirmationKey{
+				newUserDTO:             req,
+				completeContactMethods: completeContactMethods,
+			}
 			app.confirmationKeysLock.Lock()
 			app.ConfirmationKeys[req.Code] = cKeys
 			app.confirmationKeysLock.Unlock()
@@ -223,10 +222,32 @@ func (app *appContext) NewUserFromInvite(gc *gin.Context) {
 	}
 	app.checkInvite(req.Code, true, req.Username)
 
+	app.PostNewUserFromInvite(nu, ConfirmationKey{newUserDTO: req, completeContactMethods: completeContactMethods}, profile, invite)
+
+	/*responseFunc, logFunc, success := app.NewUser(req, false, gc)
+	if !success {
+		logFunc()
+		responseFunc(gc)
+		return
+	}*/
+	code := 200
+	for _, val := range validation {
+		if !val {
+			code = 400
+		}
+	}
+
+	gc.JSON(code, validation)
+	// These don't need to complete anytime soon
+	// wg.Wait()
+}
+
+// PostNewUserFromInvite attaches user details (e.g. contact method details) to a new user once they've been created from an invite.
+func (app *appContext) PostNewUserFromInvite(nu NewUserData, req ConfirmationKey, profile *Profile, invite Invite) {
 	nonEmailContactMethodEnabled := false
-	for i, c := range completeContactMethods {
+	for i, c := range req.completeContactMethods {
 		if c.Verified {
-			c.User.SetAllowContactFromDTO(req)
+			c.User.SetAllowContactFromDTO(req.newUserDTO)
 			if c.User.AllowContact() {
 				nonEmailContactMethodEnabled = true
 			}
@@ -308,12 +329,12 @@ func (app *appContext) NewUserFromInvite(gc *gin.Context) {
 		// FIXME: figure these out in a nicer way? this relies on the current ordering,
 		// which may not be fixed.
 		if discordEnabled {
-			discordUser = completeContactMethods[0].User.(*DiscordUser)
+			discordUser = req.completeContactMethods[0].User.(*DiscordUser)
 			if telegramEnabled {
-				telegramUser = completeContactMethods[1].User.(*TelegramUser)
+				telegramUser = req.completeContactMethods[1].User.(*TelegramUser)
 			}
 		} else if telegramEnabled {
-			telegramUser = completeContactMethods[0].User.(*TelegramUser)
+			telegramUser = req.completeContactMethods[0].User.(*TelegramUser)
 		}
 	}
 
@@ -322,30 +343,13 @@ func (app *appContext) NewUserFromInvite(gc *gin.Context) {
 			continue
 		}
 		// User already created, now we can link contact methods
-		err := tps.AddContactMethods(nu.User.ID, req, discordUser, telegramUser)
+		err := tps.AddContactMethods(nu.User.ID, req.newUserDTO, discordUser, telegramUser)
 		if err != nil {
 			app.err.Printf(lm.FailedSyncContactMethods, tps.Name(), err)
 		}
 	}
 
 	app.WelcomeNewUser(nu.User, expiry)
-
-	/*responseFunc, logFunc, success := app.NewUser(req, false, gc)
-	if !success {
-		logFunc()
-		responseFunc(gc)
-		return
-	}*/
-	code := 200
-	for _, val := range validation {
-		if !val {
-			code = 400
-		}
-	}
-
-	gc.JSON(code, validation)
-	// These don't need to complete anytime soon
-	// wg.Wait()
 }
 
 // @Summary Enable/Disable a list of users, optionally notifying them why.

@@ -132,7 +132,7 @@ type appContext struct {
 	proxyConfig                          easyproxy.ProxyConfig
 	internalPWRs                         map[string]InternalPWR
 	pwrCaptchas                          map[string]Captcha
-	ConfirmationKeys                     map[string]map[string]newUserDTO // Map of invite code to jwt to request
+	ConfirmationKeys                     map[string]map[string]ConfirmationKey // Map of invite code to jwt to request
 	confirmationKeysLock                 sync.Mutex
 }
 

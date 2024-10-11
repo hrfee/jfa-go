@@ -455,3 +455,14 @@ type CreateBackupDTO struct {
 type GetBackupsDTO struct {
 	Backups []CreateBackupDTO `json:"backups"`
 }
+
+type ConfirmationKey struct {
+	newUserDTO
+	completeContactMethods []ContactMethodKey
+}
+
+type ContactMethodKey struct {
+	Verified bool
+	PIN      string
+	User     ContactMethodUser
+}

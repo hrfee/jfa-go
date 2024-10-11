@@ -624,7 +624,7 @@ func (app *appContext) NewUserFromConfirmationKey(invite Invite, key string, lan
 			"contactMessage": app.config.Section("ui").Key("contact_message").String(),
 		})
 	}
-	var req newUserDTO
+	var req ConfirmationKey
 	if app.ConfirmationKeys == nil {
 		fail()
 		return
@@ -666,8 +666,10 @@ func (app *appContext) NewUserFromConfirmationKey(invite Invite, key string, lan
 		profile = &p
 	}
 
+	// FIXME: Email and contract method linking?????
+
 	nu /*wg*/, _ := app.NewUserPostVerification(NewUserParams{
-		Req:                 req,
+		Req:                 req.newUserDTO,
 		SourceType:          sourceType,
 		Source:              source,
 		ContextForIPLogging: gc,
@@ -682,6 +684,8 @@ func (app *appContext) NewUserFromConfirmationKey(invite Invite, key string, lan
 		return
 	}
 	app.checkInvite(req.Code, true, req.Username)
+
+	app.PostNewUserFromInvite(nu, req, profile, invite)
 
 	jfLink := app.config.Section("ui").Key("redirect_url").String()
 	if app.config.Section("ui").Key("auto_redirect").MustBool(false) {
