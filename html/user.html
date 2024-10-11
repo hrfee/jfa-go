@@ -80,33 +80,15 @@
         {{ template "login-modal.html" . }}
         {{ template "account-linking.html" . }}
         <div id="notification-box"></div>
-        <div class="top-2 left-2 absolute">
-            <span class="dropdown" tabindex="0" id="lang-dropdown">
-                <span class="button ~urge dropdown-button">
-                    <i class="ri-global-line"></i>
-                    <span class="ml-2 chev"></span>
-                </span>
-                <div class="dropdown-display">
-                    <div class="card ~neutral @low">
-                        <label class="switch pb-4">
-                            <input type="radio" name="lang-time" id="lang-12h">
-                            <span>{{ .strings.time12h }}</span>
-                        </label>
-                        <label class="switch pb-4">
-                            <input type="radio" name="lang-time" id="lang-24h">
-                            <span>{{ .strings.time24h }}</span>
-                        </label>
-                        <div id="lang-list"></div>
-                    </div>
+        <div class="page-container m-2 lg:my-20 lg:mx-64 flex flex-col gap-4 unfocused">
+            <div class="top-2 inset-x-2 lg:absolute flex flex-row justify-between">
+                <div class="flex flex-row gap-2">
+                    {{ template "lang-select.html" . }}
+                    <span class="button ~warning h-min" alt="{{ .strings.theme }}" id="button-theme"><i class="ri-sun-line"></i></span>
+                    <span class="button ~critical @low mb-4 unfocused" id="logout-button">{{ .strings.logout }}</span>
                 </div>
-            </span>
-            <span class="button ~warning" alt="{{ .strings.theme }}" id="button-theme"><i class="ri-sun-line"></i></span>
-            <span class="button ~critical @low mb-4 unfocused" id="logout-button">{{ .strings.logout }}</span>
-        </div>
-        <div class="top-2 right-2 absolute">
-            <a class="button ~info unfocused" href="/" id="admin-back-button"><i class="ri-arrow-left-fill mr-2"></i>{{ .strings.admin }}</a>
-        </div>
-        <div class="page-container m-2 lg:my-20 lg:mx-64 unfocused">
+                <a class="button ~info unfocused h-min" href="/" id="admin-back-button"><i class="ri-arrow-left-fill mr-2"></i>{{ .strings.admin }}</a>
+            </div>
             <div class="card @low dark:~d_neutral mb-4" id="card-user">
                 <span class="heading mb-2"></span>
             </div>

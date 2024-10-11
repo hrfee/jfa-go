@@ -161,6 +161,7 @@ if (window.userExpiryEnabled) {
         messageEl.textContent = window.userExpiryMessage.replace("{date}", toDateString(time));
         setTimeout(calculateTime, 1000);
     };
+    document.addEventListener("timefmt-change", calculateTime)
     calculateTime();
 }
 

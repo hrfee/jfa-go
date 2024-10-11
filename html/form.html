@@ -35,20 +35,11 @@
             </div>
         </div>
         {{ template "account-linking.html" . }}
-        <div class="top-2 left-2 absolute">
-            <span class="dropdown" tabindex="0" id="lang-dropdown">
-                <span class="button ~urge dropdown-button">
-                    <i class="ri-global-line"></i>
-                    <span class="ml-2 chev"></span>
-                </span>
-                <div class="dropdown-display">
-                    <div class="card ~neutral @low" id="lang-list">
-                    </div>
-                </div>
-            </span>
-        </div>
         <div id="notification-box"></div>
-        <div class="page-container m-2 lg:my-20 lg:mx-64">
+        <div class="page-container m-2 lg:my-20 lg:mx-64 flex flex-col gap-4">
+            <div class="top-2 inset-x-2 lg:absolute flex flex-row justify-between">
+                {{ template "lang-select.html" . }}
+            </div>
             <div class="card dark:~d_neutral @low">
                 <div class="flex flex-col md:flex-row gap-3 items-baseline mb-2">
                     <span class="heading mr-5">

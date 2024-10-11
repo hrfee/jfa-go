@@ -42,6 +42,7 @@ func (app *appContext) ServeSetup(gc *gin.Context) {
 	gc.HTML(200, "setup.html", gin.H{
 		"cssVersion": cssVersion,
 		"lang":       app.storage.lang.Setup[lang],
+		"strings":    app.storage.lang.Setup[lang].Strings,
 		"emailLang":  app.storage.lang.Email[emailLang],
 		"language":   app.storage.lang.Setup[lang].JSON,
 		"messages":   string(msg),

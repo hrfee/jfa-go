@@ -10,16 +10,7 @@
         <div class="page-container m-2 lg:my-20 lg:mx-64 flex flex-col gap-4">
             <div class="top-2 inset-x-2 lg:absolute flex flex-row justify-between">
                 <div class="flex flex-row gap-2">
-                    <span class="dropdown" tabindex="0" id="lang-dropdown">
-                        <span class="button ~urge dropdown-button">
-                            <i class="ri-global-line"></i>
-                            <span class="ml-2 chev"></span>
-                        </span>
-                        <div class="dropdown-display">
-                            <div class="card ~neutral @low" id="lang-list">
-                            </div>
-                        </div>
-                    </span>
+                    {{ template "lang-select.html" . }}
                 </div>
                 <span class="button ~warning" alt="{{ .strings.theme }}" id="button-theme"><i class="ri-sun-line"></i></span>
             </div>    

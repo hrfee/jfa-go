@@ -83,7 +83,7 @@ export const loadLangSelector = (page: string) => {
             let innerHTML = '';
             for (let code in req.response) {
                 queryString.set("lang", code);
-                innerHTML += `<a href="?${queryString.toString()}" class="button w-full text-left justify-start ~neutral mb-2 lang-link">${req.response[code]}</a>`;
+                innerHTML += `<a href="?${queryString.toString()}" class="button w-full text-left justify-start ~neutral lang-link">${req.response[code]}</a>`;
                 queryString.delete("lang");
             }
             list.innerHTML = innerHTML;

@@ -1,0 +1,19 @@
+<span class="dropdown z-[11]" tabindex="0" id="lang-dropdown">
+    <span class="button ~urge dropdown-button">
+        <i class="ri-global-line"></i>
+        <span class="ml-2 chev"></span>
+    </span>
+    <div class="dropdown-display">
+        <div class="card ~neutral @low flex flex-col gap-2">
+            <label class="switch">
+                <input type="radio" name="lang-time" id="lang-12h">
+                <span>{{ .strings.time12h }}</span>
+            </label>
+            <label class="switch">
+                <input type="radio" name="lang-time" id="lang-24h">
+                <span>{{ .strings.time24h }}</span>
+            </label>
+            <div id="lang-list"></div>
+        </div>
+    </div>
+</span>
