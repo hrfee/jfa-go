@@ -53,6 +53,14 @@ func (app *appContext) NewUserFromAdmin(gc *gin.Context) {
 		nu.Log()
 	}
 
+	if emailEnabled && req.Email != "" {
+		emailStore := EmailAddress{
+			Addr:    req.Email,
+			Contact: true,
+		}
+		app.storage.SetEmailsKey(nu.User.ID, emailStore)
+	}
+
 	welcomeMessageSentIfNecessary := true
 	if nu.Created {
 		welcomeMessageSentIfNecessary = app.WelcomeNewUser(nu.User, time.Time{})
