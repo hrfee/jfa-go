@@ -1,18 +1,18 @@
 {
     "meta": {
-        "name": ""
+        "name": "Português (PT)"
     },
     "strings": {
-        "startMessage": "",
-        "discordStartMessage": "",
-        "matrixStartMessage": "",
-        "invalidPIN": "",
-        "pinSuccess": "",
-        "languageMessage": "",
-        "languageMessageDiscord": "",
-        "languageSet": "",
-        "discordDMs": "",
-        "sentInvite": "",
-        "sentInviteFailure": ""
+        "startMessage": "Olá!\nIntroduza aqui o seu código PIN Jellyfin para verificar a sua conta.",
+        "discordStartMessage": "Olá!\n Introduza o seu PIN com `/pin <PIN>` para verificar a sua conta.",
+        "matrixStartMessage": "Olá!\nIntroduza o PIN abaixo na página de registo do Jellyfin para verificar a sua conta.",
+        "invalidPIN": "O PIN não é válido, tente novamente.",
+        "pinSuccess": "PIN introduzido com sucesso! Pode agora voltar à página de registo.",
+        "languageMessage": "Nota: Veja os idiomas disponíveis com {command} e defina o idioma com {command} <código do idioma>.",
+        "languageMessageDiscord": "Nota: defina o seu idioma com /lang <nome do idioma>.",
+        "languageSet": "Idioma definido para {language}.",
+        "discordDMs": "Verifique as suas MDs para obter uma resposta.",
+        "sentInvite": "Convite enviado.",
+        "sentInviteFailure": "Falha no envio do convite, verifique os registos."
     }
 }
