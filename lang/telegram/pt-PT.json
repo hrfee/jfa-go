@@ -1,0 +1,18 @@
+{
+    "meta": {
+        "name": ""
+    },
+    "strings": {
+        "startMessage": "",
+        "discordStartMessage": "",
+        "matrixStartMessage": "",
+        "invalidPIN": "",
+        "pinSuccess": "",
+        "languageMessage": "",
+        "languageMessageDiscord": "",
+        "languageSet": "",
+        "discordDMs": "",
+        "sentInvite": "",
+        "sentInviteFailure": ""
+    }
+}
