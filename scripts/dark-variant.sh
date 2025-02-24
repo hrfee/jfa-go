@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # scan all typescript and automatically add dark variants to color tags if they're not already present.
 
