@@ -1,4 +1,4 @@
-#!/usr/env/bin bash
+#!/usr/bin/env bash
 # sets version environment variable for goreleaser to use
 # scripts/version.sh goreleaser ...
 
