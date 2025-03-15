@@ -337,11 +337,13 @@ func (app *appContext) PostNewUserFromInvite(nu NewUserData, req ConfirmationKey
 		// FIXME: figure these out in a nicer way? this relies on the current ordering,
 		// which may not be fixed.
 		if discordEnabled {
-			discordUser = req.completeContactMethods[0].User.(*DiscordUser)
-			if telegramEnabled {
+		    if req.completeContactMethods[0].User != nil {
+			    discordUser = req.completeContactMethods[0].User.(*DiscordUser)
+			}
+			if telegramEnabled && req.completeContactMethods[1].User != nil {
 				telegramUser = req.completeContactMethods[1].User.(*TelegramUser)
 			}
-		} else if telegramEnabled {
+		} else if telegramEnabled && req.completeContactMethods[0].User != nil {
 			telegramUser = req.completeContactMethods[0].User.(*TelegramUser)
 		}
 	}
