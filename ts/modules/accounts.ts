@@ -103,7 +103,7 @@ class user implements User, SearchableItem {
     set selected(state: boolean) {
         this._selected = state;
         this._check.checked = state;
-        state ? document.dispatchEvent(this._checkEvent) : document.dispatchEvent(this._uncheckEvent);
+        state ? document.dispatchEvent(this._checkEvent()) : document.dispatchEvent(this._uncheckEvent());
     }
 
     get name(): string { return this._username.textContent; }
@@ -481,8 +481,8 @@ class user implements User, SearchableItem {
         );
     }
 
-    private _checkEvent = new CustomEvent("accountCheckEvent");
-    private _uncheckEvent = new CustomEvent("accountUncheckEvent");
+    private _checkEvent = () => new CustomEvent("accountCheckEvent", {detail: this.id});
+    private _uncheckEvent = () => new CustomEvent("accountUncheckEvent", {detail: this.id});
 
     constructor(user: User) {
         this._row = document.createElement("tr") as HTMLTableRowElement;
@@ -696,7 +696,7 @@ class user implements User, SearchableItem {
     asElement = (): HTMLTableRowElement => { return this._row; }
     remove = () => {
         if (this.selected) {
-            document.dispatchEvent(this._uncheckEvent);
+            document.dispatchEvent(this._uncheckEvent());
         }
         this._row.remove(); 
     }
@@ -927,6 +927,17 @@ export class accountsList {
         state ? this._checkCount = count : 0;
     }
     
+    selectAllBetweenIDs = (startID: string, endID: string) => {
+        let inRange = false;
+        for (let id of this._ordering) {
+            if (!(inRange || id == startID)) continue;
+            inRange = true;
+            if (!(this._table.contains(this._users[id].asElement()))) continue;
+            this._users[id].selected = true;
+            if (id == endID) return;
+        }
+    }
+
     add = (u: User) => {
         let domAccount = new user(u);
         this._users[u.id] = domAccount;

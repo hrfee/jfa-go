@@ -63,7 +63,7 @@ func (app *appContext) NewUserFromAdmin(gc *gin.Context) {
 
 	welcomeMessageSentIfNecessary := true
 	if nu.Created {
-		welcomeMessageSentIfNecessary = app.WelcomeNewUser(nu.User, time.Time{})
+		welcomeMessageSentIfNecessary = !app.WelcomeNewUser(nu.User, time.Time{})
 	}
 
 	respondUser(nu.Status, nu.Created, welcomeMessageSentIfNecessary, nu.Message, gc)
