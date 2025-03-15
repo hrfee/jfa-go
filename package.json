@@ -41,6 +41,6 @@
     "live-server": "^1.2.2"
   },
   "optionalDependencies": {
-    "esbuild": "^0.18.20"
+    "esbuild": "^0.25.0"
   }
 }
