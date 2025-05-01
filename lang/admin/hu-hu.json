@@ -112,7 +112,12 @@
         "matchText": "Eggyező szöveg",
         "jellyfinID": "Jellyfin azonosító",
         "userPageLogin": "Felhasználói oldal: Bejelentkezés",
-        "clickToRemoveFilter": "Szűrő eltávolítása."
+        "clickToRemoveFilter": "Szűrő eltávolítása.",
+        "deleted": "Törölt",
+        "invite": "Meghívás",
+        "activity": "Aktivitás",
+        "userLabel": "Felhasználói címke",
+        "userLabelDescription": "Ezzel a meghívóval létrehozott felhasználókra alkalmazandó címke."
     },
     "notifications": {
         "changedEmailAddress": "",
