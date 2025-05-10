@@ -1,67 +1,67 @@
 {
     "meta": {
-        "name": ""
+        "name": "ภาษาไทย (TH)"
     },
     "strings": {
-        "username": "",
-        "password": "",
-        "emailAddress": "",
-        "name": "",
-        "submit": "",
-        "send": "",
-        "success": "",
-        "continue": "",
-        "error": "",
-        "copy": "",
-        "copied": "",
-        "time24h": "",
-        "time12h": "",
-        "linkTelegram": "",
-        "contactEmail": "",
-        "contactTelegram": "",
-        "linkDiscord": "",
-        "linkMatrix": "",
-        "contactDiscord": "",
-        "theme": "",
-        "refresh": "",
-        "required": "",
-        "login": "",
-        "logout": "",
-        "admin": "",
-        "enabled": "",
-        "disabled": "",
-        "reEnable": "",
-        "disable": "",
-        "contactMethods": "",
-        "accountStatus": "",
-        "notSet": "",
-        "expiry": "",
-        "add": "",
-        "edit": "",
-        "delete": "",
-        "myAccount": "",
-        "referrals": "",
-        "inviteRemainingUses": ""
+        "username": "ชื่อผู้ใช้งาน",
+        "password": "รหัสผ่าน",
+        "emailAddress": "ที่อยู่อีเมล",
+        "name": "ชื่อ",
+        "submit": "ส่ง",
+        "send": "ส่ง",
+        "success": "เสร็จสิ้น",
+        "continue": "ดำเนินการต่อ",
+        "error": "ข้อผิดผลาด",
+        "copy": "คัดลอก",
+        "copied": "คัดลอกแล้ว",
+        "time24h": "เวลา 24 ชม.",
+        "time12h": "เวลา 12 ชม.",
+        "linkTelegram": "ลิงค์ Telegram",
+        "contactEmail": "ติดต่อผ่านอีเมล",
+        "contactTelegram": "ติดต่อผ่าน Telegram",
+        "linkDiscord": "ลิงค์ Discord",
+        "linkMatrix": "ลิงค์ Matrix",
+        "contactDiscord": "ติดต่อผ่าน Discord",
+        "theme": "ธีม",
+        "refresh": "โหลดใหม่",
+        "required": "จำเป็น",
+        "login": "เข้าสู่ระบบ",
+        "logout": "ออกจากระบบ",
+        "admin": "ผู้ดูแล",
+        "enabled": "เปิดใช้งาน",
+        "disabled": "ปิดใช้งาน",
+        "reEnable": "เปิดใช้งานอีกครั้ง",
+        "disable": "ปิดใช้งาน",
+        "contactMethods": "ช่องทางการติดต่อ",
+        "accountStatus": "สถานะบัญชี",
+        "notSet": "ยังไม่ตั้งค่า",
+        "expiry": "หมดอายุ",
+        "add": "เพิ่ม",
+        "edit": "แก้ไข",
+        "delete": "ลบ",
+        "myAccount": "บัญชีของฉัน",
+        "referrals": "คำเชิญ",
+        "inviteRemainingUses": "จำนวนใช้ที่เหลือ"
     },
     "notifications": {
-        "errorLoginBlank": "",
-        "errorConnection": "",
-        "errorUnknown": "",
-        "error401Unauthorized": "",
-        "errorSaveSettings": ""
+        "errorLoginBlank": "ชื่อผู้ใช้ และ/หรือ รหัสผ่านถูกเว้นว่างไว้",
+        "errorConnection": "ไม่สามารถเชื่อต่อไปยัง jfa-go ได้",
+        "errorUnknown": "เกิดข้อผิดผลาดที่ไม่รู้จัก",
+        "error401Unauthorized": "ไม่อนุญาติการเข้าถึง, ลองโหลดหน้านี้อีกครั้ง",
+        "errorSaveSettings": "ไม่สามารถบันทึกการตั้งค่าได้"
     },
     "quantityStrings": {
         "year": {
-            "singular": "",
-            "plural": ""
+            "singular": "{n} ปี",
+            "plural": "{n} ปี"
         },
         "month": {
-            "singular": "",
-            "plural": ""
+            "singular": "{n} เดือน",
+            "plural": "{n} เดือน"
         },
         "day": {
-            "singular": "",
-            "plural": ""
+            "singular": "{n} วัน",
+            "plural": "{n} วัน"
         }
     }
 }
