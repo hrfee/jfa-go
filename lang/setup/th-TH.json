@@ -1,167 +1,167 @@
 {
     "meta": {
-        "name": ""
+        "name": "ภาษาไทย (TH)"
     },
     "strings": {
-        "pageTitle": "",
-        "next": "",
-        "back": "",
-        "optional": "",
-        "serverType": "",
-        "disabled": "",
-        "enabled": "",
-        "port": "",
-        "message": "",
-        "serverAddress": "",
-        "emailSubject": "",
-        "URL": "",
-        "apiKey": "",
-        "error": "",
-        "errorInvalidUserPass": "",
-        "errorNotAdmin": "",
-        "errorUserDisabled": "",
-        "error404": "",
-        "errorConnectionRefused": "",
-        "errorUnknown": "",
-        "errorProxy": ""
+        "pageTitle": "ตั้งค่า - jfa-go",
+        "next": "ถัดไป",
+        "back": "กลับ",
+        "optional": "ไม่จำเป็น",
+        "serverType": "ประเภทเซิฟเวอร์",
+        "disabled": "ปิดใช้งาน",
+        "enabled": "เปิดใช้งาน",
+        "port": "Port",
+        "message": "ข้อความ",
+        "serverAddress": "ที่อยู่เซิฟเวอร์",
+        "emailSubject": "ผู้รับอีเมล",
+        "URL": "URL",
+        "apiKey": "API Key",
+        "error": "ข้อผิดผลาด",
+        "errorInvalidUserPass": "ชื่อผู้ใช้/รหัสผ่าน ไม่ถูกต้อง",
+        "errorNotAdmin": "ผู้ใช้นี้ไม่ได้รับอนุญาติในการจัดการเซิฟเวอร์",
+        "errorUserDisabled": "ผู้ใช้นี้อาจถูกปิดใช้งาน",
+        "error404": "404, โปรดตรวจสอบ URL ภายใน",
+        "errorConnectionRefused": "การเชื่อมต่อถูกปฏิเสธ",
+        "errorUnknown": "ข้อผิดพลาดที่ไม่รู้จัก, โปรดตรวจสอบบันทึกแอปฯ",
+        "errorProxy": "การตั้งค่า Proxy ไม่ถูกต้อง"
     },
     "startPage": {
-        "welcome": "",
-        "pressStart": "",
-        "httpsNotice": "",
-        "start": ""
+        "welcome": "ยินดีต้อนรับ!",
+        "pressStart": "คุณจะต้องทำอะไรเล็กน้อยเพื่อตั้งค่า jfa-go, กดเริ่มเพื่อดำเนินการต่อ",
+        "httpsNotice": "อย่าลืมตรวจสอบว่าเข้าถึงหน้านี้ผ่าน HTTPS หรือเครือข่ายส่วนตัว",
+        "start": "เริ่ม"
     },
     "endPage": {
-        "finished": "",
-        "restartMessage": "",
-        "refreshPage": ""
+        "finished": "เสร็จสิ้น!",
+        "restartMessage": "ฟีเจอร์อย่างเช่น บอท Discord/Telegram/Matrix, ข้อความ Markdown แบบกำหนดเอง และหน้า \"บัญชีของฉัน\" ที่ผู้ใช้เข้าถึงได้ สามารถพบได้ที่การตั้งค่า, อย่าลืมส่องดูหล่ะ กดปุ่มข้างล่างเพื่อเริ่มระบบใหม่ หลังจากนั้นโหลดหน้านี้ใหม่อีกครั้ง",
+        "refreshPage": "โหลดใหม่"
     },
     "language": {
-        "title": "",
-        "description": "",
-        "defaultAdminLang": "",
-        "defaultFormLang": "",
-        "defaultEmailLang": ""
+        "title": "ภาษา",
+        "description": "แปลภาษาโดยชุมชนมีให้ใช้งานเกือบทุกส่วนใน jfa-go, คุณสามารถเลือกภาษาหลักได้ข้างล่าง, แต่ผู้ใช้สามารถเปลี่ยนเองได้ตามต้องการ ถ้าต้องการช่วยแปลภาษา ลงทะเบียนที่ {n} เพื่อเริ่มแปลภาษาได้เลย!",
+        "defaultAdminLang": "ภาษาหลักสำหรับผู้ดูแล",
+        "defaultFormLang": "ภาษาหลักสำหรับหน้าสร้างบัญชี",
+        "defaultEmailLang": "ภาษาหลักสำหรับอีเมล"
     },
     "general": {
-        "title": "",
-        "listenAddress": "",
-        "urlBase": "",
-        "urlBaseNotice": "",
-        "lightTheme": "",
-        "darkTheme": "",
-        "useHTTPS": "",
-        "httpsPort": "",
-        "useHTTPSNotice": "",
-        "pathToCertificate": "",
-        "pathToKeyFile": ""
+        "title": "ทั่วไป",
+        "listenAddress": "Listen Address",
+        "urlBase": "URL Base",
+        "urlBaseNotice": "จำเป็นเฉพาะเมื่อผ่าน Reverse Proxy บนโดเมนย่อย (ตัวอย่าง 'jellyf.in/accounts')",
+        "lightTheme": "สว่าง",
+        "darkTheme": "มืด",
+        "useHTTPS": "ใช้ HTTPS",
+        "httpsPort": "พอร์ต HTTPS",
+        "useHTTPSNotice": "จำเป็นเฉพาะถ้าเข้าใช้งานไม่ผ่าน Reverse Proxy",
+        "pathToCertificate": "ที่อยู่ใบรับรอง",
+        "pathToKeyFile": "ที่อยู่ไฟล์กุญแจ (รหัสใบรับรอง)"
     },
     "updates": {
-        "title": "",
-        "description": "",
-        "updateChannel": "",
-        "stable": "",
-        "unstable": ""
+        "title": "อัปเดต",
+        "description": "เปิดเพื่อรับการแจ้งเตือนเมื่ออัปเดตพร้อมใช้งาน, jfa-go จะตรวจ {n} ทุก ๆ 30 นาที โดยไม่มีการเก็บ IP หรือข้อมูลที่ระบุถึงบุคคลได้",
+        "updateChannel": "ช่องอัปเดต",
+        "stable": "Stable",
+        "unstable": "Unstable"
     },
     "proxy": {
-        "title": "",
-        "description": "",
-        "protocol": "",
-        "address": ""
+        "title": "Proxy",
+        "description": "ให้ jfa-go เชื่อมต่อทุกอย่างผ่าน HTTP/SOCKS5 proxy, การเชื่อมต่อไปยัง Jellyfin จะถูกเชื่อมต่อผ่านทางนี้",
+        "protocol": "Protocol",
+        "address": "ที่อยู่ (รวมถึง Port)"
     },
     "login": {
-        "title": "",
-        "description": "",
-        "authorizeWithJellyfin": "",
-        "authorizeManual": "",
-        "adminOnly": "",
-        "allowAll": "",
-        "allowAllDescription": "",
-        "authorizeManualUserPageNotice": "",
-        "emailNotice": ""
+        "title": "เข้าสู่ระบบ",
+        "description": "เพื่อเข้าถึงหน้าผู้ดูแลระบบ คุณจำเป็นต้องเข้าสู่ระบบผ่านช่องทางด้านล่างนี้:",
+        "authorizeWithJellyfin": "ยืนยันตัวตนผ่าน Jellyfin/Emby: ข้อมูลเข้าสู่ระบบจะใช้ร่วมกับ Jellyfin, ซึ่งสามารถใช้ร่วมกับผู้ใช้อื่น ๆ ได้",
+        "authorizeManual": "ชื่อผู้ใช้ และ รหัสผ่าน: ตั้งค่าชื่อผู้ใช้ และ รหัสผ่านด้วยตนเอง",
+        "adminOnly": "ผู้ดูและระบบเท่านั้น (แนะนำ)",
+        "allowAll": "อนุญาติให้ผู้ใช้ Jellyfin ทั้งหมดเข้าสู่ระบบได้",
+        "allowAllDescription": "ไม่แนะนำ, คุณควรอนุญาติเป็นรายบุคคลให้เข้าสู่ระบบหลังจากตั้งค่า",
+        "authorizeManualUserPageNotice": "ใช้การตั้งค่านี้ จะปิดการใช้งานฟีเจอร์ \"หน้าผู้ใช้\"",
+        "emailNotice": "อีเมลของคุณสามารถใช้เพื่อรับการแจ้งเตือนได้"
     },
     "jellyfinEmby": {
-        "title": "",
-        "description": "",
-        "embyNotice": "",
-        "internal": "",
-        "external": "",
-        "replaceJellyfin": "",
-        "replaceJellyfinNotice": "",
-        "addressExternalNotice": "",
-        "testConnection": ""
+        "title": "Jellyfin/Emby",
+        "description": "บัญชีแอดมินจำเป็น เพราะ API ไม่อนุญาติให้สร้างผู้ใช้งานโดยไม่มี API key คุณควรสร้างชื่อผู้ใช้เฉพาะ และเลือก \"อนุญาติผู้ใช้นี้จัดการเซิฟเวอร์นี้ (Allow this user to manage the server)\" นอกเหนือจากนั้น สามารถปิดได้เลย หลังจากตั้งค่าเสร็จสิ้นแล้ว กรอกข้อมูลการเข้าสู่ระบบตรงนี้",
+        "embyNotice": "การรอบรับ Emby ยังถูกจำกัด และไม่รอบรับการตั้งค่ารหัสผ่านใหม่",
+        "internal": "ภายใน",
+        "external": "ภายนอก",
+        "replaceJellyfin": "ชื่อเซิฟเวอร์",
+        "replaceJellyfinNotice": "หากกรอก, ชื่อนี้จะถูกเปลี่ยนทุกอย่างที่เกี่ยวกับ 'Jellyfin' ในแอปฯ",
+        "addressExternalNotice": "ปล่อยว่างหากใช้ที่อยู่เดียวกัน",
+        "testConnection": "ทดสอบการเชื่อมต่อ"
     },
     "ombi": {
-        "title": "",
-        "description": "",
-        "apiKeyNotice": ""
+        "title": "Ombi",
+        "description": "โดยเชื่อมต่อกับ Ombi, ทั้งบัญชี Jellyfin และ Ombi จะถูกสร้างขึ้นเมื่อผู้ใช้เข้าร่วมผ่าน jfa-go, หลังตั้งค่าเสร็จ ไปยังการตั้งค่าเพื่อตั้งค่าโปรไฟล์เริ่มต้นสำหรับผู้ใช้ Ombi ใหม่",
+        "apiKeyNotice": "หาได้จากแท็บแรกจากการตั้งค่าบน Ombi"
     },
     "messages": {
-        "title": "",
-        "description": ""
+        "title": "ข้อความ",
+        "description": "jfa-go สามารถส่งคำขอตั้งค่ารหัสผ่านใหม่ และข้อความต่าง ๆ ผ่าน Email, Discord, Telegram, และ/หรือ Matrix คุณสามารถตั้งค่าอีเมลข้างล่าง และอื่น ๆ สามารถตั้งค่าได้ผ่านการตั้งค่าในภายหลัง ขั้นตอนสามารถหาได้ใน {n} ถ้าคุณไม่ต้องการ, คุณสามารถปิดการตั้งค่าได้"
     },
     "email": {
-        "title": "",
-        "description": "",
-        "method": "",
-        "useEmailAsUsername": "",
-        "useEmailAsUsernameNotice": "",
-        "fromAddress": "",
-        "senderName": "",
-        "dateFormat": "",
-        "dateFormatNotice": "",
-        "encryption": "",
-        "mailgunApiURL": ""
+        "title": "อีเมล",
+        "description": "jfa-go สามารถส่งคำขอรหัสผ่าน รหัส (PIN) และการแจ้งเตือนอื่น ๆ ผ่านทางอีเมล คุณสามารถเชื่อมต่อไปยัง SMTP server, หรือใช้ {n} API",
+        "method": "วิธีการส่ง",
+        "useEmailAsUsername": "ใช้ที่อยู่อีเมลเป็นชื่อผู้ใช้",
+        "useEmailAsUsernameNotice": "หากเปิด, ผู้ใช้ใหม่จะเข้าสู่ระบบ Jellyfin/Emby ผ่านอีเมลของผู้เขาแทนชื่อผู้ใช้",
+        "fromAddress": "จากที่อยู่",
+        "senderName": "ชื่อผู้ส่ง",
+        "dateFormat": "รูปแบบวันที่",
+        "dateFormatNotice": "วันที่ตามรูปแบบ strftime, สำหรับข้อมูลเพิ่มเติม ไปที่ {n}",
+        "encryption": "การเข้ารหัส",
+        "mailgunApiURL": "ที่อยู่ API"
     },
     "notifications": {
-        "title": "",
-        "description": ""
+        "title": "การแจ้งเตือนผู้ดูแลระบบ",
+        "description": "ถ้าเปิดใช้งาน, คุณสามารถเลือก (ต่อคำเชิญ) เพื่อรับข้อความแจ้งเมื่อคำเชิญหมดอายุ หรือผู้ใช้ถูกสร้างขึ้น ถ้าคุณไม่ได้เลือกเข้าสู่ระบบผ่าน Jellyfin, อย่าลืมทิ้งอีเมลติดต่อของคุณด้วย หรือเพิ่มช่องทางอื่น ๆ ในภายหลัง"
     },
     "userPage": {
-        "title": "",
-        "description": "",
-        "customizeMessages": "",
-        "requiredSettings": ""
+        "title": "หน้าผู้ใช้งาน",
+        "description": "หน้าผู้ใช้ (แสดงเป็น \"บัญชีของฉัน\") เป็นหน้าที่ให้ผู้ใช้เข้าถึงข้อมูลเกี่ยวกับบัญชีของเขา เช่น ข้อมูลติดต่อหรือวันหมดอายุ ผู้ใช้สามารถเปลี่ยนรหัสผ่าน, เริ่มต้นการตั้งรหัสผ่านใหม่ หรือ ลิงค์/เปลี่ยนข้อมูลติดต่อได้โดยไม่ต้องถามคุณ เพิ่มเติม สามารถข้อความ Markdown แบบกำหนดเองให้ผู้ใช้ ก่อนหรือหลังเข้าสู่ระบบได้",
+        "customizeMessages": "กดปุ่มแก้ไขข้าง “บัญชีของฉัน” ในการตั้งค่าเพื่อแก้ไขทีหลัง",
+        "requiredSettings": "จำเป็นต้องตั้งค่าเข้าสู่ระบบ jfa-go ผ่าน Jellyfin และมั่นใจว่าได้เลือก \"ตั้งค่ารหัสผ่านใหม่ผ่านลิงค์\""
     },
     "welcomeEmails": {
-        "title": "",
-        "description": ""
+        "title": "ข้อความต้อนรับ",
+        "description": "ถ้าเปิดใช้งาน, ข้อความจะถูกส่งไปยังผู้ใช้ใหม่พร้อมลิงค์ Jellyfin/Emby และรวมไปถึงชื่อผู้ใช้ของเขา"
     },
     "inviteEmails": {
-        "title": "",
-        "description": ""
+        "title": "จดหมายคำเชิญ",
+        "description": "ถ้าเปิดใช้งาน, คุณสามารถส่งคำเชิญไปยังอีเมล, Discord หรือ Matrix ได้โดยตรง เพระาว่าคุณอาจจะใช้ผ่าน Reverse Proxy, คุณจำเป็นต้องกรอกลิงค์ที่สามารถเข้าถึงคำเชิญได้ พิมพ์ URL Base ของคุณต่อท้ายด้วย '/invite'"
     },
     "passwordResets": {
-        "title": "",
-        "description": "",
-        "pathToJellyfin": "",
-        "pathToJellyfinNotice": "",
-        "resetLinks": "",
-        "resetLinksRequiredForUserPage": "",
-        "resetLinksNotice": "",
-        "resetLinksLanguage": "",
-        "setPassword": "",
-        "setPasswordNotice": ""
+        "title": "การตั้งรหัสผ่านใหม่",
+        "description": "เมื่อผู้ใช้พยายามตั้งรหัสผ่านใหม่, Jellyfin จะสร้างไฟล์ชื่อ 'passwordreset-*.json' ซึ่งมีรหัส (PIN) อยู่ jfa-go จะอ่านไฟล์และส่งรหัสไปยังผู้ใช้, ถ้าเปิดใช้งาน \"หน้าผู้ใช้\" ก็สามารถตั้งรหัสผ่านใหม่ผ่านทางนั้นได้, โดยใช้ชื่อผู้ใช้, อีเมล หรือช่องทางการติดต่อ",
+        "pathToJellyfin": "ที่อยู่โฟลเดอร์ไฟล์ตั้งค่า Jellyfin",
+        "pathToJellyfinNotice": "ถ้าคุณไม่รู้ตำแหน่งโฟล์เดอร์ว่าอยู่ที่ไหน ลองตั้งค่ารหัสผ่าน Jellyfin ใหม่, ป๊อปอัพ '<path to jellyfin>/passwordreset-*.json' จะแสดงขึ้นมา ข้อนี้ไม่จำเป็นหากต้องการให้เปลี่ยนรหัสผ่านด้วยตนเองผ่าน \"หน้าผู้ใช้\"",
+        "resetLinks": "ส่งลิงค์แทนรหัส (PIN)",
+        "resetLinksRequiredForUserPage": "จำเป็นสำหรับตั้งค่ารหัสใหม่ด้วยตัวเองผ่านหน้าผู้ใช้",
+        "resetLinksNotice": "ถ้าเปิดการใช้งานร่วมกับ Ombi, เปิดหัวข้อนี้เพื่อซิงค์รหัส Jellyfin กับ Ombi",
+        "resetLinksLanguage": "ภาษาหน้าตั้งค่าฯ หลัก",
+        "setPassword": "ตั้งค่ารหัสผ่านผ่านลิงค์",
+        "setPasswordNotice": "เปิดการตั้งค่านี้ ผู้ใช้ไม่จำเป็นต้องเปลี่ยนรหัสผ่านผ่านรหัส (PIN) หลังจากตั้งค่าใหม่, กฎการยื่นยันรหัสฯ จะถูกใช้"
     },
     "passwordValidation": {
-        "title": "",
-        "description": "",
-        "length": "",
-        "uppercase": "",
-        "lowercase": "",
-        "numbers": "",
-        "special": ""
+        "title": "การยืนยันรหัสผ่าน",
+        "description": "หากเปิดใช้งาน, ชุดกฎการตั้งค่ารหัสผ่านจะแสดงบนหน้าสร้างผู้ใช้งาน เช่น ความยาวรหัสผ่าน ตัวอักษรตัวเล็ก/ตัวใหญ่ เป็นต้น",
+        "length": "ความยาว",
+        "uppercase": "ตัวอักษรตัวใหญ่",
+        "lowercase": "ตัวอักษรตัวเล็ก",
+        "numbers": "ตัวเลข",
+        "special": "อักขระพิเศษ (%, *, เป็นต้น)"
     },
     "helpMessages": {
-        "title": "",
-        "description": "",
-        "contactMessage": "",
-        "contactMessageNotice": "",
-        "helpMessage": "",
-        "helpMessageNotice": "",
-        "successMessage": "",
-        "successMessageNotice": "",
-        "emailMessage": "",
-        "emailMessageNotice": ""
+        "title": "ข้อความช่วยเหลือ",
+        "description": "ข้อความเหล่านี้จะแสดงบนหน้าสร้างผู้ใช้และในรายละเอียดอื่น ๆ",
+        "contactMessage": "ข้อความติดต่อ",
+        "contactMessageNotice": "แสดงล่างหน้าทุกหน้ายกเว้นหน้าผู้ดูแลระบบ",
+        "helpMessage": "ข้อความช่วยเหลือ",
+        "helpMessageNotice": "แสดงบนหน้าสร้างบัญชี",
+        "successMessage": "ข้อความสำเร็จ",
+        "successMessageNotice": "แสดงเมื่อผู้ใช้สร้างบัญชีแล้ว",
+        "emailMessage": "ข้อความอีเมล",
+        "emailMessageNotice": "แสดงด้านล่างอีเมล"
     }
 }
