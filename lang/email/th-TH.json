@@ -1,0 +1,84 @@
+{
+    "meta": {
+        "name": ""
+    },
+    "strings": {
+        "ifItWasNotYou": "",
+        "helloUser": "",
+        "reason": ""
+    },
+    "userCreated": {
+        "name": "",
+        "title": "",
+        "aUserWasCreated": "",
+        "time": "",
+        "notificationNotice": ""
+    },
+    "inviteExpiry": {
+        "name": "",
+        "title": "",
+        "inviteExpired": "",
+        "expiredAt": "",
+        "notificationNotice": ""
+    },
+    "passwordReset": {
+        "name": "",
+        "title": "",
+        "someoneHasRequestedReset": "",
+        "ifItWasYou": "",
+        "ifItWasYouLink": "",
+        "codeExpiry": "",
+        "pin": ""
+    },
+    "userDeleted": {
+        "name": "",
+        "title": "",
+        "yourAccountWasDeleted": ""
+    },
+    "userDisabled": {
+        "name": "",
+        "title": "",
+        "yourAccountWasDisabled": ""
+    },
+    "userEnabled": {
+        "name": "",
+        "title": "",
+        "yourAccountWasEnabled": ""
+    },
+    "userExpiryAdjusted": {
+        "name": "",
+        "title": "",
+        "yourExpiryWasAdjusted": "",
+        "ifPreviouslyDisabled": "",
+        "newExpiry": ""
+    },
+    "inviteEmail": {
+        "name": "",
+        "title": "",
+        "hello": "",
+        "youHaveBeenInvited": "",
+        "toJoin": "",
+        "inviteExpiry": "",
+        "linkButton": ""
+    },
+    "welcomeEmail": {
+        "name": "",
+        "title": "",
+        "welcome": "",
+        "youCanLoginWith": "",
+        "yourAccountWillExpire": "",
+        "jellyfinURL": ""
+    },
+    "emailConfirmation": {
+        "name": "",
+        "title": "",
+        "clickBelow": "",
+        "confirmEmail": ""
+    },
+    "userExpired": {
+        "name": "",
+        "title": "",
+        "yourAccountHasExpired": "",
+        "contactTheAdmin": ""
+    }
+}
