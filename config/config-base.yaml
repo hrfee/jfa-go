@@ -330,6 +330,19 @@ sections:
     requires_restart: true
     type: password
     description: Leave blank for no Authentication.
+  - setting: value_log_note
+    name: 'Value Log:'
+    type: note
+    depends_true: enabled
+    required: false
+    description: The Value Log (vlog) file in your config folder is used to ensure data integrity in the database. It can get large, so you can adjust the maximum size. After quitting jfa-go, the file can be deleted safely without data loss.
+    style: info
+  - setting: value_log_size
+    name: Database max vlog size (MiB)
+    requires_restart: true
+    type: number
+    value: 1024
+    description: Max size for the database's value log. Lower values may reduce performance.
   - setting: debug_log_emails
     name: 'Debug Storage Logging: Emails'
     requires_restart: true

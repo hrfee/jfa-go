@@ -175,6 +175,7 @@ func generateLogActions(c *ini.File) map[string]DebugLogAction {
 
 func (app *appContext) ConnectDB() {
 	opts := badgerhold.DefaultOptions
+	opts.Options.ValueLogFileSize = app.config.Section("advanced").Key("value_log_size").MustInt64(1024) * 1024
 	opts.Dir = app.storage.db_path
 	opts.ValueDir = app.storage.db_path
 	db, err := badgerhold.Open(opts)
