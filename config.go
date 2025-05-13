@@ -156,7 +156,7 @@ func (app *appContext) loadConfig() error {
 	app.MustSetValue("ui", "port", "8056")
 	app.MustSetValue("advanced", "tls_port", "8057")
 
-	app.MustSetValue("advanced", "value_log_size", "1024")
+	app.MustSetValue("advanced", "value_log_size", "512")
 
 	pwrMethods := []string{"allow_pwr_username", "allow_pwr_email", "allow_pwr_contact_method"}
 	allDisabled := true

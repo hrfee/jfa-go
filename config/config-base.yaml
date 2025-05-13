@@ -341,7 +341,7 @@ sections:
     name: Database max vlog size (MiB)
     requires_restart: true
     type: number
-    value: 1024
+    value: 256 
     description: Max size for the database's value log. Lower values may reduce performance.
   - setting: debug_log_emails
     name: 'Debug Storage Logging: Emails'
