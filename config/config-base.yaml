@@ -1315,6 +1315,12 @@ sections:
     value: 20
     description: Number of most recent backups to keep. Once this is hit, the oldest
       backup will be deleted before doing a new one.
+  - setting: keep_previous_version_backup
+    name: Keep 1 backup from each previous version
+    requires_restart: true
+    type: bool
+    value: true
+    description: Always keep the most recent backup for each jfa-go version, incase updates mess things up. If enabled, these aren't counted by the "Number of backups to keep" setting.
 - section: welcome_email
   meta:
     name: Welcome Message

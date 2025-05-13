@@ -141,6 +141,7 @@ func (app *appContext) loadConfig() error {
 	app.MustSetValue("backups", "every_n_minutes", "1440")
 	app.MustSetValue("backups", "path", filepath.Join(app.dataPath, "backups"))
 	app.MustSetValue("backups", "keep_n_backups", "20")
+	app.MustSetValue("backups", "keep_previous_version_backup", "true")
 
 	app.config.Section("jellyfin").Key("version").SetValue(version)
 	app.config.Section("jellyfin").Key("device").SetValue("jfa-go")

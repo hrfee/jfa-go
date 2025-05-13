@@ -576,7 +576,7 @@ func (emailer *Emailer) resetValues(pwr PasswordReset, app *appContext, noSub bo
 				// Only used in html email.
 				template["pin_code"] = pwr.Pin
 			} else {
-				app.info.Println(lm.FailedGeneratePWRLink, err)
+				app.info.Printf(lm.FailedGeneratePWRLink, err)
 				template["pin"] = pwr.Pin
 			}
 		} else {

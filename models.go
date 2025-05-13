@@ -39,13 +39,13 @@ type newUserResponse struct {
 }
 
 type deleteUserDTO struct {
-	Users  []string `json:"users" binding:"required"` // List of usernames to delete
+	Users  []string `json:"users" binding:"required"` // List of user IDs.
 	Notify bool     `json:"notify"`                   // Whether to notify users of deletion
 	Reason string   `json:"reason"`                   // Account deletion reason (for notification)
 }
 
 type enableDisableUserDTO struct {
-	Users   []string `json:"users" binding:"required"` // List of usernames to delete
+	Users   []string `json:"users" binding:"required"` // List of userIDs.
 	Enabled bool     `json:"enabled"`                  // True = enable users, False = disable.
 	Notify  bool     `json:"notify"`                   // Whether to notify users of deletion
 	Reason  string   `json:"reason"`                   // Account deletion reason (for notification)
@@ -446,10 +446,11 @@ type GetActivityCountDTO struct {
 }
 
 type CreateBackupDTO struct {
-	Size string `json:"size"`
-	Name string `json:"name"`
-	Path string `json:"path"`
-	Date int64  `json:"date"`
+	Size   string `json:"size"`
+	Name   string `json:"name"`
+	Path   string `json:"path"`
+	Date   int64  `json:"date"`
+	Commit string `json:"commit"`
 }
 
 type GetBackupsDTO struct {

@@ -171,7 +171,7 @@ func test(app *appContext) {
 	var username string
 	fmt.Scanln(&username)
 	user, err := app.jf.UserByName(username, false)
-	fmt.Printf("UserByName (%s): code %d err %s", username, err)
+	fmt.Printf("UserByName (%s): err %v", username, err)
 	out, _ := json.MarshalIndent(user, "", "  ")
 	fmt.Print(string(out))
 }

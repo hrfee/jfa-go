@@ -196,7 +196,7 @@ func (d *DiscordDaemon) NewTempInvite(ageSeconds, maxUses int) (inviteURL, iconU
 	var inv *dg.Invite
 	var err error
 	if d.InviteChannel.Name == "" {
-		d.app.err.Println(lm.FailedCreateDiscordInviteChannel, lm.InviteChannelEmpty)
+		d.app.err.Printf(lm.FailedCreateDiscordInviteChannel, lm.InviteChannelEmpty)
 		return
 	}
 	if d.InviteChannel.ID == "" {

@@ -121,7 +121,7 @@ func (t *TelegramDaemon) NewAssignedAuthToken(id string) string {
 }
 
 func (t *TelegramDaemon) run() {
-	t.app.info.Println(lm.StartDaemon, lm.Telegram)
+	t.app.info.Printf(lm.StartDaemon, lm.Telegram)
 	u := tg.NewUpdate(0)
 	u.Timeout = 60
 	updates, err := t.bot.GetUpdatesChan(u)

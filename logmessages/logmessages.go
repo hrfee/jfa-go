@@ -200,6 +200,7 @@ const (
 	DeleteOldBackup       = "Deleted old backup \"%s\""
 	FailedDeleteOldBackup = "Failed to delete old backup \"%s\": %v"
 	CreateBackup          = "Created database backup \"%+v\""
+	FailedParseBackup     = "Failed to parse backup \"%s\": %v"
 	FailedCreateBackup    = "Faled to create database backup: %v"
 	MoveOldDB             = "Moved existing database to \"%s\""
 	FailedMoveOldDB       = "Failed to move existing database to \"%s\": %v"

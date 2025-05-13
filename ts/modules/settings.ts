@@ -13,6 +13,7 @@ interface BackupDTO {
     name: string;
     path: string;
     date: number;
+    commit: string;
 }
 
 interface settingsChangedEvent extends Event { 
@@ -731,6 +732,7 @@ export class settingsList {
             tr.innerHTML = `
             <td class="whitespace-nowrap"><span class="text-black dark:text-white font-mono bg-inherit">${b.name}</span> <span class="button ~info @low ml-2 backup-copy" title="${window.lang.strings("copy")}"><i class="ri-file-copy-line"></i></span></td>
             <td>${toDateString(new Date(b.date*1000))}</td>
+            <td class="font-mono">${b.commit || "?"}</td>
             <td class="table-inline justify-center">
                 <span class="backup-download button ~positive @low" title="${window.lang.strings("backupDownload")}">
                     <i class="ri-download-line"></i>
