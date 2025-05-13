@@ -73,6 +73,7 @@ export class PageManager {
     }
 
     loadPage (p: Page) {
+        console.log("loading page with", p.name || this.defaultName, p.title, p.url + window.location.search);
         window.history.pushState(p.name || this.defaultName, p.title, p.url + window.location.search);
     }
 

@@ -2,6 +2,8 @@ import { _get, _post, _delete, _download, _upload, toggleLoader, addLoader, remo
 import { Marked } from "@ts-stack/markdown";
 import { stripMarkdown } from "../modules/stripmd.js";
 
+declare var window: GlobalWindow;
+
 const toBool = (s: string): boolean => {
     let b = Boolean(s);
     if (s == "false") b = false;

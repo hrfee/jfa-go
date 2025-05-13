@@ -11,6 +11,8 @@ import { _get, _post, notificationBox, whichAnimationEvent, bindManualDropdowns 
 import { Updater } from "./modules/update.js";
 import { Login } from "./modules/login.js";
 
+declare var window: GlobalWindow;
+
 const theme = new ThemeManager(document.getElementById("button-theme"));
 
 window.lang = new lang(window.langFile as LangFile);
@@ -165,12 +167,12 @@ const defaultTab = tabs[0];
 window.tabs = new Tabs();
 
 for (let tab of tabs) {
-    window.tabs.addTab(tab.id, tab.url, null, tab.reloader);
+    window.tabs.addTab(tab.id, window.pages.Admin + "/" + tab.url, null, tab.reloader);
 }
 
 let matchedTab = false
-for (let tab of tabs) {
-    if (window.location.pathname.startsWith(window.URLBase + "/" + tab.url)) {
+for (const tab of tabs) {
+    if (window.location.pathname.startsWith(window.pages.Base + window.pages.Current + "/" + tab.url)) {
         window.tabs.switch(tab.url, true);
         matchedTab = true;
     }

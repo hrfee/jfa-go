@@ -1,5 +1,7 @@
 const dateParser = require("any-date-parser");
 
+declare var window: GlobalWindow;
+
 export interface QueryType {
     name: string;
     description?: string;

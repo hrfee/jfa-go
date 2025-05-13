@@ -467,3 +467,18 @@ type ContactMethodKey struct {
 	PIN      string
 	User     ContactMethodUser
 }
+
+type PagePaths struct {
+	// The base subfolder the app is hosted on.
+	Base string `json:"Base"`
+	// Those for other pages
+	Admin     string `json:"Admin"`
+	MyAccount string `json:"MyAccount"`
+	Form      string `json:"Form"`
+}
+
+type PagePathsDTO struct {
+	PagePaths
+	// The subdirectory this bit of the app is hosted on (e.g. admin is usually on "/", myacc is usually on "/my/account")
+	Current string `json:"Current"`
+}

@@ -2,6 +2,8 @@ import { _get, _post, _delete, toClipboard, toggleLoader, toDateString } from ".
 import { DiscordUser, newDiscordSearch } from "../modules/discord.js";
 import { reloadProfileNames }  from "../modules/profiles.js";
 
+declare var window: GlobalWindow;
+
 class DOMInvite implements Invite {
     updateNotify = (checkbox: HTMLInputElement) => {
         let state: { [code: string]: { [type: string]: boolean } } = {};
@@ -66,7 +68,7 @@ class DOMInvite implements Invite {
             codeLink = codeLink.split(split)[0];
         }
         if (codeLink.slice(-1) != "/") { codeLink += "/"; }
-        this._codeLink = codeLink + "invite/" + code;
+        this._codeLink = codeLink + window.pages.Form + "/" + code;
         const linkEl = this._codeArea.querySelector("a") as HTMLAnchorElement;
         if (this.label == "") {
             linkEl.textContent = code.replace(/-/g, '-');

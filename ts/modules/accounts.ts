@@ -6,6 +6,8 @@ import { DiscordUser, newDiscordSearch } from "../modules/discord.js";
 import { Search, SearchConfiguration, QueryType, SearchableItem } from "../modules/search.js";
 import { HiddenInputField } from "./ui.js";
 
+declare var window: GlobalWindow;
+
 const dateParser = require("any-date-parser");
 
 interface User {

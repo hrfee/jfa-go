@@ -232,6 +232,33 @@ sections:
     - ["opaque", "Opaque"]
     value: clear
     description: Appearance of the Admin login screen.
+- section: url_paths
+  meta:
+    name: URL Paths
+    description: Settings for changing where different pages are accessed.
+    advanced: true
+  settings:
+  - setting: admin
+    name: Admin page subpath
+    type: text
+    required: true
+    requires_restart: true
+    value: "/"
+    description: URL subpath the admin page should be at.
+  - setting: user_page
+    name: "\"My Account\" subpath"
+    type: text
+    required: true
+    requires_restart: true
+    value: "/my/account"
+    description: URL subpath the "My Account" page should be at.
+  - setting: form
+    name: Invite subpath
+    type: text
+    required: true
+    requires_restart: true
+    value: "/invite"
+    description: URL subpath invites should be on. 
 - section: advanced
   meta:
     name: Advanced

@@ -22,6 +22,9 @@ var telegramEnabled = false
 var discordEnabled = false
 var matrixEnabled = false
 
+// URL subpaths. Ignore the "Current" field.
+var PAGES = PagePaths{}
+
 func (app *appContext) GetPath(sect, key string) (fs.FS, string) {
 	val := app.config.Section(sect).Key(key).MustString("")
 	if strings.HasPrefix(val, "jfa-go:") {
@@ -35,12 +38,26 @@ func (app *appContext) MustSetValue(section, key, val string) {
 	app.config.Section(section).Key(key).SetValue(app.config.Section(section).Key(key).MustString(val))
 }
 
+func (app *appContext) MustSetURLPath(section, key, val string) {
+	if !strings.HasPrefix(val, "/") {
+		val = "/" + val
+	}
+	app.MustSetValue(section, key, val)
+}
+
 func (app *appContext) loadConfig() error {
 	var err error
 	app.config, err = ini.ShadowLoad(app.configPath)
 	if err != nil {
 		return err
 	}
+
+	app.MustSetURLPath("url_paths", "admin", "/")
+	app.MustSetURLPath("url_paths", "user_page", "/my/account")
+	app.MustSetURLPath("url_paths", "form", "/invite")
+	PAGES.Admin = app.config.Section("url_paths").Key("admin").MustString("/")
+	PAGES.MyAccount = app.config.Section("url_paths").Key("user_page").MustString("/my/account")
+	PAGES.Form = app.config.Section("url_paths").Key("form").MustString("/invite")
 
 	app.MustSetValue("jellyfin", "public_server", app.config.Section("jellyfin").Key("server").String())
 
@@ -58,12 +75,12 @@ func (app *appContext) loadConfig() error {
 		app.config.Section("files").Key(key).SetValue(app.config.Section("files").Key(key).MustString(filepath.Join(app.dataPath, (key + ".db"))))
 	}
 
-	app.URLBase = strings.TrimSuffix(app.config.Section("ui").Key("url_base").MustString(""), "/")
-	if app.URLBase == "/invite" || app.URLBase == "/accounts" || app.URLBase == "/settings" || app.URLBase == "/activity" {
-		app.err.Printf(lm.BadURLBase, app.URLBase)
+	PAGES.Base = strings.TrimSuffix(app.config.Section("ui").Key("url_base").MustString(""), "/")
+	if PAGES.Base == "/invite" || PAGES.Base == "/accounts" || PAGES.Base == "/settings" || PAGES.Base == "/activity" {
+		app.err.Printf(lm.BadURLBase, PAGES.Base)
 	}
 	app.ExternalURI = strings.TrimSuffix(strings.TrimSuffix(app.config.Section("ui").Key("jfa_url").MustString(""), "/invite"), "/")
-	if !strings.HasSuffix(app.ExternalURI, app.URLBase) {
+	if !strings.HasSuffix(app.ExternalURI, PAGES.Base) {
 		app.err.Println(lm.NoURLSuffix)
 	}
 	if app.ExternalURI == "" {

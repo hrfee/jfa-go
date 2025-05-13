@@ -1,5 +1,7 @@
 import {addLoader, removeLoader, _get} from "../modules/common.js";
 
+declare var window: GlobalWindow;
+
 export interface DiscordUser {
     name: string;
     avatar_url: string;

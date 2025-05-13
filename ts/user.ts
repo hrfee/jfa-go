@@ -7,7 +7,7 @@ import { Discord, Telegram, Matrix, ServiceConfiguration, MatrixConfiguration } 
 import { Validator, ValidatorConf, ValidatorRespDTO } from "./modules/validator.js";
 import { PageManager } from "./modules/pages.js";
 
-interface userWindow extends Window {
+interface userWindow extends GlobalWindow {
     jellyfinID: string;
     username: string;
     emailRequired: boolean;
@@ -18,13 +18,12 @@ interface userWindow extends Window {
     discordInviteLink: boolean;
     matrixUserID: string;
     discordSendPINMessage: string;
-    pwrEnabled: string;
     referralsEnabled: boolean;
 }
 
-const basePath = window.location.pathname.replace("/password/reset", "");
-
 declare var window: userWindow;
+
+const basePath = window.location.pathname.replace("/password/reset", "");
 
 const theme = new ThemeManager(document.getElementById("button-theme"));
 
@@ -38,7 +37,7 @@ window.token = "";
 
 window.modals = {} as Modals;
 
-let pages = new PageManager({
+const pages = new PageManager({
     hideOthersOnPageShow: true,
     defaultName: "",
     defaultTitle: document.title,
@@ -311,7 +310,7 @@ class ReferralCard {
             path = path.split(split)[0];
         }
         if (path.slice(-1) != "/") { path += "/"; }
-        path = path + "invite/" + this._code;
+        path = path + window.pages.Form + "/" + this._code;
         
         u.pathname = path;
         u.hash = "";
@@ -661,7 +660,7 @@ document.addEventListener("details-reload", () => {
             expiryCard.expiry = details.expiry;
 
             const adminBackButton = document.getElementById("admin-back-button") as HTMLAnchorElement;
-            adminBackButton.href = window.location.href.replace("my/account", "");
+            adminBackButton.href = window.location.href.replace(window.pages.MyAccount, window.pages.Admin);
 
             let messageCard = document.getElementById("card-message");
             if (details.accounts_admin) {

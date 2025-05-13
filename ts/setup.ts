@@ -3,12 +3,11 @@ import { lang, LangFile, loadLangSelector } from "./modules/lang.js";
 import { ThemeManager } from "./modules/theme.js";
 import { PageManager } from "./modules/pages.js";
 
-interface sWindow extends Window {
+interface sWindow extends GlobalWindow {
     messages: {};
 }
 
 declare var window: sWindow;
-window.URLBase = "";
 
 const theme = new ThemeManager(document.getElementById("button-theme"));
 

@@ -108,8 +108,8 @@ func (app *appContext) loadRouter(address string, debug bool) *gin.Engine {
 }
 
 func (app *appContext) loadRoutes(router *gin.Engine) {
-	routePrefixes := []string{app.URLBase}
-	if app.URLBase != "" {
+	routePrefixes := []string{PAGES.Base}
+	if PAGES.Base != "" {
 		routePrefixes = append(routePrefixes, "")
 	}
 
@@ -118,7 +118,7 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 	for _, p := range routePrefixes {
 		router.GET(p+"/lang/:page", app.GetLanguages)
 		router.Use(static.Serve(p+"/", app.webFS))
-		router.GET(p+"/", app.AdminPage)
+		router.GET(p+PAGES.Admin, app.AdminPage)
 
 		if app.config.Section("password_resets").Key("link_reset").MustBool(false) {
 			router.GET(p+"/reset", app.ResetPassword)
@@ -127,39 +127,39 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 			}
 		}
 
-		router.GET(p+"/accounts", app.AdminPage)
-		router.GET(p+"/settings", app.AdminPage)
-		router.GET(p+"/activity", app.AdminPage)
-		router.GET(p+"/accounts/user/:userID", app.AdminPage)
-		router.GET(p+"/invites/:code", app.AdminPage)
+		router.GET(p+PAGES.Admin+"/accounts", app.AdminPage)
+		router.GET(p+PAGES.Admin+"/settings", app.AdminPage)
+		router.GET(p+PAGES.Admin+"/activity", app.AdminPage)
+		router.GET(p+PAGES.Admin+"/accounts/user/:userID", app.AdminPage)
+		router.GET(p+PAGES.Admin+"/invites/:code", app.AdminPage)
 		router.GET(p+"/lang/:page/:file", app.ServeLang)
 		router.GET(p+"/token/login", app.getTokenLogin)
 		router.GET(p+"/token/refresh", app.getTokenRefresh)
 		router.POST(p+"/user/invite", app.NewUserFromInvite)
-		router.Use(static.Serve(p+"/invite/", app.webFS))
-		router.GET(p+"/invite/:invCode", app.InviteProxy)
+		router.Use(static.Serve(p+PAGES.Form, app.webFS))
+		router.GET(p+PAGES.Form+"/:invCode", app.InviteProxy)
 		if app.config.Section("captcha").Key("enabled").MustBool(false) {
 			router.GET(p+"/captcha/gen/:invCode", app.GenCaptcha)
 			router.GET(p+"/captcha/img/:invCode/:captchaID", app.GetCaptcha)
 			router.POST(p+"/captcha/verify/:invCode/:captchaID/:text", app.VerifyCaptcha)
 		}
 		if telegramEnabled {
-			router.GET(p+"/invite/:invCode/telegram/verified/:pin", app.TelegramVerifiedInvite)
+			router.GET(p+PAGES.Form+"/:invCode/telegram/verified/:pin", app.TelegramVerifiedInvite)
 		}
 		if discordEnabled {
-			router.GET(p+"/invite/:invCode/discord/verified/:pin", app.DiscordVerifiedInvite)
+			router.GET(p+PAGES.Form+"/:invCode/discord/verified/:pin", app.DiscordVerifiedInvite)
 			if app.config.Section("discord").Key("provide_invite").MustBool(false) {
-				router.GET(p+"/invite/:invCode/discord/invite", app.DiscordServerInvite)
+				router.GET(p+PAGES.Form+"/:invCode/discord/invite", app.DiscordServerInvite)
 			}
 		}
 		if matrixEnabled {
-			router.GET(p+"/invite/:invCode/matrix/verified/:userID/:pin", app.MatrixCheckPIN)
-			router.POST(p+"/invite/:invCode/matrix/user", app.MatrixSendPIN)
+			router.GET(p+PAGES.Form+"/:invCode/matrix/verified/:userID/:pin", app.MatrixCheckPIN)
+			router.POST(p+PAGES.Form+"/:invCode/matrix/user", app.MatrixSendPIN)
 			router.POST(p+"/users/matrix", app.MatrixConnect)
 		}
 		if userPageEnabled {
-			router.GET(p+"/my/account", app.MyUserPage)
-			router.GET(p+"/my/account/password/reset", app.MyUserPage)
+			router.GET(p+PAGES.MyAccount, app.MyUserPage)
+			router.GET(p+PAGES.MyAccount+"/password/reset", app.MyUserPage)
 			router.GET(p+"/my/token/login", app.getUserTokenLogin)
 			router.GET(p+"/my/token/refresh", app.getUserTokenRefresh)
 			router.GET(p+"/my/confirm/:jwt", app.ConfirmMyAction)

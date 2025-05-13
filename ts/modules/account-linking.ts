@@ -1,7 +1,7 @@
 import { Modal } from "../modules/modal.js";
 import { _get, _post, toggleLoader, addLoader, removeLoader } from "../modules/common.js";
 
-interface formWindow extends Window {
+interface formWindow extends GlobalWindow {
     invalidPassword: string;
     successModal: Modal;
     telegramModal: Modal;

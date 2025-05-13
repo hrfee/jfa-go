@@ -12,8 +12,19 @@ interface ArrayConstructor {
     from(arrayLike: any, mapFn?, thisArg?): Array<any>;
 }
 
-declare interface Window {
-    URLBase: string;
+declare interface PagePaths {
+    // The base subfolder the app is hosted on.
+    Base: string;
+    // The subdirectory this bit of the app is hosted on (e.g. admin is usually on "/", myacc is usually on "/my/account")
+    Current: string;
+    // Those for other pages
+    Admin: string;
+    MyAccount: string;
+    Form: string;
+}
+
+declare interface GlobalWindow extends Window {
+    pages: PagePaths;
     modals: Modals;
     cssFile: string;
     availableProfiles: string[];
@@ -25,6 +36,7 @@ declare interface Window {
     matrixEnabled: boolean;
     ombiEnabled: boolean;
     jellyseerrEnabled: boolean;
+    pwrEnabled: boolean;
     usernameEnabled: boolean;
     linkResetEnabled: boolean;
     token: string;

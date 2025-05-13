@@ -1,4 +1,4 @@
-declare var window: Window;
+declare var window: GlobalWindow;
 
 export class Modal implements Modal {
     modal: HTMLElement;
