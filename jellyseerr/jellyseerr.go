@@ -87,7 +87,7 @@ func (js *Jellyseerr) req(mode string, uri string, data any, queryParams url.Val
 		}
 	}
 	resp, err := js.httpClient.Do(req)
-	err = co.GenericErr(resp.StatusCode, err)
+	err = co.GenericErrFromResponse(resp, err)
 	defer js.timeoutHandler()
 	var responseText string
 	defer resp.Body.Close()

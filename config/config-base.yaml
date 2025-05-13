@@ -720,6 +720,12 @@ sections:
     type: bool
     value: false
     description: Disables using the same address on multiple accounts.
+  - setting: test_note
+    name: 'Test your settings:'
+    type: note
+    depends_true: enabled
+    required: false
+    description: Go over to the accounts tab, select your user (ensuring you've assigned it an email address) and send yourself an announcement.
 - section: mailgun
   meta:
     name: Mailgun (Email)
