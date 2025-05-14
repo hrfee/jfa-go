@@ -192,7 +192,7 @@ STATIC_TARGET = $(STATIC_SRC:static/%=$(DATA)/web/%)
 COPY_SRC = images/banner.svg jfa-go.service LICENSE $(LANG_SRC) $(STATIC_SRC)
 COPY_TARGET = $(DATA)/jfa-go.service
 # $(DATA)/LICENSE $(LANG_TARGET) $(STATIC_TARGET) $(DATA)/web/css/$(CSSVERSION)bundle.css
-$(COPY_TARGET): $(INLINE_TARGET) $(STATIC_SRC) $(LANG_SRC)
+$(COPY_TARGET): $(INLINE_TARGET) $(STATIC_SRC) $(LANG_SRC) $(CONFIG_BASE)
 	$(info copying $(CONFIG_BASE))
 	cp $(CONFIG_BASE) $(DATA)/
 	$(info copying crash page)
