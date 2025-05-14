@@ -1,31 +1,21 @@
 <!DOCTYPE html>
 <html lang="en" class="light">
     <head>
-        <link rel="stylesheet" type="text/css" href="{{ .urlBase }}/css/{{ .cssVersion }}bundle.css">
         <script>
-            window.URLBase = "{{ .urlBase }}";
-            window.notificationsEnabled = {{ .notifications }};
-            window.ombiEnabled = {{ .ombiEnabled }};
             window.langFile = JSON.parse({{ .language }});
-            window.pwrEnabled = {{ .pwrEnabled }};
             window.linkResetEnabled = {{ .linkResetEnabled }};
             window.language = "{{ .langName }}";
-            window.telegramEnabled = {{ .telegramEnabled }};
             window.telegramRequired = {{ .telegramRequired }};
             window.telegramUsername = {{ .telegramUsername }};
             window.telegramURL = {{ .telegramURL }};
-            window.emailEnabled = {{ .emailEnabled }};
             window.emailRequired = {{ .emailRequired }};
-            window.discordEnabled = {{ .discordEnabled }};
             window.discordRequired = {{ .discordRequired }};
             window.discordServerName = "{{ .discordServerName }}";
             window.discordInviteLink = {{ .discordInviteLink }};
             window.discordSendPINMessage = "{{ .discordSendPINMessage }}";
-            window.matrixEnabled = {{ .matrixEnabled }};
             window.matrixRequired = {{ .matrixRequired }};
             window.matrixUserID = "{{ .matrixUser }}";
             window.validationStrings = JSON.parse({{ .validationStrings }});
-            window.referralsEnabled = {{ .referralsEnabled }};
         </script>
         {{ template "header.html" . }}
         <title>{{ .strings.myAccount }}</title>
@@ -156,7 +146,7 @@
                 {{ end }}
             </div>
         </div>
-        <script src="{{ .urlBase }}/js/user.js" type="module"></script>
+        <script src="{{ .pages.Base }}/js/user.js" type="module"></script>
     </body>
 </html>
 

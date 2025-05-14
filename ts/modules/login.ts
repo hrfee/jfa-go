@@ -1,6 +1,8 @@
 import { Modal } from "../modules/modal.js";
 import { toggleLoader, _post, unicodeB64Encode } from "../modules/common.js";
 
+declare var window: GlobalWindow;
+
 export class Login {
     loggedIn: boolean = false;
     private _modal: Modal;
@@ -14,7 +16,7 @@ export class Login {
 
     constructor(modal: Modal, endpoint: string, appearance: string) {
         this._endpoint = endpoint;
-        this._url = window.URLBase + endpoint;
+        this._url = window.pages.Base + endpoint;
         if (this._url[this._url.length-1] != '/') this._url += "/";
 
         this._modal = modal;

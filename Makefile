@@ -170,6 +170,7 @@ $(CSS_FULLTARGET): $(TYPESCRIPT_TARGET) $(VARIANTS_TARGET) $(ALL_CSS_SRC) $(wild
 	$(info copying fonts)
 	cp -r node_modules/remixicon/fonts/remixicon.css node_modules/remixicon/fonts/remixicon.woff2 $(DATA)/web/css/
 	$(info bundling css)
+	rm -f $(CSS_TARGET) $(CSS_FULLTARGET)
 	$(ESBUILD) --bundle css/base.css --outfile=$(CSS_TARGET) --external:remixicon.css --external:../fonts/hanken* --minify
 
 	npx tailwindcss -i $(CSS_TARGET) -o $(CSS_FULLTARGET) $(TAILWIND)
@@ -192,7 +193,7 @@ STATIC_TARGET = $(STATIC_SRC:static/%=$(DATA)/web/%)
 COPY_SRC = images/banner.svg jfa-go.service LICENSE $(LANG_SRC) $(STATIC_SRC)
 COPY_TARGET = $(DATA)/jfa-go.service
 # $(DATA)/LICENSE $(LANG_TARGET) $(STATIC_TARGET) $(DATA)/web/css/$(CSSVERSION)bundle.css
-$(COPY_TARGET): $(INLINE_TARGET) $(STATIC_SRC) $(LANG_SRC)
+$(COPY_TARGET): $(INLINE_TARGET) $(STATIC_SRC) $(LANG_SRC) $(CONFIG_BASE)
 	$(info copying $(CONFIG_BASE))
 	cp $(CONFIG_BASE) $(DATA)/
 	$(info copying crash page)
@@ -206,7 +207,7 @@ $(COPY_TARGET): $(INLINE_TARGET) $(STATIC_SRC) $(LANG_SRC)
 	cp -r lang $(DATA)/
 	cp LICENSE $(DATA)/
 
-BUILDDEPS := $(DATA) $(CONFIG_DEFAULT) $(EMAIL_TARGET) $(COPY_TARGET) $(SWAGGER_TARGET) 
+BUILDDEPS := $(DATA) $(CONFIG_DEFAULT) $(EMAIL_TARGET) $(COPY_TARGET) $(SWAGGER_TARGET) $(INLINE_TARGET) $(CSS_FULLTARGET) $(TYPESCRIPT_TARGET) 
 precompile: $(BUILDDEPS)
 
 COMPDEPS =

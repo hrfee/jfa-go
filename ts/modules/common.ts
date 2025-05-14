@@ -1,4 +1,4 @@
-declare var window: Window;
+declare var window: GlobalWindow;
 
 export function toDateString(date: Date): string {
     const locale = window.language || (window as any).navigator.userLanguage || window.navigator.language;
@@ -23,7 +23,7 @@ export function toDateString(date: Date): string {
 
 export const _get = (url: string, data: Object, onreadystatechange: (req: XMLHttpRequest) => void, noConnectionError: boolean = false): void => {
     let req = new XMLHttpRequest();
-    if (window.URLBase) { url = window.URLBase + url; }
+    if (window.pages) { url = window.pages.Base + url; }
     req.open("GET", url, true);
     req.responseType = 'json';
     req.setRequestHeader("Authorization", "Bearer " + window.token);
@@ -42,7 +42,7 @@ export const _get = (url: string, data: Object, onreadystatechange: (req: XMLHtt
 
 export const _download = (url: string, fname: string): void => {
     let req = new XMLHttpRequest();
-    if (window.URLBase) { url = window.URLBase + url; }
+    if (window.pages) { url = window.pages.Base + url; }
     req.open("GET", url, true);
     req.responseType = 'blob';
     req.setRequestHeader("Authorization", "Bearer " + window.token);
@@ -58,7 +58,7 @@ export const _download = (url: string, fname: string): void => {
 
 export const _upload = (url: string, formData: FormData): void => {
     let req = new XMLHttpRequest();
-    if (window.URLBase) { url = window.URLBase + url; }
+    if (window.pages) { url = window.pages.Base + url; }
     req.open("POST", url, true);
     req.setRequestHeader("Authorization", "Bearer " + window.token);
     // req.setRequestHeader('Content-Type', 'multipart/form-data');
@@ -67,7 +67,8 @@ export const _upload = (url: string, formData: FormData): void => {
 
 export const _post = (url: string, data: Object, onreadystatechange: (req: XMLHttpRequest) => void, response?: boolean, statusHandler?: (req: XMLHttpRequest) => void, noConnectionError: boolean = false): void => {
     let req = new XMLHttpRequest();
-    req.open("POST", window.URLBase + url, true);
+    if (window.pages) { url = window.pages.Base + url; }
+    req.open("POST", url, true);
     if (response) {
         req.responseType = 'json';
     }
@@ -88,7 +89,8 @@ export const _post = (url: string, data: Object, onreadystatechange: (req: XMLHt
 
 export function _delete(url: string, data: Object, onreadystatechange: (req: XMLHttpRequest) => void, noConnectionError: boolean = false): void {
     let req = new XMLHttpRequest();
-    req.open("DELETE", window.URLBase + url, true);
+    if (window.pages) { url = window.pages.Base + url; }
+    req.open("DELETE", url, true);
     req.setRequestHeader("Authorization", "Bearer " + window.token);
     req.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
     req.onreadystatechange = () => {

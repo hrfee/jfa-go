@@ -1,5 +1,7 @@
 import { PageManager, Page } from "../modules/pages.js";
 
+declare var window: GlobalWindow;
+
 export interface Tab {
     page: Page;
     tabEl: HTMLDivElement;
@@ -38,7 +40,7 @@ export class Tabs implements Tabs {
         tab.page = {
             name: tabID,
             title: document.title, /*FIXME: Get actual names from translations*/
-            url: window.URLBase + "/" + url,
+            url: url,
             show: () => {
                 tab.buttonEl.classList.add("active", "~urge");
                 tab.tabEl.classList.remove("unfocused");

@@ -22,6 +22,9 @@ var telegramEnabled = false
 var discordEnabled = false
 var matrixEnabled = false
 
+// URL subpaths. Ignore the "Current" field.
+var PAGES = PagePaths{}
+
 func (app *appContext) GetPath(sect, key string) (fs.FS, string) {
 	val := app.config.Section(sect).Key(key).MustString("")
 	if strings.HasPrefix(val, "jfa-go:") {
@@ -35,6 +38,20 @@ func (app *appContext) MustSetValue(section, key, val string) {
 	app.config.Section(section).Key(key).SetValue(app.config.Section(section).Key(key).MustString(val))
 }
 
+func (app *appContext) MustSetURLPath(section, key, val string) {
+	if !strings.HasPrefix(val, "/") && val != "" {
+		val = "/" + val
+	}
+	app.MustSetValue(section, key, val)
+}
+
+func FormatSubpath(path string) string {
+	if path == "/" {
+		return ""
+	}
+	return strings.TrimSuffix(path, "/")
+}
+
 func (app *appContext) loadConfig() error {
 	var err error
 	app.config, err = ini.ShadowLoad(app.configPath)
@@ -42,8 +59,23 @@ func (app *appContext) loadConfig() error {
 		return err
 	}
 
+	// URLs
+	app.MustSetURLPath("ui", "url_base", "")
+	app.MustSetURLPath("url_paths", "admin", "")
+	app.MustSetURLPath("url_paths", "user_page", "/my/account")
+	app.MustSetURLPath("url_paths", "form", "/invite")
+	PAGES.Base = FormatSubpath(app.config.Section("ui").Key("url_base").String())
+	PAGES.Admin = FormatSubpath(app.config.Section("url_paths").Key("admin").String())
+	PAGES.MyAccount = FormatSubpath(app.config.Section("url_paths").Key("user_page").String())
+	PAGES.Form = FormatSubpath(app.config.Section("url_paths").Key("form").String())
+	if !(app.config.Section("user_page").Key("enabled").MustBool(true)) {
+		PAGES.MyAccount = "disabled"
+	}
+	if PAGES.Base == PAGES.Form || PAGES.Base == "/accounts" || PAGES.Base == "/settings" || PAGES.Base == "/activity" {
+		app.err.Printf(lm.BadURLBase, PAGES.Base)
+	}
+	app.info.Printf(lm.SubpathBlockMessage, PAGES.Base, PAGES.Admin, PAGES.MyAccount, PAGES.Form)
 	app.MustSetValue("jellyfin", "public_server", app.config.Section("jellyfin").Key("server").String())
-
 	app.MustSetValue("ui", "redirect_url", app.config.Section("jellyfin").Key("public_server").String())
 
 	for _, key := range app.config.Section("files").Keys() {
@@ -58,12 +90,8 @@ func (app *appContext) loadConfig() error {
 		app.config.Section("files").Key(key).SetValue(app.config.Section("files").Key(key).MustString(filepath.Join(app.dataPath, (key + ".db"))))
 	}
 
-	app.URLBase = strings.TrimSuffix(app.config.Section("ui").Key("url_base").MustString(""), "/")
-	if app.URLBase == "/invite" || app.URLBase == "/accounts" || app.URLBase == "/settings" || app.URLBase == "/activity" {
-		app.err.Printf(lm.BadURLBase, app.URLBase)
-	}
 	app.ExternalURI = strings.TrimSuffix(strings.TrimSuffix(app.config.Section("ui").Key("jfa_url").MustString(""), "/invite"), "/")
-	if !strings.HasSuffix(app.ExternalURI, app.URLBase) {
+	if !strings.HasSuffix(app.ExternalURI, PAGES.Base) {
 		app.err.Println(lm.NoURLSuffix)
 	}
 	if app.ExternalURI == "" {

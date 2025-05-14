@@ -32,7 +32,7 @@ func (app *appContext) loadCSSHeader() string {
 	l := len(css)
 	h := ""
 	for i, f := range css {
-		h += "<" + app.URLBase + "/css/" + f + ">; rel=preload; as=style"
+		h += "<" + PAGES.Base + "/css/" + f + ">; rel=preload; as=style"
 		if l > 1 && i != (l-1) {
 			h += ", "
 		}
@@ -41,18 +41,19 @@ func (app *appContext) loadCSSHeader() string {
 }
 
 func (app *appContext) getURLBase(gc *gin.Context) string {
-	if strings.HasPrefix(gc.Request.URL.String(), app.URLBase) {
+	if strings.HasPrefix(gc.Request.URL.String(), PAGES.Base) {
 		// Hack to fix the common URL base /accounts
-		if app.URLBase == "/accounts" && strings.HasPrefix(gc.Request.URL.String(), "/accounts/user/") {
+		if PAGES.Base == "/accounts" && strings.HasPrefix(gc.Request.URL.String(), "/accounts/user/") {
 			return ""
 		}
-		return app.URLBase
+		return PAGES.Base
 	}
 	return ""
 }
 
-func gcHTML(gc *gin.Context, code int, file string, templ gin.H) {
+func (app *appContext) gcHTML(gc *gin.Context, code int, file string, page Page, templ gin.H) {
 	gc.Header("Cache-Control", "no-cache")
+	app.BasePageTemplateValues(gc, page, templ)
 	gc.HTML(code, file, templ)
 }
 
@@ -61,21 +62,61 @@ func (app *appContext) pushResources(gc *gin.Context, page Page) {
 	switch page {
 	case AdminPage:
 		toPush = []string{"/js/admin.js", "/js/theme.js", "/js/lang.js", "/js/modal.js", "/js/tabs.js", "/js/invites.js", "/js/accounts.js", "/js/settings.js", "/js/profiles.js", "/js/common.js"}
-		break
 	case UserPage:
 		toPush = []string{"/js/user.js", "/js/theme.js", "/js/lang.js", "/js/modal.js", "/js/common.js"}
-		break
 	default:
 		toPush = []string{}
 	}
 	if pusher := gc.Writer.Pusher(); pusher != nil {
 		for _, f := range toPush {
-			if err := pusher.Push(app.URLBase+f, nil); err != nil {
+			if err := pusher.Push(PAGES.Base+f, nil); err != nil {
 				app.debug.Printf(lm.FailedServerPush, err)
 			}
 		}
 	}
 	gc.Header("Link", cssHeader)
+}
+
+// Returns a gin.H with general values (url base, css version, etc.)
+func (app *appContext) BasePageTemplateValues(gc *gin.Context, page Page, base gin.H) {
+	set := func(k string, v any) {
+		if _, ok := base[k]; !ok {
+			base[k] = v
+		}
+	}
+
+	pages := PagePathsDTO{
+		PagePaths: PAGES,
+	}
+	pages.Base = app.getURLBase(gc)
+	switch page {
+	case AdminPage:
+		pages.Current = PAGES.Admin
+	case FormPage:
+		pages.Current = PAGES.Form
+	case UserPage:
+		pages.Current = PAGES.MyAccount
+	default:
+		pages.Current = "/"
+	}
+	set("pages", pages)
+	ombiEnabled := app.config.Section("ombi").Key("enabled").MustBool(false)
+	jellyseerrEnabled := app.config.Section("jellyseerr").Key("enabled").MustBool(false)
+	notificationsEnabled, _ := app.config.Section("notifications").Key("enabled").Bool()
+	set("notifications", notificationsEnabled)
+	set("cssClass", app.cssClass)
+	set("cssVersion", cssVersion)
+	set("emailEnabled", emailEnabled)
+	set("telegramEnabled", telegramEnabled)
+	set("discordEnabled", discordEnabled)
+	set("matrixEnabled", matrixEnabled)
+	set("ombiEnabled", ombiEnabled)
+	set("jellyseerrEnabled", jellyseerrEnabled)
+	// QUIRK: The login modal html template uses this' existence to check if the modal is for the admin or user page.
+	if page != AdminPage {
+		set("pwrEnabled", app.config.Section("password_resets").Key("enabled").MustBool(false))
+	}
+	set("referralsEnabled", app.config.Section("user_page").Key("enabled").MustBool(false) && app.config.Section("user_page").Key("referrals").MustBool(false))
 }
 
 type Page int
@@ -132,10 +173,6 @@ func (app *appContext) getLang(gc *gin.Context, page Page, chosen string) string
 func (app *appContext) AdminPage(gc *gin.Context) {
 	app.pushResources(gc, AdminPage)
 	lang := app.getLang(gc, AdminPage, app.storage.lang.chosenAdminLang)
-	emailEnabled, _ := app.config.Section("invite_emails").Key("enabled").Bool()
-	notificationsEnabled, _ := app.config.Section("notifications").Key("enabled").Bool()
-	ombiEnabled := app.config.Section("ombi").Key("enabled").MustBool(false)
-	jellyseerrEnabled := app.config.Section("jellyseerr").Key("enabled").MustBool(false)
 	jfAdminOnly := app.config.Section("ui").Key("admin_only").MustBool(true)
 	jfAllowAll := app.config.Section("ui").Key("allow_all").MustBool(false)
 	var license string
@@ -157,62 +194,36 @@ func (app *appContext) AdminPage(gc *gin.Context) {
 		builtBy = "???"
 	}
 
-	gcHTML(gc, http.StatusOK, "admin.html", gin.H{
-		"urlBase":           app.getURLBase(gc),
-		"cssClass":          app.cssClass,
-		"cssVersion":        cssVersion,
-		"contactMessage":    "",
-		"emailEnabled":      emailEnabled,
-		"telegramEnabled":   telegramEnabled,
-		"discordEnabled":    discordEnabled,
-		"matrixEnabled":     matrixEnabled,
-		"ombiEnabled":       ombiEnabled,
-		"jellyseerrEnabled": jellyseerrEnabled,
-		"linkResetEnabled":  app.config.Section("password_resets").Key("link_reset").MustBool(false),
-		"notifications":     notificationsEnabled,
-		"version":           version,
-		"commit":            commit,
-		"buildTime":         buildTime,
-		"builtBy":           builtBy,
-		"buildTags":         buildTags,
-		"username":          !app.config.Section("email").Key("no_username").MustBool(false),
-		"strings":           app.storage.lang.Admin[lang].Strings,
-		"quantityStrings":   app.storage.lang.Admin[lang].QuantityStrings,
-		"language":          app.storage.lang.Admin[lang].JSON,
-		"langName":          lang,
-		"license":           license,
-		"jellyfinLogin":     app.jellyfinLogin,
-		"jfAdminOnly":       jfAdminOnly,
-		"jfAllowAll":        jfAllowAll,
-		"userPageEnabled":   app.config.Section("user_page").Key("enabled").MustBool(false),
-		"showUserPageLink":  app.config.Section("user_page").Key("show_link").MustBool(true),
-		"referralsEnabled":  app.config.Section("user_page").Key("enabled").MustBool(false) && app.config.Section("user_page").Key("referrals").MustBool(false),
-		"loginAppearance":   app.config.Section("ui").Key("login_appearance").MustString("clear"),
+	app.gcHTML(gc, http.StatusOK, "admin.html", AdminPage, gin.H{
+		"contactMessage":   "",
+		"linkResetEnabled": app.config.Section("password_resets").Key("link_reset").MustBool(false),
+		"version":          version,
+		"commit":           commit,
+		"buildTime":        buildTime,
+		"builtBy":          builtBy,
+		"buildTags":        buildTags,
+		"username":         !app.config.Section("email").Key("no_username").MustBool(false),
+		"strings":          app.storage.lang.Admin[lang].Strings,
+		"quantityStrings":  app.storage.lang.Admin[lang].QuantityStrings,
+		"language":         app.storage.lang.Admin[lang].JSON,
+		"langName":         lang,
+		"license":          license,
+		"jellyfinLogin":    app.jellyfinLogin,
+		"jfAdminOnly":      jfAdminOnly,
+		"jfAllowAll":       jfAllowAll,
+		"userPageEnabled":  app.config.Section("user_page").Key("enabled").MustBool(false),
+		"showUserPageLink": app.config.Section("user_page").Key("show_link").MustBool(true),
+		"loginAppearance":  app.config.Section("ui").Key("login_appearance").MustString("clear"),
 	})
 }
 
 func (app *appContext) MyUserPage(gc *gin.Context) {
 	app.pushResources(gc, UserPage)
 	lang := app.getLang(gc, UserPage, app.storage.lang.chosenUserLang)
-	emailEnabled, _ := app.config.Section("invite_emails").Key("enabled").Bool()
-	notificationsEnabled, _ := app.config.Section("notifications").Key("enabled").Bool()
-	ombiEnabled := app.config.Section("ombi").Key("enabled").MustBool(false)
-	jellyseerrEnabled := app.config.Section("jellyseerr").Key("enabled").MustBool(false)
 	data := gin.H{
-		"urlBase":           app.getURLBase(gc),
-		"cssClass":          app.cssClass,
-		"cssVersion":        cssVersion,
 		"contactMessage":    app.config.Section("ui").Key("contact_message").String(),
-		"emailEnabled":      emailEnabled,
 		"emailRequired":     app.config.Section("email").Key("required").MustBool(false),
-		"telegramEnabled":   telegramEnabled,
-		"discordEnabled":    discordEnabled,
-		"matrixEnabled":     matrixEnabled,
-		"ombiEnabled":       ombiEnabled,
-		"jellyseerrEnabled": jellyseerrEnabled,
-		"pwrEnabled":        app.config.Section("password_resets").Key("enabled").MustBool(false),
 		"linkResetEnabled":  app.config.Section("password_resets").Key("link_reset").MustBool(false),
-		"notifications":     notificationsEnabled,
 		"username":          !app.config.Section("email").Key("no_username").MustBool(false),
 		"strings":           app.storage.lang.User[lang].Strings,
 		"validationStrings": app.storage.lang.User[lang].validationStringsJSON,
@@ -220,7 +231,6 @@ func (app *appContext) MyUserPage(gc *gin.Context) {
 		"langName":          lang,
 		"jfLink":            app.config.Section("ui").Key("redirect_url").String(),
 		"requirements":      app.validator.getCriteria(),
-		"referralsEnabled":  app.config.Section("user_page").Key("enabled").MustBool(false) && app.config.Section("user_page").Key("referrals").MustBool(false),
 	}
 	if telegramEnabled {
 		data["telegramUsername"] = app.telegram.username
@@ -264,7 +274,7 @@ func (app *appContext) MyUserPage(gc *gin.Context) {
 		data[name+"MessageContent"] = template.HTML(markdown.ToHTML([]byte(msg.Content), nil, markdownRenderer))
 	}
 
-	gcHTML(gc, http.StatusOK, "user.html", data)
+	app.gcHTML(gc, http.StatusOK, "user.html", UserPage, data)
 }
 
 func (app *appContext) ResetPassword(gc *gin.Context) {
@@ -278,14 +288,9 @@ func (app *appContext) ResetPassword(gc *gin.Context) {
 	app.pushResources(gc, PWRPage)
 	lang := app.getLang(gc, PWRPage, app.storage.lang.chosenPWRLang)
 	data := gin.H{
-		"urlBase":           app.getURLBase(gc),
-		"cssClass":          app.cssClass,
-		"cssVersion":        cssVersion,
 		"contactMessage":    app.config.Section("ui").Key("contact_message").String(),
 		"strings":           app.storage.lang.PasswordReset[lang].Strings,
 		"success":           false,
-		"ombiEnabled":       app.config.Section("ombi").Key("enabled").MustBool(false),
-		"jellyseerrEnabled": app.config.Section("jellyseerr").Key("enabled").MustBool(false),
 		"customSuccessCard": false,
 	}
 	pwr, isInternal := app.internalPWRs[pin]
@@ -299,6 +304,7 @@ func (app *appContext) ResetPassword(gc *gin.Context) {
 		data["requirements"] = app.validator.getCriteria()
 		data["strings"] = app.storage.lang.PasswordReset[lang].Strings
 		data["validationStrings"] = app.storage.lang.User[lang].validationStringsJSON
+		// ewwwww, reusing an existing field, FIXME!
 		data["notifications"] = app.storage.lang.User[lang].notificationsJSON
 		data["langName"] = lang
 		data["passwordReset"] = true
@@ -309,10 +315,10 @@ func (app *appContext) ResetPassword(gc *gin.Context) {
 		data["reCAPTCHA"] = app.config.Section("captcha").Key("recaptcha").MustBool(false)
 		data["reCAPTCHASiteKey"] = app.config.Section("captcha").Key("recaptcha_site_key").MustString("")
 		data["pwrPIN"] = pin
-		gcHTML(gc, http.StatusOK, "form-loader.html", data)
+		app.gcHTML(gc, http.StatusOK, "form-loader.html", PWRPage, data)
 		return
 	}
-	defer gcHTML(gc, http.StatusOK, "password-reset.html", data)
+	defer app.gcHTML(gc, http.StatusOK, "password-reset.html", PWRPage, data)
 	// If it's a bot, pretend to be a success so the preview is nice.
 	if isBot {
 		app.debug.Println(lm.IgnoreBotPWR)
@@ -413,10 +419,7 @@ func (app *appContext) GetCaptcha(gc *gin.Context) {
 	if !isPWR {
 		inv, ok = app.storage.GetInvitesKey(code)
 		if !ok {
-			gcHTML(gc, 404, "invalidCode.html", gin.H{
-				"urlBase":        app.getURLBase(gc),
-				"cssClass":       app.cssClass,
-				"cssVersion":     cssVersion,
+			app.gcHTML(gc, 404, "invalidCode.html", OtherPage, gin.H{
 				"contactMessage": app.config.Section("ui").Key("contact_message").String(),
 			})
 		}
@@ -453,10 +456,7 @@ func (app *appContext) GenCaptcha(gc *gin.Context) {
 	}
 
 	if !ok {
-		gcHTML(gc, 404, "invalidCode.html", gin.H{
-			"urlBase":        app.getURLBase(gc),
-			"cssClass":       app.cssClass,
-			"cssVersion":     cssVersion,
+		app.gcHTML(gc, 404, "invalidCode.html", OtherPage, gin.H{
 			"contactMessage": app.config.Section("ui").Key("contact_message").String(),
 		})
 	}
@@ -587,10 +587,7 @@ func (app *appContext) VerifyCaptcha(gc *gin.Context) {
 	if !isPWR {
 		inv, ok = app.storage.GetInvitesKey(code)
 		if !ok {
-			gcHTML(gc, 404, "invalidCode.html", gin.H{
-				"urlBase":        app.getURLBase(gc),
-				"cssClass":       app.cssClass,
-				"cssVersion":     cssVersion,
+			app.gcHTML(gc, 404, "invalidCode.html", OtherPage, gin.H{
 				"contactMessage": app.config.Section("ui").Key("contact_message").String(),
 			})
 			return
@@ -617,10 +614,7 @@ func (app *appContext) VerifyCaptcha(gc *gin.Context) {
 
 func (app *appContext) NewUserFromConfirmationKey(invite Invite, key string, lang string, gc *gin.Context) {
 	fail := func() {
-		gcHTML(gc, 404, "404.html", gin.H{
-			"urlBase":        app.getURLBase(gc),
-			"cssClass":       app.cssClass,
-			"cssVersion":     cssVersion,
+		app.gcHTML(gc, 404, "404.html", OtherPage, gin.H{
 			"contactMessage": app.config.Section("ui").Key("contact_message").String(),
 		})
 	}
@@ -691,10 +685,7 @@ func (app *appContext) NewUserFromConfirmationKey(invite Invite, key string, lan
 	if app.config.Section("ui").Key("auto_redirect").MustBool(false) {
 		gc.Redirect(301, jfLink)
 	} else {
-		gcHTML(gc, http.StatusOK, "create-success.html", gin.H{
-			"urlBase":        app.getURLBase(gc),
-			"cssClass":       app.cssClass,
-			"cssVersion":     cssVersion,
+		app.gcHTML(gc, http.StatusOK, "create-success.html", OtherPage, gin.H{
 			"strings":        app.storage.lang.User[lang].Strings,
 			"successMessage": app.config.Section("ui").Key("success_message").String(),
 			"contactMessage": app.config.Section("ui").Key("contact_message").String(),
@@ -725,10 +716,7 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 	// if app.checkInvite(code, false, "") {
 	invite, ok := app.storage.GetInvitesKey(gc.Param("invCode"))
 	if !ok {
-		gcHTML(gc, 404, "invalidCode.html", gin.H{
-			"urlBase":        app.getURLBase(gc),
-			"cssClass":       app.cssClass,
-			"cssVersion":     cssVersion,
+		app.gcHTML(gc, 404, "invalidCode.html", FormPage, gin.H{
 			"contactMessage": app.config.Section("ui").Key("contact_message").String(),
 		})
 		return
@@ -747,7 +735,7 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 	discord := discordEnabled && app.config.Section("discord").Key("show_on_reg").MustBool(true)
 	matrix := matrixEnabled && app.config.Section("matrix").Key("show_on_reg").MustBool(true)
 
-	userPageAddress := fmt.Sprintf("%s/my/account", app.ExternalURI)
+	userPageAddress := app.ExternalURI + PAGES.MyAccount
 
 	fromUser := ""
 	if invite.ReferrerJellyfinID != "" {
@@ -758,9 +746,6 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 	}
 
 	data := gin.H{
-		"urlBase":            app.getURLBase(gc),
-		"cssClass":           app.cssClass,
-		"cssVersion":         cssVersion,
 		"contactMessage":     app.config.Section("ui").Key("contact_message").String(),
 		"helpMessage":        app.config.Section("ui").Key("help_message").String(),
 		"successMessage":     app.config.Section("ui").Key("success_message").String(),
@@ -772,28 +757,29 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 		"username":           !app.config.Section("email").Key("no_username").MustBool(false),
 		"strings":            app.storage.lang.User[lang].Strings,
 		"validationStrings":  app.storage.lang.User[lang].validationStringsJSON,
-		"notifications":      app.storage.lang.User[lang].notificationsJSON,
-		"code":               invite.Code,
-		"confirmation":       app.config.Section("email_confirmation").Key("enabled").MustBool(false),
-		"userExpiry":         invite.UserExpiry,
-		"userExpiryMonths":   invite.UserMonths,
-		"userExpiryDays":     invite.UserDays,
-		"userExpiryHours":    invite.UserHours,
-		"userExpiryMinutes":  invite.UserMinutes,
-		"userExpiryMessage":  app.storage.lang.User[lang].Strings.get("yourAccountIsValidUntil"),
-		"langName":           lang,
-		"passwordReset":      false,
-		"customSuccessCard":  false,
-		"telegramEnabled":    telegram,
-		"discordEnabled":     discord,
-		"matrixEnabled":      matrix,
-		"emailRequired":      app.config.Section("email").Key("required").MustBool(false),
-		"captcha":            app.config.Section("captcha").Key("enabled").MustBool(false),
-		"reCAPTCHA":          app.config.Section("captcha").Key("recaptcha").MustBool(false),
-		"reCAPTCHASiteKey":   app.config.Section("captcha").Key("recaptcha_site_key").MustString(""),
-		"userPageEnabled":    app.config.Section("user_page").Key("enabled").MustBool(false),
-		"userPageAddress":    userPageAddress,
-		"fromUser":           fromUser,
+		// ewwwww, reusing an existing field, FIXME!
+		"notifications":     app.storage.lang.User[lang].notificationsJSON,
+		"code":              invite.Code,
+		"confirmation":      app.config.Section("email_confirmation").Key("enabled").MustBool(false),
+		"userExpiry":        invite.UserExpiry,
+		"userExpiryMonths":  invite.UserMonths,
+		"userExpiryDays":    invite.UserDays,
+		"userExpiryHours":   invite.UserHours,
+		"userExpiryMinutes": invite.UserMinutes,
+		"userExpiryMessage": app.storage.lang.User[lang].Strings.get("yourAccountIsValidUntil"),
+		"langName":          lang,
+		"passwordReset":     false,
+		"customSuccessCard": false,
+		"telegramEnabled":   telegram,
+		"discordEnabled":    discord,
+		"matrixEnabled":     matrix,
+		"emailRequired":     app.config.Section("email").Key("required").MustBool(false),
+		"captcha":           app.config.Section("captcha").Key("enabled").MustBool(false),
+		"reCAPTCHA":         app.config.Section("captcha").Key("recaptcha").MustBool(false),
+		"reCAPTCHASiteKey":  app.config.Section("captcha").Key("recaptcha_site_key").MustString(""),
+		"userPageEnabled":   app.config.Section("user_page").Key("enabled").MustBool(false),
+		"userPageAddress":   userPageAddress,
+		"fromUser":          fromUser,
 	}
 	if telegram {
 		data["telegramPIN"] = app.telegram.NewAuthToken()
@@ -837,15 +823,12 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 	// 	pin := ""
 	// 	for _, token := range app.discord.tokens {
 	// 		if
-	gcHTML(gc, http.StatusOK, "form-loader.html", data)
+	app.gcHTML(gc, http.StatusOK, "form-loader.html", OtherPage, data)
 }
 
 func (app *appContext) NoRouteHandler(gc *gin.Context) {
 	app.pushResources(gc, OtherPage)
-	gcHTML(gc, 404, "404.html", gin.H{
-		"urlBase":        app.getURLBase(gc),
-		"cssClass":       app.cssClass,
-		"cssVersion":     cssVersion,
+	app.gcHTML(gc, 404, "404.html", OtherPage, gin.H{
 		"contactMessage": app.config.Section("ui").Key("contact_message").String(),
 	})
 }

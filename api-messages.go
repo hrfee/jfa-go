@@ -414,7 +414,7 @@ func (app *appContext) TelegramVerified(gc *gin.Context) {
 	respondBool(200, ok, gc)
 }
 
-// @Summary Returns true/false on whether or not a telegram PIN was verified. Requires invite code.
+// @Summary Returns true/false on whether or not a telegram PIN was verified. Requires invite code. NOTE: "/invite" might have been changed in Settings > URL Paths.
 // @Produce json
 // @Success 200 {object} boolResponse
 // @Success 401 {object} boolResponse
@@ -438,7 +438,7 @@ func (app *appContext) TelegramVerifiedInvite(gc *gin.Context) {
 	respondBool(200, ok, gc)
 }
 
-// @Summary Returns true/false on whether or not a discord PIN was verified. Requires invite code.
+// @Summary Returns true/false on whether or not a discord PIN was verified. Requires invite code. NOTE: "/invite" might have been changed in Settings > URL Paths.
 // @Produce json
 // @Success 200 {object} boolResponse
 // @Failure 401 {object} boolResponse
@@ -462,7 +462,7 @@ func (app *appContext) DiscordVerifiedInvite(gc *gin.Context) {
 	respondBool(200, ok, gc)
 }
 
-// @Summary Returns a 10-minute, one-use Discord server invite
+// @Summary Returns a 10-minute, one-use Discord server invite. NOTE: "/invite" might have been changed in Settings > URL Paths.
 // @Produce json
 // @Success 200 {object} DiscordInviteDTO
 // @Failure 400 {object} boolResponse
@@ -489,7 +489,7 @@ func (app *appContext) DiscordServerInvite(gc *gin.Context) {
 	gc.JSON(200, DiscordInviteDTO{invURL, iconURL})
 }
 
-// @Summary Generate and send a new PIN to a specified Matrix user.
+// @Summary Generate and send a new PIN to a specified Matrix user. NOTE: "/invite" might have been changed in Settings > URL Paths.
 // @Produce json
 // @Success 200 {object} boolResponse
 // @Failure 400 {object} stringResponse
@@ -528,7 +528,7 @@ func (app *appContext) MatrixSendPIN(gc *gin.Context) {
 	respondBool(200, true, gc)
 }
 
-// @Summary Check whether a matrix PIN is valid, and mark the token as verified if so. Requires invite code.
+// @Summary Check whether a matrix PIN is valid, and mark the token as verified if so. Requires invite code. NOTE: "/invite" might have been changed in Settings > URL Paths.
 // @Produce json
 // @Success 200 {object} boolResponse
 // @Failure 401 {object} boolResponse

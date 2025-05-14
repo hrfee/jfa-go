@@ -15,7 +15,7 @@
                 {{ $hasTwoCards = 1 }}
                 <div class="card mx-2 flex-initial w-full lg:w-[35%] mb-4 lg:mb-0 dark:~d_neutral @low content">
                     <span class="heading row">{{ .strings.loginNotAdmin }}</span>
-                    <a class="button ~info h-12 w-full" href="{{ .urlBase }}/my/account"><i class="ri-account-circle-fill mr-2"></i>{{ .strings.myAccount }}</a>
+                    <a class="button ~info h-12 w-full" href="{{ .pages.Base }}{{ .pages.MyAccount }}"><i class="ri-account-circle-fill mr-2"></i>{{ .strings.myAccount }}</a>
                 </div>
             {{ end }}
         {{ end }}

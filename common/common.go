@@ -79,6 +79,13 @@ func GenericErr(status int, err error) error {
 	}
 }
 
+func GenericErrFromResponse(resp *http.Response, err error) error {
+	if resp == nil {
+		return ErrUnknown{code: -2}
+	}
+	return GenericErr(resp.StatusCode, err)
+}
+
 type ConfigurableTransport interface {
 	// SetTransport sets the http.Transport to use for requests. Can be used to set a proxy.
 	SetTransport(t *http.Transport)

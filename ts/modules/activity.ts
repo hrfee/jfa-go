@@ -3,6 +3,8 @@ import { Search, SearchConfiguration, QueryType, SearchableItem } from "../modul
 import { accountURLEvent } from "../modules/accounts.js";
 import { inviteURLEvent } from "../modules/invites.js";
 
+declare var window: GlobalWindow;
+
 export interface activity {
     id: string; 
     type: string; 
@@ -52,8 +54,8 @@ export class Activity implements activity, SearchableItem {
             link = link.split(split)[0];
         }
         if (link.slice(-1) != "/") { link += "/"; }
-        // FIXME: I should probably just be using window.URLBase, but incase thats not right, i'll put this warning here
-        if (link != window.URLBase) console.error(`URL Bases don't match: "${link}" != "${window.URLBase}"`);
+        // FIXME: I should probably just be using window.pages.Base, but incase thats not right, i'll put this warning here
+        if (link != window.pages.Base) console.error(`URL Bases don't match: "${link}" != "${window.pages.Base}"`);
         return link;
     })(); */
 
@@ -66,17 +68,17 @@ export class Activity implements activity, SearchableItem {
     }
 
     _genUserLink = (): string => {
-        return `<a role="link" tabindex="0" class="hover:underline cursor-pointer activity-pseudo-link-user" data-id="${this._act.user_id}" href="${window.URLBase}/accounts?user=${this._act.user_id}">${this._genUserText()}</a>`;
+        return `<a role="link" tabindex="0" class="hover:underline cursor-pointer activity-pseudo-link-user" data-id="${this._act.user_id}" href="${window.pages.Base}${window.pages.Admin}/accounts?user=${this._act.user_id}">${this._genUserText()}</a>`;
     }
         
     _genSrcUserLink = (): string => {
-        return `<a role="link" tabindex="0" class="hover:underline cursor-pointer activity-pseudo-link-user" data-id="${this._act.user_id}" href="${window.URLBase}/accounts?user=${this._act.source}">${this._genSrcUserText()}</a>`;
+        return `<a role="link" tabindex="0" class="hover:underline cursor-pointer activity-pseudo-link-user" data-id="${this._act.user_id}" href="${window.pages.Base}${window.pages.Admin}/accounts?user=${this._act.source}">${this._genSrcUserText()}</a>`;
     }
 
     private _renderInvText = (): string => { return `<span class="font-medium font-mono">${this.value || this.invite_code || "???"}</span>`; }
 
     private _genInvLink = (): string => {
-        return `<a role="link" tabindex="0" class="hover:underline cursor-pointer activity-pseudo-link-invite" data-id="${this.invite_code}" href="${window.URLBase}/?invite=${this.invite_code}">${this._renderInvText()}</a>`;
+        return `<a role="link" tabindex="0" class="hover:underline cursor-pointer activity-pseudo-link-invite" data-id="${this.invite_code}" href="${window.pages.Base}${window.pages.Admin}/?invite=${this.invite_code}">${this._renderInvText()}</a>`;
     }
 
 

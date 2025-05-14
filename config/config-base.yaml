@@ -194,21 +194,25 @@ sections:
     value: Your account has been created. Click below to continue to Jellyfin.
     description: Displayed when a user creates an account. Use the "post-signup card"
       in the Message editor for more control.
-  - setting: url_base
-    name: Reverse Proxy subfolder
-    requires_restart: true
-    type: text
-    description: URL base for when running jfa-go with a reverse proxy in a subfolder.
-      include preceding /, e.g "/accounts".
+  - setting: subfolder_note
+    name: "Reverse proxy-ing to a subfolder?"
+    type: note
+    description: "Put the folder (e.g. /accounts) in \"Reverse Proxy subfolder\", and the full URL including it (e.g. https://jellyf.in/accounts) in \"External jfa-go URL\"."
   - setting: jfa_url
     name: External jfa-go URL
     required: true
     depends_true: enabled
     type: text
     value: http://accounts.jellyf.in:8056
-    description: The URL at which the jfa-go root (admin page) is accessible, including
+    description: The URL at which the jfa-go root (usually the admin page) is accessible, including
       the subfolder if you use one. This is necessary because using a reverse proxy
       means the program has no way of knowing the URL itself.
+  - setting: url_base
+    name: Reverse Proxy subfolder
+    requires_restart: true
+    type: text
+    description: URL base for when running jfa-go with a reverse proxy in a subfolder.
+      include preceding /, e.g "/accounts".
   - setting: redirect_url
     name: Form success redirect URL
     type: text
@@ -232,6 +236,37 @@ sections:
     - ["opaque", "Opaque"]
     value: clear
     description: Appearance of the Admin login screen.
+  - setting: urlpaths_note
+    name: "URL Paths:"
+    type: note
+    description: "Want \"My Account\" at \"/\" or the admin page at \"/admin\"? Enable advanced settings and check the \"URL Paths\" section."
+- section: url_paths
+  meta:
+    name: URL Paths
+    description: Settings for changing where different pages are accessed. If you change & forget these, they're printed in the logs on startup. Paths should have a slash at the beginning but not at the end.
+    advanced: true
+  settings:
+  - setting: admin
+    name: Admin page subpath
+    type: text
+    required: true
+    requires_restart: true
+    value: ""
+    description: URL subpath the admin page should be at.
+  - setting: user_page
+    name: "\"My Account\" subpath"
+    type: text
+    required: true
+    requires_restart: true
+    value: "/my/account"
+    description: URL subpath the "My Account" page should be at.
+  - setting: form
+    name: Invite subpath
+    type: text
+    required: true
+    requires_restart: true
+    value: "/invite"
+    description: URL subpath invites should be on. 
 - section: advanced
   meta:
     name: Advanced
@@ -720,6 +755,12 @@ sections:
     type: bool
     value: false
     description: Disables using the same address on multiple accounts.
+  - setting: test_note
+    name: 'Test your settings:'
+    type: note
+    depends_true: enabled
+    required: false
+    description: Go over to the accounts tab, select your user (ensuring you've assigned it an email address) and send yourself an announcement.
 - section: mailgun
   meta:
     name: Mailgun (Email)
@@ -1082,8 +1123,7 @@ sections:
     type: note
     depends_true: link_reset
     required: false
-    description: Set the "External jfa-go URL" in General so that links to jfa-go
-      can be made.
+    description: Set the "External jfa-go URL" in General so that links to jfa-go can be made.
   - setting: language
     name: Default reset link language
     requires_restart: true

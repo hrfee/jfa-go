@@ -6,7 +6,7 @@ import { Validator, ValidatorConf, ValidatorRespDTO } from "./modules/validator.
 import { Discord, Telegram, Matrix, ServiceConfiguration, MatrixConfiguration } from "./modules/account-linking.js";
 import { Captcha, GreCAPTCHA } from "./modules/captcha.js";
 
-interface formWindow extends Window {
+interface formWindow extends GlobalWindow {
     invalidPassword: string;
     successModal: Modal;
     telegramModal: Modal;
@@ -59,7 +59,7 @@ if (window.telegramEnabled) {
         modal: window.telegramModal as Modal,
         pin: window.telegramPIN,
         pinURL: "",
-        verifiedURL: "/invite/" + window.code + "/telegram/verified/",
+        verifiedURL: window.pages.Form + "/" + window.code + "/telegram/verified/",
         invalidCodeError: window.messages["errorInvalidPIN"],
         accountLinkedError: window.messages["errorAccountLinked"],
         successError: window.messages["verified"],
@@ -89,9 +89,9 @@ if (window.discordEnabled) {
     const discordConf: ServiceConfiguration = {
         modal: window.discordModal as Modal,
         pin: window.discordPIN,
-        inviteURL: window.discordInviteLink ? ("/invite/" + window.code + "/discord/invite") : "",
+        inviteURL: window.discordInviteLink ? (window.pages.Form + "/" + window.code + "/discord/invite") : "",
         pinURL: "",
-        verifiedURL: "/invite/" + window.code + "/discord/verified/",
+        verifiedURL: window.pages.Form + "/" + window.code + "/discord/verified/",
         invalidCodeError: window.messages["errorInvalidPIN"],
         accountLinkedError: window.messages["errorAccountLinked"],
         successError: window.messages["verified"],
@@ -121,8 +121,8 @@ if (window.matrixEnabled) {
     
     const matrixConf: MatrixConfiguration = {
         modal: window.matrixModal as Modal,
-        sendMessageURL: "/invite/" + window.code + "/matrix/user",
-        verifiedURL: "/invite/" + window.code + "/matrix/verified/",
+        sendMessageURL: window.pages.Form + "/" + window.code + "/matrix/user",
+        verifiedURL: window.pages.Form + "/" + window.code + "/matrix/verified/",
         invalidCodeError: window.messages["errorInvalidPIN"],
         accountLinkedError: window.messages["errorAccountLinked"],
         unknownError: window.messages["errorUnknown"],

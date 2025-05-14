@@ -103,37 +103,37 @@ type appContext struct {
 	adminUsers     []User
 	invalidTokens  []string
 	// Keeping jf name because I can't think of a better one
-	jf                                   *mediabrowser.MediaBrowser
-	authJf                               *mediabrowser.MediaBrowser
-	ombi                                 *OmbiWrapper
-	js                                   *JellyseerrWrapper
-	thirdPartyServices                   []ThirdPartyService
-	datePattern                          string
-	timePattern                          string
-	storage                              Storage
-	validator                            Validator
-	email                                *Emailer
-	telegram                             *TelegramDaemon
-	discord                              *DiscordDaemon
-	matrix                               *MatrixDaemon
-	contactMethods                       []ContactMethodLinker
-	info, debug, err                     *logger.Logger
-	host                                 string
-	port                                 int
-	version                              string
-	URLBase, ExternalURI, ExternalDomain string
-	updater                              *Updater
-	webhooks                             *WebhookSender
-	newUpdate                            bool // Whether whatever's in update is new.
-	tag                                  Tag
-	update                               Update
-	proxyEnabled                         bool
-	proxyTransport                       *http.Transport
-	proxyConfig                          easyproxy.ProxyConfig
-	internalPWRs                         map[string]InternalPWR
-	pwrCaptchas                          map[string]Captcha
-	ConfirmationKeys                     map[string]map[string]ConfirmationKey // Map of invite code to jwt to request
-	confirmationKeysLock                 sync.Mutex
+	jf                          *mediabrowser.MediaBrowser
+	authJf                      *mediabrowser.MediaBrowser
+	ombi                        *OmbiWrapper
+	js                          *JellyseerrWrapper
+	thirdPartyServices          []ThirdPartyService
+	datePattern                 string
+	timePattern                 string
+	storage                     Storage
+	validator                   Validator
+	email                       *Emailer
+	telegram                    *TelegramDaemon
+	discord                     *DiscordDaemon
+	matrix                      *MatrixDaemon
+	contactMethods              []ContactMethodLinker
+	info, debug, err            *logger.Logger
+	host                        string
+	port                        int
+	version                     string
+	ExternalURI, ExternalDomain string
+	updater                     *Updater
+	webhooks                    *WebhookSender
+	newUpdate                   bool // Whether whatever's in update is new.
+	tag                         Tag
+	update                      Update
+	proxyEnabled                bool
+	proxyTransport              *http.Transport
+	proxyConfig                 easyproxy.ProxyConfig
+	internalPWRs                map[string]InternalPWR
+	pwrCaptchas                 map[string]Captcha
+	ConfirmationKeys            map[string]map[string]ConfirmationKey // Map of invite code to jwt to request
+	confirmationKeysLock        sync.Mutex
 }
 
 func generateSecret(length int) (string, error) {
@@ -147,7 +147,7 @@ func generateSecret(length int) (string, error) {
 
 func test(app *appContext) {
 	fmt.Printf("\n\n----\n\n")
-	settings := map[string]interface{}{
+	settings := map[string]any{
 		"server":         app.jf.Server,
 		"server version": app.jf.ServerInfo.Version,
 		"server name":    app.jf.ServerInfo.Name,

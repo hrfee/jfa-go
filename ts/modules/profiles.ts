@@ -1,5 +1,7 @@
 import { _get, _post, _delete, toggleLoader } from "../modules/common.js";
 
+declare var window: GlobalWindow;
+
 export const profileLoadEvent = new CustomEvent("profileLoadEvent");
 export const reloadProfileNames = (then?: () => void) => _get("/profiles/names", null, (req: XMLHttpRequest) => {
     if (req.readyState != 4) return;

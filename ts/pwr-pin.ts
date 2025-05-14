@@ -1,5 +1,7 @@
 import { toClipboard, notificationBox } from "./modules/common.js";
 
+declare var window: GlobalWindow;
+
 const pin = document.getElementById("pin") as HTMLSpanElement;
 
 if (pin) {

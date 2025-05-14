@@ -1,16 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" class="{{ .cssClass }}">
     <head>
-        <link rel="stylesheet" type="text/css" href="{{ .urlBase }}/css/{{ .cssVersion }}bundle.css">
         <script>
-            window.URLBase = "{{ .urlBase }}";
-            window.notificationsEnabled = {{ .notifications }};
-            window.emailEnabled = {{ .emailEnabled }};
-            window.telegramEnabled = {{ .telegramEnabled }};
-            window.discordEnabled = {{ .discordEnabled }};
-            window.matrixEnabled = {{ .matrixEnabled }};
-            window.ombiEnabled = {{ .ombiEnabled }};
-            window.jellyseerrEnabled = {{ .jellyseerrEnabled }};
             window.usernameEnabled = {{ .username }};
             window.langFile = JSON.parse({{ .language }});
             window.linkResetEnabled = {{ .linkResetEnabled }};
@@ -18,7 +9,6 @@
             window.jellyfinLogin = {{ .jellyfinLogin }};
             window.jfAdminOnly = {{ .jfAdminOnly }};
             window.jfAllowAll = {{ .jfAllowAll }};
-            window.referralsEnabled = {{ .referralsEnabled }};
             window.loginAppearance = "{{ .loginAppearance }}";
         </script>
         <title>Admin - jfa-go</title>
@@ -47,7 +37,7 @@
         </div>
         <div id="modal-about" class="modal">
             <div class="relative mx-auto my-[10%] w-11/12 sm:w-4/5 lg:w-1/2 content card">
-                <img src="{{ .urlBase }}/banner.svg" class="banner header" alt="jfa-go banner">
+                <img src="{{ .pages.Base }}/banner.svg" class="banner header" alt="jfa-go banner">
                 <span class="heading"><span class="modal-close">&times;</span></span>
                 <p>{{ .strings.version }} <span class="text-black dark:text-white font-mono bg-inherit">{{ .version }}</span></p>
                 <p>{{ .strings.commitNoun }} <span class="text-black dark:text-white font-mono bg-inherit">{{ .commit }}</span></p>
@@ -551,7 +541,7 @@
                     <span class="button ~critical @low unfocused" id="logout-button">{{ .strings.logout }}</span>
                     {{ if .userPageEnabled }}
                         <div class="">
-                            <a class="button ~info" href="{{ .urlBase }}/my/account"><i class="ri-account-circle-fill mr-2"></i>{{ .strings.myAccount }}</a>
+                            <a class="button ~info" href="{{ .pages.Base }}{{ .pages.MyAccount }}"><i class="ri-account-circle-fill mr-2"></i>{{ .strings.myAccount }}</a>
                         </div>
                     {{ end }}
                 </div>
@@ -925,6 +915,6 @@
                 </div>
             </div>
         </div>
-        <script src="{{ .urlBase }}/js/admin.js" type="module"></script>
+        <script src="{{ .pages.Base }}/js/admin.js" type="module"></script>
     </body>
 </html>
