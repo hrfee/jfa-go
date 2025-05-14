@@ -32,7 +32,15 @@ export class PageManager {
 
     private _onpopstate = (event: PopStateEvent) => {
         let name = event.state;
-        if (!this.pages.has(event.state)) {
+        if (name == null) {
+            // Attempt to use hash from URL, if it isn't there, try the last part of the URL.
+            if (window.location.hash && window.location.hash.charAt(0) == "#") {
+                name = window.location.hash.substring(1);
+            } else {
+                name = window.location.pathname.split("/").filter(Boolean).at(-1);
+            }
+        }
+        if (!this.pages.has(name)) {
             name = this.pageList[0]
         }
         let success = this.pages.get(name).show();
@@ -73,7 +81,6 @@ export class PageManager {
     }
 
     loadPage (p: Page) {
-        console.log("loading page with", p.name || this.defaultName, p.title, p.url + window.location.search);
         window.history.pushState(p.name || this.defaultName, p.title, p.url + window.location.search);
     }
 
