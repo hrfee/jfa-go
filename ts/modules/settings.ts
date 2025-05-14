@@ -639,7 +639,7 @@ export class settingsList {
     }
 
     private _showPanel = (name: string) => {
-        console.log("showing", name);
+        // console.log("showing", name);
         for (let n in this._sections) {
             if (n == name) {
                 this._sections[name].visible = true;
@@ -944,8 +944,13 @@ export class settingsList {
 
         let firstVisibleSection = "";
         for (let section of this._settings.sections) {
-
-            let dependencyCard = this._sections[section.section].asElement().querySelector(".settings-dependency-message");
+            // Section might be disabled at build-time (like Updates), or deprecated and so not appear.
+            if (!(section.section in this._sections)) {
+                // console.log(`Couldn't find section "${section.section}"`);
+                continue
+            }
+            const sectionElement = this._sections[section.section].asElement();
+            let dependencyCard = sectionElement.querySelector(".settings-dependency-message");
             if (dependencyCard) dependencyCard.remove();
             dependencyCard = null;
             let dependencyList = null;
@@ -964,10 +969,13 @@ export class settingsList {
                     matchedSection = true;
                 }
             }
-            const sectionElement = this._sections[section.section].asElement();
             for (let setting of section.settings) {
                 if (setting.type == "note") continue;
                 const element = sectionElement.querySelector(`div[data-name="${setting.setting}"]`) as HTMLElement;
+                // Again, setting might be disabled at build-time (if we have such a mechanism) or deprecated (like the old duplicate 'url_base's)
+                if (element == null) {
+                    continue;
+                }
 
                 // If we match the whole section, don't bother searching settings.
                 if (matchedSection) {
