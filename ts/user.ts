@@ -303,14 +303,10 @@ class ReferralCard {
     get code(): string { return this._code; }
     set code(c: string) {
         this._code = c;
-        
+       
+
         let u = new URL(window.location.href);
-        let path = u.pathname;
-        for (let split of ["account", "my"]) {
-            path = path.split(split)[0];
-        }
-        if (path.slice(-1) != "/") { path += "/"; }
-        path = path + window.pages.Form + "/" + this._code;
+        const path = window.pages.Base + window.pages.Form + "/" + this._code;
         
         u.pathname = path;
         u.hash = "";
