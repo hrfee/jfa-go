@@ -204,7 +204,7 @@ sections:
     depends_true: enabled
     type: text
     value: http://accounts.jellyf.in:8056
-    description: The URL at which the jfa-go root (admin page) is accessible, including
+    description: The URL at which the jfa-go root (usually the admin page) is accessible, including
       the subfolder if you use one. This is necessary because using a reverse proxy
       means the program has no way of knowing the URL itself.
   - setting: url_base
@@ -1123,8 +1123,7 @@ sections:
     type: note
     depends_true: link_reset
     required: false
-    description: Set the "External jfa-go URL" in General so that links to jfa-go
-      can be made.
+    description: Set the "External jfa-go URL" in General so that links to jfa-go can be made.
   - setting: language
     name: Default reset link language
     requires_restart: true
