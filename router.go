@@ -136,7 +136,7 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 		router.GET(p+"/token/login", app.getTokenLogin)
 		router.GET(p+"/token/refresh", app.getTokenRefresh)
 		router.POST(p+"/user/invite", app.NewUserFromInvite)
-		router.Use(static.Serve(p+PAGES.Form, app.webFS))
+		router.Use(static.Serve(p+PAGES.Form+"/", app.webFS))
 		router.GET(p+PAGES.Form+"/:invCode", app.InviteProxy)
 		if app.config.Section("captcha").Key("enabled").MustBool(false) {
 			router.GET(p+"/captcha/gen/:invCode", app.GenCaptcha)
