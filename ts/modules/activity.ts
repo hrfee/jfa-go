@@ -48,16 +48,6 @@ export class Activity implements activity, SearchableItem {
     private _delete: HTMLElement;
     private _ip: HTMLElement;
     private _act: activity;
-    /* private _urlBase: string = ((): string => {
-        let link = window.location.href;
-        for (let split of ["#", "?", "/activity"]) {
-            link = link.split(split)[0];
-        }
-        if (link.slice(-1) != "/") { link += "/"; }
-        // FIXME: I should probably just be using window.pages.Base, but incase thats not right, i'll put this warning here
-        if (link != window.pages.Base) console.error(`URL Bases don't match: "${link}" != "${window.pages.Base}"`);
-        return link;
-    })(); */
 
     _genUserText = (): string => {
         return `<span class="font-medium">${this._act.username || this._act.user_id.substring(0, 5)}</span>`;

@@ -63,12 +63,7 @@ class DOMInvite implements Invite {
     get code(): string { return this._code; }
     set code(code: string) {
         this._code = code;
-        let codeLink = window.location.href;
-        for (let split of ["#", "?"]) {
-            codeLink = codeLink.split(split)[0];
-        }
-        if (codeLink.slice(-1) != "/") { codeLink += "/"; }
-        this._codeLink = codeLink + window.pages.Form + "/" + code;
+        this._codeLink = window.pages.Base + window.pages.Form + "/" + code;
         const linkEl = this._codeArea.querySelector("a") as HTMLAnchorElement;
         if (this.label == "") {
             linkEl.textContent = code.replace(/-/g, '-');

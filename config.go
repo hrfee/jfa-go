@@ -45,11 +45,27 @@ func (app *appContext) MustSetURLPath(section, key, val string) {
 	app.MustSetValue(section, key, val)
 }
 
+func FixFullURL(v string) string {
+	if !strings.HasPrefix(v, "http://") && !strings.HasPrefix(v, "https://") {
+		v = "http://" + v
+	}
+	return v
+}
+
 func FormatSubpath(path string) string {
 	if path == "/" {
 		return ""
 	}
 	return strings.TrimSuffix(path, "/")
+}
+
+func (app *appContext) MustCorrectURL(section, key, value string) {
+	v := app.config.Section(section).Key(key).String()
+	if v == "" {
+		v = value
+	}
+	v = FixFullURL(v)
+	app.config.Section(section).Key(key).SetValue(v)
 }
 
 func (app *appContext) loadConfig() error {
@@ -75,8 +91,10 @@ func (app *appContext) loadConfig() error {
 		app.err.Printf(lm.BadURLBase, PAGES.Base)
 	}
 	app.info.Printf(lm.SubpathBlockMessage, PAGES.Base, PAGES.Admin, PAGES.MyAccount, PAGES.Form)
-	app.MustSetValue("jellyfin", "public_server", app.config.Section("jellyfin").Key("server").String())
-	app.MustSetValue("ui", "redirect_url", app.config.Section("jellyfin").Key("public_server").String())
+
+	app.MustCorrectURL("jellyfin", "server", "")
+	app.MustCorrectURL("jellyfin", "public_server", app.config.Section("jellyfin").Key("server").String())
+	app.MustCorrectURL("ui", "redirect_url", app.config.Section("jellyfin").Key("public_server").String())
 
 	for _, key := range app.config.Section("files").Keys() {
 		if name := key.Name(); name != "html_templates" && name != "lang_files" {
@@ -132,11 +150,6 @@ func (app *appContext) loadConfig() error {
 
 	sc := app.config.Section("discord").Key("start_command").MustString("start")
 	app.config.Section("discord").Key("start_command").SetValue(strings.TrimPrefix(strings.TrimPrefix(sc, "/"), "!"))
-
-	jfUrl := app.config.Section("jellyfin").Key("server").String()
-	if !(strings.HasPrefix(jfUrl, "http://") || strings.HasPrefix(jfUrl, "https://")) {
-		app.config.Section("jellyfin").Key("server").SetValue("http://" + jfUrl)
-	}
 
 	// Deletion template is good enough for these as well.
 	app.MustSetValue("disable_enable", "disabled_html", "jfa-go:"+"deleted.html")
