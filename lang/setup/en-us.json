@@ -34,6 +34,7 @@
     "endPage": {
         "finished": "Finished!",
         "restartMessage": "Features like Discord/Telegram/Matrix bots, custom Markdown messages, and a user-accessible \"My Account\" page can be found in Settings, so make sure to give it a browse. Click below to restart, then refresh the page.",
+        "urlChangedNotice": "If you've changed the host, port, subfolder etc. that jfa-go is hosted on, check the URL is right.",
         "refreshPage": "Refresh"
     },
     "language": {
