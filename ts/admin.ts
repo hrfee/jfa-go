@@ -178,7 +178,6 @@ for (const tab of tabs) {
     }
 }
 // Default tab
-// if ((window.URLBase + "/").includes(window.location.pathname)) {
 if (!matchedTab) {
     window.tabs.switch("", true);
 }
