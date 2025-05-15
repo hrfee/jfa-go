@@ -612,11 +612,16 @@ func (d *DiscordDaemon) cmdInvite(s *dg.Session, i *dg.InteractionCreate, lang s
 	//if mins > 0 {
 	//	expmin = mins
 	//}
-	//	Check whether requestor is linked to the admin account
-	requesterEmail, ok := d.app.storage.GetEmailsKey(requester.JellyfinID)
-	if !(ok && requesterEmail.Admin) {
+	// We want the same criteria for running this command as accessing the admin page (i.e. an "admin" of some sort)
+	if !(d.app.canAccessAdminPageByID(requester.JellyfinID)) {
 		d.app.err.Printf(lm.FailedGenerateInvite, fmt.Sprintf(lm.NonAdminUser, requester.JellyfinID))
-		// FIXME: add response message
+		s.InteractionRespond(i.Interaction, &dg.InteractionResponse{
+			Type: dg.InteractionResponseChannelMessageWithSource,
+			Data: &dg.InteractionResponseData{
+				Content: d.app.storage.lang.Telegram[lang].Strings.get("noPermission"),
+				Flags:   64, // Ephemeral
+			},
+		})
 		return
 	}
 

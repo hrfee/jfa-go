@@ -165,6 +165,31 @@ func (app *appContext) decodeValidateLoginHeader(gc *gin.Context, userpage bool)
 	return
 }
 
+func (app *appContext) canAccessAdminPage(user mediabrowser.User, emailStore EmailAddress) bool {
+	// 1. "Allow all" is enabled, so simply being a user implies access.
+	if app.config.Section("ui").Key("allow_all").MustBool(false) && user.ID != "" {
+		return true
+	}
+	// 2. You've been made an "accounts admin" from the accounts tab.
+	if emailStore.Admin {
+		return true
+	}
+	// 3. (Jellyfin) "Admins only" is enabled, and you're one.
+	if app.config.Section("ui").Key("admin_only").MustBool(true) && user.ID != "" && user.Policy.IsAdministrator {
+		return true
+	}
+	return false
+}
+
+func (app *appContext) canAccessAdminPageByID(jfID string) bool {
+	user, err := app.jf.UserByID(jfID, false)
+	if err != nil {
+		return false
+	}
+	emailStore, _ := app.storage.GetEmailsKey(jfID)
+	return app.canAccessAdminPage(user, emailStore)
+}
+
 func (app *appContext) validateJellyfinCredentials(username, password string, gc *gin.Context, userpage bool) (user mediabrowser.User, ok bool) {
 	ok = false
 	user, err := app.authJf.Authenticate(username, password)
@@ -220,18 +245,12 @@ func (app *appContext) getTokenLogin(gc *gin.Context) {
 			return
 		}
 		jfID = user.ID
-		if !app.config.Section("ui").Key("allow_all").MustBool(false) {
-			accountsAdmin := false
-			adminOnly := app.config.Section("ui").Key("admin_only").MustBool(true)
-			if emailStore, ok := app.storage.GetEmailsKey(jfID); ok {
-				accountsAdmin = emailStore.Admin
-			}
-			accountsAdmin = accountsAdmin || (adminOnly && user.Policy.IsAdministrator)
-			if !accountsAdmin {
-				app.authLog(fmt.Sprintf(lm.NonAdminUser, username))
-				respond(401, "Unauthorized", gc)
-				return
-			}
+		emailStore, _ := app.storage.GetEmailsKey(jfID)
+		accountsAdmin := app.canAccessAdminPage(user, emailStore)
+		if !accountsAdmin {
+			app.authLog(fmt.Sprintf(lm.NonAdminUser, username))
+			respond(401, "Unauthorized", gc)
+			return
 		}
 		// New users are only added when using jellyfinLogin.
 		userID = shortuuid.New()
