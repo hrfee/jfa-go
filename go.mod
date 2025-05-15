@@ -70,7 +70,6 @@ require (
 	github.com/cloudwego/iasm v0.2.0 // indirect
 	github.com/dgraph-io/ristretto v1.0.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
-	github.com/expr-lang/expr v1.17.3 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.6 // indirect
 	github.com/getlantern/context v0.0.0-20220418194847-3d5e7a086201 // indirect
 	github.com/getlantern/errors v1.0.4 // indirect
