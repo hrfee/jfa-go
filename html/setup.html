@@ -557,12 +557,13 @@
             <div class="card lg:container sectioned ~neutral @low unfocused">
                 <section class="section flex flex-col gap-2 justify-center items-center">
                     <span class="heading">{{ .lang.EndPage.finished }}</span>
-                    <p class="content text-center">{{ .lang.EndPage.restartMessage }} {{ .lang.EndPage.urlChangedNotice }}</p>
+                    <p class="content text-center">{{ .lang.EndPage.moreFeatures }} {{ .lang.EndPage.restartReload }} {{ .lang.EndPage.ifFailedLoad }}</p>
                 </section>
                 <section class="section w-full ~neutral footer flex flex-row justify-center items-center gap-2">
                     <span class="button ~neutral @low back">{{ .lang.Strings.back }}</span>
                     <span class="button ~urge @low" id="restart">{{ .lang.Strings.submit }}</span>
-                    <span class="button ~urge @low unfocused" id="refresh">{{ .lang.EndPage.refreshPage }}</span>
+                    <a class="button ~urge @low flex flex-col gap-0.5 unfocused" id="refresh-internal"></a>
+                    <a class="button ~urge @low flex flex-col gap-0.5 unfocused" id="refresh-external"></a>
                 </div>
             </div>
         </div>

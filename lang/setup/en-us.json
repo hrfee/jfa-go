@@ -33,8 +33,9 @@
     },
     "endPage": {
         "finished": "Finished!",
-        "restartMessage": "Features like Discord/Telegram/Matrix bots, custom Markdown messages, and a user-accessible \"My Account\" page can be found in Settings, so make sure to give it a browse. Click below to restart, then refresh the page.",
-        "urlChangedNotice": "If you've changed the host, port, subfolder etc. that jfa-go is hosted on, check the URL is right.",
+        "moreFeatures": "Tons more features like Discord/Telegram/Matrix bots and custom Markdown messages can be found in Settings, so make sure to give it a browse.",
+        "restartReload": "Click below to restart, then access jfa-go at one of the given internal/external URLs.",
+        "ifFailedLoad": "If it doesn't load, check the application's logs for any clues as to why.",
         "refreshPage": "Refresh"
     },
     "language": {

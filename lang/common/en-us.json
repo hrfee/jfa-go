@@ -41,7 +41,9 @@
         "delete": "Delete",
         "myAccount": "My Account",
         "referrals": "Referrals",
-        "inviteRemainingUses": "Remaining uses"
+        "inviteRemainingUses": "Remaining uses",
+        "internal": "Internal",
+        "external": "External"
     },
     "notifications": {
         "errorLoginBlank": "The username and/or password were left blank.",
