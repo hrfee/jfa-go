@@ -164,8 +164,18 @@ type respUser struct {
 	ReferralsEnabled      bool   `json:"referrals_enabled"`
 }
 
+type PaginatedDTO struct {
+	LastPage bool `json:"last_page"`
+}
+
+type getUsersReqDTO struct {
+	Limit int `json:"limit"`
+	Page  int `json:"page"` // zero-indexed
+}
+
 type getUsersDTO struct {
 	UserList []respUser `json:"users"`
+	LastPage bool       `json:"last_page"`
 }
 
 type ombiUser struct {
@@ -437,11 +447,11 @@ type GetActivitiesDTO struct {
 }
 
 type GetActivitiesRespDTO struct {
+	PaginatedDTO
 	Activities []ActivityDTO `json:"activities"`
-	LastPage   bool          `json:"last_page"`
 }
 
-type GetActivityCountDTO struct {
+type PageCountDTO struct {
 	Count uint64 `json:"count"`
 }
 

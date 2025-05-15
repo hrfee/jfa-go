@@ -5,6 +5,7 @@ import { stripMarkdown } from "../modules/stripmd.js";
 import { DiscordUser, newDiscordSearch } from "../modules/discord.js";
 import { Search, SearchConfiguration, QueryType, SearchableItem } from "../modules/search.js";
 import { HiddenInputField } from "./ui.js";
+import { RecordCounter } from "./activity.js";
 
 declare var window: GlobalWindow;
 
@@ -702,7 +703,11 @@ class user implements User, SearchableItem {
         }
         this._row.remove(); 
     }
-}    
+}  
+
+interface UsersDTO extends paginatedDTO {
+    users: User[];
+}
 
 export class accountsList {
     private _table = document.getElementById("accounts-list") as HTMLTableSectionElement;
@@ -770,6 +775,8 @@ export class accountsList {
     private _sortingByButton = document.getElementById("accounts-sort-by-field") as HTMLButtonElement;
     private _filterArea = document.getElementById("accounts-filter-area");
     private _searchOptionsHeader = document.getElementById("accounts-search-options-header");
+
+    private _counter: RecordCounter;
 
     // Whether the "Extend expiry" is extending or setting an expiry.
     private _settingExpiry = false;
@@ -1779,6 +1786,9 @@ export class accountsList {
 
     constructor() {
         this._populateNumbers();
+        
+        this._counter = new RecordCounter(document.getElementById("accounts-record-counter"));
+        
         this._users = {};
         this._selectAll.checked = false;
         this._selectAll.onchange = () => {
@@ -2035,12 +2045,16 @@ export class accountsList {
     }
 
     reload = (callback?: () => void) => {
+        this._counter.reset()
+        this._counter.getTotal("/users/count");
+
         _get("/users", null, (req: XMLHttpRequest) => {
             if (req.readyState == 4 && req.status == 200) {
+                let resp = req.response as UsersDTO;
                 // same method as inviteList.reload()
                 let accountsOnDOM: { [id: string]: boolean } = {};
                 for (let id in this._users) { accountsOnDOM[id] = true; }
-                for (let u of (req.response["users"] as User[])) {
+                for (let u of resp.users) {
                     if (u.id in this._users) {
                         this._users[u.id].update(u);
                         delete accountsOnDOM[u.id];
@@ -2055,10 +2069,10 @@ export class accountsList {
                 // console.log("reload, so sorting by", this._activeSortColumn);
                 this._ordering = this._columns[this._activeSortColumn].sort(this._users);
                 this._search.ordering = this._ordering;
-                if (!(this._search.inSearch)) {
-                    this.setVisibility(this._ordering, true);
-                    this._notFoundPanel.classList.add("unfocused");
-                } else {
+
+                this._counter.loaded = this._ordering.length;
+
+                if (this._search.inSearch) {
                     const results = this._search.search(this._searchBox.value);
                     if (results.length == 0) {
                         this._notFoundPanel.classList.remove("unfocused");
@@ -2066,6 +2080,10 @@ export class accountsList {
                         this._notFoundPanel.classList.add("unfocused");
                     }
                     this.setVisibility(results, true);
+                } else {
+                    this._counter.shown = this._counter.loaded;
+                    this.setVisibility(this._ordering, true);
+                    this._notFoundPanel.classList.add("unfocused");
                 }
                 this._checkCheckCount();
 

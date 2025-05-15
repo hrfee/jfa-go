@@ -15,11 +15,11 @@ import (
 
 var (
 	names = []string{"Aaron", "Agnes", "Bridget", "Brandon", "Dolly", "Drake", "Elizabeth", "Erika", "Geoff", "Graham", "Haley", "Halsey", "Josie", "John", "Kayleigh", "Luka", "Melissa", "Nasreen", "Paul", "Ross", "Sam", "Talib", "Veronika", "Zaynab"}
+	COUNT = 3000
 )
 
 const (
 	PASSWORD = "test"
-	COUNT    = 10
 )
 
 func main() {
@@ -56,6 +56,12 @@ func main() {
 		password, _ = reader.ReadString('\n')
 		password = strings.TrimSuffix(password, "\n")
 	}
+
+	if countEnv := os.Getenv("COUNT"); countEnv != "" {
+		COUNT, _ = strconv.Atoi(countEnv)
+	}
+
+	fmt.Printf("Will generate %d users\n", COUNT)
 
 	jf, err := mediabrowser.NewServer(
 		mediabrowser.JellyfinServer,
@@ -99,7 +105,7 @@ func main() {
 
 		user, status, err := jf.NewUser(name, PASSWORD)
 		if (status != 200 && status != 201 && status != 204) || err != nil {
-			log.Fatalf("Failed to create user \"%s\" (%d): %+v\n", name, status, err)
+			log.Fatalf("Acc no %d: Failed to create user \"%s\" (%d): %+v\n", i, name, status, err)
 		}
 
 		if rand.Intn(100) > 65 {
@@ -112,7 +118,7 @@ func main() {
 
 		status, err = jf.SetPolicy(user.ID, user.Policy)
 		if (status != 200 && status != 201 && status != 204) || err != nil {
-			log.Fatalf("Failed to set policy for user \"%s\" (%d): %+v\n", name, status, err)
+			log.Fatalf("Acc no %d: Failed to set policy for user \"%s\" (%d): %+v\n", i, name, status, err)
 		}
 
 		if rand.Intn(100) > 20 {
