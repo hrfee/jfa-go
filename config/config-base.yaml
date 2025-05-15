@@ -1292,6 +1292,7 @@ sections:
       on account creation, and to automatically link contact methods (email, discord
       and telegram). A template must be added to a User Profile for accounts to be
       created.
+    wiki_link: https://wiki.jfa-go.com/docs/external-services/jellyseerr/ 
   settings:
   - setting: enabled
     name: Enabled
@@ -1318,7 +1319,7 @@ sections:
     requires_restart: true
     type: text
     depends_true: enabled
-    description: API Key. Get this from the first tab in Jellyseerr's settings.
+    description: API Key. Get this from the first tab in Jellyseerr's settings (NOT the "Jellyfin" tab!)
   - setting: import_existing
     name: Import existing users to Jellyseerr
     requires_restart: true
