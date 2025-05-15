@@ -183,6 +183,8 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 		router.POST(p+"/logout", app.Logout)
 		api.DELETE(p+"/users", app.DeleteUsers)
 		api.GET(p+"/users", app.GetUsers)
+		api.GET(p+"/users/count", app.GetUserCount)
+		api.POST(p+"/users", app.SearchUsers)
 		api.POST(p+"/user", app.NewUserFromAdmin)
 		api.POST(p+"/users/extend", app.ExtendExpiry)
 		api.DELETE(p+"/users/:id/expiry", app.RemoveExpiry)

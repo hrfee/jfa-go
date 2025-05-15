@@ -134,6 +134,7 @@ type appContext struct {
 	pwrCaptchas                 map[string]Captcha
 	ConfirmationKeys            map[string]map[string]ConfirmationKey // Map of invite code to jwt to request
 	confirmationKeysLock        sync.Mutex
+	userCache                   UserCache
 }
 
 func generateSecret(length int) (string, error) {

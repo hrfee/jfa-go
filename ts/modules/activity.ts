@@ -346,9 +346,64 @@ export class Activity implements activity, SearchableItem {
     asElement = () => { return this._card; };
 }
 
-interface ActivitiesDTO {
+export class RecordCounter {
+    private _container: HTMLElement;
+    private _totalRecords: HTMLElement;
+    private _loadedRecords: HTMLElement;
+    private _shownRecords: HTMLElement;
+    private _total: number;
+    private _loaded: number;
+    private _shown: number;
+    constructor(container: HTMLElement) {
+        this._container = container;
+        this._container.innerHTML = `
+            <span class="records-total"></span>
+            <span class="records-loaded"></span>
+            <span class="records-shown"></span>
+            `;
+        this._totalRecords = document.getElementsByClassName("records-total")[0] as HTMLElement;
+        this._loadedRecords = document.getElementsByClassName("records-loaded")[0] as HTMLElement;
+        this._shownRecords = document.getElementsByClassName("records-shown")[0] as HTMLElement;
+        this.total = 0;
+        this.loaded = 0;
+        this.shown = 0;
+    }
+
+    reset() {
+        this.total = 0;
+        this.loaded = 0;
+        this.shown = 0;
+    }
+
+    // Sets the total using a PageCountDTO-returning API endpoint.
+    getTotal(endpoint: string) {
+        _get(endpoint, null, (req: XMLHttpRequest) => {
+            if (req.readyState != 4 || req.status != 200) return;
+            this.total = req.response["count"] as number;
+        });
+    }
+
+    get total(): number { return this._total; }
+    set total(v: number) {
+        this._total = v;
+        this._totalRecords.textContent = window.lang.var("strings", "totalRecords", `${v}`);
+    }
+    
+    get loaded(): number { return this._loaded; }
+    set loaded(v: number) {
+        this._loaded = v;
+        this._loadedRecords.textContent = window.lang.var("strings", "loadedRecords", `${v}`);
+    }
+    
+    get shown(): number { return this._shown; }
+    set shown(v: number) {
+        this._shown = v;
+        this._shownRecords.textContent = window.lang.var("strings", "shownRecords", `${v}`);
+    }
+}
+
+interface ActivitiesDTO extends paginatedDTO {
     activities: activity[];
-    last_page: boolean;
 }
 
 export class activityList {
@@ -368,31 +423,7 @@ export class activityList {
     private _keepSearchingDescription = document.getElementById("activity-keep-searching-description");
     private _keepSearchingButton = document.getElementById("activity-keep-searching");
 
-    private _totalRecords = document.getElementById("activity-total-records");
-    private _loadedRecords = document.getElementById("activity-loaded-records");
-    private _shownRecords = document.getElementById("activity-shown-records");
-
-    private _total: number;
-    private _loaded: number;
-    private _shown: number;
-
-    get total(): number { return this._total; }
-    set total(v: number) {
-        this._total = v;
-        this._totalRecords.textContent = window.lang.var("strings", "totalRecords", `${v}`);
-    }
-    
-    get loaded(): number { return this._loaded; }
-    set loaded(v: number) {
-        this._loaded = v;
-        this._loadedRecords.textContent = window.lang.var("strings", "loadedRecords", `${v}`);
-    }
-    
-    get shown(): number { return this._shown; }
-    set shown(v: number) {
-        this._shown = v;
-        this._shownRecords.textContent = window.lang.var("strings", "shownRecords", `${v}`);
-    }
+    private _counter: RecordCounter;
 
     private _search: Search;
     private _ascending: boolean;
@@ -421,9 +452,8 @@ export class activityList {
         this._loadAllButton.classList.remove("unfocused");
         this._loadAllButton.disabled = false;
 
-        this.total = 0;
-        this.loaded = 0;
-        this.shown = 0;
+        this._counter.reset();
+        this._counter.getTotal("/activity/count");
 
         // this._page = 0;
         let limit = 10;
@@ -438,10 +468,6 @@ export class activityList {
             "ascending": this.ascending
         }
 
-        _get("/activity/count", null, (req: XMLHttpRequest) => {
-            if (req.readyState != 4 || req.status != 200) return;
-            this.total = req.response["count"] as number;
-        });
 
         _post("/activity", send, (req: XMLHttpRequest) => {
             if (req.readyState != 4) return;
@@ -467,13 +493,13 @@ export class activityList {
             this._search.items = this._activities;
             this._search.ordering = this._ordering;
 
-            this.loaded = this._ordering.length;
+            this._counter.loaded = this._ordering.length;
 
             if (this._search.inSearch) {
                 this._search.onSearchBoxChange(true);
                 this._loadAllButton.classList.remove("unfocused");
             } else {
-                this.shown = this.loaded;
+                this._counter.shown = this._counter.loaded;
                 this.setVisibility(this._ordering, true);
                 this._loadAllButton.classList.add("unfocused");
                 this._notFoundPanel.classList.add("unfocused");
@@ -526,7 +552,7 @@ export class activityList {
             // this._search.items = this._activities;
             // this._search.ordering = this._ordering;
 
-            this.loaded = this._ordering.length;
+            this._counter.loaded = this._ordering.length;
 
             if (this._search.inSearch || loadAll) {
                 if (this._lastPage) {
@@ -699,6 +725,8 @@ export class activityList {
         this._activityList = document.getElementById("activity-card-list");
         document.addEventListener("activity-reload", this.reload);
 
+        this._counter = new RecordCounter(document.getElementById("activity-record-counter"));
+
         let conf: SearchConfiguration = {
             filterArea: this._filterArea,
             sortingByButton: this._sortingByButton,
@@ -711,7 +739,7 @@ export class activityList {
             filterList: document.getElementById("activity-filter-list"),
             // notFoundCallback: this._notFoundCallback,
             onSearchCallback: (visibleCount: number, newItems: boolean, loadAll: boolean) => {
-                this.shown = visibleCount;
+                this._counter.shown = visibleCount;
 
                 if (this._search.inSearch && !this._lastPage) this._loadAllButton.classList.remove("unfocused");
                 else this._loadAllButton.classList.add("unfocused");

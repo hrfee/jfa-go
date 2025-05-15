@@ -155,5 +155,9 @@ interface inviteList {
 //     submitter: HTMLInputElement;
 // }
 
+interface paginatedDTO {
+    last_page: boolean;
+}
+
 declare var config: Object;
 declare var modifiedConfig: Object;

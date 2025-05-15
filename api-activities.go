@@ -126,8 +126,8 @@ func (app *appContext) GetActivities(gc *gin.Context) {
 
 	resp := GetActivitiesRespDTO{
 		Activities: make([]ActivityDTO, len(results)),
-		LastPage:   len(results) != req.Limit,
 	}
+	resp.LastPage = len(results) != req.Limit
 
 	for i, act := range results {
 		resp.Activities[i] = ActivityDTO{
@@ -173,12 +173,12 @@ func (app *appContext) DeleteActivity(gc *gin.Context) {
 
 // @Summary Returns the total number of activities stored in the database.
 // @Produce json
-// @Success 200 {object} GetActivityCountDTO
+// @Success 200 {object} PageCountDTO
 // @Router /activity/count [get]
 // @Security Bearer
 // @tags Activity
 func (app *appContext) GetActivityCount(gc *gin.Context) {
-	resp := GetActivityCountDTO{}
+	resp := PageCountDTO{}
 	var err error
 	resp.Count, err = app.storage.db.Count(&Activity{}, &badgerhold.Query{})
 	if err != nil {
