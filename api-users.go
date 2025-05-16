@@ -902,13 +902,13 @@ func (app *appContext) userSummary(jfUser mediabrowser.User) respUser {
 // @tags Activity
 func (app *appContext) GetUserCount(gc *gin.Context) {
 	resp := PageCountDTO{}
-	err := app.userCache.Gen(app)
+	userList, err := app.userCache.Gen(app)
 	if err != nil {
 		app.err.Printf(lm.FailedGetUsers, lm.Jellyfin, err)
 		respond(500, "Couldn't get users", gc)
 		return
 	}
-	resp.Count = uint64(len(app.userCache.Cache))
+	resp.Count = uint64(len(userList))
 	gc.JSON(200, resp)
 }
 
@@ -923,13 +923,14 @@ func (app *appContext) GetUsers(gc *gin.Context) {
 	var resp getUsersDTO
 	// We're sending all users, so this is always true
 	resp.LastPage = true
-	err := app.userCache.Gen(app)
+	var err error
+	resp.UserList, err = app.userCache.Gen(app)
 	if err != nil {
 		app.err.Printf(lm.FailedGetUsers, lm.Jellyfin, err)
 		respond(500, "Couldn't get users", gc)
 		return
 	}
-	resp.UserList = app.userCache.Cache
+	app.debug.Printf("sending usercache of length %d", len(resp.UserList))
 	gc.JSON(200, resp)
 }
 
@@ -951,13 +952,13 @@ func (app *appContext) SearchUsers(gc *gin.Context) {
 	var resp getUsersDTO
 	// We're sending all users, so this is always true
 	resp.LastPage = true
-	err := app.userCache.Gen(app)
+	var err error
+	resp.UserList, err = app.userCache.Gen(app)
 	if err != nil {
 		app.err.Printf(lm.FailedGetUsers, lm.Jellyfin, err)
 		respond(500, "Couldn't get users", gc)
 		return
 	}
-	resp.UserList = app.userCache.Cache
 	gc.JSON(200, resp)
 }
 

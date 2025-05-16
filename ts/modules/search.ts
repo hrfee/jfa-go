@@ -2,6 +2,23 @@ const dateParser = require("any-date-parser");
 
 declare var window: GlobalWindow;
 
+export enum QueryOperator {
+    Greater = ">",
+    Lower = "<",
+    Equal = "="
+}
+
+export function QueryOperatorToDateText(op: QueryOperator): string {
+    switch (op) {
+        case QueryOperator.Greater:
+            return window.lang.strings("after");
+        case QueryOperator.Lower:
+            return window.lang.strings("before");
+        default:
+            return "";
+    }
+}
+
 export interface QueryType {
     name: string;
     description?: string;
@@ -27,6 +44,172 @@ export interface SearchConfiguration {
     onSearchCallback: (visibleCount: number, newItems: boolean, loadAll: boolean) => void;
     loadMore?: () => void;
 }
+
+export abstract class Query {
+    protected _subject: QueryType;
+    protected _operator: QueryOperator;
+    protected _card: HTMLElement;
+
+    constructor(subject: QueryType, operator: QueryOperator) {
+        this._subject = subject;
+        this._operator = operator;
+        this._card = document.createElement("span");
+        this._card.ariaLabel = window.lang.strings("clickToRemoveFilter");
+    }
+
+    set onclick(v: () => void) {
+        this._card.addEventListener("click", v);
+    }
+
+    asElement(): HTMLElement { return this._card; }
+}
+
+
+export class BoolQuery extends Query {
+    protected _value: boolean;
+    constructor(subject: QueryType, value: boolean) {
+        super(subject, QueryOperator.Equal);
+        this._value = value;
+        this._card.classList.add("button", "~" + (this._value ? "positive" : "critical"), "@high", "center", "mx-2", "h-full");
+        this._card.innerHTML = `
+        <span class="font-bold mr-2">${subject.name}</span>
+        <i class="text-2xl ri-${this._value? "checkbox" : "close"}-circle-fill"></i>
+        `;
+    }
+
+    public static paramsFromString(valueString: string): [boolean, boolean] {
+        let isBool = false;
+        let boolState = false;
+        if (valueString == "true" || valueString == "yes" || valueString == "t" || valueString == "y") {
+            isBool = true;
+            boolState = true;
+        } else if (valueString == "false" || valueString == "no" || valueString == "f" || valueString == "n") {
+            isBool = true;
+            boolState = false;
+        }
+        return [boolState, isBool]
+    }
+
+    get value(): boolean { return this._value; }
+
+    // Ripped from old code. Why it's like this, I don't know
+    public compare(subjectBool: boolean): boolean {
+        return ((subjectBool && this._value) || (!subjectBool && !this._value))
+    }
+}
+
+export class StringQuery extends Query {
+    protected _value: string;
+    constructor(subject: QueryType, value: string) {
+        super(subject, QueryOperator.Equal);
+        this._value = value;
+        this._card.classList.add("button", "~neutral", "@low", "center", "mx-2", "h-full");
+        this._card.innerHTML = `
+        <span class="font-bold mr-2">${subject.name}:</span> "${this._value}"
+        `;
+    }
+
+    get value(): string { return this._value; }
+}
+
+export interface DateAttempt {
+    year?: number;
+    month?: number;
+    day?: number;
+    hour?: number;
+    minute?: number
+}
+
+export interface ParsedDate {
+    attempt: DateAttempt;
+    date: Date;
+    text: string;
+};
+    
+const dateGetters: Map<string, () => number> = (() => {
+    let m = new Map<string, () => number>();
+    m.set("year", Date.prototype.getFullYear);
+    m.set("month", Date.prototype.getMonth);
+    m.set("day", Date.prototype.getDate);
+    m.set("hour", Date.prototype.getHours);
+    m.set("minute", Date.prototype.getMinutes);
+    return m;
+})();
+const dateSetters: Map<string, (v: number) => void> = (() => {
+    let m = new Map<string, (v: number) => void>();
+    m.set("year", Date.prototype.setFullYear);
+    m.set("month", Date.prototype.setMonth);
+    m.set("day", Date.prototype.setDate);
+    m.set("hour", Date.prototype.setHours);
+    m.set("minute", Date.prototype.setMinutes);
+    return m;
+})();
+
+export class DateQuery extends Query {
+    protected _value: ParsedDate;
+
+    constructor(subject: QueryType, operator: QueryOperator, value: ParsedDate) {
+        super(subject, operator);
+        this._value = value;
+        console.log("op:", operator, "date:", value);
+        this._card.classList.add("button", "~neutral", "@low", "center", "m-2", "h-full");
+        let dateText = QueryOperatorToDateText(operator);
+        this._card.innerHTML = `
+        <span class="font-bold mr-2">${subject.name}:</span> ${dateText != "" ? dateText+" " : ""}${value.text}
+        `;
+    }
+    public static paramsFromString(valueString: string): [ParsedDate, QueryOperator, boolean] {
+        // FIXME: Validate this!
+        let op = QueryOperator.Equal;
+        if ((Object.values(QueryOperator) as string[]).includes(valueString.charAt(0))) {
+            op = valueString.charAt(0) as QueryOperator;
+            // Trim the operator from the string
+            valueString = valueString.substring(1);
+        }
+
+        let out: ParsedDate = {
+            text: valueString,
+            // Used just to tell use what fields the user passed.
+            attempt: dateParser.attempt(valueString),
+            // note Date.fromString is also provided by dateParser.
+            date: (Date as any).fromString(valueString) as Date
+        };
+        // Month in Date objects is 0-based, so make our parsed date that way too
+        if ("month" in out.attempt) out.attempt.month -= 1;
+        let isValid = true;
+        if ("invalid" in (out.date as any)) { isValid = false; };
+        
+        return [out, op, isValid];
+    }
+
+    get value(): ParsedDate { return this._value; }
+
+    public compare(subjectDate: Date): boolean {
+        // We want to compare only the fields given in this._value,
+        // so we copy subjectDate and apply on those fields from this._value.
+        const temp = new Date(subjectDate.valueOf());
+        for (let [field] of dateGetters) {
+            if (field in this._value.attempt) {
+                dateSetters.get(field).call(
+                    temp,
+                    dateGetters.get(field).call(this._value.date)
+                );
+            }
+        }
+
+        if (this._operator == QueryOperator.Equal) {
+            return subjectDate.getTime() == temp.getTime();
+        } else if (this._operator == QueryOperator.Lower) {
+            return subjectDate < temp;
+        }
+        return subjectDate > temp;
+    }
+}
+
+
+// FIXME: Continue taking stuff from search function, making XQuery classes!
+
+
 
 export interface SearchableItem {
     matchesSearch: (query: string) => boolean;
@@ -99,33 +282,20 @@ export class Search {
 
             const queryFormat = this._c.queries[split[0]];
 
-            if (queryFormat.bool) {
-                let isBool = false;
-                let boolState = false;
-                if (split[1] == "true" || split[1] == "yes" || split[1] == "t" || split[1] == "y") {
-                    isBool = true;
-                    boolState = true;
-                } else if (split[1] == "false" || split[1] == "no" || split[1] == "f" || split[1] == "n") {
-                    isBool = true;
-                    boolState = false;
-                }
-                if (isBool) {
-                    const filterCard = document.createElement("span");
-                    filterCard.ariaLabel = window.lang.strings("clickToRemoveFilter");
-                    filterCard.classList.add("button", "~" + (boolState ? "positive" : "critical"), "@high", "center", "mx-2", "h-full");
-                    filterCard.innerHTML = `
-                    <span class="font-bold mr-2">${queryFormat.name}</span>
-                    <i class="text-2xl ri-${boolState? "checkbox" : "close"}-circle-fill"></i>
-                    `;
+            let formattedQuery = []
 
-                    filterCard.addEventListener("click", () => {
+            if (queryFormat.bool) {
+                let [boolState, isBool] = BoolQuery.paramsFromString(split[1]);
+                if (isBool) {
+                    let q = new BoolQuery(queryFormat, boolState);
+                    q.onclick = () => {
                         for (let quote of [`"`, `'`, ``]) {
                             this._c.search.value = this._c.search.value.replace(split[0] + ":" + quote + split[1] + quote, "");
                         }
                         this._c.search.oninput((null as Event));
-                    })
+                    };
 
-                    this._c.filterArea.appendChild(filterCard);
+                    this._c.filterArea.appendChild(q.asElement());
 
                     // console.log("is bool, state", boolState);
                     // So removing elements doesn't affect us
@@ -135,7 +305,7 @@ export class Search {
                         const value = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(u), queryFormat.getter).get.call(u);
                         // console.log("got", queryFormat.getter + ":", value);
                         // Remove from result if not matching query
-                        if (!((value && boolState) || (!value && !boolState))) {
+                        if (!q.compare(value)) {
                             // console.log("not matching, result is", result);
                             result.splice(result.indexOf(id), 1);
                         }
@@ -144,22 +314,17 @@ export class Search {
                 }
             }
             if (queryFormat.string) {
-                const filterCard = document.createElement("span");
-                filterCard.ariaLabel = window.lang.strings("clickToRemoveFilter");
-                filterCard.classList.add("button", "~neutral", "@low", "center", "mx-2", "h-full");
-                filterCard.innerHTML = `
-                <span class="font-bold mr-2">${queryFormat.name}:</span> "${split[1]}"
-                `;
+                const q = new StringQuery(queryFormat, split[1]);
 
-                filterCard.addEventListener("click", () => {
+                q.onclick = () => {
                     for (let quote of [`"`, `'`, ``]) {
                         let regex = new RegExp(split[0] + ":" + quote + split[1] + quote, "ig");
                         this._c.search.value = this._c.search.value.replace(regex, "");
                     }
                     this._c.search.oninput((null as Event));
-                })
+                }
 
-                this._c.filterArea.appendChild(filterCard);
+                this._c.filterArea.appendChild(q.asElement());
 
                 let cachedResult = [...result];
                 for (let id of cachedResult) {
@@ -172,39 +337,20 @@ export class Search {
                 continue;
             }
             if (queryFormat.date) {
-                // -1 = Before, 0 = On, 1 = After, 2 = No symbol, assume 0
-                let compareType = (split[1][0] == ">") ? 1 : ((split[1][0] == "<") ? -1 : ((split[1][0] == "=") ? 0 : 2));
-                let unmodifiedValue = split[1];
-                if (compareType != 2) {
-                    split[1] = split[1].substring(1);
-                }
-                if (compareType == 2) compareType = 0;
-
-                let attempt: { year?: number, month?: number, day?: number, hour?: number, minute?: number } = dateParser.attempt(split[1]);
-                // Month in Date objects is 0-based, so make our parsed date that way too
-                if ("month" in attempt) attempt.month -= 1;
-
-                let date: Date = (Date as any).fromString(split[1]) as Date;
-                console.log("Read", attempt, "and", date);
-                if ("invalid" in (date as any)) continue;
-
-                const filterCard = document.createElement("span");
-                filterCard.ariaLabel = window.lang.strings("clickToRemoveFilter");
-                filterCard.classList.add("button", "~neutral", "@low", "center", "m-2", "h-full");
-                filterCard.innerHTML = `
-                <span class="font-bold mr-2">${queryFormat.name}:</span> ${(compareType == 1) ? window.lang.strings("after")+" " : ((compareType == -1) ? window.lang.strings("before")+" " : "")}${split[1]}
-                `;
+                let [parsedDate, op, isDate] = DateQuery.paramsFromString(split[1]);
+                if (!isDate) continue;
+                const q = new DateQuery(queryFormat, op, parsedDate);
                 
-                filterCard.addEventListener("click", () => {
+                q.onclick = () => {
                     for (let quote of [`"`, `'`, ``]) {
-                        let regex = new RegExp(split[0] + ":" + quote + unmodifiedValue + quote, "ig");
+                        let regex = new RegExp(split[0] + ":" + quote + split[1] + quote, "ig");
                         this._c.search.value = this._c.search.value.replace(regex, "");
                     }
                     
                     this._c.search.oninput((null as Event));
-                })
+                }
                 
-                this._c.filterArea.appendChild(filterCard);
+                this._c.filterArea.appendChild(q.asElement());
 
                 let cachedResult = [...result];
                 for (let id of cachedResult) {
@@ -215,33 +361,8 @@ export class Search {
                         continue;
                     }
                     let value = new Date(unixValue*1000);
-                    
-                    const getterPairs: [string, () => number][] = [["year", Date.prototype.getFullYear], ["month", Date.prototype.getMonth], ["day", Date.prototype.getDate], ["hour", Date.prototype.getHours], ["minute", Date.prototype.getMinutes]];
 
-                    // When doing > or < <time> with no date, we need to ignore the rest of the Date object
-                    if (compareType != 0 && Object.keys(attempt).length == 2 && "hour" in attempt && "minute" in attempt) { 
-                        const temp = new Date(date.valueOf());
-                        temp.setHours(value.getHours(), value.getMinutes());
-                        value = temp;
-                        console.log("just hours/minutes workaround, value set to", value);
-                    }
-
-
-                    let match = true;
-                    if (compareType == 0) {
-                        for (let pair of getterPairs) {
-                            if (pair[0] in attempt) {
-                                if (compareType == 0 && attempt[pair[0]] != pair[1].call(value)) {
-                                    match = false;
-                                    break;
-                                }
-                            }
-                        }
-                    } else if (compareType == -1) {
-                        match = (value < date);
-                    } else if (compareType == 1) {
-                        match = (value > date);
-                    }
+                    let match = q.compare(value);
                     if (!match) {
                         result.splice(result.indexOf(id), 1);
                     }
