@@ -17,14 +17,15 @@ type UserCache struct {
 	Lock     sync.Mutex
 }
 
-func (c *UserCache) Gen(app *appContext) error {
-	c.Lock.Lock()
+func (c *UserCache) Gen(app *appContext) ([]respUser, error) {
+	// FIXME: I don't like this.
 	if !time.Now().After(c.LastSync.Add(WEB_USER_CACHE_SYNC)) {
-		return nil
+		return c.Cache, nil
 	}
+	c.Lock.Lock()
 	users, err := app.jf.GetUsers(false)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	c.Cache = make([]respUser, len(users))
 	for i, jfUser := range users {
@@ -32,12 +33,13 @@ func (c *UserCache) Gen(app *appContext) error {
 	}
 	c.LastSync = time.Now()
 	c.Lock.Unlock()
-	return nil
+	return c.Cache, nil
 }
 
+type Less func(a, b *respUser) bool
 type SortableUserList struct {
 	Cache    []respUser
-	lessFunc func(a, b *respUser) bool
+	lessFunc Less
 }
 
 func (sc *SortableUserList) Len() int {
@@ -146,4 +148,11 @@ func SortUsersBy(u []respUser, field string) SortableUserList {
 		}
 	}
 	return s
+}
+
+type Filter func(yield func(*respUser) bool)
+
+type FilterableList struct {
+	Cache      []respUser
+	filterFunc Filter
 }
