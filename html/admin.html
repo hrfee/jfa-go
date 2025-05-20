@@ -722,9 +722,14 @@
                                 <span class="text-3xl font-bold mr-4">{{ .strings.accounts }}</span>
                                 <span class="dropdown-manual-toggle"><button class="h-full button ~neutral @low center" id="accounts-filter-button" tabindex="0">{{ .strings.filters }}</button></span>
                             </div>
-                            <div class="flex flex-row align-middle w-full">
+                            <div class="flex flex-row align-middle w-full gap-2">
                                 <input type="search" class="field ~neutral @low input search mr-2" id="accounts-search" placeholder="{{ .strings.search }}">
                                 <span class="button ~neutral @low center ml-[-2.64rem] rounded-s-none accounts-search-clear" aria-label="{{ .strings.clearSearch }}" text="{{ .strings.clearSearch }}"><i class="ri-close-line"></i></span>
+                                <div class="tooltip left">
+                                    <span class="button ~info @low center h-full accounts-search-server" aria-label="{{ .strings.searchAllRecords }}" text="{{ .strings.searchAllRecords }}"><i class="ri-search-line"></i></span>
+                                    <span class="content sm">{{ .strings.searchAllRecords }}</span>
+                                </div>
+                                <button class="button ~info @low" id="accounts-refresh" aria-label="{{ .strings.refresh }}" disabled><i class="ri-refresh-line"></i></button>
                             </div>
                         </div>
                         <div class="dropdown-display max-w-full">
@@ -803,13 +808,22 @@
                             </thead>
                             <tbody id="accounts-list"></tbody>
                         </table>
+                        <div id="accounts-loader"></div>
                         <div class="unfocused h-[100%] my-3" id="accounts-not-found">
                             <div class="flex flex-col h-[100%] justify-center items-center">
                                 <span class="text-2xl font-medium italic mb-3">{{ .strings.noResultsFound }}</span>
-                                <button class="button ~neutral @low accounts-search-clear">
-                                    <span class="mr-2">{{ .strings.clearSearch }}</span><i class="ri-close-line"></i>
-                                </button>
+                                <span class="text-xl font-medium italic mb-3 unfocused" id="accounts-keep-searching-description">{{ .strings.keepSearchingDescription }}</span>
+                                <div class="flex flex-row">
+                                    <button class="button ~neutral @low accounts-search-clear">
+                                        <span class="mr-2">{{ .strings.clearSearch }}</span><i class="ri-close-line"></i>
+                                    </button>
+                                    <button class="button ~neutral @low unfocused" id="accounts-keep-searching">{{ .strings.keepSearching }}</button>
+                                </div>
                             </div>
+                        </div>
+                        <div class="flex justify-center">
+                            <button class="button m-2 ~neutral @low" id="accounts-load-more">{{ .strings.loadMore }}</button>
+                            <button class="button m-2 ~neutral @low" id="accounts-load-all">{{ .strings.loadAll }}</button>
                         </div>
                     </div>
                 </div>
@@ -825,10 +839,14 @@
                                     <button class="button ~neutral @low ml-2" id="activity-sort-direction">{{ .strings.sortDirection }}</button>
                                 </div>
                             </div>
-                            <div class="flex flex-row align-middle w-full">
+                            <div class="flex flex-row align-middle w-full gap-2">
                                 <input type="search" class="field ~neutral @low input search mr-2" id="activity-search" placeholder="{{ .strings.search }}">
                                 <span class="button ~neutral @low center ml-[-2.64rem] rounded-s-none activity-search-clear" aria-label="{{ .strings.clearSearch }}" text="{{ .strings.clearSearch }}"><i class="ri-close-line"></i></span>
-                                <button class="button ~info @low ml-2" id="activity-refresh" aria-label="{{ .strings.refresh }}" disabled><i class="ri-refresh-line"></i></button>
+                                <div class="tooltip left">
+                                    <span class="button ~info @low center h-full activity-search-server" aria-label="{{ .strings.searchAllRecords }}" text="{{ .strings.searchAllRecords }}"><i class="ri-search-line"></i></span>
+                                    <span class="content sm">{{ .strings.searchAllRecords }}</span>
+                                </div>
+                                <button class="button ~info @low" id="activity-refresh" aria-label="{{ .strings.refresh }}" disabled><i class="ri-refresh-line"></i></button>
                             </div>
                         </div>
                         <div class="dropdown-display max-w-full">

@@ -32,29 +32,49 @@ export interface QueryType {
 
 export interface SearchConfiguration {
     filterArea: HTMLElement;
-    sortingByButton: HTMLButtonElement;
+    sortingByButton?: HTMLButtonElement;
     searchOptionsHeader: HTMLElement;
     notFoundPanel: HTMLElement;
     notFoundCallback?: (notFound: boolean) => void;
     filterList: HTMLElement;
     clearSearchButtonSelector: string;
+    serverSearchButtonSelector: string;
     search: HTMLInputElement;
     queries: { [field: string]: QueryType };
     setVisibility: (items: string[], visible: boolean) => void;
     onSearchCallback: (visibleCount: number, newItems: boolean, loadAll: boolean) => void;
+    searchServer: (params: PaginatedReqDTO, newSearch: boolean) => void;
+    clearServerSearch: () => void;
     loadMore?: () => void;
 }
+
+export interface ServerSearchReqDTO extends PaginatedReqDTO {
+    searchTerms: string[];
+    queries: QueryDTO[];
+}
+
+// FIXME: Generate ServerSearchReqDTO using Query.asDTO methods in serverSearch()!
+
+export interface QueryDTO {
+    class: "bool" | "string" | "date";
+    // QueryType.getter
+    field: string;
+    operator: QueryOperator;
+    value: boolean | string | DateAttempt;
+};
 
 export abstract class Query {
     protected _subject: QueryType;
     protected _operator: QueryOperator;
     protected _card: HTMLElement;
 
-    constructor(subject: QueryType, operator: QueryOperator) {
+    constructor(subject: QueryType | null, operator: QueryOperator) {
         this._subject = subject;
         this._operator = operator;
-        this._card = document.createElement("span");
-        this._card.ariaLabel = window.lang.strings("clickToRemoveFilter");
+        if (subject != null) {
+            this._card = document.createElement("span");
+            this._card.ariaLabel = window.lang.strings("clickToRemoveFilter");
+        }
     }
 
     set onclick(v: () => void) {
@@ -62,8 +82,16 @@ export abstract class Query {
     }
 
     asElement(): HTMLElement { return this._card; }
-}
+    
+    public abstract compare(subjectValue: any): boolean;
 
+    asDTO(): QueryDTO {
+        let out = {} as QueryDTO;
+        out.field = this._subject.getter;
+        out.operator = this._operator;
+        return out;
+    }
+}
 
 export class BoolQuery extends Query {
     protected _value: boolean;
@@ -96,13 +124,20 @@ export class BoolQuery extends Query {
     public compare(subjectBool: boolean): boolean {
         return ((subjectBool && this._value) || (!subjectBool && !this._value))
     }
+
+    asDTO(): QueryDTO {
+        let out = super.asDTO();
+        out.class = "bool";
+        out.value = this._value;
+        return out;
+    }
 }
 
 export class StringQuery extends Query {
     protected _value: string;
     constructor(subject: QueryType, value: string) {
         super(subject, QueryOperator.Equal);
-        this._value = value;
+        this._value = value.toLowerCase();
         this._card.classList.add("button", "~neutral", "@low", "center", "mx-2", "h-full");
         this._card.innerHTML = `
         <span class="font-bold mr-2">${subject.name}:</span> "${this._value}"
@@ -110,6 +145,17 @@ export class StringQuery extends Query {
     }
 
     get value(): string { return this._value; }
+
+    public compare(subjectString: string): boolean {
+        return subjectString.toLowerCase().includes(this._value);
+    }
+    
+    asDTO(): QueryDTO {
+        let out = super.asDTO();
+        out.class = "string";
+        out.value = this._value;
+        return out;
+    }
 }
 
 export interface DateAttempt {
@@ -151,7 +197,6 @@ export class DateQuery extends Query {
     constructor(subject: QueryType, operator: QueryOperator, value: ParsedDate) {
         super(subject, operator);
         this._value = value;
-        console.log("op:", operator, "date:", value);
         this._card.classList.add("button", "~neutral", "@low", "center", "m-2", "h-full");
         let dateText = QueryOperatorToDateText(operator);
         this._card.innerHTML = `
@@ -204,30 +249,58 @@ export class DateQuery extends Query {
         }
         return subjectDate > temp;
     }
+    
+    asDTO(): QueryDTO {
+        let out = super.asDTO();
+        out.class = "date";
+        out.value = this._value.attempt;
+        return out;
+    }
 }
-
-
-// FIXME: Continue taking stuff from search function, making XQuery classes!
-
-
 
 export interface SearchableItem {
     matchesSearch: (query: string) => boolean;
 }
 
+export type SearchableItems = { [id: string]: SearchableItem };
+
 export class Search {
     private _c: SearchConfiguration;
+    private _sortField: string = "";
+    private _ascending: boolean = true; 
     private _ordering: string[] = [];
-    private _items: { [id: string]: SearchableItem };
-    inSearch: boolean;
+    private _items: SearchableItems = {};
+    // Search queries (filters)
+    private _queries: Query[] = [];
+    // Plain-text search terms
+    private _searchTerms: string[] = [];
+    inSearch: boolean = false;
+    private _inServerSearch: boolean = false;
+    get inServerSearch(): boolean { return this._inServerSearch; }
+    set inServerSearch(v: boolean) {
+        this._inServerSearch = v;
+        if (!v) {
+            this._c.clearServerSearch();
+        }
+    }
 
+    private _serverSearchButtons: HTMLElement[];
+
+    // Returns a list of identifiers (keys in items, values in ordering).
     search = (query: String): string[] => {
         this._c.filterArea.textContent = "";
 
         query = query.toLowerCase();
 
         let result: string[] = [...this._ordering];
+        // If we're in a server search already, the results are already correct.
+        if (this.inServerSearch) return result;
+
+
         let words: string[] = [];
+        let queries = [];
+        let searchTerms = [];
+
         
         let quoteSymbol = ``;
         let queryStart = -1;
@@ -258,7 +331,6 @@ export class Search {
                         }
                     }
                     words.push(query.substring(queryStart, end).replace(/['"]/g, ""));
-                    console.log("pushed", words);
                     queryStart = -1;
                 }
             }
@@ -266,28 +338,31 @@ export class Search {
 
         query = "";
         for (let word of words) {
+            // 1. Normal search text, no filters or anything
             if (!word.includes(":")) {
+                searchTerms.push(word);
                 let cachedResult = [...result];
                 for (let id of cachedResult) {
-                    const u = this._items[id];
+                    const u = this.items[id];
                     if (!u.matchesSearch(word)) {
                         result.splice(result.indexOf(id), 1);
                     }
                 }
                 continue;
             }
+            // 2. A filter query of some sort.
             const split = [word.substring(0, word.indexOf(":")), word.substring(word.indexOf(":")+1)];
             
             if (!(split[0] in this._c.queries)) continue;
 
             const queryFormat = this._c.queries[split[0]];
 
-            let formattedQuery = []
+            let q: Query | null = null;
 
             if (queryFormat.bool) {
                 let [boolState, isBool] = BoolQuery.paramsFromString(split[1]);
                 if (isBool) {
-                    let q = new BoolQuery(queryFormat, boolState);
+                    q = new BoolQuery(queryFormat, boolState);
                     q.onclick = () => {
                         for (let quote of [`"`, `'`, ``]) {
                             this._c.search.value = this._c.search.value.replace(split[0] + ":" + quote + split[1] + quote, "");
@@ -297,24 +372,21 @@ export class Search {
 
                     this._c.filterArea.appendChild(q.asElement());
 
-                    // console.log("is bool, state", boolState);
                     // So removing elements doesn't affect us
                     let cachedResult = [...result];
                     for (let id of cachedResult) {
-                        const u = this._items[id];
+                        const u = this.items[id];
                         const value = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(u), queryFormat.getter).get.call(u);
-                        // console.log("got", queryFormat.getter + ":", value);
                         // Remove from result if not matching query
                         if (!q.compare(value)) {
                             // console.log("not matching, result is", result);
                             result.splice(result.indexOf(id), 1);
+                        } else {
                         }
                     }
-                    continue
                 }
-            }
-            if (queryFormat.string) {
-                const q = new StringQuery(queryFormat, split[1]);
+            } else if (queryFormat.string) {
+                q = new StringQuery(queryFormat, split[1]);
 
                 q.onclick = () => {
                     for (let quote of [`"`, `'`, ``]) {
@@ -328,18 +400,16 @@ export class Search {
 
                 let cachedResult = [...result];
                 for (let id of cachedResult) {
-                    const u = this._items[id];
+                    const u = this.items[id];
                     const value = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(u), queryFormat.getter).get.call(u).toLowerCase();
-                    if (!(value.includes(split[1]))) {
+                    if (!q.compare(value)) {
                         result.splice(result.indexOf(id), 1);
                     }
                 }
-                continue;
-            }
-            if (queryFormat.date) {
+            } else if (queryFormat.date) {
                 let [parsedDate, op, isDate] = DateQuery.paramsFromString(split[1]);
                 if (!isDate) continue;
-                const q = new DateQuery(queryFormat, op, parsedDate);
+                q = new DateQuery(queryFormat, op, parsedDate);
                 
                 q.onclick = () => {
                     for (let quote of [`"`, `'`, ``]) {
@@ -354,7 +424,7 @@ export class Search {
 
                 let cachedResult = [...result];
                 for (let id of cachedResult) {
-                    const u = this._items[id];
+                    const u = this.items[id];
                     const unixValue = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(u), queryFormat.getter).get.call(u);
                     if (unixValue == 0) {
                         result.splice(result.indexOf(id), 1);
@@ -362,20 +432,24 @@ export class Search {
                     }
                     let value = new Date(unixValue*1000);
 
-                    let match = q.compare(value);
-                    if (!match) {
+                    if (!q.compare(value)) {
                         result.splice(result.indexOf(id), 1);
                     }
                 }
             }
+        
+            if (q != null) queries.push(q);
         }
+
+        this._queries = queries;
+        this._searchTerms = searchTerms;
         return result;
     }
     
     showHideSearchOptionsHeader = () => {
-        const sortingBy = !(this._c.sortingByButton.parentElement.classList.contains("hidden"));
+        let sortingBy = false;
+        if (this._c.sortingByButton) sortingBy = !(this._c.sortingByButton.parentElement.classList.contains("hidden"));
         const hasFilters = this._c.filterArea.textContent != "";
-        console.log("sortingBy", sortingBy, "hasFilters", hasFilters);
         if (sortingBy || hasFilters) {
             this._c.searchOptionsHeader.classList.remove("hidden");
         } else {
@@ -383,14 +457,24 @@ export class Search {
         }
     }
 
-
+    // -all- elements.
     get items(): { [id: string]: SearchableItem } { return this._items; }
-    set items(v: { [id: string]: SearchableItem }) {
-        this._items = v;
+    // set items(v: { [id: string]: SearchableItem }) {
+    //     this._items = v;
+    // }
+
+    // The order of -all- elements (even those hidden), by their identifier.
+    get ordering(): string[] { return this._ordering; }
+    // Specifically dis-allow setting ordering itself, so that setOrdering is used instead (for the field and ascending params).
+    // set ordering(v: string[]) { this._ordering = v; }
+    setOrdering = (v: string[], field: string, ascending: boolean) => {
+        this._ordering = v;
+        this._sortField = field;
+        this._ascending = ascending;
     }
 
-    get ordering(): string[] { return this._ordering; }
-    set ordering(v: string[]) { this._ordering = v; }
+    get sortField(): string { return this._sortField; }
+    get ascending(): boolean { return this._ascending; }
 
     onSearchBoxChange = (newItems: boolean = false, loadAll: boolean = false) => {
         const query = this._c.search.value;
@@ -402,11 +486,23 @@ export class Search {
         const results = this.search(query);
         this._c.setVisibility(results, true);
         this._c.onSearchCallback(results.length, newItems, loadAll);
+        if (this.inServerSearch) {
+            this._serverSearchButtons.forEach((v: HTMLElement) => {
+                v.classList.add("@low");
+                v.classList.remove("@high");
+            });
+        } else {
+            this._serverSearchButtons.forEach((v: HTMLElement) => {
+                v.classList.add("@high");
+                v.classList.remove("@low");
+            });
+        }
         this.showHideSearchOptionsHeader();
         if (results.length == 0) {
             this._c.notFoundPanel.classList.remove("unfocused");
         } else {
             this._c.notFoundPanel.classList.add("unfocused");
+
         }
         if (this._c.notFoundCallback) this._c.notFoundCallback(results.length == 0);
     }
@@ -420,9 +516,8 @@ export class Search {
         this._c.search.setSelectionRange(newPos, newPos);
         this._c.search.oninput(null as any);
     };
-    
 
-
+    // FIXME: Make XQuery classes less specifically for in-progress searches, and include this code for making info button things.
     generateFilterList = () => {
         // Generate filter buttons
         for (let queryName of Object.keys(this._c.queries)) {
@@ -497,16 +592,54 @@ export class Search {
         }
     }
 
+    onServerSearch = () => {
+        const newServerSearch = !this.inServerSearch;
+        this.inServerSearch = true;
+        this._c.searchServer(this.serverSearchParams(this._searchTerms, this._queries), newServerSearch);
+    }
+
+    serverSearchParams = (searchTerms: string[], queries: Query[]): PaginatedReqDTO => {
+        let req: ServerSearchReqDTO = {
+            searchTerms: searchTerms,
+            queries: queries.map((q: Query) => q.asDTO()),
+            limit: -1,
+            page: 0,
+            sortByField: this.sortField,
+            ascending: this.ascending
+        };
+        return req;
+    }
+
     constructor(c: SearchConfiguration) {
+        // FIXME: Remove!
+        if (c.search.id.includes("accounts")) {
+            (window as any).s = this;
+        }
         this._c = c;
 
-        this._c.search.oninput = () => this.onSearchBoxChange();
+        this._c.search.oninput = () => {
+            this.inServerSearch = false;
+            this.onSearchBoxChange();
+        }
+        this._c.search.addEventListener("keyup", (ev: KeyboardEvent) => {
+            if (ev.key == "Enter") {
+                this.onServerSearch();
+            }
+        });
 
         const clearSearchButtons = Array.from(document.querySelectorAll(this._c.clearSearchButtonSelector)) as Array<HTMLSpanElement>;
         for (let b of clearSearchButtons) {
             b.addEventListener("click", () => {
                 this._c.search.value = "";
+                this.inServerSearch = false;
                 this.onSearchBoxChange();
+            });
+        }
+        
+        this._serverSearchButtons = Array.from(document.querySelectorAll(this._c.serverSearchButtonSelector)) as Array<HTMLSpanElement>;
+        for (let b of this._serverSearchButtons) {
+            b.addEventListener("click", () => {
+                this.onServerSearch();
             });
         }
     }

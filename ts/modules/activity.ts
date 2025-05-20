@@ -1,7 +1,8 @@
-import { _get, _post, _delete, toDateString, addLoader, removeLoader } from "../modules/common.js";
-import { Search, SearchConfiguration, QueryType, SearchableItem } from "../modules/search.js";
+import { _get, _post, _delete, toDateString } from "../modules/common.js";
+import { SearchConfiguration, QueryType, SearchableItem, SearchableItems } from "../modules/search.js";
 import { accountURLEvent } from "../modules/accounts.js";
 import { inviteURLEvent } from "../modules/invites.js";
+import { PaginatedList } from "./list.js";
 
 declare var window: GlobalWindow;
 
@@ -31,6 +32,123 @@ var activityTypeMoods = {
     "createInvite": 1,
     "deleteInvite": -1
 };
+
+// window.lang doesn't exist at page load, so I made this a function that's invoked by activityList.
+const queries = (): { [field: string]: QueryType } => { return {
+    "id": {
+        name: window.lang.strings("activityID"),
+        getter: "id",
+        bool: false,
+        string: true,
+        date: false
+    },
+    "title": {
+        name: window.lang.strings("title"),
+        getter: "title",
+        bool: false,
+        string: true,
+        date: false
+    },
+    "user": {
+        name: window.lang.strings("usersMentioned"),
+        getter: "mentionedUsers",
+        bool: false,
+        string: true,
+        date: false
+    },
+    "actor": {
+        name: window.lang.strings("actor"),
+        description: window.lang.strings("actorDescription"),
+        getter: "actor",
+        bool: false,
+        string: true,
+        date: false
+    },
+    "referrer": {
+        name: window.lang.strings("referrer"),
+        getter: "referrer",
+        bool: true,
+        string: true,
+        date: false
+    },
+    "date": {
+        name: window.lang.strings("date"),
+        getter: "date",
+        bool: false,
+        string: false,
+        date: true
+    },
+    "account-creation": {
+        name: window.lang.strings("accountCreationFilter"),
+        getter: "accountCreation",
+        bool: true,
+        string: false,
+        date: false
+    },
+    "account-deletion": {
+        name: window.lang.strings("accountDeletionFilter"),
+        getter: "accountDeletion",
+        bool: true,
+        string: false,
+        date: false
+    },
+    "account-disabled": {
+        name: window.lang.strings("accountDisabledFilter"),
+        getter: "accountDisabled",
+        bool: true,
+        string: false,
+        date: false
+    },
+    "account-enabled": {
+        name: window.lang.strings("accountEnabledFilter"),
+        getter: "accountEnabled",
+        bool: true,
+        string: false,
+        date: false
+    },
+    "contact-linked": {
+        name: window.lang.strings("contactLinkedFilter"),
+        getter: "contactLinked",
+        bool: true,
+        string: false,
+        date: false
+    },
+    "contact-unlinked": {
+        name: window.lang.strings("contactUnlinkedFilter"),
+        getter: "contactUnlinked",
+        bool: true,
+        string: false,
+        date: false
+    },
+    "password-change": {
+        name: window.lang.strings("passwordChangeFilter"),
+        getter: "passwordChange",
+        bool: true,
+        string: false,
+        date: false
+    },
+    "password-reset": {
+        name: window.lang.strings("passwordResetFilter"),
+        getter: "passwordReset",
+        bool: true,
+        string: false,
+        date: false
+    },
+    "invite-created": {
+        name: window.lang.strings("inviteCreatedFilter"),
+        getter: "inviteCreated",
+        bool: true,
+        string: false,
+        date: false
+    },
+    "invite-deleted": {
+        name: window.lang.strings("inviteDeletedFilter"),
+        getter: "inviteDeleted",
+        bool: true,
+        string: false,
+        date: false
+    }
+}};
 
 // var moodColours = ["~warning", "~neutral", "~urge"];
 
@@ -346,369 +464,130 @@ export class Activity implements activity, SearchableItem {
     asElement = () => { return this._card; };
 }
 
-export class RecordCounter {
-    private _container: HTMLElement;
-    private _totalRecords: HTMLElement;
-    private _loadedRecords: HTMLElement;
-    private _shownRecords: HTMLElement;
-    private _total: number;
-    private _loaded: number;
-    private _shown: number;
-    constructor(container: HTMLElement) {
-        this._container = container;
-        this._container.innerHTML = `
-            <span class="records-total"></span>
-            <span class="records-loaded"></span>
-            <span class="records-shown"></span>
-            `;
-        this._totalRecords = document.getElementsByClassName("records-total")[0] as HTMLElement;
-        this._loadedRecords = document.getElementsByClassName("records-loaded")[0] as HTMLElement;
-        this._shownRecords = document.getElementsByClassName("records-shown")[0] as HTMLElement;
-        this.total = 0;
-        this.loaded = 0;
-        this.shown = 0;
-    }
-
-    reset() {
-        this.total = 0;
-        this.loaded = 0;
-        this.shown = 0;
-    }
-
-    // Sets the total using a PageCountDTO-returning API endpoint.
-    getTotal(endpoint: string) {
-        _get(endpoint, null, (req: XMLHttpRequest) => {
-            if (req.readyState != 4 || req.status != 200) return;
-            this.total = req.response["count"] as number;
-        });
-    }
-
-    get total(): number { return this._total; }
-    set total(v: number) {
-        this._total = v;
-        this._totalRecords.textContent = window.lang.var("strings", "totalRecords", `${v}`);
-    }
-    
-    get loaded(): number { return this._loaded; }
-    set loaded(v: number) {
-        this._loaded = v;
-        this._loadedRecords.textContent = window.lang.var("strings", "loadedRecords", `${v}`);
-    }
-    
-    get shown(): number { return this._shown; }
-    set shown(v: number) {
-        this._shown = v;
-        this._shownRecords.textContent = window.lang.var("strings", "shownRecords", `${v}`);
-    }
-}
+interface ActivitiesReqDTO extends PaginatedReqDTO {
+    type: string[];
+};
 
 interface ActivitiesDTO extends paginatedDTO {
     activities: activity[];
 }
 
-export class activityList {
-    private _activityList: HTMLElement;
-    private _activities: { [id: string]: Activity } = {}; 
-    private _ordering: string[] = [];
-    private _filterArea = document.getElementById("activity-filter-area");
-    private _searchOptionsHeader = document.getElementById("activity-search-options-header");
-    private _sortingByButton = document.getElementById("activity-sort-by-field") as HTMLButtonElement;
-    private _notFoundPanel = document.getElementById("activity-not-found");
-    private _searchBox = document.getElementById("activity-search") as HTMLInputElement;
-    private _sortDirection = document.getElementById("activity-sort-direction") as HTMLButtonElement;
-    private _loader = document.getElementById("activity-loader");
-    private _loadMoreButton = document.getElementById("activity-load-more") as HTMLButtonElement;
-    private _loadAllButton = document.getElementById("activity-load-all") as HTMLButtonElement;
-    private _refreshButton = document.getElementById("activity-refresh") as HTMLButtonElement;
-    private _keepSearchingDescription = document.getElementById("activity-keep-searching-description");
-    private _keepSearchingButton = document.getElementById("activity-keep-searching");
+export class activityList extends PaginatedList {
+    protected _activityList: HTMLElement;
+    // protected _sortingByButton = document.getElementById("activity-sort-by-field") as HTMLButtonElement;
+    protected _sortDirection = document.getElementById("activity-sort-direction") as HTMLButtonElement;
 
-    private _counter: RecordCounter;
+    protected _ascending: boolean;
+    
+    get activities(): { [id: string]: Activity } { return this._search.items as { [id: string]: Activity }; }
+    // set activities(v: { [id: string]: Activity }) { this._search.items = v as SearchableItems; }
+    
+    constructor() {
+        super({
+            loader: document.getElementById("activity-loader"),
+            loadMoreButton: document.getElementById("activity-load-more") as HTMLButtonElement,
+            loadAllButton: document.getElementById("activity-load-all") as HTMLButtonElement,
+            refreshButton: document.getElementById("activity-refresh") as HTMLButtonElement,
+            keepSearchingDescription: document.getElementById("activity-keep-searching-description"),
+            keepSearchingButton: document.getElementById("activity-keep-searching"),
+            filterArea: document.getElementById("activity-filter-area"),
+            searchOptionsHeader: document.getElementById("activity-search-options-header"),
+            searchBox: document.getElementById("activity-search") as HTMLInputElement,
+            notFoundPanel: document.getElementById("activity-not-found"),
+            recordCounter: document.getElementById("activity-record-counter"),
+            totalEndpoint: "/activity/count",
+            getPageEndpoint: "/activity",
+            limit: 10,
+            newElementsFromPage: (resp: paginatedDTO) => {
+                let ordering: string[] = this._search.ordering;
+                for (let act of ((resp as ActivitiesDTO).activities || [])) {
+                    this.activities[act.id] = new Activity(act);
+                    ordering.push(act.id);
+                }
+            },
+            updateExistingElementsFromPage: (resp: paginatedDTO) => {
+                // FIXME: Implement updates to existing elements!
+                for (let id of Object.keys(this.activities)) {
+                    delete this.activities[id];
+                }
+                this._search.setOrdering([], this._c.defaultSortField, this.ascending);
+                this._c.newElementsFromPage(resp);
+            },
+            defaultSortField: "time",
+            pageLoadCallback: (req: XMLHttpRequest) => {
+                if (req.readyState != 4) return;
+                if (req.status != 200) {
+                    window.notifications.customError("loadActivitiesError", window.lang.notif("errorLoadActivities"));
+                    return;
+                }
+            }
+        });
 
-    private _search: Search;
-    private _ascending: boolean;
-    private _hasLoaded: boolean;
-    private _lastLoad: number;
-    private _page: number = 0;
-    private _lastPage: boolean;
+        this._activityList = document.getElementById("activity-card-list")
+        document.addEventListener("activity-reload", this.reload);
 
+        let searchConfig: SearchConfiguration = {
+            filterArea: this._c.filterArea,
+            // Exclude this: We only sort by date, and don't want to show a redundant header indicating so.
+            // sortingByButton: this._sortingByButton,
+            searchOptionsHeader: this._c.searchOptionsHeader,
+            notFoundPanel: this._c.notFoundPanel,
+            search: this._c.searchBox,
+            clearSearchButtonSelector: ".activity-search-clear",
+            serverSearchButtonSelector: ".activity-search-server",
+            queries: queries(),
+            setVisibility: this.setVisibility,
+            filterList: document.getElementById("activity-filter-list"),
+            // notFoundCallback: this._notFoundCallback,
+            onSearchCallback: null,
+            searchServer: null,
+            clearServerSearch: null,
+        }
+
+        this.initSearch(searchConfig);
+
+        this.ascending = false;
+        this._sortDirection.addEventListener("click", () => this.ascending = !this.ascending);
+    }
 
     setVisibility = (activities: string[], visible: boolean) => {
         this._activityList.textContent = ``;
-        for (let id of this._ordering) {
+        for (let id of this._search.ordering) {
             if (visible && activities.indexOf(id) != -1) {
-                this._activityList.appendChild(this._activities[id].asElement());
+                this._activityList.appendChild(this.activities[id].asElement());
             } else if (!visible && activities.indexOf(id) == -1) {
-                this._activityList.appendChild(this._activities[id].asElement());
+                this._activityList.appendChild(this.activities[id].asElement());
             }
         }
     }
 
     reload = () => {
-        this._lastLoad = Date.now();
-        this._lastPage = false;
-        this._loadMoreButton.textContent = window.lang.strings("loadMore");
-        this._loadMoreButton.disabled = false;
-        this._loadAllButton.classList.remove("unfocused");
-        this._loadAllButton.disabled = false;
-
-        this._counter.reset();
-        this._counter.getTotal("/activity/count");
-
-        // this._page = 0;
-        let limit = 10;
-        if (this._page != 0) {
-            limit *= this._page+1;
-        };
-        
-        let send = {
-            "type": [],
-            "limit": limit,
-            "page": 0,
-            "ascending": this.ascending
-        }
-
-
-        _post("/activity", send, (req: XMLHttpRequest) => {
-            if (req.readyState != 4) return;
-            if (req.status != 200) {
-                window.notifications.customError("loadActivitiesError", window.lang.notif("errorLoadActivities"));
-                return;
-            }
-
-            this._hasLoaded = true;
-            // Allow refreshes every 15s
-            this._refreshButton.disabled = true;
-            setTimeout(() => this._refreshButton.disabled = false, 15000);
-
-            let resp = req.response as ActivitiesDTO;
-            // FIXME: Don't destroy everything each reload!
-            this._activities = {};
-            this._ordering = [];
-
-            for (let act of resp.activities) {
-                this._activities[act.id] = new Activity(act);
-                this._ordering.push(act.id);
-            }
-            this._search.items = this._activities;
-            this._search.ordering = this._ordering;
-
-            this._counter.loaded = this._ordering.length;
-
-            if (this._search.inSearch) {
-                this._search.onSearchBoxChange(true);
-                this._loadAllButton.classList.remove("unfocused");
-            } else {
-                this._counter.shown = this._counter.loaded;
-                this.setVisibility(this._ordering, true);
-                this._loadAllButton.classList.add("unfocused");
-                this._notFoundPanel.classList.add("unfocused");
-            }
-        }, true);
+        this._reload();
     }
 
     loadMore = (callback?: () => void, loadAll: boolean = false) => {
-        this._lastLoad = Date.now();
-        this._loadMoreButton.disabled = true;
-        // this._loadAllButton.disabled = true;
-        const timeout = setTimeout(() => {
-            this._loadMoreButton.disabled = false;
-            // this._loadAllButton.disabled = false;
-        }, 1000);
-        this._page += 1;
-
-        let send = {
-            "type": [],
-            "limit": 10,
-            "page": this._page,
-            "ascending": this._ascending
-        };
-
-        // this._activityList.classList.add("unfocused");
-        // addLoader(this._loader, false, true);
-
-        _post("/activity", send, (req: XMLHttpRequest) => {
-            if (req.readyState != 4) return;
-            if (req.status != 200) {
-                window.notifications.customError("loadActivitiesError", window.lang.notif("errorLoadActivities"));
-                return;
+        this._loadMore(
+            loadAll,
+            (req: XMLHttpRequest) => {
+                if (req.readyState != 4) return;
+                if (req.status != 200) return;
+                if (callback) callback();
             }
-
-            let resp = req.response as ActivitiesDTO;
-            
-            this._lastPage = resp.last_page;
-            if (this._lastPage) {
-                clearTimeout(timeout);
-                this._loadMoreButton.disabled = true;
-                removeLoader(this._loadAllButton);
-                this._loadAllButton.classList.add("unfocused");
-                this._loadMoreButton.textContent = window.lang.strings("noMoreResults");
-            }
-
-            for (let act of resp.activities) {
-                this._activities[act.id] = new Activity(act);
-                this._ordering.push(act.id);
-            }
-            // this._search.items = this._activities;
-            // this._search.ordering = this._ordering;
-
-            this._counter.loaded = this._ordering.length;
-
-            if (this._search.inSearch || loadAll) {
-                if (this._lastPage) {
-                    loadAll = false;
-                }
-                this._search.onSearchBoxChange(true, loadAll);
-            } else {
-                this.setVisibility(this._ordering, true);
-                this._notFoundPanel.classList.add("unfocused");
-            }
-
-            if (callback) callback();
-            // removeLoader(this._loader);
-            // this._activityList.classList.remove("unfocused");
-        }, true);
+        );
     }
-
-    private _queries: { [field: string]: QueryType } = {
-        "id": {
-            name: window.lang.strings("activityID"),
-            getter: "id",
-            bool: false,
-            string: true,
-            date: false
-        },
-        "title": {
-            name: window.lang.strings("title"),
-            getter: "title",
-            bool: false,
-            string: true,
-            date: false
-        },
-        "user": {
-            name: window.lang.strings("usersMentioned"),
-            getter: "mentionedUsers",
-            bool: false,
-            string: true,
-            date: false
-        },
-        "actor": {
-            name: window.lang.strings("actor"),
-            description: window.lang.strings("actorDescription"),
-            getter: "actor",
-            bool: false,
-            string: true,
-            date: false
-        },
-        "referrer": {
-            name: window.lang.strings("referrer"),
-            getter: "referrer",
-            bool: true,
-            string: true,
-            date: false
-        },
-        "date": {
-            name: window.lang.strings("date"),
-            getter: "date",
-            bool: false,
-            string: false,
-            date: true
-        },
-        "account-creation": {
-            name: window.lang.strings("accountCreationFilter"),
-            getter: "accountCreation",
-            bool: true,
-            string: false,
-            date: false
-        },
-        "account-deletion": {
-            name: window.lang.strings("accountDeletionFilter"),
-            getter: "accountDeletion",
-            bool: true,
-            string: false,
-            date: false
-        },
-        "account-disabled": {
-            name: window.lang.strings("accountDisabledFilter"),
-            getter: "accountDisabled",
-            bool: true,
-            string: false,
-            date: false
-        },
-        "account-enabled": {
-            name: window.lang.strings("accountEnabledFilter"),
-            getter: "accountEnabled",
-            bool: true,
-            string: false,
-            date: false
-        },
-        "contact-linked": {
-            name: window.lang.strings("contactLinkedFilter"),
-            getter: "contactLinked",
-            bool: true,
-            string: false,
-            date: false
-        },
-        "contact-unlinked": {
-            name: window.lang.strings("contactUnlinkedFilter"),
-            getter: "contactUnlinked",
-            bool: true,
-            string: false,
-            date: false
-        },
-        "password-change": {
-            name: window.lang.strings("passwordChangeFilter"),
-            getter: "passwordChange",
-            bool: true,
-            string: false,
-            date: false
-        },
-        "password-reset": {
-            name: window.lang.strings("passwordResetFilter"),
-            getter: "passwordReset",
-            bool: true,
-            string: false,
-            date: false
-        },
-        "invite-created": {
-            name: window.lang.strings("inviteCreatedFilter"),
-            getter: "inviteCreated",
-            bool: true,
-            string: false,
-            date: false
-        },
-        "invite-deleted": {
-            name: window.lang.strings("inviteDeletedFilter"),
-            getter: "inviteDeleted",
-            bool: true,
-            string: false,
-            date: false
-        }
-    };
 
     get ascending(): boolean { return this._ascending; }
     set ascending(v: boolean) {
         this._ascending = v;
         this._sortDirection.innerHTML = `${window.lang.strings("sortDirection")} <i class="ri-arrow-${v ? "up" : "down"}-s-line ml-2"></i>`;
+        // FIXME?: We don't actually re-sort the list here, instead just use setOrdering to apply this.ascending before a reload.
+        this._search.setOrdering(this._search.ordering, this._c.defaultSortField, this.ascending);
         if (this._hasLoaded) {
             this.reload();
         }
     }
 
-    detectScroll = () => {
-        if (!this._hasLoaded) return;
-        // console.log(window.innerHeight + document.documentElement.scrollTop, document.scrollingElement.scrollHeight);
-        if (Math.abs(window.innerHeight + document.documentElement.scrollTop - document.scrollingElement.scrollHeight) < 50) {
-            // window.notifications.customSuccess("scroll", "Reached bottom.");
-            // Wait .5s between loads
-            if (this._lastLoad + 500 > Date.now()) return;
-            this.loadMore();
-        }
-    }
-
-    private _prevResultCount = 0;
-
-    private _notFoundCallback = (notFound: boolean) => {
+    /*private _notFoundCallback = (notFound: boolean) => {
         if (notFound) this._loadMoreButton.classList.add("unfocused");
         else this._loadMoreButton.classList.remove("unfocused");
 
@@ -719,55 +598,6 @@ export class activityList {
             this._keepSearchingButton.classList.add("unfocused");
             this._keepSearchingDescription.classList.add("unfocused");
         }
-    };
+    };*/
 
-    constructor() {
-        this._activityList = document.getElementById("activity-card-list");
-        document.addEventListener("activity-reload", this.reload);
-
-        this._counter = new RecordCounter(document.getElementById("activity-record-counter"));
-
-        let conf: SearchConfiguration = {
-            filterArea: this._filterArea,
-            sortingByButton: this._sortingByButton,
-            searchOptionsHeader: this._searchOptionsHeader,
-            notFoundPanel: this._notFoundPanel,
-            search: this._searchBox,
-            clearSearchButtonSelector: ".activity-search-clear",
-            queries: this._queries,
-            setVisibility: this.setVisibility,
-            filterList: document.getElementById("activity-filter-list"),
-            // notFoundCallback: this._notFoundCallback,
-            onSearchCallback: (visibleCount: number, newItems: boolean, loadAll: boolean) => {
-                this._counter.shown = visibleCount;
-
-                if (this._search.inSearch && !this._lastPage) this._loadAllButton.classList.remove("unfocused");
-                else this._loadAllButton.classList.add("unfocused");
-                
-                if (visibleCount < 10 || loadAll) {
-                    if (!newItems || this._prevResultCount != visibleCount || (visibleCount == 0 && !this._lastPage) || loadAll) this.loadMore(() => {}, loadAll);
-                }
-                this._prevResultCount = visibleCount;
-            }
-        }
-        this._search = new Search(conf);
-        this._search.generateFilterList();
-
-        this._hasLoaded = false;
-        this.ascending = false;
-        this._sortDirection.addEventListener("click", () => this.ascending = !this.ascending);
-
-        this._loadMoreButton.onclick = () => this.loadMore();
-        this._loadAllButton.onclick = () => {
-            addLoader(this._loadAllButton, true);
-            this.loadMore(() => {}, true);
-        };
-        /* this._keepSearchingButton.onclick = () => {
-            addLoader(this._keepSearchingButton, true);
-            this.loadMore(() => removeLoader(this._keepSearchingButton, true));
-        }; */
-        this._refreshButton.onclick = this.reload;
-
-        window.onscroll = this.detectScroll;
-    }
 }
