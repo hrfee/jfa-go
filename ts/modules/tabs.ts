@@ -1,7 +1,5 @@
 import { PageManager, Page } from "../modules/pages.js";
 
-declare var window: GlobalWindow;
-
 export interface Tab {
     page: Page;
     tabEl: HTMLDivElement;

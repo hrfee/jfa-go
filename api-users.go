@@ -902,7 +902,7 @@ func (app *appContext) userSummary(jfUser mediabrowser.User) respUser {
 // @tags Activity
 func (app *appContext) GetUserCount(gc *gin.Context) {
 	resp := PageCountDTO{}
-	userList, err := app.userCache.Gen(app)
+	userList, err := app.userCache.Gen(app, false)
 	if err != nil {
 		app.err.Printf(lm.FailedGetUsers, lm.Jellyfin, err)
 		respond(500, "Couldn't get users", gc)
@@ -924,13 +924,12 @@ func (app *appContext) GetUsers(gc *gin.Context) {
 	// We're sending all users, so this is always true
 	resp.LastPage = true
 	var err error
-	resp.UserList, err = app.userCache.Gen(app)
+	resp.UserList, err = app.userCache.Gen(app, true)
 	if err != nil {
 		app.err.Printf(lm.FailedGetUsers, lm.Jellyfin, err)
 		respond(500, "Couldn't get users", gc)
 		return
 	}
-	app.debug.Printf("sending usercache of length %d", len(resp.UserList))
 	gc.JSON(200, resp)
 }
 
@@ -945,20 +944,31 @@ func (app *appContext) GetUsers(gc *gin.Context) {
 func (app *appContext) SearchUsers(gc *gin.Context) {
 	req := getUsersReqDTO{}
 	gc.BindJSON(&req)
-
-	// FIXME: Figure out how to search, sort and paginate []mediabrowser.User!
-	// Expr!
+	if req.SortByField == "" {
+		req.SortByField = USER_DEFAULT_SORT_FIELD
+	}
 
 	var resp getUsersDTO
-	// We're sending all users, so this is always true
-	resp.LastPage = true
-	var err error
-	resp.UserList, err = app.userCache.Gen(app)
+	userList, err := app.userCache.Gen(app, false)
 	if err != nil {
 		app.err.Printf(lm.FailedGetUsers, lm.Jellyfin, err)
 		respond(500, "Couldn't get users", gc)
 		return
 	}
+	var filtered []*respUser
+	if (req.SearchTerms != nil && len(req.SearchTerms) != 0) || (req.Queries != nil && len(req.Queries) != 0) {
+		filtered = app.userCache.Filter(userList, req.SearchTerms, req.Queries)
+	} else {
+		filtered = userList
+	}
+	app.userCache.Sort(filtered, req.SortByField, req.Ascending)
+
+	startIndex := (req.Page * req.Limit)
+	if startIndex < len(filtered) {
+		endIndex := min(startIndex+req.Limit, len(filtered))
+		resp.UserList = filtered[startIndex:endIndex]
+	}
+	resp.LastPage = len(resp.UserList) != req.Limit
 	gc.JSON(200, resp)
 }
 

@@ -150,14 +150,16 @@ interface inviteList {
     loadInviteURL: () => void;
 }
 
-// Finally added to typescript, dont need this anymore.
-// declare interface SubmitEvent extends Event {
-//     submitter: HTMLInputElement;
-// }
-
 interface paginatedDTO {
     last_page: boolean;
 }
+
+interface PaginatedReqDTO {
+    limit: number;
+    page: number;
+    sortByField: string;
+    ascending: boolean;
+};
 
 declare var config: Object;
 declare var modifiedConfig: Object;

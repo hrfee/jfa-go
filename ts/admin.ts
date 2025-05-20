@@ -148,12 +148,16 @@ const tabs: { id: string, url: string, reloader: () => void }[] = [
                 // Don't keep loading the same item on every tab refresh
                 isAccountURL = false;
             }
+            window.onscroll = accounts.detectScroll;
         }),
     },
     {
         id: "activity",
         url: "activity",
-        reloader: activity.reload
+        reloader: () => {
+            activity.reload()
+            window.onscroll = activity.detectScroll;
+        },
     },
     {
         id: "settings",

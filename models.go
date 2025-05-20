@@ -168,14 +168,20 @@ type PaginatedDTO struct {
 	LastPage bool `json:"last_page"`
 }
 
+type PaginatedReqDTO struct {
+	Limit       int    `json:"limit"`
+	Page        int    `json:"page"` // zero-indexed
+	SortByField string `json:"sortByField"`
+	Ascending   bool   `json:"ascending"`
+}
+
 type getUsersReqDTO struct {
-	Limit int `json:"limit"`
-	Page  int `json:"page"` // zero-indexed
+	ServerSearchReqDTO
 }
 
 type getUsersDTO struct {
-	UserList []respUser `json:"users"`
-	LastPage bool       `json:"last_page"`
+	UserList []*respUser `json:"users"`
+	LastPage bool        `json:"last_page"`
 }
 
 type ombiUser struct {
@@ -440,10 +446,9 @@ type ActivityDTO struct {
 }
 
 type GetActivitiesDTO struct {
-	Type      []string `json:"type"` // Types of activity to get. Leave blank for all.
-	Limit     int      `json:"limit"`
-	Page      int      `json:"page"` // zero-indexed
-	Ascending bool     `json:"ascending"`
+	// "SortByField" ignores, it's always time.
+	PaginatedReqDTO
+	Type []string `json:"type"` // Types of activity to get. Leave blank for all.
 }
 
 type GetActivitiesRespDTO struct {
