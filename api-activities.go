@@ -119,7 +119,6 @@ func (app *appContext) GetActivities(gc *gin.Context) {
 
 	var results []Activity
 	err := app.storage.db.Find(&results, query)
-
 	if err != nil {
 		app.err.Printf(lm.FailedDBReadActivities, err)
 	}
@@ -128,7 +127,6 @@ func (app *appContext) GetActivities(gc *gin.Context) {
 		Activities: make([]ActivityDTO, len(results)),
 	}
 	resp.LastPage = len(results) != req.Limit
-
 	for i, act := range results {
 		resp.Activities[i] = ActivityDTO{
 			ID:         act.ID,
