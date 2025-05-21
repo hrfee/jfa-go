@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"slices"
 	"strings"
 	"time"
 
@@ -949,19 +950,26 @@ func (app *appContext) SearchUsers(gc *gin.Context) {
 	}
 
 	var resp getUsersDTO
-	userList, err := app.userCache.Gen(app, false)
+	userList, err := app.userCache.Gen(app, req.SortByField == USER_DEFAULT_SORT_FIELD)
 	if err != nil {
 		app.err.Printf(lm.FailedGetUsers, lm.Jellyfin, err)
 		respond(500, "Couldn't get users", gc)
 		return
 	}
 	var filtered []*respUser
-	if (req.SearchTerms != nil && len(req.SearchTerms) != 0) || (req.Queries != nil && len(req.Queries) != 0) {
+	if len(req.SearchTerms) != 0 || len(req.Queries) != 0 {
 		filtered = app.userCache.Filter(userList, req.SearchTerms, req.Queries)
 	} else {
-		filtered = userList
+		filtered = slices.Clone(userList)
 	}
-	app.userCache.Sort(filtered, req.SortByField, req.Ascending)
+
+	if req.SortByField == USER_DEFAULT_SORT_FIELD {
+		if req.Ascending != USER_DEFAULT_SORT_ASCENDING {
+			slices.Reverse(filtered)
+		}
+	} else {
+		app.userCache.Sort(filtered, req.SortByField, req.Ascending)
+	}
 
 	startIndex := (req.Page * req.Limit)
 	if startIndex < len(filtered) {

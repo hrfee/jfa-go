@@ -726,7 +726,10 @@
                                 <input type="search" class="field ~neutral @low input search mr-2" id="accounts-search" placeholder="{{ .strings.search }}">
                                 <span class="button ~neutral @low center ml-[-2.64rem] rounded-s-none accounts-search-clear" aria-label="{{ .strings.clearSearch }}" text="{{ .strings.clearSearch }}"><i class="ri-close-line"></i></span>
                                 <div class="tooltip left">
-                                    <span class="button ~info @low center h-full accounts-search-server" aria-label="{{ .strings.searchAllRecords }}" text="{{ .strings.searchAllRecords }}"><i class="ri-search-line"></i></span>
+                                    <button class="button ~info @low center h-full accounts-search-server flex flex-row gap-1" aria-label="{{ .strings.searchAllRecords }}" text="{{ .strings.searchAllRecords }}">
+                                        <i class="ri-search-line"></i>
+                                        <span>{{ .strings.searchAll }}</span>
+                                    </button>
                                     <span class="content sm">{{ .strings.searchAllRecords }}</span>
                                 </div>
                                 <button class="button ~info @low" id="accounts-refresh" aria-label="{{ .strings.refresh }}" disabled><i class="ri-refresh-line"></i></button>
@@ -810,20 +813,23 @@
                         </table>
                         <div id="accounts-loader"></div>
                         <div class="unfocused h-[100%] my-3" id="accounts-not-found">
-                            <div class="flex flex-col h-[100%] justify-center items-center">
-                                <span class="text-2xl font-medium italic mb-3">{{ .strings.noResultsFound }}</span>
-                                <span class="text-xl font-medium italic mb-3 unfocused" id="accounts-keep-searching-description">{{ .strings.keepSearchingDescription }}</span>
+                            <div class="flex flex-col gap-2 h-[100%] justify-center items-center">
+                                <span class="text-2xl font-medium italic text-center">{{ .strings.noResultsFound }}</span>
+                                <span class="text-sm font-light italic unfocused text-center" id="accounts-no-local-results">{{ .strings.noResultsFoundLocally }}</span>
                                 <div class="flex flex-row">
                                     <button class="button ~neutral @low accounts-search-clear">
                                         <span class="mr-2">{{ .strings.clearSearch }}</span><i class="ri-close-line"></i>
                                     </button>
-                                    <button class="button ~neutral @low unfocused" id="accounts-keep-searching">{{ .strings.keepSearching }}</button>
                                 </div>
                             </div>
                         </div>
-                        <div class="flex justify-center">
-                            <button class="button m-2 ~neutral @low" id="accounts-load-more">{{ .strings.loadMore }}</button>
-                            <button class="button m-2 ~neutral @low" id="accounts-load-all">{{ .strings.loadAll }}</button>
+                        <div class="flex flex-row gap-2 m-2 justify-center">
+                            <button class="button ~neutral @low" id="accounts-load-more">{{ .strings.loadMore }}</button>
+                            <button class="button ~neutral @low" id="accounts-load-all">{{ .strings.loadAll }}</button>
+                            <button class="button ~info @low center accounts-search-server flex flex-row gap-1" aria-label="{{ .strings.searchAllRecords }}" text="{{ .strings.searchAllRecords }}">
+                                <i class="ri-search-line"></i>
+                                <span>{{ .strings.searchAllRecords }}</span>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -843,7 +849,7 @@
                                 <input type="search" class="field ~neutral @low input search mr-2" id="activity-search" placeholder="{{ .strings.search }}">
                                 <span class="button ~neutral @low center ml-[-2.64rem] rounded-s-none activity-search-clear" aria-label="{{ .strings.clearSearch }}" text="{{ .strings.clearSearch }}"><i class="ri-close-line"></i></span>
                                 <div class="tooltip left">
-                                    <span class="button ~info @low center h-full activity-search-server" aria-label="{{ .strings.searchAllRecords }}" text="{{ .strings.searchAllRecords }}"><i class="ri-search-line"></i></span>
+                                    <button class="button ~info @low center h-full activity-search-server" aria-label="{{ .strings.searchAllRecords }}" text="{{ .strings.searchAllRecords }}"><i class="ri-search-line"></i></button>
                                     <span class="content sm">{{ .strings.searchAllRecords }}</span>
                                 </div>
                                 <button class="button ~info @low" id="activity-refresh" aria-label="{{ .strings.refresh }}" disabled><i class="ri-refresh-line"></i></button>
@@ -867,9 +873,9 @@
                         <div id="activity-card-list"></div>
                         <div id="activity-loader"></div>
                         <div class="unfocused h-[100%] my-3" id="activity-not-found">
-                            <div class="flex flex-col h-[100%] justify-center items-center">
-                                <span class="text-2xl font-medium italic mb-3">{{ .strings.noResultsFound }}</span>
-                                <span class="text-xl font-medium italic mb-3 unfocused" id="activity-keep-searching-description">{{ .strings.keepSearchingDescription }}</span>
+                            <div class="flex flex-col gap-2 h-[100%] justify-center items-center">
+                                <span class="text-2xl font-medium italic mb-3 text-center">{{ .strings.noResultsFound }}</span>
+                                <span class="text-sm font-light italic unfocused text-center" id="activity-no-local-results">{{ .strings.noResultsFoundLocally }}</span>
                                 <div class="flex flex-row">
                                     <button class="button ~neutral @low activity-search-clear">
                                         <span class="mr-2">{{ .strings.clearSearch }}</span><i class="ri-close-line"></i>
@@ -878,9 +884,13 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="flex justify-center">
-                            <button class="button m-2 ~neutral @low" id="activity-load-more">{{ .strings.loadMore }}</button>
-                            <button class="button m-2 ~neutral @low" id="activity-load-all">{{ .strings.loadAll }}</button>
+                        <div class="flex flex-row gap-2 m-2 justify-center">
+                            <button class="button ~neutral @low" id="activity-load-more">{{ .strings.loadMore }}</button>
+                            <button class="button ~neutral @low" id="activity-load-all">{{ .strings.loadAll }}</button>
+                            <button class="button ~info @low center activity-search-server flex flex-row gap-1" aria-label="{{ .strings.searchAllRecords }}" text="{{ .strings.searchAllRecords }}">
+                                <i class="ri-search-line"></i>
+                                <span>{{ .strings.searchAllRecords }}</span>
+                            </button>
                         </div>
                     </div>
                 </div>

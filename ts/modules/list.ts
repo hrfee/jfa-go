@@ -76,19 +76,18 @@ export interface PaginatedListConfig {
     loadMoreButton: HTMLButtonElement;
     loadAllButton: HTMLButtonElement;
     refreshButton: HTMLButtonElement;
-    keepSearchingDescription: HTMLElement;
-    keepSearchingButton: HTMLElement;
-    notFoundPanel: HTMLElement;
     filterArea: HTMLElement;
     searchOptionsHeader: HTMLElement;
     searchBox: HTMLInputElement;
     recordCounter: HTMLElement;
     totalEndpoint: string;
     getPageEndpoint: string;
-    limit: number;
+    itemsPerPage: number;
+    maxItemsLoadedForSearch: number;
     newElementsFromPage: (resp: paginatedDTO) => void;
     updateExistingElementsFromPage: (resp: paginatedDTO) => void;
     defaultSortField: string;
+    defaultSortAscending: boolean;
     pageLoadCallback?: (req: XMLHttpRequest) => void;
 }
 
@@ -109,13 +108,13 @@ export abstract class PaginatedList {
         if (v) {
             this._c.loadAllButton.classList.add("unfocused");
             this._c.loadMoreButton.textContent = window.lang.strings("noMoreResults");
+            this._search.setServerSearchButtonsDisabled(this._search.inServerSearch);
             this._c.loadMoreButton.disabled = true;
         } else {
             this._c.loadMoreButton.textContent = window.lang.strings("loadMore");
             this._c.loadMoreButton.disabled = false;
-            if (this._search.inSearch) {
-                this._c.loadAllButton.classList.remove("unfocused");
-            }
+            this._search.setServerSearchButtonsDisabled(false);
+            this._c.loadAllButton.classList.remove("unfocused");
         }
     }
 
@@ -160,9 +159,15 @@ export abstract class PaginatedList {
 
             // if (this._search.inSearch && !this.lastPage) this._c.loadAllButton.classList.remove("unfocused");
             // else this._c.loadAllButton.classList.add("unfocused");
-           
+          
+            if (this._search.sortField == this._c.defaultSortField && this._search.ascending == this._c.defaultSortAscending) {
+                this._search.setServerSearchButtonsDisabled(!this._search.inSearch)
+            } else {
+                this._search.setServerSearchButtonsDisabled(false)
+            }
+
             // FIXME: Figure out why this makes sense and make it clearer.
-            if ((visibleCount < this._c.limit && !this.lastPage) || loadAll) {
+            if ((visibleCount < this._c.itemsPerPage && this._counter.loaded < this._c.maxItemsLoadedForSearch && !this.lastPage) || loadAll) {
                 if (!newItems ||
                     this._previousPageSize != visibleCount ||
                     (visibleCount == 0 && !this.lastPage) ||
@@ -183,6 +188,7 @@ export abstract class PaginatedList {
             if (previousServerSearch) previousServerSearch(params, newSearch);
         };
         searchConfig.clearServerSearch = () => {
+            console.log("Clearing server search");
             this._page = 0;
             this.reload();
         }
@@ -195,6 +201,7 @@ export abstract class PaginatedList {
     public abstract setVisibility: (elements: string[], visible: boolean) => void;
 
     // Removes all elements, and reloads the first page.
+    // FIXME: Share more code between reload and loadMore, and go over the logic, it's messy.
     public abstract reload: () => void;
     protected _reload = (
         callback?: (req: XMLHttpRequest) => void
@@ -206,7 +213,7 @@ export abstract class PaginatedList {
         this._counter.getTotal(this._c.totalEndpoint);
 
         // Reload all currently visible elements, i.e. Load a new page of size (limit*(page+1)).
-        let limit = this._c.limit;
+        let limit = this._c.itemsPerPage;
         if (this._page != 0) {
             limit *= this._page+1;
         }
@@ -216,7 +223,7 @@ export abstract class PaginatedList {
         params.page = 0;
         if (params.sortByField == "") {
             params.sortByField = this._c.defaultSortField;
-            params.ascending = true;
+            params.ascending = this._c.defaultSortAscending;
         }
 
         _post(this._c.getPageEndpoint, params, (req: XMLHttpRequest) => {
@@ -246,8 +253,7 @@ export abstract class PaginatedList {
             } else {
                 this._counter.shown = this._counter.loaded;
                 this.setVisibility(this._search.ordering, true);
-                this._c.loadAllButton.classList.add("unfocused");
-                this._c.notFoundPanel.classList.add("unfocused");
+                // this._search.showHideNotFoundPanel(false);
             }
             if (this._c.pageLoadCallback) this._c.pageLoadCallback(req);
             if (callback) callback(req);
@@ -268,11 +274,11 @@ export abstract class PaginatedList {
         this._page += 1;
 
         let params = this._search.inServerSearch ? this._searchParams : this.defaultParams();
-        params.limit = this._c.limit;
+        params.limit = this._c.itemsPerPage;
         params.page = this._page;
         if (params.sortByField == "") {
             params.sortByField = this._c.defaultSortField;
-            params.ascending = true;
+            params.ascending = this._c.defaultSortAscending;
         }
 
         _post(this._c.getPageEndpoint, params, (req: XMLHttpRequest) => {
@@ -304,7 +310,7 @@ export abstract class PaginatedList {
                 this._search.onSearchBoxChange(true, loadAll);
             } else {
                 this.setVisibility(this._search.ordering, true);
-                this._c.notFoundPanel.classList.add("unfocused");
+                this._search.setNotFoundPanelVisibility(false);
             }
             if (this._c.pageLoadCallback) this._c.pageLoadCallback(req);
             if (callback) callback(req);

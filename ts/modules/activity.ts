@@ -6,6 +6,9 @@ import { PaginatedList } from "./list.js";
 
 declare var window: GlobalWindow;
 
+const ACTIVITY_DEFAULT_SORT_FIELD = "time";
+const ACTIVITY_DEFAULT_SORT_ASCENDING = false;
+
 export interface activity {
     id: string; 
     type: string; 
@@ -488,16 +491,14 @@ export class activityList extends PaginatedList {
             loadMoreButton: document.getElementById("activity-load-more") as HTMLButtonElement,
             loadAllButton: document.getElementById("activity-load-all") as HTMLButtonElement,
             refreshButton: document.getElementById("activity-refresh") as HTMLButtonElement,
-            keepSearchingDescription: document.getElementById("activity-keep-searching-description"),
-            keepSearchingButton: document.getElementById("activity-keep-searching"),
             filterArea: document.getElementById("activity-filter-area"),
             searchOptionsHeader: document.getElementById("activity-search-options-header"),
             searchBox: document.getElementById("activity-search") as HTMLInputElement,
-            notFoundPanel: document.getElementById("activity-not-found"),
             recordCounter: document.getElementById("activity-record-counter"),
             totalEndpoint: "/activity/count",
             getPageEndpoint: "/activity",
-            limit: 10,
+            itemsPerPage: 20,
+            maxItemsLoadedForSearch: 200,
             newElementsFromPage: (resp: paginatedDTO) => {
                 let ordering: string[] = this._search.ordering;
                 for (let act of ((resp as ActivitiesDTO).activities || [])) {
@@ -513,7 +514,8 @@ export class activityList extends PaginatedList {
                 this._search.setOrdering([], this._c.defaultSortField, this.ascending);
                 this._c.newElementsFromPage(resp);
             },
-            defaultSortField: "time",
+            defaultSortField: ACTIVITY_DEFAULT_SORT_FIELD,
+            defaultSortAscending: ACTIVITY_DEFAULT_SORT_ASCENDING,
             pageLoadCallback: (req: XMLHttpRequest) => {
                 if (req.readyState != 4) return;
                 if (req.status != 200) {
@@ -531,7 +533,8 @@ export class activityList extends PaginatedList {
             // Exclude this: We only sort by date, and don't want to show a redundant header indicating so.
             // sortingByButton: this._sortingByButton,
             searchOptionsHeader: this._c.searchOptionsHeader,
-            notFoundPanel: this._c.notFoundPanel,
+            notFoundPanel: document.getElementById("activity-not-found"),
+            notFoundLocallyText: document.getElementById("activity-no-local-results"),
             search: this._c.searchBox,
             clearSearchButtonSelector: ".activity-search-clear",
             serverSearchButtonSelector: ".activity-search-server",
@@ -546,7 +549,7 @@ export class activityList extends PaginatedList {
 
         this.initSearch(searchConfig);
 
-        this.ascending = false;
+        this.ascending = this._c.defaultSortAscending;
         this._sortDirection.addEventListener("click", () => this.ascending = !this.ascending);
     }
 

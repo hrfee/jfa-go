@@ -9,6 +9,9 @@ import { PaginatedList } from "./list.js";
 
 declare var window: GlobalWindow;
 
+const USER_DEFAULT_SORT_FIELD      = "name";
+const USER_DEFAULT_SORT_ASCENDING  = true;
+
 const dateParser = require("any-date-parser");
 
 interface User {
@@ -911,16 +914,14 @@ export class accountsList extends PaginatedList {
             loadMoreButton: document.getElementById("accounts-load-more") as HTMLButtonElement,
             loadAllButton: document.getElementById("accounts-load-all") as HTMLButtonElement,
             refreshButton: document.getElementById("accounts-refresh") as HTMLButtonElement,
-            keepSearchingDescription: document.getElementById("accounts-keep-searching-description"),
-            keepSearchingButton: document.getElementById("accounts-keep-searching"),
             filterArea: document.getElementById("accounts-filter-area"),
             searchOptionsHeader: document.getElementById("accounts-search-options-header"),
             searchBox: document.getElementById("accounts-search") as HTMLInputElement,
-            notFoundPanel: document.getElementById("accounts-not-found"),
             recordCounter: document.getElementById("accounts-record-counter"),
             totalEndpoint: "/users/count",
             getPageEndpoint: "/users",
-            limit: 4,
+            itemsPerPage: 40,
+            maxItemsLoadedForSearch: 200,
             newElementsFromPage: (resp: paginatedDTO) => {
                 for (let u of ((resp as UsersDTO).users || [])) {
                     if (u.id in this.users) {
@@ -962,7 +963,8 @@ export class accountsList extends PaginatedList {
                     this._search.ascending
                 );
             },
-            defaultSortField: "name",
+            defaultSortField: USER_DEFAULT_SORT_FIELD,
+            defaultSortAscending: USER_DEFAULT_SORT_ASCENDING,
             pageLoadCallback: (req: XMLHttpRequest) => {
                 if (req.readyState != 4) return;
                 // FIXME: Error message
@@ -975,7 +977,8 @@ export class accountsList extends PaginatedList {
             filterArea: this._c.filterArea,
             sortingByButton: this._sortingByButton,
             searchOptionsHeader: this._c.searchOptionsHeader,
-            notFoundPanel: this._c.notFoundPanel,
+            notFoundPanel: document.getElementById("accounts-not-found"),
+            notFoundLocallyText: document.getElementById("accounts-no-local-results"),
             filterList: document.getElementById("accounts-filter-list"),
             search: this._c.searchBox,
             queries: queries(),
@@ -1188,7 +1191,7 @@ export class accountsList extends PaginatedList {
         // Start off sorting by username (this._c.defaultSortField)
         const defaultSort = () => {
             document.dispatchEvent(new CustomEvent("header-click", { detail: this._c.defaultSortField }));
-            this._columns[this._c.defaultSortField].ascending = true;
+            this._columns[this._c.defaultSortField].ascending = this._c.defaultSortAscending;
             this._columns[this._c.defaultSortField].hideIcon();
             this._sortingByButton.parentElement.classList.add("hidden");
             this._search.showHideSearchOptionsHeader();
@@ -1209,15 +1212,17 @@ export class accountsList extends PaginatedList {
                 this._search.onSearchBoxChange();
             } else {
                 this.setVisibility(this._search.ordering, true);
-                this._c.notFoundPanel.classList.add("unfocused");
+                this._search.setNotFoundPanelVisibility(false);
+                this._search.setServerSearchButtonsDisabled(
+                    event.detail == this._c.defaultSortField && this._columns[event.detail].ascending == this._c.defaultSortAscending
+                );
             }
             this._search.showHideSearchOptionsHeader();
         });
 
         defaultSort();
-        this._search.showHideSearchOptionsHeader();
 
-        this._search.generateFilterList();
+        this._search.showHideSearchOptionsHeader();
 
         this.registerURLListener();
     }
@@ -2168,7 +2173,7 @@ class Column {
 
     // Returns the inner HTML to show in the "Sorting By" button.
     get buttonContent() {
-        return `<span class="font-bold">` + window.lang.strings("sortingBy") + ": " + `</span>` + this._headerContent;
+        return `<i class="ri-arrow-${this.ascending ? "up" : "down"}-s-line mr-2"></i><span class="font-bold">` + window.lang.strings("sortingBy") + ": " + `</span>` + this._headerContent;
     }
 
     get ascending() { return this._ascending; }
