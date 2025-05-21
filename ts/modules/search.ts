@@ -35,6 +35,7 @@ export interface SearchConfiguration {
     sortingByButton?: HTMLButtonElement;
     searchOptionsHeader: HTMLElement;
     notFoundPanel: HTMLElement;
+    notFoundLocallyText: HTMLElement;
     notFoundCallback?: (notFound: boolean) => void;
     filterList: HTMLElement;
     clearSearchButtonSelector: string;
@@ -90,6 +91,16 @@ export abstract class Query {
         out.field = this._subject.getter;
         out.operator = this._operator;
         return out;
+    }
+
+    get subject(): QueryType { return this._subject; }
+
+    getValueFromItem(item: SearchableItem): any {
+        return Object.getOwnPropertyDescriptor(Object.getPrototypeOf(item), this.subject.getter).get.call(item);
+    }
+
+    compareItem(item: SearchableItem): boolean {
+        return this.compare(this.getValueFromItem(item));
     }
 }
 
@@ -278,30 +289,19 @@ export class Search {
     private _inServerSearch: boolean = false;
     get inServerSearch(): boolean { return this._inServerSearch; }
     set inServerSearch(v: boolean) {
+        const previous = this._inServerSearch;
         this._inServerSearch = v;
-        if (!v) {
+        if (!v && previous != v) {
             this._c.clearServerSearch();
         }
     }
 
     private _serverSearchButtons: HTMLElement[];
 
-    // Returns a list of identifiers (keys in items, values in ordering).
-    search = (query: String): string[] => {
-        this._c.filterArea.textContent = "";
-
+    static tokenizeSearch = (query: string): string[] => {
         query = query.toLowerCase();
 
-        let result: string[] = [...this._ordering];
-        // If we're in a server search already, the results are already correct.
-        if (this.inServerSearch) return result;
-
-
         let words: string[] = [];
-        let queries = [];
-        let searchTerms = [];
-
-        
         let quoteSymbol = ``;
         let queryStart = -1;
         let lastQuote = -1;
@@ -335,19 +335,17 @@ export class Search {
                 }
             }
         }
+        return words;
+    }
 
-        query = "";
-        for (let word of words) {
+    parseTokens = (tokens: string[]): [string[], Query[]] => {
+        let queries: Query[] = [];
+        let searchTerms: string[] = [];
+
+        for (let word of tokens) {
             // 1. Normal search text, no filters or anything
             if (!word.includes(":")) {
                 searchTerms.push(word);
-                let cachedResult = [...result];
-                for (let id of cachedResult) {
-                    const u = this.items[id];
-                    if (!u.matchesSearch(word)) {
-                        result.splice(result.indexOf(id), 1);
-                    }
-                }
                 continue;
             }
             // 2. A filter query of some sort.
@@ -369,21 +367,6 @@ export class Search {
                         }
                         this._c.search.oninput((null as Event));
                     };
-
-                    this._c.filterArea.appendChild(q.asElement());
-
-                    // So removing elements doesn't affect us
-                    let cachedResult = [...result];
-                    for (let id of cachedResult) {
-                        const u = this.items[id];
-                        const value = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(u), queryFormat.getter).get.call(u);
-                        // Remove from result if not matching query
-                        if (!q.compare(value)) {
-                            // console.log("not matching, result is", result);
-                            result.splice(result.indexOf(id), 1);
-                        } else {
-                        }
-                    }
                 }
             } else if (queryFormat.string) {
                 q = new StringQuery(queryFormat, split[1]);
@@ -394,17 +377,6 @@ export class Search {
                         this._c.search.value = this._c.search.value.replace(regex, "");
                     }
                     this._c.search.oninput((null as Event));
-                }
-
-                this._c.filterArea.appendChild(q.asElement());
-
-                let cachedResult = [...result];
-                for (let id of cachedResult) {
-                    const u = this.items[id];
-                    const value = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(u), queryFormat.getter).get.call(u).toLowerCase();
-                    if (!q.compare(value)) {
-                        result.splice(result.indexOf(id), 1);
-                    }
                 }
             } else if (queryFormat.date) {
                 let [parsedDate, op, isDate] = DateQuery.paramsFromString(split[1]);
@@ -419,13 +391,61 @@ export class Search {
                     
                     this._c.search.oninput((null as Event));
                 }
-                
-                this._c.filterArea.appendChild(q.asElement());
+            }
+        
+            if (q != null) queries.push(q);
+        }
+        return [searchTerms, queries];
+    }
 
-                let cachedResult = [...result];
+    // Returns a list of identifiers (used as keys in items, values in ordering).
+    search = (query: string): string[] => {
+        this._c.filterArea.textContent = "";
+        
+        let result: string[] = [...this._ordering];
+        // If we're in a server search already, the results are already correct.
+        if (this.inServerSearch) return result;
+
+        const [searchTerms, queries] = this.parseTokens(Search.tokenizeSearch(query));
+
+        query = "";
+
+        for (let term of searchTerms) {
+            let cachedResult = [...result];
+            for (let id of cachedResult) {
+                const u = this.items[id];
+                if (!u.matchesSearch(term)) {
+                    result.splice(result.indexOf(id), 1);
+                }
+            }
+        }
+        for (let q of queries) {
+            this._c.filterArea.appendChild(q.asElement());
+            let cachedResult = [...result];
+            if (q.subject.bool) {
                 for (let id of cachedResult) {
                     const u = this.items[id];
-                    const unixValue = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(u), queryFormat.getter).get.call(u);
+                    // Remove from result if not matching query
+                    if (!q.compareItem(u)) {
+                        // console.log("not matching, result is", result);
+                        result.splice(result.indexOf(id), 1);
+                    }
+                }
+            } else if (q.subject.string) {
+                for (let id of cachedResult) {
+                    const u = this.items[id];
+                    // We want to compare case-insensitively, so we get value, lower-case it then compare,
+                    // rather than doing both with compareItem.
+                    const value = q.getValueFromItem(u).toLowerCase();
+                    if (!q.compare(value)) {
+                        result.splice(result.indexOf(id), 1);
+                    }
+                }
+            } else if(q.subject.date) {
+                for (let id of cachedResult) {
+                    const u = this.items[id];
+                    // Getter here returns a unix timestamp rather than a date, so we can't use compareItem.
+                    const unixValue = q.getValueFromItem(u);
                     if (unixValue == 0) {
                         result.splice(result.indexOf(id), 1);
                         continue;
@@ -437,12 +457,11 @@ export class Search {
                     }
                 }
             }
-        
-            if (q != null) queries.push(q);
         }
 
         this._queries = queries;
         this._searchTerms = searchTerms;
+
         return result;
     }
     
@@ -486,25 +505,37 @@ export class Search {
         const results = this.search(query);
         this._c.setVisibility(results, true);
         this._c.onSearchCallback(results.length, newItems, loadAll);
-        if (this.inServerSearch) {
-            this._serverSearchButtons.forEach((v: HTMLElement) => {
-                v.classList.add("@low");
-                v.classList.remove("@high");
-            });
-        } else {
-            this._serverSearchButtons.forEach((v: HTMLElement) => {
-                v.classList.add("@high");
-                v.classList.remove("@low");
-            });
+        if (this.inSearch) {
+            if (this.inServerSearch) {
+                this._serverSearchButtons.forEach((v: HTMLElement) => {
+                    v.classList.add("@low");
+                    v.classList.remove("@high");
+                });
+            } else {
+                this._serverSearchButtons.forEach((v: HTMLElement) => {
+                    v.classList.add("@high");
+                    v.classList.remove("@low");
+                });
+            }
         }
         this.showHideSearchOptionsHeader();
-        if (results.length == 0) {
+        this.setNotFoundPanelVisibility(results.length == 0);
+        if (this._c.notFoundCallback) this._c.notFoundCallback(results.length == 0);
+    }
+
+    setNotFoundPanelVisibility = (visible: boolean) => {
+        if (this._inServerSearch || !this.inSearch) {
+            this._c.notFoundLocallyText.classList.add("unfocused");
+        } else if (this.inSearch) {
+            this._c.notFoundLocallyText.classList.remove("unfocused");
+        }
+        if (visible) {
+            console.log("showing not found panel");
             this._c.notFoundPanel.classList.remove("unfocused");
         } else {
+            console.log("hiding not found panel");
             this._c.notFoundPanel.classList.add("unfocused");
-
         }
-        if (this._c.notFoundCallback) this._c.notFoundCallback(results.length == 0);
     }
 
     fillInFilter = (name: string, value: string, offset?: number) => {
@@ -608,6 +639,10 @@ export class Search {
             ascending: this.ascending
         };
         return req;
+    }
+
+    setServerSearchButtonsDisabled = (disabled: boolean) => {
+        this._serverSearchButtons.forEach((v: HTMLButtonElement) => v.disabled = disabled);
     }
 
     constructor(c: SearchConfiguration) {

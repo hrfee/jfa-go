@@ -11,8 +11,12 @@ import (
 
 const (
 	// FIXME: Follow mediabrowser, or make tuneable, or both
-	WEB_USER_CACHE_SYNC     = 30 * time.Second
-	USER_DEFAULT_SORT_FIELD = "name"
+	// After cache is this old, re-sync, but do it in the background and return the old cache.
+	WEB_USER_CACHE_SYNC = 30 * time.Second
+	// After cache is this old, re-sync and wait for it and return the new cache.
+	WEB_USER_CACHE_WAIT_FOR_SYNC = 5 * time.Minute
+	USER_DEFAULT_SORT_FIELD      = "name"
+	USER_DEFAULT_SORT_ASCENDING  = true
 )
 
 type UserCache struct {
@@ -20,30 +24,67 @@ type UserCache struct {
 	Ref      []*respUser
 	Sorted   bool
 	LastSync time.Time
-	Lock     sync.Mutex
+	SyncLock sync.Mutex
+	Syncing  bool
+	SortLock sync.Mutex
+	Sorting  bool
 }
 
+// FIXME: If shouldSync, sync in background and return old version. If shouldWaitForSync, wait for sync and return new one.
+// FIXME: If locked, just wait for unlock and return someone elses work.
 func (c *UserCache) gen(app *appContext) error {
-	// FIXME: I don't like this.
-	if !time.Now().After(c.LastSync.Add(WEB_USER_CACHE_SYNC)) {
+	shouldWaitForSync := time.Now().After(c.LastSync.Add(WEB_USER_CACHE_WAIT_FOR_SYNC)) || c.Ref == nil || len(c.Ref) == 0
+	shouldSync := time.Now().After(c.LastSync.Add(WEB_USER_CACHE_SYNC))
+
+	if !shouldSync {
 		return nil
 	}
-	c.Lock.Lock()
-	users, err := app.jf.GetUsers(false)
-	if err != nil {
+
+	syncStatus := make(chan error)
+
+	go func(status chan error, c *UserCache) {
+		c.SyncLock.Lock()
+		alreadySyncing := c.Syncing
+		// We're either already syncing or will be
+		c.Syncing = true
+		c.SyncLock.Unlock()
+		if !alreadySyncing {
+			users, err := app.jf.GetUsers(false)
+			if err != nil {
+				c.SyncLock.Lock()
+				c.Syncing = false
+				c.SyncLock.Unlock()
+				status <- err
+				return
+			}
+			cache := make([]respUser, len(users))
+			for i, jfUser := range users {
+				cache[i] = app.userSummary(jfUser)
+			}
+			ref := make([]*respUser, len(cache))
+			for i := range cache {
+				ref[i] = &(cache[i])
+			}
+			c.Cache = cache
+			c.Ref = ref
+			c.Sorted = false
+			c.LastSync = time.Now()
+
+			c.SyncLock.Lock()
+			c.Syncing = false
+			c.SyncLock.Unlock()
+		} else {
+			for c.Syncing {
+				continue
+			}
+		}
+		status <- nil
+	}(syncStatus, c)
+
+	if shouldWaitForSync {
+		err := <-syncStatus
 		return err
 	}
-	c.Cache = make([]respUser, len(users))
-	for i, jfUser := range users {
-		c.Cache[i] = app.userSummary(jfUser)
-	}
-	c.Ref = make([]*respUser, len(c.Cache))
-	for i := range c.Cache {
-		c.Ref[i] = &(c.Cache[i])
-	}
-	c.Sorted = false
-	c.LastSync = time.Now()
-	c.Lock.Unlock()
 	return nil
 }
 
@@ -52,11 +93,21 @@ func (c *UserCache) Gen(app *appContext, sorted bool) ([]*respUser, error) {
 		return nil, err
 	}
 	if sorted && !c.Sorted {
-		c.Lock.Lock()
-		// FIXME: Check we want ascending!
-		c.Sort(c.Ref, USER_DEFAULT_SORT_FIELD, true)
-		c.Sorted = true
-		c.Lock.Unlock()
+		c.SortLock.Lock()
+		alreadySorting := c.Sorting
+		c.Sorting = true
+		c.SortLock.Unlock()
+		if !alreadySorting {
+			c.Sort(c.Ref, USER_DEFAULT_SORT_FIELD, USER_DEFAULT_SORT_ASCENDING)
+			c.Sorted = true
+			c.SortLock.Lock()
+			c.Sorting = false
+			c.SortLock.Unlock()
+		} else {
+			for c.Sorting {
+				continue
+			}
+		}
 	}
 	return c.Ref, nil
 }
