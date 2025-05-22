@@ -1,5 +1,5 @@
 import { _get, _post, _delete, toDateString } from "../modules/common.js";
-import { SearchConfiguration, QueryType, SearchableItem, SearchableItems } from "../modules/search.js";
+import { SearchConfiguration, QueryType, SearchableItem, SearchableItems, SearchableItemDataAttribute } from "../modules/search.js";
 import { accountURLEvent } from "../modules/accounts.js";
 import { inviteURLEvent } from "../modules/invites.js";
 import { PaginatedList } from "./list.js";
@@ -353,7 +353,10 @@ export class Activity implements activity, SearchableItem {
     }
 
     get id(): string { return this._act.id; }
-    set id(v: string) { this._act.id = v; }
+    set id(v: string) {
+        this._act.id = v;
+        this._card.setAttribute(SearchableItemDataAttribute, v);
+    }
 
     get user_id(): string { return this._act.user_id; }
     set user_id(v: string) { this._act.user_id = v; }
@@ -379,6 +382,7 @@ export class Activity implements activity, SearchableItem {
         this._card = document.createElement("div");
 
         this._card.classList.add("card", "@low", "my-2");
+
         this._card.innerHTML = `
         <div class="flex flex-col md:flex-row justify-between mb-2">
             <span class="heading truncate flex-initial md:text-2xl text-xl activity-title"></span>
@@ -476,7 +480,7 @@ interface ActivitiesDTO extends paginatedDTO {
 }
 
 export class activityList extends PaginatedList {
-    protected _activityList: HTMLElement;
+    protected _container: HTMLElement;
     // protected _sortingByButton = document.getElementById("activity-sort-by-field") as HTMLButtonElement;
     protected _sortDirection = document.getElementById("activity-sort-direction") as HTMLButtonElement;
 
@@ -525,7 +529,7 @@ export class activityList extends PaginatedList {
             }
         });
 
-        this._activityList = document.getElementById("activity-card-list")
+        this._container = document.getElementById("activity-card-list")
         document.addEventListener("activity-reload", this.reload);
 
         let searchConfig: SearchConfiguration = {
@@ -551,17 +555,6 @@ export class activityList extends PaginatedList {
 
         this.ascending = this._c.defaultSortAscending;
         this._sortDirection.addEventListener("click", () => this.ascending = !this.ascending);
-    }
-
-    setVisibility = (activities: string[], visible: boolean) => {
-        this._activityList.textContent = ``;
-        for (let id of this._search.ordering) {
-            if (visible && activities.indexOf(id) != -1) {
-                this._activityList.appendChild(this.activities[id].asElement());
-            } else if (!visible && activities.indexOf(id) == -1) {
-                this._activityList.appendChild(this.activities[id].asElement());
-            }
-        }
     }
 
     reload = () => {

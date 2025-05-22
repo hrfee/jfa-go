@@ -1,11 +1,13 @@
-import { _get, _post, _delete, toggleLoader, addLoader, removeLoader, toDateString, insertText, toClipboard } from "../modules/common.js";
-import { templateEmail } from "../modules/settings.js";
+import { _get, _post, _delete, toggleLoader, addLoader, removeLoader, toDateString, insertText, toClipboard } from "../modules/common"
+import { templateEmail } from "../modules/settings"
 import { Marked } from "@ts-stack/markdown";
-import { stripMarkdown } from "../modules/stripmd.js";
-import { DiscordUser, newDiscordSearch } from "../modules/discord.js";
-import { Search, SearchConfiguration, QueryType, SearchableItem, SearchableItems } from "../modules/search.js";
-import { HiddenInputField } from "./ui.js";
-import { PaginatedList } from "./list.js";
+import { stripMarkdown } from "../modules/stripmd"
+import { DiscordUser, newDiscordSearch } from "../modules/discord"
+import { SearchConfiguration, QueryType, SearchableItem, SearchableItemDataAttribute } from "../modules/search"
+import { HiddenInputField } from "./ui"
+import { PaginatedList } from "./list"
+
+// FIXME: Find and define a threshold after which searches are no longer performed on input (or just in general by the browser).
 
 declare var window: GlobalWindow;
 
@@ -780,7 +782,10 @@ class user implements User, SearchableItem {
     });
 
     get id() { return this._id; }
-    set id(v: string) { this._id = v; }
+    set id(v: string) {
+        this._id = v;
+        this._row.setAttribute(SearchableItemDataAttribute, v);
+    }
 
 
     update = (user: User) => {
@@ -821,10 +826,8 @@ interface UsersDTO extends paginatedDTO {
     users: User[];
 }
 
-interface UsersReqDTO extends PaginatedReqDTO {};
-
 export class accountsList extends PaginatedList {
-    private _table = document.getElementById("accounts-list") as HTMLTableSectionElement;
+    protected _container = document.getElementById("accounts-list") as HTMLTableSectionElement;
     
     private _addUserButton = document.getElementById("accounts-add-user") as HTMLSpanElement;
     private _announceButton = document.getElementById("accounts-announce") as HTMLSpanElement;
@@ -973,6 +976,9 @@ export class accountsList extends PaginatedList {
         });
         this._populateNumbers();
         
+        // FIXME: Remove!
+        (window as any).s = this;
+
         let searchConfig: SearchConfiguration = {
             filterArea: this._c.filterArea,
             sortingByButton: this._sortingByButton,
@@ -1253,7 +1259,7 @@ export class accountsList extends PaginatedList {
     set selectAll(state: boolean) {
         let count = 0;
         for (let id in this.users) {
-            if (this._table.contains(this.users[id].asElement())) { // Only select visible elements
+            if (this._container.contains(this.users[id].asElement())) { // Only select visible elements
                 this.users[id].selected = state;
                 count++;
             }
@@ -1268,7 +1274,7 @@ export class accountsList extends PaginatedList {
         for (let id of this._search.ordering) {
             if (!(inRange || id == startID)) continue;
             inRange = true;
-            if (!(this._table.contains(this.users[id].asElement()))) continue;
+            if (!(this._container.contains(this.users[id].asElement()))) continue;
             this.users[id].selected = true;
             if (id == endID) return;
         }
@@ -1300,7 +1306,7 @@ export class accountsList extends PaginatedList {
         } else {
             let visibleCount = 0;
             for (let id in this.users) {
-                if (this._table.contains(this.users[id].asElement())) {
+                if (this._container.contains(this.users[id].asElement())) {
                     visibleCount++;
                 }
             }
@@ -1403,7 +1409,7 @@ export class accountsList extends PaginatedList {
     private _collectUsers = (): string[] => {
         let list: string[] = [];
         for (let id in this.users) {
-            if (this._table.contains(this.users[id].asElement()) && this.users[id].selected) { list.push(id); }
+            if (this._container.contains(this.users[id].asElement()) && this.users[id].selected) { list.push(id); }
         }
         return list;
     }
@@ -2065,20 +2071,7 @@ export class accountsList extends PaginatedList {
         this._displayExpiryDate();
         window.modals.extendExpiry.show();
     }
-    
-
-    setVisibility = (users: string[], visible: boolean) => {
-        console.log(`setting ${users.length} users as visible: ${visible}`);
-        this._table.textContent = "";
-        for (let id of this._search.ordering) {
-            if (visible && users.indexOf(id) != -1) {
-                this._table.appendChild(this.users[id].asElement());
-            } else if (!visible && users.indexOf(id) == -1) {
-                this._table.appendChild(this.users[id].asElement());
-            }
-        }
-    }
-
+   
     private _populateAddUserProfiles = () => {
         this._addUserProfile.textContent = "";
         let innerHTML = `<option value="none">${window.lang.strings("inviteNoProfile")}</option>`;
