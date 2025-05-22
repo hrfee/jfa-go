@@ -54,8 +54,6 @@ export interface ServerSearchReqDTO extends PaginatedReqDTO {
     queries: QueryDTO[];
 }
 
-// FIXME: Generate ServerSearchReqDTO using Query.asDTO methods in serverSearch()!
-
 export interface QueryDTO {
     class: "bool" | "string" | "date";
     // QueryType.getter
@@ -647,7 +645,7 @@ export class Search {
 
     constructor(c: SearchConfiguration) {
         // FIXME: Remove!
-        if (c.search.id.includes("accounts")) {
+        if (c.search.id.includes("activity")) {
             (window as any).s = this;
         }
         this._c = c;

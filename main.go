@@ -528,7 +528,7 @@ func start(asDaemon, firstCall bool) {
 
 		// NOTE: The order in which these are placed in app.contactMethods matters.
 		// Add new ones to the end.
-		// FIXME: Add proxies.
+		// Proxies are added a little later through ContactMethodLinker[].SetTransport.
 		if discordEnabled {
 			app.discord, err = newDiscordDaemon(app)
 			if err != nil {
