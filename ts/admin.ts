@@ -192,7 +192,7 @@ login.onLogin = () => {
     window.updater = new Updater();
     // FIXME: Decide whether to autoload activity or not
     reloadProfileNames();
-    setInterval(() => { window.invites.reload(); accounts.reload(); }, 30*1000);
+    setInterval(() => { window.invites.reload(); accounts.reloadIfNotInScroll(); }, 30*1000);
     // Triggers pre and post funcs, even though we're already on that page
     window.tabs.switch(window.tabs.current);
 }

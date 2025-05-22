@@ -306,3 +306,20 @@ export function unicodeB64Encode(s: string): string {
     const bin = String.fromCodePoint(...encoded);
     return btoa(bin);
 }
+
+// Only allow running a function every n milliseconds.
+// Source: Clément Prévost at https://stackoverflow.com/questions/27078285/simple-throttle-in-javascript
+// function foo<T>(bar: T): T {
+export function throttle (callback: () => void, limitMilliseconds: number): () => void {
+    var waiting = false;                      // Initially, we're not waiting
+    return function () {                      // We return a throttled function
+        if (!waiting) {                       // If we're not waiting
+            callback.apply(this, arguments);  // Execute users function
+            waiting = true;                   // Prevent future invocations
+            setTimeout(function () {          // After a period of time
+                waiting = false;              // And allow future invocations
+            }, limitMilliseconds);
+        }
+    }
+}
+

@@ -269,7 +269,11 @@ export class DateQuery extends Query {
 
 export interface SearchableItem {
     matchesSearch: (query: string) => boolean;
+    // FIXME: SearchableItem should really be ListItem or something, this isn't for search!
+    asElement: () => HTMLElement;
 }
+
+export const SearchableItemDataAttribute = "data-search-item";
 
 export type SearchableItems = { [id: string]: SearchableItem };
 
@@ -293,6 +297,9 @@ export class Search {
             this._c.clearServerSearch();
         }
     }
+
+    // Intended to be set from the JS console, if true searches are timed.
+    timeSearches: boolean = false;
 
     private _serverSearchButtons: HTMLElement[];
 
@@ -398,6 +405,7 @@ export class Search {
 
     // Returns a list of identifiers (used as keys in items, values in ordering).
     search = (query: string): string[] => {
+        let timer = this.timeSearches ? performance.now() : null;
         this._c.filterArea.textContent = "";
         
         let result: string[] = [...this._ordering];
@@ -460,6 +468,10 @@ export class Search {
         this._queries = queries;
         this._searchTerms = searchTerms;
 
+        if (this.timeSearches) {
+            const totalTime = performance.now() - timer;
+            console.log(`Search took ${totalTime}ms`);
+        }
         return result;
     }
     
@@ -528,10 +540,8 @@ export class Search {
             this._c.notFoundLocallyText.classList.remove("unfocused");
         }
         if (visible) {
-            console.log("showing not found panel");
             this._c.notFoundPanel.classList.remove("unfocused");
         } else {
-            console.log("hiding not found panel");
             this._c.notFoundPanel.classList.add("unfocused");
         }
     }
@@ -644,10 +654,6 @@ export class Search {
     }
 
     constructor(c: SearchConfiguration) {
-        // FIXME: Remove!
-        if (c.search.id.includes("activity")) {
-            (window as any).s = this;
-        }
         this._c = c;
 
         this._c.search.oninput = () => {
