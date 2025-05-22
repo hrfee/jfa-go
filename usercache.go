@@ -10,12 +10,8 @@ import (
 )
 
 const (
-	// After cache is this old, re-sync, but do it in the background and return the old cache.
-	WEB_USER_CACHE_SYNC = 30 * time.Second
-	// After cache is this old, re-sync and wait for it and return the new cache.
-	WEB_USER_CACHE_WAIT_FOR_SYNC = 5 * time.Minute
-	USER_DEFAULT_SORT_FIELD      = "name"
-	USER_DEFAULT_SORT_ASCENDING  = true
+	USER_DEFAULT_SORT_FIELD     = "name"
+	USER_DEFAULT_SORT_ASCENDING = true
 )
 
 // UserCache caches the transport representation of users,
@@ -28,19 +24,30 @@ type UserCache struct {
 	Ref      []*respUser
 	Sorted   bool
 	LastSync time.Time
-	SyncLock sync.Mutex
-	Syncing  bool
-	SortLock sync.Mutex
-	Sorting  bool
+	// After cache is this old, re-sync, but do it in the background and return the old cache.
+	SyncTimeout time.Duration
+	// After cache is this old, re-sync and wait for it and return the new cache.
+	WaitForSyncTimeout time.Duration
+	SyncLock           sync.Mutex
+	Syncing            bool
+	SortLock           sync.Mutex
+	Sorting            bool
+}
+
+func NewUserCache(syncTimeout, waitForSyncTimeout time.Duration) *UserCache {
+	return &UserCache{
+		SyncTimeout:        syncTimeout,
+		WaitForSyncTimeout: waitForSyncTimeout,
+	}
 }
 
 // MaybeSync (maybe) syncs the cache, resulting in updated UserCache.Cache/.Ref/.Sorted.
-// Only syncs if WEB_USER_CACHE_SYNC duration has passed since last one.
-// If WEB_USER_CACHE_WAIT_FOR_SYNC duration has passed, this will block until a sync is complete, otherwise it will sync in the background
+// Only syncs if c.SyncTimeout duration has passed since last one.
+// If c.WaitForSyncTimeout duration has passed, this will block until a sync is complete, otherwise it will sync in the background
 // (expecting you to use the old cache data). Only one sync will run at a time.
 func (c *UserCache) MaybeSync(app *appContext) error {
-	shouldWaitForSync := time.Now().After(c.LastSync.Add(WEB_USER_CACHE_WAIT_FOR_SYNC)) || c.Ref == nil || len(c.Ref) == 0
-	shouldSync := time.Now().After(c.LastSync.Add(WEB_USER_CACHE_SYNC))
+	shouldWaitForSync := time.Now().After(c.LastSync.Add(c.WaitForSyncTimeout)) || c.Ref == nil || len(c.Ref) == 0
+	shouldSync := time.Now().After(c.LastSync.Add(c.SyncTimeout))
 
 	if !shouldSync {
 		return nil
