@@ -134,7 +134,7 @@ type appContext struct {
 	pwrCaptchas                 map[string]Captcha
 	ConfirmationKeys            map[string]map[string]ConfirmationKey // Map of invite code to jwt to request
 	confirmationKeysLock        sync.Mutex
-	userCache                   UserCache
+	userCache                   *UserCache
 }
 
 func generateSecret(length int) (string, error) {
@@ -406,7 +406,7 @@ func start(asDaemon, firstCall bool) {
 
 		// Initialize jellyfin/emby connection
 		server := app.config.Section("jellyfin").Key("server").String()
-		cacheTimeout := int(app.config.Section("jellyfin").Key("cache_timeout").MustUint(30))
+		cacheTimeout := app.config.Section("jellyfin").Key("cache_timeout").MustInt()
 		stringServerType := app.config.Section("jellyfin").Key("type").String()
 		timeoutHandler := mediabrowser.NewNamedTimeoutHandler("Jellyfin", "\""+server+"\"", true)
 		if stringServerType == "emby" {
@@ -468,6 +468,11 @@ func start(asDaemon, firstCall bool) {
 				app.authJf.Verbose = true
 			}
 		}
+
+		app.userCache = NewUserCache(
+			time.Minute*time.Duration(app.config.Section("jellyfin").Key("web_cache_async_timeout").MustInt()),
+			time.Minute*time.Duration(app.config.Section("jellyfin").Key("web_cache_sync_timeout").MustInt()),
+		)
 
 		// Since email depends on language, the email reload in loadConfig won't work first time.
 		// Email also handles its own proxying, as (SMTP atleast) doesn't use a HTTP transport.
