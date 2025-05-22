@@ -98,6 +98,9 @@ export abstract class PaginatedList {
     protected _container: HTMLElement;
     // List of visible IDs (i.e. those set with setVisibility).
     protected _visible: string[];
+    // Infinite-scroll related data.
+    // Implementation partially based on this blog post, thank you Miina Lervik:
+    // https://www.bekk.christmas/post/2021/02/how-to-lazy-render-large-data-tables-to-up-performance
     protected _scroll = {
         rowHeight: 0,
         screenHeight: 0,
