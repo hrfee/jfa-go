@@ -22,10 +22,10 @@ export class RecordCounter {
             <span class="records-shown"></span>
             <span class="records-selected"></span>
             `;
-        this._totalRecords = document.getElementsByClassName("records-total")[0] as HTMLElement;
-        this._loadedRecords = document.getElementsByClassName("records-loaded")[0] as HTMLElement;
-        this._shownRecords = document.getElementsByClassName("records-shown")[0] as HTMLElement;
-        this._selectedRecords = document.getElementsByClassName("records-selected")[0] as HTMLElement;
+        this._totalRecords = this._container.getElementsByClassName("records-total")[0] as HTMLElement;
+        this._loadedRecords = this._container.getElementsByClassName("records-loaded")[0] as HTMLElement;
+        this._shownRecords = this._container.getElementsByClassName("records-shown")[0] as HTMLElement;
+        this._selectedRecords = this._container.getElementsByClassName("records-selected")[0] as HTMLElement;
         this.total = 0;
         this.loaded = 0;
         this.shown = 0;
@@ -138,7 +138,7 @@ export abstract class PaginatedList {
         }
     }
 
-    protected _previousPageSize = 0;
+    protected _previousVisibleItemCount = 0;
 
     // Stores a PaginatedReqDTO-implementing thing.
     // A standard PaginatedReqDTO will be overridden entirely,
@@ -173,9 +173,7 @@ export abstract class PaginatedList {
 
     initSearch = (searchConfig: SearchConfiguration) => {
         const previousCallback = searchConfig.onSearchCallback;
-        searchConfig.onSearchCallback = (visibleCount: number, newItems: boolean, loadAll: boolean) => {
-            this._counter.shown = visibleCount;
-
+        searchConfig.onSearchCallback = (newItems: boolean, loadAll: boolean) => {
             // if (this._search.inSearch && !this.lastPage) this._c.loadAllButton.classList.remove("unfocused");
             // else this._c.loadAllButton.classList.add("unfocused");
           
@@ -186,17 +184,17 @@ export abstract class PaginatedList {
             }
 
             // FIXME: Figure out why this makes sense and make it clearer.
-            if ((visibleCount < this._c.itemsPerPage && this._counter.loaded < this._c.maxItemsLoadedForSearch && !this.lastPage) || loadAll) {
+            if ((this._visible.length < this._c.itemsPerPage && this._counter.loaded < this._c.maxItemsLoadedForSearch && !this.lastPage) || loadAll) {
                 if (!newItems ||
-                    this._previousPageSize != visibleCount ||
-                    (visibleCount == 0 && !this.lastPage) ||
+                    this._previousVisibleItemCount != this._visible.length ||
+                    (this._visible.length == 0 && !this.lastPage) ||
                     loadAll
                    ) {
                     this.loadMore(() => {}, loadAll);
                 }
             }
-            this._previousPageSize = visibleCount;
-            if (previousCallback) previousCallback(visibleCount, newItems, loadAll);
+            this._previousVisibleItemCount = this._visible.length;
+            if (previousCallback) previousCallback(newItems, loadAll);
         };
         const previousServerSearch = searchConfig.searchServer;
         searchConfig.searchServer = (params: PaginatedReqDTO, newSearch: boolean) => {
@@ -211,28 +209,28 @@ export abstract class PaginatedList {
             this._page = 0;
             this.reload();
         }
+        searchConfig.setVisibility = this.setVisibility;
         this._search = new Search(searchConfig);
         this._search.generateFilterList();
         this.lastPage = false;
     };
 
     // Sets the elements with "name"s in "elements" as visible or not.
-    setVisibilityNaive = (elements: string[], visible: boolean) => {
-        let timer = this._search.timeSearches ? performance.now() : null;
-        if (visible) this._visible = elements;
-        else this._visible = this._search.ordering.filter(v => !elements.includes(v));
-        const frag = document.createDocumentFragment()
-        for (let i = 0; i < this._visible.length; i++) {
-            frag.appendChild(this._search.items[this._visible[i]].asElement())
-        }
-        this._container.replaceChildren(frag);
-        if (this._search.timeSearches) {
-            const totalTime = performance.now() - timer;
-            console.log(`setVisibility took ${totalTime}ms`);
-        }
-    }
-   
-    // FIXME: On reload, load enough pages to fill required space.
+    // setVisibilityNaive = (elements: string[], visible: boolean) => {
+    //     let timer = this._search.timeSearches ? performance.now() : null;
+    //     if (visible) this._visible = elements;
+    //     else this._visible = this._search.ordering.filter(v => !elements.includes(v));
+    //     const frag = document.createDocumentFragment()
+    //     for (let i = 0; i < this._visible.length; i++) {
+    //         frag.appendChild(this._search.items[this._visible[i]].asElement())
+    //     }
+    //     this._container.replaceChildren(frag);
+    //     if (this._search.timeSearches) {
+    //         const totalTime = performance.now() - timer;
+    //         console.log(`setVisibility took ${totalTime}ms`);
+    //     }
+    // }
+
     // FIXME: Might have broken _counter.shown!
     // Sets the elements with "name"s in "elements" as visible or not.
     // appendedItems==true implies "elements" is the previously rendered elements plus some new ones on the end. Knowing this means the page's infinite scroll doesn't have to be reset.
@@ -240,7 +238,12 @@ export abstract class PaginatedList {
         let timer = this._search.timeSearches ? performance.now() : null;
         if (visible) this._visible = elements;
         else this._visible = this._search.ordering.filter(v => !elements.includes(v));
-        if (this._visible.length == 0) return;
+        console.log(elements.length, visible, this._visible.length);
+        this._counter.shown = this._visible.length;
+        if (this._visible.length == 0) {
+            this._container.textContent = ``;
+            return;
+        }
 
         if (!appendedItems) {
             // Wipe old elements and render 1 new one, so we can take the element height.
@@ -277,6 +280,8 @@ export abstract class PaginatedList {
 
     // Computes required scroll info, requiring one on-DOM item. Should be computed on page resize and this._visible change.
     _computeScrollInfo = () => {
+        if (this._visible.length == 0) return;
+
         this._scroll.screenHeight = Math.max(
             document.documentElement.clientHeight,
             window.innerHeight || 0
@@ -340,7 +345,7 @@ export abstract class PaginatedList {
             
             this._counter.loaded = this._search.ordering.length;
             
-            this._search.onSearchBoxChange(true);
+            this._search.onSearchBoxChange(true, false, false);
             if (this._search.inSearch) {
                 // this._c.loadAllButton.classList.remove("unfocused");
             } else {
@@ -400,7 +405,7 @@ export abstract class PaginatedList {
                 if (this.lastPage) {
                     loadAll = false;
                 }
-                this._search.onSearchBoxChange(true, loadAll);
+                this._search.onSearchBoxChange(true, true, loadAll);
             } else {
                 // Since results come to us ordered already, we can assume "ordering"
                 // will be identical to pre-page-load but with extra elements at the end,
@@ -423,15 +428,14 @@ export abstract class PaginatedList {
 
     // As reloading can disrupt long-scrolling, this function will only do it if you're at the top of the page, essentially.
     public reloadIfNotInScroll = () => {
-        if (this.maximumItemsToRender(window.scrollY) < this._scroll.initialRenderCount) {
+        if (this._visible.length == 0 || this.maximumItemsToRender(window.scrollY) < this._scroll.initialRenderCount) {
             return this.reload();
         }
     }
 
 
     _detectScroll = () => {
-        if (!this._hasLoaded || this._scroll.scrollLoading) return;
-        if (this._visible.length == 0) return;
+        if (!this._hasLoaded || this._scroll.scrollLoading || this._visible.length == 0) return;
         const scrollY = window.scrollY;
         const scrollSpeed = scrollY - this._scroll.lastScrollY;
         this._scroll.lastScrollY = scrollY;
@@ -460,6 +464,7 @@ export abstract class PaginatedList {
             this._scroll.scrollLoading = true;
             const cb = () => {
                 if (this._visible.length < endIdx && !this.lastPage) {
+                    // FIXME: This causes scroll-to-top when in search.
                     this.loadMore(cb, false)
                     return;
                 }
@@ -472,17 +477,11 @@ export abstract class PaginatedList {
         }
     }
 
-    // Should be assigned to window.onscroll whenever the list is in view.
     detectScroll = throttle(this._detectScroll, 200);
 
     computeScrollInfo = throttle(this._computeScrollInfo, 200);
 
-    // Should be called in window resize
-    redrawScroll = throttle(() => {
-        // FIXME: Make sure this is enough when rows resize, and that we don't need to re-setVisibility.
-        this._computeScrollInfo();
-        // this.setVisibility(this._visible, true, false);
-    }, 200);
+    redrawScroll = this.computeScrollInfo;
 
     // bindPageEvents binds window event handlers for when this list/tab containing it is visible.
     bindPageEvents = () => {

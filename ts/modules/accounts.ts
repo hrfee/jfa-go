@@ -977,7 +977,7 @@ export class accountsList extends PaginatedList {
         this._populateNumbers();
         
         // FIXME: Remove!
-        (window as any).s = this;
+        (window as any).acc = this;
 
         let searchConfig: SearchConfiguration = {
             filterArea: this._c.filterArea,
@@ -988,10 +988,10 @@ export class accountsList extends PaginatedList {
             filterList: document.getElementById("accounts-filter-list"),
             search: this._c.searchBox,
             queries: queries(),
-            setVisibility: this.setVisibility,
+            setVisibility: null,
             clearSearchButtonSelector: ".accounts-search-clear",
             serverSearchButtonSelector: ".accounts-search-server",
-            onSearchCallback: (_0: number, _1: boolean, _2: boolean) => {
+            onSearchCallback: (_0: boolean, _1: boolean) => {
                 this._checkCheckCount();
             },
             searchServer: null,
