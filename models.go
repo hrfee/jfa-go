@@ -175,10 +175,6 @@ type PaginatedReqDTO struct {
 	Ascending   bool   `json:"ascending"`
 }
 
-type getUsersReqDTO struct {
-	ServerSearchReqDTO
-}
-
 type getUsersDTO struct {
 	UserList []*respUser `json:"users"`
 	LastPage bool        `json:"last_page"`
@@ -443,12 +439,6 @@ type ActivityDTO struct {
 	Value          string `json:"value"`
 	Time           int64  `json:"time"`
 	IP             string `json:"ip"`
-}
-
-type GetActivitiesDTO struct {
-	// "SortByField" ignores, it's always time.
-	PaginatedReqDTO
-	Type []string `json:"type"` // Types of activity to get. Leave blank for all.
 }
 
 type GetActivitiesRespDTO struct {
