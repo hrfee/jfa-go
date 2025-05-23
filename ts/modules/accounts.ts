@@ -925,7 +925,7 @@ export class accountsList extends PaginatedList {
             getPageEndpoint: "/users",
             itemsPerPage: 40,
             maxItemsLoadedForSearch: 200,
-            newElementsFromPage: (resp: paginatedDTO) => {
+            appendNewItems: (resp: paginatedDTO) => {
                 for (let u of ((resp as UsersDTO).users || [])) {
                     if (u.id in this.users) {
                         this.users[u.id].update(u);
@@ -940,7 +940,7 @@ export class accountsList extends PaginatedList {
                     this._search.ascending
                 );
             },
-            updateExistingElementsFromPage: (resp: paginatedDTO) => {
+            replaceWithNewItems: (resp: paginatedDTO) => {
                 let accountsOnDOM: { [id: string]: boolean } = {};
 
                 for (let id of Object.keys(this.users)) { accountsOnDOM[id] = true; }
