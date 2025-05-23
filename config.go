@@ -188,6 +188,10 @@ func (app *appContext) loadConfig() error {
 	app.config.Section("jellyfin").Key("device").SetValue("jfa-go")
 	app.config.Section("jellyfin").Key("device_id").SetValue(fmt.Sprintf("jfa-go-%s-%s", version, commit))
 
+	app.MustSetValue("jellyfin", "cache_timeout", "30")
+	app.MustSetValue("jellyfin", "web_cache_async_timeout", "1")
+	app.MustSetValue("jellyfin", "web_cache_sync_timeout", "10")
+
 	LOGIP = app.config.Section("advanced").Key("log_ips").MustBool(false)
 	LOGIPU = app.config.Section("advanced").Key("log_ips_users").MustBool(false)
 

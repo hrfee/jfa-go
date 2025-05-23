@@ -59,7 +59,7 @@ func logOutput() (closeFunc func(), err error) {
 
 // Regex that removes ANSI color escape sequences. Used for outputting to log file and log cache.
 var stripColors = func() *regexp.Regexp {
-	r, err := regexp.Compile("\\x1b\\[[0-9;]*m")
+	r, err := regexp.Compile(`\x1b\[[0-9;]*m`)
 	if err != nil {
 		log.Fatalf("Failed to compile color escape regexp: %v", err)
 	}

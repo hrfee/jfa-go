@@ -65,6 +65,20 @@ sections:
     type: number
     value: 30
     description: Timeout of user cache in minutes. Set to 0 to disable.
+  - setting: web_cache_async_timeout
+    name: User search cache asynchronous timeout (minutes)
+    requires_restart: true
+    advanced: true
+    type: number
+    value: 1
+    description: "Synchronise after cache is this old, but don't wait for it: The accounts tab will load quickly but show old results until the next request."
+  - setting: web_cache_sync_timeout
+    name: User search cache synchronous timeout (minutes)
+    requires_restart: true
+    advanced: true
+    type: number
+    value: 10
+    description: "Synchronise after cache is this old, and wait for it: The accounts tab may take a little longer to load while it does."
   - setting: type
     name: Server type
     requires_restart: true

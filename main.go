@@ -134,6 +134,7 @@ type appContext struct {
 	pwrCaptchas                 map[string]Captcha
 	ConfirmationKeys            map[string]map[string]ConfirmationKey // Map of invite code to jwt to request
 	confirmationKeysLock        sync.Mutex
+	userCache                   *UserCache
 }
 
 func generateSecret(length int) (string, error) {
@@ -405,7 +406,7 @@ func start(asDaemon, firstCall bool) {
 
 		// Initialize jellyfin/emby connection
 		server := app.config.Section("jellyfin").Key("server").String()
-		cacheTimeout := int(app.config.Section("jellyfin").Key("cache_timeout").MustUint(30))
+		cacheTimeout := app.config.Section("jellyfin").Key("cache_timeout").MustInt()
 		stringServerType := app.config.Section("jellyfin").Key("type").String()
 		timeoutHandler := mediabrowser.NewNamedTimeoutHandler("Jellyfin", "\""+server+"\"", true)
 		if stringServerType == "emby" {
@@ -468,6 +469,11 @@ func start(asDaemon, firstCall bool) {
 			}
 		}
 
+		app.userCache = NewUserCache(
+			time.Minute*time.Duration(app.config.Section("jellyfin").Key("web_cache_async_timeout").MustInt()),
+			time.Minute*time.Duration(app.config.Section("jellyfin").Key("web_cache_sync_timeout").MustInt()),
+		)
+
 		// Since email depends on language, the email reload in loadConfig won't work first time.
 		// Email also handles its own proxying, as (SMTP atleast) doesn't use a HTTP transport.
 		app.email = NewEmailer(app)
@@ -527,7 +533,7 @@ func start(asDaemon, firstCall bool) {
 
 		// NOTE: The order in which these are placed in app.contactMethods matters.
 		// Add new ones to the end.
-		// FIXME: Add proxies.
+		// Proxies are added a little later through ContactMethodLinker[].SetTransport.
 		if discordEnabled {
 			app.discord, err = newDiscordDaemon(app)
 			if err != nil {

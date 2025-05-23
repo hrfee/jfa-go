@@ -118,8 +118,7 @@ const (
 	SetAdminNotify = "Set \"%s\" to %t for admin address \"%s\""
 
 	// *jellyseerr*.go
-	FailedGetUsers = "Failed to get user(s) from %s: %v"
-	// FIXME: Once done, look back at uses of FailedGetUsers for places where this would make more sense.
+	FailedGetUsers                       = "Failed to get user(s) from %s: %v"
 	FailedGetUser                        = "Failed to get user \"%s\" from %s: %v"
 	FailedGetJellyseerrNotificationPrefs = "Failed to get user \"%s\"'s notification prefs from " + Jellyseerr + ": %v"
 	FailedSyncContactMethods             = "Failed to sync contact methods with %s: %v"

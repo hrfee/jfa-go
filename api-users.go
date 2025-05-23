@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"slices"
 	"strings"
 	"time"
 
@@ -337,8 +338,8 @@ func (app *appContext) PostNewUserFromInvite(nu NewUserData, req ConfirmationKey
 		// FIXME: figure these out in a nicer way? this relies on the current ordering,
 		// which may not be fixed.
 		if discordEnabled {
-		    if req.completeContactMethods[0].User != nil {
-			    discordUser = req.completeContactMethods[0].User.(*DiscordUser)
+			if req.completeContactMethods[0].User != nil {
+				discordUser = req.completeContactMethods[0].User.(*DiscordUser)
 			}
 			if telegramEnabled && req.completeContactMethods[1].User != nil {
 				telegramUser = req.completeContactMethods[1].User.(*TelegramUser)
@@ -894,7 +895,25 @@ func (app *appContext) userSummary(jfUser mediabrowser.User) respUser {
 
 }
 
-// @Summary Get a list of Jellyfin users.
+// @Summary Returns the total number of Jellyfin users.
+// @Produce json
+// @Success 200 {object} PageCountDTO
+// @Router /users/count [get]
+// @Security Bearer
+// @tags Activity
+func (app *appContext) GetUserCount(gc *gin.Context) {
+	resp := PageCountDTO{}
+	userList, err := app.userCache.GetUserDTOs(app, false)
+	if err != nil {
+		app.err.Printf(lm.FailedGetUsers, lm.Jellyfin, err)
+		respond(500, "Couldn't get users", gc)
+		return
+	}
+	resp.Count = uint64(len(userList))
+	gc.JSON(200, resp)
+}
+
+// @Summary Get a list of -all- Jellyfin users.
 // @Produce json
 // @Success 200 {object} getUsersDTO
 // @Failure 500 {object} stringResponse
@@ -903,19 +922,61 @@ func (app *appContext) userSummary(jfUser mediabrowser.User) respUser {
 // @tags Users
 func (app *appContext) GetUsers(gc *gin.Context) {
 	var resp getUsersDTO
-	users, err := app.jf.GetUsers(false)
-	resp.UserList = make([]respUser, len(users))
+	// We're sending all users, so this is always true
+	resp.LastPage = true
+	var err error
+	resp.UserList, err = app.userCache.GetUserDTOs(app, true)
 	if err != nil {
 		app.err.Printf(lm.FailedGetUsers, lm.Jellyfin, err)
 		respond(500, "Couldn't get users", gc)
 		return
 	}
-	i := 0
-	for _, jfUser := range users {
-		user := app.userSummary(jfUser)
-		resp.UserList[i] = user
-		i++
+	gc.JSON(200, resp)
+}
+
+// @Summary Get a paginated, searchable list of Jellyfin users.
+// @Produce json
+// @Param ServerSearchReqDTO body ServerSearchReqDTO true "search / pagination parameters"
+// @Success 200 {object} getUsersDTO
+// @Failure 500 {object} stringResponse
+// @Router /users [post]
+// @Security Bearer
+// @tags Users
+func (app *appContext) SearchUsers(gc *gin.Context) {
+	req := ServerSearchReqDTO{}
+	gc.BindJSON(&req)
+	if req.SortByField == "" {
+		req.SortByField = USER_DEFAULT_SORT_FIELD
 	}
+
+	var resp getUsersDTO
+	userList, err := app.userCache.GetUserDTOs(app, req.SortByField == USER_DEFAULT_SORT_FIELD)
+	if err != nil {
+		app.err.Printf(lm.FailedGetUsers, lm.Jellyfin, err)
+		respond(500, "Couldn't get users", gc)
+		return
+	}
+	var filtered []*respUser
+	if len(req.SearchTerms) != 0 || len(req.Queries) != 0 {
+		filtered = app.userCache.Filter(userList, req.SearchTerms, req.Queries)
+	} else {
+		filtered = slices.Clone(userList)
+	}
+
+	if req.SortByField == USER_DEFAULT_SORT_FIELD {
+		if req.Ascending != USER_DEFAULT_SORT_ASCENDING {
+			slices.Reverse(filtered)
+		}
+	} else {
+		app.userCache.Sort(filtered, req.SortByField, req.Ascending)
+	}
+
+	startIndex := (req.Page * req.Limit)
+	if startIndex < len(filtered) {
+		endIndex := min(startIndex+req.Limit, len(filtered))
+		resp.UserList = filtered[startIndex:endIndex]
+	}
+	resp.LastPage = len(resp.UserList) != req.Limit
 	gc.JSON(200, resp)
 }
 
