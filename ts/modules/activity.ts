@@ -503,7 +503,7 @@ export class activityList extends PaginatedList {
             getPageEndpoint: "/activity",
             itemsPerPage: 20,
             maxItemsLoadedForSearch: 200,
-            newElementsFromPage: (resp: paginatedDTO) => {
+            appendNewItems: (resp: paginatedDTO) => {
                 let ordering: string[] = this._search.ordering;
                 for (let act of ((resp as ActivitiesDTO).activities || [])) {
                     this.activities[act.id] = new Activity(act);
@@ -511,12 +511,16 @@ export class activityList extends PaginatedList {
                 }
                 this._search.setOrdering(ordering, this._c.defaultSortField, this.ascending);
             },
-            updateExistingElementsFromPage: (resp: paginatedDTO) => {
+            replaceWithNewItems: (resp: paginatedDTO) => {
                 // FIXME: Implement updates to existing elements, rather than just wiping each time.
+                
+                // Remove existing items
                 for (let id of Object.keys(this.activities)) {
                     delete this.activities[id];
                 }
-                this._c.newElementsFromPage(resp);
+                // And wipe their ordering
+                this._search.setOrdering([], this._c.defaultSortField, this.ascending);
+                this._c.appendNewItems(resp);
             },
             defaultSortField: ACTIVITY_DEFAULT_SORT_FIELD,
             defaultSortAscending: ACTIVITY_DEFAULT_SORT_ASCENDING,

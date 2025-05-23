@@ -85,8 +85,8 @@ export interface PaginatedListConfig {
     getPageEndpoint: string;
     itemsPerPage: number;
     maxItemsLoadedForSearch: number;
-    newElementsFromPage: (resp: paginatedDTO) => void;
-    updateExistingElementsFromPage: (resp: paginatedDTO) => void;
+    appendNewItems: (resp: paginatedDTO) => void;
+    replaceWithNewItems: (resp: paginatedDTO) => void;
     defaultSortField: string;
     defaultSortAscending: boolean;
     pageLoadCallback?: (req: XMLHttpRequest) => void;
@@ -238,7 +238,7 @@ export abstract class PaginatedList {
         let timer = this._search.timeSearches ? performance.now() : null;
         if (visible) this._visible = elements;
         else this._visible = this._search.ordering.filter(v => !elements.includes(v));
-        console.log(elements.length, visible, this._visible.length);
+        // console.log(elements.length, visible, this._visible.length);
         this._counter.shown = this._visible.length;
         if (this._visible.length == 0) {
             this._container.textContent = ``;
@@ -341,7 +341,7 @@ export abstract class PaginatedList {
             
             this.lastPage = resp.last_page;
             
-            this._c.updateExistingElementsFromPage(resp);
+            this._c.replaceWithNewItems(resp);
             
             this._counter.loaded = this._search.ordering.length;
             
@@ -397,7 +397,7 @@ export abstract class PaginatedList {
 
             this.lastPage = resp.last_page;
 
-            this._c.newElementsFromPage(resp);
+            this._c.appendNewItems(resp);
            
             this._counter.loaded = this._search.ordering.length;
             
