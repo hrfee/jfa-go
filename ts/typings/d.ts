@@ -91,7 +91,7 @@ declare interface NotificationBox {
 
 declare interface Tabs {
     current: string;
-    addTab: (tabID: string, url: string, preFunc?: () => void, postFunc?: () => void) => void;
+    addTab: (tabID: string, url: string, preFunc?: () => void, postFunc?: () => void, unloadFunc?: () => void) => void;
     switch: (tabID: string, noRun?: boolean, keepURL?: boolean) => void;
 }
 
