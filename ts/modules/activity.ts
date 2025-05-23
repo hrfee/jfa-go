@@ -74,9 +74,9 @@ const queries = (): { [field: string]: QueryType } => { return {
         string: true,
         date: false
     },
-    "date": {
+    "time": {
         name: window.lang.strings("date"),
-        getter: "date",
+        getter: "time",
         bool: false,
         string: false,
         date: true

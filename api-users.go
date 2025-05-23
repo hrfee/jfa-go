@@ -936,14 +936,14 @@ func (app *appContext) GetUsers(gc *gin.Context) {
 
 // @Summary Get a paginated, searchable list of Jellyfin users.
 // @Produce json
-// @Param getUsersReqDTO body getUsersReqDTO true "search / pagination parameters"
+// @Param ServerSearchReqDTO body ServerSearchReqDTO true "search / pagination parameters"
 // @Success 200 {object} getUsersDTO
 // @Failure 500 {object} stringResponse
 // @Router /users [post]
 // @Security Bearer
 // @tags Users
 func (app *appContext) SearchUsers(gc *gin.Context) {
-	req := getUsersReqDTO{}
+	req := ServerSearchReqDTO{}
 	gc.BindJSON(&req)
 	if req.SortByField == "" {
 		req.SortByField = USER_DEFAULT_SORT_FIELD
