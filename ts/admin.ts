@@ -127,7 +127,7 @@ let isInviteURL = window.invites.isInviteURL();
 let isAccountURL = accounts.isAccountURL();
 
 // load tabs
-const tabs: { id: string, url: string, reloader: () => void }[] = [
+const tabs: { id: string, url: string, reloader: () => void, unloader?: () => void }[] = [
     {
         id: "invites",
         url: "",
@@ -148,16 +148,19 @@ const tabs: { id: string, url: string, reloader: () => void }[] = [
                 // Don't keep loading the same item on every tab refresh
                 isAccountURL = false;
             }
-            window.onscroll = accounts.detectScroll;
+            accounts.bindPageEvents();
         }),
+        unloader: accounts.unbindPageEvents
+        
     },
     {
         id: "activity",
         url: "activity",
         reloader: () => {
             activity.reload()
-            window.onscroll = activity.detectScroll;
+            activity.bindPageEvents();
         },
+        unloader: activity.unbindPageEvents
     },
     {
         id: "settings",
@@ -171,7 +174,7 @@ const defaultTab = tabs[0];
 window.tabs = new Tabs();
 
 for (let tab of tabs) {
-    window.tabs.addTab(tab.id, window.pages.Admin + "/" + tab.url, null, tab.reloader);
+    window.tabs.addTab(tab.id, window.pages.Admin + "/" + tab.url, null, tab.reloader, tab.unloader || null);
 }
 
 let matchedTab = false

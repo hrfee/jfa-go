@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/hrfee/jfa-go#readme",
   "dependencies": {
+    "@af-utils/scrollend-polyfill": "^0.0.14",
     "@ts-stack/markdown": "^1.4.0",
     "@types/node": "^20.3.0",
     "a17t": "^0.10.1",

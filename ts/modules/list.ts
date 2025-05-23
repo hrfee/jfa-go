@@ -1,5 +1,6 @@
 import { _get, _post, addLoader, removeLoader, throttle } from "./common";
 import { Search, SearchConfiguration } from "./search";
+import "@af-utils/scrollend-polyfill";
 
 declare var window: GlobalWindow;
 
@@ -106,10 +107,11 @@ export abstract class PaginatedList {
         screenHeight: 0,
         // Render this many screen's worth of content below the viewport.
         renderNExtraScreensWorth: 3,
-        rowsOnPage: 0,
         rendered: 0,
         initialRenderCount: 0,
-        scrollLoading: false
+        scrollLoading: false,
+        // Used to calculate scroll speed, so more pages are loaded when scrolling fast.
+        lastScrollY: 0,
     };
 
     protected _search: Search;
@@ -230,7 +232,6 @@ export abstract class PaginatedList {
         }
     }
    
-    // FIXME: Call on window resize/zoom
     // FIXME: On reload, load enough pages to fill required space.
     // FIXME: Might have broken _counter.shown!
     // Sets the elements with "name"s in "elements" as visible or not.
@@ -241,17 +242,20 @@ export abstract class PaginatedList {
         else this._visible = this._search.ordering.filter(v => !elements.includes(v));
         if (this._visible.length == 0) return;
 
-        this._scroll.screenHeight = Math.max(
-            document.documentElement.clientHeight,
-            window.innerHeight || 0
-        );
-
         if (!appendedItems) {
             // Wipe old elements and render 1 new one, so we can take the element height.
             this._container.replaceChildren(this._search.items[this._visible[0]].asElement())
         }
 
-        this.computeScrollInfo();
+        this._computeScrollInfo();
+
+        // Initial render of min(_visible.length, max(rowsOnPage*renderNExtraScreensWorth, itemsPerPage)), skipping 1 as we already did it.
+        this._scroll.initialRenderCount = Math.floor(Math.min(
+            this._visible.length,
+            Math.max(
+                ((this._scroll.renderNExtraScreensWorth+1)*this._scroll.screenHeight)/this._scroll.rowHeight,
+                this._c.itemsPerPage)
+        ));
 
         let baseIndex = 1;
         if (appendedItems) {
@@ -272,21 +276,20 @@ export abstract class PaginatedList {
     }
 
     // Computes required scroll info, requiring one on-DOM item. Should be computed on page resize and this._visible change.
-    computeScrollInfo = () => {
+    _computeScrollInfo = () => {
+        this._scroll.screenHeight = Math.max(
+            document.documentElement.clientHeight,
+            window.innerHeight || 0
+        );
+
         this._scroll.rowHeight = this._search.items[this._visible[0]].asElement().offsetHeight;
-
-        // We want to have _scroll.renderNScreensWorth*_scroll.screenHeight or more elements rendered always.
-        this._scroll.rowsOnPage = Math.floor(this._scroll.screenHeight / this._scroll.rowHeight);
-
-        // Initial render of min(_visible.length, max(rowsOnPage*renderNExtraScreensWorth, itemsPerPage)), skipping 1 as we already did it.
-        this._scroll.initialRenderCount = Math.min(this._visible.length, Math.max((this._scroll.renderNExtraScreensWorth+1)*this._scroll.rowsOnPage, this._c.itemsPerPage));
     }
 
     // returns the item index to render up to for the given scroll position.
     // might return a value greater than this._visible.length, indicating a need for a page load.
     maximumItemsToRender = (scrollY: number): number => {
         const bottomScroll = scrollY + ((this._scroll.renderNExtraScreensWorth+1)*this._scroll.screenHeight);
-        const bottomIdx = Math.floor(bottomScroll / this._scroll.rowsOnPage);
+        const bottomIdx = Math.floor(bottomScroll / this._scroll.rowHeight);
         return bottomIdx;
     }
 
@@ -425,12 +428,24 @@ export abstract class PaginatedList {
         }
     }
 
+
     _detectScroll = () => {
         if (!this._hasLoaded || this._scroll.scrollLoading) return;
         if (this._visible.length == 0) return;
-        const endIdx = this.maximumItemsToRender(window.scrollY);
+        const scrollY = window.scrollY;
+        const scrollSpeed = scrollY - this._scroll.lastScrollY;
+        this._scroll.lastScrollY = scrollY;
         // If you've scrolled back up, do nothing
-        if (endIdx <= this._scroll.rendered) return;
+        if (scrollSpeed < 0) return;
+        let endIdx = this.maximumItemsToRender(scrollY);
+     
+        // Throttling this function means we might not catch up in time if the user scrolls fast,
+        // so we calculate the scroll speed (in rows/call) from the previous scrollY value.
+        // This still might not be enough, so hackily we'll just scale it up.
+        // With onscrollend, this is less necessary, but with both I wasn't able to hit the bottom of the page on my mouse.
+        const rowsPerScroll = Math.round((scrollSpeed / this._scroll.rowHeight));
+        // Render extra pages depending on scroll speed
+        endIdx += rowsPerScroll*2;
         
         const realEndIdx = Math.min(endIdx, this._visible.length);
         const frag = document.createDocumentFragment();
@@ -439,7 +454,7 @@ export abstract class PaginatedList {
         }
         this._scroll.rendered = realEndIdx;
         this._container.appendChild(frag);
-        
+
         if (endIdx >= this._visible.length) {
             if (this.lastPage || this._lastLoad + 500 > Date.now()) return;
             this._scroll.scrollLoading = true;
@@ -448,6 +463,7 @@ export abstract class PaginatedList {
                     this.loadMore(cb, false)
                     return;
                 }
+
                 this._scroll.scrollLoading = false;
                 this._detectScroll();
             };
@@ -458,6 +474,29 @@ export abstract class PaginatedList {
 
     // Should be assigned to window.onscroll whenever the list is in view.
     detectScroll = throttle(this._detectScroll, 200);
+
+    computeScrollInfo = throttle(this._computeScrollInfo, 200);
+
+    // Should be called in window resize
+    redrawScroll = throttle(() => {
+        // FIXME: Make sure this is enough when rows resize, and that we don't need to re-setVisibility.
+        this._computeScrollInfo();
+        // this.setVisibility(this._visible, true, false);
+    }, 200);
+
+    // bindPageEvents binds window event handlers for when this list/tab containing it is visible.
+    bindPageEvents = () => {
+        window.addEventListener("scroll", this.detectScroll);
+        // Not available on safari, we include a polyfill though.
+        window.addEventListener("scrollend", this.detectScroll);
+        window.addEventListener("resize", this.redrawScroll);
+    };
+
+    unbindPageEvents = () => {
+        window.removeEventListener("scroll", this.detectScroll);
+        window.removeEventListener("scrollend", this.detectScroll);
+        window.removeEventListener("resize", this.redrawScroll);
+    }
 }
 
 
