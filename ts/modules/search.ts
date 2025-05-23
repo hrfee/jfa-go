@@ -42,8 +42,8 @@ export interface SearchConfiguration {
     serverSearchButtonSelector: string;
     search: HTMLInputElement;
     queries: { [field: string]: QueryType };
-    setVisibility: (items: string[], visible: boolean) => void;
-    onSearchCallback: (visibleCount: number, newItems: boolean, loadAll: boolean) => void;
+    setVisibility: (items: string[], visible: boolean, appendedItems: boolean) => void;
+    onSearchCallback: (newItems: boolean, loadAll: boolean) => void;
     searchServer: (params: PaginatedReqDTO, newSearch: boolean) => void;
     clearServerSearch: () => void;
     loadMore?: () => void;
@@ -505,7 +505,7 @@ export class Search {
     get sortField(): string { return this._sortField; }
     get ascending(): boolean { return this._ascending; }
 
-    onSearchBoxChange = (newItems: boolean = false, loadAll: boolean = false) => {
+    onSearchBoxChange = (newItems: boolean = false, appendedItems: boolean = false, loadAll: boolean = false) => {
         const query = this._c.search.value;
         if (!query) {
             this.inSearch = false;
@@ -513,8 +513,8 @@ export class Search {
             this.inSearch = true;
         }
         const results = this.search(query);
-        this._c.setVisibility(results, true);
-        this._c.onSearchCallback(results.length, newItems, loadAll);
+        this._c.setVisibility(results, true, appendedItems);
+        this._c.onSearchCallback(newItems, loadAll);
         if (this.inSearch) {
             if (this.inServerSearch) {
                 this._serverSearchButtons.forEach((v: HTMLElement) => {

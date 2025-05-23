@@ -509,13 +509,13 @@ export class activityList extends PaginatedList {
                     this.activities[act.id] = new Activity(act);
                     ordering.push(act.id);
                 }
+                this._search.setOrdering(ordering, this._c.defaultSortField, this.ascending);
             },
             updateExistingElementsFromPage: (resp: paginatedDTO) => {
-                // FIXME: Implement updates to existing elements!
+                // FIXME: Implement updates to existing elements, rather than just wiping each time.
                 for (let id of Object.keys(this.activities)) {
                     delete this.activities[id];
                 }
-                this._search.setOrdering([], this._c.defaultSortField, this.ascending);
                 this._c.newElementsFromPage(resp);
             },
             defaultSortField: ACTIVITY_DEFAULT_SORT_FIELD,
@@ -528,6 +528,9 @@ export class activityList extends PaginatedList {
                 }
             }
         });
+        
+        // FIXME: Remove!
+        (window as any).act = this;
 
         this._container = document.getElementById("activity-card-list")
         document.addEventListener("activity-reload", this.reload);
@@ -543,7 +546,7 @@ export class activityList extends PaginatedList {
             clearSearchButtonSelector: ".activity-search-clear",
             serverSearchButtonSelector: ".activity-search-server",
             queries: queries(),
-            setVisibility: this.setVisibility,
+            setVisibility: null,
             filterList: document.getElementById("activity-filter-list"),
             // notFoundCallback: this._notFoundCallback,
             onSearchCallback: null,
