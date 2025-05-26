@@ -470,3 +470,19 @@ section.section:not(.\~neutral) {
     }
 }
 
+:root {
+    /* seems to be the sweet spot */
+    --inside-input-base: -2.6rem;
+
+    /* thought --spacing would do the trick but apparently not */
+    --tailwind-spacing: 0.25rem;
+}
+
+/* places buttons inside a sibling input element (hopefully), based on the flex gap of the parent. */
+.gap-1 > .button.inside-input {
+    margin-left: calc(var(--inside-input-base) - 1.0*var(--tailwind-spacing));
+}
+
+.gap-2 > .button.inside-input {
+    margin-left: calc(var(--inside-input-base) - 2.0*var(--tailwind-spacing));
+}

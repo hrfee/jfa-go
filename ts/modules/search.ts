@@ -67,6 +67,7 @@ export abstract class Query {
     protected _subject: QueryType;
     protected _operator: QueryOperator;
     protected _card: HTMLElement;
+    public type: string;
 
     constructor(subject: QueryType | null, operator: QueryOperator) {
         this._subject = subject;
@@ -110,8 +111,9 @@ export class BoolQuery extends Query {
     protected _value: boolean;
     constructor(subject: QueryType, value: boolean) {
         super(subject, QueryOperator.Equal);
+        this.type = "bool";
         this._value = value;
-        this._card.classList.add("button", "~" + (this._value ? "positive" : "critical"), "@high", "center", "mx-2", "h-full");
+        this._card.classList.add("button", "~" + (this._value ? "positive" : "critical"), "@high", "center");
         this._card.innerHTML = `
         <span class="font-bold mr-2">${subject.name}</span>
         <i class="text-2xl ri-${this._value? "checkbox" : "close"}-circle-fill"></i>
@@ -151,8 +153,9 @@ export class StringQuery extends Query {
     protected _value: string;
     constructor(subject: QueryType, value: string) {
         super(subject, QueryOperator.Equal);
+        this.type = "string";
         this._value = value.toLowerCase();
-        this._card.classList.add("button", "~neutral", "@low", "center", "mx-2", "h-full");
+        this._card.classList.add("button", "~neutral", "@low", "center");
         this._card.innerHTML = `
         <span class="font-bold mr-2">${subject.name}:</span> "${this._value}"
         `;
@@ -211,8 +214,9 @@ export class DateQuery extends Query {
 
     constructor(subject: QueryType, operator: QueryOperator, value: ParsedDate) {
         super(subject, operator);
+        this.type = "date";
         this._value = value;
-        this._card.classList.add("button", "~neutral", "@low", "center", "m-2", "h-full");
+        this._card.classList.add("button", "~neutral", "@low", "center");
         let dateText = QueryOperatorToDateText(operator);
         this._card.innerHTML = `
         <span class="font-bold mr-2">${subject.name}:</span> ${dateText != "" ? dateText+" " : ""}${value.text}
@@ -450,7 +454,7 @@ export class Search {
             if (this.inServerSearch && !(q.localOnly)) continue;
 
             let cachedResult = [...result];
-            if (q.subject.bool) {
+            if (q.type == "bool") {
                 for (let id of cachedResult) {
                     const u = this.items[id];
                     // Remove from result if not matching query
@@ -459,7 +463,7 @@ export class Search {
                         result.splice(result.indexOf(id), 1);
                     }
                 }
-            } else if (q.subject.string) {
+            } else if (q.type == "string") {
                 for (let id of cachedResult) {
                     const u = this.items[id];
                     // We want to compare case-insensitively, so we get value, lower-case it then compare,
@@ -469,7 +473,7 @@ export class Search {
                         result.splice(result.indexOf(id), 1);
                     }
                 }
-            } else if(q.subject.date) {
+            } else if (q.type == "date") {
                 for (let id of cachedResult) {
                     const u = this.items[id];
                     // Getter here returns a unix timestamp rather than a date, so we can't use compareItem.
@@ -503,7 +507,7 @@ export class Search {
 
         if (this.timeSearches) {
             const totalTime = performance.now() - timer;
-            console.log(`Search took ${totalTime}ms`);
+            console.debug(`Search took ${totalTime}ms`);
         }
         return result;
     }
@@ -515,7 +519,7 @@ export class Search {
     
     showHideSearchOptionsHeader = () => {
         let sortingBy = false;
-        if (this._c.sortingByButton) sortingBy = !(this._c.sortingByButton.parentElement.classList.contains("hidden"));
+        if (this._c.sortingByButton) sortingBy = !(this._c.sortingByButton.classList.contains("hidden"));
         const hasFilters = this._c.filterArea.textContent != "";
         if (sortingBy || hasFilters) {
             this._c.searchOptionsHeader.classList.remove("hidden");
@@ -672,8 +676,13 @@ export class Search {
     onServerSearch = () => {
         const newServerSearch = !this.inServerSearch;
         this.inServerSearch = true;
+        this.searchServer(newServerSearch);
+    }
+
+    searchServer = (newServerSearch: boolean) => {
         this._c.searchServer(this.serverSearchParams(this._searchTerms, this._queries), newServerSearch);
     }
+
 
     serverSearchParams = (searchTerms: string[], queries: Query[]): PaginatedReqDTO => {
         let req: ServerSearchReqDTO = {

@@ -286,7 +286,7 @@ export abstract class PaginatedList {
 
         if (this._search.timeSearches) {
             const totalTime = performance.now() - timer;
-            console.log(`setVisibility took ${totalTime}ms`);
+            console.debug(`setVisibility took ${totalTime}ms`);
         }
     }
 

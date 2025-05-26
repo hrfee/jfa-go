@@ -749,7 +749,7 @@ const setCardOrder = (messageCard: HTMLElement) => {
         // addValue += side.length;
     }
 
-    console.log("Shortest order:", minHeightPerm);
+    console.debug("Shortest order:", minHeightPerm);
 };
 
 const login = new Login(window.modals.login as Modal, "/my/", "opaque");

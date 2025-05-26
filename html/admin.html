@@ -715,7 +715,7 @@
                 </div>
             </div>
             <div id="tab-accounts" class="flex flex-col gap-4 unfocused">
-                <div class="card @low dark:~d_neutral accounts mb-4 overflow-visible">
+                <div class="card @low dark:~d_neutral accounts mb-4 overflow-visible flex flex-col gap-2">
                     <div id="accounts-filter-dropdown" class="dropdown manual z-10 w-full">
                         <div class="flex flex-col md:flex-row align-middle gap-2">
                             <div class="flex flex-row align-middle justify-between md:justify-normal">
@@ -724,7 +724,7 @@
                             </div>
                             <div class="flex flex-row align-middle w-full gap-2">
                                 <input type="search" class="field ~neutral @low input search mr-2" id="accounts-search" placeholder="{{ .strings.search }}">
-                                <span class="button ~neutral @low center ml-[-2.64rem] rounded-s-none accounts-search-clear" aria-label="{{ .strings.clearSearch }}" text="{{ .strings.clearSearch }}"><i class="ri-close-line"></i></span>
+                                <span class="button ~neutral @low center inside-input rounded-s-none accounts-search-clear" aria-label="{{ .strings.clearSearch }}" text="{{ .strings.clearSearch }}"><i class="ri-close-line"></i></span>
                                 <div class="tooltip left">
                                     <button class="button ~info @low center h-full accounts-search-server flex flex-row gap-1" aria-label="{{ .strings.searchAllRecords }}" text="{{ .strings.searchAllRecords }}">
                                         <i class="ri-search-line"></i>
@@ -741,14 +741,16 @@
                             </div>
                         </div>
                     </div>
-                    <div class="supra py-1 sm hidden" id="accounts-search-options-header">{{ .strings.searchOptions }}</div>
-                    <div class="row -mx-2 mb-2">
-                        <button type="button" class="button ~neutral @low center mx-2 hidden"><span id="accounts-sort-by-field"></span> <i class="ri-close-line ml-2 text-2xl"></i></button>
-                        <span id="accounts-filter-area"></span>
+                    <div class="flex flex-row justify-between">
+                        <div class="supra sm hidden" id="accounts-search-options-header">{{ .strings.searchOptions }}</div>
+                        <div class="supra sm flex flex-row gap-2" id="accounts-record-counter"></div>
                     </div>
-                    <div class="supra sm flex flex-row gap-2" id="accounts-record-counter"></div>
-                    <div class="supra pt-1 pb-2 sm">{{ .strings.actions }}</div>
-                    <div class="flex flex-row flex-wrap gap-3 mb-4">
+                    <div class="flex flex-row gap-2 flex-wrap">
+                        <div id="accounts-sort-by-field"></div>
+                        <span id="accounts-filter-area" class="flex flex-row gap-2 flex-wrap"></span>
+                    </div>
+                    <div class="supra sm">{{ .strings.actions }}</div>
+                    <div class="flex flex-row flex-wrap gap-3">
                         <span class="button ~neutral @low center " id="accounts-add-user">{{ .quantityStrings.addUser.Singular }}</span>
                         <div id="accounts-announce-dropdown" class="dropdown pb-0i " tabindex="0">
                             <span class="w-full button ~info @low center items-baseline" id="accounts-announce">{{ .strings.announce }}</span>
@@ -783,7 +785,7 @@
                         <span class="button ~info @low center unfocused " id="accounts-send-pwr">{{ .strings.sendPWR }}</span>
                         <span class="button ~critical @low center " id="accounts-delete-user">{{ .quantityStrings.deleteUser.Singular }}</span>
                     </div>
-                    <div class="card @low accounts-header table-responsive mt-2">
+                    <div class="card @low accounts-header table-responsive">
                         <table class="table text-base leading-5">
                             <thead>
                                 <tr>
@@ -817,13 +819,13 @@
                                 <span class="text-2xl font-medium italic text-center">{{ .strings.noResultsFound }}</span>
                                 <span class="text-sm font-light italic unfocused text-center" id="accounts-no-local-results">{{ .strings.noResultsFoundLocally }}</span>
                                 <div class="flex flex-row">
-                                    <button class="button ~neutral @low accounts-search-clear">
-                                        <span class="mr-2">{{ .strings.clearSearch }}</span><i class="ri-close-line"></i>
+                                    <button class="button ~neutral @low accounts-search-clear flex flex-row gap-2">
+                                        <span>{{ .strings.clearSearch }}</span><i class="ri-close-line"></i>
                                     </button>
                                 </div>
                             </div>
                         </div>
-                        <div class="flex flex-row gap-2 m-2 justify-center">
+                        <div class="flex flex-row gap-2 justify-center">
                             <button class="button ~neutral @low" id="accounts-load-more">{{ .strings.loadMore }}</button>
                             <button class="button ~neutral @low" id="accounts-load-all">{{ .strings.loadAll }}</button>
                             <button class="button ~info @low center accounts-search-server flex flex-row gap-1" aria-label="{{ .strings.searchAllRecords }}" text="{{ .strings.searchAllRecords }}">
@@ -835,7 +837,7 @@
                 </div>
             </div>
             <div id="tab-activity" class="flex flex-col gap-4 unfocused">
-                <div class="card @low dark:~d_neutral activity mb-4 overflow-visible">
+                <div class="card @low dark:~d_neutral activity mb-4 overflow-visible flex flex-col gap-2">
                     <div id="activity-filter-dropdown" class="dropdown manual z-10 w-full" tabindex="0">
                         <div class="flex flex-col md:flex-row align-middle gap-2">
                             <div class="flex flex-row align-middle justify-between md:justify-normal">
@@ -847,9 +849,12 @@
                             </div>
                             <div class="flex flex-row align-middle w-full gap-2">
                                 <input type="search" class="field ~neutral @low input search mr-2" id="activity-search" placeholder="{{ .strings.search }}">
-                                <span class="button ~neutral @low center ml-[-2.64rem] rounded-s-none activity-search-clear" aria-label="{{ .strings.clearSearch }}" text="{{ .strings.clearSearch }}"><i class="ri-close-line"></i></span>
+                                <span class="button ~neutral @low center inside-input rounded-s-none activity-search-clear" aria-label="{{ .strings.clearSearch }}" text="{{ .strings.clearSearch }}"><i class="ri-close-line"></i></span>
                                 <div class="tooltip left">
-                                    <button class="button ~info @low center h-full activity-search-server" aria-label="{{ .strings.searchAllRecords }}" text="{{ .strings.searchAllRecords }}"><i class="ri-search-line"></i></button>
+                                    <button class="button ~info @low center h-full activity-search-server flex flex-row gap-1" aria-label="{{ .strings.searchAllRecords }}" text="{{ .strings.searchAllRecords }}">
+                                        <i class="ri-search-line"></i>
+                                        <span>{{ .strings.searchAll }}</span>
+                                    </button>
                                     <span class="content sm">{{ .strings.searchAllRecords }}</span>
                                 </div>
                                 <button class="button ~info @low" id="activity-refresh" aria-label="{{ .strings.refresh }}" disabled><i class="ri-refresh-line"></i></button>
@@ -861,37 +866,34 @@
                             </div>
                         </div>
                     </div>
-                    <div class="flex flex-row justify-between pt-3 pb-2">
+                    <div class="flex flex-row justify-between">
                         <div class="supra sm hidden" id="activity-search-options-header">{{ .strings.searchOptions }}</div>
                         <div class="supra sm flex flex-row gap-2" id="activity-record-counter"></div>
                     </div>
-                    <div class="row -mx-2 mb-2">
-                        <button type="button" class="button ~neutral @low center mx-2 hidden"><span id="activity-sort-by-field"></span> <i class="ri-close-line ml-2 text-2xl"></i></button>
-                        <span id="activity-filter-area"></span>
+                    <div class="flex flex-row gap-2 flex-wrap">
+                        <span id="activity-filter-area" class="flex flex-row gap-2 flex-wrap"></span>
                     </div>
-                    <div class="my-2">
-                        <div id="activity-card-list"></div>
-                        <div id="activity-loader"></div>
-                        <div class="unfocused h-[100%] my-3" id="activity-not-found">
-                            <div class="flex flex-col gap-2 h-[100%] justify-center items-center">
-                                <span class="text-2xl font-medium italic mb-3 text-center">{{ .strings.noResultsFound }}</span>
-                                <span class="text-sm font-light italic unfocused text-center" id="activity-no-local-results">{{ .strings.noResultsFoundLocally }}</span>
-                                <div class="flex flex-row">
-                                    <button class="button ~neutral @low activity-search-clear">
-                                        <span class="mr-2">{{ .strings.clearSearch }}</span><i class="ri-close-line"></i>
-                                    </button>
-                                    <button class="button ~neutral @low unfocused" id="activity-keep-searching">{{ .strings.keepSearching }}</button>
-                                </div>
+                    <div class="unfocused h-[100%]" id="activity-not-found">
+                        <div class="flex flex-col gap-2 h-[100%] justify-center items-center">
+                            <span class="text-2xl font-medium italic text-center">{{ .strings.noResultsFound }}</span>
+                            <span class="text-sm font-light italic unfocused text-center" id="activity-no-local-results">{{ .strings.noResultsFoundLocally }}</span>
+                            <div class="flex flex-row">
+                                <button class="button ~neutral @low activity-search-clear flex flex-row gap-2">
+                                    <span>{{ .strings.clearSearch }}</span><i class="ri-close-line"></i>
+                                </button>
+                                <button class="button ~neutral @low unfocused" id="activity-keep-searching">{{ .strings.keepSearching }}</button>
                             </div>
                         </div>
-                        <div class="flex flex-row gap-2 m-2 justify-center">
-                            <button class="button ~neutral @low" id="activity-load-more">{{ .strings.loadMore }}</button>
-                            <button class="button ~neutral @low" id="activity-load-all">{{ .strings.loadAll }}</button>
-                            <button class="button ~info @low center activity-search-server flex flex-row gap-1" aria-label="{{ .strings.searchAllRecords }}" text="{{ .strings.searchAllRecords }}">
-                                <i class="ri-search-line"></i>
-                                <span>{{ .strings.searchAllRecords }}</span>
-                            </button>
-                        </div>
+                    </div>
+                    <div id="activity-card-list"></div>
+                    <div id="activity-loader"></div>
+                    <div class="flex flex-row gap-2 justify-center">
+                        <button class="button ~neutral @low" id="activity-load-more">{{ .strings.loadMore }}</button>
+                        <button class="button ~neutral @low" id="activity-load-all">{{ .strings.loadAll }}</button>
+                        <button class="button ~info @low center activity-search-server flex flex-row gap-1" aria-label="{{ .strings.searchAllRecords }}" text="{{ .strings.searchAllRecords }}">
+                            <i class="ri-search-line"></i>
+                            <span>{{ .strings.searchAllRecords }}</span>
+                        </button>
                     </div>
                 </div>
             </div>
