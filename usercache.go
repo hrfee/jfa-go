@@ -306,16 +306,38 @@ func (q QueryDTO) AsFilter() Filter {
 			return cmp.Compare(bool2int(a.NotifyThroughEmail), bool2int(q.Value.(bool))) == int(operator)
 		}
 	case "last_active":
-		return func(a *respUser) bool {
-			return q.Value.(DateAttempt).CompareUnix(a.LastActive) == int(operator)
+		switch q.Class {
+		case DateQuery:
+			return func(a *respUser) bool {
+				return q.Value.(DateAttempt).CompareUnix(a.LastActive) == int(operator)
+			}
+		case BoolQuery:
+			return func(a *respUser) bool {
+				val := a.LastActive != 0
+				if q.Value.(bool) == false {
+					val = !val
+				}
+				return val
+			}
 		}
 	case "admin":
 		return func(a *respUser) bool {
 			return cmp.Compare(bool2int(a.Admin), bool2int(q.Value.(bool))) == int(operator)
 		}
 	case "expiry":
-		return func(a *respUser) bool {
-			return q.Value.(DateAttempt).CompareUnix(a.Expiry) == int(operator)
+		switch q.Class {
+		case DateQuery:
+			return func(a *respUser) bool {
+				return q.Value.(DateAttempt).CompareUnix(a.Expiry) == int(operator)
+			}
+		case BoolQuery:
+			return func(a *respUser) bool {
+				val := a.Expiry != 0
+				if q.Value.(bool) == false {
+					val = !val
+				}
+				return val
+			}
 		}
 	case "disabled":
 		return func(a *respUser) bool {
