@@ -1188,7 +1188,7 @@ export class accountsList extends PaginatedList {
         const headerNames: string[] = ["username", "access-jfa", "email", "telegram", "matrix", "discord", "expiry", "last-active", "referrals"];
         const headerGetters: string[] = ["name", "accounts_admin", "email", "telegram", "matrix", "discord", "expiry", "last_active", "referrals_enabled"];
         for (let i = 0; i < headerNames.length; i++) {
-            const header: HTMLTableHeaderCellElement = document.querySelector(".accounts-header-" + headerNames[i]) as HTMLTableHeaderCellElement;
+            const header: HTMLTableCellElement = document.querySelector(".accounts-header-" + headerNames[i]) as HTMLTableCellElement;
             if (header !== null) {
                 this._columns[headerGetters[i]] = new Column(header, headerGetters[i], Object.getOwnPropertyDescriptor(user.prototype, headerGetters[i]).get);
             }
@@ -1219,10 +1219,9 @@ export class accountsList extends PaginatedList {
             } else {
                 this.setVisibility(this._search.ordering, true);
                 this._search.setNotFoundPanelVisibility(false);
-                this._search.setServerSearchButtonsDisabled(
-                    event.detail == this._c.defaultSortField && this._columns[event.detail].ascending == this._c.defaultSortAscending
-                );
             }
+            this._search.inServerSearch = false;
+            this.autoSetServerSearchButtonsDisabled();
             this._search.showHideSearchOptionsHeader();
         });
 
@@ -2116,14 +2115,14 @@ type Getter = () => GetterReturnType;
 // When list is refreshed, accountList calls method of the specific Column and re-orders accordingly.
 // Listen for broadcast event from others, check its not us by comparing the header className in the message, then hide the arrow icon
 class Column {
-    private _header: HTMLTableHeaderCellElement;
+    private _header: HTMLTableCellElement;
     private _name: string;
     private _headerContent: string;
     private _getter: Getter;
     private _ascending: boolean;
     private _active: boolean;
 
-    constructor(header: HTMLTableHeaderCellElement, name: string, getter: Getter) {
+    constructor(header: HTMLTableCellElement, name: string, getter: Getter) {
         this._header = header;
         this._name = name;
         this._headerContent = this._header.textContent;

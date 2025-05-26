@@ -128,14 +128,13 @@ export abstract class PaginatedList {
         if (v) {
             this._c.loadAllButton.classList.add("unfocused");
             this._c.loadMoreButton.textContent = window.lang.strings("noMoreResults");
-            this._search.setServerSearchButtonsDisabled(this._search.inServerSearch);
             this._c.loadMoreButton.disabled = true;
         } else {
             this._c.loadMoreButton.textContent = window.lang.strings("loadMore");
             this._c.loadMoreButton.disabled = false;
-            this._search.setServerSearchButtonsDisabled(false);
             this._c.loadAllButton.classList.remove("unfocused");
         }
+        this.autoSetServerSearchButtonsDisabled();
     }
 
     protected _previousVisibleItemCount = 0;
@@ -171,17 +170,30 @@ export abstract class PaginatedList {
         this._c.refreshButton.onclick = () => this.reload();
     }
 
+    autoSetServerSearchButtonsDisabled = () => {
+        const serverSearchSortChanged = this._search.inServerSearch && (this._searchParams.sortByField != this._search.sortField || this._searchParams.ascending != this._search.ascending);
+        if (this._search.inServerSearch) {
+            if (serverSearchSortChanged) {
+                this._search.setServerSearchButtonsDisabled(false);
+            } else {
+                this._search.setServerSearchButtonsDisabled(this.lastPage);
+            }
+            return;
+        }
+        if (!this._search.inSearch && this._search.sortField == this._c.defaultSortField && this._search.ascending == this._c.defaultSortAscending) {
+            this._search.setServerSearchButtonsDisabled(true);
+            return;
+        }
+        this._search.setServerSearchButtonsDisabled(false);
+    }
+
     initSearch = (searchConfig: SearchConfiguration) => {
         const previousCallback = searchConfig.onSearchCallback;
         searchConfig.onSearchCallback = (newItems: boolean, loadAll: boolean) => {
             // if (this._search.inSearch && !this.lastPage) this._c.loadAllButton.classList.remove("unfocused");
             // else this._c.loadAllButton.classList.add("unfocused");
-          
-            if (this._search.sortField == this._c.defaultSortField && this._search.ascending == this._c.defaultSortAscending) {
-                this._search.setServerSearchButtonsDisabled(!this._search.inSearch)
-            } else {
-                this._search.setServerSearchButtonsDisabled(false)
-            }
+
+            this.autoSetServerSearchButtonsDisabled();
 
             // FIXME: Figure out why this makes sense and make it clearer.
             if ((this._visible.length < this._c.itemsPerPage && this._counter.loaded < this._c.maxItemsLoadedForSearch && !this.lastPage) || loadAll) {
@@ -205,7 +217,7 @@ export abstract class PaginatedList {
             if (previousServerSearch) previousServerSearch(params, newSearch);
         };
         searchConfig.clearServerSearch = () => {
-            console.log("Clearing server search");
+            console.trace("Clearing server search");
             this._page = 0;
             this.reload();
         }

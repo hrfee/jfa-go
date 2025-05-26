@@ -420,18 +420,16 @@ export class Search {
     // Returns a list of identifiers (used as keys in items, values in ordering).
     searchParsed = (searchTerms: string[], queries: Query[]): string[] => {
         let result: string[] = [...this._ordering];
-        // If we're in a server search already, the results are (probably) already correct.
-        if (this.inServerSearch) {
-            let hasLocalOnlyQueries = false;
-            for (const q of queries) {
-                if (q.localOnly) {
-                    hasLocalOnlyQueries = true;
-                    break;
-                }
-            }
-            if (!hasLocalOnlyQueries) return result;
-            // Continue on if really necessary
-        }
+        // If we didn't care about rendering the query cards, we could run this to (maybe) return early.
+        // if (this.inServerSearch) {
+        //     let hasLocalOnlyQueries = false;
+        //     for (const q of queries) {
+        //         if (q.localOnly) {
+        //             hasLocalOnlyQueries = true;
+        //             break;
+        //         }
+        //     }
+        // }
 
         // Normal searches can be evaluated by the server, so skip this if we've already ran one.
         if (!this.inServerSearch) {
