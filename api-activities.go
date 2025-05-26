@@ -106,11 +106,19 @@ func (app *appContext) GetActivities(gc *gin.Context) {
 	if len(req.SearchTerms) != 0 {
 		query = ActivityMatchesSearchAsDBBaseQuery(req.SearchTerms)
 	} else {
-		query = &badgerhold.Query{}
+		query = nil
 	}
 
 	for _, q := range req.Queries {
-		query = q.AsDBQuery(query)
+		nq := q.AsDBQuery(query)
+		if nq == nil {
+			nq = ActivityDBQueryFromSpecialField(app.jf, query, q)
+		}
+		query = nq
+	}
+
+	if query == nil {
+		query = &badgerhold.Query{}
 	}
 
 	query = query.SortBy(req.SortByField)
@@ -132,28 +140,21 @@ func (app *appContext) GetActivities(gc *gin.Context) {
 	resp.LastPage = len(results) != req.Limit
 	for i, act := range results {
 		resp.Activities[i] = ActivityDTO{
-			ID:         act.ID,
-			Type:       activityTypeToString(act.Type),
-			UserID:     act.UserID,
-			SourceType: activitySourceToString(act.SourceType),
-			Source:     act.Source,
-			InviteCode: act.InviteCode,
-			Value:      act.Value,
-			Time:       act.Time.Unix(),
-			IP:         act.IP,
+			ID:             act.ID,
+			Type:           activityTypeToString(act.Type),
+			UserID:         act.UserID,
+			SourceType:     activitySourceToString(act.SourceType),
+			Source:         act.Source,
+			InviteCode:     act.InviteCode,
+			Value:          act.Value,
+			Time:           act.Time.Unix(),
+			IP:             act.IP,
+			Username:       act.MustGetUsername(app.jf),
+			SourceUsername: act.MustGetSourceUsername(app.jf),
 		}
 		if act.Type == ActivityDeletion || act.Type == ActivityCreation {
-			resp.Activities[i].Username = act.Value
+			// Username would've been in here, clear it to avoid confusion to the consumer
 			resp.Activities[i].Value = ""
-		} else if user, err := app.jf.UserByID(act.UserID, false); err == nil {
-			resp.Activities[i].Username = user.Name
-		}
-
-		if (act.SourceType == ActivityUser || act.SourceType == ActivityAdmin) && act.Source != "" {
-			user, err := app.jf.UserByID(act.Source, false)
-			if err == nil {
-				resp.Activities[i].SourceUsername = user.Name
-			}
 		}
 	}
 

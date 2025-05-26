@@ -373,7 +373,8 @@ export class Search {
                         this._c.search.oninput((null as Event));
                     };
                 }
-            } else if (queryFormat.string) {
+            }
+            if (queryFormat.string) {
                 q = new StringQuery(queryFormat, split[1]);
 
                 q.onclick = () => {
@@ -383,7 +384,8 @@ export class Search {
                     }
                     this._c.search.oninput((null as Event));
                 }
-            } else if (queryFormat.date) {
+            }
+            if (queryFormat.date) {
                 let [parsedDate, op, isDate] = DateQuery.paramsFromString(split[1]);
                 if (!isDate) continue;
                 q = new DateQuery(queryFormat, op, parsedDate);
