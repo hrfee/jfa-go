@@ -791,6 +791,7 @@ sections:
     options:
     - ["ssl_tls", "SSL/TLS"]
     - ["starttls", "STARTTLS"]
+    - ["none", "None (only use locally!)"]
     value: starttls
     description: Your email provider should provide different ports for each encryption
       method. Generally 465 for ssl_tls, 587 for starttls.

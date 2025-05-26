@@ -81,9 +81,14 @@ func NewEmailer(app *appContext) *Emailer {
 	}
 	method := app.config.Section("email").Key("method").String()
 	if method == "smtp" {
-		sslTLS := false
-		if app.config.Section("smtp").Key("encryption").String() == "ssl_tls" {
-			sslTLS = true
+		enc := sMail.EncryptionSTARTTLS
+		switch app.config.Section("smtp").Key("encryption").String() {
+		case "ssl_tls":
+			enc = sMail.EncryptionSSLTLS
+		case "starttls":
+			enc = sMail.EncryptionSTARTTLS
+		case "none":
+			enc = sMail.EncryptionNone
 		}
 		username := app.config.Section("smtp").Key("username").MustString("")
 		password := app.config.Section("smtp").Key("password").String()
@@ -95,7 +100,7 @@ func NewEmailer(app *appContext) *Emailer {
 			proxyConf = &app.proxyConfig
 		}
 		authType := sMail.AuthType(app.config.Section("smtp").Key("auth_type").MustInt(4))
-		err := emailer.NewSMTP(app.config.Section("smtp").Key("server").String(), app.config.Section("smtp").Key("port").MustInt(465), username, password, sslTLS, app.config.Section("smtp").Key("ssl_cert").MustString(""), app.config.Section("smtp").Key("hello_hostname").String(), app.config.Section("smtp").Key("cert_validation").MustBool(true), authType, proxyConf)
+		err := emailer.NewSMTP(app.config.Section("smtp").Key("server").String(), app.config.Section("smtp").Key("port").MustInt(465), username, password, enc, app.config.Section("smtp").Key("ssl_cert").MustString(""), app.config.Section("smtp").Key("hello_hostname").String(), app.config.Section("smtp").Key("cert_validation").MustBool(true), authType, proxyConf)
 		if err != nil {
 			app.err.Printf(lm.FailedInitSMTP, err)
 		}
@@ -121,9 +126,10 @@ type SMTP struct {
 }
 
 // NewSMTP returns an SMTP emailClient.
-func (emailer *Emailer) NewSMTP(server string, port int, username, password string, sslTLS bool, certPath string, helloHostname string, validateCertificate bool, authType sMail.AuthType, proxy *easyproxy.ProxyConfig) (err error) {
+func (emailer *Emailer) NewSMTP(server string, port int, username, password string, encryption sMail.Encryption, certPath string, helloHostname string, validateCertificate bool, authType sMail.AuthType, proxy *easyproxy.ProxyConfig) (err error) {
 	sender := &SMTP{}
 	sender.Client = sMail.NewSMTPClient()
+	sender.Client.Encryption = encryption
 	if sslTLS {
 		sender.Client.Encryption = sMail.EncryptionSSLTLS
 	} else {
