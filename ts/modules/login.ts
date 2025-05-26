@@ -53,7 +53,7 @@ export class Login {
                 }
             }, false, (req: XMLHttpRequest) => {
                 if (req.readyState == 4 && req.status == 404 && tryAgain) {
-                    console.log("trying without URL Base...");
+                    console.warn("logout failed, trying without URL Base...");
                     logoutFunc(this._endpoint, false);
                 }
             });

@@ -482,7 +482,6 @@ interface ActivitiesDTO extends paginatedDTO {
 
 export class activityList extends PaginatedList {
     protected _container: HTMLElement;
-    // protected _sortingByButton = document.getElementById("activity-sort-by-field") as HTMLButtonElement;
     protected _sortDirection = document.getElementById("activity-sort-direction") as HTMLButtonElement;
 
     protected _ascending: boolean;
@@ -580,14 +579,23 @@ export class activityList extends PaginatedList {
         );
     }
 
-    get ascending(): boolean { return this._ascending; }
+    get ascending(): boolean {
+        return this._ascending;
+    }
     set ascending(v: boolean) {
         this._ascending = v;
+        // Setting default sort makes sense, since this is the only sort ever being done.
+        this._c.defaultSortAscending = this.ascending;
         this._sortDirection.innerHTML = `${window.lang.strings("sortDirection")} <i class="ri-arrow-${v ? "up" : "down"}-s-line ml-2"></i>`;
         // FIXME?: We don't actually re-sort the list here, instead just use setOrdering to apply this.ascending before a reload.
         this._search.setOrdering(this._search.ordering, this._c.defaultSortField, this.ascending);
         if (this._hasLoaded) {
-            this.reload();
+            if (this._search.inServerSearch) {
+                // Re-run server search as new, since we changed the sort.
+                this._search.searchServer(true);
+            } else {
+                this.reload();
+            }
         }
     }
 

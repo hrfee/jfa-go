@@ -1062,7 +1062,7 @@ export class accountsList extends PaginatedList {
             const profileSpan = this._enableReferralsProfile.nextElementSibling as HTMLSpanElement;
             const inviteSpan = this._enableReferralsInvite.nextElementSibling as HTMLSpanElement;
             const checkReferralSource = () => {
-                console.log("States:", this._enableReferralsProfile.checked, this._enableReferralsInvite.checked);
+                console.debug("States:", this._enableReferralsProfile.checked, this._enableReferralsInvite.checked);
                 if (this._enableReferralsProfile.checked) {
                     this._referralsInviteSelect.parentElement.classList.add("unfocused");
                     this._referralsProfileSelect.parentElement.classList.remove("unfocused")
@@ -1199,11 +1199,11 @@ export class accountsList extends PaginatedList {
             document.dispatchEvent(new CustomEvent("header-click", { detail: this._c.defaultSortField }));
             this._columns[this._c.defaultSortField].ascending = this._c.defaultSortAscending;
             this._columns[this._c.defaultSortField].hideIcon();
-            this._sortingByButton.parentElement.classList.add("hidden");
+            this._sortingByButton.classList.add("hidden");
             this._search.showHideSearchOptionsHeader();
         };
 
-        this._sortingByButton.parentElement.addEventListener("click", defaultSort);
+        this._sortingByButton.addEventListener("click", defaultSort);
 
         document.addEventListener("header-click", (event: CustomEvent) => {
             this._search.setOrdering(
@@ -1211,8 +1211,8 @@ export class accountsList extends PaginatedList {
                 event.detail,
                 this._columns[event.detail].ascending
             );
-            this._sortingByButton.innerHTML = this._columns[event.detail].buttonContent;
-            this._sortingByButton.parentElement.classList.remove("hidden");
+            this._sortingByButton.replaceChildren(this._columns[event.detail].asElement());
+            this._sortingByButton.classList.remove("hidden");
             // console.log("ordering by", event.detail, ": ", this._ordering);
             if (this._search.inSearch) {
                 this._search.onSearchBoxChange();
@@ -1436,7 +1436,7 @@ export class accountsList extends PaginatedList {
                     window.notifications.customSuccess("addUser", window.lang.var("notifications", "userCreated", `"${send['username']}"`));
                     if (!req.response["email"]) {
                         window.notifications.customError("sendWelcome", window.lang.notif("errorSendWelcomeEmail"));
-                        console.log("User created, but welcome email failed");
+                        console.error("User created, but welcome email failed");
                     }
                 } else {
                     let msg = window.lang.var("notifications", "errorUserCreated", `"${send['username']}"`);
@@ -1447,7 +1447,7 @@ export class accountsList extends PaginatedList {
                     window.notifications.customError("addUser", msg);
                 }
                 if (req.response["error"] as String) {
-                    console.log(req.response["error"]);
+                    console.error(req.response["error"]);
                 }
 
                 this.reload();
@@ -2081,7 +2081,7 @@ export class accountsList extends PaginatedList {
     }
 
     focusAccount = (userID: string) => {
-        console.log("focusing user", userID);
+        console.debug("focusing user", userID);
         this._c.searchBox.value = `id:"${userID}"`;
         this._search.onSearchBoxChange();
         if (userID in this.users) this.users[userID].focus();
@@ -2116,6 +2116,8 @@ type Getter = () => GetterReturnType;
 // Listen for broadcast event from others, check its not us by comparing the header className in the message, then hide the arrow icon
 class Column {
     private _header: HTMLTableCellElement;
+    private _card: HTMLElement;
+    private _cardSortingByIcon: HTMLElement;
     private _name: string;
     private _headerContent: string;
     private _getter: Getter;
@@ -2133,10 +2135,8 @@ class Column {
         this._header.addEventListener("click", () => {
             // If we are the active sort column, a click means to switch between ascending/descending.
             if (this._active) {
-                this._ascending = !this._ascending;
-                console.log("was already active, switching direction to", this._ascending ? "ascending" : "descending");
-            } else {
-                console.log("wasn't active keeping direction as", this._ascending ? "ascending" : "descending");
+                this.ascending = !this.ascending;
+                return;
             }
             this._active = true;
             this._header.setAttribute("aria-sort", this._headerContent);
@@ -2150,6 +2150,15 @@ class Column {
                 this.hideIcon();
             }
         });
+
+        this._card = document.createElement("button");
+        this._card.classList.add("button", "~neutral", "@low", "center", "flex", "flex-row", "gap-1");
+        this._card.innerHTML = `
+        <i class="sorting-by-direction ri-arrow-up-s-line"></i>
+        <span class="font-bold">${window.lang.strings("sortingBy")}: </span><span>${this._headerContent}</span>
+        <i class="ri-close-line text-2xl"></i>
+        `;
+        this._cardSortingByIcon = this._card.querySelector(".sorting-by-direction");
     }
 
     hideIcon = () => {
@@ -2163,14 +2172,18 @@ class Column {
         `;
     }
 
-    // Returns the inner HTML to show in the "Sorting By" button.
-    get buttonContent() {
-        return `<i class="ri-arrow-${this.ascending ? "up" : "down"}-s-line mr-2"></i><span class="font-bold">` + window.lang.strings("sortingBy") + ": " + `</span>` + this._headerContent;
-    }
+    asElement = () => { return this._card };
 
     get ascending() { return this._ascending; }
     set ascending(v: boolean) {
         this._ascending = v;
+        if (v) {
+            this._cardSortingByIcon.classList.add("ri-arrow-up-s-line");
+            this._cardSortingByIcon.classList.remove("ri-arrow-down-s-line");
+        } else {
+            this._cardSortingByIcon.classList.add("ri-arrow-down-s-line");
+            this._cardSortingByIcon.classList.remove("ri-arrow-up-s-line");
+        }
         if (!this._active) return;
         this.updateHeader();
         this._header.setAttribute("aria-sort", this._headerContent);
