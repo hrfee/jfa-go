@@ -43,7 +43,6 @@ func activityDTONameToField(field string) string {
 		return "IP"
 	}
 	return "unknown"
-	// Only these query types actually search the ActivityDTO data.
 }
 
 func activityTypeGetterNameToType(getter string) ActivityType {
@@ -221,10 +220,18 @@ func matchReferrerAsQuery(jf *mediabrowser.MediaBrowser, query *badgerhold.Query
 	criterion := andField(query, "Type")
 	query = criterion.MatchFunc(func(ra *badgerhold.RecordAccess) (bool, error) {
 		act := ra.Record().(*Activity)
-		if act.Type == ActivityCreation || act.SourceType == ActivityUser || !act.SourceIsUser() {
+		if act.Type != ActivityCreation || act.SourceType != ActivityUser || !act.SourceIsUser() {
 			return false, nil
 		}
-		return strings.Contains(strings.ToLower(act.MustGetSourceUsername(jf)), strings.ToLower(q.Value.(string))), nil
+		sourceUsername := act.MustGetSourceUsername(jf)
+		if q.Class == BoolQuery {
+			val := sourceUsername != ""
+			if q.Value.(bool) == false {
+				val = !val
+			}
+			return val, nil
+		}
+		return strings.Contains(strings.ToLower(sourceUsername), strings.ToLower(q.Value.(string))), nil
 	})
 	return query
 }

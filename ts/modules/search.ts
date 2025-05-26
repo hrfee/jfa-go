@@ -28,6 +28,7 @@ export interface QueryType {
     date: boolean;
     dependsOnElement?: string; // Format for querySelector
     show?: boolean;
+    localOnly?: boolean // Indicates can't be performed server-side.
 }
 
 export interface SearchConfiguration {
@@ -84,7 +85,8 @@ export abstract class Query {
     
     public abstract compare(subjectValue: any): boolean;
 
-    asDTO(): QueryDTO {
+    asDTO(): QueryDTO | null {
+        if (this.localOnly) return null;
         let out = {} as QueryDTO;
         out.field = this._subject.getter;
         out.operator = this._operator;
@@ -100,6 +102,8 @@ export abstract class Query {
     compareItem(item: SearchableItem): boolean {
         return this.compare(this.getValueFromItem(item));
     }
+
+    get localOnly(): boolean { return this._subject.localOnly ? true : false; }
 }
 
 export class BoolQuery extends Query {
@@ -134,8 +138,9 @@ export class BoolQuery extends Query {
         return ((subjectBool && this._value) || (!subjectBool && !this._value))
     }
 
-    asDTO(): QueryDTO {
+    asDTO(): QueryDTO | null {
         let out = super.asDTO();
+        if (out === null) return null;
         out.class = "bool";
         out.value = this._value;
         return out;
@@ -159,8 +164,9 @@ export class StringQuery extends Query {
         return subjectString.toLowerCase().includes(this._value);
     }
     
-    asDTO(): QueryDTO {
+    asDTO(): QueryDTO | null {
         let out = super.asDTO();
+        if (out === null) return null;
         out.class = "string";
         out.value = this._value;
         return out;
@@ -259,8 +265,9 @@ export class DateQuery extends Query {
         return subjectDate > temp;
     }
     
-    asDTO(): QueryDTO {
+    asDTO(): QueryDTO | null {
         let out = super.asDTO();
+        if (out === null) return null;
         out.class = "date";
         out.value = this._value.attempt;
         return out;
@@ -372,6 +379,8 @@ export class Search {
                         }
                         this._c.search.oninput((null as Event));
                     };
+                    queries.push(q);
+                    continue;
                 }
             }
             if (queryFormat.string) {
@@ -384,6 +393,8 @@ export class Search {
                     }
                     this._c.search.oninput((null as Event));
                 }
+                queries.push(q);
+                continue;
             }
             if (queryFormat.date) {
                 let [parsedDate, op, isDate] = DateQuery.paramsFromString(split[1]);
@@ -398,37 +409,48 @@ export class Search {
                     
                     this._c.search.oninput((null as Event));
                 }
+                queries.push(q);
+                continue;
             }
-        
-            if (q != null) queries.push(q);
+            // if (q != null) queries.push(q);
         }
         return [searchTerms, queries];
     }
-
+    
     // Returns a list of identifiers (used as keys in items, values in ordering).
-    search = (query: string): string[] => {
-        let timer = this.timeSearches ? performance.now() : null;
-        this._c.filterArea.textContent = "";
-        
+    searchParsed = (searchTerms: string[], queries: Query[]): string[] => {
         let result: string[] = [...this._ordering];
-        // If we're in a server search already, the results are already correct.
-        if (this.inServerSearch) return result;
+        // If we're in a server search already, the results are (probably) already correct.
+        if (this.inServerSearch) {
+            let hasLocalOnlyQueries = false;
+            for (const q of queries) {
+                if (q.localOnly) {
+                    hasLocalOnlyQueries = true;
+                    break;
+                }
+            }
+            if (!hasLocalOnlyQueries) return result;
+            // Continue on if really necessary
+        }
 
-        const [searchTerms, queries] = this.parseTokens(Search.tokenizeSearch(query));
-
-        query = "";
-
-        for (let term of searchTerms) {
-            let cachedResult = [...result];
-            for (let id of cachedResult) {
-                const u = this.items[id];
-                if (!u.matchesSearch(term)) {
-                    result.splice(result.indexOf(id), 1);
+        // Normal searches can be evaluated by the server, so skip this if we've already ran one.
+        if (!this.inServerSearch) {
+            for (let term of searchTerms) {
+                let cachedResult = [...result];
+                for (let id of cachedResult) {
+                    const u = this.items[id];
+                    if (!u.matchesSearch(term)) {
+                        result.splice(result.indexOf(id), 1);
+                    }
                 }
             }
         }
+
         for (let q of queries) {
             this._c.filterArea.appendChild(q.asElement());
+            // Skip if this query has already been performed by the server.
+            if (this.inServerSearch && !(q.localOnly)) continue;
+
             let cachedResult = [...result];
             if (q.subject.bool) {
                 for (let id of cachedResult) {
@@ -466,7 +488,18 @@ export class Search {
                 }
             }
         }
+        return result;
+    }
 
+    // Returns a list of identifiers (used as keys in items, values in ordering).
+    search = (query: string): string[] => {
+        let timer = this.timeSearches ? performance.now() : null;
+        this._c.filterArea.textContent = "";
+        
+        const [searchTerms, queries] = this.parseTokens(Search.tokenizeSearch(query));
+
+        let result = this.searchParsed(searchTerms, queries);
+        
         this._queries = queries;
         this._searchTerms = searchTerms;
 
@@ -476,6 +509,11 @@ export class Search {
         }
         return result;
     }
+
+    // postServerSearch performs local-only queries after a server search if necessary.
+    postServerSearch = () => {
+        this.searchParsed(this._searchTerms, this._queries);
+    };
     
     showHideSearchOptionsHeader = () => {
         let sortingBy = false;
@@ -642,12 +680,16 @@ export class Search {
     serverSearchParams = (searchTerms: string[], queries: Query[]): PaginatedReqDTO => {
         let req: ServerSearchReqDTO = {
             searchTerms: searchTerms,
-            queries: queries.map((q: Query) => q.asDTO()),
+            queries: [], // queries.map((q: Query) => q.asDTO()) won't work as localOnly queries return null
             limit: -1,
             page: 0,
             sortByField: this.sortField,
             ascending: this.ascending
         };
+        for (const q of queries) {
+            const dto = q.asDTO();
+            if (dto !== null) req.queries.push(dto);
+        }
         return req;
     }
 

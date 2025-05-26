@@ -50,7 +50,8 @@ const queries = (): { [field: string]: QueryType } => { return {
         getter: "title",
         bool: false,
         string: true,
-        date: false
+        date: false,
+        localOnly: true
     },
     "user": {
         name: window.lang.strings("usersMentioned"),
