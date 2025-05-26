@@ -2,6 +2,7 @@ package main
 
 import (
 	"cmp"
+	"encoding/json"
 	"fmt"
 	"slices"
 	"strings"
@@ -241,13 +242,12 @@ type DateAttempt struct {
 	Minute *int `json:"minute,omitempty"`
 }
 
-// Compares a Unix timestamp.
+// Compare roughly compares a time.Time to a DateAttempt.
 // We want to compare only the fields given in DateAttempt,
 // so we copy subjectDate and apply on those fields from this._value.
-func (d DateAttempt) Compare(subject int64) int {
-	subjectTime := time.Unix(subject, 0)
-	yy, mo, dd := subjectTime.Date()
-	hh, mm, _ := subjectTime.Clock()
+func (d DateAttempt) Compare(subject time.Time) int {
+	yy, mo, dd := subject.Date()
+	hh, mm, _ := subject.Clock()
 	if d.Year != nil {
 		yy = *d.Year
 	}
@@ -264,7 +264,13 @@ func (d DateAttempt) Compare(subject int64) int {
 	if d.Minute != nil {
 		mm = *d.Minute
 	}
-	return subjectTime.Compare(time.Date(yy, mo, dd, hh, mm, 0, 0, nil))
+	// FIXME: Transmit timezone in request maybe?
+	return subject.Compare(time.Date(yy, mo, dd, hh, mm, 0, 0, time.UTC))
+}
+
+// CompareUnix roughly compares a unix timestamp to a DateAttempt.
+func (d DateAttempt) CompareUnix(subject int64) int {
+	return d.Compare(time.Unix(subject, 0))
 }
 
 // Filter returns true if a specific field in the passed respUser matches some internally defined value.
@@ -301,7 +307,7 @@ func (q QueryDTO) AsFilter() Filter {
 		}
 	case "last_active":
 		return func(a *respUser) bool {
-			return q.Value.(DateAttempt).Compare(a.LastActive) == int(operator)
+			return q.Value.(DateAttempt).CompareUnix(a.LastActive) == int(operator)
 		}
 	case "admin":
 		return func(a *respUser) bool {
@@ -309,7 +315,7 @@ func (q QueryDTO) AsFilter() Filter {
 		}
 	case "expiry":
 		return func(a *respUser) bool {
-			return q.Value.(DateAttempt).Compare(a.Expiry) == int(operator)
+			return q.Value.(DateAttempt).CompareUnix(a.Expiry) == int(operator)
 		}
 	case "disabled":
 		return func(a *respUser) bool {
@@ -395,6 +401,30 @@ type QueryDTO struct {
 	Operator QueryOperator `json:"operator"`
 	// string | bool | DateAttempt
 	Value any `json:"value"`
+}
+
+// UnmarshalJSON allows unmarshaling QueryDTO.Value into a DateAttempt type, rather than just a map.
+func (q *QueryDTO) UnmarshalJSON(data []byte) error {
+	type _QueryDTO QueryDTO
+	var temp _QueryDTO
+	if err := json.Unmarshal(data, &temp); err != nil {
+		return err
+	}
+	*q = QueryDTO(temp)
+	switch q.Value.(type) {
+	case string:
+	case bool:
+		return nil
+	case map[string]any:
+		var do struct {
+			Value DateAttempt `json:"value"`
+		}
+		if err := json.Unmarshal(data, &do); err != nil {
+			return err
+		}
+		q.Value = do.Value
+	}
+	return nil
 }
 
 // ServerSearchReqDTO is a usual PaginatedReqDTO with added fields for searching and filtering.
