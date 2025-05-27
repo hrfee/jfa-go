@@ -10,6 +10,8 @@ import (
 	"time"
 )
 
+// FIXME: Invalidate cache on delete/modify/etc.
+
 const (
 	USER_DEFAULT_SORT_FIELD     = "name"
 	USER_DEFAULT_SORT_ASCENDING = true
