@@ -281,6 +281,7 @@ const (
 	External            = "external"
 	RegisterPprof       = "Registered pprof"
 	SwaggerWarning      = "Warning: Swagger should not be used on a public instance."
+	NoAPIAuthPrompt     = `Disabling API auth is dangerous, only use locally for development. Disable it? [y/n]: `
 
 	// storage.go
 	ConnectDB       = "Connected to DB \"%s\""

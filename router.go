@@ -15,6 +15,11 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
+var (
+	// Disables authentication for the API. Do not use!
+	NO_API_AUTH_DO_NOT_USE = false
+)
+
 // loads HTML templates. If [files]/html_templates is set, alternative files inside the directory are loaded in place of the internal templates.
 func (app *appContext) loadHTML(router *gin.Engine) {
 	customPath := app.config.Section("files").Key("html_templates").MustString("")
@@ -182,7 +187,12 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 		}
 	}
 
-	api := router.Group("/", app.webAuth())
+	var api *gin.RouterGroup
+	if NO_API_AUTH_DO_NOT_USE && *DEBUG {
+		api = router.Group("/")
+	} else {
+		api = router.Group("/", app.webAuth())
+	}
 
 	for _, p := range routePrefixes {
 		var user *gin.RouterGroup

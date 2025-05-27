@@ -8,6 +8,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	lm "github.com/hrfee/jfa-go/logmessages"
 )
 
 func (app *appContext) loadArgs(firstCall bool) {
@@ -28,6 +30,8 @@ func (app *appContext) loadArgs(firstCall bool) {
 		PPROF = flag.Bool("pprof", false, "Exposes pprof profiler on /debug/pprof.")
 		SWAGGER = flag.Bool("swagger", false, "Enable swagger at /swagger/index.html")
 
+		flag.BoolVar(&NO_API_AUTH_DO_NOT_USE, "disable-api-auth-do-not-use", false, "Disables API authentication. DO NOT USE!")
+
 		flag.Parse()
 		if *help {
 			flag.Usage()
@@ -44,6 +48,16 @@ func (app *appContext) loadArgs(firstCall bool) {
 		}
 		if *_LOADBAK != "" {
 			LOADBAK = *_LOADBAK
+		}
+
+		if NO_API_AUTH_DO_NOT_USE && *DEBUG {
+			NO_API_AUTH_DO_NOT_USE = false
+			buf := bufio.NewReader(os.Stdin)
+			app.err.Print(lm.NoAPIAuthPrompt)
+			sentence, err := buf.ReadBytes('\n')
+			if err == nil && strings.ContainsRune(string(sentence), 'y') {
+				NO_API_AUTH_DO_NOT_USE = true
+			}
 		}
 	}
 
