@@ -2069,6 +2069,7 @@ export class accountsList extends PaginatedList {
         console.debug("focusing user", userID);
         this._c.searchBox.value = `id:"${userID}"`;
         this._search.onSearchBoxChange();
+        this._search.onServerSearch();
         if (userID in this.users) this.users[userID].focus();
     }
 
