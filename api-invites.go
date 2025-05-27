@@ -11,6 +11,7 @@ import (
 	lm "github.com/hrfee/jfa-go/logmessages"
 	"github.com/itchyny/timefmt-go"
 	"github.com/lithammer/shortuuid/v3"
+	"github.com/timshannon/badgerhold/v4"
 )
 
 const (
@@ -256,6 +257,22 @@ func (app *appContext) GenerateInvite(gc *gin.Context) {
 	}, gc, false)
 
 	respondBool(200, true, gc)
+}
+
+// @Summary Get the number of invites stored in the database.
+// @Produce json
+// @Success 200 {object} PageCountDTO
+// @Router /invites/count [get]
+// @Security Bearer
+// @tags Invites
+func (app *appContext) GetInviteCount(gc *gin.Context) {
+	resp := PageCountDTO{}
+	var err error
+	resp.Count, err = app.storage.db.Count(&Invite{}, &badgerhold.Query{})
+	if err != nil {
+		resp.Count = 0
+	}
+	gc.JSON(200, resp)
 }
 
 // @Summary Get invites.

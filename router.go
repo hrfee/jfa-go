@@ -200,6 +200,7 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 		api.POST(p+"/users/enable", app.EnableDisableUsers)
 		api.POST(p+"/invites", app.GenerateInvite)
 		api.GET(p+"/invites", app.GetInvites)
+		api.GET(p+"/invites/count", app.GetInviteCount)
 		api.DELETE(p+"/invites", app.DeleteInvite)
 		api.POST(p+"/invites/profile", app.SetProfile)
 		api.GET(p+"/profiles", app.GetProfiles)
