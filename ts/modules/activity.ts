@@ -537,7 +537,7 @@ export class activityList extends PaginatedList {
         (window as any).act = this;
 
         this._container = document.getElementById("activity-card-list")
-        document.addEventListener("activity-reload", this.reload);
+        document.addEventListener("activity-reload", () => this.reload());
 
         let searchConfig: SearchConfiguration = {
             filterArea: this._c.filterArea,
@@ -564,20 +564,16 @@ export class activityList extends PaginatedList {
         this._sortDirection.addEventListener("click", () => this.ascending = !this.ascending);
     }
 
-    reload = () => {
-        this._reload();
+    reload = (callback?: (resp: paginatedDTO) => void) => {
+        this._reload(callback);
     }
 
-    loadMore = (callback?: () => void, loadAll: boolean = false) => {
+    loadMore = (loadAll: boolean = false, callback?: () => void) => {
         this._loadMore(
             loadAll,
-            (req: XMLHttpRequest) => {
-                if (req.readyState != 4) return;
-                if (req.status != 200) return;
-                if (callback) callback();
-            }
+            callback
         );
-    }
+    };
 
     get ascending(): boolean {
         return this._ascending;

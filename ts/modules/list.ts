@@ -157,10 +157,10 @@ export abstract class PaginatedList {
         this._counter = new RecordCounter(this._c.recordCounter);
         this._hasLoaded = false;
        
-        this._c.loadMoreButton.onclick = () => this.loadMore(null, false);
+        this._c.loadMoreButton.onclick = () => this.loadMore(false);
         this._c.loadAllButton.onclick = () => {
             addLoader(this._c.loadAllButton, true);
-            this.loadMore(null, true);
+            this.loadMore(true);
         };
         /* this._keepSearchingButton.onclick = () => {
             addLoader(this._keepSearchingButton, true);
@@ -202,7 +202,7 @@ export abstract class PaginatedList {
                     (this._visible.length == 0 && !this.lastPage) ||
                     loadAll
                    ) {
-                    this.loadMore(() => {}, loadAll);
+                    this.loadMore(loadAll);
                 }
             }
             this._previousVisibleItemCount = this._visible.length;
@@ -212,7 +212,7 @@ export abstract class PaginatedList {
         searchConfig.searchServer = (params: PaginatedReqDTO, newSearch: boolean) => {
             this._searchParams = params;
             if (newSearch) this.reload();
-            else this.loadMore(null, false);
+            else this.loadMore(false);
 
             if (previousServerSearch) previousServerSearch(params, newSearch);
         };
@@ -310,130 +310,110 @@ export abstract class PaginatedList {
         return bottomIdx;
     }
 
-    // Removes all elements, and reloads the first page.
-    // FIXME: Share more code between reload and loadMore, and go over the logic, it's messy.
-    public abstract reload: () => void;
-    protected _reload = (
-        callback?: (req: XMLHttpRequest) => void
-    ) => {
+    private _load = (itemLimit: number, page: number, pre?: (resp: paginatedDTO) => void, post?: (resp: paginatedDTO) => void, failCallback?: (req: XMLHttpRequest) => void) => {
         this._lastLoad = Date.now();
-        this.lastPage = false;
-
-        this._counter.reset();
-        this._counter.getTotal(this._c.totalEndpoint);
-
-        // Reload all currently visible elements, i.e. Load a new page of size (limit*(page+1)).
-        let limit = this._c.itemsPerPage;
-        if (this._page != 0) {
-            limit *= this._page+1;
-        }
-
         let params = this._search.inServerSearch ? this._searchParams : this.defaultParams();
-        params.limit = limit;
-        params.page = 0;
-        if (params.sortByField == "") {
-            params.sortByField = this._c.defaultSortField;
-            params.ascending = this._c.defaultSortAscending;
-        }
+        params.limit = itemLimit;
+        params.page = page;
 
         _post(this._c.getPageEndpoint, params, (req: XMLHttpRequest) => {
             if (req.readyState != 4) return;
             if (req.status != 200) {
                 if (this._c.pageLoadCallback) this._c.pageLoadCallback(req);
-                if (callback) callback(req);
+                if (failCallback) failCallback(req);
                 return;
             }
-
             this._hasLoaded = true;
-            // Allow refreshes every 15s
-            this._c.refreshButton.disabled = true;
-            setTimeout(() => this._c.refreshButton.disabled = false, 15000);
 
             let resp = req.response as paginatedDTO;
-            
+            if (pre) pre(resp);
             this.lastPage = resp.last_page;
-            
-            this._c.replaceWithNewItems(resp);
+
+            // this._c.replaceWithNewItems(resp);
+            // this._c.appendNewItems(resp);
             
             this._counter.loaded = this._search.ordering.length;
             
-            this._search.onSearchBoxChange(true, false, false);
-            if (this._search.inSearch) {
-                // this._c.loadAllButton.classList.remove("unfocused");
-            } else {
-                this._counter.shown = this._counter.loaded;
-                this.setVisibility(this._search.ordering, true);
-                // this._search.showHideNotFoundPanel(false);
-            }
+            if (post) post(resp);
+
             if (this._c.pageLoadCallback) this._c.pageLoadCallback(req);
-            if (callback) callback(req);
         }, true);
+    }
+    
+    // Removes all elements, and reloads the first page.
+    public abstract reload: (callback?: (resp: paginatedDTO) => void) => void;
+    protected _reload = (callback?: (resp: paginatedDTO) => void) => {
+        this.lastPage = false;
+        this._counter.reset();
+        this._counter.getTotal(this._c.totalEndpoint);
+        // Reload all currently visible elements, i.e. Load a new page of size (limit*(page+1)).
+        let limit = this._c.itemsPerPage;
+        if (this._page != 0) {
+            limit *= this._page+1;
+        }
+        this._load(
+            limit,
+            0,
+            (_0: paginatedDTO) => {
+                // Allow refreshes every 15s
+                this._c.refreshButton.disabled = true;
+                setTimeout(() => this._c.refreshButton.disabled = false, 15000);
+            },
+            (resp: paginatedDTO) => {
+                this._search.onSearchBoxChange(true, false, false);
+                if (this._search.inSearch) {
+                    // this._c.loadAllButton.classList.remove("unfocused");
+                } else {
+                    this._counter.shown = this._counter.loaded;
+                    this.setVisibility(this._search.ordering, true);
+                    // this._search.showHideNotFoundPanel(false);
+                }
+                if (callback) callback(resp);
+            },
+        );
     }
 
     // Loads the next page. If "loadAll", all pages will be loaded until the last is reached.
-    public abstract loadMore: (callback: () => void, loadAll: boolean) => void;
-    protected _loadMore = (
-        loadAll: boolean = false,
-        callback?: (req: XMLHttpRequest) => void
-    ) => {
-        this._lastLoad = Date.now();
+    public abstract loadMore: (loadAll?: boolean, callback?: () => void) => void;
+    protected _loadMore = (loadAll: boolean = false, callback?: (resp: paginatedDTO) => void) => {
         this._c.loadMoreButton.disabled = true;
         const timeout = setTimeout(() => {
             this._c.loadMoreButton.disabled = false;
         }, 1000);
         this._page += 1;
 
-        let params = this._search.inServerSearch ? this._searchParams : this.defaultParams();
-        params.limit = this._c.itemsPerPage;
-        params.page = this._page;
-        if (params.sortByField == "") {
-            params.sortByField = this._c.defaultSortField;
-            params.ascending = this._c.defaultSortAscending;
-        }
-
-        _post(this._c.getPageEndpoint, params, (req: XMLHttpRequest) => {
-            if (req.readyState != 4) return;
-            if (req.status != 200) {
-                if (this._c.pageLoadCallback) this._c.pageLoadCallback(req);
-                if (callback) callback(req);
-                return;
-            }
-
-            let resp = req.response as paginatedDTO;
-           
-            // Check before setting this.lastPage so we have a chance to cancel the timeout.
-            if (resp.last_page) {
-                clearTimeout(timeout);
-                removeLoader(this._c.loadAllButton);
-            }
-
-            this.lastPage = resp.last_page;
-
-            this._c.appendNewItems(resp);
-           
-            this._counter.loaded = this._search.ordering.length;
-            
-            if (this._search.inSearch || loadAll) {
-                if (this.lastPage) {
-                    loadAll = false;
+        this._load(
+            this._c.itemsPerPage,
+            this._page,
+            (resp: paginatedDTO) => {
+                // Check before setting this.lastPage so we have a chance to cancel the timeout.
+                if (resp.last_page) {
+                    clearTimeout(timeout);
+                    removeLoader(this._c.loadAllButton);
                 }
-                this._search.onSearchBoxChange(true, true, loadAll);
-            } else {
-                // Since results come to us ordered already, we can assume "ordering"
-                // will be identical to pre-page-load but with extra elements at the end,
-                // allowing infinite scroll to continue
-                this.setVisibility(this._search.ordering, true, true);
-                this._search.setNotFoundPanelVisibility(false);
-            }
-            if (this._c.pageLoadCallback) this._c.pageLoadCallback(req);
-            if (callback) callback(req);
-        }, true)
+            },
+            (resp: paginatedDTO) => {
+                if (this._search.inSearch || loadAll) {
+                    if (this.lastPage) {
+                        loadAll = false;
+                    }
+                    this._search.onSearchBoxChange(true, true, loadAll);
+                } else {
+                    // Since results come to us ordered already, we can assume "ordering"
+                    // will be identical to pre-page-load but with extra elements at the end,
+                    // allowing infinite scroll to continue
+                    this.setVisibility(this._search.ordering, true, true);
+                    this._search.setNotFoundPanelVisibility(false);
+                }
+                if (callback) callback(resp);
+            },
+        );
     }
 
     loadNItems = (n: number) => {
         const cb = () => {
             if (this._counter.loaded > n) return;
-            this.loadMore(cb, false);
+            this.loadMore(false, cb);
         }
         cb();
     }
@@ -477,7 +457,7 @@ export abstract class PaginatedList {
             const cb = () => {
                 if (this._visible.length < endIdx && !this.lastPage) {
                     // FIXME: This causes scroll-to-top when in search.
-                    this.loadMore(cb, false)
+                    this.loadMore(false, cb);
                     return;
                 }
 

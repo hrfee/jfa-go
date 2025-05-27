@@ -1232,25 +1232,15 @@ export class accountsList extends PaginatedList {
         this.registerURLListener();
     }
 
-    reload = (callback?: () => void) => {
-        this._reload(
-            (req: XMLHttpRequest) => {
-                if (req.readyState != 4) return;
-                if (req.status != 200) return;
-                if (callback) callback();
-            }
-        );
+    reload = (callback?: (resp: paginatedDTO) => void) => {
+        this._reload(callback);
         this.loadTemplates();
     }
 
-    loadMore = (callback?: () => void, loadAll: boolean = false) => {
+    loadMore = (loadAll: boolean = false, callback?: () => void) => {
         this._loadMore(
             loadAll,
-            (req: XMLHttpRequest) => {
-                if (req.readyState != 4) return;
-                if (req.status != 200) return;
-                if (callback) callback();
-            }
+            callback
         );
     };
 
