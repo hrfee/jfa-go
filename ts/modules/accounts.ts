@@ -7,8 +7,6 @@ import { SearchConfiguration, QueryType, SearchableItem, SearchableItemDataAttri
 import { HiddenInputField } from "./ui"
 import { PaginatedList } from "./list"
 
-// FIXME: Find and define a threshold after which searches are no longer performed on input (or just in general by the browser).
-
 declare var window: GlobalWindow;
 
 const USER_DEFAULT_SORT_FIELD      = "name";
@@ -976,9 +974,6 @@ export class accountsList extends PaginatedList {
         });
         this._populateNumbers();
         
-        // FIXME: Remove!
-        (window as any).acc = this;
-
         let searchConfig: SearchConfiguration = {
             filterArea: this._c.filterArea,
             sortingByButton: this._sortingByButton,

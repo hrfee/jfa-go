@@ -67,9 +67,10 @@ func (app *appContext) pushResources(gc *gin.Context, page Page) {
 	default:
 		toPush = []string{}
 	}
+	urlBase := app.getURLBase(gc)
 	if pusher := gc.Writer.Pusher(); pusher != nil {
 		for _, f := range toPush {
-			if err := pusher.Push(PAGES.Base+f, nil); err != nil {
+			if err := pusher.Push(urlBase+f, nil); err != nil {
 				app.debug.Printf(lm.FailedServerPush, err)
 			}
 		}
@@ -172,6 +173,10 @@ func (app *appContext) getLang(gc *gin.Context, page Page, chosen string) string
 
 func (app *appContext) AdminPage(gc *gin.Context) {
 	app.pushResources(gc, AdminPage)
+
+	// Pre-emptively (maybe) generate user cache
+	go app.userCache.MaybeSync(app)
+
 	lang := app.getLang(gc, AdminPage, app.storage.lang.chosenAdminLang)
 	jfAdminOnly := app.config.Section("ui").Key("admin_only").MustBool(true)
 	jfAllowAll := app.config.Section("ui").Key("allow_all").MustBool(false)

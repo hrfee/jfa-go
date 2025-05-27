@@ -235,11 +235,12 @@ const (
 }*/
 
 type DateAttempt struct {
-	Year   *int `json:"year,omitempty"`
-	Month  *int `json:"month,omitempty"`
-	Day    *int `json:"day,omitempty"`
-	Hour   *int `json:"hour,omitempty"`
-	Minute *int `json:"minute,omitempty"`
+	Year                 *int `json:"year,omitempty"`
+	Month                *int `json:"month,omitempty"`
+	Day                  *int `json:"day,omitempty"`
+	Hour                 *int `json:"hour,omitempty"`
+	Minute               *int `json:"minute,omitempty"`
+	OffsetMinutesFromUTC *int `json:"offsetMinutesFromUTC,omitempty"`
 }
 
 // Compare roughly compares a time.Time to a DateAttempt.

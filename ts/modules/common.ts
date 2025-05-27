@@ -1,4 +1,5 @@
 declare var window: GlobalWindow;
+import dateParser from "any-date-parser";
 
 export function toDateString(date: Date): string {
     const locale = window.language || (window as any).navigator.userLanguage || window.navigator.language;
@@ -19,6 +20,20 @@ export function toDateString(date: Date): string {
         }
     }
     return date.toLocaleDateString(locale, args1) + " " + date.toLocaleString(locale, args2);
+}
+
+export const parseDateString = (value: string): ParsedDate => {
+    let out: ParsedDate = {
+        text: value,
+        // Used just to tell use what fields the user passed.
+        attempt: dateParser.attempt(value),
+        // note Date.fromString is also provided by dateParser.
+        date: (Date as any).fromString(value) as Date
+    };
+    out.attempt.offsetMinutesFromUTC = out.date.getTimezoneOffset();
+    // Month in Date objects is 0-based, so make our parsed date that way too
+    if ("month" in out.attempt) out.attempt.month -= 1;
+    return out;
 }
 
 export const _get = (url: string, data: Object, onreadystatechange: (req: XMLHttpRequest) => void, noConnectionError: boolean = false): void => {

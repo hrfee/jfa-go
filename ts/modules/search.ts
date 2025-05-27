@@ -1,4 +1,5 @@
-const dateParser = require("any-date-parser");
+import { ListItem } from "./list";
+import { parseDateString } from "./common";
 
 declare var window: GlobalWindow;
 
@@ -176,20 +177,6 @@ export class StringQuery extends Query {
     }
 }
 
-export interface DateAttempt {
-    year?: number;
-    month?: number;
-    day?: number;
-    hour?: number;
-    minute?: number
-}
-
-export interface ParsedDate {
-    attempt: DateAttempt;
-    date: Date;
-    text: string;
-};
-    
 const dateGetters: Map<string, () => number> = (() => {
     let m = new Map<string, () => number>();
     m.set("year", Date.prototype.getFullYear);
@@ -222,24 +209,15 @@ export class DateQuery extends Query {
         <span class="font-bold mr-2">${subject.name}:</span> ${dateText != "" ? dateText+" " : ""}${value.text}
         `;
     }
+
     public static paramsFromString(valueString: string): [ParsedDate, QueryOperator, boolean] {
-        // FIXME: Validate this!
         let op = QueryOperator.Equal;
         if ((Object.values(QueryOperator) as string[]).includes(valueString.charAt(0))) {
             op = valueString.charAt(0) as QueryOperator;
             // Trim the operator from the string
             valueString = valueString.substring(1);
         }
-
-        let out: ParsedDate = {
-            text: valueString,
-            // Used just to tell use what fields the user passed.
-            attempt: dateParser.attempt(valueString),
-            // note Date.fromString is also provided by dateParser.
-            date: (Date as any).fromString(valueString) as Date
-        };
-        // Month in Date objects is 0-based, so make our parsed date that way too
-        if ("month" in out.attempt) out.attempt.month -= 1;
+        let out = parseDateString(valueString);
         let isValid = true;
         if ("invalid" in (out.date as any)) { isValid = false; };
         
@@ -278,10 +256,8 @@ export class DateQuery extends Query {
     }
 }
 
-export interface SearchableItem {
+export interface SearchableItem extends ListItem {
     matchesSearch: (query: string) => boolean;
-    // FIXME: SearchableItem should really be ListItem or something, this isn't for search!
-    asElement: () => HTMLElement;
 }
 
 export const SearchableItemDataAttribute = "data-search-item";
@@ -598,7 +574,6 @@ export class Search {
         this._c.search.oninput(null as any);
     };
 
-    // FIXME: Make XQuery classes less specifically for in-progress searches, and include this code for making info button things.
     generateFilterList = () => {
         // Generate filter buttons
         for (let queryName of Object.keys(this._c.queries)) {

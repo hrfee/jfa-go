@@ -533,9 +533,6 @@ export class activityList extends PaginatedList {
             }
         });
         
-        // FIXME: Remove!
-        (window as any).act = this;
-
         this._container = document.getElementById("activity-card-list")
         document.addEventListener("activity-reload", () => this.reload());
 
@@ -583,7 +580,7 @@ export class activityList extends PaginatedList {
         // Setting default sort makes sense, since this is the only sort ever being done.
         this._c.defaultSortAscending = this.ascending;
         this._sortDirection.innerHTML = `${window.lang.strings("sortDirection")} <i class="ri-arrow-${v ? "up" : "down"}-s-line ml-2"></i>`;
-        // FIXME?: We don't actually re-sort the list here, instead just use setOrdering to apply this.ascending before a reload.
+        // NOTE: We don't actually re-sort the list here, instead just use setOrdering to apply this.ascending before a reload.
         this._search.setOrdering(this._search.ordering, this._c.defaultSortField, this.ascending);
         if (this._hasLoaded) {
             if (this._search.inServerSearch) {

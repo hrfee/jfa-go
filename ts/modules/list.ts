@@ -4,6 +4,10 @@ import "@af-utils/scrollend-polyfill";
 
 declare var window: GlobalWindow;
 
+export interface ListItem {
+    asElement: () => HTMLElement;
+};
+
 export class RecordCounter {
     private _container: HTMLElement;
     private _totalRecords: HTMLElement;
@@ -342,7 +346,7 @@ export abstract class PaginatedList {
             this.lastPage = resp.last_page;
 
             appendFunc(resp);
-            
+           
             this._counter.loaded = this._search.ordering.length;
             
             if (post) post(resp);

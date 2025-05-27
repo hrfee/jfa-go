@@ -161,5 +161,20 @@ interface PaginatedReqDTO {
     ascending: boolean;
 };
 
+interface DateAttempt {
+    year?: number;
+    month?: number;
+    day?: number;
+    hour?: number;
+    minute?: number;
+    offsetMinutesFromUTC?: number;
+}
+
+interface ParsedDate {
+    attempt: DateAttempt;
+    date: Date;
+    text: string;
+};
+
 declare var config: Object;
 declare var modifiedConfig: Object;
