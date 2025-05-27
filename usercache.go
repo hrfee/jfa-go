@@ -499,6 +499,11 @@ func (q *QueryDTO) UnmarshalJSON(data []byte) error {
 // ServerSearchReqDTO is a usual PaginatedReqDTO with added fields for searching and filtering.
 type ServerSearchReqDTO struct {
 	PaginatedReqDTO
+	ServerFilterReqDTO
+}
+
+// ServerFilterReqDTO provides search terms and queries to a search or count route.
+type ServerFilterReqDTO struct {
 	SearchTerms []string   `json:"searchTerms"`
 	Queries     []QueryDTO `json:"queries"`
 }

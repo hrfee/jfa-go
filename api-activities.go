@@ -86,21 +86,8 @@ func activitySourceToString(v ActivitySource) string {
 	return "anon"
 }
 
-// @Summary Get the requested set of activities, Paginated, filtered and sorted. Is a POST because of some issues I was having, ideally should be a GET.
-// @Produce json
-// @Param ServerSearchReqDTO body ServerSearchReqDTO true "search parameters"
-// @Success 200 {object} GetActivitiesRespDTO
-// @Router /activity [post]
-// @Security Bearer
-// @tags Activity
-func (app *appContext) GetActivities(gc *gin.Context) {
-	req := ServerSearchReqDTO{}
-	gc.BindJSON(&req)
-	if req.SortByField == "" {
-		req.SortByField = USER_DEFAULT_SORT_FIELD
-	} else {
-		req.SortByField = activityDTONameToField(req.SortByField)
-	}
+// generateActivitiesQuery generates a badgerhold query from QueryDTOs and search terms, which can then be searched, counted, or whatever you want.
+func (app *appContext) generateActivitiesQuery(req ServerFilterReqDTO) *badgerhold.Query {
 
 	var query *badgerhold.Query
 	if len(req.SearchTerms) != 0 {
@@ -120,6 +107,26 @@ func (app *appContext) GetActivities(gc *gin.Context) {
 	if query == nil {
 		query = &badgerhold.Query{}
 	}
+	return query
+}
+
+// @Summary Get the requested set of activities, Paginated, filtered and sorted. Is a POST because of some issues I was having, ideally should be a GET.
+// @Produce json
+// @Param ServerSearchReqDTO body ServerSearchReqDTO true "search parameters"
+// @Success 200 {object} GetActivitiesRespDTO
+// @Router /activity [post]
+// @Security Bearer
+// @tags Activity
+func (app *appContext) GetActivities(gc *gin.Context) {
+	req := ServerSearchReqDTO{}
+	gc.BindJSON(&req)
+	if req.SortByField == "" {
+		req.SortByField = USER_DEFAULT_SORT_FIELD
+	} else {
+		req.SortByField = activityDTONameToField(req.SortByField)
+	}
+
+	query := app.generateActivitiesQuery(req.ServerFilterReqDTO)
 
 	query = query.SortBy(req.SortByField)
 	if !req.Ascending {
@@ -184,6 +191,29 @@ func (app *appContext) GetActivityCount(gc *gin.Context) {
 	var err error
 	resp.Count, err = app.storage.db.Count(&Activity{}, &badgerhold.Query{})
 	if err != nil {
+		resp.Count = 0
+	}
+	gc.JSON(200, resp)
+}
+
+// @Summary Returns the total number of activities matching the given filtering. Fails silently.
+// @Produce json
+// @Param ServerFilterReqDTO body ServerFilterReqDTO true "search parameters"
+// @Success 200 {object} PageCountDTO
+// @Router /activity/count [post]
+// @Security Bearer
+// @tags Activity
+func (app *appContext) GetFilteredActivityCount(gc *gin.Context) {
+	resp := PageCountDTO{}
+	req := ServerFilterReqDTO{}
+	gc.BindJSON(&req)
+
+	query := app.generateActivitiesQuery(req)
+
+	var err error
+	resp.Count, err = app.storage.db.Count(&Activity{}, query)
+	if err != nil {
+		// app.err.Printf(lm.FailedDBReadActivities, err)
 		resp.Count = 0
 	}
 	gc.JSON(200, resp)
