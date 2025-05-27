@@ -130,11 +130,6 @@ func (emailer *Emailer) NewSMTP(server string, port int, username, password stri
 	sender := &SMTP{}
 	sender.Client = sMail.NewSMTPClient()
 	sender.Client.Encryption = encryption
-	if sslTLS {
-		sender.Client.Encryption = sMail.EncryptionSSLTLS
-	} else {
-		sender.Client.Encryption = sMail.EncryptionSTARTTLS
-	}
 	if username != "" || password != "" {
 		sender.Client.Authentication = authType
 		sender.Client.Username = username
