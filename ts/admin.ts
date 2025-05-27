@@ -179,7 +179,7 @@ for (let tab of tabs) {
 
 let matchedTab = false
 for (const tab of tabs) {
-    if (window.location.pathname.startsWith(window.pages.Current + "/" + tab.url)) {
+    if (window.location.pathname.startsWith(window.pages.Base + window.pages.Current + "/" + tab.url)) {
         window.tabs.switch(tab.url, true);
         matchedTab = true;
     }
