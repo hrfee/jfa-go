@@ -174,12 +174,12 @@ const defaultTab = tabs[0];
 window.tabs = new Tabs();
 
 for (let tab of tabs) {
-    window.tabs.addTab(tab.id, window.pages.Admin + "/" + tab.url, null, tab.reloader, tab.unloader || null);
+    window.tabs.addTab(tab.id, window.pages.Base + window.pages.Admin + "/" + tab.url, null, tab.reloader, tab.unloader || null);
 }
 
 let matchedTab = false
 for (const tab of tabs) {
-    if (window.location.pathname.startsWith(window.pages.Base + window.pages.Current + "/" + tab.url)) {
+    if (window.location.pathname.startsWith(window.pages.Current + "/" + tab.url)) {
         window.tabs.switch(tab.url, true);
         matchedTab = true;
     }

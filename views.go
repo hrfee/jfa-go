@@ -87,7 +87,9 @@ func (app *appContext) BasePageTemplateValues(gc *gin.Context, page Page, base g
 	}
 
 	pages := PagePathsDTO{
-		PagePaths: PAGES,
+		PagePaths:   PAGES,
+		ExternalURI: app.ExternalURI,
+		TrueBase:    PAGES.Base,
 	}
 	pages.Base = app.getURLBase(gc)
 	switch page {

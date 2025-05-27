@@ -13,14 +13,18 @@ interface ArrayConstructor {
 }
 
 declare interface PagePaths {
-    // The base subfolder the app is hosted on.
+    // The base subfolder the app is being accessed from.
     Base: string;
+    // The base subfolder the app is meant to be accessed from ("Reverse proxy subfolder")
+    TrueBase: string;
     // The subdirectory this bit of the app is hosted on (e.g. admin is usually on "/", myacc is usually on "/my/account")
     Current: string;
     // Those for other pages
     Admin: string;
     MyAccount: string;
     Form: string;
+    // The "External jfa-go URL"
+    ExternalURI: string;
 }
 
 declare interface GlobalWindow extends Window {

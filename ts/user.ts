@@ -6,6 +6,7 @@ import { Login } from "./modules/login.js";
 import { Discord, Telegram, Matrix, ServiceConfiguration, MatrixConfiguration } from "./modules/account-linking.js";
 import { Validator, ValidatorConf, ValidatorRespDTO } from "./modules/validator.js";
 import { PageManager } from "./modules/pages.js";
+import { generateCodeLink } from "./modules/invites.js";
 
 interface userWindow extends GlobalWindow {
     jellyfinID: string;
@@ -305,14 +306,15 @@ class ReferralCard {
         this._code = c;
        
 
-        let u = new URL(window.location.href);
-        const path = window.pages.Base + window.pages.Form + "/" + this._code;
-        
-        u.pathname = path;
-        u.hash = "";
-        u.search = "";
+        // let u = new URL(window.location.href);
+        // const path = window.pages.Base + window.pages.Form + "/" + this._code;
+        // 
+        // u.pathname = path;
+        // u.hash = "";
+        // u.search = "";
     
-        this._url = u.toString();
+        // this._url = u.toString();
+        this._url = generateCodeLink(this._code);
     }
 
     get remaining_uses(): number { return this._remainingUses; }

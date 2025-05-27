@@ -485,5 +485,8 @@ type PagePaths struct {
 type PagePathsDTO struct {
 	PagePaths
 	// The subdirectory this bit of the app is hosted on (e.g. admin is usually on "/", myacc is usually on "/my/account")
-	Current string `json:"Current"`
+	Current     string `json:"Current"`
+	ExternalURI string `json:"ExternalURI"`
+	// The subdirectory the app is meant to be accessed from ("Reverse proxy subfolder")
+	TrueBase string `json:"TrueBase"`
 }

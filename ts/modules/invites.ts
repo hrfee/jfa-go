@@ -4,6 +4,12 @@ import { reloadProfileNames }  from "../modules/profiles.js";
 
 declare var window: GlobalWindow;
 
+export const generateCodeLink = (code: string): string => {
+    // let codeLink = window.pages.Base + window.pages.Form + "/" + code;
+    let codeLink = window.pages.ExternalURI + window.pages.Form + "/" + code;
+    return codeLink;
+}
+
 class DOMInvite implements Invite {
     updateNotify = (checkbox: HTMLInputElement) => {
         let state: { [code: string]: { [type: string]: boolean } } = {};
@@ -63,7 +69,7 @@ class DOMInvite implements Invite {
     get code(): string { return this._code; }
     set code(code: string) {
         this._code = code;
-        this._codeLink = window.pages.Base + window.pages.Form + "/" + code;
+        this._codeLink = generateCodeLink(code);
         const linkEl = this._codeArea.querySelector("a") as HTMLAnchorElement;
         if (this.label == "") {
             linkEl.textContent = code.replace(/-/g, '-');
