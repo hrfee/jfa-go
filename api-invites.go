@@ -268,7 +268,7 @@ func (app *appContext) GenerateInvite(gc *gin.Context) {
 func (app *appContext) GetInviteCount(gc *gin.Context) {
 	resp := PageCountDTO{}
 	var err error
-	resp.Count, err = app.storage.db.Count(&Invite{}, &badgerhold.Query{})
+	resp.Count, err = app.storage.db.Count(&Invite{}, badgerhold.Where("IsReferral").Eq(false))
 	if err != nil {
 		resp.Count = 0
 	}
@@ -284,7 +284,7 @@ func (app *appContext) GetInviteCount(gc *gin.Context) {
 func (app *appContext) GetInviteUsedCount(gc *gin.Context) {
 	resp := PageCountDTO{}
 	var err error
-	resp.Count, err = app.storage.db.Count(&Invite{}, badgerhold.Where("usedBy").MatchFunc(func(ra *badgerhold.RecordAccess) (bool, error) {
+	resp.Count, err = app.storage.db.Count(&Invite{}, badgerhold.Where("IsReferral").Eq(false).And("UsedBy").MatchFunc(func(ra *badgerhold.RecordAccess) (bool, error) {
 		field := ra.Field()
 		switch usedBy := field.(type) {
 		case [][]string:
