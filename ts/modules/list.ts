@@ -310,11 +310,22 @@ export abstract class PaginatedList {
         return bottomIdx;
     }
 
-    private _load = (itemLimit: number, page: number, pre?: (resp: paginatedDTO) => void, post?: (resp: paginatedDTO) => void, failCallback?: (req: XMLHttpRequest) => void) => {
+    private _load = (
+        itemLimit: number,
+        page: number,
+        appendFunc: (resp: paginatedDTO) => void, // Function to append/put items in storage.
+        pre?: (resp: paginatedDTO) => void,
+        post?: (resp: paginatedDTO) => void,
+        failCallback?: (req: XMLHttpRequest) => void
+    ) => {
         this._lastLoad = Date.now();
         let params = this._search.inServerSearch ? this._searchParams : this.defaultParams();
         params.limit = itemLimit;
         params.page = page;
+        if (params.sortByField == "") {
+            params.sortByField = this._c.defaultSortField;
+            params.ascending = this._c.defaultSortAscending;
+        }
 
         _post(this._c.getPageEndpoint, params, (req: XMLHttpRequest) => {
             if (req.readyState != 4) return;
@@ -327,10 +338,10 @@ export abstract class PaginatedList {
 
             let resp = req.response as paginatedDTO;
             if (pre) pre(resp);
+            
             this.lastPage = resp.last_page;
 
-            // this._c.replaceWithNewItems(resp);
-            // this._c.appendNewItems(resp);
+            appendFunc(resp);
             
             this._counter.loaded = this._search.ordering.length;
             
@@ -354,6 +365,7 @@ export abstract class PaginatedList {
         this._load(
             limit,
             0,
+            this._c.replaceWithNewItems,
             (_0: paginatedDTO) => {
                 // Allow refreshes every 15s
                 this._c.refreshButton.disabled = true;
@@ -385,6 +397,7 @@ export abstract class PaginatedList {
         this._load(
             this._c.itemsPerPage,
             this._page,
+            this._c.appendNewItems,
             (resp: paginatedDTO) => {
                 // Check before setting this.lastPage so we have a chance to cancel the timeout.
                 if (resp.last_page) {
