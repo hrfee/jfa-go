@@ -427,7 +427,7 @@ func (app *appContext) EnableDisableUsers(gc *gin.Context) {
 			}
 		}
 	}
-	app.jf.CacheExpiry = time.Now()
+	app.InvalidateUserCaches()
 	if len(errors["GetUser"]) != 0 || len(errors["SetPolicy"]) != 0 {
 		gc.JSON(500, errors)
 		return
@@ -495,7 +495,7 @@ func (app *appContext) DeleteUsers(gc *gin.Context) {
 			}
 		}
 	}
-	app.jf.CacheExpiry = time.Now()
+	app.InvalidateUserCaches()
 	if len(errors) == len(req.Users) {
 		respondBool(500, false, gc)
 		app.err.Printf(lm.FailedDeleteUsers, lm.Jellyfin, errors[req.Users[0]])
@@ -1179,7 +1179,7 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 
 	} else if req.From == "user" {
 		applyingFromType = lm.User
-		app.jf.CacheExpiry = time.Now()
+		app.InvalidateJellyfinCache()
 		user, err := app.jf.UserByID(req.ID, false)
 		if err != nil {
 			app.err.Printf(lm.FailedGetUser, req.ID, lm.Jellyfin, err)

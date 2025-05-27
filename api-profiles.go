@@ -110,7 +110,7 @@ func (app *appContext) SetDefaultProfile(gc *gin.Context) {
 func (app *appContext) CreateProfile(gc *gin.Context) {
 	var req newProfileDTO
 	gc.BindJSON(&req)
-	app.jf.CacheExpiry = time.Now()
+	app.InvalidateJellyfinCache()
 	user, err := app.jf.UserByID(req.ID, false)
 	if err != nil {
 		app.err.Printf(lm.FailedGetUsers, lm.Jellyfin, err)

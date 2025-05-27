@@ -140,7 +140,7 @@ func newHousekeepingDaemon(interval time.Duration, app *appContext) *GenericDaem
 	clearPWR := app.config.Section("captcha").Key("enabled").MustBool(false) && !app.config.Section("captcha").Key("recaptcha").MustBool(false)
 
 	if clearEmail || clearDiscord || clearTelegram || clearMatrix {
-		d.appendJobs(func(app *appContext) { app.jf.CacheExpiry = time.Now() })
+		d.appendJobs(func(app *appContext) { app.InvalidateJellyfinCache() })
 	}
 
 	if clearEmail {

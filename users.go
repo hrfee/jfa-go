@@ -99,8 +99,8 @@ func (app *appContext) NewUserPostVerification(p NewUserParams) (out NewUserData
 		return
 	}
 	out.Created = true
-	// Invalidate Cache to be safe
-	app.jf.CacheExpiry = time.Now()
+	// Invalidate cache to be safe
+	app.InvalidateUserCaches()
 
 	app.storage.SetActivityKey(shortuuid.New(), Activity{
 		Type:       ActivityCreation,

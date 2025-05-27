@@ -104,7 +104,7 @@ func (app *appContext) checkUsers() {
 			expiry.DeleteAfterPeriod = true
 			app.storage.SetUserExpiryKey(user.ID, expiry)
 		}
-		app.jf.CacheExpiry = time.Now()
+		app.InvalidateJellyfinCache()
 		if contact {
 			if !ok {
 				continue

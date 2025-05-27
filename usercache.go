@@ -10,12 +10,23 @@ import (
 	"time"
 )
 
-// FIXME: Invalidate cache on delete/modify/etc.
-
 const (
 	USER_DEFAULT_SORT_FIELD     = "name"
 	USER_DEFAULT_SORT_ASCENDING = true
 )
+
+func (app *appContext) InvalidateUserCaches() {
+	app.InvalidateJellyfinCache()
+	app.InvalidateWebUserCache()
+}
+
+func (app *appContext) InvalidateJellyfinCache() {
+	app.jf.CacheExpiry = time.Now()
+}
+
+func (app *appContext) InvalidateWebUserCache() {
+	app.userCache.LastSync = time.Time{}
+}
 
 // UserCache caches the transport representation of users,
 // complementing the built-in cache of the mediabrowser package.
