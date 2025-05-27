@@ -9,7 +9,6 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/gin-contrib/pprof"
-	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	lm "github.com/hrfee/jfa-go/logmessages"
 	swaggerFiles "github.com/swaggo/files"
@@ -94,7 +93,7 @@ func (app *appContext) loadRouter(address string, debug bool) *gin.Engine {
 
 	router.Use(gin.Recovery())
 	app.loadHTML(router)
-	router.Use(static.Serve("/", app.webFS))
+	router.Use(serveTaggedStatic("/", app.webFS))
 	router.NoRoute(app.NoRouteHandler)
 	if *PPROF {
 		app.debug.Println(lm.RegisterPprof)
@@ -117,7 +116,7 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 
 	for _, p := range routePrefixes {
 		router.GET(p+"/lang/:page", app.GetLanguages)
-		router.Use(static.Serve(p+"/", app.webFS))
+		router.Use(serveTaggedStatic(p+"/", app.webFS))
 		router.GET(p+PAGES.Admin, app.AdminPage)
 
 		if app.config.Section("password_resets").Key("link_reset").MustBool(false) {
@@ -136,7 +135,7 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 		router.GET(p+"/token/login", app.getTokenLogin)
 		router.GET(p+"/token/refresh", app.getTokenRefresh)
 		router.POST(p+"/user/invite", app.NewUserFromInvite)
-		router.Use(static.Serve(p+PAGES.Form+"/", app.webFS))
+		router.Use(serveTaggedStatic(p+PAGES.Form+"/", app.webFS))
 		router.GET(p+PAGES.Form+"/:invCode", app.InviteProxy)
 		if app.config.Section("captcha").Key("enabled").MustBool(false) {
 			router.GET(p+"/captcha/gen/:invCode", app.GenCaptcha)

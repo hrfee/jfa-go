@@ -30,7 +30,6 @@ require (
 	github.com/fsnotify/fsnotify v1.8.0
 	github.com/getlantern/systray v1.2.2
 	github.com/gin-contrib/pprof v1.5.0
-	github.com/gin-contrib/static v1.1.2
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible
 	github.com/golang-jwt/jwt v3.2.2+incompatible
@@ -43,6 +42,7 @@ require (
 	github.com/hrfee/jfa-go/logger v0.0.0-20241105225412-da4470bc4fbc
 	github.com/hrfee/jfa-go/logmessages v0.0.0-20241105225412-da4470bc4fbc
 	github.com/hrfee/jfa-go/ombi v0.0.0-20241105225412-da4470bc4fbc
+	github.com/hrfee/mediabrowser v0.3.28
 	github.com/itchyny/timefmt-go v0.1.6
 	github.com/lithammer/shortuuid/v3 v3.0.7
 	github.com/mailgun/mailgun-go/v4 v4.18.1
@@ -97,7 +97,6 @@ require (
 	github.com/google/flatbuffers v24.3.25+incompatible // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/websocket v1.5.3 // indirect
-	github.com/hrfee/mediabrowser v0.3.28 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.17.11 // indirect
