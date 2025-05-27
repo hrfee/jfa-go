@@ -243,10 +243,34 @@ type DateAttempt struct {
 	OffsetMinutesFromUTC *int `json:"offsetMinutesFromUTC,omitempty"`
 }
 
+// CompareWithOperator roughly compares a time.Time to a DateAttempt according to the given operator.
+// **Considers zero-dates as invalid!** (i.e. any comparison to a subject.IsZero() will be false).
+func (d DateAttempt) CompareWithOperator(subject time.Time, operator CompareResult) bool {
+	if subject.IsZero() {
+		return false
+	}
+	return d.Compare(subject) == int(operator)
+}
+
+// CompareUnixWithOperator roughly compares a unix timestamp to a DateAttempt according to the given operator.
+// **Considers zero-dates as invalid!** (i.e. any comparison to a time.Unix(subject, 0).IsZero() or (subject == 0) will be false).
+func (d DateAttempt) CompareUnixWithOperator(subject int64, operator CompareResult) bool {
+	if subject == 0 {
+		return false
+	}
+	subjectTime := time.Unix(subject, 0)
+	if subjectTime.IsZero() {
+		return false
+	}
+	return d.Compare(subjectTime) == int(operator)
+}
+
 // Compare roughly compares a time.Time to a DateAttempt.
 // We want to compare only the fields given in DateAttempt,
 // so we copy subjectDate and apply on those fields from this._value.
 func (d DateAttempt) Compare(subject time.Time) int {
+	// Remove anything more precise than a second
+	subject = subject.Truncate(time.Minute)
 	yy, mo, dd := subject.Date()
 	hh, mm, _ := subject.Clock()
 	if d.Year != nil {
@@ -265,8 +289,17 @@ func (d DateAttempt) Compare(subject time.Time) int {
 	if d.Minute != nil {
 		mm = *d.Minute
 	}
+
+	location := time.UTC
+	if d.OffsetMinutesFromUTC != nil {
+		location = time.FixedZone("", 60*(*d.OffsetMinutesFromUTC))
+	}
+
 	// FIXME: Transmit timezone in request maybe?
-	return subject.Compare(time.Date(yy, mo, dd, hh, mm, 0, 0, time.UTC))
+	daAsTime := time.Date(yy, mo, dd, hh, mm, 0, 0, location)
+	comp := subject.Compare(daAsTime)
+
+	return comp
 }
 
 // CompareUnix roughly compares a unix timestamp to a DateAttempt.
@@ -310,7 +343,7 @@ func (q QueryDTO) AsFilter() Filter {
 		switch q.Class {
 		case DateQuery:
 			return func(a *respUser) bool {
-				return q.Value.(DateAttempt).CompareUnix(a.LastActive) == int(operator)
+				return q.Value.(DateAttempt).CompareUnixWithOperator(a.LastActive, operator)
 			}
 		case BoolQuery:
 			return func(a *respUser) bool {
@@ -329,7 +362,7 @@ func (q QueryDTO) AsFilter() Filter {
 		switch q.Class {
 		case DateQuery:
 			return func(a *respUser) bool {
-				return q.Value.(DateAttempt).CompareUnix(a.Expiry) == int(operator)
+				return q.Value.(DateAttempt).CompareUnixWithOperator(a.Expiry, operator)
 			}
 		case BoolQuery:
 			return func(a *respUser) bool {

@@ -219,7 +219,7 @@ export class DateQuery extends Query {
         }
         let out = parseDateString(valueString);
         let isValid = true;
-        if ("invalid" in (out.date as any)) { isValid = false; };
+        if (out.invalid) isValid = false;
         
         return [out, op, isValid];
     }

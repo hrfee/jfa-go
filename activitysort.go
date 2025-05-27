@@ -249,7 +249,7 @@ func matchTimeAsQuery(query *badgerhold.Query, q QueryDTO) *badgerhold.Query {
 	}
 	criterion := andField(query, "Time")
 	query = criterion.MatchFunc(func(ra *badgerhold.RecordAccess) (bool, error) {
-		return q.Value.(DateAttempt).Compare(ra.Field().(time.Time)) == int(operator), nil
+		return q.Value.(DateAttempt).CompareWithOperator(ra.Field().(time.Time), operator), nil
 	})
 	return query
 }

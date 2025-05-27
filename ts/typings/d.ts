@@ -174,6 +174,7 @@ interface ParsedDate {
     attempt: DateAttempt;
     date: Date;
     text: string;
+    invalid?: boolean;
 };
 
 declare var config: Object;

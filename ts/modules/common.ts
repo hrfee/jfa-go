@@ -30,7 +30,12 @@ export const parseDateString = (value: string): ParsedDate => {
         // note Date.fromString is also provided by dateParser.
         date: (Date as any).fromString(value) as Date
     };
-    out.attempt.offsetMinutesFromUTC = out.date.getTimezoneOffset();
+    if (("invalid" in (out.date as any))) {
+        out.invalid = true;
+    } else {
+        // getTimezoneOffset returns UTC - Timezone, so invert it to get distance from UTC -to- timezone.
+        out.attempt.offsetMinutesFromUTC = -1 * out.date.getTimezoneOffset();
+    }
     // Month in Date objects is 0-based, so make our parsed date that way too
     if ("month" in out.attempt) out.attempt.month -= 1;
     return out;
