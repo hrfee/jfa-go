@@ -53,7 +53,7 @@ const (
 
 type Activity struct {
 	ID         string       `badgerhold:"key"`
-	Type       ActivityType `badgerhold:"index"`
+	Type       ActivityType `badgerhold:"index"` // Index by type for quicker filtering
 	UserID     string       // ID of target user. For account creation, this will be the newly created account
 	SourceType ActivitySource
 	Source     string

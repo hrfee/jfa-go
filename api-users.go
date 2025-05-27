@@ -903,13 +903,13 @@ func (app *appContext) userSummary(jfUser mediabrowser.User) respUser {
 // @tags Activity
 func (app *appContext) GetUserCount(gc *gin.Context) {
 	resp := PageCountDTO{}
-	userList, err := app.userCache.GetUserDTOs(app, false)
+	users, err := app.jf.GetUsers(false)
 	if err != nil {
 		app.err.Printf(lm.FailedGetUsers, lm.Jellyfin, err)
 		respond(500, "Couldn't get users", gc)
 		return
 	}
-	resp.Count = uint64(len(userList))
+	resp.Count = uint64(len(users))
 	gc.JSON(200, resp)
 }
 
