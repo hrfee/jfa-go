@@ -275,6 +275,30 @@ func (app *appContext) GetInviteCount(gc *gin.Context) {
 	gc.JSON(200, resp)
 }
 
+// @Summary Get the number of invites stored in the database that have been used (but are still valid).
+// @Produce json
+// @Success 200 {object} PageCountDTO
+// @Router /invites/count [get]
+// @Security Bearer
+// @tags Invites
+func (app *appContext) GetInviteUsedCount(gc *gin.Context) {
+	resp := PageCountDTO{}
+	var err error
+	resp.Count, err = app.storage.db.Count(&Invite{}, badgerhold.Where("usedBy").MatchFunc(func(ra *badgerhold.RecordAccess) (bool, error) {
+		field := ra.Field()
+		switch usedBy := field.(type) {
+		case [][]string:
+			return len(usedBy) > 0, nil
+		default:
+			return false, nil
+		}
+	}))
+	if err != nil {
+		resp.Count = 0
+	}
+	gc.JSON(200, resp)
+}
+
 // @Summary Get invites.
 // @Produce json
 // @Success 200 {object} getInvitesDTO
