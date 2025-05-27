@@ -91,7 +91,7 @@ declare interface NotificationBox {
 
 declare interface Tabs {
     current: string;
-    addTab: (tabID: string, url: string, preFunc?: () => void, postFunc?: () => void) => void;
+    addTab: (tabID: string, url: string, preFunc?: () => void, postFunc?: () => void, unloadFunc?: () => void) => void;
     switch: (tabID: string, noRun?: boolean, keepURL?: boolean) => void;
 }
 
@@ -150,10 +150,32 @@ interface inviteList {
     loadInviteURL: () => void;
 }
 
-// Finally added to typescript, dont need this anymore.
-// declare interface SubmitEvent extends Event {
-//     submitter: HTMLInputElement;
-// }
+interface paginatedDTO {
+    last_page: boolean;
+}
+
+interface PaginatedReqDTO {
+    limit: number;
+    page: number;
+    sortByField: string;
+    ascending: boolean;
+};
+
+interface DateAttempt {
+    year?: number;
+    month?: number;
+    day?: number;
+    hour?: number;
+    minute?: number;
+    offsetMinutesFromUTC?: number;
+}
+
+interface ParsedDate {
+    attempt: DateAttempt;
+    date: Date;
+    text: string;
+    invalid?: boolean;
+};
 
 declare var config: Object;
 declare var modifiedConfig: Object;

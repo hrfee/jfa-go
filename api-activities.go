@@ -6,32 +6,6 @@ import (
 	"github.com/timshannon/badgerhold/v4"
 )
 
-func stringToActivityType(v string) ActivityType {
-	switch v {
-	case "creation":
-		return ActivityCreation
-	case "deletion":
-		return ActivityDeletion
-	case "disabled":
-		return ActivityDisabled
-	case "enabled":
-		return ActivityEnabled
-	case "contactLinked":
-		return ActivityContactLinked
-	case "contactUnlinked":
-		return ActivityContactUnlinked
-	case "changePassword":
-		return ActivityChangePassword
-	case "resetPassword":
-		return ActivityResetPassword
-	case "createInvite":
-		return ActivityCreateInvite
-	case "deleteInvite":
-		return ActivityDeleteInvite
-	}
-	return ActivityUnknown
-}
-
 func activityTypeToString(v ActivityType) string {
 	switch v {
 	case ActivityCreation:
@@ -56,6 +30,32 @@ func activityTypeToString(v ActivityType) string {
 		return "deleteInvite"
 	}
 	return "unknown"
+}
+
+func stringToActivityType(v string) ActivityType {
+	switch v {
+	case "creation":
+		return ActivityCreation
+	case "deletion":
+		return ActivityDeletion
+	case "disabled":
+		return ActivityDisabled
+	case "enabled":
+		return ActivityEnabled
+	case "contactLinked":
+		return ActivityContactLinked
+	case "contactUnlinked":
+		return ActivityContactUnlinked
+	case "changePassword":
+		return ActivityChangePassword
+	case "resetPassword":
+		return ActivityResetPassword
+	case "createInvite":
+		return ActivityCreateInvite
+	case "deleteInvite":
+		return ActivityDeleteInvite
+	}
+	return ActivityUnknown
 }
 
 func stringToActivitySource(v string) ActivitySource {
@@ -88,71 +88,73 @@ func activitySourceToString(v ActivitySource) string {
 
 // @Summary Get the requested set of activities, Paginated, filtered and sorted. Is a POST because of some issues I was having, ideally should be a GET.
 // @Produce json
-// @Param GetActivitiesDTO body GetActivitiesDTO true "search parameters"
+// @Param ServerSearchReqDTO body ServerSearchReqDTO true "search parameters"
 // @Success 200 {object} GetActivitiesRespDTO
 // @Router /activity [post]
 // @Security Bearer
 // @tags Activity
 func (app *appContext) GetActivities(gc *gin.Context) {
-	req := GetActivitiesDTO{}
+	req := ServerSearchReqDTO{}
 	gc.BindJSON(&req)
-	query := &badgerhold.Query{}
-	activityTypes := make([]interface{}, len(req.Type))
-	for i, v := range req.Type {
-		activityTypes[i] = stringToActivityType(v)
-	}
-	if len(activityTypes) != 0 {
-		query = badgerhold.Where("Type").In(activityTypes...)
+	if req.SortByField == "" {
+		req.SortByField = USER_DEFAULT_SORT_FIELD
+	} else {
+		req.SortByField = activityDTONameToField(req.SortByField)
 	}
 
+	var query *badgerhold.Query
+	if len(req.SearchTerms) != 0 {
+		query = ActivityMatchesSearchAsDBBaseQuery(req.SearchTerms)
+	} else {
+		query = nil
+	}
+
+	for _, q := range req.Queries {
+		nq := q.AsDBQuery(query)
+		if nq == nil {
+			nq = ActivityDBQueryFromSpecialField(app.jf, query, q)
+		}
+		query = nq
+	}
+
+	if query == nil {
+		query = &badgerhold.Query{}
+	}
+
+	query = query.SortBy(req.SortByField)
 	if !req.Ascending {
 		query = query.Reverse()
-	}
-
-	query = query.SortBy("Time")
-
-	if req.Limit == 0 {
-		req.Limit = 10
 	}
 
 	query = query.Skip(req.Page * req.Limit).Limit(req.Limit)
 
 	var results []Activity
 	err := app.storage.db.Find(&results, query)
-
 	if err != nil {
 		app.err.Printf(lm.FailedDBReadActivities, err)
 	}
 
 	resp := GetActivitiesRespDTO{
 		Activities: make([]ActivityDTO, len(results)),
-		LastPage:   len(results) != req.Limit,
 	}
-
+	resp.LastPage = len(results) != req.Limit
 	for i, act := range results {
 		resp.Activities[i] = ActivityDTO{
-			ID:         act.ID,
-			Type:       activityTypeToString(act.Type),
-			UserID:     act.UserID,
-			SourceType: activitySourceToString(act.SourceType),
-			Source:     act.Source,
-			InviteCode: act.InviteCode,
-			Value:      act.Value,
-			Time:       act.Time.Unix(),
-			IP:         act.IP,
+			ID:             act.ID,
+			Type:           activityTypeToString(act.Type),
+			UserID:         act.UserID,
+			SourceType:     activitySourceToString(act.SourceType),
+			Source:         act.Source,
+			InviteCode:     act.InviteCode,
+			Value:          act.Value,
+			Time:           act.Time.Unix(),
+			IP:             act.IP,
+			Username:       act.MustGetUsername(app.jf),
+			SourceUsername: act.MustGetSourceUsername(app.jf),
 		}
 		if act.Type == ActivityDeletion || act.Type == ActivityCreation {
-			resp.Activities[i].Username = act.Value
+			// Username would've been in here, clear it to avoid confusion to the consumer
 			resp.Activities[i].Value = ""
-		} else if user, err := app.jf.UserByID(act.UserID, false); err == nil {
-			resp.Activities[i].Username = user.Name
-		}
-
-		if (act.SourceType == ActivityUser || act.SourceType == ActivityAdmin) && act.Source != "" {
-			user, err := app.jf.UserByID(act.Source, false)
-			if err == nil {
-				resp.Activities[i].SourceUsername = user.Name
-			}
 		}
 	}
 
@@ -173,12 +175,12 @@ func (app *appContext) DeleteActivity(gc *gin.Context) {
 
 // @Summary Returns the total number of activities stored in the database.
 // @Produce json
-// @Success 200 {object} GetActivityCountDTO
+// @Success 200 {object} PageCountDTO
 // @Router /activity/count [get]
 // @Security Bearer
 // @tags Activity
 func (app *appContext) GetActivityCount(gc *gin.Context) {
-	resp := GetActivityCountDTO{}
+	resp := PageCountDTO{}
 	var err error
 	resp.Count, err = app.storage.db.Count(&Activity{}, &badgerhold.Query{})
 	if err != nil {

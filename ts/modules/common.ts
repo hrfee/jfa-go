@@ -1,4 +1,5 @@
 declare var window: GlobalWindow;
+import dateParser from "any-date-parser";
 
 export function toDateString(date: Date): string {
     const locale = window.language || (window as any).navigator.userLanguage || window.navigator.language;
@@ -19,6 +20,25 @@ export function toDateString(date: Date): string {
         }
     }
     return date.toLocaleDateString(locale, args1) + " " + date.toLocaleString(locale, args2);
+}
+
+export const parseDateString = (value: string): ParsedDate => {
+    let out: ParsedDate = {
+        text: value,
+        // Used just to tell use what fields the user passed.
+        attempt: dateParser.attempt(value),
+        // note Date.fromString is also provided by dateParser.
+        date: (Date as any).fromString(value) as Date
+    };
+    if (("invalid" in (out.date as any))) {
+        out.invalid = true;
+    } else {
+        // getTimezoneOffset returns UTC - Timezone, so invert it to get distance from UTC -to- timezone.
+        out.attempt.offsetMinutesFromUTC = -1 * out.date.getTimezoneOffset();
+    }
+    // Month in Date objects is 0-based, so make our parsed date that way too
+    if ("month" in out.attempt) out.attempt.month -= 1;
+    return out;
 }
 
 export const _get = (url: string, data: Object, onreadystatechange: (req: XMLHttpRequest) => void, noConnectionError: boolean = false): void => {
@@ -306,3 +326,20 @@ export function unicodeB64Encode(s: string): string {
     const bin = String.fromCodePoint(...encoded);
     return btoa(bin);
 }
+
+// Only allow running a function every n milliseconds.
+// Source: Clément Prévost at https://stackoverflow.com/questions/27078285/simple-throttle-in-javascript
+// function foo<T>(bar: T): T {
+export function throttle (callback: () => void, limitMilliseconds: number): () => void {
+    var waiting = false;                      // Initially, we're not waiting
+    return function () {                      // We return a throttled function
+        if (!waiting) {                       // If we're not waiting
+            callback.apply(this, arguments);  // Execute users function
+            waiting = true;                   // Prevent future invocations
+            setTimeout(function () {          // After a period of time
+                waiting = false;              // And allow future invocations
+            }, limitMilliseconds);
+        }
+    }
+}
+

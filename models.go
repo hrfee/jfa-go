@@ -164,8 +164,20 @@ type respUser struct {
 	ReferralsEnabled      bool   `json:"referrals_enabled"`
 }
 
+type PaginatedDTO struct {
+	LastPage bool `json:"last_page"`
+}
+
+type PaginatedReqDTO struct {
+	Limit       int    `json:"limit"`
+	Page        int    `json:"page"` // zero-indexed
+	SortByField string `json:"sortByField"`
+	Ascending   bool   `json:"ascending"`
+}
+
 type getUsersDTO struct {
-	UserList []respUser `json:"users"`
+	UserList []*respUser `json:"users"`
+	LastPage bool        `json:"last_page"`
 }
 
 type ombiUser struct {
@@ -429,19 +441,12 @@ type ActivityDTO struct {
 	IP             string `json:"ip"`
 }
 
-type GetActivitiesDTO struct {
-	Type      []string `json:"type"` // Types of activity to get. Leave blank for all.
-	Limit     int      `json:"limit"`
-	Page      int      `json:"page"` // zero-indexed
-	Ascending bool     `json:"ascending"`
-}
-
 type GetActivitiesRespDTO struct {
+	PaginatedDTO
 	Activities []ActivityDTO `json:"activities"`
-	LastPage   bool          `json:"last_page"`
 }
 
-type GetActivityCountDTO struct {
+type PageCountDTO struct {
 	Count uint64 `json:"count"`
 }
 

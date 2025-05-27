@@ -127,7 +127,7 @@ let isInviteURL = window.invites.isInviteURL();
 let isAccountURL = accounts.isAccountURL();
 
 // load tabs
-const tabs: { id: string, url: string, reloader: () => void }[] = [
+const tabs: { id: string, url: string, reloader: () => void, unloader?: () => void }[] = [
     {
         id: "invites",
         url: "",
@@ -148,12 +148,19 @@ const tabs: { id: string, url: string, reloader: () => void }[] = [
                 // Don't keep loading the same item on every tab refresh
                 isAccountURL = false;
             }
+            accounts.bindPageEvents();
         }),
+        unloader: accounts.unbindPageEvents
+        
     },
     {
         id: "activity",
         url: "activity",
-        reloader: activity.reload
+        reloader: () => {
+            activity.reload()
+            activity.bindPageEvents();
+        },
+        unloader: activity.unbindPageEvents
     },
     {
         id: "settings",
@@ -167,7 +174,7 @@ const defaultTab = tabs[0];
 window.tabs = new Tabs();
 
 for (let tab of tabs) {
-    window.tabs.addTab(tab.id, window.pages.Admin + "/" + tab.url, null, tab.reloader);
+    window.tabs.addTab(tab.id, window.pages.Admin + "/" + tab.url, null, tab.reloader, tab.unloader || null);
 }
 
 let matchedTab = false
@@ -188,7 +195,7 @@ login.onLogin = () => {
     window.updater = new Updater();
     // FIXME: Decide whether to autoload activity or not
     reloadProfileNames();
-    setInterval(() => { window.invites.reload(); accounts.reload(); }, 30*1000);
+    setInterval(() => { window.invites.reload(); accounts.reloadIfNotInScroll(); }, 30*1000);
     // Triggers pre and post funcs, even though we're already on that page
     window.tabs.switch(window.tabs.current);
 }

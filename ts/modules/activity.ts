@@ -1,9 +1,13 @@
-import { _get, _post, _delete, toDateString, addLoader, removeLoader } from "../modules/common.js";
-import { Search, SearchConfiguration, QueryType, SearchableItem } from "../modules/search.js";
+import { _get, _post, _delete, toDateString } from "../modules/common.js";
+import { SearchConfiguration, QueryType, SearchableItem, SearchableItems, SearchableItemDataAttribute } from "../modules/search.js";
 import { accountURLEvent } from "../modules/accounts.js";
 import { inviteURLEvent } from "../modules/invites.js";
+import { PaginatedList } from "./list.js";
 
 declare var window: GlobalWindow;
+
+const ACTIVITY_DEFAULT_SORT_FIELD = "time";
+const ACTIVITY_DEFAULT_SORT_ASCENDING = false;
 
 export interface activity {
     id: string; 
@@ -31,6 +35,124 @@ var activityTypeMoods = {
     "createInvite": 1,
     "deleteInvite": -1
 };
+
+// window.lang doesn't exist at page load, so I made this a function that's invoked by activityList.
+const queries = (): { [field: string]: QueryType } => { return {
+    "id": {
+        name: window.lang.strings("activityID"),
+        getter: "id",
+        bool: false,
+        string: true,
+        date: false
+    },
+    "title": {
+        name: window.lang.strings("title"),
+        getter: "title",
+        bool: false,
+        string: true,
+        date: false,
+        localOnly: true
+    },
+    "user": {
+        name: window.lang.strings("usersMentioned"),
+        getter: "mentionedUsers",
+        bool: false,
+        string: true,
+        date: false
+    },
+    "actor": {
+        name: window.lang.strings("actor"),
+        description: window.lang.strings("actorDescription"),
+        getter: "actor",
+        bool: false,
+        string: true,
+        date: false
+    },
+    "referrer": {
+        name: window.lang.strings("referrer"),
+        getter: "referrer",
+        bool: true,
+        string: true,
+        date: false
+    },
+    "time": {
+        name: window.lang.strings("date"),
+        getter: "time",
+        bool: false,
+        string: false,
+        date: true
+    },
+    "account-creation": {
+        name: window.lang.strings("accountCreationFilter"),
+        getter: "accountCreation",
+        bool: true,
+        string: false,
+        date: false
+    },
+    "account-deletion": {
+        name: window.lang.strings("accountDeletionFilter"),
+        getter: "accountDeletion",
+        bool: true,
+        string: false,
+        date: false
+    },
+    "account-disabled": {
+        name: window.lang.strings("accountDisabledFilter"),
+        getter: "accountDisabled",
+        bool: true,
+        string: false,
+        date: false
+    },
+    "account-enabled": {
+        name: window.lang.strings("accountEnabledFilter"),
+        getter: "accountEnabled",
+        bool: true,
+        string: false,
+        date: false
+    },
+    "contact-linked": {
+        name: window.lang.strings("contactLinkedFilter"),
+        getter: "contactLinked",
+        bool: true,
+        string: false,
+        date: false
+    },
+    "contact-unlinked": {
+        name: window.lang.strings("contactUnlinkedFilter"),
+        getter: "contactUnlinked",
+        bool: true,
+        string: false,
+        date: false
+    },
+    "password-change": {
+        name: window.lang.strings("passwordChangeFilter"),
+        getter: "passwordChange",
+        bool: true,
+        string: false,
+        date: false
+    },
+    "password-reset": {
+        name: window.lang.strings("passwordResetFilter"),
+        getter: "passwordReset",
+        bool: true,
+        string: false,
+        date: false
+    },
+    "invite-created": {
+        name: window.lang.strings("inviteCreatedFilter"),
+        getter: "inviteCreated",
+        bool: true,
+        string: false,
+        date: false
+    },
+    "invite-deleted": {
+        name: window.lang.strings("inviteDeletedFilter"),
+        getter: "inviteDeleted",
+        bool: true,
+        string: false,
+        date: false
+    }
+}};
 
 // var moodColours = ["~warning", "~neutral", "~urge"];
 
@@ -232,7 +354,10 @@ export class Activity implements activity, SearchableItem {
     }
 
     get id(): string { return this._act.id; }
-    set id(v: string) { this._act.id = v; }
+    set id(v: string) {
+        this._act.id = v;
+        this._card.setAttribute(SearchableItemDataAttribute, v);
+    }
 
     get user_id(): string { return this._act.user_id; }
     set user_id(v: string) { this._act.user_id = v; }
@@ -258,6 +383,7 @@ export class Activity implements activity, SearchableItem {
         this._card = document.createElement("div");
 
         this._card.classList.add("card", "@low", "my-2");
+
         this._card.innerHTML = `
         <div class="flex flex-col md:flex-row justify-between mb-2">
             <span class="heading truncate flex-initial md:text-2xl text-xl activity-title"></span>
@@ -346,343 +472,127 @@ export class Activity implements activity, SearchableItem {
     asElement = () => { return this._card; };
 }
 
-interface ActivitiesDTO {
+interface ActivitiesReqDTO extends PaginatedReqDTO {
+    type: string[];
+};
+
+interface ActivitiesDTO extends paginatedDTO {
     activities: activity[];
-    last_page: boolean;
 }
 
-export class activityList {
-    private _activityList: HTMLElement;
-    private _activities: { [id: string]: Activity } = {}; 
-    private _ordering: string[] = [];
-    private _filterArea = document.getElementById("activity-filter-area");
-    private _searchOptionsHeader = document.getElementById("activity-search-options-header");
-    private _sortingByButton = document.getElementById("activity-sort-by-field") as HTMLButtonElement;
-    private _notFoundPanel = document.getElementById("activity-not-found");
-    private _searchBox = document.getElementById("activity-search") as HTMLInputElement;
-    private _sortDirection = document.getElementById("activity-sort-direction") as HTMLButtonElement;
-    private _loader = document.getElementById("activity-loader");
-    private _loadMoreButton = document.getElementById("activity-load-more") as HTMLButtonElement;
-    private _loadAllButton = document.getElementById("activity-load-all") as HTMLButtonElement;
-    private _refreshButton = document.getElementById("activity-refresh") as HTMLButtonElement;
-    private _keepSearchingDescription = document.getElementById("activity-keep-searching-description");
-    private _keepSearchingButton = document.getElementById("activity-keep-searching");
+export class activityList extends PaginatedList {
+    protected _container: HTMLElement;
+    protected _sortDirection = document.getElementById("activity-sort-direction") as HTMLButtonElement;
 
-    private _totalRecords = document.getElementById("activity-total-records");
-    private _loadedRecords = document.getElementById("activity-loaded-records");
-    private _shownRecords = document.getElementById("activity-shown-records");
-
-    private _total: number;
-    private _loaded: number;
-    private _shown: number;
-
-    get total(): number { return this._total; }
-    set total(v: number) {
-        this._total = v;
-        this._totalRecords.textContent = window.lang.var("strings", "totalRecords", `${v}`);
-    }
+    protected _ascending: boolean;
     
-    get loaded(): number { return this._loaded; }
-    set loaded(v: number) {
-        this._loaded = v;
-        this._loadedRecords.textContent = window.lang.var("strings", "loadedRecords", `${v}`);
-    }
+    get activities(): { [id: string]: Activity } { return this._search.items as { [id: string]: Activity }; }
+    // set activities(v: { [id: string]: Activity }) { this._search.items = v as SearchableItems; }
     
-    get shown(): number { return this._shown; }
-    set shown(v: number) {
-        this._shown = v;
-        this._shownRecords.textContent = window.lang.var("strings", "shownRecords", `${v}`);
-    }
-
-    private _search: Search;
-    private _ascending: boolean;
-    private _hasLoaded: boolean;
-    private _lastLoad: number;
-    private _page: number = 0;
-    private _lastPage: boolean;
-
-
-    setVisibility = (activities: string[], visible: boolean) => {
-        this._activityList.textContent = ``;
-        for (let id of this._ordering) {
-            if (visible && activities.indexOf(id) != -1) {
-                this._activityList.appendChild(this._activities[id].asElement());
-            } else if (!visible && activities.indexOf(id) == -1) {
-                this._activityList.appendChild(this._activities[id].asElement());
-            }
-        }
-    }
-
-    reload = () => {
-        this._lastLoad = Date.now();
-        this._lastPage = false;
-        this._loadMoreButton.textContent = window.lang.strings("loadMore");
-        this._loadMoreButton.disabled = false;
-        this._loadAllButton.classList.remove("unfocused");
-        this._loadAllButton.disabled = false;
-
-        this.total = 0;
-        this.loaded = 0;
-        this.shown = 0;
-
-        // this._page = 0;
-        let limit = 10;
-        if (this._page != 0) {
-            limit *= this._page+1;
-        };
-        
-        let send = {
-            "type": [],
-            "limit": limit,
-            "page": 0,
-            "ascending": this.ascending
-        }
-
-        _get("/activity/count", null, (req: XMLHttpRequest) => {
-            if (req.readyState != 4 || req.status != 200) return;
-            this.total = req.response["count"] as number;
-        });
-
-        _post("/activity", send, (req: XMLHttpRequest) => {
-            if (req.readyState != 4) return;
-            if (req.status != 200) {
-                window.notifications.customError("loadActivitiesError", window.lang.notif("errorLoadActivities"));
-                return;
-            }
-
-            this._hasLoaded = true;
-            // Allow refreshes every 15s
-            this._refreshButton.disabled = true;
-            setTimeout(() => this._refreshButton.disabled = false, 15000);
-
-            let resp = req.response as ActivitiesDTO;
-            // FIXME: Don't destroy everything each reload!
-            this._activities = {};
-            this._ordering = [];
-
-            for (let act of resp.activities) {
-                this._activities[act.id] = new Activity(act);
-                this._ordering.push(act.id);
-            }
-            this._search.items = this._activities;
-            this._search.ordering = this._ordering;
-
-            this.loaded = this._ordering.length;
-
-            if (this._search.inSearch) {
-                this._search.onSearchBoxChange(true);
-                this._loadAllButton.classList.remove("unfocused");
-            } else {
-                this.shown = this.loaded;
-                this.setVisibility(this._ordering, true);
-                this._loadAllButton.classList.add("unfocused");
-                this._notFoundPanel.classList.add("unfocused");
-            }
-        }, true);
-    }
-
-    loadMore = (callback?: () => void, loadAll: boolean = false) => {
-        this._lastLoad = Date.now();
-        this._loadMoreButton.disabled = true;
-        // this._loadAllButton.disabled = true;
-        const timeout = setTimeout(() => {
-            this._loadMoreButton.disabled = false;
-            // this._loadAllButton.disabled = false;
-        }, 1000);
-        this._page += 1;
-
-        let send = {
-            "type": [],
-            "limit": 10,
-            "page": this._page,
-            "ascending": this._ascending
-        };
-
-        // this._activityList.classList.add("unfocused");
-        // addLoader(this._loader, false, true);
-
-        _post("/activity", send, (req: XMLHttpRequest) => {
-            if (req.readyState != 4) return;
-            if (req.status != 200) {
-                window.notifications.customError("loadActivitiesError", window.lang.notif("errorLoadActivities"));
-                return;
-            }
-
-            let resp = req.response as ActivitiesDTO;
-            
-            this._lastPage = resp.last_page;
-            if (this._lastPage) {
-                clearTimeout(timeout);
-                this._loadMoreButton.disabled = true;
-                removeLoader(this._loadAllButton);
-                this._loadAllButton.classList.add("unfocused");
-                this._loadMoreButton.textContent = window.lang.strings("noMoreResults");
-            }
-
-            for (let act of resp.activities) {
-                this._activities[act.id] = new Activity(act);
-                this._ordering.push(act.id);
-            }
-            // this._search.items = this._activities;
-            // this._search.ordering = this._ordering;
-
-            this.loaded = this._ordering.length;
-
-            if (this._search.inSearch || loadAll) {
-                if (this._lastPage) {
-                    loadAll = false;
+    constructor() {
+        super({
+            loader: document.getElementById("activity-loader"),
+            loadMoreButton: document.getElementById("activity-load-more") as HTMLButtonElement,
+            loadAllButton: document.getElementById("activity-load-all") as HTMLButtonElement,
+            refreshButton: document.getElementById("activity-refresh") as HTMLButtonElement,
+            filterArea: document.getElementById("activity-filter-area"),
+            searchOptionsHeader: document.getElementById("activity-search-options-header"),
+            searchBox: document.getElementById("activity-search") as HTMLInputElement,
+            recordCounter: document.getElementById("activity-record-counter"),
+            totalEndpoint: "/activity/count",
+            getPageEndpoint: "/activity",
+            itemsPerPage: 20,
+            maxItemsLoadedForSearch: 200,
+            appendNewItems: (resp: paginatedDTO) => {
+                let ordering: string[] = this._search.ordering;
+                for (let act of ((resp as ActivitiesDTO).activities || [])) {
+                    this.activities[act.id] = new Activity(act);
+                    ordering.push(act.id);
                 }
-                this._search.onSearchBoxChange(true, loadAll);
-            } else {
-                this.setVisibility(this._ordering, true);
-                this._notFoundPanel.classList.add("unfocused");
+                this._search.setOrdering(ordering, this._c.defaultSortField, this.ascending);
+            },
+            replaceWithNewItems: (resp: paginatedDTO) => {
+                // FIXME: Implement updates to existing elements, rather than just wiping each time.
+                
+                // Remove existing items
+                for (let id of Object.keys(this.activities)) {
+                    delete this.activities[id];
+                }
+                // And wipe their ordering
+                this._search.setOrdering([], this._c.defaultSortField, this.ascending);
+                this._c.appendNewItems(resp);
+            },
+            defaultSortField: ACTIVITY_DEFAULT_SORT_FIELD,
+            defaultSortAscending: ACTIVITY_DEFAULT_SORT_ASCENDING,
+            pageLoadCallback: (req: XMLHttpRequest) => {
+                if (req.readyState != 4) return;
+                if (req.status != 200) {
+                    window.notifications.customError("loadActivitiesError", window.lang.notif("errorLoadActivities"));
+                    return;
+                }
             }
+        });
+        
+        this._container = document.getElementById("activity-card-list")
+        document.addEventListener("activity-reload", () => this.reload());
 
-            if (callback) callback();
-            // removeLoader(this._loader);
-            // this._activityList.classList.remove("unfocused");
-        }, true);
+        let searchConfig: SearchConfiguration = {
+            filterArea: this._c.filterArea,
+            // Exclude this: We only sort by date, and don't want to show a redundant header indicating so.
+            // sortingByButton: this._sortingByButton,
+            searchOptionsHeader: this._c.searchOptionsHeader,
+            notFoundPanel: document.getElementById("activity-not-found"),
+            notFoundLocallyText: document.getElementById("activity-no-local-results"),
+            search: this._c.searchBox,
+            clearSearchButtonSelector: ".activity-search-clear",
+            serverSearchButtonSelector: ".activity-search-server",
+            queries: queries(),
+            setVisibility: null,
+            filterList: document.getElementById("activity-filter-list"),
+            // notFoundCallback: this._notFoundCallback,
+            onSearchCallback: null,
+            searchServer: null,
+            clearServerSearch: null,
+        }
+
+        this.initSearch(searchConfig);
+
+        this.ascending = this._c.defaultSortAscending;
+        this._sortDirection.addEventListener("click", () => this.ascending = !this.ascending);
     }
 
-    private _queries: { [field: string]: QueryType } = {
-        "id": {
-            name: window.lang.strings("activityID"),
-            getter: "id",
-            bool: false,
-            string: true,
-            date: false
-        },
-        "title": {
-            name: window.lang.strings("title"),
-            getter: "title",
-            bool: false,
-            string: true,
-            date: false
-        },
-        "user": {
-            name: window.lang.strings("usersMentioned"),
-            getter: "mentionedUsers",
-            bool: false,
-            string: true,
-            date: false
-        },
-        "actor": {
-            name: window.lang.strings("actor"),
-            description: window.lang.strings("actorDescription"),
-            getter: "actor",
-            bool: false,
-            string: true,
-            date: false
-        },
-        "referrer": {
-            name: window.lang.strings("referrer"),
-            getter: "referrer",
-            bool: true,
-            string: true,
-            date: false
-        },
-        "date": {
-            name: window.lang.strings("date"),
-            getter: "date",
-            bool: false,
-            string: false,
-            date: true
-        },
-        "account-creation": {
-            name: window.lang.strings("accountCreationFilter"),
-            getter: "accountCreation",
-            bool: true,
-            string: false,
-            date: false
-        },
-        "account-deletion": {
-            name: window.lang.strings("accountDeletionFilter"),
-            getter: "accountDeletion",
-            bool: true,
-            string: false,
-            date: false
-        },
-        "account-disabled": {
-            name: window.lang.strings("accountDisabledFilter"),
-            getter: "accountDisabled",
-            bool: true,
-            string: false,
-            date: false
-        },
-        "account-enabled": {
-            name: window.lang.strings("accountEnabledFilter"),
-            getter: "accountEnabled",
-            bool: true,
-            string: false,
-            date: false
-        },
-        "contact-linked": {
-            name: window.lang.strings("contactLinkedFilter"),
-            getter: "contactLinked",
-            bool: true,
-            string: false,
-            date: false
-        },
-        "contact-unlinked": {
-            name: window.lang.strings("contactUnlinkedFilter"),
-            getter: "contactUnlinked",
-            bool: true,
-            string: false,
-            date: false
-        },
-        "password-change": {
-            name: window.lang.strings("passwordChangeFilter"),
-            getter: "passwordChange",
-            bool: true,
-            string: false,
-            date: false
-        },
-        "password-reset": {
-            name: window.lang.strings("passwordResetFilter"),
-            getter: "passwordReset",
-            bool: true,
-            string: false,
-            date: false
-        },
-        "invite-created": {
-            name: window.lang.strings("inviteCreatedFilter"),
-            getter: "inviteCreated",
-            bool: true,
-            string: false,
-            date: false
-        },
-        "invite-deleted": {
-            name: window.lang.strings("inviteDeletedFilter"),
-            getter: "inviteDeleted",
-            bool: true,
-            string: false,
-            date: false
-        }
+    reload = (callback?: (resp: paginatedDTO) => void) => {
+        this._reload(callback);
+    }
+
+    loadMore = (loadAll: boolean = false, callback?: () => void) => {
+        this._loadMore(
+            loadAll,
+            callback
+        );
     };
 
-    get ascending(): boolean { return this._ascending; }
+    get ascending(): boolean {
+        return this._ascending;
+    }
     set ascending(v: boolean) {
         this._ascending = v;
+        // Setting default sort makes sense, since this is the only sort ever being done.
+        this._c.defaultSortAscending = this.ascending;
         this._sortDirection.innerHTML = `${window.lang.strings("sortDirection")} <i class="ri-arrow-${v ? "up" : "down"}-s-line ml-2"></i>`;
+        // NOTE: We don't actually re-sort the list here, instead just use setOrdering to apply this.ascending before a reload.
+        this._search.setOrdering(this._search.ordering, this._c.defaultSortField, this.ascending);
         if (this._hasLoaded) {
-            this.reload();
+            if (this._search.inServerSearch) {
+                // Re-run server search as new, since we changed the sort.
+                this._search.searchServer(true);
+            } else {
+                this.reload();
+            }
         }
     }
 
-    detectScroll = () => {
-        if (!this._hasLoaded) return;
-        // console.log(window.innerHeight + document.documentElement.scrollTop, document.scrollingElement.scrollHeight);
-        if (Math.abs(window.innerHeight + document.documentElement.scrollTop - document.scrollingElement.scrollHeight) < 50) {
-            // window.notifications.customSuccess("scroll", "Reached bottom.");
-            // Wait .5s between loads
-            if (this._lastLoad + 500 > Date.now()) return;
-            this.loadMore();
-        }
-    }
-
-    private _prevResultCount = 0;
-
-    private _notFoundCallback = (notFound: boolean) => {
+    /*private _notFoundCallback = (notFound: boolean) => {
         if (notFound) this._loadMoreButton.classList.add("unfocused");
         else this._loadMoreButton.classList.remove("unfocused");
 
@@ -693,53 +603,6 @@ export class activityList {
             this._keepSearchingButton.classList.add("unfocused");
             this._keepSearchingDescription.classList.add("unfocused");
         }
-    };
+    };*/
 
-    constructor() {
-        this._activityList = document.getElementById("activity-card-list");
-        document.addEventListener("activity-reload", this.reload);
-
-        let conf: SearchConfiguration = {
-            filterArea: this._filterArea,
-            sortingByButton: this._sortingByButton,
-            searchOptionsHeader: this._searchOptionsHeader,
-            notFoundPanel: this._notFoundPanel,
-            search: this._searchBox,
-            clearSearchButtonSelector: ".activity-search-clear",
-            queries: this._queries,
-            setVisibility: this.setVisibility,
-            filterList: document.getElementById("activity-filter-list"),
-            // notFoundCallback: this._notFoundCallback,
-            onSearchCallback: (visibleCount: number, newItems: boolean, loadAll: boolean) => {
-                this.shown = visibleCount;
-
-                if (this._search.inSearch && !this._lastPage) this._loadAllButton.classList.remove("unfocused");
-                else this._loadAllButton.classList.add("unfocused");
-                
-                if (visibleCount < 10 || loadAll) {
-                    if (!newItems || this._prevResultCount != visibleCount || (visibleCount == 0 && !this._lastPage) || loadAll) this.loadMore(() => {}, loadAll);
-                }
-                this._prevResultCount = visibleCount;
-            }
-        }
-        this._search = new Search(conf);
-        this._search.generateFilterList();
-
-        this._hasLoaded = false;
-        this.ascending = false;
-        this._sortDirection.addEventListener("click", () => this.ascending = !this.ascending);
-
-        this._loadMoreButton.onclick = () => this.loadMore();
-        this._loadAllButton.onclick = () => {
-            addLoader(this._loadAllButton, true);
-            this.loadMore(() => {}, true);
-        };
-        /* this._keepSearchingButton.onclick = () => {
-            addLoader(this._keepSearchingButton, true);
-            this.loadMore(() => removeLoader(this._keepSearchingButton, true));
-        }; */
-        this._refreshButton.onclick = this.reload;
-
-        window.onscroll = this.detectScroll;
-    }
 }
