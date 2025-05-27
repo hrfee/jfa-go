@@ -114,6 +114,13 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 
 	userPageEnabled := app.config.Section("user_page").Key("enabled").MustBool(true) && app.config.Section("ui").Key("jellyfin_login").MustBool(true)
 
+	// Route collision may occur when reverse proxy subfolder is the same as a pseudo-path (e.g. /accounts, /activity...). For non-obvious ones, recover from the panic.
+	defer func() {
+		if r := recover(); r != nil {
+			app.err.Fatalf(lm.RouteCollision, PAGES.Base, r)
+		}
+	}()
+
 	for _, p := range routePrefixes {
 		router.GET(p+"/lang/:page", app.GetLanguages)
 		router.Use(serveTaggedStatic(p+"/", app.webFS))
@@ -126,7 +133,10 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 			}
 		}
 
-		router.GET(p+PAGES.Admin+"/accounts", app.AdminPage)
+		// Handle the obvious collision of /accounts
+		if p != "" || PAGES.Admin != "" {
+			router.GET(p+PAGES.Admin+"/accounts", app.AdminPage)
+		}
 		router.GET(p+PAGES.Admin+"/settings", app.AdminPage)
 		router.GET(p+PAGES.Admin+"/activity", app.AdminPage)
 		router.GET(p+PAGES.Admin+"/accounts/user/:userID", app.AdminPage)
