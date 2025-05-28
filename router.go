@@ -139,7 +139,7 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 		}
 
 		// Handle the obvious collision of /accounts
-		if p != "" || PAGES.Admin != "" {
+		if len(routePrefixes) == 1 || p != "" || PAGES.Admin != "" {
 			router.GET(p+PAGES.Admin+"/accounts", app.AdminPage)
 		}
 		router.GET(p+PAGES.Admin+"/settings", app.AdminPage)
