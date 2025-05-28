@@ -51,10 +51,12 @@ export interface SearchConfiguration {
     loadMore?: () => void;
 }
 
-export interface ServerSearchReqDTO extends PaginatedReqDTO {
+export interface ServerFilterReqDTO {
     searchTerms: string[];
     queries: QueryDTO[];
 }
+
+export interface ServerSearchReqDTO extends PaginatedReqDTO, ServerFilterReqDTO {};
 
 export interface QueryDTO {
     class: "bool" | "string" | "date";
@@ -330,7 +332,7 @@ export class Search {
         return words;
     }
 
-    parseTokens = (tokens: string[]): [string[], Query[]] => {
+    static parseTokens = (tokens: string[], queryTypes: { [field: string]: QueryType }, searchBox?: HTMLInputElement): [string[], Query[]] => {
         let queries: Query[] = [];
         let searchTerms: string[] = [];
 
@@ -343,9 +345,9 @@ export class Search {
             // 2. A filter query of some sort.
             const split = [word.substring(0, word.indexOf(":")), word.substring(word.indexOf(":")+1)];
             
-            if (!(split[0] in this._c.queries)) continue;
+            if (!(split[0] in queryTypes)) continue;
 
-            const queryFormat = this._c.queries[split[0]];
+            const queryFormat = queryTypes[split[0]];
 
             let q: Query | null = null;
 
@@ -353,11 +355,11 @@ export class Search {
                 let [boolState, isBool] = BoolQuery.paramsFromString(split[1]);
                 if (isBool) {
                     q = new BoolQuery(queryFormat, boolState);
-                    q.onclick = () => {
+                    if (searchBox) q.onclick = () => {
                         for (let quote of [`"`, `'`, ``]) {
-                            this._c.search.value = this._c.search.value.replace(split[0] + ":" + quote + split[1] + quote, "");
+                            searchBox.value = searchBox.value.replace(split[0] + ":" + quote + split[1] + quote, "");
                         }
-                        this._c.search.oninput((null as Event));
+                        searchBox.oninput((null as Event));
                     };
                     queries.push(q);
                     continue;
@@ -366,12 +368,12 @@ export class Search {
             if (queryFormat.string) {
                 q = new StringQuery(queryFormat, split[1]);
 
-                q.onclick = () => {
+                if (searchBox) q.onclick = () => {
                     for (let quote of [`"`, `'`, ``]) {
                         let regex = new RegExp(split[0] + ":" + quote + split[1] + quote, "ig");
-                        this._c.search.value = this._c.search.value.replace(regex, "");
+                        searchBox.value = searchBox.value.replace(regex, "");
                     }
-                    this._c.search.oninput((null as Event));
+                    searchBox.oninput((null as Event));
                 }
                 queries.push(q);
                 continue;
@@ -381,13 +383,13 @@ export class Search {
                 if (!isDate) continue;
                 q = new DateQuery(queryFormat, op, parsedDate);
                 
-                q.onclick = () => {
+                if (searchBox) q.onclick = () => {
                     for (let quote of [`"`, `'`, ``]) {
                         let regex = new RegExp(split[0] + ":" + quote + split[1] + quote, "ig");
-                        this._c.search.value = this._c.search.value.replace(regex, "");
+                        searchBox.value = searchBox.value.replace(regex, "");
                     }
                     
-                    this._c.search.oninput((null as Event));
+                    searchBox.oninput((null as Event));
                 }
                 queries.push(q);
                 continue;
@@ -396,7 +398,24 @@ export class Search {
         }
         return [searchTerms, queries];
     }
-    
+
+    // Convenience method for others to use
+    static DTOFromString = (query: string, queryTypes: { [field: string]: QueryType }): ServerFilterReqDTO => {
+        const [searchTerms, queries] = Search.parseTokens(
+            Search.tokenizeSearch(query),
+            queryTypes
+        );
+        let req = {
+            searchTerms: searchTerms,
+            queries: [],
+        }
+        for (const q of queries) {
+            const dto = q.asDTO();
+            if (dto !== null) req.queries.push(dto);
+        }
+        return req;
+    }
+
     // Returns a list of identifiers (used as keys in items, values in ordering).
     searchParsed = (searchTerms: string[], queries: Query[]): string[] => {
         let result: string[] = [...this._ordering];
@@ -474,7 +493,11 @@ export class Search {
         let timer = this.timeSearches ? performance.now() : null;
         this._c.filterArea.textContent = "";
         
-        const [searchTerms, queries] = this.parseTokens(Search.tokenizeSearch(query));
+        const [searchTerms, queries] = Search.parseTokens(
+            Search.tokenizeSearch(query),
+            this._c.queries,
+            this._c.search
+        );
 
         let result = this.searchParsed(searchTerms, queries);
         

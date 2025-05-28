@@ -37,7 +37,7 @@ var activityTypeMoods = {
 };
 
 // window.lang doesn't exist at page load, so I made this a function that's invoked by activityList.
-const queries = (): { [field: string]: QueryType } => { return {
+export const ActivityQueries = (): { [field: string]: QueryType } => { return {
     "id": {
         name: window.lang.strings("activityID"),
         getter: "id",
@@ -546,7 +546,7 @@ export class activityList extends PaginatedList {
             search: this._c.searchBox,
             clearSearchButtonSelector: ".activity-search-clear",
             serverSearchButtonSelector: ".activity-search-server",
-            queries: queries(),
+            queries: ActivityQueries(),
             setVisibility: null,
             filterList: document.getElementById("activity-filter-list"),
             // notFoundCallback: this._notFoundCallback,

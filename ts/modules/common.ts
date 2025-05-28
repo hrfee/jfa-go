@@ -125,6 +125,19 @@ export function _delete(url: string, data: Object, onreadystatechange: (req: XML
     req.send(JSON.stringify(data));
 }
 
+export type HTTPMethod = "GET" | "POST" | "DELETE";
+
+export const _http = (method: HTTPMethod, url: string, data: Object, onreadystatechange: (req: XMLHttpRequest) => void) => {
+    switch (method) {
+        case "GET":
+            return _get(url, data, onreadystatechange);
+        case "POST":
+            return _post(url, data, onreadystatechange, true);
+        case "DELETE":
+            return _delete(url, data, onreadystatechange);
+    }
+}
+
 export function toClipboard (str: string) {
     const el = document.createElement('textarea') as HTMLTextAreaElement;
     el.value = str;

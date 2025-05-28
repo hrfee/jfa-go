@@ -144,6 +144,7 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 		}
 		router.GET(p+PAGES.Admin+"/settings", app.AdminPage)
 		router.GET(p+PAGES.Admin+"/activity", app.AdminPage)
+		router.GET(p+PAGES.Admin+"/statistics", app.AdminPage)
 		router.GET(p+PAGES.Admin+"/accounts/user/:userID", app.AdminPage)
 		router.GET(p+PAGES.Admin+"/invites/:code", app.AdminPage)
 		router.GET(p+"/lang/:page/:file", app.ServeLang)

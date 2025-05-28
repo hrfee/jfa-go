@@ -8,6 +8,10 @@ export interface ListItem {
     asElement: () => HTMLElement;
 };
 
+export interface PageCountDTO {
+    count: number;
+}
+
 export class RecordCounter {
     private _container: HTMLElement;
     private _totalRecords: HTMLElement;
@@ -46,7 +50,7 @@ export class RecordCounter {
     getTotal(endpoint: string) {
         _get(endpoint, null, (req: XMLHttpRequest) => {
             if (req.readyState != 4 || req.status != 200) return;
-            this.total = req.response["count"] as number;
+            this.total = (req.response as PageCountDTO).count;
         });
     }
 

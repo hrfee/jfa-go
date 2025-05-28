@@ -48,7 +48,7 @@ interface announcementTemplate {
 
 var addDiscord: (passData: string) => void;
     
-const queries = (): { [field: string]: QueryType } => { return {
+export const AccountsQueries = (): { [field: string]: QueryType } => { return {
     "id": {
         // We don't use a translation here to circumvent the name substitution feature.
         name: "Jellyfin/Emby ID",
@@ -982,7 +982,7 @@ export class accountsList extends PaginatedList {
             notFoundLocallyText: document.getElementById("accounts-no-local-results"),
             filterList: document.getElementById("accounts-filter-list"),
             search: this._c.searchBox,
-            queries: queries(),
+            queries: AccountsQueries(),
             setVisibility: null,
             clearSearchButtonSelector: ".accounts-search-clear",
             serverSearchButtonSelector: ".accounts-search-server",
