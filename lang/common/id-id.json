@@ -18,9 +18,29 @@
         "theme": "Tema",
         "login": "Masuk",
         "logout": "Keluar",
-        "edit": "Edit",
+        "edit": "Ubah",
         "delete": "Hapus",
-        "inviteRemainingUses": "Penggunaan yang tersisa"
+        "inviteRemainingUses": "Penggunaan yang tersisa",
+        "linkDiscord": "Discord Link",
+        "linkMatrix": "Matrix Link",
+        "contactDiscord": "Hubungi melalui Discord",
+        "linkTelegram": "Telegram Link",
+        "contactEmail": "Hubungi melalui Email",
+        "contactTelegram": "Hubungi melalui Telegram",
+        "refresh": "Segarkan",
+        "required": "Dibutuhkan",
+        "admin": "Admin",
+        "enabled": "Diaktifkan",
+        "disabled": "Dihentikan",
+        "reEnable": "Diaktifkan kembali",
+        "disable": "Matikan",
+        "accountStatus": "Status Akun",
+        "notSet": "Belum ditetapkan",
+        "expiry": "Kedaluwarsa",
+        "add": "Tambah",
+        "myAccount": "Akun Saya",
+        "copied": "Telah disalin",
+        "referrals": "Referensi"
     },
     "notifications": {
         "errorLoginBlank": "Nama pengguna dan / atau sandi kosong.",
@@ -28,5 +48,19 @@
         "errorUnknown": "Terjadi kesalahan yang tidak diketahui.",
         "error401Unauthorized": "Tidak ter-otorisasi. Coba segarkan halaman.",
         "errorSaveSettings": "Tidak dapat menyimpan pengaturan."
+    },
+    "quantityStrings": {
+        "year": {
+            "singular": "{n} Tahun",
+            "plural": "{n} Beberapa tahun"
+        },
+        "month": {
+            "singular": "{n} Bulan",
+            "plural": "{n} Beberapa bulan"
+        },
+        "day": {
+            "singular": "{n} Hari",
+            "plural": "{n} Beberapa hari"
+        }
     }
 }
