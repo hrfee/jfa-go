@@ -355,6 +355,7 @@ const (
 	FailedConstructInviteMessage = "Failed to construct invite message for \"%s\": %v"
 	FailedSendInviteMessage      = "Failed to send invite message for \"%s\" to \"%s\": %v"
 	SentInviteMessage            = "Sent invite message for \"%s\" to \"%s\""
+	InviteMessagesDisabled       = "invite messages are disabled, check settings"
 
 	FailedConstructConfirmationEmail = "Failed to construct confirmation email for \"%s\": %v"
 	FailedSendConfirmationEmail      = "Failed to send confirmation email for \"%s\" to \"%s\": %v"

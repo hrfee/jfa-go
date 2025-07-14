@@ -1138,7 +1138,7 @@ sections:
     type: note
     depends_true: link_reset
     required: false
-    description: Set the "External jfa-go URL" in General so that links to jfa-go can be made.
+    description: Set the "External jfa-go URL" value in General so that links to jfa-go can be made.
   - setting: language
     name: Default reset link language
     requires_restart: true
@@ -1167,9 +1167,9 @@ sections:
     description: Subject of password reset emails.
 - section: invite_emails
   meta:
-    name: Invite emails
+    name: Invite Messages
     description: Settings for sending invites directly to users.
-    depends_true: email|method
+    depends_true: messages|enabled
   settings:
   - setting: enabled
     name: Enabled

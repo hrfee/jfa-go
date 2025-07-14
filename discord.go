@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -605,6 +606,21 @@ func (d *DiscordDaemon) cmdInvite(s *dg.Session, i *dg.InteractionCreate, lang s
 	requester := d.MustGetUser(channel.ID, i.Interaction.Member.User.ID, i.Interaction.Member.User.Discriminator, i.Interaction.Member.User.Username)
 	d.users[i.Interaction.Member.User.ID] = requester
 	recipient := i.ApplicationCommandData().Options[0].UserValue(s)
+
+	// We don't reveal much in the message response itself so we can re-use this easily.
+	sendResponse := func(langKey string) {
+		err := s.InteractionRespond(i.Interaction, &dg.InteractionResponse{
+			Type: dg.InteractionResponseChannelMessageWithSource,
+			Data: &dg.InteractionResponseData{
+				Content: d.app.storage.lang.Telegram[lang].Strings.get(langKey),
+				Flags:   64, // Ephemeral
+			},
+		})
+		if err != nil {
+			d.app.err.Printf(lm.FailedReply, lm.Discord, requester.ID, err)
+		}
+	}
+
 	// d.app.debug.Println(invuser)
 	//label := i.ApplicationCommandData().Options[2].StringValue()
 	//profile := i.ApplicationCommandData().Options[3].StringValue()
@@ -615,13 +631,7 @@ func (d *DiscordDaemon) cmdInvite(s *dg.Session, i *dg.InteractionCreate, lang s
 	// We want the same criteria for running this command as accessing the admin page (i.e. an "admin" of some sort)
 	if !(d.app.canAccessAdminPageByID(requester.JellyfinID)) {
 		d.app.err.Printf(lm.FailedGenerateInvite, fmt.Sprintf(lm.NonAdminUser, requester.JellyfinID))
-		s.InteractionRespond(i.Interaction, &dg.InteractionResponse{
-			Type: dg.InteractionResponseChannelMessageWithSource,
-			Data: &dg.InteractionResponseData{
-				Content: d.app.storage.lang.Telegram[lang].Strings.get("noPermission"),
-				Flags:   64, // Ephemeral
-			},
-		})
+		sendResponse("noPermission")
 		return
 	}
 
@@ -663,54 +673,43 @@ func (d *DiscordDaemon) cmdInvite(s *dg.Session, i *dg.InteractionCreate, lang s
 		}
 	}
 
-	if recipient != nil && d.app.config.Section("invite_emails").Key("enabled").MustBool(false) {
-		invname, err := d.bot.GuildMember(d.guildID, recipient.ID)
+	if recipient != nil {
+		err = nil
+
+		var invname *dg.Member = nil
+		invname, err = d.bot.GuildMember(d.guildID, recipient.ID)
 		invite.SendTo = invname.User.Username
-		msg, err := d.app.email.constructInvite(invite.Code, invite, d.app, false)
-		if err != nil {
-			invite.SendTo = fmt.Sprintf(lm.FailedConstructInviteMessage, invite.Code, err)
-			d.app.err.Println(invite.SendTo)
-			err := s.InteractionRespond(i.Interaction, &dg.InteractionResponse{
-				Type: dg.InteractionResponseChannelMessageWithSource,
-				Data: &dg.InteractionResponseData{
-					Content: d.app.storage.lang.Telegram[lang].Strings.get("sentInviteFailure"),
-					Flags:   64, // Ephemeral
-				},
-			})
+
+		if err == nil && !(d.app.config.Section("invite_emails").Key("enabled").MustBool(false)) {
+			err = errors.New(lm.InviteMessagesDisabled)
+		}
+
+		var msg *Message
+		if err == nil {
+			msg, err = d.app.email.constructInvite(invite.Code, invite, d.app, false)
 			if err != nil {
-				d.app.err.Printf(lm.FailedReply, lm.Discord, requester.ID, err)
-			}
-		} else {
-			var err error
-			err = d.app.discord.SendDM(msg, recipient.ID)
-			if err != nil {
-				invite.SendTo = fmt.Sprintf(lm.FailedSendInviteMessage, invite.Code, RenderDiscordUsername(recipient), err)
+				// Print extra message, ideally we'd just print this, or get rid of it though.
+				invite.SendTo = fmt.Sprintf(lm.FailedConstructInviteMessage, invite.Code, err)
 				d.app.err.Println(invite.SendTo)
-				err := s.InteractionRespond(i.Interaction, &dg.InteractionResponse{
-					Type: dg.InteractionResponseChannelMessageWithSource,
-					Data: &dg.InteractionResponseData{
-						Content: d.app.storage.lang.Telegram[lang].Strings.get("sentInviteFailure"),
-						Flags:   64, // Ephemeral
-					},
-				})
-				if err != nil {
-					d.app.err.Printf(lm.FailedReply, lm.Discord, requester.ID, err)
-				}
-			} else {
-				d.app.info.Printf(lm.SentInviteMessage, invite.Code, RenderDiscordUsername(recipient))
-				err := s.InteractionRespond(i.Interaction, &dg.InteractionResponse{
-					Type: dg.InteractionResponseChannelMessageWithSource,
-					Data: &dg.InteractionResponseData{
-						Content: d.app.storage.lang.Telegram[lang].Strings.get("sentInvite"),
-						Flags:   64, // Ephemeral
-					},
-				})
-				if err != nil {
-					d.app.err.Printf(lm.FailedReply, lm.Discord, requester.ID, err)
-				}
 			}
 		}
+
+		if err == nil {
+			err = d.app.discord.SendDM(msg, recipient.ID)
+		}
+
+		if err == nil {
+			d.app.info.Printf(lm.SentInviteMessage, invite.Code, RenderDiscordUsername(recipient))
+			sendResponse("sentInvite")
+		}
+
+		if err != nil {
+			invite.SendTo = fmt.Sprintf(lm.FailedSendInviteMessage, invite.Code, RenderDiscordUsername(recipient), err)
+			d.app.err.Println(invite.SendTo)
+			sendResponse("sentInviteFailure")
+		}
 	}
+
 	//if profile != "" {
 	d.app.storage.SetInvitesKey(invite.Code, invite)
 }
