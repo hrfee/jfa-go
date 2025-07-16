@@ -5,7 +5,9 @@ when:
 steps:
   - name: build
     image: docker.io/woodpeckerci/plugin-docker-buildx
-    secrets: [ BUILT_BY ]
+    environment:
+      BUILT_BY:
+          from_secret: BUILT_BY
     settings:
         username:
             from_secret: DOCKER_USERNAME
