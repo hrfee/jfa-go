@@ -42,8 +42,8 @@ type UnverifiedUser struct {
 }
 
 var matrixFilter = mautrix.Filter{
-	Room: mautrix.RoomFilter{
-		Timeline: mautrix.FilterPart{
+	Room: &mautrix.RoomFilter{
+		Timeline: &mautrix.FilterPart{
 			Types: []event.Type{
 				event.EventMessage,
 				event.EventEncrypted,
