@@ -47,6 +47,10 @@ func (app *appContext) MustSetURLPath(section, key, val string) {
 }
 
 func FixFullURL(v string) string {
+	// Keep relative paths relative
+	if strings.HasPrefix(v, "/") {
+		return v
+	}
 	if !strings.HasPrefix(v, "http://") && !strings.HasPrefix(v, "https://") {
 		v = "http://" + v
 	}
@@ -96,6 +100,21 @@ func (app *appContext) ExternalURI(gc *gin.Context) string {
 		return proto + gc.Request.Host + PAGES.Base
 	}
 	return app.externalURI
+}
+
+func (app *appContext) EvaluateRelativePath(gc *gin.Context, path string) string {
+	if !strings.HasPrefix(path, "/") {
+		return path
+	}
+
+	var proto string
+	if gc.Request.TLS != nil || gc.Request.Header.Get("X-Forwarded-Proto") == "https" || gc.Request.Header.Get("X-Forwarded-Protocol") == "https" {
+		proto = "https://"
+	} else {
+		proto = "http://"
+	}
+
+	return proto + app.ExternalDomain(gc) + path
 }
 
 func (app *appContext) loadConfig() error {

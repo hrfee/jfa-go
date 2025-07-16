@@ -236,7 +236,7 @@ func (app *appContext) MyUserPage(gc *gin.Context) {
 		"validationStrings": app.storage.lang.User[lang].validationStringsJSON,
 		"language":          app.storage.lang.User[lang].JSON,
 		"langName":          lang,
-		"jfLink":            app.config.Section("ui").Key("redirect_url").String(),
+		"jfLink":            app.EvaluateRelativePath(gc, app.config.Section("ui").Key("redirect_url").String()),
 		"requirements":      app.validator.getCriteria(),
 	}
 	if telegramEnabled {
@@ -305,7 +305,7 @@ func (app *appContext) ResetPassword(gc *gin.Context) {
 	if setPassword {
 		data["helpMessage"] = app.config.Section("ui").Key("help_message").String()
 		data["successMessage"] = app.config.Section("ui").Key("success_message").String()
-		data["jfLink"] = app.config.Section("ui").Key("redirect_url").String()
+		data["jfLink"] = app.EvaluateRelativePath(gc, app.config.Section("ui").Key("redirect_url").String())
 		data["redirectToJellyfin"] = app.config.Section("ui").Key("auto_redirect").MustBool(false)
 		data["validate"] = app.config.Section("password_validation").Key("enabled").MustBool(false)
 		data["requirements"] = app.validator.getCriteria()
@@ -688,7 +688,7 @@ func (app *appContext) NewUserFromConfirmationKey(invite Invite, key string, lan
 
 	app.PostNewUserFromInvite(nu, req, profile, invite)
 
-	jfLink := app.config.Section("ui").Key("redirect_url").String()
+	jfLink := app.EvaluateRelativePath(gc, app.config.Section("ui").Key("redirect_url").String())
 	if app.config.Section("ui").Key("auto_redirect").MustBool(false) {
 		gc.Redirect(301, jfLink)
 	} else {
@@ -756,7 +756,7 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 		"contactMessage":     app.config.Section("ui").Key("contact_message").String(),
 		"helpMessage":        app.config.Section("ui").Key("help_message").String(),
 		"successMessage":     app.config.Section("ui").Key("success_message").String(),
-		"jfLink":             app.config.Section("ui").Key("redirect_url").String(),
+		"jfLink":             app.EvaluateRelativePath(gc, app.config.Section("ui").Key("redirect_url").String()),
 		"redirectToJellyfin": app.config.Section("ui").Key("auto_redirect").MustBool(false),
 		"validate":           app.config.Section("password_validation").Key("enabled").MustBool(false),
 		"requirements":       app.validator.getCriteria(),
