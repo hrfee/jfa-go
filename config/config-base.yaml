@@ -215,12 +215,15 @@ sections:
   - setting: jfa_url
     name: External jfa-go URL
     required: true
-    depends_true: enabled
     type: text
     value: http://accounts.jellyf.in:8056
     description: The URL at which the jfa-go root (usually the admin page) is accessible, including
-      the subfolder if you use one. This is necessary because using a reverse proxy
-      means the program has no way of knowing the URL itself.
+      the subfolder if you use one. While your reverse proxy should report this anyway, server-side actions like sending invite messages don't receive such wisdom.
+  - setting: use_proxy_host
+    name: Use reverse-proxy reported "Host" when possible
+    type: bool
+    value: false
+    description: If enabled, the "Host" reported by your reverse proxy will be used in the web app, rather than the "External jfa-go URL" value. Useful if you regularly access jfa-go from more than one host/domain. Also, make sure your proxy passes X-Forwarded-Proto/X-Forwarded-Protocol.
   - setting: url_base
     name: Reverse Proxy subfolder
     requires_restart: true

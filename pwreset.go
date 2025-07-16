@@ -30,7 +30,7 @@ func (app *appContext) GenInternalReset(userID string) (InternalPWR, error) {
 
 // GenResetLink generates and returns a password reset link.
 func (app *appContext) GenResetLink(pin string) (string, error) {
-	url := app.ExternalURI
+	url := app.ExternalURI(nil)
 	var pinLink string
 	if url == "" {
 		return pinLink, errors.New(lm.NoExternalHost)

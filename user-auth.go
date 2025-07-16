@@ -65,7 +65,7 @@ func (app *appContext) getUserTokenLogin(gc *gin.Context) {
 	}
 
 	// host := gc.Request.URL.Hostname()
-	host := app.ExternalDomain
+	host := app.ExternalDomain(gc)
 	uri := "/my"
 	// FIXME: This seems like a bad idea? I think it's to deal with people having Reverse proxy subfolder/URL base set to /accounts.
 	if strings.HasPrefix(gc.Request.RequestURI, PAGES.Base) {
@@ -105,7 +105,7 @@ func (app *appContext) getUserTokenRefresh(gc *gin.Context) {
 	}
 
 	// host := gc.Request.URL.Hostname()
-	host := app.ExternalDomain
+	host := app.ExternalDomain(gc)
 	gc.SetCookie("user-refresh", refresh, REFRESH_TOKEN_VALIDITY_SEC, "/my", host, true, true)
 	gc.JSON(200, getTokenDTO{jwt})
 }

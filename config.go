@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/hrfee/jfa-go/common"
 	"github.com/hrfee/jfa-go/easyproxy"
 	lm "github.com/hrfee/jfa-go/logmessages"
@@ -68,6 +69,35 @@ func (app *appContext) MustCorrectURL(section, key, value string) {
 	app.config.Section(section).Key(key).SetValue(v)
 }
 
+// ExternalDomain returns the Host for the request, using the fixed app.externalDomain value unless app.UseProxyHost is true.
+func (app *appContext) ExternalDomain(gc *gin.Context) string {
+	if !app.UseProxyHost || gc.Request.Host == "" {
+		return app.externalDomain
+	}
+	return gc.Request.Host
+}
+
+// ExternalURI returns the External URI of jfa-go's root directory (by default, where the admin page is), using the fixed app.externalURI value unless app.UseProxyHost is true and gc is not nil.
+// When nil is passed, app.externalURI is returned.
+func (app *appContext) ExternalURI(gc *gin.Context) string {
+	if gc == nil {
+		return app.externalURI
+	}
+
+	var proto string
+	if gc.Request.TLS != nil || gc.Request.Header.Get("X-Forwarded-Proto") == "https" || gc.Request.Header.Get("X-Forwarded-Protocol") == "https" {
+		proto = "https://"
+	} else {
+		proto = "http://"
+	}
+
+	// app.debug.Printf("Request: %+v\n", gc.Request)
+	if app.UseProxyHost && gc.Request.Host != "" {
+		return proto + gc.Request.Host + PAGES.Base
+	}
+	return app.externalURI
+}
+
 func (app *appContext) loadConfig() error {
 	var err error
 	app.config, err = ini.ShadowLoad(app.configPath)
@@ -108,16 +138,22 @@ func (app *appContext) loadConfig() error {
 		app.config.Section("files").Key(key).SetValue(app.config.Section("files").Key(key).MustString(filepath.Join(app.dataPath, (key + ".db"))))
 	}
 
-	app.ExternalURI = strings.TrimSuffix(strings.TrimSuffix(app.config.Section("ui").Key("jfa_url").MustString(""), "/invite"), "/")
-	if !strings.HasSuffix(app.ExternalURI, PAGES.Base) {
+	// If true, app.ExternalDomain() will return one based on the reported Host (ideally reported in "Host" or "X-Forwarded-Host" by the reverse proxy), falling back to app.externalDomain if not set.
+	app.UseProxyHost = app.config.Section("ui").Key("use_proxy_host").MustBool(false)
+	app.externalURI = strings.TrimSuffix(strings.TrimSuffix(app.config.Section("ui").Key("jfa_url").MustString(""), "/invite"), "/")
+	if !strings.HasSuffix(app.externalURI, PAGES.Base) {
 		app.err.Println(lm.NoURLSuffix)
 	}
-	if app.ExternalURI == "" {
-		app.err.Println(lm.NoExternalHost + lm.LoginWontSave)
+	if app.externalURI == "" {
+		if app.UseProxyHost {
+			app.err.Println(lm.NoExternalHost + lm.LoginWontSave + lm.SetExternalHostDespiteUseProxyHost)
+		} else {
+			app.err.Println(lm.NoExternalHost + lm.LoginWontSave)
+		}
 	}
-	u, err := url.Parse(app.ExternalURI)
+	u, err := url.Parse(app.externalURI)
 	if err == nil {
-		app.ExternalDomain = u.Hostname()
+		app.externalDomain = u.Hostname()
 	}
 
 	app.config.Section("email").Key("no_username").SetValue(strconv.FormatBool(app.config.Section("email").Key("no_username").MustBool(false)))

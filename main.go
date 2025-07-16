@@ -121,7 +121,8 @@ type appContext struct {
 	host                        string
 	port                        int
 	version                     string
-	ExternalURI, ExternalDomain string
+	externalURI, externalDomain string // The latter lower-case as should be accessed through app.ExternalDomain()
+	UseProxyHost                bool
 	updater                     *Updater
 	webhooks                    *WebhookSender
 	newUpdate                   bool // Whether whatever's in update is new.

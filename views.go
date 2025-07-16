@@ -88,7 +88,7 @@ func (app *appContext) BasePageTemplateValues(gc *gin.Context, page Page, base g
 
 	pages := PagePathsDTO{
 		PagePaths:   PAGES,
-		ExternalURI: app.ExternalURI,
+		ExternalURI: app.ExternalURI(gc),
 		TrueBase:    PAGES.Base,
 	}
 	pages.Base = app.getURLBase(gc)
@@ -742,7 +742,7 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 	discord := discordEnabled && app.config.Section("discord").Key("show_on_reg").MustBool(true)
 	matrix := matrixEnabled && app.config.Section("matrix").Key("show_on_reg").MustBool(true)
 
-	userPageAddress := app.ExternalURI + PAGES.MyAccount
+	userPageAddress := app.ExternalURI(gc) + PAGES.MyAccount
 
 	fromUser := ""
 	if invite.ReferrerJellyfinID != "" {
