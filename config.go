@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io/fs"
+	"net"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -79,6 +80,16 @@ func (app *appContext) ExternalDomain(gc *gin.Context) string {
 		return app.externalDomain
 	}
 	return gc.Request.Host
+}
+
+// ExternalDomainNoPort attempts to return app.ExternalDomain() with the port removed. If the internally-used method fails, it is assumed the domain has no port anyway.
+func (app *appContext) ExternalDomainNoPort(gc *gin.Context) string {
+	domain := app.ExternalDomain(gc)
+	host, _, err := net.SplitHostPort(domain)
+	if err != nil {
+		return domain
+	}
+	return host
 }
 
 // ExternalURI returns the External URI of jfa-go's root directory (by default, where the admin page is), using the fixed app.externalURI value unless app.UseProxyHost is true and gc is not nil.
