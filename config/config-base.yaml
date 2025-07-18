@@ -1469,7 +1469,7 @@ sections:
     description: When set, user accounts will be deleted this many days after expiring
       (if "Behaviour" is "Disable user"). Set to 0 to disable.
   - setting: send_email
-    name: Send email
+    name: Send message
     type: bool
     value: true
     depends_true: messages|enabled

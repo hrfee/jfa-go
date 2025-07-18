@@ -45,7 +45,7 @@ export interface SearchConfiguration {
     search: HTMLInputElement;
     queries: { [field: string]: QueryType };
     setVisibility: (items: string[], visible: boolean, appendedItems: boolean) => void;
-    onSearchCallback: (newItems: boolean, loadAll: boolean) => void;
+    onSearchCallback: (newItems: boolean, loadAll: boolean, callback?: (resp: paginatedDTO) => void) => void;
     searchServer: (params: PaginatedReqDTO, newSearch: boolean) => void;
     clearServerSearch: () => void;
     loadMore?: () => void;
@@ -523,7 +523,7 @@ export class Search {
     get sortField(): string { return this._sortField; }
     get ascending(): boolean { return this._ascending; }
 
-    onSearchBoxChange = (newItems: boolean = false, appendedItems: boolean = false, loadAll: boolean = false) => {
+    onSearchBoxChange = (newItems: boolean = false, appendedItems: boolean = false, loadAll: boolean = false, callback?: (resp: paginatedDTO) => void) => {
         const query = this._c.search.value;
         if (!query) {
             this.inSearch = false;
@@ -532,7 +532,7 @@ export class Search {
         }
         const results = this.search(query);
         this._c.setVisibility(results, true, appendedItems);
-        this._c.onSearchCallback(newItems, loadAll);
+        this._c.onSearchCallback(newItems, loadAll, callback);
         if (this.inSearch) {
             if (this.inServerSearch) {
                 this._serverSearchButtons.forEach((v: HTMLElement) => {

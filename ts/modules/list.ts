@@ -78,8 +78,8 @@ export class RecordCounter {
 
 export interface PaginatedListConfig {
     loader: HTMLElement;
-    loadMoreButton: HTMLButtonElement;
-    loadAllButton: HTMLButtonElement;
+    loadMoreButtons: Array<HTMLButtonElement>;
+    loadAllButtons: Array<HTMLButtonElement>;
     refreshButton: HTMLButtonElement;
     filterArea: HTMLElement;
     searchOptionsHeader: HTMLElement;
@@ -130,13 +130,17 @@ export abstract class PaginatedList {
     set lastPage(v: boolean) {
         this._lastPage = v;
         if (v) {
-            this._c.loadAllButton.classList.add("unfocused");
-            this._c.loadMoreButton.textContent = window.lang.strings("noMoreResults");
-            this._c.loadMoreButton.disabled = true;
+            this._c.loadAllButtons.forEach((v) => v.classList.add("unfocused"));
+            this._c.loadMoreButtons.forEach((v) => {
+                v.textContent = window.lang.strings("noMoreResults");
+                v.disabled = true;
+            });
         } else {
-            this._c.loadMoreButton.textContent = window.lang.strings("loadMore");
-            this._c.loadMoreButton.disabled = false;
-            this._c.loadAllButton.classList.remove("unfocused");
+            this._c.loadMoreButtons.forEach((v) => {
+                v.textContent = window.lang.strings("loadMore");
+                v.disabled = false;
+            });
+            this._c.loadAllButtons.forEach((v) => v.classList.remove("unfocused"));
         }
         this.autoSetServerSearchButtonsDisabled();
     }
@@ -161,11 +165,12 @@ export abstract class PaginatedList {
         this._counter = new RecordCounter(this._c.recordCounter);
         this._hasLoaded = false;
        
-        this._c.loadMoreButton.onclick = () => this.loadMore(false);
-        this._c.loadAllButton.onclick = () => {
-            addLoader(this._c.loadAllButton, true);
-            this.loadMore(true);
-        };
+        this._c.loadMoreButtons.forEach((v) => {
+            v.onclick = () => this.loadMore(false);
+        });
+        this._c.loadAllButtons.forEach((v) => {
+            v.onclick = () => this.loadAll();
+        });
         /* this._keepSearchingButton.onclick = () => {
             addLoader(this._keepSearchingButton, true);
             this.loadMore(() => removeLoader(this._keepSearchingButton, true));
@@ -193,7 +198,7 @@ export abstract class PaginatedList {
 
     initSearch = (searchConfig: SearchConfiguration) => {
         const previousCallback = searchConfig.onSearchCallback;
-        searchConfig.onSearchCallback = (newItems: boolean, loadAll: boolean) => {
+        searchConfig.onSearchCallback = (newItems: boolean, loadAll: boolean, callback?: (resp: paginatedDTO) => void) => {
             // if (this._search.inSearch && !this.lastPage) this._c.loadAllButton.classList.remove("unfocused");
             // else this._c.loadAllButton.classList.add("unfocused");
 
@@ -206,7 +211,7 @@ export abstract class PaginatedList {
                     (this._visible.length == 0 && !this.lastPage) ||
                     loadAll
                    ) {
-                    this.loadMore(loadAll);
+                    this.loadMore(loadAll, callback);
                 }
             }
             this._previousVisibleItemCount = this._visible.length;
@@ -390,11 +395,11 @@ export abstract class PaginatedList {
     }
 
     // Loads the next page. If "loadAll", all pages will be loaded until the last is reached.
-    public abstract loadMore: (loadAll?: boolean, callback?: () => void) => void;
+    public abstract loadMore: (loadAll?: boolean, callback?: (resp?: paginatedDTO) => void) => void;
     protected _loadMore = (loadAll: boolean = false, callback?: (resp: paginatedDTO) => void) => {
-        this._c.loadMoreButton.disabled = true;
+        this._c.loadMoreButtons.forEach((v) => v.disabled = true);
         const timeout = setTimeout(() => {
-            this._c.loadMoreButton.disabled = false;
+            this._c.loadMoreButtons.forEach((v) => v.disabled = false);
         }, 1000);
         this._page += 1;
 
@@ -406,7 +411,7 @@ export abstract class PaginatedList {
                 // Check before setting this.lastPage so we have a chance to cancel the timeout.
                 if (resp.last_page) {
                     clearTimeout(timeout);
-                    removeLoader(this._c.loadAllButton);
+                    this._c.loadAllButtons.forEach((v) => removeLoader(v));
                 }
             },
             (resp: paginatedDTO) => {
@@ -414,7 +419,7 @@ export abstract class PaginatedList {
                     if (this.lastPage) {
                         loadAll = false;
                     }
-                    this._search.onSearchBoxChange(true, true, loadAll);
+                    this._search.onSearchBoxChange(true, true, loadAll, callback);
                 } else {
                     // Since results come to us ordered already, we can assume "ordering"
                     // will be identical to pre-page-load but with extra elements at the end,
@@ -426,6 +431,12 @@ export abstract class PaginatedList {
             },
         );
     }
+
+    public abstract loadAll: (callback?: (resp?: paginatedDTO) => void) => void;
+    protected _loadAll = (callback?: (resp?: paginatedDTO) => void)  => {
+        this._c.loadAllButtons.forEach((v) => { addLoader(v, true); });
+        this.loadMore(true, callback);
+    };
 
     loadNItems = (n: number) => {
         const cb = () => {

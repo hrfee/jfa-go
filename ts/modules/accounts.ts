@@ -14,6 +14,13 @@ const USER_DEFAULT_SORT_ASCENDING  = true;
 
 const dateParser = require("any-date-parser");
 
+enum SelectAllState {
+    None = 0,
+    Some = 0.1,
+    AllVisible = 0.9,
+    All = 1
+};
+
 interface User {
     id: string;
     name: string;
@@ -218,10 +225,15 @@ class user implements User, SearchableItem {
 
     get selected(): boolean { return this._selected; }
     set selected(state: boolean) {
+        this.setSelected(state, true);
+    }
+
+    setSelected(state: boolean, dispatchEvent: boolean) {
         this._selected = state;
         this._check.checked = state;
-        state ? document.dispatchEvent(this._checkEvent()) : document.dispatchEvent(this._uncheckEvent());
+        if (dispatchEvent) state ? document.dispatchEvent(this._checkEvent()) : document.dispatchEvent(this._uncheckEvent());
     }
+
 
     get name(): string { return this._username.textContent; }
     set name(value: string) { this._username.textContent = value; }
@@ -869,6 +881,7 @@ export class accountsList extends PaginatedList {
     private _applyJellyseerr = document.getElementById("modify-user-jellyseerr") as HTMLInputElement;
 
     private _selectAll = document.getElementById("accounts-select-all") as HTMLInputElement;
+    private _selectAllState: SelectAllState = SelectAllState.None;
     // private _users: { [id: string]: user };
     // private _ordering: string[] = [];
     get users(): { [id: string]: user } { return this._search.items as { [id: string]: user }; }
@@ -912,8 +925,8 @@ export class accountsList extends PaginatedList {
     constructor() {
         super({
             loader: document.getElementById("accounts-loader"),
-            loadMoreButton: document.getElementById("accounts-load-more") as HTMLButtonElement,
-            loadAllButton: document.getElementById("accounts-load-all") as HTMLButtonElement,
+            loadMoreButtons: Array.from([document.getElementById("accounts-load-more") as HTMLButtonElement]) as Array<HTMLButtonElement>,
+            loadAllButtons: Array.from(document.getElementsByClassName("accounts-load-all")) as Array<HTMLButtonElement>,
             refreshButton: document.getElementById("accounts-refresh") as HTMLButtonElement,
             filterArea: document.getElementById("accounts-filter-area"),
             searchOptionsHeader: document.getElementById("accounts-search-options-header"),
@@ -987,21 +1000,23 @@ export class accountsList extends PaginatedList {
             clearSearchButtonSelector: ".accounts-search-clear",
             serverSearchButtonSelector: ".accounts-search-server",
             onSearchCallback: (_0: boolean, _1: boolean) => {
-                this._checkCheckCount();
+                this.processSelectedAccounts();
             },
             searchServer: null,
             clearServerSearch: null,
         };
         
         this.initSearch(searchConfig);
-        
+       
+        // FIXME: Remove!
+        (window as any).accs = this;
+
         this._selectAll.checked = false;
-        this._selectAll.onchange = () => {
-            this.selectAll = this._selectAll.checked;
-        };
+        this._selectAllState = SelectAllState.None;
+        this._selectAll.onchange = () => this.cycleSelectAll();
         document.addEventListener("accounts-reload", () => this.reload());
-        document.addEventListener("accountCheckEvent", () => { this._counter.selected++; this._checkCheckCount(); });
-        document.addEventListener("accountUncheckEvent", () => { this._counter.selected--; this._checkCheckCount(); });
+        document.addEventListener("accountCheckEvent", () => { this._counter.selected++; this.processSelectedAccounts(); });
+        document.addEventListener("accountUncheckEvent", () => { this._counter.selected--; this.processSelectedAccounts(); });
         this._addUserButton.onclick = () => {
             this._populateAddUserProfiles();
             window.modals.addUser.toggle();
@@ -1232,25 +1247,79 @@ export class accountsList extends PaginatedList {
         this.loadTemplates();
     }
 
-    loadMore = (loadAll: boolean = false, callback?: () => void) => {
+    loadMore = (loadAll: boolean = false, callback?: (resp?: paginatedDTO) => void) => {
         this._loadMore(
             loadAll,
             callback
         );
     };
 
-    get selectAll(): boolean { return this._selectAll.checked; }
-    set selectAll(state: boolean) {
-        let count = 0;
-        for (let id in this.users) {
-            if (this._container.contains(this.users[id].asElement())) { // Only select visible elements
-                this.users[id].selected = state;
+    loadAll = (callback?: (resp?: paginatedDTO) => void) => {
+        this._loadAll(callback);
+    };
+
+    get selectAll(): SelectAllState { return this._selectAllState; }
+
+    cycleSelectAll = () => {
+        let next: SelectAllState;
+        switch (this.selectAll) {
+            case SelectAllState.None:
+            case SelectAllState.Some:
+                next = SelectAllState.AllVisible;
+                break;
+            case SelectAllState.AllVisible:
+                next = SelectAllState.All;
+                break;
+            case SelectAllState.All:
+                next = SelectAllState.None;
+                break;
+        }
+
+        this._selectAllState = next;
+        console.debug("New check state:", next);
+
+        if (next == SelectAllState.None) {
+            // Deselect -all- users, rather than just visible ones, to be safe.
+            for (let id in this.users) {
+                this.users[id].setSelected(false, false);
+            }
+            this._selectAll.checked = false;
+            this._selectAll.indeterminate = false;
+            this.processSelectedAccounts();
+            return;
+        }
+
+        // FIXME: Decide whether to keep the AllVisible/All distinction and actually use it, or to get rid of it an just make "load all" more visible.
+        const selectAllVisible = () => {
+            let count = 0;
+            for (let id of this._visible) {
+                this.users[id].setSelected(true, false);
                 count++;
             }
+            console.debug("Selected", count);
+            this._selectAll.checked = true;
+            if (this.lastPage) {
+                this._selectAllState = SelectAllState.All;
+            }
+            this._selectAll.indeterminate = this.lastPage ? false : true;
+            this.processSelectedAccounts();
         }
-        this._selectAll.checked = state;
-        this._selectAll.indeterminate = false;
-        state ? this._counter.selected = count : 0;
+        if (next == SelectAllState.AllVisible) {
+            selectAllVisible();
+            return;
+        }
+   
+        if (next == SelectAllState.All) {
+            this.loadAll((_: paginatedDTO) => {
+                if (!(this.lastPage)) {
+                    // Pretend to live-select elements as they load.
+                    this._counter.selected = this._counter.shown;
+                    return;
+                }
+                selectAllVisible();
+            });
+            return;
+        }
     }
     
     selectAllBetweenIDs = (startID: string, endID: string) => {
@@ -1270,12 +1339,14 @@ export class accountsList extends PaginatedList {
         // console.log("after appending lengths:", Object.keys(this.users).length, Object.keys(this._search.items).length);
     }
 
-    private _checkCheckCount = () => {
+    private processSelectedAccounts = () => {
+        console.debug("processSelectedAccounts");
         const list = this._collectUsers();
         this._counter.selected = list.length;
         if (this._counter.selected == 0) {
             this._selectAll.indeterminate = false;
             this._selectAll.checked = false;
+            this._selectAll.title = "";
             this._modifySettings.classList.add("unfocused");
             if (window.referralsEnabled) {
                 this._enableReferrals.classList.add("unfocused");
@@ -1288,15 +1359,17 @@ export class accountsList extends PaginatedList {
             this._disableEnable.parentElement.classList.add("unfocused");
             this._sendPWR.classList.add("unfocused");
         } else {
-            let visibleCount = 0;
-            for (let id in this.users) {
-                if (this._container.contains(this.users[id].asElement())) {
-                    visibleCount++;
-                }
-            }
-            if (this._counter.selected == visibleCount) {
+            if (this._counter.selected == this._visible.length) {
                 this._selectAll.checked = true;
-                this._selectAll.indeterminate = false;
+                if (this.lastPage) {
+                    this._selectAll.indeterminate = false;
+                    this._selectAll.title = window.lang.strings("allMatchingSelected");
+                    // FIXME: Hover text "all matching records selected."
+                } else {
+                    this._selectAll.indeterminate = true;
+                    this._selectAll.title = window.lang.strings("allLoadedSelected");
+                    // FIXME: Hover text "all loaded matching records selected. Click again to load all."
+                }
             } else {
                 this._selectAll.checked = false;
                 this._selectAll.indeterminate = true;
@@ -1392,8 +1465,8 @@ export class accountsList extends PaginatedList {
     
     private _collectUsers = (): string[] => {
         let list: string[] = [];
-        for (let id in this.users) {
-            if (this._container.contains(this.users[id].asElement()) && this.users[id].selected) { list.push(id); }
+        for (let id of this._visible) {
+            if (this.users[id].selected) { list.push(id) }
         }
         return list;
     }
