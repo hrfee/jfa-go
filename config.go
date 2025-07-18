@@ -25,6 +25,7 @@ var discordEnabled = false
 var matrixEnabled = false
 
 // URL subpaths. Ignore the "Current" field.
+// IMPORTANT: When linking straight to a page, rather than appending further to the URL (like accessing an API route), append a /.
 var PAGES = PagePaths{}
 
 func (app *appContext) GetPath(sect, key string) (fs.FS, string) {
@@ -58,9 +59,12 @@ func FixFullURL(v string) string {
 	return v
 }
 
-func FormatSubpath(path string) string {
+func FormatSubpath(path string, removeSingleSlash bool) string {
 	if path == "/" {
-		return ""
+		if removeSingleSlash {
+			return ""
+		}
+		return path
 	}
 	return strings.TrimSuffix(path, "/")
 }
@@ -140,10 +144,10 @@ func (app *appContext) loadConfig() error {
 	app.MustSetURLPath("url_paths", "admin", "")
 	app.MustSetURLPath("url_paths", "user_page", "/my/account")
 	app.MustSetURLPath("url_paths", "form", "/invite")
-	PAGES.Base = FormatSubpath(app.config.Section("ui").Key("url_base").String())
-	PAGES.Admin = FormatSubpath(app.config.Section("url_paths").Key("admin").String())
-	PAGES.MyAccount = FormatSubpath(app.config.Section("url_paths").Key("user_page").String())
-	PAGES.Form = FormatSubpath(app.config.Section("url_paths").Key("form").String())
+	PAGES.Base = FormatSubpath(app.config.Section("ui").Key("url_base").String(), true)
+	PAGES.Admin = FormatSubpath(app.config.Section("url_paths").Key("admin").String(), true)
+	PAGES.MyAccount = FormatSubpath(app.config.Section("url_paths").Key("user_page").String(), true)
+	PAGES.Form = FormatSubpath(app.config.Section("url_paths").Key("form").String(), true)
 	if !(app.config.Section("user_page").Key("enabled").MustBool(true)) {
 		PAGES.MyAccount = "disabled"
 	}
