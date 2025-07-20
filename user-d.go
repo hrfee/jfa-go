@@ -138,6 +138,10 @@ func (app *appContext) checkUsers() {
 
 		if shouldContact {
 			name := app.getAddressOrName(user.ID)
+			// Skip blank contact info
+			if name == "" {
+				continue
+			}
 			msg, err := app.email.constructUserExpired(app, false)
 			if err != nil {
 				app.err.Printf(lm.FailedConstructExpiryMessage, user.ID, err)
