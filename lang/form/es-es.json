@@ -40,7 +40,8 @@
         "resetPasswordEmail": "Su dirección de correo electrónico",
         "resetPasswordContactMethod": "El nombre de usuario de cualquier método de contacto vinculado a su cuenta",
         "resetSentDescription": "Si una cuenta con el nombre de usuario o método de contacto suministrados existe, se habrá enviado un enlace de restablecimiento de contraseña a través de todos los métodos de contacto disponibles. El código caducará a los 30 minutos.",
-        "referralsWithExpiryDescription": "Invite a amigos y familia a Jellyfin con este enlace. El enlace se desactivará cuando caduque."
+        "referralsWithExpiryDescription": "Invite a amigos y familia a Jellyfin con este enlace. El enlace se desactivará cuando caduque.",
+        "welcomeUser": "Bienvenido, {user}!"
     },
     "notifications": {
         "errorUserExists": "El usuario ya existe.",

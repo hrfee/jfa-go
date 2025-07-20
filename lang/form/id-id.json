@@ -26,7 +26,22 @@
         "welcomeUser": "Selamat datang, {user}!",
         "joinTheServer": "Bergabung ke server:",
         "changePassword": "Ubah Sandi",
-        "resetPassword": "Atur Ulang Sandi"
+        "resetPassword": "Atur Ulang Sandi",
+        "resetPasswordUsername": "Username Jellyfin kamu",
+        "resetPasswordEmail": "Email kamu",
+        "referralsWithExpiryDescription": "Undang teman & keluarga ke Jellyfin dengan link ini. Link tidak akan bisa digunakan kalau sudah kedaluwarsa.",
+        "addContactMethod": "Tambahkan cara untuk menghubungimu",
+        "editContactMethod": "Ubah informasi kontak",
+        "customMessagePlaceholderHeader": "Sesuaikan kartu ini",
+        "customMessagePlaceholderContent": "Tekan tombol edit User Page di settings untuk sesuaikan kartu ini, atau tampilkan satu dilayar masuk, dan jangan khawatir, pengguna tidak bisa melihat ini.",
+        "resetSent": "Reset dikirim.",
+        "resetPasswordThroughLinkEnd": "Lalu tekan submit. Ada link yang akan dikirim ke email untuk reset password kamu.",
+        "resetPasswordThroughLink": "Untuk reset password kamu, masukkan salah satu dari username, email, atau kontak yang terhubung pada akun, lalu submit. Akan ada link yang dikirim ke email untuk reset password kamu.",
+        "resetPasswordThroughJellyfin": "Untuk mengubah password kamu, kunjungi {ifLink} dan tekan tombol \"Forgot Password\".",
+        "copyReferral": "Salin Link",
+        "referralsDescription": "Undang teman & keluarga untuk bergabung ke Jellyfin dengan link ini. Kembali kesini untuk membuat yang baru jika ini sudah kedaluwarsa.",
+        "invitedBy": "Kamu diundang oleh {user}.",
+        "resetPasswordThroughLinkStart": "Untuk reset password kamu, masukkan salah satu yang ada dibawah:"
     },
     "notifications": {
         "errorUserExists": "Pengguna sudah ada.",

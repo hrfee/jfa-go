@@ -27,12 +27,13 @@
         "ifItWasYou": "Jika ini adalah benar anda, masukkan pin dibawah ke dalam tempat yang sudah disediakan.",
         "codeExpiry": "Kode akan kadaluarsa pada {date}, pada waktu {time} UTC, yaitu dalam {expiresInMinutes}.",
         "pin": "PIN",
-        "name": "Atur ulang kata sandi"
+        "name": "Atur ulang kata sandi",
+        "ifItWasYouLink": "Jika ini kamu yang request, silahkan klik link dibawah ini."
     },
     "userDeleted": {
         "title": "Akun anda telah dihapus - Jellyfin",
         "yourAccountWasDeleted": "Akun Jellyfin anda telah dihapus.",
-        "name": "Penghapusan pengguna"
+        "name": "Hapus Pengguna"
     },
     "inviteEmail": {
         "title": "Undangan - Jellyfin",
@@ -48,12 +49,36 @@
         "welcome": "Selamat datang di Jellyfin!",
         "youCanLoginWith": "Anda dapat masuk dengan menggunakan data dibawah ini",
         "jellyfinURL": "URL",
-        "name": "Email selamat datang"
+        "name": "Selamat Datang",
+        "yourAccountWillExpire": "Akun kamu akan kedaluwarsa pada {date}."
     },
     "emailConfirmation": {
         "title": "Konfirmasi emailmu - Jellyfin",
-        "clickBelow": "Klik link dibawah ini untuk mengkonfirmasikan alamat emailmu untuk mulai menggunakan Jellyfin.",
+        "clickBelow": "Klik link dibawah ini untuk mengkonfirmasikan alamat emailmu dan mulai menggunakan Jellyfin.",
         "confirmEmail": "Konfirmasi Email",
         "name": "Email konfirmasi"
+    },
+    "userDisabled": {
+        "title": "Akun anda telah dihentikan - Jellyfin",
+        "yourAccountWasDisabled": "Akun anda telah dihentikan.",
+        "name": "Akun telah dihentikan"
+    },
+    "userEnabled": {
+        "name": "Akun telah diaktifkan",
+        "yourAccountWasEnabled": "Akun anda telah diaktifkan kembali.",
+        "title": "Akun anda telah diaktifkan kembali - Jellyfin"
+    },
+    "userExpired": {
+        "name": "Pengguna kedaluwarsa",
+        "title": "Akun kamu sudah kedaluwarsa - Jellyfin",
+        "yourAccountHasExpired": "Akun kamu sudah kedaluwarsa.",
+        "contactTheAdmin": "Hubungi admin untuk info lebih lanjut."
+    },
+    "userExpiryAdjusted": {
+        "name": "Waktu habis sudah diubah",
+        "yourExpiryWasAdjusted": "Tanggal kedaluwarsa akun kamu sudah disesuaikan.",
+        "title": "Waktu habis akun sudah disesuaikan - Jellyfin",
+        "ifPreviouslyDisabled": "Jika akun kamu sebelumnya dihentikan, akun kamu butuh untuk diaktifkan kembali.",
+        "newExpiry": "Akun kamu akan kedaluwarsa pada {date}."
     }
 }

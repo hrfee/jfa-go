@@ -136,7 +136,20 @@
         "disableReferrals": "Deshabilitar referencias",
         "enableReferralsDescription": "Proporciona a los usuarios un enlace personal de referencia, parecido a una invitación, para que lo compartan con amigos y familiares. Puede conseguirse a través de una plantilla de referencia en un perfil, o a través de una invitación existente.",
         "enableReferralsProfileDescription": "Proporciona a los usuarios creados con este perfil un enlace personal de referencia, parecido a una invitación, para que lo compartan con amigos y familiares. Cree una invitación con los ajustes deseados y selecciónela aquí. Cada referencia se basará en esta invitación. Puede eliminar la invitación una vez completado.",
-        "useInviteExpiryNote": "Por defecto las invitaciones caducan a los 90 días, pero pueden ser renovadas por el usuario. Habilite que la referencia sea desactivada cuando pase el tiempo establecido."
+        "useInviteExpiryNote": "Por defecto las invitaciones caducan a los 90 días, pero pueden ser renovadas por el usuario. Habilite que la referencia sea desactivada cuando pase el tiempo establecido.",
+        "settingsHiddenDependency": "Los ajustes que coinciden son escondidos porque dependen del valor de otro ajuste",
+        "actions": "Acciones",
+        "applyConfigurationAndPolicy": "Aplica la póliza/configuración de Jellyfin",
+        "jellyseerrUserDefaultsDescription": "Crea un usuario de Jellyseer y configúralo, después selezionalo abajo. Los ajustes/permisos serán almacenados y aplicados a los usuarios nuevos de jellyseerr creados por jfa-go cuando este perfil está seleccionado.",
+        "postSignupCard": "Tarjeta de ayuda post registro",
+        "loginNotAdmin": "¿No eres un administrador?",
+        "accountLinked": "{Metododecontacto} vinculado a: {usuario}",
+        "applyOmbi": "Aplica el perfil de Ombi(si está disponible)",
+        "applyJellyseerr": "Aplica el perfil de jellyseer(si está disponible)",
+        "jellyseerrProfile": "Perfilé de usuario de Jellyseerr",
+        "referrer": "Referente",
+        "accountUnlinked": "{metododecontacto} removido de: {usuario}",
+        "accountResetPassword": "{usuario} restableció su contraseña"
     },
     "notifications": {
         "changedEmailAddress": "Se cambió la dirección de correo electrónico de {n}.",
