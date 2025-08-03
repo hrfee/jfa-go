@@ -345,6 +345,8 @@ const (
 )
 
 const (
+	FailedConstructCustomContent = "Possible error in custom content \"%s\": %v"
+
 	FailedConstructExpiryAdmin = "Failed to construct expiry notification for \"%s\": %v"
 	FailedSendExpiryAdmin      = "Failed to send expiry notification for \"%s\" to \"%s\": %v"
 	SentExpiryAdmin            = "Sent expiry notification for \"%s\" to \"%s\""

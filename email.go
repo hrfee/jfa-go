@@ -347,12 +347,16 @@ func (emailer *Emailer) constructConfirmation(code, username, key string, app *a
 	template := emailer.confirmationValues(code, username, key, app, noSub)
 	message := app.storage.MustGetCustomContentKey("EmailConfirmation")
 	if message.Enabled {
-		content := templateEmail(
+		var content string
+		content, err = templateEmail(
 			message.Content,
 			message.Variables,
 			nil,
 			template,
 		)
+		if err != nil {
+			app.err.Printf(lm.FailedConstructCustomContent, emailer.lang.EmailConfirmation.get("title"), err)
+		}
 		email, err = emailer.constructTemplate(email.Subject, content, app)
 	} else {
 		email.HTML, email.Text, email.Markdown, err = emailer.construct(app, "email_confirmation", "email_", template)
@@ -365,15 +369,24 @@ func (emailer *Emailer) constructConfirmation(code, username, key string, app *a
 
 // username is optional, but should only be passed once.
 func (emailer *Emailer) constructTemplate(subject, md string, app *appContext, username ...string) (*Message, error) {
+	var err error
 	if len(username) != 0 {
-		md = templateEmail(md, []string{"{username}"}, nil, map[string]interface{}{"username": username[0]})
-		subject = templateEmail(subject, []string{"{username}"}, nil, map[string]interface{}{"username": username[0]})
+		md, err = templateEmail(md, []string{"{username}"}, nil, map[string]interface{}{"username": username[0]})
+		if err != nil {
+			app.err.Printf(lm.FailedConstructCustomContent, "Template", err)
+		}
+		subject, err = templateEmail(subject, []string{"{username}"}, nil, map[string]interface{}{"username": username[0]})
+		if err != nil {
+			app.err.Printf(lm.FailedConstructCustomContent, "Template", err)
+		}
+	}
+	if err != nil {
+		return nil, err
 	}
 	email := &Message{Subject: subject}
 	html := markdown.ToHTML([]byte(md), nil, markdownRenderer)
 	text := stripMarkdown(md)
 	message := app.config.Section("messages").Key("message").String()
-	var err error
 	data := map[string]interface{}{
 		"text":      template.HTML(html),
 		"plaintext": text,
@@ -427,12 +440,16 @@ func (emailer *Emailer) constructInvite(code string, invite Invite, app *appCont
 	var err error
 	message := app.storage.MustGetCustomContentKey("InviteEmail")
 	if message.Enabled {
-		content := templateEmail(
+		var content string
+		content, err = templateEmail(
 			message.Content,
 			message.Variables,
 			nil,
 			template,
 		)
+		if err != nil {
+			app.err.Printf(lm.FailedConstructCustomContent, emailer.lang.InviteEmail.get("title"), err)
+		}
 		email, err = emailer.constructTemplate(email.Subject, content, app)
 	} else {
 		email.HTML, email.Text, email.Markdown, err = emailer.construct(app, "invite_emails", "email_", template)
@@ -467,12 +484,16 @@ func (emailer *Emailer) constructExpiry(code string, invite Invite, app *appCont
 	template := emailer.expiryValues(code, invite, app, noSub)
 	message := app.storage.MustGetCustomContentKey("InviteExpiry")
 	if message.Enabled {
-		content := templateEmail(
+		var content string
+		content, err = templateEmail(
 			message.Content,
 			message.Variables,
 			nil,
 			template,
 		)
+		if err != nil {
+			app.err.Printf(lm.FailedConstructCustomContent, emailer.lang.InviteExpiry.get("title"), err)
+		}
 		email, err = emailer.constructTemplate(email.Subject, content, app)
 	} else {
 		email.HTML, email.Text, email.Markdown, err = emailer.construct(app, "notifications", "expiry_", template)
@@ -522,12 +543,16 @@ func (emailer *Emailer) constructCreated(code, username, address string, invite 
 	var err error
 	message := app.storage.MustGetCustomContentKey("UserCreated")
 	if message.Enabled {
-		content := templateEmail(
+		var content string
+		content, err = templateEmail(
 			message.Content,
 			message.Variables,
 			nil,
 			template,
 		)
+		if err != nil {
+			app.err.Printf(lm.FailedConstructCustomContent, emailer.lang.UserCreated.get("title"), err)
+		}
 		email, err = emailer.constructTemplate(email.Subject, content, app)
 	} else {
 		email.HTML, email.Text, email.Markdown, err = emailer.construct(app, "notifications", "created_", template)
@@ -596,12 +621,16 @@ func (emailer *Emailer) constructReset(pwr PasswordReset, app *appContext, noSub
 	var err error
 	message := app.storage.MustGetCustomContentKey("PasswordReset")
 	if message.Enabled {
-		content := templateEmail(
+		var content string
+		content, err = templateEmail(
 			message.Content,
 			message.Variables,
 			nil,
 			template,
 		)
+		if err != nil {
+			app.err.Printf(lm.FailedConstructCustomContent, app.config.Section("password_resets").Key("subject").MustString(emailer.lang.PasswordReset.get("title")), err)
+		}
 		email, err = emailer.constructTemplate(email.Subject, content, app)
 	} else {
 		email.HTML, email.Text, email.Markdown, err = emailer.construct(app, "password_resets", "email_", template)
@@ -638,12 +667,16 @@ func (emailer *Emailer) constructDeleted(reason string, app *appContext, noSub b
 	template := emailer.deletedValues(reason, app, noSub)
 	message := app.storage.MustGetCustomContentKey("UserDeleted")
 	if message.Enabled {
-		content := templateEmail(
+		var content string
+		content, err = templateEmail(
 			message.Content,
 			message.Variables,
 			nil,
 			template,
 		)
+		if err != nil {
+			app.err.Printf(lm.FailedConstructCustomContent, app.config.Section("deletion").Key("subject").MustString(emailer.lang.UserDeleted.get("title")), err)
+		}
 		email, err = emailer.constructTemplate(email.Subject, content, app)
 	} else {
 		email.HTML, email.Text, email.Markdown, err = emailer.construct(app, "deletion", "email_", template)
@@ -680,12 +713,16 @@ func (emailer *Emailer) constructDisabled(reason string, app *appContext, noSub 
 	template := emailer.disabledValues(reason, app, noSub)
 	message := app.storage.MustGetCustomContentKey("UserDisabled")
 	if message.Enabled {
-		content := templateEmail(
+		var content string
+		content, err = templateEmail(
 			message.Content,
 			message.Variables,
 			nil,
 			template,
 		)
+		if err != nil {
+			app.err.Printf(lm.FailedConstructCustomContent, app.config.Section("disable_enable").Key("subject_disabled").MustString(emailer.lang.UserDisabled.get("title")), err)
+		}
 		email, err = emailer.constructTemplate(email.Subject, content, app)
 	} else {
 		email.HTML, email.Text, email.Markdown, err = emailer.construct(app, "disable_enable", "disabled_", template)
@@ -722,12 +759,16 @@ func (emailer *Emailer) constructEnabled(reason string, app *appContext, noSub b
 	template := emailer.enabledValues(reason, app, noSub)
 	message := app.storage.MustGetCustomContentKey("UserEnabled")
 	if message.Enabled {
-		content := templateEmail(
+		var content string
+		content, err = templateEmail(
 			message.Content,
 			message.Variables,
 			nil,
 			template,
 		)
+		if err != nil {
+			app.err.Printf(lm.FailedConstructCustomContent, app.config.Section("disable_enable").Key("subject_enabled").MustString(emailer.lang.UserEnabled.get("title")), err)
+		}
 		email, err = emailer.constructTemplate(email.Subject, content, app)
 	} else {
 		email.HTML, email.Text, email.Markdown, err = emailer.construct(app, "disable_enable", "enabled_", template)
@@ -788,12 +829,16 @@ func (emailer *Emailer) constructExpiryAdjusted(username string, expiry time.Tim
 		})
 	}
 	if message.Enabled {
-		content := templateEmail(
+		var content string
+		content, err = templateEmail(
 			message.Content,
 			message.Variables,
 			nil,
 			template,
 		)
+		if err != nil {
+			app.err.Printf(lm.FailedConstructCustomContent, app.config.Section("user_expiry").Key("adjustment_subject").MustString(emailer.lang.UserExpiryAdjusted.get("title")), err)
+		}
 		email, err = emailer.constructTemplate(email.Subject, content, app)
 	} else {
 		email.HTML, email.Text, email.Markdown, err = emailer.construct(app, "user_expiry", "adjustment_email_", template)
@@ -854,12 +899,16 @@ func (emailer *Emailer) constructWelcome(username string, expiry time.Time, app 
 		})
 	}
 	if message.Enabled {
-		content := templateEmail(
+		var content string
+		content, err = templateEmail(
 			message.Content,
 			message.Variables,
 			message.Conditionals,
 			template,
 		)
+		if err != nil {
+			app.err.Printf(lm.FailedConstructCustomContent, app.config.Section("welcome_email").Key("subject").MustString(emailer.lang.WelcomeEmail.get("title")), err)
+		}
 		email, err = emailer.constructTemplate(email.Subject, content, app)
 	} else {
 		email.HTML, email.Text, email.Markdown, err = emailer.construct(app, "welcome_email", "email_", template)
@@ -890,12 +939,16 @@ func (emailer *Emailer) constructUserExpired(app *appContext, noSub bool) (*Mess
 	template := emailer.userExpiredValues(app, noSub)
 	message := app.storage.MustGetCustomContentKey("UserExpired")
 	if message.Enabled {
-		content := templateEmail(
+		var content string
+		content, err = templateEmail(
 			message.Content,
 			message.Variables,
 			nil,
 			template,
 		)
+		if err != nil {
+			app.err.Printf(lm.FailedConstructCustomContent, app.config.Section("user_expiry").Key("subject").MustString(emailer.lang.UserExpired.get("title")), err)
+		}
 		email, err = emailer.constructTemplate(email.Subject, content, app)
 	} else {
 		email.HTML, email.Text, email.Markdown, err = emailer.construct(app, "user_expiry", "email_", template)

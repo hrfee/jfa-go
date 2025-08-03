@@ -812,18 +812,21 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 	if msg, ok := app.storage.GetCustomContentKey("PostSignupCard"); ok && msg.Enabled {
 		data["customSuccessCard"] = true
 		// We don't template here, since the username is only known after login.
+		templated, err := templateEmail(
+			msg.Content,
+			msg.Variables,
+			msg.Conditionals,
+			map[string]any{
+				"username":     "{username}",
+				"myAccountURL": userPageAddress,
+			},
+		)
+		if err != nil {
+			app.err.Printf(lm.FailedConstructCustomContent, "PostSignupCard", err)
+		}
 		data["customSuccessCardContent"] = template.HTML(markdown.ToHTML(
-			[]byte(templateEmail(
-				msg.Content,
-				msg.Variables,
-				msg.Conditionals,
-				map[string]interface{}{
-					"username":     "{username}",
-					"myAccountURL": userPageAddress,
-				},
-			),
-			), nil, markdownRenderer,
-		))
+			[]byte(templated), nil, markdownRenderer),
+		)
 	}
 
 	// if discordEnabled {
