@@ -542,7 +542,7 @@ func start(asDaemon, firstCall bool) {
 				discordEnabled = false
 			} else {
 				app.debug.Println(lm.InitDiscord)
-				go app.discord.run()
+				go app.discord.Run()
 				defer app.discord.Shutdown()
 				app.contactMethods = append(app.contactMethods, app.discord)
 			}
