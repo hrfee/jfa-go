@@ -24,7 +24,7 @@ var telegramEnabled = false
 var discordEnabled = false
 var matrixEnabled = false
 
-// URL subpaths. Ignore the "Current" field.
+// URL subpaths. Ignore the "Current" field, it's populated when in copies of the struct used for page templating.
 // IMPORTANT: When linking straight to a page, rather than appending further to the URL (like accessing an API route), append a /.
 var PAGES = PagePaths{}
 
@@ -239,6 +239,9 @@ func (app *appContext) loadConfig() error {
 
 	app.MustSetValue("user_expiry", "adjustment_email_html", "jfa-go:"+"expiry-adjusted.html")
 	app.MustSetValue("user_expiry", "adjustment_email_text", "jfa-go:"+"expiry-adjusted.txt")
+
+	app.MustSetValue("user_expiry", "reminder_email_html", "jfa-go:"+"expiry-reminder.html")
+	app.MustSetValue("user_expiry", "reminder_email_text", "jfa-go:"+"expiry-reminder.txt")
 
 	app.MustSetValue("email", "collect", "true")
 

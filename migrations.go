@@ -387,6 +387,9 @@ func intialiseCustomContent(app *appContext) {
 	if _, ok := app.storage.GetCustomContentKey("UserExpiryAdjusted"); !ok {
 		app.storage.SetCustomContentKey("UserExpiryAdjusted", emptyCC)
 	}
+	if _, ok := app.storage.GetCustomContentKey("ExpiryReminder"); !ok {
+		app.storage.SetCustomContentKey("ExpiryReminder", emptyCC)
+	}
 	if _, ok := app.storage.GetCustomContentKey("PostSignupCard"); !ok {
 		app.storage.SetCustomContentKey("PostSignupCard", emptyCC)
 

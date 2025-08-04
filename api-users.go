@@ -552,6 +552,7 @@ func (app *appContext) ExtendExpiry(gc *gin.Context) {
 			}(id, expiry.Expiry)
 		}
 	}
+	app.InvalidateWebUserCache()
 	respondBool(204, true, gc)
 }
 
@@ -563,6 +564,7 @@ func (app *appContext) ExtendExpiry(gc *gin.Context) {
 // @tags Users
 func (app *appContext) RemoveExpiry(gc *gin.Context) {
 	app.storage.DeleteUserExpiryKey(gc.Param("id"))
+	app.InvalidateWebUserCache()
 	respondBool(200, true, gc)
 }
 

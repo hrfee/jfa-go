@@ -9,9 +9,14 @@ import (
 )
 
 func newUserDaemon(interval time.Duration, app *appContext) *GenericDaemon {
+	preExpiryCutoffDays := app.config.Section("user_expiry").Key("send_reminder_n_days_before").StringsWithShadows("|")
+	var as *DayTimerSet
+	if len(preExpiryCutoffDays) > 0 {
+		as = NewDayTimerSet(preExpiryCutoffDays, -24*time.Hour)
+	}
 	d := NewGenericDaemon(interval, app,
 		func(app *appContext) {
-			app.checkUsers()
+			app.checkUsers(as)
 		},
 	)
 	d.Name("User daemon")
@@ -23,7 +28,7 @@ const (
 	ExpiryModeDelete
 )
 
-func (app *appContext) checkUsers() {
+func (app *appContext) checkUsers(remindBeforeExpiry *DayTimerSet) {
 	if len(app.storage.GetUserExpiries()) == 0 {
 		return
 	}
@@ -63,7 +68,29 @@ func (app *appContext) checkUsers() {
 			app.storage.DeleteUserExpiryKey(expiry.JellyfinID)
 			continue
 		}
+
 		if !time.Now().After(expiry.Expiry) {
+			if shouldContact && remindBeforeExpiry != nil {
+				app.debug.Printf("Checking for expiry reminder timers")
+				duration := remindBeforeExpiry.Check(expiry.Expiry, expiry.LastNotified)
+				if duration != 0 {
+					expiry.LastNotified = time.Now()
+					app.storage.SetUserExpiryKey(user.ID, expiry)
+					name := app.getAddressOrName(user.ID)
+					// Skip blank contact info
+					if name == "" {
+						continue
+					}
+					msg, err := app.email.constructExpiryReminder(user.Name, expiry.Expiry, app, false)
+					if err != nil {
+						app.err.Printf(lm.FailedConstructExpiryReminderMessage, user.ID, err)
+					} else if err := app.sendByID(msg, user.ID); err != nil {
+						app.err.Printf(lm.FailedSendExpiryReminderMessage, user.ID, name, err)
+					} else {
+						app.info.Printf(lm.SentExpiryReminderMessage, user.ID, name)
+					}
+				}
+			}
 			continue
 		}
 
@@ -131,6 +158,10 @@ func (app *appContext) checkUsers() {
 		} else if deleteAfterPeriod > 0 && !alreadyExpired {
 			// Otherwise, mark the expiry as done pending a delete after N days.
 			expiry.DeleteAfterPeriod = true
+			// Sure, we haven't contacted them yet, but we're about to
+			if shouldContact {
+				expiry.LastNotified = time.Now()
+			}
 			app.storage.SetUserExpiryKey(user.ID, expiry)
 		}
 

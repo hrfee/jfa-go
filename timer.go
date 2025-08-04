@@ -26,7 +26,7 @@ type DayTimerSet struct {
 	clock  Clock
 }
 
-func NewDayTimerSet(deltaStrings []string, unit time.Duration) DayTimerSet {
+func NewDayTimerSet(deltaStrings []string, unit time.Duration) *DayTimerSet {
 	as := DayTimerSet{
 		deltas: make([]time.Duration, 0, len(deltaStrings)),
 		clock:  realClock{},
@@ -39,7 +39,7 @@ func NewDayTimerSet(deltaStrings []string, unit time.Duration) DayTimerSet {
 		}
 	}
 
-	return as
+	return &as
 }
 
 // Returns one or no time.Duration values, Giving the delta for the timer which went off. Pass a non-zero lastFired to stop too many going off at once, and store the returned time.Time value to pass as this later.

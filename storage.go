@@ -66,7 +66,8 @@ type Activity struct {
 type UserExpiry struct {
 	JellyfinID        string `badgerhold:"key"`
 	Expiry            time.Time
-	DeleteAfterPeriod bool // Whether or not to further disable the user later on
+	DeleteAfterPeriod bool      // Whether or not to further disable the user later on
+	LastNotified      time.Time // Last time an expiry notification/reminder was sent to the user.
 }
 
 type DebugLogAction int
@@ -679,6 +680,7 @@ type customEmails struct {
 	WelcomeEmail       CustomContent `json:"welcomeEmail"`
 	EmailConfirmation  CustomContent `json:"emailConfirmation"`
 	UserExpired        CustomContent `json:"userExpired"`
+	ExpiryReminder     CustomContent `json:"expiryReminder"`
 }
 
 // CustomContent stores customized versions of jfa-go content, including emails and user messages.
@@ -1311,6 +1313,7 @@ func (st *Storage) loadLangEmail(filesystems ...fs.FS) error {
 					patchLang(&lang.WelcomeEmail, &fallback.WelcomeEmail, &english.WelcomeEmail)
 					patchLang(&lang.EmailConfirmation, &fallback.EmailConfirmation, &english.EmailConfirmation)
 					patchLang(&lang.UserExpired, &fallback.UserExpired, &english.UserExpired)
+					patchLang(&lang.ExpiryReminder, &fallback.ExpiryReminder, &english.ExpiryReminder)
 					patchLang(&lang.Strings, &fallback.Strings, &english.Strings)
 				}
 			}
@@ -1326,6 +1329,7 @@ func (st *Storage) loadLangEmail(filesystems ...fs.FS) error {
 				patchLang(&lang.WelcomeEmail, &english.WelcomeEmail)
 				patchLang(&lang.EmailConfirmation, &english.EmailConfirmation)
 				patchLang(&lang.UserExpired, &english.UserExpired)
+				patchLang(&lang.ExpiryReminder, &english.ExpiryReminder)
 				patchLang(&lang.Strings, &english.Strings)
 			}
 		}

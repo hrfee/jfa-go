@@ -143,8 +143,8 @@ func (app *appContext) NewUserPostVerification(p NewUserParams) (out NewUserData
 	if len(webhookURIs) != 0 {
 		summary := app.userSummary(out.User)
 		for _, uri := range webhookURIs {
+			pendingTasks.Add(1)
 			go func() {
-				pendingTasks.Add(1)
 				app.webhooks.Send(uri, summary)
 				pendingTasks.Done()
 			}()

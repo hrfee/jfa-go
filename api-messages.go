@@ -39,6 +39,7 @@ func (app *appContext) GetCustomContent(gc *gin.Context) {
 		"WelcomeEmail":       {Name: app.storage.lang.Email[lang].WelcomeEmail["name"], Enabled: app.storage.MustGetCustomContentKey("WelcomeEmail").Enabled},
 		"EmailConfirmation":  {Name: app.storage.lang.Email[lang].EmailConfirmation["name"], Enabled: app.storage.MustGetCustomContentKey("EmailConfirmation").Enabled},
 		"UserExpired":        {Name: app.storage.lang.Email[lang].UserExpired["name"], Enabled: app.storage.MustGetCustomContentKey("UserExpired").Enabled},
+		"ExpiryReminder":     {Name: app.storage.lang.Email[lang].ExpiryReminder["name"], Enabled: app.storage.MustGetCustomContentKey("ExpiryReminder").Enabled},
 		"UserLogin":          {Name: app.storage.lang.Admin[adminLang].Strings["userPageLogin"], Enabled: app.storage.MustGetCustomContentKey("UserLogin").Enabled},
 		"UserPage":           {Name: app.storage.lang.Admin[adminLang].Strings["userPagePage"], Enabled: app.storage.MustGetCustomContentKey("UserPage").Enabled},
 		"PostSignupCard":     {Name: app.storage.lang.Admin[adminLang].Strings["postSignupCard"], Enabled: app.storage.MustGetCustomContentKey("PostSignupCard").Enabled, Description: app.storage.lang.Admin[adminLang].Strings["postSignupCardDescription"]},
@@ -196,7 +197,12 @@ func (app *appContext) GetCustomMessageTemplate(gc *gin.Context) {
 		if noContent {
 			msg, err = app.email.constructExpiryAdjusted("", time.Time{}, "", app, true)
 		}
-		values = app.email.expiryAdjustedValues(username, time.Now(), app.storage.lang.Email[lang].Strings.get("reason"), app, false, true)
+		values = app.email.expiryAdjustedValues(username, time.Time{}, app.storage.lang.Email[lang].Strings.get("reason"), app, false, true)
+	case "ExpiryReminder":
+		if noContent {
+			msg, err = app.email.constructExpiryReminder("", time.Now().AddDate(0, 0, 3), app, true)
+		}
+		values = app.email.expiryReminderValues(username, time.Now().AddDate(0, 0, 3), app, false, true)
 	case "InviteEmail":
 		if noContent {
 			msg, err = app.email.constructInvite("", Invite{}, app, true)

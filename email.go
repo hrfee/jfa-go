@@ -849,6 +849,79 @@ func (emailer *Emailer) constructExpiryAdjusted(username string, expiry time.Tim
 	return email, nil
 }
 
+func (emailer *Emailer) expiryReminderValues(username string, expiry time.Time, app *appContext, noSub bool, custom bool) map[string]interface{} {
+	template := map[string]interface{}{
+		"yourAccountIsDueToExpire": emailer.lang.ExpiryReminder.get("yourAccountIsDueToExpire"),
+		"expiresIn":                "",
+		"date":                     "",
+		"time":                     "",
+		"message":                  "",
+	}
+	if noSub {
+		template["helloUser"] = emailer.lang.Strings.get("helloUser")
+		empty := []string{"date", "expiresIn"}
+		for _, v := range empty {
+			template[v] = "{" + v + "}"
+		}
+	} else {
+		template["message"] = app.config.Section("messages").Key("message").String()
+		template["helloUser"] = emailer.lang.Strings.template("helloUser", tmpl{"username": username})
+		d, t, expiresIn := emailer.formatExpiry(expiry, false, app.datePattern, app.timePattern)
+		if !expiry.IsZero() {
+			if custom {
+				template["expiresIn"] = expiresIn
+				template["date"] = d
+				template["time"] = t
+			} else if !expiry.IsZero() {
+				template["yourAccountIsDueToExpire"] = emailer.lang.ExpiryReminder.template("yourAccountIsDueToExpire", tmpl{
+					"expiresIn": expiresIn,
+					"date":      d,
+					"time":      t,
+				})
+			}
+		}
+	}
+	return template
+}
+
+func (emailer *Emailer) constructExpiryReminder(username string, expiry time.Time, app *appContext, noSub bool) (*Message, error) {
+	email := &Message{
+		Subject: app.config.Section("user_expiry").Key("reminder_subject").MustString(emailer.lang.ExpiryReminder.get("title")),
+	}
+	var err error
+	var template map[string]interface{}
+	message := app.storage.MustGetCustomContentKey("ExpiryReminder")
+	if message.Enabled {
+		template = emailer.expiryReminderValues(username, expiry, app, noSub, true)
+	} else {
+		template = emailer.expiryReminderValues(username, expiry, app, noSub, false)
+	}
+	/*if noSub {
+		template["newExpiry"] = emailer.lang.UserExpiryAdjusted.template("newExpiry", tmpl{
+			"date": "{newExpiry}",
+		})
+	}*/
+	if message.Enabled {
+		var content string
+		content, err = templateEmail(
+			message.Content,
+			message.Variables,
+			nil,
+			template,
+		)
+		if err != nil {
+			app.err.Printf(lm.FailedConstructCustomContent, app.config.Section("user_expiry").Key("reminder_subject").MustString(emailer.lang.ExpiryReminder.get("title")), err)
+		}
+		email, err = emailer.constructTemplate(email.Subject, content, app)
+	} else {
+		email.HTML, email.Text, email.Markdown, err = emailer.construct(app, "user_expiry", "reminder_email_", template)
+	}
+	if err != nil {
+		return nil, err
+	}
+	return email, nil
+}
+
 func (emailer *Emailer) welcomeValues(username string, expiry time.Time, app *appContext, noSub bool, custom bool) map[string]interface{} {
 	template := map[string]interface{}{
 		"welcome":               emailer.lang.WelcomeEmail.get("welcome"),

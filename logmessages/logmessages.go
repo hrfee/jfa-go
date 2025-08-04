@@ -384,6 +384,10 @@ const (
 	FailedSendExpiryAdjustmentMessage      = "Failed to send expiry adjustment message for \"%s\" to \"%s\": %v"
 	SentExpiryAdjustmentMessage            = "Sent expiry adjustment message for \"%s\" to \"%s\""
 
+	FailedConstructExpiryReminderMessage = "Failed to construct expiry reminder message for \"%s\": %v"
+	FailedSendExpiryReminderMessage      = "Failed to send expiry reminder message for \"%s\" to \"%s\": %v"
+	SentExpiryReminderMessage            = "Sent expiry reminder message for \"%s\" to \"%s\""
+
 	FailedConstructExpiryMessage = "Failed to construct expiry message for \"%s\": %v"
 	FailedSendExpiryMessage      = "Failed to send expiry message for \"%s\" to \"%s\": %v"
 	SentExpiryMessage            = "Sent expiry message for \"%s\" to \"%s\""

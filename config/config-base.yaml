@@ -1474,6 +1474,10 @@ sections:
     value: true
     depends_true: messages|enabled
     description: Send an email when a user's account expires.
+  - setting: send_reminder_n_days_before
+    name: Send message N days before expiry
+    type: list
+    description: Send users a message N days before their account is due to expire. Multiple can be set.
   - setting: subject
     name: Email subject
     depends_true: messages|enabled
@@ -1505,6 +1509,23 @@ sections:
     description: Path to custom email html
   - setting: adjustment_email_text
     name: 'Adjustment: Custom email (plaintext)'
+    advanced: true
+    depends_true: messages|enabled
+    type: text
+    description: Path to custom email in plain text
+  - setting: reminder_subject
+    name: 'Reminder: email subject'
+    depends_true: messages|enabled
+    type: text
+    description: Subject of expiry reminder emails.
+  - setting: reminder_email_html
+    name: 'Reminder: Custom email (HTML)'
+    advanced: true
+    depends_true: messages|enabled
+    type: text
+    description: Path to custom email html
+  - setting: reminder_email_text
+    name: 'Reminder: Custom email (plaintext)'
     advanced: true
     depends_true: messages|enabled
     type: text
