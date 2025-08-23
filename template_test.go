@@ -23,7 +23,7 @@ func TestBlankTemplate(t *testing.T) {
 func testConditional(isTrue bool, t *testing.T) {
 	in := `Success, {username}! Your account has been created. {if myCondition}Log in at {myAccountURL} with username {username} to get started.{endif}`
 
-	vars := []string{"{username}", "{myAccountURL}", "{myCondition}"}
+	vars := []string{"username", "myAccountURL", "myCondition"}
 	conds := vars
 	vals := map[string]any{
 		"username":     "TemplateUsername",
@@ -64,7 +64,7 @@ func TestConditionalFalse(t *testing.T) {
 func TestTemplateDoubleBraceGracefulHandling(t *testing.T) {
 	in := `Success, {{username}}! Your account has been created. Log in at {myAccountURL} with username {username} to get started.`
 
-	vars := []string{"{username}", "{myAccountURL}"}
+	vars := []string{"username", "myAccountURL"}
 	vals := map[string]any{
 		"username":     "TemplateUsername",
 		"myAccountURL": "TemplateURL",
@@ -87,16 +87,16 @@ func TestTemplateDoubleBraceGracefulHandling(t *testing.T) {
 
 func TestVarAtAnyPosition(t *testing.T) {
 	in := `Success, user! Your account has been created. Log in at myAccountURL with your username to get started.`
-	vars := []string{"{username}", "{myAccountURL}"}
+	vars := []string{"username", "myAccountURL"}
 	vals := map[string]any{
 		"username":     "TemplateUsername",
 		"myAccountURL": "TemplateURL",
 	}
 
 	for i := range in {
-		newIn := in[0:i] + vars[0] + in[i:]
+		newIn := in[0:i] + "{" + vars[0] + "}" + in[i:]
 
-		target := strings.ReplaceAll(newIn, vars[0], vals["username"].(string))
+		target := strings.ReplaceAll(newIn, "{"+vars[0]+"}", vals["username"].(string))
 
 		out, err := templateEmail(newIn, vars, []string{}, vals)
 
@@ -105,7 +105,7 @@ func TestVarAtAnyPosition(t *testing.T) {
 		}
 
 		if out != target {
-			t.Fatalf(`returned string doesn't match desired output: "%+v" != "%+v"`, out, target)
+			t.Fatalf(`returned string doesn't match desired output: "%+v" != "%+v, from "%+v""`, out, target, newIn)
 		}
 	}
 }

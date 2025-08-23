@@ -18,6 +18,7 @@ func truthy(val interface{}) bool {
 }
 
 // Templater for custom emails.
+// Slices "variables", "conditionals", and map "values" should NOT wrap names in { and }.
 // Variables should be written as {varName}.
 // If statements should be written as {if (!)varName}...{endif}.
 // Strings are true if != "", ints are true if != 0.
@@ -95,8 +96,7 @@ func templateEmail(content string, variables []string, conditionals []string, va
 					positive = false
 					varName = varName[1:]
 				}
-				wrappedVarName := "{" + varName + "}"
-				validVar := slices.Contains(conditionals, wrappedVarName)
+				validVar := slices.Contains(conditionals, varName)
 				if validVar {
 					ifTrue = positive == truthy(values[varName])
 				} else {
@@ -123,10 +123,9 @@ func templateEmail(content string, variables []string, conditionals []string, va
 			if ifStart != -1 {
 				continue
 			}
-			wrappedVarName := "{" + varName + "}"
-			validVar := slices.Contains(variables, wrappedVarName)
+			validVar := slices.Contains(variables, varName)
 			if !validVar {
-				out += wrappedVarName
+				out += "{" + varName + "}"
 				continue
 			}
 			out += fmt.Sprint(values[varName])
