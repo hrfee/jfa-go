@@ -169,7 +169,7 @@ func (app *appContext) WelcomeNewUser(user mediabrowser.User, expiry time.Time) 
 	if name == "" {
 		return
 	}
-	msg, err := app.email.constructWelcome(user.Name, expiry, app, false)
+	msg, err := app.email.constructWelcome(user.Name, expiry, false)
 	if err != nil {
 		app.err.Printf(lm.FailedConstructWelcomeMessage, user.ID, err)
 	} else if err := app.sendByID(msg, user.ID); err != nil {

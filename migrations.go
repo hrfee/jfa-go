@@ -81,7 +81,7 @@ func migrateEmailConfig(app *appContext) {
 		app.err.Fatalf("Failed to save config: %v", err)
 		return
 	}
-	app.loadConfig()
+	app.ReloadConfig()
 }
 
 // Migrate pre-0.3.6 email settings to the new messages section.
@@ -245,7 +245,7 @@ func loadLegacyData(app *appContext) {
 	app.storage.customEmails_path = app.config.Section("files").Key("custom_emails").String()
 	app.storage.loadCustomEmails()
 
-	app.MustSetValue("user_page", "enabled", "true")
+	app.config.MustSetValue("user_page", "enabled", "true")
 	if app.config.Section("user_page").Key("enabled").MustBool(false) {
 		app.storage.userPage_path = app.config.Section("files").Key("custom_user_page_content").String()
 		app.storage.loadUserPageContent()

@@ -15,10 +15,8 @@ import (
 	"github.com/hrfee/jfa-go/common"
 	"github.com/hrfee/jfa-go/jellyseerr"
 	"github.com/hrfee/jfa-go/logger"
-	lm "github.com/hrfee/jfa-go/logmessages"
 	"github.com/hrfee/mediabrowser"
 	"github.com/timshannon/badgerhold/v4"
-	"gopkg.in/ini.v1"
 )
 
 type discordStore map[string]DiscordUser
@@ -80,7 +78,7 @@ const (
 
 type Storage struct {
 	debug      *logger.Logger
-	logActions map[string]DebugLogAction
+	logActions func(k string) DebugLogAction
 
 	timePattern string
 
@@ -102,6 +100,44 @@ type Storage struct {
 	deprecatedCustomEmails                                                                                                                                                                                                              customEmails
 	deprecatedUserPageContent                                                                                                                                                                                                           userPageContent
 	lang                                                                                                                                                                                                                                Lang
+}
+
+// NewStorage returns a new Storage object with values initialised.
+func NewStorage(dbPath string, debugLogger *logger.Logger, logActions func(k string) DebugLogAction) *Storage {
+	if debugLogger.Empty {
+		debugLogger = nil
+	}
+	st := &Storage{
+		debug:      debugLogger,
+		logActions: logActions,
+		db_path:    dbPath,
+	}
+	st.lang.CommonPath = "common"
+	st.lang.UserPath = "form"
+	st.lang.AdminPath = "admin"
+	st.lang.EmailPath = "email"
+	st.lang.TelegramPath = "telegram"
+	st.lang.PasswordResetPath = "pwreset"
+	st.lang.SetupPath = "setup"
+	return st
+}
+
+// Connect connects to the underlying data storage method (e.g. db).
+// Call Close() once finished.
+func (st *Storage) Connect(config *Config) error {
+	opts := badgerhold.DefaultOptions
+	// ValueLogFileSize is in bytes, so multiply by 1e6
+	opts.Options.ValueLogFileSize = config.Section("advanced").Key("value_log_size").MustInt64(256) * 1e6
+	opts.Dir = st.db_path
+	opts.ValueDir = st.db_path
+	var err error = nil
+	st.db, err = badgerhold.Open(opts)
+	return err
+}
+
+// Close shuts down the underlying data storage method (e.g. db).
+func (st *Storage) Close() error {
+	return st.db.Close()
 }
 
 type StoreType int
@@ -146,7 +182,7 @@ func (st *Storage) DebugWatch(storeType StoreType, key, mainData string) {
 		actionKey = "custom_content"
 	}
 
-	logAction := st.logActions[actionKey]
+	logAction := st.logActions(actionKey)
 	if logAction == NoLog {
 		return
 	}
@@ -159,7 +195,7 @@ func (st *Storage) DebugWatch(storeType StoreType, key, mainData string) {
 	}
 }
 
-func generateLogActions(c *ini.File) map[string]DebugLogAction {
+func generateLogActions(c *Config) func(k string) DebugLogAction {
 	m := map[string]DebugLogAction{}
 	for _, v := range []string{"emails", "discord", "telegram", "matrix", "invites", "announcements", "expirires", "profiles", "custom_content"} {
 		switch c.Section("advanced").Key("debug_log_" + v).MustString("none") {
@@ -171,21 +207,7 @@ func generateLogActions(c *ini.File) map[string]DebugLogAction {
 			m[v] = LogDeletion
 		}
 	}
-	return m
-}
-
-func (app *appContext) ConnectDB() {
-	opts := badgerhold.DefaultOptions
-	// ValueLogFileSize is in bytes, so multiply by 1e6
-	opts.Options.ValueLogFileSize = app.config.Section("advanced").Key("value_log_size").MustInt64(256) * 1e6
-	opts.Dir = app.storage.db_path
-	opts.ValueDir = app.storage.db_path
-	db, err := badgerhold.Open(opts)
-	if err != nil {
-		app.err.Fatalf(lm.FailedConnectDB, app.storage.db_path, err)
-	}
-	app.storage.db = db
-	app.info.Printf(lm.ConnectDB, app.storage.db_path)
+	return func(k string) DebugLogAction { return m[k] }
 }
 
 // GetEmails returns a copy of the store.
@@ -683,13 +705,34 @@ type customEmails struct {
 	ExpiryReminder     CustomContent `json:"expiryReminder"`
 }
 
+type CustomContentContext = int
+
+const (
+	CustomMessage CustomContentContext = iota
+	CustomCard
+	CustomTemplate
+)
+
+type ContentSourceFileInfo struct{ Section, SettingPrefix, DefaultValue string }
+
+// CustomContent stores information needed for creating custom jfa-go content, including emails and user messages.
+type CustomContentInfo struct {
+	Name                     string `json:"name" badgerhold:"key"`
+	DisplayName, Description func(dict *Lang, lang string) string
+	Subject                  func(config *Config, lang *emailLang) string
+	// Config section, the main part of the setting name (without "html" or "text"), and the default filename (without ".html" or ".txt").
+	SourceFile   ContentSourceFileInfo
+	ContentType  CustomContentContext `json:"type"`
+	Variables    []string             `json:"variables,omitempty"`
+	Conditionals []string             `json:"conditionals,omitempty"`
+	Placeholders map[string]any       `json:"values,omitempty"`
+}
+
 // CustomContent stores customized versions of jfa-go content, including emails and user messages.
 type CustomContent struct {
-	Name         string   `json:"name" badgerhold:"key"`
-	Enabled      bool     `json:"enabled,omitempty"`
-	Content      string   `json:"content"`
-	Variables    []string `json:"variables,omitempty"`
-	Conditionals []string `json:"conditionals,omitempty"`
+	Name    string `json:"name" badgerhold:"key"`
+	Enabled bool   `json:"enabled,omitempty"`
+	Content string `json:"content"`
 }
 
 type userPageContent struct {

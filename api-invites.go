@@ -135,7 +135,7 @@ func (app *appContext) sendAdminExpiryNotification(data Invite) *sync.WaitGroup 
 		wait.Add(1)
 		go func(addr string) {
 			defer wait.Done()
-			msg, err := app.email.constructExpiry(data.Code, data, app, false)
+			msg, err := app.email.constructExpiry(data, false)
 			if err != nil {
 				app.err.Printf(lm.FailedConstructExpiryAdmin, data.Code, err)
 			} else {
@@ -218,7 +218,7 @@ func (app *appContext) GenerateInvite(gc *gin.Context) {
 				invite.SendTo = req.SendTo
 			}
 			if addressValid {
-				msg, err := app.email.constructInvite(invite.Code, invite, app, false)
+				msg, err := app.email.constructInvite(invite, false)
 				if err != nil {
 					// Slight misuse of the template
 					invite.SendTo = fmt.Sprintf(lm.FailedConstructInviteMessage, req.SendTo, err)
@@ -343,7 +343,7 @@ func (app *appContext) GetInvites(gc *gin.Context) {
 				// These used to be stored formatted instead of as a unix timestamp.
 				unix, err := strconv.ParseInt(pair[1], 10, 64)
 				if err != nil {
-					date, err := timefmt.Parse(pair[1], app.datePattern+" "+app.timePattern)
+					date, err := timefmt.Parse(pair[1], datePattern+" "+timePattern)
 					if err != nil {
 						app.err.Printf(lm.FailedParseTime, err)
 					}

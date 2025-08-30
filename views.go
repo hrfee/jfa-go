@@ -88,7 +88,7 @@ func (app *appContext) BasePageTemplateValues(gc *gin.Context, page Page, base g
 
 	pages := PagePathsDTO{
 		PagePaths:   PAGES,
-		ExternalURI: app.ExternalURI(gc),
+		ExternalURI: ExternalURI(gc),
 		TrueBase:    PAGES.Base,
 	}
 	pages.Base = app.getURLBase(gc)
@@ -742,7 +742,7 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 	discord := discordEnabled && app.config.Section("discord").Key("show_on_reg").MustBool(true)
 	matrix := matrixEnabled && app.config.Section("matrix").Key("show_on_reg").MustBool(true)
 
-	userPageAddress := app.ExternalURI(gc) + PAGES.MyAccount
+	userPageAddress := ExternalURI(gc) + PAGES.MyAccount
 
 	fromUser := ""
 	if invite.ReferrerJellyfinID != "" {
@@ -810,14 +810,15 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 		data["discordInviteLink"] = app.discord.InviteChannel.Name != ""
 	}
 	if msg, ok := app.storage.GetCustomContentKey("PostSignupCard"); ok && msg.Enabled {
+		cci := customContent["PostSignupCard"]
 		data["customSuccessCard"] = true
 		// We don't template here, since the username is only known after login.
 		templated, err := templateEmail(
 			msg.Content,
-			msg.Variables,
-			msg.Conditionals,
+			cci.Variables,
+			cci.Conditionals,
 			map[string]any{
-				"username":     "{username}",
+				"username":     "{username}", // Value is subbed by webpage
 				"myAccountURL": userPageAddress,
 			},
 		)

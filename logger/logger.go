@@ -21,7 +21,7 @@ import (
 // }
 
 type Logger struct {
-	empty     bool
+	Empty     bool
 	logger    *log.Logger
 	shortfile bool
 	printer   *c.Color
@@ -75,13 +75,13 @@ func NewLogger(out io.Writer, prefix string, flag int, color c.Attribute) (l *Lo
 
 func NewEmptyLogger() (l *Logger) {
 	l = &Logger{
-		empty: true,
+		Empty: true,
 	}
 	return
 }
 
 func (l *Logger) Printf(format string, v ...interface{}) {
-	if l.empty {
+	if l.Empty {
 		return
 	}
 	var out string
@@ -93,7 +93,7 @@ func (l *Logger) Printf(format string, v ...interface{}) {
 }
 
 func (l *Logger) PrintfCustomLevel(level int, format string, v ...interface{}) {
-	if l.empty {
+	if l.Empty {
 		return
 	}
 	var out string
@@ -105,14 +105,14 @@ func (l *Logger) PrintfCustomLevel(level int, format string, v ...interface{}) {
 }
 
 func (l *Logger) PrintfNoFile(format string, v ...interface{}) {
-	if l.empty {
+	if l.Empty {
 		return
 	}
 	l.logger.Print(l.printer.Sprintf(format, v...))
 }
 
 func (l *Logger) Print(v ...interface{}) {
-	if l.empty {
+	if l.Empty {
 		return
 	}
 	var out string
@@ -124,7 +124,7 @@ func (l *Logger) Print(v ...interface{}) {
 }
 
 func (l *Logger) Println(v ...interface{}) {
-	if l.empty {
+	if l.Empty {
 		return
 	}
 	var out string
@@ -136,7 +136,7 @@ func (l *Logger) Println(v ...interface{}) {
 }
 
 func (l *Logger) Fatal(v ...interface{}) {
-	if l.empty {
+	if l.Empty {
 		return
 	}
 	var out string
@@ -148,7 +148,7 @@ func (l *Logger) Fatal(v ...interface{}) {
 }
 
 func (l *Logger) Fatalf(format string, v ...interface{}) {
-	if l.empty {
+	if l.Empty {
 		return
 	}
 	var out string

@@ -1,6 +1,10 @@
 package main
 
-import "github.com/hrfee/jfa-go/common"
+import (
+	"fmt"
+
+	"github.com/hrfee/jfa-go/common"
+)
 
 type langMeta struct {
 	Name string `json:"name"`
@@ -166,7 +170,7 @@ func (ts *telegramLangs) getOptions() []common.Option {
 }
 
 type langSection map[string]string
-type tmpl map[string]string
+type tmpl = map[string]any
 
 func templateString(text string, vals tmpl) string {
 	start, previousEnd := -1, -1
@@ -183,7 +187,7 @@ func templateString(text string, vals tmpl) string {
 				start = -1
 				continue
 			}
-			out += text[previousEnd+1:start] + val
+			out += text[previousEnd+1:start] + fmt.Sprint(val)
 			previousEnd = i
 			start = -1
 		}

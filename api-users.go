@@ -189,7 +189,7 @@ func (app *appContext) NewUserFromInvite(gc *gin.Context) {
 
 			app.debug.Printf(lm.EmailConfirmationRequired, req.Username)
 			respond(401, "confirmEmail", gc)
-			msg, err := app.email.constructConfirmation(req.Code, req.Username, key, app, false)
+			msg, err := app.email.constructConfirmation(req.Code, req.Username, key, false)
 			if err != nil {
 				app.err.Printf(lm.FailedConstructConfirmationEmail, req.Code, err)
 			} else if err := app.email.send(msg, req.Email); err != nil {
@@ -262,7 +262,7 @@ func (app *appContext) PostNewUserFromInvite(nu NewUserData, req ConfirmationKey
 			}
 			app.contactMethods[i].DeleteVerifiedToken(c.PIN)
 			c.User.SetJellyfin(nu.User.ID)
-			c.User.Store(&(app.storage))
+			c.User.Store(app.storage)
 		}
 	}
 
@@ -290,7 +290,7 @@ func (app *appContext) PostNewUserFromInvite(nu NewUserData, req ConfirmationKey
 					continue
 				}
 				go func(addr string) {
-					msg, err := app.email.constructCreated(req.Code, req.Username, req.Email, invite, app, false)
+					msg, err := app.email.constructCreated(req.Username, req.Email, time.Now(), invite, false)
 					if err != nil {
 						app.err.Printf(lm.FailedConstructCreationAdmin, req.Code, err)
 					} else {
@@ -384,9 +384,9 @@ func (app *appContext) EnableDisableUsers(gc *gin.Context) {
 	var err error
 	if sendMail {
 		if req.Enabled {
-			msg, err = app.email.constructEnabled(req.Reason, app, false)
+			msg, err = app.email.constructEnabled(req.Reason, false)
 		} else {
-			msg, err = app.email.constructDisabled(req.Reason, app, false)
+			msg, err = app.email.constructDisabled(req.Reason, false)
 		}
 		if err != nil {
 			app.err.Printf(lm.FailedConstructEnableDisableMessage, "?", err)
@@ -452,7 +452,7 @@ func (app *appContext) DeleteUsers(gc *gin.Context) {
 	var msg *Message
 	var err error
 	if sendMail {
-		msg, err = app.email.constructDeleted(req.Reason, app, false)
+		msg, err = app.email.constructDeleted(req.Reason, false)
 		if err != nil {
 			app.err.Printf(lm.FailedConstructDeletionMessage, "?", err)
 			sendMail = false
@@ -541,7 +541,7 @@ func (app *appContext) ExtendExpiry(gc *gin.Context) {
 				if err != nil {
 					return
 				}
-				msg, err := app.email.constructExpiryAdjusted(user.Name, exp, req.Reason, app, false)
+				msg, err := app.email.constructExpiryAdjusted(user.Name, exp, req.Reason, false)
 				if err != nil {
 					app.err.Printf(lm.FailedConstructExpiryAdjustmentMessage, uid, err)
 					return
@@ -677,7 +677,11 @@ func (app *appContext) Announce(gc *gin.Context) {
 				app.err.Printf(lm.FailedGetUser, userID, lm.Jellyfin, err)
 				continue
 			}
-			msg, err := app.email.constructTemplate(req.Subject, req.Message, app, user.Name)
+			msg := &Message{}
+			err = app.email.construct(AnnouncementCustomContent(req.Subject), CustomContent{
+				Enabled: true,
+				Content: req.Message,
+			}, map[string]any{"username": user.Name}, msg)
 			if err != nil {
 				app.err.Printf(lm.FailedConstructAnnouncementMessage, userID, err)
 				respondBool(500, false, gc)
@@ -690,7 +694,11 @@ func (app *appContext) Announce(gc *gin.Context) {
 		}
 		// app.info.Printf(lm.SentAnnouncementMessage, "*", "?")
 	} else {
-		msg, err := app.email.constructTemplate(req.Subject, req.Message, app)
+		msg := &Message{}
+		err := app.email.construct(AnnouncementCustomContent(req.Subject), CustomContent{
+			Enabled: true,
+			Content: req.Message,
+		}, map[string]any{"username": ""}, msg)
 		if err != nil {
 			app.err.Printf(lm.FailedConstructAnnouncementMessage, "*", err)
 			respondBool(500, false, gc)
@@ -810,7 +818,7 @@ func (app *appContext) AdminPasswordReset(gc *gin.Context) {
 		app.internalPWRs[pwr.PIN] = pwr
 		sendAddress := app.getAddressOrName(id)
 		if sendAddress == "" || len(req.Users) == 1 {
-			resp.Link, err = app.GenResetLink(pwr.PIN)
+			resp.Link, err = GenResetLink(pwr.PIN)
 			linkCount++
 			if sendAddress == "" {
 				resp.Manual = true
@@ -823,7 +831,7 @@ func (app *appContext) AdminPasswordReset(gc *gin.Context) {
 					Username: pwr.Username,
 					Expiry:   pwr.Expiry,
 					Internal: true,
-				}, app, false,
+				}, false,
 			)
 			if err != nil {
 				app.err.Printf(lm.FailedConstructPWRMessage, id, err)

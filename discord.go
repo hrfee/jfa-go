@@ -735,7 +735,7 @@ func (d *DiscordDaemon) cmdInvite(s *dg.Session, i *dg.InteractionCreate, lang s
 
 		var msg *Message
 		if err == nil {
-			msg, err = d.app.email.constructInvite(invite.Code, invite, d.app, false)
+			msg, err = d.app.email.constructInvite(invite, false)
 			if err != nil {
 				// Print extra message, ideally we'd just print this, or get rid of it though.
 				invite.SendTo = fmt.Sprintf(lm.FailedConstructInviteMessage, invite.Code, err)

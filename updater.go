@@ -130,7 +130,7 @@ type Updater struct {
 	binary                                     string
 }
 
-func newUpdater(buildroneURL, namespace, repo, version, commit, buildType string) *Updater {
+func NewUpdater(buildroneURL, namespace, repo, version, commit, buildType string) *Updater {
 	// fmt.Printf(`Updater intializing with "%s", "%s", "%s", "%s", "%s", "%s"\n`, buildroneURL, namespace, repo, version, commit, buildType)
 	bType := off
 	tag := ""

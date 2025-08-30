@@ -19,9 +19,6 @@ var loFS embed.FS
 //go:embed lang/common lang/admin lang/email lang/form lang/setup lang/pwreset lang/telegram
 var laFS embed.FS
 
-var langFS rewriteFS
-var localFS rewriteFS
-
 type rewriteFS struct {
 	fs     embed.FS
 	prefix string

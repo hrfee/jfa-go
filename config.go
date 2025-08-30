@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/fs"
 	"net"
+	"net/http"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -18,6 +19,12 @@ import (
 	"gopkg.in/ini.v1"
 )
 
+type Config struct {
+	*ini.File
+	proxyTransport *http.Transport
+	proxyConfig    *easyproxy.ProxyConfig
+}
+
 var emailEnabled = false
 var messagesEnabled = false
 var telegramEnabled = false
@@ -28,8 +35,8 @@ var matrixEnabled = false
 // IMPORTANT: When linking straight to a page, rather than appending further to the URL (like accessing an API route), append a /.
 var PAGES = PagePaths{}
 
-func (app *appContext) GetPath(sect, key string) (fs.FS, string) {
-	val := app.config.Section(sect).Key(key).MustString("")
+func (config *Config) GetPath(sect, key string) (fs.FS, string) {
+	val := config.Section(sect).Key(key).MustString("")
 	if strings.HasPrefix(val, "jfa-go:") {
 		return localFS, strings.TrimPrefix(val, "jfa-go:")
 	}
@@ -37,15 +44,15 @@ func (app *appContext) GetPath(sect, key string) (fs.FS, string) {
 	return os.DirFS(dir), file
 }
 
-func (app *appContext) MustSetValue(section, key, val string) {
-	app.config.Section(section).Key(key).SetValue(app.config.Section(section).Key(key).MustString(val))
+func (config *Config) MustSetValue(section, key, val string) {
+	config.Section(section).Key(key).SetValue(config.Section(section).Key(key).MustString(val))
 }
 
-func (app *appContext) MustSetURLPath(section, key, val string) {
+func (config *Config) MustSetURLPath(section, key, val string) {
 	if !strings.HasPrefix(val, "/") && val != "" {
 		val = "/" + val
 	}
-	app.MustSetValue(section, key, val)
+	config.MustSetValue(section, key, val)
 }
 
 func FixFullURL(v string) string {
@@ -69,26 +76,26 @@ func FormatSubpath(path string, removeSingleSlash bool) string {
 	return strings.TrimSuffix(path, "/")
 }
 
-func (app *appContext) MustCorrectURL(section, key, value string) {
-	v := app.config.Section(section).Key(key).String()
+func (config *Config) MustCorrectURL(section, key, value string) {
+	v := config.Section(section).Key(key).String()
 	if v == "" {
 		v = value
 	}
 	v = FixFullURL(v)
-	app.config.Section(section).Key(key).SetValue(v)
+	config.Section(section).Key(key).SetValue(v)
 }
 
-// ExternalDomain returns the Host for the request, using the fixed app.externalDomain value unless app.UseProxyHost is true.
-func (app *appContext) ExternalDomain(gc *gin.Context) string {
-	if !app.UseProxyHost || gc.Request.Host == "" {
-		return app.externalDomain
+// ExternalDomain returns the Host for the request, using the fixed externalDomain value unless UseProxyHost is true.
+func ExternalDomain(gc *gin.Context) string {
+	if !UseProxyHost || gc.Request.Host == "" {
+		return externalDomain
 	}
 	return gc.Request.Host
 }
 
-// ExternalDomainNoPort attempts to return app.ExternalDomain() with the port removed. If the internally-used method fails, it is assumed the domain has no port anyway.
+// ExternalDomainNoPort attempts to return ExternalDomain() with the port removed. If the internally-used method fails, it is assumed the domain has no port anyway.
 func (app *appContext) ExternalDomainNoPort(gc *gin.Context) string {
-	domain := app.ExternalDomain(gc)
+	domain := ExternalDomain(gc)
 	host, _, err := net.SplitHostPort(domain)
 	if err != nil {
 		return domain
@@ -96,11 +103,11 @@ func (app *appContext) ExternalDomainNoPort(gc *gin.Context) string {
 	return host
 }
 
-// ExternalURI returns the External URI of jfa-go's root directory (by default, where the admin page is), using the fixed app.externalURI value unless app.UseProxyHost is true and gc is not nil.
-// When nil is passed, app.externalURI is returned.
-func (app *appContext) ExternalURI(gc *gin.Context) string {
+// ExternalURI returns the External URI of jfa-go's root directory (by default, where the admin page is), using the fixed externalURI value unless UseProxyHost is true and gc is not nil.
+// When nil is passed, externalURI is returned.
+func ExternalURI(gc *gin.Context) string {
 	if gc == nil {
-		return app.externalURI
+		return externalURI
 	}
 
 	var proto string
@@ -111,10 +118,10 @@ func (app *appContext) ExternalURI(gc *gin.Context) string {
 	}
 
 	// app.debug.Printf("Request: %+v\n", gc.Request)
-	if app.UseProxyHost && gc.Request.Host != "" {
+	if UseProxyHost && gc.Request.Host != "" {
 		return proto + gc.Request.Host + PAGES.Base
 	}
-	return app.externalURI
+	return externalURI
 }
 
 func (app *appContext) EvaluateRelativePath(gc *gin.Context, path string) string {
@@ -129,177 +136,192 @@ func (app *appContext) EvaluateRelativePath(gc *gin.Context, path string) string
 		proto = "http://"
 	}
 
-	return proto + app.ExternalDomain(gc) + path
+	return proto + ExternalDomain(gc) + path
 }
 
-func (app *appContext) loadConfig() error {
+// NewConfig reads and patches a config file for use. Passed loggers are used only once. Some dependencies can be reloaded after this is called with ReloadDependents(app).
+func NewConfig(configPathOrContents any, dataPath string, logs LoggerSet) (*Config, error) {
 	var err error
-	app.config, err = ini.ShadowLoad(app.configPath)
+	config := &Config{}
+	config.File, err = ini.ShadowLoad(configPathOrContents)
 	if err != nil {
-		return err
+		return config, err
 	}
 
 	// URLs
-	app.MustSetURLPath("ui", "url_base", "")
-	app.MustSetURLPath("url_paths", "admin", "")
-	app.MustSetURLPath("url_paths", "user_page", "/my/account")
-	app.MustSetURLPath("url_paths", "form", "/invite")
-	PAGES.Base = FormatSubpath(app.config.Section("ui").Key("url_base").String(), true)
-	PAGES.Admin = FormatSubpath(app.config.Section("url_paths").Key("admin").String(), true)
-	PAGES.MyAccount = FormatSubpath(app.config.Section("url_paths").Key("user_page").String(), true)
-	PAGES.Form = FormatSubpath(app.config.Section("url_paths").Key("form").String(), true)
-	if !(app.config.Section("user_page").Key("enabled").MustBool(true)) {
+	config.MustSetURLPath("ui", "url_base", "")
+	config.MustSetURLPath("url_paths", "admin", "")
+	config.MustSetURLPath("url_paths", "user_page", "/my/account")
+	config.MustSetURLPath("url_paths", "form", "/invite")
+	PAGES.Base = FormatSubpath(config.Section("ui").Key("url_base").String(), true)
+	PAGES.Admin = FormatSubpath(config.Section("url_paths").Key("admin").String(), true)
+	PAGES.MyAccount = FormatSubpath(config.Section("url_paths").Key("user_page").String(), true)
+	PAGES.Form = FormatSubpath(config.Section("url_paths").Key("form").String(), true)
+	if !(config.Section("user_page").Key("enabled").MustBool(true)) {
 		PAGES.MyAccount = "disabled"
 	}
 	if PAGES.Base == PAGES.Form || PAGES.Base == "/accounts" || PAGES.Base == "/settings" || PAGES.Base == "/activity" {
-		app.err.Printf(lm.BadURLBase, PAGES.Base)
+		logs.err.Printf(lm.BadURLBase, PAGES.Base)
 	}
-	app.info.Printf(lm.SubpathBlockMessage, PAGES.Base, PAGES.Admin, PAGES.MyAccount, PAGES.Form)
+	logs.info.Printf(lm.SubpathBlockMessage, PAGES.Base, PAGES.Admin, PAGES.MyAccount, PAGES.Form)
 
-	app.MustCorrectURL("jellyfin", "server", "")
-	app.MustCorrectURL("jellyfin", "public_server", app.config.Section("jellyfin").Key("server").String())
-	app.MustCorrectURL("ui", "redirect_url", app.config.Section("jellyfin").Key("public_server").String())
+	config.MustCorrectURL("jellyfin", "server", "")
+	config.MustCorrectURL("jellyfin", "public_server", config.Section("jellyfin").Key("server").String())
+	config.MustCorrectURL("ui", "redirect_url", config.Section("jellyfin").Key("public_server").String())
 
-	for _, key := range app.config.Section("files").Keys() {
+	for _, key := range config.Section("files").Keys() {
 		if name := key.Name(); name != "html_templates" && name != "lang_files" {
-			key.SetValue(key.MustString(filepath.Join(app.dataPath, (key.Name() + ".json"))))
+			key.SetValue(key.MustString(filepath.Join(dataPath, (key.Name() + ".json"))))
 		}
 	}
 	for _, key := range []string{"user_configuration", "user_displayprefs", "user_profiles", "ombi_template", "invites", "emails", "user_template", "custom_emails", "users", "telegram_users", "discord_users", "matrix_users", "announcements", "custom_user_page_content"} {
-		app.config.Section("files").Key(key).SetValue(app.config.Section("files").Key(key).MustString(filepath.Join(app.dataPath, (key + ".json"))))
+		config.Section("files").Key(key).SetValue(config.Section("files").Key(key).MustString(filepath.Join(dataPath, (key + ".json"))))
 	}
 	for _, key := range []string{"matrix_sql"} {
-		app.config.Section("files").Key(key).SetValue(app.config.Section("files").Key(key).MustString(filepath.Join(app.dataPath, (key + ".db"))))
+		config.Section("files").Key(key).SetValue(config.Section("files").Key(key).MustString(filepath.Join(dataPath, (key + ".db"))))
 	}
 
-	// If true, app.ExternalDomain() will return one based on the reported Host (ideally reported in "Host" or "X-Forwarded-Host" by the reverse proxy), falling back to app.externalDomain if not set.
-	app.UseProxyHost = app.config.Section("ui").Key("use_proxy_host").MustBool(false)
-	app.externalURI = strings.TrimSuffix(strings.TrimSuffix(app.config.Section("ui").Key("jfa_url").MustString(""), "/invite"), "/")
-	if !strings.HasSuffix(app.externalURI, PAGES.Base) {
-		app.err.Println(lm.NoURLSuffix)
+	// If true, ExternalDomain() will return one based on the reported Host (ideally reported in "Host" or "X-Forwarded-Host" by the reverse proxy), falling back to externalDomain if not set.
+	UseProxyHost = config.Section("ui").Key("use_proxy_host").MustBool(false)
+	externalURI = strings.TrimSuffix(strings.TrimSuffix(config.Section("ui").Key("jfa_url").MustString(""), "/invite"), "/")
+	if !strings.HasSuffix(externalURI, PAGES.Base) {
+		logs.err.Println(lm.NoURLSuffix)
 	}
-	if app.externalURI == "" {
-		if app.UseProxyHost {
-			app.err.Println(lm.NoExternalHost + lm.LoginWontSave + lm.SetExternalHostDespiteUseProxyHost)
+	if externalURI == "" {
+		if UseProxyHost {
+			logs.err.Println(lm.NoExternalHost + lm.LoginWontSave + lm.SetExternalHostDespiteUseProxyHost)
 		} else {
-			app.err.Println(lm.NoExternalHost + lm.LoginWontSave)
+			logs.err.Println(lm.NoExternalHost + lm.LoginWontSave)
 		}
 	}
-	u, err := url.Parse(app.externalURI)
+	u, err := url.Parse(externalURI)
 	if err == nil {
-		app.externalDomain = u.Hostname()
+		externalDomain = u.Hostname()
 	}
 
-	app.config.Section("email").Key("no_username").SetValue(strconv.FormatBool(app.config.Section("email").Key("no_username").MustBool(false)))
+	config.Section("email").Key("no_username").SetValue(strconv.FormatBool(config.Section("email").Key("no_username").MustBool(false)))
 
-	app.MustSetValue("password_resets", "email_html", "jfa-go:"+"email.html")
-	app.MustSetValue("password_resets", "email_text", "jfa-go:"+"email.txt")
+	// FIXME: Remove all these, eventually
+	// config.MustSetValue("password_resets", "email_html", "jfa-go:"+"email.html")
+	// config.MustSetValue("password_resets", "email_text", "jfa-go:"+"email.txt")
 
-	app.MustSetValue("invite_emails", "email_html", "jfa-go:"+"invite-email.html")
-	app.MustSetValue("invite_emails", "email_text", "jfa-go:"+"invite-email.txt")
+	// config.MustSetValue("invite_emails", "email_html", "jfa-go:"+"invite-email.html")
+	// config.MustSetValue("invite_emails", "email_text", "jfa-go:"+"invite-email.txt")
 
-	app.MustSetValue("email_confirmation", "email_html", "jfa-go:"+"confirmation.html")
-	app.MustSetValue("email_confirmation", "email_text", "jfa-go:"+"confirmation.txt")
+	// config.MustSetValue("email_confirmation", "email_html", "jfa-go:"+"confirmation.html")
+	// config.MustSetValue("email_confirmation", "email_text", "jfa-go:"+"confirmation.txt")
 
-	app.MustSetValue("notifications", "expiry_html", "jfa-go:"+"expired.html")
-	app.MustSetValue("notifications", "expiry_text", "jfa-go:"+"expired.txt")
+	// config.MustSetValue("notifications", "expiry_html", "jfa-go:"+"expired.html")
+	// config.MustSetValue("notifications", "expiry_text", "jfa-go:"+"expired.txt")
 
-	app.MustSetValue("notifications", "created_html", "jfa-go:"+"created.html")
-	app.MustSetValue("notifications", "created_text", "jfa-go:"+"created.txt")
+	// config.MustSetValue("notifications", "created_html", "jfa-go:"+"created.html")
+	// config.MustSetValue("notifications", "created_text", "jfa-go:"+"created.txt")
 
-	app.MustSetValue("deletion", "email_html", "jfa-go:"+"deleted.html")
-	app.MustSetValue("deletion", "email_text", "jfa-go:"+"deleted.txt")
-
-	app.MustSetValue("smtp", "hello_hostname", "localhost")
-	app.MustSetValue("smtp", "cert_validation", "true")
-	app.MustSetValue("smtp", "auth_type", "4")
-	app.MustSetValue("smtp", "port", "465")
-
-	app.MustSetValue("activity_log", "keep_n_records", "1000")
-	app.MustSetValue("activity_log", "delete_after_days", "90")
-
-	sc := app.config.Section("discord").Key("start_command").MustString("start")
-	app.config.Section("discord").Key("start_command").SetValue(strings.TrimPrefix(strings.TrimPrefix(sc, "/"), "!"))
+	// config.MustSetValue("deletion", "email_html", "jfa-go:"+"deleted.html")
+	// config.MustSetValue("deletion", "email_text", "jfa-go:"+"deleted.txt")
 
 	// Deletion template is good enough for these as well.
-	app.MustSetValue("disable_enable", "disabled_html", "jfa-go:"+"deleted.html")
-	app.MustSetValue("disable_enable", "disabled_text", "jfa-go:"+"deleted.txt")
-	app.MustSetValue("disable_enable", "enabled_html", "jfa-go:"+"deleted.html")
-	app.MustSetValue("disable_enable", "enabled_text", "jfa-go:"+"deleted.txt")
+	// config.MustSetValue("disable_enable", "disabled_html", "jfa-go:"+"deleted.html")
+	// config.MustSetValue("disable_enable", "disabled_text", "jfa-go:"+"deleted.txt")
+	// config.MustSetValue("disable_enable", "enabled_html", "jfa-go:"+"deleted.html")
+	// config.MustSetValue("disable_enable", "enabled_text", "jfa-go:"+"deleted.txt")
 
-	app.MustSetValue("welcome_email", "email_html", "jfa-go:"+"welcome.html")
-	app.MustSetValue("welcome_email", "email_text", "jfa-go:"+"welcome.txt")
+	// config.MustSetValue("welcome_email", "email_html", "jfa-go:"+"welcome.html")
+	// config.MustSetValue("welcome_email", "email_text", "jfa-go:"+"welcome.txt")
 
-	app.MustSetValue("template_email", "email_html", "jfa-go:"+"template.html")
-	app.MustSetValue("template_email", "email_text", "jfa-go:"+"template.txt")
+	// config.MustSetValue("template_email", "email_html", "jfa-go:"+"template.html")
+	// config.MustSetValue("template_email", "email_text", "jfa-go:"+"template.txt")
 
-	app.MustSetValue("user_expiry", "behaviour", "disable_user")
-	app.MustSetValue("user_expiry", "email_html", "jfa-go:"+"user-expired.html")
-	app.MustSetValue("user_expiry", "email_text", "jfa-go:"+"user-expired.txt")
+	config.MustSetValue("user_expiry", "behaviour", "disable_user")
+	// config.MustSetValue("user_expiry", "email_html", "jfa-go:"+"user-expired.html")
+	// config.MustSetValue("user_expiry", "email_text", "jfa-go:"+"user-expired.txt")
 
-	app.MustSetValue("user_expiry", "adjustment_email_html", "jfa-go:"+"expiry-adjusted.html")
-	app.MustSetValue("user_expiry", "adjustment_email_text", "jfa-go:"+"expiry-adjusted.txt")
+	// config.MustSetValue("user_expiry", "adjustment_email_html", "jfa-go:"+"expiry-adjusted.html")
+	// config.MustSetValue("user_expiry", "adjustment_email_text", "jfa-go:"+"expiry-adjusted.txt")
 
-	app.MustSetValue("user_expiry", "reminder_email_html", "jfa-go:"+"expiry-reminder.html")
-	app.MustSetValue("user_expiry", "reminder_email_text", "jfa-go:"+"expiry-reminder.txt")
+	// config.MustSetValue("user_expiry", "reminder_email_html", "jfa-go:"+"expiry-reminder.html")
+	// config.MustSetValue("user_expiry", "reminder_email_text", "jfa-go:"+"expiry-reminder.txt")
 
-	app.MustSetValue("email", "collect", "true")
+	fnameSettingSuffix := []string{"html", "text"}
+	fnameExtension := []string{"html", "txt"}
 
-	app.MustSetValue("matrix", "topic", "Jellyfin notifications")
-	app.MustSetValue("matrix", "show_on_reg", "true")
+	for _, cc := range customContent {
+		if cc.SourceFile.DefaultValue == "" {
+			continue
+		}
+		for i := range fnameSettingSuffix {
+			config.MustSetValue(cc.SourceFile.Section, cc.SourceFile.SettingPrefix+fnameSettingSuffix[i], "jfa-go:"+cc.SourceFile.DefaultValue+"."+fnameExtension[i])
+		}
+	}
 
-	app.MustSetValue("discord", "show_on_reg", "true")
+	config.MustSetValue("smtp", "hello_hostname", "localhost")
+	config.MustSetValue("smtp", "cert_validation", "true")
+	config.MustSetValue("smtp", "auth_type", "4")
+	config.MustSetValue("smtp", "port", "465")
 
-	app.MustSetValue("telegram", "show_on_reg", "true")
+	config.MustSetValue("activity_log", "keep_n_records", "1000")
+	config.MustSetValue("activity_log", "delete_after_days", "90")
 
-	app.MustSetValue("backups", "every_n_minutes", "1440")
-	app.MustSetValue("backups", "path", filepath.Join(app.dataPath, "backups"))
-	app.MustSetValue("backups", "keep_n_backups", "20")
-	app.MustSetValue("backups", "keep_previous_version_backup", "true")
+	sc := config.Section("discord").Key("start_command").MustString("start")
+	config.Section("discord").Key("start_command").SetValue(strings.TrimPrefix(strings.TrimPrefix(sc, "/"), "!"))
 
-	app.config.Section("jellyfin").Key("version").SetValue(version)
-	app.config.Section("jellyfin").Key("device").SetValue("jfa-go")
-	app.config.Section("jellyfin").Key("device_id").SetValue(fmt.Sprintf("jfa-go-%s-%s", version, commit))
+	config.MustSetValue("email", "collect", "true")
 
-	app.MustSetValue("jellyfin", "cache_timeout", "30")
-	app.MustSetValue("jellyfin", "web_cache_async_timeout", "1")
-	app.MustSetValue("jellyfin", "web_cache_sync_timeout", "10")
+	config.MustSetValue("matrix", "topic", "Jellyfin notifications")
+	config.MustSetValue("matrix", "show_on_reg", "true")
 
-	LOGIP = app.config.Section("advanced").Key("log_ips").MustBool(false)
-	LOGIPU = app.config.Section("advanced").Key("log_ips_users").MustBool(false)
+	config.MustSetValue("discord", "show_on_reg", "true")
 
-	app.MustSetValue("advanced", "auth_retry_count", "6")
-	app.MustSetValue("advanced", "auth_retry_gap", "10")
+	config.MustSetValue("telegram", "show_on_reg", "true")
 
-	app.MustSetValue("ui", "port", "8056")
-	app.MustSetValue("advanced", "tls_port", "8057")
+	config.MustSetValue("backups", "every_n_minutes", "1440")
+	config.MustSetValue("backups", "path", filepath.Join(dataPath, "backups"))
+	config.MustSetValue("backups", "keep_n_backups", "20")
+	config.MustSetValue("backups", "keep_previous_version_backup", "true")
 
-	app.MustSetValue("advanced", "value_log_size", "512")
+	config.Section("jellyfin").Key("version").SetValue(version)
+	config.Section("jellyfin").Key("device").SetValue("jfa-go")
+	config.Section("jellyfin").Key("device_id").SetValue(fmt.Sprintf("jfa-go-%s-%s", version, commit))
+
+	config.MustSetValue("jellyfin", "cache_timeout", "30")
+	config.MustSetValue("jellyfin", "web_cache_async_timeout", "1")
+	config.MustSetValue("jellyfin", "web_cache_sync_timeout", "10")
+
+	LOGIP = config.Section("advanced").Key("log_ips").MustBool(false)
+	LOGIPU = config.Section("advanced").Key("log_ips_users").MustBool(false)
+
+	config.MustSetValue("advanced", "auth_retry_count", "6")
+	config.MustSetValue("advanced", "auth_retry_gap", "10")
+
+	config.MustSetValue("ui", "port", "8056")
+	config.MustSetValue("advanced", "tls_port", "8057")
+
+	config.MustSetValue("advanced", "value_log_size", "512")
 
 	pwrMethods := []string{"allow_pwr_username", "allow_pwr_email", "allow_pwr_contact_method"}
 	allDisabled := true
 	for _, v := range pwrMethods {
-		if app.config.Section("user_page").Key(v).MustBool(true) {
+		if config.Section("user_page").Key(v).MustBool(true) {
 			allDisabled = false
 		}
 	}
 	if allDisabled {
-		app.info.Println(lm.EnableAllPWRMethods)
+		logs.info.Println(lm.EnableAllPWRMethods)
 		for _, v := range pwrMethods {
-			app.config.Section("user_page").Key(v).SetValue("true")
+			config.Section("user_page").Key(v).SetValue("true")
 		}
 	}
 
-	messagesEnabled = app.config.Section("messages").Key("enabled").MustBool(false)
-	telegramEnabled = app.config.Section("telegram").Key("enabled").MustBool(false)
-	discordEnabled = app.config.Section("discord").Key("enabled").MustBool(false)
-	matrixEnabled = app.config.Section("matrix").Key("enabled").MustBool(false)
+	messagesEnabled = config.Section("messages").Key("enabled").MustBool(false)
+	telegramEnabled = config.Section("telegram").Key("enabled").MustBool(false)
+	discordEnabled = config.Section("discord").Key("enabled").MustBool(false)
+	matrixEnabled = config.Section("matrix").Key("enabled").MustBool(false)
 	if !messagesEnabled {
 		emailEnabled = false
 		telegramEnabled = false
 		discordEnabled = false
 		matrixEnabled = false
-	} else if app.config.Section("email").Key("method").MustString("") == "" {
+	} else if config.Section("email").Key("method").MustString("") == "" {
 		emailEnabled = false
 	} else {
 		emailEnabled = true
@@ -308,31 +330,64 @@ func (app *appContext) loadConfig() error {
 		messagesEnabled = false
 	}
 
-	if app.proxyEnabled = app.config.Section("advanced").Key("proxy").MustBool(false); app.proxyEnabled {
-		app.proxyConfig = easyproxy.ProxyConfig{}
-		app.proxyConfig.Protocol = easyproxy.HTTP
-		if strings.Contains(app.config.Section("advanced").Key("proxy_protocol").MustString("http"), "socks") {
-			app.proxyConfig.Protocol = easyproxy.SOCKS5
+	if proxyEnabled := config.Section("advanced").Key("proxy").MustBool(false); proxyEnabled {
+		config.proxyConfig = &easyproxy.ProxyConfig{}
+		config.proxyConfig.Protocol = easyproxy.HTTP
+		if strings.Contains(config.Section("advanced").Key("proxy_protocol").MustString("http"), "socks") {
+			config.proxyConfig.Protocol = easyproxy.SOCKS5
 		}
-		app.proxyConfig.Addr = app.config.Section("advanced").Key("proxy_address").MustString("")
-		app.proxyConfig.User = app.config.Section("advanced").Key("proxy_user").MustString("")
-		app.proxyConfig.Password = app.config.Section("advanced").Key("proxy_password").MustString("")
-		app.proxyTransport, err = easyproxy.NewTransport(app.proxyConfig)
+		config.proxyConfig.Addr = config.Section("advanced").Key("proxy_address").MustString("")
+		config.proxyConfig.User = config.Section("advanced").Key("proxy_user").MustString("")
+		config.proxyConfig.Password = config.Section("advanced").Key("proxy_password").MustString("")
+		config.proxyTransport, err = easyproxy.NewTransport(*(config.proxyConfig))
 		if err != nil {
-			app.err.Printf(lm.FailedInitProxy, app.proxyConfig.Addr, err)
+			logs.err.Printf(lm.FailedInitProxy, config.proxyConfig.Addr, err)
 			// As explained in lm.FailedInitProxy, sleep here might grab the admin's attention,
 			// Since we don't crash on this failing.
 			time.Sleep(15 * time.Second)
-			app.proxyEnabled = false
+			config.proxyConfig = nil
+			config.proxyTransport = nil
 		} else {
-			app.proxyEnabled = true
-			app.info.Printf(lm.InitProxy, app.proxyConfig.Addr)
+			logs.info.Printf(lm.InitProxy, config.proxyConfig.Addr)
 		}
 	}
 
-	app.MustSetValue("updates", "enabled", "true")
-	releaseChannel := app.config.Section("updates").Key("channel").String()
-	if app.config.Section("updates").Key("enabled").MustBool(false) {
+	config.MustSetValue("updates", "enabled", "true")
+
+	substituteStrings = config.Section("jellyfin").Key("substitute_jellyfin_strings").MustString("")
+
+	if substituteStrings != "" {
+		v := config.Section("ui").Key("success_message")
+		v.SetValue(strings.ReplaceAll(v.String(), "Jellyfin", substituteStrings))
+	}
+
+	datePattern = config.Section("messages").Key("date_format").String()
+	timePattern = `%H:%M`
+	if !(config.Section("messages").Key("use_24h").MustBool(true)) {
+		timePattern = `%I:%M %p`
+	}
+
+	return config, nil
+}
+
+// ReloadDependents re-initialises or applies changes to components of the app which can be reconfigured without restarting.
+func (config *Config) ReloadDependents(app *appContext) {
+	oldFormLang := config.Section("ui").Key("language").MustString("")
+	if oldFormLang != "" {
+		app.storage.lang.chosenUserLang = oldFormLang
+	}
+	newFormLang := config.Section("ui").Key("language-form").MustString("")
+	if newFormLang != "" {
+		app.storage.lang.chosenUserLang = newFormLang
+	}
+
+	app.storage.lang.chosenAdminLang = config.Section("ui").Key("language-admin").MustString("en-us")
+	app.storage.lang.chosenEmailLang = config.Section("email").Key("language").MustString("en-us")
+	app.storage.lang.chosenPWRLang = config.Section("password_resets").Key("language").MustString("en-us")
+	app.storage.lang.chosenTelegramLang = config.Section("telegram").Key("language").MustString("en-us")
+
+	releaseChannel := config.Section("updates").Key("channel").String()
+	if config.Section("updates").Key("enabled").MustBool(false) {
 		v := version
 		if releaseChannel == "stable" {
 			if version == "git" {
@@ -341,9 +396,9 @@ func (app *appContext) loadConfig() error {
 		} else if releaseChannel == "unstable" {
 			v = "git"
 		}
-		app.updater = newUpdater(baseURL, namespace, repo, v, commit, updater)
-		if app.proxyEnabled {
-			app.updater.SetTransport(app.proxyTransport)
+		app.updater = NewUpdater(baseURL, namespace, repo, v, commit, updater)
+		if config.proxyTransport != nil {
+			app.updater.SetTransport(config.proxyTransport)
 		}
 	}
 	if releaseChannel == "" {
@@ -352,32 +407,21 @@ func (app *appContext) loadConfig() error {
 		} else {
 			releaseChannel = "stable"
 		}
-		app.MustSetValue("updates", "channel", releaseChannel)
+		config.MustSetValue("updates", "channel", releaseChannel)
 	}
 
-	substituteStrings = app.config.Section("jellyfin").Key("substitute_jellyfin_strings").MustString("")
+	app.email = NewEmailer(config, app.storage, app.LoggerSet)
+}
 
-	if substituteStrings != "" {
-		v := app.config.Section("ui").Key("success_message")
-		v.SetValue(strings.ReplaceAll(v.String(), "Jellyfin", substituteStrings))
+func (app *appContext) ReloadConfig() {
+	var err error = nil
+	app.config, err = NewConfig(app.configPath, app.dataPath, app.LoggerSet)
+	if err != nil {
+		app.err.Fatalf(lm.FailedLoadConfig, app.configPath, err)
 	}
 
-	oldFormLang := app.config.Section("ui").Key("language").MustString("")
-	if oldFormLang != "" {
-		app.storage.lang.chosenUserLang = oldFormLang
-	}
-	newFormLang := app.config.Section("ui").Key("language-form").MustString("")
-	if newFormLang != "" {
-		app.storage.lang.chosenUserLang = newFormLang
-	}
-	app.storage.lang.chosenAdminLang = app.config.Section("ui").Key("language-admin").MustString("en-us")
-	app.storage.lang.chosenEmailLang = app.config.Section("email").Key("language").MustString("en-us")
-	app.storage.lang.chosenPWRLang = app.config.Section("password_resets").Key("language").MustString("en-us")
-	app.storage.lang.chosenTelegramLang = app.config.Section("telegram").Key("language").MustString("en-us")
-
-	app.email = NewEmailer(app)
-
-	return nil
+	app.config.ReloadDependents(app)
+	app.info.Printf(lm.LoadConfig, app.configPath)
 }
 
 func (app *appContext) PatchConfigBase() {

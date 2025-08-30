@@ -29,8 +29,8 @@ func (app *appContext) GenInternalReset(userID string) (InternalPWR, error) {
 }
 
 // GenResetLink generates and returns a password reset link.
-func (app *appContext) GenResetLink(pin string) (string, error) {
-	url := app.ExternalURI(nil)
+func GenResetLink(pin string) (string, error) {
+	url := ExternalURI(nil)
 	var pinLink string
 	if url == "" {
 		return pinLink, errors.New(lm.NoExternalHost)
@@ -104,7 +104,7 @@ func pwrMonitor(app *appContext, watcher *fsnotify.Watcher) {
 					uid := user.ID
 					name := app.getAddressOrName(uid)
 					if name != "" {
-						msg, err := app.email.constructReset(pwr, app, false)
+						msg, err := app.email.constructReset(pwr, false)
 
 						if err != nil {
 							app.err.Printf(lm.FailedConstructPWRMessage, pwr.Username, err)

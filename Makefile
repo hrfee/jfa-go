@@ -1,4 +1,4 @@
-.PHONY: configuration email typescript swagger copy compile compress inline-css variants-html install clean npm config-description config-default precompile
+.PHONY: configuration email typescript swagger copy compile compress inline-css variants-html install clean npm config-description config-default precompile test
 .DEFAULT_GOAL := all
 
 GOESBUILD ?= off
@@ -216,13 +216,16 @@ ifeq ($(INTERNAL), on)
 endif
 
 GO_SRC = $(shell find ./ -name "*.go")
-GO_TARGET = build/jfa-go 
+GO_TARGET = build/jfa-go
 $(GO_TARGET): $(COMPDEPS) $(SWAGGER_TARGET) $(GO_SRC) go.mod go.sum
 	$(info Downloading deps)
 	$(GOBINARY) mod download
 	$(info Building)
 	mkdir -p build
-	$(GOBINARY) build $(RACEDETECTOR) -ldflags="$(LDFLAGS)" $(TAGS) -o $(GO_TARGET)
+	$(GOBINARY) build $(RACEDETECTOR) -ldflags="$(LDFLAGS)" $(TAGS) -o $(GO_TARGET) 
+
+test: $(BUILDDEPS) $(COMPDEPS) $(SWAGGER_TARGET) $(GO_SRC) go.mod go.sum
+	$(GOBINARY) test -ldflags="$(LDFLAGS)" $(TAGS) -p 1
 
 all: $(BUILDDEPS) $(GO_TARGET)
 
