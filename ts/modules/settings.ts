@@ -1137,6 +1137,7 @@ class MessageEditor {
                 innerHTML = '';
                 if (this._templ.conditionals == null || this._templ.conditionals.length == 0) {
                     this._conditionalsLabel.classList.add("unfocused");
+                    this._conditionals.textContent = ``;
                 } else {
                     for (let i = this._templ.conditionals.length-1; i >= 0; i--) {
                         let ci = i % colors.length;

@@ -52,7 +52,7 @@ var customContent = map[string]CustomContentInfo{
 			"time",
 		),
 		Placeholders: defaultVals(map[string]any{
-			"expiresIn": "3d",
+			"expiresIn": "3d 4h 32m",
 			"date":      "20/08/25",
 			"time":      "14:19",
 		}),
