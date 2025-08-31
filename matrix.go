@@ -101,7 +101,7 @@ func newMatrixDaemon(app *appContext) (d *MatrixDaemon, err error) {
 			d.languages[id.RoomID(user.RoomID)] = user.Lang
 		}
 	}
-	err = InitMatrixCrypto(d)
+	err = InitMatrixCrypto(d, app.info)
 	return
 }
 
