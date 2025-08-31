@@ -124,7 +124,7 @@ func (app *appContext) deleteExpiredInvite(data Invite) {
 
 func (app *appContext) sendAdminExpiryNotification(data Invite) *sync.WaitGroup {
 	notify := data.Notify
-	if !emailEnabled || !app.config.Section("notifications").Key("enabled").MustBool(false) || len(notify) != 0 {
+	if !emailEnabled || !app.config.Section("notifications").Key("enabled").MustBool(false) || len(notify) == 0 {
 		return nil
 	}
 	var wait sync.WaitGroup
@@ -283,7 +283,7 @@ func (app *appContext) GetInviteCount(gc *gin.Context) {
 // @Summary Get the number of invites stored in the database that have been used (but are still valid).
 // @Produce json
 // @Success 200 {object} PageCountDTO
-// @Router /invites/count [get]
+// @Router /invites/count/used [get]
 // @Security Bearer
 // @tags Invites
 func (app *appContext) GetInviteUsedCount(gc *gin.Context) {

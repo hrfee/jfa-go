@@ -173,7 +173,7 @@ func (app *appContext) checkUsers(remindBeforeExpiry *DayTimerSet) {
 			if name == "" {
 				continue
 			}
-			msg, err := app.email.constructUserExpired(false)
+			msg, err := app.email.constructUserExpired(user.Name, false)
 			if err != nil {
 				app.err.Printf(lm.FailedConstructExpiryMessage, user.ID, err)
 			} else if err := app.sendByID(msg, user.ID); err != nil {

@@ -18,6 +18,7 @@ import (
 var (
 	// Disables authentication for the API. Do not use!
 	NO_API_AUTH_DO_NOT_USE = false
+	NO_API_AUTH_FORCE_JFID = ""
 )
 
 // loads HTML templates. If [files]/html_templates is set, alternative files inside the directory are loaded in place of the internal templates.
@@ -188,11 +189,7 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 	}
 
 	var api *gin.RouterGroup
-	if NO_API_AUTH_DO_NOT_USE && *DEBUG {
-		api = router.Group("/")
-	} else {
-		api = router.Group("/", app.webAuth())
-	}
+	api = router.Group("/", app.webAuth())
 
 	for _, p := range routePrefixes {
 		var user *gin.RouterGroup
@@ -244,6 +241,8 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 		api.POST(p+"/config", app.ModifyConfig)
 		api.POST(p+"/restart", app.restart)
 		api.GET(p+"/logs", app.GetLog)
+		api.POST(p+"/tasks/housekeeping", func(gc *gin.Context) { app.housekeepingDaemon.Trigger(); gc.Status(http.StatusNoContent) })
+		api.POST(p+"/tasks/users", func(gc *gin.Context) { app.userDaemon.Trigger(); gc.Status(http.StatusNoContent) })
 		api.POST(p+"/backups", app.CreateBackup)
 		api.GET(p+"/backups/:fname", app.GetBackup)
 		api.GET(p+"/backups", app.GetBackups)

@@ -148,11 +148,11 @@ func (app *appContext) GetCustomMessageTemplate(gc *gin.Context) {
 		case "PasswordReset":
 			msg, err = app.email.constructReset(PasswordReset{}, true)
 		case "UserDeleted":
-			msg, err = app.email.constructDeleted("", true)
+			msg, err = app.email.constructDeleted("", "", true)
 		case "UserDisabled":
-			msg, err = app.email.constructDisabled("", true)
+			msg, err = app.email.constructDisabled("", "", true)
 		case "UserEnabled":
-			msg, err = app.email.constructEnabled("", true)
+			msg, err = app.email.constructEnabled("", "", true)
 		case "UserExpiryAdjusted":
 			msg, err = app.email.constructExpiryAdjusted("", time.Time{}, "", true)
 		case "ExpiryReminder":
@@ -164,7 +164,7 @@ func (app *appContext) GetCustomMessageTemplate(gc *gin.Context) {
 		case "EmailConfirmation":
 			msg, err = app.email.constructConfirmation("", "", "", true)
 		case "UserExpired":
-			msg, err = app.email.constructUserExpired(true)
+			msg, err = app.email.constructUserExpired("", true)
 		case "Announcement":
 		case "UserPage":
 		case "UserLogin":
@@ -181,14 +181,13 @@ func (app *appContext) GetCustomMessageTemplate(gc *gin.Context) {
 		}
 	}
 
-	var mail *Message
+	var mail *Message = nil
 	if contentInfo.ContentType == CustomMessage {
-		mail = &Message{}
-		err = app.email.construct(EmptyCustomContent, CustomContent{
+		mail, err = app.email.construct(EmptyCustomContent, CustomContent{
 			Name:    EmptyCustomContent.Name,
 			Enabled: true,
 			Content: "<div class=\"preview-content\"></div>",
-		}, map[string]any{}, mail)
+		}, map[string]any{})
 		if err != nil {
 			respondBool(500, false, gc)
 			return

@@ -1126,9 +1126,9 @@ class MessageEditor {
                 this._variables.innerHTML = innerHTML
                 let buttons = this._variables.querySelectorAll("span.button") as NodeListOf<HTMLSpanElement>;
                 for (let i = 0; i < this._templ.variables.length; i++) {
-                    buttons[i].innerHTML = `<span class="font-mono bg-inherit">` + this._templ.variables[i] + `</span>`;
+                    buttons[i].innerHTML = `<span class="font-mono bg-inherit">` + "{" + this._templ.variables[i] + "}" + `</span>`;
                     buttons[i].onclick = () => {
-                        insertText(this._textArea, this._templ.variables[i]);
+                        insertText(this._textArea, "{" + this._templ.variables[i] + "}");
                         this.loadPreview();
                         // this._timeout = setTimeout(this.loadPreview, this._finishInterval);
                     }
@@ -1146,9 +1146,9 @@ class MessageEditor {
                     this._conditionals.innerHTML = innerHTML
                     buttons = this._conditionals.querySelectorAll("span.button") as NodeListOf<HTMLSpanElement>;
                     for (let i = 0; i < this._templ.conditionals.length; i++) {
-                        buttons[i].innerHTML = `<span class="font-mono bg-inherit">{if ` + this._templ.conditionals[i].slice(1) + `</span>`;
+                        buttons[i].innerHTML = `<span class="font-mono bg-inherit">{if ` + this._templ.conditionals[i] + "}" + `</span>`;
                         buttons[i].onclick = () => {
-                            insertText(this._textArea, "{if " + this._templ.conditionals[i].slice(1) + "{endif}");
+                            insertText(this._textArea, "{if " + this._templ.conditionals[i] + "}" + "{endif}");
                             this.loadPreview();
                             // this._timeout = setTimeout(this.loadPreview, this._finishInterval);
                         }
@@ -1162,9 +1162,9 @@ class MessageEditor {
         let content = this._textArea.value;
         if (this._templ.variables) {
             for (let variable of this._templ.variables) {
-                let value = this._templ.values[variable.slice(1, -1)];
-                if (value === undefined) { value = variable; }
-                content = content.replace(new RegExp(variable, "g"), value);
+                let value = this._templ.values[variable];
+                if (value === undefined) { value = "{" + variable + "}"; }
+                content = content.replace(new RegExp("{" + variable + "}", "g"), value);
             }
         }
         if (this._templ.html == "") {

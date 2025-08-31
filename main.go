@@ -112,18 +112,19 @@ type appContext struct {
 	adminUsers     []User
 	invalidTokens  []string
 	// Keeping jf name because I can't think of a better one
-	jf                 *mediabrowser.MediaBrowser
-	authJf             *mediabrowser.MediaBrowser
-	ombi               *OmbiWrapper
-	js                 *JellyseerrWrapper
-	thirdPartyServices []ThirdPartyService
-	storage            *Storage
-	validator          Validator
-	email              *Emailer
-	telegram           *TelegramDaemon
-	discord            *DiscordDaemon
-	matrix             *MatrixDaemon
-	contactMethods     []ContactMethodLinker
+	jf                             *mediabrowser.MediaBrowser
+	authJf                         *mediabrowser.MediaBrowser
+	ombi                           *OmbiWrapper
+	js                             *JellyseerrWrapper
+	thirdPartyServices             []ThirdPartyService
+	storage                        *Storage
+	validator                      Validator
+	email                          *Emailer
+	telegram                       *TelegramDaemon
+	discord                        *DiscordDaemon
+	matrix                         *MatrixDaemon
+	housekeepingDaemon, userDaemon *GenericDaemon
+	contactMethods                 []ContactMethodLinker
 	LoggerSet
 	host                 string
 	port                 int
@@ -505,13 +506,13 @@ func start(asDaemon, firstCall bool) {
 			os.Exit(0)
 		}
 
-		invDaemon := newHousekeepingDaemon(time.Duration(60*time.Second), app)
-		go invDaemon.run()
-		defer invDaemon.Shutdown()
+		app.housekeepingDaemon = newHousekeepingDaemon(time.Duration(60*time.Second), app)
+		go app.housekeepingDaemon.run()
+		defer app.housekeepingDaemon.Shutdown()
 
-		userDaemon := newUserDaemon(time.Duration(60*time.Second), app)
-		go userDaemon.run()
-		defer userDaemon.Shutdown()
+		app.userDaemon = newUserDaemon(time.Duration(60*time.Second), app)
+		go app.userDaemon.run()
+		defer app.userDaemon.Shutdown()
 
 		var jellyseerrDaemon *GenericDaemon
 		if app.config.Section("jellyseerr").Key("enabled").MustBool(false) && app.config.Section("jellyseerr").Key("import_existing").MustBool(false) {

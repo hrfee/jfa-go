@@ -380,19 +380,6 @@ func (app *appContext) EnableDisableUsers(gc *gin.Context) {
 		"SetPolicy": map[string]string{},
 	}
 	sendMail := messagesEnabled
-	var msg *Message
-	var err error
-	if sendMail {
-		if req.Enabled {
-			msg, err = app.email.constructEnabled(req.Reason, false)
-		} else {
-			msg, err = app.email.constructDisabled(req.Reason, false)
-		}
-		if err != nil {
-			app.err.Printf(lm.FailedConstructEnableDisableMessage, "?", err)
-			sendMail = false
-		}
-	}
 	activityType := ActivityDisabled
 	if req.Enabled {
 		activityType = ActivityEnabled
@@ -403,6 +390,18 @@ func (app *appContext) EnableDisableUsers(gc *gin.Context) {
 			errors["GetUser"][user.ID] = err.Error()
 			app.err.Printf(lm.FailedGetUser, user.ID, lm.Jellyfin, err)
 			continue
+		}
+		var msg *Message
+		if sendMail {
+			if req.Enabled {
+				msg, err = app.email.constructEnabled(user.Name, req.Reason, false)
+			} else {
+				msg, err = app.email.constructDisabled(user.Name, req.Reason, false)
+			}
+			if err != nil {
+				app.err.Printf(lm.FailedConstructEnableDisableMessage, "?", err)
+				sendMail = false
+			}
 		}
 		err, _, _ = app.SetUserDisabled(user, !req.Enabled)
 		if err != nil {
@@ -449,20 +448,20 @@ func (app *appContext) DeleteUsers(gc *gin.Context) {
 	gc.BindJSON(&req)
 	errors := map[string]string{}
 	sendMail := messagesEnabled
-	var msg *Message
-	var err error
-	if sendMail {
-		msg, err = app.email.constructDeleted(req.Reason, false)
-		if err != nil {
-			app.err.Printf(lm.FailedConstructDeletionMessage, "?", err)
-			sendMail = false
-		}
-	}
 	for _, userID := range req.Users {
 		user, err := app.jf.UserByID(userID, false)
 		if err != nil {
 			app.err.Printf(lm.FailedGetUser, user.ID, lm.Jellyfin, err)
 			errors[userID] = err.Error()
+		}
+
+		var msg *Message = nil
+		if sendMail {
+			msg, err = app.email.constructDeleted(user.Name, req.Reason, false)
+			if err != nil {
+				app.err.Printf(lm.FailedConstructDeletionMessage, "?", err)
+				sendMail = false
+			}
 		}
 
 		deleted := false
@@ -677,11 +676,10 @@ func (app *appContext) Announce(gc *gin.Context) {
 				app.err.Printf(lm.FailedGetUser, userID, lm.Jellyfin, err)
 				continue
 			}
-			msg := &Message{}
-			err = app.email.construct(AnnouncementCustomContent(req.Subject), CustomContent{
+			msg, err := app.email.construct(AnnouncementCustomContent(req.Subject), CustomContent{
 				Enabled: true,
 				Content: req.Message,
-			}, map[string]any{"username": user.Name}, msg)
+			}, map[string]any{"username": user.Name})
 			if err != nil {
 				app.err.Printf(lm.FailedConstructAnnouncementMessage, userID, err)
 				respondBool(500, false, gc)
@@ -694,11 +692,10 @@ func (app *appContext) Announce(gc *gin.Context) {
 		}
 		// app.info.Printf(lm.SentAnnouncementMessage, "*", "?")
 	} else {
-		msg := &Message{}
-		err := app.email.construct(AnnouncementCustomContent(req.Subject), CustomContent{
+		msg, err := app.email.construct(AnnouncementCustomContent(req.Subject), CustomContent{
 			Enabled: true,
 			Content: req.Message,
-		}, map[string]any{"username": ""}, msg)
+		}, map[string]any{"username": ""})
 		if err != nil {
 			app.err.Printf(lm.FailedConstructAnnouncementMessage, "*", err)
 			respondBool(500, false, gc)

@@ -245,7 +245,7 @@ var customContent = map[string]CustomContentInfo{
 			"reason",
 		),
 		Placeholders: defaultVals(map[string]any{
-			"newExpiry": "",
+			"newExpiry": "01/01/01 00:00",
 			"reason":    "Reason",
 		}),
 		SourceFile: ContentSourceFileInfo{
