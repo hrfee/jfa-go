@@ -4,10 +4,11 @@
 package main
 
 import (
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/hrfee/jfa-go/logger"
 )
 
 const binaryType = "external"
@@ -28,9 +29,12 @@ func FSJoin(elem ...string) string {
 	return strings.TrimSuffix(path, sep)
 }
 
-func loadFilesystems() {
-	log.Println("Using external storage")
-	executable, _ := os.Executable()
-	localFS = dirFS(filepath.Join(filepath.Dir(executable), "data"))
-	langFS = dirFS(filepath.Join(filepath.Dir(executable), "data", "lang"))
+func loadFilesystems(rootDir string, logger *logger.Logger) {
+	logger.Println("Using external storage")
+	if rootDir == "" {
+		executable, _ := os.Executable()
+		rootDir = filepath.Dir(executable)
+	}
+	localFS = dirFS(filepath.Join(rootDir, "data"))
+	langFS = dirFS(filepath.Join(rootDir, "data", "lang"))
 }

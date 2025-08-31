@@ -492,6 +492,7 @@ func (emailer *Emailer) constructDeleted(username, reason string, placeholders b
 		reason = "{reason}"
 	}
 	contentInfo, template := emailer.baseValues("UserDeleted", username, placeholders, map[string]any{
+		"helloUser":      emailer.lang.Strings.template("helloUser", tmpl{"username": username}),
 		"yourAccountWas": emailer.lang.UserDeleted.get("yourAccountWasDeleted"),
 		"reasonString":   emailer.lang.Strings.get("reason"),
 		"reason":         reason,
@@ -506,6 +507,7 @@ func (emailer *Emailer) constructDisabled(username, reason string, placeholders 
 		reason = "{reason}"
 	}
 	contentInfo, template := emailer.baseValues("UserDisabled", username, placeholders, map[string]any{
+		"helloUser":      emailer.lang.Strings.template("helloUser", tmpl{"username": username}),
 		"yourAccountWas": emailer.lang.UserDisabled.get("yourAccountWasDisabled"),
 		"reasonString":   emailer.lang.Strings.get("reason"),
 		"reason":         reason,
@@ -520,6 +522,7 @@ func (emailer *Emailer) constructEnabled(username, reason string, placeholders b
 		reason = "{reason}"
 	}
 	contentInfo, template := emailer.baseValues("UserEnabled", username, placeholders, map[string]any{
+		"helloUser":      emailer.lang.Strings.template("helloUser", tmpl{"username": username}),
 		"yourAccountWas": emailer.lang.UserEnabled.get("yourAccountWasEnabled"),
 		"reasonString":   emailer.lang.Strings.get("reason"),
 		"reason":         reason,

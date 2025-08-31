@@ -784,7 +784,8 @@ func main() {
 	if flagPassed("test") {
 		TEST = true
 	}
-	loadFilesystems()
+	executable, _ := os.Executable()
+	loadFilesystems(filepath.Dir(executable), logger.NewLogger(os.Stdout, "[INFO] ", log.Ltime, color.FgHiWhite))
 
 	quit := make(chan os.Signal, 0)
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)

@@ -1,3 +1,5 @@
+{{ .helloUser }}
+
 {{ .yourAccountWas }}
 
 {{ .reasonString }}: {{ .reason }}

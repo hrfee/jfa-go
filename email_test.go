@@ -1,8 +1,6 @@
 package main
 
 import (
-	"embed"
-	"errors"
 	"fmt"
 	"io/fs"
 	"log"
@@ -18,8 +16,6 @@ import (
 	"github.com/timshannon/badgerhold/v4"
 )
 
-//go:embed build/data/config-default.ini
-var configFS embed.FS
 var db *badgerhold.Store
 
 func dbClose(e *Emailer) {
@@ -34,9 +30,6 @@ func Fatal(err any) {
 
 // NewTestEmailer initialises most of what the emailer depends on, which happens to be most of the app.
 func NewTestEmailer() (*Emailer, error) {
-	if binaryType != "external" {
-		return nil, errors.New("test only supported with -tags \"external\"")
-	}
 	emailer := &Emailer{
 		fromAddr: "from@addr",
 		fromName: "fromName",
@@ -47,20 +40,16 @@ func NewTestEmailer() (*Emailer, error) {
 		},
 		sender: &DummyClient{},
 	}
-	dConfig, err := fs.ReadFile(configFS, "build/data/config-default.ini")
-	if err != nil {
-		return emailer, err
-	}
-	wd, err := os.Getwd()
+	// Assume our working directory is the root of the repo
+	wd, _ := os.Getwd()
+	loadFilesystems(filepath.Join(wd, "build"), logger.NewEmptyLogger())
+	dConfig, err := fs.ReadFile(localFS, "config-default.ini")
 	if err != nil {
 		return emailer, err
 	}
 
 	// Force emailer to construct markdown
 	discordEnabled = true
-	// Use working directory
-	localFS = dirFS(filepath.Join(wd, "build", "data"))
-	langFS = dirFS(filepath.Join(wd, "build", "data", "lang"))
 	noInfoLS := emailer.LoggerSet
 	noInfoLS.info = logger.NewEmptyLogger()
 	emailer.config, err = NewConfig(dConfig, "/tmp/jfa-go-test", noInfoLS)
@@ -327,13 +316,17 @@ func TestDeleted(t *testing.T) {
 	}
 	testContent(e, customContent["UserDeleted"], t, func(t *testing.T) {
 		reason := shortuuid.New()
-		msg, err := e.constructDeleted(reason, false)
+		username := shortuuid.New()
+		msg, err := e.constructDeleted(username, reason, false)
 		if err != nil {
 			t.Fatalf("failed construct: %+v", err)
 		}
 		for _, content := range []string{msg.Text, msg.HTML} {
 			if !strings.Contains(content, reason) {
-				t.Fatalf("reason n)ot found in output: %s", content)
+				t.Fatalf("reason not found in output: %s", content)
+			}
+			if !strings.Contains(content, username) {
+				t.Fatalf("username not found in output: %s", content)
 			}
 		}
 	})
@@ -348,13 +341,17 @@ func TestDisabled(t *testing.T) {
 	}
 	testContent(e, customContent["UserDeleted"], t, func(t *testing.T) {
 		reason := shortuuid.New()
-		msg, err := e.constructDisabled(reason, false)
+		username := shortuuid.New()
+		msg, err := e.constructDisabled(username, reason, false)
 		if err != nil {
 			t.Fatalf("failed construct: %+v", err)
 		}
 		for _, content := range []string{msg.Text, msg.HTML} {
 			if !strings.Contains(content, reason) {
 				t.Fatalf("reason not found in output: %s", content)
+			}
+			if !strings.Contains(content, username) {
+				t.Fatalf("username not found in output: %s", content)
 			}
 		}
 	})
@@ -369,13 +366,17 @@ func TestEnabled(t *testing.T) {
 	}
 	testContent(e, customContent["UserDeleted"], t, func(t *testing.T) {
 		reason := shortuuid.New()
-		msg, err := e.constructEnabled(reason, false)
+		username := shortuuid.New()
+		msg, err := e.constructEnabled(username, reason, false)
 		if err != nil {
 			t.Fatalf("failed construct: %+v", err)
 		}
 		for _, content := range []string{msg.Text, msg.HTML} {
 			if !strings.Contains(content, reason) {
 				t.Fatalf("reason not found in output: %s", content)
+			}
+			if !strings.Contains(content, username) {
+				t.Fatalf("username not found in output: %s", content)
 			}
 		}
 	})

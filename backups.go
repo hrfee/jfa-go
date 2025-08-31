@@ -214,7 +214,6 @@ func (app *appContext) makeBackup() (fileDetails CreateBackupDTO) {
 			count += 1
 			backupsByCommit[b.Commit] = count
 		}
-		fmt.Printf("remaining:%+v\n", backupsByCommit)
 	}
 	// fmt.Printf("toDelete: %d, backCount: %d, keep: %d, length: %d\n", toDelete, backups.count, toKeep, len(backups.files))
 	if toDelete > 0 && toDelete <= backups.count {

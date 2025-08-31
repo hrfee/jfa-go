@@ -6,7 +6,8 @@ package main
 import (
 	"embed"
 	"io/fs"
-	"log"
+
+	"github.com/hrfee/jfa-go/logger"
 )
 
 const binaryType = "internal"
@@ -35,8 +36,8 @@ func FSJoin(elem ...string) string {
 	return out[:len(out)-1]
 }
 
-func loadFilesystems() {
+func loadFilesystems(rootDir string, logger *logger.Logger) {
 	langFS = rewriteFS{laFS, "lang/"}
 	localFS = rewriteFS{loFS, "data/"}
-	log.Println("Using internal storage")
+	logger.Println("Using internal storage")
 }
