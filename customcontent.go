@@ -19,6 +19,18 @@ func defaultVals(vals map[string]any) map[string]any {
 	return vals
 }
 
+func vendorHeader(config *Config, lang *emailLang) string { return "jfa-go" }
+func serverHeader(config *Config, lang *emailLang) string {
+	if substituteStrings == "" {
+		return "Jellyfin"
+	} else {
+		return substituteStrings
+	}
+}
+func messageFooter(config *Config, lang *emailLang) string {
+	return config.Section("messages").Key("message").String()
+}
+
 var customContent = map[string]CustomContentInfo{
 	"EmailConfirmation": {
 		Name:        "EmailConfirmation",
@@ -94,6 +106,10 @@ var customContent = map[string]CustomContentInfo{
 		Subject: func(config *Config, lang *emailLang) string {
 			return lang.InviteExpiry.get("title")
 		},
+		HeaderText: vendorHeader,
+		FooterText: func(config *Config, lang *emailLang) string {
+			return lang.InviteExpiry.get("notificationNotice")
+		},
 		Variables: []string{
 			"code",
 			"time",
@@ -131,7 +147,7 @@ var customContent = map[string]CustomContentInfo{
 			Section:       "password_resets",
 			SettingPrefix: "email_",
 			// This was the first email type added, hence the undescriptive filename.
-			DefaultValue: "email",
+			DefaultValue: "password-reset",
 		},
 	},
 	"UserCreated": {
@@ -140,6 +156,10 @@ var customContent = map[string]CustomContentInfo{
 		DisplayName: func(dict *Lang, lang string) string { return dict.Email[lang].UserCreated["name"] },
 		Subject: func(config *Config, lang *emailLang) string {
 			return lang.UserCreated.get("title")
+		},
+		HeaderText: vendorHeader,
+		FooterText: func(config *Config, lang *emailLang) string {
+			return lang.UserCreated.get("notificationNotice")
 		},
 		Variables: []string{
 			"code",
@@ -346,6 +366,8 @@ var EmptyCustomContent = CustomContentInfo{
 	Subject: func(config *Config, lang *emailLang) string {
 		return "EmptyCustomContent"
 	},
+	HeaderText:   serverHeader,
+	FooterText:   messageFooter,
 	Description:  nil,
 	Variables:    []string{},
 	Placeholders: map[string]any{},
@@ -359,6 +381,7 @@ var AnnouncementCustomContent = func(subject string) CustomContentInfo {
 	return cci
 }
 
+// Validates customContent and sets default fields if needed.
 var _runtimeValidation = func() bool {
 	for name, cc := range customContent {
 		if name != cc.Name {
@@ -366,6 +389,14 @@ var _runtimeValidation = func() bool {
 		}
 		if cc.DisplayName == nil {
 			panic(fmt.Errorf("no customContent[%s] DisplayName set", name))
+		}
+		if cc.HeaderText == nil {
+			cc.HeaderText = serverHeader
+			customContent[name] = cc
+		}
+		if cc.FooterText == nil {
+			cc.FooterText = messageFooter
+			customContent[name] = cc
 		}
 	}
 	return true

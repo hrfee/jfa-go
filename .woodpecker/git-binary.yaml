@@ -21,6 +21,7 @@ steps:
     commands:
       - npm i
       - make precompile
+      - go mod download
   - name: test
     image: docker.io/hrfee/jfa-go-build-docker:latest
     environment:

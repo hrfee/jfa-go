@@ -1,0 +1,5 @@
+<mj-section mj-class="bg-gray">
+    <mj-column>
+        <mj-text mj-class="text-white" font-size="25px" font-family="Plus Jakarta Sans, Noto Sans, Helvetica, Arial, sans-serif"> {{ .header }} </mj-text>
+    </mj-column>
+</mj-section>

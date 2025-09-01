@@ -719,7 +719,8 @@ type ContentSourceFileInfo struct{ Section, SettingPrefix, DefaultValue string }
 type CustomContentInfo struct {
 	Name                     string `json:"name" badgerhold:"key"`
 	DisplayName, Description func(dict *Lang, lang string) string
-	Subject                  func(config *Config, lang *emailLang) string
+	// Subject returns the subject of the email. Header/FooterText returns what should show in the header, a nil-value implies "Jellyfin" (or user-supplied text).
+	Subject, HeaderText, FooterText func(config *Config, lang *emailLang) string
 	// Config section, the main part of the setting name (without "html" or "text"), and the default filename (without ".html" or ".txt").
 	SourceFile   ContentSourceFileInfo
 	ContentType  CustomContentContext `json:"type"`

@@ -269,9 +269,6 @@ func (emailer *Emailer) construct(contentInfo CustomContentInfo, cc CustomConten
 			"plaintext": text,
 			"md":        content,
 		}
-		if message, ok := data["message"]; ok {
-			templateData["message"] = message
-		}
 		data = templateData
 	}
 	var err error = nil
@@ -280,11 +277,8 @@ func (emailer *Emailer) construct(contentInfo CustomContentInfo, cc CustomConten
 	msg.Text = ""
 	msg.Markdown = ""
 	msg.HTML = ""
-	if substituteStrings == "" {
-		data["jellyfin"] = "Jellyfin"
-	} else {
-		data["jellyfin"] = substituteStrings
-	}
+	data["header"] = contentInfo.HeaderText(emailer.config, &emailer.lang)
+	data["footer"] = contentInfo.FooterText(emailer.config, &emailer.lang)
 	var keys []string
 	plaintext := emailer.config.Section("email").Key("plaintext").MustBool(false)
 	if plaintext {
@@ -349,7 +343,6 @@ func (emailer *Emailer) baseValues(name string, username string, placeholders bo
 	contentInfo := customContent[name]
 	template := map[string]any{
 		"username": username,
-		"message":  emailer.config.Section("messages").Key("message").String(),
 	}
 	maps.Copy(template, values)
 	// When generating a version for the user to customise, we'll replace "variable" with "{variable}", so the templater used for custom content understands them.
@@ -409,11 +402,10 @@ func (emailer *Emailer) constructInvite(invite Invite, placeholders bool) (*Mess
 func (emailer *Emailer) constructExpiry(invite Invite, placeholders bool) (*Message, error) {
 	expiry := formatDatetime(invite.ValidTill)
 	contentInfo, template := emailer.baseValues("InviteExpiry", "", placeholders, map[string]any{
-		"inviteExpired":      emailer.lang.InviteExpiry.get("inviteExpired"),
-		"notificationNotice": emailer.lang.InviteExpiry.get("notificationNotice"),
-		"expiredAt":          emailer.lang.InviteExpiry.get("expiredAt"),
-		"code":               "\"" + invite.Code + "\"",
-		"time":               expiry,
+		"inviteExpired": emailer.lang.InviteExpiry.get("inviteExpired"),
+		"expiredAt":     emailer.lang.InviteExpiry.get("expiredAt"),
+		"code":          "\"" + invite.Code + "\"",
+		"time":          expiry,
 	})
 	if !placeholders {
 		template["expiredAt"] = emailer.lang.InviteExpiry.template("expiredAt", template)
@@ -426,15 +418,14 @@ func (emailer *Emailer) constructCreated(username, address string, when time.Tim
 	// NOTE: This was previously invite.Created, not sure why.
 	created := formatDatetime(when)
 	contentInfo, template := emailer.baseValues("UserCreated", username, placeholders, map[string]any{
-		"aUserWasCreated":    emailer.lang.UserCreated.get("aUserWasCreated"),
-		"nameString":         emailer.lang.Strings.get("name"),
-		"addressString":      emailer.lang.Strings.get("emailAddress"),
-		"timeString":         emailer.lang.UserCreated.get("time"),
-		"notificationNotice": emailer.lang.UserCreated.get("notificationNotice"),
-		"code":               "\"" + invite.Code + "\"",
-		"name":               username,
-		"time":               created,
-		"address":            address,
+		"aUserWasCreated": emailer.lang.UserCreated.get("aUserWasCreated"),
+		"nameString":      emailer.lang.Strings.get("name"),
+		"addressString":   emailer.lang.Strings.get("emailAddress"),
+		"timeString":      emailer.lang.UserCreated.get("time"),
+		"code":            "\"" + invite.Code + "\"",
+		"name":            username,
+		"time":            created,
+		"address":         address,
 	})
 	if !placeholders {
 		template["aUserWasCreated"] = emailer.lang.UserCreated.template("aUserWasCreated", template)
