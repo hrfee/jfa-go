@@ -4,4 +4,4 @@
 
 {{ .reasonString }}: {{ .reason }}
 
-{{ .message }}
+{{ .footer }}
