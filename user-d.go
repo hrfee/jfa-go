@@ -131,6 +131,7 @@ func (app *appContext) checkUsers(remindBeforeExpiry *DayTimerSet) {
 			activity.Type = ActivityDeletion
 			// Store the user name, since there's no longer a user ID to reference back to
 			activity.Value = user.Name
+			app.InvalidateUserCaches()
 		} else {
 			app.info.Printf(lm.DisableExpiredUser, user.Name)
 			// Admins can't be disabled
@@ -138,6 +139,7 @@ func (app *appContext) checkUsers(remindBeforeExpiry *DayTimerSet) {
 			user.Policy.IsAdministrator = false
 			err, _, _ = app.SetUserDisabled(user, true)
 			activity.Type = ActivityDisabled
+			app.InvalidateUserCaches()
 		}
 		if err != nil {
 			app.err.Printf(lm.FailedDeleteOrDisableExpiredUser, user.ID, err)

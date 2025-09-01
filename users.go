@@ -155,6 +155,7 @@ func (app *appContext) NewUserPostVerification(p NewUserParams) (out NewUserData
 
 	out.Status = 200
 	out.Success = true
+	app.InvalidateWebUserCache()
 	return
 }
 

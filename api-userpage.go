@@ -796,6 +796,7 @@ func (app *appContext) GetMyReferral(gc *gin.Context) {
 		inv.ValidTill = inv.Created.Add(REFERRAL_EXPIRY_DAYS * 24 * time.Hour)
 		app.storage.SetInvitesKey(inv.Code, inv)
 	}
+	app.InvalidateWebUserCache()
 	gc.JSON(200, GetMyReferralRespDTO{
 		Code:          inv.Code,
 		RemainingUses: inv.RemainingUses,

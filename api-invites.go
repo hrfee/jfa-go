@@ -104,6 +104,7 @@ func (app *appContext) deleteExpiredInvite(data Invite) {
 		if ok {
 			user.ReferralTemplateKey = ""
 			app.storage.SetEmailsKey(data.ReferrerJellyfinID, user)
+			app.InvalidateWebUserCache()
 		}
 	}
 	wait := app.sendAdminExpiryNotification(data)

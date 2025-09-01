@@ -625,6 +625,7 @@ func (app *appContext) EnableReferralForUsers(gc *gin.Context) {
 		inv.UseReferralExpiry = useExpiry
 		app.storage.SetInvitesKey(inv.Code, inv)
 	}
+	app.InvalidateWebUserCache()
 }
 
 // @Summary Disable referrals for the given user(s).
@@ -648,6 +649,7 @@ func (app *appContext) DisableReferralForUsers(gc *gin.Context) {
 		user.ReferralTemplateKey = ""
 		app.storage.SetEmailsKey(u, user)
 	}
+	app.InvalidateWebUserCache()
 	respondBool(200, true, gc)
 }
 
@@ -848,6 +850,8 @@ func (app *appContext) AdminPasswordReset(gc *gin.Context) {
 	respondBool(204, true, gc)
 }
 
+// userSummary generates a respUser for to be displayed to the user, or sorted/filtered.
+// also, consider it a source of which data fields/struct modifications need to trigger a cache invalidation.
 func (app *appContext) userSummary(jfUser mediabrowser.User) respUser {
 	adminOnly := app.config.Section("ui").Key("admin_only").MustBool(true)
 	allowAll := app.config.Section("ui").Key("allow_all").MustBool(false)
@@ -1016,6 +1020,7 @@ func (app *appContext) SetAccountsAdmin(gc *gin.Context) {
 			app.info.Printf(lm.UserAdminAdjusted, id, admin)
 		}
 	}
+	app.InvalidateWebUserCache()
 	respondBool(204, true, gc)
 }
 
@@ -1048,6 +1053,7 @@ func (app *appContext) ModifyLabels(gc *gin.Context) {
 			app.storage.SetEmailsKey(id, emailStore)
 		}
 	}
+	app.InvalidateWebUserCache()
 	respondBool(204, true, gc)
 }
 
@@ -1087,6 +1093,7 @@ func (app *appContext) modifyEmail(jfID string, addr string) {
 			}
 		}
 	}
+	app.InvalidateWebUserCache()
 }
 
 // @Summary Modify user's email addresses.

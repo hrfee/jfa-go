@@ -271,6 +271,7 @@ func (app *appContext) TelegramAddUser(gc *gin.Context) {
 	}
 
 	linkExistingOmbiDiscordTelegram(app)
+	app.InvalidateWebUserCache()
 	respondBool(200, true, gc)
 }
 
@@ -336,6 +337,7 @@ func (app *appContext) setContactMethods(req SetContactMethodsDTO, gc *gin.Conte
 			app.err.Printf(lm.FailedSyncContactMethods, lm.Jellyseerr, err)
 		}
 	}
+	app.InvalidateWebUserCache()
 	respondBool(200, true, gc)
 }
 
@@ -564,6 +566,7 @@ func (app *appContext) MatrixConnect(gc *gin.Context) {
 		Lang:    "en-us",
 		Contact: true,
 	})
+	app.InvalidateWebUserCache()
 	respondBool(200, true, gc)
 }
 
@@ -635,6 +638,7 @@ func (app *appContext) DiscordConnect(gc *gin.Context) {
 	}, gc, false)
 
 	linkExistingOmbiDiscordTelegram(app)
+	app.InvalidateWebUserCache()
 	respondBool(200, true, gc)
 }
 
@@ -672,6 +676,7 @@ func (app *appContext) UnlinkDiscord(gc *gin.Context) {
 		Time:       time.Now(),
 	}, gc, false)
 
+	app.InvalidateWebUserCache()
 	respondBool(200, true, gc)
 }
 
@@ -708,6 +713,7 @@ func (app *appContext) UnlinkTelegram(gc *gin.Context) {
 		Time:       time.Now(),
 	}, gc, false)
 
+	app.InvalidateWebUserCache()
 	respondBool(200, true, gc)
 }
 
@@ -737,5 +743,6 @@ func (app *appContext) UnlinkMatrix(gc *gin.Context) {
 		Time:       time.Now(),
 	}, gc, false)
 
+	app.InvalidateWebUserCache()
 	respondBool(200, true, gc)
 }
