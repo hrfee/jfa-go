@@ -924,7 +924,7 @@ sections:
     requires_restart: true
     depends_true: provide_invite
     type: text
-    description: Channel to invite new users to.
+    description: Name of channel to invite new users to.
   - setting: apply_role
     name: Apply Role on connection
     requires_restart: true
