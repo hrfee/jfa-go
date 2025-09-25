@@ -39,14 +39,19 @@
         "contactMethods": "Kapcsolati lehetőségek",
         "accountStatus": "Fiók státusz",
         "notSet": "Nincs beállítva",
-        "myAccount": "Saját fiókom"
+        "myAccount": "Saját fiókom",
+        "internal": "Belső",
+        "referrals": "Hivatkozások",
+        "inviteRemainingUses": "Fennmaradó felhasználások",
+        "external": "Külső"
     },
     "notifications": {
         "errorLoginBlank": "A felhasználónév és/vagy a jelszó üresen lett hagyva.",
         "errorConnection": "Nem lehet csatlakozni a jfa-go-hoz.",
         "errorUnknown": "Ismeretlen hiba.",
         "error401Unauthorized": "Nincs jogosultság. Próbáld frissíteni az oldalt.",
-        "errorSaveSettings": "Nem lehet menteni a beállításokat."
+        "errorSaveSettings": "Nem lehet menteni a beállításokat.",
+        "errorSpecialSymbols": "Ez a mező nem tartalmazhat speciális karaktereket."
     },
     "quantityStrings": {
         "year": {
