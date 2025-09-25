@@ -11,6 +11,9 @@
         "languageMessage": "Megjegyzés: Az elérhető nyelveket a {command} parancsal láthatod, és a {command} <nyelv kód> parancsal szerkesztheted.",
         "languageMessageDiscord": "Megjegyzés: a saját nyelvet a /lang <nyelv neve> parancsal tudod beállítani.",
         "languageSet": "Nyelv {language}-ra/re állítva.",
-        "discordDMs": "Ellenőrizd az üzeneteidet."
+        "discordDMs": "Ellenőrizd az üzeneteidet.",
+        "sentInvite": "Meghívó elküldve.",
+        "sentInviteFailure": "Meghívó elküldése sikertelen, ellenőrizd a napló fájlt.",
+        "noPermission": "Nincs jogosultságod erre a műveletre."
     }
 }
