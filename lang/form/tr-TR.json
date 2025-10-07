@@ -1,28 +1,28 @@
 {
     "meta": {
-        "name": ""
+        "name": "İngilizce (ABD)"
     },
     "strings": {
-        "pageTitle": "",
-        "createAccountHeader": "",
-        "accountDetails": "",
-        "emailAddress": "",
-        "username": "",
-        "oldPassword": "",
-        "newPassword": "",
-        "password": "",
-        "reEnterPassword": "",
-        "reEnterPasswordInvalid": "",
-        "createAccountButton": "",
-        "passwordRequirementsHeader": "",
-        "successHeader": "",
-        "confirmationRequired": "",
-        "confirmationRequiredMessage": "",
-        "yourAccountIsValidUntil": "",
-        "sendPIN": "",
-        "sendPINDiscord": "",
-        "matrixEnterUser": "",
-        "welcomeUser": "",
+        "pageTitle": "Jellyfin Hesabı Oluştur",
+        "createAccountHeader": "Hesap Oluştur",
+        "accountDetails": "Ayrıntılar",
+        "emailAddress": "E-posta",
+        "username": "Kullanıcı adı",
+        "oldPassword": "Eski Şifre",
+        "newPassword": "Yeni Şifre",
+        "password": "Şifre",
+        "reEnterPassword": "Şifreyi Tekrar Girin",
+        "reEnterPasswordInvalid": "Şifreler aynı değil.",
+        "createAccountButton": "Hesap Oluştur",
+        "passwordRequirementsHeader": "Şifre Gereksinimleri",
+        "successHeader": "Başarılı!",
+        "confirmationRequired": "E-posta onayı gerekli",
+        "confirmationRequiredMessage": "Lütfen adresinizi doğrulamak için e-posta gelen kutunuzu kontrol edin.",
+        "yourAccountIsValidUntil": "Hesabınız {date} tarihine kadar geçerli olacaktır.",
+        "sendPIN": "Aşağıdaki **PIN'i** bota gönderin, ardından hesabınızı bağlamak için buraya geri gelin.",
+        "sendPINDiscord": "Discord'da {server_channel} {command} yazın, ardından aşağıdaki PIN'i gönderin.",
+        "matrixEnterUser": "Kullanıcı Kimliğinizi girin, gönderin ve size bir PIN gönderilecektir. Devam etmek için buraya girin.",
+        "welcomeUser": "Hoşgeldin, {user}!",
         "addContactMethod": "",
         "editContactMethod": "",
         "joinTheServer": "",
@@ -46,43 +46,43 @@
         "invitedBy": ""
     },
     "notifications": {
-        "errorUserExists": "",
-        "errorInvalidCode": "",
-        "errorAccountLinked": "",
-        "errorEmailLinked": "",
-        "errorTelegramVerification": "",
-        "errorDiscordVerification": "",
-        "errorMatrixVerification": "",
-        "errorInvalidPIN": "",
-        "errorUnknown": "",
-        "errorNoEmail": "",
-        "errorCaptcha": "",
-        "errorPassword": "",
-        "errorNoMatch": "",
-        "errorOldPassword": "",
-        "passwordChanged": "",
-        "verified": ""
+        "errorUserExists": "Kullanıcı zaten mevcut.",
+        "errorInvalidCode": "Geçersiz davet kodu.",
+        "errorAccountLinked": "Hesap zaten kullanımda.",
+        "errorEmailLinked": "E-posta zaten kullanımda.",
+        "errorTelegramVerification": "Telegram doğrulama gerekli.",
+        "errorDiscordVerification": "Discord doğrulama gerekli.",
+        "errorMatrixVerification": "Matrix doğrulama gerekli.",
+        "errorInvalidPIN": "PIN geçersiz.",
+        "errorUnknown": "Bilinmeyen hata.",
+        "errorNoEmail": "E-posta gerekli.",
+        "errorCaptcha": "Captcha yanlış.",
+        "errorPassword": "Şifre gereksinimlerini kontrol edin.",
+        "errorNoMatch": "Şifreler eşleşmiyor.",
+        "errorOldPassword": "Eski şifre yanlış.",
+        "passwordChanged": "Şifre Değiştirildi.",
+        "verified": "Hesap doğrulandı."
     },
     "validationStrings": {
         "length": {
-            "singular": "",
-            "plural": ""
+            "singular": "En az {n} karakter içermeli",
+            "plural": "En az {n} karakter içermeli"
         },
         "uppercase": {
-            "singular": "",
-            "plural": ""
+            "singular": "En az {n} büyük harf içermeli",
+            "plural": "En az {n} büyük harf içermeli"
         },
         "lowercase": {
-            "singular": "",
-            "plural": ""
+            "singular": "En az {n} küçük harf içermeli",
+            "plural": "En az {n} küçük harf içermeli"
         },
         "number": {
-            "singular": "",
-            "plural": ""
+            "singular": "En az {n} küçük harf içermeli",
+            "plural": "En az {n} küçük harf içermeli"
         },
         "special": {
-            "singular": "",
-            "plural": ""
+            "singular": "En az {n} özel karakter içermeli",
+            "plural": "En az {n} özel karakter içermeli"
         }
     }
 }
