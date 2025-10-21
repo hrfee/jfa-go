@@ -1304,5 +1304,6 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 	if len(errors["policy"]) == len(req.ApplyTo) || len(errors["homescreen"]) == len(req.ApplyTo) {
 		code = 500
 	}
+	app.InvalidateUserCaches()
 	gc.JSON(code, errors)
 }
