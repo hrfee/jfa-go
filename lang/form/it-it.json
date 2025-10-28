@@ -3,11 +3,11 @@
         "name": "Italiano (IT)"
     },
     "strings": {
-        "pageTitle": "Crea Un Account Jellyfin",
+        "pageTitle": "Crea Account Jellyfin",
         "createAccountHeader": "Crea Un Account",
         "accountDetails": "Dettagli",
         "emailAddress": "Email",
-        "username": "Username",
+        "username": "Nome Utente",
         "password": "Password",
         "reEnterPassword": "Riscrivi La Password",
         "reEnterPasswordInvalid": "Le password non sono uguali.",
@@ -17,7 +17,7 @@
         "confirmationRequired": "Richiesta la conferma Email",
         "confirmationRequiredMessage": "Controlla la tua casella email per verificare il tuo indirizzo.",
         "yourAccountIsValidUntil": "Il tuo account sarà valido fino al {date}.",
-        "sendPIN": "Scrivi il PIN qui sotto al bot, poi torna qui per connettere il tuo account.",
+        "sendPIN": "Invia il PIN riportato sotto al bot, poi torna qui per associare il tuo account.",
         "sendPINDiscord": "Scrivi {command} in {server_channel} su Discord, poi invia il PIN qui sotto.",
         "matrixEnterUser": "Inserisci il tuo ID utente, premi invia e ti verrò inviato un PIN. Inseriscilo qui per continuare.",
         "customMessagePlaceholderHeader": "Personalizza questa scheda",
@@ -34,7 +34,15 @@
         "resetPassword": "Ripristina Password",
         "resetSent": "Richiesta di ripristino inviata.",
         "resetSentDescription": "Se l'username/metodo di contatto corrisponde ad un account esistente, verrà inviato un link di reset a tutti i metodi di contatto disponibili. Il codice scadrà tra 30 minuti.",
-        "changePassword": "Cambia Password"
+        "changePassword": "Cambia Password",
+        "resetPasswordThroughLinkStart": "Per reimpostare la password, inserisci uno dei seguenti:",
+        "resetPasswordThroughLinkEnd": "Successivamente premi Invia. Un link verra' inviato per resettare la tua password.",
+        "resetPasswordUsername": "Il tuo nome utente Jellyfin",
+        "resetPasswordEmail": "Il tuo indirizzo email",
+        "referralsWithExpiryDescription": "Invita amici e famigliari su Jellyfin con questo link. Il link verra' disabilitato una volta scaduto.",
+        "referralsDescription": "Invita amici e famigliari su Jellyfin usando questo link. Ritorna su questa pagina per ottenerne uno nuovo.",
+        "copyReferral": "Copia Link",
+        "invitedBy": "Sei stato invitato dall'utente {user}."
     },
     "notifications": {
         "errorUserExists": "L'utente è già esistente.",
