@@ -296,6 +296,8 @@ const (
 	FailedGetUpdateTag = "Failed to get latest tag: %v"
 	FailedGetUpdate    = "Failed to get update: %v"
 	UpdateTagDetails   = "Update/Tag details: %+v"
+	TagEmpty           = "tag was empty"
+	TagAtEmpty         = "tag at \"%s\" was empty"
 
 	// user-auth.go
 	UserPage                     = "userpage"

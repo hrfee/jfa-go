@@ -27,6 +27,18 @@ const (
 	repo      = "jfa-go"
 )
 
+type TagEmptyError struct {
+	url string
+}
+
+func (t *TagEmptyError) Error() string {
+	if t.url != "" {
+		return fmt.Sprintf(lm.TagAtEmpty, t.url)
+	} else {
+		return lm.TagEmpty
+	}
+}
+
 var buildTime time.Time = func() time.Time {
 	i, _ := strconv.ParseInt(buildTimeUnix, 10, 64)
 	return time.Unix(i, 0)
@@ -213,7 +225,7 @@ func (ud *Updater) GetTag() (Tag, int, error) {
 	var tag Tag
 	err = json.Unmarshal(body, &tag)
 	if tag.Version == "" {
-		err = errors.New("Tag at \"" + url + "\" was empty")
+		err = &TagEmptyError{url: url}
 	}
 	return tag, resp.StatusCode, err
 }
@@ -568,7 +580,13 @@ func (app *appContext) checkForUpdates() {
 				if err != nil && strings.Contains(err.Error(), "strconv.ParseInt") {
 					app.err.Println("No new updates available.")
 				} else if status != -1 { // -1 means updates disabled, we don't need to log it.
-					app.err.Printf(lm.FailedGetUpdateTag, err)
+					// Silence empty tag errors (which occur when there hasn't been any tags in ages it seems)
+					var tagEmpty *TagEmptyError
+					if errors.As(err, &tagEmpty) {
+						app.debug.Printf(lm.FailedGetUpdateTag, err)
+					} else {
+						app.err.Printf(lm.FailedGetUpdateTag, err)
+					}
 				}
 				return
 			}
