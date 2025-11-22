@@ -189,7 +189,7 @@ func (app *appContext) NewUserFromInvite(gc *gin.Context) {
 
 			app.debug.Printf(lm.EmailConfirmationRequired, req.Username)
 			respond(401, "confirmEmail", gc)
-			msg, err := app.email.constructConfirmation(req.Code, req.Username, key, app, false)
+			msg, err := app.email.constructConfirmation(req.Code, req.Username, key, false)
 			if err != nil {
 				app.err.Printf(lm.FailedConstructConfirmationEmail, req.Code, err)
 			} else if err := app.email.send(msg, req.Email); err != nil {
@@ -262,7 +262,7 @@ func (app *appContext) PostNewUserFromInvite(nu NewUserData, req ConfirmationKey
 			}
 			app.contactMethods[i].DeleteVerifiedToken(c.PIN)
 			c.User.SetJellyfin(nu.User.ID)
-			c.User.Store(&(app.storage))
+			c.User.Store(app.storage)
 		}
 	}
 
@@ -290,7 +290,7 @@ func (app *appContext) PostNewUserFromInvite(nu NewUserData, req ConfirmationKey
 					continue
 				}
 				go func(addr string) {
-					msg, err := app.email.constructCreated(req.Code, req.Username, req.Email, invite, app, false)
+					msg, err := app.email.constructCreated(req.Username, req.Email, time.Now(), invite, false)
 					if err != nil {
 						app.err.Printf(lm.FailedConstructCreationAdmin, req.Code, err)
 					} else {
@@ -380,19 +380,6 @@ func (app *appContext) EnableDisableUsers(gc *gin.Context) {
 		"SetPolicy": map[string]string{},
 	}
 	sendMail := messagesEnabled
-	var msg *Message
-	var err error
-	if sendMail {
-		if req.Enabled {
-			msg, err = app.email.constructEnabled(req.Reason, app, false)
-		} else {
-			msg, err = app.email.constructDisabled(req.Reason, app, false)
-		}
-		if err != nil {
-			app.err.Printf(lm.FailedConstructEnableDisableMessage, "?", err)
-			sendMail = false
-		}
-	}
 	activityType := ActivityDisabled
 	if req.Enabled {
 		activityType = ActivityEnabled
@@ -403,6 +390,18 @@ func (app *appContext) EnableDisableUsers(gc *gin.Context) {
 			errors["GetUser"][user.ID] = err.Error()
 			app.err.Printf(lm.FailedGetUser, user.ID, lm.Jellyfin, err)
 			continue
+		}
+		var msg *Message
+		if sendMail {
+			if req.Enabled {
+				msg, err = app.email.constructEnabled(user.Name, req.Reason, false)
+			} else {
+				msg, err = app.email.constructDisabled(user.Name, req.Reason, false)
+			}
+			if err != nil {
+				app.err.Printf(lm.FailedConstructEnableDisableMessage, "?", err)
+				sendMail = false
+			}
 		}
 		err, _, _ = app.SetUserDisabled(user, !req.Enabled)
 		if err != nil {
@@ -449,20 +448,20 @@ func (app *appContext) DeleteUsers(gc *gin.Context) {
 	gc.BindJSON(&req)
 	errors := map[string]string{}
 	sendMail := messagesEnabled
-	var msg *Message
-	var err error
-	if sendMail {
-		msg, err = app.email.constructDeleted(req.Reason, app, false)
-		if err != nil {
-			app.err.Printf(lm.FailedConstructDeletionMessage, "?", err)
-			sendMail = false
-		}
-	}
 	for _, userID := range req.Users {
 		user, err := app.jf.UserByID(userID, false)
 		if err != nil {
 			app.err.Printf(lm.FailedGetUser, user.ID, lm.Jellyfin, err)
 			errors[userID] = err.Error()
+		}
+
+		var msg *Message = nil
+		if sendMail {
+			msg, err = app.email.constructDeleted(user.Name, req.Reason, false)
+			if err != nil {
+				app.err.Printf(lm.FailedConstructDeletionMessage, "?", err)
+				sendMail = false
+			}
 		}
 
 		deleted := false
@@ -541,7 +540,7 @@ func (app *appContext) ExtendExpiry(gc *gin.Context) {
 				if err != nil {
 					return
 				}
-				msg, err := app.email.constructExpiryAdjusted(user.Name, exp, req.Reason, app, false)
+				msg, err := app.email.constructExpiryAdjusted(user.Name, exp, req.Reason, false)
 				if err != nil {
 					app.err.Printf(lm.FailedConstructExpiryAdjustmentMessage, uid, err)
 					return
@@ -552,6 +551,7 @@ func (app *appContext) ExtendExpiry(gc *gin.Context) {
 			}(id, expiry.Expiry)
 		}
 	}
+	app.InvalidateWebUserCache()
 	respondBool(204, true, gc)
 }
 
@@ -563,6 +563,7 @@ func (app *appContext) ExtendExpiry(gc *gin.Context) {
 // @tags Users
 func (app *appContext) RemoveExpiry(gc *gin.Context) {
 	app.storage.DeleteUserExpiryKey(gc.Param("id"))
+	app.InvalidateWebUserCache()
 	respondBool(200, true, gc)
 }
 
@@ -624,6 +625,7 @@ func (app *appContext) EnableReferralForUsers(gc *gin.Context) {
 		inv.UseReferralExpiry = useExpiry
 		app.storage.SetInvitesKey(inv.Code, inv)
 	}
+	app.InvalidateWebUserCache()
 }
 
 // @Summary Disable referrals for the given user(s).
@@ -647,6 +649,7 @@ func (app *appContext) DisableReferralForUsers(gc *gin.Context) {
 		user.ReferralTemplateKey = ""
 		app.storage.SetEmailsKey(u, user)
 	}
+	app.InvalidateWebUserCache()
 	respondBool(200, true, gc)
 }
 
@@ -675,7 +678,10 @@ func (app *appContext) Announce(gc *gin.Context) {
 				app.err.Printf(lm.FailedGetUser, userID, lm.Jellyfin, err)
 				continue
 			}
-			msg, err := app.email.constructTemplate(req.Subject, req.Message, app, user.Name)
+			msg, err := app.email.construct(AnnouncementCustomContent(req.Subject), CustomContent{
+				Enabled: true,
+				Content: req.Message,
+			}, map[string]any{"username": user.Name})
 			if err != nil {
 				app.err.Printf(lm.FailedConstructAnnouncementMessage, userID, err)
 				respondBool(500, false, gc)
@@ -688,7 +694,10 @@ func (app *appContext) Announce(gc *gin.Context) {
 		}
 		// app.info.Printf(lm.SentAnnouncementMessage, "*", "?")
 	} else {
-		msg, err := app.email.constructTemplate(req.Subject, req.Message, app)
+		msg, err := app.email.construct(AnnouncementCustomContent(req.Subject), CustomContent{
+			Enabled: true,
+			Content: req.Message,
+		}, map[string]any{"username": ""})
 		if err != nil {
 			app.err.Printf(lm.FailedConstructAnnouncementMessage, "*", err)
 			respondBool(500, false, gc)
@@ -808,7 +817,7 @@ func (app *appContext) AdminPasswordReset(gc *gin.Context) {
 		app.internalPWRs[pwr.PIN] = pwr
 		sendAddress := app.getAddressOrName(id)
 		if sendAddress == "" || len(req.Users) == 1 {
-			resp.Link, err = app.GenResetLink(pwr.PIN)
+			resp.Link, err = GenResetLink(pwr.PIN)
 			linkCount++
 			if sendAddress == "" {
 				resp.Manual = true
@@ -821,7 +830,7 @@ func (app *appContext) AdminPasswordReset(gc *gin.Context) {
 					Username: pwr.Username,
 					Expiry:   pwr.Expiry,
 					Internal: true,
-				}, app, false,
+				}, false,
 			)
 			if err != nil {
 				app.err.Printf(lm.FailedConstructPWRMessage, id, err)
@@ -841,6 +850,8 @@ func (app *appContext) AdminPasswordReset(gc *gin.Context) {
 	respondBool(204, true, gc)
 }
 
+// userSummary generates a respUser for to be displayed to the user, or sorted/filtered.
+// also, consider it a source of which data fields/struct modifications need to trigger a cache invalidation.
 func (app *appContext) userSummary(jfUser mediabrowser.User) respUser {
 	adminOnly := app.config.Section("ui").Key("admin_only").MustBool(true)
 	allowAll := app.config.Section("ui").Key("allow_all").MustBool(false)
@@ -1009,6 +1020,7 @@ func (app *appContext) SetAccountsAdmin(gc *gin.Context) {
 			app.info.Printf(lm.UserAdminAdjusted, id, admin)
 		}
 	}
+	app.InvalidateWebUserCache()
 	respondBool(204, true, gc)
 }
 
@@ -1041,6 +1053,7 @@ func (app *appContext) ModifyLabels(gc *gin.Context) {
 			app.storage.SetEmailsKey(id, emailStore)
 		}
 	}
+	app.InvalidateWebUserCache()
 	respondBool(204, true, gc)
 }
 
@@ -1080,6 +1093,7 @@ func (app *appContext) modifyEmail(jfID string, addr string) {
 			}
 		}
 	}
+	app.InvalidateWebUserCache()
 }
 
 // @Summary Modify user's email addresses.
@@ -1290,5 +1304,6 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 	if len(errors["policy"]) == len(req.ApplyTo) || len(errors["homescreen"]) == len(req.ApplyTo) {
 		code = 500
 	}
+	app.InvalidateUserCaches()
 	gc.JSON(code, errors)
 }

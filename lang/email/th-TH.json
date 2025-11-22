@@ -1,0 +1,84 @@
+{
+    "meta": {
+        "name": "ภาษาไทย (TH)"
+    },
+    "strings": {
+        "ifItWasNotYou": "ถ้าหากไม่ใช่คุณ, สามารถมองข้ามได้เลย",
+        "helloUser": "สวัสดี {username},",
+        "reason": "เหตุผล"
+    },
+    "userCreated": {
+        "name": "การสร้างผู้ใช้",
+        "title": "แจ้งเตือน: ผู้ใช้ถูกสร้างแล้ว",
+        "aUserWasCreated": "ผู้ใช้นี้ถูกสร้างโดยใช้รหัส {code}",
+        "time": "เวลา",
+        "notificationNotice": "ปล: การแจ้งเตือนสามารถเปิด/ปิดได้ผ่านหน้าผู้ดูแลระบบ"
+    },
+    "inviteExpiry": {
+        "name": "คำเชิญหมดอายุ",
+        "title": "แจ้งเตือน: คำเชิญหมดอายุ",
+        "inviteExpired": "คำเชิญหมดอายุแล้ว",
+        "expiredAt": "รหัส {code} หมดอายุเมื่อ {time}",
+        "notificationNotice": "ปล: การแจ้งเตือนสามารถเปิด/ปิดได้ผ่านหน้าผู้ดูแลระบบ"
+    },
+    "passwordReset": {
+        "name": "ตั้งค่ารหัสผ่านใหม่",
+        "title": "คำขอตั้งค่ารหัสผ่านใหม่ - Jellyfin",
+        "someoneHasRequestedReset": "บางคนได้ส่งคำขอตั้งค่ารหัสผ่านใหม่บน Jellyfin",
+        "ifItWasYou": "ถ้าเป็นคุณ, ให้กดรหัสด้านล่างไปยังหน้าจอ",
+        "ifItWasYouLink": "ถ้าเป็นคุณ, ให้กดลิงค์ด้านล่าง",
+        "codeExpiry": "รหัสจะหมดอายุภายในวันที่ {date} เวลา {time} (UTC) ซึ่งภายใน {expiresInMinutes}",
+        "pin": "หรัส (PIN)"
+    },
+    "userDeleted": {
+        "name": "ลบผู้ใช้งาน",
+        "title": "บัญชีของคุณถูกลบ - Jellyfin",
+        "yourAccountWasDeleted": "บัญชี Jellyfin ของคุณถูกลบ"
+    },
+    "userDisabled": {
+        "name": "บัญชีถูกปิดใช้งาน",
+        "title": "บัญชีของคุณถูกปิดใช้งาน - Jellyfin",
+        "yourAccountWasDisabled": "บัญชีของคุณถูกปิดใช้งาน"
+    },
+    "userEnabled": {
+        "name": "บัญชีถูกเปิดใช้งาน",
+        "title": "บัญชีของคุณถูกเปิดใช้งานอีกครั้ง - Jellyfin",
+        "yourAccountWasEnabled": "บัญชีของคุณถูกเปิดใช้งานอีกครั้ง"
+    },
+    "userExpiryAdjusted": {
+        "name": "วันหมดอายุถูกปรับ",
+        "title": "วันหมดอายุบัญชีถูกปรับ - Jellyfin",
+        "yourExpiryWasAdjusted": "วันหมดอายุบัญชีของคุณถูกปรับ",
+        "ifPreviouslyDisabled": "ถ้าบัญชีของคุณถูกปิดก่อนหน้า, ตอนนี้อาจถูกเปิดใช้งานอีกครั้งแล้ว",
+        "newExpiry": "วันหมดอายุของคุณตอนนี้กลายเป็น {date}."
+    },
+    "inviteEmail": {
+        "name": "อีเมลเชิญ",
+        "title": "คำเชิญ - Jellyfin",
+        "hello": "สวัสดี",
+        "youHaveBeenInvited": "คุณได้รับคำเชิญเข้าสู่ Jellyfin",
+        "toJoin": "กดลิงค์ด้านล่างเพื่อเข้าร่วม",
+        "inviteExpiry": "ลิงค์คำเชิญจะหมดอายุภายในวันที่ {date} เวลา {time} ซึ่งภายใน {expiresInMinutes}, เพราะฉนั้น รีบซ่ะละ",
+        "linkButton": "ตั้งค่าบัญชีของคุณ"
+    },
+    "welcomeEmail": {
+        "name": "ยินดีต้อนรับ",
+        "title": "ยินดีต้อนรับเข้าสู่ Jellyfin",
+        "welcome": "ยินดีต้อนรับเข้าสู่ Jellyfin!",
+        "youCanLoginWith": "คุณสามารถเข้าสู่ระบบด้วยข้อมูลด้านล่าง",
+        "yourAccountWillExpire": "บัญชีของคุณจะหมดอายุภายใน {date}",
+        "jellyfinURL": "URL"
+    },
+    "emailConfirmation": {
+        "name": "อีเมลยืนยันตัวตน",
+        "title": "ยืนยันอีเมลของคุณ - Jellyfin",
+        "clickBelow": "คลิกลิงค์ด้านล่างเพื่อยืนยันอีเมลของคุณและเริ่มเข้าใช้งาน Jellyfin",
+        "confirmEmail": "ยืนยันอีเมล"
+    },
+    "userExpired": {
+        "name": "บัญชีหมดอายุ",
+        "title": "บัญชีของคุณหมดอายุ - Jellyfin",
+        "yourAccountHasExpired": "บัญชีของคุณหมดอายุแล้ว",
+        "contactTheAdmin": "ติดต่อผู้ดูแลระบบสำหรับข้อมูลเพิ่มเติม"
+    }
+}

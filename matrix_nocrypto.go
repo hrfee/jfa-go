@@ -3,7 +3,10 @@
 
 package main
 
-import "maunium.net/go/mautrix/id"
+import (
+	"github.com/hrfee/jfa-go/logger"
+	"maunium.net/go/mautrix/id"
+)
 
 type Crypto struct{}
 
@@ -11,7 +14,7 @@ func BuildTagsE2EE() {}
 
 func MatrixE2EE() bool { return false }
 
-func InitMatrixCrypto(d *MatrixDaemon) (err error) {
+func InitMatrixCrypto(d *MatrixDaemon, logger *logger.Logger) (err error) {
 	d.Encryption = false
 	return
 }

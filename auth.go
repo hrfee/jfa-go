@@ -40,7 +40,11 @@ func (app *appContext) logIpErr(gc *gin.Context, user bool, out string) {
 }
 
 func (app *appContext) webAuth() gin.HandlerFunc {
-	return app.authenticate
+	if NO_API_AUTH_DO_NOT_USE {
+		return app.bogusAuthenticate
+	} else {
+		return app.authenticate
+	}
 }
 
 func (app *appContext) authLog(v any) { app.debug.PrintfCustomLevel(4, lm.FailedAuthRequest, v) }
@@ -135,6 +139,13 @@ func (app *appContext) authenticate(gc *gin.Context) {
 	gc.Set("jfId", jfID)
 	gc.Set("userId", userID)
 	gc.Set("userMode", false)
+	gc.Next()
+}
+
+// bogusAuthenticate is for use with NO_API_AUTH_DO_NOT_USE, it sets the jfId/userId value from NO_API_AUTH_FORCE_JF_ID.
+func (app *appContext) bogusAuthenticate(gc *gin.Context) {
+	gc.Set("jfId", NO_API_AUTH_FORCE_JFID)
+	gc.Set("userId", NO_API_AUTH_FORCE_JFID)
 	gc.Next()
 }
 
@@ -266,8 +277,7 @@ func (app *appContext) getTokenLogin(gc *gin.Context) {
 		respond(500, "Couldn't generate token", gc)
 		return
 	}
-	// host := gc.Request.URL.Hostname()
-	host := app.ExternalDomain
+	host := app.ExternalDomainNoPort(gc)
 
 	// Before you think this is broken: the first "true" arg is for "secure", i.e. only HTTPS!
 	gc.SetCookie("refresh", refresh, REFRESH_TOKEN_VALIDITY_SEC, "/", host, true, true)
@@ -329,7 +339,7 @@ func (app *appContext) getTokenRefresh(gc *gin.Context) {
 		return
 	}
 	// host := gc.Request.URL.Hostname()
-	host := app.ExternalDomain
+	host := app.ExternalDomainNoPort(gc)
 	gc.SetCookie("refresh", refresh, REFRESH_TOKEN_VALIDITY_SEC, "/", host, true, true)
 	gc.JSON(200, getTokenDTO{jwt})
 }

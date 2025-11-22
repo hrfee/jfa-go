@@ -17,13 +17,13 @@ func testBackupParse(f string, a Backup, t *testing.T) {
 }
 
 func TestBackupParserOld(t *testing.T) {
-	Q1 := BACKUP_PREFIX + "2023-12-21T21-08-00" + BACKUP_SUFFIX
+	Q1 := BACKUP_PREFIX_OLD + "2023-12-21T21-08-00" + BACKUP_SUFFIX
 	A1 := Backup{}
 	A1.Date, _ = time.Parse(BACKUP_DATEFMT, "2023-12-21T21-08-00")
 	testBackupParse(Q1, A1, t)
 }
 func TestBackupParserOldUpload(t *testing.T) {
-	Q2 := BACKUP_UPLOAD_PREFIX + BACKUP_PREFIX + "2023-12-21T21-08-00" + BACKUP_SUFFIX
+	Q2 := BACKUP_UPLOAD_PREFIX + BACKUP_PREFIX_OLD + "2023-12-21T21-08-00" + BACKUP_SUFFIX
 	A2 := Backup{
 		Upload: true,
 	}

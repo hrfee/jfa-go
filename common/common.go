@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	lm "github.com/hrfee/jfa-go/logmessages"
 )
@@ -154,4 +155,12 @@ func decodeResp(resp *http.Response) (string, error) {
 		return "", err
 	}
 	return buf.String(), nil
+}
+
+// MustAuthenticateOptions is used to control the behaviour of the MustAuthenticate-like methods.
+type MustAuthenticateOptions struct {
+	RetryCount  int           // Number of Retries before failure.
+	RetryGap    time.Duration // Duration to wait between tries.
+	LogFailures bool          // Whether or not to print failures to the log.
+	Counter     int           // The current retry count.
 }

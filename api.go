@@ -36,23 +36,14 @@ func respondBool(code int, val bool, gc *gin.Context) {
 	gc.Abort()
 }
 
-func (app *appContext) loadStrftime() {
-	app.datePattern = app.config.Section("messages").Key("date_format").String()
-	app.timePattern = `%H:%M`
-	if val, _ := app.config.Section("messages").Key("use_24h").Bool(); !val {
-		app.timePattern = `%I:%M %p`
-	}
+func prettyTime(dt time.Time) (date, time string) {
+	date = timefmt.Format(dt, datePattern)
+	time = timefmt.Format(dt, timePattern)
 	return
 }
 
-func (app *appContext) prettyTime(dt time.Time) (date, time string) {
-	date = timefmt.Format(dt, app.datePattern)
-	time = timefmt.Format(dt, app.timePattern)
-	return
-}
-
-func (app *appContext) formatDatetime(dt time.Time) string {
-	d, t := app.prettyTime(dt)
+func formatDatetime(dt time.Time) string {
+	d, t := prettyTime(dt)
 	return d + " " + t
 }
 
@@ -310,7 +301,7 @@ func (app *appContext) ModifyConfig(gc *gin.Context) {
 	if req["restart-program"] != nil && req["restart-program"].(bool) {
 		app.Restart()
 	}
-	app.loadConfig()
+	app.ReloadConfig()
 	// Patch new settings for next GetConfig
 	app.PatchConfigBase()
 	// Reinitialize password validator on config change, as opposed to every applicable request like in python.

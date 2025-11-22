@@ -24,6 +24,7 @@ export class PageManager {
     private _overridePushState = () => {
         const pushState = window.history.pushState;
         window.history.pushState = function (data: any, __: string, _: string | URL) {
+            console.debug("Pushing state", arguments);
             pushState.apply(window.history, arguments);
             let ev = { state: data as string } as PopStateEvent;
             window.onpopstate(ev);

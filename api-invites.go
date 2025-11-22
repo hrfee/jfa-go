@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -103,6 +104,7 @@ func (app *appContext) deleteExpiredInvite(data Invite) {
 		if ok {
 			user.ReferralTemplateKey = ""
 			app.storage.SetEmailsKey(data.ReferrerJellyfinID, user)
+			app.InvalidateWebUserCache()
 		}
 	}
 	wait := app.sendAdminExpiryNotification(data)
@@ -123,7 +125,7 @@ func (app *appContext) deleteExpiredInvite(data Invite) {
 
 func (app *appContext) sendAdminExpiryNotification(data Invite) *sync.WaitGroup {
 	notify := data.Notify
-	if !emailEnabled || !app.config.Section("notifications").Key("enabled").MustBool(false) || len(notify) != 0 {
+	if !emailEnabled || !app.config.Section("notifications").Key("enabled").MustBool(false) || len(notify) == 0 {
 		return nil
 	}
 	var wait sync.WaitGroup
@@ -134,7 +136,7 @@ func (app *appContext) sendAdminExpiryNotification(data Invite) *sync.WaitGroup 
 		wait.Add(1)
 		go func(addr string) {
 			defer wait.Done()
-			msg, err := app.email.constructExpiry(data.Code, data, app, false)
+			msg, err := app.email.constructExpiry(data, false)
 			if err != nil {
 				app.err.Printf(lm.FailedConstructExpiryAdmin, data.Code, err)
 			} else {
@@ -195,43 +197,47 @@ func (app *appContext) GenerateInvite(gc *gin.Context) {
 		invite.UserMinutes = req.UserMinutes
 	}
 	invite.ValidTill = validTill
-	if req.SendTo != "" && app.config.Section("invite_emails").Key("enabled").MustBool(false) {
-		addressValid := false
-		discord := ""
-		if discordEnabled && (!strings.Contains(req.SendTo, "@") || strings.HasPrefix(req.SendTo, "@")) {
-			users := app.discord.GetUsers(req.SendTo)
-			if len(users) == 0 {
-				invite.SendTo = fmt.Sprintf(lm.FailedSendToTooltipNoUser, req.SendTo)
-			} else if len(users) > 1 {
-				invite.SendTo = fmt.Sprintf(lm.FailedSendToTooltipMultiUser, req.SendTo)
-			} else {
-				invite.SendTo = req.SendTo
-				addressValid = true
-				discord = users[0].User.ID
-			}
-		} else if emailEnabled {
-			addressValid = true
-			invite.SendTo = req.SendTo
-		}
-		if addressValid {
-			msg, err := app.email.constructInvite(invite.Code, invite, app, false)
-			if err != nil {
-				// Slight misuse of the template
-				invite.SendTo = fmt.Sprintf(lm.FailedConstructInviteMessage, req.SendTo, err)
-
-				app.err.Printf(lm.FailedConstructInviteMessage, invite.Code, err)
-			} else {
-				var err error
-				if discord != "" {
-					err = app.discord.SendDM(msg, discord)
+	if req.SendTo != "" {
+		if !(app.config.Section("invite_emails").Key("enabled").MustBool(false)) {
+			app.err.Printf(lm.FailedSendInviteMessage, invite.Code, req.SendTo, errors.New(lm.InviteMessagesDisabled))
+		} else {
+			addressValid := false
+			discord := ""
+			if discordEnabled && (!strings.Contains(req.SendTo, "@") || strings.HasPrefix(req.SendTo, "@")) {
+				users := app.discord.GetUsers(req.SendTo)
+				if len(users) == 0 {
+					invite.SendTo = fmt.Sprintf(lm.FailedSendToTooltipNoUser, req.SendTo)
+				} else if len(users) > 1 {
+					invite.SendTo = fmt.Sprintf(lm.FailedSendToTooltipMultiUser, req.SendTo)
 				} else {
-					err = app.email.send(msg, req.SendTo)
+					invite.SendTo = req.SendTo
+					addressValid = true
+					discord = users[0].User.ID
 				}
+			} else if emailEnabled {
+				addressValid = true
+				invite.SendTo = req.SendTo
+			}
+			if addressValid {
+				msg, err := app.email.constructInvite(invite, false)
 				if err != nil {
-					invite.SendTo = fmt.Sprintf(lm.FailedSendInviteMessage, invite.Code, req.SendTo, err)
-					app.err.Println(invite.SendTo)
+					// Slight misuse of the template
+					invite.SendTo = fmt.Sprintf(lm.FailedConstructInviteMessage, req.SendTo, err)
+
+					app.err.Printf(lm.FailedConstructInviteMessage, invite.Code, err)
 				} else {
-					app.info.Printf(lm.SentInviteMessage, invite.Code, req.SendTo)
+					var err error
+					if discord != "" {
+						err = app.discord.SendDM(msg, discord)
+					} else {
+						err = app.email.send(msg, req.SendTo)
+					}
+					if err != nil {
+						invite.SendTo = fmt.Sprintf(lm.FailedSendInviteMessage, invite.Code, req.SendTo, err)
+						app.err.Println(invite.SendTo)
+					} else {
+						app.info.Printf(lm.SentInviteMessage, invite.Code, req.SendTo)
+					}
 				}
 			}
 		}
@@ -278,7 +284,7 @@ func (app *appContext) GetInviteCount(gc *gin.Context) {
 // @Summary Get the number of invites stored in the database that have been used (but are still valid).
 // @Produce json
 // @Success 200 {object} PageCountDTO
-// @Router /invites/count [get]
+// @Router /invites/count/used [get]
 // @Security Bearer
 // @tags Invites
 func (app *appContext) GetInviteUsedCount(gc *gin.Context) {
@@ -338,7 +344,7 @@ func (app *appContext) GetInvites(gc *gin.Context) {
 				// These used to be stored formatted instead of as a unix timestamp.
 				unix, err := strconv.ParseInt(pair[1], 10, 64)
 				if err != nil {
-					date, err := timefmt.Parse(pair[1], app.datePattern+" "+app.timePattern)
+					date, err := timefmt.Parse(pair[1], datePattern+" "+timePattern)
 					if err != nil {
 						app.err.Printf(lm.FailedParseTime, err)
 					}

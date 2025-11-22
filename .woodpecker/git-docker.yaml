@@ -5,7 +5,6 @@ when:
 steps:
   - name: build
     image: docker.io/woodpeckerci/plugin-docker-buildx
-    secrets: [ BUILT_BY ]
     settings:
         username:
             from_secret: DOCKER_USERNAME
@@ -16,7 +15,8 @@ steps:
         registry: docker.io
         platforms: linux/amd64,linux/arm64,linux/arm/v7
         build_args:
-          - BUILT_BY: $BUILT_BY
+          - BUILT_BY:
+              from_secret: BUILT_BY
   - name: buildrone
     image: docker.io/python
     environment:

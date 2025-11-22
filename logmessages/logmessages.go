@@ -64,12 +64,14 @@ const (
 	TimedOut              = "timed out"
 	FailedGenericWithCode = "failed (code %d)"
 
-	InitDiscord        = "Initialized Discord daemon"
-	FailedInitDiscord  = "Failed to initialize Discord daemon: %v"
-	InitTelegram       = "Initialized Telegram daemon"
-	FailedInitTelegram = "Failed to initialize Telegram daemon: %v"
-	InitMatrix         = "Initialized Matrix daemon"
-	FailedInitMatrix   = "Failed to initialize Matrix daemon: %v"
+	InitDiscord         = "Initialized Discord daemon"
+	FailedInitDiscord   = "Failed to initialize Discord daemon: %v"
+	InitTelegram        = "Initialized Telegram daemon"
+	FailedInitTelegram  = "Failed to initialize Telegram daemon: %v"
+	InitMatrix          = "Initialized Matrix daemon"
+	FailedInitMatrix    = "Failed to initialize Matrix daemon: %v"
+	InitingMatrixCrypto = "Initializing Matrix encryption store"
+	InitMatrixCrypto    = "Initialized Matrix encryption store"
 
 	InitRouter = "Initializing router"
 	LoadRoutes = "Loading Routes"
@@ -207,15 +209,16 @@ const (
 	FailedRestoreDB       = "Failed to resotre database from \"%s\": %v"
 
 	// config.go
-	EnableAllPWRMethods = "No PWR method preferences set in [user_page], all will be enabled"
-	InitProxy           = "Initialized proxy @ \"%s\""
-	FailedInitProxy     = "Failed to initialize proxy @ \"%s\": %v\nStartup will pause for a bit to grab your attention."
-	NoURLSuffix         = `Warning: Given "jfa_url"/"External jfa-go URL" value does not include "url_base" value!`
-	BadURLBase          = `Warning: Given reverse proxy subfolder "%s" may conflict with the applications subpaths.`
-	RouteCollision      = `Route Collision! Given reverse proxy subfolder "%s" or "URL Paths" settings likely conflict with the applications subpaths. Culprit: %v`
-	NoExternalHost      = `No "External jfa-go URL" provided, set one in Settings > General.`
-	LoginWontSave       = ` Your login won't save until you do.`
-	SubpathBlockMessage = `URLs: Root subfolder = "%s", Admin = "%s", My Account = "%s", Invite forms = "%s"`
+	EnableAllPWRMethods                = "No PWR method preferences set in [user_page], all will be enabled"
+	InitProxy                          = "Initialized proxy @ \"%s\""
+	FailedInitProxy                    = "Failed to initialize proxy @ \"%s\": %v\nStartup will pause for a bit to grab your attention."
+	NoURLSuffix                        = `Warning: Given "jfa_url"/"External jfa-go URL" value does not include "url_base" value!`
+	BadURLBase                         = `Warning: Given reverse proxy subfolder "%s" may conflict with the applications subpaths.`
+	RouteCollision                     = `Route Collision! Given reverse proxy subfolder "%s" or "URL Paths" settings likely conflict with the applications subpaths. Culprit: %v`
+	NoExternalHost                     = `No "External jfa-go URL" provided, set one in Settings > General.`
+	LoginWontSave                      = ` Logins may not save until you do.`
+	SetExternalHostDespiteUseProxyHost = ` This needs to be set even though use_proxy_host is enabled.`
+	SubpathBlockMessage                = `URLs: Root subfolder = "%s", Admin = "%s", My Account = "%s", Invite forms = "%s"`
 
 	// discord.go
 	StartDaemon                      = "Started %s daemon"
@@ -293,6 +296,8 @@ const (
 	FailedGetUpdateTag = "Failed to get latest tag: %v"
 	FailedGetUpdate    = "Failed to get update: %v"
 	UpdateTagDetails   = "Update/Tag details: %+v"
+	TagEmpty           = "tag was empty"
+	TagAtEmpty         = "tag at \"%s\" was empty"
 
 	// user-auth.go
 	UserPage                     = "userpage"
@@ -344,6 +349,8 @@ const (
 )
 
 const (
+	FailedConstructCustomContent = "Possible error in custom content \"%s\": %v"
+
 	FailedConstructExpiryAdmin = "Failed to construct expiry notification for \"%s\": %v"
 	FailedSendExpiryAdmin      = "Failed to send expiry notification for \"%s\" to \"%s\": %v"
 	SentExpiryAdmin            = "Sent expiry notification for \"%s\" to \"%s\""
@@ -355,6 +362,7 @@ const (
 	FailedConstructInviteMessage = "Failed to construct invite message for \"%s\": %v"
 	FailedSendInviteMessage      = "Failed to send invite message for \"%s\" to \"%s\": %v"
 	SentInviteMessage            = "Sent invite message for \"%s\" to \"%s\""
+	InviteMessagesDisabled       = "invite messages are disabled, check settings"
 
 	FailedConstructConfirmationEmail = "Failed to construct confirmation email for \"%s\": %v"
 	FailedSendConfirmationEmail      = "Failed to send confirmation email for \"%s\" to \"%s\": %v"
@@ -379,6 +387,10 @@ const (
 	FailedConstructExpiryAdjustmentMessage = "Failed to construct expiry adjustment message for \"%s\": %v"
 	FailedSendExpiryAdjustmentMessage      = "Failed to send expiry adjustment message for \"%s\" to \"%s\": %v"
 	SentExpiryAdjustmentMessage            = "Sent expiry adjustment message for \"%s\" to \"%s\""
+
+	FailedConstructExpiryReminderMessage = "Failed to construct expiry reminder message for \"%s\": %v"
+	FailedSendExpiryReminderMessage      = "Failed to send expiry reminder message for \"%s\" to \"%s\": %v"
+	SentExpiryReminderMessage            = "Sent expiry reminder message for \"%s\" to \"%s\""
 
 	FailedConstructExpiryMessage = "Failed to construct expiry message for \"%s\": %v"
 	FailedSendExpiryMessage      = "Failed to send expiry message for \"%s\" to \"%s\": %v"

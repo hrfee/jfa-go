@@ -14,7 +14,7 @@ export function newDiscordSearch(title: string, description: string, buttonText:
     if (!window.discordEnabled) {
         return () => {};
     }
-    let timer: NodeJS.Timer;
+    let timer: ReturnType<typeof setTimeout>;
     listeners[buttonText] = (event: CustomEvent) => {
         clearTimeout(timer);
         const list = document.getElementById("discord-list") as HTMLTableElement;

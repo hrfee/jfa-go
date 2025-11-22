@@ -492,8 +492,8 @@ export class activityList extends PaginatedList {
     constructor() {
         super({
             loader: document.getElementById("activity-loader"),
-            loadMoreButton: document.getElementById("activity-load-more") as HTMLButtonElement,
-            loadAllButton: document.getElementById("activity-load-all") as HTMLButtonElement,
+            loadMoreButtons: Array.from([document.getElementById("activity-load-more") as HTMLButtonElement]) as Array<HTMLButtonElement>,
+            loadAllButtons: Array.from(document.getElementsByClassName("activity-load-all")) as Array<HTMLButtonElement>,
             refreshButton: document.getElementById("activity-refresh") as HTMLButtonElement,
             filterArea: document.getElementById("activity-filter-area"),
             searchOptionsHeader: document.getElementById("activity-search-options-header"),
@@ -570,6 +570,10 @@ export class activityList extends PaginatedList {
             loadAll,
             callback
         );
+    };
+    
+    loadAll = (callback?: (resp?: paginatedDTO) => void) => {
+        this._loadAll(callback);
     };
 
     get ascending(): boolean {

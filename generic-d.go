@@ -11,6 +11,7 @@ import (
 type GenericDaemon struct {
 	Stopped         bool
 	ShutdownChannel chan string
+	TriggerChannel  chan bool
 	Interval        time.Duration
 	period          time.Duration
 	jobs            []func(app *appContext)
@@ -27,6 +28,7 @@ func NewGenericDaemon(interval time.Duration, app *appContext, jobs ...func(app 
 	d := GenericDaemon{
 		Stopped:         false,
 		ShutdownChannel: make(chan string),
+		TriggerChannel:  make(chan bool),
 		Interval:        interval,
 		period:          interval,
 		app:             app,
@@ -46,6 +48,8 @@ func (d *GenericDaemon) run() {
 		case <-d.ShutdownChannel:
 			d.ShutdownChannel <- "Down"
 			return
+		case <-d.TriggerChannel:
+			break
 		case <-time.After(d.period):
 			break
 		}
@@ -59,6 +63,10 @@ func (d *GenericDaemon) run() {
 		duration := finished.Sub(started)
 		d.period = d.Interval - duration
 	}
+}
+
+func (d *GenericDaemon) Trigger() {
+	d.TriggerChannel <- true
 }
 
 func (d *GenericDaemon) Shutdown() {

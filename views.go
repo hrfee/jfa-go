@@ -88,7 +88,7 @@ func (app *appContext) BasePageTemplateValues(gc *gin.Context, page Page, base g
 
 	pages := PagePathsDTO{
 		PagePaths:   PAGES,
-		ExternalURI: app.ExternalURI,
+		ExternalURI: ExternalURI(gc),
 		TrueBase:    PAGES.Base,
 	}
 	pages.Base = app.getURLBase(gc)
@@ -236,7 +236,7 @@ func (app *appContext) MyUserPage(gc *gin.Context) {
 		"validationStrings": app.storage.lang.User[lang].validationStringsJSON,
 		"language":          app.storage.lang.User[lang].JSON,
 		"langName":          lang,
-		"jfLink":            app.config.Section("ui").Key("redirect_url").String(),
+		"jfLink":            app.EvaluateRelativePath(gc, app.config.Section("ui").Key("redirect_url").String()),
 		"requirements":      app.validator.getCriteria(),
 	}
 	if telegramEnabled {
@@ -305,7 +305,7 @@ func (app *appContext) ResetPassword(gc *gin.Context) {
 	if setPassword {
 		data["helpMessage"] = app.config.Section("ui").Key("help_message").String()
 		data["successMessage"] = app.config.Section("ui").Key("success_message").String()
-		data["jfLink"] = app.config.Section("ui").Key("redirect_url").String()
+		data["jfLink"] = app.EvaluateRelativePath(gc, app.config.Section("ui").Key("redirect_url").String())
 		data["redirectToJellyfin"] = app.config.Section("ui").Key("auto_redirect").MustBool(false)
 		data["validate"] = app.config.Section("password_validation").Key("enabled").MustBool(false)
 		data["requirements"] = app.validator.getCriteria()
@@ -688,7 +688,7 @@ func (app *appContext) NewUserFromConfirmationKey(invite Invite, key string, lan
 
 	app.PostNewUserFromInvite(nu, req, profile, invite)
 
-	jfLink := app.config.Section("ui").Key("redirect_url").String()
+	jfLink := app.EvaluateRelativePath(gc, app.config.Section("ui").Key("redirect_url").String())
 	if app.config.Section("ui").Key("auto_redirect").MustBool(false) {
 		gc.Redirect(301, jfLink)
 	} else {
@@ -742,7 +742,7 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 	discord := discordEnabled && app.config.Section("discord").Key("show_on_reg").MustBool(true)
 	matrix := matrixEnabled && app.config.Section("matrix").Key("show_on_reg").MustBool(true)
 
-	userPageAddress := app.ExternalURI + PAGES.MyAccount
+	userPageAddress := ExternalURI(gc) + PAGES.MyAccount
 
 	fromUser := ""
 	if invite.ReferrerJellyfinID != "" {
@@ -756,7 +756,7 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 		"contactMessage":     app.config.Section("ui").Key("contact_message").String(),
 		"helpMessage":        app.config.Section("ui").Key("help_message").String(),
 		"successMessage":     app.config.Section("ui").Key("success_message").String(),
-		"jfLink":             app.config.Section("ui").Key("redirect_url").String(),
+		"jfLink":             app.EvaluateRelativePath(gc, app.config.Section("ui").Key("redirect_url").String()),
 		"redirectToJellyfin": app.config.Section("ui").Key("auto_redirect").MustBool(false),
 		"validate":           app.config.Section("password_validation").Key("enabled").MustBool(false),
 		"requirements":       app.validator.getCriteria(),
@@ -810,20 +810,24 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 		data["discordInviteLink"] = app.discord.InviteChannel.Name != ""
 	}
 	if msg, ok := app.storage.GetCustomContentKey("PostSignupCard"); ok && msg.Enabled {
+		cci := customContent["PostSignupCard"]
 		data["customSuccessCard"] = true
 		// We don't template here, since the username is only known after login.
+		templated, err := templateEmail(
+			msg.Content,
+			cci.Variables,
+			cci.Conditionals,
+			map[string]any{
+				"username":     "{username}", // Value is subbed by webpage
+				"myAccountURL": userPageAddress,
+			},
+		)
+		if err != nil {
+			app.err.Printf(lm.FailedConstructCustomContent, "PostSignupCard", err)
+		}
 		data["customSuccessCardContent"] = template.HTML(markdown.ToHTML(
-			[]byte(templateEmail(
-				msg.Content,
-				msg.Variables,
-				msg.Conditionals,
-				map[string]interface{}{
-					"username":     "{username}",
-					"myAccountURL": userPageAddress,
-				},
-			),
-			), nil, markdownRenderer,
-		))
+			[]byte(templated), nil, markdownRenderer),
+		)
 	}
 
 	// if discordEnabled {

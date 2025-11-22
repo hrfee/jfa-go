@@ -195,6 +195,8 @@
         "loadedRecords": "{n} Loaded",
         "shownRecords": "{n} Shown",
         "selectedRecords": "{n} Selected",
+        "allMatchingSelected": "All matching results selected.",
+        "allLoadedSelected": "All loaded matching results selected. Click again to load all.",
         "backups": "Backups",
         "backupsDescription": "Backups of the database can be made, restored, or downloaded from here.",
         "backupsFormatNote": "Only backup files with the standard name format will be shown here. To use any other, upload the backup manually.",

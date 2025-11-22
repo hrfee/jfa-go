@@ -264,7 +264,7 @@ func (app *appContext) ModifyMyEmail(gc *gin.Context) {
 		}
 		app.debug.Printf(lm.EmailConfirmationRequired, id)
 		respond(401, "confirmEmail", gc)
-		msg, err := app.email.constructConfirmation("", name, key, app, false)
+		msg, err := app.email.constructConfirmation("", name, key, false)
 		if err != nil {
 			app.err.Printf(lm.FailedConstructConfirmationEmail, id, err)
 		} else if err := app.email.send(msg, req.Email); err != nil {
@@ -643,7 +643,7 @@ func (app *appContext) ResetMyPassword(gc *gin.Context) {
 			Username: pwr.Username,
 			Expiry:   pwr.Expiry,
 			Internal: true,
-		}, app, false,
+		}, false,
 	)
 	if err != nil {
 		app.err.Printf(lm.FailedConstructPWRMessage, pwr.Username, err)
@@ -796,6 +796,7 @@ func (app *appContext) GetMyReferral(gc *gin.Context) {
 		inv.ValidTill = inv.Created.Add(REFERRAL_EXPIRY_DAYS * 24 * time.Hour)
 		app.storage.SetInvitesKey(inv.Code, inv)
 	}
+	app.InvalidateWebUserCache()
 	gc.JSON(200, GetMyReferralRespDTO{
 		Code:          inv.Code,
 		RemainingUses: inv.RemainingUses,

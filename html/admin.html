@@ -541,7 +541,7 @@
                     <span class="button ~critical @low unfocused" id="logout-button">{{ .strings.logout }}</span>
                     {{ if .userPageEnabled }}
                         <div class="">
-                            <a class="button ~info" href="{{ .pages.Base }}{{ .pages.MyAccount }}"><i class="ri-account-circle-fill mr-2"></i>{{ .strings.myAccount }}</a>
+                            <a class="button ~info" href="{{ .pages.Base }}{{ .pages.MyAccount }}/"><i class="ri-account-circle-fill mr-2"></i>{{ .strings.myAccount }}</a>
                         </div>
                     {{ end }}
                 </div>
@@ -752,6 +752,7 @@
                     </div>
                     <div class="supra sm">{{ .strings.actions }}</div>
                     <div class="flex flex-row flex-wrap gap-3">
+                        <button class="button ~neutral @low center accounts-load-all">{{ .strings.loadAll }}</button>
                         <span class="button ~neutral @low center " id="accounts-add-user">{{ .quantityStrings.addUser.Singular }}</span>
                         <div id="accounts-announce-dropdown" class="dropdown pb-0i " tabindex="0">
                             <span class="w-full button ~info @low center items-baseline" id="accounts-announce">{{ .strings.announce }}</span>
@@ -828,7 +829,7 @@
                         </div>
                         <div class="flex flex-row gap-2 justify-center">
                             <button class="button ~neutral @low" id="accounts-load-more">{{ .strings.loadMore }}</button>
-                            <button class="button ~neutral @low" id="accounts-load-all">{{ .strings.loadAll }}</button>
+                            <button class="button ~neutral @low accounts-load-all">{{ .strings.loadAll }}</button>
                             <button class="button ~info @low center accounts-search-server flex flex-row gap-1" aria-label="{{ .strings.searchAllRecords }}" text="{{ .strings.searchAllRecords }}">
                                 <i class="ri-search-line"></i>
                                 <span>{{ .strings.searchAllRecords }}</span>
@@ -890,7 +891,7 @@
                     <div id="activity-loader"></div>
                     <div class="flex flex-row gap-2 justify-center">
                         <button class="button ~neutral @low" id="activity-load-more">{{ .strings.loadMore }}</button>
-                        <button class="button ~neutral @low" id="activity-load-all">{{ .strings.loadAll }}</button>
+                        <button class="button ~neutral @low activity-load-all">{{ .strings.loadAll }}</button>
                         <button class="button ~info @low center activity-search-server flex flex-row gap-1" aria-label="{{ .strings.searchAllRecords }}" text="{{ .strings.searchAllRecords }}">
                             <i class="ri-search-line"></i>
                             <span>{{ .strings.searchAllRecords }}</span>

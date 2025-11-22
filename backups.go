@@ -14,6 +14,7 @@ import (
 
 const (
 	BACKUP_PREFIX        = "jfa-go-db"
+	BACKUP_PREFIX_OLD    = "jfa-go-db-"
 	BACKUP_COMMIT_PREFIX = "-c-"
 	BACKUP_DATE_PREFIX   = "-d-"
 	BACKUP_UPLOAD_PREFIX = "upload-"
@@ -33,7 +34,7 @@ func (b Backup) Equals(a Backup) bool {
 	return a.Date.Equal(b.Date) && a.Commit == b.Commit && a.Upload == b.Upload
 }
 
-// Pre 21/03/25 format: "{BACKUP_PREFIX}{date in BACKUP_DATEFMT}{BACKUP_SUFFIX}" = "jfa-go-db-2006-01-02T15-04-05.bak"
+// Pre 21/03/25 format: "{BACKUP_PREFIX_OLD}{date in BACKUP_DATEFMT}{BACKUP_SUFFIX}" = "jfa-go-db-2006-01-02T15-04-05.bak"
 // Post 21/03/25 format: "{BACKUP_PREFIX}-c-{commit}-d-{date in BACKUP_DATEFMT}{BACKUP_SUFFIX}" = "jfa-go-db-c-0b92060-d-2006-01-02T15-04-05.bak"
 
 func (b Backup) String() string {
@@ -213,7 +214,6 @@ func (app *appContext) makeBackup() (fileDetails CreateBackupDTO) {
 			count += 1
 			backupsByCommit[b.Commit] = count
 		}
-		fmt.Printf("remaining:%+v\n", backupsByCommit)
 	}
 	// fmt.Printf("toDelete: %d, backCount: %d, keep: %d, length: %d\n", toDelete, backups.count, toKeep, len(backups.files))
 	if toDelete > 0 && toDelete <= backups.count {
@@ -274,8 +274,10 @@ func (app *appContext) loadPendingBackup() {
 	}
 	app.info.Printf(lm.MoveOldDB, oldPath)
 
-	app.ConnectDB()
-	defer app.storage.db.Close()
+	if err := app.storage.Connect(app.config); err != nil {
+		app.err.Fatalf(lm.FailedConnectDB, app.storage.db_path, err)
+	}
+	defer app.storage.Close()
 
 	f, err := os.Open(LOADBAK)
 	if err != nil {

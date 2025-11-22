@@ -1,32 +1,42 @@
-all:
-	-mkdir -p out
+.PHONY: clean
+.DEFAULT_GOAL := all
+
+GOESBUILD ?= off
+ifeq ($(GOESBUILD), on)
+	ESBUILD := esbuild
+else
+	ESBUILD := npx esbuild
+endif
+
+out/modal.css: ../css/modal.css
+	mkdir -p out/
 	cp ../css/modal.css out/
+
+out/index.html: index.html
+	mkdir -p out/
 	NOTEMPLATE=1 node ../scripts/missing-colors.js index.html out/index.html
-	cp -r node_modules/remixicon/fonts/remixicon.css node_modules/remixicon/fonts/remixicon.woff2 out/
-	-rm -r tempts
-	cp -r ts tempts
-	../scripts/dark-variant.sh tempts
-	npx esbuild --target=es6 --bundle tempts/main.ts --outfile=out/main.js --minify
-	npx esbuild --bundle base.css --outfile=out/bundle.css --external:remixicon.css --external:modal.css --external:../fonts/hanken* --minify
-	npx tailwindcss -c tailwind.config.js -i out/bundle.css -o out/bundle.css
-	cd out && npx uncss index.html --stylesheets remixicon.css > _remixicon.css; cd ..
-	mv out/_remixicon.css out/remixicon.css
-	cp -r ../static/* out/
 	node inject.js
 
-debug:
-	-mkdir -p out
-	cp ../css/modal.css out/
-	NOTEMPLATE=1 node ../scripts/missing-colors.js index.html out/index.html
-	cp -r node_modules/remixicon/fonts/remixicon.css node_modules/remixicon/fonts/remixicon.woff2 out/
+out/remixicon.css: node_modules/remixicon/fonts/remixicon.css
+	cp node_modules/remixicon/fonts/remixicon.css node_modules/remixicon/fonts/remixicon.woff2 out/
+
+out/main.js: $(wildcard ts/**/*)
 	-rm -r tempts
 	cp -r ts tempts
 	../scripts/dark-variant.sh tempts
-	npx esbuild --bundle base.css --outfile=out/bundle.css --external:remixicon.css --external:../fonts/hanken* --minify
-	npx esbuild --target=es6 --bundle ts/main.ts --sourcemap --outfile=out/main.js --minify
+	$(ESBUILD) --target=es6 --bundle tempts/main.ts --outfile=out/main.js --minify
+
+out/bundle.css: out/modal.css out/remixicon.css out/main.js out/index.html
+	-rm out/bundle.css
+	$(ESBUILD) --bundle base.css --outfile=out/bundle.css --external:remixicon.css --external:modal.css --external:../fonts/hanken* --minify
 	npx tailwindcss -c tailwind.config.js -i out/bundle.css -o out/bundle.css
+
+
+out/favicon.ico: $(wildcard ../static/**/*)
 	cp -r ../static/* out/
 
-monitor:
-	npx live-server --watch=out --open=out/index.html &
-	npx nodemon -e html,css,ts -i out --exec "make debug"
+all: out/bundle.css out/favicon.ico
+
+clean:
+	-rm -rf out/
+	-rm -rf tempts/
