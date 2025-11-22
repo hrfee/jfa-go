@@ -3,6 +3,27 @@ import { HTTPMethod, _http } from "./common";
 import { PageCountDTO } from "./list";
 import { Search, ServerFilterReqDTO } from "./search";
 
+import * as echarts from "echarts/core";
+import { BarChart } from "echarts/charts";
+import {
+  TitleComponent,
+  TooltipComponent,
+  GridComponent,
+  DatasetComponent,
+  TransformComponent
+} from 'echarts/components';
+import { CanvasRenderer } from 'echarts/renderers';
+
+echarts.use([
+    BarChart,
+    TitleComponent,
+    TooltipComponent,
+    GridComponent,
+    DatasetComponent,
+    TransformComponent,
+    CanvasRenderer
+]);
+
 // FIXME: These should be language keys, not literals!
 export type Unit = string | [string, string]; // string or [singular, plural]
 export const UnitUsers: Unit = ["User", "Users"];
@@ -129,6 +150,118 @@ export class FilteredCountCard extends CountCard {
         super(name, url, unit);
         this._method = "POST";
         this._params = params;
+    }
+}
+
+export class GraphCard implements StatCard {
+    protected _name: string;
+    protected _nameEl: HTMLElement;
+    get name(): string { return this._name; }
+    set name(v: string) {
+        this._name = v;
+        this._nameEl.textContent = v;
+        this._chartOpts.title = { text: v };
+    }
+    
+    protected _unit: Unit | null = null;
+    get unit(): Unit { return this._unit; }
+    set unit(v: Unit) {
+        this._unit = v;
+        this._chartOpts.series[0].name = v;
+    }
+
+    protected _range: string[];
+    get range(): string[] { return this._range; }
+    set range(v: string[]) {
+        this._range = v;
+        this._chartOpts.xAxis = { data: v };
+    }
+
+    protected _value: number[];
+    protected _graphEl: HTMLElement;
+    protected _chart: echarts.ECharts;
+    protected _chartOpts: echarts.EChartsCoreOption;
+
+    get value(): number[] { return this._value; }
+    set value(v: number[]) {
+        this._value = v;
+
+        this._chartOpts.series[0].data = v;
+    }
+
+    protected redraw() {
+        this._chart.setOption(this._chartOpts);
+    }
+
+    protected _url: string;
+    protected _method: HTTPMethod;
+    protected _container: HTMLElement;
+
+    // generates params for each req.
+    params: () => ServerFilterReqDTO[];
+    // returns value from HTTP response.
+    handler: (req: XMLHttpRequest) => number[];
+
+    // Name of a custom event that will trigger this specific card to reload.
+    readonly eventName: string;
+
+    public reload = () => {
+        let params = this.params();
+        _http(this._method, this._url, params, (req: XMLHttpRequest) => {
+            if (req.readyState != 4) return;
+            if (req.status != 200) {
+                this.value = [];
+            } else {
+                this.value = this.handler(req);
+            }
+        });
+    }
+
+    protected onReloadRequest = () => this.reload();
+
+    asElement = () => { return this._container; }
+
+    constructor(name: string, url: string, method: HTTPMethod, unit?: Unit) {
+        this._url = url;
+        this._method = method;
+        
+        this._container = document.createElement("div");
+        this._container.classList.add("card", "@low", "dark:~d_neutral", "flex", "flex-col", "gap-4");
+        this._container.innerHTML = `
+        <p class="text-xl italic graph-card-name"></p>
+        <div class="text-2xl font-bold graph-card-graph"></div>
+        `;
+        this._nameEl = this._container.querySelector(".graph-card-name");
+        this._graphEl = this._container.querySelector(".graph-card-graph");
+
+        this._chart = echarts.init(this._graphEl);
+        this._chartOpts = {
+            title: {
+                text: "?"
+            },
+            tooltip: {},
+            xAxis: {
+                data: []
+            },
+            yAxis: {},
+            series: [
+                {
+                    name: "",
+                    type: "bar",
+                    data: []
+                }
+            ]
+        };
+
+        this.name = name;
+        if (unit) this.unit = unit;
+        this.range = [];
+        this.value = [];
+
+        this.eventName = this.name;
+        
+        document.addEventListener(EventNamespace+this.eventName, this.onReloadRequest);
+        document.addEventListener(GlobalReload, this.onReloadRequest);
     }
 }
 
