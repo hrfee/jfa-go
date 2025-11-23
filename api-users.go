@@ -911,7 +911,7 @@ func (app *appContext) userSummary(jfUser mediabrowser.User) respUser {
 // @Success 200 {object} PageCountDTO
 // @Router /users/count [get]
 // @Security Bearer
-// @tags Activity
+// @tags Activity,Statistics
 func (app *appContext) GetUserCount(gc *gin.Context) {
 	resp := PageCountDTO{}
 	users, err := app.jf.GetUsers(false)
@@ -952,7 +952,7 @@ func (app *appContext) GetUsers(gc *gin.Context) {
 // @Failure 500 {object} stringResponse
 // @Router /users [post]
 // @Security Bearer
-// @tags Users
+// @tags Users,Statistics
 func (app *appContext) SearchUsers(gc *gin.Context) {
 	req := ServerSearchReqDTO{}
 	gc.BindJSON(&req)
@@ -988,6 +988,38 @@ func (app *appContext) SearchUsers(gc *gin.Context) {
 		resp.UserList = filtered[startIndex:endIndex]
 	}
 	resp.LastPage = len(resp.UserList) != req.Limit
+	gc.JSON(200, resp)
+}
+
+// @Summary Get a count of users matching the search provided
+// @Produce json
+// @Param ServerSearchReqDTO body ServerSearchReqDTO true "search / pagination parameters"
+// @Success 200 {object} PageCountDTO
+// @Failure 500 {object} stringResponse
+// @Router /users/count [post]
+// @Security Bearer
+// @tags Users,Statistics
+func (app *appContext) GetFilteredUserCount(gc *gin.Context) {
+	req := ServerSearchReqDTO{}
+	gc.BindJSON(&req)
+	if req.SortByField == "" {
+		req.SortByField = USER_DEFAULT_SORT_FIELD
+	}
+
+	var resp PageCountDTO
+	// No need to sort
+	userList, err := app.userCache.GetUserDTOs(app, false)
+	if err != nil {
+		app.err.Printf(lm.FailedGetUsers, lm.Jellyfin, err)
+		respond(500, "Couldn't get users", gc)
+		return
+	}
+	if len(req.SearchTerms) != 0 || len(req.Queries) != 0 {
+		resp.Count = uint64(len(app.userCache.Filter(userList, req.SearchTerms, req.Queries)))
+	} else {
+		resp.Count = uint64(len(userList))
+	}
+
 	gc.JSON(200, resp)
 }
 

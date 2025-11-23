@@ -757,6 +757,9 @@ func flagPassed(name string) (found bool) {
 // @tag.name Other
 // @tag.description Things that dont fit elsewhere.
 
+// @tag.name Statistics
+// @tag.description Routes that expose useful info/stats.
+
 func printVersion() {
 	tray := ""
 	if TRAY {

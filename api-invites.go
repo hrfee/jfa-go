@@ -270,7 +270,7 @@ func (app *appContext) GenerateInvite(gc *gin.Context) {
 // @Success 200 {object} PageCountDTO
 // @Router /invites/count [get]
 // @Security Bearer
-// @tags Invites
+// @tags Invites,Statistics
 func (app *appContext) GetInviteCount(gc *gin.Context) {
 	resp := PageCountDTO{}
 	var err error
@@ -286,7 +286,7 @@ func (app *appContext) GetInviteCount(gc *gin.Context) {
 // @Success 200 {object} PageCountDTO
 // @Router /invites/count/used [get]
 // @Security Bearer
-// @tags Invites
+// @tags Invites,Statistics
 func (app *appContext) GetInviteUsedCount(gc *gin.Context) {
 	resp := PageCountDTO{}
 	var err error
@@ -310,7 +310,7 @@ func (app *appContext) GetInviteUsedCount(gc *gin.Context) {
 // @Success 200 {object} getInvitesDTO
 // @Router /invites [get]
 // @Security Bearer
-// @tags Invites
+// @tags Invites,Statistics
 func (app *appContext) GetInvites(gc *gin.Context) {
 	currentTime := time.Now()
 	app.checkInvites()
