@@ -57,6 +57,8 @@
         "unlink": "Unlink Account",
         "deleted": "Deleted",
         "disabled": "Disabled",
+        "query": "Query",
+        "run": "Run",
         "sendPWR": "Send Password Reset",
         "noResultsFound": "No Results Found",
         "noResultsFoundLocally": "Only loaded records were searched. You can load more, or perform the search over all records on the server.",

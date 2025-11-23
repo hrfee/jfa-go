@@ -13,6 +13,8 @@ import {
   TransformComponent
 } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
+import { AccountsQueries } from "./accounts";
+import { SimpleRadioTabs } from "./ui";
 
 echarts.use([
     BarChart,
@@ -328,5 +330,32 @@ export class StatsPanel {
 
         this._cards = new Map<string, StatCard>();
         this._order = [];
+
+        const queryTypeTabs = new SimpleRadioTabs(
+            [document.getElementById("statistics-query-tab-accounts"), document.getElementById("statistics-query-tab-activity")],
+            "statistics-query-type"
+        );
+
+        queryTypeTabs.select(0);
+
+        const areas = [document.getElementById("statistics-query-tab-accounts"), document.getElementById("statistics-query-tab-activity")];
+        const querySets = [AccountsQueries(), ActivityQueries()];
+
+        for (let i = 0; i < 2; i++) {
+            let search = new Search({
+                queries: querySets[i],
+                filterArea: areas[i].getElementsByClassName("statistics-filter-area")[0] as HTMLElement,
+                filterList: areas[i].getElementsByClassName("statistics-filter-list")[0] as HTMLElement,
+                search: areas[i].getElementsByClassName("search")[0] as HTMLInputElement,
+
+                setVisibility: () => {},
+                onSearchCallback: () => {},
+                searchServer: () => {},
+                clearServerSearch: () => {},
+            });
+            search.generateFilterList();
+        }
     }
 }
+
+

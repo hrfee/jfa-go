@@ -100,3 +100,52 @@ myGenericNumber.zeroValue = 0;
 myGenericNumber.add = function (x, y) {
   return x + y;
 };*/
+
+// Simple radio tabs, when each "button" is a label containing an input[type="radio"] and some element[class="button"].
+export class SimpleRadioTabs {
+    tabs: Array<HTMLElement>;
+    radios: Array<HTMLInputElement>;
+
+
+    // Pass nothing, or a list of the tab container elements and either the "name" field used on the radios, of a list of them.
+    constructor(tabs?: Array<HTMLElement>, radios?: Array<HTMLInputElement>|string) {
+        this.tabs = tabs || new Array<HTMLElement>();
+
+        if (radios) {
+            if (typeof radios === "string") {
+                this.radios = Array.from(document.querySelectorAll(`input[name=${radios}]`)) as Array<HTMLInputElement>;
+            } else {
+                this.radios = radios as Array<HTMLInputElement>;
+            }
+            this.radios.forEach((radio) => { radio.onchange = this.onChange });
+        }
+    }
+
+    onChange = () => {
+        for (let i = 0; i < this.radios.length; i++) {
+            const buttonEl = this.radios[i].nextElementSibling;
+            if (this.radios[i].checked) {
+                buttonEl.classList.add("@high");
+                buttonEl.classList.remove("@low");
+                this.tabs[i].classList.remove("unfocused");
+            } else {
+                buttonEl.classList.add("@low");
+                buttonEl.classList.remove("@high");
+                this.tabs[i].classList.add("unfocused");
+            }
+        }
+    };
+
+    select(i: number) {
+        for (let j = 0; j < this.radios.length; j++) {
+            this.radios[j].checked = i == j;
+        }
+        this.onChange();
+    }
+
+    push(tab: HTMLElement, radio: HTMLInputElement) {
+        this.tabs.push(tab);
+        radio.onchange = this.onChange;
+        this.radios.push(radio);
+    }
+}

@@ -566,11 +566,11 @@
                         <div class="card ~neutral @low flex flex-col gap-2 flex-1">
                             <div class="flex flex-row gap-2">
                                 <label class="w-1/2">
-                                    <input type="radio" name="duration" class="unfocused" id="radio-inv-duration" checked>
+                                    <input type="radio" name="radio-duration" class="unfocused" checked>
                                     <span class="button ~neutral @high supra full-width center">{{ .strings.inviteDuration }}</span>
                                 </label>
                                 <label class="w-1/2">
-                                    <input type="radio" name="duration" class="unfocused" id="radio-user-expiry">
+                                    <input type="radio" name="radio-duration" class="unfocused">
                                     <span class="button ~neutral @low supra full-width center">{{ .strings.userExpiry }}</span>
                                 </label>
                             </div>
@@ -900,7 +900,52 @@
                 </div>
             </div>
             <div id="tab-statistics" class="flex flex-col gap-4 unfocused">
-                <div class="card @low dark:~d_neutral mb-4" id="statistics-container">
+                <div class="card @low dark:~d_neutral">
+                    <div class="card @low dark:~d_neutral flex flex-col gap-2">
+                        <div class="flex flex-row gap-2">
+                            <label class="w-full">
+                                <input type="radio" name="statistics-query-type" class="hidden" id="radio-statistics-accounts" checked>
+                                <span class="button ~neutral w-full center @high">{{ .strings.accounts }}</span>
+                            </label>
+                            <label class="w-full">
+                                <input type="radio" name="statistics-query-type" class="hidden" id="radio-statistics-activity">
+                                <span class="button ~neutral w-full center @low">{{ .strings.activity }}</span>
+                            </label>
+                        </div>
+                        <div id="statistics-query-tab-accounts">
+                            <div class="flex flex-col align-middle gap-2">
+                                <div class="flex flex-row align-middle w-full gap-2">
+                                    <input type="search" class="field ~neutral @low input search mr-2" placeholder="{{ .strings.query }}">
+                                    <span class="button ~neutral @low center inside-input rounded-s-none statistics-search-clear" aria-label="{{ .strings.clearSearch }}" text="{{ .strings.clearSearch }}"><i class="ri-close-line"></i></span>
+                                    <button class="button ~info @low statistics-query-execute" aria-label="{{ .strings.run }}"><i class="ri-refresh-line"></i></button>
+                                </div>
+                                <div class="flex flex-row gap-2 flex-wrap">
+                                    <div class="statistics-sort-by-field"></div>
+                                    <span class="flex flex-row gap-2 flex-wrap statistics-filter-area"></span>
+                                </div>
+                                <div class="card ~neutral @low statistics-filter-list">
+                                    <p class="supra pb-2">{{ .strings.filters }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="statistics-query-tab-activity">
+                            <div class="flex flex-col align-middle gap-2">
+                                <div class="flex flex-row align-middle w-full gap-2">
+                                    <input type="search" class="field ~neutral @low input search mr-2" placeholder="{{ .strings.query }}">
+                                    <span class="button ~neutral @low center inside-input rounded-s-none statistics-search-clear" aria-label="{{ .strings.clearSearch }}" text="{{ .strings.clearSearch }}"><i class="ri-close-line"></i></span>
+                                    <button class="button ~info @low statistics-query-execute" aria-label="{{ .strings.run }}"><i class="ri-refresh-line"></i></button>
+                                </div>
+                                <div class="flex flex-row gap-2 flex-wrap">
+                                    <div class="statistics-sort-by-field"></div>
+                                    <span class="flex flex-row gap-2 flex-wrap statistics-filter-area"></span>
+                                </div>
+                                <div class="card ~neutral @low statistics-filter-list">
+                                    <p class="supra pb-2">{{ .strings.filters }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="statistics-container"></div>
                 </div>
             </div>
             <div id="tab-settings" class="flex flex-col gap-4 unfocused">

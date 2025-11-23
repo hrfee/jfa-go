@@ -33,17 +33,21 @@ export interface QueryType {
 }
 
 export interface SearchConfiguration {
-    filterArea: HTMLElement;
-    sortingByButton?: HTMLButtonElement;
-    searchOptionsHeader: HTMLElement;
-    notFoundPanel: HTMLElement;
-    notFoundLocallyText: HTMLElement;
-    notFoundCallback?: (notFound: boolean) => void;
-    filterList: HTMLElement;
-    clearSearchButtonSelector: string;
-    serverSearchButtonSelector: string;
-    search: HTMLInputElement;
     queries: { [field: string]: QueryType };
+    filterArea: HTMLElement;
+    filterList: HTMLElement;
+    search: HTMLInputElement;
+    clearSearchButtonSelector?: string;
+    serverSearchButtonSelector?: string;
+    // Optionally supply a button for a single type of sorting.
+    sortingByButton?: HTMLButtonElement;
+    searchOptionsHeader?: HTMLElement;
+
+    notFoundPanel?: HTMLElement;
+    notFoundLocallyText?: HTMLElement;
+    notFoundCallback?: (notFound: boolean) => void;
+    
+    // Function for showing/hiding search items.
     setVisibility: (items: string[], visible: boolean, appendedItems: boolean) => void;
     onSearchCallback: (newItems: boolean, loadAll: boolean, callback?: (resp: paginatedDTO) => void) => void;
     searchServer: (params: PaginatedReqDTO, newSearch: boolean) => void;
@@ -521,9 +525,9 @@ export class Search {
         if (this._c.sortingByButton) sortingBy = !(this._c.sortingByButton.classList.contains("hidden"));
         const hasFilters = this._c.filterArea.textContent != "";
         if (sortingBy || hasFilters) {
-            this._c.searchOptionsHeader.classList.remove("hidden");
+            this._c.searchOptionsHeader?.classList.remove("hidden");
         } else {
-            this._c.searchOptionsHeader.classList.add("hidden");
+            this._c.searchOptionsHeader?.classList.add("hidden");
         }
     }
 
@@ -576,14 +580,14 @@ export class Search {
 
     setNotFoundPanelVisibility = (visible: boolean) => {
         if (this._inServerSearch || !this.inSearch) {
-            this._c.notFoundLocallyText.classList.add("unfocused");
+            this._c.notFoundLocallyText?.classList.add("unfocused");
         } else if (this.inSearch) {
-            this._c.notFoundLocallyText.classList.remove("unfocused");
+            this._c.notFoundLocallyText?.classList.remove("unfocused");
         }
         if (visible) {
-            this._c.notFoundPanel.classList.remove("unfocused");
+            this._c.notFoundPanel?.classList.remove("unfocused");
         } else {
-            this._c.notFoundPanel.classList.add("unfocused");
+            this._c.notFoundPanel?.classList.add("unfocused");
         }
     }
 

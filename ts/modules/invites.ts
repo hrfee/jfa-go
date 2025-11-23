@@ -1,6 +1,7 @@
 import { _get, _post, _delete, toClipboard, toggleLoader, toDateString } from "../modules/common.js";
 import { DiscordUser, newDiscordSearch } from "../modules/discord.js";
 import { reloadProfileNames }  from "../modules/profiles.js";
+import { SimpleRadioTabs } from "./ui.js";
 
 declare var window: GlobalWindow;
 
@@ -604,10 +605,10 @@ export class createInvite {
     private _userHours = document.getElementById("user-hours") as HTMLSelectElement;
     private _userMinutes = document.getElementById("user-minutes") as HTMLSelectElement;
 
-    private _invDurationButton = document.getElementById('radio-inv-duration') as HTMLInputElement;
-    private _userExpiryButton = document.getElementById('radio-user-expiry') as HTMLInputElement;
-    private _invDuration = document.getElementById('inv-duration');
-    private _userExpiry = document.getElementById('user-expiry');
+    private _durationTabs = new SimpleRadioTabs(
+        [document.getElementById("inv-duration"), document.getElementById("user-expiry")],
+        "radio-duration"
+    );
 
     private _sendToDiscord: (passData: string) => void;
 
@@ -849,30 +850,8 @@ export class createInvite {
         this.uses = 1;
         this.label = "";
 
-        const checkDuration = () => {
-            const invSpan = this._invDurationButton.nextElementSibling as HTMLSpanElement;
-            const userSpan = this._userExpiryButton.nextElementSibling as HTMLSpanElement;
-            if (this._invDurationButton.checked) {
-                this._invDuration.classList.remove("unfocused");
-                this._userExpiry.classList.add("unfocused");
-                invSpan.classList.add("@high");
-                invSpan.classList.remove("@low");
-                userSpan.classList.add("@low");
-                userSpan.classList.remove("@high");
-            } else if (this._userExpiryButton.checked) {
-                this._userExpiry.classList.remove("unfocused");
-                this._invDuration.classList.add("unfocused");
-                invSpan.classList.add("@low");
-                invSpan.classList.remove("@high");
-                userSpan.classList.add("@high");
-                userSpan.classList.remove("@low");
-            }
-        };
-
-        this._userExpiryButton.checked = false;
-        this._invDurationButton.checked = true;
-        this._userExpiryButton.onchange = checkDuration;
-        this._invDurationButton.onchange = checkDuration;
+        // Select the first tab by default (inv duration)
+        this._durationTabs.select(0);
 
         this._days.onchange = this._checkDurationValidity;
         this._months.onchange = this._checkDurationValidity;
