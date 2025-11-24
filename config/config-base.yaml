@@ -1,3 +1,26 @@
+groups:
+  - group: external_services
+    name: "Integrations"
+    description: "Integrations with external services."
+    members:
+      - group: email
+      - group: chatbots
+      - section: ombi
+      - section: jellyseerr
+  - group: email
+    name: "Email"
+    description: "Options for sending emails through jfa-go."
+    members:
+      - section: email
+      - section: smtp
+      - section: mailgun
+  - group: chatbots
+    name: "Chat bots"
+    description: "Options for messaging through chat services."
+    members:
+      - section: discord
+      - section: telegram
+      - section: matrix
 sections:
 - section: updates
   meta:

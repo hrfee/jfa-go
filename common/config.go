@@ -48,8 +48,22 @@ type Section struct {
 	Settings []Setting   `json:"settings" yaml:"settings"`
 }
 
+// Member is a member of a group, and can either reference a Section or another Group, hence the two fields.
+type Member struct {
+	Group   string `json:"group,omitempty", yaml:"group,omitempty"`
+	Section string `json:"section,omitempty", yaml:"section,omitempty"`
+}
+
+type Group struct {
+	Group       string   `json:"group" yaml:"group" example:"messaging_providers"`
+	Name        string   `json:"name" yaml:"name" example:"Messaging Providers"`
+	Description string   `json:"description" yaml:"description" example:"Options for setting up messaging providers."`
+	Members     []Member `json:"members" yaml:"members"`
+}
+
 type Config struct {
 	Sections []Section `json:"sections" yaml:"sections"`
+	Groups   []Group   `json:"groups" yaml:"groups"`
 }
 
 func (c *Config) removeSection(section string) {
