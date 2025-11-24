@@ -1043,6 +1043,21 @@ export class settingsList {
                             icon.classList.add("button", "~urge");
                             icon.innerHTML = `<i class="ri-download-line" title="${window.lang.strings("update")}"></i>`;
                             icon.onclick = () => window.updater.checkForUpdates(window.modals.updateInfo.show);
+                            // Put us first
+                            if ("order" in this._settings && this._settings.order) {
+                                let i = -1;
+                                for (let j = 0; j < this._settings.order.length; j++) {
+                                    const member = this._settings.order[j];
+                                    if ("section" in member && member.section == "updates") {
+                                        i = j;
+                                        break;
+                                    }
+                                }
+                                if (i != -1) {
+                                    this._settings.order.splice(i, 1);
+                                    this._settings.order.unshift({ section: "updates" });
+                                }
+                            }
                         }
                         this.addSection(section.section, section, icon);
                     } else if (section.section == "matrix" && !window.matrixEnabled) {
