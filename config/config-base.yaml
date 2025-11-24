@@ -1,3 +1,17 @@
+order:
+  - section: ui
+  - section: advanced
+  - section: jellyfin
+  - group: sign_up
+  - group: accounts
+  - section: messages
+  - group: external_services
+  - section: activity_log
+  - section: backups
+  - section: updates
+  - section: url_paths
+  - section: template_email
+  - section: files
 groups:
   - group: external_services
     name: "Integrations"
@@ -7,6 +21,7 @@ groups:
       - group: chatbots
       - section: ombi
       - section: jellyseerr
+      - section: webhooks
   - group: email
     name: "Email"
     description: "Options for sending emails through jfa-go."
@@ -14,6 +29,7 @@ groups:
       - section: email
       - section: smtp
       - section: mailgun
+      - section: email_confirmation
   - group: chatbots
     name: "Chat bots"
     description: "Options for messaging through chat services."
@@ -21,6 +37,24 @@ groups:
       - section: discord
       - section: telegram
       - section: matrix
+  - group: sign_up
+    name: "Invites & Referrals"
+    description: "Settings relating to invites, the sign up page and referrals."
+    members:
+      - section: captcha
+      - section: password_validation
+      - section: invite_emails
+      - section: notifications
+      - section: welcome_email
+  - group: accounts
+    name: "Accounts"
+    description: "Settings relating to account management."
+    members:
+      - section: user_page
+      - section: password_resets
+      - section: user_expiry
+      - section: disable_enable
+      - section: deletion
 sections:
 - section: updates
   meta:
@@ -1259,7 +1293,7 @@ sections:
     description: Path to custom email text template for announcements/custom messages.
 - section: notifications
   meta:
-    name: Admin invite notifications
+    name: Admin notifications
     description: Allows toggling "user created" and "invite expired" notifications
       to be sent to the admin per-invite.
     depends_true: messages|enabled
@@ -1471,7 +1505,7 @@ sections:
     description: Path to custom email in plain text
 - section: user_expiry
   meta:
-    name: User Expiry
+    name: Account Expiry
     description: When set on an invite, users will be deleted or disabled a specified
       amount of time after they create their account. Expiries can also be set and
       extended for invididual users, optionally with a message why.

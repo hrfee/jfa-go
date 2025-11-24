@@ -916,7 +916,7 @@
                         </div>
                     </div>
                     <div class="flex flex-col md:flex-row gap-3">
-                        <div class="md:card @low dark:~d_neutral flex md:flex flex-col gap-2 flex-1" id="settings-sidebar">
+                        <div class="@low dark:~d_neutral flex md:flex flex-col gap-2" id="settings-sidebar">
                             <div class="flex flex-row justify-between">
                                 <input type="search" class="field ~neutral @low input settings-section-button justify-between" id="settings-search" placeholder="{{ .strings.search }}">
                                 <button class="button ~neutral @low center -ml-10 rounded-s-none settings-search-clear" aria-label="{{ .strings.clearSearch }}" text="{{ .strings.clearSearch }}"><i class="ri-close-line"></i></button>
@@ -927,8 +927,9 @@
                                 <a class="button ~urge dark:~d_info @low justify-center grow" target="_blank" href="https://wiki.jfa-go.com"><span class="flex">{{ .strings.wiki }} <i class="ri-book-shelf-line ml-2"></i></a>
                                 <span class="button ~neutral @low justify-center grow" id="setting-profiles"><span class="flex">{{ .strings.userProfiles }} <i class="ri-user-line ml-2"></i></span></span>
                             </div>
+                            <div class="flex md:flex flex-col gap-2 overflow-y-scroll" id="settings-sidebar-items"></div>
                         </div>
-                        <div class="card ~neutral @low overflow flex-1" id="settings-panel">
+                        <div class="card ~neutral @low overflow flex-1 grow" id="settings-panel">
                             <div class="settings-section unfocused h-[100%]" id="settings-not-found">
                                 <div class="flex flex-col h-[100%] justify-center items-center">
                                     <span class="text-2xl font-medium italic mb-2">{{ .strings.noResultsFound }}</span>

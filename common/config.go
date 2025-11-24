@@ -64,6 +64,9 @@ type Group struct {
 type Config struct {
 	Sections []Section `json:"sections" yaml:"sections"`
 	Groups   []Group   `json:"groups" yaml:"groups"`
+	// Optional order, which can interleave sections and groups.
+	// If unset, falls back to sections in order, then groups in order.
+	Order []Member `json:"order,omitempty" yaml:"order,omitempty"`
 }
 
 func (c *Config) removeSection(section string) {

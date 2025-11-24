@@ -476,7 +476,7 @@ interface Group {
     group: string;
     name: string;
     description: string;
-    members: ({ group: string } | { section: string })[];
+    members: Member[];
 }
 
 interface Section {
@@ -573,9 +573,12 @@ class sectionPanel {
     asElement = (): HTMLDivElement => { return this._section; }
 }
 
+type Member = { group: string } | { section: string };
+
 interface Settings {
     groups: Group[];
     sections: Section[];
+    order?: Member[]; 
 }
 
 export class settingsList {
@@ -586,7 +589,7 @@ export class settingsList {
     private _loader = document.getElementById("settings-loader") as HTMLDivElement;
     
     private _panel = document.getElementById("settings-panel") as HTMLDivElement;
-    private _sidebar = document.getElementById("settings-sidebar") as HTMLDivElement;
+    private _sidebar = document.getElementById("settings-sidebar-items") as HTMLDivElement;
     private _visibleSection: string;
     private _sections: { [name: string]: sectionPanel };
     private _buttons: { [name: string]: HTMLSpanElement };
@@ -611,7 +614,7 @@ export class settingsList {
     // Takes all groups at once since members might contain each other.
     addGroups = (groups: Group[]) => {
         groups.forEach((g) => { this._groups[g.group] = g });
-        const addGroup = (g: Group): HTMLElement => {
+        const addGroup = (g: Group, indent: number = 0): HTMLElement => {
             if (g.group in this._groupButtons) return null;
 
             const container = document.createElement("div") as HTMLDivElement;
@@ -627,38 +630,70 @@ export class settingsList {
                 <input class="unfocused" type="checkbox">
             </label>
             `;
+            
+            const dropdown = document.createElement("div") as HTMLDivElement;
+            container.appendChild(dropdown);
+            dropdown.classList.add("ml-" + ((indent+1)*2));
+            dropdown.style.maxHeight = "0";
+            dropdown.style.opacity = "0";
+            dropdown.classList.add("settings-dropdown", "unfocused", "flex", "flex-col", "gap-2", "transition-all");
 
             const icon = button.querySelector("i.icon");
             const check = button.querySelector("input[type=checkbox]") as HTMLInputElement;
 
+
             button.onclick = () => {
                 check.checked = !check.checked;
+                onCheck();
+            };
+            // When groups are nested, the outer group's scrollHeight will obviously change when an
+            // inner group is opened/closed. Instead of traversing the tree and adjusting the maxHeight property
+            // each open/close, just set the maxHeight to 9999px once the animation is completed.
+            // On close, quickly set maxHeight back to ~scrollHeight, then animate to 0. 
+            const onCheck = () => {
                 if (check.checked) {
                     icon.classList.add("rotated");
+                    // Hide the scrollbar while we animate
+                    this._sidebar.style.overflowY = "hidden";
                     dropdown.classList.remove("unfocused");
-                    dropdown.style.maxHeight = dropdown.scrollHeight+"px";
+                    const fullHeight = () => {
+                        dropdown.removeEventListener("transitionend", fullHeight);
+                        dropdown.style.maxHeight = "9999px";
+                        // Return the scrollbar (or whatever, just don't hide it)
+                        this._sidebar.style.overflowY = "";
+                    };
+                    dropdown.addEventListener("transitionend", fullHeight);
+                    dropdown.style.maxHeight = (1.2*dropdown.scrollHeight)+"px";
                     dropdown.style.opacity = "100%";
                 } else {
                     icon.classList.remove("rotated");
-                    const hide = () => {
+                    const mainTransitionEnd = () => {
+                        dropdown.removeEventListener("transitionend", mainTransitionEnd);
                         dropdown.classList.add("unfocused");
-                        dropdown.removeEventListener("transitionend", hide);
+                        // Return the scrollbar (or whatever, just don't hide it)
+                        this._sidebar.style.overflowY = "";
                     };
-                    dropdown.addEventListener("transitionend", hide);
-                    dropdown.style.maxHeight = "0";
-                    dropdown.style.opacity = "0";
+                    const mainTransitionStart = () => {
+                        dropdown.removeEventListener("transitionend", mainTransitionStart)
+                        dropdown.style.transitionDuration = "";
+                        dropdown.addEventListener("transitionend", mainTransitionEnd);
+                        dropdown.style.maxHeight = "0";
+                        dropdown.style.opacity = "0";
+                    }
+                    // Hide the scrollbar while we animate
+                    this._sidebar.style.overflowY = "hidden";
+                    // Disabling transitions then going from 9999 - scrollHeight doesn't work in firefox to me,
+                    // so instead just make the transition duration really short.
+                    dropdown.style.transitionDuration = "1ms";
+                    dropdown.addEventListener("transitionend", mainTransitionStart);
+                    dropdown.style.maxHeight = (1.2*dropdown.scrollHeight)+"px";
                 }
             }
-            
-            const dropdown = document.createElement("div") as HTMLDivElement;
-            container.appendChild(dropdown);
-            dropdown.style.maxHeight = "0";
-            dropdown.style.opacity = "0";
-            dropdown.classList.add("unfocused", "flex", "flex-col", "gap-2", "flex-1", "max-h-0", "transition-all");
+            check.onchange = onCheck;
 
             for (const member of g.members) {
                 if ("group" in member) {
-                    let subgroup = addGroup(this._groups[member.group]);
+                    let subgroup = addGroup(this._groups[member.group], indent+1);
                     if (!subgroup) {
                         subgroup = this._groupButtons[member.group];
                         // Remove from page
@@ -725,6 +760,21 @@ export class settingsList {
         }
         this._buttons[name] = button;
         this._sidebar.appendChild(this._buttons[name]);
+    }
+
+    setOrder(order: Member[]) {
+        this._sidebar.textContent = ``;
+        for (const member of order) {
+            if ("group" in member) {
+                this._sidebar.appendChild(this._groupButtons[member.group]);
+            } else if ("section" in member) {
+                if (member.section in this._buttons) {
+                    this._sidebar.appendChild(this._buttons[member.section]);
+                } else {
+                    console.warn("Settings section specified in order but missing:", member.section);
+                }
+            }
+        }
     }
 
     private _showPanel = (name: string) => {
@@ -1013,6 +1063,8 @@ export class settingsList {
             }
 
             this.addGroups(this._settings.groups);
+
+            if ("order" in this._settings && this._settings.order) this.setOrder(this._settings.order);
 
             removeLoader(this._loader);
             for (let i = 0; i < this._loader.children.length; i++) {

@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/fatih/color"
 	"github.com/hrfee/jfa-go/common"
 	"gopkg.in/ini.v1"
 	"gopkg.in/yaml.v3"
@@ -26,6 +27,49 @@ func generateIni(yamlPath string, iniPath string) {
 	if err != nil {
 		panic(err)
 	}
+	// Validate that all groups/sections are listed in the root order, if it exists
+	if len(configBase.Order) > 0 {
+		// Expand order
+		var traverseGroup func(groupName string) []string
+		traverseGroup = func(groupName string) []string {
+			out := []string{}
+			for _, group := range configBase.Groups {
+				if group.Group == groupName {
+					for _, groupMember := range group.Members {
+						if groupMember.Group != "" {
+							out = append(out, traverseGroup(groupMember.Group)...)
+						} else if groupMember.Section != "" {
+							out = append(out, groupMember.Section)
+						}
+					}
+					break
+				}
+			}
+			return out
+		}
+		listedSects := map[string]bool{}
+		for _, member := range configBase.Order {
+			if member.Group != "" {
+				for _, sect := range traverseGroup(member.Group) {
+					listedSects[sect] = true
+				}
+			} else if member.Section != "" {
+				listedSects[member.Section] = true
+			}
+		}
+
+		missingSections := false
+		for _, section := range configBase.Sections {
+			if _, ok := listedSects[section.Section]; !ok {
+				if !missingSections {
+					color.Red("WARNING: Root order specified but the following sections were not listed, directly or indirectly:")
+					missingSections = true
+				}
+				color.Red("\t%s", section.Section)
+			}
+		}
+	}
+
 	conf := ini.Empty()
 
 	for _, section := range configBase.Sections {
