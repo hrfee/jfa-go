@@ -709,7 +709,7 @@ func flagPassed(name string) (found bool) {
 }
 
 // @title jfa-go internal API
-// @version 0.5.2
+// @version 0.6.0
 // @description API for the jfa-go frontend
 // @contact.name Harvey Tindall
 // @contact.email hrfee@hrfee.dev
