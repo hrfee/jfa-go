@@ -472,6 +472,13 @@ class DOMNote extends DOMSetting implements SNote {
     asElement = (): HTMLDivElement => { return this._container; }
 }
 
+interface Group {
+    group: string;
+    name: string;
+    description: string;
+    members: ({ group: string } | { section: string })[];
+}
+
 interface Section {
     section: string;
     meta: Meta;
@@ -567,6 +574,7 @@ class sectionPanel {
 }
 
 interface Settings {
+    groups: Group[];
     sections: Section[];
 }
 
@@ -580,8 +588,12 @@ export class settingsList {
     private _panel = document.getElementById("settings-panel") as HTMLDivElement;
     private _sidebar = document.getElementById("settings-sidebar") as HTMLDivElement;
     private _visibleSection: string;
-    private _sections: { [name: string]: sectionPanel }
-    private _buttons: { [name: string]: HTMLSpanElement }
+    private _sections: { [name: string]: sectionPanel };
+    private _buttons: { [name: string]: HTMLSpanElement };
+  
+    private _groups: { [name: string]: Group };
+    private _groupButtons: { [name: string]: HTMLSpanElement };
+
     private _needsRestart: boolean = false;
     private _messageEditor = new MessageEditor();
     private _settings: Settings;
@@ -594,6 +606,83 @@ export class settingsList {
 
     private _backupSortDirection = document.getElementById("settings-backups-sort-direction") as HTMLButtonElement;
     private _backupSortAscending = true;
+
+    // Must be called -after- all section have been added.
+    // Takes all groups at once since members might contain each other.
+    addGroups = (groups: Group[]) => {
+        groups.forEach((g) => { this._groups[g.group] = g });
+        const addGroup = (g: Group): HTMLElement => {
+            if (g.group in this._groupButtons) return null;
+
+            const container = document.createElement("div") as HTMLDivElement;
+            container.classList.add("flex", "flex-col", "gap-2");
+            
+            const button = document.createElement("span") as HTMLSpanElement;
+            container.appendChild(button);
+            button.classList.add("button", "~neutral", "@low", "settings-section-button", "justify-between");
+            button.innerHTML = `
+            ${g.name}
+            <label>
+                <i class="icon ri-arrow-down-s-line"></i>
+                <input class="unfocused" type="checkbox">
+            </label>
+            `;
+
+            const icon = button.querySelector("i.icon");
+            const check = button.querySelector("input[type=checkbox]") as HTMLInputElement;
+
+            button.onclick = () => {
+                check.checked = !check.checked;
+                if (check.checked) {
+                    icon.classList.add("rotated");
+                    dropdown.classList.remove("unfocused");
+                    dropdown.style.maxHeight = dropdown.scrollHeight+"px";
+                    dropdown.style.opacity = "100%";
+                } else {
+                    icon.classList.remove("rotated");
+                    const hide = () => {
+                        dropdown.classList.add("unfocused");
+                        dropdown.removeEventListener("transitionend", hide);
+                    };
+                    dropdown.addEventListener("transitionend", hide);
+                    dropdown.style.maxHeight = "0";
+                    dropdown.style.opacity = "0";
+                }
+            }
+            
+            const dropdown = document.createElement("div") as HTMLDivElement;
+            container.appendChild(dropdown);
+            dropdown.style.maxHeight = "0";
+            dropdown.style.opacity = "0";
+            dropdown.classList.add("unfocused", "flex", "flex-col", "gap-2", "flex-1", "max-h-0", "transition-all");
+
+            for (const member of g.members) {
+                if ("group" in member) {
+                    let subgroup = addGroup(this._groups[member.group]);
+                    if (!subgroup) {
+                        subgroup = this._groupButtons[member.group];
+                        // Remove from page
+                        subgroup.remove();
+                    }
+                    dropdown.appendChild(subgroup);
+                } else if ("section" in member) {
+                    const subsection = this._buttons[member.section];
+                    // Remove from page
+                    subsection.remove();
+                    dropdown.appendChild(subsection);
+                }
+            }
+            
+            this._groupButtons[g.group] = container;
+            return container;
+        }
+        for (let g of groups) {
+            const container = addGroup(g);
+            if (container) {
+                this._sidebar.appendChild(container);
+            }
+        }
+    }
 
     addSection = (name: string, s: Section, subButton?: HTMLElement) => {
         const section = new sectionPanel(s, name);
@@ -759,6 +848,8 @@ export class settingsList {
     });
 
     constructor() {
+        this._groups = {};
+        this._groupButtons = {};
         this._sections = {};
         this._buttons = {};
         document.addEventListener("settings-section-changed", () => this._saveButton.classList.remove("unfocused"));
@@ -920,6 +1011,9 @@ export class settingsList {
                     }
                 }
             }
+
+            this.addGroups(this._settings.groups);
+
             removeLoader(this._loader);
             for (let i = 0; i < this._loader.children.length; i++) {
                 this._loader.children[i].classList.remove("invisible");
