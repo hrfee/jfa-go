@@ -573,7 +573,7 @@ sections:
   meta:
     name: Captcha
     description: Settings related to user creation CAPTCHAs.
-    wiki_link: https://wiki.jfa-go.com/docs/captcha/
+    wiki_link: https://wiki.jfa-go.com/docs/external-services/captcha/
   settings:
   - setting: enabled
     name: Enabled
@@ -727,7 +727,7 @@ sections:
   meta:
     name: Messages/Notifications
     description: General settings for emails/messages.
-    wiki_link: https://wiki.jfa-go.com/docs/emails/
+    wiki_link: https://wiki.jfa-go.com/docs/customization/emails/
   settings:
   - setting: enabled
     name: Enabled
@@ -917,7 +917,7 @@ sections:
   meta:
     name: Discord
     description: Settings for Discord invites/signup/notifications
-    wiki_link: https://wiki.jfa-go.com/docs/bots/discord/
+    wiki_link: https://wiki.jfa-go.com/docs/external-services/bots/discord/
   settings:
   - setting: enabled
     name: Enabled
@@ -1012,7 +1012,7 @@ sections:
     name: Telegram
     description: Settings for Telegram signup/notifications. See the jfa-go wiki for
       info on setting this up.
-    wiki_link: https://wiki.jfa-go.com/docs/bots/telegram/
+    wiki_link: https://wiki.jfa-go.com/docs/external-services/bots/telegram/
   settings:
   - setting: enabled
     name: Enabled
@@ -1061,7 +1061,7 @@ sections:
     name: Matrix
     description: Settings for Matrix invites/signup/notifications. See the jfa-go
       wiki for info on setting this up.
-    wiki_link: https://wiki.jfa-go.com/docs/bots/matrix/
+    wiki_link: https://wiki.jfa-go.com/docs/external-services/bots/matrix/
   settings:
   - setting: enabled
     name: Enabled
@@ -1339,7 +1339,7 @@ sections:
       for accounts to be created, which you can do by refreshing then checking Settings
       > User Profiles. To handle password resets for Ombi & Jellyfin, enable "Use
       reset link instead of PIN".
-    wiki_link: https://wiki.jfa-go.com/docs/ombi/
+    wiki_link: https://wiki.jfa-go.com/docs/external-services/ombi/
   settings:
   - setting: enabled
     name: Enabled
@@ -1647,7 +1647,7 @@ sections:
     description: jfa-go will send a POST request to these URLs when an event occurs,
       with relevant information. Request information is logged when debug logging
       is enabled.
-    wiki_link: https://wiki.jfa-go.com/docs/webhooks/
+    wiki_link: https://wiki.jfa-go.com/docs/dev/webhooks/
   settings:
   - setting: created
     name: User Created
