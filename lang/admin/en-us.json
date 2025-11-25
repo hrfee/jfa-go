@@ -209,7 +209,9 @@
         "backupCanBeFound": "The backup can be found on the server at {filepath}.",
         "backupCanDownload": "Alternatively, click below to download the backup.",
         "wikiPage": "Wiki Page",
-        "wiki": "Wiki"
+        "wiki": "Wiki",
+        "restartRequired": "Restart required",
+        "required": "Required"
     },
     "notifications": {
         "pathCopied": "Full path copied to clipboard.",

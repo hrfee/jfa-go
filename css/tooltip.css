@@ -22,15 +22,17 @@
 }
 
 .tooltip.below .content {
-    top: 2.5rem;
-    left: 0;
+    top: calc(100% + 0.125rem);
+    left: 50%;
     right: 0;
+    transform: translateX(-50%);
 }
 
 .tooltip.above .content {
-    bottom: 2.5rem;
-    left: 0;
+    bottom: calc(100% + 0.125rem);
+    left: 50%;
     right: 0;
+    transform: translateX(-50%);
 }
 
 .tooltip.darker .content {

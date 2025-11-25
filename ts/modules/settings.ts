@@ -74,6 +74,9 @@ const splitDependant = (section: string, dep: string): string[] => {
     return parts
 };
 
+let RestartRequiredBadge: HTMLElement;
+let RequiredBadge: HTMLElement;
+
 class DOMSetting {
     protected _hideEl: HTMLElement;
     protected _input: HTMLInputElement;
@@ -133,12 +136,10 @@ class DOMSetting {
     set required(state: boolean) {
         if (state) {
             this._required.classList.remove("unfocused");
-            this._required.classList.add("badge", "~critical");
-            this._required.textContent = "*";
+            this._required.innerHTML = RequiredBadge.outerHTML;
         } else {
             this._required.classList.add("unfocused");
-            this._required.classList.remove("badge", "~critical");
-            this._required.textContent = "";
+            this._required.textContent = ``;
         }
     }
     
@@ -146,12 +147,10 @@ class DOMSetting {
     set requires_restart(state: boolean) {
         if (state) {
             this._restart.classList.remove("unfocused");
-            this._restart.classList.add("badge", "~info", "dark:~d_warning");
-            this._restart.textContent = "R";
+            this._restart.innerHTML = RestartRequiredBadge.outerHTML;
         } else {
             this._restart.classList.add("unfocused");
-            this._restart.classList.remove("badge", "~info", "dark:~d_warning");
-            this._restart.textContent = "";
+            this._restart.textContent = ``;
         }
     }
 
@@ -619,7 +618,7 @@ class groupButton {
         this._button.innerHTML = `
         <span class="group-button-name"></span>
         <label>
-            <i class="icon ri-arrow-down-s-line"></i>
+            <i class="icon ri-arrow-down-s-line text-xl"></i>
             <input class="unfocused" type="checkbox">
         </label>
         `;
@@ -1072,14 +1071,28 @@ export class settingsList {
                 this._searchbox.oninput(null);
             };
         };
+        
+        // Create (restart)required badges (can't do on load as window.lang is unset)
+        RestartRequiredBadge = (() => {
+            const rr = document.createElement("span");
+            rr.classList.add("tooltip", "below");
+            rr.innerHTML = `
+                <span class="badge ~info dark:~d_warning"><i class="icon ri-refresh-line align-baseline h-full"></i></span>
+                <span class="content sm">${window.lang.strings("restartRequired")}</span>
+            `;
 
-        // What possessed me to put this in the DOMSelect constructor originally? like what????????
-        const message = document.getElementById("settings-message") as HTMLElement;
-        message.innerHTML = window.lang.var("strings",
-                                            "settingsRequiredOrRestartMessage",
-                                            `<span class="badge ~critical">*</span>`,
-                                            `<span class="badge ~info dark:~d_warning">R</span>`
-        );
+            return rr;
+        })();
+        RequiredBadge = (() => {
+            const r = document.createElement("span");
+            r.classList.add("tooltip", "below");
+            r.innerHTML = `
+                <span class="badge ~critical"><i class="icon ri-asterisk align-baseline h-full"></i></span>
+                <span class="content sm">${window.lang.strings("required")}</span>
+            `;
+
+            return r;
+        })();
     }
 
     private _addMatrix = () => {
