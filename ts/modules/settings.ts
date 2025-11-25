@@ -553,6 +553,7 @@ class groupButton {
         // On close, quickly set maxHeight back to ~scrollHeight, then animate to 0. 
         if (this._check.checked) {
             this._icon.classList.add("rotated");
+            this._icon.classList.remove("not-rotated");
             // Hide the scrollbar while we animate
             this._parentSidebar.style.overflowY = "hidden";
             this._dropdown.classList.remove("unfocused");
@@ -566,6 +567,7 @@ class groupButton {
             this._dropdown.style.maxHeight = (1.2*this._dropdown.scrollHeight)+"px";
             this._dropdown.style.opacity = "100%";
         } else {
+            this._icon.classList.add("not-rotated");
             this._icon.classList.remove("rotated");
             const mainTransitionEnd = () => {
                 this._dropdown.removeEventListener("transitionend", mainTransitionEnd);

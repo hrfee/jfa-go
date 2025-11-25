@@ -248,22 +248,65 @@ class DOMInvite implements Invite {
     private _right: HTMLDivElement;
     private _userTable: HTMLDivElement;
 
+    private _detailsToggle: HTMLInputElement;
+
     // whether the details card is expanded.
     get expanded(): boolean {
-        return this._details.classList.contains("focused");
+        return this._detailsToggle.checked;
     }
     set expanded(state: boolean) {
-        const toggle = (this._infoArea.querySelector("input.inv-toggle-details") as HTMLInputElement);
+        this._detailsToggle.checked = state;
         if (state) {
+            this._detailsToggle.previousElementSibling.classList.add("rotated");
+            this._detailsToggle.previousElementSibling.classList.remove("not-rotated");
+            
             this._details.classList.remove("unfocused");
             this._details.classList.add("focused");
-            toggle.previousElementSibling.classList.add("rotated");
-            toggle.previousElementSibling.classList.remove("not-rotated");
+            const fullHeight = () => {
+                this._details.removeEventListener("transitionend", fullHeight);
+                this._details.style.maxHeight = "9999px";
+            };
+            this._details.addEventListener("transitionend", fullHeight);
+            this._details.style.maxHeight = (1*this._details.scrollHeight)+"px";
+            this._details.style.opacity = "100%";
         } else {
+            this._detailsToggle.previousElementSibling.classList.remove("rotated");
+            this._detailsToggle.previousElementSibling.classList.add("not-rotated");
+            const mainTransitionEnd = () => {
+                this._details.removeEventListener("transitionend", mainTransitionEnd);
+                this._details.classList.add("unfocused");
+                this._details.classList.remove("focused");
+            };
+            const mainTransitionStart = () => {
+                this._details.removeEventListener("transitionend", mainTransitionStart);
+                this._details.style.transitionDuration = "";
+                this._details.addEventListener("transitionend", mainTransitionEnd);
+                this._details.style.maxHeight = "0";
+                this._details.style.opacity = "0";
+            };
+            this._details.style.transitionDuration = "1ms";
+            this._details.addEventListener("transitionend", mainTransitionStart);
+            this._details.style.maxHeight = (1*this._details.scrollHeight)+"px";
+        }
+    }
+
+    setExpandedWithoutAnimation(state: boolean) {
+        this._detailsToggle.checked = state;
+        if (state) {
+            this._detailsToggle.previousElementSibling.classList.add("rotated");
+            this._detailsToggle.previousElementSibling.classList.remove("not-rotated");
+            
+            this._details.classList.remove("unfocused");
+            this._details.classList.add("focused");
+            this._details.style.maxHeight = "9999px";
+            this._details.style.opacity = "100%";
+        } else {
+            this._detailsToggle.previousElementSibling.classList.remove("rotated");
+            this._detailsToggle.previousElementSibling.classList.add("not-rotated");
             this._details.classList.add("unfocused");
             this._details.classList.remove("focused");
-            toggle.previousElementSibling.classList.remove("rotated");
-            toggle.previousElementSibling.classList.add("not-rotated");
+            this._details.style.maxHeight = "0";
+            this._details.style.opacity = "0";
         }
     }
 
@@ -272,11 +315,11 @@ class DOMInvite implements Invite {
     constructor(invite: Invite) {
         // first create the invite structure, then use our setter methods to fill in the data.
         this._container = document.createElement('div') as HTMLDivElement;
-        this._container.classList.add("inv", "overflow-visible");
+        this._container.classList.add("inv", "overflow-visible", "flex", "flex-col", "gap-2");
 
         this._header = document.createElement('div') as HTMLDivElement;
         this._container.appendChild(this._header);
-        this._header.classList.add("card", "dark:~d_neutral", "@low", "inv-header", "flex", "flex-row", "justify-between", "mt-2", "overflow-visible", "gap-2");
+        this._header.classList.add("card", "dark:~d_neutral", "@low", "inv-header", "flex", "flex-row", "justify-between", "overflow-visible", "gap-2");
 
         this._codeArea = document.createElement('div') as HTMLDivElement;
         this._header.appendChild(this._codeArea);
@@ -314,15 +357,17 @@ class DOMInvite implements Invite {
         </div>
         <span class="button ~critical @low inv-delete h-full">${window.lang.strings("delete")}</span>
         <label>
-            <i class="icon px-2.5 py-2 ri-arrow-down-s-line not-rotated"></i>
+            <i class="icon px-2.5 py-2 ri-arrow-down-s-line text-xl not-rotated"></i>
             <input class="inv-toggle-details unfocused" type="checkbox">
         </label>
         `;
         
         (this._infoArea.querySelector(".inv-delete") as HTMLSpanElement).onclick = this.delete;
 
-        const toggle = (this._infoArea.querySelector("input.inv-toggle-details") as HTMLInputElement);
-        toggle.onchange = () => { this.expanded = !this.expanded; };
+        this._detailsToggle = (this._infoArea.querySelector("input.inv-toggle-details") as HTMLInputElement);
+        this._detailsToggle.onclick = () => {
+            this.expanded = this.expanded;
+        };
         const toggleDetails = (event: Event) => { 
             if (event.target == this._header || event.target == this._codeArea || event.target == this._infoArea) {
                 this.expanded = !this.expanded; 
@@ -333,7 +378,9 @@ class DOMInvite implements Invite {
 
         this._details = document.createElement('div') as HTMLDivElement;
         this._container.appendChild(this._details);
-        this._details.classList.add("card", "~neutral", "@low", "mt-2", "inv-details");
+        this._details.classList.add("card", "~neutral", "@low", "inv-details", "transition-all", "unfocused");
+        this._details.style.maxHeight = "0";
+        this._details.style.opacity = "0";
         const detailsInner = document.createElement('div') as HTMLDivElement;
         this._details.appendChild(detailsInner);
         detailsInner.classList.add("inv-row", "flex", "flex-row", "flex-wrap", "justify-between", "gap-4");
@@ -394,8 +441,7 @@ class DOMInvite implements Invite {
         this._userTable.classList.add("text-sm", "mt-1", );
         this._right.appendChild(this._userTable);
 
-
-        this.expanded = false;
+        this.setExpandedWithoutAnimation(false);
         this.update(invite);
 
         document.addEventListener("profileLoadEvent", () => { this.loadProfiles(); }, false);
@@ -440,7 +486,7 @@ export class inviteList implements inviteList {
 
     focusInvite = (inviteCode: string, errorMsg: string = window.lang.notif("errorInviteNoLongerExists")) => {
         for (let code of Object.keys(this.invites)) {
-            this.invites[code].expanded = code == inviteCode;
+            this.invites[code].setExpandedWithoutAnimation(code == inviteCode);
         }
         if (inviteCode in this.invites) this.invites[inviteCode].focus();
         else window.notifications.customError("inviteDoesntExistError", errorMsg);
@@ -488,7 +534,7 @@ export class inviteList implements inviteList {
             this._list.classList.add("empty");
             this._list.innerHTML = `
             <div class="inv inv-empty">
-                <div class="card dark:~d_neutral @low inv-header mt-2">
+                <div class="card dark:~d_neutral @low inv-header">
                     <div class="justify-start">
                         <span class="text-black dark:text-white font-mono bg-inherit">${window.lang.strings("inviteNoInvites")}</span>
                     </div>
