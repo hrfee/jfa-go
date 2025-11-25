@@ -489,6 +489,8 @@ class groupButton {
     private _indent: number;
     private _parentSidebar: HTMLElement;
 
+    private static readonly _margin = "ml-6";
+
     asElement = () => { return this._el; };
 
     remove = () => { this._el.remove(); };
@@ -528,9 +530,9 @@ class groupButton {
 
     get indent(): number { return this._indent; }
     set indent(v: number) {
-        this._dropdown.classList.remove("ml-" + ((this._indent+1)*2));
+        this._dropdown.classList.remove(groupButton._margin);
         this._indent = v;
-        this._dropdown.classList.add("ml-" + ((this._indent+1)*2));
+        this._dropdown.classList.add(groupButton._margin);
     }
 
     get hidden(): boolean { return this._el.classList.contains("unfocused"); }
