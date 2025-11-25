@@ -195,7 +195,7 @@ COPY_TARGET = $(DATA)/jfa-go.service
 # $(DATA)/LICENSE $(LANG_TARGET) $(STATIC_TARGET) $(DATA)/web/css/$(CSSVERSION)bundle.css
 $(COPY_TARGET): $(INLINE_TARGET) $(STATIC_SRC) $(LANG_SRC) $(CONFIG_BASE)
 	$(info copying $(CONFIG_BASE))
-	cp $(CONFIG_BASE) $(DATA)/
+	go run scripts/yaml/main.go -in $(CONFIG_BASE) -out $(DATA)/$(shell basename $(CONFIG_BASE))
 	$(info copying crash page)
 	cp $(DATA)/crash.html $(DATA)/html/
 	$(info copying static data)
