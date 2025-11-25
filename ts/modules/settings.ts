@@ -542,6 +542,7 @@ class groupButton {
 
     get open(): boolean { return this._check.checked; }
     set open(v: boolean) {
+        console.trace("set", v);
         this.openCloseWithAnimation(v);
     }
 
@@ -581,7 +582,7 @@ class groupButton {
                 this._dropdown.addEventListener("transitionend", mainTransitionEnd);
                 this._dropdown.style.maxHeight = "0";
                 this._dropdown.style.opacity = "0";
-            }
+            };
             // Hide the scrollbar while we animate
             this._parentSidebar.style.overflowY = "hidden";
             // Disabling transitions then going from 9999 - scrollHeight doesn't work in firefox to me,
@@ -634,8 +635,8 @@ class groupButton {
         this._icon = this._button.querySelector("i.icon");
         this._check = this._button.querySelector("input[type=checkbox]") as HTMLInputElement;
 
-        this._button.onclick = () => {
-            this.open = !this.open;
+        this._button.onclick = (event: Event) => {
+            if (event.target != this._icon && event.target != this._check) this.open = !this.open;
         };
         this._check.onclick = () => {
             this.open = this.open;
