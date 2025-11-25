@@ -479,6 +479,168 @@ interface Group {
     members: Member[];
 }
 
+class groupButton {
+    private _el: HTMLElement;
+    private _button: HTMLElement;
+    private _dropdown: HTMLElement;
+    private _icon: HTMLElement;
+    private _check: HTMLInputElement;
+    private _group: Group;
+    private _indent: number;
+    private _parentSidebar: HTMLElement;
+
+    asElement = () => { return this._el; };
+
+    remove = () => { this._el.remove(); };
+
+    update = (g: Group) => {
+        this._group = g;
+        this.group = g.group;
+        this.name = g.name;
+        this.description = g.description;
+    };
+
+    append(item: HTMLElement|groupButton) {
+        if (item instanceof groupButton) {
+            this._dropdown.appendChild(item.asElement());
+        } else {
+            this._dropdown.appendChild(item);
+        }
+    }
+
+    get name(): string { return this._group.name; }
+    set name(v: string) {
+        this._group.name = v;
+        this._button.querySelector(".group-button-name").textContent = v;
+    }
+
+    get group(): string { return this._group.group; }
+    set group(v: string) {
+        this._group.group = v;
+        this._el.setAttribute("data-group", v);
+        this._button.setAttribute("data-group", v);
+        this._check.setAttribute("data-group", v);
+        this._dropdown.setAttribute("data-group", v);
+    }
+
+    get description(): string { return this._group.description; }
+    set description(v: string) { this._group.description = v; }
+
+    get indent(): number { return this._indent; }
+    set indent(v: number) {
+        this._dropdown.classList.remove("ml-" + ((this._indent+1)*2));
+        this._indent = v;
+        this._dropdown.classList.add("ml-" + ((this._indent+1)*2));
+    }
+
+    get hidden(): boolean { return this._el.classList.contains("unfocused"); }
+    set hidden(v: boolean) {
+        if (v) this._el.classList.add("unfocused");
+        else this._el.classList.remove("unfocused");
+    }
+
+    get open(): boolean { return this._check.checked; }
+    set open(v: boolean) {
+        this.openCloseWithAnimation(v);
+    }
+
+    openCloseWithAnimation(v: boolean) {
+        this._check.checked = v;
+        // When groups are nested, the outer group's scrollHeight will obviously change when an
+        // inner group is opened/closed. Instead of traversing the tree and adjusting the maxHeight property
+        // each open/close, just set the maxHeight to 9999px once the animation is completed.
+        // On close, quickly set maxHeight back to ~scrollHeight, then animate to 0. 
+        if (this._check.checked) {
+            this._icon.classList.add("rotated");
+            // Hide the scrollbar while we animate
+            this._parentSidebar.style.overflowY = "hidden";
+            this._dropdown.classList.remove("unfocused");
+            const fullHeight = () => {
+                this._dropdown.removeEventListener("transitionend", fullHeight);
+                this._dropdown.style.maxHeight = "9999px";
+                // Return the scrollbar (or whatever, just don't hide it)
+                this._parentSidebar.style.overflowY = "";
+            };
+            this._dropdown.addEventListener("transitionend", fullHeight);
+            this._dropdown.style.maxHeight = (1.2*this._dropdown.scrollHeight)+"px";
+            this._dropdown.style.opacity = "100%";
+        } else {
+            this._icon.classList.remove("rotated");
+            const mainTransitionEnd = () => {
+                this._dropdown.removeEventListener("transitionend", mainTransitionEnd);
+                this._dropdown.classList.add("unfocused");
+                // Return the scrollbar (or whatever, just don't hide it)
+                this._parentSidebar.style.overflowY = "";
+            };
+            const mainTransitionStart = () => {
+                this._dropdown.removeEventListener("transitionend", mainTransitionStart)
+                this._dropdown.style.transitionDuration = "";
+                this._dropdown.addEventListener("transitionend", mainTransitionEnd);
+                this._dropdown.style.maxHeight = "0";
+                this._dropdown.style.opacity = "0";
+            }
+            // Hide the scrollbar while we animate
+            this._parentSidebar.style.overflowY = "hidden";
+            // Disabling transitions then going from 9999 - scrollHeight doesn't work in firefox to me,
+            // so instead just make the transition duration really short.
+            this._dropdown.style.transitionDuration = "1ms";
+            this._dropdown.addEventListener("transitionend", mainTransitionStart);
+            this._dropdown.style.maxHeight = (1.2*this._dropdown.scrollHeight)+"px";
+        }
+    }
+
+    openCloseWithoutAnimation(v: boolean) {
+        this._check.checked = v;
+        if (this._check.checked) {
+            this._icon.classList.add("rotated");
+            this._dropdown.style.maxHeight = "9999px";
+            this._dropdown.style.opacity = "100%";
+            this._dropdown.classList.remove("unfocused");
+        } else {
+            this._icon.classList.remove("rotated");
+            this._dropdown.style.maxHeight = "0";
+            this._dropdown.style.opacity = "0";
+            this._dropdown.classList.add("unfocused");
+        }
+    }
+
+    // Takes sidebar as we need to disable scrolling on it when animation starts.
+    constructor(parentSidebar: HTMLElement) {
+        this._parentSidebar = parentSidebar;
+
+        this._el = document.createElement("div");
+        this._el.classList.add("flex", "flex-col", "gap-2");
+
+        this._button = document.createElement("span") as HTMLSpanElement;
+        this._el.appendChild(this._button);
+        this._button.classList.add("button", "~neutral", "@low", "settings-section-button", "justify-between");
+        this._button.innerHTML = `
+        <span class="group-button-name"></span>
+        <label>
+            <i class="icon ri-arrow-down-s-line"></i>
+            <input class="unfocused" type="checkbox">
+        </label>
+        `;
+        
+        this._dropdown = document.createElement("div") as HTMLDivElement;
+        this._el.appendChild(this._dropdown);
+        this._dropdown.style.maxHeight = "0";
+        this._dropdown.style.opacity = "0";
+        this._dropdown.classList.add("settings-dropdown", "unfocused", "flex", "flex-col", "gap-2", "transition-all");
+
+        this._icon = this._button.querySelector("i.icon");
+        this._check = this._button.querySelector("input[type=checkbox]") as HTMLInputElement;
+
+        this._button.onclick = () => {
+            this.open = !this.open;
+        };
+        this._check.onclick = () => {
+            this.open = this.open;
+        }
+        this.openCloseWithoutAnimation(false);
+    }
+};
+
 interface Section {
     section: string;
     meta: Meta;
@@ -595,7 +757,7 @@ export class settingsList {
     private _buttons: { [name: string]: HTMLSpanElement };
   
     private _groups: { [name: string]: Group };
-    private _groupButtons: { [name: string]: HTMLSpanElement };
+    private _groupButtons: { [name: string]: groupButton };
 
     private _needsRestart: boolean = false;
     private _messageEditor = new MessageEditor();
@@ -614,82 +776,12 @@ export class settingsList {
     // Takes all groups at once since members might contain each other.
     addGroups = (groups: Group[]) => {
         groups.forEach((g) => { this._groups[g.group] = g });
-        const addGroup = (g: Group, indent: number = 0): HTMLElement => {
+        const addGroup = (g: Group, indent: number = 0): groupButton => {
             if (g.group in this._groupButtons) return null;
 
-            const container = document.createElement("div") as HTMLDivElement;
-            container.classList.add("flex", "flex-col", "gap-2");
-            
-            const button = document.createElement("span") as HTMLSpanElement;
-            container.appendChild(button);
-            button.classList.add("button", "~neutral", "@low", "settings-section-button", "justify-between");
-            button.innerHTML = `
-            ${g.name}
-            <label>
-                <i class="icon ri-arrow-down-s-line"></i>
-                <input class="unfocused" type="checkbox">
-            </label>
-            `;
-            
-            const dropdown = document.createElement("div") as HTMLDivElement;
-            container.appendChild(dropdown);
-            dropdown.classList.add("ml-" + ((indent+1)*2));
-            dropdown.style.maxHeight = "0";
-            dropdown.style.opacity = "0";
-            dropdown.classList.add("settings-dropdown", "unfocused", "flex", "flex-col", "gap-2", "transition-all");
-
-            const icon = button.querySelector("i.icon");
-            const check = button.querySelector("input[type=checkbox]") as HTMLInputElement;
-
-
-            button.onclick = () => {
-                check.checked = !check.checked;
-                onCheck();
-            };
-            // When groups are nested, the outer group's scrollHeight will obviously change when an
-            // inner group is opened/closed. Instead of traversing the tree and adjusting the maxHeight property
-            // each open/close, just set the maxHeight to 9999px once the animation is completed.
-            // On close, quickly set maxHeight back to ~scrollHeight, then animate to 0. 
-            const onCheck = () => {
-                if (check.checked) {
-                    icon.classList.add("rotated");
-                    // Hide the scrollbar while we animate
-                    this._sidebar.style.overflowY = "hidden";
-                    dropdown.classList.remove("unfocused");
-                    const fullHeight = () => {
-                        dropdown.removeEventListener("transitionend", fullHeight);
-                        dropdown.style.maxHeight = "9999px";
-                        // Return the scrollbar (or whatever, just don't hide it)
-                        this._sidebar.style.overflowY = "";
-                    };
-                    dropdown.addEventListener("transitionend", fullHeight);
-                    dropdown.style.maxHeight = (1.2*dropdown.scrollHeight)+"px";
-                    dropdown.style.opacity = "100%";
-                } else {
-                    icon.classList.remove("rotated");
-                    const mainTransitionEnd = () => {
-                        dropdown.removeEventListener("transitionend", mainTransitionEnd);
-                        dropdown.classList.add("unfocused");
-                        // Return the scrollbar (or whatever, just don't hide it)
-                        this._sidebar.style.overflowY = "";
-                    };
-                    const mainTransitionStart = () => {
-                        dropdown.removeEventListener("transitionend", mainTransitionStart)
-                        dropdown.style.transitionDuration = "";
-                        dropdown.addEventListener("transitionend", mainTransitionEnd);
-                        dropdown.style.maxHeight = "0";
-                        dropdown.style.opacity = "0";
-                    }
-                    // Hide the scrollbar while we animate
-                    this._sidebar.style.overflowY = "hidden";
-                    // Disabling transitions then going from 9999 - scrollHeight doesn't work in firefox to me,
-                    // so instead just make the transition duration really short.
-                    dropdown.style.transitionDuration = "1ms";
-                    dropdown.addEventListener("transitionend", mainTransitionStart);
-                    dropdown.style.maxHeight = (1.2*dropdown.scrollHeight)+"px";
-                }
-            }
-            check.onchange = onCheck;
+            const container = new groupButton(this._sidebar);
+            container.update(g);
+            container.indent = indent;
 
             for (const member of g.members) {
                 if ("group" in member) {
@@ -699,12 +791,12 @@ export class settingsList {
                         // Remove from page
                         subgroup.remove();
                     }
-                    dropdown.appendChild(subgroup);
+                    container.append(subgroup);
                 } else if ("section" in member) {
                     const subsection = this._buttons[member.section];
                     // Remove from page
                     subsection.remove();
-                    dropdown.appendChild(subsection);
+                    container.append(subsection);
                 }
             }
             
@@ -714,7 +806,8 @@ export class settingsList {
         for (let g of groups) {
             const container = addGroup(g);
             if (container) {
-                this._sidebar.appendChild(container);
+                this._sidebar.appendChild(container.asElement());
+                container.openCloseWithoutAnimation(false);
             }
         }
     }
@@ -762,11 +855,27 @@ export class settingsList {
         this._sidebar.appendChild(this._buttons[name]);
     }
 
-    setOrder(order: Member[]) {
+    private _traverseMemberList = (list: Member[], func: (sect: string) => void) => {
+        for (const member of list) {
+            if ("group" in member) {
+                for (const group of this._settings.groups) {
+                    if (group.group == member.group) {
+                        this._traverseMemberList(group.members, func);
+                        break;
+                    }
+                }
+            } else {
+                func(member.section);
+            }
+        }
+    }
+
+    setUIOrder(order: Member[]) {
         this._sidebar.textContent = ``;
         for (const member of order) {
             if ("group" in member) {
-                this._sidebar.appendChild(this._groupButtons[member.group]);
+                this._sidebar.appendChild(this._groupButtons[member.group].asElement());
+                this._groupButtons[member.group].openCloseWithoutAnimation(false);
             } else if ("section" in member) {
                 if (member.section in this._buttons) {
                     this._sidebar.appendChild(this._buttons[member.section]);
@@ -1079,7 +1188,7 @@ export class settingsList {
 
             this.addGroups(this._settings.groups);
 
-            if ("order" in this._settings && this._settings.order) this.setOrder(this._settings.order);
+            if ("order" in this._settings && this._settings.order) this.setUIOrder(this._settings.order);
 
             removeLoader(this._loader);
             for (let i = 0; i < this._loader.children.length; i++) {
@@ -1097,6 +1206,7 @@ export class settingsList {
         })
     };
 
+    // FIXME: Fix searching groups
     // FIXME: Search "About" & "User profiles", pseudo-search "User profiles" for things like "Ombi", "Referrals", etc.
     search = (query: string) => {
         query = query.toLowerCase().trim();
@@ -1104,11 +1214,20 @@ export class settingsList {
         if (query.replace(/\s+/g, "") == "") query = "";
 
         let firstVisibleSection = "";
-        for (let section of this._settings.sections) {
+       
+        // Close and hide all groups to start with
+        for (const groupButton of Object.values(this._groupButtons)) {
+            groupButton.openCloseWithoutAnimation(false);
+            groupButton.hidden = !(groupButton.group.toLowerCase().includes(query) ||
+                                  groupButton.name.toLowerCase().includes(query) ||
+                                  groupButton.description.toLowerCase().includes(query));
+        }
+
+        const searchSection = (section: Section) => {
             // Section might be disabled at build-time (like Updates), or deprecated and so not appear.
             if (!(section.section in this._sections)) {
                 // console.log(`Couldn't find section "${section.section}"`);
-                continue
+                return;
             }
             const sectionElement = this._sections[section.section].asElement();
             let dependencyCard = sectionElement.querySelector(".settings-dependency-message");
@@ -1117,19 +1236,38 @@ export class settingsList {
             let dependencyList = null;
 
             // hide button, unhide if matched
-            this._buttons[section.section].classList.add("unfocused");
+            const button = this._buttons[section.section];
+            button.classList.add("unfocused");
+            const parentGroup = button.parentElement.getAttribute("data-group");
+            let parentGroupButton: groupButton = null;
+            let matchedGroup = false;
+            if (parentGroup) {
+                parentGroupButton = this._groupButtons[parentGroup];
+                matchedGroup = !(parentGroupButton.hidden);
+            }
 
-            let matchedSection = false;
-
-            if (section.section.toLowerCase().includes(query) ||
-                section.meta.name.toLowerCase().includes(query) ||
-                section.meta.description.toLowerCase().includes(query)) {
-                if ((section.meta.advanced && this._advanced) || !(section.meta.advanced)) {
-                    this._buttons[section.section].classList.remove("unfocused");
-                    firstVisibleSection = firstVisibleSection || section.section;
-                    matchedSection = true;
+            const show = () => {
+                button.classList.remove("unfocused");
+                if (parentGroupButton) {
+                    if (query != "") parentGroupButton.openCloseWithoutAnimation(true);
+                    parentGroupButton.hidden = false;
                 }
             }
+            const hide = () => {
+                button.classList.add("unfocused");
+            }
+
+            let matchedSection = matchedGroup ||
+                                 section.section.toLowerCase().includes(query) ||
+                                 section.meta.name.toLowerCase().includes(query) ||
+                                 section.meta.description.toLowerCase().includes(query);
+            matchedSection &&= ((section.meta.advanced && this._advanced) || !(section.meta.advanced)); 
+            
+            if (matchedSection) {
+                show();
+                firstVisibleSection = firstVisibleSection || section.section;
+            }
+
             for (let setting of section.settings) {
                 if (setting.type == "note") continue;
                 const element = sectionElement.querySelector(`div[data-name="${setting.setting}"]`) as HTMLElement;
@@ -1153,7 +1291,7 @@ export class settingsList {
                     setting.description.toLowerCase().includes(query) ||
                     String(setting.value).toLowerCase().includes(query)) {
                     if ((section.meta.advanced && this._advanced) || !(section.meta.advanced)) {
-                        this._buttons[section.section].classList.remove("unfocused");
+                        show();
                         firstVisibleSection = firstVisibleSection || section.section;
                     }
                     const shouldShow = (query != "" &&
@@ -1198,7 +1336,12 @@ export class settingsList {
                     }
                 }
             }
+        };
+
+        for (let section of this._settings.sections) {
+            searchSection(section);
         }
+        
         if (firstVisibleSection && (query != "" || this._visibleSection == "")) {
             this._buttons[firstVisibleSection].onclick(null);
             this._noResultsPanel.classList.add("unfocused");
