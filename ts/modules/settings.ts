@@ -1208,17 +1208,25 @@ export class settingsList {
         })
     };
 
+
+    private _query: string;
     // FIXME: Fix searching groups
     // FIXME: Search "About" & "User profiles", pseudo-search "User profiles" for things like "Ombi", "Referrals", etc.
     search = (query: string) => {
         query = query.toLowerCase().trim();
         // Make sure a blank search is detected when there's just whitespace.
         if (query.replace(/\s+/g, "") == "") query = "";
+        const noChange = query == this._query;
 
         let firstVisibleSection = "";
        
         // Close and hide all groups to start with
         for (const groupButton of Object.values(this._groupButtons)) {
+            // Leave these opened/closed if the query didn't change
+            // (this is overridden anyway if an actual search is happening,
+            // so we'll only do it if the search is blank, implying something else
+            // changed like advanced settings being enabled).
+            if (noChange && query == "") continue;
             groupButton.openCloseWithoutAnimation(false);
             groupButton.hidden = !(groupButton.group.toLowerCase().includes(query) ||
                                   groupButton.name.toLowerCase().includes(query) ||
@@ -1355,6 +1363,9 @@ export class settingsList {
                 this._visibleSection = "";
             }
         }
+
+        // We can use this later to tell if we should leave groups expanded/closed as they were.
+        this._query = query;
     }
 }
 
