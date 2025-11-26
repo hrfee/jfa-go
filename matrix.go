@@ -64,6 +64,16 @@ var matrixFilter = mautrix.Filter{
 	},
 }
 
+func EmptyMatrixUser() *MatrixUser {
+	return &MatrixUser{
+		RoomID:     "",
+		UserID:     "",
+		Lang:       "",
+		Contact:    false,
+		JellyfinID: "",
+	}
+}
+
 func (d *MatrixDaemon) renderUserID(uid id.UserID) id.UserID {
 	if uid[0] != '@' {
 		uid = "@" + uid

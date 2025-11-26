@@ -107,7 +107,7 @@ func (app *appContext) MyDetails(gc *gin.Context) {
 
 // @Summary Sets whether to notify yourself through telegram/discord/matrix/email or not.
 // @Produce json
-// @Param SetContactMethodsDTO body SetContactMethodsDTO true "User's Jellyfin ID and whether or not to notify then through Telegram."
+// @Param SetContactPreferencesDTO body SetContactPreferencesDTO true "User's Jellyfin ID and whether or not to notify then through Telegram."
 // @Success 200 {object} boolResponse
 // @Success 400 {object} boolResponse
 // @Success 500 {object} boolResponse
@@ -115,14 +115,14 @@ func (app *appContext) MyDetails(gc *gin.Context) {
 // @Security Bearer
 // @tags User Page
 func (app *appContext) SetMyContactMethods(gc *gin.Context) {
-	var req SetContactMethodsDTO
+	var req SetContactPreferencesDTO
 	gc.BindJSON(&req)
 	req.ID = gc.GetString("jfId")
 	if req.ID == "" {
 		respondBool(400, false, gc)
 		return
 	}
-	app.setContactMethods(req, gc)
+	app.setContactPreferences(req, gc)
 }
 
 // @Summary Logout by deleting refresh token from cookies.

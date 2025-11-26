@@ -246,16 +246,8 @@ type NotificationPref struct {
 	Enabled bool   `json:"enabled"`
 }
 
-func (ombi *Ombi) SetNotificationPrefs(user map[string]interface{}, discordID, telegramUser string) (result string, err error) {
-	id := user["id"].(string)
+func (ombi *Ombi) SetNotificationPrefs(user map[string]interface{}, data []NotificationPref) (result string, err error) {
 	url := fmt.Sprintf("%s/api/v1/Identity/NotificationPreferences", ombi.server)
-	data := []NotificationPref{}
-	if discordID != "" {
-		data = append(data, NotificationPref{NotifAgentDiscord, id, discordID, true})
-	}
-	if telegramUser != "" {
-		data = append(data, NotificationPref{NotifAgentTelegram, id, telegramUser, true})
-	}
 	var code int
 	result, code, err = ombi.send("POST", url, data, true, map[string]string{"UserName": user["userName"].(string)})
 	err = co.GenericErr(code, err)

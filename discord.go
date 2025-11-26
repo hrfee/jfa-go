@@ -32,6 +32,17 @@ type DiscordDaemon struct {
 	retryOpts                     *common.MustAuthenticateOptions
 }
 
+func EmptyDiscordUser() *DiscordUser {
+	return &DiscordUser{
+		ID:            "",
+		Username:      "",
+		Discriminator: "",
+		Lang:          "",
+		Contact:       false,
+		JellyfinID:    "",
+	}
+}
+
 func newDiscordDaemon(app *appContext) (*DiscordDaemon, error) {
 	token := app.config.Section("discord").Key("token").String()
 	if token == "" {

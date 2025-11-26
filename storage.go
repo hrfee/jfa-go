@@ -625,7 +625,11 @@ type ThirdPartyService interface {
 	common.ConfigurableTransport
 	// ok implies user imported, err can be any issue that occurs during
 	ImportUser(jellyfinID string, req newUserDTO, profile Profile) (err error, ok bool)
-	AddContactMethods(jellyfinID string, req newUserDTO, discord *DiscordUser, telegram *TelegramUser) (err error)
+	// SetContactMethods allows setting any combination of contact method address/username/id and contact preference. To leave fields alone, pass nil pointers, to set them to a blank value, use "" or Empty(Discord|Telegram|Matrix)User(). Ignores the "Contact" field in some xyzUser structs.
+	SetContactMethods(jellyfinID string, email *string, discord *DiscordUser, telegram *TelegramUser, contactPrefs *common.ContactPreferences) (err error)
+	// Enabled returns whether this service is enabled in the given profile.
+	// Not for checking if the service is enabled in general!
+	// If it wasn't, it wouldn't be in app.thirdPartyServices.
 	Enabled(app *appContext, profile *Profile) bool
 	Name() string
 }

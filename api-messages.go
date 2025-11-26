@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/hrfee/jfa-go/jellyseerr"
+	"github.com/hrfee/jfa-go/common"
 	lm "github.com/hrfee/jfa-go/logmessages"
 	"github.com/lithammer/shortuuid/v3"
 	"gopkg.in/ini.v1"
@@ -263,21 +263,21 @@ func (app *appContext) TelegramAddUser(gc *gin.Context) {
 	}
 	app.storage.SetTelegramKey(req.ID, tgUser)
 
-	if err := app.js.ModifyNotifications(gc.GetString("jfId"), map[jellyseerr.NotificationsField]any{
-		jellyseerr.FieldTelegram:        tgUser.ChatID,
-		jellyseerr.FieldTelegramEnabled: tgUser.Contact,
-	}); err != nil {
-		app.err.Printf(lm.FailedSyncContactMethods, lm.Jellyseerr, err)
+	for _, tps := range app.thirdPartyServices {
+		if err := tps.SetContactMethods(req.ID, nil, nil, &tgUser, &common.ContactPreferences{
+			Telegram: &tgUser.Contact,
+		}); err != nil {
+			app.err.Printf(lm.FailedSyncContactMethods, tps.Name(), err)
+		}
 	}
 
-	linkExistingOmbiDiscordTelegram(app)
 	app.InvalidateWebUserCache()
 	respondBool(200, true, gc)
 }
 
 // @Summary Sets whether to notify a user through telegram/discord/matrix/email or not.
 // @Produce json
-// @Param SetContactMethodsDTO body SetContactMethodsDTO true "User's Jellyfin ID and whether or not to notify then through Telegram."
+// @Param SetContactPreferencesDTO body SetContactPreferencesDTO true "User's Jellyfin ID and whether or not to notify then through Telegram."
 // @Success 200 {object} boolResponse
 // @Success 400 {object} boolResponse
 // @Success 500 {object} boolResponse
@@ -285,24 +285,24 @@ func (app *appContext) TelegramAddUser(gc *gin.Context) {
 // @Security Bearer
 // @tags Other
 func (app *appContext) SetContactMethods(gc *gin.Context) {
-	var req SetContactMethodsDTO
+	var req SetContactPreferencesDTO
 	gc.BindJSON(&req)
 	if req.ID == "" {
 		respondBool(400, false, gc)
 		return
 	}
-	app.setContactMethods(req, gc)
+	app.setContactPreferences(req, gc)
 }
 
-func (app *appContext) setContactMethods(req SetContactMethodsDTO, gc *gin.Context) {
-	jsPrefs := map[jellyseerr.NotificationsField]any{}
+func (app *appContext) setContactPreferences(req SetContactPreferencesDTO, gc *gin.Context) {
+	contactPrefs := common.ContactPreferences{}
 	if tgUser, ok := app.storage.GetTelegramKey(req.ID); ok {
 		change := tgUser.Contact != req.Telegram
 		tgUser.Contact = req.Telegram
 		app.storage.SetTelegramKey(req.ID, tgUser)
 		if change {
 			app.debug.Printf(lm.SetContactPrefForService, lm.Telegram, tgUser.Username, req.Telegram)
-			jsPrefs[jellyseerr.FieldTelegramEnabled] = req.Telegram
+			contactPrefs.Telegram = &req.Telegram
 		}
 	}
 	if dcUser, ok := app.storage.GetDiscordKey(req.ID); ok {
@@ -311,7 +311,7 @@ func (app *appContext) setContactMethods(req SetContactMethodsDTO, gc *gin.Conte
 		app.storage.SetDiscordKey(req.ID, dcUser)
 		if change {
 			app.debug.Printf(lm.SetContactPrefForService, lm.Discord, dcUser.Username, req.Discord)
-			jsPrefs[jellyseerr.FieldDiscordEnabled] = req.Discord
+			contactPrefs.Discord = &req.Discord
 		}
 	}
 	if mxUser, ok := app.storage.GetMatrixKey(req.ID); ok {
@@ -320,6 +320,7 @@ func (app *appContext) setContactMethods(req SetContactMethodsDTO, gc *gin.Conte
 		app.storage.SetMatrixKey(req.ID, mxUser)
 		if change {
 			app.debug.Printf(lm.SetContactPrefForService, lm.Matrix, mxUser.UserID, req.Matrix)
+			contactPrefs.Matrix = &req.Matrix
 		}
 	}
 	if email, ok := app.storage.GetEmailsKey(req.ID); ok {
@@ -328,13 +329,13 @@ func (app *appContext) setContactMethods(req SetContactMethodsDTO, gc *gin.Conte
 		app.storage.SetEmailsKey(req.ID, email)
 		if change {
 			app.debug.Printf(lm.SetContactPrefForService, lm.Email, email.Addr, req.Email)
-			jsPrefs[jellyseerr.FieldEmailEnabled] = req.Email
+			contactPrefs.Email = &req.Email
 		}
 	}
-	if app.config.Section("jellyseerr").Key("enabled").MustBool(false) {
-		err := app.js.ModifyNotifications(req.ID, jsPrefs)
-		if err != nil {
-			app.err.Printf(lm.FailedSyncContactMethods, lm.Jellyseerr, err)
+
+	for _, tps := range app.thirdPartyServices {
+		if err := tps.SetContactMethods(req.ID, nil, nil, nil, &contactPrefs); err != nil {
+			app.err.Printf(lm.FailedSyncContactMethods, tps.Name(), err)
 		}
 	}
 	app.InvalidateWebUserCache()
@@ -621,11 +622,12 @@ func (app *appContext) DiscordConnect(gc *gin.Context) {
 
 	app.storage.SetDiscordKey(req.JellyfinID, user)
 
-	if err := app.js.ModifyNotifications(req.JellyfinID, map[jellyseerr.NotificationsField]any{
-		jellyseerr.FieldDiscord:        req.DiscordID,
-		jellyseerr.FieldDiscordEnabled: true,
-	}); err != nil {
-		app.err.Printf(lm.FailedSyncContactMethods, lm.Jellyseerr, err)
+	for _, tps := range app.thirdPartyServices {
+		if err := tps.SetContactMethods(req.JellyfinID, nil, &user, nil, &common.ContactPreferences{
+			Discord: &user.Contact,
+		}); err != nil {
+			app.err.Printf(lm.FailedSyncContactMethods, tps.Name(), err)
+		}
 	}
 
 	app.storage.SetActivityKey(shortuuid.New(), Activity{
@@ -659,12 +661,14 @@ func (app *appContext) UnlinkDiscord(gc *gin.Context) {
 	} */
 	app.storage.DeleteDiscordKey(req.ID)
 
-	// FIXME: Use thirdPartyServices for this
-	if err := app.js.ModifyNotifications(req.ID, map[jellyseerr.NotificationsField]any{
-		jellyseerr.FieldDiscord:        jellyseerr.BogusIdentifier,
-		jellyseerr.FieldDiscordEnabled: false,
-	}); err != nil {
-		app.err.Printf(lm.FailedSyncContactMethods, lm.Jellyseerr, err)
+	contact := false
+
+	for _, tps := range app.thirdPartyServices {
+		if err := tps.SetContactMethods(req.ID, nil, EmptyDiscordUser(), nil, &common.ContactPreferences{
+			Discord: &contact,
+		}); err != nil {
+			app.err.Printf(lm.FailedSyncContactMethods, tps.Name(), err)
+		}
 	}
 
 	app.storage.SetActivityKey(shortuuid.New(), Activity{
@@ -697,12 +701,14 @@ func (app *appContext) UnlinkTelegram(gc *gin.Context) {
 	} */
 	app.storage.DeleteTelegramKey(req.ID)
 
-	// FIXME: Use thirdPartyServices for this
-	if err := app.js.ModifyNotifications(req.ID, map[jellyseerr.NotificationsField]any{
-		jellyseerr.FieldTelegram:        jellyseerr.BogusIdentifier,
-		jellyseerr.FieldTelegramEnabled: false,
-	}); err != nil {
-		app.err.Printf(lm.FailedSyncContactMethods, lm.Jellyseerr, err)
+	contact := false
+
+	for _, tps := range app.thirdPartyServices {
+		if err := tps.SetContactMethods(req.ID, nil, nil, EmptyTelegramUser(), &common.ContactPreferences{
+			Telegram: &contact,
+		}); err != nil {
+			app.err.Printf(lm.FailedSyncContactMethods, tps.Name(), err)
+		}
 	}
 
 	app.storage.SetActivityKey(shortuuid.New(), Activity{

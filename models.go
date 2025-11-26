@@ -278,7 +278,7 @@ type telegramSetDTO struct {
 	ID    string `json:"id"` // Jellyfin ID of user.
 }
 
-type SetContactMethodsDTO struct {
+type SetContactPreferencesDTO struct {
 	ID       string `json:"id"`
 	Email    bool   `json:"email"`
 	Discord  bool   `json:"discord"`

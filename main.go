@@ -369,7 +369,9 @@ func start(asDaemon, firstCall bool) {
 		// NOTE: As of writing this, the order in app.thirdPartyServices doesn't matter,
 		// but in future it might (like app.contactMethods does), so append to the end!
 		if app.config.Section("ombi").Key("enabled").MustBool(false) {
-			app.ombi = &OmbiWrapper{}
+			app.ombi = &OmbiWrapper{
+				OmbiUserByJfID: app.getOmbiUser,
+			}
 			app.debug.Printf(lm.UsingOmbi)
 			ombiServer := app.config.Section("ombi").Key("server").String()
 			app.ombi.Ombi = ombi.NewOmbi(

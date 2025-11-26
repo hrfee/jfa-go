@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hrfee/jfa-go/common"
 	"github.com/hrfee/jfa-go/jellyseerr"
 	lm "github.com/hrfee/jfa-go/logmessages"
 )
@@ -124,29 +125,62 @@ func (js *JellyseerrWrapper) ImportUser(jellyfinID string, req newUserDTO, profi
 	return
 }
 
-func (js *JellyseerrWrapper) AddContactMethods(jellyfinID string, req newUserDTO, discord *DiscordUser, telegram *TelegramUser) (err error) {
+func (js *JellyseerrWrapper) SetContactMethods(jellyfinID string, email *string, discord *DiscordUser, telegram *TelegramUser, contactPrefs *common.ContactPreferences) (err error) {
 	_, err = js.MustGetUser(jellyfinID)
 	if err != nil {
 		return
 	}
-	contactMethods := map[jellyseerr.NotificationsField]any{}
-	if emailEnabled {
-		err = js.ModifyMainUserSettings(jellyfinID, jellyseerr.MainUserSettings{Email: req.Email})
-		if err != nil {
-			// FIXME: This is a little ugly, considering all other errors are unformatted
-			err = fmt.Errorf(lm.FailedSetEmailAddress, lm.Jellyseerr, jellyfinID, err)
-			return
-		} else {
-			contactMethods[jellyseerr.FieldEmailEnabled] = req.EmailContact
+	if contactPrefs == nil {
+		contactPrefs = &common.ContactPreferences{
+			Email:    nil,
+			Discord:  nil,
+			Telegram: nil,
+			Matrix:   nil,
 		}
 	}
-	if discordEnabled && discord != nil {
-		contactMethods[jellyseerr.FieldDiscord] = discord.ID
-		contactMethods[jellyseerr.FieldDiscordEnabled] = req.DiscordContact
+	contactMethods := map[jellyseerr.NotificationsField]any{}
+	if emailEnabled {
+		if contactPrefs.Email != nil {
+			contactMethods[jellyseerr.FieldEmailEnabled] = *(contactPrefs.Email)
+		} else if email != nil && *email != "" {
+			contactMethods[jellyseerr.FieldEmailEnabled] = true
+		}
+		if email != nil {
+			err = js.ModifyMainUserSettings(jellyfinID, jellyseerr.MainUserSettings{Email: *email})
+			if err != nil {
+				// FIXME: This is a little ugly, considering all other errors are unformatted
+				err = fmt.Errorf(lm.FailedSetEmailAddress, lm.Jellyseerr, jellyfinID, err)
+				return
+			}
+		}
 	}
-	if telegramEnabled && telegram != nil {
-		contactMethods[jellyseerr.FieldTelegram] = telegram.ChatID
-		contactMethods[jellyseerr.FieldTelegramEnabled] = req.TelegramContact
+	if discordEnabled {
+		if contactPrefs.Discord != nil {
+			contactMethods[jellyseerr.FieldDiscordEnabled] = *(contactPrefs.Discord)
+		} else if discord != nil && discord.ID != "" {
+			contactMethods[jellyseerr.FieldDiscordEnabled] = true
+		}
+		if discord != nil {
+			contactMethods[jellyseerr.FieldDiscord] = discord.ID
+			// Whether this is still necessary or not, i don't know.
+			if discord.ID == "" {
+				contactMethods[jellyseerr.FieldDiscord] = jellyseerr.BogusIdentifier
+			}
+		}
+	}
+	if telegramEnabled {
+		if contactPrefs.Telegram != nil {
+			contactMethods[jellyseerr.FieldTelegramEnabled] = *(contactPrefs.Telegram)
+		} else if telegram != nil && telegram.ChatID != 0 {
+			contactMethods[jellyseerr.FieldTelegramEnabled] = true
+		}
+		if telegram != nil {
+			contactMethods[jellyseerr.FieldTelegram] = telegram.ChatID
+			// Whether this is still necessary or not, i don't know.
+			if telegram.ChatID == 0 {
+				contactMethods[jellyseerr.FieldTelegram] = jellyseerr.BogusIdentifier
+			}
+		}
 	}
 	if len(contactMethods) > 0 {
 		err = js.ModifyNotifications(jellyfinID, contactMethods)

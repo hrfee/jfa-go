@@ -10,7 +10,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
-	"github.com/hrfee/jfa-go/jellyseerr"
+	"github.com/hrfee/jfa-go/common"
 	lm "github.com/hrfee/jfa-go/logmessages"
 	"github.com/hrfee/mediabrowser"
 	"github.com/lithammer/shortuuid/v3"
@@ -54,12 +54,13 @@ func (app *appContext) NewUserFromAdmin(gc *gin.Context) {
 		nu.Log()
 	}
 
+	var emailStore *EmailAddress = nil
 	if emailEnabled && req.Email != "" {
-		emailStore := EmailAddress{
+		emailStore = &EmailAddress{
 			Addr:    req.Email,
 			Contact: true,
 		}
-		app.storage.SetEmailsKey(nu.User.ID, emailStore)
+		app.storage.SetEmailsKey(nu.User.ID, *emailStore)
 	}
 
 	for _, tps := range app.thirdPartyServices {
@@ -67,7 +68,12 @@ func (app *appContext) NewUserFromAdmin(gc *gin.Context) {
 			continue
 		}
 		// We only have email
-		err := tps.AddContactMethods(nu.User.ID, req, nil, nil)
+		if emailStore == nil {
+			continue
+		}
+		err := tps.SetContactMethods(nu.User.ID, &req.Email, nil, nil, &common.ContactPreferences{
+			Email: &(emailStore.Contact),
+		})
 		if err != nil {
 			app.err.Printf(lm.FailedSyncContactMethods, tps.Name(), err)
 		}
@@ -279,12 +285,14 @@ func (app *appContext) PostNewUserFromInvite(nu NewUserData, req ConfirmationKey
 
 	referralsEnabled := profile != nil && profile.ReferralTemplateKey != "" && app.config.Section("user_page").Key("enabled").MustBool(false) && app.config.Section("user_page").Key("referrals").MustBool(false)
 
+	contactPrefs := common.ContactPreferences{}
 	if (emailEnabled && req.Email != "") || invite.UserLabel != "" || referralsEnabled {
 		emailStore := EmailAddress{
 			Addr:    req.Email,
 			Contact: (req.Email != ""),
 			Label:   invite.UserLabel,
 		}
+		contactPrefs.Email = &(emailStore.Contact)
 		if profile != nil {
 			profile.ReferralTemplateKey = profile.ReferralTemplateKey
 		}
@@ -345,18 +353,22 @@ func (app *appContext) PostNewUserFromInvite(nu NewUserData, req ConfirmationKey
 
 	var discordUser *DiscordUser = nil
 	var telegramUser *TelegramUser = nil
+	// FIXME: Make sure its okay to, then change this check to len(app.tps) != 0 && (for loop of tps.Enabled )
 	if app.ombi.Enabled(app, profile) || app.js.Enabled(app, profile) {
 		// FIXME: figure these out in a nicer way? this relies on the current ordering,
 		// which may not be fixed.
 		if discordEnabled {
 			if req.completeContactMethods[0].User != nil {
 				discordUser = req.completeContactMethods[0].User.(*DiscordUser)
+				contactPrefs.Discord = &discordUser.Contact
 			}
 			if telegramEnabled && req.completeContactMethods[1].User != nil {
 				telegramUser = req.completeContactMethods[1].User.(*TelegramUser)
+				contactPrefs.Telegram = &telegramUser.Contact
 			}
 		} else if telegramEnabled && req.completeContactMethods[0].User != nil {
 			telegramUser = req.completeContactMethods[0].User.(*TelegramUser)
+			contactPrefs.Telegram = &telegramUser.Contact
 		}
 	}
 
@@ -365,7 +377,7 @@ func (app *appContext) PostNewUserFromInvite(nu NewUserData, req ConfirmationKey
 			continue
 		}
 		// User already created, now we can link contact methods
-		err := tps.AddContactMethods(nu.User.ID, req.newUserDTO, discordUser, telegramUser)
+		err := tps.SetContactMethods(nu.User.ID, &(req.Email), discordUser, telegramUser, &contactPrefs)
 		if err != nil {
 			app.err.Printf(lm.FailedSyncContactMethods, tps.Name(), err)
 		}
@@ -1119,39 +1131,21 @@ func (app *appContext) ModifyLabels(gc *gin.Context) {
 }
 
 func (app *appContext) modifyEmail(jfID string, addr string) {
-	contactPrefChanged := false
 	emailStore, ok := app.storage.GetEmailsKey(jfID)
 	// Auto enable contact by email for newly added addresses
 	if !ok || emailStore.Addr == "" {
 		emailStore = EmailAddress{
 			Contact: true,
 		}
-		contactPrefChanged = true
 	}
 	emailStore.Addr = addr
 	app.storage.SetEmailsKey(jfID, emailStore)
-	if app.config.Section("ombi").Key("enabled").MustBool(false) {
-		ombiUser, err := app.getOmbiUser(jfID)
-		if err == nil {
-			ombiUser["emailAddress"] = addr
-			err = app.ombi.ModifyUser(ombiUser)
-			if err != nil {
-				app.err.Printf(lm.FailedSetEmailAddress, lm.Ombi, jfID, err)
-			}
-		}
-	}
-	if app.config.Section("jellyseerr").Key("enabled").MustBool(false) {
-		err := app.js.ModifyMainUserSettings(jfID, jellyseerr.MainUserSettings{Email: addr})
-		if err != nil {
-			app.err.Printf(lm.FailedSetEmailAddress, lm.Jellyseerr, jfID, err)
-		} else if contactPrefChanged {
-			contactMethods := map[jellyseerr.NotificationsField]any{
-				jellyseerr.FieldEmailEnabled: true,
-			}
-			err := app.js.ModifyNotifications(jfID, contactMethods)
-			if err != nil {
-				app.err.Printf(lm.FailedSyncContactMethods, lm.Jellyseerr, err)
-			}
+
+	for _, tps := range app.thirdPartyServices {
+		if err := tps.SetContactMethods(jfID, &addr, nil, nil, &common.ContactPreferences{
+			Email: &(emailStore.Contact),
+		}); err != nil {
+			app.err.Printf(lm.FailedSetEmailAddress, tps.Name(), jfID, err)
 		}
 	}
 	app.InvalidateWebUserCache()

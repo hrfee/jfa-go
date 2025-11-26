@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/hrfee/jfa-go/ombi"
 	"gopkg.in/ini.v1"
 )
 
@@ -191,7 +192,10 @@ func linkExistingOmbiDiscordTelegram(app *appContext) error {
 			app.debug.Printf("Failed to get Ombi user with Discord/Telegram \"%s\"/\"%s\": %v", ids[0], ids[1], err)
 			continue
 		}
-		_, err = app.ombi.SetNotificationPrefs(ombiUser, ids[0], ids[1])
+		_, err = app.ombi.SetNotificationPrefs(ombiUser, []ombi.NotificationPref{
+			{ombi.NotifAgentDiscord, ombiUser["id"].(string), ids[0], true},
+			{ombi.NotifAgentTelegram, ombiUser["id"].(string), ids[1], true},
+		})
 		if err != nil {
 			app.debug.Printf("Failed to set prefs for Ombi user \"%s\": %v", ombiUser["userName"].(string), err)
 			continue

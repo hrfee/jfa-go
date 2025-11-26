@@ -28,6 +28,16 @@ func (tv TelegramVerifiedToken) ToUser() *TelegramUser {
 	}
 }
 
+func EmptyTelegramUser() *TelegramUser {
+	return &TelegramUser{
+		JellyfinID: "",
+		ChatID:     0,
+		Username:   "",
+		Lang:       "",
+		Contact:    false,
+	}
+}
+
 func (t *TelegramVerifiedToken) Name() string                 { return t.Username }
 func (t *TelegramVerifiedToken) SetMethodID(id any)           { t.ChatID = id.(int64) }
 func (t *TelegramVerifiedToken) MethodID() any                { return t.ChatID }

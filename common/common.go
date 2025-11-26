@@ -16,6 +16,16 @@ import (
 	lm "github.com/hrfee/jfa-go/logmessages"
 )
 
+const (
+	BogusIdentifier = "123412341234123456"
+)
+
+// ContactPreferences holds whether or not a user should be contacted through each of the available
+// methods. If nil, leave setting alone.
+type ContactPreferences struct {
+	Email, Discord, Telegram, Matrix *bool
+}
+
 // TimeoutHandler recovers from an http timeout or panic.
 type TimeoutHandler func()
 
