@@ -175,7 +175,7 @@ func (js *JellyseerrWrapper) SetContactMethods(jellyfinID string, email *string,
 			contactMethods[jellyseerr.FieldTelegramEnabled] = true
 		}
 		if telegram != nil {
-			contactMethods[jellyseerr.FieldTelegram] = telegram.ChatID
+			contactMethods[jellyseerr.FieldTelegram] = strconv.FormatInt(telegram.ChatID, 10)
 			// Whether this is still necessary or not, i don't know.
 			if telegram.ChatID == 0 {
 				contactMethods[jellyseerr.FieldTelegram] = jellyseerr.BogusIdentifier
