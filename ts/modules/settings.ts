@@ -132,7 +132,7 @@ class DOMSetting {
         }
     }
 
-    get required(): boolean { return this._required.classList.contains("badge"); }
+    get required(): boolean { return !(this._required.classList.contains("unfocused")); }
     set required(state: boolean) {
         if (state) {
             this._required.classList.remove("unfocused");
@@ -143,7 +143,7 @@ class DOMSetting {
         }
     }
     
-    get requires_restart(): boolean { return this._restart.classList.contains("badge"); }
+    get requires_restart(): boolean { return !(this._restart.classList.contains("unfocused")); }
     set requires_restart(state: boolean) {
         if (state) {
             this._restart.classList.remove("unfocused");
