@@ -62,6 +62,17 @@ func (app *appContext) NewUserFromAdmin(gc *gin.Context) {
 		app.storage.SetEmailsKey(nu.User.ID, emailStore)
 	}
 
+	for _, tps := range app.thirdPartyServices {
+		if !tps.Enabled(app, &profile) {
+			continue
+		}
+		// We only have email
+		err := tps.AddContactMethods(nu.User.ID, req, nil, nil)
+		if err != nil {
+			app.err.Printf(lm.FailedSyncContactMethods, tps.Name(), err)
+		}
+	}
+
 	welcomeMessageSentIfNecessary := true
 	if nu.Created {
 		welcomeMessageSentIfNecessary = !app.WelcomeNewUser(nu.User, time.Time{})

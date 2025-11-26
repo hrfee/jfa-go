@@ -144,7 +144,7 @@ func (js *JellyseerrWrapper) AddContactMethods(jellyfinID string, req newUserDTO
 		contactMethods[jellyseerr.FieldDiscord] = discord.ID
 		contactMethods[jellyseerr.FieldDiscordEnabled] = req.DiscordContact
 	}
-	if telegramEnabled && discord != nil {
+	if telegramEnabled && telegram != nil {
 		contactMethods[jellyseerr.FieldTelegram] = telegram.ChatID
 		contactMethods[jellyseerr.FieldTelegramEnabled] = req.TelegramContact
 	}
