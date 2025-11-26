@@ -92,8 +92,9 @@ func (js *Jellyseerr) req(mode string, uri string, data any, queryParams url.Val
 	var responseText string
 	defer resp.Body.Close()
 	if response || err != nil {
-		responseText, err = js.decodeResp(resp)
-		if err != nil {
+		var decodeErr error
+		responseText, decodeErr = js.decodeResp(resp)
+		if decodeErr != nil {
 			return responseText, resp.StatusCode, err
 		}
 	}
