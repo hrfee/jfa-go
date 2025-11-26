@@ -66,6 +66,8 @@
         "setExpiry": "Set expiry",
         "removeExpiry": "Remove expiry",
         "enterExpiry": "Enter an expiry",
+        "extendFromPreviousExpiry": "Extend from previous expiry date (if possible)",
+        "extendFromPreviousExpiryDescription": "If a record of an expired user's expiry time is found in the activity log, expiry will be extended from then, rather than the current time, unless the new expiry date would have already passed.",
         "sendPWRManual": "User {n} has no method of contact, press copy to get a link to send to them.",
         "sendPWRSuccess": "Password reset link sent.",
         "sendPWRSuccessManual": "If the user hasn't received it, press copy to get a link to manually send to them.",

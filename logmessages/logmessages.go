@@ -186,7 +186,11 @@ const (
 
 	IncorrectCaptcha = "captcha incorrect"
 
-	ExtendCreateExpiry = "Extended or created expiry for user \"%s\""
+	ExtendCreateExpiry      = "Extended or created expiry for user \"%s\""
+	FoundExistingExpiry     = "Found existing expiry key"
+	FoundPreviousExpiryLog  = "Found most recent previous expiry in activity log @ %v"
+	ExpiryWouldBeInPast     = "Expiry would've been in the past, using current time base"
+	PreviousExpiryNotExpiry = "Last user disable was not an expiry, using current time base"
 
 	UserEmailAdjusted = "Email for user \"%s\" adjusted"
 	UserAdminAdjusted = "Admin state for user \"%s\" set to %t"

@@ -525,6 +525,24 @@ func (app *appContext) ExtendExpiry(gc *gin.Context) {
 		base := time.Now()
 		if expiry, ok := app.storage.GetUserExpiryKey(id); ok {
 			base = expiry.Expiry
+			app.debug.Printf(lm.FoundExistingExpiry)
+		} else if req.TryExtendFromPreviousExpiry {
+			var acts []Activity
+			app.storage.db.Find(&acts, badgerhold.Where("Type").Eq(ActivityDisabled).And("UserID").Eq(id).SortBy("Time").Reverse().Limit(1))
+			if len(acts) != 0 {
+				// Only do it if the most recent reason for disabling was expiry
+				if acts[0].SourceType == ActivityDaemon {
+					app.debug.Printf(lm.FoundPreviousExpiryLog, acts[0].Time)
+					newExpiry := acts[0].Time.AddDate(0, req.Months, req.Days).Add(time.Duration(((60 * req.Hours) + req.Minutes)) * time.Minute)
+					if newExpiry.After(base) {
+						base = acts[0].Time
+					} else {
+						app.debug.Printf(lm.ExpiryWouldBeInPast)
+					}
+				} else {
+					app.debug.Printf(lm.PreviousExpiryNotExpiry)
+				}
+			}
 		}
 		app.debug.Printf(lm.ExtendCreateExpiry, id)
 		expiry := UserExpiry{}

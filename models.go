@@ -252,14 +252,15 @@ type customEmailDTO struct {
 }
 
 type extendExpiryDTO struct {
-	Users     []string `json:"users"`                           // List of user IDs to apply to.
-	Months    int      `json:"months" example:"1"`              // Number of months to add.
-	Days      int      `json:"days" example:"1"`                // Number of days to add.
-	Hours     int      `json:"hours" example:"2"`               // Number of hours to add.
-	Minutes   int      `json:"minutes" example:"3"`             // Number of minutes to add.
-	Timestamp int64    `json:"timestamp"`                       // Optional, exact time to expire at. Overrides other fields.
-	Notify    bool     `json:"notify"`                          // Whether to message the user(s) about the change.
-	Reason    string   `json:"reason" example:"i felt like it"` // Reason for adjustment.
+	Users                       []string `json:"users"`                                     // List of user IDs to apply to.
+	Months                      int      `json:"months,omitempty" example:"1"`              // Number of months to add.
+	Days                        int      `json:"days,omityempty" example:"1"`               // Number of days to add.
+	Hours                       int      `json:"hours,omitempty" example:"2"`               // Number of hours to add.
+	Minutes                     int      `json:"minutes,omitempty" example:"3"`             // Number of minutes to add.
+	Timestamp                   int64    `json:"timestamp,omitempty"`                       // Optional, exact time to expire at. Overrides other fields.
+	Notify                      bool     `json:"notify"`                                    // Whether to message the user(s) about the change.
+	Reason                      string   `json:"reason,omitempty" example:"i felt like it"` // Optional, reason for adjustment.
+	TryExtendFromPreviousExpiry bool     `json:"try_extend_from_previous_expiry,omitempty"` // If an activity log of the expiry of a disabled user is available, extend the expiry from that instead of the current time.
 }
 
 type checkUpdateDTO struct {
