@@ -659,8 +659,8 @@ func (app *appContext) UnlinkDiscord(gc *gin.Context) {
 	} */
 	app.storage.DeleteDiscordKey(req.ID)
 
-	// May not actually remove Discord ID, but should disable interaction.
-	if err := app.js.ModifyNotifications(gc.GetString("jfId"), map[jellyseerr.NotificationsField]any{
+	// FIXME: Use thirdPartyServices for this
+	if err := app.js.ModifyNotifications(req.ID, map[jellyseerr.NotificationsField]any{
 		jellyseerr.FieldDiscord:        jellyseerr.BogusIdentifier,
 		jellyseerr.FieldDiscordEnabled: false,
 	}); err != nil {
@@ -697,7 +697,8 @@ func (app *appContext) UnlinkTelegram(gc *gin.Context) {
 	} */
 	app.storage.DeleteTelegramKey(req.ID)
 
-	if err := app.js.ModifyNotifications(gc.GetString("jfId"), map[jellyseerr.NotificationsField]any{
+	// FIXME: Use thirdPartyServices for this
+	if err := app.js.ModifyNotifications(req.ID, map[jellyseerr.NotificationsField]any{
 		jellyseerr.FieldTelegram:        jellyseerr.BogusIdentifier,
 		jellyseerr.FieldTelegramEnabled: false,
 	}); err != nil {
