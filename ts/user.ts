@@ -25,7 +25,7 @@ interface userWindow extends GlobalWindow {
 declare var window: userWindow;
 
 // const basePath = window.location.pathname.replace("/password/reset", "");
-const basePath = window.pages.MyAccount;
+const basePath = window.pages.Base + window.pages.MyAccount;
 
 const theme = new ThemeManager(document.getElementById("button-theme"));
 
