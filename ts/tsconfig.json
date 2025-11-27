@@ -2,7 +2,7 @@
     "compilerOptions": {
         "outDir": "../js",
         "target": "es2017",
-        "lib": ["dom", "es2017"],
+        "lib": ["dom", "es2017", "dom.iterable"],
         "typeRoots": ["./typings", "../node_modules/@types"],
         "module": "esnext",
         "moduleResolution": "bundler",

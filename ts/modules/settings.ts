@@ -1,6 +1,7 @@
 import { _get, _post, _delete, _download, _upload, toggleLoader, addLoader, removeLoader, insertText, toClipboard, toDateString } from "../modules/common.js";
 import { Marked } from "@ts-stack/markdown";
 import { stripMarkdown } from "../modules/stripmd.js";
+import { PDT } from "src/data/timezoneNames";
 
 declare var window: GlobalWindow;
 
@@ -176,7 +177,7 @@ class DOMSetting {
             <div class="flex flex-row gap-2 items-baseline">
                 <span class="setting-label"></span>
                 <div class="setting-tooltip tooltip right unfocused">
-                    <i class="icon ri-information-line align-baseline"></i>
+                    <i class="icon ri-information-line align-[-0.05rem]"></i>
                     <span class="content sm"></span>
                 </div>
                 <span class="setting-required unfocused"></span>
@@ -191,10 +192,10 @@ class DOMSetting {
         // "input" variable should supply the HTML of an element with class "setting-input"
         this._input = this._container.querySelector(".setting-input") as HTMLInputElement;
         if (setting.depends_false || setting.depends_true) {
-            let dependant = splitDependant(section, setting.depends_true || setting.depends_false);
+            let [sect, dependant] = splitDependant(section, setting.depends_true || setting.depends_false);
             let state = true;
             if (setting.depends_false) { state = false; }
-            document.addEventListener(`settings-${dependant[0]}-${dependant[1]}`, (event: settingsChangedEvent) => {
+            document.addEventListener(`settings-${sect}-${dependant}`, (event: settingsChangedEvent) => {
                 if (toBool(event.detail) !== state) {
                     this.hide();
                 } else {
@@ -478,9 +479,29 @@ interface Group {
     members: Member[];
 }
 
-class groupButton {
-    private _el: HTMLElement;
-    private _button: HTMLElement;
+abstract class groupableItem {
+    protected _el: HTMLElement;
+    asElement = () => { return this._el; }
+    remove = () => { this._el.remove(); };
+    inGroup = (): string|null  => { return this._el.parentElement.getAttribute("data-group"); }
+    get hidden(): boolean { return this._el.classList.contains("unfocused"); }
+    set hidden(v: boolean) {
+        if (v) {
+            this._el.classList.add("unfocused");
+            if (this.inGroup()) {
+                document.dispatchEvent(new CustomEvent(`settings-group-${this.inGroup()}-child-hidden`));
+            }
+        } else {
+            this._el.classList.remove("unfocused");
+            if (this.inGroup()) {
+                document.dispatchEvent(new CustomEvent(`settings-group-${this.inGroup()}-child-visible`));
+            }
+        }
+    }
+}
+
+class groupButton extends groupableItem {
+    button: HTMLElement;
     private _dropdown: HTMLElement;
     private _icon: HTMLElement;
     private _check: HTMLInputElement;
@@ -489,6 +510,11 @@ class groupButton {
     private _parentSidebar: HTMLElement;
 
     private static readonly _margin = "ml-6";
+    private _indentClasses = ["h-11", "h-10", "h-9"];
+    private _indentClass = () => {
+        const classes = [["h-10"], ["h-9"]];
+        return classes[Math.min(this.indent, classes.length-1)];
+    };
 
     asElement = () => { return this._el; };
 
@@ -503,8 +529,12 @@ class groupButton {
 
     append(item: HTMLElement|groupButton) {
         if (item instanceof groupButton) {
+            item.button.classList.remove(...this._indentClasses);
+            item.button.classList.add(...this._indentClass());
             this._dropdown.appendChild(item.asElement());
         } else {
+            item.classList.remove(...this._indentClasses);
+            item.classList.add(...this._indentClass());
             this._dropdown.appendChild(item);
         }
     }
@@ -512,14 +542,18 @@ class groupButton {
     get name(): string { return this._group.name; }
     set name(v: string) {
         this._group.name = v;
-        this._button.querySelector(".group-button-name").textContent = v;
+        this.button.querySelector(".group-button-name").textContent = v;
     }
 
     get group(): string { return this._group.group; }
     set group(v: string) {
+        document.removeEventListener(`settings-group-${this.group}-child-visible`, this._childVisible);
+        document.removeEventListener(`settings-group-${this.group}-child-hidden`, this._childHidden);
         this._group.group = v;
+        document.addEventListener(`settings-group-${this.group}-child-visible`, this._childVisible);
+        document.addEventListener(`settings-group-${this.group}-child-hidden`, this._childHidden);
         this._el.setAttribute("data-group", v);
-        this._button.setAttribute("data-group", v);
+        this.button.setAttribute("data-group", v);
         this._check.setAttribute("data-group", v);
         this._dropdown.setAttribute("data-group", v);
     }
@@ -532,17 +566,14 @@ class groupButton {
         this._dropdown.classList.remove(groupButton._margin);
         this._indent = v;
         this._dropdown.classList.add(groupButton._margin);
-    }
-
-    get hidden(): boolean { return this._el.classList.contains("unfocused"); }
-    set hidden(v: boolean) {
-        if (v) this._el.classList.add("unfocused");
-        else this._el.classList.remove("unfocused");
+        for (let child of this._dropdown.children) {
+            child.classList.remove(...this._indentClasses);
+            child.classList.add(...this._indentClass());
+        };
     }
 
     get open(): boolean { return this._check.checked; }
     set open(v: boolean) {
-        console.trace("set", v);
         this.openCloseWithAnimation(v);
     }
 
@@ -608,20 +639,35 @@ class groupButton {
         }
     }
 
+    private _childVisible = () => {
+        this.hidden = false;
+    }
+
+    private _childHidden = () => {
+        for (let el of this._dropdown.children) {
+            if (!(el.classList.contains("unfocused"))) {
+                return;
+            }
+        }
+        // All children are hidden, so hide ourself
+        this.hidden = true;
+    }
+
     // Takes sidebar as we need to disable scrolling on it when animation starts.
     constructor(parentSidebar: HTMLElement) {
+        super();
         this._parentSidebar = parentSidebar;
 
         this._el = document.createElement("div");
         this._el.classList.add("flex", "flex-col", "gap-2");
 
-        this._button = document.createElement("span") as HTMLSpanElement;
-        this._el.appendChild(this._button);
-        this._button.classList.add("button", "~neutral", "@low", "settings-section-button", "justify-between");
-        this._button.innerHTML = `
+        this.button = document.createElement("span") as HTMLSpanElement;
+        this._el.appendChild(this.button);
+        this.button.classList.add("button", "~neutral", "@low", "settings-section-button", "h-11", "justify-between");
+        this.button.innerHTML = `
         <span class="group-button-name"></span>
-        <label>
-            <i class="icon ri-arrow-down-s-line text-xl"></i>
+        <label class="button border-none shadow-none">
+            <i class="icon ri-arrow-down-s-line"></i>
             <input class="unfocused" type="checkbox">
         </label>
         `;
@@ -632,15 +678,16 @@ class groupButton {
         this._dropdown.style.opacity = "0";
         this._dropdown.classList.add("settings-dropdown", "unfocused", "flex", "flex-col", "gap-2", "transition-all");
 
-        this._icon = this._button.querySelector("i.icon");
-        this._check = this._button.querySelector("input[type=checkbox]") as HTMLInputElement;
+        this._icon = this.button.querySelector("i.icon");
+        this._check = this.button.querySelector("input[type=checkbox]") as HTMLInputElement;
 
-        this._button.onclick = (event: Event) => {
+        this.button.onclick = (event: Event) => {
             if (event.target != this._icon && event.target != this._check) this.open = !this.open;
         };
         this._check.onclick = () => {
             this.open = this.open;
         }
+
         this.openCloseWithoutAnimation(false);
     }
 };
@@ -741,6 +788,103 @@ class sectionPanel {
 
 type Member = { group: string } | { section: string };
 
+class sectionButton extends groupableItem {
+    section: string;
+    private _name: HTMLElement;
+    private _subButton: HTMLElement;
+    private _meta: Meta;
+
+    update = (section: string, sm: Meta) => {
+        this.section = section;
+        this._meta = sm;
+        this.name = sm.name;
+        this.advanced = sm.advanced;
+        this._registerDependencies();
+    };
+
+    get subButton(): HTMLElement { return this._subButton.children[0] as HTMLElement; }
+    set subButton(v: HTMLElement) { this._subButton.replaceChildren(v); }
+
+    get name(): string { return this._meta.name; }
+    set name(v: string) {
+        this._meta.name = v;
+        this._name.textContent = v;
+    };
+
+    get depends_true(): string { return this._meta.depends_true; }
+    set depends_true(v: string) {
+        this._meta.depends_true = v;
+        this._registerDependencies();
+    }
+    
+    get depends_false(): string { return this._meta.depends_false; }
+    set depends_false(v: string) {
+        this._meta.depends_false = v;
+        this._registerDependencies();
+    }
+
+    get selected(): boolean { return this._el.classList.contains("selected"); }
+    set selected(v: boolean) {
+        if (v) this._el.classList.add("selected");
+        else this._el.classList.remove("selected");
+    }
+
+    select = () => {
+        document.dispatchEvent(new CustomEvent("settings-show-panel", { detail: this.section }));
+    }
+
+    private _registerDependencies() {
+        // Doesn't re-register dependencies, but that isn't important in this application
+        if (!(this._meta.depends_true || this._meta.depends_false)) return;
+
+        let [sect, dependant] = splitDependant(this.section, this._meta.depends_true || this._meta.depends_false);
+        let state = !(Boolean(this._meta.depends_false));
+        document.addEventListener(`settings-${sect}-${dependant}`, (event: settingsChangedEvent) => {
+            const hide = (toBool(event.detail) !== state);
+            this.hidden = hide;
+            document.dispatchEvent(new CustomEvent(`settings-${name}`, { detail: !hide }));
+        });
+        document.addEventListener(`settings-${sect}`, (event: settingsChangedEvent) => {
+            if (toBool(event.detail) !== state) {
+                this.hidden = true;
+                document.dispatchEvent(new CustomEvent(`settings-${name}`, { detail: false }));
+            }
+        }); 
+    }
+
+    private _advancedListener = (event: settingsChangedEvent) => {
+        if (!toBool(event.detail)) {
+            this._el.classList.add("unfocused");
+        } else {
+            this._el.classList.remove("unfocused");
+        }
+        document.dispatchEvent(new CustomEvent("settings-re-search"));
+    }
+
+    get advanced(): boolean { return this._meta.advanced }
+    set advanced(v: boolean) {
+        this._meta.advanced = v;
+        if (v) document.addEventListener("settings-advancedState", this._advancedListener);
+        else document.removeEventListener("settings-advancedState", this._advancedListener);
+    }
+
+    constructor(section?: string, sectionMeta?: Meta) {
+        super();
+        this._el = document.createElement("span") as HTMLSpanElement;
+        this._el.classList.add("button", "~neutral", "@low", "settings-section-button", "h-11", "justify-between");
+        this._el.innerHTML = `
+            <span class="settings-section-button-name"></span>
+            <div class="settings-section-button-sub-button"></div>
+        `;
+        this._name = this._el.getElementsByClassName("settings-section-button-name")[0] as HTMLElement;
+        this._subButton = this._el.getElementsByClassName("settings-section-button-sub-button")[0] as HTMLElement;
+
+        this._el.onclick = this.select;
+
+        if (sectionMeta) this.update(section, sectionMeta);
+    }
+}
+
 interface Settings {
     groups: Group[];
     sections: Section[];
@@ -758,7 +902,7 @@ export class settingsList {
     private _sidebar = document.getElementById("settings-sidebar-items") as HTMLDivElement;
     private _visibleSection: string;
     private _sections: { [name: string]: sectionPanel };
-    private _buttons: { [name: string]: HTMLSpanElement };
+    private _buttons: { [name: string]: sectionButton };
   
     private _groups: { [name: string]: Group };
     private _groupButtons: { [name: string]: groupButton };
@@ -800,7 +944,7 @@ export class settingsList {
                     const subsection = this._buttons[member.section];
                     // Remove from page
                     subsection.remove();
-                    container.append(subsection);
+                    container.append(subsection.asElement());
                 }
             }
             
@@ -820,43 +964,10 @@ export class settingsList {
         const section = new sectionPanel(s, name);
         this._sections[name] = section;
         this._panel.appendChild(this._sections[name].asElement());
-        const button = document.createElement("span") as HTMLSpanElement;
-        button.classList.add("button", "~neutral", "@low", "settings-section-button", "justify-between");
-        button.textContent = s.meta.name;
-        if (subButton) { button.appendChild(subButton); }
-        button.onclick = () => { this._showPanel(name); };
-        if (s.meta.depends_true || s.meta.depends_false) {
-            let dependant = splitDependant(name, s.meta.depends_true || s.meta.depends_false);
-            let state = true;
-            if (s.meta.depends_false) { state = false; }
-            document.addEventListener(`settings-${dependant[0]}-${dependant[1]}`, (event: settingsChangedEvent) => {
-                if (toBool(event.detail) !== state) {
-                    button.classList.add("unfocused");
-                    document.dispatchEvent(new CustomEvent(`settings-${name}`, { detail: false }));
-                } else {
-                    button.classList.remove("unfocused");
-                    document.dispatchEvent(new CustomEvent(`settings-${name}`, { detail: true }));
-                }
-            });
-            document.addEventListener(`settings-${dependant[0]}`, (event: settingsChangedEvent) => {
-                if (toBool(event.detail) !== state) {
-                    button.classList.add("unfocused");
-                    document.dispatchEvent(new CustomEvent(`settings-${name}`, { detail: false }));
-                }
-            }); 
-        }
-        if (s.meta.advanced) {
-            document.addEventListener("settings-advancedState", (event: settingsChangedEvent) => {
-                if (!toBool(event.detail)) {
-                    button.classList.add("unfocused");
-                } else {
-                    button.classList.remove("unfocused");
-                }
-                this._searchbox.oninput(null);
-            });
-        }
+        const button = new sectionButton(name, s.meta);
+        if (subButton) button.subButton = subButton;
         this._buttons[name] = button;
-        this._sidebar.appendChild(this._buttons[name]);
+        this._sidebar.appendChild(button.asElement());
     }
 
     private _traverseMemberList = (list: Member[], func: (sect: string) => void) => {
@@ -882,7 +993,7 @@ export class settingsList {
                 this._groupButtons[member.group].openCloseWithoutAnimation(false);
             } else if ("section" in member) {
                 if (member.section in this._buttons) {
-                    this._sidebar.appendChild(this._buttons[member.section]);
+                    this._sidebar.appendChild(this._buttons[member.section].asElement());
                 } else {
                     console.warn("Settings section specified in order but missing:", member.section);
                 }
@@ -891,15 +1002,11 @@ export class settingsList {
     }
 
     private _showPanel = (name: string) => {
-        // console.log("showing", name);
         for (let n in this._sections) {
+            this._sections[n].visible = n == name;
+            this._buttons[name].selected = n == name;
             if (n == name) {
-                this._sections[name].visible = true;
                 this._visibleSection = name;
-                this._buttons[name].classList.add("selected");
-            } else {
-                this._sections[n].visible = false;
-                this._buttons[n].classList.remove("selected");
             }
         }
     }
@@ -949,7 +1056,7 @@ export class settingsList {
 
     setBackupSort = (ascending: boolean) => {
         this._backupSortAscending = ascending;
-        this._backupSortDirection.innerHTML = `${window.lang.strings("sortDirection")} <i class="ri-arrow-${ascending ? "up" : "down"}-s-line ml-2"></i>`;
+        this._backupSortDirection.innerHTML = `${window.lang.strings("sortDirection")} <i class="${ascending ? "ri-arrow-up-s-line" : "ri-arrow-down-s-line"} ml-2"></i>`;
         this._getBackups();
     };
 
@@ -1029,6 +1136,10 @@ export class settingsList {
             this._backup();
         };
 
+        document.addEventListener("settings-show-panel", (event: CustomEvent) => {
+            this._showPanel(event.detail as string);
+        });
+
         document.getElementById("settings-backups").onclick = () => {
             this.setBackupSort(this._backupSortAscending);
             window.modals.backups.show();
@@ -1068,6 +1179,11 @@ export class settingsList {
         this._searchbox.oninput = () => {
             this.search(this._searchbox.value);
         };
+        
+        document.addEventListener("settings-re-search", () => {
+            this._searchbox.oninput(null);
+        });
+
         for (let b of this._clearSearchboxButtons) {
             b.onclick = () => {
                 this._searchbox.value = "";
@@ -1080,7 +1196,7 @@ export class settingsList {
             const rr = document.createElement("span");
             rr.classList.add("tooltip", "below");
             rr.innerHTML = `
-                <span class="badge ~info dark:~d_warning"><i class="icon ri-refresh-line align-baseline h-full"></i></span>
+                <span class="badge ~info dark:~d_warning align-[0.08rem]"><i class="icon ri-refresh-line h-full"></i></span>
                 <span class="content sm">${window.lang.strings("restartRequired")}</span>
             `;
 
@@ -1090,7 +1206,7 @@ export class settingsList {
             const r = document.createElement("span");
             r.classList.add("tooltip", "below");
             r.innerHTML = `
-                <span class="badge ~critical"><i class="icon ri-asterisk align-baseline h-full"></i></span>
+                <span class="badge ~critical align-[0.08rem]"><i class="icon ri-asterisk h-full"></i></span>
                 <span class="content sm">${window.lang.strings("required")}</span>
             `;
 
@@ -1151,9 +1267,9 @@ export class settingsList {
                 } else {
                     if (section.section == "messages" || section.section == "user_page") {
                         const editButton = document.createElement("div");
-                        editButton.classList.add("tooltip", "left");
+                        editButton.classList.add("tooltip", "left", "h-full");
                         editButton.innerHTML = `
-                        <span class="button ~neutral @low">
+                        <span class="button ~neutral @low h-full">
                             <i class="icon ri-edit-line"></i>
                         </span>
                         <span class="content sm">
@@ -1189,9 +1305,9 @@ export class settingsList {
                         this.addSection(section.section, section, icon);
                     } else if (section.section == "matrix" && !window.matrixEnabled) {
                         const addButton = document.createElement("div");
-                        addButton.classList.add("tooltip", "left");
+                        addButton.classList.add("tooltip", "left", "h-full");
                         addButton.innerHTML = `
-                        <span class="button ~neutral @low">+</span>
+                        <span class="button ~neutral h-full"><i class="icon ri-links-line"></i></span>
                         <span class="content sm">
                         ${window.lang.strings("linkMatrix")}
                         </span>
@@ -1263,8 +1379,8 @@ export class settingsList {
 
             // hide button, unhide if matched
             const button = this._buttons[section.section];
-            button.classList.add("unfocused");
-            const parentGroup = button.parentElement.getAttribute("data-group");
+            button.hidden = true;
+            const parentGroup = button.inGroup();
             let parentGroupButton: groupButton = null;
             let matchedGroup = false;
             if (parentGroup) {
@@ -1273,14 +1389,13 @@ export class settingsList {
             }
 
             const show = () => {
-                button.classList.remove("unfocused");
+                button.hidden = false;
                 if (parentGroupButton) {
                     if (query != "") parentGroupButton.openCloseWithoutAnimation(true);
-                    parentGroupButton.hidden = false;
                 }
             }
             const hide = () => {
-                button.classList.add("unfocused");
+                button.hidden = true;
             }
 
             let matchedSection = matchedGroup ||
@@ -1369,13 +1484,13 @@ export class settingsList {
         }
         
         if (firstVisibleSection && (query != "" || this._visibleSection == "")) {
-            this._buttons[firstVisibleSection].onclick(null);
+            this._buttons[firstVisibleSection].select();
             this._noResultsPanel.classList.add("unfocused");
         } else if (query != "") {
             this._noResultsPanel.classList.remove("unfocused");
             if (this._visibleSection) {
                 this._sections[this._visibleSection].visible = false;
-                this._buttons[this._visibleSection].classList.remove("selected");
+                this._buttons[this._visibleSection].selected = false;
                 this._visibleSection = "";
             }
         }

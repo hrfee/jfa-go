@@ -221,15 +221,8 @@ sup.\~critical, .text-critical {
     padding-bottom: 0.1rem;
 }
 
-.settings-section-button {
-    width: 100%;
-    height: 2.5rem;
-}
-
 .settings-section-button:hover, .settings-section-button:focus {
     box-sizing: border-box;
-    width: 100%;
-    height: 2.5rem;
     background-color: var(--color-neutral-normal-fill);
     filter: brightness(var(--settings-section-button-filter)) !important;
 }

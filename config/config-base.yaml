@@ -790,6 +790,7 @@ sections:
     - ["smtp", "SMTP"]
     - ["mailgun", "Mailgun"]
     value: smtp
+    depends_true: messages|enabled
     description: Method of sending email to use.
   - setting: address
     name: Sent from (address)
