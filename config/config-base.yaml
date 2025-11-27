@@ -31,7 +31,7 @@ groups:
       - section: mailgun
       - section: email_confirmation
   - group: chatbots
-    name: "Chat bots"
+    name: "Chatbots"
     description: "Options for messaging through chat services."
     members:
       - section: discord
@@ -837,7 +837,7 @@ sections:
     description: Go over to the accounts tab, select your user (ensuring you've assigned it an email address) and send yourself an announcement.
 - section: mailgun
   meta:
-    name: Mailgun (Email)
+    name: Mailgun
     description: Mailgun API connection settings
     depends_true: email|method
   settings:
@@ -851,7 +851,7 @@ sections:
     value: your api key
 - section: smtp
   meta:
-    name: SMTP (Email)
+    name: SMTP
     description: SMTP Server connection settings.
     depends_true: email|method
   settings:
@@ -1333,7 +1333,7 @@ sections:
     description: Path to user creation notification email in plaintext.
 - section: ombi
   meta:
-    name: Ombi Integration
+    name: Ombi
     description: Connect to Ombi to automatically create both Ombi and Jellyfin accounts
       for new users. You'll need to add a ombi template to an existing User Profile
       for accounts to be created, which you can do by refreshing then checking Settings
@@ -1362,7 +1362,7 @@ sections:
     description: API Key. Get this from the first tab in Ombi settings.
 - section: jellyseerr
   meta:
-    name: Jellyseerr Integration
+    name: Jellyseerr
     description: Connect to Jellyseerr to automatically trigger the import of users
       on account creation, and to automatically link contact methods (email, discord
       and telegram). A template must be added to a User Profile for accounts to be

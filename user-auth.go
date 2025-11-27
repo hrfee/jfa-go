@@ -67,6 +67,7 @@ func (app *appContext) getUserTokenLogin(gc *gin.Context) {
 	host := app.ExternalDomainNoPort(gc)
 	uri := "/my"
 	// FIXME: This seems like a bad idea? I think it's to deal with people having Reverse proxy subfolder/URL base set to /accounts.
+	// RESPONSE: Not sure when this was added but I think some changes to page stuff make it unnecessary.
 	// if strings.HasPrefix(gc.Request.RequestURI, PAGES.Base) {
 	// 	uri = "/accounts/my"
 	// }
