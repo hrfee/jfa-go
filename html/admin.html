@@ -491,24 +491,7 @@
                 <span class="button ~urge @low full-width center mt-2" id="update-update">{{ .strings.update }}</span>
             </div>
         </div>
-        {{ if .telegramEnabled }}
-        <div id="modal-telegram" class="modal">
-            <div class="card relative mx-auto my-[10%] w-11/12 sm:w-4/5 lg:w-1/3">
-                <span class="heading mb-4">{{ .strings.linkTelegram }}</span>
-                <p class="content mb-4">{{ .strings.sendPIN }}</p>
-                <h1 class="ac" id="telegram-pin"></h1>
-                <a class="subheading link-center" id="telegram-link" target="_blank">
-                    <span class="shield ~info mr-2">
-                        <span class="icon">
-                            <i class="ri-telegram-line"></i>
-                        </span>
-                    </span>
-                    &#64;<span id="telegram-username">
-                </a>
-                <span class="button ~info @low full-width center mt-4" id="telegram-waiting">{{ .strings.success }}</span>
-            </div>
-        </div>
-        {{ end }}
+        {{ template "account-linking-telegram.html" . }}
         {{ if .discordEnabled }}
         <div id="modal-discord" class="modal">
             <div class="card relative mx-auto my-[10%] w-11/12 sm:w-4/5 lg:w-1/3">

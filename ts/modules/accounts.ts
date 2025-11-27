@@ -750,9 +750,10 @@ class user implements User, SearchableItem {
     
     private _addTelegram = () => _get("/telegram/pin", null, (req: XMLHttpRequest) => {
         if (req.readyState == 4 && req.status == 200) {
-            const pin = document.getElementById("telegram-pin");
-            const link = document.getElementById("telegram-link") as HTMLAnchorElement;
-            const username = document.getElementById("telegram-username") as HTMLSpanElement;
+            const modal = window.modals.telegram.modal;
+            const pin = modal.getElementsByClassName("pin")[0] as HTMLElement;
+            const link = modal.getElementsByClassName("link")[0] as HTMLAnchorElement;
+            const username = modal.getElementsByClassName("username")[0] as HTMLElement;
             const waiting = document.getElementById("telegram-waiting") as HTMLSpanElement;
             let resp = req.response as getPinResponse;
             pin.textContent = resp.token;
