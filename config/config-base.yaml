@@ -776,9 +776,27 @@ sections:
     - ["en-us", "English (US)"]
     value: en-us
     description: Default email language. Submit a PR on github if you'd like to translate.
+  - setting: collect
+    name: Collect on sign-up
+    type: bool
+    value: true
+    description: Ask for an email address on the sign-up form.
+  - setting: required
+    name: Require on sign-up
+    depends_true: collect
+    type: bool
+    value: false
+    description: Require an email address on sign-up.
+  - setting: require_unique
+    name: Require unique address
+    requires_restart: true
+    depends_true: method
+    type: bool
+    value: false
+    description: Disables using the same address on multiple accounts.
   - setting: no_username
     name: Use email addresses as username
-    depends_true: method
+    depends_true: collect
     type: bool
     value: false
     description: Use email address from invite form as username on Jellyfin.
@@ -811,25 +829,6 @@ sections:
     type: bool
     value: false
     description: Send emails as plain text instead of HTML.
-  - setting: collect
-    name: Collect on sign-up
-    depends_true: method
-    type: bool
-    value: true
-    description: Ask for an email address on the sign-up form.
-  - setting: required
-    name: Require on sign-up
-    depends_true: collect
-    type: bool
-    value: false
-    description: Require an email address on sign-up.
-  - setting: require_unique
-    name: Require unique address
-    requires_restart: true
-    depends_true: method
-    type: bool
-    value: false
-    description: Disables using the same address on multiple accounts.
   - setting: test_note
     name: 'Test your settings:'
     type: note
@@ -1483,7 +1482,7 @@ sections:
     name: Email confirmation
     description: If enabled, a user will be sent an email confirmation link to ensure
       their password is right before they can make an account.
-    depends_true: email|method
+    depends_true: email|collect
   settings:
   - setting: enabled
     name: Enabled

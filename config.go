@@ -266,6 +266,11 @@ func NewConfig(configPathOrContents any, dataPath string, logs LoggerSet) (*Conf
 	config.Section("discord").Key("start_command").SetValue(strings.TrimPrefix(strings.TrimPrefix(sc, "/"), "!"))
 
 	config.MustSetValue("email", "collect", "true")
+	collect := config.Section("email").Key("collect").MustBool(true)
+	required := config.Section("email").Key("required").MustBool(false) && collect
+	config.Section("email").Key("required").SetValue(strconv.FormatBool(required))
+	unique := config.Section("email").Key("require_unique").MustBool(false) && collect
+	config.Section("email").Key("require_unique").SetValue(strconv.FormatBool(unique))
 
 	config.MustSetValue("matrix", "topic", "Jellyfin notifications")
 	config.MustSetValue("matrix", "show_on_reg", "true")

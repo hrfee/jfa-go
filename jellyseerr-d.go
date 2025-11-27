@@ -2,6 +2,7 @@ package main
 
 import (
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/hrfee/jfa-go/jellyseerr"
@@ -28,7 +29,12 @@ func (app *appContext) SynchronizeJellyseerrUser(jfID string) {
 	if ok && email.Addr != "" && user.Email != email.Addr {
 		err = app.js.ModifyMainUserSettings(jfID, jellyseerr.MainUserSettings{Email: email.Addr})
 		if err != nil {
-			app.err.Printf(lm.FailedSetEmailAddress, lm.Jellyseerr, jfID, err)
+			if strings.Contains(err.Error(), "INVALID_EMAIL") {
+				app.err.Printf(lm.FailedSetEmailAddress, lm.Jellyseerr, jfID, err.Error()+"\""+email.Addr+"\"")
+			} else {
+
+				app.err.Printf(lm.FailedSetEmailAddress, lm.Jellyseerr, jfID, err)
+			}
 		} else {
 			contactMethods[jellyseerr.FieldEmailEnabled] = email.Contact
 		}
