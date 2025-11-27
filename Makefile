@@ -9,7 +9,7 @@ else
 endif
 GOBINARY ?= go
 
-CSSVERSION ?= v3
+CSSVERSION ?= v0.6.0
 CSS_BUNDLE = $(DATA)/web/css/$(CSSVERSION)bundle.css
 
 VERSION ?= $(shell git describe --exact-match HEAD 2> /dev/null || echo vgit)

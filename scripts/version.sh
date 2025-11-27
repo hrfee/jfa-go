@@ -34,4 +34,4 @@ fi
 JFA_GO_VERSION=$(git describe --exact-match HEAD 2> /dev/null || echo 'vgit')
 TIMEOUT=60m
 
-JFA_GO_CSS_VERSION="v3" JFA_GO_NFPM_EPOCH=$(git rev-list --all --count) JFA_GO_BUILD_TIME=$(date +%s) JFA_GO_BUILT_BY=${JFA_GO_BUILT_BY:-"???"} JFA_GO_VERSION="$(echo $JFA_GO_VERSION | sed 's/v//g')" $@ --timeout $TIMEOUT
+JFA_GO_CSS_VERSION="v0.6.0" JFA_GO_NFPM_EPOCH=$(git rev-list --all --count) JFA_GO_BUILD_TIME=$(date +%s) JFA_GO_BUILT_BY=${JFA_GO_BUILT_BY:-"???"} JFA_GO_VERSION="$(echo $JFA_GO_VERSION | sed 's/v//g')" $@ --timeout $TIMEOUT
