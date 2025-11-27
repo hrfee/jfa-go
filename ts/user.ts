@@ -659,7 +659,7 @@ document.addEventListener("details-reload", () => {
             expiryCard.expiry = details.expiry;
 
             const adminBackButton = document.getElementById("admin-back-button") as HTMLAnchorElement;
-            adminBackButton.href = window.pages.Base + window.pages.Admin;
+            adminBackButton.href = window.pages.Base + window.pages.Admin + "/";
 
             let messageCard = document.getElementById("card-message");
             if (details.accounts_admin) {
