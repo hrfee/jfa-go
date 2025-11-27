@@ -6,9 +6,7 @@ import { PDT } from "src/data/timezoneNames";
 declare var window: GlobalWindow;
 
 const toBool = (s: string): boolean => {
-    let b = Boolean(s);
-    if (s == "false") b = false;
-    return b;
+    return s == "false" ? false : Boolean(s);
 }
 
 interface BackupDTO {
@@ -20,8 +18,18 @@ interface BackupDTO {
 }
 
 interface settingsChangedEvent extends Event { 
-    detail: string;
+    detail: {
+        value: string;
+        hidden: boolean;
+    };
 }
+
+const changedEvent = (section: string, setting: string, value: string, hidden: boolean = false) => { 
+    return new CustomEvent(`settings-${section}-${setting}`, { detail: {
+        value: value,
+        hidden: hidden
+    }});
+};
 
 type SettingType = string;
 
@@ -61,8 +69,7 @@ interface Setting {
     asElement: () => HTMLElement;
     update: (s: Setting) => void;
 
-    hide: () => void;
-    show: () => void;
+    hidden: boolean;
 
     valueAsString: () => string;
 }
@@ -87,26 +94,22 @@ class DOMSetting {
     protected _restart: HTMLSpanElement;
     protected _advanced: boolean;
     protected _section: string;
+    protected _s: Setting;
     setting: string;
 
-    hide = () => {
-        this._hideEl.classList.add("unfocused");
-        const event = new CustomEvent(`settings-${this._section}-${this.setting}`, { "detail": false })
-        document.dispatchEvent(event);
-
-    };
-    show = () => {
-        this._hideEl.classList.remove("unfocused");
-        const event = new CustomEvent(`settings-${this._section}-${this.setting}`, { "detail": this.valueAsString() })
-        document.dispatchEvent(event);
-    };
+    get hidden(): boolean { return this._hideEl.classList.contains("unfocused"); }
+    set hidden(v: boolean) {
+        if (v) {
+            this._hideEl.classList.add("unfocused");
+        } else {
+            this._hideEl.classList.remove("unfocused");
+        }
+        document.dispatchEvent(changedEvent(this._section, this.setting, this.valueAsString(), v));
+        console.log(`dispatched settings-${this._section}-${this.setting} = ${this.valueAsString()}/${v}`);
+    }
 
     private _advancedListener = (event: settingsChangedEvent) => {
-        if (!toBool(event.detail)) {
-            this.hide();
-        } else {
-            this.show();
-        }
+        this.hidden = !toBool(event.detail.value);
     }
 
     get advanced(): boolean { return this._advanced; }
@@ -155,12 +158,33 @@ class DOMSetting {
         }
     }
 
+    get depends_true(): string { return this._s.depends_true; }
+    set depends_true(v: string) {
+        this._s.depends_true = v;
+        this._registerDependencies();
+    }
+    
+    get depends_false(): string { return this._s.depends_false; }
+    set depends_false(v: string) {
+        this._s.depends_false = v;
+        this._registerDependencies();
+    }
+
+    protected _registerDependencies() {
+        // Doesn't re-register dependencies, but that isn't important in this application
+        if (!(this._s.depends_true || this._s.depends_false)) return;
+        let [sect, dependant] = splitDependant(this._section, this._s.depends_true || this._s.depends_false);
+        let state = !(Boolean(this._s.depends_false));
+        document.addEventListener(`settings-${sect}-${dependant}`, (event: settingsChangedEvent) => {
+            this.hidden = event.detail.hidden || (toBool(event.detail.value) !== state);
+        });
+    }
+
     valueAsString = (): string => { return ""+this.value; };
 
     onValueChange = () => {
-        const event = new CustomEvent(`settings-${this._section}-${this.setting}`, { "detail": this.valueAsString() })
+        document.dispatchEvent(changedEvent(this._section, this.setting, this.valueAsString(), this.hidden));
         const setEvent = new CustomEvent(`settings-set-${this._section}-${this.setting}`, { "detail": this.valueAsString() })
-        document.dispatchEvent(event);
         document.dispatchEvent(setEvent);
         if (this.requires_restart) { document.dispatchEvent(new CustomEvent("settings-requires-restart")); }
     };
@@ -191,18 +215,6 @@ class DOMSetting {
         this._restart = this._container.querySelector("span.setting-restart") as HTMLSpanElement;
         // "input" variable should supply the HTML of an element with class "setting-input"
         this._input = this._container.querySelector(".setting-input") as HTMLInputElement;
-        if (setting.depends_false || setting.depends_true) {
-            let [sect, dependant] = splitDependant(section, setting.depends_true || setting.depends_false);
-            let state = true;
-            if (setting.depends_false) { state = false; }
-            document.addEventListener(`settings-${sect}-${dependant}`, (event: settingsChangedEvent) => {
-                if (toBool(event.detail) !== state) {
-                    this.hide();
-                } else {
-                    this.show();
-                }
-            });
-        }
         this._input.onchange = this.onValueChange;
         document.addEventListener(`settings-loaded`, this.onValueChange);
         this._hideEl = this._container;
@@ -218,6 +230,11 @@ class DOMSetting {
         this.requires_restart = s.requires_restart;
         this.value = s.value;
         this.advanced = s.advanced;
+        if (!(this._s) || s.depends_true != this._s.depends_true || s.depends_false != this._s.depends_false) {
+            this._s = s;
+            this._registerDependencies();
+        }
+        this._s = s;
     }
     
     asElement = (): HTMLDivElement => { return this._container; }
@@ -415,12 +432,14 @@ class DOMNote extends DOMSetting implements SNote {
     private _style: string;
 
     // We're a note, no one depends on us so we don't need to broadcast a state change.
-    hide = () => {
-		this._container.classList.add("unfocused");
-	};
-    show = () => {
-		this._container.classList.remove("unfocused");
-	};
+    get hidden(): boolean { return this._container.classList.contains("unfocused"); }
+    set hidden(v: boolean) {
+        if (v) {
+            this._container.classList.add("unfocused");
+        } else {
+            this._container.classList.remove("unfocused");
+        }
+    }
 
     get name(): string { return this._nameEl.textContent; }
     set name(n: string) { this._nameEl.textContent = n; }
@@ -840,12 +859,13 @@ class sectionButton extends groupableItem {
         let [sect, dependant] = splitDependant(this.section, this._meta.depends_true || this._meta.depends_false);
         let state = !(Boolean(this._meta.depends_false));
         document.addEventListener(`settings-${sect}-${dependant}`, (event: settingsChangedEvent) => {
-            const hide = (toBool(event.detail) !== state);
+            console.log(`recieved settings-${sect}-${dependant} = ${event.detail.value} = ${toBool(event.detail.value)} / ${event.detail.hidden}`);
+            const hide = event.detail.hidden || (toBool(event.detail.value) !== state);
             this.hidden = hide;
             document.dispatchEvent(new CustomEvent(`settings-${name}`, { detail: !hide }));
         });
         document.addEventListener(`settings-${sect}`, (event: settingsChangedEvent) => {
-            if (toBool(event.detail) !== state) {
+            if (event.detail.hidden || toBool(event.detail.value) !== state) {
                 this.hidden = true;
                 document.dispatchEvent(new CustomEvent(`settings-${name}`, { detail: false }));
             }
@@ -853,7 +873,7 @@ class sectionButton extends groupableItem {
     }
 
     private _advancedListener = (event: settingsChangedEvent) => {
-        if (!toBool(event.detail)) {
+        if (!toBool(event.detail.value)) {
             this._el.classList.add("unfocused");
         } else {
             this._el.classList.remove("unfocused");
