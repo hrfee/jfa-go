@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/fatih/color"
+	"github.com/goccy/go-yaml"
 	"github.com/hrfee/jfa-go/common"
 	_ "github.com/hrfee/jfa-go/docs"
 	"github.com/hrfee/jfa-go/jellyseerr"
@@ -31,7 +32,6 @@ import (
 	"github.com/hrfee/mediabrowser"
 	"github.com/lithammer/shortuuid/v3"
 	"gopkg.in/ini.v1"
-	"gopkg.in/yaml.v3"
 )
 
 var (
