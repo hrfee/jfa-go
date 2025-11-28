@@ -9,7 +9,7 @@ else
 endif
 GOBINARY ?= go
 
-CSSVERSION ?= v0.6.0
+CSSVERSION ?= $(shell git describe --tags --abbrev=0)
 CSS_BUNDLE = $(DATA)/web/css/$(CSSVERSION)bundle.css
 
 VERSION ?= $(shell git describe --exact-match HEAD 2> /dev/null || echo vgit)
@@ -160,15 +160,18 @@ $(VARIANTS_TARGET): $(VARIANTS_SRC)
 
 ICON_SRC = node_modules/remixicon/fonts/remixicon.css node_modules/remixicon/fonts/remixicon.woff2
 ICON_TARGET = $(ICON_SRC:node_modules/remixicon/fonts/%=$(DATA)/web/css/%)
+SYNTAX_SRC = node_modules/highlight.js/styles/default.min.css
+SYNTAX_TARGET = $(DATA)/web/css/$(CSSVERSION)highlightjs.css
 CSS_SRC = $(wildcard css/*.css)
 CSS_TARGET = $(DATA)/web/css/part-bundle.css
 CSS_FULLTARGET = $(CSS_BUNDLE)
-ALL_CSS_SRC = $(ICON_SRC) $(CSS_SRC)
+ALL_CSS_SRC = $(ICON_SRC) $(CSS_SRC) $(SYNTAX_SRC)
 ALL_CSS_TARGET = $(ICON_TARGET)
 
 $(CSS_FULLTARGET): $(TYPESCRIPT_TARGET) $(VARIANTS_TARGET) $(ALL_CSS_SRC) $(wildcard html/*.html)
 	$(info copying fonts)
 	cp -r node_modules/remixicon/fonts/remixicon.css node_modules/remixicon/fonts/remixicon.woff2 $(DATA)/web/css/
+	cp -r $(SYNTAX_SRC) $(SYNTAX_TARGET)
 	$(info bundling css)
 	rm -f $(CSS_TARGET) $(CSS_FULLTARGET)
 	$(ESBUILD) --bundle css/base.css --outfile=$(CSS_TARGET) --external:remixicon.css --external:../fonts/hanken* --minify
