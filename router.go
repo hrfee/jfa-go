@@ -214,6 +214,8 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 		api.POST(p+"/invites/profile", app.SetProfile)
 		api.GET(p+"/profiles", app.GetProfiles)
 		api.GET(p+"/profiles/names", app.GetProfileNames)
+		api.GET(p+"/profiles/raw/:name", app.GetRawProfile)
+		api.PUT(p+"/profiles/raw/:name", app.ReplaceRawProfile)
 		api.POST(p+"/profiles/default", app.SetDefaultProfile)
 		api.POST(p+"/profiles", app.CreateProfile)
 		api.DELETE(p+"/profiles", app.DeleteProfile)

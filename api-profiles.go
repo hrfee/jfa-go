@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/url"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -69,6 +70,65 @@ func (app *appContext) GetProfiles(gc *gin.Context) {
 	gc.JSON(200, out)
 }
 
+// @Summary Get the raw values stored in a profile (Configuration, Policy, Jellyseerr/Ombi if applicable, etc.).
+// @Produce json
+// @Success 200 {object} ProfileDTO
+// @Failure 400 {object} boolResponse
+// @Param name path string true "name of profile (url encoded if necessary)"
+// @Router /profiles/raw/{name} [get]
+// @Security Bearer
+// @tags Users
+func (app *appContext) GetRawProfile(gc *gin.Context) {
+	escapedName := gc.Param("name")
+	name, err := url.QueryUnescape(escapedName)
+	if err != nil {
+		respondBool(400, false, gc)
+		return
+	}
+	if profile, ok := app.storage.GetProfileKey(name); ok {
+		gc.JSON(200, profile.ProfileDTO)
+		return
+	}
+	respondBool(400, false, gc)
+}
+
+// @Summary Update the raw data of a profile (Configuration, Policy, Jellyseerr/Ombi if applicable, etc.).
+// @Produce json
+// @Param ProfileDTO body ProfileDTO true "Raw profile data (all of it, do not omit anything)"
+// @Success 200 {object} boolResponse
+// @Failure 400 {object} boolResponse
+// @Router /profiles/raw/{name} [put]
+// @Security Bearer
+// @tags Profiles & Settings
+func (app *appContext) ReplaceRawProfile(gc *gin.Context) {
+	escapedName := gc.Param("name")
+	name, err := url.QueryUnescape(escapedName)
+	if err != nil {
+		respondBool(400, false, gc)
+		return
+	}
+	existingProfile, ok := app.storage.GetProfileKey(name)
+	if !ok {
+		respondBool(400, false, gc)
+		return
+	}
+	var req ProfileDTO
+	gc.BindJSON(&req)
+	existingProfile.ProfileDTO = req
+	if req.Name == "" {
+		req.Name = name
+	}
+	app.storage.SetProfileKey(req.Name, existingProfile)
+	if req.Name != name {
+		// Name change
+		app.storage.DeleteProfileKey(name)
+		if discordEnabled {
+			app.discord.UpdateCommands()
+		}
+	}
+	respondBool(200, true, gc)
+}
+
 // @Summary Set the default profile to use.
 // @Produce json
 // @Param profileChangeDTO body profileChangeDTO true "Default profile object"
@@ -119,7 +179,7 @@ func (app *appContext) CreateProfile(gc *gin.Context) {
 	}
 	profile := Profile{
 		FromUser:   user.Name,
-		Policy:     user.Policy,
+		ProfileDTO: ProfileDTO{Policy: user.Policy},
 		Homescreen: req.Homescreen,
 	}
 	app.debug.Printf(lm.CreateProfileFromUser, user.Name)

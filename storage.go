@@ -748,18 +748,22 @@ type userPageContent struct {
 // timePattern: %Y-%m-%dT%H:%M:%S.%f
 
 type Profile struct {
-	Name                string                     `badgerhold:"key"`
-	Admin               bool                       `json:"admin,omitempty" badgerhold:"index"`
-	LibraryAccess       string                     `json:"libraries,omitempty"`
-	FromUser            string                     `json:"fromUser,omitempty"`
-	Homescreen          bool                       `json:"homescreen"`
-	Policy              mediabrowser.Policy        `json:"policy,omitempty"`
-	Configuration       mediabrowser.Configuration `json:"configuration,omitempty"`
-	Displayprefs        map[string]interface{}     `json:"displayprefs,omitempty"`
-	Default             bool                       `json:"default,omitempty"`
-	Ombi                map[string]interface{}     `json:"ombi,omitempty"`
-	Jellyseerr          JellyseerrTemplate         `json:"jellyseerr,omitempty"`
+	ProfileDTO
+	Admin               bool   `json:"admin,omitempty" badgerhold:"index"`
+	LibraryAccess       string `json:"libraries,omitempty"`
+	FromUser            string `json:"fromUser,omitempty"`
+	Homescreen          bool   `json:"homescreen"`
+	Default             bool   `json:"default,omitempty"`
 	ReferralTemplateKey string
+}
+
+type ProfileDTO struct {
+	Name          string                     `badgerhold:"key" json:"name"`
+	Policy        mediabrowser.Policy        `json:"policy,omitempty"`
+	Configuration mediabrowser.Configuration `json:"configuration,omitempty"`
+	Displayprefs  map[string]any             `json:"displayprefs,omitempty"`
+	Ombi          map[string]any             `json:"ombi,omitempty"`
+	Jellyseerr    JellyseerrTemplate         `json:"jellyseerr,omitempty"`
 }
 
 type JellyseerrTemplate struct {
@@ -1662,9 +1666,11 @@ func (st *Storage) migrateToProfile() error {
 	st.loadDisplayprefs()
 	st.loadProfiles()
 	st.deprecatedProfiles["Default"] = Profile{
-		Policy:        st.deprecatedPolicy,
-		Configuration: st.deprecatedConfiguration,
-		Displayprefs:  st.deprecatedDisplayprefs,
+		ProfileDTO: ProfileDTO{
+			Policy:        st.deprecatedPolicy,
+			Configuration: st.deprecatedConfiguration,
+			Displayprefs:  st.deprecatedDisplayprefs,
+		},
 	}
 	return st.storeProfiles()
 }
