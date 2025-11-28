@@ -199,6 +199,7 @@ export class ProfileEditor {
     private _profileName = document.getElementById("add-profile-name") as HTMLInputElement;
     private _userSelect = document.getElementById("add-profile-user") as HTMLSelectElement;
     private _storeHomescreen = document.getElementById("add-profile-homescreen") as HTMLInputElement;
+    private _createJellyseerrProfile = window.jellyseerrEnabled ? document.getElementById("add-profile-jellyseerr") as HTMLInputElement : null;
 
     get empty(): boolean { return (Object.keys(this._table.children).length == 0) }
     set empty(state: boolean) {
@@ -439,6 +440,7 @@ export class ProfileEditor {
                     }
                     this._userSelect.innerHTML = innerHTML;
                     this._storeHomescreen.checked = true;
+                    this._createJellyseerrProfile.checked = true;
                     window.modals.profiles.close();
                     window.modals.addProfile.show();
                 } else {
@@ -456,6 +458,7 @@ export class ProfileEditor {
                 "id": this._userSelect.value,
                 "name": this._profileName.value
             }
+            if (this._createJellyseerrProfile) send["jellyseerr"] = this._createJellyseerrProfile.checked;
             _post("/profiles", send, (req: XMLHttpRequest) => {
                 if (req.readyState == 4) {
                     toggleLoader(button);

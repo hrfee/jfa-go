@@ -196,6 +196,21 @@ func (app *appContext) CreateProfile(gc *gin.Context) {
 			return
 		}
 	}
+	if req.Jellyseerr && app.config.Section("jellyseerr").Key("enabled").MustBool(false) {
+		user, err := app.js.MustGetUser(req.ID)
+		if err != nil {
+			app.err.Printf(lm.FailedGetUser, user.Name, lm.Jellyseerr, err)
+		} else {
+			profile.Jellyseerr.User = user.UserTemplate
+			n, err := app.js.GetNotificationPreferencesByID(user.ID)
+			if err != nil {
+				app.err.Printf(lm.FailedGetJellyseerrNotificationPrefs, user.ID, err)
+			} else {
+				profile.Jellyseerr.Notifications = n.NotificationsTemplate
+				profile.Jellyseerr.Enabled = true
+			}
+		}
+	}
 	app.storage.SetProfileKey(req.Name, profile)
 	// Refresh discord bots, profile list
 	if discordEnabled {

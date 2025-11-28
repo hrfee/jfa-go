@@ -102,6 +102,7 @@ type newProfileDTO struct {
 	ID         string `json:"id" example:"ZXhhbXBsZTEyMzQ1Njc4OQo" binding:"required"` // ID of user to source settings from
 	Homescreen bool   `json:"homescreen" example:"true"`                               // Whether to store homescreen layout or not
 	OmbiID     string `json:"ombi_id" example:"ZXhhbXBsZTEyMzQ1Njc4OQo"`               // ID of Ombi user to source settings from (optional)
+	Jellyseerr bool   `json:"jellyseerr"`                                              // Whether or not to generate Jellyseerr profile from user
 }
 
 type inviteDTO struct {

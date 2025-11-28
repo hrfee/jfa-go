@@ -117,6 +117,7 @@
         "addProfileDescription": "Create a Jellyfin user and configure it, then select it below. When this profile is applied to an invite, new users will be created with the settings.",
         "addProfileNameOf": "Profile Name",
         "addProfileStoreHomescreenLayout": "Store homescreen layout",
+        "addProfileStoreJellyseerr": "Create Jellyseerr profile",
         "inviteNoUsersCreated": "None yet!",
         "inviteUsersCreated": "Created users",
         "inviteNoProfile": "No Profile",

@@ -459,7 +459,7 @@ section.section:not(.\~neutral) {
 
 @layer components {
     .switch {
-        @apply flex flex-row gap-1 items-center;
+        @apply flex flex-row gap-2 items-center;
     }
 }
 

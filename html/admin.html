@@ -467,25 +467,32 @@
             </form>
         </div>
         <div id="modal-add-profile" class="modal">
-            <form class="card relative mx-auto my-[10%] w-11/12 sm:w-4/5 lg:w-1/3" id="form-add-profile" href="">
-                <span class="heading">{{ .strings.addProfile }} <span class="modal-close">&times;</span></span>
-                <p class="content my-4">{{ .strings.addProfileDescription }}</p>
-                <label>
+            <form class="card relative mx-auto my-[10%] w-11/12 sm:w-4/5 lg:w-1/3 flex flex-col gap-2" id="form-add-profile" href="">
+                <h1 class="heading">{{ .strings.addProfile }} <span class="modal-close">&times;</span></h1>
+                <p class="content">{{ .strings.addProfileDescription }}</p>
+                <label class="flex flex-col gap-2">
                     <span class="supra">{{ .strings.addProfileNameOf }} </span>
-                    <input type="text" class="field input ~neutral @high mt-4 mb-2" placeholder="{{ .strings.name }}" id="add-profile-name">
-                <label>
+                    <input type="text" class="field input ~neutral @high" placeholder="{{ .strings.name }}" id="add-profile-name">
+                </label>
+                <label class="flex flex-col gap-2">
                     <span class="supra">{{ .strings.user }}</span>
-                    <div class="select ~neutral @low mt-4 mb-2">
+                    <div class="select ~neutral @low">
                         <select id="add-profile-user"></select>
                     </div>
                 </label>
-                <label class="switch mb-4">
+                <label class="switch">
                     <input type="checkbox" id="add-profile-homescreen" checked>
                     <span>{{ .strings.addProfileStoreHomescreenLayout }}</span>
                 </label>
+                {{ if .jellyseerrEnabled }}
+                    <label class="switch">
+                        <input type="checkbox" id="add-profile-jellyseerr" checked>
+                        <span>{{ .strings.addProfileStoreJellyseerr }}</span>
+                    </label>
+                {{ end }}
                 <label>
                     <input type="submit" class="unfocused">
-                    <span class="button ~urge @low full-width center supra submit">{{ .strings.create }}</span>
+                    <span class="button ~urge @low w-full center supra submit">{{ .strings.create }}</span>
                 </label>
             </form>
         </div>
