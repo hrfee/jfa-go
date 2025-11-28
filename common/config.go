@@ -1,13 +1,14 @@
 package common
 
 type SectionMeta struct {
-	Name         string `json:"name" yaml:"name" example:"My Section"` // friendly name of the section
-	Description  string `json:"description" yaml:"description"`
-	Advanced     bool   `json:"advanced,omitempty" yaml:"advanced,omitempty"`
-	Disabled     bool   `json:"disabled,omitempty" yaml:"disabled,omitempty"`
-	DependsTrue  string `json:"depends_true,omitempty" yaml:"depends_true,omitempty"`
-	DependsFalse string `json:"depends_false,omitempty" yaml:"depends_false,omitempty"`
-	WikiLink     string `json:"wiki_link,omitempty" yaml:"wiki_link,omitempty"`
+	Name         string   `json:"name" yaml:"name" example:"My Section"` // friendly name of the section
+	Description  string   `json:"description" yaml:"description"`
+	Advanced     bool     `json:"advanced,omitempty" yaml:"advanced,omitempty"`
+	Disabled     bool     `json:"disabled,omitempty" yaml:"disabled,omitempty"`
+	DependsTrue  string   `json:"depends_true,omitempty" yaml:"depends_true,omitempty"`
+	DependsFalse string   `json:"depends_false,omitempty" yaml:"depends_false,omitempty"`
+	WikiLink     string   `json:"wiki_link,omitempty" yaml:"wiki_link,omitempty"`
+	Aliases      []string `json:"aliases,omitempty" yaml:"aliases,omitempty"`
 }
 
 type Option [2]string
@@ -40,6 +41,7 @@ type Setting struct {
 	Style           string      `json:"style,omitempty" yaml:"style,omitempty"`
 	Deprecated      bool        `json:"deprecated,omitempty" yaml:"deprecated,omitempty"`
 	WikiLink        string      `json:"wiki_link,omitempty" yaml:"wiki_link,omitempty"`
+	Aliases         []string    `json:"aliases,omitempty" yaml:"aliases,omitempty"`
 }
 
 type Section struct {

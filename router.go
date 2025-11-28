@@ -244,8 +244,11 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 		api.POST(p+"/config", app.ModifyConfig)
 		api.POST(p+"/restart", app.restart)
 		api.GET(p+"/logs", app.GetLog)
-		api.POST(p+"/tasks/housekeeping", func(gc *gin.Context) { app.housekeepingDaemon.Trigger(); gc.Status(http.StatusNoContent) })
-		api.POST(p+"/tasks/users", func(gc *gin.Context) { app.userDaemon.Trigger(); gc.Status(http.StatusNoContent) })
+		api.POST(p+"/tasks/housekeeping", app.TaskHousekeeping)
+		api.POST(p+"/tasks/users", app.TaskUserCleanup)
+		if app.config.Section("jellyseerr").Key("enabled").MustBool(false) {
+			api.POST(p+"/tasks/jellyseerr", app.TaskJellyseerrImport)
+		}
 		api.POST(p+"/backups", app.CreateBackup)
 		api.GET(p+"/backups/:fname", app.GetBackup)
 		api.GET(p+"/backups", app.GetBackups)

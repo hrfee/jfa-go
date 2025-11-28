@@ -32,7 +32,6 @@ func (app *appContext) SynchronizeJellyseerrUser(jfID string) {
 			if strings.Contains(err.Error(), "INVALID_EMAIL") {
 				app.err.Printf(lm.FailedSetEmailAddress, lm.Jellyseerr, jfID, err.Error()+"\""+email.Addr+"\"")
 			} else {
-
 				app.err.Printf(lm.FailedSetEmailAddress, lm.Jellyseerr, jfID, err)
 			}
 		} else {

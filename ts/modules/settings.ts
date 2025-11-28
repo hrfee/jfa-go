@@ -50,6 +50,7 @@ interface Meta {
     depends_true?: string;
     depends_false?: string;
     wiki_link?: string;
+    aliases?: string[];
 }
 
 interface Setting {
@@ -65,6 +66,7 @@ interface Setting {
     depends_false?: string;
     wiki_link?: string;
     deprecated?: boolean;
+    aliases?: string[];
 
     asElement: () => HTMLElement;
     update: (s: Setting) => void;
@@ -169,6 +171,8 @@ class DOMSetting {
         this._s.depends_false = v;
         this._registerDependencies();
     }
+
+    get aliases(): string[] { return this._s.aliases; }
 
     protected _registerDependencies() {
         // Doesn't re-register dependencies, but that isn't important in this application
@@ -1422,6 +1426,7 @@ export class settingsList {
                                  section.section.toLowerCase().includes(query) ||
                                  section.meta.name.toLowerCase().includes(query) ||
                                  section.meta.description.toLowerCase().includes(query);
+            if (section.meta.aliases) section.meta.aliases.forEach((term: string) => matchedSection ||= term.toLowerCase().includes(query));
             matchedSection &&= ((section.meta.advanced && this._advanced) || !(section.meta.advanced)); 
             
             if (matchedSection) {
@@ -1447,10 +1452,12 @@ export class settingsList {
                 // element.classList.remove("-mx-2", "my-2", "p-2", "aside", "~neutral", "@low");
                 element.classList.add("opacity-50", "pointer-events-none");
                 element.setAttribute("aria-disabled", "true");
-                if (setting.setting.toLowerCase().includes(query) ||
-                    setting.name.toLowerCase().includes(query) ||
-                    setting.description.toLowerCase().includes(query) ||
-                    String(setting.value).toLowerCase().includes(query)) {
+                let matchedSetting = setting.setting.toLowerCase().includes(query) ||
+                                     setting.name.toLowerCase().includes(query) ||
+                                     setting.description.toLowerCase().includes(query) ||
+                                     String(setting.value).toLowerCase().includes(query);
+                if (setting.aliases) setting.aliases.forEach((term: string) => matchedSetting ||= term.toLowerCase().includes(query));
+                if (matchedSetting) {
                     if ((section.meta.advanced && this._advanced) || !(section.meta.advanced)) {
                         show();
                         firstVisibleSection = firstVisibleSection || section.section;

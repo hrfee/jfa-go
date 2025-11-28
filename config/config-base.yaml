@@ -1368,6 +1368,10 @@ sections:
       and telegram). A template must be added to a User Profile for accounts to be
       created.
     wiki_link: https://wiki.jfa-go.com/docs/external-services/jellyseerr/ 
+    aliases:
+      - Jellyseerr
+      - Overseerr
+      - Seerr
   settings:
   - setting: enabled
     name: Enabled
