@@ -111,6 +111,7 @@ declare interface Modals {
     jellyseerrProfile?: Modal;
     profiles: Modal;
     addProfile: Modal;
+    editProfile: Modal;
     announce: Modal;
     editor: Modal;
     customizeEmails: Modal;

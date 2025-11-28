@@ -6,6 +6,7 @@
         "typeRoots": ["./typings", "../node_modules/@types"],
         "module": "esnext",
         "moduleResolution": "bundler",
-        "esModuleInterop": true
+        "esModuleInterop": true,
+        "skipLibCheck": true
     }
 }

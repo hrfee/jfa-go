@@ -160,18 +160,24 @@ $(VARIANTS_TARGET): $(VARIANTS_SRC)
 
 ICON_SRC = node_modules/remixicon/fonts/remixicon.css node_modules/remixicon/fonts/remixicon.woff2
 ICON_TARGET = $(ICON_SRC:node_modules/remixicon/fonts/%=$(DATA)/web/css/%)
-SYNTAX_SRC = node_modules/highlight.js/styles/default.min.css
-SYNTAX_TARGET = $(DATA)/web/css/$(CSSVERSION)highlightjs.css
+SYNTAX_LIGHT_SRC = node_modules/highlight.js/styles/base16/atelier-sulphurpool-light.min.css
+SYNTAX_LIGHT_TARGET = $(DATA)/web/css/$(CSSVERSION)highlightjs-light.css
+SYNTAX_DARK_SRC = node_modules/highlight.js/styles/base16/circus.min.css
+SYNTAX_DARK_TARGET = $(DATA)/web/css/$(CSSVERSION)highlightjs-dark.css
+CODEINPUT_SRC = node_modules/@webcoder49/code-input/code-input.min.css
+CODEINPUT_TARGET = $(DATA)/web/css/$(CSSVERSION)code-input.css
 CSS_SRC = $(wildcard css/*.css)
 CSS_TARGET = $(DATA)/web/css/part-bundle.css
 CSS_FULLTARGET = $(CSS_BUNDLE)
-ALL_CSS_SRC = $(ICON_SRC) $(CSS_SRC) $(SYNTAX_SRC)
+ALL_CSS_SRC = $(ICON_SRC) $(CSS_SRC) $(SYNTAX_LIGHT_SRC) $(SYNTAX_DARK_SRC)
 ALL_CSS_TARGET = $(ICON_TARGET)
 
 $(CSS_FULLTARGET): $(TYPESCRIPT_TARGET) $(VARIANTS_TARGET) $(ALL_CSS_SRC) $(wildcard html/*.html)
 	$(info copying fonts)
 	cp -r node_modules/remixicon/fonts/remixicon.css node_modules/remixicon/fonts/remixicon.woff2 $(DATA)/web/css/
-	cp -r $(SYNTAX_SRC) $(SYNTAX_TARGET)
+	cp -r $(SYNTAX_LIGHT_SRC) $(SYNTAX_LIGHT_TARGET)
+	cp -r $(SYNTAX_DARK_SRC) $(SYNTAX_DARK_TARGET)
+	cp -r $(CODEINPUT_SRC) $(CODEINPUT_TARGET)
 	$(info bundling css)
 	rm -f $(CSS_TARGET) $(CSS_FULLTARGET)
 	$(ESBUILD) --bundle css/base.css --outfile=$(CSS_TARGET) --external:remixicon.css --external:../fonts/hanken* --minify

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 	"net/url"
 	"time"
 
@@ -77,7 +78,7 @@ func (app *appContext) GetProfiles(gc *gin.Context) {
 // @Param name path string true "name of profile (url encoded if necessary)"
 // @Router /profiles/raw/{name} [get]
 // @Security Bearer
-// @tags Users
+// @tags Profiles & Settings
 func (app *appContext) GetRawProfile(gc *gin.Context) {
 	escapedName := gc.Param("name")
 	name, err := url.QueryUnescape(escapedName)
@@ -95,7 +96,8 @@ func (app *appContext) GetRawProfile(gc *gin.Context) {
 // @Summary Update the raw data of a profile (Configuration, Policy, Jellyseerr/Ombi if applicable, etc.).
 // @Produce json
 // @Param ProfileDTO body ProfileDTO true "Raw profile data (all of it, do not omit anything)"
-// @Success 200 {object} boolResponse
+// @Success 204 {object} boolResponse
+// @Success 201 {object} boolResponse
 // @Failure 400 {object} boolResponse
 // @Router /profiles/raw/{name} [put]
 // @Security Bearer
@@ -118,6 +120,7 @@ func (app *appContext) ReplaceRawProfile(gc *gin.Context) {
 	if req.Name == "" {
 		req.Name = name
 	}
+	status := http.StatusNoContent
 	app.storage.SetProfileKey(req.Name, existingProfile)
 	if req.Name != name {
 		// Name change
@@ -125,8 +128,9 @@ func (app *appContext) ReplaceRawProfile(gc *gin.Context) {
 		if discordEnabled {
 			app.discord.UpdateCommands()
 		}
+		status = http.StatusCreated
 	}
-	respondBool(200, true, gc)
+	respondBool(status, true, gc)
 }
 
 // @Summary Set the default profile to use.

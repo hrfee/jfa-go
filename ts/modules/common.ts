@@ -85,10 +85,10 @@ export const _upload = (url: string, formData: FormData): void => {
     req.send(formData);
 };
 
-export const _post = (url: string, data: Object, onreadystatechange: (req: XMLHttpRequest) => void, response?: boolean, statusHandler?: (req: XMLHttpRequest) => void, noConnectionError: boolean = false): void => {
+export const _req = (method: string, url: string, data: Object, onreadystatechange: (req: XMLHttpRequest) => void, response?: boolean, statusHandler?: (req: XMLHttpRequest) => void, noConnectionError: boolean = false): void => {
     let req = new XMLHttpRequest();
     if (window.pages) { url = window.pages.Base + url; }
-    req.open("POST", url, true);
+    req.open(method, url, true);
     if (response) {
         req.responseType = 'json';
     }
@@ -106,6 +106,10 @@ export const _post = (url: string, data: Object, onreadystatechange: (req: XMLHt
     };
     req.send(JSON.stringify(data));
 };
+
+export const _post = (url: string, data: Object, onreadystatechange: (req: XMLHttpRequest) => void, response?: boolean, statusHandler?: (req: XMLHttpRequest) => void, noConnectionError: boolean = false): void => _req("POST", url, data, onreadystatechange, response, statusHandler, noConnectionError);
+
+export const _put = (url: string, data: Object, onreadystatechange: (req: XMLHttpRequest) => void, response?: boolean, statusHandler?: (req: XMLHttpRequest) => void, noConnectionError: boolean = false): void => _req("PUT", url, data, onreadystatechange, response, statusHandler, noConnectionError);
 
 export function _delete(url: string, data: Object, onreadystatechange: (req: XMLHttpRequest) => void, noConnectionError: boolean = false): void {
     let req = new XMLHttpRequest();
