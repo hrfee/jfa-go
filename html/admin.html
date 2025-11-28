@@ -103,14 +103,18 @@
                         <input type="checkbox" id="modify-user-homescreen" checked>
                         <span>{{ .strings.applyHomescreenLayout }}</span>
                     </label>
-                    <label class="switch">
-                        <input type="checkbox" id="modify-user-ombi" checked>
-                        <span>{{ .strings.applyOmbi }}</span>
-                    </label>
-                    <label class="switch">
-                        <input type="checkbox" id="modify-user-jellyseerr" checked>
-                        <span>{{ .strings.applyJellyseerr }}</span>
-                    </label>
+                    {{ if .ombiEnabled }}
+                        <label class="switch">
+                            <input type="checkbox" id="modify-user-ombi" checked>
+                            <span>{{ .strings.applyOmbi }}</span>
+                        </label>
+                    {{ end }}
+                    {{ if .jellyseerrEnabled }}
+                        <label class="switch">
+                            <input type="checkbox" id="modify-user-jellyseerr" checked>
+                            <span>{{ .strings.applyJellyseerr }}</span>
+                        </label>
+                    {{ end }}
                     <label>
                         <input type="submit" class="unfocused">
                         <span class="button ~urge @low full-width center supra submit">{{ .strings.apply }}</span>

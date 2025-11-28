@@ -891,8 +891,8 @@ export class accountsList extends PaginatedList {
 
     private _applyHomescreen = document.getElementById("modify-user-homescreen") as HTMLInputElement;
     private _applyConfiguration = document.getElementById("modify-user-configuration") as HTMLInputElement;
-    private _applyOmbi = document.getElementById("modify-user-ombi") as HTMLInputElement;
-    private _applyJellyseerr = document.getElementById("modify-user-jellyseerr") as HTMLInputElement;
+    private _applyOmbi = window.ombiEnabled ? document.getElementById("modify-user-ombi") as HTMLInputElement : null;
+    private _applyJellyseerr = window.jellyseerrEnabled ? document.getElementById("modify-user-jellyseerr") as HTMLInputElement : null;
 
     private _selectAll = document.getElementById("accounts-select-all") as HTMLInputElement;
     private _selectAllState: SelectAllState = SelectAllState.None;
@@ -1047,15 +1047,6 @@ export class accountsList extends PaginatedList {
         this._modifySettings.onclick = this.modifyUsers;
         this._modifySettings.classList.add("unfocused");
 
-        if (window.ombiEnabled)
-            this._applyOmbi.parentElement.classList.remove("unfocused");
-        else
-            this._applyOmbi.parentElement.classList.add("unfocused");
-        if (window.jellyseerrEnabled)
-            this._applyJellyseerr.parentElement.classList.remove("unfocused");
-        else
-            this._applyJellyseerr.parentElement.classList.add("unfocused");
-
         const checkSource = () => {
             const profileSpan = this._modifySettingsProfile.nextElementSibling as HTMLSpanElement;
             const userSpan = this._modifySettingsUser.nextElementSibling as HTMLSpanElement;
@@ -1066,8 +1057,8 @@ export class accountsList extends PaginatedList {
                 profileSpan.classList.remove("@low");
                 userSpan.classList.remove("@high");
                 userSpan.classList.add("@low");
-                this._applyOmbi.parentElement.classList.remove("unfocused");
-                this._applyJellyseerr.parentElement.classList.remove("unfocused");
+                this._applyOmbi?.parentElement.classList.remove("unfocused");
+                this._applyJellyseerr?.parentElement.classList.remove("unfocused");
             } else {
                 this._userSelect.parentElement.classList.remove("unfocused");
                 this._profileSelect.parentElement.classList.add("unfocused");
@@ -1075,8 +1066,8 @@ export class accountsList extends PaginatedList {
                 userSpan.classList.remove("@low");
                 profileSpan.classList.remove("@high");
                 profileSpan.classList.add("@low");
-                this._applyOmbi.parentElement.classList.add("unfocused");
-                this._applyJellyseerr.parentElement.classList.add("unfocused");
+                this._applyOmbi?.parentElement.classList.add("unfocused");
+                this._applyJellyseerr?.parentElement.classList.add("unfocused");
             }
         };
         this._modifySettingsProfile.onchange = checkSource;
@@ -1873,9 +1864,13 @@ export class accountsList extends PaginatedList {
                 "apply_to": list,
                 "homescreen": this._applyHomescreen.checked,
                 "configuration": this._applyConfiguration.checked,
-                "ombi": this._applyOmbi.checked,
-                "jellyseerr": this._applyJellyseerr.checked
             };
+            if (window.ombiEnabled) {
+                send["ombi"] = this._applyOmbi.checked;
+            }
+            if (window.jellyseerrEnabled) {
+                send["jellyseerr"] = this._applyJellyseerr.checked;
+            }
             if (this._modifySettingsProfile.checked && !this._modifySettingsUser.checked) { 
                 send["from"] = "profile";
                 send["profile"] = this._profileSelect.value;
