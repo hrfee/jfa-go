@@ -51,7 +51,7 @@ func (app *appContext) SynchronizeJellyseerrUser(jfID string) {
 		chatID, _ := strconv.ParseInt(notif.TelegramChatID, 10, 64)
 		if ok && tgUser.ChatID != 0 && chatID != tgUser.ChatID {
 			u, _ := app.storage.GetTelegramKey(jfID)
-			contactMethods[jellyseerr.FieldTelegram] = u.ChatID
+			contactMethods[jellyseerr.FieldTelegram] = strconv.FormatInt(u.ChatID, 10)
 			contactMethods[jellyseerr.FieldTelegramEnabled] = tgUser.Contact
 		}
 	}
