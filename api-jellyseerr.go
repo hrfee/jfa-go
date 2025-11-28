@@ -112,6 +112,9 @@ func (js *JellyseerrWrapper) ImportUser(jellyfinID string, req newUserDTO, profi
 		return
 	}
 	ok = true
+	if !profile.Jellyseerr.Enabled {
+		return
+	}
 	err = js.ApplyTemplateToUser(jellyfinID, profile.Jellyseerr.User)
 	if err != nil {
 		err = fmt.Errorf(lm.FailedApplyTemplate, "user", lm.Jellyseerr, jellyfinID, err)
