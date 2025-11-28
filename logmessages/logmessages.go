@@ -278,7 +278,8 @@ const (
 	// NOTE: "migrations.go" is the one file where log messages are not part of logmessages/logmessages.go.
 
 	// pwreset.go
-	PWRExpired = "PWR for user \"%s\" already expired @ %s, check system time!"
+	PWRExpired    = "PWR for user \"%s\" already expired @ %s, check system time!"
+	NewPWRForUser = "New password reset for user \"%s\""
 
 	// router.go
 	UseDefaultHTML      = "Using default HTML \"%s\""

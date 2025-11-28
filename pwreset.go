@@ -73,7 +73,7 @@ type PasswordReset struct {
 }
 
 func pwrMonitor(app *appContext, watcher *fsnotify.Watcher) {
-	if !emailEnabled {
+	if !messagesEnabled {
 		return
 	}
 	for {
@@ -94,7 +94,7 @@ func pwrMonitor(app *appContext, watcher *fsnotify.Watcher) {
 					app.debug.Printf(lm.FailedReading, event.Name, err)
 					continue
 				}
-				app.info.Printf("New password reset for user \"%s\"", pwr.Username)
+				app.info.Printf(lm.NewPWRForUser, pwr.Username)
 				if currentTime := time.Now(); pwr.Expiry.After(currentTime) {
 					user, err := app.jf.UserByName(pwr.Username, false)
 					if err != nil || user.ID == "" {

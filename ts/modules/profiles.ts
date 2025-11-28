@@ -358,7 +358,7 @@ export class ProfileEditor {
             const editor = document.createElement("code-input") as CodeInput;
             editor.setAttribute("template", "json-highlighted");
             editor.setAttribute("language", "json");
-            editor.classList.add("rounded-sm");
+            editor.classList.add("rounded-md");
             editor.value = JSON.stringify(req.response, null, 2);
             editorContainer.replaceChildren(editor);
 
