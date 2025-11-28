@@ -30,11 +30,13 @@ func (tv TelegramVerifiedToken) ToUser() *TelegramUser {
 
 func EmptyTelegramUser() *TelegramUser {
 	return &TelegramUser{
-		JellyfinID: "",
-		ChatID:     0,
-		Username:   "",
-		Lang:       "",
-		Contact:    false,
+		TelegramVerifiedToken: TelegramVerifiedToken{
+			JellyfinID: "",
+			ChatID:     0,
+			Username:   "",
+		},
+		Lang:    "",
+		Contact: false,
 	}
 }
 

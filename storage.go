@@ -670,11 +670,8 @@ type DiscordUser struct {
 
 type TelegramUser struct {
 	TelegramVerifiedToken
-	JellyfinID string `badgerhold:"key"`
-	ChatID     int64  `badgerhold:"index"`
-	Username   string `badgerhold:"index"`
-	Lang       string
-	Contact    bool // Whether to contact through telegram or not
+	Lang    string
+	Contact bool // Whether to contact through telegram or not
 }
 
 type MatrixUser struct {

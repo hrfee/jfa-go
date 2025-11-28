@@ -254,9 +254,11 @@ func (app *appContext) TelegramAddUser(gc *gin.Context) {
 		return
 	}
 	tgUser := TelegramUser{
-		ChatID:   tgToken.ChatID,
-		Username: tgToken.Username,
-		Contact:  true,
+		TelegramVerifiedToken: TelegramVerifiedToken{
+			ChatID:   tgToken.ChatID,
+			Username: tgToken.Username,
+		},
+		Contact: true,
 	}
 	if lang, ok := app.telegram.languages[tgToken.ChatID]; ok {
 		tgUser.Lang = lang

@@ -394,9 +394,11 @@ func (app *appContext) MyTelegramVerifiedInvite(gc *gin.Context) {
 		return
 	}
 	tgUser := TelegramUser{
-		ChatID:   token.ChatID,
-		Username: token.Username,
-		Contact:  true,
+		TelegramVerifiedToken: TelegramVerifiedToken{
+			ChatID:   token.ChatID,
+			Username: token.Username,
+		},
+		Contact: true,
 	}
 	if lang, ok := app.telegram.languages[tgUser.ChatID]; ok {
 		tgUser.Lang = lang
