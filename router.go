@@ -244,6 +244,7 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 		api.POST(p+"/config", app.ModifyConfig)
 		api.POST(p+"/restart", app.restart)
 		api.GET(p+"/logs", app.GetLog)
+		api.GET(p+"/tasks", app.TaskList)
 		api.POST(p+"/tasks/housekeeping", app.TaskHousekeeping)
 		api.POST(p+"/tasks/users", app.TaskUserCleanup)
 		if app.config.Section("jellyseerr").Key("enabled").MustBool(false) {

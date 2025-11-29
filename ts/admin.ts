@@ -74,6 +74,8 @@ window.availableProfiles = window.availableProfiles || [];
     window.modals.matrix = new Modal(document.getElementById("modal-matrix"));
 
     window.modals.logs = new Modal(document.getElementById("modal-logs"));
+    
+    window.modals.tasks = new Modal(document.getElementById("modal-tasks"));
 
     window.modals.backedUp = new Modal(document.getElementById("modal-backed-up"));
 

@@ -123,6 +123,7 @@ declare interface Modals {
     sendPWR?: Modal;
     pwr?: Modal;
     logs: Modal;
+    tasks: Modal;
     email?: Modal;
     enableReferralsUser?: Modal;
     enableReferralsProfile?: Modal;

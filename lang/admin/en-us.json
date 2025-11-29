@@ -46,6 +46,8 @@
         "userLabel": "User Label",
         "userLabelDescription": "Label to apply to users created with this invite.",
         "logs": "Logs",
+        "tasks": "Tasks",
+        "tasksDescription": "Tasks are large actions that may be run periodically in the background. You can manually trigger them here if you wish.",
         "announce": "Announce",
         "templates": "Templates",
         "subject": "Subject",
@@ -58,6 +60,7 @@
         "unlink": "Unlink Account",
         "deleted": "Deleted",
         "disabled": "Disabled",
+        "run": "Run",
         "sendPWR": "Send Password Reset",
         "noResultsFound": "No Results Found",
         "noResultsFoundLocally": "Only loaded records were searched. You can load more, or perform the search over all records on the server.",
@@ -264,7 +267,8 @@
         "errorInvalidDate": "Date is invalid.",
         "errorInvalidJSON": "Invalid JSON.",
         "updateAvailable": "A new update is available, check settings.",
-        "noUpdatesAvailable": "No new updates available."
+        "noUpdatesAvailable": "No new updates available.",
+        "runTask": "Triggered task."
     },
     "quantityStrings": {
         "modifySettingsFor": {

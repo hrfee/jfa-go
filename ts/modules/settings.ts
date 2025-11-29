@@ -936,13 +936,16 @@ export class settingsList {
     private _settings: Settings;
     private _advanced: boolean = false;
 
-    private _searchbox: HTMLInputElement = document.getElementById("settings-search") as HTMLInputElement;
-    private _clearSearchboxButtons: Array<HTMLButtonElement> = Array.from(document.getElementsByClassName("settings-search-clear")) as Array<HTMLButtonElement>;
+    private _searchbox = document.getElementById("settings-search") as HTMLInputElement;
+    private _clearSearchboxButtons = Array.from(document.getElementsByClassName("settings-search-clear")) as Array<HTMLButtonElement>;
 
     private _noResultsPanel: HTMLElement = document.getElementById("settings-not-found");
 
     private _backupSortDirection = document.getElementById("settings-backups-sort-direction") as HTMLButtonElement;
     private _backupSortAscending = true;
+
+    private _tasksList: TasksList;
+    private _tasksButton = document.getElementById("settings-tasks") as HTMLButtonElement;
 
     // Must be called -after- all section have been added.
     // Takes all groups at once since members might contain each other.
@@ -1160,6 +1163,9 @@ export class settingsList {
             this._backup();
         };
 
+        this._tasksList = new TasksList();
+        this._tasksButton.onclick = this._tasksList.load;
+
         document.addEventListener("settings-show-panel", (event: CustomEvent) => {
             this._showPanel(event.detail as string);
         });
@@ -1187,17 +1193,21 @@ export class settingsList {
 
         advancedEnableToggle.onchange = () => {
             document.dispatchEvent(new CustomEvent("settings-advancedState", { detail: advancedEnableToggle.checked }));
+        };
+        document.addEventListener("settings-advancedState", () => {
             const parent = advancedEnableToggle.parentElement;
             this._advanced = advancedEnableToggle.checked;
             if (this._advanced) {
                 parent.classList.add("~urge");
                 parent.classList.remove("~neutral");
+                this._tasksButton.classList.remove("unfocused");
             } else {
                 parent.classList.add("~neutral");
                 parent.classList.remove("~urge");
+                this._tasksButton.classList.add("unfocused");
             }
             this._searchbox.oninput(null);
-        };
+        });
         advancedEnableToggle.checked = false;
 
         this._searchbox.oninput = () => {
@@ -1744,5 +1754,60 @@ class MessageEditor {
                 }
             });
         };
+    }
+}
+
+class TasksList {
+    private _list: HTMLElement = document.getElementById("modal-tasks-list");
+
+    load = () => _get("/tasks", null, (req: XMLHttpRequest) => {
+        if (req.readyState != 4) return;
+        if (req.status != 200) return;
+        let resp = req.response["tasks"] as TaskDTO[];
+        this._list.textContent = "";
+        for (let t of resp) {
+            const task = new Task(t);
+            this._list.appendChild(task.asElement());
+        }
+        window.modals.tasks.show();
+    });
+}
+
+interface TaskDTO {
+    url: string;
+    name: string;
+    description: string;
+}
+
+class Task {
+    private _el: HTMLElement;
+    asElement = () => { return this._el };
+    constructor(t: TaskDTO) {
+        this._el = document.createElement("div");
+        this._el.classList.add("aside", "flex", "flex-row", "gap-4", "justify-between", "dark:shadow-md")
+        this._el.innerHTML = `
+        <div class="flex flex-col gap-1">
+            <div class="flex flex-row gap-2 items-baseline w-max">
+                <h2 class="heading text-2xl">${t.name}</h2>
+                <span class="text-sm font-mono">${t.url}</span>
+            </div>
+            <p class="max-w-[40ch] wrap-break-word text-justify">${t.description}</p>
+        </div>
+        <button class="button ~urge @low p-6">${window.lang.strings("run")}</button>
+        `;
+        const button = this._el.querySelector("button") as HTMLButtonElement;
+        button.onclick = () => {
+            addLoader(button);
+            _post(t.url, null, (req: XMLHttpRequest) => {
+                if (req.readyState != 4) return;
+                removeLoader(button);
+                setTimeout(window.modals.tasks.close, 1000)
+                if (req.status != 204) {
+                    window.notifications.customError("errorRunTask", window.lang.notif("errorFailureCheckLogs"));
+                    return;
+                }
+                window.notifications.customSuccess("runTask", window.lang.notif("runTask"));
+            })
+        }
     }
 }

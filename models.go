@@ -492,3 +492,13 @@ type PagePathsDTO struct {
 	// The subdirectory the app is meant to be accessed from ("Reverse proxy subfolder")
 	TrueBase string `json:"TrueBase"`
 }
+
+type TasksDTO struct {
+	Tasks []TaskDTO `json:"tasks"`
+}
+
+type TaskDTO struct {
+	URL         string `json:"url"`
+	Name        string `json:"name"`
+	Description string ` json:"description"`
+}

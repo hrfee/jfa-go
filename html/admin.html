@@ -69,9 +69,16 @@
             </div>
         </div>
         <div id="modal-logs" class="modal">
-            <div class="relative mx-auto my-[10%] w-4/5 lg:w-2/3 content content card">
+            <div class="relative mx-auto my-[10%] w-4/5 lg:w-2/3 content card">
                 <span class="heading">{{ .strings.logs }}<span class="modal-close">&times;</span></span>
                 <pre class="monospace" id="log-area"></pre>
+            </div>
+        </div>
+        <div id="modal-tasks" class="modal">
+            <div class="relative mx-auto my-[10%] w-min card flex flex-col gap-2">
+                <h1 class="heading">{{ .strings.tasks }}<span class="modal-close">&times;</span></h1>
+                <p class="content">{{ .strings.tasksDescription }}</p>
+                <div id="modal-tasks-list" class="flex flex-col gap-2"></div>
             </div>
         </div>
         <div id="modal-modify-user" class="modal">
@@ -737,7 +744,7 @@
                                 <input type="search" class="field ~neutral @low input search mr-2" id="accounts-search" placeholder="{{ .strings.search }}">
                                 <span class="button ~neutral @low center inside-input rounded-s-none accounts-search-clear" aria-label="{{ .strings.clearSearch }}" text="{{ .strings.clearSearch }}"><i class="ri-close-line"></i></span>
                                 <div class="tooltip left">
-                                    <button class="button ~info @low center h-full accounts-search-server flex flex-row gap-1" aria-label="{{ .strings.searchAllRecords }}" text="{{ .strings.searchAllRecords }}">
+                                    <button class="button ~info @low center h-full accounts-search-server gap-1" aria-label="{{ .strings.searchAllRecords }}" text="{{ .strings.searchAllRecords }}">
                                         <i class="ri-search-line"></i>
                                         <span>{{ .strings.searchAll }}</span>
                                     </button>
@@ -831,8 +838,9 @@
                                 <span class="text-2xl font-medium italic text-center">{{ .strings.noResultsFound }}</span>
                                 <span class="text-sm font-light italic unfocused text-center" id="accounts-no-local-results">{{ .strings.noResultsFoundLocally }}</span>
                                 <div class="flex flex-row">
-                                    <button class="button ~neutral @low accounts-search-clear flex flex-row gap-2">
-                                        <span>{{ .strings.clearSearch }}</span><i class="ri-close-line"></i>
+                                    <button class="button ~neutral @low accounts-search-clear gap-1">
+                                        <i class="ri-close-line"></i>
+                                        <span>{{ .strings.clearSearch }}</span>
                                     </button>
                                 </div>
                             </div>
@@ -840,7 +848,7 @@
                         <div class="flex flex-row gap-2 justify-center">
                             <button class="button ~neutral @low" id="accounts-load-more">{{ .strings.loadMore }}</button>
                             <button class="button ~neutral @low accounts-load-all">{{ .strings.loadAll }}</button>
-                            <button class="button ~info @low center accounts-search-server flex flex-row gap-1" aria-label="{{ .strings.searchAllRecords }}" text="{{ .strings.searchAllRecords }}">
+                            <button class="button ~info @low center accounts-search-server gap-1" aria-label="{{ .strings.searchAllRecords }}" text="{{ .strings.searchAllRecords }}">
                                 <i class="ri-search-line"></i>
                                 <span>{{ .strings.searchAllRecords }}</span>
                             </button>
@@ -863,7 +871,7 @@
                                 <input type="search" class="field ~neutral @low input search mr-2" id="activity-search" placeholder="{{ .strings.search }}">
                                 <span class="button ~neutral @low center inside-input rounded-s-none activity-search-clear" aria-label="{{ .strings.clearSearch }}" text="{{ .strings.clearSearch }}"><i class="ri-close-line"></i></span>
                                 <div class="tooltip left">
-                                    <button class="button ~info @low center h-full activity-search-server flex flex-row gap-1" aria-label="{{ .strings.searchAllRecords }}" text="{{ .strings.searchAllRecords }}">
+                                    <button class="button ~info @low center h-full activity-search-server gap-1" aria-label="{{ .strings.searchAllRecords }}" text="{{ .strings.searchAllRecords }}">
                                         <i class="ri-search-line"></i>
                                         <span>{{ .strings.searchAll }}</span>
                                     </button>
@@ -890,8 +898,9 @@
                             <span class="text-2xl font-medium italic text-center">{{ .strings.noResultsFound }}</span>
                             <span class="text-sm font-light italic unfocused text-center" id="activity-no-local-results">{{ .strings.noResultsFoundLocally }}</span>
                             <div class="flex flex-row">
-                                <button class="button ~neutral @low activity-search-clear flex flex-row gap-2">
-                                    <span>{{ .strings.clearSearch }}</span><i class="ri-close-line"></i>
+                                <button class="button ~neutral @low activity-search-clear gap-1">
+                                    <i class="ri-close-line"></i>
+                                    <span>{{ .strings.clearSearch }}</span>
                                 </button>
                                 <button class="button ~neutral @low unfocused" id="activity-keep-searching">{{ .strings.keepSearching }}</button>
                             </div>
@@ -902,7 +911,7 @@
                     <div class="flex flex-row gap-2 justify-center">
                         <button class="button ~neutral @low" id="activity-load-more">{{ .strings.loadMore }}</button>
                         <button class="button ~neutral @low activity-load-all">{{ .strings.loadAll }}</button>
-                        <button class="button ~info @low center activity-search-server flex flex-row gap-1" aria-label="{{ .strings.searchAllRecords }}" text="{{ .strings.searchAllRecords }}">
+                        <button class="button ~info @low center activity-search-server gap-1" aria-label="{{ .strings.searchAllRecords }}" text="{{ .strings.searchAllRecords }}">
                             <i class="ri-search-line"></i>
                             <span>{{ .strings.searchAllRecords }}</span>
                         </button>
@@ -920,10 +929,11 @@
                             </label>
                         </div>
                         <div class="flex flex-row justify-start md:justify-end gap-2 w-full">
+                            <span class="button ~neutral @low gap-1 unfocused" id="settings-tasks"><i class="ri-calendar-schedule-line"></i>{{ .strings.tasks }}</span>
                             <span class="button ~neutral @low" id="settings-logs">{{ .strings.logs }}</span>
-                            <span class="button ~info @low" id="settings-backups">{{ .strings.backups }}</span>
-                            <span class="button ~neutral @low" id="settings-restart">{{ .strings.settingsRestart }}</span>
-                            <span class="button ~urge @low unfocused" id="settings-save">{{ .strings.settingsSave }}</span>
+                            <span class="button ~info @low gap-1" id="settings-backups"><i class="icon ri-file-copy-line"></i>{{ .strings.backups }}</span>
+                            <span class="button ~neutral @low gap-1" id="settings-restart"><i class="icon ri-restart-line"></i>{{ .strings.settingsRestart }}</span>
+                            <span class="button ~urge @low unfocused gap-1" id="settings-save"><i class="icon ri-save-line"></i>{{ .strings.settingsSave }}</span>
                         </div>
                     </div>
                     <div class="flex flex-col md:flex-row gap-3">
