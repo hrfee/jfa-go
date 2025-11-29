@@ -3,52 +3,52 @@
         "name": "العربية (AR)"
     },
     "strings": {
-        "ifItWasNotYou": "اذا لم يكن هذا انت، الرجاء تجاهل هذا.",
-        "helloUser": "مرحباً {username}،",
+        "ifItWasNotYou": "اذا لم يكن هذا أنت، الرجاء تجاهل هذه الرسالة.",
+        "helloUser": "أهلاً {username}،",
         "reason": "السبب"
     },
     "userCreated": {
-        "name": "إنشاء حساب",
-        "title": "ملاحظة: تم إنشاء الحساب",
-        "aUserWasCreated": "تم إنشاء الحساب بواسطة الرمز {code}.",
+        "name": "إنشاء مستخدم",
+        "title": "إشعار: تم إنشاء المستخدم",
+        "aUserWasCreated": "تم إنشاء مستخدم باستخدام الرمز {code}.",
         "time": "الوقت",
         "notificationNotice": "ملاحظة: الرسائل التذكيرية يمكن تعديلها في لوحة التحكم."
     },
     "inviteExpiry": {
         "name": "انتهاء صلاحية الدعوة",
-        "title": "ملاحظة: انتهت صلاحية الدعوة",
+        "title": "إشعار: انتهت صلاحية الدعوة",
         "inviteExpired": "انتهت صلاحية الدعوة.",
         "expiredAt": "انتهت صلاحية الرمز {code} في {time} .",
         "notificationNotice": "ملاحظة: الرسائل التذكيرية يمكن تعديلها في لوحة التحكم."
     },
     "passwordReset": {
         "name": "إعادة تعيين كلمة المرور",
-        "title": "تم طلب إعادة تعيين كلمة المرور - Jellyfin",
+        "title": "طلب إعادة تعيين كلمة المرور - Jellyfin",
         "someoneHasRequestedReset": "قام شخص ما بطلب إعادة تعيين كلمة المرور مؤخرا.",
-        "ifItWasYou": "إذا كان هذا انت، أدخل رمز التعريف الشخصي أدناه في الخانة.",
-        "ifItWasYouLink": "إذا كان هذا انت، اضغط على الرابط أدناه.",
+        "ifItWasYou": "إذا كان هذا انت، أدخل الرمز أدناه في الخانة.",
+        "ifItWasYouLink": "إذا كان هذا انت، اضغط الرابط أدناه.",
         "codeExpiry": "ستنتهي صلاحية الرمز في {date}، {time} UTC، خلال {expiresInMinutes}.",
-        "pin": "رمز التعريف الشخصي"
+        "pin": "الرمز"
     },
     "userDeleted": {
-        "name": "حذف المستخدم",
-        "title": "لقد تم حذف حسابك - Jellyfin",
+        "name": "حذف مستخدم",
+        "title": "تم حذف حسابك - Jellyfin",
         "yourAccountWasDeleted": "لقد تم حذف حسابك في Jellyfin."
     },
     "userDisabled": {
-        "name": "تعطيل المستخدم",
-        "title": "لقد تم تعطيل حسابك - Jellyfin",
+        "name": "تعطيل مستخدم",
+        "title": "تم تعطيل حسابك - Jellyfin",
         "yourAccountWasDisabled": "لقد تم تعطيل حسابك."
     },
     "userEnabled": {
-        "name": "تفعيل المستخدم",
-        "title": "لقد تم تفعيل حسابك - Jellyfin",
+        "name": "تفعيل مستخدم",
+        "title": "تم تفعيل حسابك - Jellyfin",
         "yourAccountWasEnabled": "لقد تم تفعيل حسابك."
     },
     "inviteEmail": {
-        "name": "دعوة البريد الإلكتروني",
+        "name": "بريد الدعوة",
         "title": "دعوة - Jellyfin",
-        "hello": "مرحباً",
+        "hello": "أهلاً",
         "youHaveBeenInvited": "تمت دعوتك إلى Jellyfin.",
         "toJoin": "للإنضمام، اتبع الرابط أدناه.",
         "inviteExpiry": "ستنتهي صلاحية الدعوة في {date} {time}، خلال {expiresInMinutes}، اتخذ اجراءاً.",
@@ -60,7 +60,7 @@
         "welcome": "مرحباً في Jellyfin!",
         "youCanLoginWith": "يمكنك تسجيل الدخول بإستخدام المعلومات أدناه",
         "yourAccountWillExpire": "ستنتهي صلاحية حسابك في {date}.",
-        "jellyfinURL": "رابط"
+        "jellyfinURL": "الرابط"
     },
     "emailConfirmation": {
         "name": "بريد التحقق",
@@ -69,9 +69,21 @@
         "confirmEmail": "تأكيد البريد الإلكتروني"
     },
     "userExpired": {
-        "name": "انتهاء صلاحية المستخدم",
+        "name": "انتهاء صلاحية مستخدم",
         "title": "انتهت صلاحية حسابك - Jellyfin",
         "yourAccountHasExpired": "انتهت صلاحية حسابك.",
         "contactTheAdmin": "تواصل مع المشرفين للمزيد من المعلومات."
+    },
+    "expiryReminder": {
+        "name": "تذكير انتهاء الصلاحية",
+        "title": "تذكير: ستنتهي صلاحية حسابك قريباً - Jellyfin",
+        "yourAccountIsDueToExpire": "ستنتهي صلاحية حسابك خلال {expiresIn}، في{date} {time}."
+    },
+    "userExpiryAdjusted": {
+        "yourExpiryWasAdjusted": "تم تغيير تاريخ انتهاء صلاحية حسابك.",
+        "name": "تغيير مدة انتهاء الصلاحية",
+        "title": "تغيرت مدة صلاحية حسابك - Jellyfin",
+        "ifPreviouslyDisabled": "إذا تم تعطيل حسابك مسبقاً، فمن الممكن أنه قد تم تفعيله.",
+        "newExpiry": "ستنتهي صلاحية حسابك في: {date}."
     }
 }
