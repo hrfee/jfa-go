@@ -25,7 +25,9 @@ type Jellyseerr struct {
 	server, key      string
 	header           map[string]string
 	httpClient       *http.Client
-	userCache        map[string]User // Map of jellyfin IDs to users
+	userCache        map[string]User  // Map of jellyfin IDs to users
+	jsToJfID         map[int64]string // Map of jellyseerr IDs to jellyfin IDs
+	invalidatedUsers map[int64]bool   // Map of jellyseerr IDs needing a re-caching
 	cacheExpiry      time.Time
 	cacheLength      time.Duration
 	timeoutHandler   co.TimeoutHandler
@@ -51,6 +53,8 @@ func NewJellyseerr(server, key string, timeoutHandler co.TimeoutHandler) *Jellys
 		cacheExpiry:      time.Now(),
 		timeoutHandler:   timeoutHandler,
 		userCache:        map[string]User{},
+		jsToJfID:         map[int64]string{},
+		invalidatedUsers: map[int64]bool{},
 		LogRequestBodies: false,
 	}
 }
@@ -158,6 +162,7 @@ func (js *Jellyseerr) ImportFromJellyfin(jfIDs ...string) ([]User, error) {
 	for _, u := range data {
 		if u.JellyfinUserID != "" {
 			js.userCache[u.JellyfinUserID] = u
+			js.jsToJfID[u.ID] = u.JellyfinUserID
 		}
 	}
 	return data, err
@@ -166,8 +171,13 @@ func (js *Jellyseerr) ImportFromJellyfin(jfIDs ...string) ([]User, error) {
 func (js *Jellyseerr) getUsers() error {
 	if js.cacheExpiry.After(time.Now()) {
 		return nil
+		if len(js.invalidatedUsers) != 0 {
+			return js.getInvalidatedUsers()
+		}
 	}
 	js.cacheExpiry = time.Now().Add(js.cacheLength)
+	userCache := map[string]User{}
+	jsToJfID := map[int64]string{}
 	pageCount := 1
 	pageIndex := 0
 	for {
@@ -179,7 +189,8 @@ func (js *Jellyseerr) getUsers() error {
 			if u.JellyfinUserID == "" {
 				continue
 			}
-			js.userCache[u.JellyfinUserID] = u
+			userCache[u.JellyfinUserID] = u
+			jsToJfID[u.ID] = u.JellyfinUserID
 		}
 		pageCount = res.Page.Pages
 		pageIndex++
@@ -187,6 +198,10 @@ func (js *Jellyseerr) getUsers() error {
 			break
 		}
 	}
+	js.userCache = userCache
+	js.jsToJfID = jsToJfID
+	js.invalidatedUsers = map[int64]bool{}
+
 	return nil
 }
 
@@ -207,15 +222,15 @@ func (js *Jellyseerr) getUserPage(page int) (GetUsersDTO, error) {
 }
 
 func (js *Jellyseerr) MustGetUser(jfID string) (User, error) {
-	u, _, err := js.GetOrImportUser(jfID)
+	u, _, err := js.GetOrImportUser(jfID, false)
 	return u, err
 }
 
 // GetImportedUser provides the same function as ImportFromJellyfin, but will always return the user,
 // even if they already existed. Also returns whether the user was imported or not,
-func (js *Jellyseerr) GetOrImportUser(jfID string) (u User, imported bool, err error) {
+func (js *Jellyseerr) GetOrImportUser(jfID string, fixedCache bool) (u User, imported bool, err error) {
 	imported = false
-	u, err = js.GetExistingUser(jfID)
+	u, err = js.GetExistingUser(jfID, fixedCache)
 	if err == nil {
 		return
 	}
@@ -233,15 +248,24 @@ func (js *Jellyseerr) GetOrImportUser(jfID string) (u User, imported bool, err e
 	return
 }
 
-func (js *Jellyseerr) GetExistingUser(jfID string) (u User, err error) {
+func (js *Jellyseerr) GetExistingUser(jfID string, fixedCache bool) (u User, err error) {
 	js.getUsers()
 	ok := false
 	err = nil
-	if u, ok = js.userCache[jfID]; ok {
+	u, ok = js.userCache[jfID]
+	_, invalidated := js.invalidatedUsers[u.ID]
+	if ok && !invalidated {
 		return
 	}
-	js.cacheExpiry = time.Now()
-	js.getUsers()
+	if invalidated {
+		err = js.getInvalidatedUsers()
+		if err != nil {
+			return
+		}
+	} else if !fixedCache {
+		js.cacheExpiry = time.Now()
+		js.getUsers()
+	}
 	if u, ok = js.userCache[jfID]; ok {
 		err = nil
 		return
@@ -254,7 +278,7 @@ func (js *Jellyseerr) getUser(jfID string) (User, error) {
 	if js.AutoImportUsers {
 		return js.MustGetUser(jfID)
 	}
-	return js.GetExistingUser(jfID)
+	return js.GetExistingUser(jfID, false)
 }
 
 func (js *Jellyseerr) Me() (User, error) {
@@ -266,6 +290,25 @@ func (js *Jellyseerr) Me() (User, error) {
 	}
 	err = json.Unmarshal([]byte(resp), &data)
 	return data, err
+}
+
+func (js *Jellyseerr) getInvalidatedUsers() error {
+	// FIXME: Collect errors and return
+	for jellyseerrID, _ := range js.invalidatedUsers {
+		jfID, ok := js.jsToJfID[jellyseerrID]
+		if !ok {
+			continue
+		}
+		user, err := js.UserByID(jellyseerrID)
+		if err != nil {
+			continue
+		}
+		js.userCache[jfID] = user
+		js.jsToJfID[jellyseerrID] = jfID
+		delete(js.invalidatedUsers, jellyseerrID)
+
+	}
+	return nil
 }
 
 func (js *Jellyseerr) GetPermissions(jfID string) (Permissions, error) {
@@ -295,6 +338,7 @@ func (js *Jellyseerr) SetPermissions(jfID string, perm Permissions) error {
 	}
 	u.Permissions = perm
 	js.userCache[jfID] = u
+	js.jsToJfID[u.ID] = jfID
 	return nil
 }
 
@@ -310,6 +354,7 @@ func (js *Jellyseerr) ApplyTemplateToUser(jfID string, tmpl UserTemplate) error 
 	}
 	u.UserTemplate = tmpl
 	js.userCache[jfID] = u
+	js.jsToJfID[u.ID] = jfID
 	return nil
 }
 
@@ -326,8 +371,7 @@ func (js *Jellyseerr) ModifyUser(jfID string, conf map[UserField]any) error {
 	if err != nil {
 		return err
 	}
-	// Lazily just invalidate the cache.
-	js.cacheExpiry = time.Now()
+	js.invalidatedUsers[u.ID] = true
 	return nil
 }
 
@@ -413,12 +457,19 @@ func (js *Jellyseerr) ModifyMainUserSettings(jfID string, conf MainUserSettings)
 	if err != nil {
 		return err
 	}
+	return js.ModifyMainUserSettingsByID(u.ID, conf)
+}
 
-	_, _, err = js.post(fmt.Sprintf(js.server+"/user/%d/settings/main", u.ID), conf, false)
+func (js *Jellyseerr) ModifyMainUserSettingsByID(jellyseerrID int64, conf MainUserSettings) error {
+	_, _, err := js.post(fmt.Sprintf(js.server+"/user/%d/settings/main", jellyseerrID), conf, false)
 	if err != nil {
 		return err
 	}
-	// Lazily just invalidate the cache.
-	js.cacheExpiry = time.Now()
+	js.invalidatedUsers[jellyseerrID] = true
 	return nil
+}
+
+func (js *Jellyseerr) ReloadCache() error {
+	js.cacheExpiry = time.Now()
+	return js.getUsers()
 }

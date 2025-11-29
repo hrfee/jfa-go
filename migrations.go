@@ -22,6 +22,7 @@ func runMigrations(app *appContext) {
 	// migrateHyphens(app)
 	migrateToBadger(app)
 	intialiseCustomContent(app)
+	migrateJellyseerrImportDaemon(app)
 }
 
 // Migrate pre-0.2.0 user templates to profiles
@@ -503,5 +504,13 @@ func migrateExternalURL(app *appContext) {
 	if err != nil {
 		app.err.Fatalf("Failed to save new config: %v", err)
 		return
+	}
+}
+
+// Migrate from use of "Import Existing Users" Jellyseerr import daemon to one-time run when enabling the feature.
+func migrateJellyseerrImportDaemon(app *appContext) {
+	// When Jellyseerr is disabled, set this flag to false so that an initial sync happens the next time it is enabled.
+	if !(app.config.Section("jellyseerr").Key("enabled").MustBool(false)) {
+		app.storage.db.Upsert("jellyseerr_inital_sync_status", JellyseerrInitialSyncStatus{false})
 	}
 }

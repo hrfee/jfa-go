@@ -416,6 +416,7 @@ func (config *Config) ReloadDependents(app *appContext) {
 	}
 
 	app.email = NewEmailer(config, app.storage, app.LoggerSet)
+
 }
 
 func (app *appContext) ReloadConfig() {

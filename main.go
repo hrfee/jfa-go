@@ -516,11 +516,16 @@ func start(asDaemon, firstCall bool) {
 		go app.userDaemon.run()
 		defer app.userDaemon.Shutdown()
 
-		if app.config.Section("jellyseerr").Key("enabled").MustBool(false) && app.config.Section("jellyseerr").Key("import_existing").MustBool(false) {
+		if app.config.Section("jellyseerr").Key("enabled").MustBool(false) {
+			// import_existing_users setting is deprecated, now it'll run when jellyseerr is enabled, or when triggered manually.
 			// jellyseerrDaemon = newJellyseerrDaemon(time.Duration(30*time.Second), app)
-			app.jellyseerrDaemon = newJellyseerrDaemon(time.Duration(10*time.Minute), app)
-			go app.jellyseerrDaemon.run()
-			defer app.jellyseerrDaemon.Shutdown()
+			app.jellyseerrDaemon = newJellyseerrDaemon(time.Duration(24*time.Hour), app)
+			if app.jellyseerrDaemon != nil {
+				go app.jellyseerrDaemon.run()
+				// Run on startup
+				go app.jellyseerrDaemon.Trigger()
+				defer app.jellyseerrDaemon.Shutdown()
+			}
 		}
 
 		if app.config.Section("password_resets").Key("enabled").MustBool(false) && serverType == mediabrowser.JellyfinServer {

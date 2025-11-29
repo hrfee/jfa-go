@@ -2192,6 +2192,12 @@ export class accountsList extends PaginatedList {
 
 }
 
+// An alternate view showing accounts in sub-lists grouped by group/label.
+export class groupedAccountsList {
+
+    
+}
+
 export const accountURLEvent = (id: string) => { return new CustomEvent(accountsList._accountURLEvent, {"detail": id}) };
 
 type GetterReturnType = Boolean | boolean | String | Number | number;

@@ -1407,6 +1407,7 @@ sections:
     depends_true: enabled
     description: Existing users (and those created outside jfa-go) will have their
       contact info imported to Jellyseerr.
+    deprecated: true
   - setting: constraints_note
     name: 'Unique Emails:'
     type: note
