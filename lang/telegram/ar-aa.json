@@ -3,13 +3,13 @@
         "name": "العربية (AR)"
     },
     "strings": {
-        "startMessage": "أهلاً!\nأدخل رمز Jellyfin هنا للتحقق من حسابك.",
+        "startMessage": "أهلاً!\nأدخل رمز Jellyfin هنا لتأكيد حسابك.",
         "discordStartMessage": "أهلاً!\nأدخل رمزك باستخدام ⁦.لتأكيد حسابك /pin <الرمز>",
-        "matrixStartMessage": "أهلاً\nأدخل رقم التعريف الشخصي أدناه في صفحة الاشتراك في Jellyfin للتحقق من حسابك.",
+        "matrixStartMessage": "أهلاً\nأدخل الرمز أدناه في صفحة التسجيل في Jellyfin لتأكيد حسابك.",
         "invalidPIN": "هذا الرمز خاطئ، حاول مرة أُخرى.",
         "pinSuccess": "تم! يمكنك الآن العودة إلى صفحة التسجيل.",
         "languageMessage": "ملاحظة: اطّلع على اللغات المتاحة باستخدام {command}، وقم بتعيين اللغة باستخدام {command} <language code>.",
-        "languageMessageDiscord": "ملاحظة: اختار اللغة باستخدام ⁦./lang <language name>",
+        "languageMessageDiscord": "ملاحظة: اختر اللغة باستخدام ⁦./lang <language name>",
         "languageSet": "تم تعيين اللغة إلى {language}.",
         "discordDMs": "يرجى التحقق من رسائلك المباشرة للحصول على رد.",
         "noPermission": "لا تملك الصلاحية لهذا الإجراء.",
