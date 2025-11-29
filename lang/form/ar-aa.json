@@ -10,70 +10,79 @@
         "username": "اسم المستخدم",
         "password": "كلمة المرور",
         "reEnterPassword": "تأكيد كلمة المرور",
-        "reEnterPasswordInvalid": "كلمة المرور غير مطابقة.",
+        "reEnterPasswordInvalid": "كلمات المرور غير متطابقة.",
         "createAccountButton": "إنشاء الحساب",
         "passwordRequirementsHeader": "متطلبات كلمة المرور",
         "successHeader": "تم!",
         "confirmationRequired": "مطلوب تأكيد البريد الإلكتروني",
-        "confirmationRequiredMessage": "يرجى التحقق من صندوق البريد الإلكتروني الخاص بك للتحقق من عنوانك.",
-        "yourAccountIsValidUntil": "سيكون حسابك ساري المفعول حتى {date}.",
-        "sendPIN": "أرسل رقم التعريف الشخصي أدناه إلى البوت ، ثم عُد إلى هنا لربط حسابك.",
-        "sendPINDiscord": "اكتب {command} في {server_channel} على Discord ، ثم أرسل رقم التعريف الشخصي أدناه.",
-        "matrixEnterUser": "أدخل معرف المستخدم الخاص بك، واضغط على إرسال، وسيتم إرسال رمز PIN إليك. أدخله هنا للمتابعة.",
-        "oldPassword": "كلمة المرور السابقة",
+        "confirmationRequiredMessage": "يرجى التحقق من بريدك الإلكتروني لتأكيد العنوان.",
+        "yourAccountIsValidUntil": "سيكون حسابك صالحاً حتى {date}.",
+        "sendPIN": "أرسل الرمز أدناه إلى البوت، ثم عُد إلى هنا لربط حسابك.",
+        "sendPINDiscord": "اكتب {command} في {server_channel} في الدسكورد، ثم أرسل الرمز أدناه.",
+        "matrixEnterUser": "أدخل مُعرّف المستخدم الخاص بك، واضغط على إرسال، وسيتم إرسال رمز إليك. أدخله هنا للمتابعة.",
+        "oldPassword": "كلمة المرور القديمة",
         "newPassword": "كلمة المرور الجديدة",
-        "joinTheServer": "انضم إلى السيرفر:",
-        "editContactMethod": "تحرير طريقة الاتصال",
-        "customMessagePlaceholderHeader": "تحرير هذه البطاقة",
+        "joinTheServer": "انضم إلى الخادم:",
+        "editContactMethod": "تحرير وسيلة الاتصال",
+        "customMessagePlaceholderHeader": "تخصيص هذه البطاقة",
         "resetPassword": "إعادة تعيين كلمة المرور",
         "resetSent": "تم إرسال إعادة التعيين.",
-        "resetSentDescription": "في حال وجود حساب يملك اسم المستخدم/طريقة الاتصال المحددة، فسيتم إرسال رابط إعادة تعيين كلمة المرور عبر جميع طرق الاتصال المتاحة.ستنتهي صلاحية الرمز خلال 30 دقيقة.",
+        "resetSentDescription": "في حال وجود حساب يملك اسم المستخدم/وسيلة الاتصال المحددة، فسيتم إرسال رابط إعادة تعيين كلمة المرور عبر جميع وسائل الاتصال المتاحة. ستنتهي صلاحية الرمز خلال 30 دقيقة.",
         "changePassword": "تغيير كلمة المرور",
         "welcomeUser": "مرحباً، {user}!",
-        "addContactMethod": "إضافة طريقة اتصال",
+        "addContactMethod": "أضف وسيلة اتصال",
         "customMessagePlaceholderContent": "اضغط على زر تحرير صفحة المستخدم في الإعدادات لتخصيص هذه البطاقة، أو أظهر واحدة على صفحة تسجيل الدخول، ولا تقلق، لا يستطيع المستخدم رؤيتها.",
         "userPageSuccessMessage": "تستطيع رؤية وتحرير التفاصيل حول حسابك لاحقاً في صفحة {myAccount}.",
         "resetPasswordThroughJellyfin": "لإعادة تعيين كلمة المرور، قم بزيارة {jfLink} واضغط على زر \"نسيت كلمة المرور\".",
-        "resetPasswordThroughLink": "لإعادة تعيين كلمة المرور، أدخل اسم المستخدم، البريد الإلكتروني، أو اسم مستخدم لطريقة اتصال مرتبطة، ثم أرسل. سيتم إرسال رابط لإعادة تعيين كلمة المرور."
+        "resetPasswordThroughLink": "لإعادة تعيين كلمة المرور، أدخل اسم المستخدم، عنوان البريد الإلكتروني، أو اسم مستخدم لوسيلة اتصال مربوطة، ثم أرسل. سيتم إرسال رابط لإعادة تعيين كلمة المرور.",
+        "resetPasswordThroughLinkEnd": "ثم اضغط على إرسال. سيتم إرسال رابط لإعادة تعيين كلمة مرورك.",
+        "referralsDescription": "ادعُ أصدقاءك وعائلتك إلى Jellyfin باستخدام هذا الرابط. عُد إلى هنا للحصول على رابط جديد إذا انتهت صلاحيته.",
+        "resetPasswordThroughLinkStart": "لإعادة تعيين كلمة مرورك، أدخل أحد الخيارات التالية:",
+        "resetPasswordContactMethod": "اسم المستخدم لأي وسيلة اتصال مرتبطة بحسابك",
+        "copyReferral": "نسخ الرابط",
+        "invitedBy": "تمت دعوتك من قبل المستخدم {user}.",
+        "resetPasswordUsername": "اسم مستخدم Jellyfin الخاص بك",
+        "resetPasswordEmail": "عنوان بريدك الإلكتروني",
+        "referralsWithExpiryDescription": "ادعُ أصدقاءك وعائلتك إلى Jellyfin باستخدام هذا الرابط. سيتم تعطيل الرابط بعد انتهاء صلاحيته."
     },
     "notifications": {
         "errorUserExists": "المستخدم موجود مسبقا.",
         "errorInvalidCode": "رمز دعوة غير صالح.",
-        "errorTelegramVerification": "مطلوب التحقق من تيليجرام.",
-        "errorDiscordVerification": "مطلوب التحقق من الدسكورد.",
-        "errorMatrixVerification": "مطلوب التحقق من Matrix.",
-        "errorInvalidPIN": "رقم التعريف الشخصي غير صالح.",
+        "errorTelegramVerification": "مطلوب تأكيد التيليجرام.",
+        "errorDiscordVerification": "مطلوب تأكيد الدسكورد.",
+        "errorMatrixVerification": "مطلوب تأكيد Matrix.",
+        "errorInvalidPIN": "الرمز غير صالح.",
         "errorUnknown": "خطأ غير معروف.",
         "errorNoEmail": "البريد الإلكتروني مطلوب.",
-        "errorCaptcha": "كلمة التحقق غير صحيحة.",
+        "errorCaptcha": "كلمة التحقق خاطئة.",
         "errorPassword": "تحقق من متطلبات كلمة المرور.",
         "errorNoMatch": "كلمات المرور غير متطابقة.",
-        "verified": "تم التحقق من الحساب.",
-        "errorAccountLinked": "الحساب قيد الاستخدام.",
-        "errorEmailLinked": "البريد الإلكتروني قيد الاستخدام.",
-        "errorOldPassword": "كلمة المرور القديمة غير صحيحة.",
+        "verified": "تم تأكيد الحساب.",
+        "errorAccountLinked": "الحساب مستخدم بالفعل.",
+        "errorEmailLinked": "البريد مستخدم بالفعل.",
+        "errorOldPassword": "كلمة المرور القديمة خاطئة.",
         "passwordChanged": "تم تغيير كلمة المرور."
     },
     "validationStrings": {
         "length": {
-            "singular": "يجب أن يتألف من {n} حرف على الأقل",
+            "singular": "يجب ألا يقل عدد الأحرف عن {n}",
             "plural": "يجب ألا يقل عدد الأحرف عن {n}"
         },
         "uppercase": {
-            "singular": "يجب أن تحتوي على {n} حرف كبير على الأقل",
+            "singular": "يجب ألا يقل عدد الأحرف الكبيرة عن {n}",
             "plural": "يجب ألا يقل عدد الأحرف الكبيرة عن {n}"
         },
         "lowercase": {
-            "singular": "يجب أن يتألف من {n} حرف صغير على الأقل",
+            "singular": "يجب ألا يقل عدد الأحرف الصغيرة عن {n}",
             "plural": "يجب ألا يقل عدد الأحرف الصغيرة عن {n}"
         },
         "number": {
-            "singular": "يجب أن يحتوي على {n} رقم على الأقل",
-            "plural": "يجب أن يحتوي على {n} رقم على الأقل"
+            "singular": "يجب ألا يقل عدد الأرقام عن {n}",
+            "plural": "يجب ألا يقل عدد الأرقام عن {n}"
         },
         "special": {
-            "singular": "يجب أن يتألف من {n} حرف خاص على الأقل",
-            "plural": "يجب أن يتألف من {n} حرف خاص على الأقل"
+            "singular": "يجب ألا يقل عدد الأحرف الخاصة عن {n}",
+            "plural": "يجب ألا يقل عدد الأحرف الخاصة عن {n}"
         }
     }
 }
