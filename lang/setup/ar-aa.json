@@ -25,7 +25,7 @@
         "errorUnknown": ""
     },
     "startPage": {
-        "welcome": "",
+        "welcome": "مرحباً!",
         "pressStart": "",
         "httpsNotice": "",
         "start": ""
@@ -36,7 +36,7 @@
         "refreshPage": ""
     },
     "language": {
-        "title": "",
+        "title": "اللغة",
         "description": "",
         "defaultAdminLang": "",
         "defaultFormLang": "",
