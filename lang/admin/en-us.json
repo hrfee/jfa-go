@@ -39,11 +39,15 @@
         "commitNoun": "Commit",
         "newUser": "New User",
         "profile": "Profile",
+        "editProfile": "Edit profile",
+        "editProfileDescription": "For large changes, it is recommended you modify settings in Jellyfin/Jellyseerr/Ombi and re-generate the profile, but you can also make direct changes here. Please use caution when editing.",
         "unknown": "Unknown",
         "label": "Label",
         "userLabel": "User Label",
         "userLabelDescription": "Label to apply to users created with this invite.",
         "logs": "Logs",
+        "tasks": "Tasks",
+        "tasksDescription": "Tasks are large actions that may be run periodically in the background. You can manually trigger them here if you wish.",
         "announce": "Announce",
         "templates": "Templates",
         "subject": "Subject",
@@ -56,6 +60,7 @@
         "unlink": "Unlink Account",
         "deleted": "Deleted",
         "disabled": "Disabled",
+        "run": "Run",
         "sendPWR": "Send Password Reset",
         "noResultsFound": "No Results Found",
         "noResultsFoundLocally": "Only loaded records were searched. You can load more, or perform the search over all records on the server.",
@@ -66,6 +71,8 @@
         "setExpiry": "Set expiry",
         "removeExpiry": "Remove expiry",
         "enterExpiry": "Enter an expiry",
+        "extendFromPreviousExpiry": "Extend from previous expiry date (if possible)",
+        "extendFromPreviousExpiryDescription": "If a record of an expired user's expiry time is found in the activity log, expiry will be extended from then, rather than the current time, unless the new expiry date would have already passed.",
         "sendPWRManual": "User {n} has no method of contact, press copy to get a link to send to them.",
         "sendPWRSuccess": "Password reset link sent.",
         "sendPWRSuccessManual": "If the user hasn't received it, press copy to get a link to manually send to them.",
@@ -113,6 +120,7 @@
         "addProfileDescription": "Create a Jellyfin user and configure it, then select it below. When this profile is applied to an invite, new users will be created with the settings.",
         "addProfileNameOf": "Profile Name",
         "addProfileStoreHomescreenLayout": "Store homescreen layout",
+        "addProfileStoreJellyseerr": "Create Jellyseerr profile",
         "inviteNoUsersCreated": "None yet!",
         "inviteUsersCreated": "Created users",
         "inviteNoProfile": "No Profile",
@@ -209,7 +217,9 @@
         "backupCanBeFound": "The backup can be found on the server at {filepath}.",
         "backupCanDownload": "Alternatively, click below to download the backup.",
         "wikiPage": "Wiki Page",
-        "wiki": "Wiki"
+        "wiki": "Wiki",
+        "restartRequired": "Restart required",
+        "required": "Required"
     },
     "notifications": {
         "pathCopied": "Full path copied to clipboard.",
@@ -237,6 +247,7 @@
         "errorBlankFields": "Fields were left blank",
         "errorDeleteProfile": "Failed to delete profile {n}",
         "errorLoadProfiles": "Failed to load profiles.",
+        "errorLoadProfile": "Failed to load profile.",
         "errorCreateProfile": "Failed to create profile {n}",
         "errorSavedProfile": "Failed to save profile {n}",
         "errorSetDefaultProfile": "Failed to set default profile.",
@@ -254,8 +265,10 @@
         "errorNoReferralTemplate": "Profile doesn't contain referral template, add one in settings.",
         "errorLoadActivities": "Failed to load activities.",
         "errorInvalidDate": "Date is invalid.",
+        "errorInvalidJSON": "Invalid JSON.",
         "updateAvailable": "A new update is available, check settings.",
-        "noUpdatesAvailable": "No new updates available."
+        "noUpdatesAvailable": "No new updates available.",
+        "runTask": "Triggered task."
     },
     "quantityStrings": {
         "modifySettingsFor": {

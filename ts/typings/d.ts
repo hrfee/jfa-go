@@ -111,6 +111,7 @@ declare interface Modals {
     jellyseerrProfile?: Modal;
     profiles: Modal;
     addProfile: Modal;
+    editProfile: Modal;
     announce: Modal;
     editor: Modal;
     customizeEmails: Modal;
@@ -122,6 +123,7 @@ declare interface Modals {
     sendPWR?: Modal;
     pwr?: Modal;
     logs: Modal;
+    tasks: Modal;
     email?: Modal;
     enableReferralsUser?: Modal;
     enableReferralsProfile?: Modal;

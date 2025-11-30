@@ -1,0 +1,88 @@
+{
+    "meta": {
+        "name": "İngilizce (ABD)"
+    },
+    "strings": {
+        "pageTitle": "Jellyfin Hesabı Oluştur",
+        "createAccountHeader": "Hesap Oluştur",
+        "accountDetails": "Ayrıntılar",
+        "emailAddress": "E-posta",
+        "username": "Kullanıcı Adı",
+        "oldPassword": "Eski Şifre",
+        "newPassword": "Yeni Şifre",
+        "password": "Şifre",
+        "reEnterPassword": "Şifreyi Tekrar Girin",
+        "reEnterPasswordInvalid": "Şifreler aynı değil.",
+        "createAccountButton": "Hesap Oluştur",
+        "passwordRequirementsHeader": "Şifre Gereksinimleri",
+        "successHeader": "Başarılı!",
+        "confirmationRequired": "E-posta onayı gerekli",
+        "confirmationRequiredMessage": "Lütfen adresinizi doğrulamak için e-posta gelen kutunuzu kontrol edin.",
+        "yourAccountIsValidUntil": "Hesabınız {date} tarihine kadar geçerli olacaktır.",
+        "sendPIN": "Aşağıdaki **PIN'i** bota gönderin, ardından hesabınızı bağlamak için buraya geri gelin.",
+        "sendPINDiscord": "Discord'da {server_channel} {command} yazın, ardından aşağıdaki PIN'i gönderin.",
+        "matrixEnterUser": "Kullanıcı Kimliğinizi girin, gönderin ve size bir PIN gönderilecektir. Devam etmek için buraya girin.",
+        "welcomeUser": "Hoşgeldin, {user}!",
+        "addContactMethod": "İletişim Yöntemi Ekle",
+        "editContactMethod": "İletişim Yöntemini Düzenle",
+        "joinTheServer": "Sunucuya katıl:",
+        "customMessagePlaceholderHeader": "Bu kartı özelleştir",
+        "customMessagePlaceholderContent": "Bu kartı özelleştirmek için ayarlarda kullanıcı sayfası düzenleme düğmesine tıklayın ya da oturum açma ekranında bir tane gösterin ve endişelenmeyin, kullanıcı bunu göremez.",
+        "userPageSuccessMessage": "Hesabınızla ilgili ayrıntıları daha sonra {myAccount} sayfasında görebilir ve değiştirebilirsiniz.",
+        "resetPassword": "Şifreyi Sıfırla",
+        "resetPasswordThroughJellyfin": "Şifrenizi sıfırlamak için {jfLink} adresini ziyaret edin ve \"Şifremi Unuttum\" düğmesine basın.",
+        "resetPasswordThroughLink": "Şifrenizi sıfırlamak için kullanıcı adınızı, e-posta adresinizi veya bağlı bir iletişim yöntemi kullanıcı adınızı girin ve gönderin. Şifrenizi sıfırlamanız için bir bağlantı gönderilecektir.",
+        "resetPasswordThroughLinkStart": "Şifrenizi sıfırlamak için aşağıdakilerden birini girin:",
+        "resetPasswordThroughLinkEnd": "Şifrenizi sıfırlamanız için bir bağlantı gönderilecektir. Ardından gönder'e basın.",
+        "resetPasswordUsername": "Jellyfin kullanıcı adınız",
+        "resetPasswordEmail": "E-posta adresiniz",
+        "resetPasswordContactMethod": "Hesabınıza bağlı herhangi bir iletişim yönteminin kullanıcı adı",
+        "resetSent": "Sıfırlama Gönderildi.",
+        "resetSentDescription": "Verilen kullanıcı adı/iletişim yöntemine sahip bir hesap varsa, mevcut tüm iletişim yöntemleri aracılığıyla bir şifre sıfırlama bağlantısı gönderilmiştir. Kodun süresi **30 dakika** içinde dolacaktır.",
+        "changePassword": "Şifreyi Değiştir",
+        "referralsDescription": "Bu bağlantı ile arkadaşlarınızı ve ailenizi Jellyfin'e davet edin. Süresi dolarsa yeni bir tane almak için buraya geri gelin.",
+        "referralsWithExpiryDescription": "Bu bağlantı ile arkadaşlarınızı ve ailenizi Jellyfin'e davet edin. Bağlantının süresi dolduğunda devre dışı bırakılacaktır.",
+        "copyReferral": "Linki Kopyala",
+        "invitedBy": "Sizi {user} adlı kullanıcı davet etti."
+    },
+    "notifications": {
+        "errorUserExists": "Kullanıcı zaten mevcut.",
+        "errorInvalidCode": "Geçersiz davet kodu.",
+        "errorAccountLinked": "Hesap zaten kullanımda.",
+        "errorEmailLinked": "E-posta zaten kullanımda.",
+        "errorTelegramVerification": "Telegram doğrulama gerekli.",
+        "errorDiscordVerification": "Discord doğrulama gerekli.",
+        "errorMatrixVerification": "Matrix doğrulama gerekli.",
+        "errorInvalidPIN": "PIN geçersiz.",
+        "errorUnknown": "Bilinmeyen hata.",
+        "errorNoEmail": "E-posta gerekli.",
+        "errorCaptcha": "Captcha yanlış.",
+        "errorPassword": "Şifre gereksinimlerini kontrol edin.",
+        "errorNoMatch": "Şifreler eşleşmiyor.",
+        "errorOldPassword": "Eski şifre yanlış.",
+        "passwordChanged": "Şifre Değiştirildi.",
+        "verified": "Hesap doğrulandı."
+    },
+    "validationStrings": {
+        "length": {
+            "singular": "En az {n} karakter içermeli",
+            "plural": "En az {n} karakter içermeli"
+        },
+        "uppercase": {
+            "singular": "En az {n} büyük harf içermeli",
+            "plural": "En az {n} büyük harf içermeli"
+        },
+        "lowercase": {
+            "singular": "En az {n} küçük harf içermeli",
+            "plural": "En az {n} küçük harf içermeli"
+        },
+        "number": {
+            "singular": "En az {n} küçük harf içermeli",
+            "plural": "En az {n} küçük harf içermeli"
+        },
+        "special": {
+            "singular": "En az {n} özel karakter içermeli",
+            "plural": "En az {n} özel karakter içermeli"
+        }
+    }
+}

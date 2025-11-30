@@ -80,5 +80,10 @@
         "title": "Your account has expired - Jellyfin",
         "yourAccountHasExpired": "Your account has expired.",
         "contactTheAdmin": "Contact the administrator for more info."
+    },
+    "expiryReminder": {
+        "name": "Expiry reminder",
+        "title": "Reminder: your account will expire soon - Jellyfin",
+        "yourAccountIsDueToExpire": "Your account is due to expire in {expiresIn}, or on {date} at {time}."
     }
 }

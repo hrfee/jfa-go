@@ -1,3 +1,60 @@
+order:
+  - section: ui
+  - section: advanced
+  - section: jellyfin
+  - group: sign_up
+  - group: accounts
+  - section: messages
+  - group: external_services
+  - section: activity_log
+  - section: backups
+  - section: updates
+  - section: url_paths
+  - section: template_email
+  - section: files
+groups:
+  - group: external_services
+    name: "Integrations"
+    description: "Integrations with external services."
+    members:
+      - group: email
+      - group: chatbots
+      - section: ombi
+      - section: jellyseerr
+      - section: webhooks
+  - group: email
+    name: "Email"
+    description: "Options for sending emails through jfa-go."
+    members:
+      - section: email
+      - section: smtp
+      - section: mailgun
+      - section: email_confirmation
+  - group: chatbots
+    name: "Chatbots"
+    description: "Options for messaging through chat services."
+    members:
+      - section: discord
+      - section: telegram
+      - section: matrix
+  - group: sign_up
+    name: "Invites & Referrals"
+    description: "Settings relating to invites, the sign up page and referrals."
+    members:
+      - section: captcha
+      - section: password_validation
+      - section: invite_emails
+      - section: notifications
+      - section: welcome_email
+  - group: accounts
+    name: "Accounts"
+    description: "Settings relating to account management."
+    members:
+      - section: user_page
+      - section: password_resets
+      - section: user_expiry
+      - section: disable_enable
+      - section: deletion
 sections:
 - section: updates
   meta:
@@ -516,7 +573,7 @@ sections:
   meta:
     name: Captcha
     description: Settings related to user creation CAPTCHAs.
-    wiki_link: https://wiki.jfa-go.com/docs/captcha/
+    wiki_link: https://wiki.jfa-go.com/docs/external-services/captcha/
   settings:
   - setting: enabled
     name: Enabled
@@ -670,7 +727,7 @@ sections:
   meta:
     name: Messages/Notifications
     description: General settings for emails/messages.
-    wiki_link: https://wiki.jfa-go.com/docs/emails/
+    wiki_link: https://wiki.jfa-go.com/docs/customization/emails/
   settings:
   - setting: enabled
     name: Enabled
@@ -719,9 +776,27 @@ sections:
     - ["en-us", "English (US)"]
     value: en-us
     description: Default email language. Submit a PR on github if you'd like to translate.
+  - setting: collect
+    name: Collect on sign-up
+    type: bool
+    value: true
+    description: Ask for an email address on the sign-up form.
+  - setting: required
+    name: Require on sign-up
+    depends_true: collect
+    type: bool
+    value: false
+    description: Require an email address on sign-up.
+  - setting: require_unique
+    name: Require unique address
+    requires_restart: true
+    depends_true: method
+    type: bool
+    value: false
+    description: Disables using the same address on multiple accounts.
   - setting: no_username
     name: Use email addresses as username
-    depends_true: method
+    depends_true: collect
     type: bool
     value: false
     description: Use email address from invite form as username on Jellyfin.
@@ -733,6 +808,7 @@ sections:
     - ["smtp", "SMTP"]
     - ["mailgun", "Mailgun"]
     value: smtp
+    depends_true: messages|enabled
     description: Method of sending email to use.
   - setting: address
     name: Sent from (address)
@@ -753,25 +829,6 @@ sections:
     type: bool
     value: false
     description: Send emails as plain text instead of HTML.
-  - setting: collect
-    name: Collect on sign-up
-    depends_true: method
-    type: bool
-    value: true
-    description: Ask for an email address on the sign-up form.
-  - setting: required
-    name: Require on sign-up
-    depends_true: collect
-    type: bool
-    value: false
-    description: Require an email address on sign-up.
-  - setting: require_unique
-    name: Require unique address
-    requires_restart: true
-    depends_true: method
-    type: bool
-    value: false
-    description: Disables using the same address on multiple accounts.
   - setting: test_note
     name: 'Test your settings:'
     type: note
@@ -780,7 +837,7 @@ sections:
     description: Go over to the accounts tab, select your user (ensuring you've assigned it an email address) and send yourself an announcement.
 - section: mailgun
   meta:
-    name: Mailgun (Email)
+    name: Mailgun
     description: Mailgun API connection settings
     depends_true: email|method
   settings:
@@ -794,7 +851,7 @@ sections:
     value: your api key
 - section: smtp
   meta:
-    name: SMTP (Email)
+    name: SMTP
     description: SMTP Server connection settings.
     depends_true: email|method
   settings:
@@ -860,7 +917,7 @@ sections:
   meta:
     name: Discord
     description: Settings for Discord invites/signup/notifications
-    wiki_link: https://wiki.jfa-go.com/docs/bots/discord/
+    wiki_link: https://wiki.jfa-go.com/docs/external-services/bots/discord/
   settings:
   - setting: enabled
     name: Enabled
@@ -924,7 +981,7 @@ sections:
     requires_restart: true
     depends_true: provide_invite
     type: text
-    description: Channel to invite new users to.
+    description: Name of channel to invite new users to.
   - setting: apply_role
     name: Apply Role on connection
     requires_restart: true
@@ -955,7 +1012,7 @@ sections:
     name: Telegram
     description: Settings for Telegram signup/notifications. See the jfa-go wiki for
       info on setting this up.
-    wiki_link: https://wiki.jfa-go.com/docs/bots/telegram/
+    wiki_link: https://wiki.jfa-go.com/docs/external-services/bots/telegram/
   settings:
   - setting: enabled
     name: Enabled
@@ -1004,7 +1061,7 @@ sections:
     name: Matrix
     description: Settings for Matrix invites/signup/notifications. See the jfa-go
       wiki for info on setting this up.
-    wiki_link: https://wiki.jfa-go.com/docs/bots/matrix/
+    wiki_link: https://wiki.jfa-go.com/docs/external-services/bots/matrix/
   settings:
   - setting: enabled
     name: Enabled
@@ -1236,7 +1293,7 @@ sections:
     description: Path to custom email text template for announcements/custom messages.
 - section: notifications
   meta:
-    name: Admin invite notifications
+    name: Admin notifications
     description: Allows toggling "user created" and "invite expired" notifications
       to be sent to the admin per-invite.
     depends_true: messages|enabled
@@ -1276,13 +1333,13 @@ sections:
     description: Path to user creation notification email in plaintext.
 - section: ombi
   meta:
-    name: Ombi Integration
+    name: Ombi
     description: Connect to Ombi to automatically create both Ombi and Jellyfin accounts
       for new users. You'll need to add a ombi template to an existing User Profile
       for accounts to be created, which you can do by refreshing then checking Settings
       > User Profiles. To handle password resets for Ombi & Jellyfin, enable "Use
       reset link instead of PIN".
-    wiki_link: https://wiki.jfa-go.com/docs/ombi/
+    wiki_link: https://wiki.jfa-go.com/docs/external-services/ombi/
   settings:
   - setting: enabled
     name: Enabled
@@ -1305,12 +1362,16 @@ sections:
     description: API Key. Get this from the first tab in Ombi settings.
 - section: jellyseerr
   meta:
-    name: Jellyseerr Integration
+    name: Jellyseerr
     description: Connect to Jellyseerr to automatically trigger the import of users
       on account creation, and to automatically link contact methods (email, discord
       and telegram). A template must be added to a User Profile for accounts to be
       created.
     wiki_link: https://wiki.jfa-go.com/docs/external-services/jellyseerr/ 
+    aliases:
+      - Jellyseerr
+      - Overseerr
+      - Seerr
   settings:
   - setting: enabled
     name: Enabled
@@ -1346,6 +1407,7 @@ sections:
     depends_true: enabled
     description: Existing users (and those created outside jfa-go) will have their
       contact info imported to Jellyseerr.
+    deprecated: true
   - setting: constraints_note
     name: 'Unique Emails:'
     type: note
@@ -1425,7 +1487,7 @@ sections:
     name: Email confirmation
     description: If enabled, a user will be sent an email confirmation link to ensure
       their password is right before they can make an account.
-    depends_true: email|method
+    depends_true: email|collect
   settings:
   - setting: enabled
     name: Enabled
@@ -1448,7 +1510,7 @@ sections:
     description: Path to custom email in plain text
 - section: user_expiry
   meta:
-    name: User Expiry
+    name: Account Expiry
     description: When set on an invite, users will be deleted or disabled a specified
       amount of time after they create their account. Expiries can also be set and
       extended for invididual users, optionally with a message why.
@@ -1474,6 +1536,10 @@ sections:
     value: true
     depends_true: messages|enabled
     description: Send an email when a user's account expires.
+  - setting: send_reminder_n_days_before
+    name: Send message N days before expiry
+    type: list
+    description: Send users a message N days before their account is due to expire. Multiple can be set.
   - setting: subject
     name: Email subject
     depends_true: messages|enabled
@@ -1505,6 +1571,23 @@ sections:
     description: Path to custom email html
   - setting: adjustment_email_text
     name: 'Adjustment: Custom email (plaintext)'
+    advanced: true
+    depends_true: messages|enabled
+    type: text
+    description: Path to custom email in plain text
+  - setting: reminder_subject
+    name: 'Reminder: email subject'
+    depends_true: messages|enabled
+    type: text
+    description: Subject of expiry reminder emails.
+  - setting: reminder_email_html
+    name: 'Reminder: Custom email (HTML)'
+    advanced: true
+    depends_true: messages|enabled
+    type: text
+    description: Path to custom email html
+  - setting: reminder_email_text
+    name: 'Reminder: Custom email (plaintext)'
     advanced: true
     depends_true: messages|enabled
     type: text
@@ -1569,7 +1652,7 @@ sections:
     description: jfa-go will send a POST request to these URLs when an event occurs,
       with relevant information. Request information is logged when debug logging
       is enabled.
-    wiki_link: https://wiki.jfa-go.com/docs/webhooks/
+    wiki_link: https://wiki.jfa-go.com/docs/dev/webhooks/
   settings:
   - setting: created
     name: User Created
@@ -1587,30 +1670,36 @@ sections:
     requires_restart: true
     type: text
     description: Location of stored invites (json).
+    deprecated: true
   - setting: password_resets
     name: Password Resets
     requires_restart: true
     type: text
     description: Location of stored non-Jellyfin password resets (json).
+    deprecated: true
   - setting: emails
     name: Email Addresses
     requires_restart: true
     type: text
     description: Location of stored email addresses (json).
+    deprecated: true
   - setting: users
     name: User storage
     type: text
     description: Stores users temporarily when a user expiry is set.
+    deprecated: true
   - setting: ombi_template
     name: Ombi user template
     type: text
     description: Location of stored Ombi user template.
+    deprecated: true
   - setting: user_profiles
     name: User Profiles
     requires_restart: true
     type: text
     description: Location of stored user profiles (encompasses template and configuration
       and displayprefs) (json)
+    deprecated: true
   - setting: html_templates
     name: Custom HTML Template Directory
     requires_restart: true
@@ -1628,19 +1717,23 @@ sections:
     type: text
     description: JSON file generated by program in settings, different from email_html/email_text.
       See wiki for more info.
+    deprecated: true
   - setting: custom_user_page_content
     name: Custom user page content
     type: text
     description: JSON file generated by program in settings, containing user page
       messages. See wiki for more info.
+    deprecated: true
   - setting: telegram_users
     name: Telegram users
     type: text
     description: Stores telegram user IDs and language preferences.
+    deprecated: true
   - setting: matrix_users
     name: Matrix users
     type: text
     description: Stores matrix user IDs and language preferences.
+    deprecated: true
   - setting: matrix_sql
     name: Matrix encryption DB
     type: text
@@ -1649,7 +1742,9 @@ sections:
     name: Discord users
     type: text
     description: Stores discord user IDs and language preferences.
+    deprecated: true
   - setting: announcements
     name: Announcement templates
     type: text
     description: Stores custom announcement templates.
+    deprecated: true

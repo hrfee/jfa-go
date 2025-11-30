@@ -107,7 +107,7 @@ func (app *appContext) MyDetails(gc *gin.Context) {
 
 // @Summary Sets whether to notify yourself through telegram/discord/matrix/email or not.
 // @Produce json
-// @Param SetContactMethodsDTO body SetContactMethodsDTO true "User's Jellyfin ID and whether or not to notify then through Telegram."
+// @Param SetContactPreferencesDTO body SetContactPreferencesDTO true "User's Jellyfin ID and whether or not to notify then through Telegram."
 // @Success 200 {object} boolResponse
 // @Success 400 {object} boolResponse
 // @Success 500 {object} boolResponse
@@ -115,14 +115,14 @@ func (app *appContext) MyDetails(gc *gin.Context) {
 // @Security Bearer
 // @tags User Page
 func (app *appContext) SetMyContactMethods(gc *gin.Context) {
-	var req SetContactMethodsDTO
+	var req SetContactPreferencesDTO
 	gc.BindJSON(&req)
 	req.ID = gc.GetString("jfId")
 	if req.ID == "" {
 		respondBool(400, false, gc)
 		return
 	}
-	app.setContactMethods(req, gc)
+	app.setContactPreferences(req, gc)
 }
 
 // @Summary Logout by deleting refresh token from cookies.
@@ -264,7 +264,7 @@ func (app *appContext) ModifyMyEmail(gc *gin.Context) {
 		}
 		app.debug.Printf(lm.EmailConfirmationRequired, id)
 		respond(401, "confirmEmail", gc)
-		msg, err := app.email.constructConfirmation("", name, key, app, false)
+		msg, err := app.email.constructConfirmation("", name, key, false)
 		if err != nil {
 			app.err.Printf(lm.FailedConstructConfirmationEmail, id, err)
 		} else if err := app.email.send(msg, req.Email); err != nil {
@@ -394,9 +394,11 @@ func (app *appContext) MyTelegramVerifiedInvite(gc *gin.Context) {
 		return
 	}
 	tgUser := TelegramUser{
-		ChatID:   token.ChatID,
-		Username: token.Username,
-		Contact:  true,
+		TelegramVerifiedToken: TelegramVerifiedToken{
+			ChatID:   token.ChatID,
+			Username: token.Username,
+		},
+		Contact: true,
 	}
 	if lang, ok := app.telegram.languages[tgUser.ChatID]; ok {
 		tgUser.Lang = lang
@@ -643,7 +645,7 @@ func (app *appContext) ResetMyPassword(gc *gin.Context) {
 			Username: pwr.Username,
 			Expiry:   pwr.Expiry,
 			Internal: true,
-		}, app, false,
+		}, false,
 	)
 	if err != nil {
 		app.err.Printf(lm.FailedConstructPWRMessage, pwr.Username, err)
@@ -796,6 +798,7 @@ func (app *appContext) GetMyReferral(gc *gin.Context) {
 		inv.ValidTill = inv.Created.Add(REFERRAL_EXPIRY_DAYS * 24 * time.Hour)
 		app.storage.SetInvitesKey(inv.Code, inv)
 	}
+	app.InvalidateWebUserCache()
 	gc.JSON(200, GetMyReferralRespDTO{
 		Code:          inv.Code,
 		RemainingUses: inv.RemainingUses,

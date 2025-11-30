@@ -68,8 +68,10 @@
                                 <input type="text" class="input ~neutral @high mt-2 mb-4" placeholder="{{ .strings.username }}" id="create-username" aria-label="{{ .strings.username }}">
                             </label>
 
-                            <label class="label supra" for="create-email">{{ .strings.emailAddress }}</label>
-                            <input type="email" class="input ~neutral @high mt-2 mb-4" placeholder="{{ .strings.emailAddress }}" id="create-email" aria-label="{{ .strings.emailAddress }}" value="{{ .email }}">
+                            <div>
+                                <label class="label supra" for="create-email">{{ .strings.emailAddress }}</label>
+                                <input type="email" class="input ~neutral @high mt-2 mb-4" placeholder="{{ .strings.emailAddress }}" id="create-email" aria-label="{{ .strings.emailAddress }}" value="{{ .email }}">
+                            </div>
                             {{ if .telegramEnabled }}
                             <span class="button ~info @low full-width center mb-4" id="link-telegram">{{ .strings.linkTelegram }} {{ if .telegramRequired }}({{ .strings.required }}){{ end }}</span>
                             {{ end }}

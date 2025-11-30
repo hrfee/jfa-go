@@ -143,8 +143,8 @@ func (app *appContext) NewUserPostVerification(p NewUserParams) (out NewUserData
 	if len(webhookURIs) != 0 {
 		summary := app.userSummary(out.User)
 		for _, uri := range webhookURIs {
+			pendingTasks.Add(1)
 			go func() {
-				pendingTasks.Add(1)
 				app.webhooks.Send(uri, summary)
 				pendingTasks.Done()
 			}()
@@ -155,6 +155,7 @@ func (app *appContext) NewUserPostVerification(p NewUserParams) (out NewUserData
 
 	out.Status = 200
 	out.Success = true
+	app.InvalidateWebUserCache()
 	return
 }
 
@@ -169,7 +170,7 @@ func (app *appContext) WelcomeNewUser(user mediabrowser.User, expiry time.Time) 
 	if name == "" {
 		return
 	}
-	msg, err := app.email.constructWelcome(user.Name, expiry, app, false)
+	msg, err := app.email.constructWelcome(user.Name, expiry, false)
 	if err != nil {
 		app.err.Printf(lm.FailedConstructWelcomeMessage, user.ID, err)
 	} else if err := app.sendByID(msg, user.ID); err != nil {

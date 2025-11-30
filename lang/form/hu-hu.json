@@ -17,7 +17,7 @@
         "confirmationRequired": "E-mail megerősítés szükséges",
         "confirmationRequiredMessage": "Kérjük ellenőrizze az e-mail címére küldött üzenetet, a fiók ellenőrzéséhez.",
         "yourAccountIsValidUntil": "A fiókja eddig lesz érvényes: {date}.",
-        "sendPIN": "Az alábbi PIN-t küldje el a botnak, majd itt csatolja össze a fiókját.",
+        "sendPIN": "Az alábbi PIN-t küld el a botnak, majd itt csatold össze a fiókoddal.",
         "sendPINDiscord": "Írja be a {command} parancsot a {server_channel} Discord csatornába, adja meg a PIN-t.",
         "matrixEnterUser": "Írja be a felhasználója azonosítóját majd nyomja meg a beküldés gombot. A kapott kódot ide írja be.",
         "customMessagePlaceholderContent": "Kattints a felhasználói oldal szerkesztés gombjára a beállításokban a kártya testreszabásához, vagy jeleníts meg egyet a bejelentkezési képernyőn, ne aggódj, a felhasználó ezt nem láthatja.",
@@ -34,7 +34,16 @@
         "resetPasswordThroughJellyfin": "A jelszavad visszaállításához látogass el a {jfLink} oldalra, és nyomj rá az \"Elfelejtett jelszó\" gombra.",
         "resetPasswordThroughLink": "A jelszavad visszaállításához, add meg a felhasználóneved, e-mail címed vagy a hozzákötött kapcsolattartási felhasználónevet, és nyomj a gombra. A linket levélben fogod kapni.",
         "resetSent": "Visszaállítás elküldve.",
-        "changePassword": "Jelszó megváltoztatása"
+        "changePassword": "Jelszó megváltoztatása",
+        "referralsWithExpiryDescription": "Hívd meg barátaidat és családtagjaidat a Jellyfinre ezzel a linkkel. A link nem lesz elérhető, ha lejár.",
+        "referralsDescription": "Hívd meg barátaidat és családtagjaidat a Jellyfinre ezzel a linkkel. Gyere vissza ide egy újért, ha lejár.",
+        "copyReferral": "Link másolása",
+        "invitedBy": "Meghívást kaptál {user} által.",
+        "resetPasswordThroughLinkStart": "Jelszava visszaállításához adja meg az alábbiak egyikét:",
+        "resetPasswordThroughLinkEnd": "Ezután kattints az elküldésre. Egy linket fogsz kapni a jelszó visszaállításához.",
+        "resetPasswordUsername": "Jellyfin felhasználónév",
+        "resetPasswordEmail": "Email cím",
+        "resetPasswordContactMethod": "A fiókodhoz kapcsolt kapcsolatfelvételi mód felhasználóneve"
     },
     "notifications": {
         "errorUserExists": "A felhasználó már létezik.",

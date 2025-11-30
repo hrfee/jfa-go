@@ -104,6 +104,7 @@ func (app *appContext) deleteExpiredInvite(data Invite) {
 		if ok {
 			user.ReferralTemplateKey = ""
 			app.storage.SetEmailsKey(data.ReferrerJellyfinID, user)
+			app.InvalidateWebUserCache()
 		}
 	}
 	wait := app.sendAdminExpiryNotification(data)
@@ -124,7 +125,7 @@ func (app *appContext) deleteExpiredInvite(data Invite) {
 
 func (app *appContext) sendAdminExpiryNotification(data Invite) *sync.WaitGroup {
 	notify := data.Notify
-	if !emailEnabled || !app.config.Section("notifications").Key("enabled").MustBool(false) || len(notify) != 0 {
+	if !emailEnabled || !app.config.Section("notifications").Key("enabled").MustBool(false) || len(notify) == 0 {
 		return nil
 	}
 	var wait sync.WaitGroup
@@ -135,7 +136,7 @@ func (app *appContext) sendAdminExpiryNotification(data Invite) *sync.WaitGroup 
 		wait.Add(1)
 		go func(addr string) {
 			defer wait.Done()
-			msg, err := app.email.constructExpiry(data.Code, data, app, false)
+			msg, err := app.email.constructExpiry(data, false)
 			if err != nil {
 				app.err.Printf(lm.FailedConstructExpiryAdmin, data.Code, err)
 			} else {
@@ -218,7 +219,7 @@ func (app *appContext) GenerateInvite(gc *gin.Context) {
 				invite.SendTo = req.SendTo
 			}
 			if addressValid {
-				msg, err := app.email.constructInvite(invite.Code, invite, app, false)
+				msg, err := app.email.constructInvite(invite, false)
 				if err != nil {
 					// Slight misuse of the template
 					invite.SendTo = fmt.Sprintf(lm.FailedConstructInviteMessage, req.SendTo, err)
@@ -269,7 +270,7 @@ func (app *appContext) GenerateInvite(gc *gin.Context) {
 // @Success 200 {object} PageCountDTO
 // @Router /invites/count [get]
 // @Security Bearer
-// @tags Invites
+// @tags Invites,Statistics
 func (app *appContext) GetInviteCount(gc *gin.Context) {
 	resp := PageCountDTO{}
 	var err error
@@ -283,9 +284,9 @@ func (app *appContext) GetInviteCount(gc *gin.Context) {
 // @Summary Get the number of invites stored in the database that have been used (but are still valid).
 // @Produce json
 // @Success 200 {object} PageCountDTO
-// @Router /invites/count [get]
+// @Router /invites/count/used [get]
 // @Security Bearer
-// @tags Invites
+// @tags Invites,Statistics
 func (app *appContext) GetInviteUsedCount(gc *gin.Context) {
 	resp := PageCountDTO{}
 	var err error
@@ -309,7 +310,7 @@ func (app *appContext) GetInviteUsedCount(gc *gin.Context) {
 // @Success 200 {object} getInvitesDTO
 // @Router /invites [get]
 // @Security Bearer
-// @tags Invites
+// @tags Invites,Statistics
 func (app *appContext) GetInvites(gc *gin.Context) {
 	currentTime := time.Now()
 	app.checkInvites()
@@ -343,7 +344,7 @@ func (app *appContext) GetInvites(gc *gin.Context) {
 				// These used to be stored formatted instead of as a unix timestamp.
 				unix, err := strconv.ParseInt(pair[1], 10, 64)
 				if err != nil {
-					date, err := timefmt.Parse(pair[1], app.datePattern+" "+app.timePattern)
+					date, err := timefmt.Parse(pair[1], datePattern+" "+timePattern)
 					if err != nil {
 						app.err.Printf(lm.FailedParseTime, err)
 					}

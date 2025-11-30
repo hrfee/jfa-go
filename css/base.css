@@ -221,15 +221,8 @@ sup.\~critical, .text-critical {
     padding-bottom: 0.1rem;
 }
 
-.settings-section-button {
-    width: 100%;
-    height: 2.5rem;
-}
-
 .settings-section-button:hover, .settings-section-button:focus {
     box-sizing: border-box;
-    width: 100%;
-    height: 2.5rem;
     background-color: var(--color-neutral-normal-fill);
     filter: brightness(var(--settings-section-button-filter)) !important;
 }
@@ -242,7 +235,7 @@ sup.\~critical, .text-critical {
     margin-bottom: 0.25rem;
 }
 
-.textarea {
+.textarea:not(code-input *) {
     resize: vertical;
 }
 
@@ -254,7 +247,7 @@ sup.\~critical, .text-critical {
     overflow-y: visible;
 }
 
-select, textarea {
+select, textarea:not(code-input *) {
     color: inherit;
     border: 0 solid var(--color-neutral-300);
     appearance: none;
@@ -262,7 +255,7 @@ select, textarea {
     -moz-appearance: none;
 }
 
-html.dark textarea {
+html.dark textarea:not(code-input *) {
     background-color: #202020
 }
 
@@ -320,7 +313,7 @@ p.top {
     bottom: 115%;
 }
 
-pre {
+pre:not(code-input *) {
     white-space: pre-wrap;       /* css-3 */
     white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
     white-space: -pre-wrap;      /* Opera 4-6 */
@@ -466,7 +459,7 @@ section.section:not(.\~neutral) {
 
 @layer components {
     .switch {
-        @apply flex flex-row gap-1 items-center;
+        @apply flex flex-row gap-2 items-center;
     }
 }
 

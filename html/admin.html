@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" class="{{ .cssClass }}">
     <head>
+        {{ template "syntaxhighlighting.html" . }}
         <script>
             window.usernameEnabled = {{ .username }};
             window.langFile = JSON.parse({{ .language }});
@@ -68,9 +69,16 @@
             </div>
         </div>
         <div id="modal-logs" class="modal">
-            <div class="relative mx-auto my-[10%] w-4/5 lg:w-2/3 content content card">
+            <div class="relative mx-auto my-[10%] w-4/5 lg:w-2/3 content card">
                 <span class="heading">{{ .strings.logs }}<span class="modal-close">&times;</span></span>
                 <pre class="monospace" id="log-area"></pre>
+            </div>
+        </div>
+        <div id="modal-tasks" class="modal">
+            <div class="relative mx-auto my-[10%] w-min card flex flex-col gap-2">
+                <h1 class="heading">{{ .strings.tasks }}<span class="modal-close">&times;</span></h1>
+                <p class="content">{{ .strings.tasksDescription }}</p>
+                <div id="modal-tasks-list" class="flex flex-col gap-2"></div>
             </div>
         </div>
         <div id="modal-modify-user" class="modal">
@@ -102,14 +110,18 @@
                         <input type="checkbox" id="modify-user-homescreen" checked>
                         <span>{{ .strings.applyHomescreenLayout }}</span>
                     </label>
-                    <label class="switch">
-                        <input type="checkbox" id="modify-user-ombi" checked>
-                        <span>{{ .strings.applyOmbi }}</span>
-                    </label>
-                    <label class="switch">
-                        <input type="checkbox" id="modify-user-jellyseerr" checked>
-                        <span>{{ .strings.applyJellyseerr }}</span>
-                    </label>
+                    {{ if .ombiEnabled }}
+                        <label class="switch">
+                            <input type="checkbox" id="modify-user-ombi" checked>
+                            <span>{{ .strings.applyOmbi }}</span>
+                        </label>
+                    {{ end }}
+                    {{ if .jellyseerrEnabled }}
+                        <label class="switch">
+                            <input type="checkbox" id="modify-user-jellyseerr" checked>
+                            <span>{{ .strings.applyJellyseerr }}</span>
+                        </label>
+                    {{ end }}
                     <label>
                         <input type="submit" class="unfocused">
                         <span class="button ~urge @low full-width center supra submit">{{ .strings.apply }}</span>
@@ -186,56 +198,60 @@
             </form>
         </div>
         <div id="modal-extend-expiry" class="modal">
-            <form class="card relative mx-auto my-[10%] w-11/12 sm:w-4/5 lg:w-1/3" id="form-extend-expiry" href="">
+            <form class="card relative mx-auto my-[10%] w-11/12 sm:w-4/5 lg:w-1/3 flex flex-col gap-2" id="form-extend-expiry" href="">
                 <span class="heading"><span id="header-extend-expiry"></span> <span class="modal-close">&times;</span></span>
-                <div class="content mt-8">
-                    <aside class="aside sm ~urge dark:~d_info mb-2 @low row unfocused" id="extend-expiry-date"></aside>
-                    <div>
-                        <span class="text-xl supra row py-1">{{ .strings.setExpiry }}</span>
-                        <div class="row">
-                            <input type="text" id="extend-expiry-text" class="input ~neutral @low mb-2 mt-4" placeholder="{{ .strings.enterExpiry }}">
-                        </div>
+                <div class="flex flex-col gap-3">
+                    <aside class="aside sm ~urge dark:~d_info @low unfocused" id="extend-expiry-date"></aside>
+                    <div class="flex flex-col gap-2">
+                        <span class="text-xl supra">{{ .strings.setExpiry }}</span>
+                        <input type="text" id="extend-expiry-text" class="input ~neutral @low" placeholder="{{ .strings.enterExpiry }}">
                     </div>
-                    <div id="extend-expiry-field-inputs">
-                        <span class="text-xl supra row py-1">{{ .strings.extendExpiry }}</span>
-                        <div class="row">
-                            <div class="col">
+                    <div id="extend-expiry-field-inputs" class="flex flex-col gap-2">
+                        <span class="text-xl supra">{{ .strings.extendExpiry }}</span>
+                        <div class="grid grid-cols-2 grid-rows-2 gap-2">
+                            <div class="flex flex-col gap-2">
                                 <label class="label supra" for="extend-expiry-months">{{ .strings.inviteMonths }}</label>
-                                <div class="select ~neutral @low mb-2 mt-4">
+                                <div class="select ~neutral @low">
                                     <select id="extend-expiry-months">
                                         <option>0</option>
                                     </select>
                                 </div>
                             </div>
-                            <div class="col">
+                            <div class="flex flex-col gap-2">
                                 <label class="label supra" for="extend-expiry-days">{{ .strings.inviteDays }}</label>
-                                <div class="select ~neutral @low mb-2 mt-4">
+                                <div class="select ~neutral @low">
                                     <select id="extend-expiry-days">
                                         <option>0</option>
                                     </select>
                                 </div>
                             </div>
-                        </div>
-                        <div class="row">
-                            <div class="col">
+                            <div class="flex flex-col gap-2">
                                 <label class="label supra" for="extend-expiry-hours">{{ .strings.inviteHours }}</label>
-                                <div class="select ~neutral @low mb-2 mt-4">
+                                <div class="select ~neutral @low">
                                     <select id="extend-expiry-hours">
                                         <option>0</option>
                                     </select>
                                 </div>
                             </div>
-                            <div class="col">
+                            <div class="flex flex-col gap-2">
                                 <label class="label supra" for="extend-expiry-minutes">{{ .strings.inviteMinutes }}</label>
-                                <div class="select ~neutral @low mb-2 mt-4">
+                                <div class="select ~neutral @low">
                                     <select id="extend-expiry-minutes">
                                         <option>0</option>
                                     </select>
                                 </div>
                             </div>
                         </div>
+                        <label class="switch">
+                            <input type="checkbox" id="expiry-use-previous">
+                            <span>{{ .strings.extendFromPreviousExpiry }}</span>
+                            <div class="tooltip left">
+                                <i class="icon ri-information-line align-middle"></i>
+                                <div class="content sm w-max">{{ .strings.extendFromPreviousExpiryDescription }}</div>
+                            </div>
+                        </label>
                     </div>
-                    <label class="switch mb-4">
+                    <label class="switch">
                         <input type="checkbox" id="expiry-extend-enable" checked>
                         <span>{{ .strings.sendDeleteNotificationEmail }}</span>
                     </label>
@@ -441,6 +457,7 @@
                                 {{ end }}
                                 <th>{{ .strings.from }}</th>
                                 <th>{{ .strings.userProfilesLibraries }}</th>
+                                <th></th>
                                 <th><span class="button ~neutral @high" id="button-profile-create">{{ .strings.create }}</span></th>
                             </tr>
                         </thead>
@@ -449,26 +466,44 @@
                 </div>
             </div>
         </div>
+        <div id="modal-edit-profile" class="modal">
+            <form class="relative mx-auto my-[10%] w-11/12 sm:w-4/5 lg:w-2/3 card flex flex-col gap-2" id="form-edit-profile">
+                <span class="heading">{{ .strings.editProfile }} <span class="modal-close">&times;</span></span>
+                <p class="content">{{ .strings.editProfileDescription }}</p>
+                <div id="modal-edit-profile-editor"></div>
+                <label>
+                    <input type="submit" class="unfocused">
+                    <span class="button ~urge @low full-width center supra submit">{{ .strings.submit }}</span>
+                </label>
+            </form>
+        </div>
         <div id="modal-add-profile" class="modal">
-            <form class="card relative mx-auto my-[10%] w-11/12 sm:w-4/5 lg:w-1/3" id="form-add-profile" href="">
-                <span class="heading">{{ .strings.addProfile }} <span class="modal-close">&times;</span></span>
-                <p class="content my-4">{{ .strings.addProfileDescription }}</p>
-                <label>
+            <form class="card relative mx-auto my-[10%] w-11/12 sm:w-4/5 lg:w-1/3 flex flex-col gap-2" id="form-add-profile" href="">
+                <h1 class="heading">{{ .strings.addProfile }} <span class="modal-close">&times;</span></h1>
+                <p class="content">{{ .strings.addProfileDescription }}</p>
+                <label class="flex flex-col gap-2">
                     <span class="supra">{{ .strings.addProfileNameOf }} </span>
-                    <input type="text" class="field input ~neutral @high mt-4 mb-2" placeholder="{{ .strings.name }}" id="add-profile-name">
-                <label>
+                    <input type="text" class="field input ~neutral @high" placeholder="{{ .strings.name }}" id="add-profile-name">
+                </label>
+                <label class="flex flex-col gap-2">
                     <span class="supra">{{ .strings.user }}</span>
-                    <div class="select ~neutral @low mt-4 mb-2">
+                    <div class="select ~neutral @low">
                         <select id="add-profile-user"></select>
                     </div>
                 </label>
-                <label class="switch mb-4">
+                <label class="switch">
                     <input type="checkbox" id="add-profile-homescreen" checked>
                     <span>{{ .strings.addProfileStoreHomescreenLayout }}</span>
                 </label>
+                {{ if .jellyseerrEnabled }}
+                    <label class="switch">
+                        <input type="checkbox" id="add-profile-jellyseerr" checked>
+                        <span>{{ .strings.addProfileStoreJellyseerr }}</span>
+                    </label>
+                {{ end }}
                 <label>
                     <input type="submit" class="unfocused">
-                    <span class="button ~urge @low full-width center supra submit">{{ .strings.create }}</span>
+                    <span class="button ~urge @low w-full center supra submit">{{ .strings.create }}</span>
                 </label>
             </form>
         </div>
@@ -487,24 +522,7 @@
                 <span class="button ~urge @low full-width center mt-2" id="update-update">{{ .strings.update }}</span>
             </div>
         </div>
-        {{ if .telegramEnabled }}
-        <div id="modal-telegram" class="modal">
-            <div class="card relative mx-auto my-[10%] w-11/12 sm:w-4/5 lg:w-1/3">
-                <span class="heading mb-4">{{ .strings.linkTelegram }}</span>
-                <p class="content mb-4">{{ .strings.sendPIN }}</p>
-                <h1 class="ac" id="telegram-pin"></h1>
-                <a class="subheading link-center" id="telegram-link" target="_blank">
-                    <span class="shield ~info mr-2">
-                        <span class="icon">
-                            <i class="ri-telegram-line"></i>
-                        </span>
-                    </span>
-                    &#64;<span id="telegram-username">
-                </a>
-                <span class="button ~info @low full-width center mt-4" id="telegram-waiting">{{ .strings.success }}</span>
-            </div>
-        </div>
-        {{ end }}
+        {{ template "account-linking-telegram.html" . }}
         {{ if .discordEnabled }}
         <div id="modal-discord" class="modal">
             <div class="card relative mx-auto my-[10%] w-11/12 sm:w-4/5 lg:w-1/3">
@@ -557,7 +575,7 @@
             <div id="tab-invites" class="flex flex-col gap-4">
                 <div class="card @low dark:~d_neutral flex flex-col gap-2 overflow-visible invites">
                     <span class="heading">{{ .strings.invites }}</span>
-                    <div id="invites"></div>
+                    <div id="invites" class="flex flex-col gap-2"></div>
                 </div>
                 <div class="card @low dark:~d_neutral flex flex-col gap-2">
                     <span class="heading">{{ .strings.create }}</span>
@@ -726,7 +744,7 @@
                                 <input type="search" class="field ~neutral @low input search mr-2" id="accounts-search" placeholder="{{ .strings.search }}">
                                 <span class="button ~neutral @low center inside-input rounded-s-none accounts-search-clear" aria-label="{{ .strings.clearSearch }}" text="{{ .strings.clearSearch }}"><i class="ri-close-line"></i></span>
                                 <div class="tooltip left">
-                                    <button class="button ~info @low center h-full accounts-search-server flex flex-row gap-1" aria-label="{{ .strings.searchAllRecords }}" text="{{ .strings.searchAllRecords }}">
+                                    <button class="button ~info @low center h-full accounts-search-server gap-1" aria-label="{{ .strings.searchAllRecords }}" text="{{ .strings.searchAllRecords }}">
                                         <i class="ri-search-line"></i>
                                         <span>{{ .strings.searchAll }}</span>
                                     </button>
@@ -820,8 +838,9 @@
                                 <span class="text-2xl font-medium italic text-center">{{ .strings.noResultsFound }}</span>
                                 <span class="text-sm font-light italic unfocused text-center" id="accounts-no-local-results">{{ .strings.noResultsFoundLocally }}</span>
                                 <div class="flex flex-row">
-                                    <button class="button ~neutral @low accounts-search-clear flex flex-row gap-2">
-                                        <span>{{ .strings.clearSearch }}</span><i class="ri-close-line"></i>
+                                    <button class="button ~neutral @low accounts-search-clear gap-1">
+                                        <i class="ri-close-line"></i>
+                                        <span>{{ .strings.clearSearch }}</span>
                                     </button>
                                 </div>
                             </div>
@@ -829,7 +848,7 @@
                         <div class="flex flex-row gap-2 justify-center">
                             <button class="button ~neutral @low" id="accounts-load-more">{{ .strings.loadMore }}</button>
                             <button class="button ~neutral @low accounts-load-all">{{ .strings.loadAll }}</button>
-                            <button class="button ~info @low center accounts-search-server flex flex-row gap-1" aria-label="{{ .strings.searchAllRecords }}" text="{{ .strings.searchAllRecords }}">
+                            <button class="button ~info @low center accounts-search-server gap-1" aria-label="{{ .strings.searchAllRecords }}" text="{{ .strings.searchAllRecords }}">
                                 <i class="ri-search-line"></i>
                                 <span>{{ .strings.searchAllRecords }}</span>
                             </button>
@@ -852,7 +871,7 @@
                                 <input type="search" class="field ~neutral @low input search mr-2" id="activity-search" placeholder="{{ .strings.search }}">
                                 <span class="button ~neutral @low center inside-input rounded-s-none activity-search-clear" aria-label="{{ .strings.clearSearch }}" text="{{ .strings.clearSearch }}"><i class="ri-close-line"></i></span>
                                 <div class="tooltip left">
-                                    <button class="button ~info @low center h-full activity-search-server flex flex-row gap-1" aria-label="{{ .strings.searchAllRecords }}" text="{{ .strings.searchAllRecords }}">
+                                    <button class="button ~info @low center h-full activity-search-server gap-1" aria-label="{{ .strings.searchAllRecords }}" text="{{ .strings.searchAllRecords }}">
                                         <i class="ri-search-line"></i>
                                         <span>{{ .strings.searchAll }}</span>
                                     </button>
@@ -879,8 +898,9 @@
                             <span class="text-2xl font-medium italic text-center">{{ .strings.noResultsFound }}</span>
                             <span class="text-sm font-light italic unfocused text-center" id="activity-no-local-results">{{ .strings.noResultsFoundLocally }}</span>
                             <div class="flex flex-row">
-                                <button class="button ~neutral @low activity-search-clear flex flex-row gap-2">
-                                    <span>{{ .strings.clearSearch }}</span><i class="ri-close-line"></i>
+                                <button class="button ~neutral @low activity-search-clear gap-1">
+                                    <i class="ri-close-line"></i>
+                                    <span>{{ .strings.clearSearch }}</span>
                                 </button>
                                 <button class="button ~neutral @low unfocused" id="activity-keep-searching">{{ .strings.keepSearching }}</button>
                             </div>
@@ -891,7 +911,7 @@
                     <div class="flex flex-row gap-2 justify-center">
                         <button class="button ~neutral @low" id="activity-load-more">{{ .strings.loadMore }}</button>
                         <button class="button ~neutral @low activity-load-all">{{ .strings.loadAll }}</button>
-                        <button class="button ~info @low center activity-search-server flex flex-row gap-1" aria-label="{{ .strings.searchAllRecords }}" text="{{ .strings.searchAllRecords }}">
+                        <button class="button ~info @low center activity-search-server gap-1" aria-label="{{ .strings.searchAllRecords }}" text="{{ .strings.searchAllRecords }}">
                             <i class="ri-search-line"></i>
                             <span>{{ .strings.searchAllRecords }}</span>
                         </button>
@@ -909,26 +929,27 @@
                             </label>
                         </div>
                         <div class="flex flex-row justify-start md:justify-end gap-2 w-full">
+                            <span class="button ~neutral @low gap-1 unfocused" id="settings-tasks"><i class="ri-calendar-schedule-line"></i>{{ .strings.tasks }}</span>
                             <span class="button ~neutral @low" id="settings-logs">{{ .strings.logs }}</span>
-                            <span class="button ~info @low" id="settings-backups">{{ .strings.backups }}</span>
-                            <span class="button ~neutral @low" id="settings-restart">{{ .strings.settingsRestart }}</span>
-                            <span class="button ~urge @low unfocused" id="settings-save">{{ .strings.settingsSave }}</span>
+                            <span class="button ~info @low gap-1" id="settings-backups"><i class="icon ri-file-copy-line"></i>{{ .strings.backups }}</span>
+                            <span class="button ~neutral @low gap-1" id="settings-restart"><i class="icon ri-restart-line"></i>{{ .strings.settingsRestart }}</span>
+                            <span class="button ~urge @low unfocused gap-1" id="settings-save"><i class="icon ri-save-line"></i>{{ .strings.settingsSave }}</span>
                         </div>
                     </div>
                     <div class="flex flex-col md:flex-row gap-3">
-                        <div class="md:card @low dark:~d_neutral flex md:flex flex-col gap-2 flex-1" id="settings-sidebar">
+                        <div class="@low dark:~d_neutral flex md:flex flex-col gap-2" id="settings-sidebar">
                             <div class="flex flex-row justify-between">
                                 <input type="search" class="field ~neutral @low input settings-section-button justify-between" id="settings-search" placeholder="{{ .strings.search }}">
                                 <button class="button ~neutral @low center -ml-10 rounded-s-none settings-search-clear" aria-label="{{ .strings.clearSearch }}" text="{{ .strings.clearSearch }}"><i class="ri-close-line"></i></button>
                             </div>
-                            <aside class="aside sm ~urge dark:~d_info @low" id="settings-message">Note: <span class="badge ~critical">*</span> indicates a required field, <span class="badge ~info dark:~d_warning">R</span> indicates changes require a restart.</aside>
                             <div id="settings-loader" class="flex flex-row flex-wrap gap-2">
                                 <span class="button ~neutral @low justify-center grow" id="setting-about"><span class="flex">{{ .strings.aboutProgram }} <i class="ri-information-line ml-2"></i></span></span>
                                 <a class="button ~urge dark:~d_info @low justify-center grow" target="_blank" href="https://wiki.jfa-go.com"><span class="flex">{{ .strings.wiki }} <i class="ri-book-shelf-line ml-2"></i></a>
                                 <span class="button ~neutral @low justify-center grow" id="setting-profiles"><span class="flex">{{ .strings.userProfiles }} <i class="ri-user-line ml-2"></i></span></span>
                             </div>
+                            <div class="flex md:flex flex-col gap-2 overflow-y-scroll" id="settings-sidebar-items"></div>
                         </div>
-                        <div class="card ~neutral @low overflow flex-1" id="settings-panel">
+                        <div class="card ~neutral @low overflow flex-1 grow" id="settings-panel">
                             <div class="settings-section unfocused h-[100%]" id="settings-not-found">
                                 <div class="flex flex-col h-[100%] justify-center items-center">
                                     <span class="text-2xl font-medium italic mb-2">{{ .strings.noResultsFound }}</span>

@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/hrfee/jfa-go/common"
 	lm "github.com/hrfee/jfa-go/logmessages"
-	"github.com/hrfee/jfa-go/ombi"
+	ombiLib "github.com/hrfee/jfa-go/ombi"
 	"github.com/hrfee/mediabrowser"
 )
 
@@ -147,7 +147,8 @@ func (app *appContext) DeleteOmbiProfile(gc *gin.Context) {
 }
 
 type OmbiWrapper struct {
-	*ombi.Ombi
+	OmbiUserByJfID func(jfID string) (map[string]interface{}, error)
+	*ombiLib.Ombi
 }
 
 func (ombi *OmbiWrapper) applyProfile(user map[string]interface{}, profile map[string]interface{}) (err error) {
@@ -189,23 +190,69 @@ func (ombi *OmbiWrapper) ImportUser(jellyfinID string, req newUserDTO, profile P
 	return
 }
 
-func (ombi *OmbiWrapper) AddContactMethods(jellyfinID string, req newUserDTO, discord *DiscordUser, telegram *TelegramUser) (err error) {
-	var ombiUser map[string]interface{}
-	ombiUser, err = ombi.getUser(req.Username, req.Email)
+func (ombi *OmbiWrapper) SetContactMethods(jellyfinID string, email *string, discord *DiscordUser, telegram *TelegramUser, contactPrefs *common.ContactPreferences) (err error) {
+	ombiUser, err := ombi.OmbiUserByJfID(jellyfinID)
 	if err != nil {
 		return
 	}
-	if discordEnabled || telegramEnabled {
-		dID := ""
-		tUser := ""
+	if contactPrefs == nil {
+		contactPrefs = &common.ContactPreferences{
+			Email:    nil,
+			Discord:  nil,
+			Telegram: nil,
+			Matrix:   nil,
+		}
+	}
+	if emailEnabled && email != nil {
+		ombiUser["emailAddress"] = *email
+		err = ombi.ModifyUser(ombiUser)
+		if err != nil {
+			// FIXME: This is a little ugly, considering all other errors are unformatted
+			err = fmt.Errorf(lm.FailedSetEmailAddress, lm.Ombi, jellyfinID, err)
+			return
+		}
+	}
+
+	data := make([]ombiLib.NotificationPref, 0, 2)
+	if discordEnabled {
+		pref := ombiLib.NotificationPref{
+			Agent:  ombiLib.NotifAgentDiscord,
+			UserID: ombiUser["id"].(string),
+		}
+		valid := false
+		if contactPrefs.Discord != nil {
+			pref.Enabled = *(contactPrefs.Discord)
+			valid = true
+		} else if discord != nil && discord.ID != "" {
+			pref.Enabled = true
+			valid = true
+		}
 		if discord != nil {
-			dID = discord.ID
+			pref.Value = discord.ID
+			valid = true
+		}
+		if valid {
+			data = append(data, pref)
+		}
+	}
+	if telegramEnabled && telegram != nil {
+		pref := ombiLib.NotificationPref{
+			Agent:  ombiLib.NotifAgentTelegram,
+			UserID: ombiUser["id"].(string),
+		}
+		if contactPrefs.Telegram != nil {
+			pref.Enabled = *(contactPrefs.Telegram)
+		} else if telegram != nil && telegram.Username != "" {
+			pref.Enabled = true
 		}
 		if telegram != nil {
-			tUser = telegram.Username
+			pref.Value = telegram.Username
 		}
+		data = append(data, pref)
+	}
+	if len(data) > 0 {
 		var resp string
-		resp, err = ombi.SetNotificationPrefs(ombiUser, dID, tUser)
+		resp, err = ombi.SetNotificationPrefs(ombiUser, data)
 		if err != nil {
 			if resp != "" {
 				err = fmt.Errorf("%v, %s", err, resp)

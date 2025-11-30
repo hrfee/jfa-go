@@ -116,7 +116,7 @@ func (app *appContext) generateActivitiesQuery(req ServerFilterReqDTO) *badgerho
 // @Success 200 {object} GetActivitiesRespDTO
 // @Router /activity [post]
 // @Security Bearer
-// @tags Activity
+// @tags Activity,Statistics
 func (app *appContext) GetActivities(gc *gin.Context) {
 	req := ServerSearchReqDTO{}
 	gc.BindJSON(&req)
@@ -185,7 +185,7 @@ func (app *appContext) DeleteActivity(gc *gin.Context) {
 // @Success 200 {object} PageCountDTO
 // @Router /activity/count [get]
 // @Security Bearer
-// @tags Activity
+// @tags Activity,Statistics
 func (app *appContext) GetActivityCount(gc *gin.Context) {
 	resp := PageCountDTO{}
 	var err error
@@ -202,7 +202,7 @@ func (app *appContext) GetActivityCount(gc *gin.Context) {
 // @Success 200 {object} PageCountDTO
 // @Router /activity/count [post]
 // @Security Bearer
-// @tags Activity
+// @tags Activity,Statistics
 func (app *appContext) GetFilteredActivityCount(gc *gin.Context) {
 	resp := PageCountDTO{}
 	req := ServerFilterReqDTO{}

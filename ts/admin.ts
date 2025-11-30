@@ -58,6 +58,8 @@ window.availableProfiles = window.availableProfiles || [];
     window.modals.profiles = new Modal(document.getElementById("modal-user-profiles"));
 
     window.modals.addProfile = new Modal(document.getElementById("modal-add-profile"));
+    
+    window.modals.editProfile = new Modal(document.getElementById("modal-edit-profile"));
 
     window.modals.announce = new Modal(document.getElementById("modal-announce"));
     
@@ -72,6 +74,8 @@ window.availableProfiles = window.availableProfiles || [];
     window.modals.matrix = new Modal(document.getElementById("modal-matrix"));
 
     window.modals.logs = new Modal(document.getElementById("modal-logs"));
+    
+    window.modals.tasks = new Modal(document.getElementById("modal-tasks"));
 
     window.modals.backedUp = new Modal(document.getElementById("modal-backed-up"));
 

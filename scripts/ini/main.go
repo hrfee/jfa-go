@@ -7,9 +7,9 @@ import (
 	"os"
 	"strings"
 
+	"github.com/goccy/go-yaml"
 	"github.com/hrfee/jfa-go/common"
 	"gopkg.in/ini.v1"
-	"gopkg.in/yaml.v3"
 )
 
 func fixDescription(desc string) string {
@@ -26,6 +26,7 @@ func generateIni(yamlPath string, iniPath string) {
 	if err != nil {
 		panic(err)
 	}
+
 	conf := ini.Empty()
 
 	for _, section := range configBase.Sections {

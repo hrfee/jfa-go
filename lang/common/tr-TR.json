@@ -1,0 +1,70 @@
+{
+    "meta": {
+        "name": "İngilizce (ABD)"
+    },
+    "strings": {
+        "username": "Kullanıcı Adı",
+        "password": "Şifre",
+        "emailAddress": "E-posta Adresi",
+        "name": "İsim",
+        "submit": "Kaydet",
+        "send": "Gönder",
+        "success": "Başarılı",
+        "continue": "Devam Et",
+        "error": "Hata",
+        "copy": "Kopyala",
+        "copied": "Kopyalandı",
+        "time24h": "24 Saat",
+        "time12h": "12 Saat",
+        "linkTelegram": "Telegram Bağla",
+        "contactEmail": "E-posta ile İletişim",
+        "contactTelegram": "Telegram ile İletişim",
+        "linkDiscord": "Discord Bağla",
+        "linkMatrix": "Matrix Bağla",
+        "contactDiscord": "Discord ile İletişim",
+        "theme": "Tema",
+        "refresh": "Yenile",
+        "required": "Gerekli",
+        "login": "Oturum Aç",
+        "logout": "Oturumu Kapat",
+        "admin": "Yönetici",
+        "enabled": "Etkin",
+        "disabled": "Devre Dışı",
+        "reEnable": "Yeniden Etkinleştir",
+        "disable": "Devre Dışı Bırak",
+        "contactMethods": "İletişim Yöntemleri",
+        "accountStatus": "Hesap Durumu",
+        "notSet": "Ayarlanmadı",
+        "expiry": "Son Kullanma Tarihi",
+        "add": "Ekle",
+        "edit": "Düzenle",
+        "delete": "Sil",
+        "myAccount": "Hesabım",
+        "referrals": "Referanslar",
+        "inviteRemainingUses": "Kalan Kullanım",
+        "internal": "Dahili",
+        "external": "Harici"
+    },
+    "notifications": {
+        "errorLoginBlank": "Kullanıcı adı ve/veya şifre boş bırakıldı.",
+        "errorConnection": "jfa-go'ya bağlanılamadı.",
+        "errorUnknown": "Bilinmeyen hata.",
+        "error401Unauthorized": "Yetkisiz İşlem. Sayfayı yenilemeyi deneyin.",
+        "errorSaveSettings": "Ayarlar kaydedilemedi.",
+        "errorSpecialSymbols": "Alan özel semboller içeremez."
+    },
+    "quantityStrings": {
+        "year": {
+            "singular": "{n} Yıl",
+            "plural": "{n} Yıl"
+        },
+        "month": {
+            "singular": "{n} Ay",
+            "plural": "{n} Ay"
+        },
+        "day": {
+            "singular": "{n} Gün",
+            "plural": "{n} Gün"
+        }
+    }
+}

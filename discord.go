@@ -8,6 +8,7 @@ import (
 	"time"
 
 	dg "github.com/bwmarrin/discordgo"
+	"github.com/hrfee/jfa-go/common"
 	lm "github.com/hrfee/jfa-go/logmessages"
 	"github.com/timshannon/badgerhold/v4"
 )
@@ -28,6 +29,18 @@ type DiscordDaemon struct {
 	commandHandlers               map[string]func(s *dg.Session, i *dg.InteractionCreate, lang string)
 	commandIDs                    []string
 	commandDescriptions           []*dg.ApplicationCommand
+	retryOpts                     *common.MustAuthenticateOptions
+}
+
+func EmptyDiscordUser() *DiscordUser {
+	return &DiscordUser{
+		ID:            "",
+		Username:      "",
+		Discriminator: "",
+		Lang:          "",
+		Contact:       false,
+		JellyfinID:    "",
+	}
 }
 
 func newDiscordDaemon(app *appContext) (*DiscordDaemon, error) {
@@ -58,6 +71,16 @@ func newDiscordDaemon(app *appContext) (*DiscordDaemon, error) {
 	for _, user := range app.storage.GetDiscord() {
 		dd.users[user.ID] = user
 	}
+
+	dd.retryOpts = &common.MustAuthenticateOptions{
+		RetryCount:  app.config.Section("advanced").Key("auth_retry_count").MustInt(6),
+		RetryGap:    time.Duration(app.config.Section("advanced").Key("auth_retry_gap").MustInt(10)) * time.Second,
+		LogFailures: true,
+	}
+
+	dd.bot.AddHandler(dd.commandHandler)
+
+	dd.bot.Identify.Intents = dg.IntentsGuildMessages | dg.IntentsDirectMessages | dg.IntentsGuildMembers | dg.IntentsGuildInvites
 
 	return dd, nil
 }
@@ -99,13 +122,27 @@ func (d *DiscordDaemon) MustGetUser(channelID, userID, discrim, username string)
 	return d.NewUnknownUser(channelID, userID, discrim, username)
 }
 
-func (d *DiscordDaemon) run() {
-	d.bot.AddHandler(d.commandHandler)
+func (d *DiscordDaemon) Run() {
+	ro := common.MustAuthenticateOptions{}
+	ro = *d.retryOpts
+	ro.Counter = 0
+	d.run(&ro)
+}
 
-	d.bot.Identify.Intents = dg.IntentsGuildMessages | dg.IntentsDirectMessages | dg.IntentsGuildMembers | dg.IntentsGuildInvites
+func (d *DiscordDaemon) run(retry *common.MustAuthenticateOptions) {
 	if err := d.bot.Open(); err != nil {
-		d.app.err.Printf(lm.FailedStartDaemon, lm.Discord, err)
-		return
+		if retry == nil || retry.LogFailures {
+			d.app.err.Printf(lm.FailedStartDaemon, lm.Discord, err)
+		}
+		if retry != nil {
+			retry.Counter += 1
+			if retry.Counter >= retry.RetryCount {
+				return
+			}
+			time.Sleep(retry.RetryGap)
+			d.run(retry)
+			return
+		}
 	}
 	// Wait for everything to populate, it's slow sometimes.
 	for d.bot.State == nil {
@@ -135,15 +172,18 @@ func (d *DiscordDaemon) run() {
 			d.InviteChannel.Name = invChannel
 		}
 	}
-	err = d.bot.UpdateGameStatus(0, "/"+d.app.config.Section("discord").Key("start_command").MustString("start"))
+	d.bot.UpdateGameStatus(0, "/"+d.app.config.Section("discord").Key("start_command").MustString("start"))
 	defer d.deregisterCommands()
 	defer d.bot.Close()
 
-	go d.registerCommands()
+	ro := common.MustAuthenticateOptions{}
+	ro = *(d.retryOpts)
+	ro.Counter = 0
+
+	go d.registerCommands(&ro)
 
 	<-d.ShutdownChannel
 	d.ShutdownChannel <- "Down"
-	return
 }
 
 // ListRoles returns a list of available (excluding bot and @everyone) roles in a guild as a list of containing an array of the guild ID and its name.
@@ -333,7 +373,7 @@ func (d *DiscordDaemon) Shutdown() {
 	close(d.ShutdownChannel)
 }
 
-func (d *DiscordDaemon) registerCommands() {
+func (d *DiscordDaemon) registerCommands(retry *common.MustAuthenticateOptions) {
 	d.commandDescriptions = []*dg.ApplicationCommand{
 		{
 			Name:        d.app.config.Section("discord").Key("start_command").MustString("start"),
@@ -430,7 +470,27 @@ func (d *DiscordDaemon) registerCommands() {
 	// if err != nil {
 	// 	d.app.err.Printf("Discord: Cannot create commands: %v", err)
 	// }
-	for i, cmd := range d.commandDescriptions {
+
+	cCommands, err := d.bot.ApplicationCommandBulkOverwrite(d.bot.State.User.ID, d.guildID, d.commandDescriptions)
+	if err != nil {
+		if retry == nil || retry.LogFailures {
+			d.app.err.Printf(lm.FailedRegisterDiscordCommand, "*", err)
+		}
+		if retry != nil {
+			retry.Counter += 1
+			if retry.Counter >= retry.RetryCount {
+				return
+			}
+			time.Sleep(retry.RetryGap)
+			d.registerCommands(retry)
+		}
+	} else {
+		for i := range len(d.commandDescriptions) {
+			d.commandIDs[i] = cCommands[i].ID
+		}
+		d.app.debug.Printf(lm.RegisterDiscordCommand, "*")
+	}
+	/* for i, cmd := range d.commandDescriptions {
 		command, err := d.bot.ApplicationCommandCreate(d.bot.State.User.ID, d.guildID, cmd)
 		if err != nil {
 			d.app.err.Printf(lm.FailedRegisterDiscordCommand, cmd.Name, err)
@@ -438,7 +498,7 @@ func (d *DiscordDaemon) registerCommands() {
 			d.app.debug.Printf(lm.RegisterDiscordCommand, cmd.Name)
 			d.commandIDs[i] = command.ID
 		}
-	}
+	} */
 }
 
 func (d *DiscordDaemon) deregisterCommands() {
@@ -686,7 +746,7 @@ func (d *DiscordDaemon) cmdInvite(s *dg.Session, i *dg.InteractionCreate, lang s
 
 		var msg *Message
 		if err == nil {
-			msg, err = d.app.email.constructInvite(invite.Code, invite, d.app, false)
+			msg, err = d.app.email.constructInvite(invite, false)
 			if err != nil {
 				// Print extra message, ideally we'd just print this, or get rid of it though.
 				invite.SendTo = fmt.Sprintf(lm.FailedConstructInviteMessage, invite.Code, err)

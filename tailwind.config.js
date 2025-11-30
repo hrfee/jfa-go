@@ -1,5 +1,4 @@
-let colors = require("tailwindcss/colors")
-let dark = require("./css/dark");
+import { colorSet } from "./css/colors";
 
 module.exports = {
   content: ["./data/html/*.html", "./build/data/html/*.html", "./ts/*.ts", "./ts/modules/*.ts"],
@@ -62,21 +61,7 @@ module.exports = {
               'slide-out': 'slide-out 0.2s cubic-bezier(.08,.52,.01,.98)',
               'pulse': 'pulse 0.2s cubic-bezier(0.25, 0.45, 0.45, 0.94)'
           },
-          colors: {
-              neutral: colors.slate,
-              positive: colors.green,
-              urge: colors.violet,
-              warning: colors.yellow,
-              info: colors.blue,
-              critical: colors.red,
-              d_neutral: dark.d_neutral,
-              d_positive: dark.d_positive,
-              d_urge: dark.d_urge,
-              d_warning: dark.d_warning,
-              d_info: dark.d_info,
-              d_critical: dark.d_critical,
-              discord: "#5865F2"
-          }
+          colors: colorSet,
       }
   },
   plugins: [require("a17t")],

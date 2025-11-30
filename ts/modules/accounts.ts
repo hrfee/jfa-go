@@ -750,9 +750,10 @@ class user implements User, SearchableItem {
     
     private _addTelegram = () => _get("/telegram/pin", null, (req: XMLHttpRequest) => {
         if (req.readyState == 4 && req.status == 200) {
-            const pin = document.getElementById("telegram-pin");
-            const link = document.getElementById("telegram-link") as HTMLAnchorElement;
-            const username = document.getElementById("telegram-username") as HTMLSpanElement;
+            const modal = window.modals.telegram.modal;
+            const pin = modal.getElementsByClassName("pin")[0] as HTMLElement;
+            const link = modal.getElementsByClassName("link")[0] as HTMLAnchorElement;
+            const username = modal.getElementsByClassName("username")[0] as HTMLElement;
             const waiting = document.getElementById("telegram-waiting") as HTMLSpanElement;
             let resp = req.response as getPinResponse;
             pin.textContent = resp.token;
@@ -836,6 +837,18 @@ interface UsersDTO extends paginatedDTO {
     users: User[];
 }
 
+declare interface ExtendExpiryDTO {
+    users: string[];
+    months?: number;
+    days?: number;
+    hours?: number;
+    minutes?: number;
+    timestamp?: number;
+    notify: boolean;
+    reason?: string;
+    try_extend_from_previous_expiry?: boolean;
+}
+
 export class accountsList extends PaginatedList {
     protected _container = document.getElementById("accounts-list") as HTMLTableSectionElement;
     
@@ -856,6 +869,7 @@ export class accountsList extends PaginatedList {
     private  _extendExpiryForm = document.getElementById("form-extend-expiry") as HTMLFormElement;
     private _extendExpiryTextInput = document.getElementById("extend-expiry-text") as HTMLInputElement;
     private _extendExpiryFieldInputs = document.getElementById("extend-expiry-field-inputs") as HTMLElement;
+    private _extendExpiryFromPreviousExpiry = document.getElementById("expiry-use-previous") as HTMLInputElement;
     private _usingExtendExpiryTextInput = true;
 
     private _extendExpiryDate = document.getElementById("extend-expiry-date") as HTMLElement;
@@ -877,8 +891,8 @@ export class accountsList extends PaginatedList {
 
     private _applyHomescreen = document.getElementById("modify-user-homescreen") as HTMLInputElement;
     private _applyConfiguration = document.getElementById("modify-user-configuration") as HTMLInputElement;
-    private _applyOmbi = document.getElementById("modify-user-ombi") as HTMLInputElement;
-    private _applyJellyseerr = document.getElementById("modify-user-jellyseerr") as HTMLInputElement;
+    private _applyOmbi = window.ombiEnabled ? document.getElementById("modify-user-ombi") as HTMLInputElement : null;
+    private _applyJellyseerr = window.jellyseerrEnabled ? document.getElementById("modify-user-jellyseerr") as HTMLInputElement : null;
 
     private _selectAll = document.getElementById("accounts-select-all") as HTMLInputElement;
     private _selectAllState: SelectAllState = SelectAllState.None;
@@ -1033,15 +1047,6 @@ export class accountsList extends PaginatedList {
         this._modifySettings.onclick = this.modifyUsers;
         this._modifySettings.classList.add("unfocused");
 
-        if (window.ombiEnabled)
-            this._applyOmbi.parentElement.classList.remove("unfocused");
-        else
-            this._applyOmbi.parentElement.classList.add("unfocused");
-        if (window.jellyseerrEnabled)
-            this._applyJellyseerr.parentElement.classList.remove("unfocused");
-        else
-            this._applyJellyseerr.parentElement.classList.add("unfocused");
-
         const checkSource = () => {
             const profileSpan = this._modifySettingsProfile.nextElementSibling as HTMLSpanElement;
             const userSpan = this._modifySettingsUser.nextElementSibling as HTMLSpanElement;
@@ -1052,8 +1057,8 @@ export class accountsList extends PaginatedList {
                 profileSpan.classList.remove("@low");
                 userSpan.classList.remove("@high");
                 userSpan.classList.add("@low");
-                this._applyOmbi.parentElement.classList.remove("unfocused");
-                this._applyJellyseerr.parentElement.classList.remove("unfocused");
+                this._applyOmbi?.parentElement.classList.remove("unfocused");
+                this._applyJellyseerr?.parentElement.classList.remove("unfocused");
             } else {
                 this._userSelect.parentElement.classList.remove("unfocused");
                 this._profileSelect.parentElement.classList.add("unfocused");
@@ -1061,8 +1066,8 @@ export class accountsList extends PaginatedList {
                 userSpan.classList.remove("@low");
                 profileSpan.classList.remove("@high");
                 profileSpan.classList.add("@low");
-                this._applyOmbi.parentElement.classList.add("unfocused");
-                this._applyJellyseerr.parentElement.classList.add("unfocused");
+                this._applyOmbi?.parentElement.classList.add("unfocused");
+                this._applyJellyseerr?.parentElement.classList.add("unfocused");
             }
         };
         this._modifySettingsProfile.onchange = checkSource;
@@ -1117,14 +1122,14 @@ export class accountsList extends PaginatedList {
         this._extendExpiryDate.classList.add("unfocused");
 
         this._extendExpiryTextInput.onkeyup = () => {
-            this._extendExpiryTextInput.parentElement.parentElement.classList.remove("opacity-60");
+            this._extendExpiryTextInput.parentElement.classList.remove("opacity-60");
             this._extendExpiryFieldInputs.classList.add("opacity-60");
                 this._usingExtendExpiryTextInput = true;
             this._displayExpiryDate();
         }
 
         this._extendExpiryTextInput.onclick = () => {
-            this._extendExpiryTextInput.parentElement.parentElement.classList.remove("opacity-60");
+            this._extendExpiryTextInput.parentElement.classList.remove("opacity-60");
             this._extendExpiryFieldInputs.classList.add("opacity-60");
             this._usingExtendExpiryTextInput = true;
             this._displayExpiryDate();
@@ -1132,15 +1137,17 @@ export class accountsList extends PaginatedList {
 
         this._extendExpiryFieldInputs.onclick = () => {
             this._extendExpiryFieldInputs.classList.remove("opacity-60");
-            this._extendExpiryTextInput.parentElement.parentElement.classList.add("opacity-60");
+            this._extendExpiryTextInput.parentElement.classList.add("opacity-60");
             this._usingExtendExpiryTextInput = false;
             this._displayExpiryDate();
         };
+
+        this._extendExpiryFromPreviousExpiry.onclick = this._displayExpiryDate;
         
         for (let field of ["months", "days", "hours", "minutes"]) {
             (document.getElementById("extend-expiry-"+field) as HTMLSelectElement).onchange = () => {
                 this._extendExpiryFieldInputs.classList.remove("opacity-60");
-                this._extendExpiryTextInput.parentElement.parentElement.classList.add("opacity-60");
+                this._extendExpiryTextInput.parentElement.classList.add("opacity-60");
                 this._usingExtendExpiryTextInput = false;
                 this._displayExpiryDate();
             };
@@ -1857,9 +1864,13 @@ export class accountsList extends PaginatedList {
                 "apply_to": list,
                 "homescreen": this._applyHomescreen.checked,
                 "configuration": this._applyConfiguration.checked,
-                "ombi": this._applyOmbi.checked,
-                "jellyseerr": this._applyJellyseerr.checked
             };
+            if (window.ombiEnabled) {
+                send["ombi"] = this._applyOmbi.checked;
+            }
+            if (window.jellyseerrEnabled) {
+                send["jellyseerr"] = this._applyJellyseerr.checked;
+            }
             if (this._modifySettingsProfile.checked && !this._modifySettingsUser.checked) { 
                 send["from"] = "profile";
                 send["profile"] = this._profileSelect.value;
@@ -2008,45 +2019,54 @@ export class accountsList extends PaginatedList {
     _displayExpiryDate = () => {
         let date: Date;
         let invalid = false;
+        let cantShow = false;
         let users = this._collectUsers();
         if (this._usingExtendExpiryTextInput) {
             date = (Date as any).fromString(this._extendExpiryTextInput.value) as Date;
             invalid = "invalid" in (date as any);
         } else {
-            let fields: Array<HTMLSelectElement> = [
-                document.getElementById("extend-expiry-months") as HTMLSelectElement,
-                document.getElementById("extend-expiry-days") as HTMLSelectElement,
-                document.getElementById("extend-expiry-hours") as HTMLSelectElement,
-                document.getElementById("extend-expiry-minutes") as HTMLSelectElement
-            ];
-            invalid = fields[0].value == "0" && fields[1].value == "0" && fields[2].value == "0" && fields[3].value == "0";
-            let id = users.length > 0 ? users[0] : "";
-            if (!id) invalid = true;
-            else {
-                date = new Date(this.users[id].expiry*1000);
-                if (this.users[id].expiry == 0) date = new Date();
-                date.setMonth(date.getMonth() + (+fields[0].value))
-                date.setDate(date.getDate() + (+fields[1].value));
-                date.setHours(date.getHours() + (+fields[2].value));
-                date.setMinutes(date.getMinutes() + (+fields[3].value));
+            if (this._extendExpiryFromPreviousExpiry.checked) {
+                cantShow = true;
+            } else {
+                let fields: Array<HTMLSelectElement> = [
+                    document.getElementById("extend-expiry-months") as HTMLSelectElement,
+                    document.getElementById("extend-expiry-days") as HTMLSelectElement,
+                    document.getElementById("extend-expiry-hours") as HTMLSelectElement,
+                    document.getElementById("extend-expiry-minutes") as HTMLSelectElement
+                ];
+                invalid = fields[0].value == "0" && fields[1].value == "0" && fields[2].value == "0" && fields[3].value == "0";
+                let id = users.length > 0 ? users[0] : "";
+                if (!id) invalid = true;
+                else {
+                    date = new Date(this.users[id].expiry*1000);
+                    if (this.users[id].expiry == 0) date = new Date();
+                    date.setMonth(date.getMonth() + (+fields[0].value))
+                    date.setDate(date.getDate() + (+fields[1].value));
+                    date.setHours(date.getHours() + (+fields[2].value));
+                    date.setMinutes(date.getMinutes() + (+fields[3].value));
+                }
             }
         }
         const submit = this._extendExpiryForm.querySelector(`input[type="submit"]`) as HTMLInputElement;
         const submitSpan = submit.nextElementSibling;
+        if (invalid || cantShow) {
+            this._extendExpiryDate.classList.add("unfocused");
+        }
         if (invalid) {
             submit.disabled = true;
             submitSpan.classList.add("opacity-60");
-            this._extendExpiryDate.classList.add("unfocused");
         } else {
             submit.disabled = false;
             submitSpan.classList.remove("opacity-60");
-            this._extendExpiryDate.innerHTML = `
-            <div class="flex flex-col">
-                <span>${window.lang.strings("accountWillExpire").replace("{date}", toDateString(date))}</span>
-                ${users.length > 1 ? "<span>"+window.lang.strings("expirationBasedOn")+"</span>" : ""}
-            </div>
-            `;
-            this._extendExpiryDate.classList.remove("unfocused");
+            if (!cantShow) {
+                this._extendExpiryDate.innerHTML = `
+                <div class="flex flex-col">
+                    <span>${window.lang.strings("accountWillExpire").replace("{date}", toDateString(date))}</span>
+                    ${users.length > 1 ? "<span>"+window.lang.strings("expirationBasedOn")+"</span>" : ""}
+                </div>
+                `;
+                this._extendExpiryDate.classList.remove("unfocused");
+            }
         }
     }
 
@@ -2072,18 +2092,25 @@ export class accountsList extends PaginatedList {
         }
         document.getElementById("header-extend-expiry").textContent = header;
         const extend = () => {
-            let send = { "users": applyList, "timestamp": 0, "notify": this._enableExpiryNotify.checked }
+            let send: ExtendExpiryDTO = {
+                users: applyList,
+                timestamp: 0,
+                notify: this._enableExpiryNotify.checked
+            }
             if (this._enableExpiryNotify.checked) {
-                send["reason"] = this._enableExpiryReason.value;
+                send.reason = this._enableExpiryReason.value;
             }
             if (this._usingExtendExpiryTextInput) {
                 let date = (Date as any).fromString(this._extendExpiryTextInput.value) as Date;
-                send["timestamp"] = Math.floor(date.getTime() / 1000);
+                send.timestamp = Math.floor(date.getTime() / 1000);
                 if ("invalid" in (date as any)) {
                     window.notifications.customError("extendExpiryError", window.lang.notif("errorInvalidDate"));
                     return;
                 }
             } else {
+                if (this._extendExpiryFromPreviousExpiry.checked) {
+                    send.try_extend_from_previous_expiry = true;
+                }
                 for (let field of ["months", "days", "hours", "minutes"]) {
                     send[field] = +(document.getElementById("extend-expiry-"+field) as HTMLSelectElement).value;
                 }
@@ -2163,6 +2190,12 @@ export class accountsList extends PaginatedList {
         this.focusAccount(userID);
     }
 
+}
+
+// An alternate view showing accounts in sub-lists grouped by group/label.
+export class groupedAccountsList {
+
+    
 }
 
 export const accountURLEvent = (id: string) => { return new CustomEvent(accountsList._accountURLEvent, {"detail": id}) };

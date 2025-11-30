@@ -18,7 +18,7 @@
         "create": "",
         "apply": "",
         "select": "",
-        "name": "",
+        "name": "Nome",
         "date": "",
         "setExpiry": "",
         "updates": "",
@@ -117,7 +117,8 @@
         "userPageLogin": "",
         "userPagePage": "",
         "buildTime": "",
-        "builtBy": ""
+        "builtBy": "",
+        "disabled": "Disabilitato"
     },
     "notifications": {
         "changedEmailAddress": "",

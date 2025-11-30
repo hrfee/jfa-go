@@ -18,6 +18,7 @@ import (
 var (
 	// Disables authentication for the API. Do not use!
 	NO_API_AUTH_DO_NOT_USE = false
+	NO_API_AUTH_FORCE_JFID = ""
 )
 
 // loads HTML templates. If [files]/html_templates is set, alternative files inside the directory are loaded in place of the internal templates.
@@ -188,11 +189,7 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 	}
 
 	var api *gin.RouterGroup
-	if NO_API_AUTH_DO_NOT_USE && *DEBUG {
-		api = router.Group("/")
-	} else {
-		api = router.Group("/", app.webAuth())
-	}
+	api = router.Group("/", app.webAuth())
 
 	for _, p := range routePrefixes {
 		var user *gin.RouterGroup
@@ -204,6 +201,7 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 		api.GET(p+"/users", app.GetUsers)
 		api.GET(p+"/users/count", app.GetUserCount)
 		api.POST(p+"/users", app.SearchUsers)
+		api.POST(p+"/users/count", app.GetFilteredUserCount)
 		api.POST(p+"/user", app.NewUserFromAdmin)
 		api.POST(p+"/users/extend", app.ExtendExpiry)
 		api.DELETE(p+"/users/:id/expiry", app.RemoveExpiry)
@@ -216,6 +214,8 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 		api.POST(p+"/invites/profile", app.SetProfile)
 		api.GET(p+"/profiles", app.GetProfiles)
 		api.GET(p+"/profiles/names", app.GetProfileNames)
+		api.GET(p+"/profiles/raw/:name", app.GetRawProfile)
+		api.PUT(p+"/profiles/raw/:name", app.ReplaceRawProfile)
 		api.POST(p+"/profiles/default", app.SetDefaultProfile)
 		api.POST(p+"/profiles", app.CreateProfile)
 		api.DELETE(p+"/profiles", app.DeleteProfile)
@@ -244,6 +244,12 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 		api.POST(p+"/config", app.ModifyConfig)
 		api.POST(p+"/restart", app.restart)
 		api.GET(p+"/logs", app.GetLog)
+		api.GET(p+"/tasks", app.TaskList)
+		api.POST(p+"/tasks/housekeeping", app.TaskHousekeeping)
+		api.POST(p+"/tasks/users", app.TaskUserCleanup)
+		if app.config.Section("jellyseerr").Key("enabled").MustBool(false) {
+			api.POST(p+"/tasks/jellyseerr", app.TaskJellyseerrImport)
+		}
 		api.POST(p+"/backups", app.CreateBackup)
 		api.GET(p+"/backups/:fname", app.GetBackup)
 		api.GET(p+"/backups", app.GetBackups)

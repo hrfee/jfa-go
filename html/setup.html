@@ -12,7 +12,7 @@
                     {{ template "lang-select.html" . }}
                 </div>
                 <span class="button ~warning" alt="{{ .strings.theme }}" id="button-theme"><i class="ri-sun-line"></i></span>
-            </div>    
+            </div>
             <div class="card lg:container sectioned ~neutral @low flex flex-col gap-4 justify-between items-center">
                 <img class="w-[105%] max-w-none" src="banner.svg" alt="jfa-go" />
                 <span class="heading welcome">{{ .lang.StartPage.welcome }}</span>
@@ -106,7 +106,7 @@
                                 <p class="support">{{ .lang.General.urlBaseNotice }}</p>
                             </label>
                             <label class="label flex flex-col gap-2">
-                                <span>{{ .lang.General.externalURL }} ({{ .lang.required }})</span>
+                                <span>{{ .lang.General.externalURL }} ({{ .lang.Strings.required }})</span>
                                 <input type="text" class="input ~neutral @low" id="ui-jfa_url" placeholder="https://jellyf.in/mysubfolder">
                                 <p class="support">{{ .lang.General.externalURLNotice }}</p>
                             </label>

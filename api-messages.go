@@ -1,11 +1,10 @@
 package main
 
 import (
-	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/hrfee/jfa-go/jellyseerr"
+	"github.com/hrfee/jfa-go/common"
 	lm "github.com/hrfee/jfa-go/logmessages"
 	"github.com/lithammer/shortuuid/v3"
 	"gopkg.in/ini.v1"
@@ -23,25 +22,16 @@ func (app *appContext) GetCustomContent(gc *gin.Context) {
 	if _, ok := app.storage.lang.Email[lang]; !ok {
 		lang = app.storage.lang.chosenEmailLang
 	}
-	adminLang := lang
-	if _, ok := app.storage.lang.Admin[lang]; !ok {
-		adminLang = app.storage.lang.chosenAdminLang
-	}
-	list := emailListDTO{
-		"UserCreated":        {Name: app.storage.lang.Email[lang].UserCreated["name"], Enabled: app.storage.MustGetCustomContentKey("UserCreated").Enabled},
-		"InviteExpiry":       {Name: app.storage.lang.Email[lang].InviteExpiry["name"], Enabled: app.storage.MustGetCustomContentKey("InviteExpiry").Enabled},
-		"PasswordReset":      {Name: app.storage.lang.Email[lang].PasswordReset["name"], Enabled: app.storage.MustGetCustomContentKey("PasswordReset").Enabled},
-		"UserDeleted":        {Name: app.storage.lang.Email[lang].UserDeleted["name"], Enabled: app.storage.MustGetCustomContentKey("UserDeleted").Enabled},
-		"UserDisabled":       {Name: app.storage.lang.Email[lang].UserDisabled["name"], Enabled: app.storage.MustGetCustomContentKey("UserDisabled").Enabled},
-		"UserEnabled":        {Name: app.storage.lang.Email[lang].UserEnabled["name"], Enabled: app.storage.MustGetCustomContentKey("UserEnabled").Enabled},
-		"UserExpiryAdjusted": {Name: app.storage.lang.Email[lang].UserExpiryAdjusted["name"], Enabled: app.storage.MustGetCustomContentKey("UserExpiryAdjusted").Enabled},
-		"InviteEmail":        {Name: app.storage.lang.Email[lang].InviteEmail["name"], Enabled: app.storage.MustGetCustomContentKey("InviteEmail").Enabled},
-		"WelcomeEmail":       {Name: app.storage.lang.Email[lang].WelcomeEmail["name"], Enabled: app.storage.MustGetCustomContentKey("WelcomeEmail").Enabled},
-		"EmailConfirmation":  {Name: app.storage.lang.Email[lang].EmailConfirmation["name"], Enabled: app.storage.MustGetCustomContentKey("EmailConfirmation").Enabled},
-		"UserExpired":        {Name: app.storage.lang.Email[lang].UserExpired["name"], Enabled: app.storage.MustGetCustomContentKey("UserExpired").Enabled},
-		"UserLogin":          {Name: app.storage.lang.Admin[adminLang].Strings["userPageLogin"], Enabled: app.storage.MustGetCustomContentKey("UserLogin").Enabled},
-		"UserPage":           {Name: app.storage.lang.Admin[adminLang].Strings["userPagePage"], Enabled: app.storage.MustGetCustomContentKey("UserPage").Enabled},
-		"PostSignupCard":     {Name: app.storage.lang.Admin[adminLang].Strings["postSignupCard"], Enabled: app.storage.MustGetCustomContentKey("PostSignupCard").Enabled, Description: app.storage.lang.Admin[adminLang].Strings["postSignupCardDescription"]},
+	list := emailListDTO{}
+	for _, cc := range customContent {
+		if cc.ContentType == CustomTemplate {
+			continue
+		}
+		ccDescription := emailListEl{Name: cc.DisplayName(&app.storage.lang, lang), Enabled: app.storage.MustGetCustomContentKey(cc.Name).Enabled}
+		if cc.Description != nil {
+			ccDescription.Description = cc.Description(&app.storage.lang, lang)
+		}
+		list[cc.Name] = ccDescription
 	}
 
 	filter := gc.Query("filter")
@@ -73,11 +63,12 @@ func (app *appContext) SetCustomMessage(gc *gin.Context) {
 		respondBool(400, false, gc)
 		return
 	}
-	message, ok := app.storage.GetCustomContentKey(id)
+	_, ok := customContent[id]
 	if !ok {
 		respondBool(400, false, gc)
 		return
 	}
+	message, ok := app.storage.GetCustomContentKey(id)
 	message.Content = req.Content
 	message.Enabled = true
 	app.storage.SetCustomContentKey(id, message)
@@ -123,146 +114,91 @@ func (app *appContext) SetCustomMessageState(gc *gin.Context) {
 // @Security Bearer
 // @tags Configuration
 func (app *appContext) GetCustomMessageTemplate(gc *gin.Context) {
-	lang := app.storage.lang.chosenEmailLang
 	id := gc.Param("id")
-	var content string
 	var err error
-	var msg *Message
-	var variables []string
-	var conditionals []string
-	var values map[string]interface{}
-	username := app.storage.lang.Email[lang].Strings.get("username")
-	emailAddress := app.storage.lang.Email[lang].Strings.get("emailAddress")
-	customMessage, ok := app.storage.GetCustomContentKey(id)
+	contentInfo, ok := customContent[id]
+	// FIXME: Add announcement to customContent
 	if !ok && id != "Announcement" {
 		app.err.Printf(lm.FailedGetCustomMessage, id)
 		respondBool(400, false, gc)
 		return
 	}
-	if id == "WelcomeEmail" {
-		conditionals = []string{"{yourAccountWillExpire}"}
-		customMessage.Conditionals = conditionals
-	} else if id == "UserPage" {
-		variables = []string{"{username}"}
-		customMessage.Variables = variables
-	} else if id == "UserLogin" {
-		variables = []string{}
-		customMessage.Variables = variables
-	} else if id == "PostSignupCard" {
-		variables = []string{"{username}", "{myAccountURL}"}
-		customMessage.Variables = variables
+
+	content, ok := app.storage.GetCustomContentKey(id)
+
+	if contentInfo.Variables == nil {
+		contentInfo.Variables = []string{}
+	}
+	if contentInfo.Conditionals == nil {
+		contentInfo.Conditionals = []string{}
+	}
+	if contentInfo.Placeholders == nil {
+		contentInfo.Placeholders = map[string]any{}
 	}
 
-	content = customMessage.Content
-	noContent := content == ""
-	if !noContent {
-		variables = customMessage.Variables
+	// Generate content from real email, if the user hasn't already customised this message.
+	if content.Content == "" {
+		var msg *Message
+		switch id {
+		// FIXME: Add announcement to customContent
+		case "UserCreated":
+			msg, err = app.email.constructCreated("", "", time.Time{}, Invite{}, true)
+		case "InviteExpiry":
+			msg, err = app.email.constructExpiry(Invite{}, true)
+		case "PasswordReset":
+			msg, err = app.email.constructReset(PasswordReset{}, true)
+		case "UserDeleted":
+			msg, err = app.email.constructDeleted("", "", true)
+		case "UserDisabled":
+			msg, err = app.email.constructDisabled("", "", true)
+		case "UserEnabled":
+			msg, err = app.email.constructEnabled("", "", true)
+		case "UserExpiryAdjusted":
+			msg, err = app.email.constructExpiryAdjusted("", time.Time{}, "", true)
+		case "ExpiryReminder":
+			msg, err = app.email.constructExpiryReminder("", time.Now().AddDate(0, 0, 3), true)
+		case "InviteEmail":
+			msg, err = app.email.constructInvite(Invite{Code: ""}, true)
+		case "WelcomeEmail":
+			msg, err = app.email.constructWelcome("", time.Time{}, true)
+		case "EmailConfirmation":
+			msg, err = app.email.constructConfirmation("", "", "", true)
+		case "UserExpired":
+			msg, err = app.email.constructUserExpired("", true)
+		case "Announcement":
+		case "UserPage":
+		case "UserLogin":
+		case "PostSignupCard":
+			// These don't have any example content
+			msg = nil
+		}
+		if err != nil {
+			respondBool(500, false, gc)
+			return
+		}
+		if msg != nil {
+			content.Content = msg.Text
+		}
 	}
-	switch id {
-	case "Announcement":
-		// Just send the email html
-		content = ""
-	case "UserCreated":
-		if noContent {
-			msg, err = app.email.constructCreated("", "", "", Invite{}, app, true)
-		}
-		values = app.email.createdValues("xxxxxx", username, emailAddress, Invite{}, app, false)
-	case "InviteExpiry":
-		if noContent {
-			msg, err = app.email.constructExpiry("", Invite{}, app, true)
-		}
-		values = app.email.expiryValues("xxxxxx", Invite{}, app, false)
-	case "PasswordReset":
-		if noContent {
-			msg, err = app.email.constructReset(PasswordReset{}, app, true)
-		}
-		values = app.email.resetValues(PasswordReset{Pin: "12-34-56", Username: username}, app, false)
-	case "UserDeleted":
-		if noContent {
-			msg, err = app.email.constructDeleted("", app, true)
-		}
-		values = app.email.deletedValues(app.storage.lang.Email[lang].Strings.get("reason"), app, false)
-	case "UserDisabled":
-		if noContent {
-			msg, err = app.email.constructDisabled("", app, true)
-		}
-		values = app.email.deletedValues(app.storage.lang.Email[lang].Strings.get("reason"), app, false)
-	case "UserEnabled":
-		if noContent {
-			msg, err = app.email.constructEnabled("", app, true)
-		}
-		values = app.email.deletedValues(app.storage.lang.Email[lang].Strings.get("reason"), app, false)
-	case "UserExpiryAdjusted":
-		if noContent {
-			msg, err = app.email.constructExpiryAdjusted("", time.Time{}, "", app, true)
-		}
-		values = app.email.expiryAdjustedValues(username, time.Now(), app.storage.lang.Email[lang].Strings.get("reason"), app, false, true)
-	case "InviteEmail":
-		if noContent {
-			msg, err = app.email.constructInvite("", Invite{}, app, true)
-		}
-		values = app.email.inviteValues("xxxxxx", Invite{}, app, false)
-	case "WelcomeEmail":
-		if noContent {
-			msg, err = app.email.constructWelcome("", time.Time{}, app, true)
-		}
-		values = app.email.welcomeValues(username, time.Now(), app, false, true)
-	case "EmailConfirmation":
-		if noContent {
-			msg, err = app.email.constructConfirmation("", "", "", app, true)
-		}
-		values = app.email.confirmationValues("xxxxxx", username, "xxxxxx", app, false)
-	case "UserExpired":
-		if noContent {
-			msg, err = app.email.constructUserExpired(app, true)
-		}
-		values = app.email.userExpiredValues(app, false)
-	case "UserLogin", "UserPage", "PostSignupCard":
-		values = map[string]interface{}{}
-	}
-	if err != nil {
-		respondBool(500, false, gc)
-		return
-	}
-	if noContent && id != "Announcement" && id != "UserPage" && id != "UserLogin" && id != "PostSignupCard" {
-		content = msg.Text
-		variables = make([]string, strings.Count(content, "{"))
-		i := 0
-		found := false
-		buf := ""
-		for _, c := range content {
-			if !found && c != '{' && c != '}' {
-				continue
-			}
-			found = true
-			buf += string(c)
-			if c == '}' {
-				found = false
-				variables[i] = buf
-				buf = ""
-				i++
-			}
-		}
-		customMessage.Variables = variables
-	}
-	if variables == nil {
-		variables = []string{}
-	}
-	app.storage.SetCustomContentKey(id, customMessage)
-	var mail *Message
-	if id != "UserLogin" && id != "UserPage" && id != "PostSignupCard" {
-		mail, err = app.email.constructTemplate("", "<div class=\"preview-content\"></div>", app)
+
+	var mail *Message = nil
+	if contentInfo.ContentType == CustomMessage {
+		mail, err = app.email.construct(EmptyCustomContent, CustomContent{
+			Name:    EmptyCustomContent.Name,
+			Enabled: true,
+			Content: "<div class=\"preview-content\"></div>",
+		}, map[string]any{})
 		if err != nil {
 			respondBool(500, false, gc)
 			return
 		}
 	} else if id == "PostSignupCard" {
-		// Jankiness follows.
+		// Specific workaround for the currently-unique "Post signup card".
 		// Source content from "Success Message" setting.
-		if noContent {
-			content = "# " + app.storage.lang.User[app.storage.lang.chosenUserLang].Strings.get("successHeader") + "\n" + app.config.Section("ui").Key("success_message").String()
+		if content.Content == "" {
+			content.Content = "# " + app.storage.lang.User[app.storage.lang.chosenUserLang].Strings.get("successHeader") + "\n" + app.config.Section("ui").Key("success_message").String()
 			if app.config.Section("user_page").Key("enabled").MustBool(false) {
-				content += "\n\n<br>\n" + app.storage.lang.User[app.storage.lang.chosenUserLang].Strings.template("userPageSuccessMessage", tmpl{
+				content.Content += "\n\n<br>\n" + app.storage.lang.User[app.storage.lang.chosenUserLang].Strings.template("userPageSuccessMessage", tmpl{
 					"myAccount": "[" + app.storage.lang.User[app.storage.lang.chosenUserLang].Strings.get("myAccount") + "]({myAccountURL})",
 				})
 			}
@@ -271,13 +207,15 @@ func (app *appContext) GetCustomMessageTemplate(gc *gin.Context) {
 			HTML: "<div class=\"card ~neutral dark:~d_neutral @low\"><div class=\"preview-content\"></div><br><button class=\"button ~urge dark:~d_urge @low full-width center supra submit\">" + app.storage.lang.User[app.storage.lang.chosenUserLang].Strings.get("continue") + "</a></div>",
 		}
 		mail.Markdown = mail.HTML
-	} else {
+	} else if contentInfo.ContentType == CustomCard {
 		mail = &Message{
 			HTML: "<div class=\"card ~neutral dark:~d_neutral @low preview-content\"></div>",
 		}
 		mail.Markdown = mail.HTML
+	} else {
+		app.err.Printf("unknown custom content type %d", contentInfo.ContentType)
 	}
-	gc.JSON(200, customEmailDTO{Content: content, Variables: variables, Conditionals: conditionals, Values: values, HTML: mail.HTML, Plaintext: mail.Text})
+	gc.JSON(200, customEmailDTO{Content: content.Content, Variables: contentInfo.Variables, Conditionals: contentInfo.Conditionals, Values: contentInfo.Placeholders, HTML: mail.HTML, Plaintext: mail.Text})
 }
 
 // @Summary Returns a new Telegram verification PIN, and the bot username.
@@ -316,29 +254,32 @@ func (app *appContext) TelegramAddUser(gc *gin.Context) {
 		return
 	}
 	tgUser := TelegramUser{
-		ChatID:   tgToken.ChatID,
-		Username: tgToken.Username,
-		Contact:  true,
+		TelegramVerifiedToken: TelegramVerifiedToken{
+			ChatID:   tgToken.ChatID,
+			Username: tgToken.Username,
+		},
+		Contact: true,
 	}
 	if lang, ok := app.telegram.languages[tgToken.ChatID]; ok {
 		tgUser.Lang = lang
 	}
 	app.storage.SetTelegramKey(req.ID, tgUser)
 
-	if err := app.js.ModifyNotifications(gc.GetString("jfId"), map[jellyseerr.NotificationsField]any{
-		jellyseerr.FieldTelegram:        tgUser.ChatID,
-		jellyseerr.FieldTelegramEnabled: tgUser.Contact,
-	}); err != nil {
-		app.err.Printf(lm.FailedSyncContactMethods, lm.Jellyseerr, err)
+	for _, tps := range app.thirdPartyServices {
+		if err := tps.SetContactMethods(req.ID, nil, nil, &tgUser, &common.ContactPreferences{
+			Telegram: &tgUser.Contact,
+		}); err != nil {
+			app.err.Printf(lm.FailedSyncContactMethods, tps.Name(), err)
+		}
 	}
 
-	linkExistingOmbiDiscordTelegram(app)
+	app.InvalidateWebUserCache()
 	respondBool(200, true, gc)
 }
 
 // @Summary Sets whether to notify a user through telegram/discord/matrix/email or not.
 // @Produce json
-// @Param SetContactMethodsDTO body SetContactMethodsDTO true "User's Jellyfin ID and whether or not to notify then through Telegram."
+// @Param SetContactPreferencesDTO body SetContactPreferencesDTO true "User's Jellyfin ID and whether or not to notify then through Telegram."
 // @Success 200 {object} boolResponse
 // @Success 400 {object} boolResponse
 // @Success 500 {object} boolResponse
@@ -346,24 +287,24 @@ func (app *appContext) TelegramAddUser(gc *gin.Context) {
 // @Security Bearer
 // @tags Other
 func (app *appContext) SetContactMethods(gc *gin.Context) {
-	var req SetContactMethodsDTO
+	var req SetContactPreferencesDTO
 	gc.BindJSON(&req)
 	if req.ID == "" {
 		respondBool(400, false, gc)
 		return
 	}
-	app.setContactMethods(req, gc)
+	app.setContactPreferences(req, gc)
 }
 
-func (app *appContext) setContactMethods(req SetContactMethodsDTO, gc *gin.Context) {
-	jsPrefs := map[jellyseerr.NotificationsField]any{}
+func (app *appContext) setContactPreferences(req SetContactPreferencesDTO, gc *gin.Context) {
+	contactPrefs := common.ContactPreferences{}
 	if tgUser, ok := app.storage.GetTelegramKey(req.ID); ok {
 		change := tgUser.Contact != req.Telegram
 		tgUser.Contact = req.Telegram
 		app.storage.SetTelegramKey(req.ID, tgUser)
 		if change {
 			app.debug.Printf(lm.SetContactPrefForService, lm.Telegram, tgUser.Username, req.Telegram)
-			jsPrefs[jellyseerr.FieldTelegramEnabled] = req.Telegram
+			contactPrefs.Telegram = &req.Telegram
 		}
 	}
 	if dcUser, ok := app.storage.GetDiscordKey(req.ID); ok {
@@ -372,7 +313,7 @@ func (app *appContext) setContactMethods(req SetContactMethodsDTO, gc *gin.Conte
 		app.storage.SetDiscordKey(req.ID, dcUser)
 		if change {
 			app.debug.Printf(lm.SetContactPrefForService, lm.Discord, dcUser.Username, req.Discord)
-			jsPrefs[jellyseerr.FieldDiscordEnabled] = req.Discord
+			contactPrefs.Discord = &req.Discord
 		}
 	}
 	if mxUser, ok := app.storage.GetMatrixKey(req.ID); ok {
@@ -381,6 +322,7 @@ func (app *appContext) setContactMethods(req SetContactMethodsDTO, gc *gin.Conte
 		app.storage.SetMatrixKey(req.ID, mxUser)
 		if change {
 			app.debug.Printf(lm.SetContactPrefForService, lm.Matrix, mxUser.UserID, req.Matrix)
+			contactPrefs.Matrix = &req.Matrix
 		}
 	}
 	if email, ok := app.storage.GetEmailsKey(req.ID); ok {
@@ -389,15 +331,16 @@ func (app *appContext) setContactMethods(req SetContactMethodsDTO, gc *gin.Conte
 		app.storage.SetEmailsKey(req.ID, email)
 		if change {
 			app.debug.Printf(lm.SetContactPrefForService, lm.Email, email.Addr, req.Email)
-			jsPrefs[jellyseerr.FieldEmailEnabled] = req.Email
+			contactPrefs.Email = &req.Email
 		}
 	}
-	if app.config.Section("jellyseerr").Key("enabled").MustBool(false) {
-		err := app.js.ModifyNotifications(req.ID, jsPrefs)
-		if err != nil {
-			app.err.Printf(lm.FailedSyncContactMethods, lm.Jellyseerr, err)
+
+	for _, tps := range app.thirdPartyServices {
+		if err := tps.SetContactMethods(req.ID, nil, nil, nil, &contactPrefs); err != nil {
+			app.err.Printf(lm.FailedSyncContactMethods, tps.Name(), err)
 		}
 	}
+	app.InvalidateWebUserCache()
 	respondBool(200, true, gc)
 }
 
@@ -626,6 +569,7 @@ func (app *appContext) MatrixConnect(gc *gin.Context) {
 		Lang:    "en-us",
 		Contact: true,
 	})
+	app.InvalidateWebUserCache()
 	respondBool(200, true, gc)
 }
 
@@ -680,11 +624,12 @@ func (app *appContext) DiscordConnect(gc *gin.Context) {
 
 	app.storage.SetDiscordKey(req.JellyfinID, user)
 
-	if err := app.js.ModifyNotifications(req.JellyfinID, map[jellyseerr.NotificationsField]any{
-		jellyseerr.FieldDiscord:        req.DiscordID,
-		jellyseerr.FieldDiscordEnabled: true,
-	}); err != nil {
-		app.err.Printf(lm.FailedSyncContactMethods, lm.Jellyseerr, err)
+	for _, tps := range app.thirdPartyServices {
+		if err := tps.SetContactMethods(req.JellyfinID, nil, &user, nil, &common.ContactPreferences{
+			Discord: &user.Contact,
+		}); err != nil {
+			app.err.Printf(lm.FailedSyncContactMethods, tps.Name(), err)
+		}
 	}
 
 	app.storage.SetActivityKey(shortuuid.New(), Activity{
@@ -697,6 +642,7 @@ func (app *appContext) DiscordConnect(gc *gin.Context) {
 	}, gc, false)
 
 	linkExistingOmbiDiscordTelegram(app)
+	app.InvalidateWebUserCache()
 	respondBool(200, true, gc)
 }
 
@@ -717,12 +663,14 @@ func (app *appContext) UnlinkDiscord(gc *gin.Context) {
 	} */
 	app.storage.DeleteDiscordKey(req.ID)
 
-	// May not actually remove Discord ID, but should disable interaction.
-	if err := app.js.ModifyNotifications(gc.GetString("jfId"), map[jellyseerr.NotificationsField]any{
-		jellyseerr.FieldDiscord:        jellyseerr.BogusIdentifier,
-		jellyseerr.FieldDiscordEnabled: false,
-	}); err != nil {
-		app.err.Printf(lm.FailedSyncContactMethods, lm.Jellyseerr, err)
+	contact := false
+
+	for _, tps := range app.thirdPartyServices {
+		if err := tps.SetContactMethods(req.ID, nil, EmptyDiscordUser(), nil, &common.ContactPreferences{
+			Discord: &contact,
+		}); err != nil {
+			app.err.Printf(lm.FailedSyncContactMethods, tps.Name(), err)
+		}
 	}
 
 	app.storage.SetActivityKey(shortuuid.New(), Activity{
@@ -734,6 +682,7 @@ func (app *appContext) UnlinkDiscord(gc *gin.Context) {
 		Time:       time.Now(),
 	}, gc, false)
 
+	app.InvalidateWebUserCache()
 	respondBool(200, true, gc)
 }
 
@@ -754,11 +703,14 @@ func (app *appContext) UnlinkTelegram(gc *gin.Context) {
 	} */
 	app.storage.DeleteTelegramKey(req.ID)
 
-	if err := app.js.ModifyNotifications(gc.GetString("jfId"), map[jellyseerr.NotificationsField]any{
-		jellyseerr.FieldTelegram:        jellyseerr.BogusIdentifier,
-		jellyseerr.FieldTelegramEnabled: false,
-	}); err != nil {
-		app.err.Printf(lm.FailedSyncContactMethods, lm.Jellyseerr, err)
+	contact := false
+
+	for _, tps := range app.thirdPartyServices {
+		if err := tps.SetContactMethods(req.ID, nil, nil, EmptyTelegramUser(), &common.ContactPreferences{
+			Telegram: &contact,
+		}); err != nil {
+			app.err.Printf(lm.FailedSyncContactMethods, tps.Name(), err)
+		}
 	}
 
 	app.storage.SetActivityKey(shortuuid.New(), Activity{
@@ -770,6 +722,7 @@ func (app *appContext) UnlinkTelegram(gc *gin.Context) {
 		Time:       time.Now(),
 	}, gc, false)
 
+	app.InvalidateWebUserCache()
 	respondBool(200, true, gc)
 }
 
@@ -799,5 +752,6 @@ func (app *appContext) UnlinkMatrix(gc *gin.Context) {
 		Time:       time.Now(),
 	}, gc, false)
 
+	app.InvalidateWebUserCache()
 	respondBool(200, true, gc)
 }

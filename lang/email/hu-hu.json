@@ -3,75 +3,82 @@
         "name": "Magyar (HU)"
     },
     "strings": {
-        "ifItWasNotYou": "",
-        "helloUser": "",
-        "reason": ""
+        "ifItWasNotYou": "Ha nem Te voltál, akkor hagyd figyelmen kívül.",
+        "helloUser": "Szia {username},",
+        "reason": "Ok"
     },
     "userCreated": {
-        "name": "",
-        "title": "",
-        "aUserWasCreated": "",
-        "time": "",
-        "notificationNotice": ""
+        "name": "Felhasználó létrehozása",
+        "title": "Értesítés: Felhasználó létrehozva",
+        "aUserWasCreated": "Felhasználó létrehozva {code} kóddal.",
+        "time": "Idő",
+        "notificationNotice": "Megjegyzés: A figyelmeztető üzenetek ki- be kapcsolhatók az admin felületen."
     },
     "inviteExpiry": {
-        "name": "",
-        "title": "",
-        "inviteExpired": "",
-        "expiredAt": "",
-        "notificationNotice": ""
+        "name": "Meghívó lejárata",
+        "title": "Értesítés: A meghívó lejárt",
+        "inviteExpired": "A meghívó lejárt.",
+        "expiredAt": "A {code} kód lejárt ekkor {time}.",
+        "notificationNotice": "Megjegyzés: A figyelmeztető üzenetek ki- be kapcsolhatók az admin felületen."
     },
     "passwordReset": {
-        "name": "",
-        "title": "",
-        "someoneHasRequestedReset": "",
-        "ifItWasYou": "",
-        "ifItWasYouLink": "",
-        "codeExpiry": "",
-        "pin": ""
+        "name": "Jelszó visszaállítás",
+        "title": "Jelszó visszaállítási kérelem - Jellyfin",
+        "someoneHasRequestedReset": "Valaki mostanában jelszó visszaállítást kért.",
+        "ifItWasYou": "Ha Te voltál, írd be a kódot ide.",
+        "ifItWasYouLink": "Ha Te voltál, kattints a linkre.",
+        "codeExpiry": "A kód lejárt {expiresInMinutes} perce. ({date} {time} UTC).",
+        "pin": "PIN"
     },
     "userDeleted": {
-        "name": "",
-        "title": "",
-        "yourAccountWasDeleted": ""
+        "name": "Felhasználó törlése",
+        "title": "A fiókod törölve lett - Jellyfin",
+        "yourAccountWasDeleted": "A jellyfin fiókod törölve lett."
     },
     "userDisabled": {
-        "name": "",
-        "title": "",
-        "yourAccountWasDisabled": ""
+        "name": "Felhsználó letiltva",
+        "title": "A felhasználód le lett tiltva - Jellyfin",
+        "yourAccountWasDisabled": "A fiókod le lett tiltva."
     },
     "userEnabled": {
-        "name": "",
-        "title": "",
-        "yourAccountWasEnabled": ""
+        "name": "Felhasználó engedélyezve",
+        "title": "A fiókod fel lett oldva - Jellyfin",
+        "yourAccountWasEnabled": "A fiókod fel lett oldva."
     },
     "inviteEmail": {
-        "name": "",
-        "title": "",
-        "hello": "",
-        "youHaveBeenInvited": "",
-        "toJoin": "",
-        "inviteExpiry": "",
-        "linkButton": ""
+        "name": "Meghívó email",
+        "title": "Meghívó - Jellyfin",
+        "hello": "Szia",
+        "youHaveBeenInvited": "Meghívtak a jellyfin alkalmazásba.",
+        "toJoin": "Csatlakozáshoz kattints a linkre.",
+        "inviteExpiry": "A meghívó {date} {time}-kor lejár, ami {expiresInMinutes} perc múlva lesz, szóval gyorsan cselekedj.",
+        "linkButton": "Fiók beállítása"
     },
     "welcomeEmail": {
-        "name": "",
-        "title": "",
-        "welcome": "",
-        "youCanLoginWith": "",
-        "yourAccountWillExpire": "",
-        "jellyfinURL": ""
+        "name": "Üdvözöllek",
+        "title": "Üdvözöllek a Jellyfin-ben",
+        "welcome": "Üdvözöllek a Jellyfin-ben!",
+        "youCanLoginWith": "Be tudsz lépni az alábbi adatokkal",
+        "yourAccountWillExpire": "A fiókod {date} dátummal lejár.",
+        "jellyfinURL": "URL"
     },
     "emailConfirmation": {
-        "name": "",
-        "title": "",
-        "clickBelow": "",
-        "confirmEmail": ""
+        "name": "Megerősítő email cím",
+        "title": "Erősítsd meg az email címed- Jellyfin",
+        "clickBelow": "Kattints az alábbi linkre, hogy megerősítsd az email címed és elkezd használni a jellyfin-t.",
+        "confirmEmail": "Email megerősítése"
     },
     "userExpired": {
-        "name": "",
-        "title": "",
-        "yourAccountHasExpired": "",
-        "contactTheAdmin": ""
+        "name": "Felhasználó lejárata",
+        "title": "A fiókod lejárt - Jellyfin",
+        "yourAccountHasExpired": "A fiókod lejárt.",
+        "contactTheAdmin": "Lépj kapcsolatba az rendszergazdával további információkért."
+    },
+    "userExpiryAdjusted": {
+        "name": "Lejárat módosítva",
+        "title": "Fiók lejárat módosítva - Jellyfin",
+        "yourExpiryWasAdjusted": "A fiókod lejárata módosult.",
+        "ifPreviouslyDisabled": "Ha fiókod korábban letiltották, előfordulhat, hogy újra engedélyezték.",
+        "newExpiry": "A fiókod {date} napon lejár."
     }
 }

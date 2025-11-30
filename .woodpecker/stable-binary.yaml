@@ -11,11 +11,31 @@ clone:
             depth: 0
 
 steps:
+  - name: precompile
+    image: docker.io/hrfee/jfa-go-build-docker:latest
+    environment:
+        JFA_GO_SNAPSHOT: y
+        JFA_GO_BUILT_BY:
+            from_secret: BUILT_BY
+    commands:
+      - npm i
+      - make precompile
+      - go mod download
+  - name: test
+    image: docker.io/hrfee/jfa-go-build-docker:latest
+    environment:
+        JFA_GO_SNAPSHOT: y
+        JFA_GO_BUILT_BY:
+            from_secret: BUILT_BY
+    commands:
+      - make test
   - name: build
     image: docker.io/hrfee/jfa-go-build-docker:latest
     environment:
         JFA_GO_BUILT_BY:
             from_secret: BUILT_BY
+        GITHUB_TOKEN:
+            from_secret: GITHUB_TOKEN
     commands:
       - curl -sfL https://goreleaser.com/static/run > ../goreleaser
       - chmod +x ../goreleaser

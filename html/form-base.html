@@ -27,6 +27,7 @@
     window.reCAPTCHASiteKey = "{{ .reCAPTCHASiteKey }}";
     window.userPageEnabled = {{ .userPageEnabled }};
     window.userPageAddress = "{{ .userPageAddress }}";
+    window.collectEmail = {{ .collectEmail }};
     {{ if index . "customSuccessCard" }}
         window.customSuccessCard = {{ .customSuccessCard }};
     {{ else }}

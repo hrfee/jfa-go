@@ -64,12 +64,14 @@ const (
 	TimedOut              = "timed out"
 	FailedGenericWithCode = "failed (code %d)"
 
-	InitDiscord        = "Initialized Discord daemon"
-	FailedInitDiscord  = "Failed to initialize Discord daemon: %v"
-	InitTelegram       = "Initialized Telegram daemon"
-	FailedInitTelegram = "Failed to initialize Telegram daemon: %v"
-	InitMatrix         = "Initialized Matrix daemon"
-	FailedInitMatrix   = "Failed to initialize Matrix daemon: %v"
+	InitDiscord         = "Initialized Discord daemon"
+	FailedInitDiscord   = "Failed to initialize Discord daemon: %v"
+	InitTelegram        = "Initialized Telegram daemon"
+	FailedInitTelegram  = "Failed to initialize Telegram daemon: %v"
+	InitMatrix          = "Initialized Matrix daemon"
+	FailedInitMatrix    = "Failed to initialize Matrix daemon: %v"
+	InitingMatrixCrypto = "Initializing Matrix encryption store"
+	InitMatrixCrypto    = "Initialized Matrix encryption store"
 
 	InitRouter = "Initializing router"
 	LoadRoutes = "Loading Routes"
@@ -184,7 +186,11 @@ const (
 
 	IncorrectCaptcha = "captcha incorrect"
 
-	ExtendCreateExpiry = "Extended or created expiry for user \"%s\""
+	ExtendCreateExpiry      = "Extended or created expiry for user \"%s\""
+	FoundExistingExpiry     = "Found existing expiry key"
+	FoundPreviousExpiryLog  = "Found most recent previous expiry in activity log @ %v"
+	ExpiryWouldBeInPast     = "Expiry would've been in the past, using current time base"
+	PreviousExpiryNotExpiry = "Last user disable was not an expiry, using current time base"
 
 	UserEmailAdjusted = "Email for user \"%s\" adjusted"
 	UserAdminAdjusted = "Admin state for user \"%s\" set to %t"
@@ -272,7 +278,8 @@ const (
 	// NOTE: "migrations.go" is the one file where log messages are not part of logmessages/logmessages.go.
 
 	// pwreset.go
-	PWRExpired = "PWR for user \"%s\" already expired @ %s, check system time!"
+	PWRExpired    = "PWR for user \"%s\" already expired @ %s, check system time!"
+	NewPWRForUser = "New password reset for user \"%s\""
 
 	// router.go
 	UseDefaultHTML      = "Using default HTML \"%s\""
@@ -294,6 +301,8 @@ const (
 	FailedGetUpdateTag = "Failed to get latest tag: %v"
 	FailedGetUpdate    = "Failed to get update: %v"
 	UpdateTagDetails   = "Update/Tag details: %+v"
+	TagEmpty           = "tag was empty"
+	TagAtEmpty         = "tag at \"%s\" was empty"
 
 	// user-auth.go
 	UserPage                     = "userpage"
@@ -345,6 +354,8 @@ const (
 )
 
 const (
+	FailedConstructCustomContent = "Possible error in custom content \"%s\": %v"
+
 	FailedConstructExpiryAdmin = "Failed to construct expiry notification for \"%s\": %v"
 	FailedSendExpiryAdmin      = "Failed to send expiry notification for \"%s\" to \"%s\": %v"
 	SentExpiryAdmin            = "Sent expiry notification for \"%s\" to \"%s\""
@@ -381,6 +392,10 @@ const (
 	FailedConstructExpiryAdjustmentMessage = "Failed to construct expiry adjustment message for \"%s\": %v"
 	FailedSendExpiryAdjustmentMessage      = "Failed to send expiry adjustment message for \"%s\" to \"%s\": %v"
 	SentExpiryAdjustmentMessage            = "Sent expiry adjustment message for \"%s\" to \"%s\""
+
+	FailedConstructExpiryReminderMessage = "Failed to construct expiry reminder message for \"%s\": %v"
+	FailedSendExpiryReminderMessage      = "Failed to send expiry reminder message for \"%s\" to \"%s\": %v"
+	SentExpiryReminderMessage            = "Sent expiry reminder message for \"%s\" to \"%s\""
 
 	FailedConstructExpiryMessage = "Failed to construct expiry message for \"%s\": %v"
 	FailedSendExpiryMessage      = "Failed to send expiry message for \"%s\" to \"%s\": %v"

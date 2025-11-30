@@ -1,0 +1,64 @@
+<mj-head>
+    <mj-raw>
+        <meta name="color-scheme" content="light dark">
+        <meta name="supported-color-schemes" content="light dark">
+    </mj-raw>
+    <mj-style>
+        :root {
+            Color-scheme: light dark;
+            supported-color-schemes: light dark;
+        }
+        body, .body {
+            background: #101010 !important;
+            background-color: #101010 !important;
+        }
+        .text-gray {
+            color: rgb(153,153,153) !important;
+        }
+        .bg-gray {
+            background: #292929 !important;
+            background-color: #292929 !important;
+        }
+        @media (prefers-color-scheme: light) {
+            Color-scheme: dark;
+            body, .body {
+                background: #101010 !important;
+                background-color: #101010 !important;
+            }
+            [data-ogsc] .body {
+                background: #101010 !important;
+                background-color: #101010 !important;
+            }
+            [data-ogsb] .body {
+                background: #101010 !important;
+                background-color: #101010 !important;
+            }
+        }
+        @media (prefers-color-scheme: dark) {
+            Color-scheme: dark;
+            body, .body {
+                background: #101010 !important;
+                background-color: #101010 !important;
+            }
+            [data-ogsc] .body {
+                background: #101010 !important;
+                background-color: #101010 !important;
+            }
+            [data-ogsb] .body {
+                background: #101010 !important;
+                background-color: #101010 !important;
+            }
+        }
+    </mj-style>
+    <mj-attributes>
+        <mj-class name="body" background-color="#101010" />
+        <mj-class name="bg-gray" background-color="#292929" />
+        <mj-class name="text-white" color="rgb(255,255,255)" />
+        <mj-class name="blue" background-color="rgb(0,164,220)" />
+        <mj-class name="secondary" font-style="italic" font-size="14px" />
+        <mj-class name="text-gray" color="rgb(153,153,153)" />
+        <mj-all font-family="Hanken Grotesk, Noto Sans, Helvetica, Arial, sans-serif" font-size="16px" color="rgba(255,255,255,0.8)">
+    </mj-attributes>
+    <mj-font name="Plus Jakarta Sans" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,700;1,700&display=swap" />
+    <mj-font name="Hanken Grotesk" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital@0;1&display=swap" />
+</mj-head>

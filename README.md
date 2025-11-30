@@ -13,7 +13,7 @@
 Studies mean I can't work on this project a lot outside of breaks, however I hope i'll be able to fit in general support and things like bug fixes into my time. New features and such will likely come in short bursts throughout the year (if they do at all).
 
 #### Does/Will it still work?
-jfa-go currently works on Jellyfin 10.9.8, the latest version as of 31/07/2024. I should be able to maintain compatability in the future, unless any big changes occur.
+jfa-go currently works on Jellyfin 10.11.0, the latest version as of 21/10/25. I should be able to maintain compatability in the future, unless any big changes occur.
 
 #### Alternatives
 If you want a bit more of a guarantee of support, I've seen these projects mentioned although haven't tried them myself.

@@ -39,6 +39,7 @@ interface formWindow extends GlobalWindow {
     userPageEnabled: boolean;
     userPageAddress: string;
     customSuccessCard: boolean;
+    collectEmail: boolean;
 }
 
 loadLangSelector("form");
@@ -171,7 +172,13 @@ const submitSpan = form.querySelector("span.submit") as HTMLSpanElement;
 const submitText = submitSpan.textContent;
 let usernameField = document.getElementById("create-username") as HTMLInputElement;
 const emailField = document.getElementById("create-email") as HTMLInputElement;
-if (!window.usernameEnabled) { usernameField.parentElement.remove(); usernameField = emailField; }
+window.emailRequired &&= window.collectEmail;
+if (!window.usernameEnabled) {
+    usernameField.parentElement.remove(); usernameField = emailField;
+} else if (!window.collectEmail) {
+    emailField.parentElement.classList.add("unfocused");
+    emailField.value = "";
+}
 const passwordField = document.getElementById("create-password") as HTMLInputElement;
 const rePasswordField = document.getElementById("create-reenter-password") as HTMLInputElement;
 

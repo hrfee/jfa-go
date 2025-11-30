@@ -25,7 +25,7 @@ interface userWindow extends GlobalWindow {
 declare var window: userWindow;
 
 // const basePath = window.location.pathname.replace("/password/reset", "");
-const basePath = window.pages.MyAccount;
+const basePath = window.pages.Base + window.pages.MyAccount;
 
 const theme = new ThemeManager(document.getElementById("button-theme"));
 
@@ -659,7 +659,7 @@ document.addEventListener("details-reload", () => {
             expiryCard.expiry = details.expiry;
 
             const adminBackButton = document.getElementById("admin-back-button") as HTMLAnchorElement;
-            adminBackButton.href = window.pages.Base + window.pages.Admin;
+            adminBackButton.href = window.pages.Base + window.pages.Admin + "/";
 
             let messageCard = document.getElementById("card-message");
             if (details.accounts_admin) {

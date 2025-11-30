@@ -2,4 +2,4 @@
 
 {{ .expiredAt }}
 
-{{ .notificationNotice }}
+{{ .footer }}

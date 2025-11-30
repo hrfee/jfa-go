@@ -141,7 +141,7 @@
     },
     "notifications": {
         "title": "Admin Notifications",
-        "description": "If enabled, you can choose (per invite) to receive an message when an invite expires, or a user is created. If you didn't choose the Jellyfin login method, make sure you provided your email address, or add another contact method later."
+        "description": "If enabled, you can choose (per invite) to receive a message when an invite expires, or a user is created. If you didn't choose the Jellyfin login method, make sure you provided your email address, or add another contact method later."
     },
     "inviteEmails": {
         "title": "Invite Messages",

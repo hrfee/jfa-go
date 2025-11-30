@@ -345,8 +345,18 @@ func (q QueryDTO) AsFilter() Filter {
 			return cmp.Compare(strings.ToLower(a.Name), strings.ToLower(q.Value.(string))) == int(operator)
 		}
 	case "email":
-		return func(a *respUser) bool {
-			return cmp.Compare(strings.ToLower(a.Email), strings.ToLower(q.Value.(string))) == int(operator)
+		switch q.Class {
+		case BoolQuery:
+			return func(a *respUser) bool {
+				if q.Value.(bool) {
+					return a.Email != ""
+				}
+				return a.Email == ""
+			}
+		case StringQuery:
+			return func(a *respUser) bool {
+				return cmp.Compare(strings.ToLower(a.Email), strings.ToLower(q.Value.(string))) == int(operator)
+			}
 		}
 	case "notify_email":
 		return func(a *respUser) bool {
@@ -391,16 +401,36 @@ func (q QueryDTO) AsFilter() Filter {
 			return cmp.Compare(bool2int(a.Disabled), bool2int(q.Value.(bool))) == int(operator)
 		}
 	case "telegram":
-		return func(a *respUser) bool {
-			return cmp.Compare(strings.ToLower(a.Telegram), strings.ToLower(q.Value.(string))) == int(operator)
+		switch q.Class {
+		case BoolQuery:
+			return func(a *respUser) bool {
+				if q.Value.(bool) {
+					return a.Telegram != ""
+				}
+				return a.Telegram == ""
+			}
+		case StringQuery:
+			return func(a *respUser) bool {
+				return cmp.Compare(strings.ToLower(a.Telegram), strings.ToLower(q.Value.(string))) == int(operator)
+			}
 		}
 	case "notify_telegram":
 		return func(a *respUser) bool {
 			return cmp.Compare(bool2int(a.NotifyThroughTelegram), bool2int(q.Value.(bool))) == int(operator)
 		}
 	case "discord":
-		return func(a *respUser) bool {
-			return cmp.Compare(strings.ToLower(a.Discord), strings.ToLower(q.Value.(string))) == int(operator)
+		switch q.Class {
+		case BoolQuery:
+			return func(a *respUser) bool {
+				if q.Value.(bool) {
+					return a.Discord != ""
+				}
+				return a.Discord == ""
+			}
+		case StringQuery:
+			return func(a *respUser) bool {
+				return cmp.Compare(strings.ToLower(a.Discord), strings.ToLower(q.Value.(string))) == int(operator)
+			}
 		}
 	case "discord_id":
 		return func(a *respUser) bool {
@@ -411,16 +441,36 @@ func (q QueryDTO) AsFilter() Filter {
 			return cmp.Compare(bool2int(a.NotifyThroughDiscord), bool2int(q.Value.(bool))) == int(operator)
 		}
 	case "matrix":
-		return func(a *respUser) bool {
-			return cmp.Compare(strings.ToLower(a.Matrix), strings.ToLower(q.Value.(string))) == int(operator)
+		switch q.Class {
+		case BoolQuery:
+			return func(a *respUser) bool {
+				if q.Value.(bool) {
+					return a.Matrix != ""
+				}
+				return a.Matrix == ""
+			}
+		case StringQuery:
+			return func(a *respUser) bool {
+				return cmp.Compare(strings.ToLower(a.Matrix), strings.ToLower(q.Value.(string))) == int(operator)
+			}
 		}
 	case "notify_matrix":
 		return func(a *respUser) bool {
 			return cmp.Compare(bool2int(a.NotifyThroughMatrix), bool2int(q.Value.(bool))) == int(operator)
 		}
 	case "label":
-		return func(a *respUser) bool {
-			return cmp.Compare(strings.ToLower(a.Label), strings.ToLower(q.Value.(string))) == int(operator)
+		switch q.Class {
+		case BoolQuery:
+			return func(a *respUser) bool {
+				if q.Value.(bool) {
+					return a.Label != ""
+				}
+				return a.Label == ""
+			}
+		case StringQuery:
+			return func(a *respUser) bool {
+				return cmp.Compare(strings.ToLower(a.Label), strings.ToLower(q.Value.(string))) == int(operator)
+			}
 		}
 	case "accounts_admin":
 		return func(a *respUser) bool {

@@ -64,6 +64,16 @@ var matrixFilter = mautrix.Filter{
 	},
 }
 
+func EmptyMatrixUser() *MatrixUser {
+	return &MatrixUser{
+		RoomID:     "",
+		UserID:     "",
+		Lang:       "",
+		Contact:    false,
+		JellyfinID: "",
+	}
+}
+
 func (d *MatrixDaemon) renderUserID(uid id.UserID) id.UserID {
 	if uid[0] != '@' {
 		uid = "@" + uid
@@ -101,7 +111,7 @@ func newMatrixDaemon(app *appContext) (d *MatrixDaemon, err error) {
 			d.languages[id.RoomID(user.RoomID)] = user.Lang
 		}
 	}
-	err = InitMatrixCrypto(d)
+	err = InitMatrixCrypto(d, app.info)
 	return
 }
 

@@ -102,6 +102,7 @@ type newProfileDTO struct {
 	ID         string `json:"id" example:"ZXhhbXBsZTEyMzQ1Njc4OQo" binding:"required"` // ID of user to source settings from
 	Homescreen bool   `json:"homescreen" example:"true"`                               // Whether to store homescreen layout or not
 	OmbiID     string `json:"ombi_id" example:"ZXhhbXBsZTEyMzQ1Njc4OQo"`               // ID of Ombi user to source settings from (optional)
+	Jellyseerr bool   `json:"jellyseerr"`                                              // Whether or not to generate Jellyseerr profile from user
 }
 
 type inviteDTO struct {
@@ -252,14 +253,15 @@ type customEmailDTO struct {
 }
 
 type extendExpiryDTO struct {
-	Users     []string `json:"users"`                           // List of user IDs to apply to.
-	Months    int      `json:"months" example:"1"`              // Number of months to add.
-	Days      int      `json:"days" example:"1"`                // Number of days to add.
-	Hours     int      `json:"hours" example:"2"`               // Number of hours to add.
-	Minutes   int      `json:"minutes" example:"3"`             // Number of minutes to add.
-	Timestamp int64    `json:"timestamp"`                       // Optional, exact time to expire at. Overrides other fields.
-	Notify    bool     `json:"notify"`                          // Whether to message the user(s) about the change.
-	Reason    string   `json:"reason" example:"i felt like it"` // Reason for adjustment.
+	Users                       []string `json:"users"`                                     // List of user IDs to apply to.
+	Months                      int      `json:"months,omitempty" example:"1"`              // Number of months to add.
+	Days                        int      `json:"days,omityempty" example:"1"`               // Number of days to add.
+	Hours                       int      `json:"hours,omitempty" example:"2"`               // Number of hours to add.
+	Minutes                     int      `json:"minutes,omitempty" example:"3"`             // Number of minutes to add.
+	Timestamp                   int64    `json:"timestamp,omitempty"`                       // Optional, exact time to expire at. Overrides other fields.
+	Notify                      bool     `json:"notify"`                                    // Whether to message the user(s) about the change.
+	Reason                      string   `json:"reason,omitempty" example:"i felt like it"` // Optional, reason for adjustment.
+	TryExtendFromPreviousExpiry bool     `json:"try_extend_from_previous_expiry,omitempty"` // If an activity log of the expiry of a disabled user is available, extend the expiry from that instead of the current time.
 }
 
 type checkUpdateDTO struct {
@@ -277,7 +279,7 @@ type telegramSetDTO struct {
 	ID    string `json:"id"` // Jellyfin ID of user.
 }
 
-type SetContactMethodsDTO struct {
+type SetContactPreferencesDTO struct {
 	ID       string `json:"id"`
 	Email    bool   `json:"email"`
 	Discord  bool   `json:"discord"`
@@ -489,4 +491,14 @@ type PagePathsDTO struct {
 	ExternalURI string `json:"ExternalURI"`
 	// The subdirectory the app is meant to be accessed from ("Reverse proxy subfolder")
 	TrueBase string `json:"TrueBase"`
+}
+
+type TasksDTO struct {
+	Tasks []TaskDTO `json:"tasks"`
+}
+
+type TaskDTO struct {
+	URL         string `json:"url"`
+	Name        string `json:"name"`
+	Description string ` json:"description"`
 }
