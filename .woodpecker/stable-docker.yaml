@@ -2,6 +2,14 @@ when:
   - event: tag
     branch: main
 
+clone:
+    git:
+        image: woodpeckerci/plugin-git
+        settings:
+            tags: true
+            partial: false
+            depth: 0
+
 steps:
   - name: build
     image: docker.io/woodpeckerci/plugin-docker-buildx
