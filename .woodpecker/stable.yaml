@@ -84,4 +84,4 @@ steps:
     commands:
       - wget https://builds.hrfee.pw/upload.py
       - bash -c 'python3 upload.py https://builds.hrfee.pw hrfee jfa-go --tag internal=true'
-      - python upload.py https://builds.hrfee.pw hrfee jfa-go --tag docker-stable=true
+      - python3 upload.py https://builds.hrfee.pw hrfee jfa-go --tag docker-stable=true

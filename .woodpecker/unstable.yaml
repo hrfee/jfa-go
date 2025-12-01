@@ -93,6 +93,6 @@ steps:
     commands:
       - wget https://builds.hrfee.pw/upload.py
       - bash -c 'python3 upload.py https://builds.hrfee.pw hrfee jfa-go --upload ./dist/*.zip ./dist/*.rpm ./dist/*.apk --tag internal-git=true'
-      - python upload.py https://builds.hrfee.pw hrfee jfa-go --tag docker-unstable=true
+      - python3 upload.py https://builds.hrfee.pw hrfee jfa-go --tag docker-unstable=true
 
 
