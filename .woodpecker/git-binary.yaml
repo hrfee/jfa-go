@@ -1,6 +1,6 @@
 when:
   - event: push
-    branch: main
+    branch: ci-streamline
   #  - evaluate: 'CI_PIPELINE_EVENT != "PULL_REQUEST" && CI_COMMIT_BRANCH == CI_REPO_DEFAULT_BRANCH'
 
 clone:
@@ -40,30 +40,57 @@ steps:
       - curl -sfL https://goreleaser.com/static/run > goreleaser
       - chmod +x goreleaser
       - ./scripts/version.sh ./goreleaser --snapshot --skip=publish --clean
-  - name: redoc
+  # - name: redoc
+  #   image: docker.io/hrfee/jfa-go-build-docker:latest
+  #   environment:
+  #       REDOC_SSH_ID:
+  #           from_secret: REDOC_SSH_ID
+  #   commands:
+  #     - sh -c "echo \"$REDOC_SSH_ID\" > /tmp/id_redoc && chmod 600 /tmp/id_redoc"
+  #     - bash -c 'sftp -P 3625 -i /tmp/id_redoc -o StrictHostKeyChecking=no redoc@api.jfa-go.com:/home/redoc <<< $"put docs/swagger.json jfa-go.json"'
+  # - name: deb-repo
+  #   image: docker.io/hrfee/jfa-go-build-docker:latest
+  #   environment:
+  #       REPO_SSH_ID:
+  #           from_secret: REPO_SSH_ID
+  #   commands:
+  #     - sh -c "echo \"$REPO_SSH_ID\" > /tmp/id_repo && chmod 600 /tmp/id_repo"
+  #     - bash -c 'sftp -P 2022 -i /tmp/id_repo -o StrictHostKeyChecking=no root@apt.hrfee.dev:/repo/incoming <<< $"put dist/*.deb"'
+  #     - bash -c 'ssh -i /tmp/id_repo root@apt.hrfee.dev -p 2022 "repo-process-deb trusty-unstable"'
+  #     - bash -c 'ssh -i /tmp/id_repo root@apt.hrfee.dev -p 2022 "repo-process-deb trusty"'
+  #     - bash -c 'ssh -i /tmp/id_repo root@apt.hrfee.dev -p 2022 "rm -f /repo/incoming/*.deb"'
+  # - name: buildrone
+  #   image: docker.io/hrfee/jfa-go-build-docker:latest
+  #   environment:
+  #       BUILDRONE_KEY:
+  #           from_secret: BUILDRONE_KEY
+  #   commands:
+  #     - wget https://builds.hrfee.pw/upload.py
+  #     - bash -c 'python3 upload.py https://builds.hrfee.pw hrfee jfa-go --upload ./dist/*.zip ./dist/*.rpm ./dist/*.apk --tag internal-git=true'
+  - name: build-external
     image: docker.io/hrfee/jfa-go-build-docker:latest
     environment:
-        REDOC_SSH_ID:
-            from_secret: REDOC_SSH_ID
+        JFA_GO_SNAPSHOT: y
+        JFA_GO_BUILT_BY:
+            from_secret: BUILT_BY
     commands:
-      - sh -c "echo \"$REDOC_SSH_ID\" > /tmp/id_redoc && chmod 600 /tmp/id_redoc"
-      - bash -c 'sftp -P 3625 -i /tmp/id_redoc -o StrictHostKeyChecking=no redoc@api.jfa-go.com:/home/redoc <<< $"put docs/swagger.json jfa-go.json"'
-  - name: deb-repo
-    image: docker.io/hrfee/jfa-go-build-docker:latest
-    environment:
-        REPO_SSH_ID:
-            from_secret: REPO_SSH_ID
-    commands:
-      - sh -c "echo \"$REPO_SSH_ID\" > /tmp/id_repo && chmod 600 /tmp/id_repo"
-      - bash -c 'sftp -P 2022 -i /tmp/id_repo -o StrictHostKeyChecking=no root@apt.hrfee.dev:/repo/incoming <<< $"put dist/*.deb"'
-      - bash -c 'ssh -i /tmp/id_repo root@apt.hrfee.dev -p 2022 "repo-process-deb trusty-unstable"'
-      - bash -c 'ssh -i /tmp/id_repo root@apt.hrfee.dev -p 2022 "repo-process-deb trusty"'
-      - bash -c 'ssh -i /tmp/id_repo root@apt.hrfee.dev -p 2022 "rm -f /repo/incoming/*.deb"'
-  - name: buildrone
-    image: docker.io/hrfee/jfa-go-build-docker:latest
-    environment:
-        BUILDRONE_KEY:
-            from_secret: BUILDRONE_KEY
-    commands:
-      - wget https://builds.hrfee.pw/upload.py
-      - bash -c 'python3 upload.py https://builds.hrfee.pw hrfee jfa-go --upload ./dist/*.zip ./dist/*.rpm ./dist/*.apk --tag internal-git=true'
+      - sed -i 's#id="password_resets-watch_directory" placeholder="/config/jellyfin"#id="password_resets-watch_directory" value="/jf" disabled#g' ./build/data/html/setup.html
+      - env GOOS=linux ./scripts/version.sh ./goreleaser --snapshot --skip=publish --single-target --id notray-e2ee
+  - name: container
+    image: docker.io/woodpeckerci/plugin-docker-buildx
+    settings:
+        dry_run: true
+        dockerfile: Dockerfile.ci
+        username:
+            from_secret: DOCKER_USERNAME
+        password:
+            from_secret: DOCKER_TOKEN
+        repo: docker.io/hrfee/jfa-go
+        tags: unstable
+        registry: docker.io
+        platforms: linux/amd64,linux/arm64,linux/arm/v7
+        build_args:
+          - BUILT_BY:
+              from_secret: BUILT_BY
+
+
