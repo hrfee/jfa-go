@@ -62,7 +62,7 @@ func (app *appContext) SetJellyseerrProfile(gc *gin.Context) {
 	}
 	u, err := app.js.UserByID(jellyseerrID)
 	if err != nil {
-		app.err.Printf(lm.FailedGetUser, jellyseerrID, lm.Jellyseerr, err)
+		app.err.Printf(lm.FailedGetUser, strconv.FormatInt(jellyseerrID, 10), lm.Jellyseerr, err)
 		respond(500, "Couldn't get user", gc)
 		return
 	}
