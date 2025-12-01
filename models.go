@@ -500,5 +500,9 @@ type TasksDTO struct {
 type TaskDTO struct {
 	URL         string `json:"url"`
 	Name        string `json:"name"`
-	Description string ` json:"description"`
+	Description string `json:"description"`
+}
+
+type LabelsDTO struct {
+	Labels []string `json:'labels"`
 }

@@ -164,7 +164,7 @@ func test(app *appContext) {
 		fmt.Println(n, ":", v)
 	}
 	users, err := app.jf.GetUsers(false)
-	fmt.Printf("GetUsers: err %s maplength %d\n", err, len(users))
+	fmt.Printf("GetUsers: err %+v maplength %d\n", err, len(users))
 	fmt.Printf("View output? [y/n]: ")
 	var choice string
 	fmt.Scanln(&choice)
@@ -176,7 +176,7 @@ func test(app *appContext) {
 	var username string
 	fmt.Scanln(&username)
 	user, err := app.jf.UserByName(username, false)
-	fmt.Printf("UserByName (%s): err %v", username, err)
+	fmt.Printf("UserByName (%s): err %+v", username, err)
 	out, _ := json.MarshalIndent(user, "", "  ")
 	fmt.Print(string(out))
 }
