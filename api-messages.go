@@ -169,6 +169,7 @@ func (app *appContext) GetCustomMessageTemplate(gc *gin.Context) {
 		case "UserPage":
 		case "UserLogin":
 		case "PostSignupCard":
+		case "PreSignupCard":
 			// These don't have any example content
 			msg = nil
 		}

@@ -125,6 +125,11 @@
                         {{ if .fromUser }}
                             <aside class="col aside sm ~positive mb-4" id="invite-from-user" data-from="{{ .fromUser }}">{{ .strings.invitedBy }}</aside>
                         {{ end }}
+                        {{ if .preSignupCard }}
+                            <div class="card @low dark:~d_neutral break-words content">
+                                {{ .preSignupCardContent }}
+                            </div>
+                        {{ end }}
                         <div class="card ~neutral @low mb-4">
                             <span class="label supra">{{ .strings.passwordRequirementsHeader }}</span>
                             <ul>

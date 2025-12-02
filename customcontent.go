@@ -352,8 +352,30 @@ var customContent = map[string]CustomContentInfo{
 			"myAccountURL",
 		),
 		Placeholders: defaultVals(map[string]any{
-			"myAccountURL": "https://sub2.test.url/my/account",
+			"myAccountURL": "https://example.url/my/account",
 		}),
+	},
+	"PreSignupCard": {
+		Name:        "PreSignupCard",
+		ContentType: CustomCard,
+		DisplayName: func(dict *Lang, lang string) string {
+			if _, ok := dict.Admin[lang]; !ok {
+				lang = dict.chosenAdminLang
+			}
+			return dict.Admin[lang].Strings["preSignupCard"]
+		},
+		Description: func(dict *Lang, lang string) string {
+			if _, ok := dict.Admin[lang]; !ok {
+				lang = dict.chosenAdminLang
+			}
+			return dict.Admin[lang].Strings["preSignupCardDescription"]
+		},
+		Variables: []string{
+			"myAccountURL",
+		},
+		Placeholders: map[string]any{
+			"myAccountURL": "https://example.url/my/account",
+		},
 	},
 }
 

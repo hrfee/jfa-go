@@ -831,6 +831,25 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 			[]byte(templated), nil, markdownRenderer),
 		)
 	}
+	if msg, ok := app.storage.GetCustomContentKey("PreSignupCard"); ok && msg.Enabled {
+		cci := customContent["PreSignupCard"]
+		data["preSignupCard"] = true
+		// We don't template here, since the username is only known after login.
+		templated, err := templateEmail(
+			msg.Content,
+			cci.Variables,
+			cci.Conditionals,
+			map[string]any{
+				"myAccountURL": userPageAddress,
+			},
+		)
+		if err != nil {
+			app.err.Printf(lm.FailedConstructCustomContent, "PreSignupCard", err)
+		}
+		data["preSignupCardContent"] = template.HTML(markdown.ToHTML(
+			[]byte(templated), nil, markdownRenderer),
+		)
+	}
 
 	// if discordEnabled {
 	// 	pin := ""

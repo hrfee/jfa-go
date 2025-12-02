@@ -155,6 +155,8 @@
         "userPagePage": "User Page: Page",
         "postSignupCard": "Post-signup help card",
         "postSignupCardDescription": "Card shown to user after signing up. Overrides \"Success Message\". Overriden by \"Auto redirect on success\" setting.",
+        "preSignupCard": "Pre-signup help card",
+        "preSignupCardDescription": "Optional card shown on the sign-up page.",
         "buildTime": "Build Time",  
         "builtBy": "Built By",
         "buildTags": "Build Tags",
