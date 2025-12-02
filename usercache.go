@@ -46,6 +46,7 @@ type UserCache struct {
 	Syncing            bool
 	SortLock           sync.Mutex
 	Sorting            bool
+	Labels             []string
 }
 
 func NewUserCache(syncTimeout, waitForSyncTimeout time.Duration) *UserCache {
@@ -85,16 +86,25 @@ func (c *UserCache) MaybeSync(app *appContext) error {
 				return
 			}
 			cache := make([]respUser, len(users))
+			labels := map[string]bool{}
 			for i, jfUser := range users {
 				cache[i] = app.userSummary(jfUser)
+				if cache[i].Label != "" {
+					labels[cache[i].Label] = true
+				}
 			}
 			ref := make([]*respUser, len(cache))
 			for i := range cache {
 				ref[i] = &(cache[i])
 			}
+			labelSlice := make([]string, 0, len(labels))
+			for label, _ := range labels {
+				labelSlice = append(labelSlice, label)
+			}
 			c.Cache = cache
 			c.Ref = ref
 			c.Sorted = false
+			c.Labels = labelSlice
 			c.LastSync = time.Now()
 
 			c.SyncLock.Lock()

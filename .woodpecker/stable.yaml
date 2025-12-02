@@ -51,6 +51,31 @@ steps:
       - bash -c 'ssh -i /tmp/id_repo root@apt.hrfee.dev -p 2022 "repo-process-deb trusty"'
       - bash -c 'ssh -i /tmp/id_repo root@apt.hrfee.dev -p 2022 "repo-process-deb trusty-unstable"'
       - bash -c 'ssh -i /tmp/id_repo root@apt.hrfee.dev -p 2022 "rm -f /repo/incoming/*.deb"'
+  - name: build-external
+    image: docker.io/hrfee/jfa-go-build-docker:latest
+    environment:
+        JFA_GO_BUILT_BY:
+            from_secret: BUILT_BY
+    commands:
+      - sed -i 's#id="password_resets-watch_directory" placeholder="/config/jellyfin"#id="password_resets-watch_directory" value="/jf" disabled#g' ./build/data/html/setup.html
+      - env GOOS=linux INTERNAL=off ./scripts/version.sh ./goreleaser build --id notray-e2ee --clean
+      - mv ./dist/notray-e2ee_linux_arm_6 ./dist/notray-e2ee_linux_arm
+  - name: container
+    image: docker.io/woodpeckerci/plugin-docker-buildx
+    settings:
+        dry_run: false
+        dockerfile: Dockerfile.ci
+        username:
+            from_secret: DOCKER_USERNAME
+        password:
+            from_secret: DOCKER_TOKEN
+        repo: docker.io/hrfee/jfa-go
+        tags: stable
+        registry: docker.io
+        platforms: linux/amd64,linux/arm64,linux/arm/v7
+        build_args:
+          - BUILT_BY:
+              from_secret: BUILT_BY
   - name: buildrone
     image: docker.io/hrfee/jfa-go-build-docker:latest
     environment:
@@ -59,3 +84,4 @@ steps:
     commands:
       - wget https://builds.hrfee.pw/upload.py
       - bash -c 'python3 upload.py https://builds.hrfee.pw hrfee jfa-go --tag internal=true'
+      - python3 upload.py https://builds.hrfee.pw hrfee jfa-go --tag docker-stable=true

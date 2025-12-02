@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -199,12 +200,12 @@ func (app *appContext) CreateProfile(gc *gin.Context) {
 	if req.Jellyseerr && app.config.Section("jellyseerr").Key("enabled").MustBool(false) {
 		user, err := app.js.MustGetUser(req.ID)
 		if err != nil {
-			app.err.Printf(lm.FailedGetUser, user.Name, lm.Jellyseerr, err)
+			app.err.Printf(lm.FailedGetUser, user.Name(), lm.Jellyseerr, err)
 		} else {
 			profile.Jellyseerr.User = user.UserTemplate
 			n, err := app.js.GetNotificationPreferencesByID(user.ID)
 			if err != nil {
-				app.err.Printf(lm.FailedGetJellyseerrNotificationPrefs, user.ID, err)
+				app.err.Printf(lm.FailedGetJellyseerrNotificationPrefs, strconv.FormatInt(user.ID, 10), err)
 			} else {
 				profile.Jellyseerr.Notifications = n.NotificationsTemplate
 				profile.Jellyseerr.Enabled = true

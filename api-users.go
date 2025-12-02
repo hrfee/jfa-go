@@ -952,7 +952,7 @@ func (app *appContext) userSummary(jfUser mediabrowser.User) respUser {
 // @Success 200 {object} PageCountDTO
 // @Router /users/count [get]
 // @Security Bearer
-// @tags Activity,Statistics
+// @tags Users,Statistics
 func (app *appContext) GetUserCount(gc *gin.Context) {
 	resp := PageCountDTO{}
 	users, err := app.jf.GetUsers(false)
@@ -963,6 +963,21 @@ func (app *appContext) GetUserCount(gc *gin.Context) {
 	}
 	resp.Count = uint64(len(users))
 	gc.JSON(200, resp)
+}
+
+// @Summary Returns the list of all labels on accounts.
+// @Produce json
+// @Success 200 {object} LabelsDTO
+// @Router /users/labels [get]
+// @Security Bearer
+// @tags Users,Statistics
+func (app *appContext) GetLabels(gc *gin.Context) {
+	if err := app.userCache.MaybeSync(app); err != nil {
+		app.err.Printf(lm.FailedGetUsers, lm.Jellyfin, err)
+		respond(500, "Couldn't get users", gc)
+		return
+	}
+	gc.JSON(200, LabelsDTO{Labels: app.userCache.Labels})
 }
 
 // @Summary Get a list of -all- Jellyfin users.

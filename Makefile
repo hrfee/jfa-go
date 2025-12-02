@@ -33,7 +33,7 @@ E2EE ?= on
 TAGS := -tags "
 
 ifeq ($(INTERNAL), on)
-	DATA := data
+	DATA := build/data
 	COMPDEPS := $(BUILDDEPS)
 else
 	DATA := build/data
@@ -101,6 +101,13 @@ ifeq (, $(shell which swag))
 else
 	SWAGINSTALL :=
 endif
+
+# FLAG HASHING: To rebuild on flag change.
+# credit for idea to https://bnikolic.co.uk/blog/sh/make/unix/2021/07/08/makefile.html
+rebuildFlags := GOESBUILD GOBINARY VERSION COMMIT UPDATER INTERNAL TRAY E2EE TAGS DEBUG RACE
+rebuildVals := $(foreach v,$(rebuildFlags),$(v)=$($(v)))
+rebuildHash := $(strip $(shell echo $(rebuildVals) | sha256sum | cut -d " " -f1))
+rebuildHashFile := $(DATA)/buildhash-$(rebuildHash).txt
 
 CONFIG_BASE = config/config-base.yaml
 
@@ -219,10 +226,15 @@ $(COPY_TARGET): $(INLINE_TARGET) $(STATIC_SRC) $(LANG_SRC) $(CONFIG_BASE)
 BUILDDEPS := $(DATA) $(CONFIG_DEFAULT) $(EMAIL_TARGET) $(COPY_TARGET) $(SWAGGER_TARGET) $(INLINE_TARGET) $(CSS_FULLTARGET) $(TYPESCRIPT_TARGET) 
 precompile: $(BUILDDEPS)
 
-COMPDEPS =
+COMPDEPS = $(rebuildHashFile)
 ifeq ($(INTERNAL), on)
-	COMPDEPS = $(BUILDDEPS)
+	COMPDEPS = $(BUILDDEPS) $(rebuildHashFile)
 endif
+
+$(rebuildHashFile):
+	$(info recording new flags $(rebuildVals))
+	rm -f $(DATA)/buildhash-*.txt
+	touch $(rebuildHashFile)
 
 GO_SRC = $(shell find ./ -name "*.go")
 GO_TARGET = build/jfa-go
@@ -236,7 +248,7 @@ $(GO_TARGET): $(COMPDEPS) $(SWAGGER_TARGET) $(GO_SRC) go.mod go.sum
 test: $(BUILDDEPS) $(COMPDEPS) $(SWAGGER_TARGET) $(GO_SRC) go.mod go.sum
 	$(GOBINARY) test -ldflags="$(LDFLAGS)" $(TAGS) -p 1
 
-all: $(BUILDDEPS) $(GO_TARGET)
+all: $(BUILDDEPS) $(GO_TARGET) $(rebuildHashFile)
 
 compress:
 	upx --lzma $(GO_TARGET)
