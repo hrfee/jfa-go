@@ -13,39 +13,28 @@
 Studies mean I can't work on this project a lot outside of breaks, however I hope i'll be able to fit in general support and things like bug fixes into my time. New features and such will likely come in short bursts throughout the year (if they do at all).
 
 #### Does/Will it still work?
-jfa-go currently works on Jellyfin 10.11.0, the latest version as of 21/10/25. I should be able to maintain compatability in the future, unless any big changes occur.
+jfa-go currently works on Jellyfin 10.11.0, the latest version as of 21/10/25. I should be able to maintain compatibility in the future, unless any big changes occur.
 
 #### Alternatives
-If you want a bit more of a guarantee of support, I've seen these projects mentioned although haven't tried them myself.
+If you want a bit more guarantee of support [Wizarr](https://github.com/Wizarrrr/wizarr) is popular and seems very polished. It supports multiple media servers, lots of customization and invitation through Discord.
 
-* [Wizarr](https://github.com/Wizarrrr/wizarr) focuses on invites, and also includes some Discord & Ombi integration.
-* [Jellyseerr](https://github.com/Fallenbagel/jellyseerr) is a fork of Overseerr which can manage users and mainly acts as an Ombi alternative.
-  * [jfa-go now integrates with Jellyseerr, much like Ombi, but better.](https://github.com/hrfee/jfa-go/pull/351)
-* [Organizr](https://github.com/causefx/Organizr) doesn't focus on Jellyfin, but allows putting self-hosted services into "tabs" on a central page, and allows creating users, which lets one control who can access what.
 ---
-jfa-go is a user management app for [Jellyfin](https://github.com/jellyfin/jellyfin) (and [Emby](https://emby.media/) as 2nd class) that provides invite-based account creation as well as other features that make one's instance much easier to manage.
+
+jfa-go is a user management app for [Jellyfin](https://github.com/jellyfin/jellyfin) (and [Emby](https://emby.media/) as 2nd class) that provides invite-based account creation as well as other features that make ones instance much easier to manage.
 
 #### Features
-* 🧑 Invite based account creation: Send invites to your friends or family, and let them choose their own username and password without relying on you.
-    * Send invites via a link and/or email, discord, telegram or matrix
-    * Granular control over invites: Validity period as well as number of uses can be specified.
-    * Account profiles: Assign settings profiles to invites so new users have your predefined permissions, homescreen layout, etc. applied to their account on creation.
-    * Password validation: Ensure users choose a strong password.
-    * CAPTCHAs and contact method verificatoin can be enabled to avoid bots.
-* ⌛ User expiry: Specify a validity period, and new users accounts will be disabled/deleted after it. The period can be manually extended too.
-* 🔗 Ombi/Jellyseerr Integration: Automatically creates and synchronizes details for new accounts. Supports setting permissions with the Profiles feature. **Ombi integration use is risky, see [wiki](https://wiki.jfa-go.com/docs/ombi/)**.
-* Account management: Bulk or individually; apply settings, delete, disable/enable, send messages and much more.
-* 📣 Announcements: Bulk message your users with announcements about your server.
-* Telegram/Discord/Matrix Integration: Verify users via a chat bot, and send Password Resets, Announcements, etc. through it.
-* "My Account" Page: Allows users to reset their password, manage contact details, view their account expiry date, and send referrals. Can be customized with markdown.
-* Referrals: Users can be given special invites to send to their friends and families, similar to some invite-only services like Bluesky.
-* 🔑 Password resets: When users forget their passwords and request a change in Jellyfin, jfa-go reads the PIN from the created file and sends it straight to them via email/telegram.
-  * Can also be done through the "My Account" page if enabled.
-* Admin Notifications: Get notified when someone creates an account, or an invite expires.
-* 🌓 Customizations
-    * Customize emails with variables and markdown
-    * Specify contact and help messages to appear in emails and pages
-    * Light and dark themes available
+* **Invites**: Send invite links to new users so they can sign up without relying on you.
+  * Customize with profiles: Apply Jellyfin settings (library access, transcoding, etc.) on sign-up, with different profiles for each user type.
+  * Limit invites by time or number of uses, enforce strong passwords, require a CAPTCHA, and more
+* **Password Resets**: Let your users do it themselves. Works with the Jellyfin "Forgot Password" feature, or through the "My Account" page. [See the wiki for your options](https://wiki.jfa-go.com/docs/pwr/).
+* **Contact your users**: Collect email address, Discord/Telegram/Matrix info when the user signs up or add later, and jfa-go will contact them when needed (e.g. on/before account expiry, disabling/enabling, deletion) or when you wish with Markdown announcements.
+  * "Confirm email" optional, similar is required for Discord/Telegram/Matrix
+* **"My Account"**: Lets your users change their password or email/contact info themselves and show them relevant info on a special page. Also,
+  * Referrals: Allow users a special, limited invite to give to their friends/family.
+* **Advanced user management**: See all of your users at once and manage them in bulk (enable/disable/delete, send markdown announcements, apply profiles/settings, and more)
+  * User expiry: Set on an invite, and any new users will be valid for a fixed period (e.g. 30 days). After time passes, account is disabled, deleted, or disabled then deleted.
+* **Ombi/Jellyseerr integration**: Sync username/passwords & contact details between your services.
+* **Customizable**: Edit messages sent to users and shown on invites, "My Account" page and more with full Markdown support.
 
 #### Interface
 <p align="center">

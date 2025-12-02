@@ -40,6 +40,14 @@ steps:
       - curl -sfL https://goreleaser.com/static/run > goreleaser
       - chmod +x goreleaser
       - ./scripts/version.sh ./goreleaser --snapshot --skip=publish --clean
+  - name: buildrone-binary
+    image: docker.io/hrfee/jfa-go-build-docker:latest
+    environment:
+        BUILDRONE_KEY:
+            from_secret: BUILDRONE_KEY
+    commands:
+      - wget https://builds.hrfee.pw/upload.py
+      - bash -c 'python3 upload.py https://builds.hrfee.pw hrfee jfa-go --upload ./dist/*.zip ./dist/*.rpm ./dist/*.apk --tag internal-git=true'
   - name: redoc
     image: docker.io/hrfee/jfa-go-build-docker:latest
     environment:
@@ -85,14 +93,13 @@ steps:
         build_args:
           - BUILT_BY:
               from_secret: BUILT_BY
-  - name: buildrone
+  - name: buildrone-container
     image: docker.io/hrfee/jfa-go-build-docker:latest
     environment:
         BUILDRONE_KEY:
             from_secret: BUILDRONE_KEY
     commands:
       - wget https://builds.hrfee.pw/upload.py
-      - bash -c 'python3 upload.py https://builds.hrfee.pw hrfee jfa-go --upload ./dist/*.zip ./dist/*.rpm ./dist/*.apk --tag internal-git=true'
       - python3 upload.py https://builds.hrfee.pw hrfee jfa-go --tag docker-unstable=true
 
 
