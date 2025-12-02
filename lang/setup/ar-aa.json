@@ -18,78 +18,83 @@
         "apiKey": "مفتاح API",
         "error": "خطأ",
         "errorInvalidUserPass": "اسم مستخدم/كلمة مرور خاطئة.",
-        "errorNotAdmin": "",
-        "errorUserDisabled": "",
-        "error404": "",
-        "errorConnectionRefused": "",
-        "errorUnknown": ""
+        "errorNotAdmin": "لا يُسمح للمستخدم بإدارة الخادم.",
+        "errorUserDisabled": "قد يكون المستخدم معطلاً.",
+        "error404": "404، تحقق من عنوان URL الداخلي.",
+        "errorConnectionRefused": "رُفض الاتصال.",
+        "errorUnknown": "خطأ غير معروف، تحقق من سجلات التطبيق.",
+        "errorProxy": "إعدادات الوكيل غير صالحة."
     },
     "startPage": {
         "welcome": "مرحباً!",
-        "pressStart": "",
-        "httpsNotice": "",
-        "start": ""
+        "pressStart": "ستحتاج إلى القيام ببعض الخطوات لإعداد jfa-go. اضغط على \"ابدأ\" للمتابعة.",
+        "httpsNotice": "تأكد من الاتصال بهذه الصفحة عبر HTTPS أو على شبكة خاصة.",
+        "start": "ابدأ"
     },
     "endPage": {
-        "finished": "",
+        "finished": "انتهينا!",
         "restartMessage": "",
         "refreshPage": ""
     },
     "language": {
         "title": "اللغة",
-        "description": "",
-        "defaultAdminLang": "",
-        "defaultFormLang": "",
-        "defaultEmailLang": ""
+        "description": "تتوفر ترجمات تطوعية لمعظم أجزاء jfa-go. يمكنك اختيار اللغات الافتراضية أدناه، ويمكن للمستخدمين تغييرها إذا رغبوا في ذلك. إذا أردت المساعدة في الترجمة، قم بالتسجيل في {n} للمساهمة!",
+        "defaultAdminLang": "لغة المسؤول الافتراضية",
+        "defaultFormLang": "لغة إنشاء الحساب الافتراضية",
+        "defaultEmailLang": "لغة البريد الافتراضية"
     },
     "general": {
-        "title": "",
-        "listenAddress": "",
-        "urlBase": "",
-        "urlBaseNotice": "",
-        "lightTheme": "",
-        "darkTheme": "",
-        "useHTTPS": "",
-        "httpsPort": "",
-        "useHTTPSNotice": "",
-        "pathToCertificate": "",
-        "pathToKeyFile": ""
+        "title": "عام",
+        "listenAddress": "عنوان الاستماع",
+        "urlBase": "عنوان URL الأساسي",
+        "urlBaseNotice": "مطلوب فقط في حالة استخدام وكيل عكسي على مجلد فرعي (على سبيل المثال 'jellyf.in/accounts').",
+        "lightTheme": "فاتح",
+        "darkTheme": "داكن",
+        "useHTTPS": "استخدم HTTPS",
+        "httpsPort": "منفذ HTTPS",
+        "useHTTPSNotice": "موصى به فقط في حال عدم استخدامك لوكيل عكسي.",
+        "pathToCertificate": "مسار الشهادة",
+        "pathToKeyFile": "مسار ملف المفتاح ‎(.key)",
+        "externalURLNotice": "عنوان URL المستخدم للوصول إلى jfa-go. يُستخدم لإنشاء روابط لأمور مثل إعادة تعيين كلمة المرور. تأكد من تضمين عنوان URL الأساسي أعلاه إذا قمت بتعيينه.",
+        "externalURL": "عنوان URL الخارجي لـ jfa-go"
     },
     "updates": {
-        "title": "",
-        "description": "",
-        "updateChannel": "",
-        "stable": "",
-        "unstable": ""
+        "title": "التحديثات",
+        "description": "تلقي إشعارات عند توفر تحديثات جديدة. سيتحقق jfa-go من {n} كل 30 دقيقة. لا يتم جمع أي عناوين IP أو معلومات شخصية.",
+        "updateChannel": "قناة التحديثات",
+        "stable": "مستقرة",
+        "unstable": "غير مستقرة"
     },
     "login": {
-        "title": "",
-        "description": "",
-        "authorizeWithJellyfin": "",
-        "authorizeManual": "",
-        "adminOnly": "",
-        "allowAll": "",
-        "allowAllDescription": "",
-        "emailNotice": ""
+        "title": "تسجيل الدخول",
+        "description": "للوصول إلى صفحة المسؤول، سجّل الدخول بإحدى الطرق التالية:",
+        "authorizeWithJellyfin": "التفويض باستخدام Jellyfin/Emby: يتم مشاركة تفاصيل تسجيل الدخول مع Jellyfin، مما يسمح بتعدد المستخدمين.",
+        "authorizeManual": "اسم المستخدم وكلمة المرور: قم بتعيين اسم المستخدم وكلمة المرور يدوياً.",
+        "adminOnly": "المسؤولون فقط (مستحسن)",
+        "allowAll": "السماح لجميع مستخدمي Jellyfin بتسجيل الدخول",
+        "allowAllDescription": "لا يُنصح بذلك، ينبغي السماح للمستخدمين الفرديين بتسجيل الدخول بعد الإعداد.",
+        "emailNotice": "يمكن استخدام عنوان بريدك الإلكتروني لتلقي الإشعارات.",
+        "authorizeManualUserPageNotice": "سيؤدي استخدام هذا إلى تعطيل ميزة \"صفحة المستخدم\"."
     },
     "jellyfinEmby": {
-        "title": "",
-        "description": "",
-        "embyNotice": "",
-        "internal": "",
-        "external": "",
-        "replaceJellyfin": "",
-        "replaceJellyfinNotice": "",
-        "addressExternalNotice": "",
-        "testConnection": ""
+        "title": "إعداد Jellyfin/Emby",
+        "description": "يلزم وجود حساب مسؤول لأن واجهة برمجة التطبيقات (API) لا تسمح بإنشاء مستخدمين من خلالها. يجب عليك إنشاء حساب منفصل وتحديد خيار \"اسمح لهذا المستخدم بالتحكم بالخادم\". يمكنك تعطيل كل الخيارات الأخرى. بعد ذلك، أدخل بيانات تسجيل الدخول هنا.",
+        "embyNotice": "دعم Emby محدود ولا يدعم إعادة تعيين كلمة المرور.",
+        "internal": "داخلي",
+        "external": "خارجي",
+        "replaceJellyfin": "اسم الخادم",
+        "replaceJellyfinNotice": "عند إدخاله، سيحل هذا الاسم محل أي ذكر لكلمة \"Jellyfin\" في التطبيق.",
+        "addressExternalNotice": "اتركه فارغاً لاستخدام نفس العنوان.",
+        "testConnection": "اختبر الاتصال"
     },
     "ombi": {
-        "title": "",
-        "description": "",
-        "apiKeyNotice": ""
+        "title": "إعداد Ombi",
+        "description": "عند الاتصال بـ Ombi، سيتم إنشاء حساب Jellyfin و Ombi عندما ينضم المستخدم عبر jfa-go. بعد الانتهاء من الإعداد، انتقل إلى الإعدادات لتعيين ملف تعريف افتراضي لمستخدمي Ombi الجدد.",
+        "apiKeyNotice": "تجده في أول قسم لإعدادات Ombi.",
+        "stabilityWarning": "تحذير: تكامل Ombi غير مستقر، وقد يُسبب مشاكل. يُنصح باستخدام Jellyseerr بدلاً منه. راجع {n} لمزيد من المعلومات."
     },
     "messages": {
-        "title": "",
+        "title": "الرسائل",
         "description": ""
     },
     "email": {
@@ -148,5 +153,17 @@
         "successMessageNotice": "",
         "emailMessage": "",
         "emailMessageNotice": ""
+    },
+    "jellyseerr": {
+        "description": "Jellyseerr هو بديل لـ Ombi، ويتكامل مع jfa-go بشكل أفضل. بعد الانتهاء من الإعداد، انتقل إلى الإعدادات لإنشاء ملف تعريف وإضافة قالب لحسابات Jellyseerr الجديدة.",
+        "title": "إعداد Jellyseerr",
+        "importExisting": "استيراد المستخدمين الحاليين",
+        "importExistingDescription": "عند التفعيل، سيتم مزامنة تفاصيل وسائل الاتصال والتفضيلات الخاصة بالمستخدمين الحاليين من jfa-go."
+    },
+    "proxy": {
+        "title": "الوكيل",
+        "description": "دع jfa-go يقوم بجميع الاتصالات من خلال وكيل HTTP/SOCKS5. سيتم اختبار الاتصال بـ Jellyfin من خلاله.",
+        "protocol": "البروتوكول",
+        "address": "العنوان (متضمناً المنفذ)"
     }
 }
