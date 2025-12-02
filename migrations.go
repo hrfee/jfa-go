@@ -23,6 +23,7 @@ func runMigrations(app *appContext) {
 	migrateToBadger(app)
 	intialiseCustomContent(app)
 	migrateJellyseerrImportDaemon(app)
+	migratePWREmailPath(app)
 }
 
 // Migrate pre-0.2.0 user templates to profiles
@@ -513,4 +514,24 @@ func migrateJellyseerrImportDaemon(app *appContext) {
 	if !(app.config.Section("jellyseerr").Key("enabled").MustBool(false)) {
 		app.storage.db.Upsert("jellyseerr_inital_sync_status", JellyseerrInitialSyncStatus{false})
 	}
+}
+
+// Migrate previous filepath to the password reset email (email.html/txt) to new one.
+func migratePWREmailPath(app *appContext) {
+	if app.config.Section("password_resets").Key("email_html").String() != "jfa-go:email.html" && app.config.Section("password_resets").Key("email_text").String() != "jfa-go:email.txt" {
+		return
+	}
+	tempConfig, _ := ini.ShadowLoad(app.configPath)
+	if app.config.Section("password_resets").Key("email_html").String() == "jfa-go:email.html" {
+		tempConfig.Section("password_resets").Key("email_html").SetValue("")
+	}
+	if app.config.Section("password_resets").Key("email_text").String() == "jfa-go:email.txt" {
+		tempConfig.Section("password_resets").Key("email_text").SetValue("")
+	}
+	err := tempConfig.SaveTo(app.configPath)
+	if err != nil {
+		app.err.Fatalf("Failed to save config: %v", err)
+		return
+	}
+	app.ReloadConfig()
 }

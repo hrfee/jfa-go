@@ -202,8 +202,8 @@ func NewConfig(configPathOrContents any, dataPath string, logs LoggerSet) (*Conf
 	config.Section("email").Key("no_username").SetValue(strconv.FormatBool(config.Section("email").Key("no_username").MustBool(false)))
 
 	// FIXME: Remove all these, eventually
-	// config.MustSetValue("password_resets", "email_html", "jfa-go:"+"email.html")
-	// config.MustSetValue("password_resets", "email_text", "jfa-go:"+"email.txt")
+	// config.MustSetValue("password_resets", "email_html", "jfa-go:"+"password-reset.html")
+	// config.MustSetValue("password_resets", "email_text", "jfa-go:"+"password-reset.txt")
 
 	// config.MustSetValue("invite_emails", "email_html", "jfa-go:"+"invite-email.html")
 	// config.MustSetValue("invite_emails", "email_text", "jfa-go:"+"invite-email.txt")
