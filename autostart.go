@@ -1,3 +1,4 @@
+//go:build tray
 // +build tray
 
 package main
@@ -8,7 +9,7 @@ import (
 	"path/filepath"
 
 	"github.com/emersion/go-autostart"
-	"github.com/getlantern/systray"
+	"github.com/lutischan-ferenc/systray"
 )
 
 type Autostart struct {
@@ -48,8 +49,8 @@ func NewAutostart(name, displayname, trayName, trayTooltip string) *Autostart {
 	return a
 }
 
-func (a *Autostart) HandleCheck() {
-	for range a.menuitem.ClickedCh {
+func (a *Autostart) Register() {
+	a.menuitem.Click(func() {
 		if !a.menuitem.Checked() {
 			if err := a.as.Enable(); err != nil {
 				log.Printf("Failed to enable autostart on login: %v", err)
@@ -65,5 +66,5 @@ func (a *Autostart) HandleCheck() {
 				log.Printf("Disabled autostart")
 			}
 		}
-	}
+	})
 }

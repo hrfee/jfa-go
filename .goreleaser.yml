@@ -177,13 +177,10 @@ nfpms:
             replaces:
                 - jfa-go
             dependencies:
-                - libayatana-appindicator
                 - libolm-dev
         rpm:
             dependencies:
-                - libappindicator-gtk3
                 - libolm 
         apk:
             dependencies:
-                - libayatana-appindicator
                 - olm
