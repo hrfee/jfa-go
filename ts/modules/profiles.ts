@@ -440,7 +440,7 @@ export class ProfileEditor {
                     }
                     this._userSelect.innerHTML = innerHTML;
                     this._storeHomescreen.checked = true;
-                    this._createJellyseerrProfile.checked = true;
+                    if (this._createJellyseerrProfile) this._createJellyseerrProfile.checked = true;
                     window.modals.profiles.close();
                     window.modals.addProfile.show();
                 } else {

@@ -221,7 +221,9 @@
         "wikiPage": "Wiki Page",
         "wiki": "Wiki",
         "restartRequired": "Restart required",
-        "required": "Required"
+        "required": "Required",
+        "syntax": "Syntax",
+        "syntaxDescription": "Variables denoted as {varname}. If statements can evaluate truthfulness (e.g. {if messageAddress}Message sent to {messageAddress}{end}) or make basic comparisons (e.g. {if profile == \"Friends\"}Friend{else if profile != \"Admins\"}User{end})"
     },
     "notifications": {
         "pathCopied": "Full path copied to clipboard.",
