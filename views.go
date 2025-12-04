@@ -20,6 +20,7 @@ import (
 	"github.com/hrfee/jfa-go/common"
 	lm "github.com/hrfee/jfa-go/logmessages"
 	"github.com/hrfee/mediabrowser"
+	sTemplate "github.com/hrfee/simple-template"
 	"github.com/lithammer/shortuuid/v3"
 	"github.com/steambap/captcha"
 )
@@ -812,13 +813,10 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 		data["discordInviteLink"] = app.discord.InviteChannel.Name != ""
 	}
 	if msg, ok := app.storage.GetCustomContentKey("PostSignupCard"); ok && msg.Enabled {
-		cci := customContent["PostSignupCard"]
 		data["customSuccessCard"] = true
 		// We don't template here, since the username is only known after login.
-		templated, err := templateEmail(
+		templated, err := sTemplate.Template(
 			msg.Content,
-			cci.Variables,
-			cci.Conditionals,
 			map[string]any{
 				"username":     "{username}", // Value is subbed by webpage
 				"myAccountURL": userPageAddress,
@@ -832,15 +830,13 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 		)
 	}
 	if msg, ok := app.storage.GetCustomContentKey("PreSignupCard"); ok && msg.Enabled {
-		cci := customContent["PreSignupCard"]
 		data["preSignupCard"] = true
 		// We don't template here, since the username is only known after login.
-		templated, err := templateEmail(
+		templated, err := sTemplate.Template(
 			msg.Content,
-			cci.Variables,
-			cci.Conditionals,
 			map[string]any{
 				"myAccountURL": userPageAddress,
+				"profile":      invite.Profile,
 			},
 		)
 		if err != nil {

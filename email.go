@@ -19,6 +19,8 @@ import (
 	textTemplate "text/template"
 	"time"
 
+	sTemplate "github.com/hrfee/simple-template"
+
 	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/html"
 	"github.com/hrfee/jfa-go/easyproxy"
@@ -251,13 +253,13 @@ func (emailer *Emailer) construct(contentInfo CustomContentInfo, cc CustomConten
 		Subject: contentInfo.Subject(emailer.config, &emailer.lang),
 	}
 	// Template the subject for bonus points
-	if subject, err := templateEmail(msg.Subject, contentInfo.Variables, contentInfo.Conditionals, data); err == nil {
+	if subject, err := sTemplate.Template(msg.Subject, data); err == nil {
 		msg.Subject = subject
 	}
 	if cc.Enabled {
 		// Use template email, rather than the built-in's email file.
 		contentInfo.SourceFile = customContent["TemplateEmail"].SourceFile
-		content, err := templateEmail(cc.Content, contentInfo.Variables, contentInfo.Conditionals, data)
+		content, err := sTemplate.Template(cc.Content, data)
 		if err != nil {
 			emailer.err.Printf(lm.FailedConstructCustomContent, msg.Subject, err)
 			return msg, err

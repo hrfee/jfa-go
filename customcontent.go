@@ -372,9 +372,11 @@ var customContent = map[string]CustomContentInfo{
 		},
 		Variables: []string{
 			"myAccountURL",
+			"profile",
 		},
 		Placeholders: map[string]any{
 			"myAccountURL": "https://example.url/my/account",
+			"profile":      "Default User Profile",
 		},
 	},
 }
