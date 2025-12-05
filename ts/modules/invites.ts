@@ -123,20 +123,55 @@ class DOMInvite implements Invite {
         } else {
             chip.classList.add("button");
             chip.parentElement.classList.add("h-full");
-            if (address.includes("Failed")) {
+            if (address.includes(window.lang.strings("failed"))) {
                 icon.classList.remove("ri-mail-line");
                 icon.classList.add("ri-mail-close-line");
                 chip.classList.remove("~neutral");
                 chip.classList.add("~critical");
             } else {
-                address = "Sent to " + address;
                 icon.classList.remove("ri-mail-close-line");
                 icon.classList.add("ri-mail-line");
                 chip.classList.remove("~critical");
                 chip.classList.add("~neutral");
             }
         }
-        tooltip.textContent = address;
+        // innerHTML as the newer sent_to re-uses this with HTML.
+        tooltip.innerHTML = address;
+    }
+    
+    private _sent_to: SentToList;
+    get sent_to(): SentToList { return this._sent_to; }
+    set sent_to(v: SentToList) {
+        this._sent_to = v;
+        if (!v || !(v.success || v.failed)) return;
+        let text = "";
+        if (v.success && v.success.length > 0) {
+            text += window.lang.strings("sentTo") + ": " + v.success.join(", ") + " <br>"
+        }
+        if (v.failed && v.failed.length > 0) {
+            text += window.lang.strings("failed") + ": " + v.failed.map((el: SendFailure) => {
+                let err: string;
+                switch (el.reason) {
+                    case "CheckLogs":
+                        err = window.lang.notif("errorCheckLogs");
+                        break;
+                    case "NoUser":
+                        err = window.lang.notif("errorNoUser");
+                        break;
+                    case "MultiUser":
+                        err = window.lang.notif("errorMultiUser");
+                        break;
+                    case "InvalidAddress":
+                        err = window.lang.notif("errorInvalidAddress");
+                        break;
+                    default:
+                        err = el.reason;
+                        break;
+                }
+                return el.address + " (" + err + ")";
+            }).join(", ");
+        }
+        if (text.length != 0) this.send_to = text;
     }
 
     private _usedBy: { [name: string]: number };
@@ -455,6 +490,7 @@ class DOMInvite implements Invite {
         this.code = invite.code;
         this.created = invite.created;
         this.send_to = invite.send_to;
+        this.sent_to = invite.sent_to;
         this.expiresIn = invite.expiresIn;
         if (window.notificationsEnabled) {
             this.notifyCreation = invite.notifyCreation;
@@ -477,7 +513,7 @@ class DOMInvite implements Invite {
     remove = () => { this._container.remove(); }
 }
 
-export class inviteList implements inviteList {
+export class DOMInviteList implements InviteList {
     private _list: HTMLDivElement;
     private _empty: boolean;
     // since invite reload sends profiles, this event it broadcast so the createInvite object can load them.
@@ -493,7 +529,7 @@ export class inviteList implements inviteList {
     };
 
     public static readonly _inviteURLEvent = "invite-url";
-    registerURLListener = () => document.addEventListener(inviteList._inviteURLEvent, (event: CustomEvent) => {
+    registerURLListener = () => document.addEventListener(DOMInviteList._inviteURLEvent, (event: CustomEvent) => {
         this.focusInvite(event.detail);
     })
 
@@ -587,12 +623,14 @@ export class inviteList implements inviteList {
     }));
 }
 
-export const inviteURLEvent = (id: string) => { return new CustomEvent(inviteList._inviteURLEvent, {"detail": id}) };
+export const inviteURLEvent = (id: string) => { return new CustomEvent(DOMInviteList._inviteURLEvent, {"detail": id}) };
 
-function parseInvite(invite: { [f: string]: string | number | { [name: string]: number } | boolean }): Invite {
+// FIXME: Please, i beg you, get rid of this horror! 
+function parseInvite(invite: { [f: string]: string | number | { [name: string]: number } | boolean | SentToList }): Invite {
     let parsed: Invite = {};
     parsed.code = invite["code"] as string;
     parsed.send_to = invite["send_to"] as string || "";
+    parsed.sent_to = invite["sent_to"] as SentToList || null;
     parsed.label = invite["label"] as string || "";
     parsed.user_label = invite["user_label"] as string || "";
     let time = "";

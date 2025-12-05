@@ -1626,7 +1626,8 @@ class MessageEditor {
                 } else {
                     for (let i = this._templ.conditionals.length-1; i >= 0; i--) {
                         let ci = i % colors.length;
-                        innerHTML += '<span class="button ~' + colors[ci] +' @low mb-4" style="margin-left: 0.25rem; margin-right: 0.25rem;"></span>'
+                        // FIXME: Store full color strings (with ~) so tailwind sees them.
+                        innerHTML += '<span class="button ~' + colors[ci] +' @low"></span>'
                     }
                     this._conditionalsLabel.classList.remove("unfocused");
                     this._conditionals.innerHTML = innerHTML
@@ -1754,6 +1755,20 @@ class MessageEditor {
                 }
             });
         };
+
+        const descriptions = document.getElementsByClassName("editor-syntax-description") as HTMLCollectionOf<HTMLParagraphElement>;
+        for (let el of descriptions) {
+            el.innerHTML = window.lang.template("strings", "syntaxDescription", {
+                "variable": `<span class="font-mono font-bold">{varname}</span>`,
+                "ifTruth": `<span class="font-mono font-bold">{if address}Message sent to {address}{end}</span>`,
+                "ifCompare": `<span class="font-mono font-bold">{if profile == "Friends"}Friend{else if profile != "Admins"}User{end}</span>`
+            });
+        };
+
+        // Get rid of nasty CSS
+        window.modals.editor.onclose = () => {
+            this._preview.textContent = ``;
+        }
     }
 }
 

@@ -48,7 +48,7 @@ declare interface GlobalWindow extends Window {
     transitionEvent: string;
     animationEvent: string;
     tabs: Tabs;
-    invites: inviteList;
+    invites: InviteList;
     notifications: NotificationBox;
     language: string;
     lang: Lang;
@@ -59,6 +59,42 @@ declare interface GlobalWindow extends Window {
     jfAllowAll: boolean;
     referralsEnabled: boolean;
     loginAppearance: string; 
+}
+
+declare interface InviteList {
+    empty: boolean;
+    invites: { [code: string]: Invite }
+    add: (invite: Invite) => void;
+    reload: (callback?: () => void) => void;
+    isInviteURL: () => boolean;
+    loadInviteURL: () => void;
+}
+
+declare interface Invite {
+    code?: string;
+    expiresIn?: string;
+    remainingUses?: string;
+    send_to?: string; // DEPRECATED: use sent_to instead.
+    sent_to?: SentToList;
+    usedBy?: { [name: string]: number };
+    created?: number;
+    notifyExpiry?: boolean;
+    notifyCreation?: boolean;
+    profile?: string;
+    label?: string;
+    user_label?: string;
+    userExpiry?: boolean;
+    userExpiryTime?: string;
+}
+
+declare interface SendFailure {
+    address: string;
+    reason: "CheckLogs" | "NoUser" | "MultiUser" | "InvalidAddress";
+}
+
+declare interface SentToList {
+    success: string[];
+    failed: SendFailure[];
 }
 
 declare interface Update {
@@ -83,6 +119,7 @@ declare interface Lang {
     strings: (key: string) => string;
     notif: (key: string) => string;
     var: (sect: string, key: string, ...subs: string[]) => string;
+    template: (sect: string, key: string, subs: { [key: string]: string }) => string;
     quantity: (key: string, number: number) => string;
 }
 
@@ -129,31 +166,6 @@ declare interface Modals {
     enableReferralsProfile?: Modal;
     backedUp?: Modal;
     backups?: Modal;
-}
-
-interface Invite {
-    code?: string;
-    expiresIn?: string;
-    remainingUses?: string;
-    send_to?: string;
-    usedBy?: { [name: string]: number };
-    created?: number;
-    notifyExpiry?: boolean;
-    notifyCreation?: boolean;
-    profile?: string;
-    label?: string;
-    user_label?: string;
-    userExpiry?: boolean;
-    userExpiryTime?: string;
-}
-
-interface inviteList {
-    empty: boolean;
-    invites: { [code: string]: Invite }
-    add: (invite: Invite) => void;
-    reload: (callback?: () => void) => void;
-    isInviteURL: () => boolean;
-    loadInviteURL: () => void;
 }
 
 interface paginatedDTO {

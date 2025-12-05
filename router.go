@@ -213,6 +213,7 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 		api.GET(p+"/invites/count/used", app.GetInviteUsedCount)
 		api.DELETE(p+"/invites", app.DeleteInvite)
 		api.POST(p+"/invites/profile", app.SetProfile)
+		api.POST(p+"/invites/send", app.SendInvite)
 		api.GET(p+"/profiles", app.GetProfiles)
 		api.GET(p+"/profiles/names", app.GetProfileNames)
 		api.GET(p+"/profiles/raw/:name", app.GetRawProfile)

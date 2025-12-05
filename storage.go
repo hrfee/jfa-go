@@ -769,20 +769,39 @@ type JellyseerrTemplate struct {
 	Notifications jellyseerr.NotificationsTemplate `json:"notifications,omitempty"`
 }
 
+type SendFailureReason = string
+
+const (
+	CheckLogs      SendFailureReason = "CheckLogs"
+	NoUser                           = "NoUser"
+	MultiUser                        = "MultiUser"
+	InvalidAddress                   = "InvalidAddress"
+)
+
+type SendFailure struct {
+	Address string            `json:"address"`
+	Reason  SendFailureReason `json:"reason"`
+}
+
+type SentToList struct {
+	Success []string      `json:"success"`
+	Failed  []SendFailure `json:"failed"`
+}
+
 type Invite struct {
-	Code          string    `badgerhold:"key"`
-	Created       time.Time `json:"created"`
-	NoLimit       bool      `json:"no-limit"`
-	RemainingUses int       `json:"remaining-uses"`
-	ValidTill     time.Time `json:"valid_till"`
-	UserExpiry    bool      `json:"user-duration"`
-	UserMonths    int       `json:"user-months,omitempty"`
-	UserDays      int       `json:"user-days,omitempty"`
-	UserHours     int       `json:"user-hours,omitempty"`
-	UserMinutes   int       `json:"user-minutes,omitempty"`
-	SendTo        string    `json:"email"`
-	// Used to be stored as formatted time, now as Unix.
-	UsedBy             [][]string                 `json:"used-by"`
+	Code               string                     `badgerhold:"key"`
+	Created            time.Time                  `json:"created"`
+	NoLimit            bool                       `json:"no-limit"`
+	RemainingUses      int                        `json:"remaining-uses"`
+	ValidTill          time.Time                  `json:"valid_till"`
+	UserExpiry         bool                       `json:"user-duration"`
+	UserMonths         int                        `json:"user-months,omitempty"`
+	UserDays           int                        `json:"user-days,omitempty"`
+	UserHours          int                        `json:"user-hours,omitempty"`
+	UserMinutes        int                        `json:"user-minutes,omitempty"`
+	SendTo             string                     `json:"email"` // deprecated: use SentTo now.
+	SentTo             SentToList                 `json:"sent-to,omitempty"`
+	UsedBy             [][]string                 `json:"used-by"` // Used to be stored as formatted time, now as Unix.
 	Notify             map[string]map[string]bool `json:"notify"`
 	Profile            string                     `json:"profile"`
 	Label              string                     `json:"label,omitempty"`

@@ -379,7 +379,7 @@ func (emailer *Emailer) constructConfirmation(code, username, key string, placeh
 	return emailer.construct(contentInfo, cc, template)
 }
 
-func (emailer *Emailer) constructInvite(invite Invite, placeholders bool) (*Message, error) {
+func (emailer *Emailer) constructInvite(invite *Invite, placeholders bool) (*Message, error) {
 	expiry := invite.ValidTill
 	d, t, expiresIn := emailer.formatExpiry(expiry, false)
 	inviteLink := fmt.Sprintf("%s%s/%s", ExternalURI(nil), PAGES.Form, invite.Code)

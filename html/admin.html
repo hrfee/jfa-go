@@ -266,18 +266,20 @@
         <div id="modal-announce" class="modal">
             <form class="relative mx-auto my-[10%] w-4/5 lg:w-2/3 content card" id="form-announce" href="">
                 <span class="heading"><span id="header-announce"></span> <span class="modal-close">&times;</span></span>
-                <div class="flex flex-col md:flex-row">
-                    <div class="col card ~neutral @low">
-                        <div id="announce-details">
+                <div class="flex flex-col md:flex-row gap-4">
+                    <div class="card ~neutral @low w-1/2 grow">
+                        <div id="announce-details" class="flex flex-col gap-2">
                             <span class="label supra" for="editor-variables" id="label-editor-variables">{{ .strings.variables }}</span>
-                            <div id="announce-variables">
-                                <span class="button ~urge @low mb-2 mt-4" id="announce-variables-username" style="margin-left: 0.25rem; margin-right: 0.25rem;"><span class="font-mono bg-inherit">{username}</span></span>
+                            <div id="announce-variables" class="flex flex-row flex-wrap gap-2">
+                                <span class="button ~urge @low" id="announce-variables-username"><span class="font-mono bg-inherit">{username}</span></span>
                             </div>
                             <label class="label supra" for="announce-subject"> {{ .strings.subject }}</label>
-                            <input type="text" id="announce-subject" class="input ~neutral @low mb-2 mt-4">
+                            <input type="text" id="announce-subject" class="input ~neutral @low">
                             <label class="label supra" for="textarea-announce">{{ .strings.message }}</label>
-                            <textarea id="textarea-announce" class="textarea full-width ~neutral @low mt-4 font-mono"></textarea>
-                            <p class="support mt-4 mb-2">{{ .strings.markdownSupported }}</p>
+                            <textarea id="textarea-announce" class="textarea full-width ~neutral @low font-mono"></textarea>
+                            <p class="support">{{ .strings.markdownSupported }}</p>
+                            <p class="support editor-syntax-description">{{ .strings.syntaxDescription }}</p>
+
                         </div>
                         <label class="label unfocused" id="announce-name"><p class="supra">{{ .strings.name }}</p>
                             <input type="text" class="input ~neutral @low mb-2 mt-4">
@@ -291,9 +293,9 @@
                             <span class="button ~info @low center supra" id="save-announce">{{ .strings.saveAsTemplate }}</span>
                         </div>
                     </div>
-                    <div class="col card ~neutral @low">
+                    <div class="card ~neutral @low flex flex-col gap-2 min-w-lg">
                         <span class="subheading supra">{{ .strings.preview }}</span>
-                        <div class="mt-8" id="announce-preview"></div>
+                        <div id="announce-preview"></div>
                     </div>
                 </div>
             </form>
@@ -319,8 +321,8 @@
         <div id="modal-editor" class="modal">
             <form class="relative mx-auto my-[10%] w-4/5 lg:w-2/3 content card" id="form-editor" href="">
                 <span class="heading"><span id="header-editor"></span> <span class="modal-close">&times;</span></span>
-                <div class="row">
-                    <div class="col card ~neutral @low flex flex-col gap-2 justify-between">
+                <div class="flex flex-col md:flex-row gap-4">
+                    <div class="card ~neutral @low w-1/2 grow flex flex-col gap-2 justify-between">
                         <div class="flex flex-col gap-2">
                             <aside class="aside sm ~urge dark:~d_info @low" id="aside-editor"></aside> 
                             <label class="label supra" for="editor-variables" id="label-editor-variables">{{ .strings.variables }}</label>
@@ -329,16 +331,17 @@
                             <div id="editor-conditionals"></div>
                             <label class="label supra" for="textarea-editor">{{ .strings.message }}</label>
                             <textarea id="textarea-editor" class="textarea full-width flex-auto ~neutral @low font-mono"></textarea>
+                            <p class="support">{{ .strings.markdownSupported }}</p>
+                            <p class="support editor-syntax-description">{{ .strings.syntaxDescription }}</p>
                         </div>
                         <div class="flex flex-col gap-2">
-                            <p class="support">{{ .strings.markdownSupported }}</p>
                             <label class="w-full">
                                 <input type="submit" class="unfocused">
                                 <span class="button ~urge @low w-full supra submit">{{ .strings.submit }}</span>
                             </label>
                         </div>
                     </div>
-                    <div class="col card ~neutral @low flex flex-col gap-2">
+                    <div class="card ~neutral @low flex flex-col gap-2 min-w-lg">
                         <span class="subheading supra">{{ .strings.preview }}</span>
                         <div id="editor-preview"></div>
                     </div>

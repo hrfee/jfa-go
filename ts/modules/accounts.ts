@@ -1247,6 +1247,12 @@ export class accountsList extends PaginatedList {
         this._search.showHideSearchOptionsHeader();
 
         this.registerURLListener();
+
+        // Get rid of nasty CSS
+        window.modals.announce.onclose = () => {
+            const preview = document.getElementById("announce-preview") as HTMLDivElement;
+            preview.textContent = ``;
+        }
     }
 
     reload = (callback?: (resp: paginatedDTO) => void) => {

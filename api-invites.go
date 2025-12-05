@@ -157,6 +157,90 @@ func (app *appContext) sendAdminExpiryNotification(data Invite) *sync.WaitGroup 
 	return &wait
 }
 
+// @Summary Send an existing invite to an email address or discord user.
+// @Produce json
+// @Param SendInviteDTO body SendInviteDTO true "Email address or Discord username"
+// @Success 200 {object} boolResponse
+// @Failure 500 {object} stringResponse
+// @Router /invites/send [post]
+// @Security Bearer
+// @tags Invites
+func (app *appContext) SendInvite(gc *gin.Context) {
+	var req SendInviteDTO
+	gc.BindJSON(&req)
+	inv, ok := app.storage.GetInvitesKey(req.Invite)
+	if !ok {
+		app.err.Printf(lm.FailedGetInvite, req.Invite, lm.NotFound)
+		respond(500, "Invite not found", gc)
+		return
+	}
+	err := app.sendInvite(req.sendInviteDTO, &inv)
+	// Even if failed, some error info might have been stored in the invite.
+	app.storage.SetInvitesKey(req.Invite, inv)
+	if err != nil {
+		app.err.Printf(lm.FailedSendInviteMessage, req.Invite, req.SendTo, err)
+		respond(500, err.Error(), gc)
+		return
+	}
+	app.info.Printf(lm.SentInviteMessage, req.Invite, req.SendTo)
+	respondBool(200, true, gc)
+}
+
+// sendInvite attempts to send an invite to the given email address or discord username.
+func (app *appContext) sendInvite(req sendInviteDTO, invite *Invite) (err error) {
+	if !(app.config.Section("invite_emails").Key("enabled").MustBool(false)) {
+		// app.err.Printf(lm.FailedSendInviteMessage, invite.Code, req.SendTo, errors.New(lm.InviteMessagesDisabled))
+		err = errors.New(lm.InviteMessagesDisabled)
+		return err
+	}
+	discord := ""
+	if discordEnabled && (!strings.Contains(req.SendTo, "@") || strings.HasPrefix(req.SendTo, "@")) {
+		users := app.discord.GetUsers(req.SendTo)
+		if len(users) == 0 {
+			invite.SentTo.Failed = append(invite.SentTo.Failed, SendFailure{
+				Address: req.SendTo,
+				Reason:  NoUser,
+			})
+			err = fmt.Errorf(lm.InvalidAddress, req.SendTo)
+			return err
+		} else if len(users) > 1 {
+			invite.SentTo.Failed = append(invite.SentTo.Failed, SendFailure{
+				Address: req.SendTo,
+				Reason:  MultiUser,
+			})
+			err = fmt.Errorf(lm.InvalidAddress, req.SendTo)
+			return err
+		}
+		discord = users[0].User.ID
+	}
+	var msg *Message
+	msg, err = app.email.constructInvite(invite, false)
+	if err != nil {
+		// Slight misuse of the template
+		invite.SentTo.Failed = append(invite.SentTo.Failed, SendFailure{
+			Address: req.SendTo,
+			Reason:  CheckLogs,
+		})
+		// app.err.Printf(lm.FailedConstructInviteMessage, req.SendTo, err)
+		return err
+	}
+	if discord != "" {
+		err = app.discord.SendDM(msg, discord)
+	} else {
+		err = app.email.send(msg, req.SendTo)
+	}
+	if err != nil {
+		invite.SentTo.Failed = append(invite.SentTo.Failed, SendFailure{
+			Address: req.SendTo,
+			Reason:  CheckLogs,
+		})
+		return err
+		// app.err.Println(invite.SendTo)
+	}
+	invite.SentTo.Success = append(invite.SentTo.Success, req.SendTo)
+	return err
+}
+
 // @Summary Create a new invite.
 // @Produce json
 // @Param generateInviteDTO body generateInviteDTO true "New invite request object"
@@ -198,48 +282,11 @@ func (app *appContext) GenerateInvite(gc *gin.Context) {
 	}
 	invite.ValidTill = validTill
 	if req.SendTo != "" {
-		if !(app.config.Section("invite_emails").Key("enabled").MustBool(false)) {
-			app.err.Printf(lm.FailedSendInviteMessage, invite.Code, req.SendTo, errors.New(lm.InviteMessagesDisabled))
+		err := app.sendInvite(req.sendInviteDTO, &invite)
+		if err != nil {
+			app.err.Printf(lm.FailedSendInviteMessage, invite.Code, req.SendTo, err)
 		} else {
-			addressValid := false
-			discord := ""
-			if discordEnabled && (!strings.Contains(req.SendTo, "@") || strings.HasPrefix(req.SendTo, "@")) {
-				users := app.discord.GetUsers(req.SendTo)
-				if len(users) == 0 {
-					invite.SendTo = fmt.Sprintf(lm.FailedSendToTooltipNoUser, req.SendTo)
-				} else if len(users) > 1 {
-					invite.SendTo = fmt.Sprintf(lm.FailedSendToTooltipMultiUser, req.SendTo)
-				} else {
-					invite.SendTo = req.SendTo
-					addressValid = true
-					discord = users[0].User.ID
-				}
-			} else if emailEnabled {
-				addressValid = true
-				invite.SendTo = req.SendTo
-			}
-			if addressValid {
-				msg, err := app.email.constructInvite(invite, false)
-				if err != nil {
-					// Slight misuse of the template
-					invite.SendTo = fmt.Sprintf(lm.FailedConstructInviteMessage, req.SendTo, err)
-
-					app.err.Printf(lm.FailedConstructInviteMessage, invite.Code, err)
-				} else {
-					var err error
-					if discord != "" {
-						err = app.discord.SendDM(msg, discord)
-					} else {
-						err = app.email.send(msg, req.SendTo)
-					}
-					if err != nil {
-						invite.SendTo = fmt.Sprintf(lm.FailedSendInviteMessage, invite.Code, req.SendTo, err)
-						app.err.Println(invite.SendTo)
-					} else {
-						app.info.Printf(lm.SentInviteMessage, invite.Code, req.SendTo)
-					}
-				}
-			}
+			app.info.Printf(lm.SentInviteMessage, invite.Code, req.SendTo)
 		}
 	}
 	if req.Profile != "" {
@@ -356,6 +403,9 @@ func (app *appContext) GetInvites(gc *gin.Context) {
 		invite.RemainingUses = 1
 		if inv.RemainingUses != 0 {
 			invite.RemainingUses = inv.RemainingUses
+		}
+		if len(inv.SentTo.Success) != 0 || len(inv.SentTo.Failed) != 0 {
+			invite.SentTo = inv.SentTo
 		}
 		if inv.SendTo != "" {
 			invite.SendTo = inv.SendTo

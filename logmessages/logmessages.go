@@ -109,9 +109,11 @@ const (
 	GenerateInvite       = "Generating new invite"
 	FailedGenerateInvite = "Failed to generate new invite: %v"
 	InvalidInviteCode    = "Invalid invite code \"%s\""
+	FailedGetInvite      = "Failed to get invite \"%s\": %v"
 
 	FailedSendToTooltipNoUser    = "Failed: \"%s\" not found"
 	FailedSendToTooltipMultiUser = "Failed: \"%s\" linked to multiple users"
+	InvalidAddress               = "invalid address \"%s\""
 
 	FailedParseTime = "Failed to parse time value: %v"
 

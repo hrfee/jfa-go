@@ -1,4 +1,5 @@
 import { _get } from "../modules/common.js";
+import { Template } from "@hrfee/simpletemplate";
 
 interface Meta {
     name: string;
@@ -37,6 +38,15 @@ export class lang implements Lang {
             str = str.replace("{n}", sub);
         }
         return str;
+    }
+
+    template = (sect: string, key: string, subs: { [key: string]: any }): string => {
+        if (sect == "quantityStrings" || sect == "meta") { return ""; }
+        const map = new Map<string, any>();
+        for (let key of Object.keys(subs)) { map.set(key, subs[key]); }
+        const [out, err] = Template(this._lang[sect][key], map);
+        if (err != null) throw err;
+        return out;
     }
 
     quantity = (key: string, number: number): string => {

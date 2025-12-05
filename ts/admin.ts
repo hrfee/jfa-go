@@ -2,7 +2,7 @@ import { ThemeManager } from "./modules/theme.js";
 import { lang, LangFile, loadLangSelector } from "./modules/lang.js";
 import { Modal } from "./modules/modal.js";
 import { Tabs, Tab } from "./modules/tabs.js";
-import { inviteList, createInvite } from "./modules/invites.js";
+import { DOMInviteList, createInvite } from "./modules/invites.js";
 import { accountsList } from "./modules/accounts.js";
 import { settingsList } from "./modules/settings.js";
 import { activityList } from "./modules/activity.js";
@@ -105,7 +105,7 @@ var accounts = new accountsList();
 
 var activity = new activityList();
 
-window.invites = new inviteList();
+window.invites = new DOMInviteList();
 
 var settings = new settingsList();
 

@@ -18,6 +18,7 @@
   "homepage": "https://github.com/hrfee/jfa-go#readme",
   "dependencies": {
     "@af-utils/scrollend-polyfill": "^0.0.14",
+    "@hrfee/simpletemplate": "^1.1.0",
     "@ts-stack/markdown": "^1.4.0",
     "@types/node": "^20.3.0",
     "@webcoder49/code-input": "^2.7.2",

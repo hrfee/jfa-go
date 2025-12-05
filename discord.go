@@ -738,7 +738,6 @@ func (d *DiscordDaemon) cmdInvite(s *dg.Session, i *dg.InteractionCreate, lang s
 
 		var invname *dg.Member = nil
 		invname, err = d.bot.GuildMember(d.guildID, recipient.ID)
-		invite.SendTo = invname.User.Username
 
 		if err == nil && !(d.app.config.Section("invite_emails").Key("enabled").MustBool(false)) {
 			err = errors.New(lm.InviteMessagesDisabled)
@@ -746,11 +745,14 @@ func (d *DiscordDaemon) cmdInvite(s *dg.Session, i *dg.InteractionCreate, lang s
 
 		var msg *Message
 		if err == nil {
-			msg, err = d.app.email.constructInvite(invite, false)
+			msg, err = d.app.email.constructInvite(&invite, false)
 			if err != nil {
 				// Print extra message, ideally we'd just print this, or get rid of it though.
-				invite.SendTo = fmt.Sprintf(lm.FailedConstructInviteMessage, invite.Code, err)
-				d.app.err.Println(invite.SendTo)
+				invite.SentTo.Failed = append(invite.SentTo.Failed, SendFailure{
+					Address: invname.User.Username,
+					Reason:  CheckLogs,
+				})
+				d.app.err.Printf(lm.FailedConstructInviteMessage, invite.Code, err)
 			}
 		}
 
@@ -760,12 +762,12 @@ func (d *DiscordDaemon) cmdInvite(s *dg.Session, i *dg.InteractionCreate, lang s
 
 		if err == nil {
 			d.app.info.Printf(lm.SentInviteMessage, invite.Code, RenderDiscordUsername(recipient))
+			invite.SentTo.Success = append(invite.SentTo.Success, invname.User.Username)
 			sendResponse("sentInvite")
 		}
 
 		if err != nil {
 			invite.SendTo = fmt.Sprintf(lm.FailedSendInviteMessage, invite.Code, RenderDiscordUsername(recipient), err)
-			d.app.err.Println(invite.SendTo)
 			sendResponse("sentInviteFailure")
 		}
 	}
