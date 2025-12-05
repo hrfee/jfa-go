@@ -1,5 +1,5 @@
-import { _get, _post, _delete, toClipboard, toggleLoader, toDateString } from "../modules/common.js";
-import { DiscordUser, newDiscordSearch } from "../modules/discord.js";
+import { _get, _post, _delete, toClipboard, toggleLoader, toDateString, SetupCopyButton, addLoader, removeLoader } from "../modules/common.js";
+import { DiscordSearch, DiscordUser, newDiscordSearch } from "../modules/discord.js";
 import { reloadProfileNames }  from "../modules/profiles.js";
 
 declare var window: GlobalWindow;
@@ -31,7 +31,7 @@ class DOMInvite implements Invite {
     delete = () => _delete("/invites", { "code": this.code }, (req: XMLHttpRequest) => {
         if (req.readyState == 4 && (req.status == 200 || req.status == 204)) {
             this.remove();
-            const inviteDeletedEvent = new CustomEvent("inviteDeletedEvent", { "detail": this.code });
+            const inviteDeletedEvent = new CustomEvent("inviteDeletedEvent", { detail: this.code });
             document.dispatchEvent(inviteDeletedEvent);
         }
     })
@@ -91,8 +91,10 @@ class DOMInvite implements Invite {
         const expiry = this._middle.querySelector("span.user-expiry") as HTMLSpanElement;
         if (!d) {
             expiry.textContent = "";
+            expiry.parentElement.classList.add("unfocused");
         } else {
             expiry.textContent = window.lang.strings("userExpiry");
+            expiry.parentElement.classList.remove("unfocused");
         }
         this._userExpiry = d;
         this._middle.querySelector("strong.user-expiry-time").textContent = d;
@@ -138,7 +140,7 @@ class DOMInvite implements Invite {
         // innerHTML as the newer sent_to re-uses this with HTML.
         tooltip.innerHTML = address;
     }
-    
+    private _sendToDialog: SendToDialog; 
     private _sent_to: SentToList;
     get sent_to(): SentToList { return this._sent_to; }
     set sent_to(v: SentToList) {
@@ -358,33 +360,20 @@ class DOMInvite implements Invite {
 
         this._codeArea = document.createElement('div') as HTMLDivElement;
         this._header.appendChild(this._codeArea);
-        this._codeArea.classList.add("flex", "flex-row", "flex-wrap", "justify-between", "w-full", "items-baseline", "gap-2", "truncate");
+        this._codeArea.classList.add("flex", "flex-row", "flex-wrap", "justify-between", "w-full", "items-center", "gap-2", "truncate");
         this._codeArea.innerHTML = `
-        <div class="flex items-baseline gap-x-4 gap-y-2 truncate">
+        <div class="flex items-center gap-x-4 gap-y-2 truncate">
             <a class="invite-link text-black dark:text-white font-mono bg-inherit truncate" href=""></a>
-            <span class="button ~info @low" title="${window.lang.strings("copy")}"><i class="ri-file-copy-line"></i></span>
+            <button class="invite-copy-button"></button>
         </div>
         <span class="inv-duration"></span>
         `;
-        const copyButton = this._codeArea.querySelector("span.button") as HTMLSpanElement;
-        copyButton.onclick = () => { 
-            toClipboard(this._codeLink);
-            const icon = copyButton.children[0];
-            icon.classList.remove("ri-file-copy-line");
-            icon.classList.add("ri-check-line");
-            copyButton.classList.remove("~info");
-            copyButton.classList.add("~positive");
-            setTimeout(() => {
-                icon.classList.remove("ri-check-line");
-                icon.classList.add("ri-file-copy-line");
-                copyButton.classList.remove("~positive");
-                copyButton.classList.add("~info");
-            }, 800);
-        };
+        const copyButton = this._codeArea.getElementsByClassName("invite-copy-button")[0] as HTMLButtonElement;
+        SetupCopyButton(copyButton, this._codeLink); 
 
         this._infoArea = document.createElement('div') as HTMLDivElement;
         this._header.appendChild(this._infoArea);
-        this._infoArea.classList.add("inv-infoarea", "flex", "flex-row", "items-baseline", "gap-2");
+        this._infoArea.classList.add("inv-infoarea", "flex", "flex-row", "items-center", "gap-2");
         this._infoArea.innerHTML = `
         <div class="tooltip below darker" tabindex="0">
             <span class="inv-email-chip h-full"><i></i></span>
@@ -425,26 +414,30 @@ class DOMInvite implements Invite {
         detailsInner.appendChild(this._left);
         const leftLeft = document.createElement("div") as HTMLDivElement;
         this._left.appendChild(leftLeft);
-        leftLeft.classList.add("inv-profilearea", "min-w-full", "sm:min-w-fit");
+        leftLeft.classList.add("inv-profilearea", "min-w-full", "sm:min-w-fit", "flex", "flex-col", "gap-4");
         let innerHTML = `
-        <p class="supra mb-2 top">${window.lang.strings("profile")}</p>
-        <div class="select ~neutral @low inv-profileselect min-w-full inline-block mb-2">
-            <select>
-                <option value="noProfile" selected>${window.lang.strings("inviteNoProfile")}</option>
-            </select>
-        </div>
+        <label class="flex flex-col gap-2">
+            <p class="label supra">${window.lang.strings("profile")}</p>
+            <div class="select ~neutral @low inv-profileselect min-w-full inline-block">
+                <select>
+                    <option value="noProfile" selected>${window.lang.strings("inviteNoProfile")}</option>
+                </select>
+            </div>
+        </label>
         `;
         if (window.notificationsEnabled) {
             innerHTML += `
-            <p class="label supra mb-2">${window.lang.strings("notifyEvent")}</p>
-            <label class="switch block">
-                <input class="inv-notify-expiry" type="checkbox">
-                <span>${window.lang.strings("notifyInviteExpiry")}</span>
-            </label>
-            <label class="switch block">
-                <input class="inv-notify-creation" type="checkbox">
-                <span>${window.lang.strings("notifyUserCreation")}</span>
-            </label>
+            <div class="flex flex-col gap-2">
+                <p class="label supra">${window.lang.strings("notifyEvent")}</p>
+                <label class="switch block">
+                    <input class="inv-notify-expiry" type="checkbox">
+                    <span>${window.lang.strings("notifyInviteExpiry")}</span>
+                </label>
+                <label class="switch block">
+                    <input class="inv-notify-creation" type="checkbox">
+                    <span>${window.lang.strings("notifyUserCreation")}</span>
+                </label>
+            </div>
             `;
         }
         leftLeft.innerHTML = innerHTML;
@@ -460,18 +453,19 @@ class DOMInvite implements Invite {
 
         this._middle = document.createElement('div') as HTMLDivElement;
         this._left.appendChild(this._middle);
-        this._middle.classList.add("flex", "flex-col", "justify-between");
+        this._middle.classList.add("flex", "flex-col", "grow", "gap-4");
         this._middle.innerHTML = `
-        <p class="supra top">${window.lang.strings("inviteDateCreated")} <strong class="inv-created"></strong></p>
-        <p class="supra">${window.lang.strings("inviteRemainingUses")} <strong class="inv-remaining"></strong></p>
-        <p class="supra"><span class="user-expiry"></span> <strong class="user-expiry-time"></strong></p>
-        <p class="flex items-center"><span class="user-label-label supra mr-2"></span> <span class="user-label chip ~blue unfocused"></span></p>
+        <p class="label flex items-center gap-2 supra">${window.lang.strings("inviteDateCreated")} <strong class="inv-created"></strong></p>
+        <p class="label flex items-center gap-2 supra">${window.lang.strings("inviteRemainingUses")} <strong class="inv-remaining"></strong></p>
+        <p class="label flex items-center gap-2 supra"><span class="user-expiry"></span> <strong class="user-expiry-time"></strong></p>
+        <p class="flex items-center gap-2"><span class="user-label-label label supra"></span> <span class="user-label chip ~blue unfocused"></span></p>
+        <div class="invite-send-to-dialog"></div>
         `;
 
         this._right = document.createElement('div') as HTMLDivElement;
         detailsInner.appendChild(this._right);
         this._right.classList.add("card", "~neutral", "@low", "inv-created-users", "min-w-full", "sm:min-w-fit", "whitespace-nowrap");
-        this._right.innerHTML = `<span class="supra table-header">${window.lang.strings("inviteUsersCreated")}</span>`;
+        this._right.innerHTML = `<span class="label supra table-header">${window.lang.strings("inviteUsersCreated")}</span>`;
         this._userTable = document.createElement('div') as HTMLDivElement;
         this._userTable.classList.add("text-sm", "mt-1", );
         this._right.appendChild(this._userTable);
@@ -506,6 +500,10 @@ class DOMInvite implements Invite {
             this.user_label = invite.user_label;
         }
         this.userExpiryTime = invite.userExpiryTime || "";
+        this._sendToDialog = new SendToDialog(this._middle.getElementsByClassName("invite-send-to-dialog")[0] as HTMLElement, invite, () => {
+            const needsUpdatingEvent = new CustomEvent("inviteNeedsUpdating", { detail: this.code });
+            document.dispatchEvent(needsUpdatingEvent);
+        });
     }
 
     asElement = (): HTMLDivElement => { return this._container; }
@@ -549,6 +547,9 @@ export class DOMInviteList implements InviteList {
         this._list = document.getElementById('invites') as HTMLDivElement;
         this.empty = true;
         this.invites = {};
+        // FIXME: Do this better, take advantage of getting the code in e.detail
+        document.addEventListener("inviteNeedsUpdating", () => { this.reload(); }, false);
+
         document.addEventListener("newInviteEvent", () => { this.reload(); }, false);
         document.addEventListener("inviteDeletedEvent", (event: CustomEvent) => {
             const code = event.detail;
@@ -667,9 +668,7 @@ function parseInvite(invite: { [f: string]: string | number | { [name: string]: 
 }
 
 export class createInvite {
-    private _sendToEnabled = document.getElementById("create-send-to-enabled") as HTMLInputElement;
-    private _sendTo = document.getElementById("create-send-to") as HTMLInputElement;
-    private _discordSearch: HTMLSpanElement;
+    private _sendTo: SendToDialog;
     private _userExpiryToggle = document.getElementById("create-user-expiry-enabled") as HTMLInputElement;
     private _uses = document.getElementById('create-uses') as HTMLInputElement;
     private _infUses = document.getElementById("create-inf-uses") as HTMLInputElement;
@@ -722,31 +721,6 @@ export class createInvite {
 
     get user_label(): string { return this._userLabel.value; }
     set user_label(label: string) { this._userLabel.value = label; }
-
-    get sendToEnabled(): boolean {
-        return this._sendToEnabled.checked;
-    }
-    set sendToEnabled(state: boolean) {
-        this._sendToEnabled.checked = state;
-        this._sendTo.disabled = !state;
-        if (state) {
-            this._sendToEnabled.parentElement.classList.remove("~neutral");
-            this._sendToEnabled.parentElement.classList.add("~urge");
-            if (window.discordEnabled) {
-                this._discordSearch.classList.remove("~neutral");
-                this._discordSearch.classList.add("~urge");
-                this._discordSearch.onclick = () => this._sendToDiscord("");
-            }
-        } else {
-            this._sendToEnabled.parentElement.classList.remove("~urge");
-            this._sendToEnabled.parentElement.classList.add("~neutral");
-            if (window.discordEnabled) {
-                this._discordSearch.classList.remove("~urge");
-                this._discordSearch.classList.add("~neutral");
-                this._discordSearch.onclick = null;
-            }
-        }
-    }
 
     get infiniteUses(): boolean {
         return this._infUses.checked;
@@ -849,8 +823,13 @@ export class createInvite {
         this._userMinutes.value = ""+n;
     }
 
-    get sendTo(): string { return this._sendTo.value; }
-    set sendTo(address: string) { this._sendTo.value = address; }
+    get sendTo(): string {
+        if (!(this._sendTo)) return "";
+        if (this._sendTo.addresses.length > 1) console.error("FIXME: SendToDialog has collected more than one address, make them usable or fix it!");
+        if (this._sendTo.addresses.length > 0) return this._sendTo.addresses[0];
+        else return "";
+    }
+    set sendTo(address: string) { if (!(this._sendTo)) return; this._sendTo.addresses = [address]; }
 
     get profile(): string { 
         const val = this._profile.value;
@@ -898,7 +877,7 @@ export class createInvite {
             "multiple-uses": (this.uses > 1 || this.infiniteUses),
             "no-limit": this.infiniteUses,
             "remaining-uses": this.uses,
-            "send-to": this.sendToEnabled ? this.sendTo : "",
+            "send-to": this.sendTo,
             "profile": this.profile,
             "label": this.label,
             "user_label": this.user_label
@@ -921,7 +900,6 @@ export class createInvite {
         this.minutes = 30;
         this._infUses.onchange = () => { this.infiniteUses = this.infiniteUses; };
         this.infiniteUses = false;
-        this._sendToEnabled.onchange = () => { this.sendToEnabled = this.sendToEnabled; };
         this.userExpiry = false;
         this._userExpiryToggle.onchange = () => { this.userExpiry = this._userExpiryToggle.checked; }
         this._userMonths.disabled = true;
@@ -964,22 +942,99 @@ export class createInvite {
         this._minutes.onchange = this._checkDurationValidity;
         document.addEventListener("profileLoadEvent", () => { this.loadProfiles(); }, false);
 
-        if (!window.emailEnabled && !window.discordEnabled) {
-            document.getElementById("create-send-to-container").classList.add("unfocused");
+        const sendToContainer = document.getElementById("create-send-to-container");
+        if (window.emailEnabled || window.discordEnabled) {
+            this._sendTo = new SendToDialog(sendToContainer);
+        } else { 
+            sendToContainer.classList.add("unfocused");
         }
+    }
+}
 
+class SendToDialog {
+    private _container: HTMLElement;
+    private _input: HTMLInputElement;
+    private _submit?: HTMLButtonElement;
+    // FIXME: Make an interface for multiple addresses
+    // private _addresses: string[] = [];
+    get addresses(): string[] {
+        if (this._input.value) return [this._input.value];
+        return [];
+    }
+    set addresses(v: string[]) {
+        if (v.length > 0) this._input.value = v[0];
+        // this._addresses = v;
+    };
+
+    private _search?: HTMLButtonElement;
+    private _discordSearch?: DiscordSearch;
+
+
+    constructor(container: HTMLElement, invite?: Invite, onSuccess?: () => void) {
+        this._container = container;
+        this._container.classList.add("flex", "flex-col", "gap-2");
+        this._container.innerHTML = `
+            <label class="label supra">${window.lang.strings("inviteSendToEmail")}</label>
+            <div class="flex flex-row gap-2">
+                <input class="input ~neutral @low send-to-dialog-input" type="email" placeholder="example@example.com">
+                <button class="button ~urge @low send-to-dialog-search unfocused" title="${window.lang.strings("search")}">
+                    <i class="icon ri-search-2-line"></i>
+                </button>
+                <button class="button ~urge @low send-to-dialog-submit unfocused" title="${window.lang.strings("submit")}">
+                    <i class="icon ri-send-plane-2-line"></i>
+                </button>
+            </div>
+        `;
+        this._input = this._container.getElementsByClassName("send-to-dialog-input")[0] as HTMLInputElement;
         if (window.discordEnabled) {
-            this._discordSearch = document.getElementById("create-send-to-search") as HTMLSpanElement;
-            this._sendToDiscord = newDiscordSearch(
+            this._input.type = "text";
+            this._input.placeholder = "example@example.com | user#1234";
+            this._search = this._container.getElementsByClassName("send-to-dialog-search")[0] as HTMLButtonElement;
+            this._search.classList.remove("unfocused");
+            this._discordSearch = newDiscordSearch(
                 window.lang.strings("findDiscordUser"),
                 window.lang.strings("searchDiscordUser"),
                 window.lang.strings("select"),
                 (user: DiscordUser) => {
-                    this.sendTo = user.name;
+                    this.addresses = [user.name];
+                    // this.addresses.push(user.name);
+
                     window.modals.discord.close();
                 }
             );
+            // FIXME: Check why we're passing an empty string rather than the input value
+            this._search.onclick = () => this._discordSearch("");
         }
-        this.sendToEnabled = false;
+
+        if (invite) {
+            if (this._search) {
+                this._search.classList.add("~neutral");
+                this._search.classList.remove("~urge");
+            }
+            this._submit = this._container.getElementsByClassName("send-to-dialog-submit")[0] as HTMLButtonElement;
+            this._submit.classList.remove("unfocused");
+            this._submit.onclick = () => {
+                const icon = this._submit.children[0] as HTMLElement;
+                addLoader(icon, true);
+                if (this.addresses.length == 0) return;
+                _post("/invites/send", {"invite": invite.code, "send-to": this.addresses[0]}, (req: XMLHttpRequest) => {
+                    if (req.readyState != 4) return;
+                    removeLoader(icon, true)
+                    if (req.status != 200 && req.status != 204) {
+                        window.notifications.customError("errorSendInvite", window.lang.notif("errorFailureCheckLogs"));
+                        return;
+                    }
+                    window.notifications.customSuccess("sendInvite", window.lang.strings("sent"));
+                    if (onSuccess) onSuccess();
+                    this.addresses = [];
+                });
+            };
+            this._input.addEventListener("keypress", (e: KeyboardEvent) => {
+                if (e.key === "Enter") {
+                    e.preventDefault();
+                    this._submit.click();
+                }
+            })
+        }
     }
 }

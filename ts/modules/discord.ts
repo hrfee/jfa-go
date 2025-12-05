@@ -10,7 +10,9 @@ export interface DiscordUser {
 
 var listeners: { [buttonText: string]: (event: CustomEvent) => void } = {};
 
-export function newDiscordSearch(title: string, description: string, buttonText: string, buttonFunction: (user: DiscordUser, passData: string) => void): (passData: string) => void {
+export type DiscordSearch = (passData: string) => void;
+
+export function newDiscordSearch(title: string, description: string, buttonText: string, buttonFunction: (user: DiscordUser, passData: string) => void): DiscordSearch {
     if (!window.discordEnabled) {
         return () => {};
     }

@@ -712,20 +712,6 @@
                                     </div>
                                 </div>
                                 <div id="create-send-to-container" class="flex flex-col gap-4">
-                                    <label class="label supra">{{ .strings.inviteSendToEmail }}</label>
-                                    <div class="flex flex-row gap-2">
-                                        {{ if .discordEnabled }}
-                                        <input type="text" id="create-send-to" class="input ~neutral @low" placeholder="example@example.com | user#1234">
-                                        <span id="create-send-to-search" class="button ~neutral @low">
-                                            <i class="icon ri-search-2-line" title="{{ .strings.search }}"></i>
-                                        </span>
-                                        {{ else }}
-                                        <input type="email" id="create-send-to" class="input ~neutral @low" placeholder="example@example.com">
-                                        {{ end }}
-                                        <label for="create-send-to-enabled" class="button ~neutral @low">
-                                            <input type="checkbox" id="create-send-to-enabled" aria-label="Send to address enabled">
-                                        </label>
-                                    </div>
                                 </div>
                             </div>
                             <div>

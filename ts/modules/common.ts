@@ -251,14 +251,13 @@ export function toggleLoader(el: HTMLElement, small: boolean = true) {
 }
 
 export function addLoader(el: HTMLElement, small: boolean = true, relative: boolean = false) {
-    if (!el.classList.contains("loader")) {
-        el.classList.add("loader");
-        if (relative) el.classList.add("rel");
-        if (small) { el.classList.add("loader-sm"); }
-        const dot = document.createElement("span") as HTMLSpanElement;
-        dot.classList.add("dot")
-        el.appendChild(dot);
-    }
+    if (el.classList.contains("loader")) return;
+    el.classList.add("loader");
+    if (relative) el.classList.add("rel");
+    if (small) { el.classList.add("loader-sm"); }
+    const dot = document.createElement("span") as HTMLSpanElement;
+    dot.classList.add("dot")
+    el.appendChild(dot);
 }
 
 export function removeLoader(el: HTMLElement, small: boolean = true) {
@@ -347,3 +346,35 @@ export function throttle (callback: () => void, limitMilliseconds: number): () =
     }
 }
 
+export function SetupCopyButton(button: HTMLButtonElement, text: string, baseClass?: string, notif?: string) {
+    if (!notif) notif = window.lang.strings("copied");
+    if (!baseClass) baseClass = "~info";
+    // script will probably turn this into multiple
+    const baseClasses = baseClass.split(" ");
+    button.type = "button";
+    button.classList.add("button", ...baseClasses, "@low", "p-1");
+    button.title = window.lang.strings("copy");
+    const icon = document.createElement("i");
+    icon.classList.add("icon", "ri-file-copy-line");
+    button.appendChild(icon)
+    button.onclick = () => { 
+        toClipboard(text);
+        icon.classList.remove("ri-file-copy-line");
+        icon.classList.add("ri-check-line");
+        button.classList.remove(...baseClasses);
+        button.classList.add("~positive");
+        setTimeout(() => {
+            icon.classList.remove("ri-check-line");
+            icon.classList.add("ri-file-copy-line");
+            button.classList.remove("~positive");
+            button.classList.add(...baseClasses);
+        }, 800);
+        window.notifications.customPositive("copied", "", notif);
+    };
+}
+
+export function CopyButton(text: string, baseClass?: string, notif?: string): HTMLButtonElement {
+    const button = document.createElement("button");
+    SetupCopyButton(button, text, baseClass, notif);
+    return button;
+}
