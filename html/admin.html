@@ -266,8 +266,8 @@
         <div id="modal-announce" class="modal">
             <form class="relative mx-auto my-[10%] w-4/5 lg:w-2/3 content card" id="form-announce" href="">
                 <span class="heading"><span id="header-announce"></span> <span class="modal-close">&times;</span></span>
-                <div class="flex flex-col md:flex-row gap-4">
-                    <div class="card ~neutral @low w-1/2 grow">
+                <div class="flex flex-row flex-wrap gap-4">
+                    <div class="card ~neutral @low flex flex-col gap-2 justify-between basis-[24rem] grow-[4]">
                         <div id="announce-details" class="flex flex-col gap-2">
                             <span class="label supra" for="editor-variables" id="label-editor-variables">{{ .strings.variables }}</span>
                             <div id="announce-variables" class="flex flex-row flex-wrap gap-2">
@@ -293,7 +293,7 @@
                             <span class="button ~info @low center supra" id="save-announce">{{ .strings.saveAsTemplate }}</span>
                         </div>
                     </div>
-                    <div class="card ~neutral @low flex flex-col gap-2 min-w-lg">
+                    <div class="card ~neutral @low flex flex-col gap-2 basis-[24rem] grow">
                         <span class="subheading supra">{{ .strings.preview }}</span>
                         <div id="announce-preview"></div>
                     </div>
@@ -321,8 +321,8 @@
         <div id="modal-editor" class="modal">
             <form class="relative mx-auto my-[10%] w-4/5 lg:w-2/3 content card" id="form-editor" href="">
                 <span class="heading"><span id="header-editor"></span> <span class="modal-close">&times;</span></span>
-                <div class="flex flex-col md:flex-row gap-4">
-                    <div class="card ~neutral @low w-1/2 grow flex flex-col gap-2 justify-between">
+                <div class="flex flex-row flex-wrap gap-4">
+                    <div class="card ~neutral @low flex flex-col gap-2 justify-between basis-[24rem] grow-[4]">
                         <div class="flex flex-col gap-2">
                             <aside class="aside sm ~urge dark:~d_info @low" id="aside-editor"></aside> 
                             <label class="label supra" for="editor-variables" id="label-editor-variables">{{ .strings.variables }}</label>
@@ -341,7 +341,7 @@
                             </label>
                         </div>
                     </div>
-                    <div class="card ~neutral @low flex flex-col gap-2 min-w-lg">
+                    <div class="card ~neutral @low flex flex-col gap-2 basis-[24rem] grow">
                         <span class="subheading supra">{{ .strings.preview }}</span>
                         <div id="editor-preview"></div>
                     </div>
