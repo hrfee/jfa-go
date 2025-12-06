@@ -24,6 +24,10 @@ interface settingsChangedEvent extends Event {
     };
 }
 
+interface advancedEvent extends Event {
+    detail: boolean;
+}
+
 const changedEvent = (section: string, setting: string, value: string, hidden: boolean = false) => { 
     return new CustomEvent(`settings-${section}-${setting}`, { detail: {
         value: value,
@@ -110,8 +114,8 @@ class DOMSetting {
         console.log(`dispatched settings-${this._section}-${this.setting} = ${this.valueAsString()}/${v}`);
     }
 
-    private _advancedListener = (event: settingsChangedEvent) => {
-        this.hidden = !toBool(event.detail.value);
+    private _advancedListener = (event: advancedEvent) => {
+        this.hidden = !(event.detail);
     }
 
     get advanced(): boolean { return this._advanced; }
@@ -876,8 +880,8 @@ class sectionButton extends groupableItem {
         }); 
     }
 
-    private _advancedListener = (event: settingsChangedEvent) => {
-        if (!toBool(event.detail.value)) {
+    private _advancedListener = (event: advancedEvent) => {
+        if (!(event.detail)) {
             this._el.classList.add("unfocused");
         } else {
             this._el.classList.remove("unfocused");
