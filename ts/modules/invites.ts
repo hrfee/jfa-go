@@ -1,6 +1,7 @@
-import { _get, _post, _delete, toClipboard, toggleLoader, toDateString, SetupCopyButton, addLoader, removeLoader, DateCountdown } from "../modules/common.js";
+import { _get, _post, _delete, _patch, toClipboard, toggleLoader, toDateString, SetupCopyButton, addLoader, removeLoader, DateCountdown } from "../modules/common.js";
 import { DiscordSearch, DiscordUser, newDiscordSearch } from "../modules/discord.js";
 import { reloadProfileNames }  from "../modules/profiles.js";
+import { HiddenInputField } from "./ui.js";
 
 declare var window: GlobalWindow;
 
@@ -14,16 +15,18 @@ export const generateCodeLink = (code: string): string => {
 
 class DOMInvite implements Invite {
     updateNotify = (checkbox: HTMLInputElement) => {
-        let state: { [code: string]: { [type: string]: boolean } } = {};
+        let state = {
+            code: this.code,
+            notify_expiry: this.notify_expiry,
+            notify_creation: this.notify_creation
+        };
         let revertChanges: () => void;
         if (checkbox.classList.contains("inv-notify-expiry")) {
             revertChanges = () => { this.notify_expiry = !this.notify_expiry };
-            state[this.code] = { "notify-expiry": this.notify_expiry };
         } else {
             revertChanges = () => { this.notify_creation = !this.notify_creation };
-            state[this.code] = { "notify-creation": this.notify_creation };
         }
-        _post("/invites/notify", state, (req: XMLHttpRequest) => {
+        _patch("/invites/edit", state, (req: XMLHttpRequest) => {
             if (req.readyState == 4 && !(req.status == 200 || req.status == 204)) {
                 revertChanges();
             }
@@ -37,18 +40,6 @@ class DOMInvite implements Invite {
             document.dispatchEvent(inviteDeletedEvent);
         }
     })
-
-    private _label: string = "";
-    get label(): string { return this._label; }
-    set label(label: string) {
-        this._label = label;
-        const linkEl = this._codeArea.querySelector("a") as HTMLAnchorElement;
-        if (label == "") {
-            linkEl.textContent = this.code.replace(/-/g, '-');
-        } else {
-            linkEl.textContent = label;
-        }
-    }
 
     private _userLabel: string = "";
     get user_label(): string { return this._userLabel; }
@@ -67,16 +58,26 @@ class DOMInvite implements Invite {
         }
     }
 
+    private _label: string = "";
+    get label(): string { return this._label; }
+    set label(label: string) {
+        this._label = label;
+        if (label == "") {
+            this.code = this.code;
+        } else {
+            this._labelEditor.value = label;
+        }
+    }
+
     private _code: string = "None";
     get code(): string { return this._code; }
     set code(code: string) {
         this._code = code;
         this._codeLink = generateCodeLink(code);
-        const linkEl = this._codeArea.querySelector("a") as HTMLAnchorElement;
         if (this.label == "") {
-            linkEl.textContent = code.replace(/-/g, '-');
+            this._labelEditor.value = code.replace(/-/g, '-');
         }
-        linkEl.href = this._codeLink;
+        this._linkEl.href = this._codeLink;
     }
     private _codeLink: string;
 
@@ -311,14 +312,31 @@ class DOMInvite implements Invite {
         const select = this._left.querySelector("select") as HTMLSelectElement;
         const previous = this.profile;
         let profile = select.value;
-        if (profile == "noProfile") { profile = ""; }
-        _post("/invites/profile", { "invite": this.code, "profile": profile }, (req: XMLHttpRequest) => {
+        let state = {code: this.code};
+        if (profile != "noProfile") { state["profile"] = profile };
+        _patch("/invites/edit", state, (req: XMLHttpRequest) => {
             if (req.readyState == 4) {
                 if (!(req.status == 200 || req.status == 204)) {
                     select.value = previous || "noProfile";
                 } else {
                     this._profile = profile;
                 }
+            }
+        });
+    }
+
+    private _setLabel = () => {
+        const newLabel = this._labelEditor.value.trim();
+        const old = this.label;
+        this.label = newLabel;
+        let state = {
+            code: this.code,
+            label: newLabel
+        };
+        _patch("/invites/edit", state, (req: XMLHttpRequest) => {
+            if (req.readyState != 4) return;
+            if (req.status != 200 && req.status != 204) {
+                this.label = old;
             }
         });
     }
@@ -334,6 +352,10 @@ class DOMInvite implements Invite {
     private _middle: HTMLDivElement;
     private _right: HTMLDivElement;
     private _userTable: HTMLDivElement;
+
+    private _linkContainer: HTMLElement;
+    private _linkEl: HTMLAnchorElement;
+    private _labelEditor: HiddenInputField;
 
     private _detailsToggle: HTMLInputElement;
 
@@ -413,11 +435,22 @@ class DOMInvite implements Invite {
         this._codeArea.classList.add("flex", "flex-row", "flex-wrap", "justify-between", "w-full", "items-center", "gap-2", "truncate");
         this._codeArea.innerHTML = `
         <div class="flex items-center gap-x-4 gap-y-2 truncate">
-            <a class="invite-link text-black dark:text-white font-mono bg-inherit truncate" href=""></a>
+            <a class="invite-link-container text-black dark:text-white font-mono bg-inherit truncate"></a>
             <button class="invite-copy-button"></button>
         </div>
         <span>${window.lang.var("strings", "inviteExpiresInTime", "<span class=\"inv-duration\"></span>")}</span>
         `;
+
+        this._linkContainer = this._codeArea.getElementsByClassName("invite-link-container")[0] as HTMLElement;
+        this._labelEditor = new HiddenInputField({
+            container: this._linkContainer,
+            buttonOnLeft: false,
+            customContainerHTML: `<a class="hidden-input-content invite-link text-black dark:text-white font-mono bg-inherit truncate"></a>`,
+            clickAwayShouldSave: true,
+            onSet: this._setLabel
+        });
+        this._linkEl = this._linkContainer.getElementsByClassName("invite-link")[0] as HTMLAnchorElement;
+
         const copyButton = this._codeArea.getElementsByClassName("invite-copy-button")[0] as HTMLButtonElement;
         SetupCopyButton(copyButton, this._codeLink); 
 

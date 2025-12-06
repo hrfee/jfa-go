@@ -142,6 +142,8 @@ export const _post = (url: string, data: Object, onreadystatechange: (req: XMLHt
 
 export const _put = (url: string, data: Object, onreadystatechange: (req: XMLHttpRequest) => void, response?: boolean, statusHandler?: (req: XMLHttpRequest) => void, noConnectionError: boolean = false): void => _req("PUT", url, data, onreadystatechange, response, statusHandler, noConnectionError);
 
+export const _patch = (url: string, data: Object, onreadystatechange: (req: XMLHttpRequest) => void, response?: boolean, statusHandler?: (req: XMLHttpRequest) => void, noConnectionError: boolean = false): void => _req("PATCH", url, data, onreadystatechange, response, statusHandler, noConnectionError);
+
 export function _delete(url: string, data: Object, onreadystatechange: (req: XMLHttpRequest) => void, noConnectionError: boolean = false): void {
     let req = new XMLHttpRequest();
     if (window.pages) { url = window.pages.Base + url; }

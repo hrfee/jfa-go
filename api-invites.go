@@ -186,6 +186,100 @@ func (app *appContext) SendInvite(gc *gin.Context) {
 	respondBool(200, true, gc)
 }
 
+// @Summary Edit an existing invite. Not all fields are modifiable.
+// @Produce json
+// @Param EditableInviteDTO body EditableInviteDTO true "Email address or Discord username"
+// @Success 200 {object} boolResponse
+// @Failure 500 {object} stringResponse
+// @Failure 400 {object} stringResponse
+// @Router /invites/edit [patch]
+// @Security Bearer
+// @tags Invites
+func (app *appContext) EditInvite(gc *gin.Context) {
+	var req EditableInviteDTO
+	gc.BindJSON(&req)
+	inv, ok := app.storage.GetInvitesKey(req.Code)
+	if !ok {
+		msg := fmt.Sprintf(lm.InvalidInviteCode, req.Code)
+		app.err.Println(msg)
+		respond(400, msg, gc)
+		return
+	}
+	changed := false
+
+	if req.NotifyCreation != nil || req.NotifyExpiry != nil {
+		setNotify := map[string]bool{}
+		if req.NotifyExpiry != nil {
+			setNotify["notify-expiry"] = *req.NotifyExpiry
+		}
+		if req.NotifyCreation != nil {
+			setNotify["notify-creation"] = *req.NotifyCreation
+		}
+		ch, ok := app.SetNotify(&inv, setNotify, gc)
+		changed = changed || ch
+		if ch && !ok {
+			return
+		}
+	}
+	if req.Profile != nil {
+		ch, ok := app.SetProfile(&inv, *req.Profile, gc)
+		changed = changed || ch
+		if ch && !ok {
+			return
+		}
+	}
+	if req.Label != nil {
+		*req.Label = strings.TrimSpace(*req.Label)
+		changed = changed || (*req.Label != inv.Label)
+		inv.Label = *req.Label
+	}
+	if req.UserLabel != nil {
+		*req.UserLabel = strings.TrimSpace(*req.UserLabel)
+		changed = changed || (*req.UserLabel != inv.UserLabel)
+		inv.UserLabel = *req.UserLabel
+	}
+	if req.UserExpiry != nil {
+		changed = changed || (*req.UserExpiry != inv.UserExpiry)
+		inv.UserExpiry = *req.UserExpiry
+		if !inv.UserExpiry {
+			inv.UserMonths = 0
+			inv.UserDays = 0
+			inv.UserHours = 0
+			inv.UserMinutes = 0
+		}
+	}
+	if req.UserMonths != nil || req.UserDays != nil || req.UserHours != nil || req.UserMinutes != nil {
+		if inv.UserMonths == 0 &&
+			inv.UserDays == 0 &&
+			inv.UserHours == 0 &&
+			inv.UserMinutes == 0 {
+			changed = changed || (inv.UserExpiry != false)
+			inv.UserExpiry = false
+		}
+		if req.UserMonths != nil {
+			changed = changed || (*req.UserMonths != inv.UserMonths)
+			inv.UserMonths = *req.UserMonths
+		}
+		if req.UserDays != nil {
+			changed = changed || (*req.UserDays != inv.UserDays)
+			inv.UserDays = *req.UserDays
+		}
+		if req.UserHours != nil {
+			changed = changed || (*req.UserHours != inv.UserHours)
+			inv.UserHours = *req.UserHours
+		}
+		if req.UserMinutes != nil {
+			changed = changed || (*req.UserMinutes != inv.UserMinutes)
+			inv.UserMinutes = *req.UserMinutes
+		}
+	}
+
+	if changed {
+		app.storage.SetInvitesKey(inv.Code, inv)
+	}
+	respondBool(200, true, gc)
+}
+
 // sendInvite attempts to send an invite to the given email address or discord username.
 func (app *appContext) sendInvite(req sendInviteDTO, invite *Invite) (err error) {
 	if !(app.config.Section("invite_emails").Key("enabled").MustBool(false)) {
@@ -369,22 +463,24 @@ func (app *appContext) GetInvites(gc *gin.Context) {
 		// years, months, days, hours, minutes, _ := timeDiff(inv.ValidTill, currentTime)
 		// months += years * 12
 		invite := inviteDTO{
-			Code:      inv.Code,
+			EditableInviteDTO: EditableInviteDTO{
+				Code:        inv.Code,
+				Label:       &inv.Label,
+				UserLabel:   &inv.UserLabel,
+				Profile:     &inv.Profile,
+				UserExpiry:  &inv.UserExpiry,
+				UserMonths:  &inv.UserMonths,
+				UserDays:    &inv.UserDays,
+				UserHours:   &inv.UserHours,
+				UserMinutes: &inv.UserMinutes,
+			},
 			ValidTill: inv.ValidTill.Unix(),
 			// Months:      months,
 			// Days:        days,
 			// Hours:       hours,
 			// Minutes:     minutes,
-			UserExpiry:  inv.UserExpiry,
-			UserMonths:  inv.UserMonths,
-			UserDays:    inv.UserDays,
-			UserHours:   inv.UserHours,
-			UserMinutes: inv.UserMinutes,
-			Created:     inv.Created.Unix(),
-			Profile:     inv.Profile,
-			NoLimit:     inv.NoLimit,
-			Label:       inv.Label,
-			UserLabel:   inv.UserLabel,
+			Created: inv.Created.Unix(),
+			NoLimit: inv.NoLimit,
 		}
 		if len(inv.UsedBy) != 0 {
 			invite.UsedBy = map[string]int64{}
@@ -420,10 +516,12 @@ func (app *appContext) GetInvites(gc *gin.Context) {
 			}
 			if _, ok := inv.Notify[addressOrID]; ok {
 				if _, ok = inv.Notify[addressOrID]["notify-expiry"]; ok {
-					invite.NotifyExpiry = inv.Notify[addressOrID]["notify-expiry"]
+					notifyExpiry := inv.Notify[addressOrID]["notify-expiry"]
+					invite.NotifyExpiry = &notifyExpiry
 				}
 				if _, ok = inv.Notify[addressOrID]["notify-creation"]; ok {
-					invite.NotifyCreation = inv.Notify[addressOrID]["notify-creation"]
+					notifyCreation := inv.Notify[addressOrID]["notify-creation"]
+					invite.NotifyCreation = &notifyCreation
 				}
 			}
 		}
@@ -435,82 +533,54 @@ func (app *appContext) GetInvites(gc *gin.Context) {
 	gc.JSON(200, resp)
 }
 
-// @Summary Set profile for an invite
-// @Produce json
-// @Param inviteProfileDTO body inviteProfileDTO true "Invite profile object"
-// @Success 200 {object} boolResponse
-// @Failure 500 {object} stringResponse
-// @Router /invites/profile [post]
-// @Security Bearer
-// @tags Invites
-func (app *appContext) SetProfile(gc *gin.Context) {
-	var req inviteProfileDTO
-	gc.BindJSON(&req)
+func (app *appContext) SetProfile(inv *Invite, name string, gc *gin.Context) (changed, ok bool) {
+	changed = false
+	ok = false
 	// "" means "Don't apply profile"
-	if _, ok := app.storage.GetProfileKey(req.Profile); !ok && req.Profile != "" {
-		app.err.Printf(lm.FailedGetProfile, req.Profile)
+	if _, profileExists := app.storage.GetProfileKey(name); !profileExists && name != "" {
+		app.err.Printf(lm.FailedGetProfile, name)
 		respond(500, "Profile not found", gc)
 		return
 	}
-	inv, _ := app.storage.GetInvitesKey(req.Invite)
-	inv.Profile = req.Profile
-	app.storage.SetInvitesKey(req.Invite, inv)
-	respondBool(200, true, gc)
+	changed = name != inv.Profile
+	inv.Profile = name
+	ok = true
+	return
 }
 
-// @Summary Set notification preferences for an invite.
-// @Produce json
-// @Param setNotifyDTO body setNotifyDTO true "Map of invite codes to notification settings objects"
-// @Success 200
-// @Failure 400 {object} stringResponse
-// @Failure 500 {object} stringResponse
-// @Router /invites/notify [post]
-// @Security Bearer
-// @tags Other
-func (app *appContext) SetNotify(gc *gin.Context) {
-	var req map[string]map[string]bool
-	gc.BindJSON(&req)
-	changed := false
-	for code, settings := range req {
-		invite, ok := app.storage.GetInvitesKey(code)
-		if !ok {
-			msg := fmt.Sprintf(lm.InvalidInviteCode, code)
-			app.err.Println(msg)
-			respond(400, msg, gc)
+func (app *appContext) SetNotify(inv *Invite, settings map[string]bool, gc *gin.Context) (changed, ok bool) {
+	changed = false
+	ok = false
+	var address string
+	jellyfinLogin := app.config.Section("ui").Key("jellyfin_login").MustBool(false)
+	if jellyfinLogin {
+		var addressAvailable bool = app.getAddressOrName(gc.GetString("jfId")) != ""
+		if !addressAvailable {
+			app.err.Printf(lm.FailedGetContactMethod, gc.GetString("jfId"))
+			respond(500, fmt.Sprintf(lm.FailedGetContactMethod, "admin"), gc)
 			return
 		}
-		var address string
-		jellyfinLogin := app.config.Section("ui").Key("jellyfin_login").MustBool(false)
-		if jellyfinLogin {
-			var addressAvailable bool = app.getAddressOrName(gc.GetString("jfId")) != ""
-			if !addressAvailable {
-				app.err.Printf(lm.FailedGetContactMethod, gc.GetString("jfId"))
-				respond(500, fmt.Sprintf(lm.FailedGetContactMethod, "admin"), gc)
-				return
-			}
-			address = gc.GetString("jfId")
-		} else {
-			address = app.config.Section("ui").Key("email").String()
-		}
-		if invite.Notify == nil {
-			invite.Notify = map[string]map[string]bool{}
-		}
-		if _, ok := invite.Notify[address]; !ok {
-			invite.Notify[address] = map[string]bool{}
-		} /*else {
-		if _, ok := invite.Notify[address]["notify-expiry"]; !ok {
-		*/
-		for _, notifyType := range []string{"notify-expiry", "notify-creation"} {
-			if _, ok := settings[notifyType]; ok && invite.Notify[address][notifyType] != settings[notifyType] {
-				invite.Notify[address][notifyType] = settings[notifyType]
-				app.debug.Printf(lm.SetAdminNotify, notifyType, settings[notifyType], address)
-				changed = true
-			}
-		}
-		if changed {
-			app.storage.SetInvitesKey(code, invite)
+		address = gc.GetString("jfId")
+	} else {
+		address = app.config.Section("ui").Key("email").String()
+	}
+	if inv.Notify == nil {
+		inv.Notify = map[string]map[string]bool{}
+	}
+	if _, ok := inv.Notify[address]; !ok {
+		inv.Notify[address] = map[string]bool{}
+	} /*else {
+	if _, ok := invite.Notify[address]["notify-expiry"]; !ok {
+	*/
+	for _, notifyType := range []string{"notify-expiry", "notify-creation"} {
+		if _, ok := settings[notifyType]; ok && inv.Notify[address][notifyType] != settings[notifyType] {
+			inv.Notify[address][notifyType] = settings[notifyType]
+			app.debug.Printf(lm.SetAdminNotify, notifyType, settings[notifyType], address)
+			changed = true
 		}
 	}
+	ok = true
+	return
 }
 
 // @Summary Delete an invite.
