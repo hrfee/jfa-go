@@ -359,6 +359,33 @@ class DOMInvite implements Invite {
 
     private _detailsToggle: HTMLInputElement;
 
+    private _gap: number;
+    get gap(): number { return this._gap; }
+    set gap(v: number) {
+        // Do it this way to ensure the class is included by tailwind
+        let gapClass: string;
+        switch (v) {
+            case 1:
+                gapClass = "gap-1";
+                break;
+            case 2:
+                gapClass = "gap-2";
+                break;
+            case 3:
+                gapClass = "gap-3";
+                break;
+            case 4:
+                gapClass = "gap-4";
+                break;
+            default:
+                gapClass = "gap-"+v;
+                break;
+        }
+        this._container.classList.remove("gap-"+this._gap);
+        this._container.classList.add(gapClass);
+        this._gap = v;
+    }
+
     // whether the details card is expanded.
     get expanded(): boolean {
         return this._detailsToggle.checked;
@@ -369,20 +396,40 @@ class DOMInvite implements Invite {
             this._detailsToggle.previousElementSibling.classList.add("rotated");
             this._detailsToggle.previousElementSibling.classList.remove("not-rotated");
             
-            this._details.classList.remove("unfocused");
-            this._details.classList.add("focused");
-            const fullHeight = () => {
-                this._details.removeEventListener("transitionend", fullHeight);
+            const mainTransitionStart = () => {
+                this._details.removeEventListener("transitionend", mainTransitionStart);
+                this._details.style.transitionDuration = "";
+                this._details.addEventListener("transitionend", mainTransitionEnd);
+                this._details.style.opacity = "100%";
+                this._details.style.maxHeight = "calc(" + (1*this._details.scrollHeight)+"px" + " + " + (0.125 * 8 * this.gap) + "rem)"; // Compensate for the margin and padding (ugly)
+                this._details.style.marginTop = "0";
+                this._details.style.marginBottom = "0";
+                this._details.style.paddingTop = "";
+                this._details.style.paddingBottom = "";
+            };
+            const mainTransitionEnd = () => {
+                this._details.removeEventListener("transitionend", mainTransitionEnd);
                 this._details.style.maxHeight = "9999px";
             };
-            this._details.addEventListener("transitionend", fullHeight);
-            this._details.style.maxHeight = (1*this._details.scrollHeight)+"px";
-            this._details.style.opacity = "100%";
+            this._details.classList.remove("unfocused");
+            this._details.classList.add("focused");
+            this._details.style.transitionDuration = "1ms";
+            // Add negative y margin to cancel out "gap-x" when we unhide (and are initially height: 0)
+            // perhaps not great assuming --spacing == 0.25rem
+            this._details.style.marginTop = (-0.125 * this.gap)+"rem";
+            this._details.style.marginBottom = (-0.125 * this.gap)+"rem";
+            this._details.style.paddingTop = "0";
+            this._details.style.paddingBottom = "0";
+            mainTransitionStart();
         } else {
             this._detailsToggle.previousElementSibling.classList.remove("rotated");
             this._detailsToggle.previousElementSibling.classList.add("not-rotated");
             const mainTransitionEnd = () => {
                 this._details.removeEventListener("transitionend", mainTransitionEnd);
+                this._details.style.paddingTop = "";
+                this._details.style.paddingBottom = "";
+                this._details.style.marginTop = "0";
+                this._details.style.marginBottom = "0";
                 this._details.classList.add("unfocused");
                 this._details.classList.remove("focused");
             };
@@ -390,8 +437,14 @@ class DOMInvite implements Invite {
                 this._details.removeEventListener("transitionend", mainTransitionStart);
                 this._details.style.transitionDuration = "";
                 this._details.addEventListener("transitionend", mainTransitionEnd);
+                this._details.style.paddingTop = "0";
+                this._details.style.paddingBottom = "0";
                 this._details.style.maxHeight = "0";
                 this._details.style.opacity = "0";
+                // Add negative y margin to cancel out "gap-x" when we finish hiding (and end up height:0)
+                // perhaps not great assuming --spacing == 0.25rem
+                this._details.style.marginTop = (-0.125 * this.gap)+"rem";
+                this._details.style.marginBottom = (-0.125 * this.gap)+"rem";
             };
             this._details.style.transitionDuration = "1ms";
             this._details.addEventListener("transitionend", mainTransitionStart);
@@ -424,11 +477,14 @@ class DOMInvite implements Invite {
     constructor(invite: Invite) {
         // first create the invite structure, then use our setter methods to fill in the data.
         this._container = document.createElement('div') as HTMLDivElement;
-        this._container.classList.add("inv", "overflow-visible", "flex", "flex-col", "gap-2");
+        this._container.classList.add("inv", "overflow-visible", "flex", "flex-col");
+       
+        // Stores gap-x so we can cancel it out for transitions
+        this.gap = 2;
 
         this._header = document.createElement('div') as HTMLDivElement;
         this._container.appendChild(this._header);
-        this._header.classList.add("card", "dark:~d_neutral", "@low", "inv-header", "flex", "flex-row", "justify-between", "overflow-visible", "gap-2");
+        this._header.classList.add("card", "dark:~d_neutral", "@low", "inv-header", "flex", "flex-row", "justify-between", "overflow-visible", "gap-2", "z-[1]");
 
         this._codeArea = document.createElement('div') as HTMLDivElement;
         this._header.appendChild(this._codeArea);
