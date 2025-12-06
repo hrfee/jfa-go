@@ -13,6 +13,7 @@
         "languageSet": "Language set to {language}.",
         "discordDMs": "Please check your DMs for a response.",
         "sentInvite": "Sent invite.",
-        "sentInviteFailure": "Failed to send invite, check logs."
+        "sentInviteFailure": "Failed to send invite, check logs.",
+        "noPermission": "You do not have permissions for this action."
     }
 }

@@ -9,6 +9,7 @@
         "name": "Name",
         "submit": "Submit",
         "send": "Send",
+        "sent": "Sent",
         "success": "Success",
         "continue": "Continue",
         "error": "Error",
@@ -41,7 +42,10 @@
         "delete": "Delete",
         "myAccount": "My Account",
         "referrals": "Referrals",
-        "inviteRemainingUses": "Remaining uses"
+        "inviteRemainingUses": "Remaining uses",
+        "internal": "Internal",
+        "external": "External",
+        "failed": "Failed"
     },
     "notifications": {
         "errorLoginBlank": "The username and/or password were left blank.",

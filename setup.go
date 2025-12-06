@@ -39,8 +39,10 @@ func (app *appContext) ServeSetup(gc *gin.Context) {
 		respond(500, "Failed to fetch default values", gc)
 		return
 	}
+	pages := PagePathsDTO{PagePaths: PAGES}
 	gc.HTML(200, "setup.html", gin.H{
 		"cssVersion": cssVersion,
+		"pages":      pages,
 		"lang":       app.storage.lang.Setup[lang],
 		"strings":    app.storage.lang.Setup[lang].Strings,
 		"emailLang":  app.storage.lang.Email[emailLang],

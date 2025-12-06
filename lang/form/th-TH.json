@@ -1,0 +1,88 @@
+{
+    "meta": {
+        "name": "ภาษาไทย (TH)"
+    },
+    "strings": {
+        "pageTitle": "สมัครบัญชี Jellyfin",
+        "createAccountHeader": "สมัครบัญชี",
+        "accountDetails": "รายละเอียด",
+        "emailAddress": "ที่อยู่อีเมล",
+        "username": "ชื่อผู้ใช้งาน",
+        "oldPassword": "รหัสผ่านเก่า",
+        "newPassword": "รหัสผ่านใหม่",
+        "password": "รหัสผ่าน",
+        "reEnterPassword": "กรอกรหัสผ่านซ้ำ",
+        "reEnterPasswordInvalid": "รหัสผ่านไม่เหมือนกัน",
+        "createAccountButton": "สมัครบัญชี",
+        "passwordRequirementsHeader": "ความต้องการของรหัสผ่าน",
+        "successHeader": "สำเร็จ!",
+        "confirmationRequired": "จำเป็นต้องยืนยันอีเมล",
+        "confirmationRequiredMessage": "โปรดตรวจสอบกล่องข้อความ (Inbox) เพื่อยืนยันที่อยู่ของท่าน",
+        "yourAccountIsValidUntil": "บัญชีของคุณจะใช้ได้ถึงวันที่ {date}",
+        "sendPIN": "ส่งรหัส (PIN) ด้านล่างไปให้บอท, หลังจากนั้นกลับมาเพื่อผูกบัญชีของคุณ",
+        "sendPINDiscord": "พิมพ์ {command} ในห้อง {server_channel} บน Discord, หลังจากนั้นส่งรหัส (PIN) ด้านล่าง",
+        "matrixEnterUser": "กรอกรหัสประจำไอดี, แล้วกดส่ง, รหัส (PIN) จะส่งไปให้คุณ และโปรดกรอกลงตรงนี้เพื่อดำเนินการต่อ",
+        "welcomeUser": "ยินดีต้อนรับ, {user}!",
+        "addContactMethod": "เพิ่มช่องทางการติดต่อ",
+        "editContactMethod": "แก้ไขช่องทางการติดต่อ",
+        "joinTheServer": "เข้าร่วมเซิฟเวอร์:",
+        "customMessagePlaceholderHeader": "ปรับเปลี่ยนการ์ดนี้",
+        "customMessagePlaceholderContent": "กดไปที่ปุ่ม \"แก้ไขหน้าผู้ใช้\" ในการตั้งค่าเพื่อปรับเปลี่ยนการ์ดนี้, หรือแสดงบนหน้าเข้าสู่ระบบ, และไม่ต้องห่วง! ผู้ใช้จะไม่เห็นสิ่งนี้",
+        "userPageSuccessMessage": "คุณสามารถแก้ไขหรือดูข้อมูลเกี่ยวกับบัญชีได้ทีหลัง ผ่านหน้า {myAccount}",
+        "resetPassword": "ตั้งค่ารหัสผ่านใหม่",
+        "resetPasswordThroughJellyfin": "หากต้องการตั้งค่ารหัสผ่านใหม่, เข้าไปที่ {jfLink} และกดปุ่ม \"ตั้งค่ารหัสผ่านใหม่\"",
+        "resetPasswordThroughLink": "หากต้องการตั้งค่ารหัสผ่านใหม่, กรอกชื่อผู้ใช้, บัญชีอีเมล หรือชื่อผู้ใช้ที่เชื่อมไว้, แล้วกดส่ง แล้วลิงค์จะถูกส่งให้ตั้งค่ารหัสผ่านใหม่",
+        "resetPasswordThroughLinkStart": "หากต้องการตั้งค่ารหัสผ่านใหม่, กรอกช่องใดช่องหนึ่งด้านล่าง:",
+        "resetPasswordThroughLinkEnd": "หลังจากนั้นกดส่ง แล้วลิงค์จะถูกส่งให้ตั้งค่ารหัสผ่านใหม่",
+        "resetPasswordUsername": "ชื่อผู้ใช้ Jellyfin ของคุณ",
+        "resetPasswordEmail": "บัญชีอีเมลของคุณ",
+        "resetPasswordContactMethod": "ชื่อผู้ใช้ที่เชื่อมไว้กับบัญชีของคุณอันใดก็ได้",
+        "resetSent": "ส่งอีกครั้ง",
+        "resetSentDescription": "ถ้าหากบัญชี/ข้อมูลที่ให้ไว้ตรงกับในระบบ, ลิงค์เพื่อตั้งค่ารหัสใหม่จะถูกส่งให้ผ่านช่องทางติดต่อทั้งหมด. รหัสจะหมดอายุภายใน 30 นาที",
+        "changePassword": "เปลี่ยนรหัสผ่าน",
+        "referralsDescription": "ชวนเพื่อน & ครอบครัวเข้าสู่ Jellyfin ผ่านลิงค์นี้, กลับมาเอาอันใหม่อีกครั้งหากหมดอายุ",
+        "referralsWithExpiryDescription": "ชวนเพื่อน & ครอบครัวเข้าสู่ Jellyfin ผ่านลิงค์นี้, ลิงค์นี้จะถูกปิดใช้งานหลังจากหมดอายุ",
+        "copyReferral": "คัดลอกลิงค์",
+        "invitedBy": "คุณถูกเชิญโดยผู้ใช้ {user}"
+    },
+    "notifications": {
+        "errorUserExists": "ชื่อผู้ใช้นี้มีอยู่แล้ว",
+        "errorInvalidCode": "รหัสเชิญไม่ถูกต้อง",
+        "errorAccountLinked": "บัญชีนี้ถูกใช้ไปแล้ว",
+        "errorEmailLinked": "อีเมลนี้ถูกใช้ไปแล้ว",
+        "errorTelegramVerification": "จำเป็นต้องยืนยันตัวตนผ่าน Telegram",
+        "errorDiscordVerification": "จำเป็นต้องยืนยันตัวตนผ่าน Discord",
+        "errorMatrixVerification": "จำเป็นต้องยืนยันตัวตนผ่าน Matrix",
+        "errorInvalidPIN": "รหัส (PIN) ไม่ถูกต้อง",
+        "errorUnknown": "เกิดข้อผิดผลาดที่ไม่รู้จัก",
+        "errorNoEmail": "จำเป็นต้องกรอกอีเมล",
+        "errorCaptcha": "ยืนยันตัว (Capcha) ไม่ถูกต้อง",
+        "errorPassword": "ตรวจสอบกฎเกณฑ์รหัสผ่าน",
+        "errorNoMatch": "รหัสผ่านไม่ตรงกัน",
+        "errorOldPassword": "รหัสผ่านเก่าไม่ถูกต้อง",
+        "passwordChanged": "รหัสผ่านถูกเปลี่ยนแล้ว",
+        "verified": "ยืนยันบัญชีแล้ว"
+    },
+    "validationStrings": {
+        "length": {
+            "singular": "ต้องมีอย่างน้อย {n} ตัว",
+            "plural": "ต้องมีอย่างน้อย {n} ตัว"
+        },
+        "uppercase": {
+            "singular": "ต้องมีตัวอักษรตัวใหญ่อย่างน้อย {n} ตัว",
+            "plural": "ต้องมีตัวอักษรตัวใหญ่อย่างน้อย {n} ตัว"
+        },
+        "lowercase": {
+            "singular": "ต้องมีตัวอักษรตัวเล็กอย่างน้อย {n} ตัว",
+            "plural": "ต้องมีตัวอักษรตัวเล็กอย่างน้อย {n} ตัว"
+        },
+        "number": {
+            "singular": "ต้องมีตัวเลขอย่างน้อย {n} ตัว",
+            "plural": "ต้องมีตัวเลขอย่างน้อย {n} ตัว"
+        },
+        "special": {
+            "singular": "ต้องมีอักขระพิเศษอย่างน้อย {n} ตัว",
+            "plural": "ต้องมีอักขระพิเศษอย่างน้อย {n} ตัว"
+        }
+    }
+}

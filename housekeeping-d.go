@@ -31,6 +31,7 @@ func (app *appContext) clearEmails() {
 func (app *appContext) clearDiscord() {
 	app.debug.Println(lm.HousekeepingDiscord)
 	discordUsers := app.storage.GetDiscord()
+	removeRoleOnDisable := app.config.Section("discord").Key("disable_enable_role").MustBool(false)
 	for _, discordUser := range discordUsers {
 		user, err := app.jf.UserByID(discordUser.JellyfinID, false)
 		// Make sure the user doesn't exist, and no other error has occured
@@ -40,7 +41,7 @@ func (app *appContext) clearDiscord() {
 			app.discord.RemoveRole(discordUser.MethodID().(string))
 			app.storage.DeleteDiscordKey(discordUser.JellyfinID)
 		default:
-			if user.Policy.IsDisabled {
+			if removeRoleOnDisable && user.Policy.IsDisabled {
 				app.discord.RemoveRole(discordUser.MethodID().(string))
 			}
 			continue
@@ -140,7 +141,7 @@ func newHousekeepingDaemon(interval time.Duration, app *appContext) *GenericDaem
 	clearPWR := app.config.Section("captcha").Key("enabled").MustBool(false) && !app.config.Section("captcha").Key("recaptcha").MustBool(false)
 
 	if clearEmail || clearDiscord || clearTelegram || clearMatrix {
-		d.appendJobs(func(app *appContext) { app.jf.CacheExpiry = time.Now() })
+		d.appendJobs(func(app *appContext) { app.InvalidateJellyfinCache() })
 	}
 
 	if clearEmail {

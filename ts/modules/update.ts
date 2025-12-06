@@ -1,6 +1,8 @@
 import { _get, _post, toggleLoader, toDateString } from "../modules/common.js";
 import { Marked, Renderer } from "@ts-stack/markdown";
 
+declare var window: GlobalWindow;
+
 interface updateDTO {
     new: boolean;
     update: Update;

@@ -28,6 +28,18 @@ func (tv TelegramVerifiedToken) ToUser() *TelegramUser {
 	}
 }
 
+func EmptyTelegramUser() *TelegramUser {
+	return &TelegramUser{
+		TelegramVerifiedToken: TelegramVerifiedToken{
+			JellyfinID: "",
+			ChatID:     0,
+			Username:   "",
+		},
+		Lang:    "",
+		Contact: false,
+	}
+}
+
 func (t *TelegramVerifiedToken) Name() string                 { return t.Username }
 func (t *TelegramVerifiedToken) SetMethodID(id any)           { t.ChatID = id.(int64) }
 func (t *TelegramVerifiedToken) MethodID() any                { return t.ChatID }
@@ -121,7 +133,7 @@ func (t *TelegramDaemon) NewAssignedAuthToken(id string) string {
 }
 
 func (t *TelegramDaemon) run() {
-	t.app.info.Println(lm.StartDaemon, lm.Telegram)
+	t.app.info.Printf(lm.StartDaemon, lm.Telegram)
 	u := tg.NewUpdate(0)
 	u.Timeout = 60
 	updates, err := t.bot.GetUpdatesChan(u)

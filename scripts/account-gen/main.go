@@ -14,12 +14,13 @@ import (
 )
 
 var (
-	names = []string{"Aaron", "Agnes", "Bridget", "Brandon", "Dolly", "Drake", "Elizabeth", "Erika", "Geoff", "Graham", "Haley", "Halsey", "Josie", "John", "Kayleigh", "Luka", "Melissa", "Nasreen", "Paul", "Ross", "Sam", "Talib", "Veronika", "Zaynab"}
+	names = []string{"Aaron", "Agnes", "Bridget", "Brandon", "Dolly", "Drake", "Elizabeth", "Erika", "Geoff", "Graham", "Haley", "Halsey", "Josie", "John", "Kayleigh", "Luka", "Melissa", "Nasreen", "Paul", "Ross", "Sam", "Talib", "Veronika", "Zaynab", "Graig", "Rhoda", "Tyler", "Quentin", "Melinda", "Zelma", "Jack", "Clifton", "Sherry", "Boyce", "Elma", "Jere", "Shelby", "Caitlin", "Bertie", "Mallory", "Thelma", "Charley", "Santo", "Merrill", "Royal", "Jefferson", "Ester", "Dee", "Susanna", "Adriana", "Alfonso", "Lillie", "Carmen", "Federico", "Ernie", "Kory", "Kimberly", "Donn", "Lilian", "Irvin", "Sherri", "Cordell", "Adrienne", "Edwin", "Serena", "Otis", "Latasha", "Johanna", "Clarence", "Noe", "Mindy", "Felix", "Audra"}
+	COUNT = 4000
+	DELAY = 1 * time.Millisecond
 )
 
 const (
 	PASSWORD = "test"
-	COUNT    = 10
 )
 
 func main() {
@@ -56,6 +57,12 @@ func main() {
 		password, _ = reader.ReadString('\n')
 		password = strings.TrimSuffix(password, "\n")
 	}
+
+	if countEnv := os.Getenv("COUNT"); countEnv != "" {
+		COUNT, _ = strconv.Atoi(countEnv)
+	}
+
+	fmt.Printf("Will generate %d users\n", COUNT)
 
 	jf, err := mediabrowser.NewServer(
 		mediabrowser.JellyfinServer,
@@ -95,11 +102,12 @@ func main() {
 	rand.Seed(time.Now().Unix())
 
 	for i := 0; i < COUNT; i++ {
-		name := names[rand.Intn(len(names))] + strconv.Itoa(rand.Intn(100))
+		name := names[rand.Intn(len(names))] + strconv.Itoa(rand.Intn(500))
 
 		user, status, err := jf.NewUser(name, PASSWORD)
 		if (status != 200 && status != 201 && status != 204) || err != nil {
-			log.Fatalf("Failed to create user \"%s\" (%d): %+v\n", name, status, err)
+			log.Printf("Acc no %d: Failed to create user \"%s\" (%d): %+v\n", i, name, status, err)
+			continue
 		}
 
 		if rand.Intn(100) > 65 {
@@ -110,13 +118,17 @@ func main() {
 			user.Policy.IsDisabled = true
 		}
 
+		time.Sleep(DELAY / 4)
 		status, err = jf.SetPolicy(user.ID, user.Policy)
 		if (status != 200 && status != 201 && status != 204) || err != nil {
-			log.Fatalf("Failed to set policy for user \"%s\" (%d): %+v\n", name, status, err)
+			log.Fatalf("Acc no %d: Failed to set policy for user \"%s\" (%d): %+v\n", i, name, status, err)
 		}
 
 		if rand.Intn(100) > 20 {
+			time.Sleep(DELAY / 4)
 			jfTemp.Authenticate(name, PASSWORD)
 		}
+		log.Printf("Acc %d done\n", i)
+		time.Sleep(DELAY / 4)
 	}
 }

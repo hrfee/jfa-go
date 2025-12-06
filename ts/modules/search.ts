@@ -1,4 +1,24 @@
-const dateParser = require("any-date-parser");
+import { ListItem } from "./list";
+import { parseDateString } from "./common";
+
+declare var window: GlobalWindow;
+
+export enum QueryOperator {
+    Greater = ">",
+    Lower = "<",
+    Equal = "="
+}
+
+export function QueryOperatorToDateText(op: QueryOperator): string {
+    switch (op) {
+        case QueryOperator.Greater:
+            return window.lang.strings("after");
+        case QueryOperator.Lower:
+            return window.lang.strings("before");
+        default:
+            return "";
+    }
+}
 
 export interface QueryType {
     name: string;
@@ -9,41 +29,271 @@ export interface QueryType {
     date: boolean;
     dependsOnElement?: string; // Format for querySelector
     show?: boolean;
+    localOnly?: boolean // Indicates can't be performed server-side.
 }
 
 export interface SearchConfiguration {
     filterArea: HTMLElement;
-    sortingByButton: HTMLButtonElement;
+    sortingByButton?: HTMLButtonElement;
     searchOptionsHeader: HTMLElement;
     notFoundPanel: HTMLElement;
+    notFoundLocallyText: HTMLElement;
     notFoundCallback?: (notFound: boolean) => void;
     filterList: HTMLElement;
     clearSearchButtonSelector: string;
+    serverSearchButtonSelector: string;
     search: HTMLInputElement;
     queries: { [field: string]: QueryType };
-    setVisibility: (items: string[], visible: boolean) => void;
-    onSearchCallback: (visibleCount: number, newItems: boolean, loadAll: boolean) => void;
+    setVisibility: (items: string[], visible: boolean, appendedItems: boolean) => void;
+    onSearchCallback: (newItems: boolean, loadAll: boolean, callback?: (resp: paginatedDTO) => void) => void;
+    searchServer: (params: PaginatedReqDTO, newSearch: boolean) => void;
+    clearServerSearch: () => void;
     loadMore?: () => void;
 }
 
-export interface SearchableItem {
+export interface ServerSearchReqDTO extends PaginatedReqDTO {
+    searchTerms: string[];
+    queries: QueryDTO[];
+}
+
+export interface QueryDTO {
+    class: "bool" | "string" | "date";
+    // QueryType.getter
+    field: string;
+    operator: QueryOperator;
+    value: boolean | string | DateAttempt;
+};
+
+export abstract class Query {
+    protected _subject: QueryType;
+    protected _operator: QueryOperator;
+    protected _card: HTMLElement;
+    public type: string;
+
+    constructor(subject: QueryType | null, operator: QueryOperator) {
+        this._subject = subject;
+        this._operator = operator;
+        if (subject != null) {
+            this._card = document.createElement("span");
+            this._card.ariaLabel = window.lang.strings("clickToRemoveFilter");
+        }
+    }
+
+    set onclick(v: () => void) {
+        this._card.addEventListener("click", v);
+    }
+
+    asElement(): HTMLElement { return this._card; }
+    
+    public abstract compare(subjectValue: any): boolean;
+
+    asDTO(): QueryDTO | null {
+        if (this.localOnly) return null;
+        let out = {} as QueryDTO;
+        out.field = this._subject.getter;
+        out.operator = this._operator;
+        return out;
+    }
+
+    get subject(): QueryType { return this._subject; }
+
+    getValueFromItem(item: SearchableItem): any {
+        return Object.getOwnPropertyDescriptor(Object.getPrototypeOf(item), this.subject.getter).get.call(item);
+    }
+
+    compareItem(item: SearchableItem): boolean {
+        return this.compare(this.getValueFromItem(item));
+    }
+
+    get localOnly(): boolean { return this._subject.localOnly ? true : false; }
+}
+
+export class BoolQuery extends Query {
+    protected _value: boolean;
+    constructor(subject: QueryType, value: boolean) {
+        super(subject, QueryOperator.Equal);
+        this.type = "bool";
+        this._value = value;
+        this._card.classList.add("button", "~" + (this._value ? "positive" : "critical"), "@high", "center");
+        this._card.innerHTML = `
+        <span class="font-bold mr-2">${subject.name}</span>
+        <i class="text-2xl ri-${this._value? "checkbox" : "close"}-circle-fill"></i>
+        `;
+    }
+
+    public static paramsFromString(valueString: string): [boolean, boolean] {
+        let isBool = false;
+        let boolState = false;
+        if (valueString == "true" || valueString == "yes" || valueString == "t" || valueString == "y") {
+            isBool = true;
+            boolState = true;
+        } else if (valueString == "false" || valueString == "no" || valueString == "f" || valueString == "n") {
+            isBool = true;
+            boolState = false;
+        }
+        return [boolState, isBool]
+    }
+
+    get value(): boolean { return this._value; }
+
+    // Ripped from old code. Why it's like this, I don't know
+    public compare(subjectBool: boolean): boolean {
+        return ((subjectBool && this._value) || (!subjectBool && !this._value))
+    }
+
+    asDTO(): QueryDTO | null {
+        let out = super.asDTO();
+        if (out === null) return null;
+        out.class = "bool";
+        out.value = this._value;
+        return out;
+    }
+}
+
+export class StringQuery extends Query {
+    protected _value: string;
+    constructor(subject: QueryType, value: string) {
+        super(subject, QueryOperator.Equal);
+        this.type = "string";
+        this._value = value.toLowerCase();
+        this._card.classList.add("button", "~neutral", "@low", "center");
+        this._card.innerHTML = `
+        <span class="font-bold mr-2">${subject.name}:</span> "${this._value}"
+        `;
+    }
+
+    get value(): string { return this._value; }
+
+    public compare(subjectString: string): boolean {
+        return subjectString.toLowerCase().includes(this._value);
+    }
+    
+    asDTO(): QueryDTO | null {
+        let out = super.asDTO();
+        if (out === null) return null;
+        out.class = "string";
+        out.value = this._value;
+        return out;
+    }
+}
+
+const dateGetters: Map<string, () => number> = (() => {
+    let m = new Map<string, () => number>();
+    m.set("year", Date.prototype.getFullYear);
+    m.set("month", Date.prototype.getMonth);
+    m.set("day", Date.prototype.getDate);
+    m.set("hour", Date.prototype.getHours);
+    m.set("minute", Date.prototype.getMinutes);
+    return m;
+})();
+const dateSetters: Map<string, (v: number) => void> = (() => {
+    let m = new Map<string, (v: number) => void>();
+    m.set("year", Date.prototype.setFullYear);
+    m.set("month", Date.prototype.setMonth);
+    m.set("day", Date.prototype.setDate);
+    m.set("hour", Date.prototype.setHours);
+    m.set("minute", Date.prototype.setMinutes);
+    return m;
+})();
+
+export class DateQuery extends Query {
+    protected _value: ParsedDate;
+
+    constructor(subject: QueryType, operator: QueryOperator, value: ParsedDate) {
+        super(subject, operator);
+        this.type = "date";
+        this._value = value;
+        this._card.classList.add("button", "~neutral", "@low", "center");
+        let dateText = QueryOperatorToDateText(operator);
+        this._card.innerHTML = `
+        <span class="font-bold mr-2">${subject.name}:</span> ${dateText != "" ? dateText+" " : ""}${value.text}
+        `;
+    }
+
+    public static paramsFromString(valueString: string): [ParsedDate, QueryOperator, boolean] {
+        let op = QueryOperator.Equal;
+        if ((Object.values(QueryOperator) as string[]).includes(valueString.charAt(0))) {
+            op = valueString.charAt(0) as QueryOperator;
+            // Trim the operator from the string
+            valueString = valueString.substring(1);
+        }
+        let out = parseDateString(valueString);
+        let isValid = true;
+        if (out.invalid) isValid = false;
+        
+        return [out, op, isValid];
+    }
+
+    get value(): ParsedDate { return this._value; }
+
+    public compare(subjectDate: Date): boolean {
+        // We want to compare only the fields given in this._value,
+        // so we copy subjectDate and apply on those fields from this._value.
+        const temp = new Date(subjectDate.valueOf());
+        for (let [field] of dateGetters) {
+            if (field in this._value.attempt) {
+                dateSetters.get(field).call(
+                    temp,
+                    dateGetters.get(field).call(this._value.date)
+                );
+            }
+        }
+
+        if (this._operator == QueryOperator.Equal) {
+            return subjectDate.getTime() == temp.getTime();
+        } else if (this._operator == QueryOperator.Lower) {
+            return subjectDate < temp;
+        }
+        return subjectDate > temp;
+    }
+    
+    asDTO(): QueryDTO | null {
+        let out = super.asDTO();
+        if (out === null) return null;
+        out.class = "date";
+        out.value = this._value.attempt;
+        return out;
+    }
+}
+
+export interface SearchableItem extends ListItem {
     matchesSearch: (query: string) => boolean;
 }
 
+export const SearchableItemDataAttribute = "data-search-item";
+
+export type SearchableItems = { [id: string]: SearchableItem };
+
 export class Search {
     private _c: SearchConfiguration;
+    private _sortField: string = "";
+    private _ascending: boolean = true; 
     private _ordering: string[] = [];
-    private _items: { [id: string]: SearchableItem };
-    inSearch: boolean;
+    private _items: SearchableItems = {};
+    // Search queries (filters)
+    private _queries: Query[] = [];
+    // Plain-text search terms
+    private _searchTerms: string[] = [];
+    inSearch: boolean = false;
+    private _inServerSearch: boolean = false;
+    get inServerSearch(): boolean { return this._inServerSearch; }
+    set inServerSearch(v: boolean) {
+        const previous = this._inServerSearch;
+        this._inServerSearch = v;
+        if (!v && previous != v) {
+            this._c.clearServerSearch();
+        }
+    }
 
-    search = (query: String): string[] => {
-        this._c.filterArea.textContent = "";
+    // Intended to be set from the JS console, if true searches are timed.
+    timeSearches: boolean = false;
 
+    private _serverSearchButtons: HTMLElement[];
+
+    static tokenizeSearch = (query: string): string[] => {
         query = query.toLowerCase();
 
-        let result: string[] = [...this._ordering];
         let words: string[] = [];
-        
         let quoteSymbol = ``;
         let queryStart = -1;
         let lastQuote = -1;
@@ -73,174 +323,144 @@ export class Search {
                         }
                     }
                     words.push(query.substring(queryStart, end).replace(/['"]/g, ""));
-                    console.log("pushed", words);
                     queryStart = -1;
                 }
             }
         }
+        return words;
+    }
 
-        query = "";
-        for (let word of words) {
+    parseTokens = (tokens: string[]): [string[], Query[]] => {
+        let queries: Query[] = [];
+        let searchTerms: string[] = [];
+
+        for (let word of tokens) {
+            // 1. Normal search text, no filters or anything
             if (!word.includes(":")) {
-                let cachedResult = [...result];
-                for (let id of cachedResult) {
-                    const u = this._items[id];
-                    if (!u.matchesSearch(word)) {
-                        result.splice(result.indexOf(id), 1);
-                    }
-                }
+                searchTerms.push(word);
                 continue;
             }
+            // 2. A filter query of some sort.
             const split = [word.substring(0, word.indexOf(":")), word.substring(word.indexOf(":")+1)];
             
             if (!(split[0] in this._c.queries)) continue;
 
             const queryFormat = this._c.queries[split[0]];
 
-            if (queryFormat.bool) {
-                let isBool = false;
-                let boolState = false;
-                if (split[1] == "true" || split[1] == "yes" || split[1] == "t" || split[1] == "y") {
-                    isBool = true;
-                    boolState = true;
-                } else if (split[1] == "false" || split[1] == "no" || split[1] == "f" || split[1] == "n") {
-                    isBool = true;
-                    boolState = false;
-                }
-                if (isBool) {
-                    const filterCard = document.createElement("span");
-                    filterCard.ariaLabel = window.lang.strings("clickToRemoveFilter");
-                    filterCard.classList.add("button", "~" + (boolState ? "positive" : "critical"), "@high", "center", "mx-2", "h-full");
-                    filterCard.innerHTML = `
-                    <span class="font-bold mr-2">${queryFormat.name}</span>
-                    <i class="text-2xl ri-${boolState? "checkbox" : "close"}-circle-fill"></i>
-                    `;
+            let q: Query | null = null;
 
-                    filterCard.addEventListener("click", () => {
+            if (queryFormat.bool) {
+                let [boolState, isBool] = BoolQuery.paramsFromString(split[1]);
+                if (isBool) {
+                    q = new BoolQuery(queryFormat, boolState);
+                    q.onclick = () => {
                         for (let quote of [`"`, `'`, ``]) {
                             this._c.search.value = this._c.search.value.replace(split[0] + ":" + quote + split[1] + quote, "");
                         }
                         this._c.search.oninput((null as Event));
-                    })
-
-                    this._c.filterArea.appendChild(filterCard);
-
-                    // console.log("is bool, state", boolState);
-                    // So removing elements doesn't affect us
-                    let cachedResult = [...result];
-                    for (let id of cachedResult) {
-                        const u = this._items[id];
-                        const value = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(u), queryFormat.getter).get.call(u);
-                        // console.log("got", queryFormat.getter + ":", value);
-                        // Remove from result if not matching query
-                        if (!((value && boolState) || (!value && !boolState))) {
-                            // console.log("not matching, result is", result);
-                            result.splice(result.indexOf(id), 1);
-                        }
-                    }
-                    continue
+                    };
+                    queries.push(q);
+                    continue;
                 }
             }
             if (queryFormat.string) {
-                const filterCard = document.createElement("span");
-                filterCard.ariaLabel = window.lang.strings("clickToRemoveFilter");
-                filterCard.classList.add("button", "~neutral", "@low", "center", "mx-2", "h-full");
-                filterCard.innerHTML = `
-                <span class="font-bold mr-2">${queryFormat.name}:</span> "${split[1]}"
-                `;
+                q = new StringQuery(queryFormat, split[1]);
 
-                filterCard.addEventListener("click", () => {
+                q.onclick = () => {
                     for (let quote of [`"`, `'`, ``]) {
                         let regex = new RegExp(split[0] + ":" + quote + split[1] + quote, "ig");
                         this._c.search.value = this._c.search.value.replace(regex, "");
                     }
                     this._c.search.oninput((null as Event));
-                })
-
-                this._c.filterArea.appendChild(filterCard);
-
-                let cachedResult = [...result];
-                for (let id of cachedResult) {
-                    const u = this._items[id];
-                    const value = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(u), queryFormat.getter).get.call(u).toLowerCase();
-                    if (!(value.includes(split[1]))) {
-                        result.splice(result.indexOf(id), 1);
-                    }
                 }
+                queries.push(q);
                 continue;
             }
             if (queryFormat.date) {
-                // -1 = Before, 0 = On, 1 = After, 2 = No symbol, assume 0
-                let compareType = (split[1][0] == ">") ? 1 : ((split[1][0] == "<") ? -1 : ((split[1][0] == "=") ? 0 : 2));
-                let unmodifiedValue = split[1];
-                if (compareType != 2) {
-                    split[1] = split[1].substring(1);
-                }
-                if (compareType == 2) compareType = 0;
-
-                let attempt: { year?: number, month?: number, day?: number, hour?: number, minute?: number } = dateParser.attempt(split[1]);
-                // Month in Date objects is 0-based, so make our parsed date that way too
-                if ("month" in attempt) attempt.month -= 1;
-
-                let date: Date = (Date as any).fromString(split[1]) as Date;
-                console.log("Read", attempt, "and", date);
-                if ("invalid" in (date as any)) continue;
-
-                const filterCard = document.createElement("span");
-                filterCard.ariaLabel = window.lang.strings("clickToRemoveFilter");
-                filterCard.classList.add("button", "~neutral", "@low", "center", "m-2", "h-full");
-                filterCard.innerHTML = `
-                <span class="font-bold mr-2">${queryFormat.name}:</span> ${(compareType == 1) ? window.lang.strings("after")+" " : ((compareType == -1) ? window.lang.strings("before")+" " : "")}${split[1]}
-                `;
+                let [parsedDate, op, isDate] = DateQuery.paramsFromString(split[1]);
+                if (!isDate) continue;
+                q = new DateQuery(queryFormat, op, parsedDate);
                 
-                filterCard.addEventListener("click", () => {
+                q.onclick = () => {
                     for (let quote of [`"`, `'`, ``]) {
-                        let regex = new RegExp(split[0] + ":" + quote + unmodifiedValue + quote, "ig");
+                        let regex = new RegExp(split[0] + ":" + quote + split[1] + quote, "ig");
                         this._c.search.value = this._c.search.value.replace(regex, "");
                     }
                     
                     this._c.search.oninput((null as Event));
-                })
-                
-                this._c.filterArea.appendChild(filterCard);
+                }
+                queries.push(q);
+                continue;
+            }
+            // if (q != null) queries.push(q);
+        }
+        return [searchTerms, queries];
+    }
+    
+    // Returns a list of identifiers (used as keys in items, values in ordering).
+    searchParsed = (searchTerms: string[], queries: Query[]): string[] => {
+        let result: string[] = [...this._ordering];
+        // If we didn't care about rendering the query cards, we could run this to (maybe) return early.
+        // if (this.inServerSearch) {
+        //     let hasLocalOnlyQueries = false;
+        //     for (const q of queries) {
+        //         if (q.localOnly) {
+        //             hasLocalOnlyQueries = true;
+        //             break;
+        //         }
+        //     }
+        // }
 
+        // Normal searches can be evaluated by the server, so skip this if we've already ran one.
+        if (!this.inServerSearch) {
+            for (let term of searchTerms) {
                 let cachedResult = [...result];
                 for (let id of cachedResult) {
-                    const u = this._items[id];
-                    const unixValue = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(u), queryFormat.getter).get.call(u);
+                    const u = this.items[id];
+                    if (!u.matchesSearch(term)) {
+                        result.splice(result.indexOf(id), 1);
+                    }
+                }
+            }
+        }
+
+        for (let q of queries) {
+            this._c.filterArea.appendChild(q.asElement());
+            // Skip if this query has already been performed by the server.
+            if (this.inServerSearch && !(q.localOnly)) continue;
+
+            let cachedResult = [...result];
+            if (q.type == "bool") {
+                for (let id of cachedResult) {
+                    const u = this.items[id];
+                    // Remove from result if not matching query
+                    if (!q.compareItem(u)) {
+                        // console.log("not matching, result is", result);
+                        result.splice(result.indexOf(id), 1);
+                    }
+                }
+            } else if (q.type == "string") {
+                for (let id of cachedResult) {
+                    const u = this.items[id];
+                    // We want to compare case-insensitively, so we get value, lower-case it then compare,
+                    // rather than doing both with compareItem.
+                    const value = q.getValueFromItem(u).toLowerCase();
+                    if (!q.compare(value)) {
+                        result.splice(result.indexOf(id), 1);
+                    }
+                }
+            } else if (q.type == "date") {
+                for (let id of cachedResult) {
+                    const u = this.items[id];
+                    // Getter here returns a unix timestamp rather than a date, so we can't use compareItem.
+                    const unixValue = q.getValueFromItem(u);
                     if (unixValue == 0) {
                         result.splice(result.indexOf(id), 1);
                         continue;
                     }
                     let value = new Date(unixValue*1000);
-                    
-                    const getterPairs: [string, () => number][] = [["year", Date.prototype.getFullYear], ["month", Date.prototype.getMonth], ["day", Date.prototype.getDate], ["hour", Date.prototype.getHours], ["minute", Date.prototype.getMinutes]];
 
-                    // When doing > or < <time> with no date, we need to ignore the rest of the Date object
-                    if (compareType != 0 && Object.keys(attempt).length == 2 && "hour" in attempt && "minute" in attempt) { 
-                        const temp = new Date(date.valueOf());
-                        temp.setHours(value.getHours(), value.getMinutes());
-                        value = temp;
-                        console.log("just hours/minutes workaround, value set to", value);
-                    }
-
-
-                    let match = true;
-                    if (compareType == 0) {
-                        for (let pair of getterPairs) {
-                            if (pair[0] in attempt) {
-                                if (compareType == 0 && attempt[pair[0]] != pair[1].call(value)) {
-                                    match = false;
-                                    break;
-                                }
-                            }
-                        }
-                    } else if (compareType == -1) {
-                        match = (value < date);
-                    } else if (compareType == 1) {
-                        match = (value > date);
-                    }
-                    if (!match) {
+                    if (!q.compare(value)) {
                         result.splice(result.indexOf(id), 1);
                     }
                 }
@@ -248,11 +468,35 @@ export class Search {
         }
         return result;
     }
+
+    // Returns a list of identifiers (used as keys in items, values in ordering).
+    search = (query: string): string[] => {
+        let timer = this.timeSearches ? performance.now() : null;
+        this._c.filterArea.textContent = "";
+        
+        const [searchTerms, queries] = this.parseTokens(Search.tokenizeSearch(query));
+
+        let result = this.searchParsed(searchTerms, queries);
+        
+        this._queries = queries;
+        this._searchTerms = searchTerms;
+
+        if (this.timeSearches) {
+            const totalTime = performance.now() - timer;
+            console.debug(`Search took ${totalTime}ms`);
+        }
+        return result;
+    }
+
+    // postServerSearch performs local-only queries after a server search if necessary.
+    postServerSearch = () => {
+        this.searchParsed(this._searchTerms, this._queries);
+    };
     
     showHideSearchOptionsHeader = () => {
-        const sortingBy = !(this._c.sortingByButton.parentElement.classList.contains("hidden"));
+        let sortingBy = false;
+        if (this._c.sortingByButton) sortingBy = !(this._c.sortingByButton.classList.contains("hidden"));
         const hasFilters = this._c.filterArea.textContent != "";
-        console.log("sortingBy", sortingBy, "hasFilters", hasFilters);
         if (sortingBy || hasFilters) {
             this._c.searchOptionsHeader.classList.remove("hidden");
         } else {
@@ -260,16 +504,26 @@ export class Search {
         }
     }
 
-
+    // -all- elements.
     get items(): { [id: string]: SearchableItem } { return this._items; }
-    set items(v: { [id: string]: SearchableItem }) {
-        this._items = v;
+    // set items(v: { [id: string]: SearchableItem }) {
+    //     this._items = v;
+    // }
+
+    // The order of -all- elements (even those hidden), by their identifier.
+    get ordering(): string[] { return this._ordering; }
+    // Specifically dis-allow setting ordering itself, so that setOrdering is used instead (for the field and ascending params).
+    // set ordering(v: string[]) { this._ordering = v; }
+    setOrdering = (v: string[], field: string, ascending: boolean) => {
+        this._ordering = v;
+        this._sortField = field;
+        this._ascending = ascending;
     }
 
-    get ordering(): string[] { return this._ordering; }
-    set ordering(v: string[]) { this._ordering = v; }
+    get sortField(): string { return this._sortField; }
+    get ascending(): boolean { return this._ascending; }
 
-    onSearchBoxChange = (newItems: boolean = false, loadAll: boolean = false) => {
+    onSearchBoxChange = (newItems: boolean = false, appendedItems: boolean = false, loadAll: boolean = false, callback?: (resp: paginatedDTO) => void) => {
         const query = this._c.search.value;
         if (!query) {
             this.inSearch = false;
@@ -277,15 +531,37 @@ export class Search {
             this.inSearch = true;
         }
         const results = this.search(query);
-        this._c.setVisibility(results, true);
-        this._c.onSearchCallback(results.length, newItems, loadAll);
+        this._c.setVisibility(results, true, appendedItems);
+        this._c.onSearchCallback(newItems, loadAll, callback);
+        if (this.inSearch) {
+            if (this.inServerSearch) {
+                this._serverSearchButtons.forEach((v: HTMLElement) => {
+                    v.classList.add("@low");
+                    v.classList.remove("@high");
+                });
+            } else {
+                this._serverSearchButtons.forEach((v: HTMLElement) => {
+                    v.classList.add("@high");
+                    v.classList.remove("@low");
+                });
+            }
+        }
         this.showHideSearchOptionsHeader();
-        if (results.length == 0) {
+        this.setNotFoundPanelVisibility(results.length == 0);
+        if (this._c.notFoundCallback) this._c.notFoundCallback(results.length == 0);
+    }
+
+    setNotFoundPanelVisibility = (visible: boolean) => {
+        if (this._inServerSearch || !this.inSearch) {
+            this._c.notFoundLocallyText.classList.add("unfocused");
+        } else if (this.inSearch) {
+            this._c.notFoundLocallyText.classList.remove("unfocused");
+        }
+        if (visible) {
             this._c.notFoundPanel.classList.remove("unfocused");
         } else {
             this._c.notFoundPanel.classList.add("unfocused");
         }
-        if (this._c.notFoundCallback) this._c.notFoundCallback(results.length == 0);
     }
 
     fillInFilter = (name: string, value: string, offset?: number) => {
@@ -297,8 +573,6 @@ export class Search {
         this._c.search.setSelectionRange(newPos, newPos);
         this._c.search.oninput(null as any);
     };
-    
-
 
     generateFilterList = () => {
         // Generate filter buttons
@@ -374,16 +648,63 @@ export class Search {
         }
     }
 
+    onServerSearch = () => {
+        const newServerSearch = !this.inServerSearch;
+        this.inServerSearch = true;
+        this.searchServer(newServerSearch);
+    }
+
+    searchServer = (newServerSearch: boolean) => {
+        this._c.searchServer(this.serverSearchParams(this._searchTerms, this._queries), newServerSearch);
+    }
+
+
+    serverSearchParams = (searchTerms: string[], queries: Query[]): PaginatedReqDTO => {
+        let req: ServerSearchReqDTO = {
+            searchTerms: searchTerms,
+            queries: [], // queries.map((q: Query) => q.asDTO()) won't work as localOnly queries return null
+            limit: -1,
+            page: 0,
+            sortByField: this.sortField,
+            ascending: this.ascending
+        };
+        for (const q of queries) {
+            const dto = q.asDTO();
+            if (dto !== null) req.queries.push(dto);
+        }
+        return req;
+    }
+
+    setServerSearchButtonsDisabled = (disabled: boolean) => {
+        this._serverSearchButtons.forEach((v: HTMLButtonElement) => v.disabled = disabled);
+    }
+
     constructor(c: SearchConfiguration) {
         this._c = c;
 
-        this._c.search.oninput = () => this.onSearchBoxChange();
+        this._c.search.oninput = () => {
+            this.inServerSearch = false;
+            this.onSearchBoxChange();
+        }
+        this._c.search.addEventListener("keyup", (ev: KeyboardEvent) => {
+            if (ev.key == "Enter") {
+                this.onServerSearch();
+            }
+        });
 
         const clearSearchButtons = Array.from(document.querySelectorAll(this._c.clearSearchButtonSelector)) as Array<HTMLSpanElement>;
         for (let b of clearSearchButtons) {
             b.addEventListener("click", () => {
                 this._c.search.value = "";
+                this.inServerSearch = false;
                 this.onSearchBoxChange();
+            });
+        }
+        
+        this._serverSearchButtons = Array.from(document.querySelectorAll(this._c.serverSearchButtonSelector)) as Array<HTMLSpanElement>;
+        for (let b of this._serverSearchButtons) {
+            b.addEventListener("click", () => {
+                this.onServerSearch();
             });
         }
     }

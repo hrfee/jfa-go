@@ -1,11 +1,10 @@
 package main
 
 import (
+	"net/url"
 	"os"
 	"path/filepath"
 	"sort"
-	"strings"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	lm "github.com/hrfee/jfa-go/logmessages"
@@ -31,11 +30,16 @@ func (app *appContext) CreateBackup(gc *gin.Context) {
 // @Security Bearer
 // @tags Backups
 func (app *appContext) GetBackup(gc *gin.Context) {
-	fname := gc.Param("fname")
+	escapedFName := gc.Param("fname")
+	fname, err := url.QueryUnescape(escapedFName)
+	if err != nil {
+		respondBool(400, false, gc)
+		return
+	}
 	// Hopefully this is enough to ensure the path isn't malicious. Hidden behind bearer auth anyway so shouldn't matter too much I guess.
-	ok := (strings.HasPrefix(fname, BACKUP_PREFIX) || strings.HasPrefix(fname, BACKUP_UPLOAD_PREFIX+BACKUP_PREFIX)) && strings.HasSuffix(fname, BACKUP_SUFFIX)
-	t, err := time.Parse(BACKUP_DATEFMT, strings.TrimSuffix(strings.TrimPrefix(strings.TrimPrefix(fname, BACKUP_UPLOAD_PREFIX), BACKUP_PREFIX), BACKUP_SUFFIX))
-	if !ok || err != nil || t.IsZero() {
+	b := Backup{}
+	err = b.FromString(fname)
+	if err != nil || b.Date.IsZero() {
 		app.debug.Printf(lm.IgnoreInvalidFilename, fname, err)
 		respondBool(400, false, gc)
 		return
@@ -62,7 +66,8 @@ func (app *appContext) GetBackups(gc *gin.Context) {
 		resp.Backups[i].Name = item.Name()
 		fullpath := filepath.Join(path, item.Name())
 		resp.Backups[i].Path = fullpath
-		resp.Backups[i].Date = backups.dates[i].Unix()
+		resp.Backups[i].Date = backups.info[i].Date.Unix()
+		resp.Backups[i].Commit = backups.info[i].Commit
 		fstat, err := os.Stat(fullpath)
 		if err == nil {
 			resp.Backups[i].Size = fileSize(fstat.Size())
@@ -81,9 +86,9 @@ func (app *appContext) GetBackups(gc *gin.Context) {
 func (app *appContext) RestoreLocalBackup(gc *gin.Context) {
 	fname := gc.Param("fname")
 	// Hopefully this is enough to ensure the path isn't malicious. Hidden behind bearer auth anyway so shouldn't matter too much I guess.
-	ok := strings.HasPrefix(fname, BACKUP_PREFIX) && strings.HasSuffix(fname, BACKUP_SUFFIX)
-	t, err := time.Parse(BACKUP_DATEFMT, strings.TrimSuffix(strings.TrimPrefix(fname, BACKUP_PREFIX), BACKUP_SUFFIX))
-	if !ok || err != nil || t.IsZero() {
+	b := Backup{}
+	err := b.FromString(fname)
+	if err != nil || b.Date.IsZero() {
 		app.debug.Printf(lm.IgnoreInvalidFilename, fname, err)
 		respondBool(400, false, gc)
 		return
@@ -110,7 +115,8 @@ func (app *appContext) RestoreBackup(gc *gin.Context) {
 	}
 	app.debug.Printf(lm.GetUpload, file.Filename)
 	path := app.config.Section("backups").Key("path").String()
-	fullpath := filepath.Join(path, BACKUP_UPLOAD_PREFIX+BACKUP_PREFIX+time.Now().Local().Format(BACKUP_DATEFMT)+BACKUP_SUFFIX)
+	b := Backup{Upload: true}
+	fullpath := filepath.Join(path, b.String())
 	gc.SaveUploadedFile(file, fullpath)
 	app.debug.Printf(lm.Write, fullpath)
 	LOADBAK = fullpath

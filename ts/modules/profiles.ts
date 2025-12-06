@@ -1,4 +1,16 @@
-import { _get, _post, _delete, toggleLoader } from "../modules/common.js";
+import { _get, _post, _delete, toggleLoader, _put } from "../modules/common.js";
+import hljs from "highlight.js/lib/core";
+import json from 'highlight.js/lib/languages/json';
+import codeInput, { CodeInput } from "@webcoder49/code-input/code-input.mjs";
+import Template from "@webcoder49/code-input/templates/hljs.mjs";
+import Indent from "@webcoder49/code-input/plugins/indent.mjs";
+
+hljs.registerLanguage("json", json);
+codeInput.registerTemplate("json-highlighted",
+                           new Template(hljs, [new Indent()])
+                          );
+
+declare var window: GlobalWindow;
 
 export const profileLoadEvent = new CustomEvent("profileLoadEvent");
 export const reloadProfileNames = (then?: () => void) => _get("/profiles/names", null, (req: XMLHttpRequest) => {
@@ -30,6 +42,7 @@ class profile implements Profile {
     private _defaultRadio: HTMLInputElement;
     private _referralsButton: HTMLSpanElement;
     private _referralsEnabled: boolean;
+    private _editButton: HTMLButtonElement;
 
     get name(): string { return this._name.textContent; }
     set name(v: string) { this._name.textContent = v; }
@@ -117,6 +130,7 @@ class profile implements Profile {
         innerHTML += `
             <td class="profile-from truncate"></td>
             <td class="profile-libraries"></td>
+            <td><button class="button ~neutral @low flex flex-row gap-2 profile-edit"><i class="ri-edit-line"></i>${window.lang.strings("edit")}</button></td> 
             <td><span class="button ~critical @low">${window.lang.strings("delete")}</span></td>
         `;
         this._row.innerHTML = innerHTML;
@@ -130,6 +144,7 @@ class profile implements Profile {
         if (window.referralsEnabled)
             this._referralsButton = this._row.querySelector("span.profile-referrals") as HTMLSpanElement;
         this._fromUser = this._row.querySelector("td.profile-from") as HTMLTableDataCellElement;
+        this._editButton = this._row.querySelector(".profile-edit") as HTMLButtonElement;
         this._defaultRadio = this._row.querySelector("input[type=radio]") as HTMLInputElement;
         this._defaultRadio.onclick = () => document.dispatchEvent(new CustomEvent("profiles-default", { detail: this.name }));
         (this._row.querySelector("span.\\~critical") as HTMLSpanElement).onclick = this.delete;
@@ -150,6 +165,7 @@ class profile implements Profile {
     setOmbiFunc = (ombiFunc: (ombi: boolean) => void) => { this._ombiButton.onclick = () => ombiFunc(this._ombi); }
     setJellyseerrFunc = (jellyseerrFunc: (jellyseerr: boolean) => void) => { this._jellyseerrButton.onclick = () => jellyseerrFunc(this._jellyseerr); }
     setReferralFunc = (referralFunc: (enabled: boolean) => void) => { this._referralsButton.onclick = () => referralFunc(this._referralsEnabled); }
+    setEditFunc = (editFunc: (name: string) => void) => { this._editButton.onclick = () => editFunc(this.name); }
 
     remove = () => { document.dispatchEvent(new CustomEvent("profiles-delete", { detail: this._name })); this._row.remove(); }
 
@@ -183,6 +199,7 @@ export class ProfileEditor {
     private _profileName = document.getElementById("add-profile-name") as HTMLInputElement;
     private _userSelect = document.getElementById("add-profile-user") as HTMLSelectElement;
     private _storeHomescreen = document.getElementById("add-profile-homescreen") as HTMLInputElement;
+    private _createJellyseerrProfile = window.jellyseerrEnabled ? document.getElementById("add-profile-jellyseerr") as HTMLInputElement : null;
 
     get empty(): boolean { return (Object.keys(this._table.children).length == 0) }
     set empty(state: boolean) {
@@ -260,6 +277,7 @@ export class ProfileEditor {
                                     }
                                 });
                             }
+                            this._profiles[name].setEditFunc(this._loadProfileEditor);
                             this._table.appendChild(this._profiles[name].asElement());
                         }
                     }
@@ -329,6 +347,64 @@ export class ProfileEditor {
         window.modals.enableReferralsProfile.show();
     };
 
+    private _loadProfileEditor = (name: string) => {
+        const urlSafeName = encodeURIComponent(encodeURIComponent(name));
+        _get("/profiles/raw/" + urlSafeName, null, (req: XMLHttpRequest) => {
+            if (req.readyState != 4) return;
+            if (req.status != 200) {
+                window.notifications.customError("errorLoadProfile", window.lang.notif("errorLoadProfile"));
+                return;
+            }
+            const editorContainer = document.getElementById("modal-edit-profile-editor");
+            const editor = document.createElement("code-input") as CodeInput;
+            editor.setAttribute("template", "json-highlighted");
+            editor.setAttribute("language", "json");
+            editor.classList.add("rounded-md");
+            editor.value = JSON.stringify(req.response, null, 2);
+            editorContainer.replaceChildren(editor);
+
+            const form = document.getElementById("form-edit-profile") as HTMLFormElement;
+            const submit = form.querySelector("input[type=submit]").nextElementSibling;
+            form.onsubmit = (event: SubmitEvent) => {
+                event.preventDefault();
+                let send: any;
+                try {
+                    send = JSON.parse(editor.value);
+                } catch(e: any) {
+                    submit.classList.add("~critical");
+                    submit.classList.remove("~urge");
+                    window.notifications.customError("errorInvalidJSON", window.lang.notif("errorInvalidJSON"));
+                    setTimeout(() => {
+                        submit.classList.add("~urge");
+                        submit.classList.remove("~critical");
+                    }, 2000);
+                }
+                if (!send) return;
+                _put("/profiles/raw/" + urlSafeName, send, (req: XMLHttpRequest) => {
+                    if (req.readyState != 4) return;
+                    if (req.status == 200 || req.status == 201 || req.status == 204) {
+                        window.notifications.customSuccess("savedProfile", window.lang.notif("savedProfile"));
+                        // a 201 implies the profile was renamed. Since reloading profiles doesn't delete missing ones,
+                        // we should delete the old one ourselves.
+                        if (req.status == 201) {
+                            this._profiles[name].remove()
+                            delete this._profiles[name];
+                        }
+                    } else {
+                        window.notifications.customError("errorSavedProfile", window.lang.notif("errorSavedProfile"));
+                    }
+                    window.modals.editProfile.close();
+                    // Reload with new info from edits
+                    this.load();
+                });
+            };
+
+            window.modals.profiles.close();
+            window.modals.editProfile.show();
+        })
+
+    }
+
     constructor() {
         (document.getElementById('setting-profiles') as HTMLSpanElement).onclick = this.load;
         document.addEventListener("profiles-default", (event: CustomEvent) => {
@@ -364,6 +440,7 @@ export class ProfileEditor {
                     }
                     this._userSelect.innerHTML = innerHTML;
                     this._storeHomescreen.checked = true;
+                    if (this._createJellyseerrProfile) this._createJellyseerrProfile.checked = true;
                     window.modals.profiles.close();
                     window.modals.addProfile.show();
                 } else {
@@ -381,6 +458,7 @@ export class ProfileEditor {
                 "id": this._userSelect.value,
                 "name": this._profileName.value
             }
+            if (this._createJellyseerrProfile) send["jellyseerr"] = this._createJellyseerrProfile.checked;
             _post("/profiles", send, (req: XMLHttpRequest) => {
                 if (req.readyState == 4) {
                     toggleLoader(button);

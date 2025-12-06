@@ -1,12 +1,14 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
 	"time"
 
 	dg "github.com/bwmarrin/discordgo"
+	"github.com/hrfee/jfa-go/common"
 	lm "github.com/hrfee/jfa-go/logmessages"
 	"github.com/timshannon/badgerhold/v4"
 )
@@ -27,6 +29,18 @@ type DiscordDaemon struct {
 	commandHandlers               map[string]func(s *dg.Session, i *dg.InteractionCreate, lang string)
 	commandIDs                    []string
 	commandDescriptions           []*dg.ApplicationCommand
+	retryOpts                     *common.MustAuthenticateOptions
+}
+
+func EmptyDiscordUser() *DiscordUser {
+	return &DiscordUser{
+		ID:            "",
+		Username:      "",
+		Discriminator: "",
+		Lang:          "",
+		Contact:       false,
+		JellyfinID:    "",
+	}
 }
 
 func newDiscordDaemon(app *appContext) (*DiscordDaemon, error) {
@@ -57,6 +71,16 @@ func newDiscordDaemon(app *appContext) (*DiscordDaemon, error) {
 	for _, user := range app.storage.GetDiscord() {
 		dd.users[user.ID] = user
 	}
+
+	dd.retryOpts = &common.MustAuthenticateOptions{
+		RetryCount:  app.config.Section("advanced").Key("auth_retry_count").MustInt(6),
+		RetryGap:    time.Duration(app.config.Section("advanced").Key("auth_retry_gap").MustInt(10)) * time.Second,
+		LogFailures: true,
+	}
+
+	dd.bot.AddHandler(dd.commandHandler)
+
+	dd.bot.Identify.Intents = dg.IntentsGuildMessages | dg.IntentsDirectMessages | dg.IntentsGuildMembers | dg.IntentsGuildInvites
 
 	return dd, nil
 }
@@ -98,13 +122,27 @@ func (d *DiscordDaemon) MustGetUser(channelID, userID, discrim, username string)
 	return d.NewUnknownUser(channelID, userID, discrim, username)
 }
 
-func (d *DiscordDaemon) run() {
-	d.bot.AddHandler(d.commandHandler)
+func (d *DiscordDaemon) Run() {
+	ro := common.MustAuthenticateOptions{}
+	ro = *d.retryOpts
+	ro.Counter = 0
+	d.run(&ro)
+}
 
-	d.bot.Identify.Intents = dg.IntentsGuildMessages | dg.IntentsDirectMessages | dg.IntentsGuildMembers | dg.IntentsGuildInvites
+func (d *DiscordDaemon) run(retry *common.MustAuthenticateOptions) {
 	if err := d.bot.Open(); err != nil {
-		d.app.err.Printf(lm.FailedStartDaemon, lm.Discord, err)
-		return
+		if retry == nil || retry.LogFailures {
+			d.app.err.Printf(lm.FailedStartDaemon, lm.Discord, err)
+		}
+		if retry != nil {
+			retry.Counter += 1
+			if retry.Counter >= retry.RetryCount {
+				return
+			}
+			time.Sleep(retry.RetryGap)
+			d.run(retry)
+			return
+		}
 	}
 	// Wait for everything to populate, it's slow sometimes.
 	for d.bot.State == nil {
@@ -134,15 +172,18 @@ func (d *DiscordDaemon) run() {
 			d.InviteChannel.Name = invChannel
 		}
 	}
-	err = d.bot.UpdateGameStatus(0, "/"+d.app.config.Section("discord").Key("start_command").MustString("start"))
+	d.bot.UpdateGameStatus(0, "/"+d.app.config.Section("discord").Key("start_command").MustString("start"))
 	defer d.deregisterCommands()
 	defer d.bot.Close()
 
-	go d.registerCommands()
+	ro := common.MustAuthenticateOptions{}
+	ro = *(d.retryOpts)
+	ro.Counter = 0
+
+	go d.registerCommands(&ro)
 
 	<-d.ShutdownChannel
 	d.ShutdownChannel <- "Down"
-	return
 }
 
 // ListRoles returns a list of available (excluding bot and @everyone) roles in a guild as a list of containing an array of the guild ID and its name.
@@ -196,7 +237,7 @@ func (d *DiscordDaemon) NewTempInvite(ageSeconds, maxUses int) (inviteURL, iconU
 	var inv *dg.Invite
 	var err error
 	if d.InviteChannel.Name == "" {
-		d.app.err.Println(lm.FailedCreateDiscordInviteChannel, lm.InviteChannelEmpty)
+		d.app.err.Printf(lm.FailedCreateDiscordInviteChannel, lm.InviteChannelEmpty)
 		return
 	}
 	if d.InviteChannel.ID == "" {
@@ -332,7 +373,7 @@ func (d *DiscordDaemon) Shutdown() {
 	close(d.ShutdownChannel)
 }
 
-func (d *DiscordDaemon) registerCommands() {
+func (d *DiscordDaemon) registerCommands(retry *common.MustAuthenticateOptions) {
 	d.commandDescriptions = []*dg.ApplicationCommand{
 		{
 			Name:        d.app.config.Section("discord").Key("start_command").MustString("start"),
@@ -429,7 +470,27 @@ func (d *DiscordDaemon) registerCommands() {
 	// if err != nil {
 	// 	d.app.err.Printf("Discord: Cannot create commands: %v", err)
 	// }
-	for i, cmd := range d.commandDescriptions {
+
+	cCommands, err := d.bot.ApplicationCommandBulkOverwrite(d.bot.State.User.ID, d.guildID, d.commandDescriptions)
+	if err != nil {
+		if retry == nil || retry.LogFailures {
+			d.app.err.Printf(lm.FailedRegisterDiscordCommand, "*", err)
+		}
+		if retry != nil {
+			retry.Counter += 1
+			if retry.Counter >= retry.RetryCount {
+				return
+			}
+			time.Sleep(retry.RetryGap)
+			d.registerCommands(retry)
+		}
+	} else {
+		for i := range len(d.commandDescriptions) {
+			d.commandIDs[i] = cCommands[i].ID
+		}
+		d.app.debug.Printf(lm.RegisterDiscordCommand, "*")
+	}
+	/* for i, cmd := range d.commandDescriptions {
 		command, err := d.bot.ApplicationCommandCreate(d.bot.State.User.ID, d.guildID, cmd)
 		if err != nil {
 			d.app.err.Printf(lm.FailedRegisterDiscordCommand, cmd.Name, err)
@@ -437,7 +498,7 @@ func (d *DiscordDaemon) registerCommands() {
 			d.app.debug.Printf(lm.RegisterDiscordCommand, cmd.Name)
 			d.commandIDs[i] = command.ID
 		}
-	}
+	} */
 }
 
 func (d *DiscordDaemon) deregisterCommands() {
@@ -605,6 +666,21 @@ func (d *DiscordDaemon) cmdInvite(s *dg.Session, i *dg.InteractionCreate, lang s
 	requester := d.MustGetUser(channel.ID, i.Interaction.Member.User.ID, i.Interaction.Member.User.Discriminator, i.Interaction.Member.User.Username)
 	d.users[i.Interaction.Member.User.ID] = requester
 	recipient := i.ApplicationCommandData().Options[0].UserValue(s)
+
+	// We don't reveal much in the message response itself so we can re-use this easily.
+	sendResponse := func(langKey string) {
+		err := s.InteractionRespond(i.Interaction, &dg.InteractionResponse{
+			Type: dg.InteractionResponseChannelMessageWithSource,
+			Data: &dg.InteractionResponseData{
+				Content: d.app.storage.lang.Telegram[lang].Strings.get(langKey),
+				Flags:   64, // Ephemeral
+			},
+		})
+		if err != nil {
+			d.app.err.Printf(lm.FailedReply, lm.Discord, requester.ID, err)
+		}
+	}
+
 	// d.app.debug.Println(invuser)
 	//label := i.ApplicationCommandData().Options[2].StringValue()
 	//profile := i.ApplicationCommandData().Options[3].StringValue()
@@ -612,11 +688,10 @@ func (d *DiscordDaemon) cmdInvite(s *dg.Session, i *dg.InteractionCreate, lang s
 	//if mins > 0 {
 	//	expmin = mins
 	//}
-	//	Check whether requestor is linked to the admin account
-	requesterEmail, ok := d.app.storage.GetEmailsKey(requester.JellyfinID)
-	if !(ok && requesterEmail.Admin) {
+	// We want the same criteria for running this command as accessing the admin page (i.e. an "admin" of some sort)
+	if !(d.app.canAccessAdminPageByID(requester.JellyfinID)) {
 		d.app.err.Printf(lm.FailedGenerateInvite, fmt.Sprintf(lm.NonAdminUser, requester.JellyfinID))
-		// FIXME: add response message
+		sendResponse("noPermission")
 		return
 	}
 
@@ -658,54 +733,45 @@ func (d *DiscordDaemon) cmdInvite(s *dg.Session, i *dg.InteractionCreate, lang s
 		}
 	}
 
-	if recipient != nil && d.app.config.Section("invite_emails").Key("enabled").MustBool(false) {
-		invname, err := d.bot.GuildMember(d.guildID, recipient.ID)
-		invite.SendTo = invname.User.Username
-		msg, err := d.app.email.constructInvite(invite.Code, invite, d.app, false)
-		if err != nil {
-			invite.SendTo = fmt.Sprintf(lm.FailedConstructInviteMessage, invite.Code, err)
-			d.app.err.Println(invite.SendTo)
-			err := s.InteractionRespond(i.Interaction, &dg.InteractionResponse{
-				Type: dg.InteractionResponseChannelMessageWithSource,
-				Data: &dg.InteractionResponseData{
-					Content: d.app.storage.lang.Telegram[lang].Strings.get("sentInviteFailure"),
-					Flags:   64, // Ephemeral
-				},
-			})
+	if recipient != nil {
+		err = nil
+
+		var invname *dg.Member = nil
+		invname, err = d.bot.GuildMember(d.guildID, recipient.ID)
+
+		if err == nil && !(d.app.config.Section("invite_emails").Key("enabled").MustBool(false)) {
+			err = errors.New(lm.InviteMessagesDisabled)
+		}
+
+		var msg *Message
+		if err == nil {
+			msg, err = d.app.email.constructInvite(&invite, false)
 			if err != nil {
-				d.app.err.Printf(lm.FailedReply, lm.Discord, requester.ID, err)
-			}
-		} else {
-			var err error
-			err = d.app.discord.SendDM(msg, recipient.ID)
-			if err != nil {
-				invite.SendTo = fmt.Sprintf(lm.FailedSendInviteMessage, invite.Code, RenderDiscordUsername(recipient), err)
-				d.app.err.Println(invite.SendTo)
-				err := s.InteractionRespond(i.Interaction, &dg.InteractionResponse{
-					Type: dg.InteractionResponseChannelMessageWithSource,
-					Data: &dg.InteractionResponseData{
-						Content: d.app.storage.lang.Telegram[lang].Strings.get("sentInviteFailure"),
-						Flags:   64, // Ephemeral
-					},
+				// Print extra message, ideally we'd just print this, or get rid of it though.
+				invite.SentTo.Failed = append(invite.SentTo.Failed, SendFailure{
+					Address: invname.User.Username,
+					Reason:  CheckLogs,
 				})
-				if err != nil {
-					d.app.err.Printf(lm.FailedReply, lm.Discord, requester.ID, err)
-				}
-			} else {
-				d.app.info.Printf(lm.SentInviteMessage, invite.Code, RenderDiscordUsername(recipient))
-				err := s.InteractionRespond(i.Interaction, &dg.InteractionResponse{
-					Type: dg.InteractionResponseChannelMessageWithSource,
-					Data: &dg.InteractionResponseData{
-						Content: d.app.storage.lang.Telegram[lang].Strings.get("sentInvite"),
-						Flags:   64, // Ephemeral
-					},
-				})
-				if err != nil {
-					d.app.err.Printf(lm.FailedReply, lm.Discord, requester.ID, err)
-				}
+				d.app.err.Printf(lm.FailedConstructInviteMessage, invite.Code, err)
 			}
 		}
+
+		if err == nil {
+			err = d.app.discord.SendDM(msg, recipient.ID)
+		}
+
+		if err == nil {
+			d.app.info.Printf(lm.SentInviteMessage, invite.Code, RenderDiscordUsername(recipient))
+			invite.SentTo.Success = append(invite.SentTo.Success, invname.User.Username)
+			sendResponse("sentInvite")
+		}
+
+		if err != nil {
+			invite.SendTo = fmt.Sprintf(lm.FailedSendInviteMessage, invite.Code, RenderDiscordUsername(recipient), err)
+			sendResponse("sentInviteFailure")
+		}
 	}
+
 	//if profile != "" {
 	d.app.storage.SetInvitesKey(invite.Code, invite)
 }

@@ -1,4 +1,6 @@
-declare var window: Window;
+declare var window: GlobalWindow;
+import dateParser from "any-date-parser";
+import { Temporal } from 'temporal-polyfill';
 
 export function toDateString(date: Date): string {
     const locale = window.language || (window as any).navigator.userLanguage || window.navigator.language;
@@ -21,9 +23,58 @@ export function toDateString(date: Date): string {
     return date.toLocaleDateString(locale, args1) + " " + date.toLocaleString(locale, args2);
 }
 
+export const parseDateString = (value: string): ParsedDate => {
+    let out: ParsedDate = {
+        text: value,
+        // Used just to tell use what fields the user passed.
+        attempt: dateParser.attempt(value),
+        // note Date.fromString is also provided by dateParser.
+        date: (Date as any).fromString(value) as Date
+    };
+    if (("invalid" in (out.date as any))) {
+        out.invalid = true;
+    } else {
+        // getTimezoneOffset returns UTC - Timezone, so invert it to get distance from UTC -to- timezone.
+        out.attempt.offsetMinutesFromUTC = -1 * out.date.getTimezoneOffset();
+    }
+    // Month in Date objects is 0-based, so make our parsed date that way too
+    if ("month" in out.attempt) out.attempt.month -= 1;
+    return out;
+}
+
+// DateCountdown sets the given el's textContent to the time till the given date (unixSeconds), updating
+// every minute. It returns the timeout, so it can be later removed with clearTimeout if desired.
+export function DateCountdown(el: HTMLElement, unixSeconds: number): ReturnType<typeof setTimeout> {
+    let then = Temporal.Instant.fromEpochMilliseconds(unixSeconds * 1000);
+    const toString = (): string => {
+        let out = "";
+        let now = Temporal.Now.instant();
+        let nowPlain = Temporal.Now.plainDateTimeISO();
+        let diff = now.until(then).round({
+            largestUnit: "years",
+            smallestUnit: "minutes",
+            relativeTo: nowPlain
+        });
+        // FIXME: I'd really like this to be localized, but don't know of any nice solutions.
+        const fields = [diff.years, diff.months, diff.days, diff.hours, diff.minutes];
+        const abbrevs = ["y", "mo", "d", "h", "m"];
+        for (let i = 0; i < fields.length; i++) {
+            if (fields[i]) {
+                out += ""+fields[i] + abbrevs[i] + " ";
+            }
+        }
+        return out.slice(0, -1);
+    };
+    const update = () => {
+        el.textContent = toString();
+    };
+    update();
+    return setTimeout(update, 60000);
+}
+
 export const _get = (url: string, data: Object, onreadystatechange: (req: XMLHttpRequest) => void, noConnectionError: boolean = false): void => {
     let req = new XMLHttpRequest();
-    if (window.URLBase) { url = window.URLBase + url; }
+    if (window.pages) { url = window.pages.Base + url; }
     req.open("GET", url, true);
     req.responseType = 'json';
     req.setRequestHeader("Authorization", "Bearer " + window.token);
@@ -42,7 +93,7 @@ export const _get = (url: string, data: Object, onreadystatechange: (req: XMLHtt
 
 export const _download = (url: string, fname: string): void => {
     let req = new XMLHttpRequest();
-    if (window.URLBase) { url = window.URLBase + url; }
+    if (window.pages) { url = window.pages.Base + url; }
     req.open("GET", url, true);
     req.responseType = 'blob';
     req.setRequestHeader("Authorization", "Bearer " + window.token);
@@ -58,16 +109,17 @@ export const _download = (url: string, fname: string): void => {
 
 export const _upload = (url: string, formData: FormData): void => {
     let req = new XMLHttpRequest();
-    if (window.URLBase) { url = window.URLBase + url; }
+    if (window.pages) { url = window.pages.Base + url; }
     req.open("POST", url, true);
     req.setRequestHeader("Authorization", "Bearer " + window.token);
     // req.setRequestHeader('Content-Type', 'multipart/form-data');
     req.send(formData);
 };
 
-export const _post = (url: string, data: Object, onreadystatechange: (req: XMLHttpRequest) => void, response?: boolean, statusHandler?: (req: XMLHttpRequest) => void, noConnectionError: boolean = false): void => {
+export const _req = (method: string, url: string, data: Object, onreadystatechange: (req: XMLHttpRequest) => void, response?: boolean, statusHandler?: (req: XMLHttpRequest) => void, noConnectionError: boolean = false): void => {
     let req = new XMLHttpRequest();
-    req.open("POST", window.URLBase + url, true);
+    if (window.pages) { url = window.pages.Base + url; }
+    req.open(method, url, true);
     if (response) {
         req.responseType = 'json';
     }
@@ -86,9 +138,16 @@ export const _post = (url: string, data: Object, onreadystatechange: (req: XMLHt
     req.send(JSON.stringify(data));
 };
 
+export const _post = (url: string, data: Object, onreadystatechange: (req: XMLHttpRequest) => void, response?: boolean, statusHandler?: (req: XMLHttpRequest) => void, noConnectionError: boolean = false): void => _req("POST", url, data, onreadystatechange, response, statusHandler, noConnectionError);
+
+export const _put = (url: string, data: Object, onreadystatechange: (req: XMLHttpRequest) => void, response?: boolean, statusHandler?: (req: XMLHttpRequest) => void, noConnectionError: boolean = false): void => _req("PUT", url, data, onreadystatechange, response, statusHandler, noConnectionError);
+
+export const _patch = (url: string, data: Object, onreadystatechange: (req: XMLHttpRequest) => void, response?: boolean, statusHandler?: (req: XMLHttpRequest) => void, noConnectionError: boolean = false): void => _req("PATCH", url, data, onreadystatechange, response, statusHandler, noConnectionError);
+
 export function _delete(url: string, data: Object, onreadystatechange: (req: XMLHttpRequest) => void, noConnectionError: boolean = false): void {
     let req = new XMLHttpRequest();
-    req.open("DELETE", window.URLBase + url, true);
+    if (window.pages) { url = window.pages.Base + url; }
+    req.open("DELETE", url, true);
     req.setRequestHeader("Authorization", "Bearer " + window.token);
     req.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
     req.onreadystatechange = () => {
@@ -225,14 +284,13 @@ export function toggleLoader(el: HTMLElement, small: boolean = true) {
 }
 
 export function addLoader(el: HTMLElement, small: boolean = true, relative: boolean = false) {
-    if (!el.classList.contains("loader")) {
-        el.classList.add("loader");
-        if (relative) el.classList.add("rel");
-        if (small) { el.classList.add("loader-sm"); }
-        const dot = document.createElement("span") as HTMLSpanElement;
-        dot.classList.add("dot")
-        el.appendChild(dot);
-    }
+    if (el.classList.contains("loader")) return;
+    el.classList.add("loader");
+    if (relative) el.classList.add("rel");
+    if (small) { el.classList.add("loader-sm"); }
+    const dot = document.createElement("span") as HTMLSpanElement;
+    dot.classList.add("dot")
+    el.appendChild(dot);
 }
 
 export function removeLoader(el: HTMLElement, small: boolean = true) {
@@ -303,4 +361,53 @@ export function unicodeB64Encode(s: string): string {
     const encoded = new TextEncoder().encode(s);
     const bin = String.fromCodePoint(...encoded);
     return btoa(bin);
+}
+
+// Only allow running a function every n milliseconds.
+// Source: Clément Prévost at https://stackoverflow.com/questions/27078285/simple-throttle-in-javascript
+// function foo<T>(bar: T): T {
+export function throttle (callback: () => void, limitMilliseconds: number): () => void {
+    var waiting = false;                      // Initially, we're not waiting
+    return function () {                      // We return a throttled function
+        if (!waiting) {                       // If we're not waiting
+            callback.apply(this, arguments);  // Execute users function
+            waiting = true;                   // Prevent future invocations
+            setTimeout(function () {          // After a period of time
+                waiting = false;              // And allow future invocations
+            }, limitMilliseconds);
+        }
+    }
+}
+
+export function SetupCopyButton(button: HTMLButtonElement, text: string, baseClass?: string, notif?: string) {
+    if (!notif) notif = window.lang.strings("copied");
+    if (!baseClass) baseClass = "~info";
+    // script will probably turn this into multiple
+    const baseClasses = baseClass.split(" ");
+    button.type = "button";
+    button.classList.add("button", ...baseClasses, "@low", "p-1");
+    button.title = window.lang.strings("copy");
+    const icon = document.createElement("i");
+    icon.classList.add("icon", "ri-file-copy-line");
+    button.appendChild(icon)
+    button.onclick = () => { 
+        toClipboard(text);
+        icon.classList.remove("ri-file-copy-line");
+        icon.classList.add("ri-check-line");
+        button.classList.remove(...baseClasses);
+        button.classList.add("~positive");
+        setTimeout(() => {
+            icon.classList.remove("ri-check-line");
+            icon.classList.add("ri-file-copy-line");
+            button.classList.remove("~positive");
+            button.classList.add(...baseClasses);
+        }, 800);
+        window.notifications.customPositive("copied", "", notif);
+    };
+}
+
+export function CopyButton(text: string, baseClass?: string, notif?: string): HTMLButtonElement {
+    const button = document.createElement("button");
+    SetupCopyButton(button, text, baseClass, notif);
+    return button;
 }

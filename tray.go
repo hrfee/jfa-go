@@ -7,10 +7,11 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"runtime"
 	"syscall"
 	"time"
 
-	"github.com/getlantern/systray"
+	"github.com/lutischan-ferenc/systray"
 )
 
 var TRAY = true
@@ -38,7 +39,13 @@ func onExit() {
 }
 
 func onReady() {
-	icon, err := localFS.ReadFile("web/favicon.ico")
+	var icon []byte
+	var err error = nil
+	if runtime.GOOS == "windows" {
+		icon, err = localFS.ReadFile("web/favicon.ico")
+	} else {
+		icon, err = localFS.ReadFile("web/favicon-256x256.png")
+	}
 	if err != nil {
 		log.Fatalf("Failed to load favicon: %v", err)
 	}
@@ -69,7 +76,7 @@ func onReady() {
 	mStart.Disable()
 	mStop.Enable()
 	mRestart.Enable()
-	go as.HandleCheck()
+	as.Register()
 	trayRestart := func() {
 		if RUNNING {
 			RESTART <- true
@@ -87,31 +94,37 @@ func onReady() {
 			mRestart.Enable()
 		}
 	}
+
+	mStart.Click(func() {
+		if !RUNNING {
+			go start(false, false)
+			mStart.Disable()
+			mStop.Enable()
+			mRestart.Enable()
+		}
+	})
+	mStop.Click(func() {
+		if RUNNING {
+			RESTART <- true
+			mStop.Disable()
+			mStart.Enable()
+			mRestart.Disable()
+		}
+	})
+	mRestart.Click(func() {
+		trayRestart()
+	})
+	mOpenLogs.Click(func() {
+		log.Printf("Opening %s\n", logPath)
+		OpenFile(logPath)
+	})
+	mQuit.Click(func() {
+		systray.Quit()
+	})
 	for {
 		select {
-		case <-mStart.ClickedCh:
-			if !RUNNING {
-				go start(false, false)
-				mStart.Disable()
-				mStop.Enable()
-				mRestart.Enable()
-			}
-		case <-mStop.ClickedCh:
-			if RUNNING {
-				RESTART <- true
-				mStop.Disable()
-				mStart.Enable()
-				mRestart.Disable()
-			}
 		case <-TRAYRESTART:
 			trayRestart()
-		case <-mRestart.ClickedCh:
-			trayRestart()
-		case <-mOpenLogs.ClickedCh:
-			log.Printf("Opening %s\n", logPath)
-			OpenFile(logPath)
-		case <-mQuit.ClickedCh:
-			systray.Quit()
 		}
 	}
 }

@@ -1,4 +1,4 @@
-.PHONY: configuration email typescript swagger copy compile compress inline-css variants-html install clean npm config-description config-default precompile
+.PHONY: configuration email typescript swagger copy compile compress inline-css variants-html install clean npm config-description config-default precompile test
 .DEFAULT_GOAL := all
 
 GOESBUILD ?= off
@@ -9,7 +9,7 @@ else
 endif
 GOBINARY ?= go
 
-CSSVERSION ?= v3
+CSSVERSION ?= $(shell git describe --tags --abbrev=0)
 CSS_BUNDLE = $(DATA)/web/css/$(CSSVERSION)bundle.css
 
 VERSION ?= $(shell git describe --exact-match HEAD 2> /dev/null || echo vgit)
@@ -33,7 +33,7 @@ E2EE ?= on
 TAGS := -tags "
 
 ifeq ($(INTERNAL), on)
-	DATA := data
+	DATA := build/data
 	COMPDEPS := $(BUILDDEPS)
 else
 	DATA := build/data
@@ -97,10 +97,17 @@ else
 endif
 
 ifeq (, $(shell which swag))
-	SWAGINSTALL := $(GOBINARY) install github.com/swaggo/swag/cmd/swag@latest
+	SWAGINSTALL := $(GOBINARY) install github.com/swaggo/swag/cmd/swag@v1.16.4
 else
 	SWAGINSTALL :=
 endif
+
+# FLAG HASHING: To rebuild on flag change.
+# credit for idea to https://bnikolic.co.uk/blog/sh/make/unix/2021/07/08/makefile.html
+rebuildFlags := GOESBUILD GOBINARY VERSION COMMIT UPDATER INTERNAL TRAY E2EE TAGS DEBUG RACE
+rebuildVals := $(foreach v,$(rebuildFlags),$(v)=$($(v)))
+rebuildHash := $(strip $(shell echo $(rebuildVals) | sha256sum | cut -d " " -f1))
+rebuildHashFile := $(DATA)/buildhash-$(rebuildHash).txt
 
 CONFIG_BASE = config/config-base.yaml
 
@@ -148,7 +155,7 @@ SWAGGER_SRC = $(wildcard api*.go) $(wildcard *auth.go) views.go
 SWAGGER_TARGET = docs/docs.go
 $(SWAGGER_TARGET): $(SWAGGER_SRC)
 	$(SWAGINSTALL)
-	swag init -g main.go
+	swag init --parseDependency --parseInternal -g main.go
 
 VARIANTS_SRC = $(wildcard html/*.html)
 VARIANTS_TARGET = $(DATA)/html/admin.html
@@ -160,16 +167,26 @@ $(VARIANTS_TARGET): $(VARIANTS_SRC)
 
 ICON_SRC = node_modules/remixicon/fonts/remixicon.css node_modules/remixicon/fonts/remixicon.woff2
 ICON_TARGET = $(ICON_SRC:node_modules/remixicon/fonts/%=$(DATA)/web/css/%)
+SYNTAX_LIGHT_SRC = node_modules/highlight.js/styles/base16/atelier-sulphurpool-light.min.css
+SYNTAX_LIGHT_TARGET = $(DATA)/web/css/$(CSSVERSION)highlightjs-light.css
+SYNTAX_DARK_SRC = node_modules/highlight.js/styles/base16/circus.min.css
+SYNTAX_DARK_TARGET = $(DATA)/web/css/$(CSSVERSION)highlightjs-dark.css
+CODEINPUT_SRC = node_modules/@webcoder49/code-input/code-input.min.css
+CODEINPUT_TARGET = $(DATA)/web/css/$(CSSVERSION)code-input.css
 CSS_SRC = $(wildcard css/*.css)
 CSS_TARGET = $(DATA)/web/css/part-bundle.css
 CSS_FULLTARGET = $(CSS_BUNDLE)
-ALL_CSS_SRC = $(ICON_SRC) $(CSS_SRC)
+ALL_CSS_SRC = $(ICON_SRC) $(CSS_SRC) $(SYNTAX_LIGHT_SRC) $(SYNTAX_DARK_SRC)
 ALL_CSS_TARGET = $(ICON_TARGET)
 
 $(CSS_FULLTARGET): $(TYPESCRIPT_TARGET) $(VARIANTS_TARGET) $(ALL_CSS_SRC) $(wildcard html/*.html)
 	$(info copying fonts)
 	cp -r node_modules/remixicon/fonts/remixicon.css node_modules/remixicon/fonts/remixicon.woff2 $(DATA)/web/css/
+	cp -r $(SYNTAX_LIGHT_SRC) $(SYNTAX_LIGHT_TARGET)
+	cp -r $(SYNTAX_DARK_SRC) $(SYNTAX_DARK_TARGET)
+	cp -r $(CODEINPUT_SRC) $(CODEINPUT_TARGET)
 	$(info bundling css)
+	rm -f $(CSS_TARGET) $(CSS_FULLTARGET)
 	$(ESBUILD) --bundle css/base.css --outfile=$(CSS_TARGET) --external:remixicon.css --external:../fonts/hanken* --minify
 
 	npx tailwindcss -i $(CSS_TARGET) -o $(CSS_FULLTARGET) $(TAILWIND)
@@ -192,9 +209,9 @@ STATIC_TARGET = $(STATIC_SRC:static/%=$(DATA)/web/%)
 COPY_SRC = images/banner.svg jfa-go.service LICENSE $(LANG_SRC) $(STATIC_SRC)
 COPY_TARGET = $(DATA)/jfa-go.service
 # $(DATA)/LICENSE $(LANG_TARGET) $(STATIC_TARGET) $(DATA)/web/css/$(CSSVERSION)bundle.css
-$(COPY_TARGET): $(INLINE_TARGET) $(STATIC_SRC) $(LANG_SRC)
+$(COPY_TARGET): $(INLINE_TARGET) $(STATIC_SRC) $(LANG_SRC) $(CONFIG_BASE)
 	$(info copying $(CONFIG_BASE))
-	cp $(CONFIG_BASE) $(DATA)/
+	go run scripts/yaml/main.go -in $(CONFIG_BASE) -out $(DATA)/$(shell basename $(CONFIG_BASE))
 	$(info copying crash page)
 	cp $(DATA)/crash.html $(DATA)/html/
 	$(info copying static data)
@@ -206,24 +223,32 @@ $(COPY_TARGET): $(INLINE_TARGET) $(STATIC_SRC) $(LANG_SRC)
 	cp -r lang $(DATA)/
 	cp LICENSE $(DATA)/
 
-BUILDDEPS := $(DATA) $(CONFIG_DEFAULT) $(EMAIL_TARGET) $(COPY_TARGET) $(SWAGGER_TARGET) 
+BUILDDEPS := $(DATA) $(CONFIG_DEFAULT) $(EMAIL_TARGET) $(COPY_TARGET) $(SWAGGER_TARGET) $(INLINE_TARGET) $(CSS_FULLTARGET) $(TYPESCRIPT_TARGET) 
 precompile: $(BUILDDEPS)
 
-COMPDEPS =
+COMPDEPS = $(rebuildHashFile)
 ifeq ($(INTERNAL), on)
-	COMPDEPS = $(BUILDDEPS)
+	COMPDEPS = $(BUILDDEPS) $(rebuildHashFile)
 endif
 
+$(rebuildHashFile):
+	$(info recording new flags $(rebuildVals))
+	rm -f $(DATA)/buildhash-*.txt
+	touch $(rebuildHashFile)
+
 GO_SRC = $(shell find ./ -name "*.go")
-GO_TARGET = build/jfa-go 
+GO_TARGET = build/jfa-go
 $(GO_TARGET): $(COMPDEPS) $(SWAGGER_TARGET) $(GO_SRC) go.mod go.sum
 	$(info Downloading deps)
 	$(GOBINARY) mod download
 	$(info Building)
 	mkdir -p build
-	$(GOBINARY) build $(RACEDETECTOR) -ldflags="$(LDFLAGS)" $(TAGS) -o $(GO_TARGET)
+	$(GOBINARY) build $(RACEDETECTOR) -ldflags="$(LDFLAGS)" $(TAGS) -o $(GO_TARGET) 
 
-all: $(BUILDDEPS) $(GO_TARGET)
+test: $(BUILDDEPS) $(COMPDEPS) $(SWAGGER_TARGET) $(GO_SRC) go.mod go.sum
+	$(GOBINARY) test -ldflags="$(LDFLAGS)" $(TAGS) -p 1
+
+all: $(BUILDDEPS) $(GO_TARGET) $(rebuildHashFile)
 
 compress:
 	upx --lzma $(GO_TARGET)

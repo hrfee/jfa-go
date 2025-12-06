@@ -76,7 +76,8 @@
         "download": "Unduh",
         "inviteMonths": "Bulan",
         "inviteDuration": "Durasi undangan",
-        "activity": "Aktivitas"
+        "activity": "Aktivitas",
+        "disabled": "Dihentikan"
     },
     "notifications": {
         "changedEmailAddress": "Alamat email {n} diubah.",

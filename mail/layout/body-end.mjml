@@ -1,0 +1,5 @@
+<mj-section mj-class="bg-gray">
+    <mj-column>
+        <mj-text mj-class="secondary text-gray">{{ .footer }}</mj-text>
+    </mj-column>
+</mj-section>

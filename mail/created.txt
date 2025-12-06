@@ -6,4 +6,4 @@
 
 {{ .timeString }}: {{ .time }}
 
-{{ .notificationNotice }}
+{{ .footer }}

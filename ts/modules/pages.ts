@@ -24,6 +24,7 @@ export class PageManager {
     private _overridePushState = () => {
         const pushState = window.history.pushState;
         window.history.pushState = function (data: any, __: string, _: string | URL) {
+            console.debug("Pushing state", arguments);
             pushState.apply(window.history, arguments);
             let ev = { state: data as string } as PopStateEvent;
             window.onpopstate(ev);
@@ -32,7 +33,15 @@ export class PageManager {
 
     private _onpopstate = (event: PopStateEvent) => {
         let name = event.state;
-        if (!this.pages.has(event.state)) {
+        if (name == null) {
+            // Attempt to use hash from URL, if it isn't there, try the last part of the URL.
+            if (window.location.hash && window.location.hash.charAt(0) == "#") {
+                name = window.location.hash.substring(1);
+            } else {
+                name = window.location.pathname.split("/").filter(Boolean).at(-1);
+            }
+        }
+        if (!this.pages.has(name)) {
             name = this.pageList[0]
         }
         let success = this.pages.get(name).show();

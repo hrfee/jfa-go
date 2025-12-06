@@ -7,7 +7,6 @@ const logNormal = document.getElementById("log-normal") as HTMLInputElement;
 const logSanitized = document.getElementById("log-sanitized") as HTMLInputElement;
 
 const buttonChange = (type: string) => {
-    console.log("RUN");
     if (type == "normal") {
         logSanitized.classList.add("unfocused");
         logNormal.classList.remove("unfocused");

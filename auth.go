@@ -40,7 +40,11 @@ func (app *appContext) logIpErr(gc *gin.Context, user bool, out string) {
 }
 
 func (app *appContext) webAuth() gin.HandlerFunc {
-	return app.authenticate
+	if NO_API_AUTH_DO_NOT_USE {
+		return app.bogusAuthenticate
+	} else {
+		return app.authenticate
+	}
 }
 
 func (app *appContext) authLog(v any) { app.debug.PrintfCustomLevel(4, lm.FailedAuthRequest, v) }
@@ -138,6 +142,13 @@ func (app *appContext) authenticate(gc *gin.Context) {
 	gc.Next()
 }
 
+// bogusAuthenticate is for use with NO_API_AUTH_DO_NOT_USE, it sets the jfId/userId value from NO_API_AUTH_FORCE_JF_ID.
+func (app *appContext) bogusAuthenticate(gc *gin.Context) {
+	gc.Set("jfId", NO_API_AUTH_FORCE_JFID)
+	gc.Set("userId", NO_API_AUTH_FORCE_JFID)
+	gc.Next()
+}
+
 func checkToken(token *jwt.Token) (interface{}, error) {
 	if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 		return nil, fmt.Errorf("Unexpected signing method %v", token.Header["alg"])
@@ -163,6 +174,31 @@ func (app *appContext) decodeValidateLoginHeader(gc *gin.Context, userpage bool)
 	}
 	ok = true
 	return
+}
+
+func (app *appContext) canAccessAdminPage(user mediabrowser.User, emailStore EmailAddress) bool {
+	// 1. "Allow all" is enabled, so simply being a user implies access.
+	if app.config.Section("ui").Key("allow_all").MustBool(false) && user.ID != "" {
+		return true
+	}
+	// 2. You've been made an "accounts admin" from the accounts tab.
+	if emailStore.Admin {
+		return true
+	}
+	// 3. (Jellyfin) "Admins only" is enabled, and you're one.
+	if app.config.Section("ui").Key("admin_only").MustBool(true) && user.ID != "" && user.Policy.IsAdministrator {
+		return true
+	}
+	return false
+}
+
+func (app *appContext) canAccessAdminPageByID(jfID string) bool {
+	user, err := app.jf.UserByID(jfID, false)
+	if err != nil {
+		return false
+	}
+	emailStore, _ := app.storage.GetEmailsKey(jfID)
+	return app.canAccessAdminPage(user, emailStore)
 }
 
 func (app *appContext) validateJellyfinCredentials(username, password string, gc *gin.Context, userpage bool) (user mediabrowser.User, ok bool) {
@@ -220,18 +256,12 @@ func (app *appContext) getTokenLogin(gc *gin.Context) {
 			return
 		}
 		jfID = user.ID
-		if !app.config.Section("ui").Key("allow_all").MustBool(false) {
-			accountsAdmin := false
-			adminOnly := app.config.Section("ui").Key("admin_only").MustBool(true)
-			if emailStore, ok := app.storage.GetEmailsKey(jfID); ok {
-				accountsAdmin = emailStore.Admin
-			}
-			accountsAdmin = accountsAdmin || (adminOnly && user.Policy.IsAdministrator)
-			if !accountsAdmin {
-				app.authLog(fmt.Sprintf(lm.NonAdminUser, username))
-				respond(401, "Unauthorized", gc)
-				return
-			}
+		emailStore, _ := app.storage.GetEmailsKey(jfID)
+		accountsAdmin := app.canAccessAdminPage(user, emailStore)
+		if !accountsAdmin {
+			app.authLog(fmt.Sprintf(lm.NonAdminUser, username))
+			respond(401, "Unauthorized", gc)
+			return
 		}
 		// New users are only added when using jellyfinLogin.
 		userID = shortuuid.New()
@@ -247,8 +277,7 @@ func (app *appContext) getTokenLogin(gc *gin.Context) {
 		respond(500, "Couldn't generate token", gc)
 		return
 	}
-	// host := gc.Request.URL.Hostname()
-	host := app.ExternalDomain
+	host := app.ExternalDomainNoPort(gc)
 
 	// Before you think this is broken: the first "true" arg is for "secure", i.e. only HTTPS!
 	gc.SetCookie("refresh", refresh, REFRESH_TOKEN_VALIDITY_SEC, "/", host, true, true)
@@ -310,7 +339,7 @@ func (app *appContext) getTokenRefresh(gc *gin.Context) {
 		return
 	}
 	// host := gc.Request.URL.Hostname()
-	host := app.ExternalDomain
+	host := app.ExternalDomainNoPort(gc)
 	gc.SetCookie("refresh", refresh, REFRESH_TOKEN_VALIDITY_SEC, "/", host, true, true)
 	gc.JSON(200, getTokenDTO{jwt})
 }

@@ -14,11 +14,12 @@
         "add": "Thêm",
         "edit": "Chỉnh sửa",
         "delete": "Xóa",
-        "inviteRemainingUses": "Số lần sử dụng còn lại"
+        "inviteRemainingUses": "Số lần sử dụng còn lại",
+        "username": "Tài khoản",
+        "password": "Mật khẩu"
     },
     "notifications": {
         "errorConnection": "Không thể kết nối với jfa-go.",
         "error401Unauthorized": "Không được phép. Hãy thử làm mới trang."
-    },
-    "quantityStrings": {}
+    }
 }

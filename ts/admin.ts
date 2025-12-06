@@ -2,7 +2,7 @@ import { ThemeManager } from "./modules/theme.js";
 import { lang, LangFile, loadLangSelector } from "./modules/lang.js";
 import { Modal } from "./modules/modal.js";
 import { Tabs, Tab } from "./modules/tabs.js";
-import { inviteList, createInvite } from "./modules/invites.js";
+import { DOMInviteList, createInvite } from "./modules/invites.js";
 import { accountsList } from "./modules/accounts.js";
 import { settingsList } from "./modules/settings.js";
 import { activityList } from "./modules/activity.js";
@@ -10,6 +10,8 @@ import { ProfileEditor, reloadProfileNames } from "./modules/profiles.js";
 import { _get, _post, notificationBox, whichAnimationEvent, bindManualDropdowns } from "./modules/common.js";
 import { Updater } from "./modules/update.js";
 import { Login } from "./modules/login.js";
+
+declare var window: GlobalWindow;
 
 const theme = new ThemeManager(document.getElementById("button-theme"));
 
@@ -56,6 +58,8 @@ window.availableProfiles = window.availableProfiles || [];
     window.modals.profiles = new Modal(document.getElementById("modal-user-profiles"));
 
     window.modals.addProfile = new Modal(document.getElementById("modal-add-profile"));
+    
+    window.modals.editProfile = new Modal(document.getElementById("modal-edit-profile"));
 
     window.modals.announce = new Modal(document.getElementById("modal-announce"));
     
@@ -70,6 +74,8 @@ window.availableProfiles = window.availableProfiles || [];
     window.modals.matrix = new Modal(document.getElementById("modal-matrix"));
 
     window.modals.logs = new Modal(document.getElementById("modal-logs"));
+    
+    window.modals.tasks = new Modal(document.getElementById("modal-tasks"));
 
     window.modals.backedUp = new Modal(document.getElementById("modal-backed-up"));
 
@@ -99,7 +105,7 @@ var accounts = new accountsList();
 
 var activity = new activityList();
 
-window.invites = new inviteList();
+window.invites = new DOMInviteList();
 
 var settings = new settingsList();
 
@@ -125,7 +131,7 @@ let isInviteURL = window.invites.isInviteURL();
 let isAccountURL = accounts.isAccountURL();
 
 // load tabs
-const tabs: { id: string, url: string, reloader: () => void }[] = [
+const tabs: { id: string, url: string, reloader: () => void, unloader?: () => void }[] = [
     {
         id: "invites",
         url: "",
@@ -146,12 +152,19 @@ const tabs: { id: string, url: string, reloader: () => void }[] = [
                 // Don't keep loading the same item on every tab refresh
                 isAccountURL = false;
             }
+            accounts.bindPageEvents();
         }),
+        unloader: accounts.unbindPageEvents
+        
     },
     {
         id: "activity",
         url: "activity",
-        reloader: activity.reload
+        reloader: () => {
+            activity.reload()
+            activity.bindPageEvents();
+        },
+        unloader: activity.unbindPageEvents
     },
     {
         id: "settings",
@@ -165,18 +178,17 @@ const defaultTab = tabs[0];
 window.tabs = new Tabs();
 
 for (let tab of tabs) {
-    window.tabs.addTab(tab.id, tab.url, null, tab.reloader);
+    window.tabs.addTab(tab.id, window.pages.Base + window.pages.Admin + "/" + tab.url, null, tab.reloader, tab.unloader || null);
 }
 
 let matchedTab = false
-for (let tab of tabs) {
-    if (window.location.pathname.startsWith(window.URLBase + "/" + tab.url)) {
+for (const tab of tabs) {
+    if (window.location.pathname.startsWith(window.pages.Base + window.pages.Current + "/" + tab.url)) {
         window.tabs.switch(tab.url, true);
         matchedTab = true;
     }
 }
 // Default tab
-// if ((window.URLBase + "/").includes(window.location.pathname)) {
 if (!matchedTab) {
     window.tabs.switch("", true);
 }
@@ -187,7 +199,7 @@ login.onLogin = () => {
     window.updater = new Updater();
     // FIXME: Decide whether to autoload activity or not
     reloadProfileNames();
-    setInterval(() => { window.invites.reload(); accounts.reload(); }, 30*1000);
+    setInterval(() => { window.invites.reload(); accounts.reloadIfNotInScroll(); }, 30*1000);
     // Triggers pre and post funcs, even though we're already on that page
     window.tabs.switch(window.tabs.current);
 }

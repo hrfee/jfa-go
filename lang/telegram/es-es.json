@@ -11,6 +11,9 @@
         "discordStartMessage": "Hola\nIntroduzca su PIN con `/pin <PIN>` para verificar su cuenta.",
         "languageMessageDiscord": "Nota: configure su idioma con /lang <language name>.",
         "languageSet": "El idioma esta configurado como {language}.",
-        "discordDMs": "Por favor, compruebe sus DMs para una respuesta."
+        "discordDMs": "Por favor, compruebe sus DMs para una respuesta.",
+        "sentInvite": "Enviar invitación.",
+        "sentInviteFailure": "Error al enviar la invitación, compruebe los logs.",
+        "noPermission": "No tienes permisos para esta acción."
     }
 }

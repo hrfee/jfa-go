@@ -6,6 +6,8 @@ package main
 import (
 	"context"
 
+	"github.com/hrfee/jfa-go/logger"
+	lm "github.com/hrfee/jfa-go/logmessages"
 	_ "github.com/mattn/go-sqlite3"
 	"maunium.net/go/mautrix/crypto/cryptohelper"
 	"maunium.net/go/mautrix/event"
@@ -22,7 +24,8 @@ func BuildTagsE2EE() {
 
 func MatrixE2EE() bool { return true }
 
-func InitMatrixCrypto(d *MatrixDaemon) error {
+func InitMatrixCrypto(d *MatrixDaemon, logger *logger.Logger) error {
+	logger.Printf(lm.InitingMatrixCrypto)
 	d.Encryption = d.app.config.Section("matrix").Key("encryption").MustBool(false)
 	if !d.Encryption {
 		// return fmt.Errorf("encryption disabled")
@@ -45,6 +48,7 @@ func InitMatrixCrypto(d *MatrixDaemon) error {
 	d.bot.Crypto = d.crypto.helper
 
 	d.Encryption = true
+	logger.Printf(lm.InitMatrixCrypto)
 	return nil
 }
 

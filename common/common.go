@@ -11,9 +11,20 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	lm "github.com/hrfee/jfa-go/logmessages"
 )
+
+const (
+	BogusIdentifier = "123412341234123456"
+)
+
+// ContactPreferences holds whether or not a user should be contacted through each of the available
+// methods. If nil, leave setting alone.
+type ContactPreferences struct {
+	Email, Discord, Telegram, Matrix *bool
+}
 
 // TimeoutHandler recovers from an http timeout or panic.
 type TimeoutHandler func()
@@ -77,6 +88,13 @@ func GenericErr(status int, err error) error {
 	default:
 		return ErrUnknown{code: status}
 	}
+}
+
+func GenericErrFromResponse(resp *http.Response, err error) error {
+	if resp == nil {
+		return ErrUnknown{code: -2}
+	}
+	return GenericErr(resp.StatusCode, err)
 }
 
 type ConfigurableTransport interface {
@@ -147,4 +165,12 @@ func decodeResp(resp *http.Response) (string, error) {
 		return "", err
 	}
 	return buf.String(), nil
+}
+
+// MustAuthenticateOptions is used to control the behaviour of the MustAuthenticate-like methods.
+type MustAuthenticateOptions struct {
+	RetryCount  int           // Number of Retries before failure.
+	RetryGap    time.Duration // Duration to wait between tries.
+	LogFailures bool          // Whether or not to print failures to the log.
+	Counter     int           // The current retry count.
 }

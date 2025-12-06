@@ -15,10 +15,8 @@ import (
 	"github.com/hrfee/jfa-go/common"
 	"github.com/hrfee/jfa-go/jellyseerr"
 	"github.com/hrfee/jfa-go/logger"
-	lm "github.com/hrfee/jfa-go/logmessages"
 	"github.com/hrfee/mediabrowser"
 	"github.com/timshannon/badgerhold/v4"
-	"gopkg.in/ini.v1"
 )
 
 type discordStore map[string]DiscordUser
@@ -53,7 +51,7 @@ const (
 
 type Activity struct {
 	ID         string       `badgerhold:"key"`
-	Type       ActivityType `badgerhold:"index"`
+	Type       ActivityType `badgerhold:"index"` // Index by type for quicker filtering
 	UserID     string       // ID of target user. For account creation, this will be the newly created account
 	SourceType ActivitySource
 	Source     string
@@ -66,7 +64,8 @@ type Activity struct {
 type UserExpiry struct {
 	JellyfinID        string `badgerhold:"key"`
 	Expiry            time.Time
-	DeleteAfterPeriod bool // Whether or not to further disable the user later on
+	DeleteAfterPeriod bool      // Whether or not to further disable the user later on
+	LastNotified      time.Time // Last time an expiry notification/reminder was sent to the user.
 }
 
 type DebugLogAction int
@@ -79,7 +78,7 @@ const (
 
 type Storage struct {
 	debug      *logger.Logger
-	logActions map[string]DebugLogAction
+	logActions func(k string) DebugLogAction
 
 	timePattern string
 
@@ -101,6 +100,44 @@ type Storage struct {
 	deprecatedCustomEmails                                                                                                                                                                                                              customEmails
 	deprecatedUserPageContent                                                                                                                                                                                                           userPageContent
 	lang                                                                                                                                                                                                                                Lang
+}
+
+// NewStorage returns a new Storage object with values initialised.
+func NewStorage(dbPath string, debugLogger *logger.Logger, logActions func(k string) DebugLogAction) *Storage {
+	if debugLogger.Empty {
+		debugLogger = nil
+	}
+	st := &Storage{
+		debug:      debugLogger,
+		logActions: logActions,
+		db_path:    dbPath,
+	}
+	st.lang.CommonPath = "common"
+	st.lang.UserPath = "form"
+	st.lang.AdminPath = "admin"
+	st.lang.EmailPath = "email"
+	st.lang.TelegramPath = "telegram"
+	st.lang.PasswordResetPath = "pwreset"
+	st.lang.SetupPath = "setup"
+	return st
+}
+
+// Connect connects to the underlying data storage method (e.g. db).
+// Call Close() once finished.
+func (st *Storage) Connect(config *Config) error {
+	opts := badgerhold.DefaultOptions
+	// ValueLogFileSize is in bytes, so multiply by 1e6
+	opts.Options.ValueLogFileSize = config.Section("advanced").Key("value_log_size").MustInt64(256) * 1e6
+	opts.Dir = st.db_path
+	opts.ValueDir = st.db_path
+	var err error = nil
+	st.db, err = badgerhold.Open(opts)
+	return err
+}
+
+// Close shuts down the underlying data storage method (e.g. db).
+func (st *Storage) Close() error {
+	return st.db.Close()
 }
 
 type StoreType int
@@ -145,7 +182,7 @@ func (st *Storage) DebugWatch(storeType StoreType, key, mainData string) {
 		actionKey = "custom_content"
 	}
 
-	logAction := st.logActions[actionKey]
+	logAction := st.logActions(actionKey)
 	if logAction == NoLog {
 		return
 	}
@@ -158,7 +195,7 @@ func (st *Storage) DebugWatch(storeType StoreType, key, mainData string) {
 	}
 }
 
-func generateLogActions(c *ini.File) map[string]DebugLogAction {
+func generateLogActions(c *Config) func(k string) DebugLogAction {
 	m := map[string]DebugLogAction{}
 	for _, v := range []string{"emails", "discord", "telegram", "matrix", "invites", "announcements", "expirires", "profiles", "custom_content"} {
 		switch c.Section("advanced").Key("debug_log_" + v).MustString("none") {
@@ -170,19 +207,7 @@ func generateLogActions(c *ini.File) map[string]DebugLogAction {
 			m[v] = LogDeletion
 		}
 	}
-	return m
-}
-
-func (app *appContext) ConnectDB() {
-	opts := badgerhold.DefaultOptions
-	opts.Dir = app.storage.db_path
-	opts.ValueDir = app.storage.db_path
-	db, err := badgerhold.Open(opts)
-	if err != nil {
-		app.err.Fatalf(lm.FailedConnectDB, app.storage.db_path, err)
-	}
-	app.storage.db = db
-	app.info.Printf(lm.ConnectDB, app.storage.db_path)
+	return func(k string) DebugLogAction { return m[k] }
 }
 
 // GetEmails returns a copy of the store.
@@ -600,7 +625,11 @@ type ThirdPartyService interface {
 	common.ConfigurableTransport
 	// ok implies user imported, err can be any issue that occurs during
 	ImportUser(jellyfinID string, req newUserDTO, profile Profile) (err error, ok bool)
-	AddContactMethods(jellyfinID string, req newUserDTO, discord *DiscordUser, telegram *TelegramUser) (err error)
+	// SetContactMethods allows setting any combination of contact method address/username/id and contact preference. To leave fields alone, pass nil pointers, to set them to a blank value, use "" or Empty(Discord|Telegram|Matrix)User(). Ignores the "Contact" field in some xyzUser structs.
+	SetContactMethods(jellyfinID string, email *string, discord *DiscordUser, telegram *TelegramUser, contactPrefs *common.ContactPreferences) (err error)
+	// Enabled returns whether this service is enabled in the given profile.
+	// Not for checking if the service is enabled in general!
+	// If it wasn't, it wouldn't be in app.thirdPartyServices.
 	Enabled(app *appContext, profile *Profile) bool
 	Name() string
 }
@@ -641,11 +670,8 @@ type DiscordUser struct {
 
 type TelegramUser struct {
 	TelegramVerifiedToken
-	JellyfinID string `badgerhold:"key"`
-	ChatID     int64  `badgerhold:"index"`
-	Username   string `badgerhold:"index"`
-	Lang       string
-	Contact    bool // Whether to contact through telegram or not
+	Lang    string
+	Contact bool // Whether to contact through telegram or not
 }
 
 type MatrixUser struct {
@@ -677,15 +703,38 @@ type customEmails struct {
 	WelcomeEmail       CustomContent `json:"welcomeEmail"`
 	EmailConfirmation  CustomContent `json:"emailConfirmation"`
 	UserExpired        CustomContent `json:"userExpired"`
+	ExpiryReminder     CustomContent `json:"expiryReminder"`
+}
+
+type CustomContentContext = int
+
+const (
+	CustomMessage CustomContentContext = iota
+	CustomCard
+	CustomTemplate
+)
+
+type ContentSourceFileInfo struct{ Section, SettingPrefix, DefaultValue string }
+
+// CustomContent stores information needed for creating custom jfa-go content, including emails and user messages.
+type CustomContentInfo struct {
+	Name                     string `json:"name" badgerhold:"key"`
+	DisplayName, Description func(dict *Lang, lang string) string
+	// Subject returns the subject of the email. Header/FooterText returns what should show in the header, a nil-value implies "Jellyfin" (or user-supplied text).
+	Subject, HeaderText, FooterText func(config *Config, lang *emailLang) string
+	// Config section, the main part of the setting name (without "html" or "text"), and the default filename (without ".html" or ".txt").
+	SourceFile   ContentSourceFileInfo
+	ContentType  CustomContentContext `json:"type"`
+	Variables    []string             `json:"variables,omitempty"`
+	Conditionals []string             `json:"conditionals,omitempty"`
+	Placeholders map[string]any       `json:"values,omitempty"`
 }
 
 // CustomContent stores customized versions of jfa-go content, including emails and user messages.
 type CustomContent struct {
-	Name         string   `json:"name" badgerhold:"key"`
-	Enabled      bool     `json:"enabled,omitempty"`
-	Content      string   `json:"content"`
-	Variables    []string `json:"variables,omitempty"`
-	Conditionals []string `json:"conditionals,omitempty"`
+	Name    string `json:"name" badgerhold:"key"`
+	Enabled bool   `json:"enabled,omitempty"`
+	Content string `json:"content"`
 }
 
 type userPageContent struct {
@@ -696,18 +745,22 @@ type userPageContent struct {
 // timePattern: %Y-%m-%dT%H:%M:%S.%f
 
 type Profile struct {
-	Name                string                     `badgerhold:"key"`
-	Admin               bool                       `json:"admin,omitempty" badgerhold:"index"`
-	LibraryAccess       string                     `json:"libraries,omitempty"`
-	FromUser            string                     `json:"fromUser,omitempty"`
-	Homescreen          bool                       `json:"homescreen"`
-	Policy              mediabrowser.Policy        `json:"policy,omitempty"`
-	Configuration       mediabrowser.Configuration `json:"configuration,omitempty"`
-	Displayprefs        map[string]interface{}     `json:"displayprefs,omitempty"`
-	Default             bool                       `json:"default,omitempty"`
-	Ombi                map[string]interface{}     `json:"ombi,omitempty"`
-	Jellyseerr          JellyseerrTemplate         `json:"jellyseerr,omitempty"`
+	ProfileDTO
+	Admin               bool   `json:"admin,omitempty" badgerhold:"index"`
+	LibraryAccess       string `json:"libraries,omitempty"`
+	FromUser            string `json:"fromUser,omitempty"`
+	Homescreen          bool   `json:"homescreen"`
+	Default             bool   `json:"default,omitempty"`
 	ReferralTemplateKey string
+}
+
+type ProfileDTO struct {
+	Name          string                     `badgerhold:"key" json:"name"`
+	Policy        mediabrowser.Policy        `json:"policy,omitempty"`
+	Configuration mediabrowser.Configuration `json:"configuration,omitempty"`
+	Displayprefs  map[string]any             `json:"displayprefs,omitempty"`
+	Ombi          map[string]any             `json:"ombi,omitempty"`
+	Jellyseerr    JellyseerrTemplate         `json:"jellyseerr,omitempty"`
 }
 
 type JellyseerrTemplate struct {
@@ -716,20 +769,39 @@ type JellyseerrTemplate struct {
 	Notifications jellyseerr.NotificationsTemplate `json:"notifications,omitempty"`
 }
 
+type SendFailureReason = string
+
+const (
+	CheckLogs      SendFailureReason = "CheckLogs"
+	NoUser                           = "NoUser"
+	MultiUser                        = "MultiUser"
+	InvalidAddress                   = "InvalidAddress"
+)
+
+type SendFailure struct {
+	Address string            `json:"address"`
+	Reason  SendFailureReason `json:"reason"`
+}
+
+type SentToList struct {
+	Success []string      `json:"success"`
+	Failed  []SendFailure `json:"failed"`
+}
+
 type Invite struct {
-	Code          string    `badgerhold:"key"`
-	Created       time.Time `json:"created"`
-	NoLimit       bool      `json:"no-limit"`
-	RemainingUses int       `json:"remaining-uses"`
-	ValidTill     time.Time `json:"valid_till"`
-	UserExpiry    bool      `json:"user-duration"`
-	UserMonths    int       `json:"user-months,omitempty"`
-	UserDays      int       `json:"user-days,omitempty"`
-	UserHours     int       `json:"user-hours,omitempty"`
-	UserMinutes   int       `json:"user-minutes,omitempty"`
-	SendTo        string    `json:"email"`
-	// Used to be stored as formatted time, now as Unix.
-	UsedBy             [][]string                 `json:"used-by"`
+	Code               string                     `badgerhold:"key"`
+	Created            time.Time                  `json:"created"`
+	NoLimit            bool                       `json:"no-limit"`
+	RemainingUses      int                        `json:"remaining-uses"`
+	ValidTill          time.Time                  `json:"valid_till"`
+	UserExpiry         bool                       `json:"user-duration"`
+	UserMonths         int                        `json:"user-months,omitempty"`
+	UserDays           int                        `json:"user-days,omitempty"`
+	UserHours          int                        `json:"user-hours,omitempty"`
+	UserMinutes        int                        `json:"user-minutes,omitempty"`
+	SendTo             string                     `json:"email"` // deprecated: use SentTo now.
+	SentTo             SentToList                 `json:"sent-to,omitempty"`
+	UsedBy             [][]string                 `json:"used-by"` // Used to be stored as formatted time, now as Unix.
 	Notify             map[string]map[string]bool `json:"notify"`
 	Profile            string                     `json:"profile"`
 	Label              string                     `json:"label,omitempty"`
@@ -1309,6 +1381,7 @@ func (st *Storage) loadLangEmail(filesystems ...fs.FS) error {
 					patchLang(&lang.WelcomeEmail, &fallback.WelcomeEmail, &english.WelcomeEmail)
 					patchLang(&lang.EmailConfirmation, &fallback.EmailConfirmation, &english.EmailConfirmation)
 					patchLang(&lang.UserExpired, &fallback.UserExpired, &english.UserExpired)
+					patchLang(&lang.ExpiryReminder, &fallback.ExpiryReminder, &english.ExpiryReminder)
 					patchLang(&lang.Strings, &fallback.Strings, &english.Strings)
 				}
 			}
@@ -1324,6 +1397,7 @@ func (st *Storage) loadLangEmail(filesystems ...fs.FS) error {
 				patchLang(&lang.WelcomeEmail, &english.WelcomeEmail)
 				patchLang(&lang.EmailConfirmation, &english.EmailConfirmation)
 				patchLang(&lang.UserExpired, &english.UserExpired)
+				patchLang(&lang.ExpiryReminder, &english.ExpiryReminder)
 				patchLang(&lang.Strings, &english.Strings)
 			}
 		}
@@ -1608,9 +1682,11 @@ func (st *Storage) migrateToProfile() error {
 	st.loadDisplayprefs()
 	st.loadProfiles()
 	st.deprecatedProfiles["Default"] = Profile{
-		Policy:        st.deprecatedPolicy,
-		Configuration: st.deprecatedConfiguration,
-		Displayprefs:  st.deprecatedDisplayprefs,
+		ProfileDTO: ProfileDTO{
+			Policy:        st.deprecatedPolicy,
+			Configuration: st.deprecatedConfiguration,
+			Displayprefs:  st.deprecatedDisplayprefs,
+		},
 	}
 	return st.storeProfiles()
 }

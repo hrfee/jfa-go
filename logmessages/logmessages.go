@@ -64,12 +64,14 @@ const (
 	TimedOut              = "timed out"
 	FailedGenericWithCode = "failed (code %d)"
 
-	InitDiscord        = "Initialized Discord daemon"
-	FailedInitDiscord  = "Failed to initialize Discord daemon: %v"
-	InitTelegram       = "Initialized Telegram daemon"
-	FailedInitTelegram = "Failed to initialize Telegram daemon: %v"
-	InitMatrix         = "Initialized Matrix daemon"
-	FailedInitMatrix   = "Failed to initialize Matrix daemon: %v"
+	InitDiscord         = "Initialized Discord daemon"
+	FailedInitDiscord   = "Failed to initialize Discord daemon: %v"
+	InitTelegram        = "Initialized Telegram daemon"
+	FailedInitTelegram  = "Failed to initialize Telegram daemon: %v"
+	InitMatrix          = "Initialized Matrix daemon"
+	FailedInitMatrix    = "Failed to initialize Matrix daemon: %v"
+	InitingMatrixCrypto = "Initializing Matrix encryption store"
+	InitMatrixCrypto    = "Initialized Matrix encryption store"
 
 	InitRouter = "Initializing router"
 	LoadRoutes = "Loading Routes"
@@ -107,9 +109,11 @@ const (
 	GenerateInvite       = "Generating new invite"
 	FailedGenerateInvite = "Failed to generate new invite: %v"
 	InvalidInviteCode    = "Invalid invite code \"%s\""
+	FailedGetInvite      = "Failed to get invite \"%s\": %v"
 
 	FailedSendToTooltipNoUser    = "Failed: \"%s\" not found"
 	FailedSendToTooltipMultiUser = "Failed: \"%s\" linked to multiple users"
+	InvalidAddress               = "invalid address \"%s\""
 
 	FailedParseTime = "Failed to parse time value: %v"
 
@@ -118,8 +122,7 @@ const (
 	SetAdminNotify = "Set \"%s\" to %t for admin address \"%s\""
 
 	// *jellyseerr*.go
-	FailedGetUsers = "Failed to get user(s) from %s: %v"
-	// FIXME: Once done, look back at uses of FailedGetUsers for places where this would make more sense.
+	FailedGetUsers                       = "Failed to get user(s) from %s: %v"
 	FailedGetUser                        = "Failed to get user \"%s\" from %s: %v"
 	FailedGetJellyseerrNotificationPrefs = "Failed to get user \"%s\"'s notification prefs from " + Jellyseerr + ": %v"
 	FailedSyncContactMethods             = "Failed to sync contact methods with %s: %v"
@@ -185,7 +188,11 @@ const (
 
 	IncorrectCaptcha = "captcha incorrect"
 
-	ExtendCreateExpiry = "Extended or created expiry for user \"%s\""
+	ExtendCreateExpiry      = "Extended or created expiry for user \"%s\""
+	FoundExistingExpiry     = "Found existing expiry key"
+	FoundPreviousExpiryLog  = "Found most recent previous expiry in activity log @ %v"
+	ExpiryWouldBeInPast     = "Expiry would've been in the past, using current time base"
+	PreviousExpiryNotExpiry = "Last user disable was not an expiry, using current time base"
 
 	UserEmailAdjusted = "Email for user \"%s\" adjusted"
 	UserAdminAdjusted = "Admin state for user \"%s\" set to %t"
@@ -200,6 +207,7 @@ const (
 	DeleteOldBackup       = "Deleted old backup \"%s\""
 	FailedDeleteOldBackup = "Failed to delete old backup \"%s\": %v"
 	CreateBackup          = "Created database backup \"%+v\""
+	FailedParseBackup     = "Failed to parse backup \"%s\": %v"
 	FailedCreateBackup    = "Faled to create database backup: %v"
 	MoveOldDB             = "Moved existing database to \"%s\""
 	FailedMoveOldDB       = "Failed to move existing database to \"%s\": %v"
@@ -207,13 +215,16 @@ const (
 	FailedRestoreDB       = "Failed to resotre database from \"%s\": %v"
 
 	// config.go
-	EnableAllPWRMethods = "No PWR method preferences set in [user_page], all will be enabled"
-	InitProxy           = "Initialized proxy @ \"%s\""
-	FailedInitProxy     = "Failed to initialize proxy @ \"%s\": %v\nStartup will pause for a bit to grab your attention."
-	NoURLSuffix         = `Warning: Given "jfa_url"/"External jfa-go URL" value does not include "url_base" value!`
-	BadURLBase          = `Warning: Given URL Base "%s" may conflict with the applications subpaths.`
-	NoExternalHost      = `No "External jfa-go URL" provided, set one in Settings > General.`
-	LoginWontSave       = ` Your login won't save until you do.`
+	EnableAllPWRMethods                = "No PWR method preferences set in [user_page], all will be enabled"
+	InitProxy                          = "Initialized proxy @ \"%s\""
+	FailedInitProxy                    = "Failed to initialize proxy @ \"%s\": %v\nStartup will pause for a bit to grab your attention."
+	NoURLSuffix                        = `Warning: Given "jfa_url"/"External jfa-go URL" value does not include "url_base" value!`
+	BadURLBase                         = `Warning: Given reverse proxy subfolder "%s" may conflict with the applications subpaths.`
+	RouteCollision                     = `Route Collision! Given reverse proxy subfolder "%s" or "URL Paths" settings likely conflict with the applications subpaths. Culprit: %v`
+	NoExternalHost                     = `No "External jfa-go URL" provided, set one in Settings > General.`
+	LoginWontSave                      = ` Logins may not save until you do.`
+	SetExternalHostDespiteUseProxyHost = ` This needs to be set even though use_proxy_host is enabled.`
+	SubpathBlockMessage                = `URLs: Root subfolder = "%s", Admin = "%s", My Account = "%s", Invite forms = "%s"`
 
 	// discord.go
 	StartDaemon                      = "Started %s daemon"
@@ -269,7 +280,8 @@ const (
 	// NOTE: "migrations.go" is the one file where log messages are not part of logmessages/logmessages.go.
 
 	// pwreset.go
-	PWRExpired = "PWR for user \"%s\" already expired @ %s, check system time!"
+	PWRExpired    = "PWR for user \"%s\" already expired @ %s, check system time!"
+	NewPWRForUser = "New password reset for user \"%s\""
 
 	// router.go
 	UseDefaultHTML      = "Using default HTML \"%s\""
@@ -279,6 +291,7 @@ const (
 	External            = "external"
 	RegisterPprof       = "Registered pprof"
 	SwaggerWarning      = "Warning: Swagger should not be used on a public instance."
+	NoAPIAuthPrompt     = `Disabling API auth is dangerous, only use locally for development. Disable it? [y/n]: `
 
 	// storage.go
 	ConnectDB       = "Connected to DB \"%s\""
@@ -290,6 +303,8 @@ const (
 	FailedGetUpdateTag = "Failed to get latest tag: %v"
 	FailedGetUpdate    = "Failed to get update: %v"
 	UpdateTagDetails   = "Update/Tag details: %+v"
+	TagEmpty           = "tag was empty"
+	TagAtEmpty         = "tag at \"%s\" was empty"
 
 	// user-auth.go
 	UserPage                     = "userpage"
@@ -341,6 +356,8 @@ const (
 )
 
 const (
+	FailedConstructCustomContent = "Possible error in custom content \"%s\": %v"
+
 	FailedConstructExpiryAdmin = "Failed to construct expiry notification for \"%s\": %v"
 	FailedSendExpiryAdmin      = "Failed to send expiry notification for \"%s\" to \"%s\": %v"
 	SentExpiryAdmin            = "Sent expiry notification for \"%s\" to \"%s\""
@@ -352,6 +369,7 @@ const (
 	FailedConstructInviteMessage = "Failed to construct invite message for \"%s\": %v"
 	FailedSendInviteMessage      = "Failed to send invite message for \"%s\" to \"%s\": %v"
 	SentInviteMessage            = "Sent invite message for \"%s\" to \"%s\""
+	InviteMessagesDisabled       = "invite messages are disabled, check settings"
 
 	FailedConstructConfirmationEmail = "Failed to construct confirmation email for \"%s\": %v"
 	FailedSendConfirmationEmail      = "Failed to send confirmation email for \"%s\" to \"%s\": %v"
@@ -376,6 +394,10 @@ const (
 	FailedConstructExpiryAdjustmentMessage = "Failed to construct expiry adjustment message for \"%s\": %v"
 	FailedSendExpiryAdjustmentMessage      = "Failed to send expiry adjustment message for \"%s\" to \"%s\": %v"
 	SentExpiryAdjustmentMessage            = "Sent expiry adjustment message for \"%s\" to \"%s\""
+
+	FailedConstructExpiryReminderMessage = "Failed to construct expiry reminder message for \"%s\": %v"
+	FailedSendExpiryReminderMessage      = "Failed to send expiry reminder message for \"%s\" to \"%s\": %v"
+	SentExpiryReminderMessage            = "Sent expiry reminder message for \"%s\" to \"%s\""
 
 	FailedConstructExpiryMessage = "Failed to construct expiry message for \"%s\": %v"
 	FailedSendExpiryMessage      = "Failed to send expiry message for \"%s\" to \"%s\": %v"

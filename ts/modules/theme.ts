@@ -2,6 +2,10 @@ export class ThemeManager {
 
     private _themeButton: HTMLElement = null;
     private _metaTag: HTMLMetaElement;
+       
+    private _cssLightFiles: HTMLLinkElement[];
+    private _cssDarkFiles: HTMLLinkElement[];
+
     
     private _beforeTransition = () => {
         const doc = document.documentElement;
@@ -47,6 +51,11 @@ export class ThemeManager {
 
     constructor(button?: HTMLElement) {
         this._metaTag = document.querySelector("meta[name=color-scheme]") as HTMLMetaElement;
+    
+        this._cssLightFiles = Array.from(document.head.querySelectorAll("link[data-theme=light]")) as Array<HTMLLinkElement>;
+        this._cssDarkFiles = Array.from(document.head.querySelectorAll("link[data-theme=dark]")) as Array<HTMLLinkElement>;
+        this._cssLightFiles.forEach((el) => el.remove());
+        this._cssDarkFiles.forEach((el) => el.remove());
         const theme = localStorage.getItem("theme");
         if (theme == "dark") {
             this._enable(true);
@@ -63,11 +72,16 @@ export class ThemeManager {
     private _toggle = () => {
         let metaValue = "light dark";
         this._beforeTransition();
-        if (!document.documentElement.classList.contains('dark')) {
+        const dark = !document.documentElement.classList.contains("dark");
+        if (dark) {
             document.documentElement.classList.add('dark');
             metaValue = "dark light";
+            this._cssLightFiles.forEach((el) => el.remove());
+            this._cssDarkFiles.forEach((el) => document.head.appendChild(el));
         } else {
             document.documentElement.classList.remove('dark');
+            this._cssDarkFiles.forEach((el) => el.remove());
+            this._cssLightFiles.forEach((el) => document.head.appendChild(el));
         }
         localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? "dark" : "light");
         
@@ -86,7 +100,14 @@ export class ThemeManager {
             document.documentElement.classList.remove(opposite);
         }
         document.documentElement.classList.add(mode);
-
+       
+        if (dark) {
+            this._cssLightFiles.forEach((el) => el.remove());
+            this._cssDarkFiles.forEach((el) => document.head.appendChild(el));
+        } else {
+            this._cssDarkFiles.forEach((el) => el.remove());
+            this._cssLightFiles.forEach((el) => document.head.appendChild(el));
+        }
         // this._metaTag.setAttribute("content", `${mode} ${opposite}`);
     };
 

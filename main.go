@@ -22,9 +22,9 @@ import (
 	"time"
 
 	"github.com/fatih/color"
+	"github.com/goccy/go-yaml"
 	"github.com/hrfee/jfa-go/common"
 	_ "github.com/hrfee/jfa-go/docs"
-	"github.com/hrfee/jfa-go/easyproxy"
 	"github.com/hrfee/jfa-go/jellyseerr"
 	"github.com/hrfee/jfa-go/logger"
 	lm "github.com/hrfee/jfa-go/logmessages"
@@ -32,7 +32,6 @@ import (
 	"github.com/hrfee/mediabrowser"
 	"github.com/lithammer/shortuuid/v3"
 	"gopkg.in/ini.v1"
-	"gopkg.in/yaml.v3"
 )
 
 var (
@@ -81,6 +80,11 @@ var serverTypes = map[string]string{
 var serverType = mediabrowser.JellyfinServer
 var substituteStrings = ""
 
+var externalURI, externalDomain string // The latter lower-case as should be accessed through app.ExternalDomain()
+var UseProxyHost bool
+
+var datePattern, timePattern string
+
 // User is used for auth purposes.
 type User struct {
 	UserID   string `json:"id"`
@@ -88,10 +92,15 @@ type User struct {
 	Password string `json:"password"`
 }
 
+// Set of the usual log channels, for ease of passing between things.
+type LoggerSet struct {
+	info, debug, err *logger.Logger
+}
+
 // contains (almost) everything the application needs, essentially. This was a dumb design decision imo.
 type appContext struct {
 	// defaults         *Config
-	config         *ini.File
+	config         *Config
 	configPath     string
 	configBasePath string
 	configBase     common.Config
@@ -103,37 +112,33 @@ type appContext struct {
 	adminUsers     []User
 	invalidTokens  []string
 	// Keeping jf name because I can't think of a better one
-	jf                                   *mediabrowser.MediaBrowser
-	authJf                               *mediabrowser.MediaBrowser
-	ombi                                 *OmbiWrapper
-	js                                   *JellyseerrWrapper
-	thirdPartyServices                   []ThirdPartyService
-	datePattern                          string
-	timePattern                          string
-	storage                              Storage
-	validator                            Validator
-	email                                *Emailer
-	telegram                             *TelegramDaemon
-	discord                              *DiscordDaemon
-	matrix                               *MatrixDaemon
-	contactMethods                       []ContactMethodLinker
-	info, debug, err                     *logger.Logger
-	host                                 string
-	port                                 int
-	version                              string
-	URLBase, ExternalURI, ExternalDomain string
-	updater                              *Updater
-	webhooks                             *WebhookSender
-	newUpdate                            bool // Whether whatever's in update is new.
-	tag                                  Tag
-	update                               Update
-	proxyEnabled                         bool
-	proxyTransport                       *http.Transport
-	proxyConfig                          easyproxy.ProxyConfig
-	internalPWRs                         map[string]InternalPWR
-	pwrCaptchas                          map[string]Captcha
-	ConfirmationKeys                     map[string]map[string]ConfirmationKey // Map of invite code to jwt to request
-	confirmationKeysLock                 sync.Mutex
+	jf                                               *mediabrowser.MediaBrowser
+	authJf                                           *mediabrowser.MediaBrowser
+	ombi                                             *OmbiWrapper
+	js                                               *JellyseerrWrapper
+	thirdPartyServices                               []ThirdPartyService
+	storage                                          *Storage
+	validator                                        Validator
+	email                                            *Emailer
+	telegram                                         *TelegramDaemon
+	discord                                          *DiscordDaemon
+	matrix                                           *MatrixDaemon
+	housekeepingDaemon, userDaemon, jellyseerrDaemon *GenericDaemon
+	contactMethods                                   []ContactMethodLinker
+	LoggerSet
+	host                 string
+	port                 int
+	version              string
+	updater              *Updater
+	webhooks             *WebhookSender
+	newUpdate            bool // Whether whatever's in update is new.
+	tag                  Tag
+	update               Update
+	internalPWRs         map[string]InternalPWR
+	pwrCaptchas          map[string]Captcha
+	ConfirmationKeys     map[string]map[string]ConfirmationKey // Map of invite code to jwt to request
+	confirmationKeysLock sync.Mutex
+	userCache            *UserCache
 }
 
 func generateSecret(length int) (string, error) {
@@ -147,7 +152,7 @@ func generateSecret(length int) (string, error) {
 
 func test(app *appContext) {
 	fmt.Printf("\n\n----\n\n")
-	settings := map[string]interface{}{
+	settings := map[string]any{
 		"server":         app.jf.Server,
 		"server version": app.jf.ServerInfo.Version,
 		"server name":    app.jf.ServerInfo.Name,
@@ -159,7 +164,7 @@ func test(app *appContext) {
 		fmt.Println(n, ":", v)
 	}
 	users, err := app.jf.GetUsers(false)
-	fmt.Printf("GetUsers: err %s maplength %d\n", err, len(users))
+	fmt.Printf("GetUsers: err %+v maplength %d\n", err, len(users))
 	fmt.Printf("View output? [y/n]: ")
 	var choice string
 	fmt.Scanln(&choice)
@@ -171,7 +176,7 @@ func test(app *appContext) {
 	var username string
 	fmt.Scanln(&username)
 	user, err := app.jf.UserByName(username, false)
-	fmt.Printf("UserByName (%s): code %d err %s", username, err)
+	fmt.Printf("UserByName (%s): err %+v", username, err)
 	out, _ := json.MarshalIndent(user, "", "  ")
 	fmt.Print(string(out))
 }
@@ -242,7 +247,9 @@ func start(asDaemon, firstCall bool) {
 
 	var debugMode bool
 	var address string
-	if err := app.loadConfig(); err != nil {
+	var err error = nil
+	app.config, err = NewConfig(app.configPath, app.dataPath, app.LoggerSet)
+	if err != nil {
 		app.err.Fatalf(lm.FailedLoadConfig, app.configPath, err)
 	}
 	app.info.Printf(lm.LoadConfig, app.configPath)
@@ -260,12 +267,8 @@ func start(asDaemon, firstCall bool) {
 	}
 	if debugMode {
 		app.debug = logger.NewLogger(os.Stdout, "[DEBUG] ", log.Ltime|log.Lshortfile, color.FgYellow)
-		// Bind debug log
-		app.storage.debug = app.debug
-		app.storage.logActions = generateLogActions(app.config)
 	} else {
 		app.debug = logger.NewEmptyLogger()
-		app.storage.debug = nil
 	}
 	if *PPROF {
 		app.info.Print(warning("\n\nWARNING: Don't use pprof in production.\n\n"))
@@ -310,14 +313,17 @@ func start(asDaemon, firstCall bool) {
 		}()
 	}
 
-	app.storage.lang.CommonPath = "common"
-	app.storage.lang.UserPath = "form"
-	app.storage.lang.AdminPath = "admin"
-	app.storage.lang.EmailPath = "email"
-	app.storage.lang.TelegramPath = "telegram"
-	app.storage.lang.PasswordResetPath = "pwreset"
+	dbPath := filepath.Join(app.dataPath, "db")
+	if debugMode {
+		app.storage = NewStorage(dbPath, app.debug, generateLogActions(app.config))
+	} else {
+		app.storage = NewStorage(dbPath, app.debug, nil)
+	}
+
+	// Placed here, since storage.chosenXLang is set by this function.
+	app.config.ReloadDependents(app)
+
 	externalLang := app.config.Section("files").Key("lang_files").MustString("")
-	var err error
 	if externalLang == "" {
 		err = app.storage.loadLang(langFS)
 	} else {
@@ -360,10 +366,12 @@ func start(asDaemon, firstCall bool) {
 		}
 		address = fmt.Sprintf("%s:%d", app.host, app.port)
 
-		// NOTE: As of writing this, the order in app.thirdPartServices doesn't matter,
+		// NOTE: As of writing this, the order in app.thirdPartyServices doesn't matter,
 		// but in future it might (like app.contactMethods does), so append to the end!
 		if app.config.Section("ombi").Key("enabled").MustBool(false) {
-			app.ombi = &OmbiWrapper{}
+			app.ombi = &OmbiWrapper{
+				OmbiUserByJfID: app.getOmbiUser,
+			}
 			app.debug.Printf(lm.UsingOmbi)
 			ombiServer := app.config.Section("ombi").Key("server").String()
 			app.ombi.Ombi = ombi.NewOmbi(
@@ -389,10 +397,12 @@ func start(asDaemon, firstCall bool) {
 
 		}
 
-		app.storage.db_path = filepath.Join(app.dataPath, "db")
 		app.loadPendingBackup()
-		app.ConnectDB()
-		defer app.storage.db.Close()
+		if err := app.storage.Connect(app.config); err != nil {
+			app.err.Fatalf(lm.FailedConnectDB, dbPath, err)
+		}
+		app.info.Printf(lm.ConnectDB, dbPath)
+		defer app.storage.Close()
 
 		// copy it to app.patchedConfig, and patch in settings from app.config, and language stuff.
 		app.PatchConfigBase()
@@ -405,7 +415,7 @@ func start(asDaemon, firstCall bool) {
 
 		// Initialize jellyfin/emby connection
 		server := app.config.Section("jellyfin").Key("server").String()
-		cacheTimeout := int(app.config.Section("jellyfin").Key("cache_timeout").MustUint(30))
+		cacheTimeout := app.config.Section("jellyfin").Key("cache_timeout").MustInt()
 		stringServerType := app.config.Section("jellyfin").Key("type").String()
 		timeoutHandler := mediabrowser.NewNamedTimeoutHandler("Jellyfin", "\""+server+"\"", true)
 		if stringServerType == "emby" {
@@ -468,10 +478,14 @@ func start(asDaemon, firstCall bool) {
 			}
 		}
 
-		// Since email depends on language, the email reload in loadConfig won't work first time.
+		app.userCache = NewUserCache(
+			time.Minute*time.Duration(app.config.Section("jellyfin").Key("web_cache_async_timeout").MustInt()),
+			time.Minute*time.Duration(app.config.Section("jellyfin").Key("web_cache_sync_timeout").MustInt()),
+		)
+
+		// Since email depends on language, the email reload in NewConfig won't work first time.
 		// Email also handles its own proxying, as (SMTP atleast) doesn't use a HTTP transport.
-		app.email = NewEmailer(app)
-		app.loadStrftime()
+		app.email = NewEmailer(app.config, app.storage, app.LoggerSet)
 
 		var validatorConf ValidatorConf
 
@@ -494,20 +508,24 @@ func start(asDaemon, firstCall bool) {
 			os.Exit(0)
 		}
 
-		invDaemon := newHousekeepingDaemon(time.Duration(60*time.Second), app)
-		go invDaemon.run()
-		defer invDaemon.Shutdown()
+		app.housekeepingDaemon = newHousekeepingDaemon(time.Duration(60*time.Second), app)
+		go app.housekeepingDaemon.run()
+		defer app.housekeepingDaemon.Shutdown()
 
-		userDaemon := newUserDaemon(time.Duration(60*time.Second), app)
-		go userDaemon.run()
-		defer userDaemon.Shutdown()
+		app.userDaemon = newUserDaemon(time.Duration(60*time.Second), app)
+		go app.userDaemon.run()
+		defer app.userDaemon.Shutdown()
 
-		var jellyseerrDaemon *GenericDaemon
-		if app.config.Section("jellyseerr").Key("enabled").MustBool(false) && app.config.Section("jellyseerr").Key("import_existing").MustBool(false) {
+		if app.config.Section("jellyseerr").Key("enabled").MustBool(false) {
+			// import_existing_users setting is deprecated, now it'll run when jellyseerr is enabled, or when triggered manually.
 			// jellyseerrDaemon = newJellyseerrDaemon(time.Duration(30*time.Second), app)
-			jellyseerrDaemon = newJellyseerrDaemon(time.Duration(10*time.Minute), app)
-			go jellyseerrDaemon.run()
-			defer jellyseerrDaemon.Shutdown()
+			app.jellyseerrDaemon = newJellyseerrDaemon(time.Duration(24*time.Hour), app)
+			if app.jellyseerrDaemon != nil {
+				go app.jellyseerrDaemon.run()
+				// Run on startup
+				go app.jellyseerrDaemon.Trigger()
+				defer app.jellyseerrDaemon.Shutdown()
+			}
 		}
 
 		if app.config.Section("password_resets").Key("enabled").MustBool(false) && serverType == mediabrowser.JellyfinServer {
@@ -527,7 +545,7 @@ func start(asDaemon, firstCall bool) {
 
 		// NOTE: The order in which these are placed in app.contactMethods matters.
 		// Add new ones to the end.
-		// FIXME: Add proxies.
+		// Proxies are added a little later through ContactMethodLinker[].SetTransport.
 		if discordEnabled {
 			app.discord, err = newDiscordDaemon(app)
 			if err != nil {
@@ -535,7 +553,7 @@ func start(asDaemon, firstCall bool) {
 				discordEnabled = false
 			} else {
 				app.debug.Println(lm.InitDiscord)
-				go app.discord.run()
+				go app.discord.Run()
 				defer app.discord.Shutdown()
 				app.contactMethods = append(app.contactMethods, app.discord)
 			}
@@ -572,13 +590,13 @@ func start(asDaemon, firstCall bool) {
 		)
 
 		// Updater proxy set in config.go, don't worry!
-		if app.proxyEnabled {
-			app.jf.SetTransport(app.proxyTransport)
+		if app.config.proxyConfig != nil {
+			app.jf.SetTransport(app.config.proxyTransport)
 			for _, c := range app.thirdPartyServices {
-				c.SetTransport(app.proxyTransport)
+				c.SetTransport(app.config.proxyTransport)
 			}
 			for _, c := range app.contactMethods {
-				c.SetTransport(app.proxyTransport)
+				c.SetTransport(app.config.proxyTransport)
 			}
 		}
 	} else {
@@ -594,7 +612,6 @@ func start(asDaemon, firstCall bool) {
 			app.host = "0.0.0.0"
 		}
 		address = fmt.Sprintf("%s:%d", app.host, app.port)
-		app.storage.lang.SetupPath = "setup"
 		err := app.storage.loadLangSetup(langFS)
 		if err != nil {
 			app.info.Fatalf(lm.FailedLangLoad, err)
@@ -698,7 +715,7 @@ func flagPassed(name string) (found bool) {
 }
 
 // @title jfa-go internal API
-// @version 0.5.2
+// @version 0.6.1
 // @description API for the jfa-go frontend
 // @contact.name Harvey Tindall
 // @contact.email hrfee@hrfee.dev
@@ -746,6 +763,12 @@ func flagPassed(name string) (found bool) {
 // @tag.name Other
 // @tag.description Things that dont fit elsewhere.
 
+// @tag.name Statistics
+// @tag.description Routes that expose useful info/stats.
+
+// @tag.name Tasks
+// @tag.description Manual triggers for background tasks.
+
 func printVersion() {
 	tray := ""
 	if TRAY {
@@ -773,7 +796,8 @@ func main() {
 	if flagPassed("test") {
 		TEST = true
 	}
-	loadFilesystems()
+	executable, _ := os.Executable()
+	loadFilesystems(filepath.Dir(executable), logger.NewLogger(os.Stdout, "[INFO] ", log.Ltime, color.FgHiWhite))
 
 	quit := make(chan os.Signal, 0)
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)

@@ -1,12 +1,25 @@
-import { _get, _post, _delete, toggleLoader, addLoader, removeLoader, toDateString, insertText, toClipboard } from "../modules/common.js";
-import { templateEmail } from "../modules/settings.js";
+import { _get, _post, _delete, toggleLoader, addLoader, removeLoader, toDateString, insertText, toClipboard } from "../modules/common"
+import { templateEmail } from "../modules/settings"
 import { Marked } from "@ts-stack/markdown";
-import { stripMarkdown } from "../modules/stripmd.js";
-import { DiscordUser, newDiscordSearch } from "../modules/discord.js";
-import { Search, SearchConfiguration, QueryType, SearchableItem } from "../modules/search.js";
-import { HiddenInputField } from "./ui.js";
+import { stripMarkdown } from "../modules/stripmd"
+import { DiscordUser, newDiscordSearch } from "../modules/discord"
+import { SearchConfiguration, QueryType, SearchableItem, SearchableItemDataAttribute } from "../modules/search"
+import { HiddenInputField } from "./ui"
+import { PaginatedList } from "./list"
+
+declare var window: GlobalWindow;
+
+const USER_DEFAULT_SORT_FIELD      = "name";
+const USER_DEFAULT_SORT_ASCENDING  = true;
 
 const dateParser = require("any-date-parser");
+
+enum SelectAllState {
+    None = 0,
+    Some = 0.1,
+    AllVisible = 0.9,
+    All = 1
+};
 
 interface User {
     id: string;
@@ -41,6 +54,117 @@ interface announcementTemplate {
 }
 
 var addDiscord: (passData: string) => void;
+    
+const queries = (): { [field: string]: QueryType } => { return {
+    "id": {
+        // We don't use a translation here to circumvent the name substitution feature.
+        name: "Jellyfin/Emby ID",
+        getter: "id",
+        bool: false,
+        string: true,
+        date: false
+    },
+    "label": {
+        name: window.lang.strings("label"),
+        getter: "label",
+        bool: true,
+        string: true,
+        date: false
+    },
+    "username": {
+        name: window.lang.strings("username"),
+        getter: "name",
+        bool: false,
+        string: true,
+        date: false
+    },
+    "name": {
+        name: window.lang.strings("username"),
+        getter: "name",
+        bool: false,
+        string: true,
+        date: false,
+        show: false
+    },
+    "admin": {
+        name: window.lang.strings("admin"),
+        getter: "admin",
+        bool: true,
+        string: false,
+        date: false
+    },
+    "disabled": {
+        name: window.lang.strings("disabled"),
+        getter: "disabled",
+        bool: true,
+        string: false,
+        date: false
+    },
+    "access-jfa": {
+        name: window.lang.strings("accessJFA"),
+        getter: "accounts_admin",
+        bool: true,
+        string: false,
+        date: false,
+        dependsOnElement: ".accounts-header-access-jfa"
+    },
+    "email": {
+        name: window.lang.strings("emailAddress"),
+        getter: "email",
+        bool: true,
+        string: true,
+        date: false,
+        dependsOnElement: ".accounts-header-email"
+    },
+    "telegram": {
+        name: "Telegram",
+        getter: "telegram",
+        bool: true,
+        string: true,
+        date: false,
+        dependsOnElement: ".accounts-header-telegram"
+    },
+    "matrix": {
+        name: "Matrix",
+        getter: "matrix",
+        bool: true,
+        string: true,
+        date: false,
+        dependsOnElement: ".accounts-header-matrix"
+    },
+    "discord": {
+        name: "Discord",
+        getter: "discord",
+        bool: true,
+        string: true,
+        date: false,
+        dependsOnElement: ".accounts-header-discord"
+    },
+    "expiry": {
+        name: window.lang.strings("expiry"),
+        getter: "expiry",
+        bool: true,
+        string: false,
+        date: true,
+        dependsOnElement: ".accounts-header-expiry"
+    },
+    "last-active": {
+        name: window.lang.strings("lastActiveTime"),
+        getter: "last_active",
+        bool: true,
+        string: false,
+        date: true
+    },
+    "referrals-enabled": {
+        name: window.lang.strings("referrals"),
+        getter: "referrals_enabled",
+        bool: true,
+        string: false,
+        date: false,
+        dependsOnElement: ".accounts-header-referrals"
+    }
+}};
+
 
 class user implements User, SearchableItem {
     private _id = "";
@@ -101,15 +225,20 @@ class user implements User, SearchableItem {
 
     get selected(): boolean { return this._selected; }
     set selected(state: boolean) {
+        this.setSelected(state, true);
+    }
+
+    setSelected(state: boolean, dispatchEvent: boolean) {
         this._selected = state;
         this._check.checked = state;
-        state ? document.dispatchEvent(this._checkEvent) : document.dispatchEvent(this._uncheckEvent);
+        if (dispatchEvent) state ? document.dispatchEvent(this._checkEvent()) : document.dispatchEvent(this._uncheckEvent());
     }
+
 
     get name(): string { return this._username.textContent; }
     set name(value: string) { this._username.textContent = value; }
 
-    get admin(): boolean { return this._admin.classList.contains("chip"); }
+    get admin(): boolean { return !(this._admin.classList.contains("hidden")); }
     set admin(state: boolean) {
         if (state) {
             this._admin.classList.remove("hidden")
@@ -469,7 +598,6 @@ class user implements User, SearchableItem {
     }
 
     matchesSearch = (query: string): boolean => {
-        console.log(this.name, "matches", query, ":", this.name.includes(query));
         return (
             this.id.includes(query) ||
             this.name.toLowerCase().includes(query) ||
@@ -481,8 +609,8 @@ class user implements User, SearchableItem {
         );
     }
 
-    private _checkEvent = new CustomEvent("accountCheckEvent");
-    private _uncheckEvent = new CustomEvent("accountUncheckEvent");
+    private _checkEvent = () => new CustomEvent("accountCheckEvent", {detail: this.id});
+    private _uncheckEvent = () => new CustomEvent("accountUncheckEvent", {detail: this.id});
 
     constructor(user: User) {
         this._row = document.createElement("tr") as HTMLTableRowElement;
@@ -533,7 +661,6 @@ class user implements User, SearchableItem {
         <td class="accounts-last-active whitespace-nowrap"></td>
         `;
         this._row.innerHTML = innerHTML;
-        const emailEditor = `<input type="email" class="input ~neutral @low stealth-input">`;
         this._check = this._row.querySelector("input[type=checkbox].accounts-select-user") as HTMLInputElement;
         this._accounts_admin = this._row.querySelector("input[type=checkbox].accounts-access-jfa") as HTMLInputElement;
         this._username = this._row.querySelector(".accounts-username") as HTMLSpanElement;
@@ -623,9 +750,10 @@ class user implements User, SearchableItem {
     
     private _addTelegram = () => _get("/telegram/pin", null, (req: XMLHttpRequest) => {
         if (req.readyState == 4 && req.status == 200) {
-            const pin = document.getElementById("telegram-pin");
-            const link = document.getElementById("telegram-link") as HTMLAnchorElement;
-            const username = document.getElementById("telegram-username") as HTMLSpanElement;
+            const modal = window.modals.telegram.modal;
+            const pin = modal.getElementsByClassName("pin")[0] as HTMLElement;
+            const link = modal.getElementsByClassName("link")[0] as HTMLAnchorElement;
+            const username = modal.getElementsByClassName("username")[0] as HTMLElement;
             const waiting = document.getElementById("telegram-waiting") as HTMLSpanElement;
             let resp = req.response as getPinResponse;
             pin.textContent = resp.token;
@@ -665,7 +793,10 @@ class user implements User, SearchableItem {
     });
 
     get id() { return this._id; }
-    set id(v: string) { this._id = v; }
+    set id(v: string) {
+        this._id = v;
+        this._row.setAttribute(SearchableItemDataAttribute, v);
+    }
 
 
     update = (user: User) => {
@@ -696,14 +827,30 @@ class user implements User, SearchableItem {
     asElement = (): HTMLTableRowElement => { return this._row; }
     remove = () => {
         if (this.selected) {
-            document.dispatchEvent(this._uncheckEvent);
+            document.dispatchEvent(this._uncheckEvent());
         }
         this._row.remove(); 
     }
-}    
+}  
 
-export class accountsList {
-    private _table = document.getElementById("accounts-list") as HTMLTableSectionElement;
+interface UsersDTO extends paginatedDTO {
+    users: User[];
+}
+
+declare interface ExtendExpiryDTO {
+    users: string[];
+    months?: number;
+    days?: number;
+    hours?: number;
+    minutes?: number;
+    timestamp?: number;
+    notify: boolean;
+    reason?: string;
+    try_extend_from_previous_expiry?: boolean;
+}
+
+export class accountsList extends PaginatedList {
+    protected _container = document.getElementById("accounts-list") as HTMLTableSectionElement;
     
     private _addUserButton = document.getElementById("accounts-add-user") as HTMLSpanElement;
     private _announceButton = document.getElementById("accounts-announce") as HTMLSpanElement;
@@ -722,6 +869,7 @@ export class accountsList {
     private  _extendExpiryForm = document.getElementById("form-extend-expiry") as HTMLFormElement;
     private _extendExpiryTextInput = document.getElementById("extend-expiry-text") as HTMLInputElement;
     private _extendExpiryFieldInputs = document.getElementById("extend-expiry-field-inputs") as HTMLElement;
+    private _extendExpiryFromPreviousExpiry = document.getElementById("expiry-use-previous") as HTMLInputElement;
     private _usingExtendExpiryTextInput = true;
 
     private _extendExpiryDate = document.getElementById("extend-expiry-date") as HTMLElement;
@@ -740,18 +888,19 @@ export class accountsList {
     private _referralsProfileSelect = document.getElementById("enable-referrals-user-profiles") as HTMLSelectElement;
     private _referralsInviteSelect = document.getElementById("enable-referrals-user-invites") as HTMLSelectElement;
     private _referralsExpiry = document.getElementById("enable-referrals-user-expiry") as HTMLInputElement;
-    private _searchBox = document.getElementById("accounts-search") as HTMLInputElement;
-    private _search: Search;
 
     private _applyHomescreen = document.getElementById("modify-user-homescreen") as HTMLInputElement;
     private _applyConfiguration = document.getElementById("modify-user-configuration") as HTMLInputElement;
-    private _applyOmbi = document.getElementById("modify-user-ombi") as HTMLInputElement;
-    private _applyJellyseerr = document.getElementById("modify-user-jellyseerr") as HTMLInputElement;
+    private _applyOmbi = window.ombiEnabled ? document.getElementById("modify-user-ombi") as HTMLInputElement : null;
+    private _applyJellyseerr = window.jellyseerrEnabled ? document.getElementById("modify-user-jellyseerr") as HTMLInputElement : null;
 
     private _selectAll = document.getElementById("accounts-select-all") as HTMLInputElement;
-    private _users: { [id: string]: user };
-    private _ordering: string[] = [];
-    private _checkCount: number = 0;
+    private _selectAllState: SelectAllState = SelectAllState.None;
+    // private _users: { [id: string]: user };
+    // private _ordering: string[] = [];
+    get users(): { [id: string]: user } { return this._search.items as { [id: string]: user }; }
+    // set users(v: { [id: string]: user }) { this._search.items = v as SearchableItems; }
+
     // Whether the enable/disable button should enable or not.
     private _shouldEnable = false;
 
@@ -763,16 +912,13 @@ export class accountsList {
     
     // Columns for sorting.
     private _columns: { [className: string]: Column } = {};
-    private _activeSortColumn: string;
-
-    private _sortingByButton = document.getElementById("accounts-sort-by-field") as HTMLButtonElement;
-    private _filterArea = document.getElementById("accounts-filter-area");
-    private _searchOptionsHeader = document.getElementById("accounts-search-options-header");
 
     // Whether the "Extend expiry" is extending or setting an expiry.
     private _settingExpiry = false;
 
-    private _count = 30;
+    private _sortingByButton = document.getElementById("accounts-sort-by-field") as HTMLButtonElement;
+
+    private _maxDayHourMinuteOptions = 30;
     private _populateNumbers = () => {
         const fieldIDs = ["months", "days", "hours", "minutes"];
         const prefixes = ["extend-expiry-"];
@@ -780,7 +926,7 @@ export class accountsList {
             for (let j = 0; j < prefixes.length; j++) { 
                 const field = document.getElementById(prefixes[j] + fieldIDs[i]);
                 field.textContent = '';
-                for (let n = 0; n <= this._count; n++) {
+                for (let n = 0; n <= this._maxDayHourMinuteOptions; n++) {
                    const opt = document.createElement("option") as HTMLOptionElement;
                    opt.textContent = ""+n;
                    opt.value = ""+n;
@@ -789,155 +935,431 @@ export class accountsList {
             }
         }
     }
+    
+    constructor() {
+        super({
+            loader: document.getElementById("accounts-loader"),
+            loadMoreButtons: Array.from([document.getElementById("accounts-load-more") as HTMLButtonElement]) as Array<HTMLButtonElement>,
+            loadAllButtons: Array.from(document.getElementsByClassName("accounts-load-all")) as Array<HTMLButtonElement>,
+            refreshButton: document.getElementById("accounts-refresh") as HTMLButtonElement,
+            filterArea: document.getElementById("accounts-filter-area"),
+            searchOptionsHeader: document.getElementById("accounts-search-options-header"),
+            searchBox: document.getElementById("accounts-search") as HTMLInputElement,
+            recordCounter: document.getElementById("accounts-record-counter"),
+            totalEndpoint: "/users/count",
+            getPageEndpoint: "/users",
+            itemsPerPage: 40,
+            maxItemsLoadedForSearch: 200,
+            appendNewItems: (resp: paginatedDTO) => {
+                for (let u of ((resp as UsersDTO).users || [])) {
+                    if (u.id in this.users) {
+                        this.users[u.id].update(u);
+                    } else {
+                        this.add(u);
+                    }
+                }
 
-    showHideSearchOptionsHeader = () => {
-        const sortingBy = !(this._sortingByButton.parentElement.classList.contains("hidden"));
-        const hasFilters = this._filterArea.textContent != "";
-        console.log("sortingBy", sortingBy, "hasFilters", hasFilters);
-        if (sortingBy || hasFilters) {
-            this._searchOptionsHeader.classList.remove("hidden");
+                this._search.setOrdering(
+                    this._columns[this._search.sortField].sort(this.users),
+                    this._search.sortField,
+                    this._search.ascending
+                );
+            },
+            replaceWithNewItems: (resp: paginatedDTO) => {
+                let accountsOnDOM: { [id: string]: boolean } = {};
+
+                for (let id of Object.keys(this.users)) { accountsOnDOM[id] = true; }
+                for (let u of ((resp as UsersDTO).users || [])) {
+                    if (u.id in accountsOnDOM) {
+                        this.users[u.id].update(u);
+                        delete accountsOnDOM[u.id];
+                    } else {
+                        this.add(u);
+                    }
+                }
+
+                // Delete accounts w/ remaining IDs (those not in resp.users)
+                // console.log("Removing", Object.keys(accountsOnDOM).length, "from DOM");
+                for (let id in accountsOnDOM) {
+                    this.users[id].remove()
+                    delete this.users[id];
+                }
+
+                this._search.setOrdering(
+                    this._columns[this._search.sortField].sort(this.users),
+                    this._search.sortField,
+                    this._search.ascending
+                );
+            },
+            defaultSortField: USER_DEFAULT_SORT_FIELD,
+            defaultSortAscending: USER_DEFAULT_SORT_ASCENDING,
+            pageLoadCallback: (req: XMLHttpRequest) => {
+                if (req.readyState != 4) return;
+                // FIXME: Error message
+                if (req.status != 200) return;
+            }
+        });
+        this._populateNumbers();
+        
+        let searchConfig: SearchConfiguration = {
+            filterArea: this._c.filterArea,
+            sortingByButton: this._sortingByButton,
+            searchOptionsHeader: this._c.searchOptionsHeader,
+            notFoundPanel: document.getElementById("accounts-not-found"),
+            notFoundLocallyText: document.getElementById("accounts-no-local-results"),
+            filterList: document.getElementById("accounts-filter-list"),
+            search: this._c.searchBox,
+            queries: queries(),
+            setVisibility: null,
+            clearSearchButtonSelector: ".accounts-search-clear",
+            serverSearchButtonSelector: ".accounts-search-server",
+            onSearchCallback: (_0: boolean, _1: boolean) => {
+                this.processSelectedAccounts();
+            },
+            searchServer: null,
+            clearServerSearch: null,
+        };
+        
+        this.initSearch(searchConfig);
+       
+        // FIXME: Remove!
+        (window as any).accs = this;
+
+        this._selectAll.checked = false;
+        this._selectAllState = SelectAllState.None;
+        this._selectAll.onchange = () => this.cycleSelectAll();
+        document.addEventListener("accounts-reload", () => this.reload());
+        document.addEventListener("accountCheckEvent", () => { this._counter.selected++; this.processSelectedAccounts(); });
+        document.addEventListener("accountUncheckEvent", () => { this._counter.selected--; this.processSelectedAccounts(); });
+        this._addUserButton.onclick = () => {
+            this._populateAddUserProfiles();
+            window.modals.addUser.toggle();
+        };
+        this._addUserForm.addEventListener("submit", this._addUser);
+
+        this._deleteNotify.onchange = () => {
+            if (this._deleteNotify.checked) {
+                this._deleteReason.classList.remove("unfocused");
+            } else {
+                this._deleteReason.classList.add("unfocused");
+            }
+        };
+        this._modifySettings.onclick = this.modifyUsers;
+        this._modifySettings.classList.add("unfocused");
+
+        const checkSource = () => {
+            const profileSpan = this._modifySettingsProfile.nextElementSibling as HTMLSpanElement;
+            const userSpan = this._modifySettingsUser.nextElementSibling as HTMLSpanElement;
+            if (this._modifySettingsProfile.checked) {
+                this._userSelect.parentElement.classList.add("unfocused");
+                this._profileSelect.parentElement.classList.remove("unfocused")
+                profileSpan.classList.add("@high");
+                profileSpan.classList.remove("@low");
+                userSpan.classList.remove("@high");
+                userSpan.classList.add("@low");
+                this._applyOmbi?.parentElement.classList.remove("unfocused");
+                this._applyJellyseerr?.parentElement.classList.remove("unfocused");
+            } else {
+                this._userSelect.parentElement.classList.remove("unfocused");
+                this._profileSelect.parentElement.classList.add("unfocused");
+                userSpan.classList.add("@high");
+                userSpan.classList.remove("@low");
+                profileSpan.classList.remove("@high");
+                profileSpan.classList.add("@low");
+                this._applyOmbi?.parentElement.classList.add("unfocused");
+                this._applyJellyseerr?.parentElement.classList.add("unfocused");
+            }
+        };
+        this._modifySettingsProfile.onchange = checkSource;
+        this._modifySettingsUser.onchange = checkSource;
+
+        if (window.referralsEnabled) {
+            const profileSpan = this._enableReferralsProfile.nextElementSibling as HTMLSpanElement;
+            const inviteSpan = this._enableReferralsInvite.nextElementSibling as HTMLSpanElement;
+            const checkReferralSource = () => {
+                console.debug("States:", this._enableReferralsProfile.checked, this._enableReferralsInvite.checked);
+                if (this._enableReferralsProfile.checked) {
+                    this._referralsInviteSelect.parentElement.classList.add("unfocused");
+                    this._referralsProfileSelect.parentElement.classList.remove("unfocused")
+                    profileSpan.classList.add("@high");
+                    profileSpan.classList.remove("@low");
+                    inviteSpan.classList.remove("@high");
+                    inviteSpan.classList.add("@low");
+                } else {
+                    this._referralsInviteSelect.parentElement.classList.remove("unfocused");
+                    this._referralsProfileSelect.parentElement.classList.add("unfocused");
+                    inviteSpan.classList.add("@high");
+                    inviteSpan.classList.remove("@low");
+                    profileSpan.classList.remove("@high");
+                    profileSpan.classList.add("@low");
+                }
+            };
+            profileSpan.onclick = () => {
+                this._enableReferralsProfile.checked = true;
+                this._enableReferralsInvite.checked = false;
+                checkReferralSource();
+            };
+            inviteSpan.onclick = () => {;
+                this._enableReferralsInvite.checked = true;
+                this._enableReferralsProfile.checked = false;
+                checkReferralSource();
+            };
+            this._enableReferrals.onclick = () => {
+                this.enableReferrals();
+                profileSpan.onclick(null);
+            };
+        }
+
+        this._deleteUser.onclick = this.deleteUsers;
+        this._deleteUser.classList.add("unfocused");
+
+        this._announceButton.onclick = this.announce;
+        this._announceButton.parentElement.classList.add("unfocused");
+
+        this._extendExpiry.onclick = () => { this.extendExpiry(); };
+        this._removeExpiry.onclick = () => { this.removeExpiry(); };
+        this._expiryDropdown.classList.add("unfocused");
+        this._extendExpiryDate.classList.add("unfocused");
+
+        this._extendExpiryTextInput.onkeyup = () => {
+            this._extendExpiryTextInput.parentElement.classList.remove("opacity-60");
+            this._extendExpiryFieldInputs.classList.add("opacity-60");
+                this._usingExtendExpiryTextInput = true;
+            this._displayExpiryDate();
+        }
+
+        this._extendExpiryTextInput.onclick = () => {
+            this._extendExpiryTextInput.parentElement.classList.remove("opacity-60");
+            this._extendExpiryFieldInputs.classList.add("opacity-60");
+            this._usingExtendExpiryTextInput = true;
+            this._displayExpiryDate();
+        };
+
+        this._extendExpiryFieldInputs.onclick = () => {
+            this._extendExpiryFieldInputs.classList.remove("opacity-60");
+            this._extendExpiryTextInput.parentElement.classList.add("opacity-60");
+            this._usingExtendExpiryTextInput = false;
+            this._displayExpiryDate();
+        };
+
+        this._extendExpiryFromPreviousExpiry.onclick = this._displayExpiryDate;
+        
+        for (let field of ["months", "days", "hours", "minutes"]) {
+            (document.getElementById("extend-expiry-"+field) as HTMLSelectElement).onchange = () => {
+                this._extendExpiryFieldInputs.classList.remove("opacity-60");
+                this._extendExpiryTextInput.parentElement.classList.add("opacity-60");
+                this._usingExtendExpiryTextInput = false;
+                this._displayExpiryDate();
+            };
+        }
+
+        this._disableEnable.onclick = this.enableDisableUsers;
+        this._disableEnable.parentElement.classList.add("unfocused");
+
+        this._enableExpiry.onclick = () => { this.extendExpiry(true); };
+        this._enableExpiryNotify.onchange = () => {
+            if (this._enableExpiryNotify.checked) {
+                this._enableExpiryReason.classList.remove("unfocused");
+            } else {
+                this._enableExpiryReason.classList.add("unfocused");
+            }
+        };
+
+        if (!window.usernameEnabled) {
+            this._addUserName.classList.add("unfocused");
+            this._addUserName = this._addUserEmail;
+        }
+
+        if (!window.linkResetEnabled) {
+            this._sendPWR.classList.add("unfocused");
         } else {
-            this._searchOptionsHeader.classList.add("hidden");
+            this._sendPWR.onclick = this.sendPWR;
         }
-    }
+        /*if (!window.emailEnabled) {
+            this._deleteNotify.parentElement.classList.add("unfocused");
+            this._deleteNotify.checked = false;
+        }*/
 
-    private _queries: { [field: string]: QueryType } = {
-        "id": {
-            // We don't use a translation here to circumvent the name substitution feature.
-            name: "Jellyfin/Emby ID",
-            getter: "id",
-            bool: false,
-            string: true,
-            date: false
-        },
-        "label": {
-            name: window.lang.strings("label"),
-            getter: "label",
-            bool: true,
-            string: true,
-            date: false
-        },
-        "username": {
-            name: window.lang.strings("username"),
-            getter: "name",
-            bool: false,
-            string: true,
-            date: false
-        },
-        "name": {
-            name: window.lang.strings("username"),
-            getter: "name",
-            bool: false,
-            string: true,
-            date: false,
-            show: false
-        },
-        "admin": {
-            name: window.lang.strings("admin"),
-            getter: "admin",
-            bool: true,
-            string: false,
-            date: false
-        },
-        "disabled": {
-            name: window.lang.strings("disabled"),
-            getter: "disabled",
-            bool: true,
-            string: false,
-            date: false
-        },
-        "access-jfa": {
-            name: window.lang.strings("accessJFA"),
-            getter: "accounts_admin",
-            bool: true,
-            string: false,
-            date: false,
-            dependsOnElement: ".accounts-header-access-jfa"
-        },
-        "email": {
-            name: window.lang.strings("emailAddress"),
-            getter: "email",
-            bool: true,
-            string: true,
-            date: false,
-            dependsOnElement: ".accounts-header-email"
-        },
-        "telegram": {
-            name: "Telegram",
-            getter: "telegram",
-            bool: true,
-            string: true,
-            date: false,
-            dependsOnElement: ".accounts-header-telegram"
-        },
-        "matrix": {
-            name: "Matrix",
-            getter: "matrix",
-            bool: true,
-            string: true,
-            date: false,
-            dependsOnElement: ".accounts-header-matrix"
-        },
-        "discord": {
-            name: "Discord",
-            getter: "discord",
-            bool: true,
-            string: true,
-            date: false,
-            dependsOnElement: ".accounts-header-discord"
-        },
-        "expiry": {
-            name: window.lang.strings("expiry"),
-            getter: "expiry",
-            bool: true,
-            string: false,
-            date: true,
-            dependsOnElement: ".accounts-header-expiry"
-        },
-        "last-active": {
-            name: window.lang.strings("lastActiveTime"),
-            getter: "last_active",
-            bool: true,
-            string: false,
-            date: true
-        },
-        "referrals-enabled": {
-            name: window.lang.strings("referrals"),
-            getter: "referrals_enabled",
-            bool: true,
-            string: false,
-            date: false,
-            dependsOnElement: ".accounts-header-referrals"
-        }
-    }
+        this._announceTextarea.onkeyup = this.loadPreview;
+        addDiscord = newDiscordSearch(window.lang.strings("linkDiscord"), window.lang.strings("searchDiscordUser"), window.lang.strings("add"), (user: DiscordUser, id: string) => { 
+            _post("/users/discord", {jf_id: id, discord_id: user.id}, (req: XMLHttpRequest) => {
+                if (req.readyState == 4) {
+                    document.dispatchEvent(new CustomEvent("accounts-reload"));
+                    if (req.status != 200) {
+                        window.notifications.customError("errorConnectDiscord", window.lang.notif("errorFailureCheckLogs"));
+                        return
+                    }
+                    window.notifications.customSuccess("discordConnected", window.lang.notif("accountConnected"));
+                    window.modals.discord.close()
+                }
+            });
+        });
 
-    private _notFoundPanel: HTMLElement = document.getElementById("accounts-not-found");
+        this._announceSaveButton.onclick = this.saveAnnouncement;
+        const announceVarUsername = document.getElementById("announce-variables-username") as HTMLSpanElement;
+        announceVarUsername.onclick = () => {
+            insertText(this._announceTextarea, announceVarUsername.children[0].textContent);
+            this.loadPreview();
+        };
 
-    get selectAll(): boolean { return this._selectAll.checked; }
-    set selectAll(state: boolean) {
-        let count = 0;
-        for (let id in this._users) {
-            if (this._table.contains(this._users[id].asElement())) { // Only select visible elements
-                this._users[id].selected = state;
-                count++;
+        const headerNames: string[] = ["username", "access-jfa", "email", "telegram", "matrix", "discord", "expiry", "last-active", "referrals"];
+        const headerGetters: string[] = ["name", "accounts_admin", "email", "telegram", "matrix", "discord", "expiry", "last_active", "referrals_enabled"];
+        for (let i = 0; i < headerNames.length; i++) {
+            const header: HTMLTableCellElement = document.querySelector(".accounts-header-" + headerNames[i]) as HTMLTableCellElement;
+            if (header !== null) {
+                this._columns[headerGetters[i]] = new Column(header, headerGetters[i], Object.getOwnPropertyDescriptor(user.prototype, headerGetters[i]).get);
             }
         }
-        this._selectAll.checked = state;
-        this._selectAll.indeterminate = false;
-        state ? this._checkCount = count : 0;
-    }
-    
-    add = (u: User) => {
-        let domAccount = new user(u);
-        this._users[u.id] = domAccount;
+
+        // Start off sorting by username (this._c.defaultSortField)
+        const defaultSort = () => {
+            document.dispatchEvent(new CustomEvent("header-click", { detail: this._c.defaultSortField }));
+            this._columns[this._c.defaultSortField].ascending = this._c.defaultSortAscending;
+            this._columns[this._c.defaultSortField].hideIcon();
+            this._sortingByButton.classList.add("hidden");
+            this._search.showHideSearchOptionsHeader();
+        };
+
+        this._sortingByButton.addEventListener("click", defaultSort);
+
+        document.addEventListener("header-click", (event: CustomEvent) => {
+            this._search.setOrdering(
+                this._columns[event.detail].sort(this.users),
+                event.detail,
+                this._columns[event.detail].ascending
+            );
+            this._sortingByButton.replaceChildren(this._columns[event.detail].asElement());
+            this._sortingByButton.classList.remove("hidden");
+            // console.log("ordering by", event.detail, ": ", this._ordering);
+            if (this._search.inSearch) {
+                this._search.onSearchBoxChange();
+            } else {
+                this.setVisibility(this._search.ordering, true);
+                this._search.setNotFoundPanelVisibility(false);
+            }
+            this._search.inServerSearch = false;
+            this.autoSetServerSearchButtonsDisabled();
+            this._search.showHideSearchOptionsHeader();
+        });
+
+        defaultSort();
+
+        this._search.showHideSearchOptionsHeader();
+
+        this.registerURLListener();
+
+        // Get rid of nasty CSS
+        window.modals.announce.onclose = () => {
+            const preview = document.getElementById("announce-preview") as HTMLDivElement;
+            preview.textContent = ``;
+        }
     }
 
-    private _checkCheckCount = () => {
+    reload = (callback?: (resp: paginatedDTO) => void) => {
+        this._reload(callback);
+        this.loadTemplates();
+    }
+
+    loadMore = (loadAll: boolean = false, callback?: (resp?: paginatedDTO) => void) => {
+        this._loadMore(
+            loadAll,
+            callback
+        );
+    };
+
+    loadAll = (callback?: (resp?: paginatedDTO) => void) => {
+        this._loadAll(callback);
+    };
+
+    get selectAll(): SelectAllState { return this._selectAllState; }
+
+    cycleSelectAll = () => {
+        let next: SelectAllState;
+        switch (this.selectAll) {
+            case SelectAllState.None:
+            case SelectAllState.Some:
+                next = SelectAllState.AllVisible;
+                break;
+            case SelectAllState.AllVisible:
+                next = SelectAllState.All;
+                break;
+            case SelectAllState.All:
+                next = SelectAllState.None;
+                break;
+        }
+
+        this._selectAllState = next;
+        console.debug("New check state:", next);
+
+        if (next == SelectAllState.None) {
+            // Deselect -all- users, rather than just visible ones, to be safe.
+            for (let id in this.users) {
+                this.users[id].setSelected(false, false);
+            }
+            this._selectAll.checked = false;
+            this._selectAll.indeterminate = false;
+            this.processSelectedAccounts();
+            return;
+        }
+
+        // FIXME: Decide whether to keep the AllVisible/All distinction and actually use it, or to get rid of it an just make "load all" more visible.
+        const selectAllVisible = () => {
+            let count = 0;
+            for (let id of this._visible) {
+                this.users[id].setSelected(true, false);
+                count++;
+            }
+            console.debug("Selected", count);
+            this._selectAll.checked = true;
+            if (this.lastPage) {
+                this._selectAllState = SelectAllState.All;
+            }
+            this._selectAll.indeterminate = this.lastPage ? false : true;
+            this.processSelectedAccounts();
+        }
+        if (next == SelectAllState.AllVisible) {
+            selectAllVisible();
+            return;
+        }
+   
+        if (next == SelectAllState.All) {
+            this.loadAll((_: paginatedDTO) => {
+                if (!(this.lastPage)) {
+                    // Pretend to live-select elements as they load.
+                    this._counter.selected = this._counter.shown;
+                    return;
+                }
+                selectAllVisible();
+            });
+            return;
+        }
+    }
+    
+    selectAllBetweenIDs = (startID: string, endID: string) => {
+        let inRange = false;
+        for (let id of this._search.ordering) {
+            if (!(inRange || id == startID)) continue;
+            inRange = true;
+            if (!(this._container.contains(this.users[id].asElement()))) continue;
+            this.users[id].selected = true;
+            if (id == endID) return;
+        }
+    }
+
+    add = (u: User) => {
+        let domAccount = new user(u);
+        this.users[u.id] = domAccount;
+        // console.log("after appending lengths:", Object.keys(this.users).length, Object.keys(this._search.items).length);
+    }
+
+    private processSelectedAccounts = () => {
+        console.debug("processSelectedAccounts");
         const list = this._collectUsers();
-        this._checkCount = list.length;
-        if (this._checkCount == 0) {
+        this._counter.selected = list.length;
+        if (this._counter.selected == 0) {
             this._selectAll.indeterminate = false;
             this._selectAll.checked = false;
+            this._selectAll.title = "";
             this._modifySettings.classList.add("unfocused");
             if (window.referralsEnabled) {
                 this._enableReferrals.classList.add("unfocused");
@@ -950,15 +1372,17 @@ export class accountsList {
             this._disableEnable.parentElement.classList.add("unfocused");
             this._sendPWR.classList.add("unfocused");
         } else {
-            let visibleCount = 0;
-            for (let id in this._users) {
-                if (this._table.contains(this._users[id].asElement())) {
-                    visibleCount++;
-                }
-            }
-            if (this._checkCount == visibleCount) {
+            if (this._counter.selected == this._visible.length) {
                 this._selectAll.checked = true;
-                this._selectAll.indeterminate = false;
+                if (this.lastPage) {
+                    this._selectAll.indeterminate = false;
+                    this._selectAll.title = window.lang.strings("allMatchingSelected");
+                    // FIXME: Hover text "all matching records selected."
+                } else {
+                    this._selectAll.indeterminate = true;
+                    this._selectAll.title = window.lang.strings("allLoadedSelected");
+                    // FIXME: Hover text "all loaded matching records selected. Click again to load all."
+                }
             } else {
                 this._selectAll.checked = false;
                 this._selectAll.indeterminate = true;
@@ -975,27 +1399,27 @@ export class accountsList {
             let anyNonExpiries = list.length == 0 ? true : false;
             let allNonExpiries = true;
             let noContactCount = 0;
-            let referralState = Number(this._users[list[0]].referrals_enabled); // -1 = hide, 0 = show "enable", 1 = show "disable"
+            let referralState = Number(this.users[list[0]].referrals_enabled); // -1 = hide, 0 = show "enable", 1 = show "disable"
             // Only show enable/disable button if all selected have the same state.
-            this._shouldEnable = this._users[list[0]].disabled
+            this._shouldEnable = this.users[list[0]].disabled
             let showDisableEnable = true;
             for (let id of list) {
-                if (!anyNonExpiries && !this._users[id].expiry) {
+                if (!anyNonExpiries && !this.users[id].expiry) {
                     anyNonExpiries = true;
                     this._expiryDropdown.classList.add("unfocused");
                 }
-                if (this._users[id].expiry) {
+                if (this.users[id].expiry) {
                     allNonExpiries = false;
                 }
-                if (showDisableEnable && this._users[id].disabled != this._shouldEnable) {
+                if (showDisableEnable && this.users[id].disabled != this._shouldEnable) {
                     showDisableEnable = false;
                     this._disableEnable.parentElement.classList.add("unfocused");
                 }
                 if (!showDisableEnable && anyNonExpiries) { break; }
-                if (!this._users[id].lastNotifyMethod()) {
+                if (!this.users[id].lastNotifyMethod()) {
                     noContactCount++;
                 }
-                if (window.referralsEnabled && referralState != -1 && Number(this._users[id].referrals_enabled) != referralState) {
+                if (window.referralsEnabled && referralState != -1 && Number(this.users[id].referrals_enabled) != referralState) {
                     referralState = -1;
                 }
             }
@@ -1054,8 +1478,8 @@ export class accountsList {
     
     private _collectUsers = (): string[] => {
         let list: string[] = [];
-        for (let id in this._users) {
-            if (this._table.contains(this._users[id].asElement()) && this._users[id].selected) { list.push(id); }
+        for (let id of this._visible) {
+            if (this.users[id].selected) { list.push(id) }
         }
         return list;
     }
@@ -1083,7 +1507,7 @@ export class accountsList {
                     window.notifications.customSuccess("addUser", window.lang.var("notifications", "userCreated", `"${send['username']}"`));
                     if (!req.response["email"]) {
                         window.notifications.customError("sendWelcome", window.lang.notif("errorSendWelcomeEmail"));
-                        console.log("User created, but welcome email failed");
+                        console.error("User created, but welcome email failed");
                     }
                 } else {
                     let msg = window.lang.var("notifications", "errorUserCreated", `"${send['username']}"`);
@@ -1094,7 +1518,7 @@ export class accountsList {
                     window.notifications.customError("addUser", msg);
                 }
                 if (req.response["error"] as String) {
-                    console.log(req.response["error"]);
+                    console.error(req.response["error"]);
                 }
 
                 this.reload();
@@ -1362,7 +1786,7 @@ export class accountsList {
         let list = this._collectUsers();
         let manualUser: user;
         for (let id of list) {
-            let user = this._users[id];
+            let user = this.users[id];
             if (!user.lastNotifyMethod() && !user.email) {
                 manualUser  = user;
                 break;
@@ -1428,8 +1852,8 @@ export class accountsList {
 
         (() => {
             let innerHTML = "";
-            for (let id in this._users) {
-                innerHTML += `<option value="${id}">${this._users[id].name}</option>`;
+            for (let id in this.users) {
+                innerHTML += `<option value="${id}">${this.users[id].name}</option>`;
             }
             this._userSelect.innerHTML = innerHTML;
         })();
@@ -1446,9 +1870,13 @@ export class accountsList {
                 "apply_to": list,
                 "homescreen": this._applyHomescreen.checked,
                 "configuration": this._applyConfiguration.checked,
-                "ombi": this._applyOmbi.checked,
-                "jellyseerr": this._applyJellyseerr.checked
             };
+            if (window.ombiEnabled) {
+                send["ombi"] = this._applyOmbi.checked;
+            }
+            if (window.jellyseerrEnabled) {
+                send["jellyseerr"] = this._applyJellyseerr.checked;
+            }
             if (this._modifySettingsProfile.checked && !this._modifySettingsUser.checked) { 
                 send["from"] = "profile";
                 send["profile"] = this._profileSelect.value;
@@ -1493,7 +1921,7 @@ export class accountsList {
         let list = this._collectUsers();
 
         // Check if we're disabling or enabling
-        if (this._users[list[0]].referrals_enabled) {
+        if (this.users[list[0]].referrals_enabled) {
             _delete("/users/referral", {"users": list}, (req: XMLHttpRequest) => {
                 if (req.readyState != 4 || req.status != 200) return;
                 window.notifications.customSuccess("disabledReferralsSuccess", window.lang.quantity("appliedSettings", list.length));
@@ -1597,45 +2025,54 @@ export class accountsList {
     _displayExpiryDate = () => {
         let date: Date;
         let invalid = false;
+        let cantShow = false;
         let users = this._collectUsers();
         if (this._usingExtendExpiryTextInput) {
             date = (Date as any).fromString(this._extendExpiryTextInput.value) as Date;
             invalid = "invalid" in (date as any);
         } else {
-            let fields: Array<HTMLSelectElement> = [
-                document.getElementById("extend-expiry-months") as HTMLSelectElement,
-                document.getElementById("extend-expiry-days") as HTMLSelectElement,
-                document.getElementById("extend-expiry-hours") as HTMLSelectElement,
-                document.getElementById("extend-expiry-minutes") as HTMLSelectElement
-            ];
-            invalid = fields[0].value == "0" && fields[1].value == "0" && fields[2].value == "0" && fields[3].value == "0";
-            let id = users.length > 0 ? users[0] : "";
-            if (!id) invalid = true;
-            else {
-                date = new Date(this._users[id].expiry*1000);
-                if (this._users[id].expiry == 0) date = new Date();
-                date.setMonth(date.getMonth() + (+fields[0].value))
-                date.setDate(date.getDate() + (+fields[1].value));
-                date.setHours(date.getHours() + (+fields[2].value));
-                date.setMinutes(date.getMinutes() + (+fields[3].value));
+            if (this._extendExpiryFromPreviousExpiry.checked) {
+                cantShow = true;
+            } else {
+                let fields: Array<HTMLSelectElement> = [
+                    document.getElementById("extend-expiry-months") as HTMLSelectElement,
+                    document.getElementById("extend-expiry-days") as HTMLSelectElement,
+                    document.getElementById("extend-expiry-hours") as HTMLSelectElement,
+                    document.getElementById("extend-expiry-minutes") as HTMLSelectElement
+                ];
+                invalid = fields[0].value == "0" && fields[1].value == "0" && fields[2].value == "0" && fields[3].value == "0";
+                let id = users.length > 0 ? users[0] : "";
+                if (!id) invalid = true;
+                else {
+                    date = new Date(this.users[id].expiry*1000);
+                    if (this.users[id].expiry == 0) date = new Date();
+                    date.setMonth(date.getMonth() + (+fields[0].value))
+                    date.setDate(date.getDate() + (+fields[1].value));
+                    date.setHours(date.getHours() + (+fields[2].value));
+                    date.setMinutes(date.getMinutes() + (+fields[3].value));
+                }
             }
         }
         const submit = this._extendExpiryForm.querySelector(`input[type="submit"]`) as HTMLInputElement;
         const submitSpan = submit.nextElementSibling;
+        if (invalid || cantShow) {
+            this._extendExpiryDate.classList.add("unfocused");
+        }
         if (invalid) {
             submit.disabled = true;
             submitSpan.classList.add("opacity-60");
-            this._extendExpiryDate.classList.add("unfocused");
         } else {
             submit.disabled = false;
             submitSpan.classList.remove("opacity-60");
-            this._extendExpiryDate.innerHTML = `
-            <div class="flex flex-col">
-                <span>${window.lang.strings("accountWillExpire").replace("{date}", toDateString(date))}</span>
-                ${users.length > 1 ? "<span>"+window.lang.strings("expirationBasedOn")+"</span>" : ""}
-            </div>
-            `;
-            this._extendExpiryDate.classList.remove("unfocused");
+            if (!cantShow) {
+                this._extendExpiryDate.innerHTML = `
+                <div class="flex flex-col">
+                    <span>${window.lang.strings("accountWillExpire").replace("{date}", toDateString(date))}</span>
+                    ${users.length > 1 ? "<span>"+window.lang.strings("expirationBasedOn")+"</span>" : ""}
+                </div>
+                `;
+                this._extendExpiryDate.classList.remove("unfocused");
+            }
         }
     }
 
@@ -1661,18 +2098,25 @@ export class accountsList {
         }
         document.getElementById("header-extend-expiry").textContent = header;
         const extend = () => {
-            let send = { "users": applyList, "timestamp": 0, "notify": this._enableExpiryNotify.checked }
+            let send: ExtendExpiryDTO = {
+                users: applyList,
+                timestamp: 0,
+                notify: this._enableExpiryNotify.checked
+            }
             if (this._enableExpiryNotify.checked) {
-                send["reason"] = this._enableExpiryReason.value;
+                send.reason = this._enableExpiryReason.value;
             }
             if (this._usingExtendExpiryTextInput) {
                 let date = (Date as any).fromString(this._extendExpiryTextInput.value) as Date;
-                send["timestamp"] = Math.floor(date.getTime() / 1000);
+                send.timestamp = Math.floor(date.getTime() / 1000);
                 if ("invalid" in (date as any)) {
                     window.notifications.customError("extendExpiryError", window.lang.notif("errorInvalidDate"));
                     return;
                 }
             } else {
+                if (this._extendExpiryFromPreviousExpiry.checked) {
+                    send.try_extend_from_previous_expiry = true;
+                }
                 for (let field of ["months", "days", "hours", "minutes"]) {
                     send[field] = +(document.getElementById("extend-expiry-"+field) as HTMLSelectElement).value;
                 }
@@ -1717,19 +2161,7 @@ export class accountsList {
         this._displayExpiryDate();
         window.modals.extendExpiry.show();
     }
-    
-
-    setVisibility = (users: string[], visible: boolean) => {
-        this._table.textContent = "";
-        for (let id of this._ordering) {
-            if (visible && users.indexOf(id) != -1) {
-                this._table.appendChild(this._users[id].asElement());
-            } else if (!visible && users.indexOf(id) == -1) {
-                this._table.appendChild(this._users[id].asElement());
-            }
-        }
-    }
-
+   
     private _populateAddUserProfiles = () => {
         this._addUserProfile.textContent = "";
         let innerHTML = `<option value="none">${window.lang.strings("inviteNoProfile")}</option>`;
@@ -1740,10 +2172,11 @@ export class accountsList {
     }
 
     focusAccount = (userID: string) => {
-        console.log("focusing user", userID);
-        this._searchBox.value = `id:"${userID}"`;
+        console.debug("focusing user", userID);
+        this._c.searchBox.value = `id:"${userID}"`;
         this._search.onSearchBoxChange();
-        if (userID in this._users) this._users[userID].focus();
+        this._search.onServerSearch();
+        if (userID in this.users) this.users[userID].focus();
     }
 
     public static readonly _accountURLEvent = "account-url";
@@ -1751,7 +2184,6 @@ export class accountsList {
         this.focusAccount(event.detail);
     });
 
-    // FIXME: Use Query Param! so it doesn't get cleared by pages.ts.
     isAccountURL = () => {
         const urlParams = new URLSearchParams(window.location.search);
         const userID = urlParams.get("user");
@@ -1764,303 +2196,13 @@ export class accountsList {
         this.focusAccount(userID);
     }
 
-    constructor() {
-        this._populateNumbers();
-        this._users = {};
-        this._selectAll.checked = false;
-        this._selectAll.onchange = () => {
-            this.selectAll = this._selectAll.checked;
-        };
-        document.addEventListener("accounts-reload", () => this.reload());
-        document.addEventListener("accountCheckEvent", () => { this._checkCount++; this._checkCheckCount(); });
-        document.addEventListener("accountUncheckEvent", () => { this._checkCount--; this._checkCheckCount(); });
-        this._addUserButton.onclick = () => {
-            this._populateAddUserProfiles();
-            window.modals.addUser.toggle();
-        };
-        this._addUserForm.addEventListener("submit", this._addUser);
+}
 
-        this._deleteNotify.onchange = () => {
-            if (this._deleteNotify.checked) {
-                this._deleteReason.classList.remove("unfocused");
-            } else {
-                this._deleteReason.classList.add("unfocused");
-            }
-        };
-        this._modifySettings.onclick = this.modifyUsers;
-        this._modifySettings.classList.add("unfocused");
+// An alternate view showing accounts in sub-lists grouped by group/label.
+export class groupedAccountsList {
 
-        if (window.ombiEnabled)
-            this._applyOmbi.parentElement.classList.remove("unfocused");
-        else
-            this._applyOmbi.parentElement.classList.add("unfocused");
-        if (window.jellyseerrEnabled)
-            this._applyJellyseerr.parentElement.classList.remove("unfocused");
-        else
-            this._applyJellyseerr.parentElement.classList.add("unfocused");
 
-        const checkSource = () => {
-            const profileSpan = this._modifySettingsProfile.nextElementSibling as HTMLSpanElement;
-            const userSpan = this._modifySettingsUser.nextElementSibling as HTMLSpanElement;
-            if (this._modifySettingsProfile.checked) {
-                this._userSelect.parentElement.classList.add("unfocused");
-                this._profileSelect.parentElement.classList.remove("unfocused")
-                profileSpan.classList.add("@high");
-                profileSpan.classList.remove("@low");
-                userSpan.classList.remove("@high");
-                userSpan.classList.add("@low");
-                this._applyOmbi.parentElement.classList.remove("unfocused");
-                this._applyJellyseerr.parentElement.classList.remove("unfocused");
-            } else {
-                this._userSelect.parentElement.classList.remove("unfocused");
-                this._profileSelect.parentElement.classList.add("unfocused");
-                userSpan.classList.add("@high");
-                userSpan.classList.remove("@low");
-                profileSpan.classList.remove("@high");
-                profileSpan.classList.add("@low");
-                this._applyOmbi.parentElement.classList.add("unfocused");
-                this._applyJellyseerr.parentElement.classList.add("unfocused");
-            }
-        };
-        this._modifySettingsProfile.onchange = checkSource;
-        this._modifySettingsUser.onchange = checkSource;
-
-        if (window.referralsEnabled) {
-            const profileSpan = this._enableReferralsProfile.nextElementSibling as HTMLSpanElement;
-            const inviteSpan = this._enableReferralsInvite.nextElementSibling as HTMLSpanElement;
-            const checkReferralSource = () => {
-                console.log("States:", this._enableReferralsProfile.checked, this._enableReferralsInvite.checked);
-                if (this._enableReferralsProfile.checked) {
-                    this._referralsInviteSelect.parentElement.classList.add("unfocused");
-                    this._referralsProfileSelect.parentElement.classList.remove("unfocused")
-                    profileSpan.classList.add("@high");
-                    profileSpan.classList.remove("@low");
-                    inviteSpan.classList.remove("@high");
-                    inviteSpan.classList.add("@low");
-                } else {
-                    this._referralsInviteSelect.parentElement.classList.remove("unfocused");
-                    this._referralsProfileSelect.parentElement.classList.add("unfocused");
-                    inviteSpan.classList.add("@high");
-                    inviteSpan.classList.remove("@low");
-                    profileSpan.classList.remove("@high");
-                    profileSpan.classList.add("@low");
-                }
-            };
-            profileSpan.onclick = () => {
-                this._enableReferralsProfile.checked = true;
-                this._enableReferralsInvite.checked = false;
-                checkReferralSource();
-            };
-            inviteSpan.onclick = () => {;
-                this._enableReferralsInvite.checked = true;
-                this._enableReferralsProfile.checked = false;
-                checkReferralSource();
-            };
-            this._enableReferrals.onclick = () => {
-                this.enableReferrals();
-                profileSpan.onclick(null);
-            };
-        }
-
-        this._deleteUser.onclick = this.deleteUsers;
-        this._deleteUser.classList.add("unfocused");
-
-        this._announceButton.onclick = this.announce;
-        this._announceButton.parentElement.classList.add("unfocused");
-
-        this._extendExpiry.onclick = () => { this.extendExpiry(); };
-        this._removeExpiry.onclick = () => { this.removeExpiry(); };
-        this._expiryDropdown.classList.add("unfocused");
-        this._extendExpiryDate.classList.add("unfocused");
-
-        this._extendExpiryTextInput.onkeyup = () => {
-            this._extendExpiryTextInput.parentElement.parentElement.classList.remove("opacity-60");
-            this._extendExpiryFieldInputs.classList.add("opacity-60");
-                this._usingExtendExpiryTextInput = true;
-            this._displayExpiryDate();
-        }
-
-        this._extendExpiryTextInput.onclick = () => {
-            this._extendExpiryTextInput.parentElement.parentElement.classList.remove("opacity-60");
-            this._extendExpiryFieldInputs.classList.add("opacity-60");
-            this._usingExtendExpiryTextInput = true;
-            this._displayExpiryDate();
-        };
-
-        this._extendExpiryFieldInputs.onclick = () => {
-            this._extendExpiryFieldInputs.classList.remove("opacity-60");
-            this._extendExpiryTextInput.parentElement.parentElement.classList.add("opacity-60");
-            this._usingExtendExpiryTextInput = false;
-            this._displayExpiryDate();
-        };
-        
-        for (let field of ["months", "days", "hours", "minutes"]) {
-            (document.getElementById("extend-expiry-"+field) as HTMLSelectElement).onchange = () => {
-                this._extendExpiryFieldInputs.classList.remove("opacity-60");
-                this._extendExpiryTextInput.parentElement.parentElement.classList.add("opacity-60");
-                this._usingExtendExpiryTextInput = false;
-                this._displayExpiryDate();
-            };
-        }
-
-        this._disableEnable.onclick = this.enableDisableUsers;
-        this._disableEnable.parentElement.classList.add("unfocused");
-
-        this._enableExpiry.onclick = () => { this.extendExpiry(true); };
-        this._enableExpiryNotify.onchange = () => {
-            if (this._enableExpiryNotify.checked) {
-                this._enableExpiryReason.classList.remove("unfocused");
-            } else {
-                this._enableExpiryReason.classList.add("unfocused");
-            }
-        };
-
-        if (!window.usernameEnabled) {
-            this._addUserName.classList.add("unfocused");
-            this._addUserName = this._addUserEmail;
-        }
-
-        if (!window.linkResetEnabled) {
-            this._sendPWR.classList.add("unfocused");
-        } else {
-            this._sendPWR.onclick = this.sendPWR;
-        }
-        /*if (!window.emailEnabled) {
-            this._deleteNotify.parentElement.classList.add("unfocused");
-            this._deleteNotify.checked = false;
-        }*/
-
-        let conf: SearchConfiguration = {
-            filterArea: this._filterArea,
-            sortingByButton: this._sortingByButton,
-            searchOptionsHeader: this._searchOptionsHeader,
-            notFoundPanel: this._notFoundPanel,
-            filterList: document.getElementById("accounts-filter-list"),
-            search: this._searchBox,
-            queries: this._queries,
-            setVisibility: this.setVisibility,
-            clearSearchButtonSelector: ".accounts-search-clear",
-            onSearchCallback: (_0: number, _1: boolean, _2: boolean) => {
-                this._checkCheckCount();
-            }
-        };
-        this._search = new Search(conf);
-        this._search.items = this._users;
-        
-
-        this._announceTextarea.onkeyup = this.loadPreview;
-        addDiscord = newDiscordSearch(window.lang.strings("linkDiscord"), window.lang.strings("searchDiscordUser"), window.lang.strings("add"), (user: DiscordUser, id: string) => { 
-            _post("/users/discord", {jf_id: id, discord_id: user.id}, (req: XMLHttpRequest) => {
-                if (req.readyState == 4) {
-                    document.dispatchEvent(new CustomEvent("accounts-reload"));
-                    if (req.status != 200) {
-                        window.notifications.customError("errorConnectDiscord", window.lang.notif("errorFailureCheckLogs"));
-                        return
-                    }
-                    window.notifications.customSuccess("discordConnected", window.lang.notif("accountConnected"));
-                    window.modals.discord.close()
-                }
-            });
-        });
-
-        this._announceSaveButton.onclick = this.saveAnnouncement;
-        const announceVarUsername = document.getElementById("announce-variables-username") as HTMLSpanElement;
-        announceVarUsername.onclick = () => {
-            insertText(this._announceTextarea, announceVarUsername.children[0].textContent);
-            this.loadPreview();
-        };
-
-        const headerNames: string[] = ["username", "access-jfa", "email", "telegram", "matrix", "discord", "expiry", "last-active", "referrals"];
-        const headerGetters: string[] = ["name", "accounts_admin", "email", "telegram", "matrix", "discord", "expiry", "last_active", "referrals_enabled"];
-        for (let i = 0; i < headerNames.length; i++) {
-            const header: HTMLTableHeaderCellElement = document.querySelector(".accounts-header-" + headerNames[i]) as HTMLTableHeaderCellElement;
-            if (header !== null) {
-                this._columns[header.className] = new Column(header, Object.getOwnPropertyDescriptor(user.prototype, headerGetters[i]).get);
-            }
-        }
-
-        // Start off sorting by Name
-        const defaultSort = () => {
-            this._activeSortColumn = document.getElementsByClassName("accounts-header-" + headerNames[0])[0].className;
-            document.dispatchEvent(new CustomEvent("header-click", { detail: this._activeSortColumn }));
-            this._columns[this._activeSortColumn].ascending = true;
-            this._columns[this._activeSortColumn].hideIcon();
-            this._sortingByButton.parentElement.classList.add("hidden");
-            this.showHideSearchOptionsHeader();
-        };
-
-        this._sortingByButton.parentElement.addEventListener("click", defaultSort);
-
-        document.addEventListener("header-click", (event: CustomEvent) => {
-            this._ordering = this._columns[event.detail].sort(this._users);
-            this._search.ordering = this._ordering;
-            this._activeSortColumn = event.detail;
-            this._sortingByButton.innerHTML = this._columns[event.detail].buttonContent;
-            this._sortingByButton.parentElement.classList.remove("hidden");
-            // console.log("ordering by", event.detail, ": ", this._ordering);
-            if (!(this._search.inSearch)) {
-                this.setVisibility(this._ordering, true);
-                this._notFoundPanel.classList.add("unfocused");
-            } else {
-                const results = this._search.search(this._searchBox.value);
-                this.setVisibility(results, true);
-                if (results.length == 0) {
-                    this._notFoundPanel.classList.remove("unfocused");
-                } else {
-                    this._notFoundPanel.classList.add("unfocused");
-                }
-            }
-            this.showHideSearchOptionsHeader();
-        });
-
-        defaultSort();
-        this.showHideSearchOptionsHeader();
-
-        this._search.generateFilterList();
-
-        this.registerURLListener();
-    }
-
-    reload = (callback?: () => void) => {
-        _get("/users", null, (req: XMLHttpRequest) => {
-            if (req.readyState == 4 && req.status == 200) {
-                // same method as inviteList.reload()
-                let accountsOnDOM: { [id: string]: boolean } = {};
-                for (let id in this._users) { accountsOnDOM[id] = true; }
-                for (let u of (req.response["users"] as User[])) {
-                    if (u.id in this._users) {
-                        this._users[u.id].update(u);
-                        delete accountsOnDOM[u.id];
-                    } else {
-                        this.add(u);
-                    }
-                }
-                for (let id in accountsOnDOM) {
-                    this._users[id].remove();
-                    delete this._users[id];
-                }
-                // console.log("reload, so sorting by", this._activeSortColumn);
-                this._ordering = this._columns[this._activeSortColumn].sort(this._users);
-                this._search.ordering = this._ordering;
-                if (!(this._search.inSearch)) {
-                    this.setVisibility(this._ordering, true);
-                    this._notFoundPanel.classList.add("unfocused");
-                } else {
-                    const results = this._search.search(this._searchBox.value);
-                    if (results.length == 0) {
-                        this._notFoundPanel.classList.remove("unfocused");
-                    } else {
-                        this._notFoundPanel.classList.add("unfocused");
-                    }
-                    this.setVisibility(results, true);
-                }
-                this._checkCheckCount();
-
-                if (callback) callback();
-            }
-        });
-        this.loadTemplates();
-    }
+    
 }
 
 export const accountURLEvent = (id: string) => { return new CustomEvent(accountsList._accountURLEvent, {"detail": id}) };
@@ -2072,14 +2214,18 @@ type Getter = () => GetterReturnType;
 // When list is refreshed, accountList calls method of the specific Column and re-orders accordingly.
 // Listen for broadcast event from others, check its not us by comparing the header className in the message, then hide the arrow icon
 class Column {
-    private _header: HTMLTableHeaderCellElement;
+    private _header: HTMLTableCellElement;
+    private _card: HTMLElement;
+    private _cardSortingByIcon: HTMLElement;
+    private _name: string;
     private _headerContent: string;
     private _getter: Getter;
     private _ascending: boolean;
     private _active: boolean;
 
-    constructor(header: HTMLTableHeaderCellElement, getter: Getter) {
+    constructor(header: HTMLTableCellElement, name: string, getter: Getter) {
         this._header = header;
+        this._name = name;
         this._headerContent = this._header.textContent;
         this._getter = getter;
         this._ascending = true;
@@ -2088,23 +2234,30 @@ class Column {
         this._header.addEventListener("click", () => {
             // If we are the active sort column, a click means to switch between ascending/descending.
             if (this._active) {
-                this._ascending = !this._ascending;
-                console.log("was already active, switching direction to", this._ascending ? "ascending" : "descending");
-            } else {
-                console.log("wasn't active keeping direction as", this._ascending ? "ascending" : "descending");
+                this.ascending = !this.ascending;
+                return;
             }
             this._active = true;
             this._header.setAttribute("aria-sort", this._headerContent);
             this.updateHeader();
-            document.dispatchEvent(new CustomEvent("header-click", { detail: this._header.className }));
+            document.dispatchEvent(new CustomEvent("header-click", { detail: this._name }));
         });
         document.addEventListener("header-click", (event: CustomEvent) => {
-            if (event.detail != this._header.className) {
+            if (event.detail != this._name) {
                 this._active = false;
                 this._header.removeAttribute("aria-sort");
                 this.hideIcon();
             }
         });
+
+        this._card = document.createElement("button");
+        this._card.classList.add("button", "~neutral", "@low", "center", "flex", "flex-row", "gap-1");
+        this._card.innerHTML = `
+        <i class="sorting-by-direction ri-arrow-up-s-line"></i>
+        <span class="font-bold">${window.lang.strings("sortingBy")}: </span><span>${this._headerContent}</span>
+        <i class="ri-close-line text-2xl"></i>
+        `;
+        this._cardSortingByIcon = this._card.querySelector(".sorting-by-direction");
     }
 
     hideIcon = () => {
@@ -2118,26 +2271,32 @@ class Column {
         `;
     }
 
-    // Returns the inner HTML to show in the "Sorting By" button.
-    get buttonContent() {
-        return `<span class="font-bold">` + window.lang.strings("sortingBy") + ": " + `</span>` + this._headerContent;
-    }
+    asElement = () => { return this._card };
 
     get ascending() { return this._ascending; }
     set ascending(v: boolean) {
         this._ascending = v;
+        if (v) {
+            this._cardSortingByIcon.classList.add("ri-arrow-up-s-line");
+            this._cardSortingByIcon.classList.remove("ri-arrow-down-s-line");
+        } else {
+            this._cardSortingByIcon.classList.add("ri-arrow-down-s-line");
+            this._cardSortingByIcon.classList.remove("ri-arrow-up-s-line");
+        }
         if (!this._active) return;
         this.updateHeader();
         this._header.setAttribute("aria-sort", this._headerContent);
-        document.dispatchEvent(new CustomEvent("header-click", { detail: this._header.className }));
+        document.dispatchEvent(new CustomEvent("header-click", { detail: this._name }));
     }
 
     // Sorts the user list. previouslyActive is whether this column was previously sorted by, indicating that the direction should change.
     sort = (users: { [id: string]: user }): string[] => {
         let userIDs = Object.keys(users);
         userIDs.sort((a: string, b: string): number => {
-            const av: GetterReturnType = this._getter.call(users[a]);
-            const bv: GetterReturnType = this._getter.call(users[b]);
+            let av: GetterReturnType = this._getter.call(users[a]);
+            if (typeof av === "string") av = av.toLowerCase();
+            let bv: GetterReturnType = this._getter.call(users[b]);
+            if (typeof bv === "string") bv = bv.toLowerCase();
             if (av < bv) return this._ascending ? -1 : 1;
             if (av > bv) return this._ascending ? 1 : -1;
             return 0;

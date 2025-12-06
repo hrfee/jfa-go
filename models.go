@@ -39,29 +39,29 @@ type newUserResponse struct {
 }
 
 type deleteUserDTO struct {
-	Users  []string `json:"users" binding:"required"` // List of usernames to delete
+	Users  []string `json:"users" binding:"required"` // List of user IDs.
 	Notify bool     `json:"notify"`                   // Whether to notify users of deletion
 	Reason string   `json:"reason"`                   // Account deletion reason (for notification)
 }
 
 type enableDisableUserDTO struct {
-	Users   []string `json:"users" binding:"required"` // List of usernames to delete
+	Users   []string `json:"users" binding:"required"` // List of userIDs.
 	Enabled bool     `json:"enabled"`                  // True = enable users, False = disable.
 	Notify  bool     `json:"notify"`                   // Whether to notify users of deletion
 	Reason  string   `json:"reason"`                   // Account deletion reason (for notification)
 }
 
 type generateInviteDTO struct {
-	Months        int    `json:"months" example:"0"`                    // Number of months
-	Days          int    `json:"days" example:"1"`                      // Number of days
-	Hours         int    `json:"hours" example:"2"`                     // Number of hours
-	Minutes       int    `json:"minutes" example:"3"`                   // Number of minutes
-	UserExpiry    bool   `json:"user-expiry"`                           // Whether or not user expiry is enabled
-	UserMonths    int    `json:"user-months,omitempty" example:"1"`     // Number of months till user expiry
-	UserDays      int    `json:"user-days,omitempty" example:"1"`       // Number of days till user expiry
-	UserHours     int    `json:"user-hours,omitempty" example:"2"`      // Number of hours till user expiry
-	UserMinutes   int    `json:"user-minutes,omitempty" example:"3"`    // Number of minutes till user expiry
-	SendTo        string `json:"send-to" example:"jeff@jellyf.in"`      // Send invite to this address or discord name
+	Months      int  `json:"months" example:"0"`                 // Number of months
+	Days        int  `json:"days" example:"1"`                   // Number of days
+	Hours       int  `json:"hours" example:"2"`                  // Number of hours
+	Minutes     int  `json:"minutes" example:"3"`                // Number of minutes
+	UserExpiry  bool `json:"user-expiry"`                        // Whether or not user expiry is enabled
+	UserMonths  int  `json:"user-months,omitempty" example:"1"`  // Number of months till user expiry
+	UserDays    int  `json:"user-days,omitempty" example:"1"`    // Number of days till user expiry
+	UserHours   int  `json:"user-hours,omitempty" example:"2"`   // Number of hours till user expiry
+	UserMinutes int  `json:"user-minutes,omitempty" example:"3"` // Number of minutes till user expiry
+	sendInviteDTO
 	MultipleUses  bool   `json:"multiple-uses" example:"true"`          // Allow multiple uses
 	NoLimit       bool   `json:"no-limit" example:"false"`              // No invite use limit
 	RemainingUses int    `json:"remaining-uses" example:"5"`            // Remaining invite uses
@@ -70,9 +70,13 @@ type generateInviteDTO struct {
 	UserLabel     string `json:"user_label,omitempty" example:"Friend"` // Label to apply to users created w/ this invite.
 }
 
-type inviteProfileDTO struct {
-	Invite  string `json:"invite" example:"slakdaslkdl2342"` // Invite to apply to
-	Profile string `json:"profile" example:"DefaultProfile"` // Profile to use
+type SendInviteDTO struct {
+	Invite string `json:"invite" example:"slakdaslkdl2342"` // Invite to apply to
+	sendInviteDTO
+}
+
+type sendInviteDTO struct {
+	SendTo string `json:"send-to" example:"jeff@jellyf.in"` // Send invite to this address or discord name
 }
 
 type profileDTO struct {
@@ -102,29 +106,33 @@ type newProfileDTO struct {
 	ID         string `json:"id" example:"ZXhhbXBsZTEyMzQ1Njc4OQo" binding:"required"` // ID of user to source settings from
 	Homescreen bool   `json:"homescreen" example:"true"`                               // Whether to store homescreen layout or not
 	OmbiID     string `json:"ombi_id" example:"ZXhhbXBsZTEyMzQ1Njc4OQo"`               // ID of Ombi user to source settings from (optional)
+	Jellyseerr bool   `json:"jellyseerr"`                                              // Whether or not to generate Jellyseerr profile from user
 }
 
 type inviteDTO struct {
-	Code           string           `json:"code" example:"sajdlj23423j23"`         // Invite code
-	Months         int              `json:"months" example:"1"`                    // Number of months till expiry
-	Days           int              `json:"days" example:"1"`                      // Number of days till expiry
-	Hours          int              `json:"hours" example:"2"`                     // Number of hours till expiry
-	Minutes        int              `json:"minutes" example:"3"`                   // Number of minutes till expiry
-	UserExpiry     bool             `json:"user-expiry"`                           // Whether or not user expiry is enabled
-	UserMonths     int              `json:"user-months,omitempty" example:"1"`     // Number of months till user expiry
-	UserDays       int              `json:"user-days,omitempty" example:"1"`       // Number of days till user expiry
-	UserHours      int              `json:"user-hours,omitempty" example:"2"`      // Number of hours till user expiry
-	UserMinutes    int              `json:"user-minutes,omitempty" example:"3"`    // Number of minutes till user expiry
-	Created        int64            `json:"created" example:"1617737207510"`       // Date of creation
-	Profile        string           `json:"profile" example:"DefaultProfile"`      // Profile used on this invite
-	UsedBy         map[string]int64 `json:"used-by,omitempty"`                     // Users who have used this invite mapped to their creation time in Epoch/Unix time
-	NoLimit        bool             `json:"no-limit,omitempty"`                    // If true, invite can be used any number of times
-	RemainingUses  int              `json:"remaining-uses,omitempty"`              // Remaining number of uses (if applicable)
-	SendTo         string           `json:"send_to,omitempty"`                     // Email/Discord username the invite was sent to (if applicable)
-	NotifyExpiry   bool             `json:"notify-expiry,omitempty"`               // Whether to notify the requesting user of expiry or not
-	NotifyCreation bool             `json:"notify-creation,omitempty"`             // Whether to notify the requesting user of account creation or not
-	Label          string           `json:"label,omitempty" example:"For Friends"` // Optional label for the invite
-	UserLabel      string           `json:"user_label,omitempty" example:"Friend"` // Label to apply to users created w/ this invite.
+	EditableInviteDTO
+	ValidTill     int64            `json:"valid_till" example:"1617737207510"` // Unix timestamp of expiry
+	Created       int64            `json:"created" example:"1617737207510"`    // Date of creation
+	UsedBy        map[string]int64 `json:"used_by,omitempty"`                  // Users who have used this invite mapped to their creation time in Epoch/Unix time
+	NoLimit       bool             `json:"no_limit"`                           // If true, invite can be used any number of times
+	RemainingUses int              `json:"remaining_uses,omitempty"`           // Remaining number of uses (if applicable)
+	SendTo        string           `json:"send_to,omitempty"`                  // DEPRECATED Email/Discord username the invite was sent to (if applicable)
+	SentTo        SentToList       `json:"sent_to,omitempty"`                  // Email/Discord usernames attempts were made to send this invite to, and a failure reason if failed.
+}
+
+type EditableInviteDTO struct {
+	Code string `json:"code" example:"sajdlj23423j23"` // Invite code
+
+	NotifyExpiry   *bool   `json:"notify_expiry,omitempty"`               // Whether to notify the requesting user of expiry or not
+	NotifyCreation *bool   `json:"notify_creation,omitempty"`             // Whether to notify the requesting user of account creation or not
+	Label          *string `json:"label,omitempty" example:"For Friends"` // Optional label for the invite
+	UserLabel      *string `json:"user_label,omitempty" example:"Friend"` // Label to apply to users created w/ this invite.
+	Profile        *string `json:"profile" example:"DefaultProfile"`      // Profile used on this invite
+	UserExpiry     *bool   `json:"user_expiry"`                           // Whether or not user expiry is enabled
+	UserMonths     *int    `json:"user_months,omitempty" example:"1"`     // Number of months till user expiry
+	UserDays       *int    `json:"user_days,omitempty" example:"1"`       // Number of days till user expiry
+	UserHours      *int    `json:"user_hours,omitempty" example:"2"`      // Number of hours till user expiry
+	UserMinutes    *int    `json:"user_minutes,omitempty" example:"3"`    // Number of minutes till user expiry
 }
 
 type getInvitesDTO struct {
@@ -164,8 +172,20 @@ type respUser struct {
 	ReferralsEnabled      bool   `json:"referrals_enabled"`
 }
 
+type PaginatedDTO struct {
+	LastPage bool `json:"last_page"`
+}
+
+type PaginatedReqDTO struct {
+	Limit       int    `json:"limit"`
+	Page        int    `json:"page"` // zero-indexed
+	SortByField string `json:"sortByField"`
+	Ascending   bool   `json:"ascending"`
+}
+
 type getUsersDTO struct {
-	UserList []respUser `json:"users"`
+	UserList []*respUser `json:"users"`
+	LastPage bool        `json:"last_page"`
 }
 
 type ombiUser struct {
@@ -240,14 +260,15 @@ type customEmailDTO struct {
 }
 
 type extendExpiryDTO struct {
-	Users     []string `json:"users"`                           // List of user IDs to apply to.
-	Months    int      `json:"months" example:"1"`              // Number of months to add.
-	Days      int      `json:"days" example:"1"`                // Number of days to add.
-	Hours     int      `json:"hours" example:"2"`               // Number of hours to add.
-	Minutes   int      `json:"minutes" example:"3"`             // Number of minutes to add.
-	Timestamp int64    `json:"timestamp"`                       // Optional, exact time to expire at. Overrides other fields.
-	Notify    bool     `json:"notify"`                          // Whether to message the user(s) about the change.
-	Reason    string   `json:"reason" example:"i felt like it"` // Reason for adjustment.
+	Users                       []string `json:"users"`                                     // List of user IDs to apply to.
+	Months                      int      `json:"months,omitempty" example:"1"`              // Number of months to add.
+	Days                        int      `json:"days,omityempty" example:"1"`               // Number of days to add.
+	Hours                       int      `json:"hours,omitempty" example:"2"`               // Number of hours to add.
+	Minutes                     int      `json:"minutes,omitempty" example:"3"`             // Number of minutes to add.
+	Timestamp                   int64    `json:"timestamp,omitempty"`                       // Optional, exact time to expire at. Overrides other fields.
+	Notify                      bool     `json:"notify"`                                    // Whether to message the user(s) about the change.
+	Reason                      string   `json:"reason,omitempty" example:"i felt like it"` // Optional, reason for adjustment.
+	TryExtendFromPreviousExpiry bool     `json:"try_extend_from_previous_expiry,omitempty"` // If an activity log of the expiry of a disabled user is available, extend the expiry from that instead of the current time.
 }
 
 type checkUpdateDTO struct {
@@ -265,7 +286,7 @@ type telegramSetDTO struct {
 	ID    string `json:"id"` // Jellyfin ID of user.
 }
 
-type SetContactMethodsDTO struct {
+type SetContactPreferencesDTO struct {
 	ID       string `json:"id"`
 	Email    bool   `json:"email"`
 	Discord  bool   `json:"discord"`
@@ -429,27 +450,21 @@ type ActivityDTO struct {
 	IP             string `json:"ip"`
 }
 
-type GetActivitiesDTO struct {
-	Type      []string `json:"type"` // Types of activity to get. Leave blank for all.
-	Limit     int      `json:"limit"`
-	Page      int      `json:"page"` // zero-indexed
-	Ascending bool     `json:"ascending"`
-}
-
 type GetActivitiesRespDTO struct {
+	PaginatedDTO
 	Activities []ActivityDTO `json:"activities"`
-	LastPage   bool          `json:"last_page"`
 }
 
-type GetActivityCountDTO struct {
+type PageCountDTO struct {
 	Count uint64 `json:"count"`
 }
 
 type CreateBackupDTO struct {
-	Size string `json:"size"`
-	Name string `json:"name"`
-	Path string `json:"path"`
-	Date int64  `json:"date"`
+	Size   string `json:"size"`
+	Name   string `json:"name"`
+	Path   string `json:"path"`
+	Date   int64  `json:"date"`
+	Commit string `json:"commit"`
 }
 
 type GetBackupsDTO struct {
@@ -465,4 +480,36 @@ type ContactMethodKey struct {
 	Verified bool
 	PIN      string
 	User     ContactMethodUser
+}
+
+type PagePaths struct {
+	// The base subfolder the app is hosted on.
+	Base string `json:"Base"`
+	// Those for other pages
+	Admin     string `json:"Admin"`
+	MyAccount string `json:"MyAccount"`
+	Form      string `json:"Form"`
+}
+
+type PagePathsDTO struct {
+	PagePaths
+	// The subdirectory this bit of the app is hosted on (e.g. admin is usually on "/", myacc is usually on "/my/account")
+	Current     string `json:"Current"`
+	ExternalURI string `json:"ExternalURI"`
+	// The subdirectory the app is meant to be accessed from ("Reverse proxy subfolder")
+	TrueBase string `json:"TrueBase"`
+}
+
+type TasksDTO struct {
+	Tasks []TaskDTO `json:"tasks"`
+}
+
+type TaskDTO struct {
+	URL         string `json:"url"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
+
+type LabelsDTO struct {
+	Labels []string `json:'labels"`
 }

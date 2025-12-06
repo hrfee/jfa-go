@@ -1,13 +1,14 @@
 package common
 
 type SectionMeta struct {
-	Name         string `json:"name" yaml:"name" example:"My Section"` // friendly name of the section
-	Description  string `json:"description" yaml:"description"`
-	Advanced     bool   `json:"advanced,omitempty" yaml:"advanced,omitempty"`
-	Disabled     bool   `json:"disabled,omitempty" yaml:"disabled,omitempty"`
-	DependsTrue  string `json:"depends_true,omitempty" yaml:"depends_true,omitempty"`
-	DependsFalse string `json:"depends_false,omitempty" yaml:"depends_false,omitempty"`
-	WikiLink     string `json:"wiki_link,omitempty" yaml:"wiki_link,omitempty"`
+	Name         string   `json:"name" yaml:"name" example:"My Section"` // friendly name of the section
+	Description  string   `json:"description" yaml:"description"`
+	Advanced     bool     `json:"advanced,omitempty" yaml:"advanced,omitempty"`
+	Disabled     bool     `json:"disabled,omitempty" yaml:"disabled,omitempty"`
+	DependsTrue  string   `json:"depends_true,omitempty" yaml:"depends_true,omitempty"`
+	DependsFalse string   `json:"depends_false,omitempty" yaml:"depends_false,omitempty"`
+	WikiLink     string   `json:"wiki_link,omitempty" yaml:"wiki_link,omitempty"`
+	Aliases      []string `json:"aliases,omitempty" yaml:"aliases,omitempty"`
 }
 
 type Option [2]string
@@ -40,6 +41,7 @@ type Setting struct {
 	Style           string      `json:"style,omitempty" yaml:"style,omitempty"`
 	Deprecated      bool        `json:"deprecated,omitempty" yaml:"deprecated,omitempty"`
 	WikiLink        string      `json:"wiki_link,omitempty" yaml:"wiki_link,omitempty"`
+	Aliases         []string    `json:"aliases,omitempty" yaml:"aliases,omitempty"`
 }
 
 type Section struct {
@@ -48,8 +50,25 @@ type Section struct {
 	Settings []Setting   `json:"settings" yaml:"settings"`
 }
 
+// Member is a member of a group, and can either reference a Section or another Group, hence the two fields.
+type Member struct {
+	Group   string `json:"group,omitempty", yaml:"group,omitempty"`
+	Section string `json:"section,omitempty", yaml:"section,omitempty"`
+}
+
+type Group struct {
+	Group       string   `json:"group" yaml:"group" example:"messaging_providers"`
+	Name        string   `json:"name" yaml:"name" example:"Messaging Providers"`
+	Description string   `json:"description" yaml:"description" example:"Options for setting up messaging providers."`
+	Members     []Member `json:"members" yaml:"members"`
+}
+
 type Config struct {
 	Sections []Section `json:"sections" yaml:"sections"`
+	Groups   []Group   `json:"groups" yaml:"groups"`
+	// Optional order, which can interleave sections and groups.
+	// If unset, falls back to sections in order, then groups in order.
+	Order []Member `json:"order,omitempty" yaml:"order,omitempty"`
 }
 
 func (c *Config) removeSection(section string) {

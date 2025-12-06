@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	lm "github.com/hrfee/jfa-go/logmessages"
@@ -65,11 +64,13 @@ func (app *appContext) getUserTokenLogin(gc *gin.Context) {
 	}
 
 	// host := gc.Request.URL.Hostname()
-	host := app.ExternalDomain
+	host := app.ExternalDomainNoPort(gc)
 	uri := "/my"
-	if strings.HasPrefix(gc.Request.RequestURI, app.URLBase) {
-		uri = "/accounts/my"
-	}
+	// FIXME: This seems like a bad idea? I think it's to deal with people having Reverse proxy subfolder/URL base set to /accounts.
+	// RESPONSE: Not sure when this was added but I think some changes to page stuff make it unnecessary.
+	// if strings.HasPrefix(gc.Request.RequestURI, PAGES.Base) {
+	// 	uri = "/accounts/my"
+	// }
 	gc.SetCookie("user-refresh", refresh, REFRESH_TOKEN_VALIDITY_SEC, uri, host, true, true)
 	gc.JSON(200, getTokenDTO{token})
 }
@@ -104,7 +105,7 @@ func (app *appContext) getUserTokenRefresh(gc *gin.Context) {
 	}
 
 	// host := gc.Request.URL.Hostname()
-	host := app.ExternalDomain
+	host := app.ExternalDomainNoPort(gc)
 	gc.SetCookie("user-refresh", refresh, REFRESH_TOKEN_VALIDITY_SEC, "/my", host, true, true)
 	gc.JSON(200, getTokenDTO{jwt})
 }

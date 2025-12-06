@@ -2,6 +2,9 @@ package main
 
 import (
 	"fmt"
+	"net/http"
+	"net/url"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -69,6 +72,68 @@ func (app *appContext) GetProfiles(gc *gin.Context) {
 	gc.JSON(200, out)
 }
 
+// @Summary Get the raw values stored in a profile (Configuration, Policy, Jellyseerr/Ombi if applicable, etc.).
+// @Produce json
+// @Success 200 {object} ProfileDTO
+// @Failure 400 {object} boolResponse
+// @Param name path string true "name of profile (url encoded if necessary)"
+// @Router /profiles/raw/{name} [get]
+// @Security Bearer
+// @tags Profiles & Settings
+func (app *appContext) GetRawProfile(gc *gin.Context) {
+	escapedName := gc.Param("name")
+	name, err := url.QueryUnescape(escapedName)
+	if err != nil {
+		respondBool(400, false, gc)
+		return
+	}
+	if profile, ok := app.storage.GetProfileKey(name); ok {
+		gc.JSON(200, profile.ProfileDTO)
+		return
+	}
+	respondBool(400, false, gc)
+}
+
+// @Summary Update the raw data of a profile (Configuration, Policy, Jellyseerr/Ombi if applicable, etc.).
+// @Produce json
+// @Param ProfileDTO body ProfileDTO true "Raw profile data (all of it, do not omit anything)"
+// @Success 204 {object} boolResponse
+// @Success 201 {object} boolResponse
+// @Failure 400 {object} boolResponse
+// @Router /profiles/raw/{name} [put]
+// @Security Bearer
+// @tags Profiles & Settings
+func (app *appContext) ReplaceRawProfile(gc *gin.Context) {
+	escapedName := gc.Param("name")
+	name, err := url.QueryUnescape(escapedName)
+	if err != nil {
+		respondBool(400, false, gc)
+		return
+	}
+	existingProfile, ok := app.storage.GetProfileKey(name)
+	if !ok {
+		respondBool(400, false, gc)
+		return
+	}
+	var req ProfileDTO
+	gc.BindJSON(&req)
+	existingProfile.ProfileDTO = req
+	if req.Name == "" {
+		req.Name = name
+	}
+	status := http.StatusNoContent
+	app.storage.SetProfileKey(req.Name, existingProfile)
+	if req.Name != name {
+		// Name change
+		app.storage.DeleteProfileKey(name)
+		if discordEnabled {
+			app.discord.UpdateCommands()
+		}
+		status = http.StatusCreated
+	}
+	respondBool(status, true, gc)
+}
+
 // @Summary Set the default profile to use.
 // @Produce json
 // @Param profileChangeDTO body profileChangeDTO true "Default profile object"
@@ -110,7 +175,7 @@ func (app *appContext) SetDefaultProfile(gc *gin.Context) {
 func (app *appContext) CreateProfile(gc *gin.Context) {
 	var req newProfileDTO
 	gc.BindJSON(&req)
-	app.jf.CacheExpiry = time.Now()
+	app.InvalidateJellyfinCache()
 	user, err := app.jf.UserByID(req.ID, false)
 	if err != nil {
 		app.err.Printf(lm.FailedGetUsers, lm.Jellyfin, err)
@@ -119,7 +184,7 @@ func (app *appContext) CreateProfile(gc *gin.Context) {
 	}
 	profile := Profile{
 		FromUser:   user.Name,
-		Policy:     user.Policy,
+		ProfileDTO: ProfileDTO{Policy: user.Policy},
 		Homescreen: req.Homescreen,
 	}
 	app.debug.Printf(lm.CreateProfileFromUser, user.Name)
@@ -130,6 +195,21 @@ func (app *appContext) CreateProfile(gc *gin.Context) {
 			app.err.Printf(lm.FailedGetJellyfinDisplayPrefs, req.ID, err)
 			respond(500, "Couldn't get displayprefs", gc)
 			return
+		}
+	}
+	if req.Jellyseerr && app.config.Section("jellyseerr").Key("enabled").MustBool(false) {
+		user, err := app.js.MustGetUser(req.ID)
+		if err != nil {
+			app.err.Printf(lm.FailedGetUser, user.Name(), lm.Jellyseerr, err)
+		} else {
+			profile.Jellyseerr.User = user.UserTemplate
+			n, err := app.js.GetNotificationPreferencesByID(user.ID)
+			if err != nil {
+				app.err.Printf(lm.FailedGetJellyseerrNotificationPrefs, strconv.FormatInt(user.ID, 10), err)
+			} else {
+				profile.Jellyseerr.Notifications = n.NotificationsTemplate
+				profile.Jellyseerr.Enabled = true
+			}
 		}
 	}
 	app.storage.SetProfileKey(req.Name, profile)
@@ -167,7 +247,13 @@ func (app *appContext) DeleteProfile(gc *gin.Context) {
 // @Security Bearer
 // @tags Profiles & Settings
 func (app *appContext) EnableReferralForProfile(gc *gin.Context) {
-	profileName := gc.Param("profile")
+	escapedProfileName := gc.Param("profile")
+	profileName, err := url.QueryUnescape(escapedProfileName)
+	if err != nil {
+		respond(400, "Invalid profile", gc)
+		app.err.Printf(lm.FailedGetProfile, profileName)
+		return
+	}
 	invCode := gc.Param("invite")
 	useExpiry := gc.Param("useExpiry") == "with-expiry"
 	inv, ok := app.storage.GetInvitesKey(invCode)
@@ -214,7 +300,13 @@ func (app *appContext) EnableReferralForProfile(gc *gin.Context) {
 // @Security Bearer
 // @tags Profiles & Settings
 func (app *appContext) DisableReferralForProfile(gc *gin.Context) {
-	profileName := gc.Param("profile")
+	escapedProfileName := gc.Param("profile")
+	profileName, err := url.QueryUnescape(escapedProfileName)
+	if err != nil {
+		respond(400, "Invalid profile", gc)
+		app.err.Printf(lm.FailedGetProfile, profileName)
+		return
+	}
 	profile, ok := app.storage.GetProfileKey(profileName)
 	if !ok {
 		respondBool(200, true, gc)

@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/hrfee/jfa-go/ombi"
 	"gopkg.in/ini.v1"
 )
 
@@ -21,6 +22,8 @@ func runMigrations(app *appContext) {
 	// migrateHyphens(app)
 	migrateToBadger(app)
 	intialiseCustomContent(app)
+	migrateJellyseerrImportDaemon(app)
+	migratePWREmailPath(app)
 }
 
 // Migrate pre-0.2.0 user templates to profiles
@@ -81,7 +84,7 @@ func migrateEmailConfig(app *appContext) {
 		app.err.Fatalf("Failed to save config: %v", err)
 		return
 	}
-	app.loadConfig()
+	app.ReloadConfig()
 }
 
 // Migrate pre-0.3.6 email settings to the new messages section.
@@ -191,7 +194,10 @@ func linkExistingOmbiDiscordTelegram(app *appContext) error {
 			app.debug.Printf("Failed to get Ombi user with Discord/Telegram \"%s\"/\"%s\": %v", ids[0], ids[1], err)
 			continue
 		}
-		_, err = app.ombi.SetNotificationPrefs(ombiUser, ids[0], ids[1])
+		_, err = app.ombi.SetNotificationPrefs(ombiUser, []ombi.NotificationPref{
+			{ombi.NotifAgentDiscord, ombiUser["id"].(string), ids[0], true},
+			{ombi.NotifAgentTelegram, ombiUser["id"].(string), ids[1], true},
+		})
 		if err != nil {
 			app.debug.Printf("Failed to set prefs for Ombi user \"%s\": %v", ombiUser["userName"].(string), err)
 			continue
@@ -245,7 +251,7 @@ func loadLegacyData(app *appContext) {
 	app.storage.customEmails_path = app.config.Section("files").Key("custom_emails").String()
 	app.storage.loadCustomEmails()
 
-	app.MustSetValue("user_page", "enabled", "true")
+	app.config.MustSetValue("user_page", "enabled", "true")
 	if app.config.Section("user_page").Key("enabled").MustBool(false) {
 		app.storage.userPage_path = app.config.Section("files").Key("custom_user_page_content").String()
 		app.storage.loadUserPageContent()
@@ -387,6 +393,9 @@ func intialiseCustomContent(app *appContext) {
 	if _, ok := app.storage.GetCustomContentKey("UserExpiryAdjusted"); !ok {
 		app.storage.SetCustomContentKey("UserExpiryAdjusted", emptyCC)
 	}
+	if _, ok := app.storage.GetCustomContentKey("ExpiryReminder"); !ok {
+		app.storage.SetCustomContentKey("ExpiryReminder", emptyCC)
+	}
 	if _, ok := app.storage.GetCustomContentKey("PostSignupCard"); !ok {
 		app.storage.SetCustomContentKey("PostSignupCard", emptyCC)
 
@@ -497,4 +506,32 @@ func migrateExternalURL(app *appContext) {
 		app.err.Fatalf("Failed to save new config: %v", err)
 		return
 	}
+}
+
+// Migrate from use of "Import Existing Users" Jellyseerr import daemon to one-time run when enabling the feature.
+func migrateJellyseerrImportDaemon(app *appContext) {
+	// When Jellyseerr is disabled, set this flag to false so that an initial sync happens the next time it is enabled.
+	if !(app.config.Section("jellyseerr").Key("enabled").MustBool(false)) {
+		app.storage.db.Upsert("jellyseerr_inital_sync_status", JellyseerrInitialSyncStatus{false})
+	}
+}
+
+// Migrate previous filepath to the password reset email (email.html/txt) to new one.
+func migratePWREmailPath(app *appContext) {
+	if app.config.Section("password_resets").Key("email_html").String() != "jfa-go:email.html" && app.config.Section("password_resets").Key("email_text").String() != "jfa-go:email.txt" {
+		return
+	}
+	tempConfig, _ := ini.ShadowLoad(app.configPath)
+	if app.config.Section("password_resets").Key("email_html").String() == "jfa-go:email.html" {
+		tempConfig.Section("password_resets").Key("email_html").SetValue("")
+	}
+	if app.config.Section("password_resets").Key("email_text").String() == "jfa-go:email.txt" {
+		tempConfig.Section("password_resets").Key("email_text").SetValue("")
+	}
+	err := tempConfig.SaveTo(app.configPath)
+	if err != nil {
+		app.err.Fatalf("Failed to save config: %v", err)
+		return
+	}
+	app.ReloadConfig()
 }

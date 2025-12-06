@@ -1,0 +1,16 @@
+{
+    "meta": {
+        "name": "İngilizce (ABD)"
+    },
+    "strings": {
+        "passwordReset": "Şifre sıfırlama",
+        "reset": "Sıfırla",
+        "resetFailed": "Şifre sıfırlama başarısız oldu",
+        "tryAgain": "Lütfen tekrar deneyin.",
+        "youCanLogin": "Artık aşağıdaki kodla şifreniz olarak oturum açabilirsiniz.",
+        "youCanLoginOmbi": "Artık aşağıdaki kodu şifreniz olarak kullanarak Jellyfin & Ombi'ye oturum açabilirsiniz.",
+        "youCanLoginPassword": "Artık yeni şifrenizle oturum açabilirsiniz. Jellyfin'e devam etmek için aşağıya basın.",
+        "changeYourPassword": "Oturum açtıktan sonra şifrenizi değiştirdiğinizden emin olun.",
+        "enterYourPassword": "Yeni şifrenizi aşağıya girin."
+    }
+}

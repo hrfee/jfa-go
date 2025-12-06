@@ -44,6 +44,14 @@ export class HiddenInputField {
         this._toggle.onclick = () => {
             this.editing = !this.editing;
         };
+        this._input.addEventListener("keypress", (e: KeyboardEvent) => {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                this._toggle.click();
+            }
+        })
+
+
 
         this.setEditing(false, true);
     }
@@ -66,6 +74,7 @@ export class HiddenInputField {
             this._toggle.classList.add(HiddenInputField.saveClass);
             this._toggle.classList.remove(HiddenInputField.editClass);
             this._input.classList.remove("hidden");
+            this._input.focus();
             this._content.classList.add("hidden");
         } else {
             document.removeEventListener("click", this.outerClickListener);

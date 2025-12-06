@@ -3,12 +3,11 @@ import { lang, LangFile, loadLangSelector } from "./modules/lang.js";
 import { ThemeManager } from "./modules/theme.js";
 import { PageManager } from "./modules/pages.js";
 
-interface sWindow extends Window {
+interface sWindow extends GlobalWindow {
     messages: {};
 }
 
 declare var window: sWindow;
-window.URLBase = "";
 
 const theme = new ThemeManager(document.getElementById("button-theme"));
 
@@ -366,6 +365,33 @@ const checkTheme = () => {
 settings["ui"]["theme"].onchange = checkTheme;
 checkTheme();
 
+const fixFullURL = (v: string): string => {
+    if (!(v.startsWith("http://")) && !(v.startsWith("https://"))) {
+        v = "http://" + v;
+    }
+    return v;
+};
+
+const formatSubpath = (v: string): string => {
+    if (v == "/") return "";
+    if (v.charAt(-1) == "/") { v = v.slice(0, -1); }
+    return v;
+}
+
+const constructNewURLs = (): string[] => {
+    let local = settings["ui"]["host"].value + ":" + settings["ui"]["port"].value;
+    if (settings["ui"]["url_base"].value != "") {
+        local += formatSubpath(settings["ui"]["url_base"].value);
+    }
+    local = fixFullURL(local);
+    let remote = settings["ui"]["jfa_url"].value;
+    if (remote == "") {
+        return [local];
+    }
+    remote = fixFullURL(remote);
+    return [local, remote];
+}
+
 const restartButton = document.getElementById("restart") as HTMLSpanElement;
 const serialize = () => {
     toggleLoader(restartButton);
@@ -410,12 +436,16 @@ const serialize = () => {
             }
             restartButton.parentElement.querySelector("span.back").classList.add("unfocused");
             restartButton.classList.add("unfocused");
-            const refresh = document.getElementById("refresh") as HTMLSpanElement;
-            refresh.classList.remove("unfocused");
-            refresh.onclick = () => {
-                let host = window.location.href.split("#")[0].split("?")[0] + settings["ui"]["url_base"].value;
-                window.location.href = host;
-            };
+            const refreshURLs = constructNewURLs();
+            const refreshButtons = [document.getElementById("refresh-internal") as HTMLAnchorElement, document.getElementById("refresh-external") as HTMLAnchorElement];
+            ["internal", "external"].forEach((urltype, i) => {
+                const button = refreshButtons[i];
+                button.classList.remove("unfocused");
+                button.href = refreshURLs[i];
+                button.innerHTML = `<span>${urltype.charAt(0).toUpperCase() + urltype.slice(1)}:</span><i class="italic underline">${button.href}</i>`;
+                // skip external if it isn't set
+                if (refreshURLs.length == 1) return;
+            });
         }
     }, true, (req: XMLHttpRequest) => {
         if (req.status == 0) {

@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" class="{{ .cssClass }}">
     <head>
-        <link rel="stylesheet" type="text/css" href="css/{{ .cssVersion }}bundle.css">
         {{ template "header.html" . }}
         {{ if .passwordReset }}
         <title>{{ .strings.passwordReset }}</title>
@@ -69,8 +68,10 @@
                                 <input type="text" class="input ~neutral @high mt-2 mb-4" placeholder="{{ .strings.username }}" id="create-username" aria-label="{{ .strings.username }}">
                             </label>
 
-                            <label class="label supra" for="create-email">{{ .strings.emailAddress }}</label>
-                            <input type="email" class="input ~neutral @high mt-2 mb-4" placeholder="{{ .strings.emailAddress }}" id="create-email" aria-label="{{ .strings.emailAddress }}" value="{{ .email }}">
+                            <div>
+                                <label class="label supra" for="create-email">{{ .strings.emailAddress }}</label>
+                                <input type="email" class="input ~neutral @high mt-2 mb-4" placeholder="{{ .strings.emailAddress }}" id="create-email" aria-label="{{ .strings.emailAddress }}" value="{{ .email }}">
+                            </div>
                             {{ if .telegramEnabled }}
                             <span class="button ~info @low full-width center mb-4" id="link-telegram">{{ .strings.linkTelegram }} {{ if .telegramRequired }}({{ .strings.required }}){{ end }}</span>
                             {{ end }}
@@ -123,6 +124,11 @@
                     <div class="flex-initial">
                         {{ if .fromUser }}
                             <aside class="col aside sm ~positive mb-4" id="invite-from-user" data-from="{{ .fromUser }}">{{ .strings.invitedBy }}</aside>
+                        {{ end }}
+                        {{ if .preSignupCard }}
+                            <div class="card @low dark:~d_neutral break-words content">
+                                {{ .preSignupCardContent }}
+                            </div>
                         {{ end }}
                         <div class="card ~neutral @low mb-4">
                             <span class="label supra">{{ .strings.passwordRequirementsHeader }}</span>

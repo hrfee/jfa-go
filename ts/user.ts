@@ -6,8 +6,9 @@ import { Login } from "./modules/login.js";
 import { Discord, Telegram, Matrix, ServiceConfiguration, MatrixConfiguration } from "./modules/account-linking.js";
 import { Validator, ValidatorConf, ValidatorRespDTO } from "./modules/validator.js";
 import { PageManager } from "./modules/pages.js";
+import { generateCodeLink } from "./modules/invites.js";
 
-interface userWindow extends Window {
+interface userWindow extends GlobalWindow {
     jellyfinID: string;
     username: string;
     emailRequired: boolean;
@@ -18,13 +19,13 @@ interface userWindow extends Window {
     discordInviteLink: boolean;
     matrixUserID: string;
     discordSendPINMessage: string;
-    pwrEnabled: string;
     referralsEnabled: boolean;
 }
 
-const basePath = window.location.pathname.replace("/password/reset", "");
-
 declare var window: userWindow;
+
+// const basePath = window.location.pathname.replace("/password/reset", "");
+const basePath = window.pages.Base + window.pages.MyAccount;
 
 const theme = new ThemeManager(document.getElementById("button-theme"));
 
@@ -38,7 +39,7 @@ window.token = "";
 
 window.modals = {} as Modals;
 
-let pages = new PageManager({
+const pages = new PageManager({
     hideOthersOnPageShow: true,
     defaultName: "",
     defaultTitle: document.title,
@@ -304,20 +305,17 @@ class ReferralCard {
     get code(): string { return this._code; }
     set code(c: string) {
         this._code = c;
-        
-        let u = new URL(window.location.href);
-        let path = u.pathname;
-        for (let split of ["account", "my"]) {
-            path = path.split(split)[0];
-        }
-        if (path.slice(-1) != "/") { path += "/"; }
-        path = path + "invite/" + this._code;
-        
-        u.pathname = path;
-        u.hash = "";
-        u.search = "";
+       
+
+        // let u = new URL(window.location.href);
+        // const path = window.pages.Base + window.pages.Form + "/" + this._code;
+        // 
+        // u.pathname = path;
+        // u.hash = "";
+        // u.search = "";
     
-        this._url = u.toString();
+        // this._url = u.toString();
+        this._url = generateCodeLink(this._code);
     }
 
     get remaining_uses(): number { return this._remainingUses; }
@@ -661,7 +659,7 @@ document.addEventListener("details-reload", () => {
             expiryCard.expiry = details.expiry;
 
             const adminBackButton = document.getElementById("admin-back-button") as HTMLAnchorElement;
-            adminBackButton.href = window.location.href.replace("my/account", "");
+            adminBackButton.href = window.pages.Base + window.pages.Admin + "/";
 
             let messageCard = document.getElementById("card-message");
             if (details.accounts_admin) {
@@ -754,7 +752,7 @@ const setCardOrder = (messageCard: HTMLElement) => {
         // addValue += side.length;
     }
 
-    console.log("Shortest order:", minHeightPerm);
+    console.debug("Shortest order:", minHeightPerm);
 };
 
 const login = new Login(window.modals.login as Modal, "/my/", "opaque");

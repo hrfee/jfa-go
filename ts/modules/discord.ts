@@ -1,5 +1,7 @@
 import {addLoader, removeLoader, _get} from "../modules/common.js";
 
+declare var window: GlobalWindow;
+
 export interface DiscordUser {
     name: string;
     avatar_url: string;
@@ -8,11 +10,13 @@ export interface DiscordUser {
 
 var listeners: { [buttonText: string]: (event: CustomEvent) => void } = {};
 
-export function newDiscordSearch(title: string, description: string, buttonText: string, buttonFunction: (user: DiscordUser, passData: string) => void): (passData: string) => void {
+export type DiscordSearch = (passData: string) => void;
+
+export function newDiscordSearch(title: string, description: string, buttonText: string, buttonFunction: (user: DiscordUser, passData: string) => void): DiscordSearch {
     if (!window.discordEnabled) {
         return () => {};
     }
-    let timer: NodeJS.Timer;
+    let timer: ReturnType<typeof setTimeout>;
     listeners[buttonText] = (event: CustomEvent) => {
         clearTimeout(timer);
         const list = document.getElementById("discord-list") as HTMLTableElement;

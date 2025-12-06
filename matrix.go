@@ -42,8 +42,8 @@ type UnverifiedUser struct {
 }
 
 var matrixFilter = mautrix.Filter{
-	Room: mautrix.RoomFilter{
-		Timeline: mautrix.FilterPart{
+	Room: &mautrix.RoomFilter{
+		Timeline: &mautrix.FilterPart{
 			Types: []event.Type{
 				event.EventMessage,
 				event.EventEncrypted,
@@ -62,6 +62,16 @@ var matrixFilter = mautrix.Filter{
 		// "content.body",
 		// "content.membership",
 	},
+}
+
+func EmptyMatrixUser() *MatrixUser {
+	return &MatrixUser{
+		RoomID:     "",
+		UserID:     "",
+		Lang:       "",
+		Contact:    false,
+		JellyfinID: "",
+	}
 }
 
 func (d *MatrixDaemon) renderUserID(uid id.UserID) id.UserID {
@@ -101,7 +111,7 @@ func newMatrixDaemon(app *appContext) (d *MatrixDaemon, err error) {
 			d.languages[id.RoomID(user.RoomID)] = user.Lang
 		}
 	}
-	err = InitMatrixCrypto(d)
+	err = InitMatrixCrypto(d, app.info)
 	return
 }
 

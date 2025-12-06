@@ -74,9 +74,9 @@ builds:
         - amd64
 archives:
   - id: windows-tray
-    builds:
+    ids:
         - windows-tray
-    format: zip
+    formats: [ "zip" ]
     name_template: >-
       {{ .ProjectName }}_{{ .Version }}_TrayIcon_
       {{- if eq .Os "darwin" }}macOS
@@ -84,9 +84,9 @@ archives:
       {{- if eq .Arch "amd64" }}x86_64
       {{- else }}{{ .Arch }}{{ end }}
   - id: linux-tray
-    builds:
+    ids:
         - linux-tray
-    format: zip
+    formats: [ "zip" ]
     name_template: >-
       {{ .ProjectName }}_{{ .Version }}_TrayIcon_
       {{- if eq .Os "darwin" }}macOS
@@ -94,9 +94,9 @@ archives:
       {{- if eq .Arch "amd64" }}x86_64
       {{- else }}{{ .Arch }}{{ end }}
   - id: notray
-    builds:
+    ids:
         - notray
-    format: zip
+    formats: [ "zip" ]
     name_template: >-
       {{ .ProjectName }}_{{ .Version }}_
       {{- if eq .Os "darwin" }}macOS
@@ -104,9 +104,9 @@ archives:
       {{- if eq .Arch "amd64" }}x86_64
       {{- else }}{{ .Arch }}{{ end }}
   - id: notray-e2ee
-    builds:
+    ids:
         - notray-e2ee
-    format: zip
+    formats: [ "zip" ]
     name_template: >-
       {{ .ProjectName }}_{{ .Version }}_MatrixE2EE_
       {{- if eq .Os "darwin" }}macOS
@@ -133,7 +133,7 @@ nfpms:
     license: MIT
     vendor: hrfee.dev
     version_metadata: git
-    builds:
+    ids:
       - notray-e2ee
     contents:
       - src: ./LICENSE
@@ -161,7 +161,7 @@ nfpms:
     license: MIT
     vendor: hrfee.dev
     version_metadata: git
-    builds:
+    ids:
       - linux-tray
     contents:
       - src: ./LICENSE
@@ -177,13 +177,10 @@ nfpms:
             replaces:
                 - jfa-go
             dependencies:
-                - libayatana-appindicator
                 - libolm-dev
         rpm:
             dependencies:
-                - libappindicator-gtk3
                 - libolm 
         apk:
             dependencies:
-                - libayatana-appindicator
                 - olm

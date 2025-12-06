@@ -9,11 +9,16 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/gin-contrib/pprof"
-	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	lm "github.com/hrfee/jfa-go/logmessages"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+)
+
+var (
+	// Disables authentication for the API. Do not use!
+	NO_API_AUTH_DO_NOT_USE = false
+	NO_API_AUTH_FORCE_JFID = ""
 )
 
 // loads HTML templates. If [files]/html_templates is set, alternative files inside the directory are loaded in place of the internal templates.
@@ -94,7 +99,7 @@ func (app *appContext) loadRouter(address string, debug bool) *gin.Engine {
 
 	router.Use(gin.Recovery())
 	app.loadHTML(router)
-	router.Use(static.Serve("/", app.webFS))
+	router.Use(serveTaggedStatic("/", app.webFS))
 	router.NoRoute(app.NoRouteHandler)
 	if *PPROF {
 		app.debug.Println(lm.RegisterPprof)
@@ -108,17 +113,24 @@ func (app *appContext) loadRouter(address string, debug bool) *gin.Engine {
 }
 
 func (app *appContext) loadRoutes(router *gin.Engine) {
-	routePrefixes := []string{app.URLBase}
-	if app.URLBase != "" {
+	routePrefixes := []string{PAGES.Base}
+	if PAGES.Base != "" {
 		routePrefixes = append(routePrefixes, "")
 	}
 
 	userPageEnabled := app.config.Section("user_page").Key("enabled").MustBool(true) && app.config.Section("ui").Key("jellyfin_login").MustBool(true)
 
+	// Route collision may occur when reverse proxy subfolder is the same as a pseudo-path (e.g. /accounts, /activity...). For non-obvious ones, recover from the panic.
+	defer func() {
+		if r := recover(); r != nil {
+			app.err.Fatalf(lm.RouteCollision, PAGES.Base, r)
+		}
+	}()
+
 	for _, p := range routePrefixes {
 		router.GET(p+"/lang/:page", app.GetLanguages)
-		router.Use(static.Serve(p+"/", app.webFS))
-		router.GET(p+"/", app.AdminPage)
+		router.Use(serveTaggedStatic(p+"/", app.webFS))
+		router.GET(p+PAGES.Admin, app.AdminPage)
 
 		if app.config.Section("password_resets").Key("link_reset").MustBool(false) {
 			router.GET(p+"/reset", app.ResetPassword)
@@ -127,39 +139,42 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 			}
 		}
 
-		router.GET(p+"/accounts", app.AdminPage)
-		router.GET(p+"/settings", app.AdminPage)
-		router.GET(p+"/activity", app.AdminPage)
-		router.GET(p+"/accounts/user/:userID", app.AdminPage)
-		router.GET(p+"/invites/:code", app.AdminPage)
+		// Handle the obvious collision of /accounts
+		if len(routePrefixes) == 1 || p != "" || PAGES.Admin != "" {
+			router.GET(p+PAGES.Admin+"/accounts", app.AdminPage)
+		}
+		router.GET(p+PAGES.Admin+"/settings", app.AdminPage)
+		router.GET(p+PAGES.Admin+"/activity", app.AdminPage)
+		router.GET(p+PAGES.Admin+"/accounts/user/:userID", app.AdminPage)
+		router.GET(p+PAGES.Admin+"/invites/:code", app.AdminPage)
 		router.GET(p+"/lang/:page/:file", app.ServeLang)
 		router.GET(p+"/token/login", app.getTokenLogin)
 		router.GET(p+"/token/refresh", app.getTokenRefresh)
 		router.POST(p+"/user/invite", app.NewUserFromInvite)
-		router.Use(static.Serve(p+"/invite/", app.webFS))
-		router.GET(p+"/invite/:invCode", app.InviteProxy)
+		router.Use(serveTaggedStatic(p+PAGES.Form+"/", app.webFS))
+		router.GET(p+PAGES.Form+"/:invCode", app.InviteProxy)
 		if app.config.Section("captcha").Key("enabled").MustBool(false) {
 			router.GET(p+"/captcha/gen/:invCode", app.GenCaptcha)
 			router.GET(p+"/captcha/img/:invCode/:captchaID", app.GetCaptcha)
 			router.POST(p+"/captcha/verify/:invCode/:captchaID/:text", app.VerifyCaptcha)
 		}
 		if telegramEnabled {
-			router.GET(p+"/invite/:invCode/telegram/verified/:pin", app.TelegramVerifiedInvite)
+			router.GET(p+PAGES.Form+"/:invCode/telegram/verified/:pin", app.TelegramVerifiedInvite)
 		}
 		if discordEnabled {
-			router.GET(p+"/invite/:invCode/discord/verified/:pin", app.DiscordVerifiedInvite)
+			router.GET(p+PAGES.Form+"/:invCode/discord/verified/:pin", app.DiscordVerifiedInvite)
 			if app.config.Section("discord").Key("provide_invite").MustBool(false) {
-				router.GET(p+"/invite/:invCode/discord/invite", app.DiscordServerInvite)
+				router.GET(p+PAGES.Form+"/:invCode/discord/invite", app.DiscordServerInvite)
 			}
 		}
 		if matrixEnabled {
-			router.GET(p+"/invite/:invCode/matrix/verified/:userID/:pin", app.MatrixCheckPIN)
-			router.POST(p+"/invite/:invCode/matrix/user", app.MatrixSendPIN)
+			router.GET(p+PAGES.Form+"/:invCode/matrix/verified/:userID/:pin", app.MatrixCheckPIN)
+			router.POST(p+PAGES.Form+"/:invCode/matrix/user", app.MatrixSendPIN)
 			router.POST(p+"/users/matrix", app.MatrixConnect)
 		}
 		if userPageEnabled {
-			router.GET(p+"/my/account", app.MyUserPage)
-			router.GET(p+"/my/account/password/reset", app.MyUserPage)
+			router.GET(p+PAGES.MyAccount, app.MyUserPage)
+			router.GET(p+PAGES.MyAccount+"/password/reset", app.MyUserPage)
 			router.GET(p+"/my/token/login", app.getUserTokenLogin)
 			router.GET(p+"/my/token/refresh", app.getUserTokenRefresh)
 			router.GET(p+"/my/confirm/:jwt", app.ConfirmMyAction)
@@ -173,7 +188,8 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 		}
 	}
 
-	api := router.Group("/", app.webAuth())
+	var api *gin.RouterGroup
+	api = router.Group("/", app.webAuth())
 
 	for _, p := range routePrefixes {
 		var user *gin.RouterGroup
@@ -183,20 +199,28 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 		router.POST(p+"/logout", app.Logout)
 		api.DELETE(p+"/users", app.DeleteUsers)
 		api.GET(p+"/users", app.GetUsers)
+		api.GET(p+"/users/count", app.GetUserCount)
+		api.POST(p+"/users", app.SearchUsers)
+		api.POST(p+"/users/count", app.GetFilteredUserCount)
+		api.GET(p+"/users/labels", app.GetLabels)
 		api.POST(p+"/user", app.NewUserFromAdmin)
 		api.POST(p+"/users/extend", app.ExtendExpiry)
 		api.DELETE(p+"/users/:id/expiry", app.RemoveExpiry)
 		api.POST(p+"/users/enable", app.EnableDisableUsers)
 		api.POST(p+"/invites", app.GenerateInvite)
 		api.GET(p+"/invites", app.GetInvites)
+		api.GET(p+"/invites/count", app.GetInviteCount)
+		api.GET(p+"/invites/count/used", app.GetInviteUsedCount)
 		api.DELETE(p+"/invites", app.DeleteInvite)
-		api.POST(p+"/invites/profile", app.SetProfile)
+		api.POST(p+"/invites/send", app.SendInvite)
+		api.PATCH(p+"/invites/edit", app.EditInvite)
 		api.GET(p+"/profiles", app.GetProfiles)
 		api.GET(p+"/profiles/names", app.GetProfileNames)
+		api.GET(p+"/profiles/raw/:name", app.GetRawProfile)
+		api.PUT(p+"/profiles/raw/:name", app.ReplaceRawProfile)
 		api.POST(p+"/profiles/default", app.SetDefaultProfile)
 		api.POST(p+"/profiles", app.CreateProfile)
 		api.DELETE(p+"/profiles", app.DeleteProfile)
-		api.POST(p+"/invites/notify", app.SetNotify)
 		api.POST(p+"/users/emails", app.ModifyEmails)
 		api.POST(p+"/users/labels", app.ModifyLabels)
 		api.POST(p+"/users/accounts-admin", app.SetAccountsAdmin)
@@ -221,6 +245,12 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 		api.POST(p+"/config", app.ModifyConfig)
 		api.POST(p+"/restart", app.restart)
 		api.GET(p+"/logs", app.GetLog)
+		api.GET(p+"/tasks", app.TaskList)
+		api.POST(p+"/tasks/housekeeping", app.TaskHousekeeping)
+		api.POST(p+"/tasks/users", app.TaskUserCleanup)
+		if app.config.Section("jellyseerr").Key("enabled").MustBool(false) {
+			api.POST(p+"/tasks/jellyseerr", app.TaskJellyseerrImport)
+		}
 		api.POST(p+"/backups", app.CreateBackup)
 		api.GET(p+"/backups/:fname", app.GetBackup)
 		api.GET(p+"/backups", app.GetBackups)
@@ -262,6 +292,7 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 		api.POST(p+"/activity", app.GetActivities)
 		api.DELETE(p+"/activity/:id", app.DeleteActivity)
 		api.GET(p+"/activity/count", app.GetActivityCount)
+		api.POST(p+"/activity/count", app.GetFilteredActivityCount)
 
 		if userPageEnabled {
 			user.GET("/details", app.MyDetails)
