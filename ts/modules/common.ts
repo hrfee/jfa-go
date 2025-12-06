@@ -1,5 +1,6 @@
 declare var window: GlobalWindow;
 import dateParser from "any-date-parser";
+import { Temporal } from 'temporal-polyfill';
 
 export function toDateString(date: Date): string {
     const locale = window.language || (window as any).navigator.userLanguage || window.navigator.language;
@@ -39,6 +40,36 @@ export const parseDateString = (value: string): ParsedDate => {
     // Month in Date objects is 0-based, so make our parsed date that way too
     if ("month" in out.attempt) out.attempt.month -= 1;
     return out;
+}
+
+// DateCountdown sets the given el's textContent to the time till the given date (unixSeconds), updating
+// every minute. It returns the timeout, so it can be later removed with clearTimeout if desired.
+export function DateCountdown(el: HTMLElement, unixSeconds: number): ReturnType<typeof setTimeout> {
+    let then = Temporal.Instant.fromEpochMilliseconds(unixSeconds * 1000);
+    const toString = (): string => {
+        let out = "";
+        let now = Temporal.Now.instant();
+        let nowPlain = Temporal.Now.plainDateTimeISO();
+        let diff = now.until(then).round({
+            largestUnit: "years",
+            smallestUnit: "minutes",
+            relativeTo: nowPlain
+        });
+        // FIXME: I'd really like this to be localized, but don't know of any nice solutions.
+        const fields = [diff.years, diff.months, diff.days, diff.hours, diff.minutes];
+        const abbrevs = ["y", "mo", "d", "h", "m"];
+        for (let i = 0; i < fields.length; i++) {
+            if (fields[i]) {
+                out += ""+fields[i] + abbrevs[i] + " ";
+            }
+        }
+        return out.slice(0, -1);
+    };
+    const update = () => {
+        el.textContent = toString();
+    };
+    update();
+    return setTimeout(update, 60000);
 }
 
 export const _get = (url: string, data: Object, onreadystatechange: (req: XMLHttpRequest) => void, noConnectionError: boolean = false): void => {

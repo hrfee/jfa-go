@@ -1,8 +1,10 @@
-import { _get, _post, _delete, toClipboard, toggleLoader, toDateString, SetupCopyButton, addLoader, removeLoader } from "../modules/common.js";
+import { _get, _post, _delete, toClipboard, toggleLoader, toDateString, SetupCopyButton, addLoader, removeLoader, DateCountdown } from "../modules/common.js";
 import { DiscordSearch, DiscordUser, newDiscordSearch } from "../modules/discord.js";
 import { reloadProfileNames }  from "../modules/profiles.js";
 
 declare var window: GlobalWindow;
+
+const INF = "∞";
 
 export const generateCodeLink = (code: string): string => {
     // let codeLink = window.pages.Base + window.pages.Form + "/" + code;
@@ -15,11 +17,11 @@ class DOMInvite implements Invite {
         let state: { [code: string]: { [type: string]: boolean } } = {};
         let revertChanges: () => void;
         if (checkbox.classList.contains("inv-notify-expiry")) {
-            revertChanges = () => { this.notifyExpiry = !this.notifyExpiry };
-            state[this.code] = { "notify-expiry": this.notifyExpiry };
+            revertChanges = () => { this.notify_expiry = !this.notify_expiry };
+            state[this.code] = { "notify-expiry": this.notify_expiry };
         } else {
-            revertChanges = () => { this.notifyCreation = !this.notifyCreation };
-            state[this.code] = { "notify-creation": this.notifyCreation };
+            revertChanges = () => { this.notify_creation = !this.notify_creation };
+            state[this.code] = { "notify-creation": this.notify_creation };
         }
         _post("/invites/notify", state, (req: XMLHttpRequest) => {
             if (req.readyState == 4 && !(req.status == 200 || req.status == 204)) {
@@ -78,44 +80,92 @@ class DOMInvite implements Invite {
     }
     private _codeLink: string;
 
-    private _expiresIn: string;
-    get expiresIn(): string { return this._expiresIn }
-    set expiresIn(expiry: string) {
-        this._expiresIn = expiry;
-        this._codeArea.querySelector("span.inv-duration").textContent = expiry;
+    private _validTill: number;
+    private _validTillUpdater: ReturnType<typeof setTimeout> = null;
+    get valid_till(): number { return this._validTill; }
+    set valid_till(v: number) {
+        this._validTill = v;
+        if (this._validTillUpdater) clearTimeout(this._validTillUpdater);
+        this._validTillUpdater = DateCountdown(this._codeArea.querySelector("span.inv-duration"), v);
     }
 
-    private _userExpiry: string;
-    get userExpiryTime(): string { return this._userExpiry; }
-    set userExpiryTime(d: string) {
+    private _userExpiryEnabled: boolean;
+    get user_expiry(): boolean { return this._userExpiryEnabled; }
+    set user_expiry(v: boolean) { this._userExpiryEnabled = v; }
+    private _userExpiry = { months: 0, days: 0, hours: 0, minutes: 0 };
+    private _userExpiryString: string;
+    get user_months(): number { return this._userExpiry.months; }
+    get user_days(): number { return this._userExpiry.days; }
+    get user_hours(): number { return this._userExpiry.hours; }
+    get user_minutes(): number { return this._userExpiry.minutes; }
+    set user_months(v: number) {
+        this._userExpiry.months = v;
+        this._updateUserExpiry();
+    }
+    set user_days(v: number) {
+        this._userExpiry.days = v;
+        this._updateUserExpiry();
+    }
+    set user_hours(v: number) {
+        this._userExpiry.hours = v;
+        this._updateUserExpiry();
+    }
+    set user_minutes(v: number) {
+        this._userExpiry.minutes = v;
+        this._updateUserExpiry();
+    }
+    set user_expiry_time(v: { months: number, days: number, hours: number, minutes: number }) {
+        this._userExpiry = v;
+        this._updateUserExpiry()
+    }
+    private _updateUserExpiry() {
         const expiry = this._middle.querySelector("span.user-expiry") as HTMLSpanElement;
-        if (!d) {
+        this._userExpiryString = "";
+        if (!(this._userExpiry.months || this._userExpiry.days || this._userExpiry.hours || this._userExpiry.minutes)) {
             expiry.textContent = "";
             expiry.parentElement.classList.add("unfocused");
         } else {
             expiry.textContent = window.lang.strings("userExpiry");
             expiry.parentElement.classList.remove("unfocused");
+            const fields = ["months", "days", "hours", "minutes"].map((v) => this._userExpiry[v]);
+            const abbrevs = ["mo", "d", "h", "m"];
+            for (let i = 0; i < fields.length; i++) {
+                if (fields[i]) {
+                    this._userExpiryString += ""+fields[i] + abbrevs[i] + " ";
+                }
+            }
+            this._userExpiryString = this._userExpiryString.slice(0, -1);
         }
-        this._userExpiry = d;
-        this._middle.querySelector("strong.user-expiry-time").textContent = d;
+        this._middle.querySelector("strong.user-expiry-time").textContent = this._userExpiryString;
+    }
+    
+    private _noLimit: boolean = false;
+    get no_limit(): boolean { return this._noLimit; }
+    set no_limit(v: boolean) {
+        this._noLimit = v;
+        const remaining = this._middle.querySelector("strong.inv-remaining") as HTMLElement;
+        if (!this.no_limit) remaining.textContent = ""+this._remainingUses;
+        else remaining.textContent = INF;
     }
 
-    private _remainingUses: string = "1";
-    get remainingUses(): string { return this._remainingUses; }
-    set remainingUses(remaining: string) {
-        this._remainingUses = remaining;
-        this._middle.querySelector("strong.inv-remaining").textContent = remaining;
+    private _remainingUses: number = 1;
+    get remaining_uses(): number { return this._remainingUses; }
+    set remaining_uses(v: number) {
+        this._remainingUses = v;
+        const remaining = this._middle.querySelector("strong.inv-remaining") as HTMLElement;
+        if (!this.no_limit) remaining.textContent = ""+this._remainingUses;
+        else remaining.textContent = INF;
     }
 
     private _send_to: string = "";
     get send_to(): string { return this._send_to };
-    set send_to(address: string) {
+    set send_to(address: string | null) {
         this._send_to = address;
         const container = this._infoArea.querySelector(".tooltip") as HTMLDivElement;
         const icon = container.querySelector("i");
         const chip = container.querySelector("span.inv-email-chip");
         const tooltip = container.querySelector("span.content") as HTMLSpanElement;
-        if (address == "") {
+        if (!address) {
             icon.classList.remove("ri-mail-line");
             icon.classList.remove("ri-mail-close-line");
             chip.classList.remove("~neutral");
@@ -177,10 +227,10 @@ class DOMInvite implements Invite {
     }
 
     private _usedBy: { [name: string]: number };
-    get usedBy(): { [name: string]: number } { return this._usedBy; }
-    set usedBy(uB: { [name: string]: number }) {
+    get used_by(): { [name: string]: number } { return this._usedBy; }
+    set used_by(uB: { [name: string]: number } | null) {
         this._usedBy = uB;
-        if (Object.keys(uB).length == 0) {
+        if (!uB || Object.keys(uB).length == 0) {
             this._right.classList.add("empty");
             this._userTable.innerHTML = `<p class="content">${window.lang.strings("inviteNoUsersCreated")}</p>`;
             return;
@@ -226,15 +276,15 @@ class DOMInvite implements Invite {
     }
     
     private _notifyExpiry: boolean = false;
-    get notifyExpiry(): boolean { return this._notifyExpiry }
-    set notifyExpiry(state: boolean) {
+    get notify_expiry(): boolean { return this._notifyExpiry }
+    set notify_expiry(state: boolean) {
         this._notifyExpiry = state;
         (this._left.querySelector("input.inv-notify-expiry") as HTMLInputElement).checked = state;
     }
 
     private _notifyCreation: boolean = false;
-    get notifyCreation(): boolean { return this._notifyCreation }
-    set notifyCreation(state: boolean) {
+    get notify_creation(): boolean { return this._notifyCreation }
+    set notify_creation(state: boolean) {
         this._notifyCreation = state;
         (this._left.querySelector("input.inv-notify-creation") as HTMLInputElement).checked = state;
     }
@@ -366,7 +416,7 @@ class DOMInvite implements Invite {
             <a class="invite-link text-black dark:text-white font-mono bg-inherit truncate" href=""></a>
             <button class="invite-copy-button"></button>
         </div>
-        <span class="inv-duration"></span>
+        <span>${window.lang.var("strings", "inviteExpiresInTime", "<span class=\"inv-duration\"></span>")}</span>
         `;
         const copyButton = this._codeArea.getElementsByClassName("invite-copy-button")[0] as HTMLButtonElement;
         SetupCopyButton(copyButton, this._codeLink); 
@@ -476,30 +526,39 @@ class DOMInvite implements Invite {
         document.addEventListener("profileLoadEvent", () => { this.loadProfiles(); }, false);
         document.addEventListener("timefmt-change", () => {
             this.created = this.created;
-            this.usedBy = this.usedBy;
+            this.used_by = this.used_by;
         });
     }
 
     update = (invite: Invite) => {
         this.code = invite.code;
+        this.valid_till = invite.valid_till;
+        if (invite.user_expiry) {
+            this.user_expiry = invite.user_expiry;
+            this.user_expiry_time = {
+                months: invite.user_months,
+                days: invite.user_days,
+                hours: invite.user_hours,
+                minutes: invite.user_minutes
+            };
+        }
         this.created = invite.created;
+        this.profile = invite.profile;
+        this.used_by = invite.used_by;
+        this.no_limit = invite.no_limit ? invite.no_limit : false;
+        this.remaining_uses = invite.remaining_uses;
         this.send_to = invite.send_to;
         this.sent_to = invite.sent_to;
-        this.expiresIn = invite.expiresIn;
         if (window.notificationsEnabled) {
-            this.notifyCreation = invite.notifyCreation;
-            this.notifyExpiry = invite.notifyExpiry;
+            this.notify_creation = invite.notify_creation;
+            this.notify_expiry = invite.notify_expiry;
         }
-        this.profile = invite.profile;
-        this.remainingUses = invite.remainingUses;
-        this.usedBy = invite.usedBy;
         if (invite.label) {
             this.label = invite.label;
         }
         if (invite.user_label) {
             this.user_label = invite.user_label;
         }
-        this.userExpiryTime = invite.userExpiryTime || "";
         this._sendToDialog = new SendToDialog(this._middle.getElementsByClassName("invite-send-to-dialog")[0] as HTMLElement, invite, () => {
             const needsUpdatingEvent = new CustomEvent("inviteNeedsUpdating", { detail: this.code });
             document.dispatchEvent(needsUpdatingEvent);
@@ -605,8 +664,7 @@ export class DOMInviteList implements InviteList {
             // at end delete all remaining in list from dom
             let invitesOnDOM: { [code: string]: boolean } = {};
             for (let code in this.invites) { invitesOnDOM[code] = true; }
-            for (let inv of (data["invites"] as Array<any>)) {
-                const invite = parseInvite(inv);
+            for (let invite of (data["invites"] as Array<Invite>)) {
                 if (invite.code in this.invites) {
                     this.invites[invite.code].update(invite);
                     delete invitesOnDOM[invite.code];
@@ -625,47 +683,6 @@ export class DOMInviteList implements InviteList {
 }
 
 export const inviteURLEvent = (id: string) => { return new CustomEvent(DOMInviteList._inviteURLEvent, {"detail": id}) };
-
-// FIXME: Please, i beg you, get rid of this horror! 
-function parseInvite(invite: { [f: string]: string | number | { [name: string]: number } | boolean | SentToList }): Invite {
-    let parsed: Invite = {};
-    parsed.code = invite["code"] as string;
-    parsed.send_to = invite["send_to"] as string || "";
-    parsed.sent_to = invite["sent_to"] as SentToList || null;
-    parsed.label = invite["label"] as string || "";
-    parsed.user_label = invite["user_label"] as string || "";
-    let time = "";
-    let userExpiryTime = "";
-    const fields = ["months", "days", "hours", "minutes"];
-    let prefixes = [""];
-    if (invite["user-expiry"] as boolean) { prefixes.push("user-"); }
-    for (let i = 0; i < fields.length; i++) {
-        for (let j = 0; j < prefixes.length; j++) {
-            if (invite[prefixes[j]+fields[i]]) {
-                let abbreviation = fields[i][0];
-                if (fields[i] == "months") {
-                    abbreviation += fields[i][1];
-                }
-                let text = `${invite[prefixes[j]+fields[i]]}${abbreviation} `;
-                if (prefixes[j] ==  "user-") {
-                    userExpiryTime += text;
-                } else {
-                    time += text;
-                }
-            }
-        }
-    }
-    parsed.expiresIn = window.lang.var("strings", "inviteExpiresInTime", time.slice(0, -1));
-    parsed.userExpiry = invite["user-expiry"] as boolean;
-    parsed.userExpiryTime = userExpiryTime.slice(0, -1);
-    parsed.remainingUses = invite["no-limit"] ? "∞" : String(invite["remaining-uses"])
-    parsed.usedBy = invite["used-by"] as { [name: string]: number } || {} ;
-    parsed.created = invite["created"] as number || 0;
-    parsed.profile = invite["profile"] as string || "";
-    parsed.notifyExpiry = invite["notify-expiry"] as boolean || false;
-    parsed.notifyCreation = invite["notify-creation"] as boolean || false;
-    return parsed;
-}
 
 export class createInvite {
     private _sendTo: SendToDialog;

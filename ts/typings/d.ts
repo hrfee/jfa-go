@@ -71,20 +71,25 @@ declare interface InviteList {
 }
 
 declare interface Invite {
-    code?: string;
-    expiresIn?: string;
-    remainingUses?: string;
-    send_to?: string; // DEPRECATED: use sent_to instead.
-    sent_to?: SentToList;
-    usedBy?: { [name: string]: number };
-    created?: number;
-    notifyExpiry?: boolean;
-    notifyCreation?: boolean;
-    profile?: string;
-    label?: string;
-    user_label?: string;
-    userExpiry?: boolean;
-    userExpiryTime?: string;
+	code: string; // Invite code
+    valid_till: number; // Unix timestamp of expiry
+	user_expiry: boolean; // Whether or not user expiry is enabled
+	user_months?: number; // Number of months till user expiry
+	user_days?: number; // Number of days till user expiry
+	user_hours?: number; // Number of hours till user expiry
+	user_minutes?: number; // Number of minutes till user expiry
+	created: number; // Date of creation (unix timestamp)
+	profile: string; // Profile used on this invite
+	used_by?: { [user: string]: number }; // Users who have used this invite mapped to their creation time in Epoch/Unix time
+	no_limit: boolean; // If true, invite can be used any number of times
+	remaining_uses?: number; // Remaining number of uses (if applicable)
+	send_to?: string; // DEPRECATED Email/Discord username the invite was sent to (if applicable)
+	sent_to?: SentToList; // Email/Discord usernames attempts were made to send this invite to, and a failure reason if failed.
+
+	notify_expiry?: boolean; // Whether to notify the requesting user of expiry or not
+	notify_creation?: boolean; // Whether to notify the requesting user of account creation or not
+	label?: string; // Optional label for the invite
+	user_label?: string; // Label to apply to users created w/ this invite.
 }
 
 declare interface SendFailure {

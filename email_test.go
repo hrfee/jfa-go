@@ -180,7 +180,7 @@ func TestInvite(t *testing.T) {
 			Created:   time.Now(),
 			ValidTill: time.Now().Add(30 * time.Minute),
 		}
-		msg, err := e.constructInvite(inv, false)
+		msg, err := e.constructInvite(&inv, false)
 		if err != nil {
 			t.Fatalf("failed construct: %+v", err)
 		}

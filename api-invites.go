@@ -359,21 +359,22 @@ func (app *appContext) GetInviteUsedCount(gc *gin.Context) {
 // @Security Bearer
 // @tags Invites,Statistics
 func (app *appContext) GetInvites(gc *gin.Context) {
-	currentTime := time.Now()
+	// currentTime := time.Now()
 	app.checkInvites()
 	var invites []inviteDTO
 	for _, inv := range app.storage.GetInvites() {
 		if inv.IsReferral {
 			continue
 		}
-		years, months, days, hours, minutes, _ := timeDiff(inv.ValidTill, currentTime)
-		months += years * 12
+		// years, months, days, hours, minutes, _ := timeDiff(inv.ValidTill, currentTime)
+		// months += years * 12
 		invite := inviteDTO{
-			Code:        inv.Code,
-			Months:      months,
-			Days:        days,
-			Hours:       hours,
-			Minutes:     minutes,
+			Code:      inv.Code,
+			ValidTill: inv.ValidTill.Unix(),
+			// Months:      months,
+			// Days:        days,
+			// Hours:       hours,
+			// Minutes:     minutes,
 			UserExpiry:  inv.UserExpiry,
 			UserMonths:  inv.UserMonths,
 			UserDays:    inv.UserDays,
