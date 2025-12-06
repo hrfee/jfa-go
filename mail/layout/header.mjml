@@ -8,7 +8,7 @@
             Color-scheme: light dark;
             supported-color-schemes: light dark;
         }
-        body, .body {
+        .body {
             background: #101010 !important;
             background-color: #101010 !important;
         }
