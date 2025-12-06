@@ -1,6 +1,7 @@
 package main
 
 import (
+	"net/url"
 	"os"
 	"path/filepath"
 	"sort"
@@ -29,10 +30,15 @@ func (app *appContext) CreateBackup(gc *gin.Context) {
 // @Security Bearer
 // @tags Backups
 func (app *appContext) GetBackup(gc *gin.Context) {
-	fname := gc.Param("fname")
+	escapedFName := gc.Param("fname")
+	fname, err := url.QueryUnescape(escapedFName)
+	if err != nil {
+		respondBool(400, false, gc)
+		return
+	}
 	// Hopefully this is enough to ensure the path isn't malicious. Hidden behind bearer auth anyway so shouldn't matter too much I guess.
 	b := Backup{}
-	err := b.FromString(fname)
+	err = b.FromString(fname)
 	if err != nil || b.Date.IsZero() {
 		app.debug.Printf(lm.IgnoreInvalidFilename, fname, err)
 		respondBool(400, false, gc)

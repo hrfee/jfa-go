@@ -1,6 +1,7 @@
 package main
 
 import (
+	"net/url"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -584,8 +585,9 @@ func (app *appContext) MatrixConnect(gc *gin.Context) {
 // @Security Bearer
 // @tags Other
 func (app *appContext) DiscordGetUsers(gc *gin.Context) {
-	name := gc.Param("username")
-	if name == "" {
+	escapedName := gc.Param("username")
+	name, err := url.QueryUnescape(escapedName)
+	if err != nil || name == "" {
 		respondBool(400, false, gc)
 		return
 	}

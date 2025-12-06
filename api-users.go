@@ -625,7 +625,12 @@ func (app *appContext) EnableReferralForUsers(gc *gin.Context) {
 	gc.BindJSON(&req)
 	mode := gc.Param("mode")
 
-	source := gc.Param("source")
+	escapedSource := gc.Param("source")
+	source, err := url.QueryUnescape(escapedSource)
+	if err != nil {
+		respondBool(400, false, gc)
+		return
+	}
 	useExpiry := gc.Param("useExpiry") == "with-expiry"
 	baseInv := Invite{}
 	if mode == "profile" {
@@ -813,13 +818,19 @@ func (app *appContext) GetAnnounceTemplate(gc *gin.Context) {
 // @Summary Delete an announcement template.
 // @Produce json
 // @Success 200 {object} boolResponse
+// @Failure 400 {object} boolResponse
 // @Failure 500 {object} boolResponse
-// @Param name path string true "name of template"
+// @Param name path string true "name of template (url encoded if necessary)"
 // @Router /users/announce/template/{name} [delete]
 // @Security Bearer
 // @tags Users
 func (app *appContext) DeleteAnnounceTemplate(gc *gin.Context) {
-	name := gc.Param("name")
+	escapedName := gc.Param("name")
+	name, err := url.QueryUnescape(escapedName)
+	if err != nil {
+		respondBool(400, false, gc)
+		return
+	}
 	app.storage.DeleteAnnouncementsKey(name)
 	respondBool(200, false, gc)
 }

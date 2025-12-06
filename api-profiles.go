@@ -247,7 +247,13 @@ func (app *appContext) DeleteProfile(gc *gin.Context) {
 // @Security Bearer
 // @tags Profiles & Settings
 func (app *appContext) EnableReferralForProfile(gc *gin.Context) {
-	profileName := gc.Param("profile")
+	escapedProfileName := gc.Param("profile")
+	profileName, err := url.QueryUnescape(escapedProfileName)
+	if err != nil {
+		respond(400, "Invalid profile", gc)
+		app.err.Printf(lm.FailedGetProfile, profileName)
+		return
+	}
 	invCode := gc.Param("invite")
 	useExpiry := gc.Param("useExpiry") == "with-expiry"
 	inv, ok := app.storage.GetInvitesKey(invCode)
@@ -294,7 +300,13 @@ func (app *appContext) EnableReferralForProfile(gc *gin.Context) {
 // @Security Bearer
 // @tags Profiles & Settings
 func (app *appContext) DisableReferralForProfile(gc *gin.Context) {
-	profileName := gc.Param("profile")
+	escapedProfileName := gc.Param("profile")
+	profileName, err := url.QueryUnescape(escapedProfileName)
+	if err != nil {
+		respond(400, "Invalid profile", gc)
+		app.err.Printf(lm.FailedGetProfile, profileName)
+		return
+	}
 	profile, ok := app.storage.GetProfileKey(profileName)
 	if !ok {
 		respondBool(200, true, gc)
