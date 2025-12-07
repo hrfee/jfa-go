@@ -1230,7 +1230,7 @@ export class settingsList {
         // Create (restart)required badges (can't do on load as window.lang is unset)
         RestartRequiredBadge = (() => {
             const rr = document.createElement("span");
-            rr.classList.add("tooltip", "below");
+            rr.classList.add("tooltip", "below", "force-ltr");
             rr.innerHTML = `
                 <span class="badge ~info dark:~d_warning align-[0.08rem]"><i class="icon ri-refresh-line h-full"></i></span>
                 <span class="content sm">${window.lang.strings("restartRequired")}</span>
@@ -1240,7 +1240,7 @@ export class settingsList {
         })();
         RequiredBadge = (() => {
             const r = document.createElement("span");
-            r.classList.add("tooltip", "below");
+            r.classList.add("tooltip", "below", "force-ltr");
             r.innerHTML = `
                 <span class="badge ~critical align-[0.08rem]"><i class="icon ri-asterisk h-full"></i></span>
                 <span class="content sm">${window.lang.strings("required")}</span>
@@ -1303,7 +1303,7 @@ export class settingsList {
                 } else {
                     if (section.section == "messages" || section.section == "user_page") {
                         const editButton = document.createElement("div");
-                        editButton.classList.add("tooltip", "left", "h-full");
+                        editButton.classList.add("tooltip", "left", "h-full", "force-ltr");
                         editButton.innerHTML = `
                         <span class="button ~neutral @low h-full">
                             <i class="icon ri-edit-line"></i>
@@ -1341,7 +1341,7 @@ export class settingsList {
                         this.addSection(section.section, section, icon);
                     } else if (section.section == "matrix" && !window.matrixEnabled) {
                         const addButton = document.createElement("div");
-                        addButton.classList.add("tooltip", "left", "h-full");
+                        addButton.classList.add("tooltip", "left", "h-full", "force-ltr");
                         addButton.innerHTML = `
                         <span class="button ~neutral h-full"><i class="icon ri-links-line"></i></span>
                         <span class="content sm">
