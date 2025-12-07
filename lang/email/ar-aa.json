@@ -55,7 +55,7 @@
         "linkButton": "قم بإعداد حسابك"
     },
     "welcomeEmail": {
-        "name": "مرحباً",
+        "name": "الترحيب",
         "title": "مرحباً في Jellyfin",
         "welcome": "مرحباً في Jellyfin!",
         "youCanLoginWith": "يمكنك تسجيل الدخول بإستخدام المعلومات أدناه",
