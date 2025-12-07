@@ -52,9 +52,9 @@ func (app *appContext) getURLBase(gc *gin.Context) string {
 	return ""
 }
 
-func (app *appContext) gcHTML(gc *gin.Context, code int, file string, page Page, templ gin.H) {
+func (app *appContext) gcHTML(gc *gin.Context, code int, file string, page Page, lang string, templ gin.H) {
 	gc.Header("Cache-Control", "no-cache")
-	app.BasePageTemplateValues(gc, page, templ)
+	app.BasePageTemplateValues(gc, lang, page, templ)
 	gc.HTML(code, file, templ)
 }
 
@@ -80,7 +80,7 @@ func (app *appContext) pushResources(gc *gin.Context, page Page) {
 }
 
 // Returns a gin.H with general values (url base, css version, etc.)
-func (app *appContext) BasePageTemplateValues(gc *gin.Context, page Page, base gin.H) {
+func (app *appContext) BasePageTemplateValues(gc *gin.Context, lang string, page Page, base gin.H) {
 	set := func(k string, v any) {
 		if _, ok := base[k]; !ok {
 			base[k] = v
@@ -121,6 +121,15 @@ func (app *appContext) BasePageTemplateValues(gc *gin.Context, page Page, base g
 		set("pwrEnabled", app.config.Section("password_resets").Key("enabled").MustBool(false))
 	}
 	set("referralsEnabled", app.config.Section("user_page").Key("enabled").MustBool(false) && app.config.Section("user_page").Key("referrals").MustBool(false))
+	langComponents := strings.Split(lang, "-")
+	var shortLang string
+	if len(langComponents) < 1 {
+		shortLang = "en"
+	} else {
+		shortLang = langComponents[0]
+	}
+	set("langName", lang)
+	set("shortLang", shortLang)
 }
 
 type Page int
@@ -202,7 +211,7 @@ func (app *appContext) AdminPage(gc *gin.Context) {
 		builtBy = "???"
 	}
 
-	app.gcHTML(gc, http.StatusOK, "admin.html", AdminPage, gin.H{
+	app.gcHTML(gc, http.StatusOK, "admin.html", AdminPage, lang, gin.H{
 		"contactMessage":   "",
 		"linkResetEnabled": app.config.Section("password_resets").Key("link_reset").MustBool(false),
 		"version":          version,
@@ -214,7 +223,6 @@ func (app *appContext) AdminPage(gc *gin.Context) {
 		"strings":          app.storage.lang.Admin[lang].Strings,
 		"quantityStrings":  app.storage.lang.Admin[lang].QuantityStrings,
 		"language":         app.storage.lang.Admin[lang].JSON,
-		"langName":         lang,
 		"license":          license,
 		"jellyfinLogin":    app.jellyfinLogin,
 		"jfAdminOnly":      jfAdminOnly,
@@ -236,7 +244,6 @@ func (app *appContext) MyUserPage(gc *gin.Context) {
 		"strings":           app.storage.lang.User[lang].Strings,
 		"validationStrings": app.storage.lang.User[lang].validationStringsJSON,
 		"language":          app.storage.lang.User[lang].JSON,
-		"langName":          lang,
 		"jfLink":            app.EvaluateRelativePath(gc, app.config.Section("ui").Key("redirect_url").String()),
 		"requirements":      app.validator.getCriteria(),
 	}
@@ -282,7 +289,7 @@ func (app *appContext) MyUserPage(gc *gin.Context) {
 		data[name+"MessageContent"] = template.HTML(markdown.ToHTML([]byte(msg.Content), nil, markdownRenderer))
 	}
 
-	app.gcHTML(gc, http.StatusOK, "user.html", UserPage, data)
+	app.gcHTML(gc, http.StatusOK, "user.html", UserPage, lang, data)
 }
 
 func (app *appContext) ResetPassword(gc *gin.Context) {
@@ -315,7 +322,6 @@ func (app *appContext) ResetPassword(gc *gin.Context) {
 		data["validationStrings"] = app.storage.lang.User[lang].validationStringsJSON
 		// ewwwww, reusing an existing field, FIXME!
 		data["notifications"] = app.storage.lang.User[lang].notificationsJSON
-		data["langName"] = lang
 		data["passwordReset"] = true
 		data["telegramEnabled"] = false
 		data["discordEnabled"] = false
@@ -324,10 +330,10 @@ func (app *appContext) ResetPassword(gc *gin.Context) {
 		data["reCAPTCHA"] = app.config.Section("captcha").Key("recaptcha").MustBool(false)
 		data["reCAPTCHASiteKey"] = app.config.Section("captcha").Key("recaptcha_site_key").MustString("")
 		data["pwrPIN"] = pin
-		app.gcHTML(gc, http.StatusOK, "form-loader.html", PWRPage, data)
+		app.gcHTML(gc, http.StatusOK, "form-loader.html", PWRPage, lang, data)
 		return
 	}
-	defer app.gcHTML(gc, http.StatusOK, "password-reset.html", PWRPage, data)
+	defer app.gcHTML(gc, http.StatusOK, "password-reset.html", PWRPage, lang, data)
 	// If it's a bot, pretend to be a success so the preview is nice.
 	if isBot {
 		app.debug.Println(lm.IgnoreBotPWR)
@@ -428,7 +434,7 @@ func (app *appContext) GetCaptcha(gc *gin.Context) {
 	if !isPWR {
 		inv, ok = app.storage.GetInvitesKey(code)
 		if !ok {
-			app.gcHTML(gc, 404, "invalidCode.html", OtherPage, gin.H{
+			app.gcHTML(gc, 404, "invalidCode.html", OtherPage, "en-us", gin.H{
 				"contactMessage": app.config.Section("ui").Key("contact_message").String(),
 			})
 		}
@@ -465,7 +471,7 @@ func (app *appContext) GenCaptcha(gc *gin.Context) {
 	}
 
 	if !ok {
-		app.gcHTML(gc, 404, "invalidCode.html", OtherPage, gin.H{
+		app.gcHTML(gc, 404, "invalidCode.html", OtherPage, "en-us", gin.H{
 			"contactMessage": app.config.Section("ui").Key("contact_message").String(),
 		})
 	}
@@ -596,7 +602,7 @@ func (app *appContext) VerifyCaptcha(gc *gin.Context) {
 	if !isPWR {
 		inv, ok = app.storage.GetInvitesKey(code)
 		if !ok {
-			app.gcHTML(gc, 404, "invalidCode.html", OtherPage, gin.H{
+			app.gcHTML(gc, 404, "invalidCode.html", OtherPage, "en-us", gin.H{
 				"contactMessage": app.config.Section("ui").Key("contact_message").String(),
 			})
 			return
@@ -623,7 +629,7 @@ func (app *appContext) VerifyCaptcha(gc *gin.Context) {
 
 func (app *appContext) NewUserFromConfirmationKey(invite Invite, key string, lang string, gc *gin.Context) {
 	fail := func() {
-		app.gcHTML(gc, 404, "404.html", OtherPage, gin.H{
+		app.gcHTML(gc, 404, "404.html", OtherPage, lang, gin.H{
 			"contactMessage": app.config.Section("ui").Key("contact_message").String(),
 		})
 	}
@@ -694,7 +700,7 @@ func (app *appContext) NewUserFromConfirmationKey(invite Invite, key string, lan
 	if app.config.Section("ui").Key("auto_redirect").MustBool(false) {
 		gc.Redirect(301, jfLink)
 	} else {
-		app.gcHTML(gc, http.StatusOK, "create-success.html", OtherPage, gin.H{
+		app.gcHTML(gc, http.StatusOK, "create-success.html", OtherPage, lang, gin.H{
 			"strings":        app.storage.lang.User[lang].Strings,
 			"successMessage": app.config.Section("ui").Key("success_message").String(),
 			"contactMessage": app.config.Section("ui").Key("contact_message").String(),
@@ -725,7 +731,7 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 	// if app.checkInvite(code, false, "") {
 	invite, ok := app.storage.GetInvitesKey(gc.Param("invCode"))
 	if !ok {
-		app.gcHTML(gc, 404, "invalidCode.html", FormPage, gin.H{
+		app.gcHTML(gc, 404, "invalidCode.html", FormPage, lang, gin.H{
 			"contactMessage": app.config.Section("ui").Key("contact_message").String(),
 		})
 		return
@@ -777,7 +783,6 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 		"userExpiryHours":   invite.UserHours,
 		"userExpiryMinutes": invite.UserMinutes,
 		"userExpiryMessage": app.storage.lang.User[lang].Strings.get("yourAccountIsValidUntil"),
-		"langName":          lang,
 		"passwordReset":     false,
 		"customSuccessCard": false,
 		"telegramEnabled":   telegram,
@@ -851,12 +856,12 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 	// 	pin := ""
 	// 	for _, token := range app.discord.tokens {
 	// 		if
-	app.gcHTML(gc, http.StatusOK, "form-loader.html", OtherPage, data)
+	app.gcHTML(gc, http.StatusOK, "form-loader.html", OtherPage, lang, data)
 }
 
 func (app *appContext) NoRouteHandler(gc *gin.Context) {
 	app.pushResources(gc, OtherPage)
-	app.gcHTML(gc, 404, "404.html", OtherPage, gin.H{
+	app.gcHTML(gc, 404, "404.html", OtherPage, "en-us", gin.H{
 		"contactMessage": app.config.Section("ui").Key("contact_message").String(),
 	})
 }

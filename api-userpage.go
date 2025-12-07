@@ -164,7 +164,7 @@ func (app *appContext) confirmMyAction(gc *gin.Context, key string) {
 	var target ConfirmationTarget
 	var id string
 	fail := func() {
-		app.gcHTML(gc, 404, "404.html", OtherPage, gin.H{
+		app.gcHTML(gc, 404, "404.html", OtherPage, "en-us", gin.H{
 			"contactMessage": app.config.Section("ui").Key("contact_message").String(),
 		})
 	}

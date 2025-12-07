@@ -379,7 +379,7 @@ export function throttle (callback: () => void, limitMilliseconds: number): () =
     }
 }
 
-export function SetupCopyButton(button: HTMLButtonElement, text: string | () => string, baseClass?: string, notif?: string) {
+export function SetupCopyButton(button: HTMLButtonElement, text: string | (() => string), baseClass?: string, notif?: string) {
     if (!notif) notif = window.lang.strings("copied");
     if (!baseClass) baseClass = "~info";
     // script will probably turn this into multiple
@@ -392,9 +392,9 @@ export function SetupCopyButton(button: HTMLButtonElement, text: string | () => 
     button.appendChild(icon)
     button.onclick = () => { 
         if (typeof text === "string") {
-                toClipboard(text);
+            toClipboard(text);
         } else {
-                toClipboard(text());
+            toClipboard(text());
         }
         icon.classList.remove("ri-file-copy-line");
         icon.classList.add("ri-check-line");
@@ -410,7 +410,7 @@ export function SetupCopyButton(button: HTMLButtonElement, text: string | () => 
     };
 }
 
-export function CopyButton(text: string, baseClass?: string, notif?: string): HTMLButtonElement {
+export function CopyButton(text: string | (() => string), baseClass?: string, notif?: string): HTMLButtonElement {
     const button = document.createElement("button");
     SetupCopyButton(button, text, baseClass, notif);
     return button;
