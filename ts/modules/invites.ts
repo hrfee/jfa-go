@@ -508,7 +508,7 @@ class DOMInvite implements Invite {
         this._linkEl = this._linkContainer.getElementsByClassName("invite-link")[0] as HTMLAnchorElement;
 
         const copyButton = this._codeArea.getElementsByClassName("invite-copy-button")[0] as HTMLButtonElement;
-        SetupCopyButton(copyButton, this._codeLink); 
+        SetupCopyButton(copyButton, () => { return this._codeLink; }); 
 
         this._infoArea = document.createElement('div') as HTMLDivElement;
         this._header.appendChild(this._infoArea);
