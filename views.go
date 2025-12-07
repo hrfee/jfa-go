@@ -128,6 +128,9 @@ func (app *appContext) BasePageTemplateValues(gc *gin.Context, lang string, page
 	} else {
 		shortLang = langComponents[0]
 	}
+	if lang == "pk-pk" || shortLang == "ar" || shortLang == "fa" || shortLang == "he" || shortLang == "iw" || shortLang == "kd" || shortLang == "ps" || shortLang == "ug" || shortLang == "ur" || shortLang == "yi" {
+		set("pageDirection", "rtl")
+	}
 	set("langName", lang)
 	set("shortLang", shortLang)
 }
