@@ -44,8 +44,18 @@
     left: 120%;
 }
 
+.tooltip.right:dir(rtl) .content {
+    right: 120%;
+    left: unset;
+}
+
 .tooltip.left .content {
     right: 120%;
+}
+
+.tooltip.left:dir(rtl) .content {
+    left: 120%;
+    right: unset;
 }
 
 .tooltip .content.sm {
