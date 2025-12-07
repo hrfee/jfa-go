@@ -465,7 +465,7 @@ section.section:not(.\~neutral) {
 
 :root {
     /* seems to be the sweet spot */
-    --inside-input-base: -2.6rem;
+    --inside-input-base: -2.1rem;
 
     /* thought --spacing would do the trick but apparently not */
     --tailwind-spacing: 0.25rem;
