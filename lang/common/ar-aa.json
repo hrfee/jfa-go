@@ -7,7 +7,7 @@
         "password": "كلمة المرور",
         "emailAddress": "عنوان البريد الإلكتروني",
         "name": "الاسم",
-        "submit": "إدخال",
+        "submit": "إرسال",
         "success": "تم",
         "continue": "متابعة",
         "error": "خطأ",
@@ -43,7 +43,9 @@
         "referrals": "الإحالات",
         "inviteRemainingUses": "الاستخدامات المتبقية",
         "internal": "داخلي",
-        "external": "خارجي"
+        "external": "خارجي",
+        "sent": "تم إرساُلها",
+        "failed": "فشل"
     },
     "notifications": {
         "errorUnknown": "خطأ غير معروف.",
@@ -55,15 +57,15 @@
     },
     "quantityStrings": {
         "year": {
-            "singular": "{n} سنة",
+            "singular": "سنة",
             "plural": "{n} سنوات"
         },
         "month": {
-            "singular": "{n} شهر",
+            "singular": "شهر",
             "plural": "{n} أشهر"
         },
         "day": {
-            "singular": "{n} يوم",
+            "singular": "يوم",
             "plural": "{n} أيام"
         }
     }
