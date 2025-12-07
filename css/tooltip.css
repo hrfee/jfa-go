@@ -44,7 +44,7 @@
     left: 120%;
 }
 
-.tooltip.right:dir(rtl) .content {
+.tooltip.right:dir(rtl):not(.force-ltr) .content {
     right: 120%;
     left: unset;
 }
@@ -53,7 +53,7 @@
     right: 120%;
 }
 
-.tooltip.left:dir(rtl) .content {
+.tooltip.left:dir(rtl):not(.force-ltr) .content {
     left: 120%;
     right: unset;
 }
