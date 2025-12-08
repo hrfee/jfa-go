@@ -6,7 +6,7 @@ declare var window: GlobalWindow;
 
 export interface ListItem {
     asElement: () => HTMLElement;
-};
+}
 
 export class RecordCounter {
     private _container: HTMLElement;
@@ -50,25 +50,33 @@ export class RecordCounter {
         });
     }
 
-    get total(): number { return this._total; }
+    get total(): number {
+        return this._total;
+    }
     set total(v: number) {
         this._total = v;
         this._totalRecords.textContent = window.lang.var("strings", "totalRecords", `${v}`);
     }
-    
-    get loaded(): number { return this._loaded; }
+
+    get loaded(): number {
+        return this._loaded;
+    }
     set loaded(v: number) {
         this._loaded = v;
         this._loadedRecords.textContent = window.lang.var("strings", "loadedRecords", `${v}`);
     }
-    
-    get shown(): number { return this._shown; }
+
+    get shown(): number {
+        return this._shown;
+    }
     set shown(v: number) {
         this._shown = v;
         this._shownRecords.textContent = window.lang.var("strings", "shownRecords", `${v}`);
     }
-    
-    get selected(): number { return this._selected; }
+
+    get selected(): number {
+        return this._selected;
+    }
     set selected(v: number) {
         this._selected = v;
         if (v == 0) this._selectedRecords.textContent = ``;
@@ -98,7 +106,7 @@ export interface PaginatedListConfig {
 
 export abstract class PaginatedList {
     protected _c: PaginatedListConfig;
-   
+
     // Container to append items to.
     protected _container: HTMLElement;
     // List of visible IDs (i.e. those set with setVisibility).
@@ -119,14 +127,16 @@ export abstract class PaginatedList {
     };
 
     protected _search: Search;
-    
+
     protected _counter: RecordCounter;
-    
+
     protected _hasLoaded: boolean;
     protected _lastLoad: number;
     protected _page: number = 0;
     protected _lastPage: boolean;
-    get lastPage(): boolean { return this._lastPage };
+    get lastPage(): boolean {
+        return this._lastPage;
+    }
     set lastPage(v: boolean) {
         this._lastPage = v;
         if (v) {
@@ -156,15 +166,15 @@ export abstract class PaginatedList {
             limit: 0,
             page: 0,
             sortByField: "",
-            ascending: false
+            ascending: false,
         };
-    }
+    };
 
     constructor(c: PaginatedListConfig) {
         this._c = c;
         this._counter = new RecordCounter(this._c.recordCounter);
         this._hasLoaded = false;
-       
+
         this._c.loadMoreButtons.forEach((v) => {
             v.onclick = () => this.loadMore(false);
         });
@@ -180,7 +190,10 @@ export abstract class PaginatedList {
     }
 
     autoSetServerSearchButtonsDisabled = () => {
-        const serverSearchSortChanged = this._search.inServerSearch && (this._searchParams.sortByField != this._search.sortField || this._searchParams.ascending != this._search.ascending);
+        const serverSearchSortChanged =
+            this._search.inServerSearch &&
+            (this._searchParams.sortByField != this._search.sortField ||
+                this._searchParams.ascending != this._search.ascending);
         if (this._search.inServerSearch) {
             if (serverSearchSortChanged) {
                 this._search.setServerSearchButtonsDisabled(false);
@@ -189,28 +202,42 @@ export abstract class PaginatedList {
             }
             return;
         }
-        if (!this._search.inSearch && this._search.sortField == this._c.defaultSortField && this._search.ascending == this._c.defaultSortAscending) {
+        if (
+            !this._search.inSearch &&
+            this._search.sortField == this._c.defaultSortField &&
+            this._search.ascending == this._c.defaultSortAscending
+        ) {
             this._search.setServerSearchButtonsDisabled(true);
             return;
         }
         this._search.setServerSearchButtonsDisabled(false);
-    }
+    };
 
     initSearch = (searchConfig: SearchConfiguration) => {
         const previousCallback = searchConfig.onSearchCallback;
-        searchConfig.onSearchCallback = (newItems: boolean, loadAll: boolean, callback?: (resp: paginatedDTO) => void) => {
+        searchConfig.onSearchCallback = (
+            newItems: boolean,
+            loadAll: boolean,
+            callback?: (resp: paginatedDTO) => void,
+        ) => {
             // if (this._search.inSearch && !this.lastPage) this._c.loadAllButton.classList.remove("unfocused");
             // else this._c.loadAllButton.classList.add("unfocused");
 
             this.autoSetServerSearchButtonsDisabled();
 
             // FIXME: Figure out why this makes sense and make it clearer.
-            if ((this._visible.length < this._c.itemsPerPage && this._counter.loaded < this._c.maxItemsLoadedForSearch && !this.lastPage) || loadAll) {
-                if (!newItems ||
+            if (
+                (this._visible.length < this._c.itemsPerPage &&
+                    this._counter.loaded < this._c.maxItemsLoadedForSearch &&
+                    !this.lastPage) ||
+                loadAll
+            ) {
+                if (
+                    !newItems ||
                     this._previousVisibleItemCount != this._visible.length ||
                     (this._visible.length == 0 && !this.lastPage) ||
                     loadAll
-                   ) {
+                ) {
                     this.loadMore(loadAll, callback);
                 }
             }
@@ -229,7 +256,7 @@ export abstract class PaginatedList {
             console.trace("Clearing server search");
             this._page = 0;
             this.reload();
-        }
+        };
         searchConfig.setVisibility = this.setVisibility;
         this._search = new Search(searchConfig);
         this._search.generateFilterList();
@@ -258,7 +285,7 @@ export abstract class PaginatedList {
     setVisibility = (elements: string[], visible: boolean, appendedItems: boolean = false) => {
         let timer = this._search.timeSearches ? performance.now() : null;
         if (visible) this._visible = elements;
-        else this._visible = this._search.ordering.filter(v => !elements.includes(v));
+        else this._visible = this._search.ordering.filter((v) => !elements.includes(v));
         // console.log(elements.length, visible, this._visible.length);
         this._counter.shown = this._visible.length;
         if (this._visible.length == 0) {
@@ -268,56 +295,56 @@ export abstract class PaginatedList {
 
         if (!appendedItems) {
             // Wipe old elements and render 1 new one, so we can take the element height.
-            this._container.replaceChildren(this._search.items[this._visible[0]].asElement())
+            this._container.replaceChildren(this._search.items[this._visible[0]].asElement());
         }
 
         this._computeScrollInfo();
 
         // Initial render of min(_visible.length, max(rowsOnPage*renderNExtraScreensWorth, itemsPerPage)), skipping 1 as we already did it.
-        this._scroll.initialRenderCount = Math.floor(Math.min(
-            this._visible.length,
-            Math.max(
-                ((this._scroll.renderNExtraScreensWorth+1)*this._scroll.screenHeight)/this._scroll.rowHeight,
-                this._c.itemsPerPage)
-        ));
+        this._scroll.initialRenderCount = Math.floor(
+            Math.min(
+                this._visible.length,
+                Math.max(
+                    ((this._scroll.renderNExtraScreensWorth + 1) * this._scroll.screenHeight) / this._scroll.rowHeight,
+                    this._c.itemsPerPage,
+                ),
+            ),
+        );
 
         let baseIndex = 1;
         if (appendedItems) {
             baseIndex = this._scroll.rendered;
         }
-        const frag = document.createDocumentFragment()
+        const frag = document.createDocumentFragment();
         for (let i = baseIndex; i < this._scroll.initialRenderCount; i++) {
-            frag.appendChild(this._search.items[this._visible[i]].asElement())
+            frag.appendChild(this._search.items[this._visible[i]].asElement());
         }
         this._scroll.rendered = Math.max(baseIndex, this._scroll.initialRenderCount);
-        // appendChild over replaceChildren because there's already elements on the DOM 
+        // appendChild over replaceChildren because there's already elements on the DOM
         this._container.appendChild(frag);
 
         if (this._search.timeSearches) {
             const totalTime = performance.now() - timer;
             console.debug(`setVisibility took ${totalTime}ms`);
         }
-    }
+    };
 
     // Computes required scroll info, requiring one on-DOM item. Should be computed on page resize and this._visible change.
     _computeScrollInfo = () => {
         if (this._visible.length == 0) return;
 
-        this._scroll.screenHeight = Math.max(
-            document.documentElement.clientHeight,
-            window.innerHeight || 0
-        );
+        this._scroll.screenHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
 
         this._scroll.rowHeight = this._search.items[this._visible[0]].asElement().offsetHeight;
-    }
+    };
 
     // returns the item index to render up to for the given scroll position.
     // might return a value greater than this._visible.length, indicating a need for a page load.
     maximumItemsToRender = (scrollY: number): number => {
-        const bottomScroll = scrollY + ((this._scroll.renderNExtraScreensWorth+1)*this._scroll.screenHeight);
+        const bottomScroll = scrollY + (this._scroll.renderNExtraScreensWorth + 1) * this._scroll.screenHeight;
         const bottomIdx = Math.floor(bottomScroll / this._scroll.rowHeight);
         return bottomIdx;
-    }
+    };
 
     private _load = (
         itemLimit: number,
@@ -325,7 +352,7 @@ export abstract class PaginatedList {
         appendFunc: (resp: paginatedDTO) => void, // Function to append/put items in storage.
         pre?: (resp: paginatedDTO) => void,
         post?: (resp: paginatedDTO) => void,
-        failCallback?: (req: XMLHttpRequest) => void
+        failCallback?: (req: XMLHttpRequest) => void,
     ) => {
         this._lastLoad = Date.now();
         let params = this._search.inServerSearch ? this._searchParams : this.defaultParams();
@@ -336,30 +363,35 @@ export abstract class PaginatedList {
             params.ascending = this._c.defaultSortAscending;
         }
 
-        _post(this._c.getPageEndpoint, params, (req: XMLHttpRequest) => {
-            if (req.readyState != 4) return;
-            if (req.status != 200) {
+        _post(
+            this._c.getPageEndpoint,
+            params,
+            (req: XMLHttpRequest) => {
+                if (req.readyState != 4) return;
+                if (req.status != 200) {
+                    if (this._c.pageLoadCallback) this._c.pageLoadCallback(req);
+                    if (failCallback) failCallback(req);
+                    return;
+                }
+                this._hasLoaded = true;
+
+                let resp = req.response as paginatedDTO;
+                if (pre) pre(resp);
+
+                this.lastPage = resp.last_page;
+
+                appendFunc(resp);
+
+                this._counter.loaded = this._search.ordering.length;
+
+                if (post) post(resp);
+
                 if (this._c.pageLoadCallback) this._c.pageLoadCallback(req);
-                if (failCallback) failCallback(req);
-                return;
-            }
-            this._hasLoaded = true;
+            },
+            true,
+        );
+    };
 
-            let resp = req.response as paginatedDTO;
-            if (pre) pre(resp);
-            
-            this.lastPage = resp.last_page;
-
-            appendFunc(resp);
-           
-            this._counter.loaded = this._search.ordering.length;
-            
-            if (post) post(resp);
-
-            if (this._c.pageLoadCallback) this._c.pageLoadCallback(req);
-        }, true);
-    }
-    
     // Removes all elements, and reloads the first page.
     public abstract reload: (callback?: (resp: paginatedDTO) => void) => void;
     protected _reload = (callback?: (resp: paginatedDTO) => void) => {
@@ -369,7 +401,7 @@ export abstract class PaginatedList {
         // Reload all currently visible elements, i.e. Load a new page of size (limit*(page+1)).
         let limit = this._c.itemsPerPage;
         if (this._page != 0) {
-            limit *= this._page+1;
+            limit *= this._page + 1;
         }
         this._load(
             limit,
@@ -378,7 +410,7 @@ export abstract class PaginatedList {
             (_0: paginatedDTO) => {
                 // Allow refreshes every 15s
                 this._c.refreshButton.disabled = true;
-                setTimeout(() => this._c.refreshButton.disabled = false, 15000);
+                setTimeout(() => (this._c.refreshButton.disabled = false), 15000);
             },
             (resp: paginatedDTO) => {
                 this._search.onSearchBoxChange(true, false, false);
@@ -392,14 +424,14 @@ export abstract class PaginatedList {
                 if (callback) callback(resp);
             },
         );
-    }
+    };
 
     // Loads the next page. If "loadAll", all pages will be loaded until the last is reached.
     public abstract loadMore: (loadAll?: boolean, callback?: (resp?: paginatedDTO) => void) => void;
     protected _loadMore = (loadAll: boolean = false, callback?: (resp: paginatedDTO) => void) => {
-        this._c.loadMoreButtons.forEach((v) => v.disabled = true);
+        this._c.loadMoreButtons.forEach((v) => (v.disabled = true));
         const timeout = setTimeout(() => {
-            this._c.loadMoreButtons.forEach((v) => v.disabled = false);
+            this._c.loadMoreButtons.forEach((v) => (v.disabled = false));
         }, 1000);
         this._page += 1;
 
@@ -430,11 +462,13 @@ export abstract class PaginatedList {
                 if (callback) callback(resp);
             },
         );
-    }
+    };
 
     public abstract loadAll: (callback?: (resp?: paginatedDTO) => void) => void;
-    protected _loadAll = (callback?: (resp?: paginatedDTO) => void)  => {
-        this._c.loadAllButtons.forEach((v) => { addLoader(v, true); });
+    protected _loadAll = (callback?: (resp?: paginatedDTO) => void) => {
+        this._c.loadAllButtons.forEach((v) => {
+            addLoader(v, true);
+        });
         this.loadMore(true, callback);
     };
 
@@ -442,17 +476,16 @@ export abstract class PaginatedList {
         const cb = () => {
             if (this._counter.loaded > n) return;
             this.loadMore(false, cb);
-        }
+        };
         cb();
-    }
+    };
 
     // As reloading can disrupt long-scrolling, this function will only do it if you're at the top of the page, essentially.
     public reloadIfNotInScroll = () => {
         if (this._visible.length == 0 || this.maximumItemsToRender(window.scrollY) < this._scroll.initialRenderCount) {
             return this.reload();
         }
-    }
-
+    };
 
     _detectScroll = () => {
         if (!this._hasLoaded || this._scroll.scrollLoading || this._visible.length == 0) return;
@@ -462,15 +495,15 @@ export abstract class PaginatedList {
         // If you've scrolled back up, do nothing
         if (scrollSpeed < 0) return;
         let endIdx = this.maximumItemsToRender(scrollY);
-     
+
         // Throttling this function means we might not catch up in time if the user scrolls fast,
         // so we calculate the scroll speed (in rows/call) from the previous scrollY value.
         // This still might not be enough, so hackily we'll just scale it up.
         // With onscrollend, this is less necessary, but with both I wasn't able to hit the bottom of the page on my mouse.
-        const rowsPerScroll = Math.round((scrollSpeed / this._scroll.rowHeight));
+        const rowsPerScroll = Math.round(scrollSpeed / this._scroll.rowHeight);
         // Render extra pages depending on scroll speed
-        endIdx += rowsPerScroll*2;
-        
+        endIdx += rowsPerScroll * 2;
+
         const realEndIdx = Math.min(endIdx, this._visible.length);
         const frag = document.createDocumentFragment();
         for (let i = this._scroll.rendered; i < realEndIdx; i++) {
@@ -495,7 +528,7 @@ export abstract class PaginatedList {
             cb();
             return;
         }
-    }
+    };
 
     detectScroll = throttle(this._detectScroll, 200);
 
@@ -515,7 +548,5 @@ export abstract class PaginatedList {
         window.removeEventListener("scroll", this.detectScroll);
         window.removeEventListener("scrollend", this.detectScroll);
         window.removeEventListener("resize", this.redrawScroll);
-    }
+    };
 }
-
-

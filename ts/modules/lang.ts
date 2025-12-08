@@ -24,37 +24,45 @@ export class lang implements Lang {
     }
 
     get = (sect: string, key: string): string => {
-        if (sect == "quantityStrings" || sect == "meta") { return ""; }
+        if (sect == "quantityStrings" || sect == "meta") {
+            return "";
+        }
         return this._lang[sect][key];
-    }
+    };
 
-    strings = (key: string): string => this.get("strings", key)
-    notif = (key: string): string => this.get("notifications", key)
+    strings = (key: string): string => this.get("strings", key);
+    notif = (key: string): string => this.get("notifications", key);
 
     var = (sect: string, key: string, ...subs: string[]): string => {
-        if (sect == "quantityStrings" || sect == "meta") { return ""; }
+        if (sect == "quantityStrings" || sect == "meta") {
+            return "";
+        }
         let str = this._lang[sect][key];
         for (let sub of subs) {
             str = str.replace("{n}", sub);
         }
         return str;
-    }
+    };
 
     template = (sect: string, key: string, subs: { [key: string]: any }): string => {
-        if (sect == "quantityStrings" || sect == "meta") { return ""; }
+        if (sect == "quantityStrings" || sect == "meta") {
+            return "";
+        }
         const map = new Map<string, any>();
-        for (let key of Object.keys(subs)) { map.set(key, subs[key]); }
+        for (let key of Object.keys(subs)) {
+            map.set(key, subs[key]);
+        }
         const [out, err] = Template(this._lang[sect][key], map);
         if (err != null) throw err;
         return out;
-    }
+    };
 
     quantity = (key: string, number: number): string => {
         if (number == 1) {
-            return this._lang.quantityStrings[key].singular.replace("{n}", ""+number)
+            return this._lang.quantityStrings[key].singular.replace("{n}", "" + number);
         }
-        return this._lang.quantityStrings[key].plural.replace("{n}", ""+number);
-    }
+        return this._lang.quantityStrings[key].plural.replace("{n}", "" + number);
+    };
 }
 
 export var TimeFmtChange = new CustomEvent("timefmt-change");
@@ -66,7 +74,7 @@ export const loadLangSelector = (page: string) => {
             localStorage.setItem("timefmt", fmt);
         };
         const t12 = document.getElementById("lang-12h") as HTMLInputElement;
-        if (typeof(t12) !== "undefined" && t12 != null) {
+        if (typeof t12 !== "undefined" && t12 != null) {
             t12.onchange = () => setTimefmt("12h");
             const t24 = document.getElementById("lang-24h") as HTMLInputElement;
             t24.onchange = () => setTimefmt("24h");
@@ -83,21 +91,26 @@ export const loadLangSelector = (page: string) => {
     }
     let queryString = new URLSearchParams(window.location.search);
     if (queryString.has("lang")) queryString.delete("lang");
-    _get("/lang/" + page, null, (req: XMLHttpRequest) => {
-        if (req.readyState == 4) {
-            if (req.status != 200) {
-                document.getElementById("lang-dropdown").remove();
-                return;
+    _get(
+        "/lang/" + page,
+        null,
+        (req: XMLHttpRequest) => {
+            if (req.readyState == 4) {
+                if (req.status != 200) {
+                    document.getElementById("lang-dropdown").remove();
+                    return;
+                }
+                const list = document.getElementById("lang-list") as HTMLDivElement;
+                let innerHTML = "";
+                for (let code in req.response) {
+                    if (!code || !req.response[code]) continue;
+                    queryString.set("lang", code);
+                    innerHTML += `<a href="?${queryString.toString()}" class="button w-full text-left justify-start ~neutral lang-link">${req.response[code]}</a>`;
+                    queryString.delete("lang");
+                }
+                list.innerHTML = innerHTML;
             }
-            const list = document.getElementById("lang-list") as HTMLDivElement;
-            let innerHTML = '';
-            for (let code in req.response) {
-                if (!code || !(req.response[code])) continue;
-                queryString.set("lang", code);
-                innerHTML += `<a href="?${queryString.toString()}" class="button w-full text-left justify-start ~neutral lang-link">${req.response[code]}</a>`;
-                queryString.delete("lang");
-            }
-            list.innerHTML = innerHTML;
-        }
-    }, true);
+        },
+        true,
+    );
 };

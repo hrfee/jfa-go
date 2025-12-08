@@ -11,13 +11,15 @@ declare var window: sWindow;
 
 const theme = new ThemeManager(document.getElementById("button-theme"));
 
-window.notifications = new notificationBox(document.getElementById('notification-box') as HTMLDivElement, 5);
-
+window.notifications = new notificationBox(document.getElementById("notification-box") as HTMLDivElement, 5);
 
 const get = (id: string): HTMLElement => document.getElementById(id);
-const text = (id: string, val: string) => { document.getElementById(id).textContent = val; };
-const html = (id: string, val: string) => { document.getElementById(id).innerHTML = val; };
-
+const text = (id: string, val: string) => {
+    document.getElementById(id).textContent = val;
+};
+const html = (id: string, val: string) => {
+    document.getElementById(id).innerHTML = val;
+};
 
 // FIXME: Reuse setting types from ts/modules/settings.ts
 interface boolEvent extends Event {
@@ -26,18 +28,35 @@ interface boolEvent extends Event {
 
 class Input {
     private _el: HTMLInputElement;
-    get value(): string { return ""+this._el.value; }
-    set value(v: string) { this._el.value = v; }
+    get value(): string {
+        return "" + this._el.value;
+    }
+    set value(v: string) {
+        this._el.value = v;
+    }
     // Nothing depends on input, but we add an empty broadcast function so we can just loop over all settings to fix dependents on start.
-    broadcast = () => {}
-    constructor(el: HTMLElement, placeholder?: any, value?: any, depends?: string, dependsTrue?: boolean, section?: string) {
+    broadcast = () => {};
+    constructor(
+        el: HTMLElement,
+        placeholder?: any,
+        value?: any,
+        depends?: string,
+        dependsTrue?: boolean,
+        section?: string,
+    ) {
         this._el = el as HTMLInputElement;
-        if (placeholder) { this._el.placeholder = placeholder; }
-        if (value) { this.value = value; }
+        if (placeholder) {
+            this._el.placeholder = placeholder;
+        }
+        if (value) {
+            this.value = value;
+        }
         if (depends) {
             document.addEventListener(`settings-${section}-${depends}`, (event: boolEvent) => {
                 let el = this._el as HTMLElement;
-                if (el.parentElement.tagName == "LABEL") { el = el.parentElement; }
+                if (el.parentElement.tagName == "LABEL") {
+                    el = el.parentElement;
+                }
                 if (event.detail !== dependsTrue) {
                     el.classList.add("unfocused");
                 } else {
@@ -51,9 +70,13 @@ class Input {
 class Checkbox {
     private _el: HTMLInputElement;
     private _hideEl: HTMLElement;
-    get value(): string { return this._el.checked ? "true" : "false"; }
-    set value(v: string) { this._el.checked = (v == "true") ? true : false; }
-    
+    get value(): string {
+        return this._el.checked ? "true" : "false";
+    }
+    set value(v: string) {
+        this._el.checked = v == "true" ? true : false;
+    }
+
     private _section: string;
     private _setting: string;
     broadcast = () => {
@@ -62,10 +85,10 @@ class Checkbox {
             state = false;
         }
         if (this._section && this._setting) {
-            const ev = new CustomEvent(`settings-${this._section}-${this._setting}`, { "detail": state })
+            const ev = new CustomEvent(`settings-${this._section}-${this._setting}`, { detail: state });
             document.dispatchEvent(ev);
         }
-    }
+    };
     set onchange(f: () => void) {
         this._el.addEventListener("change", f);
     }
@@ -85,7 +108,7 @@ class Checkbox {
         if (section && setting) {
             this._section = section;
             this._setting = setting;
-            this._el.onchange = this.broadcast; 
+            this._el.onchange = this.broadcast;
         }
         if (depends) {
             document.addEventListener(`settings-${section}-${depends}`, (event: boolEvent) => {
@@ -110,21 +133,23 @@ class Checkbox {
 
 class BoolRadios {
     private _els: NodeListOf<HTMLInputElement>;
-    get value(): string { return this._els[0].checked ? "true" : "false" }
-    set value(v: string) { 
-        const bool = (v == "true") ? true : false;
+    get value(): string {
+        return this._els[0].checked ? "true" : "false";
+    }
+    set value(v: string) {
+        const bool = v == "true" ? true : false;
         this._els[0].checked = bool;
         this._els[1].checked = !bool;
     }
-    
+
     private _section: string;
     private _setting: string;
     broadcast = () => {
         if (this._section && this._setting) {
-            const ev = new CustomEvent(`settings-${this._section}-${this._setting}`, { "detail": this._els[0].checked })
+            const ev = new CustomEvent(`settings-${this._section}-${this._setting}`, { detail: this._els[0].checked });
             document.dispatchEvent(ev);
         }
-    }
+    };
     constructor(name: string, depends?: string, dependsTrue?: boolean, section?: string, setting?: string) {
         this._els = document.getElementsByName(name) as NodeListOf<HTMLInputElement>;
         if (section && setting) {
@@ -177,26 +202,32 @@ class BoolRadios {
 
 class Select {
     private _el: HTMLSelectElement;
-    get value(): string { return this._el.value; }
-    set value(v: string) { this._el.value = v; }
+    get value(): string {
+        return this._el.value;
+    }
+    set value(v: string) {
+        this._el.value = v;
+    }
     add = (val: string, label: string) => {
         const item = document.createElement("option") as HTMLOptionElement;
         item.value = val;
         item.textContent = label;
         this._el.appendChild(item);
-    }
+    };
     set onchange(f: () => void) {
         this._el.addEventListener("change", f);
     }
-    
+
     private _section: string;
     private _setting: string;
     broadcast = () => {
         if (this._section && this._setting) {
-            const ev = new CustomEvent(`settings-${this._section}-${this._setting}`, { "detail": this.value ? true : false })
+            const ev = new CustomEvent(`settings-${this._section}-${this._setting}`, {
+                detail: this.value ? true : false,
+            });
             document.dispatchEvent(ev);
         }
-    }
+    };
     constructor(el: HTMLElement, depends?: string, dependsTrue?: boolean, section?: string, setting?: string) {
         this._el = el as HTMLSelectElement;
         if (section && setting) {
@@ -221,137 +252,194 @@ class Select {
 }
 
 class LangSelect extends Select {
-    constructor(page: string, el: HTMLElement, depends?: string, dependsTrue?: boolean, section?: string, setting?: string) {
+    constructor(
+        page: string,
+        el: HTMLElement,
+        depends?: string,
+        dependsTrue?: boolean,
+        section?: string,
+        setting?: string,
+    ) {
         super(el, depends, dependsTrue, section, setting);
-        _get("/lang/" + page, null, (req: XMLHttpRequest) => {
-            if (req.readyState == 4 && req.status == 200) {
-                for (let code in req.response) {
-                    this.add(code, req.response[code]);
+        _get(
+            "/lang/" + page,
+            null,
+            (req: XMLHttpRequest) => {
+                if (req.readyState == 4 && req.status == 200) {
+                    for (let code in req.response) {
+                        this.add(code, req.response[code]);
+                    }
+                    this.value = "en-us";
                 }
-                this.value = "en-us";
-            }
-        }, true);
+            },
+            true,
+        );
     }
 }
 
-const replaceLink = (elName: string, sect: string, name: string, url: string, text: string) => html(elName, window.lang.var(sect, name, `<a class="underline" target="_blank" href="${url}">${text}</a>`));
+const replaceLink = (elName: string, sect: string, name: string, url: string, text: string) =>
+    html(elName, window.lang.var(sect, name, `<a class="underline" target="_blank" href="${url}">${text}</a>`));
 
 window.lang = new lang(window.langFile as LangFile);
 replaceLink("language-description", "language", "description", "https://weblate.jfa-go.com", "Weblate");
 replaceLink("email-description", "email", "description", "https://mailgun.com", "Mailgun");
-replaceLink("email-dateformat-notice", "email", "dateFormatNotice", "https://strftime.timpetricola.com/", "strftime.timpetricola.com");
+replaceLink(
+    "email-dateformat-notice",
+    "email",
+    "dateFormatNotice",
+    "https://strftime.timpetricola.com/",
+    "strftime.timpetricola.com",
+);
 replaceLink("updates-description", "updates", "description", "https://builds.hrfee.dev/view/hrfee/jfa-go", "buildrone");
 replaceLink("messages-description", "messages", "description", "https://wiki.jfa-go.com", "Wiki");
-replaceLink("password_resets-more-info", "passwordResets", "moreInfo", "https://wiki.jfa-go.com/docs/pwr/", "wiki.jfa-go.com");
-replaceLink("ombi-stability-warning", "ombi", "stabilityWarning", "https://wiki.jfa-go.com/docs/ombi/", "wiki.jfa-go.com");
+replaceLink(
+    "password_resets-more-info",
+    "passwordResets",
+    "moreInfo",
+    "https://wiki.jfa-go.com/docs/pwr/",
+    "wiki.jfa-go.com",
+);
+replaceLink(
+    "ombi-stability-warning",
+    "ombi",
+    "stabilityWarning",
+    "https://wiki.jfa-go.com/docs/ombi/",
+    "wiki.jfa-go.com",
+);
 
 const settings = {
-    "jellyfin": {
-        "type": new Select(get("jellyfin-type")),
-        "server": new Input(get("jellyfin-server")),
-        "public_server": new Input(get("jellyfin-public_server")),
-        "username": new Input(get("jellyfin-username")),
-        "password": new Input(get("jellyfin-password")),
-        "substitute_jellyfin_strings": new Input(get("jellyfin-substitute_jellyfin_strings"))
+    jellyfin: {
+        type: new Select(get("jellyfin-type")),
+        server: new Input(get("jellyfin-server")),
+        public_server: new Input(get("jellyfin-public_server")),
+        username: new Input(get("jellyfin-username")),
+        password: new Input(get("jellyfin-password")),
+        substitute_jellyfin_strings: new Input(get("jellyfin-substitute_jellyfin_strings")),
     },
-    "updates": {
-        "enabled": new Checkbox(get("updates-enabled"), "", false, "updates", "enabled"),
-        "channel": new Select(get("updates-channel"), "enabled", true, "updates")
+    updates: {
+        enabled: new Checkbox(get("updates-enabled"), "", false, "updates", "enabled"),
+        channel: new Select(get("updates-channel"), "enabled", true, "updates"),
     },
-    "ui": {
-        "host": new Input(get("ui-host")),
-        "port": new Input(get("ui-port")),
-        "url_base": new Input(get("ui-url_base")),
-        "jfa_url": new Input(get("ui-jfa_url")),
-        "theme": new Select(get("ui-theme")),
+    ui: {
+        host: new Input(get("ui-host")),
+        port: new Input(get("ui-port")),
+        url_base: new Input(get("ui-url_base")),
+        jfa_url: new Input(get("ui-jfa_url")),
+        theme: new Select(get("ui-theme")),
         "language-form": new LangSelect("form", get("ui-language-form")),
         "language-admin": new LangSelect("admin", get("ui-language-admin")),
-        "jellyfin_login": new BoolRadios("ui-jellyfin_login", "", false, "ui", "jellyfin_login"),
-        "admin_only": new Checkbox(get("ui-admin_only"), "jellyfin_login", true, "ui"),
-        "allow_all": new Checkbox(get("ui-allow_all"), "jellyfin_login", true, "ui"),
-        "username": new Input(get("ui-username"), "", "", "jellyfin_login", false, "ui"),
-        "password": new Input(get("ui-password"), "", "", "jellyfin_login", false, "ui"),
-        "email": new Input(get("ui-email"), "", "", "jellyfin_login", false, "ui"),
-        "contact_message": new Input(get("ui-contact_message"), window.messages["ui"]["contact_message"]),
-        "help_message": new Input(get("ui-help_message"), window.messages["ui"]["help_message"]),
-        "success_message": new Input(get("ui-success_message"), window.messages["ui"]["success_message"])
+        jellyfin_login: new BoolRadios("ui-jellyfin_login", "", false, "ui", "jellyfin_login"),
+        admin_only: new Checkbox(get("ui-admin_only"), "jellyfin_login", true, "ui"),
+        allow_all: new Checkbox(get("ui-allow_all"), "jellyfin_login", true, "ui"),
+        username: new Input(get("ui-username"), "", "", "jellyfin_login", false, "ui"),
+        password: new Input(get("ui-password"), "", "", "jellyfin_login", false, "ui"),
+        email: new Input(get("ui-email"), "", "", "jellyfin_login", false, "ui"),
+        contact_message: new Input(get("ui-contact_message"), window.messages["ui"]["contact_message"]),
+        help_message: new Input(get("ui-help_message"), window.messages["ui"]["help_message"]),
+        success_message: new Input(get("ui-success_message"), window.messages["ui"]["success_message"]),
     },
-    "password_validation": {
-        "enabled": new Checkbox(get("password_validation-enabled"), "", false, "password_validation", "enabled"),
-        "min_length": new Input(get("password_validation-min_length"), "", 8, "enabled", true, "password_validation"),
-        "upper": new Input(get("password_validation-upper"), "", 1, "enabled", true, "password_validation"),
-        "lower": new Input(get("password_validation-lower"), "", 0, "enabled", true, "password_validation"),
-        "number": new Input(get("password_validation-number"), "", 1, "enabled", true, "password_validation"),
-        "special": new Input(get("password_validation-special"), "", 0, "enabled", true, "password_validation")
+    password_validation: {
+        enabled: new Checkbox(get("password_validation-enabled"), "", false, "password_validation", "enabled"),
+        min_length: new Input(get("password_validation-min_length"), "", 8, "enabled", true, "password_validation"),
+        upper: new Input(get("password_validation-upper"), "", 1, "enabled", true, "password_validation"),
+        lower: new Input(get("password_validation-lower"), "", 0, "enabled", true, "password_validation"),
+        number: new Input(get("password_validation-number"), "", 1, "enabled", true, "password_validation"),
+        special: new Input(get("password_validation-special"), "", 0, "enabled", true, "password_validation"),
     },
-    "messages": {
-        "enabled": new Checkbox(get("messages-enabled"), "", false, "messages", "enabled"),
-        "use_24h": new BoolRadios("email-24h", "enabled", true, "messages"),
-        "date_format": new Input(get("email-date_format"), "", "%d/%m/%y", "enabled", true, "messages"),
-        "message": new Input(get("email-message"), window.messages["messages"]["message"], "", "enabled", true, "messages")
+    messages: {
+        enabled: new Checkbox(get("messages-enabled"), "", false, "messages", "enabled"),
+        use_24h: new BoolRadios("email-24h", "enabled", true, "messages"),
+        date_format: new Input(get("email-date_format"), "", "%d/%m/%y", "enabled", true, "messages"),
+        message: new Input(
+            get("email-message"),
+            window.messages["messages"]["message"],
+            "",
+            "enabled",
+            true,
+            "messages",
+        ),
     },
-    "email": {
-        "language": new LangSelect("email", get("email-language")),
-        "no_username": new Checkbox(get("email-no_username"), "method", true, "email"),
-        "method": new Select(get("email-method"), "", false, "email", "method"),
-        "address": new Input(get("email-address"), "jellyfin@jellyf.in", "", "method", true, "email"),
-        "from": new Input(get("email-from"), "", "Jellyfin", "method", true, "email")
+    email: {
+        language: new LangSelect("email", get("email-language")),
+        no_username: new Checkbox(get("email-no_username"), "method", true, "email"),
+        method: new Select(get("email-method"), "", false, "email", "method"),
+        address: new Input(get("email-address"), "jellyfin@jellyf.in", "", "method", true, "email"),
+        from: new Input(get("email-from"), "", "Jellyfin", "method", true, "email"),
     },
-    "password_resets": {
-        "enabled": new Checkbox(get("password_resets-enabled"), "", false, "password_resets", "enabled"),
-        "watch_directory": new Input(get("password_resets-watch_directory"), "", "", "enabled", true, "password_resets"),
-        "subject": new Input(get("password_resets-subject"), "", "", "enabled", true, "password_resets"),
-        "link_reset": new Checkbox(get("password_resets-link_reset"), "enabled", true, "password_resets", "link_reset"),
-        "language": new LangSelect("pwr", get("password_resets-language"), "link_reset", true, "password_resets", "language"),
-        "set_password": new Checkbox(get("password_resets-set_password"), "link_reset", true, "password_resets", "set_password")
+    password_resets: {
+        enabled: new Checkbox(get("password_resets-enabled"), "", false, "password_resets", "enabled"),
+        watch_directory: new Input(get("password_resets-watch_directory"), "", "", "enabled", true, "password_resets"),
+        subject: new Input(get("password_resets-subject"), "", "", "enabled", true, "password_resets"),
+        link_reset: new Checkbox(get("password_resets-link_reset"), "enabled", true, "password_resets", "link_reset"),
+        language: new LangSelect(
+            "pwr",
+            get("password_resets-language"),
+            "link_reset",
+            true,
+            "password_resets",
+            "language",
+        ),
+        set_password: new Checkbox(
+            get("password_resets-set_password"),
+            "link_reset",
+            true,
+            "password_resets",
+            "set_password",
+        ),
     },
-    "notifications": {
-        "enabled": new Checkbox(get("notifications-enabled"))
+    notifications: {
+        enabled: new Checkbox(get("notifications-enabled")),
     },
-    "user_page": {
-        "enabled": new Checkbox(get("userpage-enabled"))
+    user_page: {
+        enabled: new Checkbox(get("userpage-enabled")),
     },
-    "welcome_email": {
-        "enabled": new Checkbox(get("welcome_email-enabled"), "", false, "welcome_email", "enabled"),
-        "subject": new Input(get("welcome_email-subject"), "", "", "enabled", true, "welcome_email")
+    welcome_email: {
+        enabled: new Checkbox(get("welcome_email-enabled"), "", false, "welcome_email", "enabled"),
+        subject: new Input(get("welcome_email-subject"), "", "", "enabled", true, "welcome_email"),
     },
-    "invite_emails": {
-        "enabled": new Checkbox(get("invite_emails-enabled"), "", false, "invite_emails", "enabled"),
-        "subject": new Input(get("invite_emails-subject"), "", "", "enabled", true, "invite_emails"),
+    invite_emails: {
+        enabled: new Checkbox(get("invite_emails-enabled"), "", false, "invite_emails", "enabled"),
+        subject: new Input(get("invite_emails-subject"), "", "", "enabled", true, "invite_emails"),
     },
-    "mailgun": {
-        "api_url": new Input(get("mailgun-api_url")),
-        "api_key": new Input(get("mailgun-api_key"))
+    mailgun: {
+        api_url: new Input(get("mailgun-api_url")),
+        api_key: new Input(get("mailgun-api_key")),
     },
-    "smtp": {
-        "username": new Input(get("smtp-username")),
-        "encryption": new Select(get("smtp-encryption")),
-        "server": new Input(get("smtp-server")),
-        "port": new Input(get("smtp-port")),
-        "password": new Input(get("smtp-password"))
+    smtp: {
+        username: new Input(get("smtp-username")),
+        encryption: new Select(get("smtp-encryption")),
+        server: new Input(get("smtp-server")),
+        port: new Input(get("smtp-port")),
+        password: new Input(get("smtp-password")),
     },
-    "ombi": {
-        "enabled": new Checkbox(get("ombi-enabled"), "", false, "ombi", "enabled"),
-        "server": new Input(get("ombi-server"), "", "", "enabled", true, "ombi"),
-        "api_key": new Input(get("ombi-api_key"), "", "", "enabled", true, "ombi")
+    ombi: {
+        enabled: new Checkbox(get("ombi-enabled"), "", false, "ombi", "enabled"),
+        server: new Input(get("ombi-server"), "", "", "enabled", true, "ombi"),
+        api_key: new Input(get("ombi-api_key"), "", "", "enabled", true, "ombi"),
     },
-    "jellyseerr": {
-        "enabled": new Checkbox(get("jellyseerr-enabled"), "", false, "jellyseerr", "enabled"),
-        "server": new Input(get("jellyseerr-server"), "", "", "enabled", true, "jellyseerr"),
-        "api_key": new Input(get("jellyseerr-api_key"), "", "", "enabled", true, "jellyseerr"),
-        "import_existing": new Checkbox(get("jellyseerr-import_existing"), "enabled", true, "jellyseerr", "import_existing")
+    jellyseerr: {
+        enabled: new Checkbox(get("jellyseerr-enabled"), "", false, "jellyseerr", "enabled"),
+        server: new Input(get("jellyseerr-server"), "", "", "enabled", true, "jellyseerr"),
+        api_key: new Input(get("jellyseerr-api_key"), "", "", "enabled", true, "jellyseerr"),
+        import_existing: new Checkbox(
+            get("jellyseerr-import_existing"),
+            "enabled",
+            true,
+            "jellyseerr",
+            "import_existing",
+        ),
     },
-    "advanced": {
-        "tls": new Checkbox(get("advanced-tls"), "", false, "advanced", "tls"),
-        "tls_port": new Input(get("advanced-tls_port"), "", "", "tls", true, "advanced"),
-        "tls_cert": new Input(get("advanced-tls_cert"), "", "", "tls", true, "advanced"),
-        "tls_key": new Input(get("advanced-tls_key"), "", "", "tls", true, "advanced"),
-        "proxy": new Checkbox(get("advanced-proxy"), "", false, "advanced", "proxy"),
-        "proxy_protocol": new Select(get("advanced-proxy_protocol"), "proxy", true, "advanced"),
-        "proxy_address": new Input(get("advanced-proxy_address"), "", "", "proxy", true, "advanced"),
-        "proxy_user": new Input(get("advanced-proxy_user"), "", "", "proxy", true, "advanced"),
-        "proxy_password": new Input(get("advanced-proxy_password"), "", "", "proxy", true, "advanced")
-    }
+    advanced: {
+        tls: new Checkbox(get("advanced-tls"), "", false, "advanced", "tls"),
+        tls_port: new Input(get("advanced-tls_port"), "", "", "tls", true, "advanced"),
+        tls_cert: new Input(get("advanced-tls_cert"), "", "", "tls", true, "advanced"),
+        tls_key: new Input(get("advanced-tls_key"), "", "", "tls", true, "advanced"),
+        proxy: new Checkbox(get("advanced-proxy"), "", false, "advanced", "proxy"),
+        proxy_protocol: new Select(get("advanced-proxy_protocol"), "proxy", true, "advanced"),
+        proxy_address: new Input(get("advanced-proxy_address"), "", "", "proxy", true, "advanced"),
+        proxy_user: new Input(get("advanced-proxy_user"), "", "", "proxy", true, "advanced"),
+        proxy_password: new Input(get("advanced-proxy_password"), "", "", "proxy", true, "advanced"),
+    },
 };
 const checkTheme = () => {
     if (settings["ui"]["theme"].value.includes("Dark")) {
@@ -366,7 +454,7 @@ settings["ui"]["theme"].onchange = checkTheme;
 checkTheme();
 
 const fixFullURL = (v: string): string => {
-    if (!(v.startsWith("http://")) && !(v.startsWith("https://"))) {
+    if (!v.startsWith("http://") && !v.startsWith("https://")) {
         v = "http://" + v;
     }
     return v;
@@ -374,9 +462,11 @@ const fixFullURL = (v: string): string => {
 
 const formatSubpath = (v: string): string => {
     if (v == "/") return "";
-    if (v.charAt(-1) == "/") { v = v.slice(0, -1); }
+    if (v.charAt(-1) == "/") {
+        v = v.slice(0, -1);
+    }
     return v;
-}
+};
 
 const constructNewURLs = (): string[] => {
     let local = settings["ui"]["host"].value + ":" + settings["ui"]["port"].value;
@@ -390,7 +480,7 @@ const constructNewURLs = (): string[] => {
     }
     remote = fixFullURL(remote);
     return [local, remote];
-}
+};
 
 const restartButton = document.getElementById("restart") as HTMLSpanElement;
 const serialize = () => {
@@ -405,54 +495,63 @@ const serialize = () => {
         }
     }
     config["restart-program"] = true;
-    _post("/config", config, (req: XMLHttpRequest) => {
-        if (req.readyState == 4) {
-            toggleLoader(restartButton);
-            if (req.status == 500) {
-                if (req.response == null) {
-                    const old = restartButton.textContent;
-                    restartButton.classList.add("~critical");
-                    restartButton.classList.remove("~urge");
-                    restartButton.textContent = window.lang.strings("errorUnknown");
-                    setTimeout(() => {
-                        restartButton.classList.add("~urge");
-                        restartButton.classList.remove("~critical");
-                        restartButton.textContent = old;
-                    }, 5000);
-                    return;
+    _post(
+        "/config",
+        config,
+        (req: XMLHttpRequest) => {
+            if (req.readyState == 4) {
+                toggleLoader(restartButton);
+                if (req.status == 500) {
+                    if (req.response == null) {
+                        const old = restartButton.textContent;
+                        restartButton.classList.add("~critical");
+                        restartButton.classList.remove("~urge");
+                        restartButton.textContent = window.lang.strings("errorUnknown");
+                        setTimeout(() => {
+                            restartButton.classList.add("~urge");
+                            restartButton.classList.remove("~critical");
+                            restartButton.textContent = old;
+                        }, 5000);
+                        return;
+                    }
+                    if (req.response["error"] as string) {
+                        const old = restartButton.textContent;
+                        restartButton.classList.add("~critical");
+                        restartButton.classList.remove("~urge");
+                        restartButton.textContent = req.response["error"];
+                        setTimeout(() => {
+                            restartButton.classList.add("~urge");
+                            restartButton.classList.remove("~critical");
+                            restartButton.textContent = old;
+                        }, 5000);
+                        return;
+                    }
                 }
-                if (req.response["error"] as string) {
-                    const old = restartButton.textContent;
-                    restartButton.classList.add("~critical");
-                    restartButton.classList.remove("~urge");
-                    restartButton.textContent = req.response["error"];
-                    setTimeout(() => {
-                        restartButton.classList.add("~urge");
-                        restartButton.classList.remove("~critical");
-                        restartButton.textContent = old;
-                    }, 5000);
-                    return;
-                }
+                restartButton.parentElement.querySelector("span.back").classList.add("unfocused");
+                restartButton.classList.add("unfocused");
+                const refreshURLs = constructNewURLs();
+                const refreshButtons = [
+                    document.getElementById("refresh-internal") as HTMLAnchorElement,
+                    document.getElementById("refresh-external") as HTMLAnchorElement,
+                ];
+                ["internal", "external"].forEach((urltype, i) => {
+                    const button = refreshButtons[i];
+                    button.classList.remove("unfocused");
+                    button.href = refreshURLs[i];
+                    button.innerHTML = `<span>${urltype.charAt(0).toUpperCase() + urltype.slice(1)}:</span><i class="italic underline">${button.href}</i>`;
+                    // skip external if it isn't set
+                    if (refreshURLs.length == 1) return;
+                });
             }
-            restartButton.parentElement.querySelector("span.back").classList.add("unfocused");
-            restartButton.classList.add("unfocused");
-            const refreshURLs = constructNewURLs();
-            const refreshButtons = [document.getElementById("refresh-internal") as HTMLAnchorElement, document.getElementById("refresh-external") as HTMLAnchorElement];
-            ["internal", "external"].forEach((urltype, i) => {
-                const button = refreshButtons[i];
-                button.classList.remove("unfocused");
-                button.href = refreshURLs[i];
-                button.innerHTML = `<span>${urltype.charAt(0).toUpperCase() + urltype.slice(1)}:</span><i class="italic underline">${button.href}</i>`;
-                // skip external if it isn't set
-                if (refreshURLs.length == 1) return;
-            });
-        }
-    }, true, (req: XMLHttpRequest) => {
-        if (req.status == 0) {
-            window.notifications.customError("connectionError", window.lang.strings("errorConnectionRefused"));
-        }
-    });
-}
+        },
+        true,
+        (req: XMLHttpRequest) => {
+            if (req.status == 0) {
+                window.notifications.customError("connectionError", window.lang.strings("errorConnectionRefused"));
+            }
+        },
+    );
+};
 restartButton.onclick = serialize;
 
 const relatedToEmail = Array.from(document.getElementsByClassName("related-to-email"));
@@ -503,7 +602,7 @@ const getParentCard = (el: HTMLElement): HTMLDivElement => {
 
 const jellyfinLoginAccessChange = () => {
     const adminOnly = settings["ui"]["admin_only"].value == "true";
-    const allowAll  = settings["ui"]["allow_all"].value == "true";
+    const allowAll = settings["ui"]["allow_all"].value == "true";
     const adminOnlyEl = document.getElementById("ui-admin_only") as HTMLInputElement;
     const allowAllEl = document.getElementById("ui-allow_all") as HTMLInputElement;
     const nextButton = getParentCard(adminOnlyEl).querySelector("span.next") as HTMLSpanElement;
@@ -515,10 +614,10 @@ const jellyfinLoginAccessChange = () => {
         adminOnlyEl.disabled = true;
         allowAllEl.disabled = false;
         nextButton.removeAttribute("disabled");
-    } else { 
+    } else {
         adminOnlyEl.disabled = false;
         allowAllEl.disabled = false;
-        nextButton.setAttribute("disabled", "true")
+        nextButton.setAttribute("disabled", "true");
     }
 };
 
@@ -534,7 +633,7 @@ const embyHidePWR = () => {
     } else if (val == "emby") {
         pwr.classList.add("hidden");
     }
-}
+};
 settings["jellyfin"]["type"].onchange = embyHidePWR;
 embyHidePWR();
 
@@ -552,7 +651,9 @@ let pages = new PageManager({
     defaultTitle: "Setup - jfa-go",
 });
 
-const cards = Array.from(document.getElementsByClassName("page-container")[0].querySelectorAll(".card.sectioned")) as Array<HTMLDivElement>;
+const cards = Array.from(
+    document.getElementsByClassName("page-container")[0].querySelectorAll(".card.sectioned"),
+) as Array<HTMLDivElement>;
 (window as any).cards = cards;
 
 (() => {
@@ -582,10 +683,11 @@ const cards = Array.from(document.getElementsByClassName("page-container")[0].qu
             },
         });
         if (back) back.addEventListener("click", () => pages.prev(title));
-        if (next) next.addEventListener("click", () => {
-            if (next.hasAttribute("disabled")) return;
-            pages.next(title);
-        });
+        if (next)
+            next.addEventListener("click", () => {
+                if (next.hasAttribute("disabled")) return;
+                pages.next(title);
+            });
     }
 })();
 
@@ -596,51 +698,57 @@ const cards = Array.from(document.getElementsByClassName("page-container")[0].qu
     button.onclick = () => {
         toggleLoader(button);
         let send = {
-            "type": settings["jellyfin"]["type"].value,
-            "server": settings["jellyfin"]["server"].value,
-            "username": settings["jellyfin"]["username"].value,
-            "password": settings["jellyfin"]["password"].value,
-            "proxy": settings["advanced"]["proxy"].value == "true",
-            "proxy_protocol": settings["advanced"]["proxy_protocol"].value,
-            "proxy_address": settings["advanced"]["proxy_address"].value,
-            "proxy_user": settings["advanced"]["proxy_user"].value,
-            "proxy_password": settings["advanced"]["proxy_password"].value
+            type: settings["jellyfin"]["type"].value,
+            server: settings["jellyfin"]["server"].value,
+            username: settings["jellyfin"]["username"].value,
+            password: settings["jellyfin"]["password"].value,
+            proxy: settings["advanced"]["proxy"].value == "true",
+            proxy_protocol: settings["advanced"]["proxy_protocol"].value,
+            proxy_address: settings["advanced"]["proxy_address"].value,
+            proxy_user: settings["advanced"]["proxy_user"].value,
+            proxy_password: settings["advanced"]["proxy_password"].value,
         };
-        _post("/jellyfin/test", send, (req: XMLHttpRequest) => {
-            if (req.readyState == 4) {
-                toggleLoader(button);
-                if (req.status != 200) {
-                    nextButton.setAttribute("disabled", "");
-                    button.classList.add("~critical");
+        _post(
+            "/jellyfin/test",
+            send,
+            (req: XMLHttpRequest) => {
+                if (req.readyState == 4) {
+                    toggleLoader(button);
+                    if (req.status != 200) {
+                        nextButton.setAttribute("disabled", "");
+                        button.classList.add("~critical");
+                        button.classList.remove("~urge");
+                        setTimeout(() => {
+                            button.textContent = ogText;
+                            button.classList.add("~urge");
+                            button.classList.remove("~critical");
+                        }, 5000);
+                        const errorMsg = req.response["error"] as string;
+                        if (!errorMsg) {
+                            button.textContent = window.lang.strings("error");
+                        } else {
+                            button.textContent = window.lang.strings(errorMsg);
+                        }
+                        return;
+                    }
+                    nextButton.removeAttribute("disabled");
+                    button.textContent = window.lang.strings("success");
+                    button.classList.add("~positive");
                     button.classList.remove("~urge");
                     setTimeout(() => {
                         button.textContent = ogText;
                         button.classList.add("~urge");
-                        button.classList.remove("~critical");
+                        button.classList.remove("~positive");
                     }, 5000);
-                    const errorMsg = req.response["error"] as string;
-                    if (!errorMsg) {
-                        button.textContent = window.lang.strings("error");
-                    } else {
-                        button.textContent = window.lang.strings(errorMsg);
-                    }
-                    return;
                 }
-                nextButton.removeAttribute("disabled");
-                button.textContent = window.lang.strings("success");
-                button.classList.add("~positive");
-                button.classList.remove("~urge");
-                setTimeout(() => {
-                    button.textContent = ogText;
-                    button.classList.add("~urge");
-                    button.classList.remove("~positive");
-                }, 5000);
-            }
-        }, true, (req: XMLHttpRequest) => {
-            if (req.status == 0) {
-                window.notifications.customError("connectionError", window.lang.strings("errorConnectionRefused"));
-            }
-        });
+            },
+            true,
+            (req: XMLHttpRequest) => {
+                if (req.status == 0) {
+                    window.notifications.customError("connectionError", window.lang.strings("errorConnectionRefused"));
+                }
+            },
+        );
     };
 })();
 

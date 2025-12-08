@@ -6,7 +6,7 @@ declare var window: GlobalWindow;
 export enum QueryOperator {
     Greater = ">",
     Lower = "<",
-    Equal = "="
+    Equal = "=",
 }
 
 export function QueryOperatorToDateText(op: QueryOperator): string {
@@ -29,7 +29,7 @@ export interface QueryType {
     date: boolean;
     dependsOnElement?: string; // Format for querySelector
     show?: boolean;
-    localOnly?: boolean // Indicates can't be performed server-side.
+    localOnly?: boolean; // Indicates can't be performed server-side.
 }
 
 export interface SearchConfiguration {
@@ -62,7 +62,7 @@ export interface QueryDTO {
     field: string;
     operator: QueryOperator;
     value: boolean | string | DateAttempt;
-};
+}
 
 export abstract class Query {
     protected _subject: QueryType;
@@ -83,8 +83,10 @@ export abstract class Query {
         this._card.addEventListener("click", v);
     }
 
-    asElement(): HTMLElement { return this._card; }
-    
+    asElement(): HTMLElement {
+        return this._card;
+    }
+
     public abstract compare(subjectValue: any): boolean;
 
     asDTO(): QueryDTO | null {
@@ -95,7 +97,9 @@ export abstract class Query {
         return out;
     }
 
-    get subject(): QueryType { return this._subject; }
+    get subject(): QueryType {
+        return this._subject;
+    }
 
     getValueFromItem(item: SearchableItem): any {
         return Object.getOwnPropertyDescriptor(Object.getPrototypeOf(item), this.subject.getter).get.call(item);
@@ -105,7 +109,9 @@ export abstract class Query {
         return this.compare(this.getValueFromItem(item));
     }
 
-    get localOnly(): boolean { return this._subject.localOnly ? true : false; }
+    get localOnly(): boolean {
+        return this._subject.localOnly ? true : false;
+    }
 }
 
 export class BoolQuery extends Query {
@@ -122,7 +128,7 @@ export class BoolQuery extends Query {
         }
         this._card.innerHTML = `
         <span class="font-bold">${subject.name}</span>
-        <i class="text-2xl ri-${this._value? "checkbox" : "close"}-circle-fill"></i>
+        <i class="text-2xl ri-${this._value ? "checkbox" : "close"}-circle-fill"></i>
         `;
     }
 
@@ -136,14 +142,16 @@ export class BoolQuery extends Query {
             isBool = true;
             boolState = false;
         }
-        return [boolState, isBool]
+        return [boolState, isBool];
     }
 
-    get value(): boolean { return this._value; }
+    get value(): boolean {
+        return this._value;
+    }
 
     // Ripped from old code. Why it's like this, I don't know
     public compare(subjectBool: boolean): boolean {
-        return ((subjectBool && this._value) || (!subjectBool && !this._value))
+        return (subjectBool && this._value) || (!subjectBool && !this._value);
     }
 
     asDTO(): QueryDTO | null {
@@ -167,12 +175,14 @@ export class StringQuery extends Query {
         `;
     }
 
-    get value(): string { return this._value; }
+    get value(): string {
+        return this._value;
+    }
 
     public compare(subjectString: string): boolean {
         return subjectString.toLowerCase().includes(this._value);
     }
-    
+
     asDTO(): QueryDTO | null {
         let out = super.asDTO();
         if (out === null) return null;
@@ -211,7 +221,7 @@ export class DateQuery extends Query {
         this._card.classList.add("button", "~neutral", "@low", "center", "flex", "flex-row", "gap-2");
         let dateText = QueryOperatorToDateText(operator);
         this._card.innerHTML = `
-        <span class="font-bold">${subject.name}:</span> ${dateText != "" ? dateText+" " : ""}${value.text}
+        <span class="font-bold">${subject.name}:</span> ${dateText != "" ? dateText + " " : ""}${value.text}
         `;
     }
 
@@ -225,11 +235,13 @@ export class DateQuery extends Query {
         let out = parseDateString(valueString);
         let isValid = true;
         if (out.invalid) isValid = false;
-        
+
         return [out, op, isValid];
     }
 
-    get value(): ParsedDate { return this._value; }
+    get value(): ParsedDate {
+        return this._value;
+    }
 
     public compare(subjectDate: Date): boolean {
         // We want to compare only the fields given in this._value,
@@ -237,10 +249,7 @@ export class DateQuery extends Query {
         const temp = new Date(subjectDate.valueOf());
         for (let [field] of dateGetters) {
             if (field in this._value.attempt) {
-                dateSetters.get(field).call(
-                    temp,
-                    dateGetters.get(field).call(this._value.date)
-                );
+                dateSetters.get(field).call(temp, dateGetters.get(field).call(this._value.date));
             }
         }
 
@@ -251,7 +260,7 @@ export class DateQuery extends Query {
         }
         return subjectDate > temp;
     }
-    
+
     asDTO(): QueryDTO | null {
         let out = super.asDTO();
         if (out === null) return null;
@@ -272,7 +281,7 @@ export type SearchableItems = { [id: string]: SearchableItem };
 export class Search {
     private _c: SearchConfiguration;
     private _sortField: string = "";
-    private _ascending: boolean = true; 
+    private _ascending: boolean = true;
     private _ordering: string[] = [];
     private _items: SearchableItems = {};
     // Search queries (filters)
@@ -281,7 +290,9 @@ export class Search {
     private _searchTerms: string[] = [];
     inSearch: boolean = false;
     private _inServerSearch: boolean = false;
-    get inServerSearch(): boolean { return this._inServerSearch; }
+    get inServerSearch(): boolean {
+        return this._inServerSearch;
+    }
     set inServerSearch(v: boolean) {
         const previous = this._inServerSearch;
         this._inServerSearch = v;
@@ -316,14 +327,14 @@ export class Search {
                 }
             }
 
-            if (query[i] == " " || i == query.length-1) {
+            if (query[i] == " " || i == query.length - 1) {
                 if (lastQuote != -1) {
                     continue;
                 } else {
-                    let end = i+1;
+                    let end = i + 1;
                     if (query[i] == " ") {
                         end = i;
-                        while (i+1 < query.length && query[i+1] == " ") {
+                        while (i + 1 < query.length && query[i + 1] == " ") {
                             i += 1;
                         }
                     }
@@ -333,7 +344,7 @@ export class Search {
             }
         }
         return words;
-    }
+    };
 
     parseTokens = (tokens: string[]): [string[], Query[]] => {
         let queries: Query[] = [];
@@ -346,8 +357,8 @@ export class Search {
                 continue;
             }
             // 2. A filter query of some sort.
-            const split = [word.substring(0, word.indexOf(":")), word.substring(word.indexOf(":")+1)];
-            
+            const split = [word.substring(0, word.indexOf(":")), word.substring(word.indexOf(":") + 1)];
+
             if (!(split[0] in this._c.queries)) continue;
 
             const queryFormat = this._c.queries[split[0]];
@@ -360,9 +371,12 @@ export class Search {
                     q = new BoolQuery(queryFormat, boolState);
                     q.onclick = () => {
                         for (let quote of [`"`, `'`, ``]) {
-                            this._c.search.value = this._c.search.value.replace(split[0] + ":" + quote + split[1] + quote, "");
+                            this._c.search.value = this._c.search.value.replace(
+                                split[0] + ":" + quote + split[1] + quote,
+                                "",
+                            );
                         }
-                        this._c.search.oninput((null as Event));
+                        this._c.search.oninput(null as Event);
                     };
                     queries.push(q);
                     continue;
@@ -376,8 +390,8 @@ export class Search {
                         let regex = new RegExp(split[0] + ":" + quote + split[1] + quote, "ig");
                         this._c.search.value = this._c.search.value.replace(regex, "");
                     }
-                    this._c.search.oninput((null as Event));
-                }
+                    this._c.search.oninput(null as Event);
+                };
                 queries.push(q);
                 continue;
             }
@@ -385,23 +399,23 @@ export class Search {
                 let [parsedDate, op, isDate] = DateQuery.paramsFromString(split[1]);
                 if (!isDate) continue;
                 q = new DateQuery(queryFormat, op, parsedDate);
-                
+
                 q.onclick = () => {
                     for (let quote of [`"`, `'`, ``]) {
                         let regex = new RegExp(split[0] + ":" + quote + split[1] + quote, "ig");
                         this._c.search.value = this._c.search.value.replace(regex, "");
                     }
-                    
-                    this._c.search.oninput((null as Event));
-                }
+
+                    this._c.search.oninput(null as Event);
+                };
                 queries.push(q);
                 continue;
             }
             // if (q != null) queries.push(q);
         }
         return [searchTerms, queries];
-    }
-    
+    };
+
     // Returns a list of identifiers (used as keys in items, values in ordering).
     searchParsed = (searchTerms: string[], queries: Query[]): string[] => {
         let result: string[] = [...this._ordering];
@@ -432,7 +446,7 @@ export class Search {
         for (let q of queries) {
             this._c.filterArea.appendChild(q.asElement());
             // Skip if this query has already been performed by the server.
-            if (this.inServerSearch && !(q.localOnly)) continue;
+            if (this.inServerSearch && !q.localOnly) continue;
 
             let cachedResult = [...result];
             if (q.type == "bool") {
@@ -463,7 +477,7 @@ export class Search {
                         result.splice(result.indexOf(id), 1);
                         continue;
                     }
-                    let value = new Date(unixValue*1000);
+                    let value = new Date(unixValue * 1000);
 
                     if (!q.compare(value)) {
                         result.splice(result.indexOf(id), 1);
@@ -472,17 +486,17 @@ export class Search {
             }
         }
         return result;
-    }
+    };
 
     // Returns a list of identifiers (used as keys in items, values in ordering).
     search = (query: string): string[] => {
         let timer = this.timeSearches ? performance.now() : null;
         this._c.filterArea.textContent = "";
-        
+
         const [searchTerms, queries] = this.parseTokens(Search.tokenizeSearch(query));
 
         let result = this.searchParsed(searchTerms, queries);
-        
+
         this._queries = queries;
         this._searchTerms = searchTerms;
 
@@ -491,44 +505,57 @@ export class Search {
             console.debug(`Search took ${totalTime}ms`);
         }
         return result;
-    }
+    };
 
     // postServerSearch performs local-only queries after a server search if necessary.
     postServerSearch = () => {
         this.searchParsed(this._searchTerms, this._queries);
     };
-    
+
     showHideSearchOptionsHeader = () => {
         let sortingBy = false;
-        if (this._c.sortingByButton) sortingBy = !(this._c.sortingByButton.classList.contains("hidden"));
+        if (this._c.sortingByButton) sortingBy = !this._c.sortingByButton.classList.contains("hidden");
         const hasFilters = this._c.filterArea.textContent != "";
         if (sortingBy || hasFilters) {
             this._c.searchOptionsHeader.classList.remove("hidden");
         } else {
             this._c.searchOptionsHeader.classList.add("hidden");
         }
-    }
+    };
 
     // -all- elements.
-    get items(): { [id: string]: SearchableItem } { return this._items; }
+    get items(): { [id: string]: SearchableItem } {
+        return this._items;
+    }
     // set items(v: { [id: string]: SearchableItem }) {
     //     this._items = v;
     // }
 
     // The order of -all- elements (even those hidden), by their identifier.
-    get ordering(): string[] { return this._ordering; }
+    get ordering(): string[] {
+        return this._ordering;
+    }
     // Specifically dis-allow setting ordering itself, so that setOrdering is used instead (for the field and ascending params).
     // set ordering(v: string[]) { this._ordering = v; }
     setOrdering = (v: string[], field: string, ascending: boolean) => {
         this._ordering = v;
         this._sortField = field;
         this._ascending = ascending;
+    };
+
+    get sortField(): string {
+        return this._sortField;
+    }
+    get ascending(): boolean {
+        return this._ascending;
     }
 
-    get sortField(): string { return this._sortField; }
-    get ascending(): boolean { return this._ascending; }
-
-    onSearchBoxChange = (newItems: boolean = false, appendedItems: boolean = false, loadAll: boolean = false, callback?: (resp: paginatedDTO) => void) => {
+    onSearchBoxChange = (
+        newItems: boolean = false,
+        appendedItems: boolean = false,
+        loadAll: boolean = false,
+        callback?: (resp: paginatedDTO) => void,
+    ) => {
         const query = this._c.search.value;
         if (!query) {
             this.inSearch = false;
@@ -554,7 +581,7 @@ export class Search {
         this.showHideSearchOptionsHeader();
         this.setNotFoundPanelVisibility(results.length == 0);
         if (this._c.notFoundCallback) this._c.notFoundCallback(results.length == 0);
-    }
+    };
 
     setNotFoundPanelVisibility = (visible: boolean) => {
         if (this._inServerSearch || !this.inSearch) {
@@ -567,14 +594,13 @@ export class Search {
         } else {
             this._c.notFoundPanel.classList.add("unfocused");
         }
-    }
+    };
 
     fillInFilter = (name: string, value: string, offset?: number) => {
         this._c.search.value = name + ":" + value + " " + this._c.search.value;
         this._c.search.focus();
         let newPos = name.length + 1 + value.length;
-        if (typeof offset !== 'undefined')
-            newPos += offset;
+        if (typeof offset !== "undefined") newPos += offset;
         this._c.search.setSelectionRange(newPos, newPos);
         this._c.search.oninput(null as any);
     };
@@ -592,7 +618,16 @@ export class Search {
             }
 
             const container = document.createElement("span") as HTMLSpanElement;
-            container.classList.add("button", "button-xl", "~neutral", "@low", "align-bottom", "flex", "flex-row", "gap-2");
+            container.classList.add(
+                "button",
+                "button-xl",
+                "~neutral",
+                "@low",
+                "align-bottom",
+                "flex",
+                "flex-row",
+                "gap-2",
+            );
             container.innerHTML = `
             <div class="flex flex-col">
                 <span>${query.name}</span>
@@ -624,7 +659,7 @@ export class Search {
 
                 // Position cursor between quotes
                 button.addEventListener("click", () => this.fillInFilter(queryName, `""`, -1));
-                
+
                 container.appendChild(button);
             }
             if (query.date) {
@@ -645,27 +680,26 @@ export class Search {
                 afterDate.classList.add("button", "~urge", "flex", "flex-row", "gap-2");
                 afterDate.innerHTML = `<i class="ri-calendar-check-line"></i>After Date`;
                 afterDate.addEventListener("click", () => this.fillInFilter(queryName, `">"`, -1));
-                
+
                 container.appendChild(onDate);
                 container.appendChild(beforeDate);
                 container.appendChild(afterDate);
             }
-            
+
             filterListContainer.appendChild(container);
         }
-        this._c.filterList.appendChild(filterListContainer)
-    }
+        this._c.filterList.appendChild(filterListContainer);
+    };
 
     onServerSearch = () => {
         const newServerSearch = !this.inServerSearch;
         this.inServerSearch = true;
         this.searchServer(newServerSearch);
-    }
+    };
 
     searchServer = (newServerSearch: boolean) => {
         this._c.searchServer(this.serverSearchParams(this._searchTerms, this._queries), newServerSearch);
-    }
-
+    };
 
     serverSearchParams = (searchTerms: string[], queries: Query[]): PaginatedReqDTO => {
         let req: ServerSearchReqDTO = {
@@ -674,18 +708,18 @@ export class Search {
             limit: -1,
             page: 0,
             sortByField: this.sortField,
-            ascending: this.ascending
+            ascending: this.ascending,
         };
         for (const q of queries) {
             const dto = q.asDTO();
             if (dto !== null) req.queries.push(dto);
         }
         return req;
-    }
+    };
 
     setServerSearchButtonsDisabled = (disabled: boolean) => {
-        this._serverSearchButtons.forEach((v: HTMLButtonElement) => v.disabled = disabled);
-    }
+        this._serverSearchButtons.forEach((v: HTMLButtonElement) => (v.disabled = disabled));
+    };
 
     constructor(c: SearchConfiguration) {
         this._c = c;
@@ -693,14 +727,16 @@ export class Search {
         this._c.search.oninput = () => {
             this.inServerSearch = false;
             this.onSearchBoxChange();
-        }
+        };
         this._c.search.addEventListener("keyup", (ev: KeyboardEvent) => {
             if (ev.key == "Enter") {
                 this.onServerSearch();
             }
         });
 
-        const clearSearchButtons = Array.from(document.querySelectorAll(this._c.clearSearchButtonSelector)) as Array<HTMLSpanElement>;
+        const clearSearchButtons = Array.from(
+            document.querySelectorAll(this._c.clearSearchButtonSelector),
+        ) as Array<HTMLSpanElement>;
         for (let b of clearSearchButtons) {
             b.addEventListener("click", () => {
                 this._c.search.value = "";
@@ -708,8 +744,10 @@ export class Search {
                 this.onSearchBoxChange();
             });
         }
-        
-        this._serverSearchButtons = Array.from(document.querySelectorAll(this._c.serverSearchButtonSelector)) as Array<HTMLSpanElement>;
+
+        this._serverSearchButtons = Array.from(
+            document.querySelectorAll(this._c.serverSearchButtonSelector),
+        ) as Array<HTMLSpanElement>;
         for (let b of this._serverSearchButtons) {
             b.addEventListener("click", () => {
                 this.onServerSearch();

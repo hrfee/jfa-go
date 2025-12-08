@@ -1,7 +1,17 @@
 import { ThemeManager } from "./modules/theme.js";
 import { lang, LangFile, loadLangSelector } from "./modules/lang.js";
 import { Modal } from "./modules/modal.js";
-import { _get, _post, _delete, notificationBox, whichAnimationEvent, toDateString, addLoader, removeLoader, toClipboard } from "./modules/common.js";
+import {
+    _get,
+    _post,
+    _delete,
+    notificationBox,
+    whichAnimationEvent,
+    toDateString,
+    addLoader,
+    removeLoader,
+    toClipboard,
+} from "./modules/common.js";
 import { Login } from "./modules/login.js";
 import { Discord, Telegram, Matrix, ServiceConfiguration, MatrixConfiguration } from "./modules/account-linking.js";
 import { Validator, ValidatorConf, ValidatorRespDTO } from "./modules/validator.js";
@@ -77,7 +87,7 @@ pages.setPage({
         pages.setPage({
             name: "reset",
             title: document.title,
-            url: basePath+"/password/reset",
+            url: basePath + "/password/reset",
             show: () => {
                 const usernameInput = document.getElementById("login-user") as HTMLInputElement;
                 const input = document.getElementById("pwr-address") as HTMLInputElement;
@@ -98,11 +108,11 @@ pages.setPage({
         const resetButton = document.getElementById("modal-login-pwr");
         resetButton.onclick = () => {
             pages.load("reset");
-        }
+        };
     }
 })();
 
-window.notifications = new notificationBox(document.getElementById('notification-box') as HTMLDivElement, 5);
+window.notifications = new notificationBox(document.getElementById("notification-box") as HTMLDivElement, 5);
 
 if (window.pwrEnabled && window.linkResetEnabled) {
     const submitButton = document.getElementById("pwr-submit");
@@ -113,7 +123,7 @@ if (window.pwrEnabled && window.linkResetEnabled) {
             if (req.readyState != 4) return;
             removeLoader(submitButton);
             if (req.status != 204) {
-                window.notifications.customError("unkownError", window.lang.notif("errorUnknown"));;
+                window.notifications.customError("unkownError", window.lang.notif("errorUnknown"));
                 window.modals.pwr.close();
                 return;
             }
@@ -168,9 +178,9 @@ interface ContactDTO {
 class ContactMethods {
     private _card: HTMLElement;
     private _content: HTMLElement;
-    private _buttons: { [name: string]: { element: HTMLElement, details: MyDetailsContactMethod } };
+    private _buttons: { [name: string]: { element: HTMLElement; details: MyDetailsContactMethod } };
 
-    constructor (card: HTMLElement) {
+    constructor(card: HTMLElement) {
         this._card = card;
         this._content = this._card.querySelector(".content");
         this._buttons = {};
@@ -179,9 +189,15 @@ class ContactMethods {
     clear = () => {
         this._content.textContent = "";
         this._buttons = {};
-    }
+    };
 
-    append = (name: string, details: MyDetailsContactMethod, icon: string, addEditFunc?: (add: boolean) => void, required?: boolean) => {
+    append = (
+        name: string,
+        details: MyDetailsContactMethod,
+        icon: string,
+        addEditFunc?: (add: boolean) => void,
+        required?: boolean,
+    ) => {
         const row = document.createElement("div");
         row.classList.add("flex", "flex-row", "justify-between", "gap-2", "flex-nowrap");
         let innerHTML = `
@@ -191,7 +207,7 @@ class ContactMethods {
                         ${icon}
                     </span>
                 </span>
-                <span class="font-bold text-ellipsis overflow-hidden">${(details.value == "") ? window.lang.strings("notSet") : details.value}</span>
+                <span class="font-bold text-ellipsis overflow-hidden">${details.value == "" ? window.lang.strings("notSet") : details.value}</span>
             </div>
             <div class="flex flex-col justify-center">
                 <div class="flex items-center flex-row gap-2">
@@ -224,12 +240,12 @@ class ContactMethods {
         `;
 
         row.innerHTML = innerHTML;
-        
+
         this._buttons[name] = {
             element: row,
-            details: details
+            details: details,
         };
-        
+
         const button = row.querySelector(".user-contact-enabled-disabled") as HTMLButtonElement;
         const checkbox = button.querySelector("input[type=checkbox]") as HTMLInputElement;
         const setButtonAppearance = () => {
@@ -260,13 +276,14 @@ class ContactMethods {
             const addEditButton = row.querySelector(".user-contact-edit") as HTMLButtonElement;
             addEditButton.onclick = () => addEditFunc(details.value == "");
         }
-        
+
         if (!required && details.value != "") {
             const deleteButton = row.querySelector(".user-contact-delete") as HTMLButtonElement;
-            deleteButton.onclick = () => _delete("/my/" + name, null, (req: XMLHttpRequest) => {
-                if (req.readyState != 4) return;
-                document.dispatchEvent(new CustomEvent("details-reload"));
-            });
+            deleteButton.onclick = () =>
+                _delete("/my/" + name, null, (req: XMLHttpRequest) => {
+                    if (req.readyState != 4) return;
+                    document.dispatchEvent(new CustomEvent("details-reload"));
+                });
         }
 
         this._content.appendChild(row);
@@ -305,46 +322,52 @@ class ReferralCard {
     private _expiryEl: HTMLSpanElement;
     private _descriptionEl: HTMLSpanElement;
 
-    get code(): string { return this._code; }
+    get code(): string {
+        return this._code;
+    }
     set code(c: string) {
         this._code = c;
-       
 
         // let u = new URL(window.location.href);
         // const path = window.pages.Base + window.pages.Form + "/" + this._code;
-        // 
+        //
         // u.pathname = path;
         // u.hash = "";
         // u.search = "";
-    
+
         // this._url = u.toString();
         this._url = generateCodeLink(this._code);
     }
 
-    get remaining_uses(): number { return this._remainingUses; }
-    set remaining_uses(v: number) { 
+    get remaining_uses(): number {
+        return this._remainingUses;
+    }
+    set remaining_uses(v: number) {
         this._remainingUses = v;
-        if (v > 0 && !(this._noLimit))
-            this._remainingUsesEl.textContent = `${v}`;
+        if (v > 0 && !this._noLimit) this._remainingUsesEl.textContent = `${v}`;
     }
 
-    get no_limit(): boolean { return this._noLimit; }
+    get no_limit(): boolean {
+        return this._noLimit;
+    }
     set no_limit(v: boolean) {
         this._noLimit = v;
-        if (v)
-            this._remainingUsesEl.textContent = `∞`;
-        else
-            this._remainingUsesEl.textContent = `${this._remainingUses}`;
+        if (v) this._remainingUsesEl.textContent = `∞`;
+        else this._remainingUsesEl.textContent = `${this._remainingUses}`;
     }
 
-    get expiry(): Date { return this._expiry; };
+    get expiry(): Date {
+        return this._expiry;
+    }
     set expiry(expiryUnix: number) {
         this._expiryUnix = expiryUnix;
         this._expiry = new Date(expiryUnix * 1000);
         this._expiryEl.textContent = toDateString(this._expiry);
     }
 
-    get use_expiry(): boolean { return this._useExpiry; }
+    get use_expiry(): boolean {
+        return this._useExpiry;
+    }
     set use_expiry(v: boolean) {
         this._useExpiry = v;
         if (v) {
@@ -353,7 +376,7 @@ class ReferralCard {
             this._descriptionEl.textContent = window.lang.strings("referralsDescription");
         }
     }
-    
+
     constructor(card: HTMLElement) {
         this._card = card;
         this._button = this._card.querySelector(".user-referrals-button") as HTMLButtonElement;
@@ -372,10 +395,10 @@ class ReferralCard {
             <div>
         </div>
         `;
-    
+
         this._remainingUsesEl = this._infoArea.querySelector(".referral-remaining-uses") as HTMLSpanElement;
         this._expiryEl = this._infoArea.querySelector(".referral-expiry") as HTMLSpanElement;
-        
+
         document.addEventListener("timefmt-change", () => {
             this.expiry = this._expiryUnix;
         });
@@ -432,25 +455,25 @@ class ExpiryCard {
         let ymd = [0, 0, 0];
         while (now.getFullYear() != this._expiry.getFullYear()) {
             ymd[0] += 1;
-            now.setFullYear(now.getFullYear()+1);
+            now.setFullYear(now.getFullYear() + 1);
         }
         if (now.getMonth() > this._expiry.getMonth()) {
-            ymd[0] -=1;
-            now.setFullYear(now.getFullYear()-1);
+            ymd[0] -= 1;
+            now.setFullYear(now.getFullYear() - 1);
         }
         while (now.getMonth() != this._expiry.getMonth()) {
             ymd[1] += 1;
             now.setMonth(now.getMonth() + 1);
         }
         if (now.getDate() > this._expiry.getDate()) {
-            ymd[1] -=1;
-            now.setMonth(now.getMonth()-1);
+            ymd[1] -= 1;
+            now.setMonth(now.getMonth() - 1);
         }
         while (now.getDate() != this._expiry.getDate()) {
             ymd[2] += 1;
             now.setDate(now.getDate() + 1);
         }
-        
+
         const langKeys = ["year", "month", "day"];
         let innerHTML = ``;
         for (let i = 0; i < langKeys.length; i++) {
@@ -467,7 +490,9 @@ class ExpiryCard {
         this._countdown.innerHTML = innerHTML;
     };
 
-    get expiry(): Date { return this._expiry; };
+    get expiry(): Date {
+        return this._expiry;
+    }
     set expiry(expiryUnix: number) {
         if (this._interval !== null) {
             window.clearInterval(this._interval);
@@ -479,10 +504,12 @@ class ExpiryCard {
             return;
         }
         this._expiry = new Date(expiryUnix * 1000);
-        this._aside.textContent = window.lang.strings("yourAccountIsValidUntil").replace("{date}", toDateString(this._expiry));
+        this._aside.textContent = window.lang
+            .strings("yourAccountIsValidUntil")
+            .replace("{date}", toDateString(this._expiry));
         this._card.classList.remove("unfocused");
 
-        this._interval = window.setInterval(this._drawCountdown, 60*1000);
+        this._interval = window.setInterval(this._drawCountdown, 60 * 1000);
         this._drawCountdown();
     }
 }
@@ -496,37 +523,45 @@ var contactMethodList = new ContactMethods(contactCard);
 
 const addEditEmail = (add: boolean): void => {
     const heading = window.modals.email.modal.querySelector(".heading");
-    heading.innerHTML = (add ? window.lang.strings("addContactMethod") : window.lang.strings("editContactMethod")) + `<span class="modal-close">&times;</span>`;
+    heading.innerHTML =
+        (add ? window.lang.strings("addContactMethod") : window.lang.strings("editContactMethod")) +
+        `<span class="modal-close">&times;</span>`;
     const input = document.getElementById("modal-email-input") as HTMLInputElement;
     input.value = "";
     const confirmationRequired = window.modals.email.modal.querySelector(".confirmation-required");
     confirmationRequired.classList.add("unfocused");
-   
+
     const content = window.modals.email.modal.querySelector(".content");
     content.classList.remove("unfocused");
 
     const submit = window.modals.email.modal.querySelector(".modal-submit") as HTMLButtonElement;
     submit.onclick = () => {
         addLoader(submit);
-        _post("/my/email", {"email": input.value}, (req: XMLHttpRequest) => {
-            if (req.readyState != 4) return;
-            removeLoader(submit);
-            if (req.status == 303 || req.status == 200) {
-                document.dispatchEvent(new CustomEvent("details-reload"));
-                window.modals.email.close();
-            }
-        }, true, (req: XMLHttpRequest) => {
-            if (req.readyState != 4) return;
-            removeLoader(submit);
-            if (req.status == 401) {
-                content.classList.add("unfocused");
-                confirmationRequired.classList.remove("unfocused");
-            }
-        });
-    }
+        _post(
+            "/my/email",
+            { email: input.value },
+            (req: XMLHttpRequest) => {
+                if (req.readyState != 4) return;
+                removeLoader(submit);
+                if (req.status == 303 || req.status == 200) {
+                    document.dispatchEvent(new CustomEvent("details-reload"));
+                    window.modals.email.close();
+                }
+            },
+            true,
+            (req: XMLHttpRequest) => {
+                if (req.readyState != 4) return;
+                removeLoader(submit);
+                if (req.status == 401) {
+                    content.classList.add("unfocused");
+                    confirmationRequired.classList.remove("unfocused");
+                }
+            },
+        );
+    };
 
     window.modals.email.show();
-}
+};
 
 const discordConf: ServiceConfiguration = {
     modal: window.modals.discord as Modal,
@@ -539,7 +574,7 @@ const discordConf: ServiceConfiguration = {
     successError: window.lang.notif("verified"),
     successFunc: (modalClosed: boolean) => {
         if (modalClosed) document.dispatchEvent(new CustomEvent("details-reload"));
-    }
+    },
 };
 
 let discord: Discord;
@@ -555,7 +590,7 @@ const telegramConf: ServiceConfiguration = {
     successError: window.lang.notif("verified"),
     successFunc: (modalClosed: boolean) => {
         if (modalClosed) document.dispatchEvent(new CustomEvent("details-reload"));
-    }
+    },
 };
 
 let telegram: Telegram;
@@ -571,12 +606,11 @@ const matrixConf: MatrixConfiguration = {
     successError: window.lang.notif("verified"),
     successFunc: () => {
         setTimeout(() => document.dispatchEvent(new CustomEvent("details-reload")), 1200);
-    }
+    },
 };
 
 let matrix: Matrix;
 if (window.matrixEnabled) matrix = new Matrix(matrixConf);
-
 
 const oldPasswordField = document.getElementById("user-old-password") as HTMLInputElement;
 const newPasswordField = document.getElementById("user-new-password") as HTMLInputElement;
@@ -592,7 +626,7 @@ let validatorConf: ValidatorConf = {
     passwordField: newPasswordField,
     rePasswordField: rePasswordField,
     submitButton: changePasswordButton,
-    validatorFunc: baseValidator
+    validatorFunc: baseValidator,
 };
 
 let validator = new Validator(validatorConf);
@@ -601,25 +635,33 @@ let validator = new Validator(validatorConf);
 oldPasswordField.addEventListener("keyup", validator.validate);
 changePasswordButton.addEventListener("click", () => {
     addLoader(changePasswordButton);
-    _post("/my/password", { old: oldPasswordField.value, new: newPasswordField.value }, (req: XMLHttpRequest) => {
-        if (req.readyState != 4) return;
-        removeLoader(changePasswordButton);
-        if (req.status == 400) {
-            window.notifications.customError("errorPassword", window.lang.notif("errorPassword"));
-        } else if (req.status == 500) {
-            window.notifications.customError("errorUnknown", window.lang.notif("errorUnknown"));
-        } else if (req.status == 204) {
-            window.notifications.customSuccess("passwordChanged", window.lang.notif("passwordChanged"));
-            setTimeout(() => { window.location.reload() }, 2000);
-        }
-    }, true, (req: XMLHttpRequest) => {
-        if (req.readyState != 4) return;
-        removeLoader(changePasswordButton);
-        if (req.status == 401) {
-            window.notifications.customError("oldPasswordError", window.lang.notif("errorOldPassword"));
-            return;
-        }
-    });
+    _post(
+        "/my/password",
+        { old: oldPasswordField.value, new: newPasswordField.value },
+        (req: XMLHttpRequest) => {
+            if (req.readyState != 4) return;
+            removeLoader(changePasswordButton);
+            if (req.status == 400) {
+                window.notifications.customError("errorPassword", window.lang.notif("errorPassword"));
+            } else if (req.status == 500) {
+                window.notifications.customError("errorUnknown", window.lang.notif("errorUnknown"));
+            } else if (req.status == 204) {
+                window.notifications.customSuccess("passwordChanged", window.lang.notif("passwordChanged"));
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+            }
+        },
+        true,
+        (req: XMLHttpRequest) => {
+            if (req.readyState != 4) return;
+            removeLoader(changePasswordButton);
+            if (req.status == 401) {
+                window.notifications.customError("oldPasswordError", window.lang.notif("errorOldPassword"));
+                return;
+            }
+        },
+    );
 });
 
 document.addEventListener("details-reload", () => {
@@ -644,20 +686,56 @@ document.addEventListener("details-reload", () => {
 
             rootCard.querySelector(".heading").innerHTML = innerHTML;
 
-            contactMethodList.clear(); 
+            contactMethodList.clear();
 
             // Note the weird format of the functions for discord/telegram:
             // "this" was being redefined within the onclick() method, so
             // they had to be wrapped in an anonymous function.
-            const contactMethods: { name: string, icon: string, f: (add: boolean) => void, required: boolean, enabled: boolean }[] = [
-                {name: "email", icon: `<i class="ri-mail-fill ri-lg"></i>`, f: addEditEmail, required: true, enabled: true},
-                {name: "discord", icon: `<i class="ri-discord-fill ri-lg"></i>`, f: (add: boolean) => { discord.onclick(); }, required: window.discordRequired, enabled: window.discordEnabled},
-                {name: "telegram", icon: `<i class="ri-telegram-fill ri-lg"></i>`, f: (add: boolean) => { telegram.onclick() }, required: window.telegramRequired, enabled: window.telegramEnabled},
-                {name: "matrix", icon: `<span class="font-bold">[m]</span>`, f: (add: boolean) => { matrix.show(); }, required: window.matrixRequired, enabled: window.matrixEnabled}
+            const contactMethods: {
+                name: string;
+                icon: string;
+                f: (add: boolean) => void;
+                required: boolean;
+                enabled: boolean;
+            }[] = [
+                {
+                    name: "email",
+                    icon: `<i class="ri-mail-fill ri-lg"></i>`,
+                    f: addEditEmail,
+                    required: true,
+                    enabled: true,
+                },
+                {
+                    name: "discord",
+                    icon: `<i class="ri-discord-fill ri-lg"></i>`,
+                    f: (add: boolean) => {
+                        discord.onclick();
+                    },
+                    required: window.discordRequired,
+                    enabled: window.discordEnabled,
+                },
+                {
+                    name: "telegram",
+                    icon: `<i class="ri-telegram-fill ri-lg"></i>`,
+                    f: (add: boolean) => {
+                        telegram.onclick();
+                    },
+                    required: window.telegramRequired,
+                    enabled: window.telegramEnabled,
+                },
+                {
+                    name: "matrix",
+                    icon: `<span class="font-bold">[m]</span>`,
+                    f: (add: boolean) => {
+                        matrix.show();
+                    },
+                    required: window.matrixRequired,
+                    enabled: window.matrixEnabled,
+                },
             ];
-            
+
             for (let method of contactMethods) {
-                if (!(method.enabled)) continue;
+                if (!method.enabled) continue;
                 if (method.name in details) {
                     contactMethodList.append(method.name, details[method.name], method.icon, method.f, method.required);
                 }
@@ -671,7 +749,7 @@ document.addEventListener("details-reload", () => {
             let messageCard = document.getElementById("card-message");
             if (details.accounts_admin) {
                 adminBackButton.classList.remove("unfocused");
-                if (typeof(messageCard) == "undefined" || messageCard == null) {
+                if (typeof messageCard == "undefined" || messageCard == null) {
                     messageCard = document.createElement("div");
                     messageCard.classList.add("card", "@low", "dark:~d_neutral", "content");
                     messageCard.id = "card-message";
@@ -685,7 +763,7 @@ document.addEventListener("details-reload", () => {
                 }
             }
 
-            if (typeof(messageCard) != "undefined" && messageCard != null) {
+            if (typeof messageCard != "undefined" && messageCard != null) {
                 messageCard.innerHTML = messageCard.innerHTML.replace(new RegExp("{username}", "g"), details.username);
                 // setBestRowSpan(messageCard, false);
                 // contactCard.querySelector(".content").classList.add("h-100");
@@ -696,7 +774,7 @@ document.addEventListener("details-reload", () => {
             if (window.referralsEnabled) {
                 if (details.has_referrals) {
                     _get("/my/referral", null, (req: XMLHttpRequest) => {
-                        if (req.readyState != 4 || req.status != 200) return; 
+                        if (req.readyState != 4 || req.status != 200) return;
                         const referral: MyReferral = req.response as MyReferral;
                         referralCard.update(referral);
                         setCardOrder(messageCard);
@@ -715,9 +793,9 @@ document.addEventListener("details-reload", () => {
 const setCardOrder = (messageCard: HTMLElement) => {
     const cards = document.getElementById("user-cardlist");
     const children = Array.from(cards.children);
-    const idxs = [...Array(cards.childElementCount).keys()]
+    const idxs = [...Array(cards.childElementCount).keys()];
     // The message card is the first element and should always be so, so remove it from the list.
-    const hasMessageCard = !(typeof(messageCard) == "undefined" || messageCard == null);
+    const hasMessageCard = !(typeof messageCard == "undefined" || messageCard == null);
     if (hasMessageCard) idxs.shift();
     const perms = generatePermutations(idxs);
     let minHeight = 999999;
@@ -781,8 +859,7 @@ const setBestRowSpan = (el: HTMLElement, setOnParent: boolean) => {
 
     let rowSpan = Math.ceil(computeRealHeight(el) / largestNonMessageCardHeight);
 
-    if (rowSpan > 0)
-        (setOnParent ? el.parentElement : el).style.gridRow = `span ${rowSpan}`;
+    if (rowSpan > 0) (setOnParent ? el.parentElement : el).style.gridRow = `span ${rowSpan}`;
 };
 
 const computeRealHeight = (el: HTMLElement): number => {
@@ -801,12 +878,12 @@ const computeRealHeight = (el: HTMLElement): number => {
         }
     }
     return total;
-}
+};
 
 const generatePermutations = (xs: number[]): [number[], number[]][] => {
     const l = xs.length;
     let out: [number[], number[]][] = [];
-    for (let i = 0; i < (l << 1); i++) {
+    for (let i = 0; i < l << 1; i++) {
         let incl = [];
         let excl = [];
         for (let j = 0; j < l; j++) {
@@ -819,7 +896,7 @@ const generatePermutations = (xs: number[]): [number[], number[]][] => {
         out.push([incl, excl]);
     }
     return out;
-}
+};
 
 login.bindLogout(document.getElementById("logout-button"));
 

@@ -20,7 +20,7 @@ interface pwValStrings {
     lowercase: pwValString;
     number: pwValString;
     special: pwValString;
-    [ type: string ]: pwValString;
+    [type: string]: pwValString;
 }
 
 declare var window: valWindow;
@@ -32,7 +32,9 @@ class Requirement {
     private _valid: HTMLSpanElement;
     private _li: HTMLLIElement;
 
-    get valid(): boolean { return this._valid.classList.contains("~positive"); }
+    get valid(): boolean {
+        return this._valid.classList.contains("~positive");
+    }
     set valid(state: boolean) {
         if (state) {
             this._valid.classList.add("~positive");
@@ -57,12 +59,14 @@ class Requirement {
         if (this._minCount == 1) {
             text = window.validationStrings[this._name].singular.replace("{n}", "1");
         } else {
-            text = window.validationStrings[this._name].plural.replace("{n}", ""+this._minCount);
+            text = window.validationStrings[this._name].plural.replace("{n}", "" + this._minCount);
         }
         this._content.textContent = text;
     }
 
-    validate = (count: number) => { this.valid = (count >= this._minCount); }
+    validate = (count: number) => {
+        this.valid = count >= this._minCount;
+    };
 }
 
 export interface ValidatorConf {
@@ -73,8 +77,12 @@ export interface ValidatorConf {
     validatorFunc?: (oncomplete: (valid: boolean) => void) => void;
 }
 
-export interface Validation { [name: string]: number }
-export interface Requirements { [category: string]: Requirement };
+export interface Validation {
+    [name: string]: number;
+}
+export interface Requirements {
+    [category: string]: Requirement;
+}
 
 export class Validator {
     private _conf: ValidatorConf;
@@ -82,29 +90,29 @@ export class Validator {
     private _defaultPwValStrings: pwValStrings = {
         length: {
             singular: "Must have at least {n} character",
-            plural: "Must have at least {n} characters"
+            plural: "Must have at least {n} characters",
         },
         uppercase: {
             singular: "Must have at least {n} uppercase character",
-            plural: "Must have at least {n} uppercase characters"
+            plural: "Must have at least {n} uppercase characters",
         },
         lowercase: {
             singular: "Must have at least {n} lowercase character",
-            plural: "Must have at least {n} lowercase characters"
+            plural: "Must have at least {n} lowercase characters",
         },
         number: {
             singular: "Must have at least {n} number",
-            plural: "Must have at least {n} numbers"
+            plural: "Must have at least {n} numbers",
         },
         special: {
             singular: "Must have at least {n} special character",
-            plural: "Must have at least {n} special characters"
-        }
+            plural: "Must have at least {n} special characters",
+        },
     };
 
     private _checkPasswords = () => {
         return this._conf.passwordField.value == this._conf.rePasswordField.value;
-    }
+    };
 
     validate = () => {
         const pw = this._checkPasswords();
@@ -125,51 +133,66 @@ export class Validator {
         });
     };
 
-    private _isInt = (s: string): boolean => { return (s >= '0' && s <= '9'); }
-    
+    private _isInt = (s: string): boolean => {
+        return s >= "0" && s <= "9";
+    };
+
     private _testStrings = (f: pwValString): boolean => {
         const testString = (s: string): boolean => {
-            if (s == "" || !s.includes("{n}")) { return false; }
+            if (s == "" || !s.includes("{n}")) {
+                return false;
+            }
             return true;
-        }
+        };
         return testString(f.singular) && testString(f.plural);
-    }
+    };
 
     private _validate = (s: string): Validation => {
         let v: Validation = {};
-        for (let criteria of ["length", "lowercase", "uppercase", "number", "special"]) { v[criteria] = 0; }
+        for (let criteria of ["length", "lowercase", "uppercase", "number", "special"]) {
+            v[criteria] = 0;
+        }
         v["length"] = s.length;
         for (let c of s) {
-            if (this._isInt(c)) { v["number"]++; }
-            else {
+            if (this._isInt(c)) {
+                v["number"]++;
+            } else {
                 const upper = c.toUpperCase();
-                if (upper == c.toLowerCase()) { v["special"]++; }
-                else {
-                    if (upper == c) { v["uppercase"]++; }
-                    else if (upper != c) { v["lowercase"]++; }
+                if (upper == c.toLowerCase()) {
+                    v["special"]++;
+                } else {
+                    if (upper == c) {
+                        v["uppercase"]++;
+                    } else if (upper != c) {
+                        v["lowercase"]++;
+                    }
                 }
             }
         }
-        return v
-    }
-    
+        return v;
+    };
+
     private _bindRequirements = () => {
         for (let category in window.validationStrings) {
             if (!this._testStrings(window.validationStrings[category])) {
                 window.validationStrings[category] = this._defaultPwValStrings[category];
             }
             const el = document.getElementById("requirement-" + category);
-            if (typeof(el) === 'undefined' || el == null) continue;
+            if (typeof el === "undefined" || el == null) continue;
             this._requirements[category] = new Requirement(category, el as HTMLLIElement);
         }
     };
 
-    get requirements(): Requirements { return this._requirements }; 
+    get requirements(): Requirements {
+        return this._requirements;
+    }
 
     constructor(conf: ValidatorConf) {
         this._conf = conf;
-        if (!(this._conf.validatorFunc)) {
-            this._conf.validatorFunc = (oncomplete: (valid: boolean) => void) => { oncomplete(true); };
+        if (!this._conf.validatorFunc) {
+            this._conf.validatorFunc = (oncomplete: (valid: boolean) => void) => {
+                oncomplete(true);
+            };
         }
         this._conf.rePasswordField.addEventListener("keyup", this.validate);
         this._conf.passwordField.addEventListener("keyup", this.validate);

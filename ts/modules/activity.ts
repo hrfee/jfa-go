@@ -1,5 +1,11 @@
 import { _get, _post, _delete, toDateString } from "../modules/common.js";
-import { SearchConfiguration, QueryType, SearchableItem, SearchableItems, SearchableItemDataAttribute } from "../modules/search.js";
+import {
+    SearchConfiguration,
+    QueryType,
+    SearchableItem,
+    SearchableItems,
+    SearchableItemDataAttribute,
+} from "../modules/search.js";
 import { accountURLEvent } from "../modules/accounts.js";
 import { inviteURLEvent } from "../modules/invites.js";
 import { PaginatedList } from "./list.js";
@@ -10,149 +16,151 @@ const ACTIVITY_DEFAULT_SORT_FIELD = "time";
 const ACTIVITY_DEFAULT_SORT_ASCENDING = false;
 
 export interface activity {
-    id: string; 
-    type: string; 
-    user_id: string; 
-    source_type: string; 
-    source: string; 
-    invite_code: string; 
-    value: string; 
-    time: number; 
+    id: string;
+    type: string;
+    user_id: string;
+    source_type: string;
+    source: string;
+    invite_code: string;
+    value: string;
+    time: number;
     username: string;
     source_username: string;
     ip: string;
 }
 
 var activityTypeMoods = {
-    "creation": 1,
-    "deletion": -1,
-    "disabled": -1,
-    "enabled": 1,
-    "contactLinked": 1,
-    "contactUnlinked": -1,
-    "changePassword": 0,
-    "resetPassword": 0,
-    "createInvite": 1,
-    "deleteInvite": -1
+    creation: 1,
+    deletion: -1,
+    disabled: -1,
+    enabled: 1,
+    contactLinked: 1,
+    contactUnlinked: -1,
+    changePassword: 0,
+    resetPassword: 0,
+    createInvite: 1,
+    deleteInvite: -1,
 };
 
 // window.lang doesn't exist at page load, so I made this a function that's invoked by activityList.
-const queries = (): { [field: string]: QueryType } => { return {
-    "id": {
-        name: window.lang.strings("activityID"),
-        getter: "id",
-        bool: false,
-        string: true,
-        date: false
-    },
-    "title": {
-        name: window.lang.strings("title"),
-        getter: "title",
-        bool: false,
-        string: true,
-        date: false,
-        localOnly: true
-    },
-    "user": {
-        name: window.lang.strings("usersMentioned"),
-        getter: "mentionedUsers",
-        bool: false,
-        string: true,
-        date: false
-    },
-    "actor": {
-        name: window.lang.strings("actor"),
-        description: window.lang.strings("actorDescription"),
-        getter: "actor",
-        bool: false,
-        string: true,
-        date: false
-    },
-    "referrer": {
-        name: window.lang.strings("referrer"),
-        getter: "referrer",
-        bool: true,
-        string: true,
-        date: false
-    },
-    "time": {
-        name: window.lang.strings("date"),
-        getter: "time",
-        bool: false,
-        string: false,
-        date: true
-    },
-    "account-creation": {
-        name: window.lang.strings("accountCreationFilter"),
-        getter: "accountCreation",
-        bool: true,
-        string: false,
-        date: false
-    },
-    "account-deletion": {
-        name: window.lang.strings("accountDeletionFilter"),
-        getter: "accountDeletion",
-        bool: true,
-        string: false,
-        date: false
-    },
-    "account-disabled": {
-        name: window.lang.strings("accountDisabledFilter"),
-        getter: "accountDisabled",
-        bool: true,
-        string: false,
-        date: false
-    },
-    "account-enabled": {
-        name: window.lang.strings("accountEnabledFilter"),
-        getter: "accountEnabled",
-        bool: true,
-        string: false,
-        date: false
-    },
-    "contact-linked": {
-        name: window.lang.strings("contactLinkedFilter"),
-        getter: "contactLinked",
-        bool: true,
-        string: false,
-        date: false
-    },
-    "contact-unlinked": {
-        name: window.lang.strings("contactUnlinkedFilter"),
-        getter: "contactUnlinked",
-        bool: true,
-        string: false,
-        date: false
-    },
-    "password-change": {
-        name: window.lang.strings("passwordChangeFilter"),
-        getter: "passwordChange",
-        bool: true,
-        string: false,
-        date: false
-    },
-    "password-reset": {
-        name: window.lang.strings("passwordResetFilter"),
-        getter: "passwordReset",
-        bool: true,
-        string: false,
-        date: false
-    },
-    "invite-created": {
-        name: window.lang.strings("inviteCreatedFilter"),
-        getter: "inviteCreated",
-        bool: true,
-        string: false,
-        date: false
-    },
-    "invite-deleted": {
-        name: window.lang.strings("inviteDeletedFilter"),
-        getter: "inviteDeleted",
-        bool: true,
-        string: false,
-        date: false
-    }
-}};
+const queries = (): { [field: string]: QueryType } => {
+    return {
+        id: {
+            name: window.lang.strings("activityID"),
+            getter: "id",
+            bool: false,
+            string: true,
+            date: false,
+        },
+        title: {
+            name: window.lang.strings("title"),
+            getter: "title",
+            bool: false,
+            string: true,
+            date: false,
+            localOnly: true,
+        },
+        user: {
+            name: window.lang.strings("usersMentioned"),
+            getter: "mentionedUsers",
+            bool: false,
+            string: true,
+            date: false,
+        },
+        actor: {
+            name: window.lang.strings("actor"),
+            description: window.lang.strings("actorDescription"),
+            getter: "actor",
+            bool: false,
+            string: true,
+            date: false,
+        },
+        referrer: {
+            name: window.lang.strings("referrer"),
+            getter: "referrer",
+            bool: true,
+            string: true,
+            date: false,
+        },
+        time: {
+            name: window.lang.strings("date"),
+            getter: "time",
+            bool: false,
+            string: false,
+            date: true,
+        },
+        "account-creation": {
+            name: window.lang.strings("accountCreationFilter"),
+            getter: "accountCreation",
+            bool: true,
+            string: false,
+            date: false,
+        },
+        "account-deletion": {
+            name: window.lang.strings("accountDeletionFilter"),
+            getter: "accountDeletion",
+            bool: true,
+            string: false,
+            date: false,
+        },
+        "account-disabled": {
+            name: window.lang.strings("accountDisabledFilter"),
+            getter: "accountDisabled",
+            bool: true,
+            string: false,
+            date: false,
+        },
+        "account-enabled": {
+            name: window.lang.strings("accountEnabledFilter"),
+            getter: "accountEnabled",
+            bool: true,
+            string: false,
+            date: false,
+        },
+        "contact-linked": {
+            name: window.lang.strings("contactLinkedFilter"),
+            getter: "contactLinked",
+            bool: true,
+            string: false,
+            date: false,
+        },
+        "contact-unlinked": {
+            name: window.lang.strings("contactUnlinkedFilter"),
+            getter: "contactUnlinked",
+            bool: true,
+            string: false,
+            date: false,
+        },
+        "password-change": {
+            name: window.lang.strings("passwordChangeFilter"),
+            getter: "passwordChange",
+            bool: true,
+            string: false,
+            date: false,
+        },
+        "password-reset": {
+            name: window.lang.strings("passwordResetFilter"),
+            getter: "passwordReset",
+            bool: true,
+            string: false,
+            date: false,
+        },
+        "invite-created": {
+            name: window.lang.strings("inviteCreatedFilter"),
+            getter: "inviteCreated",
+            bool: true,
+            string: false,
+            date: false,
+        },
+        "invite-deleted": {
+            name: window.lang.strings("inviteDeletedFilter"),
+            getter: "inviteDeleted",
+            bool: true,
+            string: false,
+            date: false,
+        },
+    };
+};
 
 // var moodColours = ["~warning", "~neutral", "~urge"];
 
@@ -173,37 +181,58 @@ export class Activity implements activity, SearchableItem {
 
     _genUserText = (): string => {
         return `<span class="font-medium">${this._act.username || this._act.user_id.substring(0, 5)}</span>`;
-    }
+    };
 
     _genSrcUserText = (): string => {
         return `<span class="font-medium">${this._act.source_username || this._act.source.substring(0, 5)}</span>`;
-    }
+    };
 
     _genUserLink = (): string => {
         return `<a role="link" tabindex="0" class="hover:underline cursor-pointer activity-pseudo-link-user" data-id="${this._act.user_id}" href="${window.pages.Base}${window.pages.Admin}/accounts?user=${this._act.user_id}">${this._genUserText()}</a>`;
-    }
-        
+    };
+
     _genSrcUserLink = (): string => {
         return `<a role="link" tabindex="0" class="hover:underline cursor-pointer activity-pseudo-link-user" data-id="${this._act.user_id}" href="${window.pages.Base}${window.pages.Admin}/accounts?user=${this._act.source}">${this._genSrcUserText()}</a>`;
-    }
+    };
 
-    private _renderInvText = (): string => { return `<span class="font-medium font-mono">${this.value || this.invite_code || "???"}</span>`; }
+    private _renderInvText = (): string => {
+        return `<span class="font-medium font-mono">${this.value || this.invite_code || "???"}</span>`;
+    };
 
     private _genInvLink = (): string => {
         return `<a role="link" tabindex="0" class="hover:underline cursor-pointer activity-pseudo-link-invite" data-id="${this.invite_code}" href="${window.pages.Base}${window.pages.Admin}/?invite=${this.invite_code}">${this._renderInvText()}</a>`;
+    };
+
+    get accountCreation(): boolean {
+        return this.type == "creation";
     }
-
-
-    get accountCreation(): boolean { return this.type == "creation"; }
-    get accountDeletion(): boolean { return this.type == "deletion"; }
-    get accountDisabled(): boolean { return this.type == "disabled"; }
-    get accountEnabled(): boolean { return this.type == "enabled"; }
-    get contactLinked(): boolean { return this.type == "contactLinked"; }
-    get contactUnlinked(): boolean { return this.type == "contactUnlinked"; }
-    get passwordChange(): boolean { return this.type == "changePassword"; }
-    get passwordReset(): boolean { return this.type == "resetPassword"; }
-    get inviteCreated(): boolean { return this.type == "createInvite"; }
-    get inviteDeleted(): boolean { return this.type == "deleteInvite"; }
+    get accountDeletion(): boolean {
+        return this.type == "deletion";
+    }
+    get accountDisabled(): boolean {
+        return this.type == "disabled";
+    }
+    get accountEnabled(): boolean {
+        return this.type == "enabled";
+    }
+    get contactLinked(): boolean {
+        return this.type == "contactLinked";
+    }
+    get contactUnlinked(): boolean {
+        return this.type == "contactUnlinked";
+    }
+    get passwordChange(): boolean {
+        return this.type == "changePassword";
+    }
+    get passwordReset(): boolean {
+        return this.type == "resetPassword";
+    }
+    get inviteCreated(): boolean {
+        return this.type == "createInvite";
+    }
+    get inviteDeleted(): boolean {
+        return this.type == "deleteInvite";
+    }
 
     get mentionedUsers(): string {
         return (this.username + " " + this.source_username).toLowerCase();
@@ -220,7 +249,9 @@ export class Activity implements activity, SearchableItem {
         return this.source_username.toLowerCase();
     }
 
-    get type(): string { return this._act.type; }
+    get type(): string {
+        return this._act.type;
+    }
     set type(v: string) {
         this._act.type = v;
 
@@ -229,7 +260,7 @@ export class Activity implements activity, SearchableItem {
             el.classList.remove("~warning");
             el.classList.remove("~neutral");
             el.classList.remove("~urge");
-            
+
             if (mood == -1) {
                 el.classList.add("~warning");
             } else if (mood == 0) {
@@ -243,7 +274,7 @@ export class Activity implements activity, SearchableItem {
             if (i-1 == mood) this._card.classList.add(moodColours[i]);
             else this._card.classList.remove(moodColours[i]);
         } */
-      
+
         // lazy late addition, hide then unhide if needed
         this._expiryTypeBadge.classList.add("unfocused");
         if (this.type == "changePassword" || this.type == "resetPassword") {
@@ -309,13 +340,17 @@ export class Activity implements activity, SearchableItem {
         }
     }
 
-    get time(): number { return this._timeUnix; }
+    get time(): number {
+        return this._timeUnix;
+    }
     set time(v: number) {
         this._timeUnix = v;
-        this._time.textContent = toDateString(new Date(v*1000));
+        this._time.textContent = toDateString(new Date(v * 1000));
     }
 
-    get source_type(): string { return this._act.source_type; }
+    get source_type(): string {
+        return this._act.source_type;
+    }
     set source_type(v: string) {
         this._act.source_type = v;
         if ((this.source_type == "anon" || this.source_type == "user") && this.type == "creation") {
@@ -329,7 +364,9 @@ export class Activity implements activity, SearchableItem {
         }
     }
 
-    get ip(): string { return this._act.ip; }
+    get ip(): string {
+        return this._act.ip;
+    }
     set ip(v: string) {
         this._act.ip = v;
         if (v) {
@@ -341,42 +378,68 @@ export class Activity implements activity, SearchableItem {
         }
     }
 
-    get invite_code(): string { return this._act.invite_code; }
+    get invite_code(): string {
+        return this._act.invite_code;
+    }
     set invite_code(v: string) {
         this._act.invite_code = v;
     }
 
-    get value(): string { return this._act.value; }
+    get value(): string {
+        return this._act.value;
+    }
     set value(v: string) {
         this._act.value = v;
     }
 
-    get source(): string { return this._act.source; }
+    get source(): string {
+        return this._act.source;
+    }
     set source(v: string) {
         this._act.source = v;
         if ((this.source_type == "anon" || this.source_type == "user") && this.type == "creation") {
             this._source.innerHTML = this._genInvLink();
-        } else if ((this.source_type == "admin" || this.source_type == "user") && this._act.source != "" && this._act.source_username != "") {
+        } else if (
+            (this.source_type == "admin" || this.source_type == "user") &&
+            this._act.source != "" &&
+            this._act.source_username != ""
+        ) {
             this._source.innerHTML = this._genSrcUserLink();
         }
     }
 
-    get id(): string { return this._act.id; }
+    get id(): string {
+        return this._act.id;
+    }
     set id(v: string) {
         this._act.id = v;
         this._card.setAttribute(SearchableItemDataAttribute, v);
     }
 
-    get user_id(): string { return this._act.user_id; }
-    set user_id(v: string) { this._act.user_id = v; }
+    get user_id(): string {
+        return this._act.user_id;
+    }
+    set user_id(v: string) {
+        this._act.user_id = v;
+    }
 
-    get username(): string { return this._act.username; }
-    set username(v: string) { this._act.username = v; }
+    get username(): string {
+        return this._act.username;
+    }
+    set username(v: string) {
+        this._act.username = v;
+    }
 
-    get source_username(): string { return this._act.source_username; }
-    set source_username(v: string) { this._act.source_username = v; }
+    get source_username(): string {
+        return this._act.source_username;
+    }
+    set source_username(v: string) {
+        this._act.source_username = v;
+    }
 
-    get title(): string { return this._title.textContent; }
+    get title(): string {
+        return this._title.textContent;
+    }
 
     matchesSearch = (query: string): boolean => {
         // console.log(this.title, "matches", query, ":", this.title.includes(query));
@@ -385,7 +448,7 @@ export class Activity implements activity, SearchableItem {
             this.username.toLowerCase().includes(query) ||
             this.source_username.toLowerCase().includes(query)
         );
-    }
+    };
 
     constructor(act: activity) {
         this._card = document.createElement("div");
@@ -431,8 +494,12 @@ export class Activity implements activity, SearchableItem {
 
         this.update(act);
 
-        const pseudoUsers = this._card.getElementsByClassName("activity-pseudo-link-user") as HTMLCollectionOf<HTMLAnchorElement>;
-        const pseudoInvites = this._card.getElementsByClassName("activity-pseudo-link-invite") as HTMLCollectionOf<HTMLAnchorElement>;
+        const pseudoUsers = this._card.getElementsByClassName(
+            "activity-pseudo-link-user",
+        ) as HTMLCollectionOf<HTMLAnchorElement>;
+        const pseudoInvites = this._card.getElementsByClassName(
+            "activity-pseudo-link-invite",
+        ) as HTMLCollectionOf<HTMLAnchorElement>;
 
         for (let i = 0; i < pseudoUsers.length; i++) {
             /*const navigate = (event: Event) => {
@@ -465,24 +532,27 @@ export class Activity implements activity, SearchableItem {
         this.time = act.time;
         this.source = act.source;
         this.value = act.value;
-        this.type  = act.type;
+        this.type = act.type;
         this.ip = act.ip;
-    }
+    };
 
-    delete = () => _delete("/activity/" + this._act.id, null, (req: XMLHttpRequest) => {
-        if (req.readyState != 4) return;
-        if (req.status == 200) {
-            window.notifications.customSuccess("activityDeleted", window.lang.notif("activityDeleted"));
-        }
-        document.dispatchEvent(activityReload);
-    });
+    delete = () =>
+        _delete("/activity/" + this._act.id, null, (req: XMLHttpRequest) => {
+            if (req.readyState != 4) return;
+            if (req.status == 200) {
+                window.notifications.customSuccess("activityDeleted", window.lang.notif("activityDeleted"));
+            }
+            document.dispatchEvent(activityReload);
+        });
 
-    asElement = () => { return this._card; };
+    asElement = () => {
+        return this._card;
+    };
 }
 
 interface ActivitiesReqDTO extends PaginatedReqDTO {
     type: string[];
-};
+}
 
 interface ActivitiesDTO extends paginatedDTO {
     activities: activity[];
@@ -493,15 +563,21 @@ export class activityList extends PaginatedList {
     protected _sortDirection = document.getElementById("activity-sort-direction") as HTMLButtonElement;
 
     protected _ascending: boolean;
-    
-    get activities(): { [id: string]: Activity } { return this._search.items as { [id: string]: Activity }; }
+
+    get activities(): { [id: string]: Activity } {
+        return this._search.items as { [id: string]: Activity };
+    }
     // set activities(v: { [id: string]: Activity }) { this._search.items = v as SearchableItems; }
-    
+
     constructor() {
         super({
             loader: document.getElementById("activity-loader"),
-            loadMoreButtons: Array.from([document.getElementById("activity-load-more") as HTMLButtonElement]) as Array<HTMLButtonElement>,
-            loadAllButtons: Array.from(document.getElementsByClassName("activity-load-all")) as Array<HTMLButtonElement>,
+            loadMoreButtons: Array.from([
+                document.getElementById("activity-load-more") as HTMLButtonElement,
+            ]) as Array<HTMLButtonElement>,
+            loadAllButtons: Array.from(
+                document.getElementsByClassName("activity-load-all"),
+            ) as Array<HTMLButtonElement>,
             refreshButton: document.getElementById("activity-refresh") as HTMLButtonElement,
             filterArea: document.getElementById("activity-filter-area"),
             searchOptionsHeader: document.getElementById("activity-search-options-header"),
@@ -513,7 +589,7 @@ export class activityList extends PaginatedList {
             maxItemsLoadedForSearch: 200,
             appendNewItems: (resp: paginatedDTO) => {
                 let ordering: string[] = this._search.ordering;
-                for (let act of ((resp as ActivitiesDTO).activities || [])) {
+                for (let act of (resp as ActivitiesDTO).activities || []) {
                     this.activities[act.id] = new Activity(act);
                     ordering.push(act.id);
                 }
@@ -521,7 +597,7 @@ export class activityList extends PaginatedList {
             },
             replaceWithNewItems: (resp: paginatedDTO) => {
                 // FIXME: Implement updates to existing elements, rather than just wiping each time.
-                
+
                 // Remove existing items
                 for (let id of Object.keys(this.activities)) {
                     delete this.activities[id];
@@ -538,10 +614,10 @@ export class activityList extends PaginatedList {
                     window.notifications.customError("loadActivitiesError", window.lang.notif("errorLoadActivities"));
                     return;
                 }
-            }
+            },
         });
-        
-        this._container = document.getElementById("activity-card-list")
+
+        this._container = document.getElementById("activity-card-list");
         document.addEventListener("activity-reload", () => this.reload());
 
         let searchConfig: SearchConfiguration = {
@@ -561,25 +637,22 @@ export class activityList extends PaginatedList {
             onSearchCallback: null,
             searchServer: null,
             clearServerSearch: null,
-        }
+        };
 
         this.initSearch(searchConfig);
 
         this.ascending = this._c.defaultSortAscending;
-        this._sortDirection.addEventListener("click", () => this.ascending = !this.ascending);
+        this._sortDirection.addEventListener("click", () => (this.ascending = !this.ascending));
     }
 
     reload = (callback?: (resp: paginatedDTO) => void) => {
         this._reload(callback);
-    }
+    };
 
     loadMore = (loadAll: boolean = false, callback?: () => void) => {
-        this._loadMore(
-            loadAll,
-            callback
-        );
+        this._loadMore(loadAll, callback);
     };
-    
+
     loadAll = (callback?: (resp?: paginatedDTO) => void) => {
         this._loadAll(callback);
     };
@@ -616,5 +689,4 @@ export class activityList extends PaginatedList {
             this._keepSearchingDescription.classList.add("unfocused");
         }
     };*/
-
 }

@@ -45,7 +45,7 @@ export interface ServiceConfiguration {
     accountLinkedError: string;
     successError: string;
     successFunc: (modalClosed: boolean) => void;
-};
+}
 
 export interface DiscordInvite {
     invite: string;
@@ -61,7 +61,9 @@ export class ServiceLinker {
     protected _name: string;
     protected _pin: string;
 
-    get verified(): boolean { return this._verified; }
+    get verified(): boolean {
+        return this._verified;
+    }
 
     constructor(conf: ServiceConfiguration) {
         this._conf = conf;
@@ -90,7 +92,7 @@ export class ServiceLinker {
                     this._verified = true;
                     this._waiting.classList.add("~positive");
                     this._waiting.classList.remove("~info");
-                    window.notifications.customPositive(this._name + "Verified", "", this._conf.successError); 
+                    window.notifications.customPositive(this._name + "Verified", "", this._conf.successError);
                     if (this._conf.successFunc) {
                         this._conf.successFunc(false);
                     }
@@ -100,7 +102,6 @@ export class ServiceLinker {
                             this._conf.successFunc(true);
                         }
                     }, 2000);
-
                 } else if (!this._modalClosed) {
                     setTimeout(this._checkVerified, 1500);
                 }
@@ -135,29 +136,29 @@ export class ServiceLinker {
 }
 
 export class Discord extends ServiceLinker {
-
     constructor(conf: ServiceConfiguration) {
         super(conf);
         this._name = "discord";
         this._waiting = document.getElementById("discord-waiting") as HTMLSpanElement;
     }
 
-    private _getInviteURL = () => _get(this._conf.inviteURL, null, (req: XMLHttpRequest) => {
-        if (req.readyState != 4) return;
-        const inv = req.response as DiscordInvite;
-        const link = document.getElementById("discord-invite") as HTMLSpanElement;
-        (link.parentElement as HTMLAnchorElement).href = inv.invite;
-        (link.parentElement as HTMLAnchorElement).target = "_blank";
-        let innerHTML = ``;
-        if (inv.icon != "") {
-            innerHTML += `<span class="img-circle lg"><img class="img-circle" src="${inv.icon}" width="64" height="64"></span>${window.discordServerName}`;
-        } else {
-            innerHTML += `
+    private _getInviteURL = () =>
+        _get(this._conf.inviteURL, null, (req: XMLHttpRequest) => {
+            if (req.readyState != 4) return;
+            const inv = req.response as DiscordInvite;
+            const link = document.getElementById("discord-invite") as HTMLSpanElement;
+            (link.parentElement as HTMLAnchorElement).href = inv.invite;
+            (link.parentElement as HTMLAnchorElement).target = "_blank";
+            let innerHTML = ``;
+            if (inv.icon != "") {
+                innerHTML += `<span class="img-circle lg"><img class="img-circle" src="${inv.icon}" width="64" height="64"></span>${window.discordServerName}`;
+            } else {
+                innerHTML += `
             <span class="shield bg-discord"><i class="ri-discord-fill ri-xl text-white"></i></span>${window.discordServerName}
             `;
-        }
-        link.innerHTML = innerHTML;
-    });
+            }
+            link.innerHTML = innerHTML;
+        });
 
     onclick() {
         if (this._conf.inviteURL != "") {
@@ -176,7 +177,7 @@ export class Telegram extends ServiceLinker {
         this._name = "telegram";
         this._waiting = document.getElementById("telegram-waiting") as HTMLSpanElement;
     }
-};
+}
 
 export interface MatrixConfiguration {
     modal: Modal;
@@ -198,14 +199,20 @@ export class Matrix {
     private _input: HTMLInputElement;
     private _submit: HTMLSpanElement;
 
-    get verified(): boolean { return this._verified; }
-    get pin(): string { return this._pin; }
+    get verified(): boolean {
+        return this._verified;
+    }
+    get pin(): string {
+        return this._pin;
+    }
 
     constructor(conf: MatrixConfiguration) {
         this._conf = conf;
         this._input = document.getElementById("matrix-userid") as HTMLInputElement;
         this._submit = document.getElementById("matrix-send") as HTMLSpanElement;
-        this._submit.onclick = () => { this._onclick(); };
+        this._submit.onclick = () => {
+            this._onclick();
+        };
     }
 
     private _onclick = () => {
@@ -220,52 +227,53 @@ export class Matrix {
     show = () => {
         this._input.value = "";
         this._conf.modal.show();
-    }
+    };
 
-    private _sendMessage = () => _post(this._conf.sendMessageURL, { "user_id": this._input.value }, (req: XMLHttpRequest) => {
-        if (req.readyState != 4) return;
-        removeLoader(this._submit);
-        if (req.status == 400 && req.response["error"] == "errorAccountLinked") {
-            this._conf.modal.close();
-            window.notifications.customError("accountLinkedError", this._conf.accountLinkedError);
-            return;
-        } else if (req.status != 200) {
-            this._conf.modal.close();
-            window.notifications.customError("unknownError", this._conf.unknownError);
-            return;
-        }
-        this._userID = this._input.value;
-        this._submit.classList.add("~positive");
-        this._submit.classList.remove("~info");
-        setTimeout(() => {
-            this._submit.classList.add("~info");
-            this._submit.classList.remove("~positive");
-        }, 2000);
-        this._input.placeholder = "PIN";
-        this._input.value = "";
-    });
-
-    private _verifyCode = () => _get(this._conf.verifiedURL + this._userID + "/" + this._input.value, null, (req: XMLHttpRequest) => {
-        if (req.readyState != 4) return;
-        removeLoader(this._submit);
-        const valid = req.response["success"] as boolean;
-        if (valid) {
-            this._conf.modal.close();
-            window.notifications.customPositive(this._name + "Verified", "", this._conf.successError); 
-            this._verified = true;
-            this._pin = this._input.value;
-            if (this._conf.successFunc) {
-                this._conf.successFunc();
+    private _sendMessage = () =>
+        _post(this._conf.sendMessageURL, { user_id: this._input.value }, (req: XMLHttpRequest) => {
+            if (req.readyState != 4) return;
+            removeLoader(this._submit);
+            if (req.status == 400 && req.response["error"] == "errorAccountLinked") {
+                this._conf.modal.close();
+                window.notifications.customError("accountLinkedError", this._conf.accountLinkedError);
+                return;
+            } else if (req.status != 200) {
+                this._conf.modal.close();
+                window.notifications.customError("unknownError", this._conf.unknownError);
+                return;
             }
-        } else {
-            window.notifications.customError("invalidCodeError", this._conf.invalidCodeError);
-            this._submit.classList.add("~critical");
+            this._userID = this._input.value;
+            this._submit.classList.add("~positive");
             this._submit.classList.remove("~info");
             setTimeout(() => {
                 this._submit.classList.add("~info");
-                this._submit.classList.remove("~critical");
-            }, 800);
-        }
-    });
-}
+                this._submit.classList.remove("~positive");
+            }, 2000);
+            this._input.placeholder = "PIN";
+            this._input.value = "";
+        });
 
+    private _verifyCode = () =>
+        _get(this._conf.verifiedURL + this._userID + "/" + this._input.value, null, (req: XMLHttpRequest) => {
+            if (req.readyState != 4) return;
+            removeLoader(this._submit);
+            const valid = req.response["success"] as boolean;
+            if (valid) {
+                this._conf.modal.close();
+                window.notifications.customPositive(this._name + "Verified", "", this._conf.successError);
+                this._verified = true;
+                this._pin = this._input.value;
+                if (this._conf.successFunc) {
+                    this._conf.successFunc();
+                }
+            } else {
+                window.notifications.customError("invalidCodeError", this._conf.invalidCodeError);
+                this._submit.classList.add("~critical");
+                this._submit.classList.remove("~info");
+                setTimeout(() => {
+                    this._submit.classList.add("~info");
+                    this._submit.classList.remove("~critical");
+                }, 800);
+            }
+        });
+}

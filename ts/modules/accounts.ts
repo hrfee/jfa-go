@@ -1,16 +1,26 @@
-import { _get, _post, _delete, toggleLoader, addLoader, removeLoader, toDateString, insertText, toClipboard } from "../modules/common"
-import { templateEmail } from "../modules/settings"
+import {
+    _get,
+    _post,
+    _delete,
+    toggleLoader,
+    addLoader,
+    removeLoader,
+    toDateString,
+    insertText,
+    toClipboard,
+} from "../modules/common";
+import { templateEmail } from "../modules/settings";
 import { Marked } from "@ts-stack/markdown";
-import { stripMarkdown } from "../modules/stripmd"
-import { DiscordUser, newDiscordSearch } from "../modules/discord"
-import { SearchConfiguration, QueryType, SearchableItem, SearchableItemDataAttribute } from "../modules/search"
-import { HiddenInputField } from "./ui"
-import { PaginatedList } from "./list"
+import { stripMarkdown } from "../modules/stripmd";
+import { DiscordUser, newDiscordSearch } from "../modules/discord";
+import { SearchConfiguration, QueryType, SearchableItem, SearchableItemDataAttribute } from "../modules/search";
+import { HiddenInputField } from "./ui";
+import { PaginatedList } from "./list";
 
 declare var window: GlobalWindow;
 
-const USER_DEFAULT_SORT_FIELD      = "name";
-const USER_DEFAULT_SORT_ASCENDING  = true;
+const USER_DEFAULT_SORT_FIELD = "name";
+const USER_DEFAULT_SORT_ASCENDING = true;
 
 const dateParser = require("any-date-parser");
 
@@ -18,8 +28,8 @@ enum SelectAllState {
     None = 0,
     Some = 0.1,
     AllVisible = 0.9,
-    All = 1
-};
+    All = 1,
+}
 
 interface User {
     id: string;
@@ -54,117 +64,118 @@ interface announcementTemplate {
 }
 
 var addDiscord: (passData: string) => void;
-    
-const queries = (): { [field: string]: QueryType } => { return {
-    "id": {
-        // We don't use a translation here to circumvent the name substitution feature.
-        name: "Jellyfin/Emby ID",
-        getter: "id",
-        bool: false,
-        string: true,
-        date: false
-    },
-    "label": {
-        name: window.lang.strings("label"),
-        getter: "label",
-        bool: true,
-        string: true,
-        date: false
-    },
-    "username": {
-        name: window.lang.strings("username"),
-        getter: "name",
-        bool: false,
-        string: true,
-        date: false
-    },
-    "name": {
-        name: window.lang.strings("username"),
-        getter: "name",
-        bool: false,
-        string: true,
-        date: false,
-        show: false
-    },
-    "admin": {
-        name: window.lang.strings("admin"),
-        getter: "admin",
-        bool: true,
-        string: false,
-        date: false
-    },
-    "disabled": {
-        name: window.lang.strings("disabled"),
-        getter: "disabled",
-        bool: true,
-        string: false,
-        date: false
-    },
-    "access-jfa": {
-        name: window.lang.strings("accessJFA"),
-        getter: "accounts_admin",
-        bool: true,
-        string: false,
-        date: false,
-        dependsOnElement: ".accounts-header-access-jfa"
-    },
-    "email": {
-        name: window.lang.strings("emailAddress"),
-        getter: "email",
-        bool: true,
-        string: true,
-        date: false,
-        dependsOnElement: ".accounts-header-email"
-    },
-    "telegram": {
-        name: "Telegram",
-        getter: "telegram",
-        bool: true,
-        string: true,
-        date: false,
-        dependsOnElement: ".accounts-header-telegram"
-    },
-    "matrix": {
-        name: "Matrix",
-        getter: "matrix",
-        bool: true,
-        string: true,
-        date: false,
-        dependsOnElement: ".accounts-header-matrix"
-    },
-    "discord": {
-        name: "Discord",
-        getter: "discord",
-        bool: true,
-        string: true,
-        date: false,
-        dependsOnElement: ".accounts-header-discord"
-    },
-    "expiry": {
-        name: window.lang.strings("expiry"),
-        getter: "expiry",
-        bool: true,
-        string: false,
-        date: true,
-        dependsOnElement: ".accounts-header-expiry"
-    },
-    "last-active": {
-        name: window.lang.strings("lastActiveTime"),
-        getter: "last_active",
-        bool: true,
-        string: false,
-        date: true
-    },
-    "referrals-enabled": {
-        name: window.lang.strings("referrals"),
-        getter: "referrals_enabled",
-        bool: true,
-        string: false,
-        date: false,
-        dependsOnElement: ".accounts-header-referrals"
-    }
-}};
 
+const queries = (): { [field: string]: QueryType } => {
+    return {
+        id: {
+            // We don't use a translation here to circumvent the name substitution feature.
+            name: "Jellyfin/Emby ID",
+            getter: "id",
+            bool: false,
+            string: true,
+            date: false,
+        },
+        label: {
+            name: window.lang.strings("label"),
+            getter: "label",
+            bool: true,
+            string: true,
+            date: false,
+        },
+        username: {
+            name: window.lang.strings("username"),
+            getter: "name",
+            bool: false,
+            string: true,
+            date: false,
+        },
+        name: {
+            name: window.lang.strings("username"),
+            getter: "name",
+            bool: false,
+            string: true,
+            date: false,
+            show: false,
+        },
+        admin: {
+            name: window.lang.strings("admin"),
+            getter: "admin",
+            bool: true,
+            string: false,
+            date: false,
+        },
+        disabled: {
+            name: window.lang.strings("disabled"),
+            getter: "disabled",
+            bool: true,
+            string: false,
+            date: false,
+        },
+        "access-jfa": {
+            name: window.lang.strings("accessJFA"),
+            getter: "accounts_admin",
+            bool: true,
+            string: false,
+            date: false,
+            dependsOnElement: ".accounts-header-access-jfa",
+        },
+        email: {
+            name: window.lang.strings("emailAddress"),
+            getter: "email",
+            bool: true,
+            string: true,
+            date: false,
+            dependsOnElement: ".accounts-header-email",
+        },
+        telegram: {
+            name: "Telegram",
+            getter: "telegram",
+            bool: true,
+            string: true,
+            date: false,
+            dependsOnElement: ".accounts-header-telegram",
+        },
+        matrix: {
+            name: "Matrix",
+            getter: "matrix",
+            bool: true,
+            string: true,
+            date: false,
+            dependsOnElement: ".accounts-header-matrix",
+        },
+        discord: {
+            name: "Discord",
+            getter: "discord",
+            bool: true,
+            string: true,
+            date: false,
+            dependsOnElement: ".accounts-header-discord",
+        },
+        expiry: {
+            name: window.lang.strings("expiry"),
+            getter: "expiry",
+            bool: true,
+            string: false,
+            date: true,
+            dependsOnElement: ".accounts-header-expiry",
+        },
+        "last-active": {
+            name: window.lang.strings("lastActiveTime"),
+            getter: "last_active",
+            bool: true,
+            string: false,
+            date: true,
+        },
+        "referrals-enabled": {
+            name: window.lang.strings("referrals"),
+            getter: "referrals_enabled",
+            bool: true,
+            string: false,
+            date: false,
+            dependsOnElement: ".accounts-header-referrals",
+        },
+    };
+};
 
 class user implements User, SearchableItem {
     private _id = "";
@@ -195,7 +206,7 @@ class user implements User, SearchableItem {
     private _label: HTMLInputElement;
     private _labelEditor: HiddenInputField;
     private _userLabel: string;
-    private _accounts_admin: HTMLInputElement
+    private _accounts_admin: HTMLInputElement;
     private _selected: boolean;
     private _referralsEnabled: boolean;
     private _referralsEnabledCheck: HTMLElement;
@@ -212,7 +223,7 @@ class user implements User, SearchableItem {
         if (matrix) return "matrix";
         if (telegram) return "telegram";
         if (email) return "email";
-    }
+    };
 
     private _checkUnlinkArea = () => {
         const unlinkHeader = this._notifyDropdown.querySelector(".accounts-unlink-header") as HTMLSpanElement;
@@ -221,9 +232,11 @@ class user implements User, SearchableItem {
         } else {
             unlinkHeader.classList.remove("unfocused");
         }
-    }
+    };
 
-    get selected(): boolean { return this._selected; }
+    get selected(): boolean {
+        return this._selected;
+    }
     set selected(state: boolean) {
         this.setSelected(state, true);
     }
@@ -231,29 +244,37 @@ class user implements User, SearchableItem {
     setSelected(state: boolean, dispatchEvent: boolean) {
         this._selected = state;
         this._check.checked = state;
-        if (dispatchEvent) state ? document.dispatchEvent(this._checkEvent()) : document.dispatchEvent(this._uncheckEvent());
+        if (dispatchEvent)
+            state ? document.dispatchEvent(this._checkEvent()) : document.dispatchEvent(this._uncheckEvent());
     }
 
+    get name(): string {
+        return this._username.textContent;
+    }
+    set name(value: string) {
+        this._username.textContent = value;
+    }
 
-    get name(): string { return this._username.textContent; }
-    set name(value: string) { this._username.textContent = value; }
-
-    get admin(): boolean { return !(this._admin.classList.contains("hidden")); }
+    get admin(): boolean {
+        return !this._admin.classList.contains("hidden");
+    }
     set admin(state: boolean) {
         if (state) {
-            this._admin.classList.remove("hidden")
+            this._admin.classList.remove("hidden");
             this._admin.textContent = window.lang.strings("admin");
         } else {
-            this._admin.classList.add("hidden")
+            this._admin.classList.add("hidden");
             this._admin.textContent = "";
         }
     }
 
-    get accounts_admin(): boolean { return this._accounts_admin.checked; }
+    get accounts_admin(): boolean {
+        return this._accounts_admin.checked;
+    }
     set accounts_admin(a: boolean) {
         if (!window.jellyfinLogin) return;
         this._accounts_admin.checked = a;
-        this._accounts_admin.disabled = (window.jfAllowAll || (a && this.admin && window.jfAdminOnly));
+        this._accounts_admin.disabled = window.jfAllowAll || (a && this.admin && window.jfAdminOnly);
         if (this._accounts_admin.disabled) {
             this._accounts_admin.title = window.lang.strings("accessJFASettings");
         } else {
@@ -261,18 +282,22 @@ class user implements User, SearchableItem {
         }
     }
 
-    get disabled(): boolean { return !(this._disabled.classList.contains("hidden")); }
+    get disabled(): boolean {
+        return !this._disabled.classList.contains("hidden");
+    }
     set disabled(state: boolean) {
         if (state) {
-            this._disabled.classList.remove("hidden")
+            this._disabled.classList.remove("hidden");
             this._disabled.textContent = window.lang.strings("disabled");
         } else {
-            this._disabled.classList.add("hidden")
+            this._disabled.classList.add("hidden");
             this._disabled.textContent = "";
         }
     }
 
-    get email(): string { return this._emailAddress; }
+    get email(): string {
+        return this._emailAddress;
+    }
     set email(value: string) {
         this._emailAddress = value;
         this._emailEditor.value = value;
@@ -287,14 +312,18 @@ class user implements User, SearchableItem {
         }
     }
 
-    get notify_email(): boolean { return this._notifyEmail; }
+    get notify_email(): boolean {
+        return this._notifyEmail;
+    }
     set notify_email(s: boolean) {
         if (this._notifyDropdown) {
             (this._notifyDropdown.querySelector(".accounts-contact-email") as HTMLInputElement).checked = s;
         }
     }
 
-    get referrals_enabled(): boolean { return this._referralsEnabled; }
+    get referrals_enabled(): boolean {
+        return this._referralsEnabled;
+    }
     set referrals_enabled(v: boolean) {
         this._referralsEnabled = v;
         if (!window.referralsEnabled) return;
@@ -363,9 +392,13 @@ class user implements User, SearchableItem {
         for (let i = 0; i < checks.length; i++) {
             checks[i].onclick = () => this._setNotifyMethod();
         }
-        
+
         for (let service of ["telegram", "discord", "matrix"]) {
-            el.querySelector(".accounts-unlink-"+service).addEventListener("click", () => _delete(`/users/${service}`, {"id": this.id}, () => document.dispatchEvent(new CustomEvent("accounts-reload"))));
+            el.querySelector(".accounts-unlink-" + service).addEventListener("click", () =>
+                _delete(`/users/${service}`, { id: this.id }, () =>
+                    document.dispatchEvent(new CustomEvent("accounts-reload")),
+                ),
+            );
         }
 
         button.onclick = () => {
@@ -373,15 +406,19 @@ class user implements User, SearchableItem {
             document.addEventListener("click", outerClickListener);
         };
         const outerClickListener = (event: Event) => {
-            if (!(event.target instanceof HTMLElement && (el.contains(event.target) || button.contains(event.target)))) {
+            if (
+                !(event.target instanceof HTMLElement && (el.contains(event.target) || button.contains(event.target)))
+            ) {
                 dropdown.classList.remove("selected");
                 document.removeEventListener("click", outerClickListener);
             }
         };
         return el;
-    }
+    };
 
-    get matrix(): string { return this._matrixID; }
+    get matrix(): string {
+        return this._matrixID;
+    }
     set matrix(u: string) {
         if (!window.matrixEnabled) {
             this._notifyDropdown.querySelector(".accounts-area-matrix").classList.add("unfocused");
@@ -409,12 +446,14 @@ class user implements User, SearchableItem {
             </div>
             `;
             if (lastNotifyMethod) {
-                (this._matrix.querySelector(".accounts-settings-area") as HTMLDivElement).appendChild(this._notifyDropdown);
+                (this._matrix.querySelector(".accounts-settings-area") as HTMLDivElement).appendChild(
+                    this._notifyDropdown,
+                );
             }
         }
         this._checkUnlinkArea();
     }
-   
+
     private _addMatrix = () => {
         const addButton = this._matrix.querySelector(".btn") as HTMLSpanElement;
         const input = this._matrix.querySelector("input.stealth-input") as HTMLInputElement;
@@ -423,9 +462,14 @@ class user implements User, SearchableItem {
             input.classList.remove("unfocused");
             addIcon.classList.add("ri-check-line");
             addIcon.classList.remove("ri-link");
-            addButton.classList.remove("chip")
+            addButton.classList.remove("chip");
             const outerClickListener = (event: Event) => {
-                if (!(event.target instanceof HTMLElement && (this._matrix.contains(event.target) || addButton.contains(event.target)))) {
+                if (
+                    !(
+                        event.target instanceof HTMLElement &&
+                        (this._matrix.contains(event.target) || addButton.contains(event.target))
+                    )
+                ) {
                     document.dispatchEvent(new CustomEvent("accounts-reload"));
                     document.removeEventListener("click", outerClickListener);
                 }
@@ -435,29 +479,36 @@ class user implements User, SearchableItem {
             if (input.value.charAt(0) != "@" || !input.value.includes(":")) return;
             const send = {
                 jf_id: this.id,
-                user_id: input.value
-            }
+                user_id: input.value,
+            };
             _post("/users/matrix", send, (req: XMLHttpRequest) => {
                 if (req.readyState == 4) {
                     document.dispatchEvent(new CustomEvent("accounts-reload"));
                     if (req.status != 200) {
-                        window.notifications.customError("errorConnectMatrix", window.lang.notif("errorFailureCheckLogs"));
+                        window.notifications.customError(
+                            "errorConnectMatrix",
+                            window.lang.notif("errorFailureCheckLogs"),
+                        );
                         return;
                     }
                     window.notifications.customSuccess("connectMatrix", window.lang.notif("accountConnected"));
                 }
             });
         }
-    }
+    };
 
-    get notify_matrix(): boolean { return this._notifyMatrix; }
+    get notify_matrix(): boolean {
+        return this._notifyMatrix;
+    }
     set notify_matrix(s: boolean) {
         if (this._notifyDropdown) {
             (this._notifyDropdown.querySelector(".accounts-contact-matrix") as HTMLInputElement).checked = s;
         }
     }
-    
-    get telegram(): string { return this._telegramUsername; }
+
+    get telegram(): string {
+        return this._telegramUsername;
+    }
     set telegram(u: string) {
         if (!window.telegramEnabled) {
             this._notifyDropdown.querySelector(".accounts-area-telegram").classList.add("unfocused");
@@ -480,13 +531,17 @@ class user implements User, SearchableItem {
             </div>
             `;
             if (lastNotifyMethod) {
-                (this._telegram.querySelector(".accounts-settings-area") as HTMLDivElement).appendChild(this._notifyDropdown);
+                (this._telegram.querySelector(".accounts-settings-area") as HTMLDivElement).appendChild(
+                    this._notifyDropdown,
+                );
             }
         }
         this._checkUnlinkArea();
     }
-    
-    get notify_telegram(): boolean { return this._notifyTelegram; }
+
+    get notify_telegram(): boolean {
+        return this._notifyTelegram;
+    }
     set notify_telegram(s: boolean) {
         if (this._notifyDropdown) {
             (this._notifyDropdown.querySelector(".accounts-contact-telegram") as HTMLInputElement).checked = s;
@@ -497,37 +552,49 @@ class user implements User, SearchableItem {
         const email = this._notifyDropdown.getElementsByClassName("accounts-contact-email")[0] as HTMLInputElement;
         let send = {
             id: this.id,
-            email: email.checked
-        }
+            email: email.checked,
+        };
         if (window.telegramEnabled && this._telegramUsername) {
-            const telegram = this._notifyDropdown.getElementsByClassName("accounts-contact-telegram")[0] as HTMLInputElement;
+            const telegram = this._notifyDropdown.getElementsByClassName(
+                "accounts-contact-telegram",
+            )[0] as HTMLInputElement;
             send["telegram"] = telegram.checked;
         }
         if (window.discordEnabled && this._discordUsername) {
-            const discord = this._notifyDropdown.getElementsByClassName("accounts-contact-discord")[0] as HTMLInputElement;
+            const discord = this._notifyDropdown.getElementsByClassName(
+                "accounts-contact-discord",
+            )[0] as HTMLInputElement;
             send["discord"] = discord.checked;
         }
-        _post("/users/contact", send, (req: XMLHttpRequest) => {
-            if (req.readyState == 4) {
-                if (req.status != 200) {
-                    window.notifications.customError("errorSetNotify", window.lang.notif("errorSaveSettings"));
+        _post(
+            "/users/contact",
+            send,
+            (req: XMLHttpRequest) => {
+                if (req.readyState == 4) {
+                    if (req.status != 200) {
+                        window.notifications.customError("errorSetNotify", window.lang.notif("errorSaveSettings"));
+                        document.dispatchEvent(new CustomEvent("accounts-reload"));
+                        return;
+                    }
+                }
+            },
+            false,
+            (req: XMLHttpRequest) => {
+                if (req.status == 0) {
+                    window.notifications.connectionError();
                     document.dispatchEvent(new CustomEvent("accounts-reload"));
                     return;
+                } else if (req.status == 401) {
+                    window.notifications.customError("401Error", window.lang.notif("error401Unauthorized"));
+                    document.dispatchEvent(new CustomEvent("accounts-reload"));
                 }
-            }
-        }, false, (req: XMLHttpRequest) => {
-            if (req.status == 0) {
-                window.notifications.connectionError();
-                document.dispatchEvent(new CustomEvent("accounts-reload"));
-                return;
-            } else if (req.status == 401) {
-                window.notifications.customError("401Error", window.lang.notif("error401Unauthorized"));
-                document.dispatchEvent(new CustomEvent("accounts-reload"));
-            }
-        });
+            },
+        );
+    };
+
+    get discord(): string {
+        return this._discordUsername;
     }
-    
-    get discord(): string { return this._discordUsername; }
     set discord(u: string) {
         if (!window.discordEnabled) {
             this._notifyDropdown.querySelector(".accounts-area-discord").classList.add("unfocused");
@@ -550,48 +617,60 @@ class user implements User, SearchableItem {
             </div>
             `;
             if (lastNotifyMethod) {
-                (this._discord.querySelector(".accounts-settings-area") as HTMLDivElement).appendChild(this._notifyDropdown);
+                (this._discord.querySelector(".accounts-settings-area") as HTMLDivElement).appendChild(
+                    this._notifyDropdown,
+                );
             }
         }
         this._checkUnlinkArea();
     }
 
-    get discord_id(): string { return this._discordID; }
+    get discord_id(): string {
+        return this._discordID;
+    }
     set discord_id(id: string) {
-        if (!window.discordEnabled || this._discordUsername == "") return; 
+        if (!window.discordEnabled || this._discordUsername == "") return;
         this._discordID = id;
         const link = this._discord.getElementsByClassName("discord-link")[0] as HTMLAnchorElement;
         link.href = `https://discord.com/users/${id}`;
     }
-    
-    get notify_discord(): boolean { return this._notifyDiscord; }
+
+    get notify_discord(): boolean {
+        return this._notifyDiscord;
+    }
     set notify_discord(s: boolean) {
         if (this._notifyDropdown) {
             (this._notifyDropdown.querySelector(".accounts-contact-discord") as HTMLInputElement).checked = s;
         }
     }
 
-    get expiry(): number { return this._expiryUnix; }
+    get expiry(): number {
+        return this._expiryUnix;
+    }
     set expiry(unix: number) {
         this._expiryUnix = unix;
         if (unix == 0) {
             this._expiry.textContent = "";
         } else {
-            this._expiry.textContent = toDateString(new Date(unix*1000));
+            this._expiry.textContent = toDateString(new Date(unix * 1000));
         }
     }
 
-    get last_active(): number { return this._lastActiveUnix; }
+    get last_active(): number {
+        return this._lastActiveUnix;
+    }
     set last_active(unix: number) {
         this._lastActiveUnix = unix;
         if (unix == 0) {
             this._lastActive.textContent == "n/a";
         } else {
-            this._lastActive.textContent = toDateString(new Date(unix*1000));
+            this._lastActive.textContent = toDateString(new Date(unix * 1000));
         }
     }
 
-    get label(): string { return this._userLabel; }
+    get label(): string {
+        return this._userLabel;
+    }
     set label(l: string) {
         this._userLabel = l ? l : "";
         this._labelEditor.value = l ? l : "";
@@ -607,10 +686,10 @@ class user implements User, SearchableItem {
             this.matrix.toLowerCase().includes(query) ||
             this.telegram.toLowerCase().includes(query)
         );
-    }
+    };
 
-    private _checkEvent = () => new CustomEvent("accountCheckEvent", {detail: this.id});
-    private _uncheckEvent = () => new CustomEvent("accountUncheckEvent", {detail: this.id});
+    private _checkEvent = () => new CustomEvent("accountCheckEvent", { detail: this.id });
+    private _uncheckEvent = () => new CustomEvent("accountUncheckEvent", { detail: this.id });
 
     constructor(user: User) {
         this._row = document.createElement("tr") as HTMLTableRowElement;
@@ -688,8 +767,10 @@ class user implements User, SearchableItem {
             clickAwayShouldSave: false,
         });
 
-        this._check.onchange = () => { this.selected = this._check.checked; }
-        
+        this._check.onchange = () => {
+            this.selected = this._check.checked;
+        };
+
         if (window.jellyfinLogin) {
             this._accounts_admin.onchange = () => {
                 this.accounts_admin = this._accounts_admin.checked;
@@ -705,7 +786,7 @@ class user implements User, SearchableItem {
                 });
             };
         }
-        
+
         if (window.referralsEnabled) {
             this._referralsEnabledCheck = this._row.querySelector(".accounts-referrals");
         }
@@ -713,13 +794,13 @@ class user implements User, SearchableItem {
         this._notifyDropdown = this._constructDropdown();
 
         this.update(user);
-        
+
         document.addEventListener("timefmt-change", () => {
             this.expiry = this.expiry;
             this.last_active = this.last_active;
         });
     }
-    
+
     private _updateLabel = () => {
         let send = {};
         send[this.id] = this._labelEditor.value;
@@ -739,65 +820,82 @@ class user implements User, SearchableItem {
         _post("/users/emails", send, (req: XMLHttpRequest) => {
             if (req.readyState == 4) {
                 if (req.status == 200) {
-                    window.notifications.customSuccess("emailChanged", window.lang.var("notifications", "changedEmailAddress", `"${this.name}"`));
+                    window.notifications.customSuccess(
+                        "emailChanged",
+                        window.lang.var("notifications", "changedEmailAddress", `"${this.name}"`),
+                    );
                 } else {
                     this.email = this._emailEditor.previous;
-                    window.notifications.customError("emailChanged", window.lang.var("notifications", "errorChangedEmailAddress", `"${this.name}"`)); 
+                    window.notifications.customError(
+                        "emailChanged",
+                        window.lang.var("notifications", "errorChangedEmailAddress", `"${this.name}"`),
+                    );
                 }
             }
         });
-    }
-    
-    private _addTelegram = () => _get("/telegram/pin", null, (req: XMLHttpRequest) => {
-        if (req.readyState == 4 && req.status == 200) {
-            const modal = window.modals.telegram.modal;
-            const pin = modal.getElementsByClassName("pin")[0] as HTMLElement;
-            const link = modal.getElementsByClassName("link")[0] as HTMLAnchorElement;
-            const username = modal.getElementsByClassName("username")[0] as HTMLElement;
-            const waiting = document.getElementById("telegram-waiting") as HTMLSpanElement;
-            let resp = req.response as getPinResponse;
-            pin.textContent = resp.token;
-            link.href = "https://t.me/" + resp.username;
-            username.textContent = resp.username;
-            addLoader(waiting);
-            let modalClosed = false;
-            window.modals.telegram.onclose = () => { 
-                modalClosed = true;
-                removeLoader(waiting);
-            }
-            let send = {
-                token: resp.token,
-                id: this.id
-            };
-            const checkVerified = () => _post("/users/telegram", send, (req: XMLHttpRequest) => {
-                if (req.readyState == 4) {
-                    if (req.status == 200 && req.response["success"] as boolean) {
-                        removeLoader(waiting);
-                        waiting.classList.add("~positive");
-                        waiting.classList.remove("~info");
-                        window.notifications.customSuccess("telegramVerified", window.lang.notif("telegramVerified"));
-                        setTimeout(() => {
-                            window.modals.telegram.close();
-                            waiting.classList.add("~info");
-                            waiting.classList.remove("~positive");
-                        }, 2000);
-                        document.dispatchEvent(new CustomEvent("accounts-reload"));
-                    } else if (!modalClosed) {
-                        setTimeout(checkVerified, 1500);
-                    }
-                }
-            }, true);
-            window.modals.telegram.show();
-            checkVerified();
-        }
-    });
+    };
 
-    get id() { return this._id; }
+    private _addTelegram = () =>
+        _get("/telegram/pin", null, (req: XMLHttpRequest) => {
+            if (req.readyState == 4 && req.status == 200) {
+                const modal = window.modals.telegram.modal;
+                const pin = modal.getElementsByClassName("pin")[0] as HTMLElement;
+                const link = modal.getElementsByClassName("link")[0] as HTMLAnchorElement;
+                const username = modal.getElementsByClassName("username")[0] as HTMLElement;
+                const waiting = document.getElementById("telegram-waiting") as HTMLSpanElement;
+                let resp = req.response as getPinResponse;
+                pin.textContent = resp.token;
+                link.href = "https://t.me/" + resp.username;
+                username.textContent = resp.username;
+                addLoader(waiting);
+                let modalClosed = false;
+                window.modals.telegram.onclose = () => {
+                    modalClosed = true;
+                    removeLoader(waiting);
+                };
+                let send = {
+                    token: resp.token,
+                    id: this.id,
+                };
+                const checkVerified = () =>
+                    _post(
+                        "/users/telegram",
+                        send,
+                        (req: XMLHttpRequest) => {
+                            if (req.readyState == 4) {
+                                if (req.status == 200 && (req.response["success"] as boolean)) {
+                                    removeLoader(waiting);
+                                    waiting.classList.add("~positive");
+                                    waiting.classList.remove("~info");
+                                    window.notifications.customSuccess(
+                                        "telegramVerified",
+                                        window.lang.notif("telegramVerified"),
+                                    );
+                                    setTimeout(() => {
+                                        window.modals.telegram.close();
+                                        waiting.classList.add("~info");
+                                        waiting.classList.remove("~positive");
+                                    }, 2000);
+                                    document.dispatchEvent(new CustomEvent("accounts-reload"));
+                                } else if (!modalClosed) {
+                                    setTimeout(checkVerified, 1500);
+                                }
+                            }
+                        },
+                        true,
+                    );
+                window.modals.telegram.show();
+                checkVerified();
+            }
+        });
+
+    get id() {
+        return this._id;
+    }
     set id(v: string) {
         this._id = v;
         this._row.setAttribute(SearchableItemDataAttribute, v);
     }
-
 
     update = (user: User) => {
         this.id = user.id;
@@ -822,16 +920,18 @@ class user implements User, SearchableItem {
         this.label = user.label;
         this.accounts_admin = user.accounts_admin;
         this.referrals_enabled = user.referrals_enabled;
-    }
+    };
 
-    asElement = (): HTMLTableRowElement => { return this._row; }
+    asElement = (): HTMLTableRowElement => {
+        return this._row;
+    };
     remove = () => {
         if (this.selected) {
             document.dispatchEvent(this._uncheckEvent());
         }
-        this._row.remove(); 
-    }
-}  
+        this._row.remove();
+    };
+}
 
 interface UsersDTO extends paginatedDTO {
     users: User[];
@@ -851,7 +951,7 @@ declare interface ExtendExpiryDTO {
 
 export class accountsList extends PaginatedList {
     protected _container = document.getElementById("accounts-list") as HTMLTableSectionElement;
-    
+
     private _addUserButton = document.getElementById("accounts-add-user") as HTMLSpanElement;
     private _announceButton = document.getElementById("accounts-announce") as HTMLSpanElement;
     private _announceSaveButton = document.getElementById("save-announce") as HTMLSpanElement;
@@ -866,7 +966,7 @@ export class accountsList extends PaginatedList {
     private _deleteReason = document.getElementById("textarea-delete-user") as HTMLTextAreaElement;
     private _expiryDropdown = document.getElementById("accounts-expiry-dropdown") as HTMLElement;
     private _extendExpiry = document.getElementById("accounts-extend-expiry") as HTMLSpanElement;
-    private  _extendExpiryForm = document.getElementById("form-extend-expiry") as HTMLFormElement;
+    private _extendExpiryForm = document.getElementById("form-extend-expiry") as HTMLFormElement;
     private _extendExpiryTextInput = document.getElementById("extend-expiry-text") as HTMLInputElement;
     private _extendExpiryFieldInputs = document.getElementById("extend-expiry-field-inputs") as HTMLElement;
     private _extendExpiryFromPreviousExpiry = document.getElementById("expiry-use-previous") as HTMLInputElement;
@@ -891,14 +991,18 @@ export class accountsList extends PaginatedList {
 
     private _applyHomescreen = document.getElementById("modify-user-homescreen") as HTMLInputElement;
     private _applyConfiguration = document.getElementById("modify-user-configuration") as HTMLInputElement;
-    private _applyOmbi = window.ombiEnabled ? document.getElementById("modify-user-ombi") as HTMLInputElement : null;
-    private _applyJellyseerr = window.jellyseerrEnabled ? document.getElementById("modify-user-jellyseerr") as HTMLInputElement : null;
+    private _applyOmbi = window.ombiEnabled ? (document.getElementById("modify-user-ombi") as HTMLInputElement) : null;
+    private _applyJellyseerr = window.jellyseerrEnabled
+        ? (document.getElementById("modify-user-jellyseerr") as HTMLInputElement)
+        : null;
 
     private _selectAll = document.getElementById("accounts-select-all") as HTMLInputElement;
     private _selectAllState: SelectAllState = SelectAllState.None;
     // private _users: { [id: string]: user };
     // private _ordering: string[] = [];
-    get users(): { [id: string]: user } { return this._search.items as { [id: string]: user }; }
+    get users(): { [id: string]: user } {
+        return this._search.items as { [id: string]: user };
+    }
     // set users(v: { [id: string]: user }) { this._search.items = v as SearchableItems; }
 
     // Whether the enable/disable button should enable or not.
@@ -909,7 +1013,7 @@ export class accountsList extends PaginatedList {
     private _addUserEmail = this._addUserForm.querySelector("input[type=email]") as HTMLInputElement;
     private _addUserPassword = this._addUserForm.querySelector("input[type=password]") as HTMLInputElement;
     private _addUserProfile = this._addUserForm.querySelector("select") as HTMLSelectElement;
-    
+
     // Columns for sorting.
     private _columns: { [className: string]: Column } = {};
 
@@ -923,24 +1027,28 @@ export class accountsList extends PaginatedList {
         const fieldIDs = ["months", "days", "hours", "minutes"];
         const prefixes = ["extend-expiry-"];
         for (let i = 0; i < fieldIDs.length; i++) {
-            for (let j = 0; j < prefixes.length; j++) { 
+            for (let j = 0; j < prefixes.length; j++) {
                 const field = document.getElementById(prefixes[j] + fieldIDs[i]);
-                field.textContent = '';
+                field.textContent = "";
                 for (let n = 0; n <= this._maxDayHourMinuteOptions; n++) {
-                   const opt = document.createElement("option") as HTMLOptionElement;
-                   opt.textContent = ""+n;
-                   opt.value = ""+n;
-                   field.appendChild(opt);
+                    const opt = document.createElement("option") as HTMLOptionElement;
+                    opt.textContent = "" + n;
+                    opt.value = "" + n;
+                    field.appendChild(opt);
                 }
             }
         }
-    }
-    
+    };
+
     constructor() {
         super({
             loader: document.getElementById("accounts-loader"),
-            loadMoreButtons: Array.from([document.getElementById("accounts-load-more") as HTMLButtonElement]) as Array<HTMLButtonElement>,
-            loadAllButtons: Array.from(document.getElementsByClassName("accounts-load-all")) as Array<HTMLButtonElement>,
+            loadMoreButtons: Array.from([
+                document.getElementById("accounts-load-more") as HTMLButtonElement,
+            ]) as Array<HTMLButtonElement>,
+            loadAllButtons: Array.from(
+                document.getElementsByClassName("accounts-load-all"),
+            ) as Array<HTMLButtonElement>,
             refreshButton: document.getElementById("accounts-refresh") as HTMLButtonElement,
             filterArea: document.getElementById("accounts-filter-area"),
             searchOptionsHeader: document.getElementById("accounts-search-options-header"),
@@ -951,7 +1059,7 @@ export class accountsList extends PaginatedList {
             itemsPerPage: 40,
             maxItemsLoadedForSearch: 200,
             appendNewItems: (resp: paginatedDTO) => {
-                for (let u of ((resp as UsersDTO).users || [])) {
+                for (let u of (resp as UsersDTO).users || []) {
                     if (u.id in this.users) {
                         this.users[u.id].update(u);
                     } else {
@@ -962,14 +1070,16 @@ export class accountsList extends PaginatedList {
                 this._search.setOrdering(
                     this._columns[this._search.sortField].sort(this.users),
                     this._search.sortField,
-                    this._search.ascending
+                    this._search.ascending,
                 );
             },
             replaceWithNewItems: (resp: paginatedDTO) => {
                 let accountsOnDOM: { [id: string]: boolean } = {};
 
-                for (let id of Object.keys(this.users)) { accountsOnDOM[id] = true; }
-                for (let u of ((resp as UsersDTO).users || [])) {
+                for (let id of Object.keys(this.users)) {
+                    accountsOnDOM[id] = true;
+                }
+                for (let u of (resp as UsersDTO).users || []) {
                     if (u.id in accountsOnDOM) {
                         this.users[u.id].update(u);
                         delete accountsOnDOM[u.id];
@@ -981,14 +1091,14 @@ export class accountsList extends PaginatedList {
                 // Delete accounts w/ remaining IDs (those not in resp.users)
                 // console.log("Removing", Object.keys(accountsOnDOM).length, "from DOM");
                 for (let id in accountsOnDOM) {
-                    this.users[id].remove()
+                    this.users[id].remove();
                     delete this.users[id];
                 }
 
                 this._search.setOrdering(
                     this._columns[this._search.sortField].sort(this.users),
                     this._search.sortField,
-                    this._search.ascending
+                    this._search.ascending,
                 );
             },
             defaultSortField: USER_DEFAULT_SORT_FIELD,
@@ -997,10 +1107,10 @@ export class accountsList extends PaginatedList {
                 if (req.readyState != 4) return;
                 // FIXME: Error message
                 if (req.status != 200) return;
-            }
+            },
         });
         this._populateNumbers();
-        
+
         let searchConfig: SearchConfiguration = {
             filterArea: this._c.filterArea,
             sortingByButton: this._sortingByButton,
@@ -1019,9 +1129,9 @@ export class accountsList extends PaginatedList {
             searchServer: null,
             clearServerSearch: null,
         };
-        
+
         this.initSearch(searchConfig);
-       
+
         // FIXME: Remove!
         (window as any).accs = this;
 
@@ -1029,8 +1139,14 @@ export class accountsList extends PaginatedList {
         this._selectAllState = SelectAllState.None;
         this._selectAll.onchange = () => this.cycleSelectAll();
         document.addEventListener("accounts-reload", () => this.reload());
-        document.addEventListener("accountCheckEvent", () => { this._counter.selected++; this.processSelectedAccounts(); });
-        document.addEventListener("accountUncheckEvent", () => { this._counter.selected--; this.processSelectedAccounts(); });
+        document.addEventListener("accountCheckEvent", () => {
+            this._counter.selected++;
+            this.processSelectedAccounts();
+        });
+        document.addEventListener("accountUncheckEvent", () => {
+            this._counter.selected--;
+            this.processSelectedAccounts();
+        });
         this._addUserButton.onclick = () => {
             this._populateAddUserProfiles();
             window.modals.addUser.toggle();
@@ -1052,7 +1168,7 @@ export class accountsList extends PaginatedList {
             const userSpan = this._modifySettingsUser.nextElementSibling as HTMLSpanElement;
             if (this._modifySettingsProfile.checked) {
                 this._userSelect.parentElement.classList.add("unfocused");
-                this._profileSelect.parentElement.classList.remove("unfocused")
+                this._profileSelect.parentElement.classList.remove("unfocused");
                 profileSpan.classList.add("@high");
                 profileSpan.classList.remove("@low");
                 userSpan.classList.remove("@high");
@@ -1080,7 +1196,7 @@ export class accountsList extends PaginatedList {
                 console.debug("States:", this._enableReferralsProfile.checked, this._enableReferralsInvite.checked);
                 if (this._enableReferralsProfile.checked) {
                     this._referralsInviteSelect.parentElement.classList.add("unfocused");
-                    this._referralsProfileSelect.parentElement.classList.remove("unfocused")
+                    this._referralsProfileSelect.parentElement.classList.remove("unfocused");
                     profileSpan.classList.add("@high");
                     profileSpan.classList.remove("@low");
                     inviteSpan.classList.remove("@high");
@@ -1099,7 +1215,7 @@ export class accountsList extends PaginatedList {
                 this._enableReferralsInvite.checked = false;
                 checkReferralSource();
             };
-            inviteSpan.onclick = () => {;
+            inviteSpan.onclick = () => {
                 this._enableReferralsInvite.checked = true;
                 this._enableReferralsProfile.checked = false;
                 checkReferralSource();
@@ -1116,17 +1232,21 @@ export class accountsList extends PaginatedList {
         this._announceButton.onclick = this.announce;
         this._announceButton.parentElement.classList.add("unfocused");
 
-        this._extendExpiry.onclick = () => { this.extendExpiry(); };
-        this._removeExpiry.onclick = () => { this.removeExpiry(); };
+        this._extendExpiry.onclick = () => {
+            this.extendExpiry();
+        };
+        this._removeExpiry.onclick = () => {
+            this.removeExpiry();
+        };
         this._expiryDropdown.classList.add("unfocused");
         this._extendExpiryDate.classList.add("unfocused");
 
         this._extendExpiryTextInput.onkeyup = () => {
             this._extendExpiryTextInput.parentElement.classList.remove("opacity-60");
             this._extendExpiryFieldInputs.classList.add("opacity-60");
-                this._usingExtendExpiryTextInput = true;
+            this._usingExtendExpiryTextInput = true;
             this._displayExpiryDate();
-        }
+        };
 
         this._extendExpiryTextInput.onclick = () => {
             this._extendExpiryTextInput.parentElement.classList.remove("opacity-60");
@@ -1143,9 +1263,9 @@ export class accountsList extends PaginatedList {
         };
 
         this._extendExpiryFromPreviousExpiry.onclick = this._displayExpiryDate;
-        
+
         for (let field of ["months", "days", "hours", "minutes"]) {
-            (document.getElementById("extend-expiry-"+field) as HTMLSelectElement).onchange = () => {
+            (document.getElementById("extend-expiry-" + field) as HTMLSelectElement).onchange = () => {
                 this._extendExpiryFieldInputs.classList.remove("opacity-60");
                 this._extendExpiryTextInput.parentElement.classList.add("opacity-60");
                 this._usingExtendExpiryTextInput = false;
@@ -1156,7 +1276,9 @@ export class accountsList extends PaginatedList {
         this._disableEnable.onclick = this.enableDisableUsers;
         this._disableEnable.parentElement.classList.add("unfocused");
 
-        this._enableExpiry.onclick = () => { this.extendExpiry(true); };
+        this._enableExpiry.onclick = () => {
+            this.extendExpiry(true);
+        };
         this._enableExpiryNotify.onchange = () => {
             if (this._enableExpiryNotify.checked) {
                 this._enableExpiryReason.classList.remove("unfocused");
@@ -1181,19 +1303,27 @@ export class accountsList extends PaginatedList {
         }*/
 
         this._announceTextarea.onkeyup = this.loadPreview;
-        addDiscord = newDiscordSearch(window.lang.strings("linkDiscord"), window.lang.strings("searchDiscordUser"), window.lang.strings("add"), (user: DiscordUser, id: string) => { 
-            _post("/users/discord", {jf_id: id, discord_id: user.id}, (req: XMLHttpRequest) => {
-                if (req.readyState == 4) {
-                    document.dispatchEvent(new CustomEvent("accounts-reload"));
-                    if (req.status != 200) {
-                        window.notifications.customError("errorConnectDiscord", window.lang.notif("errorFailureCheckLogs"));
-                        return
+        addDiscord = newDiscordSearch(
+            window.lang.strings("linkDiscord"),
+            window.lang.strings("searchDiscordUser"),
+            window.lang.strings("add"),
+            (user: DiscordUser, id: string) => {
+                _post("/users/discord", { jf_id: id, discord_id: user.id }, (req: XMLHttpRequest) => {
+                    if (req.readyState == 4) {
+                        document.dispatchEvent(new CustomEvent("accounts-reload"));
+                        if (req.status != 200) {
+                            window.notifications.customError(
+                                "errorConnectDiscord",
+                                window.lang.notif("errorFailureCheckLogs"),
+                            );
+                            return;
+                        }
+                        window.notifications.customSuccess("discordConnected", window.lang.notif("accountConnected"));
+                        window.modals.discord.close();
                     }
-                    window.notifications.customSuccess("discordConnected", window.lang.notif("accountConnected"));
-                    window.modals.discord.close()
-                }
-            });
-        });
+                });
+            },
+        );
 
         this._announceSaveButton.onclick = this.saveAnnouncement;
         const announceVarUsername = document.getElementById("announce-variables-username") as HTMLSpanElement;
@@ -1202,12 +1332,38 @@ export class accountsList extends PaginatedList {
             this.loadPreview();
         };
 
-        const headerNames: string[] = ["username", "access-jfa", "email", "telegram", "matrix", "discord", "expiry", "last-active", "referrals"];
-        const headerGetters: string[] = ["name", "accounts_admin", "email", "telegram", "matrix", "discord", "expiry", "last_active", "referrals_enabled"];
+        const headerNames: string[] = [
+            "username",
+            "access-jfa",
+            "email",
+            "telegram",
+            "matrix",
+            "discord",
+            "expiry",
+            "last-active",
+            "referrals",
+        ];
+        const headerGetters: string[] = [
+            "name",
+            "accounts_admin",
+            "email",
+            "telegram",
+            "matrix",
+            "discord",
+            "expiry",
+            "last_active",
+            "referrals_enabled",
+        ];
         for (let i = 0; i < headerNames.length; i++) {
-            const header: HTMLTableCellElement = document.querySelector(".accounts-header-" + headerNames[i]) as HTMLTableCellElement;
+            const header: HTMLTableCellElement = document.querySelector(
+                ".accounts-header-" + headerNames[i],
+            ) as HTMLTableCellElement;
             if (header !== null) {
-                this._columns[headerGetters[i]] = new Column(header, headerGetters[i], Object.getOwnPropertyDescriptor(user.prototype, headerGetters[i]).get);
+                this._columns[headerGetters[i]] = new Column(
+                    header,
+                    headerGetters[i],
+                    Object.getOwnPropertyDescriptor(user.prototype, headerGetters[i]).get,
+                );
             }
         }
 
@@ -1226,7 +1382,7 @@ export class accountsList extends PaginatedList {
             this._search.setOrdering(
                 this._columns[event.detail].sort(this.users),
                 event.detail,
-                this._columns[event.detail].ascending
+                this._columns[event.detail].ascending,
             );
             this._sortingByButton.replaceChildren(this._columns[event.detail].asElement());
             this._sortingByButton.classList.remove("hidden");
@@ -1252,26 +1408,25 @@ export class accountsList extends PaginatedList {
         window.modals.announce.onclose = () => {
             const preview = document.getElementById("announce-preview") as HTMLDivElement;
             preview.textContent = ``;
-        }
+        };
     }
 
     reload = (callback?: (resp: paginatedDTO) => void) => {
         this._reload(callback);
         this.loadTemplates();
-    }
+    };
 
     loadMore = (loadAll: boolean = false, callback?: (resp?: paginatedDTO) => void) => {
-        this._loadMore(
-            loadAll,
-            callback
-        );
+        this._loadMore(loadAll, callback);
     };
 
     loadAll = (callback?: (resp?: paginatedDTO) => void) => {
         this._loadAll(callback);
     };
 
-    get selectAll(): SelectAllState { return this._selectAllState; }
+    get selectAll(): SelectAllState {
+        return this._selectAllState;
+    }
 
     cycleSelectAll = () => {
         let next: SelectAllState;
@@ -1316,15 +1471,15 @@ export class accountsList extends PaginatedList {
             }
             this._selectAll.indeterminate = this.lastPage ? false : true;
             this.processSelectedAccounts();
-        }
+        };
         if (next == SelectAllState.AllVisible) {
             selectAllVisible();
             return;
         }
-   
+
         if (next == SelectAllState.All) {
             this.loadAll((_: paginatedDTO) => {
-                if (!(this.lastPage)) {
+                if (!this.lastPage) {
                     // Pretend to live-select elements as they load.
                     this._counter.selected = this._counter.shown;
                     return;
@@ -1333,24 +1488,24 @@ export class accountsList extends PaginatedList {
             });
             return;
         }
-    }
-    
+    };
+
     selectAllBetweenIDs = (startID: string, endID: string) => {
         let inRange = false;
         for (let id of this._search.ordering) {
             if (!(inRange || id == startID)) continue;
             inRange = true;
-            if (!(this._container.contains(this.users[id].asElement()))) continue;
+            if (!this._container.contains(this.users[id].asElement())) continue;
             this.users[id].selected = true;
             if (id == endID) return;
         }
-    }
+    };
 
     add = (u: User) => {
         let domAccount = new user(u);
         this.users[u.id] = domAccount;
         // console.log("after appending lengths:", Object.keys(this.users).length, Object.keys(this._search.items).length);
-    }
+    };
 
     private processSelectedAccounts = () => {
         console.debug("processSelectedAccounts");
@@ -1401,7 +1556,7 @@ export class accountsList extends PaginatedList {
             let noContactCount = 0;
             let referralState = Number(this.users[list[0]].referrals_enabled); // -1 = hide, 0 = show "enable", 1 = show "disable"
             // Only show enable/disable button if all selected have the same state.
-            this._shouldEnable = this.users[list[0]].disabled
+            this._shouldEnable = this.users[list[0]].disabled;
             let showDisableEnable = true;
             for (let id of list) {
                 if (!anyNonExpiries && !this.users[id].expiry) {
@@ -1415,11 +1570,17 @@ export class accountsList extends PaginatedList {
                     showDisableEnable = false;
                     this._disableEnable.parentElement.classList.add("unfocused");
                 }
-                if (!showDisableEnable && anyNonExpiries) { break; }
+                if (!showDisableEnable && anyNonExpiries) {
+                    break;
+                }
                 if (!this.users[id].lastNotifyMethod()) {
                     noContactCount++;
                 }
-                if (window.referralsEnabled && referralState != -1 && Number(this.users[id].referrals_enabled) != referralState) {
+                if (
+                    window.referralsEnabled &&
+                    referralState != -1 &&
+                    Number(this.users[id].referrals_enabled) != referralState
+                ) {
                     referralState = -1;
                 }
             }
@@ -1460,7 +1621,7 @@ export class accountsList extends PaginatedList {
             if (window.referralsEnabled) {
                 if (referralState == -1) {
                     this._enableReferrals.classList.add("unfocused");
-                }  else {
+                } else {
                     this._enableReferrals.classList.remove("unfocused");
                 }
                 if (referralState == 0) {
@@ -1474,24 +1635,26 @@ export class accountsList extends PaginatedList {
                 }
             }
         }
-    }
-    
+    };
+
     private _collectUsers = (): string[] => {
         let list: string[] = [];
         for (let id of this._visible) {
-            if (this.users[id].selected) { list.push(id) }
+            if (this.users[id].selected) {
+                list.push(id);
+            }
         }
         return list;
-    }
+    };
 
     private _addUser = (event: Event) => {
         event.preventDefault();
         const button = this._addUserForm.querySelector("span.submit") as HTMLSpanElement;
         const send = {
-            "username": this._addUserName.value,
-            "email": this._addUserEmail.value,
-            "password": this._addUserPassword.value,
-            "profile": this._addUserProfile.value,
+            username: this._addUserName.value,
+            email: this._addUserEmail.value,
+            password: this._addUserPassword.value,
+            profile: this._addUserProfile.value,
         };
         for (let field in send) {
             if (!send[field]) {
@@ -1500,32 +1663,40 @@ export class accountsList extends PaginatedList {
             }
         }
         toggleLoader(button);
-        _post("/user", send, (req: XMLHttpRequest) => {
-            if (req.readyState == 4) {
-                toggleLoader(button);
-                if (req.status == 200 || (req.response["user"] as boolean)) {
-                    window.notifications.customSuccess("addUser", window.lang.var("notifications", "userCreated", `"${send['username']}"`));
-                    if (!req.response["email"]) {
-                        window.notifications.customError("sendWelcome", window.lang.notif("errorSendWelcomeEmail"));
-                        console.error("User created, but welcome email failed");
+        _post(
+            "/user",
+            send,
+            (req: XMLHttpRequest) => {
+                if (req.readyState == 4) {
+                    toggleLoader(button);
+                    if (req.status == 200 || (req.response["user"] as boolean)) {
+                        window.notifications.customSuccess(
+                            "addUser",
+                            window.lang.var("notifications", "userCreated", `"${send["username"]}"`),
+                        );
+                        if (!req.response["email"]) {
+                            window.notifications.customError("sendWelcome", window.lang.notif("errorSendWelcomeEmail"));
+                            console.error("User created, but welcome email failed");
+                        }
+                    } else {
+                        let msg = window.lang.var("notifications", "errorUserCreated", `"${send["username"]}"`);
+                        if ("error" in req.response) {
+                            let realError = window.lang.notif(req.response["error"]);
+                            if (realError) msg = realError;
+                        }
+                        window.notifications.customError("addUser", msg);
                     }
-                } else {
-                    let msg = window.lang.var("notifications", "errorUserCreated", `"${send['username']}"`);
-                    if ("error" in req.response) {
-                        let realError = window.lang.notif(req.response["error"]);
-                        if (realError) msg = realError;
+                    if (req.response["error"] as String) {
+                        console.error(req.response["error"]);
                     }
-                    window.notifications.customError("addUser", msg);
-                }
-                if (req.response["error"] as String) {
-                    console.error(req.response["error"]);
-                }
 
-                this.reload();
-                window.modals.addUser.close();
-            }
-        }, true);
-    }
+                    this.reload();
+                    window.modals.addUser.close();
+                }
+            },
+            true,
+        );
+    };
     loadPreview = () => {
         let content = this._announceTextarea.value;
         if (!this._previewLoaded) {
@@ -1535,7 +1706,7 @@ export class accountsList extends PaginatedList {
             content = Marked.parse(content);
             this._announcePreview.innerHTML = content;
         }
-    }
+    };
     saveAnnouncement = (event: Event) => {
         event.preventDefault();
         const form = document.getElementById("form-announce") as HTMLFormElement;
@@ -1550,13 +1721,15 @@ export class accountsList extends PaginatedList {
             return;
         }
         const name = (this._announceNameLabel.querySelector("input") as HTMLInputElement).value;
-        if (!name) { return; }
+        if (!name) {
+            return;
+        }
         const subject = document.getElementById("announce-subject") as HTMLInputElement;
         let send: announcementTemplate = {
             name: name,
             subject: subject.value,
-            message: this._announceTextarea.value
-        }
+            message: this._announceTextarea.value,
+        };
         _post("/users/announce/template", send, (req: XMLHttpRequest) => {
             if (req.readyState == 4) {
                 this.reload();
@@ -1569,7 +1742,7 @@ export class accountsList extends PaginatedList {
                 }
             }
         });
-    }
+    };
     announce = (event?: Event, template?: announcementTemplate) => {
         const modalHeader = document.getElementById("header-announce");
         modalHeader.textContent = window.lang.quantity("announceTo", this._collectUsers().length);
@@ -1594,18 +1767,24 @@ export class accountsList extends PaginatedList {
             event.preventDefault();
             toggleLoader(button);
             let send = {
-                "users": list,
-                "subject": subject.value,
-                "message": this._announceTextarea.value
-            }
+                users: list,
+                subject: subject.value,
+                message: this._announceTextarea.value,
+            };
             _post("/users/announce", send, (req: XMLHttpRequest) => {
                 if (req.readyState == 4) {
                     toggleLoader(button);
                     window.modals.announce.close();
                     if (req.status != 200 && req.status != 204) {
-                        window.notifications.customError("announcementError", window.lang.notif("errorFailureCheckLogs"));
+                        window.notifications.customError(
+                            "announcementError",
+                            window.lang.notif("errorFailureCheckLogs"),
+                        );
                     } else {
-                        window.notifications.customSuccess("announcementSuccess", window.lang.notif("sentAnnouncement"));
+                        window.notifications.customSuccess(
+                            "announcementSuccess",
+                            window.lang.notif("sentAnnouncement"),
+                        );
                     }
                 }
             });
@@ -1619,7 +1798,7 @@ export class accountsList extends PaginatedList {
                     this._previewLoaded = false;
                     return;
                 }
-                    
+
                 let templ = req.response as templateEmail;
                 if (!templ.html) {
                     preview.innerHTML = `<pre class="preview-content" class="font-mono bg-inherit"></pre>`;
@@ -1633,64 +1812,77 @@ export class accountsList extends PaginatedList {
                 window.modals.announce.show();
             }
         });
-    }
-    loadTemplates = () => _get("/users/announce", null, (req: XMLHttpRequest) => {
-        if (req.readyState == 4) {
-            if (req.status != 200) {
-                this._announceButton.nextElementSibling.children[0].classList.add("unfocused");
-                return;
-            }
-            this._announceButton.nextElementSibling.children[0].classList.remove("unfocused");
-            const list = req.response["announcements"] as string[];
-            if (list.length == 0) {
-                this._announceButton.nextElementSibling.children[0].classList.add("unfocused");
-                return;
-            }
-            if (list.length > 0) {
-                this._announceButton.innerHTML = `${window.lang.strings("announce")} <i class="ri-arrow-drop-down-line"></i>`;
-            }
-            const dList = document.getElementById("accounts-announce-templates") as HTMLDivElement;
-            dList.textContent = '';
-            for (let name of list) {
-                const el = document.createElement("div") as HTMLDivElement;
-                el.classList.add("flex", "flex-row", "gap-2", "justify-between", "truncate");
-                el.innerHTML = `
+    };
+    loadTemplates = () =>
+        _get("/users/announce", null, (req: XMLHttpRequest) => {
+            if (req.readyState == 4) {
+                if (req.status != 200) {
+                    this._announceButton.nextElementSibling.children[0].classList.add("unfocused");
+                    return;
+                }
+                this._announceButton.nextElementSibling.children[0].classList.remove("unfocused");
+                const list = req.response["announcements"] as string[];
+                if (list.length == 0) {
+                    this._announceButton.nextElementSibling.children[0].classList.add("unfocused");
+                    return;
+                }
+                if (list.length > 0) {
+                    this._announceButton.innerHTML = `${window.lang.strings("announce")} <i class="ri-arrow-drop-down-line"></i>`;
+                }
+                const dList = document.getElementById("accounts-announce-templates") as HTMLDivElement;
+                dList.textContent = "";
+                for (let name of list) {
+                    const el = document.createElement("div") as HTMLDivElement;
+                    el.classList.add("flex", "flex-row", "gap-2", "justify-between", "truncate");
+                    el.innerHTML = `
                 <span class="button ~neutral sm full-width accounts-announce-template-button">${name}</span><span class="button ~critical accounts-announce-template-delete">&times;</span>
                 `;
-                let urlSafeName = encodeURIComponent(encodeURIComponent(name));
-                (el.querySelector("span.accounts-announce-template-button") as HTMLSpanElement).onclick = () => {
-                    _get("/users/announce/" + urlSafeName, null, (req: XMLHttpRequest) => {
-                        if (req.readyState == 4) {
-                            let template: announcementTemplate;
-                            if (req.status != 200) {
-                                window.notifications.customError("getTemplateError", window.lang.notif("errorFailureCheckLogs"));
-                            } else {
-                                template = req.response;
+                    let urlSafeName = encodeURIComponent(encodeURIComponent(name));
+                    (el.querySelector("span.accounts-announce-template-button") as HTMLSpanElement).onclick = () => {
+                        _get("/users/announce/" + urlSafeName, null, (req: XMLHttpRequest) => {
+                            if (req.readyState == 4) {
+                                let template: announcementTemplate;
+                                if (req.status != 200) {
+                                    window.notifications.customError(
+                                        "getTemplateError",
+                                        window.lang.notif("errorFailureCheckLogs"),
+                                    );
+                                } else {
+                                    template = req.response;
+                                }
+                                this.announce(null, template);
                             }
-                            this.announce(null, template);
-                        }
-                    });
-                };
-                (el.querySelector("span.accounts-announce-template-delete") as HTMLSpanElement).onclick = () => {
-                    _delete("/users/announce/" + urlSafeName, null, (req: XMLHttpRequest) => {
-                        if (req.readyState == 4) {
-                            if (req.status != 200) {
-                                window.notifications.customError("deleteTemplateError", window.lang.notif("errorFailureCheckLogs"));
+                        });
+                    };
+                    (el.querySelector("span.accounts-announce-template-delete") as HTMLSpanElement).onclick = () => {
+                        _delete("/users/announce/" + urlSafeName, null, (req: XMLHttpRequest) => {
+                            if (req.readyState == 4) {
+                                if (req.status != 200) {
+                                    window.notifications.customError(
+                                        "deleteTemplateError",
+                                        window.lang.notif("errorFailureCheckLogs"),
+                                    );
+                                }
+                                this.reload();
                             }
-                            this.reload();
-                        }
-                    });
-                };
-                dList.appendChild(el);
+                        });
+                    };
+                    dList.appendChild(el);
+                }
             }
-        }
-    });
+        });
 
-    private _enableDisableUsers = (users: string[], enable: boolean, notify: boolean, reason: string|null, post: (req: XMLHttpRequest) => void) => {
+    private _enableDisableUsers = (
+        users: string[],
+        enable: boolean,
+        notify: boolean,
+        reason: string | null,
+        post: (req: XMLHttpRequest) => void,
+    ) => {
         let send = {
-            "users": users,
-            "enabled": enable,
-            "notify": notify
+            users: users,
+            enabled: enable,
+            notify: notify,
         };
         if (reason) send["reason"] = reason;
         _post("/users/enable", send, post, true);
@@ -1719,27 +1911,39 @@ export class accountsList extends PaginatedList {
         form.onsubmit = (event: Event) => {
             event.preventDefault();
             toggleLoader(button);
-            this._enableDisableUsers(list, this._shouldEnable, this._deleteNotify.checked, this._deleteNotify ? this._deleteReason.value : null, (req: XMLHttpRequest) => {
-                if (req.readyState == 4) {
-                    toggleLoader(button);
-                    window.modals.deleteUser.close();
-                    if (req.status != 200 && req.status != 204) {
-                        let errorMsg = window.lang.notif("errorFailureCheckLogs");
-                        if (!("error" in req.response)) {
-                            errorMsg = window.lang.notif("errorPartialFailureCheckLogs");
+            this._enableDisableUsers(
+                list,
+                this._shouldEnable,
+                this._deleteNotify.checked,
+                this._deleteNotify ? this._deleteReason.value : null,
+                (req: XMLHttpRequest) => {
+                    if (req.readyState == 4) {
+                        toggleLoader(button);
+                        window.modals.deleteUser.close();
+                        if (req.status != 200 && req.status != 204) {
+                            let errorMsg = window.lang.notif("errorFailureCheckLogs");
+                            if (!("error" in req.response)) {
+                                errorMsg = window.lang.notif("errorPartialFailureCheckLogs");
+                            }
+                            window.notifications.customError("deleteUserError", errorMsg);
+                        } else if (this._shouldEnable) {
+                            window.notifications.customSuccess(
+                                "enableUserSuccess",
+                                window.lang.quantity("enabledUser", list.length),
+                            );
+                        } else {
+                            window.notifications.customSuccess(
+                                "disableUserSuccess",
+                                window.lang.quantity("disabledUser", list.length),
+                            );
                         }
-                        window.notifications.customError("deleteUserError", errorMsg);
-                    } else if (this._shouldEnable) {
-                        window.notifications.customSuccess("enableUserSuccess", window.lang.quantity("enabledUser", list.length));
-                    } else {
-                        window.notifications.customSuccess("disableUserSuccess", window.lang.quantity("disabledUser", list.length));
+                        this.reload();
                     }
-                    this.reload();
-                }
-            });
-        }
+                },
+            );
+        };
         window.modals.deleteUser.show();
-    }
+    };
 
     deleteUsers = () => {
         const modalHeader = document.getElementById("header-delete-user");
@@ -1757,9 +1961,9 @@ export class accountsList extends PaginatedList {
             event.preventDefault();
             toggleLoader(button);
             let send = {
-                "users": list,
-                "notify": this._deleteNotify.checked,
-                "reason": this._deleteNotify ? this._deleteReason.value : ""
+                users: list,
+                notify: this._deleteNotify.checked,
+                reason: this._deleteNotify ? this._deleteReason.value : "",
             };
             _delete("/users", send, (req: XMLHttpRequest) => {
                 if (req.readyState == 4) {
@@ -1772,15 +1976,18 @@ export class accountsList extends PaginatedList {
                         }
                         window.notifications.customError("deleteUserError", errorMsg);
                     } else {
-                        window.notifications.customSuccess("deleteUserSuccess", window.lang.quantity("deletedUser", list.length));
+                        window.notifications.customSuccess(
+                            "deleteUserSuccess",
+                            window.lang.quantity("deletedUser", list.length),
+                        );
                     }
                     this.reload();
                 }
             });
         };
         window.modals.deleteUser.show();
-    }
-    
+    };
+
     sendPWR = () => {
         addLoader(this._sendPWR);
         let list = this._collectUsers();
@@ -1788,58 +1995,64 @@ export class accountsList extends PaginatedList {
         for (let id of list) {
             let user = this.users[id];
             if (!user.lastNotifyMethod() && !user.email) {
-                manualUser  = user;
+                manualUser = user;
                 break;
             }
         }
         const messageBox = document.getElementById("send-pwr-note") as HTMLParagraphElement;
         let message: string;
         let send = {
-            users: list
+            users: list,
         };
-        _post("/users/password-reset", send, (req: XMLHttpRequest) => {
-            if (req.readyState != 4) return;
-            removeLoader(this._sendPWR);
-            let link: string;
-            if (req.status == 200) {
-                link = req.response["link"];
-                if (req.response["manual"] as boolean) {
-                    message = window.lang.var("strings", "sendPWRManual", manualUser.name);
-                } else {
-                    message = window.lang.strings("sendPWRSuccess") + " " + window.lang.strings("sendPWRSuccessManual");
-                }
-            } else if (req.status == 204) {
+        _post(
+            "/users/password-reset",
+            send,
+            (req: XMLHttpRequest) => {
+                if (req.readyState != 4) return;
+                removeLoader(this._sendPWR);
+                let link: string;
+                if (req.status == 200) {
+                    link = req.response["link"];
+                    if (req.response["manual"] as boolean) {
+                        message = window.lang.var("strings", "sendPWRManual", manualUser.name);
+                    } else {
+                        message =
+                            window.lang.strings("sendPWRSuccess") + " " + window.lang.strings("sendPWRSuccessManual");
+                    }
+                } else if (req.status == 204) {
                     message = window.lang.strings("sendPWRSuccess");
-            } else {
-                window.notifications.customError("errorSendPWR", window.lang.strings("errorFailureCheckLogs"));
-                return;
-            }
-            message += " " + window.lang.strings("sendPWRValidFor");
-            messageBox.textContent = message;
-            let linkButton = document.getElementById("send-pwr-link") as HTMLSpanElement;
-            if (link) {
-                linkButton.classList.remove("unfocused");
-                linkButton.onclick = () => {
-                    toClipboard(link);
-                    linkButton.textContent = window.lang.strings("copied");
-                    linkButton.classList.add("~positive");
-                    linkButton.classList.remove("~urge");
-                    setTimeout(() => {
-                        linkButton.textContent = window.lang.strings("copy");
-                        linkButton.classList.add("~urge");
-                        linkButton.classList.remove("~positive");
-                    }, 800);
-                };
-            } else {
-                linkButton.classList.add("unfocused");
-            }
-            window.modals.sendPWR.show();
-        }, true);
-    }
+                } else {
+                    window.notifications.customError("errorSendPWR", window.lang.strings("errorFailureCheckLogs"));
+                    return;
+                }
+                message += " " + window.lang.strings("sendPWRValidFor");
+                messageBox.textContent = message;
+                let linkButton = document.getElementById("send-pwr-link") as HTMLSpanElement;
+                if (link) {
+                    linkButton.classList.remove("unfocused");
+                    linkButton.onclick = () => {
+                        toClipboard(link);
+                        linkButton.textContent = window.lang.strings("copied");
+                        linkButton.classList.add("~positive");
+                        linkButton.classList.remove("~urge");
+                        setTimeout(() => {
+                            linkButton.textContent = window.lang.strings("copy");
+                            linkButton.classList.add("~urge");
+                            linkButton.classList.remove("~positive");
+                        }, 800);
+                    };
+                } else {
+                    linkButton.classList.add("unfocused");
+                }
+                window.modals.sendPWR.show();
+            },
+            true,
+        );
+    };
 
     modifyUsers = () => {
         const modalHeader = document.getElementById("header-modify-user");
-        modalHeader.textContent = window.lang.quantity("modifySettingsFor", this._collectUsers().length)
+        modalHeader.textContent = window.lang.quantity("modifySettingsFor", this._collectUsers().length);
         let list = this._collectUsers();
 
         (() => {
@@ -1867,9 +2080,9 @@ export class accountsList extends PaginatedList {
             event.preventDefault();
             toggleLoader(button);
             let send = {
-                "apply_to": list,
-                "homescreen": this._applyHomescreen.checked,
-                "configuration": this._applyConfiguration.checked,
+                apply_to: list,
+                homescreen: this._applyHomescreen.checked,
+                configuration: this._applyConfiguration.checked,
             };
             if (window.ombiEnabled) {
                 send["ombi"] = this._applyOmbi.checked;
@@ -1877,7 +2090,7 @@ export class accountsList extends PaginatedList {
             if (window.jellyseerrEnabled) {
                 send["jellyseerr"] = this._applyJellyseerr.checked;
             }
-            if (this._modifySettingsProfile.checked && !this._modifySettingsUser.checked) { 
+            if (this._modifySettingsProfile.checked && !this._modifySettingsUser.checked) {
                 send["from"] = "profile";
                 send["profile"] = this._profileSelect.value;
             } else if (this._modifySettingsUser.checked && !this._modifySettingsProfile.checked) {
@@ -1905,7 +2118,10 @@ export class accountsList extends PaginatedList {
                         }
                         window.notifications.customError("modifySettingsError", errorMsg);
                     } else if (req.status == 200 || req.status == 204) {
-                        window.notifications.customSuccess("modifySettingsSuccess", window.lang.quantity("appliedSettings", this._collectUsers().length));
+                        window.notifications.customSuccess(
+                            "modifySettingsSuccess",
+                            window.lang.quantity("appliedSettings", this._collectUsers().length),
+                        );
                     }
                     this.reload();
                     window.modals.modifyUser.close();
@@ -1913,23 +2129,26 @@ export class accountsList extends PaginatedList {
             });
         };
         window.modals.modifyUser.show();
-    }
-    
+    };
+
     enableReferrals = () => {
         const modalHeader = document.getElementById("header-enable-referrals-user");
-        modalHeader.textContent = window.lang.quantity("enableReferralsFor", this._collectUsers().length)
+        modalHeader.textContent = window.lang.quantity("enableReferralsFor", this._collectUsers().length);
         let list = this._collectUsers();
 
         // Check if we're disabling or enabling
         if (this.users[list[0]].referrals_enabled) {
-            _delete("/users/referral", {"users": list}, (req: XMLHttpRequest) => {
+            _delete("/users/referral", { users: list }, (req: XMLHttpRequest) => {
                 if (req.readyState != 4 || req.status != 200) return;
-                window.notifications.customSuccess("disabledReferralsSuccess", window.lang.quantity("appliedSettings", list.length));
+                window.notifications.customSuccess(
+                    "disabledReferralsSuccess",
+                    window.lang.quantity("appliedSettings", list.length),
+                );
                 this.reload();
             });
             return;
         }
-            
+
         (() => {
             _get("/invites", null, (req: XMLHttpRequest) => {
                 if (req.readyState != 4 || req.status != 200) return;
@@ -1951,9 +2170,9 @@ export class accountsList extends PaginatedList {
                     this._enableReferralsInvite.checked = false;
                     innerHTML += `<option>${window.lang.strings("inviteNoInvites")}</option>`;
                 }
-                this._enableReferralsProfile.checked = !(this._enableReferralsInvite.checked);
+                this._enableReferralsProfile.checked = !this._enableReferralsInvite.checked;
                 this._referralsInviteSelect.innerHTML = innerHTML;
-            
+
                 // 2. Profiles
 
                 innerHTML = "";
@@ -1970,34 +2189,49 @@ export class accountsList extends PaginatedList {
             event.preventDefault();
             toggleLoader(button);
             let send = {
-                "users": list
+                users: list,
             };
-            // console.log("profile:", this._enableReferralsProfile.checked, this._enableReferralsInvite.checked); 
-            if (this._enableReferralsProfile.checked && !this._enableReferralsInvite.checked) { 
+            // console.log("profile:", this._enableReferralsProfile.checked, this._enableReferralsInvite.checked);
+            if (this._enableReferralsProfile.checked && !this._enableReferralsInvite.checked) {
                 send["from"] = "profile";
                 send["profile"] = this._referralsProfileSelect.value;
             } else if (this._enableReferralsInvite.checked && !this._enableReferralsProfile.checked) {
                 send["from"] = "invite";
                 send["id"] = this._referralsInviteSelect.value;
             }
-            _post("/users/referral/" + send["from"] + "/" + (send["id"] ? send["id"] : send["profile"]) + "/" + (this._referralsExpiry.checked ? "with-expiry" : "none"), send, (req: XMLHttpRequest) => {
-                if (req.readyState == 4) {
-                    toggleLoader(button);
-                    if (req.status == 400) {
-                        window.notifications.customError("noReferralTemplateError", window.lang.notif("errorNoReferralTemplate"));
-                    } else if (req.status == 200 || req.status == 204) {
-                        window.notifications.customSuccess("enableReferralsSuccess", window.lang.quantity("appliedSettings", list.length));
+            _post(
+                "/users/referral/" +
+                    send["from"] +
+                    "/" +
+                    (send["id"] ? send["id"] : send["profile"]) +
+                    "/" +
+                    (this._referralsExpiry.checked ? "with-expiry" : "none"),
+                send,
+                (req: XMLHttpRequest) => {
+                    if (req.readyState == 4) {
+                        toggleLoader(button);
+                        if (req.status == 400) {
+                            window.notifications.customError(
+                                "noReferralTemplateError",
+                                window.lang.notif("errorNoReferralTemplate"),
+                            );
+                        } else if (req.status == 200 || req.status == 204) {
+                            window.notifications.customSuccess(
+                                "enableReferralsSuccess",
+                                window.lang.quantity("appliedSettings", list.length),
+                            );
+                        }
+                        this.reload();
+                        window.modals.enableReferralsUser.close();
                     }
-                    this.reload();
-                    window.modals.enableReferralsUser.close();
-                }
-            });
+                },
+            );
         };
         this._enableReferralsProfile.checked = true;
         this._enableReferralsInvite.checked = false;
         this._referralsExpiry.checked = false;
         window.modals.enableReferralsUser.show();
-    }
+    };
 
     removeExpiry = () => {
         const list = this._collectUsers();
@@ -2015,12 +2249,15 @@ export class accountsList extends PaginatedList {
         }
 
         if (success) {
-            window.notifications.customSuccess("modifySettingsSuccess", window.lang.quantity("appliedSettings", list.length));
+            window.notifications.customSuccess(
+                "modifySettingsSuccess",
+                window.lang.quantity("appliedSettings", list.length),
+            );
         } else {
             window.notifications.customError("modifySettingsError", window.lang.notif("errorSettingsFailed"));
         }
         this.reload();
-    }
+    };
 
     _displayExpiryDate = () => {
         let date: Date;
@@ -2038,18 +2275,22 @@ export class accountsList extends PaginatedList {
                     document.getElementById("extend-expiry-months") as HTMLSelectElement,
                     document.getElementById("extend-expiry-days") as HTMLSelectElement,
                     document.getElementById("extend-expiry-hours") as HTMLSelectElement,
-                    document.getElementById("extend-expiry-minutes") as HTMLSelectElement
+                    document.getElementById("extend-expiry-minutes") as HTMLSelectElement,
                 ];
-                invalid = fields[0].value == "0" && fields[1].value == "0" && fields[2].value == "0" && fields[3].value == "0";
+                invalid =
+                    fields[0].value == "0" &&
+                    fields[1].value == "0" &&
+                    fields[2].value == "0" &&
+                    fields[3].value == "0";
                 let id = users.length > 0 ? users[0] : "";
                 if (!id) invalid = true;
                 else {
-                    date = new Date(this.users[id].expiry*1000);
+                    date = new Date(this.users[id].expiry * 1000);
                     if (this.users[id].expiry == 0) date = new Date();
-                    date.setMonth(date.getMonth() + (+fields[0].value))
-                    date.setDate(date.getDate() + (+fields[1].value));
-                    date.setHours(date.getHours() + (+fields[2].value));
-                    date.setMinutes(date.getMinutes() + (+fields[3].value));
+                    date.setMonth(date.getMonth() + +fields[0].value);
+                    date.setDate(date.getDate() + +fields[1].value);
+                    date.setHours(date.getHours() + +fields[2].value);
+                    date.setMinutes(date.getMinutes() + +fields[3].value);
                 }
             }
         }
@@ -2068,13 +2309,13 @@ export class accountsList extends PaginatedList {
                 this._extendExpiryDate.innerHTML = `
                 <div class="flex flex-col">
                     <span>${window.lang.strings("accountWillExpire").replace("{date}", toDateString(date))}</span>
-                    ${users.length > 1 ? "<span>"+window.lang.strings("expirationBasedOn")+"</span>" : ""}
+                    ${users.length > 1 ? "<span>" + window.lang.strings("expirationBasedOn") + "</span>" : ""}
                 </div>
                 `;
                 this._extendExpiryDate.classList.remove("unfocused");
             }
         }
-    }
+    };
 
     extendExpiry = (enableUser?: boolean) => {
         const list = this._collectUsers();
@@ -2101,8 +2342,8 @@ export class accountsList extends PaginatedList {
             let send: ExtendExpiryDTO = {
                 users: applyList,
                 timestamp: 0,
-                notify: this._enableExpiryNotify.checked
-            }
+                notify: this._enableExpiryNotify.checked,
+            };
             if (this._enableExpiryNotify.checked) {
                 send.reason = this._enableExpiryReason.value;
             }
@@ -2118,18 +2359,24 @@ export class accountsList extends PaginatedList {
                     send.try_extend_from_previous_expiry = true;
                 }
                 for (let field of ["months", "days", "hours", "minutes"]) {
-                    send[field] = +(document.getElementById("extend-expiry-"+field) as HTMLSelectElement).value;
+                    send[field] = +(document.getElementById("extend-expiry-" + field) as HTMLSelectElement).value;
                 }
             }
 
             _post("/users/extend", send, (req: XMLHttpRequest) => {
                 if (req.readyState == 4) {
                     if (req.status != 200 && req.status != 204) {
-                        window.notifications.customError("extendExpiryError", window.lang.notif("errorFailureCheckLogs"));
+                        window.notifications.customError(
+                            "extendExpiryError",
+                            window.lang.notif("errorFailureCheckLogs"),
+                        );
                     } else {
-                        window.notifications.customSuccess("extendExpiry", window.lang.quantity("extendedExpiry", applyList.length));
+                        window.notifications.customSuccess(
+                            "extendExpiry",
+                            window.lang.quantity("extendedExpiry", applyList.length),
+                        );
                     }
-                    window.modals.extendExpiry.close()
+                    window.modals.extendExpiry.close();
                     this.reload();
                 }
             });
@@ -2137,31 +2384,37 @@ export class accountsList extends PaginatedList {
         this._extendExpiryForm.onsubmit = (event: Event) => {
             event.preventDefault();
             if (enableUser) {
-                this._enableDisableUsers(applyList, true, this._enableExpiryNotify.checked, this._enableExpiryNotify.checked ? this._enableExpiryReason.value : null, (req: XMLHttpRequest) => {
-                    if (req.readyState == 4) {
-                        if (req.status != 200 && req.status != 204) {
-                            window.modals.extendExpiry.close();
-                            let errorMsg = window.lang.notif("errorFailureCheckLogs");
-                            if (!("error" in req.response)) {
-                                errorMsg = window.lang.notif("errorPartialFailureCheckLogs");
+                this._enableDisableUsers(
+                    applyList,
+                    true,
+                    this._enableExpiryNotify.checked,
+                    this._enableExpiryNotify.checked ? this._enableExpiryReason.value : null,
+                    (req: XMLHttpRequest) => {
+                        if (req.readyState == 4) {
+                            if (req.status != 200 && req.status != 204) {
+                                window.modals.extendExpiry.close();
+                                let errorMsg = window.lang.notif("errorFailureCheckLogs");
+                                if (!("error" in req.response)) {
+                                    errorMsg = window.lang.notif("errorPartialFailureCheckLogs");
+                                }
+                                window.notifications.customError("deleteUserError", errorMsg);
+                                return;
                             }
-                            window.notifications.customError("deleteUserError", errorMsg);
-                            return;
+                            extend();
                         }
-                        extend();
-                    }
-                });
+                    },
+                );
             } else {
                 extend();
             }
-        }
+        };
         this._extendExpiryTextInput.value = "";
         this._usingExtendExpiryTextInput = false;
         this._extendExpiryDate.classList.add("unfocused");
         this._displayExpiryDate();
         window.modals.extendExpiry.show();
-    }
-   
+    };
+
     private _populateAddUserProfiles = () => {
         this._addUserProfile.textContent = "";
         let innerHTML = `<option value="none">${window.lang.strings("inviteNoProfile")}</option>`;
@@ -2169,7 +2422,7 @@ export class accountsList extends PaginatedList {
             innerHTML += `<option value="${window.availableProfiles[i]}" ${i == 0 ? "selected" : ""}>${window.availableProfiles[i]}</option>`;
         }
         this._addUserProfile.innerHTML = innerHTML;
-    }
+    };
 
     focusAccount = (userID: string) => {
         console.debug("focusing user", userID);
@@ -2177,35 +2430,33 @@ export class accountsList extends PaginatedList {
         this._search.onSearchBoxChange();
         this._search.onServerSearch();
         if (userID in this.users) this.users[userID].focus();
-    }
+    };
 
     public static readonly _accountURLEvent = "account-url";
-    registerURLListener = () => document.addEventListener(accountsList._accountURLEvent, (event: CustomEvent) => {
-        this.focusAccount(event.detail);
-    });
+    registerURLListener = () =>
+        document.addEventListener(accountsList._accountURLEvent, (event: CustomEvent) => {
+            this.focusAccount(event.detail);
+        });
 
     isAccountURL = () => {
         const urlParams = new URLSearchParams(window.location.search);
         const userID = urlParams.get("user");
         return Boolean(userID);
-    }
+    };
 
     loadAccountURL = () => {
         const urlParams = new URLSearchParams(window.location.search);
         const userID = urlParams.get("user");
         this.focusAccount(userID);
-    }
-
+    };
 }
 
 // An alternate view showing accounts in sub-lists grouped by group/label.
-export class groupedAccountsList {
+export class groupedAccountsList {}
 
-
-    
-}
-
-export const accountURLEvent = (id: string) => { return new CustomEvent(accountsList._accountURLEvent, {"detail": id}) };
+export const accountURLEvent = (id: string) => {
+    return new CustomEvent(accountsList._accountURLEvent, { detail: id });
+};
 
 type GetterReturnType = Boolean | boolean | String | Number | number;
 type Getter = () => GetterReturnType;
@@ -2262,18 +2513,22 @@ class Column {
 
     hideIcon = () => {
         this._header.textContent = this._headerContent;
-    }
+    };
 
     updateHeader = () => {
         this._header.innerHTML = `
         <span class="">${this._headerContent}</span>
-        <i class="ri-arrow-${this._ascending? "up" : "down"}-s-line" aria-hidden="true"></i>
+        <i class="ri-arrow-${this._ascending ? "up" : "down"}-s-line" aria-hidden="true"></i>
         `;
+    };
+
+    asElement = () => {
+        return this._card;
+    };
+
+    get ascending() {
+        return this._ascending;
     }
-
-    asElement = () => { return this._card };
-
-    get ascending() { return this._ascending; }
     set ascending(v: boolean) {
         this._ascending = v;
         if (v) {
@@ -2303,5 +2558,5 @@ class Column {
         });
 
         return userIDs;
-    }
+    };
 }

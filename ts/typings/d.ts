@@ -1,6 +1,6 @@
 declare interface Modal {
     modal: HTMLElement;
-    closeButton: HTMLSpanElement
+    closeButton: HTMLSpanElement;
     show: () => void;
     close: (event?: Event, noDispatch?: boolean) => void;
     toggle: () => void;
@@ -58,12 +58,12 @@ declare interface GlobalWindow extends Window {
     jfAdminOnly: boolean;
     jfAllowAll: boolean;
     referralsEnabled: boolean;
-    loginAppearance: string; 
+    loginAppearance: string;
 }
 
 declare interface InviteList {
     empty: boolean;
-    invites: { [code: string]: Invite }
+    invites: { [code: string]: Invite };
     add: (invite: Invite) => void;
     reload: (callback?: () => void) => void;
     isInviteURL: () => boolean;
@@ -71,25 +71,25 @@ declare interface InviteList {
 }
 
 declare interface Invite {
-	code: string; // Invite code
+    code: string; // Invite code
     valid_till: number; // Unix timestamp of expiry
-	user_expiry: boolean; // Whether or not user expiry is enabled
-	user_months?: number; // Number of months till user expiry
-	user_days?: number; // Number of days till user expiry
-	user_hours?: number; // Number of hours till user expiry
-	user_minutes?: number; // Number of minutes till user expiry
-	created: number; // Date of creation (unix timestamp)
-	profile: string; // Profile used on this invite
-	used_by?: { [user: string]: number }; // Users who have used this invite mapped to their creation time in Epoch/Unix time
-	no_limit: boolean; // If true, invite can be used any number of times
-	remaining_uses?: number; // Remaining number of uses (if applicable)
-	send_to?: string; // DEPRECATED Email/Discord username the invite was sent to (if applicable)
-	sent_to?: SentToList; // Email/Discord usernames attempts were made to send this invite to, and a failure reason if failed.
+    user_expiry: boolean; // Whether or not user expiry is enabled
+    user_months?: number; // Number of months till user expiry
+    user_days?: number; // Number of days till user expiry
+    user_hours?: number; // Number of hours till user expiry
+    user_minutes?: number; // Number of minutes till user expiry
+    created: number; // Date of creation (unix timestamp)
+    profile: string; // Profile used on this invite
+    used_by?: { [user: string]: number }; // Users who have used this invite mapped to their creation time in Epoch/Unix time
+    no_limit: boolean; // If true, invite can be used any number of times
+    remaining_uses?: number; // Remaining number of uses (if applicable)
+    send_to?: string; // DEPRECATED Email/Discord username the invite was sent to (if applicable)
+    sent_to?: SentToList; // Email/Discord usernames attempts were made to send this invite to, and a failure reason if failed.
 
-	notify_expiry?: boolean; // Whether to notify the requesting user of expiry or not
-	notify_creation?: boolean; // Whether to notify the requesting user of account creation or not
-	label?: string; // Optional label for the invite
-	user_label?: string; // Label to apply to users created w/ this invite.
+    notify_expiry?: boolean; // Whether to notify the requesting user of expiry or not
+    notify_creation?: boolean; // Whether to notify the requesting user of account creation or not
+    label?: string; // Optional label for the invite
+    user_label?: string; // Label to apply to users created w/ this invite.
 }
 
 declare interface SendFailure {
@@ -103,9 +103,9 @@ declare interface SentToList {
 }
 
 declare interface Update {
-	version: string; 
-    commit: string;    
-	date: number;
+    version: string;
+    commit: string;
+    date: number;
     description: string;
     changelog: string;
     link: string;
@@ -131,7 +131,7 @@ declare interface Lang {
 declare interface NotificationBox {
     connectionError: () => void;
     customError: (type: string, message: string) => void;
-    customPositive: (type: string, bold: string,  message: string) => void;
+    customPositive: (type: string, bold: string, message: string) => void;
     customSuccess: (type: string, message: string) => void;
 }
 
@@ -182,7 +182,7 @@ interface PaginatedReqDTO {
     page: number;
     sortByField: string;
     ascending: boolean;
-};
+}
 
 interface DateAttempt {
     year?: number;
@@ -198,7 +198,7 @@ interface ParsedDate {
     date: Date;
     text: string;
     invalid?: boolean;
-};
+}
 
 declare var config: Object;
 declare var modifiedConfig: Object;

@@ -1,4 +1,4 @@
-import {addLoader, removeLoader, _get} from "../modules/common.js";
+import { addLoader, removeLoader, _get } from "../modules/common.js";
 
 declare var window: GlobalWindow;
 
@@ -12,7 +12,12 @@ var listeners: { [buttonText: string]: (event: CustomEvent) => void } = {};
 
 export type DiscordSearch = (passData: string) => void;
 
-export function newDiscordSearch(title: string, description: string, buttonText: string, buttonFunction: (user: DiscordUser, passData: string) => void): DiscordSearch {
+export function newDiscordSearch(
+    title: string,
+    description: string,
+    buttonText: string,
+    buttonFunction: (user: DiscordUser, passData: string) => void,
+): DiscordSearch {
     if (!window.discordEnabled) {
         return () => {};
     }
@@ -62,7 +67,7 @@ export function newDiscordSearch(title: string, description: string, buttonText:
                 }
             });
         }, 750);
-    }
+    };
 
     return (passData: string) => {
         const input = document.getElementById("discord-search") as HTMLInputElement;
@@ -79,5 +84,5 @@ export function newDiscordSearch(title: string, description: string, buttonText:
         input.addEventListener("keyup", listeners[buttonText].bind(null, { detail: passData }));
 
         window.modals.discord.show();
-    }
+    };
 }

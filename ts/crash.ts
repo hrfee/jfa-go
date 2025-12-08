@@ -22,7 +22,7 @@ const buttonChange = (type: string) => {
         buttonNormal.classList.add("@low");
         buttonNormal.classList.remove("@high");
     }
-}
+};
 buttonNormal.onclick = () => buttonChange("normal");
 buttonSanitized.onclick = () => buttonChange("sanitized");
 

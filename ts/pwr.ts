@@ -10,7 +10,7 @@ interface formWindow extends Window {
     telegramModal: Modal;
     discordModal: Modal;
     matrixModal: Modal;
-    confirmationModal: Modal
+    confirmationModal: Modal;
     code: string;
     messages: { [key: string]: string };
     confirmation: boolean;
@@ -66,7 +66,7 @@ let validatorConf: ValidatorConf = {
     rePasswordField: rePasswordField,
     submitInput: submitInput,
     submitButton: submitSpan,
-    validatorFunc: baseValidator
+    validatorFunc: baseValidator,
 };
 
 var validator = new Validator(validatorConf);
@@ -90,7 +90,7 @@ form.onsubmit = (event: Event) => {
     const params = new URLSearchParams(window.location.search);
     let send: sendDTO = {
         pin: params.get("pin"),
-        password: passwordField.value
+        password: passwordField.value,
     };
     if (window.captcha) {
         if (window.reCAPTCHA) {
@@ -99,13 +99,34 @@ form.onsubmit = (event: Event) => {
             send.captcha_text = captcha.input.value;
         }
     }
-    _post("/reset", send, (req: XMLHttpRequest) => {
-        if (req.readyState == 4) {
-            removeLoader(submitSpan);
-            if (req.status == 400) {
-                if (req.response["error"] as string) {
+    _post(
+        "/reset",
+        send,
+        (req: XMLHttpRequest) => {
+            if (req.readyState == 4) {
+                removeLoader(submitSpan);
+                if (req.status == 400) {
+                    if (req.response["error"] as string) {
+                        const old = submitSpan.textContent;
+                        submitSpan.textContent = window.messages[req.response["error"]];
+                        submitSpan.classList.add("~critical");
+                        submitSpan.classList.remove("~urge");
+                        setTimeout(() => {
+                            submitSpan.classList.add("~urge");
+                            submitSpan.classList.remove("~critical");
+                            submitSpan.textContent = old;
+                        }, 2000);
+                    } else {
+                        for (let type in req.response) {
+                            if (requirements[type]) {
+                                requirements[type].valid = req.response[type] as boolean;
+                            }
+                        }
+                    }
+                    return;
+                } else if (req.status != 200) {
                     const old = submitSpan.textContent;
-                    submitSpan.textContent = window.messages[req.response["error"]];
+                    submitSpan.textContent = window.messages["errorUnknown"];
                     submitSpan.classList.add("~critical");
                     submitSpan.classList.remove("~urge");
                     setTimeout(() => {
@@ -114,26 +135,12 @@ form.onsubmit = (event: Event) => {
                         submitSpan.textContent = old;
                     }, 2000);
                 } else {
-                    for (let type in req.response) {
-                        if (requirements[type]) { requirements[type].valid = req.response[type] as boolean; }
-                    }
+                    window.successModal.show();
                 }
-                return;
-            } else if (req.status != 200) {
-                const old = submitSpan.textContent;
-                submitSpan.textContent = window.messages["errorUnknown"];
-                submitSpan.classList.add("~critical");
-                submitSpan.classList.remove("~urge");
-                setTimeout(() => {
-                    submitSpan.classList.add("~urge");
-                    submitSpan.classList.remove("~critical");
-                    submitSpan.textContent = old;
-                }, 2000);
-            } else {
-                window.successModal.show();
             }
-        }
-    }, true);
+        },
+        true,
+    );
 };
 
 validator.validate();

@@ -5,7 +5,7 @@ export interface HiddenInputConf {
     customContainerHTML?: string;
     input?: string;
     clickAwayShouldSave?: boolean;
-};
+}
 
 export class HiddenInputField {
     public static editClass = "ri-edit-line";
@@ -13,17 +13,17 @@ export class HiddenInputField {
 
     private _c: HiddenInputConf;
     private _input: HTMLInputElement;
-    private _content: HTMLElement
+    private _content: HTMLElement;
     private _toggle: HTMLElement;
 
     previous: string;
 
     constructor(c: HiddenInputConf) {
         this._c = c;
-        if (!(this._c.customContainerHTML)) {
+        if (!this._c.customContainerHTML) {
             this._c.customContainerHTML = `<span class="hidden-input-content"></span>`;
         }
-        if (!(this._c.input)) {
+        if (!this._c.input) {
             this._c.input = `<input type="text" class="field ~neutral @low max-w-24 hidden-input-input">`;
         }
         this._c.container.innerHTML = `
@@ -40,7 +40,7 @@ export class HiddenInputField {
         this._input.classList.add("py-0.5", "px-1", "hidden");
         this._toggle = this._c.container.querySelector(".hidden-input-toggle");
         this._content = this._c.container.querySelector(".hidden-input-content");
-    
+
         this._toggle.onclick = () => {
             this.editing = !this.editing;
         };
@@ -49,22 +49,29 @@ export class HiddenInputField {
                 e.preventDefault();
                 this._toggle.click();
             }
-        })
-
-
+        });
 
         this.setEditing(false, true);
     }
 
     // FIXME: not working
     outerClickListener = ((event: Event) => {
-        if (!(event.target instanceof HTMLElement && (this._input.contains(event.target) || this._toggle.contains(event.target)))) {
-            this.toggle(!(this._c.clickAwayShouldSave));
+        if (
+            !(
+                event.target instanceof HTMLElement &&
+                (this._input.contains(event.target) || this._toggle.contains(event.target))
+            )
+        ) {
+            this.toggle(!this._c.clickAwayShouldSave);
         }
     }).bind(this);
 
-    get editing(): boolean  { return this._toggle.classList.contains(HiddenInputField.saveClass); }
-    set editing(e: boolean) { this.setEditing(e); }
+    get editing(): boolean {
+        return this._toggle.classList.contains(HiddenInputField.saveClass);
+    }
+    set editing(e: boolean) {
+        this.setEditing(e);
+    }
 
     setEditing(e: boolean, noEvent: boolean = false, noSave: boolean = false) {
         if (e) {
@@ -84,11 +91,13 @@ export class HiddenInputField {
             // done by set value()
             // this._content.classList.remove("hidden");
             this._input.classList.add("hidden");
-            if (this.value != this.previous && !noEvent && !noSave) this._c.onSet()
+            if (this.value != this.previous && !noEvent && !noSave) this._c.onSet();
         }
     }
 
-    get value(): string { return this._content.textContent; };
+    get value(): string {
+        return this._content.textContent;
+    }
     set value(v: string) {
         this._content.textContent = v;
         this._input.value = v;
@@ -96,5 +105,7 @@ export class HiddenInputField {
         else this._content.classList.remove("hidden");
     }
 
-    toggle(noSave: boolean = false) { this.setEditing(!this.editing, false, noSave); }
+    toggle(noSave: boolean = false) {
+        this.setEditing(!this.editing, false, noSave);
+    }
 }

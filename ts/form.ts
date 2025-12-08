@@ -50,7 +50,6 @@ window.animationEvent = whichAnimationEvent();
 
 window.successModal = new Modal(document.getElementById("modal-success"), true);
 
-
 var telegramVerified = false;
 if (window.telegramEnabled) {
     window.telegramModal = new Modal(document.getElementById("modal-telegram"), window.telegramRequired);
@@ -74,23 +73,25 @@ if (window.telegramEnabled) {
             checkbox.parentElement.classList.remove("unfocused");
             checkbox.checked = true;
             validator.validate();
-        }
+        },
     };
 
     const telegram = new Telegram(telegramConf);
 
-    telegramButton.onclick = () => { telegram.onclick(); };
+    telegramButton.onclick = () => {
+        telegram.onclick();
+    };
 }
 
 var discordVerified = false;
 if (window.discordEnabled) {
     window.discordModal = new Modal(document.getElementById("modal-discord"), window.discordRequired);
     const discordButton = document.getElementById("link-discord") as HTMLSpanElement;
-    
+
     const discordConf: ServiceConfiguration = {
         modal: window.discordModal as Modal,
         pin: window.discordPIN,
-        inviteURL: window.discordInviteLink ? (window.pages.Form + "/" + window.code + "/discord/invite") : "",
+        inviteURL: window.discordInviteLink ? window.pages.Form + "/" + window.code + "/discord/invite" : "",
         pinURL: "",
         verifiedURL: window.pages.Form + "/" + window.code + "/discord/verified/",
         invalidCodeError: window.messages["errorInvalidPIN"],
@@ -103,15 +104,17 @@ if (window.discordEnabled) {
             document.getElementById("contact-via").classList.remove("unfocused");
             document.getElementById("contact-via-email").parentElement.classList.remove("unfocused");
             const checkbox = document.getElementById("contact-via-discord") as HTMLInputElement;
-            checkbox.parentElement.classList.remove("unfocused")
+            checkbox.parentElement.classList.remove("unfocused");
             checkbox.checked = true;
             validator.validate();
-        }
+        },
     };
 
     const discord = new Discord(discordConf);
 
-    discordButton.onclick = () => { discord.onclick(); };
+    discordButton.onclick = () => {
+        discord.onclick();
+    };
 }
 
 var matrixVerified = false;
@@ -119,7 +122,7 @@ var matrixPIN = "";
 if (window.matrixEnabled) {
     window.matrixModal = new Modal(document.getElementById("modal-matrix"), window.matrixRequired);
     const matrixButton = document.getElementById("link-matrix") as HTMLSpanElement;
-    
+
     const matrixConf: MatrixConfiguration = {
         modal: window.matrixModal as Modal,
         sendMessageURL: window.pages.Form + "/" + window.code + "/matrix/user",
@@ -138,12 +141,14 @@ if (window.matrixEnabled) {
             checkbox.parentElement.classList.remove("unfocused");
             checkbox.checked = true;
             validator.validate();
-        }
+        },
     };
 
     const matrix = new Matrix(matrixConf);
 
-    matrixButton.onclick = () => { matrix.show(); };
+    matrixButton.onclick = () => {
+        matrix.show();
+    };
 }
 
 if (window.confirmation) {
@@ -154,7 +159,7 @@ declare var window: formWindow;
 if (window.userExpiryEnabled) {
     const messageEl = document.getElementById("user-expiry-message") as HTMLElement;
     const calculateTime = () => {
-        let time = new Date()
+        let time = new Date();
         time.setMonth(time.getMonth() + window.userExpiryMonths);
         time.setDate(time.getDate() + window.userExpiryDays);
         time.setHours(time.getHours() + window.userExpiryHours);
@@ -162,7 +167,7 @@ if (window.userExpiryEnabled) {
         messageEl.textContent = window.userExpiryMessage.replace("{date}", toDateString(time));
         setTimeout(calculateTime, 1000);
     };
-    document.addEventListener("timefmt-change", calculateTime)
+    document.addEventListener("timefmt-change", calculateTime);
     calculateTime();
 }
 
@@ -174,7 +179,8 @@ let usernameField = document.getElementById("create-username") as HTMLInputEleme
 const emailField = document.getElementById("create-email") as HTMLInputElement;
 window.emailRequired &&= window.collectEmail;
 if (!window.usernameEnabled) {
-    usernameField.parentElement.remove(); usernameField = emailField;
+    usernameField.parentElement.remove();
+    usernameField = emailField;
 } else if (!window.collectEmail) {
     emailField.parentElement.classList.add("unfocused");
     emailField.value = "";
@@ -229,7 +235,7 @@ function _baseValidator(oncomplete: (valid: boolean) => void, captchaValid: bool
     oncomplete(true);
 }
 
-let baseValidator = captcha.baseValidatorWrapper(_baseValidator); 
+let baseValidator = captcha.baseValidatorWrapper(_baseValidator);
 
 declare var grecaptcha: GreCAPTCHA;
 
@@ -238,14 +244,14 @@ let validatorConf: ValidatorConf = {
     rePasswordField: rePasswordField,
     submitInput: submitInput,
     submitButton: submitSpan,
-    validatorFunc: baseValidator
+    validatorFunc: baseValidator,
 };
 
 let validator = new Validator(validatorConf);
 var requirements = validator.requirements;
 
 if (window.emailRequired) {
-    emailField.addEventListener("keyup", validator.validate)
+    emailField.addEventListener("keyup", validator.validate);
 }
 
 interface sendDTO {
@@ -273,7 +279,6 @@ if (window.captcha && !window.reCAPTCHA) {
 const create = (event: SubmitEvent) => {
     event.preventDefault();
     if (window.captcha && !window.reCAPTCHA && !captcha.verified) {
-        
     }
     addLoader(submitSpan);
     let send: sendDTO = {
@@ -281,8 +286,8 @@ const create = (event: SubmitEvent) => {
         username: usernameField.value,
         email: emailField.value,
         email_contact: true,
-        password: passwordField.value
-    }
+        password: passwordField.value,
+    };
     if (telegramVerified) {
         send.telegram_pin = window.telegramPIN;
         const checkbox = document.getElementById("contact-via-telegram") as HTMLInputElement;
@@ -316,62 +321,74 @@ const create = (event: SubmitEvent) => {
             send.captcha_text = captcha.input.value;
         }
     }
-    _post("/user/invite", send, (req: XMLHttpRequest) => {
-        if (req.readyState != 4) return;
-        removeLoader(submitSpan);
-        let vals = req.response as ValidatorRespDTO;
-        let valid = true;
-        for (let type in vals) {
-            if (requirements[type]) requirements[type].valid = vals[type];
-            if (!vals[type]) valid = false;
-        }
-        if (req.status == 200 && valid) {
-            if (window.redirectToJellyfin == true) {
-                const url = ((document.getElementById("modal-success") as HTMLDivElement).querySelector("a.submit") as HTMLAnchorElement).href;
-                window.location.href = url;
-            } else {
-                if (window.customSuccessCard) {
-                    const content = window.successModal.asElement().querySelector(".card");
-                    content.innerHTML = content.innerHTML.replace(new RegExp("{username}", "g"), send.username)
-                } else if (window.userPageEnabled) {
-                    const userPageNoticeArea = document.getElementById("modal-success-user-page-area");
-                    const link = `<a href="${window.userPageAddress}" target="_blank">${userPageNoticeArea.getAttribute("my-account-term")}</a>`;
-                    userPageNoticeArea.innerHTML = userPageNoticeArea.textContent.replace("{myAccount}", link);
-                }
-                window.successModal.show();
+    _post(
+        "/user/invite",
+        send,
+        (req: XMLHttpRequest) => {
+            if (req.readyState != 4) return;
+            removeLoader(submitSpan);
+            let vals = req.response as ValidatorRespDTO;
+            let valid = true;
+            for (let type in vals) {
+                if (requirements[type]) requirements[type].valid = vals[type];
+                if (!vals[type]) valid = false;
             }
-        } else if (req.status != 401 && req.status != 400){
-            submitSpan.classList.add("~critical");
-            submitSpan.classList.remove("~urge");
-            if (req.response["error"] as string) {
-                submitSpan.textContent = window.messages[req.response["error"]];
-            } else {
-                submitSpan.textContent = window.messages["errorPassword"];
-            }
-            setTimeout(() => {
-                submitSpan.classList.add("~urge");
-                submitSpan.classList.remove("~critical");
-                submitSpan.textContent = submitText;
-            }, 1000);
-        }
-    }, true, (req: XMLHttpRequest) => {
-        if (req.readyState != 4) return;
-        removeLoader(submitSpan);
-        if (req.status == 401 || req.status == 400) {
-            if (req.response["error"] as string) {
-                if (req.response["error"] == "confirmEmail") {
-                    window.confirmationModal.show();
-                    return;
+            if (req.status == 200 && valid) {
+                if (window.redirectToJellyfin == true) {
+                    const url = (
+                        (document.getElementById("modal-success") as HTMLDivElement).querySelector(
+                            "a.submit",
+                        ) as HTMLAnchorElement
+                    ).href;
+                    window.location.href = url;
+                } else {
+                    if (window.customSuccessCard) {
+                        const content = window.successModal.asElement().querySelector(".card");
+                        content.innerHTML = content.innerHTML.replace(new RegExp("{username}", "g"), send.username);
+                    } else if (window.userPageEnabled) {
+                        const userPageNoticeArea = document.getElementById("modal-success-user-page-area");
+                        const link = `<a href="${window.userPageAddress}" target="_blank">${userPageNoticeArea.getAttribute("my-account-term")}</a>`;
+                        userPageNoticeArea.innerHTML = userPageNoticeArea.textContent.replace("{myAccount}", link);
+                    }
+                    window.successModal.show();
                 }
-                if (req.response["error"] in window.messages) {
+            } else if (req.status != 401 && req.status != 400) {
+                submitSpan.classList.add("~critical");
+                submitSpan.classList.remove("~urge");
+                if (req.response["error"] as string) {
                     submitSpan.textContent = window.messages[req.response["error"]];
                 } else {
-                    submitSpan.textContent = req.response["error"];
+                    submitSpan.textContent = window.messages["errorPassword"];
                 }
-                setTimeout(() => { submitSpan.textContent = submitText; }, 1000);
+                setTimeout(() => {
+                    submitSpan.classList.add("~urge");
+                    submitSpan.classList.remove("~critical");
+                    submitSpan.textContent = submitText;
+                }, 1000);
             }
-        }
-    });
+        },
+        true,
+        (req: XMLHttpRequest) => {
+            if (req.readyState != 4) return;
+            removeLoader(submitSpan);
+            if (req.status == 401 || req.status == 400) {
+                if (req.response["error"] as string) {
+                    if (req.response["error"] == "confirmEmail") {
+                        window.confirmationModal.show();
+                        return;
+                    }
+                    if (req.response["error"] in window.messages) {
+                        submitSpan.textContent = window.messages[req.response["error"]];
+                    } else {
+                        submitSpan.textContent = req.response["error"];
+                    }
+                    setTimeout(() => {
+                        submitSpan.textContent = submitText;
+                    }, 1000);
+                }
+            }
+        },
+    );
 };
 
 validator.validate();
@@ -379,6 +396,6 @@ validator.validate();
 form.onsubmit = create;
 
 const invitedByAside = document.getElementById("invite-from-user");
-if (typeof(invitedByAside) != "undefined" && invitedByAside != null) {
+if (typeof invitedByAside != "undefined" && invitedByAside != null) {
     invitedByAside.textContent = invitedByAside.textContent.replace("{user}", invitedByAside.getAttribute("data-from"));
 }

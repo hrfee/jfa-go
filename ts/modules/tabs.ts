@@ -8,15 +8,14 @@ export interface Tab {
     postFunc?: () => void;
 }
 
-
 export class Tabs implements Tabs {
     private _current: string = "";
     private _baseOffset = -1;
     tabs: Map<string, Tab>;
     pages: PageManager;
-   
+
     constructor() {
-        this.tabs = new Map<string, Tab>;
+        this.tabs = new Map<string, Tab>();
         this.pages = new PageManager({
             hideOthersOnPageShow: true,
             defaultName: "invites",
@@ -24,7 +23,13 @@ export class Tabs implements Tabs {
         });
     }
 
-    addTab = (tabID: string, url: string, preFunc = () => void {}, postFunc = () => void {}, unloadFunc = () => void {}) => {
+    addTab = (
+        tabID: string,
+        url: string,
+        preFunc = () => void {},
+        postFunc = () => void {},
+        unloadFunc = () => void {},
+    ) => {
         let tab: Tab = {
             page: null,
             tabEl: document.getElementById("tab-" + tabID) as HTMLDivElement,
@@ -37,12 +42,12 @@ export class Tabs implements Tabs {
         }
         tab.page = {
             name: tabID,
-            title: document.title, /*FIXME: Get actual names from translations*/
+            title: document.title /*FIXME: Get actual names from translations*/,
             url: url,
             show: () => {
                 tab.buttonEl.classList.add("active", "~urge");
                 tab.tabEl.classList.remove("unfocused");
-                tab.buttonEl.parentElement.scrollTo(tab.buttonEl.offsetLeft-this._baseOffset, 0);
+                tab.buttonEl.parentElement.scrollTo(tab.buttonEl.offsetLeft - this._baseOffset, 0);
                 document.dispatchEvent(new CustomEvent("tab-change", { detail: tabID }));
                 return true;
             },
@@ -56,23 +61,33 @@ export class Tabs implements Tabs {
             shouldSkip: () => false,
         };
         this.pages.setPage(tab.page);
-        tab.buttonEl.onclick = () => { this.switch(tabID); };
+        tab.buttonEl.onclick = () => {
+            this.switch(tabID);
+        };
         this.tabs.set(tabID, tab);
-    }
+    };
 
-    get current(): string { return this._current; }
-    set current(tabID: string) { this.switch(tabID); }
+    get current(): string {
+        return this._current;
+    }
+    set current(tabID: string) {
+        this.switch(tabID);
+    }
 
     switch = (tabID: string, noRun: boolean = false) => {
         let t = this.tabs.get(tabID);
         if (t == undefined) {
             [t] = this.tabs.values();
         }
-        
+
         this._current = t.page.name;
 
-        if (t.preFunc && !noRun) { t.preFunc(); }
+        if (t.preFunc && !noRun) {
+            t.preFunc();
+        }
         this.pages.load(tabID);
-        if (t.postFunc && !noRun) { t.postFunc(); }
-    }
+        if (t.postFunc && !noRun) {
+            t.postFunc();
+        }
+    };
 }

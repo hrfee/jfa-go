@@ -17,7 +17,7 @@ export class Login {
     constructor(modal: Modal, endpoint: string, appearance: string) {
         this._endpoint = endpoint;
         this._url = window.pages.Base + endpoint;
-        if (this._url[this._url.length-1] != '/') this._url += "/";
+        if (this._url[this._url.length - 1] != "/") this._url += "/";
 
         this._modal = modal;
         if (appearance == "opaque") {
@@ -45,29 +45,39 @@ export class Login {
         this._logoutButton = button;
         this._logoutButton.classList.add("unfocused");
         const logoutFunc = (url: string, tryAgain: boolean) => {
-            _post(url + "logout", null, (req: XMLHttpRequest): boolean => {
-                if (req.readyState == 4 && req.status == 200) {
-                    window.token = "";
-                    location.reload();
-                    return false;
-                }
-            }, false, (req: XMLHttpRequest) => {
-                if (req.readyState == 4 && req.status == 404 && tryAgain) {
-                    console.warn("logout failed, trying without URL Base...");
-                    logoutFunc(this._endpoint, false);
-                }
-            });
+            _post(
+                url + "logout",
+                null,
+                (req: XMLHttpRequest): boolean => {
+                    if (req.readyState == 4 && req.status == 200) {
+                        window.token = "";
+                        location.reload();
+                        return false;
+                    }
+                },
+                false,
+                (req: XMLHttpRequest) => {
+                    if (req.readyState == 4 && req.status == 404 && tryAgain) {
+                        console.warn("logout failed, trying without URL Base...");
+                        logoutFunc(this._endpoint, false);
+                    }
+                },
+            );
         };
         this._logoutButton.onclick = () => logoutFunc(this._url, true);
     };
 
-    get onLogin() { return this._onLogin; }
-    set onLogin(f: (username: string, password: string) => void) { this._onLogin = f; }
+    get onLogin() {
+        return this._onLogin;
+    }
+    set onLogin(f: (username: string, password: string) => void) {
+        this._onLogin = f;
+    }
 
     login = (username: string, password: string, run?: (state?: number) => void) => {
         const req = new XMLHttpRequest();
-        req.responseType = 'json';
-        const refresh = (username == "" && password == "");
+        req.responseType = "json";
+        const refresh = username == "" && password == "";
         req.open("GET", this._url + (refresh ? "token/refresh" : "token/login"), true);
         if (!refresh) {
             req.setRequestHeader("Authorization", "Basic " + unicodeB64Encode(username + ":" + password));
@@ -100,13 +110,13 @@ export class Login {
                     }
                     if (this._hasOpacityWall) this._wall.remove();
                     this._modal.close();
-                    if (this._logoutButton != null)
-                        this._logoutButton.classList.remove("unfocused");
+                    if (this._logoutButton != null) this._logoutButton.classList.remove("unfocused");
                 }
-                if (run) { run(+req.status); }
+                if (run) {
+                    run(+req.status);
+                }
             }
         }).bind(this, req);
         req.send();
     };
 }
-

@@ -6,7 +6,7 @@ export interface Page {
     hide: () => boolean;
     shouldSkip: () => boolean;
     index?: number;
-};
+}
 
 export interface PageConfig {
     hideOthersOnPageShow: boolean;
@@ -29,7 +29,7 @@ export class PageManager {
             let ev = { state: data as string } as PopStateEvent;
             window.onpopstate(ev);
         };
-    }
+    };
 
     private _onpopstate = (event: PopStateEvent) => {
         let name = event.state;
@@ -42,13 +42,13 @@ export class PageManager {
             }
         }
         if (!this.pages.has(name)) {
-            name = this.pageList[0]
+            name = this.pageList[0];
         }
         let success = this.pages.get(name).show();
         if (!success) {
             return;
         }
-        if (!(this.hideOthers)) {
+        if (!this.hideOthers) {
             return;
         }
         for (let k of this.pageList) {
@@ -56,15 +56,15 @@ export class PageManager {
                 this.pages.get(k).hide();
             }
         }
-    }
+    };
 
     constructor(c: PageConfig) {
-        this.pages = new Map<string, Page>;
+        this.pages = new Map<string, Page>();
         this.pageList = [];
         this.hideOthers = c.hideOthersOnPageShow;
         this.defaultName = c.defaultName;
         this.defaultTitle = c.defaultTitle;
-    
+
         this._overridePushState();
         window.onpopstate = this._onpopstate;
     }
@@ -77,12 +77,12 @@ export class PageManager {
 
     load(name: string = "") {
         name = decodeURI(name);
-        if (!this.pages.has(name)) return window.history.pushState(name || this.defaultName, this.defaultTitle, "")
+        if (!this.pages.has(name)) return window.history.pushState(name || this.defaultName, this.defaultTitle, "");
         const p = this.pages.get(name);
         this.loadPage(p);
     }
 
-    loadPage (p: Page) {
+    loadPage(p: Page) {
         let url = p.url;
         // Fix ordering of query params and hash
         if (url.includes("#")) {
@@ -99,20 +99,20 @@ export class PageManager {
         let p = this.pages.get(name);
         let shouldSkip = true;
         while (shouldSkip && p.index > 0) {
-            p = this.pages.get(this.pageList[p.index-1]);
+            p = this.pages.get(this.pageList[p.index - 1]);
             shouldSkip = p.shouldSkip();
         }
         this.loadPage(p);
-    } 
-    
+    }
+
     next(name: string = "") {
         if (!this.pages.has(name)) return console.error(`previous page ${name} not found`);
         let p = this.pages.get(name);
         let shouldSkip = true;
         while (shouldSkip && p.index < this.pageList.length) {
-            p = this.pages.get(this.pageList[p.index+1]);
+            p = this.pages.get(this.pageList[p.index + 1]);
             shouldSkip = p.shouldSkip();
         }
         this.loadPage(p);
-    } 
-};
+    }
+}
