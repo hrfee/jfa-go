@@ -279,6 +279,10 @@ table.table-p-0 th, table.table-p-0 td {
     padding-bottom: 0 !important;
 }
 
+td:dir(rtl), th:dir(rtl) {
+    text-align: right;
+}
+
 p.top {
     margin-top: 0px;
 }
@@ -478,4 +482,8 @@ section.section:not(.\~neutral) {
 
 .gap-2 > .button.inside-input {
     margin-left: calc(var(--inside-input-base) - 2.0*var(--tailwind-spacing));
+}
+
+.force-ltr {
+    direction: ltr !important;
 }

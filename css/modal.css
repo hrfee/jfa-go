@@ -29,7 +29,7 @@ html:not(.dark) .wall {
 }
 
 .modal-close {
-    float: right;
+    float: inline-end;
     color: #aaa;
     font-weight: normal;
 }

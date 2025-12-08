@@ -316,7 +316,7 @@ class user implements User, SearchableItem {
         <i class="icon ri-settings-2-line dropdown-button"></i>
         <div class="dropdown manual over-top">
             <div class="dropdown-display lg">
-                <div class="card ~neutral @low flex flex-col gap-2">
+                <div class="card ~neutral @low flex flex-col gap-2 w-max">
                     <div class="supra sm">${window.lang.strings("contactThrough")}</div>
                     <div class="accounts-area-email">
                         <label class="row switch flex flex-row gap-2">
@@ -476,7 +476,7 @@ class user implements User, SearchableItem {
             this._notifyDropdown.querySelector(".accounts-unlink-telegram").classList.remove("unfocused");
             this._telegram.innerHTML = `
             <div class="accounts-settings-area flex flex-row gap-2 justify-center">
-                <a href="https://t.me/${u}" target="_blank">@${u}</a>
+                <a class="force-ltr" href="https://t.me/${u}" target="_blank">@${u}</a>
             </div>
             `;
             if (lastNotifyMethod) {
@@ -546,7 +546,7 @@ class user implements User, SearchableItem {
             this._notifyDropdown.querySelector(".accounts-unlink-discord").classList.remove("unfocused");
             this._discord.innerHTML = `
             <div class="accounts-settings-area flex flex-row gap-2 justify-center">
-                <a href="https://discord.com/users/${this._discordID}" class="discord-link" target="_blank">${u}</a>
+                <a href="https://discord.com/users/${this._discordID}" class="discord-link force-ltr" target="_blank">${u}</a>
             </div>
             `;
             if (lastNotifyMethod) {

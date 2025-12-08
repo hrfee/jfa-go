@@ -65,13 +65,13 @@
                     <a class="button ~urge @low discord lang-link flex flex-row gap-2" href="https://discord.com/invite/MrtvuQmyhP" target="_blank"><i class="ri-discord-line"></i>discord</a>
                 </div>
                 <p><a href="https://github.com/hrfee/jfa-go/blob/main/LICENSE">Available under the MIT License. Font "Hanken Grotesk" available under SIL OFL 1.1 License.</a></p>
-                <pre class="font-mono bg-inherit">{{ .license }}</pre>
+                <pre class="font-mono bg-inherit force-ltr">{{ .license }}</pre>
             </div>
         </div>
         <div id="modal-logs" class="modal">
             <div class="relative mx-auto my-[10%] w-4/5 lg:w-2/3 content card">
                 <span class="heading">{{ .strings.logs }}<span class="modal-close">&times;</span></span>
-                <pre class="monospace" id="log-area"></pre>
+                <pre class="monospace force-ltr" id="log-area"></pre>
             </div>
         </div>
         <div id="modal-tasks" class="modal">
@@ -847,7 +847,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="flex flex-row gap-2 justify-center">
+                        <div class="flex flex-row gap-2 my-3 justify-center">
                             <button class="button ~neutral @low" id="accounts-load-more">{{ .strings.loadMore }}</button>
                             <button class="button ~neutral @low accounts-load-all">{{ .strings.loadAll }}</button>
                             <button class="button ~info @low center accounts-search-server gap-1" aria-label="{{ .strings.searchAllRecords }}" text="{{ .strings.searchAllRecords }}">
@@ -938,7 +938,7 @@
                             <span class="button ~urge @low unfocused gap-1" id="settings-save"><i class="icon ri-save-line"></i>{{ .strings.settingsSave }}</span>
                         </div>
                     </div>
-                    <div class="flex flex-col md:flex-row gap-3" style="direction: ltr;">
+                    <div class="flex flex-col md:flex-row gap-3 force-ltr">
                         <div class="@low dark:~d_neutral flex md:flex flex-col gap-2" id="settings-sidebar">
                             <div class="flex flex-row justify-between">
                                 <input type="search" class="field ~neutral @low input settings-section-button justify-between" id="settings-search" placeholder="{{ .strings.search }}">
