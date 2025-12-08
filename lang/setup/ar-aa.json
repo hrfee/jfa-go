@@ -109,7 +109,7 @@
         "fromAddress": "عنوان المرسل",
         "senderName": "اسم المرسل",
         "dateFormat": "صيغة التاريخ",
-        "dateFormatNotice": "التاريخ يتبع تنسيق strftime. لمزيد من المعلومات، يرجى بزيارة {n}.",
+        "dateFormatNotice": "التاريخ يتبع تنسيق strftime. لمزيد من المعلومات، يرجى زيارة {n}.",
         "encryption": "التشفير",
         "mailgunApiURL": "رابط API"
     },
