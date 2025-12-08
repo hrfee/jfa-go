@@ -3,6 +3,7 @@
         "name": "English (US)"
     },
     "strings": {
+        "language": "Language",
         "username": "Username",
         "password": "Password",
         "emailAddress": "Email Address",

@@ -345,7 +345,7 @@ class DOMList extends DOMSetting implements SList {
         container.classList.add("flex", "flex-row", "justify-between");
         container.innerHTML = `
             <input type="text" class="input ~neutral @low">
-            <button class="button ~neutral @low center -ml-10 rounded-s-none aria-label="${window.lang.strings("delete")}" title="${window.lang.strings("delete")}">
+            <button class="button ~neutral @low center inside-input rounded-s-none aria-label="${window.lang.strings("delete")}" title="${window.lang.strings("delete")}">
                 <i class="ri-close-line"></i>
             </button>
         `;
@@ -536,6 +536,7 @@ class groupButton extends groupableItem {
     private _indent: number;
     private _parentSidebar: HTMLElement;
 
+    // one of the few sanctioned uses of ml/mr. Looks worse with ms/me.
     private static readonly _margin = "ml-6";
     private _indentClasses = ["h-11", "h-10", "h-9"];
     private _indentClass = () => {
@@ -1087,7 +1088,7 @@ export class settingsList {
 
     setBackupSort = (ascending: boolean) => {
         this._backupSortAscending = ascending;
-        this._backupSortDirection.innerHTML = `${window.lang.strings("sortDirection")} <i class="${ascending ? "ri-arrow-up-s-line" : "ri-arrow-down-s-line"} ml-2"></i>`;
+        this._backupSortDirection.innerHTML = `${window.lang.strings("sortDirection")} <i class="${ascending ? "ri-arrow-up-s-line" : "ri-arrow-down-s-line"}"></i>`;
         this._getBackups();
     };
 
@@ -1103,8 +1104,8 @@ export class settingsList {
         location.innerHTML = window.lang.strings("backupCanBeFound").replace("{filepath}", `<span class="text-black dark:text-white font-mono bg-inherit">"`+backupDTO.path+`"</span>`);
         download.innerHTML = `
         <i class="ri-download-line"></i>
-        <span class="ml-2">${window.lang.strings("download")}</span>
-        <span class="badge ~info @low ml-2">${backupDTO.size}</span>
+        <span>${window.lang.strings("download")}</span>
+        <span class="badge ~info @low">${backupDTO.size}</span>
         `;
         
         download.parentElement.onclick = () => _download("/backups/" + backupDTO.name, backupDTO.name);
@@ -1127,9 +1128,9 @@ export class settingsList {
             <td>${toDateString(new Date(b.date*1000))}</td>
             <td class="font-mono">${b.commit || "?"}</td>
             <td><div class="flex flex-row gap-2 items-stretch justify-center">
-                <span class="backup-download button ~positive @low" title="${window.lang.strings("backupDownload")}">
+                <span class="backup-download button ~positive @low flex flex-row gap-2" title="${window.lang.strings("backupDownload")}">
                     <i class="ri-download-line"></i>
-                    <span class="badge ~positive @low ml-2">${b.size}</span>
+                    <span class="badge ~positive @low">${b.size}</span>
                 </span>
                 <span class="backup-restore button ~critical @low" title="${window.lang.strings("backupRestore")}"><i class="icon ri-restart-line"></i></span>
             </div></td>
@@ -1461,7 +1462,6 @@ export class settingsList {
                     continue;
                 }
 
-                // element.classList.remove("-mx-2", "my-2", "p-2", "aside", "~neutral", "@low");
                 element.classList.add("opacity-50", "pointer-events-none");
                 element.setAttribute("aria-disabled", "true");
                 let matchedSetting = setting.setting.toLowerCase().includes(query) ||
@@ -1478,7 +1478,6 @@ export class settingsList {
                                     ((setting.advanced && this._advanced) ||
                                     !(setting.advanced)));
                     if (shouldShow || query == "") {
-                        // element.classList.add("-mx-2", "my-2", "p-2", "aside", "~neutral", "@low");
                         element.classList.remove("opacity-50", "pointer-events-none");
                         element.setAttribute("aria-disabled", "false");
                     }

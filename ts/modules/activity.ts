@@ -243,7 +243,9 @@ export class Activity implements activity, SearchableItem {
             if (i-1 == mood) this._card.classList.add(moodColours[i]);
             else this._card.classList.remove(moodColours[i]);
         } */
-       
+      
+        // lazy late addition, hide then unhide if needed
+        this._expiryTypeBadge.classList.add("unfocused");
         if (this.type == "changePassword" || this.type == "resetPassword") {
             let innerHTML = ``;
             if (this.type == "changePassword") innerHTML = window.lang.strings("accountChangedPassword");
@@ -265,13 +267,16 @@ export class Activity implements activity, SearchableItem {
         } else if (this.type == "creation") {
             this._title.innerHTML = window.lang.strings("accountCreated").replace("{user}", this._genUserLink());
             if (this.source_type == "user") {
-                this._referrer.innerHTML = `<span class="supra mr-2">${window.lang.strings("referrer")}</span>${this._genSrcUserLink()}`;
+                this._referrer.classList.remove("unfocused");
+                this._referrer.innerHTML = `<span class="supra">${window.lang.strings("referrer")}</span>${this._genSrcUserLink()}`;
             } else {
+                this._referrer.classList.add("unfocused");
                 this._referrer.textContent = ``;
             }
         } else if (this.type == "deletion") {
             if (this.source_type == "daemon") {
                 this._title.innerHTML = window.lang.strings("accountExpired").replace("{user}", this._genUserText());
+                this._expiryTypeBadge.classList.remove("unfocused");
                 this._expiryTypeBadge.classList.add("~critical");
                 this._expiryTypeBadge.classList.remove("~info");
                 this._expiryTypeBadge.textContent = window.lang.strings("deleted");
@@ -283,6 +288,7 @@ export class Activity implements activity, SearchableItem {
         } else if (this.type == "disabled") {
             if (this.source_type == "daemon") {
                 this._title.innerHTML = window.lang.strings("accountExpired").replace("{user}", this._genUserLink());
+                this._expiryTypeBadge.classList.remove("unfocused");
                 this._expiryTypeBadge.classList.add("~info");
                 this._expiryTypeBadge.classList.remove("~critical");
                 this._expiryTypeBadge.textContent = window.lang.strings("disabled");
@@ -327,8 +333,10 @@ export class Activity implements activity, SearchableItem {
     set ip(v: string) {
         this._act.ip = v;
         if (v) {
-            this._ip.innerHTML = `<span class="supra mr-2">IP</span><span class="font-mono bg-inherit">${v}</span>`;
+            this._ip.classList.remove("unfocused");
+            this._ip.innerHTML = `<span class="supra">IP</span><span class="font-mono bg-inherit">${v}</span>`;
         } else {
+            this._ip.classList.add("unfocused");
             this._ip.textContent = ``;
         }
     }
@@ -382,23 +390,23 @@ export class Activity implements activity, SearchableItem {
     constructor(act: activity) {
         this._card = document.createElement("div");
 
-        this._card.classList.add("card", "@low", "my-2");
+        this._card.classList.add("card", "@low", "flex", "flex-col", "gap-2");
 
         this._card.innerHTML = `
-        <div class="flex flex-col md:flex-row justify-between mb-2">
+        <div class="flex flex-row flex-wrap justify-between items-start gap-1">
             <span class="heading truncate flex-initial md:text-2xl text-xl activity-title"></span>
-            <div class="flex flex-col flex-none ml-0 md:ml-2">
+            <div class="flex flex-row flex-wrap gap-2">
+                <span class="activity-expiry-type badge self-stretch"></span>
                 <span class="font-medium md:text-sm text-xs activity-time" aria-label="${window.lang.strings("date")}"></span>
-                <span class="activity-expiry-type badge self-start md:self-end mt-1"></span>
             </div>
         </div>
-        <div class="flex flex-row justify-between items-end">
-            <div class="flex flex-col md:flex-row gap-2">
-                <div>    
-                    <span class="content supra mr-2 activity-source-type"></span><span class="activity-source"></span>
+        <div class="flex flex-row justify-between items-baseline">
+            <div class="flex flex-col md:flex-row gap-1 items-baseline">
+                <div class="flex flex-row gap-2 items-baseline">    
+                    <span class="supra activity-source-type"></span><span class="activity-source"></span>
                 </div>
-                <span class="content activity-referrer"></span>
-                <span class="content activity-ip"></span>
+                <span class="activity-referrer flex flex-row gap-2 items-baseline"></span>
+                <span class="activity-ip flex flex-row gap-2 items-baseline"></span>
             </div>
             <div>
                 <button class="button @low hover:~critical rounded-full px-1 py-px activity-delete" aria-label="${window.lang.strings("delete")}"><i class="ri-close-line"></i></button>
@@ -583,7 +591,7 @@ export class activityList extends PaginatedList {
         this._ascending = v;
         // Setting default sort makes sense, since this is the only sort ever being done.
         this._c.defaultSortAscending = this.ascending;
-        this._sortDirection.innerHTML = `${window.lang.strings("sortDirection")} <i class="ri-arrow-${v ? "up" : "down"}-s-line ml-2"></i>`;
+        this._sortDirection.innerHTML = `${window.lang.strings("sortDirection")} <i class="ri-arrow-${v ? "up" : "down"}-s-line"></i>`;
         // NOTE: We don't actually re-sort the list here, instead just use setOrdering to apply this.ascending before a reload.
         this._search.setOrdering(this._search.ordering, this._c.defaultSortField, this.ascending);
         if (this._hasLoaded) {

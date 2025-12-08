@@ -34,5 +34,11 @@ copyButton.onclick = () => {
         toClipboard("```\n" + logSanitized.textContent + "```");
     }
     copyButton.textContent = "Copied.";
-    setTimeout(() => { copyButton.textContent = "Copy"; }, 1500);
+    copyButton.classList.add("~positive");
+    copyButton.classList.remove("~urge");
+    setTimeout(() => {
+        copyButton.textContent = "Copy";
+        copyButton.classList.add("~urge");
+        copyButton.classList.remove("~positive");
+    }, 1500);
 };

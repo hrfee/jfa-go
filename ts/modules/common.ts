@@ -184,18 +184,24 @@ export class notificationBox implements NotificationBox {
     private _errorTypes: { [type: string]: boolean } = {};
     private _positiveTypes: { [type: string]: boolean } = {};
     timeout: number;
-    constructor(box: HTMLDivElement, timeout?: number) { this._box = box; this.timeout = timeout || 5; }
+    constructor(box: HTMLDivElement, timeout?: number) {
+        this._box = box;
+        this._box.classList.add("flex", "flex-col", "gap-2");
+        this.timeout = timeout || 5;
+    }
+
+    static baseClasses = ["aside", "flex", "flex-row", "justify-between", "gap-4"];
 
     private _error = (message: string): HTMLElement => {
         const noti = document.createElement('aside');
-        noti.classList.add("aside", "~critical", "@low", "mt-2", "notification-error");
+        noti.classList.add(...notificationBox.baseClasses, "~critical", "@low", "notification-error");
         let error = "";
         if (window.lang) {
             error = window.lang.strings("error") + ":"
         }
-        noti.innerHTML = `<strong>${error}</strong> ${message}`;
+        noti.innerHTML = `<div><strong>${error}</strong> ${message}</div>`;
         const closeButton = document.createElement('span') as HTMLSpanElement;
-        closeButton.classList.add("button", "~critical", "@low", "ml-4");
+        closeButton.classList.add("button", "~critical", "@low");
         closeButton.innerHTML = `<i class="icon ri-close-line"></i>`;
         closeButton.onclick = () => this._close(noti);
         noti.classList.add("animate-slide-in");
@@ -205,10 +211,10 @@ export class notificationBox implements NotificationBox {
     
     private _positive = (bold: string, message: string): HTMLElement => {
         const noti = document.createElement('aside');
-        noti.classList.add("aside", "~positive", "@low", "mt-2", "notification-positive");
-        noti.innerHTML = `<strong>${bold}</strong> ${message}`;
+        noti.classList.add(...notificationBox.baseClasses, "~positive", "@low", "notification-positive");
+        noti.innerHTML = `<div><strong>${bold}</strong> ${message}</div>`;
         const closeButton = document.createElement('span') as HTMLSpanElement;
-        closeButton.classList.add("button", "~positive", "@low", "ml-4");
+        closeButton.classList.add("button", "~positive", "@low");
         closeButton.innerHTML = `<i class="icon ri-close-line"></i>`;
         closeButton.onclick = () => this._close(noti); 
         noti.classList.add("animate-slide-in");

@@ -76,13 +76,22 @@ export class PageManager {
     }
 
     load(name: string = "") {
+        name = decodeURI(name);
         if (!this.pages.has(name)) return window.history.pushState(name || this.defaultName, this.defaultTitle, "")
         const p = this.pages.get(name);
         this.loadPage(p);
     }
 
     loadPage (p: Page) {
-        window.history.pushState(p.name || this.defaultName, p.title, p.url + window.location.search);
+        let url = p.url;
+        // Fix ordering of query params and hash
+        if (url.includes("#")) {
+            let split = url.split("#");
+            url = split[0] + window.location.search + "#" + split[1];
+        } else {
+            url = url + window.location.search;
+        }
+        window.history.pushState(p.name || this.defaultName, p.title, url);
     }
 
     prev(name: string = "") {

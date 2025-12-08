@@ -266,7 +266,7 @@ interface sendDTO {
 
 if (window.captcha && !window.reCAPTCHA) {
     captcha.generate();
-    (document.getElementById("captcha-regen") as HTMLSpanElement).onclick = captcha.generate;
+    (document.getElementById("captcha-regen") as HTMLButtonElement).onclick = captcha.generate;
     captcha.input.onkeyup = validator.validate;
 }
 

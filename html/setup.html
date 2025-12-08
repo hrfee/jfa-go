@@ -6,7 +6,7 @@
     </head>
     <body class="max-w-full overflow-x-hidden section">
         <div id="notification-box"></div>
-        <div class="page-container m-2 lg:my-20 lg:mx-64 flex flex-col gap-4 items-center">
+        <div class="page-container m-2 lg:my-20 lg:mx-64 flex flex-col gap-4">
             <div class="top-2 inset-x-2 lg:absolute flex flex-row justify-between">
                 <div class="flex flex-row gap-2">
                     {{ template "lang-select.html" . }}
@@ -322,10 +322,10 @@
                     </label>
                     <div class="flex flex-col gap-2">
                         <label class="label flex flex-col gap-2">
-                            <div class="switch"><input type="radio" class="mr-2" name="email-24h" value="true" checked><span>{{ .lang.Strings.time24h }}</span></div>
+                            <div class="switch flex flex-row gap-2"><input type="radio" name="email-24h" value="true" checked><span>{{ .lang.Strings.time24h }}</span></div>
                         </label>
                         <label class="label flex flex-col gap-2">
-                            <div class="switch"><input type="radio" class="mr-2" name="email-24h" value="false"><span>{{ .lang.Strings.time12h }}</span></div>
+                            <div class="switch flex flex-row gap-2"><input type="radio" name="email-24h" value="false"><span>{{ .lang.Strings.time12h }}</span></div>
                         </label>
                     </div>
                     <div id="email-sect" class="flex flex-row gap-2 justify-between">

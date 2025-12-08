@@ -568,7 +568,7 @@ const cards = Array.from(document.getElementsByClassName("page-container")[0].qu
         pages.setPage({
             name: title,
             title: titleEl.textContent + " - jfa-go",
-            url: "/#" + title,
+            url: "/" + (!title ? "" : "#") + title,
             show: () => {
                 cards[i].classList.remove("unfocused");
                 return true;

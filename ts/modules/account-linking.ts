@@ -150,10 +150,10 @@ export class Discord extends ServiceLinker {
         (link.parentElement as HTMLAnchorElement).target = "_blank";
         let innerHTML = ``;
         if (inv.icon != "") {
-            innerHTML += `<span class="img-circle lg mr-4"><img class="img-circle" src="${inv.icon}" width="64" height="64"></span>${window.discordServerName}`;
+            innerHTML += `<span class="img-circle lg"><img class="img-circle" src="${inv.icon}" width="64" height="64"></span>${window.discordServerName}`;
         } else {
             innerHTML += `
-            <span class="shield mr-4 bg-discord"><i class="ri-discord-fill ri-xl text-white"></i></span>${window.discordServerName}
+            <span class="shield bg-discord"><i class="ri-discord-fill ri-xl text-white"></i></span>${window.discordServerName}
             `;
         }
         link.innerHTML = innerHTML;

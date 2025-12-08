@@ -54,7 +54,11 @@ func (app *appContext) getURLBase(gc *gin.Context) string {
 
 func (app *appContext) gcHTML(gc *gin.Context, code int, file string, page Page, lang string, templ gin.H) {
 	gc.Header("Cache-Control", "no-cache")
-	app.BasePageTemplateValues(gc, lang, page, templ)
+	if page == SetupPage {
+		app.SetBaseLangTemplateValues(gc, lang, templ)
+	} else {
+		app.BasePageTemplateValues(gc, lang, page, templ)
+	}
 	gc.HTML(code, file, templ)
 }
 
@@ -121,6 +125,15 @@ func (app *appContext) BasePageTemplateValues(gc *gin.Context, lang string, page
 		set("pwrEnabled", app.config.Section("password_resets").Key("enabled").MustBool(false))
 	}
 	set("referralsEnabled", app.config.Section("user_page").Key("enabled").MustBool(false) && app.config.Section("user_page").Key("referrals").MustBool(false))
+	app.SetBaseLangTemplateValues(gc, lang, base)
+}
+
+func (app *appContext) SetBaseLangTemplateValues(gc *gin.Context, lang string, base gin.H) {
+	set := func(k string, v any) {
+		if _, ok := base[k]; !ok {
+			base[k] = v
+		}
+	}
 	langComponents := strings.Split(lang, "-")
 	var shortLang string
 	if len(langComponents) < 1 {
@@ -142,6 +155,7 @@ const (
 	FormPage
 	PWRPage
 	UserPage
+	SetupPage
 	OtherPage
 )
 

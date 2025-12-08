@@ -1,7 +1,7 @@
 import { ThemeManager } from "./modules/theme.js";
 import { lang, LangFile, loadLangSelector } from "./modules/lang.js";
 import { Modal } from "./modules/modal.js";
-import { _get, _post, _delete, notificationBox, whichAnimationEvent, toDateString, toggleLoader, addLoader, removeLoader, toClipboard } from "./modules/common.js";
+import { _get, _post, _delete, notificationBox, whichAnimationEvent, toDateString, addLoader, removeLoader, toClipboard } from "./modules/common.js";
 import { Login } from "./modules/login.js";
 import { Discord, Telegram, Matrix, ServiceConfiguration, MatrixConfiguration } from "./modules/account-linking.js";
 import { Validator, ValidatorConf, ValidatorRespDTO } from "./modules/validator.js";
@@ -108,10 +108,10 @@ if (window.pwrEnabled && window.linkResetEnabled) {
     const submitButton = document.getElementById("pwr-submit");
     const input = document.getElementById("pwr-address") as HTMLInputElement;
     submitButton.onclick = () => {
-        toggleLoader(submitButton);
+        addLoader(submitButton);
         _post("/my/password/reset/" + input.value, null, (req: XMLHttpRequest) => {
             if (req.readyState != 4) return;
-            toggleLoader(submitButton);
+            removeLoader(submitButton);
             if (req.status != 204) {
                 window.notifications.customError("unkownError", window.lang.notif("errorUnknown"));;
                 window.modals.pwr.close();
@@ -183,40 +183,43 @@ class ContactMethods {
 
     append = (name: string, details: MyDetailsContactMethod, icon: string, addEditFunc?: (add: boolean) => void, required?: boolean) => {
         const row = document.createElement("div");
-        row.classList.add("flex", "flex-row", "justify-between", "my-2", "flex-nowrap");
+        row.classList.add("flex", "flex-row", "justify-between", "gap-2", "flex-nowrap");
         let innerHTML = `
-            <div class="flex items-baseline flex-nowrap truncate">
+            <div class="flex items-baseline flex-row gap-2 flex-nowrap truncate">
                 <span class="shield ~urge" alt="${name}">
                     <span class="icon">
                         ${icon}
                     </span>
                 </span>
-                <span class="ml-2 font-bold text-ellipsis overflow-hidden">${(details.value == "") ? window.lang.strings("notSet") : details.value}</span>
+                <span class="font-bold text-ellipsis overflow-hidden">${(details.value == "") ? window.lang.strings("notSet") : details.value}</span>
             </div>
-            <div class="flex items-center ml-2">
-                <button class="user-contact-enabled-disabled button ~neutral" ${details.value == "" ? "disabled" : ""}>
-                    <input type="checkbox" class="mr-2" ${details.value == "" ? "disabled" : ""}>
-                    <span>${window.lang.strings("enabled")}</span>
-                </button>
+            <div class="flex flex-col justify-center">
+                <div class="flex items-center flex-row gap-2">
+
+                    <button class="user-contact-enabled-disabled button ~neutral flex flex-row gap-2" ${details.value == "" ? "disabled" : ""}>
+                        <input type="checkbox" ${details.value == "" ? "disabled" : ""}>
+                        <span>${window.lang.strings("enabled")}</span>
+                    </button>
         `;
         if (addEditFunc) {
             innerHTML += `
-                <button class="user-contact-edit button ~info ml-2">
-                    <i class="ri-${details.value == "" ? "add" : "edit"}-fill mr-2"></i>
-                    <span>${details.value == "" ? window.lang.strings("add") : window.lang.strings("edit")}</span>
-                </button>
+                    <button class="user-contact-edit button ~info flex flex-row gap-2">
+                        <i class="ri-${details.value == "" ? "add" : "edit"}-fill"></i>
+                        <span>${details.value == "" ? window.lang.strings("add") : window.lang.strings("edit")}</span>
+                    </button>
             `;
         }
 
         if (!required && details.value != "") {
             innerHTML += `
-                <button class="user-contact-delete button ~critical ml-2" alt="${window.lang.strings("delete")}" text="${window.lang.strings("delete")}">
-                    &times;
-                </button>
+                    <button class="user-contact-delete button ~critical h-[100%]" alt="${window.lang.strings("delete")}" text="${window.lang.strings("delete")}">
+                        <i class="icon ri-close-line"></i>
+                    </button>
             `;
         }
 
         innerHTML += `
+                </div>
             </div>
         `;
 
@@ -358,12 +361,12 @@ class ReferralCard {
         this._descriptionEl = this._card.querySelector(".user-referrals-description") as HTMLSpanElement;
 
         this._infoArea.innerHTML = `
-        <div class="row my-3">
+        <div class="">
             <div class="inline baseline">
                 <span class="text-2xl referral-remaining-uses"></span> <span class="text-gray-400 text-lg">${window.lang.strings("inviteRemainingUses")}</span>
             </div>
         </div>
-        <div class="row my-3">
+        <div class="">
             <div class="inline baseline">
                 <span class="text-gray-400 text-lg">${window.lang.strings("expiry")}</span> <span class="text-2xl referral-expiry"></span>
             <div>
@@ -381,7 +384,7 @@ class ReferralCard {
             toClipboard(this._url);
             const content = this._button.innerHTML;
             this._button.innerHTML = `
-            ${window.lang.strings("copied")} <i class="ri-check-line ml-2"></i>
+            ${window.lang.strings("copied")} <i class="ri-check-line"></i>
             `;
             this._button.classList.add("~positive");
             this._button.classList.remove("~info");
@@ -454,7 +457,7 @@ class ExpiryCard {
             if (ymd[i] == 0) continue;
             const words = window.lang.quantity(langKeys[i], ymd[i]).split(" ");
             innerHTML += `
-            <div class="row my-3">
+            <div class="row">
                 <div class="inline baseline">
                     <span class="text-2xl">${words[0]}</span> <span class="text-gray-400 text-lg">${words[1]}</span>
                 </div>
@@ -504,14 +507,18 @@ const addEditEmail = (add: boolean): void => {
 
     const submit = window.modals.email.modal.querySelector(".modal-submit") as HTMLButtonElement;
     submit.onclick = () => {
-        toggleLoader(submit);
+        addLoader(submit);
         _post("/my/email", {"email": input.value}, (req: XMLHttpRequest) => {
-            if (req.readyState == 4 && (req.status == 303 || req.status == 200)) {
+            if (req.readyState != 4) return;
+            removeLoader(submit);
+            if (req.status == 303 || req.status == 200) {
                 document.dispatchEvent(new CustomEvent("details-reload"));
                 window.modals.email.close();
             }
         }, true, (req: XMLHttpRequest) => {
-            if (req.readyState == 4 && req.status == 401) {
+            if (req.readyState != 4) return;
+            removeLoader(submit);
+            if (req.status == 401) {
                 content.classList.add("unfocused");
                 confirmationRequired.classList.remove("unfocused");
             }
@@ -607,8 +614,8 @@ changePasswordButton.addEventListener("click", () => {
         }
     }, true, (req: XMLHttpRequest) => {
         if (req.readyState != 4) return;
+        removeLoader(changePasswordButton);
         if (req.status == 401) {
-            removeLoader(changePasswordButton);
             window.notifications.customError("oldPasswordError", window.lang.notif("errorOldPassword"));
             return;
         }
@@ -629,10 +636,10 @@ document.addEventListener("details-reload", () => {
             <span>${window.lang.strings("welcomeUser").replace("{user}", window.username)}</span>
             `;
             if (details.admin) {
-                innerHTML += `<span class="chip ~info ml-4">${window.lang.strings("admin")}</span>`;
+                innerHTML += `<span class="chip ~info">${window.lang.strings("admin")}</span>`;
             }
             if (details.disabled) {
-                innerHTML += `<span class="chip ~warning ml-4">${window.lang.strings("disabled")}</span>`;
+                innerHTML += `<span class="chip ~warning">${window.lang.strings("disabled")}</span>`;
             }
 
             rootCard.querySelector(".heading").innerHTML = innerHTML;

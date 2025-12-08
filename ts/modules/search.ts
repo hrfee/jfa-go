@@ -114,9 +114,14 @@ export class BoolQuery extends Query {
         super(subject, QueryOperator.Equal);
         this.type = "bool";
         this._value = value;
-        this._card.classList.add("button", "~" + (this._value ? "positive" : "critical"), "@high", "center");
+        this._card.classList.add("button", "@high", "center", "flex", "flex-row", "gap-2");
+        if (this._value) {
+            this._card.classList.add("~positive");
+        } else {
+            this._card.classList.add("~critical");
+        }
         this._card.innerHTML = `
-        <span class="font-bold mr-2">${subject.name}</span>
+        <span class="font-bold">${subject.name}</span>
         <i class="text-2xl ri-${this._value? "checkbox" : "close"}-circle-fill"></i>
         `;
     }
@@ -156,9 +161,9 @@ export class StringQuery extends Query {
         super(subject, QueryOperator.Equal);
         this.type = "string";
         this._value = value.toLowerCase();
-        this._card.classList.add("button", "~neutral", "@low", "center");
+        this._card.classList.add("button", "~neutral", "@low", "center", "flex", "flex-row", "gap-2");
         this._card.innerHTML = `
-        <span class="font-bold mr-2">${subject.name}:</span> "${this._value}"
+        <span class="font-bold">${subject.name}:</span> "${this._value}"
         `;
     }
 
@@ -203,10 +208,10 @@ export class DateQuery extends Query {
         super(subject, operator);
         this.type = "date";
         this._value = value;
-        this._card.classList.add("button", "~neutral", "@low", "center");
+        this._card.classList.add("button", "~neutral", "@low", "center", "flex", "flex-row", "gap-2");
         let dateText = QueryOperatorToDateText(operator);
         this._card.innerHTML = `
-        <span class="font-bold mr-2">${subject.name}:</span> ${dateText != "" ? dateText+" " : ""}${value.text}
+        <span class="font-bold">${subject.name}:</span> ${dateText != "" ? dateText+" " : ""}${value.text}
         `;
     }
 
@@ -575,6 +580,8 @@ export class Search {
     };
 
     generateFilterList = () => {
+        const filterListContainer = document.createElement("div");
+        filterListContainer.classList.add("flex", "flex-row", "flex-wrap", "gap-2");
         // Generate filter buttons
         for (let queryName of Object.keys(this._c.queries)) {
             const query = this._c.queries[queryName];
@@ -585,9 +592,9 @@ export class Search {
             }
 
             const container = document.createElement("span") as HTMLSpanElement;
-            container.classList.add("button", "button-xl", "~neutral", "@low", "mb-1", "mr-2", "align-bottom");
+            container.classList.add("button", "button-xl", "~neutral", "@low", "align-bottom", "flex", "flex-row", "gap-2");
             container.innerHTML = `
-            <div class="flex flex-col mr-2">
+            <div class="flex flex-col">
                 <span>${query.name}</span>
                 <span class="support">${query.description || ""}</span>
             </div>
@@ -596,13 +603,13 @@ export class Search {
                 const pos = document.createElement("button") as HTMLButtonElement;
                 pos.type = "button";
                 pos.ariaLabel = `Filter by "${query.name}": True`;
-                pos.classList.add("button", "~positive", "ml-2");
+                pos.classList.add("button", "~positive");
                 pos.innerHTML = `<i class="ri-checkbox-circle-fill"></i>`;
                 pos.addEventListener("click", () => this.fillInFilter(queryName, "true"));
                 const neg = document.createElement("button") as HTMLButtonElement;
                 neg.type = "button";
                 neg.ariaLabel = `Filter by "${query.name}": False`;
-                neg.classList.add("button", "~critical", "ml-2");
+                neg.classList.add("button", "~critical");
                 neg.innerHTML = `<i class="ri-close-circle-fill"></i>`;
                 neg.addEventListener("click", () => this.fillInFilter(queryName, "false"));
 
@@ -612,8 +619,8 @@ export class Search {
             if (query.string) {
                 const button = document.createElement("button") as HTMLButtonElement;
                 button.type = "button";
-                button.classList.add("button", "~urge", "ml-2");
-                button.innerHTML = `<i class="ri-equal-line mr-2"></i>${window.lang.strings("matchText")}`;
+                button.classList.add("button", "~urge", "flex", "flex-row", "gap-2");
+                button.innerHTML = `<i class="ri-equal-line"></i>${window.lang.strings("matchText")}`;
 
                 // Position cursor between quotes
                 button.addEventListener("click", () => this.fillInFilter(queryName, `""`, -1));
@@ -623,29 +630,30 @@ export class Search {
             if (query.date) {
                 const onDate = document.createElement("button") as HTMLButtonElement;
                 onDate.type = "button";
-                onDate.classList.add("button", "~urge", "ml-2");
-                onDate.innerHTML = `<i class="ri-calendar-check-line mr-2"></i>On Date`;
+                onDate.classList.add("button", "~urge", "flex", "flex-row", "gap-2");
+                onDate.innerHTML = `<i class="ri-calendar-check-line"></i>On Date`;
                 onDate.addEventListener("click", () => this.fillInFilter(queryName, `"="`, -1));
 
                 const beforeDate = document.createElement("button") as HTMLButtonElement;
                 beforeDate.type = "button";
-                beforeDate.classList.add("button", "~urge", "ml-2");
-                beforeDate.innerHTML = `<i class="ri-calendar-check-line mr-2"></i>Before Date`;
+                beforeDate.classList.add("button", "~urge", "flex", "flex-row", "gap-2");
+                beforeDate.innerHTML = `<i class="ri-calendar-check-line"></i>Before Date`;
                 beforeDate.addEventListener("click", () => this.fillInFilter(queryName, `"<"`, -1));
 
                 const afterDate = document.createElement("button") as HTMLButtonElement;
                 afterDate.type = "button";
-                afterDate.classList.add("button", "~urge", "ml-2");
-                afterDate.innerHTML = `<i class="ri-calendar-check-line mr-2"></i>After Date`;
+                afterDate.classList.add("button", "~urge", "flex", "flex-row", "gap-2");
+                afterDate.innerHTML = `<i class="ri-calendar-check-line"></i>After Date`;
                 afterDate.addEventListener("click", () => this.fillInFilter(queryName, `">"`, -1));
                 
                 container.appendChild(onDate);
                 container.appendChild(beforeDate);
                 container.appendChild(afterDate);
             }
-
-            this._c.filterList.appendChild(container);
+            
+            filterListContainer.appendChild(container);
         }
+        this._c.filterList.appendChild(filterListContainer)
     }
 
     onServerSearch = () => {

@@ -313,44 +313,44 @@ class user implements User, SearchableItem {
         const email = this._emailAddress != "";
         if (!telegram && !discord && !matrix && !email) return;
         let innerHTML = `
-        <i class="icon ri-settings-2-line ml-2 dropdown-button"></i>
+        <i class="icon ri-settings-2-line dropdown-button"></i>
         <div class="dropdown manual over-top">
             <div class="dropdown-display lg">
-                <div class="card ~neutral @low">
-                    <div class="supra sm mb-2">${window.lang.strings("contactThrough")}</div>
+                <div class="card ~neutral @low flex flex-col gap-2">
+                    <div class="supra sm">${window.lang.strings("contactThrough")}</div>
                     <div class="accounts-area-email">
-                        <label class="row switch pb-2">
-                            <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-email mr-2">
+                        <label class="row switch flex flex-row gap-2">
+                            <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-email">
                             </span>Email</span>
                         </label>
                     </div>
                     <div class="accounts-area-telegram">
-                        <label class="row switch pb-2">
-                            <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-telegram mr-2">
+                        <label class="row switch flex flex-row gap-2">
+                            <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-telegram">
                             <span>Telegram</span>
                         </label>
                     </div>
                     <div class="accounts-area-discord">
-                        <label class="row switch pb-2">
-                            <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-discord mr-2">
+                        <label class="row switch flex flex-row gap-2">
+                            <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-discord">
                             <span>Discord</span>
                         </label>
                     </div>
                     <div class="accounts-area-matrix">
-                        <label class="row switch pb-2">
-                            <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-matrix mr-2">
+                        <label class="row switch flex flex-row gap-2">
+                            <input type="checkbox" name="accounts-contact-${this.id}" class="accounts-contact-matrix">
                             <span>Matrix</span>
                         </label>
                     </div>
-                    <div class="supra sm mb-2 accounts-unlink-header">${window.lang.strings("unlink")}:</div>
+                    <div class="supra sm accounts-unlink-header">${window.lang.strings("unlink")}:</div>
                     <div class="accounts-unlink-telegram"> 
-                        <button class="button ~critical mb-2 w-full">Telegram</button>
+                        <button class="button ~critical w-full">Telegram</button>
                     </div>
                     <div class="accounts-unlink-discord"> 
-                        <button class="button ~critical mb-2 w-full">Discord</button>
+                        <button class="button ~critical w-full">Discord</button>
                     </div>
                     <div class="accounts-unlink-matrix"> 
-                        <button class="button ~critical mb-2 w-full">Matrix</button>
+                        <button class="button ~critical w-full">Matrix</button>
                     </div>
                 </div>
             </div>
@@ -404,12 +404,12 @@ class user implements User, SearchableItem {
             this._notifyDropdown.querySelector(".accounts-area-matrix").classList.remove("unfocused");
             this._notifyDropdown.querySelector(".accounts-unlink-matrix").classList.remove("unfocused");
             this._matrix.innerHTML = `
-            <div class="table-inline">
+            <div class="accounts-settings-area flex flex-row gap-2 justify-center">
                 ${u}
             </div>
             `;
             if (lastNotifyMethod) {
-                (this._matrix.querySelector(".table-inline") as HTMLDivElement).appendChild(this._notifyDropdown);
+                (this._matrix.querySelector(".accounts-settings-area") as HTMLDivElement).appendChild(this._notifyDropdown);
             }
         }
         this._checkUnlinkArea();
@@ -475,12 +475,12 @@ class user implements User, SearchableItem {
             this._notifyDropdown.querySelector(".accounts-area-telegram").classList.remove("unfocused");
             this._notifyDropdown.querySelector(".accounts-unlink-telegram").classList.remove("unfocused");
             this._telegram.innerHTML = `
-            <div class="table-inline">
+            <div class="accounts-settings-area flex flex-row gap-2 justify-center">
                 <a href="https://t.me/${u}" target="_blank">@${u}</a>
             </div>
             `;
             if (lastNotifyMethod) {
-                (this._telegram.querySelector(".table-inline") as HTMLDivElement).appendChild(this._notifyDropdown);
+                (this._telegram.querySelector(".accounts-settings-area") as HTMLDivElement).appendChild(this._notifyDropdown);
             }
         }
         this._checkUnlinkArea();
@@ -545,12 +545,12 @@ class user implements User, SearchableItem {
             this._notifyDropdown.querySelector(".accounts-area-discord").classList.remove("unfocused");
             this._notifyDropdown.querySelector(".accounts-unlink-discord").classList.remove("unfocused");
             this._discord.innerHTML = `
-            <div class="table-inline">
+            <div class="accounts-settings-area flex flex-row gap-2 justify-center">
                 <a href="https://discord.com/users/${this._discordID}" class="discord-link" target="_blank">${u}</a>
             </div>
             `;
             if (lastNotifyMethod) {
-                (this._discord.querySelector(".table-inline") as HTMLDivElement).appendChild(this._notifyDropdown);
+                (this._discord.querySelector(".accounts-settings-area") as HTMLDivElement).appendChild(this._notifyDropdown);
             }
         }
         this._checkUnlinkArea();
@@ -1647,15 +1647,15 @@ export class accountsList extends PaginatedList {
                 return;
             }
             if (list.length > 0) {
-                this._announceButton.innerHTML = `${window.lang.strings("announce")} <i class="ml-2 ri-arrow-drop-down-line"></i>`;
+                this._announceButton.innerHTML = `${window.lang.strings("announce")} <i class="ri-arrow-drop-down-line"></i>`;
             }
             const dList = document.getElementById("accounts-announce-templates") as HTMLDivElement;
             dList.textContent = '';
             for (let name of list) {
                 const el = document.createElement("div") as HTMLDivElement;
-                el.classList.add("flex", "flex-row", "justify-between", "truncate", "mt-2");
+                el.classList.add("flex", "flex-row", "gap-2", "justify-between", "truncate");
                 el.innerHTML = `
-                <span class="button ~neutral sm full-width accounts-announce-template-button">${name}</span><span class="button ~critical fr ml-4 accounts-announce-template-delete">&times;</span>
+                <span class="button ~neutral sm full-width accounts-announce-template-button">${name}</span><span class="button ~critical accounts-announce-template-delete">&times;</span>
                 `;
                 let urlSafeName = encodeURIComponent(encodeURIComponent(name));
                 (el.querySelector("span.accounts-announce-template-button") as HTMLSpanElement).onclick = () => {

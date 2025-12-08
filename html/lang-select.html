@@ -1,7 +1,7 @@
 <span class="dropdown z-[11]" tabindex="0" id="lang-dropdown">
-    <span class="button ~urge dropdown-button">
-        <i class="ri-global-line"></i>
-        <span class="ml-2 chev"></span>
+    <span class="button ~urge dropdown-button flex flex-row gap-2 h-full" title="{{ .strings.language }}" aria-label="{{ .strings.language }}">
+        <i class="icon ri-global-line"></i>
+        <i class="icon ri-arrow-down-s-line"></i>
     </span>
     <div class="dropdown-display">
         <div class="card ~neutral @low flex flex-col gap-2">
@@ -13,7 +13,7 @@
                 <input type="radio" name="lang-time" id="lang-24h">
                 <span>{{ .strings.time24h }}</span>
             </label>
-            <div id="lang-list"></div>
+            <div id="lang-list" class="flex flex-col gap-2"></div>
         </div>
     </div>
 </span>

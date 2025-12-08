@@ -9,34 +9,30 @@
     <body>
         <div class="page-container m-2 lg:my-20 lg:mx-64">
             <div class="card ~critical sectioned">
-                <section class="section ~critical">
+                <section class="section ~critical flex flex-col gap-2">
                     <span class="heading">Crash report for jfa-go</span>
                     {{ if .Err }}
-                    <div class="font-mono bg-inherit pre-line mt-4 mb-4">
+                    <div class="font-mono bg-inherit pre-line">
                     Error: {{ .Err }}
                     </div>
                     {{ end }}
-                    <a class="button ~critical mb-4" target="_blank" href="https://github.com/hrfee/jfa-go/issues/new/choose">Create an Issue</a>
+                    <a class="button ~critical w-full center" target="_blank" href="https://github.com/hrfee/jfa-go/issues/new/choose">Create an Issue</a>
                 </section>
-                <section class="section ~neutral @low">
-                    <div class="flex flex-row justify-between">
-                        <span class="subheading">Full Log</span>
-                        <span class="button ~urge ml-4" id="copy-log">Copy</span>
+                <section class="section ~neutral @low flex flex-col gap-4">
+                    <div class="flex flex-row justify-between gap-4">
+                        <span class="subheading font-medium">Full Log</span>
+                        <span class="button ~urge" id="copy-log">Copy</span>
                     </div>
-                    <div class="row mb-4">
-                        <label class="col mr-4">
-                            <span class="button ~neutral @high supra full-width center" id="button-log-normal">Normal</span>
-                        </label>
-                        <label class="col mr-4">
-                            <span class="button ~neutral @low supra full-width center" id="button-log-sanitized">Sanitized</span>
-                        </label>
+                    <div class="flex flex-row gap-2 justify-between">
+                        <button class="button ~neutral @high supra w-full center" id="button-log-normal">Normal</button>
+                        <button class="button ~neutral @low supra w-full center" id="button-log-sanitized">Sanitized</button>
                     </div>
                     <div id="log-normal">
-                        <pre class="font-mono bg-inherit pre-line">{{ .Log }}</pre>
+                        <pre class="card font-mono bg-inherit pre-line">{{ .Log }}</pre>
                     </div>
-                    <div id="log-sanitized" class="unfocused">
-                        <p class="subheading">An attempt has been made to remove sensitive info, but make sure to check yourself.</p>
-                        <pre class="font-mono bg-inherit pre-line">{{ .SanitizedLog }}</pre>
+                    <div id="log-sanitized" class="flex flex-col gap-2 unfocused">
+                        <p class="support subheading">An attempt has been made to remove sensitive info, but make sure to check yourself.</p>
+                        <pre class="card font-mono bg-inherit pre-line">{{ .SanitizedLog }}</pre>
                     </div>
                 </section>
             </div>

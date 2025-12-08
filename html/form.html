@@ -41,7 +41,7 @@
             </div>
             <div class="card dark:~d_neutral @low">
                 <div class="flex flex-col md:flex-row gap-3 items-baseline mb-2">
-                    <span class="heading mr-5">
+                    <span class="heading">
                         {{ if .passwordReset }}
                         {{ .strings.passwordReset }}
                         {{ else }}
@@ -82,23 +82,23 @@
                             <span class="button ~info @low full-width center mb-4" id="link-matrix">{{ .strings.linkMatrix }} {{ if .matrixRequired }}({{ .strings.required }}){{ end }}</span>
                             {{ end }}
                             {{ if or (.telegramEnabled) (or .discordEnabled .matrixEnabled) }}
-                            <div id="contact-via" class="unfocused">
-                                <label class="row switch pb-4 unfocused">
-                                    <input type="checkbox" name="contact-via" value="email" id="contact-via-email" class="mr-2"><span>Contact through Email</span>
+                            <div id="contact-via" class="unfocused flex flex-col gap-2">
+                                <label class="flex flex-row gap-2 switch unfocused">
+                                    <input type="checkbox" name="contact-via" value="email" id="contact-via-email"><span>Contact through Email</span>
                                 </label>
                                 {{ if .telegramEnabled }}
-                                <label class="row switch pb-4 unfocused">
-                                    <input type="checkbox" name="contact-via" value="telegram" id="contact-via-telegram" class="mr-2"><span>Contact through Telegram</span>
+                                <label class="flex flex-row gap-2 switch unfocused">
+                                    <input type="checkbox" name="contact-via" value="telegram" id="contact-via-telegram"><span>Contact through Telegram</span>
                                 </label>
                                 {{ end }}
                                 {{ if .discordEnabled }}
-                                <label class="row switch pb-4 unfocused">
-                                    <input type="checkbox" name="contact-via" value="discord" id="contact-via-discord" class="mr-2"><span>Contact through Discord</span>
+                                <label class="flex flex-row gap-2 switch unfocused">
+                                    <input type="checkbox" name="contact-via" value="discord" id="contact-via-discord"><span>Contact through Discord</span>
                                 </label>
                                 {{ end }}
                                 {{ if .matrixEnabled }}
-                                <label class="row switch pb-4 unfocused">
-                                    <input type="checkbox" name="contact-via" value="matrix" id="contact-via-matrix" class="mr-2"><span>Contact through Matrix</span>
+                                <label class="flex flex-row gap-2 switch unfocused">
+                                    <input type="checkbox" name="contact-via" value="matrix" id="contact-via-matrix"><span>Contact through Matrix</span>
                                 </label>
                                 {{ end }}
                             </div>
@@ -141,11 +141,19 @@
                             </ul>
                         </div>
                         {{ if .captcha }}
-                        <div class="card ~neutral @low mb-4">
-                            <span class="label supra mb-2">CAPTCHA {{ if not .reCAPTCHA }}<span id="captcha-regen" title="{{ .strings.refresh }}" class="badge lg @low ~info ml-2 float-right"><i class="ri-refresh-line"></i></span><span id="captcha-success" class="badge lg @low ~critical ml-2 float-right"><i class="ri-close-line"></i></span>{{ end }}</span>
-                            <div id="captcha-img" class="mt-2 mb-2 {{ if .reCAPTCHA }}g-recaptcha{{ end }}"></div>
+                        <div class="card ~neutral @low mb-4 flex flex-col gap-2">
+                            <div class="flex flex-row justify-between gap-2">
+                                <span class="label supra">CAPTCHA</span>
+                                {{ if not .reCAPTCHA }}
+                                <div class="flex flex-row gap-2">
+                                    <button id="captcha-regen" aria-label="{{ .strings.refresh }}" title="{{ .strings.refresh }}" class="badge lg @low ~info"><i class="ri-refresh-line"></i></button>
+                                    <span id="captcha-success" class="badge lg @low ~critical"><i class="ri-close-line"></i></span>
+                                </div>
+                                {{ end }}
+                            </div>
+                            <div id="captcha-img" class="{{ if .reCAPTCHA }}g-recaptcha{{ end }}"></div>
                             {{ if not .reCAPTCHA }}
-                            <input class="field ~neutral @low" id="captcha-input" class="mt-2" placeholder="CAPTCHA">
+                            <input class="field ~neutral @low" id="captcha-input" placeholder="CAPTCHA">
                             {{ end }}
                         </div>
                         {{ end }}

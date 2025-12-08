@@ -40,7 +40,7 @@ func (app *appContext) ServeSetup(gc *gin.Context) {
 		return
 	}
 	pages := PagePathsDTO{PagePaths: PAGES}
-	gc.HTML(200, "setup.html", gin.H{
+	app.gcHTML(gc, 200, "setup.html", SetupPage, lang, gin.H{
 		"cssVersion": cssVersion,
 		"pages":      pages,
 		"lang":       app.storage.lang.Setup[lang],

@@ -50,10 +50,12 @@ class profile implements Profile {
     get admin(): boolean { return this._adminChip.classList.contains("chip"); }
     set admin(state: boolean) {
         if (state) {
-            this._adminChip.classList.add("chip", "~info", "ml-2");
+            this._adminChip.classList.remove("unfocused");
+            this._adminChip.classList.add("chip", "~info");
             this._adminChip.textContent = "Admin";
         } else {
-            this._adminChip.classList.remove("chip", "~info", "ml-2");
+            this._adminChip.classList.add("unfocused");
+            this._adminChip.classList.remove("chip", "~info");
             this._adminChip.textContent = "";
         }
     }
@@ -115,7 +117,7 @@ class profile implements Profile {
     constructor(name: string, p: Profile) {
         this._row = document.createElement("tr") as HTMLTableRowElement;
         let innerHTML = `
-            <td><b class="profile-name"></b> <span class="profile-admin"></span></td>
+            <td><div class="flex flex-row items-baseline gap-2"><b class="profile-name"></b> <span class="profile-admin"></span></div></td>
             <td><input type="radio" name="profile-default"></td>
         `;
         if (window.ombiEnabled) innerHTML += `
