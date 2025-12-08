@@ -141,7 +141,7 @@ func (app *appContext) SetBaseLangTemplateValues(gc *gin.Context, lang string, b
 	} else {
 		shortLang = langComponents[0]
 	}
-	if lang == "pk-pk" || shortLang == "ar" || shortLang == "fa" || shortLang == "he" || shortLang == "iw" || shortLang == "kd" || shortLang == "ps" || shortLang == "ug" || shortLang == "ur" || shortLang == "yi" {
+	if lang == "pk-pk" || shortLang == "ar" || shortLang == "fa" || shortLang == "he" || shortLang == "iw" || shortLang == "kd" || shortLang == "ps" || shortLang == "ug" || shortLang == "ur" || shortLang == "yi" || shortLang == "ckb" {
 		set("pageDirection", "rtl")
 	}
 	set("langName", lang)
