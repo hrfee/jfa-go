@@ -45,7 +45,8 @@
         "internal": "داخلي",
         "external": "خارجي",
         "sent": "تم إرساُلها",
-        "failed": "فشل"
+        "failed": "فشل",
+        "language": "اللغة"
     },
     "notifications": {
         "errorUnknown": "خطأ غير معروف.",
