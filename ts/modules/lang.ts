@@ -92,6 +92,7 @@ export const loadLangSelector = (page: string) => {
             const list = document.getElementById("lang-list") as HTMLDivElement;
             let innerHTML = '';
             for (let code in req.response) {
+                if (!code || !(req.response[code])) continue;
                 queryString.set("lang", code);
                 innerHTML += `<a href="?${queryString.toString()}" class="button w-full text-left justify-start ~neutral lang-link">${req.response[code]}</a>`;
                 queryString.delete("lang");
