@@ -59,15 +59,16 @@ type VerifToken struct {
 }
 
 type TelegramDaemon struct {
-	Stopped         bool
-	ShutdownChannel chan string
-	bot             *tg.BotAPI
-	username        string
-	tokens          map[string]VerifToken            // Map of pins to tokens.
-	verifiedTokens  map[string]TelegramVerifiedToken // Map of token pins to the responsible ChatID+Username.
-	languages       map[int64]string                 // Store of languages for chatIDs. Added to on first interaction, and loaded from app.storage.telegram on start.
-	link            string
-	app             *appContext
+	Stopped              bool
+	ShutdownChannel      chan string
+	bot                  *tg.BotAPI
+	username             string
+	tokens               map[string]VerifToken            // Map of pins to tokens.
+	verifiedTokens       map[string]TelegramVerifiedToken // Map of token pins to the responsible ChatID+Username.
+	languages            map[int64]string                 // Store of languages for chatIDs. Added to on first interaction, and loaded from app.storage.telegram on start.
+	ignoreClientLanguage bool                             // Whether to ignore the sender's client language and just use the preconfigured default language or not.
+	link                 string
+	app                  *appContext
 }
 
 func newTelegramDaemon(app *appContext) (*TelegramDaemon, error) {
@@ -80,14 +81,15 @@ func newTelegramDaemon(app *appContext) (*TelegramDaemon, error) {
 		return nil, err
 	}
 	td := &TelegramDaemon{
-		ShutdownChannel: make(chan string),
-		bot:             bot,
-		username:        bot.Self.UserName,
-		tokens:          map[string]VerifToken{},
-		verifiedTokens:  map[string]TelegramVerifiedToken{},
-		languages:       map[int64]string{},
-		link:            "https://t.me/" + bot.Self.UserName,
-		app:             app,
+		ShutdownChannel:      make(chan string),
+		bot:                  bot,
+		username:             bot.Self.UserName,
+		tokens:               map[string]VerifToken{},
+		verifiedTokens:       map[string]TelegramVerifiedToken{},
+		languages:            map[int64]string{},
+		ignoreClientLanguage: app.config.Section("telegram").Key("ignore_client_language").MustBool(false),
+		link:                 "https://t.me/" + bot.Self.UserName,
+		app:                  app,
 	}
 	for _, user := range app.storage.GetTelegram() {
 		if user.Lang != "" {
@@ -156,12 +158,14 @@ func (t *TelegramDaemon) run() {
 			lang := t.app.storage.lang.chosenTelegramLang
 			storedLang, ok := t.languages[upd.Message.Chat.ID]
 			if !ok {
-				found := false
-				for code := range t.app.storage.lang.Telegram {
-					if code[:2] == upd.Message.From.LanguageCode {
-						lang = code
-						found = true
-						break
+				found := t.ignoreClientLanguage
+				if !found {
+					for code := range t.app.storage.lang.Telegram {
+						if code[:2] == upd.Message.From.LanguageCode {
+							lang = code
+							found = true
+							break
+						}
 					}
 				}
 				if found {
@@ -172,6 +176,8 @@ func (t *TelegramDaemon) run() {
 			}
 			switch msg := sects[0]; msg {
 			case "/start":
+			case "/help":
+			case "!help":
 				t.commandStart(&upd, sects, lang)
 				continue
 			case "/lang":
@@ -243,12 +249,24 @@ func (t *TelegramDaemon) commandStart(upd *tg.Update, sects []string, lang strin
 func (t *TelegramDaemon) commandLang(upd *tg.Update, sects []string, lang string) {
 	if len(sects) == 1 {
 		list := "/lang `<lang>`\n"
+		list += "`default`: " + t.app.storage.lang.Telegram[t.app.storage.lang.chosenTelegramLang].Meta.Name + "\n"
 		for code := range t.app.storage.lang.Telegram {
 			list += fmt.Sprintf("`%s`: %s\n", code, t.app.storage.lang.Telegram[code].Meta.Name)
 		}
 		err := t.Reply(upd, list)
 		if err != nil {
 			t.app.err.Printf(lm.FailedReply, lm.Telegram, upd.Message.From.UserName, err)
+		}
+		return
+	}
+	if sects[1] == "default" {
+		delete(t.languages, upd.Message.Chat.ID)
+		for _, user := range t.app.storage.GetTelegram() {
+			if user.ChatID == upd.Message.Chat.ID {
+				user.Lang = ""
+				t.app.storage.SetTelegramKey(user.JellyfinID, user)
+				break
+			}
 		}
 		return
 	}

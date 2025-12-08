@@ -1056,6 +1056,12 @@ sections:
     value: en-us
     description: Default telegram message language. Visit weblate if you'd like to
       translate.
+  - setting: ignore_client_language
+    name: Always use default language
+    depends_true: enabled
+    type: bool
+    value: false
+    description: When disabled, jfa-go will check the telegram user's language and use it if possible. Enable to ignore it and use your configured default language always.
 - section: matrix
   meta:
     name: Matrix
