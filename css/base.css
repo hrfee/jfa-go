@@ -487,3 +487,12 @@ section.section:not(.\~neutral) {
 .force-ltr {
     direction: ltr !important;
 }
+
+.content ul, .content ol {
+    margin-left: unset;
+    margin-inline-start: 2rem;
+}
+
+.content li {
+    text-align: start;
+}
