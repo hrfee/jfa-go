@@ -142,11 +142,14 @@ TYPESCRIPT_TEMPSRC = $(TYPESCRIPT_SRC:ts/%=tempts/%)
 TYPESCRIPT_TARGET = $(DATA)/web/js/admin.js
 $(TYPESCRIPT_TARGET): $(TYPESCRIPT_FULLSRC) ts/tsconfig.json
 	$(TYPECHECK)
+	# rm -rf tempts
+	# cp -r ts tempts
 	rm -rf tempts
-	cp -r ts tempts
+	mkdir -p tempts
 	$(adding dark variants to typescript)
-	scripts/dark-variant.sh tempts
-	scripts/dark-variant.sh tempts/modules
+	# scripts/dark-variant.sh tempts
+	# scripts/dark-variant.sh tempts/modules
+	go run scripts/variants/main.go -dir ts -out tempts 
 	$(info compiling typescript)
 	$(foreach tempsrc,$(TYPESCRIPT_TEMPSRC),$(ESBUILD) --target=es6 --bundle $(tempsrc) $(SOURCEMAP) --outfile=$(patsubst %.ts,%.js,$(subst tempts/,./$(DATA)/web/js/,$(tempsrc))) $(MINIFY);)
 	$(COPYTS)

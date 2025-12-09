@@ -23,15 +23,16 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/goccy/go-yaml"
+	"github.com/hrfee/mediabrowser"
+	"github.com/lithammer/shortuuid/v3"
+	"gopkg.in/ini.v1"
+
 	"github.com/hrfee/jfa-go/common"
 	_ "github.com/hrfee/jfa-go/docs"
 	"github.com/hrfee/jfa-go/jellyseerr"
 	"github.com/hrfee/jfa-go/logger"
 	lm "github.com/hrfee/jfa-go/logmessages"
 	"github.com/hrfee/jfa-go/ombi"
-	"github.com/hrfee/mediabrowser"
-	"github.com/lithammer/shortuuid/v3"
-	"gopkg.in/ini.v1"
 )
 
 var (
@@ -77,7 +78,9 @@ var serverTypes = map[string]string{
 	"jellyfin": "Jellyfin",
 	"emby":     "Emby (experimental)",
 }
+
 var serverType = mediabrowser.JellyfinServer
+
 var substituteStrings = ""
 
 var externalURI, externalDomain string // The latter lower-case as should be accessed through app.ExternalDomain()

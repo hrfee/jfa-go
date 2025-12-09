@@ -472,13 +472,12 @@ export function throttle(callback: () => void, limitMilliseconds: number): () =>
 export function SetupCopyButton(
     button: HTMLButtonElement,
     text: string | (() => string),
-    baseClass?: string,
+    baseClasses?: string[],
     notif?: string,
 ) {
     if (!notif) notif = window.lang.strings("copied");
-    if (!baseClass) baseClass = "~info";
+    if (!baseClasses || baseClasses.length == 0) baseClasses = ["~info", "dark:~d_info"];
     // script will probably turn this into multiple
-    const baseClasses = baseClass.split(" ");
     button.type = "button";
     button.classList.add("button", ...baseClasses, "@low", "p-1");
     button.title = window.lang.strings("copy");
@@ -505,8 +504,8 @@ export function SetupCopyButton(
     };
 }
 
-export function CopyButton(text: string | (() => string), baseClass?: string, notif?: string): HTMLButtonElement {
+export function CopyButton(text: string | (() => string), baseClasses?: string[], notif?: string): HTMLButtonElement {
     const button = document.createElement("button");
-    SetupCopyButton(button, text, baseClass, notif);
+    SetupCopyButton(button, text, baseClasses, notif);
     return button;
 }
