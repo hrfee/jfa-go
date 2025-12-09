@@ -18,8 +18,12 @@ steps:
         JFA_GO_SNAPSHOT: y
         JFA_GO_BUILT_BY:
             from_secret: BUILT_BY
+    volumes:
+      - jfa-go-build-cache:/root/.cache/go-build
+      - jfa-go-mod-cache:/go/pkg/mod
+      - jfa-go-npm-cache:/npm
     commands:
-      - npm i
+      - npm ci --cache /npm --prefer-offline
       - make precompile
       - go mod download
   - name: test
@@ -31,6 +35,7 @@ steps:
     volumes:
       - jfa-go-build-cache:/root/.cache/go-build
       - jfa-go-mod-cache:/go/pkg/mod
+      - jfa-go-npm-cache:/npm
     commands:
       - make test
   - name: build
@@ -42,6 +47,7 @@ steps:
     volumes:
       - jfa-go-build-cache:/root/.cache/go-build
       - jfa-go-mod-cache:/go/pkg/mod
+      - jfa-go-npm-cache:/npm
     commands:
       - curl -sfL https://goreleaser.com/static/run > goreleaser
       - chmod +x goreleaser
