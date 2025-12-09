@@ -19,19 +19,19 @@
                 </div>
             {{ end }}
         {{ end }}
-        <form class="card mx-2 form-login w-full {{ if eq $hasTwoCards 1 }}lg:w-[55%]{{ end }} mb-0" href=""> 
+        <form class="card mx-2 form-login w-full flex flex-col gap-2 {{ if eq $hasTwoCards 1 }}lg:w-[55%]{{ end }} mb-0" href=""> 
             <span class="heading">{{ .strings.login }}</span>
-            <input type="text" class="field input ~neutral @high mt-4 mb-2" placeholder="{{ .strings.username }}" id="login-user">
-            <input type="password" class="field input ~neutral @high mb-4" placeholder="{{ .strings.password }}" id="login-password">
+            <input type="text" class="field input ~neutral @high" placeholder="{{ .strings.username }}" id="login-user">
+            <input type="password" class="field input ~neutral @high" placeholder="{{ .strings.password }}" id="login-password">
             <label>
                 <input type="submit" class="unfocused">
                 <span class="button ~urge @low full-width center supra submit">{{ .strings.login }}</span>
-                {{ if index . "pwrEnabled" }}
-                    {{ if .pwrEnabled }}
-                        <span class="button ~info @low full-width center supra submit my-2" id="modal-login-pwr">{{ .strings.resetPassword }}</span>
-                    {{ end }}
-                {{ end }}
             </label>
+            {{ if index . "pwrEnabled" }}
+                {{ if .pwrEnabled }}
+                    <span class="button ~info @low full-width center supra" id="modal-login-pwr">{{ .strings.resetPassword }}</span>
+                {{ end }}
+            {{ end }}
         </form>
     </div>
 </div>
