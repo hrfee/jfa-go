@@ -85,6 +85,10 @@ steps:
         JFA_GO_SNAPSHOT: y
         JFA_GO_BUILT_BY:
             from_secret: BUILT_BY
+    volumes:
+      - jfa-go-build-cache:/root/.cache/go-build
+      - jfa-go-mod-cache:/go/pkg/mod
+      - jfa-go-npm-cache:/npm
     commands:
       - sed -i 's#id="password_resets-watch_directory" placeholder="/config/jellyfin"#id="password_resets-watch_directory" value="/jf" disabled#g' ./build/data/html/setup.html
       - env GOOS=linux INTERNAL=off ./scripts/version.sh ./goreleaser build --snapshot --id notray-e2ee --clean
