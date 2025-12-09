@@ -27,6 +27,9 @@ steps:
         JFA_GO_SNAPSHOT: y
         JFA_GO_BUILT_BY:
             from_secret: BUILT_BY
+    volumes:
+      - jfa-go-build-cache:/root/.cache/go-build
+      - jfa-go-mod-cache:/go/pkg/mod
     commands:
       - make test
   - name: build
@@ -36,6 +39,9 @@ steps:
             from_secret: BUILT_BY
         GITHUB_TOKEN:
             from_secret: GITHUB_TOKEN
+    volumes:
+      - jfa-go-build-cache:/root/.cache/go-build
+      - jfa-go-mod-cache:/go/pkg/mod
     commands:
       - curl -sfL https://goreleaser.com/static/run > ../goreleaser
       - chmod +x ../goreleaser
