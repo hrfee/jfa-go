@@ -94,11 +94,13 @@ func ParseDirParallel(in, out string) error {
 		if err != nil {
 			return err
 		}
-		wg.Go(func() {
+		wg.Add(1)
+		go func() {
 			if err := ParseFile(path, outFile, &perm); err != nil {
 				panic(err)
 			}
-		})
+			wg.Done()
+		}()
 		return nil
 	})
 	if err != nil {
