@@ -8,7 +8,6 @@ package main
 import (
 	"bytes"
 	"flag"
-	"fmt"
 	"io/fs"
 	"log"
 	"os"
@@ -16,6 +15,7 @@ import (
 	"regexp"
 )
 
+var VERBOSE = false
 var classList = func() *regexp.Regexp {
 	classList, err := regexp.Compile(`classList\.(add|remove)(\((?:[^()]*|\((?:[^()]*|\([^()]*\))\))*\))`)
 	if err != nil {
@@ -60,7 +60,9 @@ func ParseDir(in, out string) error {
 		if d.IsDir() {
 			return os.MkdirAll(outFile, perm)
 		}
-		log.Printf("\"%s\" => \"%s\"\n", path, outFile)
+		if VERBOSE {
+			log.Printf("\"%s\" => \"%s\"\n", path, outFile)
+		}
 		if err != nil {
 			return err
 		}
@@ -85,7 +87,9 @@ func ParseFile(in, out string, perm *fs.FileMode) error {
 
 	outText := classList.ReplaceAllFunc(file, func(match []byte) []byte {
 		if bytes.Contains(match, []byte("dark:~d_")) {
-			log.Printf("Skipping pre-set dark colour: `%s`\n", string(match))
+			if VERBOSE {
+				log.Printf("Skipping pre-set dark colour: `%s`\n", string(match))
+			}
 			return match
 		}
 		submatches := quotedColor.FindSubmatch(match)
@@ -94,15 +98,21 @@ func ParseFile(in, out string, perm *fs.FileMode) error {
 		}
 		quote := string(submatches[1])
 		color := string(submatches[2])
-		fmt.Printf("Matched quote %s, color %s\n", quote, color)
+		if VERBOSE {
+			log.Printf("Matched quote %s, color %s\n", quote, color)
+		}
 		newVal := bytes.Replace(match, []byte(quote+"~"+color+quote), []byte(quote+"~"+color+quote+", "+quote+"dark:~d_"+color+quote), 1)
-		fmt.Printf("`%s` => `%s`\n", string(match), string(newVal))
+		if VERBOSE {
+			log.Printf("`%s` => `%s`\n", string(match), string(newVal))
+		}
 		return newVal
 	})
 
 	outText = htmlClassList.ReplaceAllFunc(outText, func(match []byte) []byte {
 		if bytes.Contains(match, []byte("dark:~d_")) {
-			log.Printf("Skipping pre-set dark colour: `%s`\n", string(match))
+			if VERBOSE {
+				log.Printf("Skipping pre-set dark colour: `%s`\n", string(match))
+			}
 			return match
 		}
 		// Sucks we can't get a submatch from ReplaceAllFunc
@@ -112,7 +122,9 @@ func ParseFile(in, out string, perm *fs.FileMode) error {
 		}
 		c := submatches[1]
 		newVal := bytes.Replace(match, []byte("~"+string(c)), []byte("~"+string(c)+" dark:~d_"+string(c)), 1)
-		fmt.Printf("`%s` => `%s`\n", string(match), string(newVal))
+		if VERBOSE {
+			log.Printf("`%s` => `%s`\n", string(match), string(newVal))
+		}
 		return newVal
 	})
 	err = os.WriteFile(out, outText, *perm)
@@ -124,6 +136,7 @@ func main() {
 	flag.StringVar(&inFile, "file", "", "Input of an individual file.")
 	flag.StringVar(&inDir, "dir", "", "Input of a whole directory.")
 	flag.StringVar(&out, "out", "", "Output filepath/directory, depending on if -file or -dir passed.")
+	flag.BoolVar(&VERBOSE, "v", false, "prints information about files and replacements as they are made")
 	flag.Parse()
 
 	if out == "" {
