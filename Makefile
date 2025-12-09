@@ -1,6 +1,8 @@
 .PHONY: configuration email typescript swagger copy compile compress inline-css variants-html install clean npm config-description config-default precompile test
 .DEFAULT_GOAL := all
 
+TS ?= npx tsgo
+
 GOESBUILD ?= off
 ifeq ($(GOESBUILD), on)
 	ESBUILD := esbuild
@@ -60,7 +62,7 @@ DEBUG ?= off
 ifeq ($(DEBUG), on)
 	SOURCEMAP := --sourcemap
 	MINIFY := 
-	TYPECHECK := npx tsc -noEmit --project ts/tsconfig.json
+	TYPECHECK := $(TS) -noEmit --incremental --project ts/tsconfig.json
 	# jank
 	COPYTS := rm -r $(DATA)/web/js/ts; cp -r tempts $(DATA)/web/js/ts
 	UNCSS := cp $(CSS_BUNDLE) $(DATA)/bundle.css

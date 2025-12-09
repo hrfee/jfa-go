@@ -27,3 +27,6 @@ scripts/langmover/out
 tinyproxy.conf
 static/banner.svg
 start.sh
+ts/*.tsbuildinfo
+ts/**/*.tsbuildinfo
+js/

@@ -39,10 +39,10 @@
     "remove-markdown": "^0.5.0",
     "tailwindcss": "^3.3.2",
     "temporal-polyfill": "^0.3.0",
-    "typescript": "^5.1.3",
     "uncss": "^0.17.3"
   },
   "devDependencies": {
+    "@typescript/native-preview": "^7.0.0-dev.20251209.1",
     "live-server": "^1.2.2"
   },
   "optionalDependencies": {
