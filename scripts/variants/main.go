@@ -13,6 +13,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"sync"
 )
 
 var VERBOSE = false
@@ -68,6 +69,42 @@ func ParseDir(in, out string) error {
 		}
 		return ParseFile(path, outFile, &perm)
 	})
+	return err
+}
+
+func ParseDirParallel(in, out string) error {
+	var wg sync.WaitGroup
+	err := filepath.WalkDir(in, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		info, err := d.Info()
+		if err != nil {
+			return err
+		}
+		perm := info.Mode()
+		rel, err := filepath.Rel(in, path)
+		outFile := filepath.Join(out, rel)
+		if d.IsDir() {
+			return os.MkdirAll(outFile, perm)
+		}
+		if VERBOSE {
+			log.Printf("\"%s\" => \"%s\"\n", path, outFile)
+		}
+		if err != nil {
+			return err
+		}
+		wg.Go(func() {
+			if err := ParseFile(path, outFile, &perm); err != nil {
+				panic(err)
+			}
+		})
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	wg.Wait()
 	return err
 }
 
@@ -133,10 +170,12 @@ func ParseFile(in, out string, perm *fs.FileMode) error {
 
 func main() {
 	var inFile, inDir, out string
+	var parallel bool
 	flag.StringVar(&inFile, "file", "", "Input of an individual file.")
 	flag.StringVar(&inDir, "dir", "", "Input of a whole directory.")
 	flag.StringVar(&out, "out", "", "Output filepath/directory, depending on if -file or -dir passed.")
-	flag.BoolVar(&VERBOSE, "v", false, "prints information about files and replacements as they are made")
+	flag.BoolVar(&VERBOSE, "v", false, "Prints information about files and replacements as they are made")
+	flag.BoolVar(&parallel, "p", false, "Run a goroutine per file. Probably won't speed things up.")
 	flag.Parse()
 
 	if out == "" {
@@ -147,7 +186,11 @@ func main() {
 	if inFile != "" {
 		err = ParseFile(inFile, out, nil)
 	} else if inDir != "" {
-		err = ParseDir(inDir, out)
+		if parallel {
+			err = ParseDirParallel(inDir, out)
+		} else {
+			err = ParseDir(inDir, out)
+		}
 	} else {
 		flag.PrintDefaults()
 		os.Exit(1)
