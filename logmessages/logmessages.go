@@ -328,6 +328,9 @@ const (
 
 	// webhooks.go
 	WebhookRequest = "Webhook request send to \"%s\" (%d): %v"
+
+	// usercache.go
+	CacheRefreshCompleted = "Usercache refreshed, %d in %.2fs (%f.2u/sec)"
 )
 
 const (

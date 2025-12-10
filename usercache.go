@@ -8,6 +8,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	lm "github.com/hrfee/jfa-go/logmessages"
 )
 
 const (
@@ -85,10 +87,12 @@ func (c *UserCache) MaybeSync(app *appContext) error {
 				status <- err
 				return
 			}
+			startTime := time.Now()
 			cache := make([]respUser, len(users))
 			labels := map[string]bool{}
+			referralCache := app.getActiveReferrals()
 			for i, jfUser := range users {
-				cache[i] = app.userSummary(jfUser)
+				cache[i] = app.userSummary(jfUser, &referralCache)
 				if cache[i].Label != "" {
 					labels[cache[i].Label] = true
 				}
@@ -101,6 +105,9 @@ func (c *UserCache) MaybeSync(app *appContext) error {
 			for label, _ := range labels {
 				labelSlice = append(labelSlice, label)
 			}
+			elapsed := time.Since(startTime).Seconds()
+			usersPerSec := float64(len(users)) / elapsed
+			app.debug.Printf(lm.CacheRefreshCompleted, len(users), elapsed, usersPerSec)
 			c.Cache = cache
 			c.Ref = ref
 			c.Sorted = false

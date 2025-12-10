@@ -902,9 +902,23 @@ func (app *appContext) AdminPasswordReset(gc *gin.Context) {
 	respondBool(204, true, gc)
 }
 
+// getActiveReferrals returns a map of jellyfin user IDs to their active referral "invite" code, if they have one.
+// It does not check if the user still exists, simply finding invites with the ReferrerJellyfinID field set.
+func (app *appContext) getActiveReferrals() map[string]string {
+	out := map[string]string{}
+	for _, inv := range app.storage.GetInvites() {
+		if inv.ReferrerJellyfinID == "" {
+			continue
+		}
+		out[inv.ReferrerJellyfinID] = inv.Code
+	}
+	return out
+}
+
 // userSummary generates a respUser for to be displayed to the user, or sorted/filtered.
 // also, consider it a source of which data fields/struct modifications need to trigger a cache invalidation.
-func (app *appContext) userSummary(jfUser mediabrowser.User) respUser {
+// referralCache can be passed to avoid querying the db each time this is called. It can be generated with app.getActiveReferrals().
+func (app *appContext) userSummary(jfUser mediabrowser.User, referralCache *map[string]string) respUser {
 	adminOnly := app.config.Section("ui").Key("admin_only").MustBool(true)
 	allowAll := app.config.Section("ui").Key("allow_all").MustBool(false)
 	referralsEnabled := app.config.Section("user_page").Key("referrals").MustBool(false)
@@ -944,10 +958,17 @@ func (app *appContext) userSummary(jfUser mediabrowser.User) respUser {
 	}
 	// FIXME: Send referral data
 	referrerInv := Invite{}
+	// FIXME: This is veeery slow when running an arm64 binary through qemu
 	if referralsEnabled {
 		// 1. Directly attached invite.
-		err := app.storage.db.FindOne(&referrerInv, badgerhold.Where("ReferrerJellyfinID").Eq(jfUser.ID))
-		if err == nil {
+		found := false
+		if referralCache != nil {
+			_, found = (*referralCache)[jfUser.ID]
+		} else {
+			err := app.storage.db.FindOne(&referrerInv, badgerhold.Where("IsReferral").Eq(true).And("ReferrerJellyfinID").Eq(jfUser.ID))
+			found = err == nil
+		}
+		if found {
 			user.ReferralsEnabled = true
 			// 2. Referrals via profile template. Shallow check, doesn't look for the thing in the database.
 		} else if email, ok := app.storage.GetEmailsKey(jfUser.ID); ok && email.ReferralTemplateKey != "" {
