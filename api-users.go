@@ -902,81 +902,90 @@ func (app *appContext) AdminPasswordReset(gc *gin.Context) {
 	respondBool(204, true, gc)
 }
 
-// getActiveReferrals returns a map of jellyfin user IDs to their active referral "invite" code, if they have one.
-// It does not check if the user still exists, simply finding invites with the ReferrerJellyfinID field set.
-func (app *appContext) getActiveReferrals() map[string]string {
-	out := map[string]string{}
-	for _, inv := range app.storage.GetInvites() {
-		if inv.ReferrerJellyfinID == "" {
-			continue
-		}
-		out[inv.ReferrerJellyfinID] = inv.Code
-	}
-	return out
-}
-
-// userSummary generates a respUser for to be displayed to the user, or sorted/filtered.
-// also, consider it a source of which data fields/struct modifications need to trigger a cache invalidation.
-// referralCache can be passed to avoid querying the db each time this is called. It can be generated with app.getActiveReferrals().
-func (app *appContext) userSummary(jfUser mediabrowser.User, referralCache *map[string]string) respUser {
+// userSummary functions the same as userSummary, but pulls from the given caches rather than the database.
+func (app *appContext) userSummary(jfUser mediabrowser.User, email *EmailAddress, expiry *UserExpiry, discord *DiscordUser, telegram *TelegramUser, matrix *MatrixUser, referralActive bool) respUser {
 	adminOnly := app.config.Section("ui").Key("admin_only").MustBool(true)
 	allowAll := app.config.Section("ui").Key("allow_all").MustBool(false)
-	referralsEnabled := app.config.Section("user_page").Key("referrals").MustBool(false)
+
 	user := respUser{
 		ID:               jfUser.ID,
 		Name:             jfUser.Name,
 		Admin:            jfUser.Policy.IsAdministrator,
 		Disabled:         jfUser.Policy.IsDisabled,
-		ReferralsEnabled: false,
+		ReferralsEnabled: referralActive || (email != nil && email.ReferralTemplateKey != ""),
 	}
 	if !jfUser.LastActivityDate.IsZero() {
 		user.LastActive = jfUser.LastActivityDate.Unix()
 	}
-	if email, ok := app.storage.GetEmailsKey(jfUser.ID); ok {
+	if email != nil {
 		user.Email = email.Addr
 		user.NotifyThroughEmail = email.Contact
 		user.Label = email.Label
 		user.AccountsAdmin = (app.jellyfinLogin) && (email.Admin || (adminOnly && jfUser.Policy.IsAdministrator) || allowAll)
 	}
-	expiry, ok := app.storage.GetUserExpiryKey(jfUser.ID)
-	if ok {
+	if expiry != nil {
 		user.Expiry = expiry.Expiry.Unix()
 	}
-	if tgUser, ok := app.storage.GetTelegramKey(jfUser.ID); ok {
-		user.Telegram = tgUser.Username
-		user.NotifyThroughTelegram = tgUser.Contact
+	if telegram != nil {
+		user.Telegram = telegram.Username
+		user.NotifyThroughTelegram = telegram.Contact
 	}
-	if mxUser, ok := app.storage.GetMatrixKey(jfUser.ID); ok {
-		user.Matrix = mxUser.UserID
-		user.NotifyThroughMatrix = mxUser.Contact
+	if matrix != nil {
+		user.Matrix = matrix.UserID
+		user.NotifyThroughMatrix = matrix.Contact
 	}
-	if dcUser, ok := app.storage.GetDiscordKey(jfUser.ID); ok {
-		user.Discord = RenderDiscordUsername(dcUser)
-		// user.Discord = dcUser.Username + "#" + dcUser.Discriminator
-		user.DiscordID = dcUser.ID
-		user.NotifyThroughDiscord = dcUser.Contact
+	if discord != nil {
+		user.Discord = RenderDiscordUsername(*discord)
+		// user.Discord = discord.Username + "#" + discord.Discriminator
+		user.DiscordID = discord.ID
+		user.NotifyThroughDiscord = discord.Contact
 	}
+	return user
+}
+
+// GetUserSummary generates a respUser for to be displayed to the user, or sorted/filtered.
+// It fetches information from the db quite a lot. If calling lots, consider collecting data for all fields and calling app.userSummary().
+// also, consider it a source of which data fields/struct modifications need to trigger a cache invalidation.
+func (app *appContext) GetUserSummary(jfUser mediabrowser.User) respUser {
+	referralsEnabled := app.config.Section("user_page").Key("referrals").MustBool(false)
+	var emailPtr *EmailAddress = nil
+	if email, ok := app.storage.GetEmailsKey(jfUser.ID); ok {
+		emailPtr = &email
+	}
+	var expiryPtr *UserExpiry = nil
+	if expiry, ok := app.storage.GetUserExpiryKey(jfUser.ID); ok {
+		expiryPtr = &expiry
+	}
+	var discordPtr *DiscordUser = nil
+	if discordEnabled {
+		if discord, ok := app.storage.GetDiscordKey(jfUser.ID); ok {
+			discordPtr = &discord
+		}
+	}
+	var telegramPtr *TelegramUser = nil
+	if telegramEnabled {
+		if telegram, ok := app.storage.GetTelegramKey(jfUser.ID); ok {
+			telegramPtr = &telegram
+		}
+	}
+	var matrixPtr *MatrixUser = nil
+	if matrixEnabled {
+		if matrix, ok := app.storage.GetMatrixKey(jfUser.ID); ok {
+			matrixPtr = &matrix
+		}
+	}
+	referralsActive := false
 	// FIXME: Send referral data
 	referrerInv := Invite{}
 	// FIXME: This is veeery slow when running an arm64 binary through qemu
 	if referralsEnabled {
 		// 1. Directly attached invite.
-		found := false
-		if referralCache != nil {
-			_, found = (*referralCache)[jfUser.ID]
-		} else {
-			err := app.storage.db.FindOne(&referrerInv, badgerhold.Where("IsReferral").Eq(true).And("ReferrerJellyfinID").Eq(jfUser.ID))
-			found = err == nil
+		if err := app.storage.db.FindOne(&referrerInv, badgerhold.Where("IsReferral").Eq(true).And("ReferrerJellyfinID").Eq(jfUser.ID)); err == nil {
+			referralsActive = true
 		}
-		if found {
-			user.ReferralsEnabled = true
-			// 2. Referrals via profile template. Shallow check, doesn't look for the thing in the database.
-		} else if email, ok := app.storage.GetEmailsKey(jfUser.ID); ok && email.ReferralTemplateKey != "" {
-			user.ReferralsEnabled = true
-		}
+		// 2. performed by userSummaryFixme
 	}
-	return user
-
+	return app.userSummary(jfUser, emailPtr, expiryPtr, discordPtr, telegramPtr, matrixPtr, referralsActive)
 }
 
 // @Summary Returns the total number of Jellyfin users.

@@ -1716,3 +1716,61 @@ func storeJSON(path string, obj interface{}) error {
 	}
 	return err
 }
+
+// ActiveReferralsByID returns a map of jellyfin user IDs to their active referral "invite" code, if they have one.
+// It does not check if the user still exists, simply finding invites with the ReferrerJellyfinID field set.
+func (st *Storage) ActiveReferralsByID() map[string]Invite {
+	out := map[string]Invite{}
+	for _, inv := range st.GetInvites() {
+		if inv.ReferrerJellyfinID == "" {
+			continue
+		}
+		out[inv.ReferrerJellyfinID] = inv
+	}
+	return out
+}
+
+// EmailsByID returns a map of jellyfin user IDs to EmailAddress entries, if they have one.
+func (st *Storage) EmailsByID() map[string]EmailAddress {
+	out := map[string]EmailAddress{}
+	for _, email := range st.GetEmails() {
+		out[email.JellyfinID] = email
+	}
+	return out
+}
+
+// ExpiriesByID returns a map of jellyfin user IDs to User expiries, if they have one.
+func (st *Storage) ExpiriesByID() map[string]UserExpiry {
+	out := map[string]UserExpiry{}
+	for _, expiry := range st.GetUserExpiries() {
+		out[expiry.JellyfinID] = expiry
+	}
+	return out
+}
+
+// DiscordUsersByID returns a map of jellyfin user IDs to Discord user entries, if they have one.
+func (st *Storage) DiscordUsersByID() map[string]DiscordUser {
+	out := map[string]DiscordUser{}
+	for _, expiry := range st.GetDiscord() {
+		out[expiry.JellyfinID] = expiry
+	}
+	return out
+}
+
+// TelegramUsersByID returns a map of jellyfin user IDs to Telegram user entries, if they have one.
+func (st *Storage) TelegramUsersByID() map[string]TelegramUser {
+	out := map[string]TelegramUser{}
+	for _, expiry := range st.GetTelegram() {
+		out[expiry.JellyfinID] = expiry
+	}
+	return out
+}
+
+// MatrixUsersByID returns a map of jellyfin user IDs to Matrix user entries, if they have one.
+func (st *Storage) MatrixUsersByID() map[string]MatrixUser {
+	out := map[string]MatrixUser{}
+	for _, expiry := range st.GetMatrix() {
+		out[expiry.JellyfinID] = expiry
+	}
+	return out
+}

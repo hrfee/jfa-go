@@ -90,9 +90,45 @@ func (c *UserCache) MaybeSync(app *appContext) error {
 			startTime := time.Now()
 			cache := make([]respUser, len(users))
 			labels := map[string]bool{}
-			referralCache := app.getActiveReferrals()
+
+			emailCache := app.storage.EmailsByID()
+			expiryCache := app.storage.ExpiriesByID()
+			discordCache := app.storage.DiscordUsersByID()
+			telegramCache := app.storage.TelegramUsersByID()
+			matrixCache := app.storage.MatrixUsersByID()
+			referralCache := app.storage.ActiveReferralsByID()
+
 			for i, jfUser := range users {
-				cache[i] = app.userSummary(jfUser, &referralCache)
+				var emailPtr *EmailAddress = nil
+				if email, ok := emailCache[jfUser.ID]; ok {
+					emailPtr = &email
+				}
+				var expiryPtr *UserExpiry = nil
+				if expiry, ok := expiryCache[jfUser.ID]; ok {
+					expiryPtr = &expiry
+				}
+				var discordPtr *DiscordUser = nil
+				if discordEnabled {
+					if discord, ok := discordCache[jfUser.ID]; ok {
+						discordPtr = &discord
+					}
+				}
+				var telegramPtr *TelegramUser = nil
+				if telegramEnabled {
+					if telegram, ok := telegramCache[jfUser.ID]; ok {
+						telegramPtr = &telegram
+					}
+				}
+				var matrixPtr *MatrixUser = nil
+				if matrixEnabled {
+					if matrix, ok := matrixCache[jfUser.ID]; ok {
+						matrixPtr = &matrix
+					}
+				}
+				_, referralsActive := referralCache[jfUser.ID]
+
+				// cache[i] = app.userSummary(jfUser, &referralCache)
+				cache[i] = app.userSummary(jfUser, emailPtr, expiryPtr, discordPtr, telegramPtr, matrixPtr, referralsActive)
 				if cache[i].Label != "" {
 					labels[cache[i].Label] = true
 				}
