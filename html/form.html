@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="{{ .shortLang }}" dir="{{ .pageDirection }}" class="{{ .cssClass }}">
     <head>
-        {{ template "header.html" . }}
+        {{ template "header.txt" . }}
         {{ if .passwordReset }}
         <title>{{ .strings.passwordReset }}</title>
         {{ else }}

@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html lang="{{ .shortLang }}" dir="{{ .pageDirection }}" class="{{ .cssClass }}">
     <head>
-        {{ template "syntaxhighlighting.html" . }}
+        {{ template "syntaxhighlighting.txt" . }}
+        <title>Admin - jfa-go</title>
+        {{ template "header.txt" . }}
         <script>
             window.usernameEnabled = {{ .username }};
             window.langFile = JSON.parse({{ .language }});
@@ -12,8 +14,6 @@
             window.jfAllowAll = {{ .jfAllowAll }};
             window.loginAppearance = "{{ .loginAppearance }}";
         </script>
-        <title>Admin - jfa-go</title>
-        {{ template "header.html" . }}
     </head>
     <body class="max-w-full overflow-x-hidden section">
         {{ template "login-modal.html" . }}
@@ -565,7 +565,7 @@
             </form>
         </div>
         <div id="notification-box"></div>
-        <div class="page-container m-2 lg:my-20 lg:mx-64 flex flex-col gap-4">
+        <div class="page-container m-2 lg:my-20 lg:mx-64 flex flex-col gap-4 overflow-x-hidden">
             <div class="top-2 inset-x-2 lg:absolute flex flex-row justify-between">
                 <div class="flex flex-row gap-2">
                     {{ template "lang-select.html" . }}
@@ -806,7 +806,7 @@
                         <span class="button ~info @low center unfocused " id="accounts-send-pwr">{{ .strings.sendPWR }}</span>
                         <span class="button ~critical @low center " id="accounts-delete-user">{{ .quantityStrings.deleteUser.Singular }}</span>
                     </div>
-                    <div class="card @low accounts-header table-responsive">
+                    <div class="card @low accounts-header overflow-x-scroll">
                         <table class="table text-base leading-5">
                             <thead>
                                 <tr>
