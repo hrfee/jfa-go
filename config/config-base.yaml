@@ -739,19 +739,19 @@ sections:
       etc.
   - setting: use_24h
     name: Use 24h time
-    depends_true: method
+    depends_true: enabled
     type: bool
     value: true
   - setting: date_format
     name: Date format
-    advanced: true
-    depends_true: method
+    advanced: false
+    depends_true: enabled
     type: text
     value: '%d/%m/%y'
     description: Date format used in emails. Follows datetime.strftime format.
   - setting: message
     name: Help message
-    depends_true: method
+    depends_true: enabled
     type: text
     value: Need help? contact me.
     description: Message displayed at bottom of emails.
