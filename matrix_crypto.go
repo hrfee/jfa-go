@@ -8,7 +8,9 @@ import (
 
 	"github.com/hrfee/jfa-go/logger"
 	lm "github.com/hrfee/jfa-go/logmessages"
+
 	_ "github.com/mattn/go-sqlite3"
+
 	"maunium.net/go/mautrix/crypto/cryptohelper"
 	"maunium.net/go/mautrix/event"
 	"maunium.net/go/mautrix/id"
@@ -35,7 +37,17 @@ func InitMatrixCrypto(d *MatrixDaemon, logger *logger.Logger) error {
 	dbPath := d.app.config.Section("files").Key("matrix_sql").String()
 	var err error
 	d.crypto = &Crypto{}
+	// bmss, err := NewBackedMemoryStateStore(d.app.storage.db)
+	// if err != nil {
+	// 	return err
+	// }
+	// d.bot.StateStore = bmss
 	d.crypto.helper, err = cryptohelper.NewCryptoHelper(d.bot, []byte("jfa-go"), dbPath)
+	// bms, err := NewBackedMemoryStore(d.app.storage.db)
+	// if err != nil {
+	// 	return err
+	// }
+	// d.crypto.helper, err = cryptohelper.NewCryptoHelper(d.bot, []byte("jfa-go"), bms)
 	if err != nil {
 		return err
 	}
@@ -63,3 +75,55 @@ func EncryptRoom(d *MatrixDaemon, roomID id.RoomID) error {
 	})
 	return err
 }
+
+/*type BackedMemoryStore struct {
+	*crypto.MemoryStore
+	db *badgerhold.Store
+}
+
+func (b *BackedMemoryStore) save() error {
+	err := b.db.Upsert("MatrixEncryptionStore", b.MemoryStore)
+	defer func(err error) { log.Printf("MATRIX WRITE: err=%v\n", err) }(err)
+	return err
+}
+
+func NewBackedMemoryStore(db *badgerhold.Store) (*BackedMemoryStore, error) {
+	b := &BackedMemoryStore{
+		db: db,
+	}
+	b.MemoryStore = crypto.NewMemoryStore(b.save)
+	err := b.db.Get("MatrixEncryptionStore", b.MemoryStore)
+	if err != nil && !errors.Is(err, badgerhold.ErrNotFound) {
+		return nil, err
+	}
+	return b, nil
+}
+
+type BackedMemoryStateStore struct {
+	*mautrix.MemoryStateStore
+	db *badgerhold.Store
+}
+
+func (b *BackedMemoryStateStore) save() error {
+	err := b.db.Upsert("MatrixEncryptionStateStore", b.MemoryStateStore)
+	defer func(err error) { log.Printf("MATRIX WRITE: err=%v\n", err) }(err)
+	return err
+}
+
+func NewBackedMemoryStateStore(db *badgerhold.Store) (*BackedMemoryStateStore, error) {
+	b := &BackedMemoryStateStore{
+		db: db,
+	}
+
+	store := mautrix.NewMemoryStateStore()
+	memStore, ok := store.(*mautrix.MemoryStateStore)
+	if !ok {
+		return nil, errors.New("didn't get a MemoryStateStore")
+	}
+	b.MemoryStateStore = memStore
+	err := b.db.Get("MatrixEncryptionStateStore", b.MemoryStateStore)
+	if err != nil && !errors.Is(err, badgerhold.ErrNotFound) {
+		return nil, err
+	}
+	return b, nil
+}*/

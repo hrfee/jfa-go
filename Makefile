@@ -48,7 +48,7 @@ ifeq ($(TRAY), on)
 endif
 
 ifeq ($(E2EE), on)
-	TAGS := $(TAGS) e2ee
+	TAGS := $(TAGS) e2ee goolm
 endif
 
 TAGS := $(TAGS)"
@@ -125,7 +125,7 @@ $(DATA):
 
 $(CONFIG_DEFAULT): $(CONFIG_BASE)
 	$(info Generating config-default.ini)
-	go run scripts/ini/main.go -in $(CONFIG_BASE) -out $(DATA)/config-default.ini
+	CGO_ENABLED=0 go run scripts/ini/main.go -in $(CONFIG_BASE) -out $(DATA)/config-default.ini
 
 configuration: $(CONFIG_DEFAULT)
 
@@ -151,7 +151,7 @@ $(TYPESCRIPT_TARGET): $(TYPESCRIPT_FULLSRC) ts/tsconfig.json
 	$(adding dark variants to typescript)
 	# scripts/dark-variant.sh tempts
 	# scripts/dark-variant.sh tempts/modules
-	go run scripts/variants/main.go -dir ts -out tempts 
+	CGO_ENABLED=0 go run scripts/variants/main.go -dir ts -out tempts 
 	$(info compiling typescript)
 	$(foreach tempsrc,$(TYPESCRIPT_TEMPSRC),$(ESBUILD) --target=es6 --bundle $(tempsrc) $(SOURCEMAP) --outfile=$(patsubst %.ts,%.js,$(subst tempts/,./$(DATA)/web/js/,$(tempsrc))) $(MINIFY);)
 	$(COPYTS)
@@ -216,7 +216,7 @@ COPY_TARGET = $(DATA)/jfa-go.service
 # $(DATA)/LICENSE $(LANG_TARGET) $(STATIC_TARGET) $(DATA)/web/css/$(CSSVERSION)bundle.css
 $(COPY_TARGET): $(INLINE_TARGET) $(STATIC_SRC) $(LANG_SRC) $(CONFIG_BASE)
 	$(info copying $(CONFIG_BASE))
-	go run scripts/yaml/main.go -in $(CONFIG_BASE) -out $(DATA)/$(shell basename $(CONFIG_BASE))
+	CGO_ENABLED=0 go run scripts/yaml/main.go -in $(CONFIG_BASE) -out $(DATA)/$(shell basename $(CONFIG_BASE))
 	$(info copying crash page)
 	cp $(DATA)/crash.html $(DATA)/html/
 	$(info copying static data)

@@ -1,12 +1,10 @@
-FROM golang:bookworm AS final
+FROM gcr.io/distroless/base:latest AS final
 ARG TARGETARCH
 
-COPY ./dist/notray-e2ee_linux_${TARGETARCH}* /opt/jfa-go
-COPY ./build/data /opt/jfa-go/data
-
-RUN apt-get update -y && apt-get install libolm-dev -y
+COPY ./dist/notray-e2ee_linux_${TARGETARCH}* /jfa-go
+COPY ./build/data /jfa-go/data
 
 EXPOSE 8056
 EXPOSE 8057
 
-CMD [ "/opt/jfa-go/jfa-go", "-data", "/data" ]
+CMD [ "/jfa-go/jfa-go", "-data", "/data" ]

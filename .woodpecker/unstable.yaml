@@ -49,9 +49,7 @@ steps:
       - jfa-go-mod-cache:/go/pkg/mod
       - jfa-go-npm-cache:/npm
     commands:
-      - curl -sfL https://goreleaser.com/static/run > goreleaser
-      - chmod +x goreleaser
-      - ./scripts/version.sh ./goreleaser --snapshot --skip=publish --clean
+      - ./scripts/version.sh goreleaser --snapshot --skip=publish --clean
   - name: buildrone-binary
     image: docker.io/hrfee/jfa-go-build-docker:latest
     environment:
@@ -91,7 +89,7 @@ steps:
       - jfa-go-npm-cache:/npm
     commands:
       - sed -i 's#id="password_resets-watch_directory" placeholder="/config/jellyfin"#id="password_resets-watch_directory" value="/jf" disabled#g' ./build/data/html/setup.html
-      - env GOOS=linux INTERNAL=off ./scripts/version.sh ./goreleaser build --snapshot --id notray-e2ee --clean
+      - env GOOS=linux INTERNAL=off ./scripts/version.sh goreleaser build --snapshot --id notray-e2ee --clean
       - mv ./dist/notray-e2ee_linux_arm_6 ./dist/notray-e2ee_linux_arm
   - name: container
     image: docker.io/woodpeckerci/plugin-docker-buildx
