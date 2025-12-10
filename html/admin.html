@@ -15,7 +15,7 @@
             window.loginAppearance = "{{ .loginAppearance }}";
         </script>
     </head>
-    <body class="max-w-full overflow-x-hidden section">
+    <body class="max-w-full section"><div class="overflow-x-hidden relative"><!-- for whatever reason position:relative stops hidden x overflow on ios and samsung web -->
         {{ template "login-modal.html" . }}
         <div id="modal-add-user" class="modal">
             <form class="card relative mx-auto my-[10%] w-11/12 sm:w-4/5 lg:w-1/3 flex flex-col gap-2" id="form-add-user" href="">
@@ -967,5 +967,5 @@
             </div>
         </div>
         <script src="{{ .pages.Base }}/js/admin.js" type="module"></script>
-    </body>
+    </div></body>
 </html>
