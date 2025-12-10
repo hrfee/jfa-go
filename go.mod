@@ -46,8 +46,8 @@ require (
 	github.com/hrfee/simple-template v1.1.0
 	github.com/itchyny/timefmt-go v0.1.7
 	github.com/lithammer/shortuuid/v3 v3.0.7
-	github.com/lutischan-ferenc/systray v1.2.1
 	github.com/mailgun/mailgun-go/v4 v4.23.0
+	github.com/mattn/go-sqlite3 v1.14.32
 	github.com/robert-nix/ansihtml v1.0.1
 	github.com/steambap/captcha v1.4.1
 	github.com/swaggo/files v1.0.1
@@ -57,7 +57,6 @@ require (
 	github.com/xhit/go-simple-mail/v2 v2.16.0
 	gopkg.in/ini.v1 v1.67.0
 	maunium.net/go/mautrix v0.26.0
-	modernc.org/sqlite v1.40.1
 )
 
 require (
@@ -103,22 +102,16 @@ require (
 	github.com/mailgun/errors v0.4.0 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
-	github.com/mattn/go-sqlite3 v1.14.32 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
-	github.com/ncruces/go-sqlite3 v0.30.3 // indirect
-	github.com/ncruces/go-strftime v0.1.9 // indirect
-	github.com/ncruces/julianday v1.0.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
 	github.com/petermattis/goid v0.0.0-20251121121749-a11dd1a45f9a // indirect
 	github.com/quic-go/qpack v0.6.0 // indirect
 	github.com/quic-go/quic-go v0.57.0 // indirect
-	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/rs/zerolog v1.34.0 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/swaggo/swag v1.16.6 // indirect
 	github.com/technoweenie/multipartstreamer v1.0.1 // indirect
-	github.com/tetratelabs/wazero v1.10.1 // indirect
 	github.com/tevino/abool v0.0.0-20220530134649-2bfc934cb23c // indirect
 	github.com/tidwall/gjson v1.18.0 // indirect
 	github.com/tidwall/match v1.2.0 // indirect
@@ -145,7 +138,4 @@ require (
 	golang.org/x/text v0.31.0 // indirect
 	golang.org/x/tools v0.39.0 // indirect
 	google.golang.org/protobuf v1.36.10 // indirect
-	modernc.org/libc v1.66.10 // indirect
-	modernc.org/mathutil v1.7.1 // indirect
-	modernc.org/memory v1.11.0 // indirect
 )

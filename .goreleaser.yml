@@ -9,7 +9,7 @@ release:
 before:
   hooks:
     - npm ci
-    - make precompile
+    - env GOOS= GOARCH= make precompile
 builds:
     - id: notray
       dir: ./
