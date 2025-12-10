@@ -98,6 +98,7 @@ require (
 	github.com/klauspost/compress v1.18.1 // indirect
 	github.com/klauspost/cpuid/v2 v2.3.0 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
+	github.com/lutischan-ferenc/systray v1.2.1 // indirect
 	github.com/magisterquis/connectproxy v0.0.0-20200725203833-3582e84f0c9b // indirect
 	github.com/mailgun/errors v0.4.0 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
@@ -134,7 +135,7 @@ require (
 	golang.org/x/mod v0.30.0 // indirect
 	golang.org/x/net v0.47.0 // indirect
 	golang.org/x/sync v0.18.0 // indirect
-	golang.org/x/sys v0.38.0 // indirect
+	golang.org/x/sys v0.39.0 // indirect
 	golang.org/x/text v0.31.0 // indirect
 	golang.org/x/tools v0.39.0 // indirect
 	google.golang.org/protobuf v1.36.10 // indirect
