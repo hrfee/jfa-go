@@ -85,7 +85,9 @@ export class ThemeManager {
             this._cssLightFiles.forEach((el) => document.head.appendChild(el));
         }
         localStorage.setItem("theme", document.documentElement.classList.contains("dark") ? "dark" : "light");
-
+        document.head
+            .querySelectorAll("meta[name=theme-color]")
+            .forEach((el) => el.setAttribute("content", dark ? "#101010" : "ffffff"));
         // this._metaTag.setAttribute("content", metaValue);
     };
 
@@ -110,6 +112,9 @@ export class ThemeManager {
             this._cssLightFiles.forEach((el) => document.head.appendChild(el));
         }
         // this._metaTag.setAttribute("content", `${mode} ${opposite}`);
+        document.head
+            .querySelectorAll("meta[name=theme-color]")
+            .forEach((el) => el.setAttribute("content", dark ? "#101010" : "ffffff"));
     };
 
     enable = (dark: boolean) => {

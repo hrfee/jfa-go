@@ -66,9 +66,6 @@ html:not(.dark) .card.\@low:not(.\~neutral):not(.\~positive):not(.\~urge):not(.\
 }
 
 @media screen and (max-width: 1024px) {
-    :root {
-        font-size: 0.9rem;
-    }
     .table-responsive table {
         min-width: 800px;
     }
@@ -287,11 +284,6 @@ p.top {
     margin-top: 0px;
 }
 
-.table-responsive {
-    overflow-x: auto;
-    font-size: 0.9rem;
-}
-
 #notification-box {
     position: fixed;
     right: 1rem;
@@ -495,4 +487,8 @@ section.section:not(.\~neutral) {
 
 .content li {
     text-align: start;
+}
+
+.input {
+    font-size: 16px !important;
 }

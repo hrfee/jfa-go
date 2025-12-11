@@ -3,6 +3,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="Description" content="jfa-go, a better way to manage Jellyfin users.">
 <meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#101010" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#ffffff">
 <meta name="robots" content="noindex">
 
 <link rel="apple-touch-icon" sizes="180x180" href="{{ .pages.Base }}/apple-touch-icon.png">
@@ -11,7 +14,6 @@
 <link rel="manifest" href="{{ .pages.Base }}/site.webmanifest">
 <link rel="mask-icon" href="{{ .pages.Base }}/safari-pinned-tab.svg" color="#5bbad5">
 <meta name="msapplication-TileColor" content="#603cba">
-<meta name="theme-color" content="#ffffff">
 <script>
     window.pages = {
         "Base": "{{ .pages.Base }}",
