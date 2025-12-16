@@ -199,7 +199,7 @@ func (app *appContext) confirmMyAction(gc *gin.Context, key string) {
 
 	// Perform an Action
 	if target == NoOp {
-		gc.Redirect(http.StatusSeeOther, PAGES.MyAccount)
+		gc.Redirect(http.StatusSeeOther, MustGetNonEmptyURL(PAGES.MyAccount))
 		return
 	} else if target == UserEmailChange {
 		app.modifyEmail(id, claims["email"].(string))
@@ -214,7 +214,7 @@ func (app *appContext) confirmMyAction(gc *gin.Context, key string) {
 		}, gc, true)
 
 		app.info.Printf(lm.UserEmailAdjusted, gc.GetString("jfId"))
-		gc.Redirect(http.StatusSeeOther, PAGES.MyAccount)
+		gc.Redirect(http.StatusSeeOther, MustGetNonEmptyURL(PAGES.MyAccount))
 		return
 	}
 }

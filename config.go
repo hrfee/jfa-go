@@ -66,6 +66,13 @@ func FixFullURL(v string) string {
 	return v
 }
 
+func MustGetNonEmptyURL(path string) string {
+	if !strings.HasPrefix(path, "/") {
+		return "/" + path
+	}
+	return path
+}
+
 func FormatSubpath(path string, removeSingleSlash bool) string {
 	if path == "/" {
 		if removeSingleSlash {
