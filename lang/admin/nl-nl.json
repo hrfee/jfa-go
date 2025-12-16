@@ -195,7 +195,11 @@
         "wikiPage": "Wiki pagina",
         "useInviteExpiryNote": "Standaard verlopen uitnodigingen na 90 dagen, maar kunnen ze vernieuwd worden door de gebruiker. Schakel in om de verwijzing uit te schakelen na de ingestelde tijd.",
         "backupsDescription": "Hier kunnen backups van de database gemaakt, teruggezet, of gedownload worden.",
-        "backupsCopy": "Bij het toepassen van een backup wordt er een kopie van de originele \"db\" folder naast gemaakt, voor het geval er iets misgaat."
+        "backupsCopy": "Bij het toepassen van een backup wordt er een kopie van de originele \"db\" folder naast gemaakt, voor het geval er iets misgaat.",
+        "sentTo": "Verzonden naar",
+        "editProfile": "Pas profiel aan",
+        "tasks": "Taken",
+        "run": "Uitvoeren"
     },
     "notifications": {
         "changedEmailAddress": "E-mailadres van {n} gewijzigd.",
