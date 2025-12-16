@@ -2,6 +2,8 @@ package main
 
 import (
 	"time"
+
+	"github.com/hrfee/mediabrowser"
 )
 
 type stringResponse struct {
@@ -512,4 +514,8 @@ type TaskDTO struct {
 
 type LabelsDTO struct {
 	Labels []string `json:'labels"`
+}
+
+type ActivityLogEntriesDTO struct {
+	Entries []mediabrowser.ActivityLogEntry `json:"entries"`
 }

@@ -115,7 +115,10 @@ type appContext struct {
 	adminUsers     []User
 	invalidTokens  []string
 	// Keeping jf name because I can't think of a better one
-	jf                                               *mediabrowser.MediaBrowser
+	jf struct {
+		*mediabrowser.MediaBrowser
+		activity *JFActivityCache
+	}
 	authJf                                           *mediabrowser.MediaBrowser
 	ombi                                             *OmbiWrapper
 	js                                               *JellyseerrWrapper
@@ -154,6 +157,14 @@ func generateSecret(length int) (string, error) {
 }
 
 func test(app *appContext) {
+	app.jf.activity = NewJFActivityCache(app.jf, 10*time.Second)
+	for {
+		c, _ := app.jf.activity.ByUserID("9d8c71d1bac04c4c8e69ce3446c61652")
+		v, _ := app.jf.GetActivityLog(-1, 1, time.Time{}, true)
+		fmt.Printf("From the source: %+v\nFrom the cache: %+v\nequal: %t\n", v.Items[0], c[0], v.Items[0].ID == c[0].ID)
+		time.Sleep(5 * time.Second)
+	}
+
 	fmt.Printf("\n\n----\n\n")
 	settings := map[string]any{
 		"server":         app.jf.Server,
@@ -429,7 +440,7 @@ func start(asDaemon, firstCall bool) {
 			app.info.Println(lm.UsingJellyfin)
 		}
 
-		app.jf, err = mediabrowser.NewServer(
+		app.jf.MediaBrowser, err = mediabrowser.NewServer(
 			serverType,
 			server,
 			app.config.Section("jellyfin").Key("client").String(),

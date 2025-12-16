@@ -99,7 +99,7 @@ func (app *appContext) generateActivitiesQuery(req ServerFilterReqDTO) *badgerho
 	for _, q := range req.Queries {
 		nq := q.AsDBQuery(query)
 		if nq == nil {
-			nq = ActivityDBQueryFromSpecialField(app.jf, query, q)
+			nq = ActivityDBQueryFromSpecialField(app.jf.MediaBrowser, query, q)
 		}
 		query = nq
 	}
@@ -156,8 +156,8 @@ func (app *appContext) GetActivities(gc *gin.Context) {
 			Value:          act.Value,
 			Time:           act.Time.Unix(),
 			IP:             act.IP,
-			Username:       act.MustGetUsername(app.jf),
-			SourceUsername: act.MustGetSourceUsername(app.jf),
+			Username:       act.MustGetUsername(app.jf.MediaBrowser),
+			SourceUsername: act.MustGetSourceUsername(app.jf.MediaBrowser),
 		}
 		if act.Type == ActivityDeletion || act.Type == ActivityCreation {
 			// Username would've been in here, clear it to avoid confusion to the consumer

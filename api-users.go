@@ -1418,3 +1418,26 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 	app.InvalidateUserCaches()
 	gc.JSON(code, errors)
 }
+
+// @Summary Get the latest Jellyfin/Emby activities related to the given user ID. Returns as many as the server has recorded.
+// @Produce json
+// @Success 200 {object} ActivityLogEntriesDTO
+// @Failure 400 {object} boolResponse
+// @Param id path string true "id of user to fetch activities of."
+// @Router /users/{id}/activities/jellyfin [get]
+// @Security Bearer
+// @tags Users
+func (app *appContext) GetJFActivitesForUser(gc *gin.Context) {
+	userId := gc.Param("id")
+	if userId == "" {
+		respondBool(400, false, gc)
+		return
+	}
+	activities, err := app.jf.activity.ByUserID(userId)
+	if err != nil {
+		app.err.Printf(lm.FailedGetJFActivities, err)
+		respondBool(400, false, gc)
+		return
+	}
+	gc.JSON(200, ActivityLogEntriesDTO{Entries: activities})
+}
