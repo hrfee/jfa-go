@@ -101,6 +101,34 @@ window.availableProfiles = window.availableProfiles || [];
     }
 })();
 
+// Make the navbar horizontally scrollable by dragging (with mouse)
+// doesn't work incredibly well so disabled.
+/*[...document.getElementsByClassName("horizontally-scrollable")].forEach((c: HTMLElement) => {
+    c.classList.add("cursor-pointer");
+    let down = false;
+    let startX: number, scrollLeft: number;
+    c.addEventListener("mousedown", (ev: MouseEvent) => {
+        console.log("down");
+        down = true;
+        c.classList.add("active");
+        startX = ev.pageX - c.offsetLeft;
+        scrollLeft = c.scrollLeft;
+    });
+    const leave = () => {
+        console.log("up");
+        down = false;
+        c.classList.remove("active");
+    };
+    c.addEventListener("mouseleave", leave);
+    c.addEventListener("mouseup", leave);
+    c.addEventListener("mousemove", (ev: MouseEvent) => {
+        if (!down) return;
+        const x = ev.pageX - c.offsetLeft;
+        const walk = x - startX;
+        c.scrollLeft = scrollLeft - walk;
+    });
+});*/
+
 var inviteCreator = new createInvite();
 
 var accounts = new accountsList();

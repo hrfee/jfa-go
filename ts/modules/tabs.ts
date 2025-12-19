@@ -33,13 +33,20 @@ export class Tabs implements Tabs {
         let tab: Tab = {
             page: null,
             tabEl: document.getElementById("tab-" + tabID) as HTMLDivElement,
-            buttonEl: document.getElementById("button-tab-" + tabID) as HTMLSpanElement,
+            buttonEl: document.getElementById("button-tab-" + tabID) as HTMLButtonElement,
             preFunc: preFunc,
             postFunc: postFunc,
         };
         if (this._baseOffset == -1) {
             this._baseOffset = tab.buttonEl.offsetLeft;
         }
+        const order = Array.from(this.tabs.keys());
+        let scrollTo: () => number = (): number => tab.buttonEl.offsetLeft - this._baseOffset;
+        if (order.length > 0) {
+            scrollTo = (): number =>
+                tab.buttonEl.offsetLeft - (tab.buttonEl.parentElement.offsetWidth - tab.buttonEl.offsetWidth) / 2;
+        }
+
         tab.page = {
             name: tabID,
             title: document.title /*FIXME: Get actual names from translations*/,
@@ -47,7 +54,11 @@ export class Tabs implements Tabs {
             show: () => {
                 tab.buttonEl.classList.add("active", "~urge");
                 tab.tabEl.classList.remove("unfocused");
-                tab.buttonEl.parentElement.scrollTo(tab.buttonEl.offsetLeft - this._baseOffset, 0);
+                tab.buttonEl.parentElement.scrollTo({
+                    left: scrollTo(),
+                    top: 0,
+                    behavior: "auto",
+                });
                 document.dispatchEvent(new CustomEvent("tab-change", { detail: tabID }));
                 return true;
             },
