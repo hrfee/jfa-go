@@ -534,7 +534,7 @@ const addEditEmail = (add: boolean): void => {
     const content = window.modals.email.modal.querySelector(".content");
     content.classList.remove("unfocused");
 
-    const submit = window.modals.email.modal.querySelector(".modal-submit") as HTMLButtonElement;
+    const submit = window.modals.email.modal.querySelector(".card").children[0] as HTMLButtonElement;
     submit.onclick = () => {
         addLoader(submit);
         _post(
