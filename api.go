@@ -201,7 +201,7 @@ func (app *appContext) ResetSetPassword(gc *gin.Context) {
 			respondBool(200, true, gc)
 			return
 		} */
-		ombiUser, err := app.getOmbiUser(user.ID)
+		ombiUser, err := app.getOmbiUser(user.ID, nil)
 		if err != nil {
 			app.err.Printf(lm.FailedGetUser, user.ID, lm.Ombi, err)
 			respondBool(200, true, gc)

@@ -248,7 +248,7 @@ $(GO_TARGET): $(COMPDEPS) $(SWAGGER_TARGET) $(GO_SRC) go.mod go.sum
 	$(GOBINARY) mod download
 	$(info Building)
 	mkdir -p build
-	$(GOBINARY) build $(RACEDETECTOR) -ldflags="$(LDFLAGS)" $(TAGS) -o $(GO_TARGET) 
+	$(GOBINARY) build $(RACEDETECTOR) -ldflags="$(LDFLAGS)" $(TAGS) -o $(GO_TARGET) $(GOBUILDFLAGS)
 
 test: $(BUILDDEPS) $(COMPDEPS) $(SWAGGER_TARGET) $(GO_SRC) go.mod go.sum
 	$(GOBINARY) test -ldflags="$(LDFLAGS)" $(TAGS) -p 1

@@ -207,9 +207,10 @@ func (app *appContext) SetUserDisabled(user mediabrowser.User, disabled bool) (e
 }
 
 func (app *appContext) DeleteUser(user mediabrowser.User) (err error, deleted bool) {
+	// FIXME: Add DeleteContactMethod to TPS
 	if app.ombi != nil {
 		var tpUser map[string]any
-		tpUser, err = app.getOmbiUser(user.ID)
+		tpUser, err = app.getOmbiUser(user.ID, nil)
 		if err == nil {
 			if id, ok := tpUser["id"]; ok {
 				err = app.ombi.DeleteUser(id.(string))

@@ -12,17 +12,22 @@ import (
 	"github.com/hrfee/mediabrowser"
 )
 
-func (app *appContext) getOmbiUser(jfID string) (map[string]interface{}, error) {
+// getOmbiUser searches for an ombi user given a Jellyfin user ID. It looks for matching username or matching email address.
+// If "email"=nil, an email address will be acquired from the DB instead. Passing it manually is useful when changing email address.
+func (app *appContext) getOmbiUser(jfID string, email *string) (map[string]interface{}, error) {
 	jfUser, err := app.jf.UserByID(jfID, false)
 	if err != nil {
 		return nil, err
 	}
 	username := jfUser.Name
-	email := ""
-	if e, ok := app.storage.GetEmailsKey(jfID); ok {
-		email = e.Addr
+	if email == nil {
+		addr := ""
+		if e, ok := app.storage.GetEmailsKey(jfID); ok {
+			addr = e.Addr
+		}
+		email = &addr
 	}
-	user, err := app.ombi.getUser(username, email)
+	user, err := app.ombi.getUser(username, *email)
 	return user, err
 }
 
@@ -147,7 +152,7 @@ func (app *appContext) DeleteOmbiProfile(gc *gin.Context) {
 }
 
 type OmbiWrapper struct {
-	OmbiUserByJfID func(jfID string) (map[string]interface{}, error)
+	OmbiUserByJfID func(jfID string, email *string) (map[string]interface{}, error)
 	*ombiLib.Ombi
 }
 
@@ -191,7 +196,7 @@ func (ombi *OmbiWrapper) ImportUser(jellyfinID string, req newUserDTO, profile P
 }
 
 func (ombi *OmbiWrapper) SetContactMethods(jellyfinID string, email *string, discord *DiscordUser, telegram *TelegramUser, contactPrefs *common.ContactPreferences) (err error) {
-	ombiUser, err := ombi.OmbiUserByJfID(jellyfinID)
+	ombiUser, err := ombi.OmbiUserByJfID(jellyfinID, email)
 	if err != nil {
 		return
 	}

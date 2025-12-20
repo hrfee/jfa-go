@@ -157,14 +157,6 @@ func generateSecret(length int) (string, error) {
 }
 
 func test(app *appContext) {
-	app.jf.activity = NewJFActivityCache(app.jf, 10*time.Second)
-	for {
-		c, _ := app.jf.activity.ByUserID("9d8c71d1bac04c4c8e69ce3446c61652")
-		v, _ := app.jf.GetActivityLog(-1, 1, time.Time{}, true)
-		fmt.Printf("From the source: %+v\nFrom the cache: %+v\nequal: %t\n", v.Items[0], c[0], v.Items[0].ID == c[0].ID)
-		time.Sleep(5 * time.Second)
-	}
-
 	fmt.Printf("\n\n----\n\n")
 	settings := map[string]any{
 		"server":         app.jf.Server,
@@ -453,6 +445,10 @@ func start(asDaemon, firstCall bool) {
 		if err != nil {
 			app.err.Fatalf(lm.FailedAuthJellyfin, server, -1, err)
 		}
+		app.jf.activity = NewJFActivityCache(
+			app.jf,
+			time.Duration(app.config.Section("jellyfin").Key("activity_cache_sync_timeout_seconds").MustInt(20))*time.Second,
+		)
 		/*if debugMode {
 			app.jf.Verbose = true
 		}*/

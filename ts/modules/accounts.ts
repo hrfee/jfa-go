@@ -31,7 +31,7 @@ enum SelectAllState {
     All = 1,
 }
 
-interface User {
+interface UserDTO {
     id: string;
     name: string;
     email: string | undefined;
@@ -177,7 +177,7 @@ const queries = (): { [field: string]: QueryType } => {
     };
 };
 
-class user implements User, SearchableItem {
+class User implements UserDTO, SearchableItem {
     private _id = "";
     private _row: HTMLTableRowElement;
     private _check: HTMLInputElement;
@@ -691,7 +691,7 @@ class user implements User, SearchableItem {
     private _checkEvent = () => new CustomEvent("accountCheckEvent", { detail: this.id });
     private _uncheckEvent = () => new CustomEvent("accountUncheckEvent", { detail: this.id });
 
-    constructor(user: User) {
+    constructor(user: UserDTO) {
         this._row = document.createElement("tr") as HTMLTableRowElement;
         this._row.classList.add("border-b", "border-dashed", "dark:border-dotted", "dark:border-stone-700");
         let innerHTML = `
@@ -897,7 +897,7 @@ class user implements User, SearchableItem {
         this._row.setAttribute(SearchableItemDataAttribute, v);
     }
 
-    update = (user: User) => {
+    update = (user: UserDTO) => {
         this.id = user.id;
         this.name = user.name;
         this.email = user.email || "";
@@ -934,7 +934,7 @@ class user implements User, SearchableItem {
 }
 
 interface UsersDTO extends paginatedDTO {
-    users: User[];
+    users: UserDTO[];
 }
 
 declare interface ExtendExpiryDTO {
@@ -1000,8 +1000,8 @@ export class accountsList extends PaginatedList {
     private _selectAllState: SelectAllState = SelectAllState.None;
     // private _users: { [id: string]: user };
     // private _ordering: string[] = [];
-    get users(): { [id: string]: user } {
-        return this._search.items as { [id: string]: user };
+    get users(): { [id: string]: User } {
+        return this._search.items as { [id: string]: User };
     }
     // set users(v: { [id: string]: user }) { this._search.items = v as SearchableItems; }
 
@@ -1362,7 +1362,7 @@ export class accountsList extends PaginatedList {
                 this._columns[headerGetters[i]] = new Column(
                     header,
                     headerGetters[i],
-                    Object.getOwnPropertyDescriptor(user.prototype, headerGetters[i]).get,
+                    Object.getOwnPropertyDescriptor(User.prototype, headerGetters[i]).get,
                 );
             }
         }
@@ -1501,8 +1501,8 @@ export class accountsList extends PaginatedList {
         }
     };
 
-    add = (u: User) => {
-        let domAccount = new user(u);
+    add = (u: UserDTO) => {
+        let domAccount = new User(u);
         this.users[u.id] = domAccount;
         // console.log("after appending lengths:", Object.keys(this.users).length, Object.keys(this._search.items).length);
     };
@@ -1991,7 +1991,7 @@ export class accountsList extends PaginatedList {
     sendPWR = () => {
         addLoader(this._sendPWR);
         let list = this._collectUsers();
-        let manualUser: user;
+        let manualUser: User;
         for (let id of list) {
             let user = this.users[id];
             if (!user.lastNotifyMethod() && !user.email) {
@@ -2545,7 +2545,7 @@ class Column {
     }
 
     // Sorts the user list. previouslyActive is whether this column was previously sorted by, indicating that the direction should change.
-    sort = (users: { [id: string]: user }): string[] => {
+    sort = (users: { [id: string]: User }): string[] => {
         let userIDs = Object.keys(users);
         userIDs.sort((a: string, b: string): number => {
             let av: GetterReturnType = this._getter.call(users[a]);
@@ -2559,4 +2559,18 @@ class Column {
 
         return userIDs;
     };
+}
+
+type ActivitySeverity = "Info" | "Debug" | "Warn" | "Error" | "Fatal";
+interface ActivityLogEntryDTO {
+    Id: number;
+    Name: string;
+    Overview: string;
+    ShortOverview: string;
+    Type: string;
+    ItemId: string;
+    Date: number;
+    UserId: string;
+    UserPrimaryImageTag: string;
+    Severity: ActivitySeverity;
 }

@@ -517,5 +517,10 @@ type LabelsDTO struct {
 }
 
 type ActivityLogEntriesDTO struct {
-	Entries []mediabrowser.ActivityLogEntry `json:"entries"`
+	Entries []ActivityLogEntryDTO `json:"entries"`
+}
+
+type ActivityLogEntryDTO struct {
+	mediabrowser.ActivityLogEntry
+	Date int64 `json:"Date"`
 }

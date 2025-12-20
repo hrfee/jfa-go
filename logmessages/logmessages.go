@@ -333,6 +333,9 @@ const (
 
 	// usercache.go
 	CacheRefreshCompleted = "Usercache refreshed, %d in %.2fs (%f.2u/sec)"
+
+	// Other
+	GotNEntries = "got %d entries"
 )
 
 const (

@@ -421,7 +421,7 @@ func (app *appContext) ResetPassword(gc *gin.Context) {
 			app.err.Printf(lm.FailedGetUser, username, lm.Jellyfin, err)
 			return
 		}
-		ombiUser, err := app.getOmbiUser(jfUser.ID)
+		ombiUser, err := app.getOmbiUser(jfUser.ID, nil)
 		if err != nil {
 			app.err.Printf(lm.FailedGetUser, username, lm.Ombi, err)
 			return

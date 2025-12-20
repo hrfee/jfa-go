@@ -11,11 +11,13 @@ import (
 )
 
 const (
-	// ActivityLimit is the maximum number of ActivityLogEntries to fetch at once.
-	ActivityLimit = 5000
+	// ActivityLimit is the maximum number of ActivityLogEntries to keep in memory.
+	// The array they are stored in is fixed, so (ActivityLimit*unsafe.Sizeof(mediabrowser.ActivityLogEntry))
+	// At writing ActivityLogEntries take up ~160 bytes each, so 1M of memory gives us room for ~6250 records
+	ActivityLimit int = 1e6 / 160
 	// If ByUserLimitLength is true, ByUserLengthOrBaseLength is the maximum number of records attached
 	// to a user.
-	// If false, it is the base amount of entries to allocate for for each user ID, and more will be allocayted as needed.
+	// If false, it is the base amount of entries to allocate for for each user ID, and more will be allocated as needed.
 	ByUserLengthOrBaseLength = 128
 	ByUserLimitLength        = false
 )
@@ -113,11 +115,13 @@ func (c *JFActivityCache) ByEntryID(entryID int64) (entry mediabrowser.ActivityL
 // MaybeSync returns once the cache is in a suitable state to read:
 // return if cache is fresh, sync if not, or wait if another sync is happening already.
 func (c *JFActivityCache) MaybeSync() error {
+	syncTime := time.Now()
 	shouldWaitForSync := time.Now().After(c.LastSync.Add(c.WaitForSyncTimeout))
 
 	if !shouldWaitForSync {
 		return nil
 	}
+	defer func() { fmt.Printf("sync took %v", time.Since(syncTime)) }()
 
 	syncStatus := make(chan error)
 
@@ -153,7 +157,7 @@ func (c *JFActivityCache) MaybeSync() error {
 				}
 			}
 			if recvLength > 0 {
-				// Lazy strategy: for user ID maps, each refresh we'll rebuild them.
+				// Lazy strategy: rebuild user ID maps each time.
 				// Wipe them, and then append each new refresh element as we process them.
 				// Then loop through all the old entries and append them too.
 				for uid := range c.byUserID {

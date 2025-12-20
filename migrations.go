@@ -189,7 +189,7 @@ func linkExistingOmbiDiscordTelegram(app *appContext) error {
 		idList[user.JellyfinID] = vals
 	}
 	for jfID, ids := range idList {
-		ombiUser, err := app.getOmbiUser(jfID)
+		ombiUser, err := app.getOmbiUser(jfID, nil)
 		if err != nil {
 			app.debug.Printf("Failed to get Ombi user with Discord/Telegram \"%s\"/\"%s\": %v", ids[0], ids[1], err)
 			continue

@@ -294,6 +294,7 @@ func (app *appContext) PostNewUserFromInvite(nu NewUserData, req ConfirmationKey
 		}
 		contactPrefs.Email = &(emailStore.Contact)
 		if profile != nil {
+			// FIXME: Why?
 			profile.ReferralTemplateKey = profile.ReferralTemplateKey
 		}
 		/// Ensures at least one contact method is enabled.
@@ -1369,7 +1370,7 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 		}
 		if ombi != nil {
 			errorString := ""
-			user, err := app.getOmbiUser(id)
+			user, err := app.getOmbiUser(id, nil)
 			if err != nil {
 				errorString += fmt.Sprintf("Ombi GetUser: %v ", err)
 			} else {
@@ -1439,5 +1440,13 @@ func (app *appContext) GetJFActivitesForUser(gc *gin.Context) {
 		respondBool(400, false, gc)
 		return
 	}
-	gc.JSON(200, ActivityLogEntriesDTO{Entries: activities})
+	out := ActivityLogEntriesDTO{
+		Entries: make([]ActivityLogEntryDTO, len(activities)),
+	}
+	for i := range activities {
+		out.Entries[i].ActivityLogEntry = activities[i]
+		out.Entries[i].Date = activities[i].Date.Unix()
+	}
+	app.debug.Printf(lm.GotNEntries, len(activities))
+	gc.JSON(200, out)
 }
