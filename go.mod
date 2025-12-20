@@ -20,7 +20,7 @@ replace github.com/hrfee/jfa-go/easyproxy => ./easyproxy
 
 replace github.com/hrfee/jfa-go/jellyseerr => ./jellyseerr
 
-replace github.com/hrfee/mediabrowser => ../mediabrowser
+// replace github.com/hrfee/mediabrowser => ../mediabrowser
 
 require (
 	github.com/bwmarrin/discordgo v0.29.0
@@ -42,7 +42,7 @@ require (
 	github.com/hrfee/jfa-go/logger v0.0.0-20251123165523-7c9f91711460
 	github.com/hrfee/jfa-go/logmessages v0.0.0-20251123165523-7c9f91711460
 	github.com/hrfee/jfa-go/ombi v0.0.0-20251123165523-7c9f91711460
-	github.com/hrfee/mediabrowser v0.0.0-00010101000000-000000000000
+	github.com/hrfee/mediabrowser v0.3.34
 	github.com/hrfee/simple-template v1.1.0
 	github.com/itchyny/timefmt-go v0.1.7
 	github.com/lithammer/shortuuid/v3 v3.0.7
