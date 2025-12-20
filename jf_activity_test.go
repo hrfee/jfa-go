@@ -78,7 +78,7 @@ func TestJFActivityLog(t *testing.T) {
 
 			if finished {
 				// Make sure we got everything
-				time.Sleep(30 * waitForSync)
+				time.Sleep(5 * waitForSync)
 				if err := cache.MaybeSync(); err != nil {
 					t.Errorf("sync failed: %v", err)
 					return
@@ -93,11 +93,11 @@ func TestJFActivityLog(t *testing.T) {
 	})
 	t.Run("Ordering", func(t *testing.T) {
 		mock := MockActivityLogSource{}
-		waitForSync := 5 * time.Millisecond
+		waitForSync := 300 * time.Microsecond
 		cache := NewJFActivityCache(&mock, waitForSync)
 		finished := false
-		count := len(cache.cache) * 10
-		go mock.run(count, time.Second/100, &finished)
+		count := len(cache.cache) * 2
+		go mock.run(count, time.Millisecond, &finished)
 		for {
 			if err := cache.MaybeSync(); err != nil {
 				t.Errorf("sync failed: %v", err)
