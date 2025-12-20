@@ -294,6 +294,7 @@ func (app *appContext) PostNewUserFromInvite(nu NewUserData, req ConfirmationKey
 		}
 		contactPrefs.Email = &(emailStore.Contact)
 		if profile != nil {
+			// FIXME: Why?
 			profile.ReferralTemplateKey = profile.ReferralTemplateKey
 		}
 		/// Ensures at least one contact method is enabled.
@@ -1369,7 +1370,7 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 		}
 		if ombi != nil {
 			errorString := ""
-			user, err := app.getOmbiUser(id)
+			user, err := app.getOmbiUser(id, nil)
 			if err != nil {
 				errorString += fmt.Sprintf("Ombi GetUser: %v ", err)
 			} else {
@@ -1417,4 +1418,35 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 	}
 	app.InvalidateUserCaches()
 	gc.JSON(code, errors)
+}
+
+// @Summary Get the latest Jellyfin/Emby activities related to the given user ID. Returns as many as the server has recorded.
+// @Produce json
+// @Success 200 {object} ActivityLogEntriesDTO
+// @Failure 400 {object} boolResponse
+// @Param id path string true "id of user to fetch activities of."
+// @Router /users/{id}/activities/jellyfin [get]
+// @Security Bearer
+// @tags Users
+func (app *appContext) GetJFActivitesForUser(gc *gin.Context) {
+	userId := gc.Param("id")
+	if userId == "" {
+		respondBool(400, false, gc)
+		return
+	}
+	activities, err := app.jf.activity.ByUserID(userId)
+	if err != nil {
+		app.err.Printf(lm.FailedGetJFActivities, err)
+		respondBool(400, false, gc)
+		return
+	}
+	out := ActivityLogEntriesDTO{
+		Entries: make([]ActivityLogEntryDTO, len(activities)),
+	}
+	for i := range activities {
+		out.Entries[i].ActivityLogEntry = activities[i]
+		out.Entries[i].Date = activities[i].Date.Unix()
+	}
+	app.debug.Printf(lm.GotNEntries, len(activities))
+	gc.JSON(200, out)
 }

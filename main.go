@@ -115,7 +115,10 @@ type appContext struct {
 	adminUsers     []User
 	invalidTokens  []string
 	// Keeping jf name because I can't think of a better one
-	jf                                               *mediabrowser.MediaBrowser
+	jf struct {
+		*mediabrowser.MediaBrowser
+		activity *JFActivityCache
+	}
 	authJf                                           *mediabrowser.MediaBrowser
 	ombi                                             *OmbiWrapper
 	js                                               *JellyseerrWrapper
@@ -429,7 +432,7 @@ func start(asDaemon, firstCall bool) {
 			app.info.Println(lm.UsingJellyfin)
 		}
 
-		app.jf, err = mediabrowser.NewServer(
+		app.jf.MediaBrowser, err = mediabrowser.NewServer(
 			serverType,
 			server,
 			app.config.Section("jellyfin").Key("client").String(),
@@ -442,6 +445,10 @@ func start(asDaemon, firstCall bool) {
 		if err != nil {
 			app.err.Fatalf(lm.FailedAuthJellyfin, server, -1, err)
 		}
+		app.jf.activity = NewJFActivityCache(
+			app.jf,
+			time.Duration(app.config.Section("jellyfin").Key("activity_cache_sync_timeout_seconds").MustInt(20))*time.Second,
+		)
 		/*if debugMode {
 			app.jf.Verbose = true
 		}*/

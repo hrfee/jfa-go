@@ -162,7 +162,7 @@ $(SWAGGER_TARGET): $(SWAGGER_SRC)
 	$(SWAGINSTALL)
 	swag init --parseDependency --parseInternal -g main.go
 
-VARIANTS_SRC = $(wildcard html/*.html)
+VARIANTS_SRC = $(wildcard html/*.html) $(wildcard html/*.txt)
 VARIANTS_TARGET = $(DATA)/html/admin.html
 $(VARIANTS_TARGET): $(VARIANTS_SRC)
 	$(info copying html)
@@ -184,7 +184,7 @@ CSS_FULLTARGET = $(CSS_BUNDLE)
 ALL_CSS_SRC = $(ICON_SRC) $(CSS_SRC) $(SYNTAX_LIGHT_SRC) $(SYNTAX_DARK_SRC)
 ALL_CSS_TARGET = $(ICON_TARGET)
 
-$(CSS_FULLTARGET): $(TYPESCRIPT_TARGET) $(VARIANTS_TARGET) $(ALL_CSS_SRC) $(wildcard html/*.html)
+$(CSS_FULLTARGET): $(TYPESCRIPT_TARGET) $(VARIANTS_TARGET) $(ALL_CSS_SRC) $(wildcard html/*.html) $(wildcard html.*.txt)
 	$(info copying fonts)
 	cp -r node_modules/remixicon/fonts/remixicon.css node_modules/remixicon/fonts/remixicon.woff2 $(DATA)/web/css/
 	cp -r $(SYNTAX_LIGHT_SRC) $(SYNTAX_LIGHT_TARGET)
@@ -248,7 +248,7 @@ $(GO_TARGET): $(COMPDEPS) $(SWAGGER_TARGET) $(GO_SRC) go.mod go.sum
 	$(GOBINARY) mod download
 	$(info Building)
 	mkdir -p build
-	$(GOBINARY) build $(RACEDETECTOR) -ldflags="$(LDFLAGS)" $(TAGS) -o $(GO_TARGET) 
+	$(GOBINARY) build $(RACEDETECTOR) -ldflags="$(LDFLAGS)" $(TAGS) -o $(GO_TARGET) $(GOBUILDFLAGS)
 
 test: $(BUILDDEPS) $(COMPDEPS) $(SWAGGER_TARGET) $(GO_SRC) go.mod go.sum
 	$(GOBINARY) test -ldflags="$(LDFLAGS)" $(TAGS) -p 1

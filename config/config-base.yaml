@@ -136,6 +136,13 @@ sections:
     type: number
     value: 10
     description: "Synchronise after cache is this old, and wait for it: The accounts tab may take a little longer to load while it does."
+  - setting: activity_cache_sync_timeout
+    name: "Activity cache timeout (minutes)"
+    requires_restart: true
+    advanced: true
+    type: number
+    value: 0.1
+    description: "Synchronise Jellyfin's activity log after cache is this old. It can be pretty low as syncing only pulls new records and so is quick. Note this is unrelated to jfa-go's activity log."
   - setting: type
     name: Server type
     requires_restart: true

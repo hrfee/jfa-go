@@ -198,6 +198,8 @@ const (
 	UserAdminAdjusted = "Admin state for user \"%s\" set to %t"
 	UserLabelAdjusted = "Label for user \"%s\" set to \"%s\""
 
+	FailedGetJFActivities = "Failed to get ActivityLog entries: %v"
+
 	// api.go
 	ApplyUpdate       = "Applied update"
 	FailedApplyUpdate = "Failed to apply update: %v"
@@ -331,6 +333,9 @@ const (
 
 	// usercache.go
 	CacheRefreshCompleted = "Usercache refreshed, %d in %.2fs (%f.2u/sec)"
+
+	// Other
+	GotNEntries = "got %d entries"
 )
 
 const (

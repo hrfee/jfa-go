@@ -20,7 +20,7 @@ replace github.com/hrfee/jfa-go/easyproxy => ./easyproxy
 
 replace github.com/hrfee/jfa-go/jellyseerr => ./jellyseerr
 
-// replace github.com/hrfee/mediabrowser => ../mediabrowser
+replace github.com/hrfee/mediabrowser => ../mediabrowser
 
 require (
 	github.com/bwmarrin/discordgo v0.29.0
@@ -42,10 +42,11 @@ require (
 	github.com/hrfee/jfa-go/logger v0.0.0-20251123165523-7c9f91711460
 	github.com/hrfee/jfa-go/logmessages v0.0.0-20251123165523-7c9f91711460
 	github.com/hrfee/jfa-go/ombi v0.0.0-20251123165523-7c9f91711460
-	github.com/hrfee/mediabrowser v0.3.33
+	github.com/hrfee/mediabrowser v0.0.0-00010101000000-000000000000
 	github.com/hrfee/simple-template v1.1.0
 	github.com/itchyny/timefmt-go v0.1.7
 	github.com/lithammer/shortuuid/v3 v3.0.7
+	github.com/lutischan-ferenc/systray v1.2.1
 	github.com/mailgun/mailgun-go/v4 v4.23.0
 	github.com/mattn/go-sqlite3 v1.14.32
 	github.com/robert-nix/ansihtml v1.0.1
@@ -98,7 +99,6 @@ require (
 	github.com/klauspost/compress v1.18.1 // indirect
 	github.com/klauspost/cpuid/v2 v2.3.0 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
-	github.com/lutischan-ferenc/systray v1.2.1 // indirect
 	github.com/magisterquis/connectproxy v0.0.0-20200725203833-3582e84f0c9b // indirect
 	github.com/mailgun/errors v0.4.0 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect

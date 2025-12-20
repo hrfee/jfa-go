@@ -206,14 +206,14 @@ func (app *appContext) confirmMyAction(gc *gin.Context, key string) {
 
 		app.storage.SetActivityKey(shortuuid.New(), Activity{
 			Type:       ActivityContactLinked,
-			UserID:     gc.GetString("jfId"),
+			UserID:     id,
 			SourceType: ActivityUser,
-			Source:     gc.GetString("jfId"),
+			Source:     id,
 			Value:      "email",
 			Time:       time.Now(),
 		}, gc, true)
 
-		app.info.Printf(lm.UserEmailAdjusted, gc.GetString("jfId"))
+		app.info.Printf(lm.UserEmailAdjusted, id)
 		gc.Redirect(http.StatusSeeOther, MustGetNonEmptyURL(PAGES.MyAccount))
 		return
 	}
@@ -270,7 +270,7 @@ func (app *appContext) ModifyMyEmail(gc *gin.Context) {
 		} else if err := app.email.send(msg, req.Email); err != nil {
 			app.err.Printf(lm.FailedSendConfirmationEmail, id, req.Email, err)
 		} else {
-			app.err.Printf(lm.SentConfirmationEmail, id, req.Email)
+			app.info.Printf(lm.SentConfirmationEmail, id, req.Email)
 		}
 		return
 	}
@@ -716,7 +716,7 @@ func (app *appContext) ChangeMyPassword(gc *gin.Context) {
 
 	if app.config.Section("ombi").Key("enabled").MustBool(false) {
 		func() {
-			ombiUser, err := app.getOmbiUser(gc.GetString("jfId"))
+			ombiUser, err := app.getOmbiUser(gc.GetString("jfId"), nil)
 			if err != nil {
 				app.err.Printf(lm.FailedGetUser, user.Name, lm.Ombi, err)
 				return

@@ -298,6 +298,7 @@ func NewConfig(configPathOrContents any, dataPath string, logs LoggerSet) (*Conf
 	config.MustSetValue("jellyfin", "cache_timeout", "30")
 	config.MustSetValue("jellyfin", "web_cache_async_timeout", "1")
 	config.MustSetValue("jellyfin", "web_cache_sync_timeout", "10")
+	config.MustSetValue("jellyfin", "activity_cache_sync_timeout_seconds", "20")
 
 	LOGIP = config.Section("advanced").Key("log_ips").MustBool(false)
 	LOGIPU = config.Section("advanced").Key("log_ips_users").MustBool(false)
