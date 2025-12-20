@@ -806,54 +806,59 @@
                         <span class="button ~info @low center unfocused " id="accounts-send-pwr">{{ .strings.sendPWR }}</span>
                         <span class="button ~critical @low center " id="accounts-delete-user">{{ .quantityStrings.deleteUser.Singular }}</span>
                     </div>
-                    <div class="card @low accounts-header overflow-x-scroll">
-                        <table class="table text-base leading-5">
-                            <thead>
-                                <tr>
-                                    <th><input type="checkbox" value="" id="accounts-select-all"></th>
-                                    <th class="table-inline my-2 grid gap-4 place-items-stretch accounts-header-username">{{ .strings.username }}</th>
-                                    {{ if .jellyfinLogin }}
-                                    <th class="text-center-i grid gap-4 place-items-stretch accounts-header-access-jfa">{{ .strings.accessJFA }}</th>
-                                    {{ end }}
-                                    <th class="grid gap-4 place-items-stretch accounts-header-email">{{ .strings.emailAddress }}</th>
-                                    {{ if .telegramEnabled }}
-                                    <th class="text-center-i grid gap-4 place-items-stretch accounts-header-telegram">Telegram</th>
-                                    {{ end }}
-                                    {{ if .matrixEnabled }}
-                                    <th class="text-center-i grid gap-4 place-items-stretch accounts-header-matrix">Matrix</th>
-                                    {{ end }}
-                                    {{ if .discordEnabled }}
-                                    <th class="text-center-i grid gap-4 place-items-stretch accounts-header-discord">Discord</th>
-                                    {{ end }}
-                                    {{ if .referralsEnabled }}
-                                    <th class="text-center-i grid gap-4 place-items-stretch accounts-header-referrals">{{ .strings.referrals }}</th>
-                                    {{ end }}
-                                    <th class="grid gap-4 place-items-stretch accounts-header-expiry">{{ .strings.expiry }}</th>
-                                    <th class="grid gap-4 place-items-stretch accounts-header-last-active">{{ .strings.lastActiveTime }}</th>
-                                </tr>
-                            </thead>
-                            <tbody id="accounts-list"></tbody>
-                        </table>
-                        <div id="accounts-loader"></div>
-                        <div class="unfocused h-[100%] my-3" id="accounts-not-found">
-                            <div class="flex flex-col gap-2 h-[100%] justify-center items-center">
-                                <span class="text-2xl font-medium italic text-center">{{ .strings.noResultsFound }}</span>
-                                <span class="text-sm font-light italic unfocused text-center" id="accounts-no-local-results">{{ .strings.noResultsFoundLocally }}</span>
-                                <div class="flex flex-row">
-                                    <button class="button ~neutral @low accounts-search-clear gap-1">
-                                        <i class="ri-close-line"></i>
-                                        <span>{{ .strings.clearSearch }}</span>
-                                    </button>
+                    <div id="accounts-table-details-container">
+                        <div class="card @low accounts-details unfocused">
+                            <div id="accounts-loader"></div>
+                        </div>
+                        <div class="card @low accounts-header overflow-x-scroll" id="accounts-table">
+                            <table class="table text-base leading-5">
+                                <thead>
+                                    <tr>
+                                        <th><input type="checkbox" value="" id="accounts-select-all"></th>
+                                        <th class="table-inline my-2 grid gap-4 place-items-stretch accounts-header-username">{{ .strings.username }}</th>
+                                        {{ if .jellyfinLogin }}
+                                        <th class="text-center-i grid gap-4 place-items-stretch accounts-header-access-jfa">{{ .strings.accessJFA }}</th>
+                                        {{ end }}
+                                        <th class="grid gap-4 place-items-stretch accounts-header-email">{{ .strings.emailAddress }}</th>
+                                        {{ if .telegramEnabled }}
+                                        <th class="text-center-i grid gap-4 place-items-stretch accounts-header-telegram">Telegram</th>
+                                        {{ end }}
+                                        {{ if .matrixEnabled }}
+                                        <th class="text-center-i grid gap-4 place-items-stretch accounts-header-matrix">Matrix</th>
+                                        {{ end }}
+                                        {{ if .discordEnabled }}
+                                        <th class="text-center-i grid gap-4 place-items-stretch accounts-header-discord">Discord</th>
+                                        {{ end }}
+                                        {{ if .referralsEnabled }}
+                                        <th class="text-center-i grid gap-4 place-items-stretch accounts-header-referrals">{{ .strings.referrals }}</th>
+                                        {{ end }}
+                                        <th class="grid gap-4 place-items-stretch accounts-header-expiry">{{ .strings.expiry }}</th>
+                                        <th class="grid gap-4 place-items-stretch accounts-header-last-active">{{ .strings.lastActiveTime }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="accounts-list"></tbody>
+                            </table>
+                            <div id="accounts-loader"></div>
+                            <div class="unfocused h-[100%] my-3" id="accounts-not-found">
+                                <div class="flex flex-col gap-2 h-[100%] justify-center items-center">
+                                    <span class="text-2xl font-medium italic text-center">{{ .strings.noResultsFound }}</span>
+                                    <span class="text-sm font-light italic unfocused text-center" id="accounts-no-local-results">{{ .strings.noResultsFoundLocally }}</span>
+                                    <div class="flex flex-row">
+                                        <button class="button ~neutral @low accounts-search-clear gap-1">
+                                            <i class="ri-close-line"></i>
+                                            <span>{{ .strings.clearSearch }}</span>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="flex flex-row gap-2 my-3 justify-center">
-                            <button class="button ~neutral @low" id="accounts-load-more">{{ .strings.loadMore }}</button>
-                            <button class="button ~neutral @low accounts-load-all">{{ .strings.loadAll }}</button>
-                            <button class="button ~info @low center accounts-search-server gap-1" aria-label="{{ .strings.searchAllRecords }}" text="{{ .strings.searchAllRecords }}">
-                                <i class="ri-search-line"></i>
-                                <span>{{ .strings.searchAllRecords }}</span>
-                            </button>
+                            <div class="flex flex-row gap-2 my-3 justify-center">
+                                <button class="button ~neutral @low" id="accounts-load-more">{{ .strings.loadMore }}</button>
+                                <button class="button ~neutral @low accounts-load-all">{{ .strings.loadAll }}</button>
+                                <button class="button ~info @low center accounts-search-server gap-1" aria-label="{{ .strings.searchAllRecords }}" text="{{ .strings.searchAllRecords }}">
+                                    <i class="ri-search-line"></i>
+                                    <span>{{ .strings.searchAllRecords }}</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

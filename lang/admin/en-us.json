@@ -224,7 +224,13 @@
         "restartRequired": "Restart required",
         "required": "Required",
         "syntax": "Syntax",
-        "syntaxDescription": "Variables denoted as {variable}. If statements can evaluate truthfulness (e.g. {ifTruth}) or make basic comparisons (e.g. {ifCompare})"
+        "syntaxDescription": "Variables denoted as {variable}. If statements can evaluate truthfulness (e.g. {ifTruth}) or make basic comparisons (e.g. {ifCompare})",
+        "info": "Info",
+        "debug": "Debug",
+        "warn": "Warn",
+        "error": "Error",
+        "fatal": "Fatal",
+        "severity": "Severity"
     },
     "notifications": {
         "pathCopied": "Full path copied to clipboard.",

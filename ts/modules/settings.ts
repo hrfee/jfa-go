@@ -14,7 +14,6 @@ import {
 } from "../modules/common.js";
 import { Marked } from "@ts-stack/markdown";
 import { stripMarkdown } from "../modules/stripmd.js";
-import { PDT } from "src/data/timezoneNames";
 
 declare var window: GlobalWindow;
 
