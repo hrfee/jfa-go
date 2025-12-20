@@ -115,13 +115,11 @@ func (c *JFActivityCache) ByEntryID(entryID int64) (entry mediabrowser.ActivityL
 // MaybeSync returns once the cache is in a suitable state to read:
 // return if cache is fresh, sync if not, or wait if another sync is happening already.
 func (c *JFActivityCache) MaybeSync() error {
-	syncTime := time.Now()
 	shouldWaitForSync := time.Now().After(c.LastSync.Add(c.WaitForSyncTimeout))
 
 	if !shouldWaitForSync {
 		return nil
 	}
-	defer func() { fmt.Printf("sync took %v", time.Since(syncTime)) }()
 
 	syncStatus := make(chan error)
 

@@ -198,6 +198,8 @@ github.com/hrfee/mediabrowser v0.3.33 h1:kjUFZc46hNhbOEU4xZNyhGVNjfZ5lENmX95Md1t
 github.com/hrfee/mediabrowser v0.3.33/go.mod h1:PnHZbdxmbv1wCVdAQyM7nwPwpVj9fdKx2EcET7sAk+U=
 github.com/hrfee/mediabrowser v0.3.34 h1:AKnd1V9wt+KWZmHDjj1GMkCgcgcpBKxPw5iUcYgD6Tg=
 github.com/hrfee/mediabrowser v0.3.34/go.mod h1:PnHZbdxmbv1wCVdAQyM7nwPwpVj9fdKx2EcET7sAk+U=
+github.com/hrfee/mediabrowser v0.3.35 h1:xEq4cL96Di0G+S3ONBH1HHeQJU6IfUMZiaeGeuJSFS8=
+github.com/hrfee/mediabrowser v0.3.35/go.mod h1:PnHZbdxmbv1wCVdAQyM7nwPwpVj9fdKx2EcET7sAk+U=
 github.com/hrfee/simple-template v1.1.0 h1:PNQDTgc2H0s19/pWuhRh4bncuNJjPrW0fIX77YtY78M=
 github.com/hrfee/simple-template v1.1.0/go.mod h1:s9a5QgfqbmT7j9WCC3GD5JuEqvihBEohyr+oYZmr4bA=
 github.com/inconshreveable/mousetrap v1.0.0/go.mod h1:PxqpIevigyE2G7u3NXJIT2ANytuPF1OarO4DADm73n8=
