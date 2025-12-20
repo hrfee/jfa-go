@@ -564,8 +564,8 @@ export class activityList extends PaginatedList {
 
     protected _ascending: boolean;
 
-    get activities(): { [id: string]: Activity } {
-        return this._search.items as { [id: string]: Activity };
+    get activities(): Map<string, Activity> {
+        return this._search.items as Map<string, Activity>;
     }
     // set activities(v: { [id: string]: Activity }) { this._search.items = v as SearchableItems; }
 
@@ -590,7 +590,7 @@ export class activityList extends PaginatedList {
             appendNewItems: (resp: paginatedDTO) => {
                 let ordering: string[] = this._search.ordering;
                 for (let act of (resp as ActivitiesDTO).activities || []) {
-                    this.activities[act.id] = new Activity(act);
+                    this.activities.set(act.id, new Activity(act));
                     ordering.push(act.id);
                 }
                 this._search.setOrdering(ordering, this._c.defaultSortField, this.ascending);
@@ -599,9 +599,7 @@ export class activityList extends PaginatedList {
                 // FIXME: Implement updates to existing elements, rather than just wiping each time.
 
                 // Remove existing items
-                for (let id of Object.keys(this.activities)) {
-                    delete this.activities[id];
-                }
+                this.activities.clear();
                 // And wipe their ordering
                 this._search.setOrdering([], this._c.defaultSortField, this.ascending);
                 this._c.appendNewItems(resp);

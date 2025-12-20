@@ -1420,7 +1420,30 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 	gc.JSON(code, errors)
 }
 
-// @Summary Get the latest Jellyfin/Emby activities related to the given user ID. Returns as many as the server has recorded.
+// @Summary Gets the number of Jellyfin/Emby activities stored by jfa-go related to the given user ID. As the total collected by jfa-go is limited, this may not include all those held by Jellyfin.
+// @Produce json
+// @Success 200 {object} PageCountDTO
+// @Failure 400 {object} boolResponse
+// @Param id path string true "id of user to fetch activities of."
+// @Router /users/{id}/activities/jellyfin/count [get]
+// @Security Bearer
+// @tags Users
+func (app *appContext) CountJFActivitesForUser(gc *gin.Context) {
+	userID := gc.Param("id")
+	if userID == "" {
+		respondBool(400, false, gc)
+		return
+	}
+	activities, err := app.jf.activity.ByUserID(userID)
+	if err != nil {
+		app.err.Printf(lm.FailedGetJFActivities, err)
+		respondBool(400, false, gc)
+		return
+	}
+	gc.JSON(200, PageCountDTO{Count: uint64(len(activities))})
+}
+
+// @Summary Get the latest Jellyfin/Emby activities related to the given user ID. Returns as many as the server has recorded. As the total collected by jfa-go is limited, this may not include all those held by Jellyfin.
 // @Produce json
 // @Success 200 {object} ActivityLogEntriesDTO
 // @Failure 400 {object} boolResponse
@@ -1429,12 +1452,12 @@ func (app *appContext) ApplySettings(gc *gin.Context) {
 // @Security Bearer
 // @tags Users
 func (app *appContext) GetJFActivitesForUser(gc *gin.Context) {
-	userId := gc.Param("id")
-	if userId == "" {
+	userID := gc.Param("id")
+	if userID == "" {
 		respondBool(400, false, gc)
 		return
 	}
-	activities, err := app.jf.activity.ByUserID(userId)
+	activities, err := app.jf.activity.ByUserID(userID)
 	if err != nil {
 		app.err.Printf(lm.FailedGetJFActivities, err)
 		respondBool(400, false, gc)
@@ -1443,6 +1466,49 @@ func (app *appContext) GetJFActivitesForUser(gc *gin.Context) {
 	out := ActivityLogEntriesDTO{
 		Entries: make([]ActivityLogEntryDTO, len(activities)),
 	}
+	for i := range activities {
+		out.Entries[i].ActivityLogEntry = activities[i]
+		out.Entries[i].Date = activities[i].Date.Unix()
+	}
+	app.debug.Printf(lm.GotNEntries, len(activities))
+	gc.JSON(200, out)
+}
+
+// @Summary Get the latest Jellyfin/Emby activities related to the given user ID, paginated. As the total collected by jfa-go is limited, this may not include all those held by Jellyfin.
+// @Produce json
+// @Param PaginatedReqDTO body PaginatedReqDTO true "pagination parameters"
+// @Success 200 {object} PaginatedActivityLogEntriesDTO
+// @Failure 400 {object} boolResponse
+// @Param id path string true "id of user to fetch activities of."
+// @Router /users/{id}/activities/jellyfin [post]
+// @Security Bearer
+// @tags Users
+func (app *appContext) GetPaginatedJFActivitesForUser(gc *gin.Context) {
+	var req PaginatedReqDTO
+	gc.BindJSON(&req)
+	userID := gc.Param("id")
+	if userID == "" {
+		respondBool(400, false, gc)
+		return
+	}
+	activities, err := app.jf.activity.ByUserID(userID)
+	if err != nil {
+		app.err.Printf(lm.FailedGetJFActivities, err)
+		respondBool(400, false, gc)
+		return
+	}
+	out := PaginatedActivityLogEntriesDTO{}
+	startIndex := req.Page * req.Limit
+	if startIndex >= len(activities) {
+		out.LastPage = true
+		gc.JSON(200, out)
+		return
+	}
+	endIndex := min(startIndex+req.Limit, len(activities))
+	activities = activities[startIndex:endIndex]
+
+	out.Entries = make([]ActivityLogEntryDTO, len(activities))
+	out.LastPage = len(activities) != req.Limit
 	for i := range activities {
 		out.Entries[i].ActivityLogEntry = activities[i]
 		out.Entries[i].Date = activities[i].Date.Unix()

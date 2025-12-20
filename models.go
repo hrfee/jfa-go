@@ -174,15 +174,31 @@ type respUser struct {
 	ReferralsEnabled      bool   `json:"referrals_enabled"`
 }
 
+// ServerSearchReqDTO is a usual SortablePaginatedReqDTO with added fields for searching and filtering.
+type ServerSearchReqDTO struct {
+	SortablePaginatedReqDTO
+	ServerFilterReqDTO
+}
+
+// ServerFilterReqDTO provides search terms and queries to a search or count route.
+type ServerFilterReqDTO struct {
+	SearchTerms []string   `json:"searchTerms"`
+	Queries     []QueryDTO `json:"queries"`
+}
+
 type PaginatedDTO struct {
 	LastPage bool `json:"last_page"`
 }
 
-type PaginatedReqDTO struct {
-	Limit       int    `json:"limit"`
-	Page        int    `json:"page"` // zero-indexed
+type SortablePaginatedReqDTO struct {
 	SortByField string `json:"sortByField"`
 	Ascending   bool   `json:"ascending"`
+	PaginatedReqDTO
+}
+
+type PaginatedReqDTO struct {
+	Limit int `json:"limit"`
+	Page  int `json:"page"` // zero-indexed
 }
 
 type getUsersDTO struct {
@@ -518,6 +534,11 @@ type LabelsDTO struct {
 
 type ActivityLogEntriesDTO struct {
 	Entries []ActivityLogEntryDTO `json:"entries"`
+}
+
+type PaginatedActivityLogEntriesDTO struct {
+	ActivityLogEntriesDTO
+	PaginatedDTO
 }
 
 type ActivityLogEntryDTO struct {
