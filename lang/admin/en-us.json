@@ -63,6 +63,8 @@
         "disabled": "Disabled",
         "run": "Run",
         "sendPWR": "Send Password Reset",
+        "noActivityFound": "No activity found",
+        "noActivityFoundLocally": "If this account hasn't been used in a while, you might find older entries on Jellyfin directly.",
         "noResultsFound": "No Results Found",
         "noResultsFoundLocally": "Only loaded records were searched. You can load more, or perform the search over all records on the server.",
         "keepSearching": "Keep Searching",
