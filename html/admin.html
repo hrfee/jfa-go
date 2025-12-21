@@ -771,6 +771,7 @@
                     </div>
                     <div class="supra sm">{{ .strings.actions }}</div>
                     <div class="flex flex-row flex-wrap gap-3">
+                        <button type="button" title="{{ .strings.back }}" class="button ~neutral @low inline-flex gap-1 unfocused" id="user-details-back" aria-label="{{ .strings.back }}"><i class="icon ri-arrow-left-fill"></i>{{ .strings.back }}</button>
                         <button class="button ~neutral @low center accounts-load-all">{{ .strings.loadAll }}</button>
                         <span class="button ~neutral @low center " id="accounts-add-user">{{ .quantityStrings.addUser.Singular }}</span>
                         <div id="accounts-announce-dropdown" class="dropdown pb-0i " tabindex="0">
@@ -807,10 +808,10 @@
                         <span class="button ~critical @low center " id="accounts-delete-user">{{ .quantityStrings.deleteUser.Singular }}</span>
                     </div>
                     <div id="accounts-table-details-container">
-                        <div class="card @low accounts-details unfocused">
+                        <div class="card @low accounts-details transition-opacity transition-display unfocused">
                             <div id="accounts-loader"></div>
                         </div>
-                        <div class="card @low accounts-header overflow-x-scroll" id="accounts-table">
+                        <div class="card @low accounts-header overflow-x-scroll transition-opacity transition-display" id="accounts-table">
                             <table class="table text-base leading-5">
                                 <thead>
                                     <tr>

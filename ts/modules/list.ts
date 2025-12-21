@@ -107,6 +107,7 @@ export interface PaginatedListConfig {
     defaultSortAscending?: boolean;
     pageLoadCallback?: (req: XMLHttpRequest) => void;
     disableSearch?: boolean;
+    hideButtonsOnLastPage?: boolean;
 }
 
 export abstract class PaginatedList {
@@ -148,11 +149,17 @@ export abstract class PaginatedList {
             this._c.loadAllButtons.forEach((v) => v.classList.add("unfocused"));
             this._c.loadMoreButtons.forEach((v) => {
                 v.textContent = window.lang.strings("noMoreResults");
+                if (this._c.hideButtonsOnLastPage) {
+                    v.classList.add("unfocused");
+                }
                 v.disabled = true;
             });
         } else {
             this._c.loadMoreButtons.forEach((v) => {
                 v.textContent = window.lang.strings("loadMore");
+                if (this._c.hideButtonsOnLastPage) {
+                    v.classList.remove("unfocused");
+                }
                 v.disabled = false;
             });
             this._c.loadAllButtons.forEach((v) => v.classList.remove("unfocused"));

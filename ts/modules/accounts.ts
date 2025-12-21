@@ -731,7 +731,7 @@ class User extends TableRow implements UserDTO, SearchableItem {
         }
         if (window.referralsEnabled) {
             innerHTML += `
-            <td class="accounts-referrals text-center-i grid gap-4 place-items-stretch"></td>
+            <td class="accounts-referrals grid gap-4 place-items-stretch"></td>
             `;
         }
         innerHTML += `
@@ -1047,6 +1047,7 @@ export class accountsList extends PaginatedList {
         }
     };
 
+    private _inDetails: boolean = false;
     details(username: string, jfId: string) {
         this.unbindPageEvents();
         console.debug("Loading details for ", username, jfId);
@@ -1055,14 +1056,17 @@ export class accountsList extends PaginatedList {
             jfId,
             () => {
                 this.unbindPageEvents();
+                this._inDetails = true;
+                // To make things look better, run processSelectedAccounts before -actually- unhiding.
+                this.processSelectedAccounts();
                 this._table.classList.add("unfocused");
                 this._details.hidden = false;
-                this.processSelectedAccounts();
             },
             () => {
+                this._inDetails = false;
+                this.processSelectedAccounts();
                 this._details.hidden = true;
                 this._table.classList.remove("unfocused");
-                this.processSelectedAccounts();
                 this.bindPageEvents();
             },
         );
@@ -1667,11 +1671,24 @@ export class accountsList extends PaginatedList {
                     this._enableReferrals.textContent = window.lang.strings("disableReferrals");
                 }
             }
+            if (this._details.hidden) {
+                this._c.loadAllButtons.forEach((el) => {
+                    // FIXME: Using hidden here instead of unfocused so that it doesn't interfere with any PaginatedList behaviour. Don't do this.
+                    el.classList.add("hidden");
+                });
+                this._addUserButton.classList.remove("unfocused");
+            } else {
+                this._c.loadAllButtons.forEach((el) => {
+                    // FIXME: Using hidden here instead of unfocused so that it doesn't interfere with any PaginatedList behaviour. Don't do this.
+                    el.classList.add("hidden");
+                });
+                this._addUserButton.classList.add("unfocused");
+            }
         }
     };
 
     private _collectUsers = (): string[] => {
-        if (!this._details.hidden && this._details.jfId != "") return [this._details.jfId];
+        if (this._inDetails && this._details.jfId != "") return [this._details.jfId];
         let list: string[] = [];
         for (let id of this._visible) {
             if (this.users.get(id).selected) {
@@ -2836,7 +2853,10 @@ interface ShowDetailsEvent extends Event {
 }
 
 class UserInfo extends PaginatedList {
+    private _hidden: boolean = true;
+    private _table: HTMLElement;
     private _card: HTMLElement;
+    private _noResults: HTMLElement;
     get entries(): Map<string, ActivityLogEntry> {
         return this._search.items as Map<string, ActivityLogEntry>;
     }
@@ -2848,27 +2868,35 @@ class UserInfo extends PaginatedList {
         card.innerHTML = `
         <div class="flex flex-col gap-2">
             <div class="flex flex-row gap-2 justify-start">
-                <button type="button" title="${window.lang.strings("back")}" class="button ~neutral @low inline-flex gap-1 user-details-back" aria-label="${window.lang.strings("back")}"><i class="icon ri-arrow-left-fill"></i>${window.lang.strings("back")}</button>
             </div>
             <div class="flex flex-row gap-2">
             </div>
-            <div class="card @low overflow-x-scroll">
-                <table class="table text-xs leading-5">
-                    <thead>
-                        <tr>
-                            <th>${window.lang.strings("severity")}</th>
-                            <th>${window.lang.strings("details")}</th>
-                            <th>${window.lang.strings("type")}</th>
-                            <th>${window.lang.strings("other")}</th>
-                            <th>${window.lang.strings("date")}</th>
-                        </tr>
-                    </thead>
-                    <tbody class="jf-activity-table-content"></tbody>
-                </table>
-            </div>
-            <div class="flex flex-row gap-2 justify-center">
-                <button class="button ~neutral @low jf-activity-load-more">${window.lang.strings("loadMore")}</button>
-                <button class="button ~neutral @low accounts-load-all jf-activity-load-all">${window.lang.strings("loadAll")}</button>
+            <div class="flex flex-col gap-1">
+                <h2 class="heading text-2xl">${window.lang.strings("activity")}</h2>
+                <div class="card @low overflow-x-scroll jf-activity-table">
+                    <table class="table text-xs leading-5">
+                        <thead>
+                            <tr>
+                                <th>${window.lang.strings("severity")}</th>
+                                <th>${window.lang.strings("details")}</th>
+                                <th>${window.lang.strings("type")}</th>
+                                <th>${window.lang.strings("other")}</th>
+                                <th>${window.lang.strings("date")}</th>
+                            </tr>
+                        </thead>
+                        <tbody class="jf-activity-table-content"></tbody>
+                    </table>
+                    <div class="unfocused h-[100%] my-3 jf-activity-no-activity">
+                        <div class="flex flex-col gap-2 h-[100%] justify-center items-center">
+                            <span class="text-2xl font-medium italic text-center">${window.lang.strings("noActivityFound")}</span>
+                            <span class="text-sm font-light italic text-center" id="accounts-no-local-results">${window.lang.strings("noActivityFoundLocally")}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex flex-row gap-2 justify-center">
+                    <button class="button ~neutral @low jf-activity-load-more">${window.lang.strings("loadMore")}</button>
+                    <button class="button ~neutral @low accounts-load-all jf-activity-load-all">${window.lang.strings("loadAll")}</button>
+                </div>
             </div>
         </div>
         `;
@@ -2885,6 +2913,7 @@ class UserInfo extends PaginatedList {
             itemsPerPage: 20,
             maxItemsLoadedForSearch: 200,
             disableSearch: true,
+            hideButtonsOnLastPage: true,
             appendNewItems: (resp: paginatedDTO) => {
                 for (let entry of (resp as PaginatedActivityLogEntriesDTO).entries || []) {
                     if (this.entries.has("" + entry.Id)) {
@@ -2921,9 +2950,12 @@ class UserInfo extends PaginatedList {
                 this._search.setOrdering(Array.from(this.entries.keys()), "Date", true);
             },
         });
+        this._hidden = true;
         this._card = card;
-        this._container = this._card.getElementsByClassName("jf-activity-table-content")[0] as HTMLElement;
-        this._back = this._card.getElementsByClassName("user-details-back")[0] as HTMLButtonElement;
+        this._table = this._card.getElementsByClassName("jf-activity-table")[0] as HTMLElement;
+        this._container = this._table.getElementsByClassName("jf-activity-table-content")[0] as HTMLElement;
+        this._back = document.getElementById("user-details-back") as HTMLButtonElement;
+        this._noResults = this._card.getElementsByClassName("jf-activity-no-activity")[0] as HTMLElement;
 
         let searchConfig: SearchConfiguration = {
             queries: {},
@@ -2931,6 +2963,7 @@ class UserInfo extends PaginatedList {
             searchServer: null,
             clearServerSearch: null,
             onSearchCallback: (_0: boolean, _1: boolean) => {},
+            notFoundPanel: this._noResults,
         };
 
         this.initSearch(searchConfig);
@@ -2981,17 +3014,20 @@ class UserInfo extends PaginatedList {
     };
 
     get hidden(): boolean {
-        return this._card.classList.contains("unfocused");
+        return this._hidden;
     }
     set hidden(v: boolean) {
+        this._hidden = v;
         if (v) {
             this.unbindPageEvents();
             this._card.classList.add("unfocused");
+            this._back.classList.add("unfocused");
             this.username = "";
             this.jfId = "";
         } else {
             this.bindPageEvents();
             this._card.classList.remove("unfocused");
+            this._back.classList.remove("unfocused");
         }
     }
 }
