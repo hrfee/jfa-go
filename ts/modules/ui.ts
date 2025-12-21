@@ -1,3 +1,5 @@
+declare var window: GlobalWindow;
+
 export interface HiddenInputConf {
     container: HTMLElement;
     onSet: () => void;
@@ -107,5 +109,94 @@ export class HiddenInputField {
 
     toggle(noSave: boolean = false) {
         this.setEditing(!this.editing, false, noSave);
+    }
+}
+
+
+export interface RadioBasedTab {
+    name: string;
+    content: HTMLElement;
+    onShow?: () => void;
+    onHide?: () => void;
+}
+
+interface RadioBasedTabItem {
+    tab: RadioBasedTab;
+    input: HTMLInputElement;
+    button: HTMLElement;
+}
+
+export class RadioBasedTabSelector {
+    private _id: string;
+    private _container: HTMLElement;
+    private _tabs: RadioBasedTabItem[];
+    private _selected: string;
+    constructor(container: HTMLElement, id: string,  ...tabs: RadioBasedTab[]) {
+        this._container = container;
+        this._container.classList.add("flex", "flex-row", "gap-2");
+        this._tabs = [];
+        this._id = id;
+        let i = 0;
+        const frag = document.createDocumentFragment();
+        for (let tab of tabs) {
+            const label = document.createElement("label");
+            label.classList.add("grow");
+            label.innerHTML = `
+                <input type="radio" name="${this._id}" value="${tab.name}" class="unfocused" ${i == 0 ? "checked" : ""}>
+                <span class="button ~neutral ${i == 0 ? "@high" : "@low"} radio-tab-button supra w-full text-center">${tab.name}</span>
+            `;
+            let ft: RadioBasedTabItem = {
+                tab: tab,
+                input: label.getElementsByTagName("input")[0] as HTMLInputElement,
+                button: label.getElementsByClassName("radio-tab-button")[0] as HTMLElement
+            };
+            ft.input.onclick = () => {
+                ft.input.checked = true;
+                this.checkSource();
+            };
+            frag.appendChild(label);
+            this._tabs.push(ft);
+
+            i++;
+        }
+        this._container.replaceChildren(frag);
+        this.selected = this._tabs[0].tab.name;
+    }
+
+    checkSource = () => {
+        for (let tab of this._tabs) {
+            if (tab.input.checked) {
+                this._selected = tab.tab.name;
+                tab.tab.content.classList.remove("unfocused");
+                tab.button.classList.add("@high");
+                tab.button.classList.remove("@low");
+                if (tab.tab.onShow) tab.tab.onShow();
+            } else {
+                tab.tab.content.classList.add("unfocused");
+                tab.button.classList.add("@low");
+                tab.button.classList.remove("@high");
+                if (tab.tab.onHide) tab.tab.onHide();
+            }
+        }
+    };
+
+    get selected(): string { return this._selected; }
+    set selected(name: string) {
+        for (let tab of this._tabs) {
+            if (tab.tab.name == name) {
+                this._selected = tab.tab.name;
+                tab.input.checked = true;
+                tab.tab.content.classList.remove("unfocused");
+                tab.button.classList.add("@high");
+                tab.button.classList.remove("@low");
+                if (tab.tab.onShow) tab.tab.onShow();
+            } else {
+                tab.input.checked = false;
+                tab.tab.content.classList.add("unfocused");
+                tab.button.classList.add("@low");
+                tab.button.classList.remove("@high");
+                if (tab.tab.onHide) tab.tab.onHide();
+            }
+        }
     }
 }

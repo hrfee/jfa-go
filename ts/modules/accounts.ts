@@ -2872,7 +2872,17 @@ class UserInfo extends PaginatedList {
             <div class="flex flex-row gap-2">
             </div>
             <div class="flex flex-col gap-1">
-                <h2 class="heading text-2xl">${window.lang.strings("activity")}</h2>
+                <div class="flex flex-row gap-2">
+                    <label class="grow">
+                        <input type="radio" name="jf-activity-source" class="jf-activity-source-jellyfin unfocused" checked>
+                        <span class="button ~neutral @high supra w-full text-center">${window.lang.strings("jellyfin")}</span>
+                    </label>
+                    <label class="grow">
+                        <input type="radio" name="jf-activity-source" class="jf-activity-source-jfa-go unfocused">
+                        <span class="button ~neutral @low supra w-full text-center">jfa-go</span>
+                    </label>
+                </div>
+                <!-- <h2 class="heading text-2xl">${window.lang.strings("activity")}</h2> -->
                 <div class="card @low overflow-x-scroll jf-activity-table">
                     <table class="table text-xs leading-5">
                         <thead>
