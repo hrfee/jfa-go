@@ -206,6 +206,7 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 		api.POST(p+"/user", app.NewUserFromAdmin)
 		api.POST(p+"/users/extend", app.ExtendExpiry)
 		api.DELETE(p+"/users/:id/expiry", app.RemoveExpiry)
+		api.GET(p+"/users/:id", app.GetUser)
 		api.GET(p+"/users/:id/activities/jellyfin", app.GetJFActivitesForUser)
 		api.GET(p+"/users/:id/activities/jellyfin/count", app.CountJFActivitesForUser)
 		api.POST(p+"/users/:id/activities/jellyfin", app.GetPaginatedJFActivitesForUser)

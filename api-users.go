@@ -1022,6 +1022,37 @@ func (app *appContext) GetLabels(gc *gin.Context) {
 	gc.JSON(200, LabelsDTO{Labels: app.userCache.Labels})
 }
 
+// @Summary Get the details of a given user. Skips the user cache and gets fresh information.
+// @Produce json
+// @Success 200 {object} respUser
+// @Failure 400 {object} boolResponse
+// @Failure 500 {object} stringResponse
+// @Param id path string true "id of user to fetch details of"
+// @Router /users/{id} [get]
+// @Security Bearer
+// @tags Users
+func (app *appContext) GetUser(gc *gin.Context) {
+	userID := gc.Param("id")
+	if userID == "" {
+		respondBool(400, false, gc)
+		return
+	}
+	user, err := app.jf.UserByID(userID, false)
+	if err != nil {
+		switch err.(type) {
+		case mediabrowser.ErrUserNotFound:
+			respondBool(400, false, gc)
+			app.err.Printf(lm.FailedGetUser, userID, lm.Jellyfin, err)
+			return
+		default:
+			respond(500, "Check logs", gc)
+			app.err.Printf(lm.FailedGetUser, userID, lm.Jellyfin, err)
+			return
+		}
+	}
+	gc.JSON(200, app.GetUserSummary(user))
+}
+
 // @Summary Get a list of -all- Jellyfin users.
 // @Produce json
 // @Success 200 {object} getUsersDTO
