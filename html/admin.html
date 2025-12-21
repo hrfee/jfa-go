@@ -597,16 +597,7 @@
                     <span class="heading">{{ .strings.create }}</span>
                     <div class="flex flex-col md:flex-row gap-3" id="create-inv">
                         <div class="card ~neutral @low flex flex-col gap-2 flex-1">
-                            <div class="flex flex-row gap-2">
-                                <label class="w-1/2">
-                                    <input type="radio" name="duration" class="unfocused" id="radio-inv-duration" checked>
-                                    <span class="button ~neutral @high supra full-width center">{{ .strings.inviteDuration }}</span>
-                                </label>
-                                <label class="w-1/2">
-                                    <input type="radio" name="duration" class="unfocused" id="radio-user-expiry">
-                                    <span class="button ~neutral @low supra full-width center">{{ .strings.userExpiry }}</span>
-                                </label>
-                            </div>
+                            <div id="invites-duration-type-tabs"></div>
                             <div id="inv-duration" class="flex flex-col gap-2">
                                 <div class="flex flex-row gap-2">
                                     <div class="grow flex flex-col gap-4">

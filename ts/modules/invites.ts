@@ -13,7 +13,7 @@ import {
 } from "../modules/common.js";
 import { DiscordSearch, DiscordUser, newDiscordSearch } from "../modules/discord.js";
 import { reloadProfileNames } from "../modules/profiles.js";
-import { HiddenInputField } from "./ui.js";
+import { HiddenInputField, RadioBasedTabSelector } from "./ui.js";
 
 declare var window: GlobalWindow;
 
@@ -945,8 +945,8 @@ export class createInvite {
     private _userHours = document.getElementById("user-hours") as HTMLSelectElement;
     private _userMinutes = document.getElementById("user-minutes") as HTMLSelectElement;
 
-    private _invDurationButton = document.getElementById("radio-inv-duration") as HTMLInputElement;
-    private _userExpiryButton = document.getElementById("radio-user-expiry") as HTMLInputElement;
+    // private _invDurationButton = document.getElementById("radio-inv-duration") as HTMLInputElement;
+    // private _userExpiryButton = document.getElementById("radio-user-expiry") as HTMLInputElement;
     private _invDuration = document.getElementById("inv-duration");
     private _userExpiry = document.getElementById("user-expiry");
 
@@ -1191,30 +1191,18 @@ export class createInvite {
         this.uses = 1;
         this.label = "";
 
-        const checkDuration = () => {
-            const invSpan = this._invDurationButton.nextElementSibling as HTMLSpanElement;
-            const userSpan = this._userExpiryButton.nextElementSibling as HTMLSpanElement;
-            if (this._invDurationButton.checked) {
-                this._invDuration.classList.remove("unfocused");
-                this._userExpiry.classList.add("unfocused");
-                invSpan.classList.add("@high");
-                invSpan.classList.remove("@low");
-                userSpan.classList.add("@low");
-                userSpan.classList.remove("@high");
-            } else if (this._userExpiryButton.checked) {
-                this._userExpiry.classList.remove("unfocused");
-                this._invDuration.classList.add("unfocused");
-                invSpan.classList.add("@low");
-                invSpan.classList.remove("@high");
-                userSpan.classList.add("@high");
-                userSpan.classList.remove("@low");
-            }
-        };
-
-        this._userExpiryButton.checked = false;
-        this._invDurationButton.checked = true;
-        this._userExpiryButton.onchange = checkDuration;
-        this._invDurationButton.onchange = checkDuration;
+        new RadioBasedTabSelector(
+            document.getElementById("invites-duration-type-tabs"),
+            "invites-duration-type",
+            {
+                name: window.lang.strings("inviteDuration"),
+                content: this._invDuration,
+            },
+            {
+                name: window.lang.strings("userExpiry"),
+                content: this._userExpiry,
+            },
+        );
 
         this._days.onchange = this._checkDurationValidity;
         this._months.onchange = this._checkDurationValidity;
