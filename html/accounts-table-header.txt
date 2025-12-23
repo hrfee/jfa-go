@@ -1,0 +1,24 @@
+<thead id="accounts-table-header">
+    <tr>
+        <th><input type="checkbox" value="" id="accounts-select-all"></th>
+        <th class="table-inline my-2 grid gap-4 place-items-stretch accounts-header-username">{{ .strings.username }}</th>
+        {{ if .jellyfinLogin }}
+        <th class="text-center-i grid gap-4 place-items-stretch accounts-header-access-jfa">{{ .strings.accessJFA }}</th>
+        {{ end }}
+        <th class="grid gap-4 place-items-stretch accounts-header-email">{{ .strings.emailAddress }}</th>
+        {{ if .telegramEnabled }}
+        <th class="text-center-i grid gap-4 place-items-stretch accounts-header-telegram">Telegram</th>
+        {{ end }}
+        {{ if .matrixEnabled }}
+        <th class="text-center-i grid gap-4 place-items-stretch accounts-header-matrix">Matrix</th>
+        {{ end }}
+        {{ if .discordEnabled }}
+        <th class="text-center-i grid gap-4 place-items-stretch accounts-header-discord">Discord</th>
+        {{ end }}
+        {{ if .referralsEnabled }}
+        <th class="text-center-i grid gap-4 place-items-stretch accounts-header-referrals">{{ .strings.referrals }}</th>
+        {{ end }}
+        <th class="grid gap-4 place-items-stretch accounts-header-expiry">{{ .strings.expiry }}</th>
+        <th class="grid gap-4 place-items-stretch accounts-header-last-active">{{ .strings.lastActiveTime }}</th>
+    </tr>
+</thead>

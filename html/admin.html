@@ -86,16 +86,7 @@
                 <span class="heading"><span id="header-modify-user"></span> <span class="modal-close">&times;</span></span>
                 <p class="content">{{ .strings.modifySettingsDescription }}</p>
                 <div class="flex flex-col gap-4">
-                    <div class="flex flex-row gap-2">
-                        <label class="grow">
-                            <input type="radio" name="modify-user-source" class="unfocused" id="radio-use-profile" checked>
-                            <span class="button ~neutral @high supra full-width center">{{ .strings.profile }}</span>
-                        </label>
-                        <label class="grow">
-                            <input type="radio" name="modify-user-source" class="unfocused" id="radio-use-user">
-                            <span class="button ~neutral @low supra full-width center">{{ .strings.user }}</span>
-                        </label>
-                    </div>
+                    <div id="modify-user-profile-source"></div>
                     <div class="select ~neutral @low">
                         <select id="modify-user-profiles"></select>
                     </div>
@@ -134,16 +125,7 @@
             <form class="card relative mx-auto my-[10%] w-11/12 sm:w-4/5 lg:w-1/3 flex flex-col gap-4" id="form-enable-referrals-user" href="">
                 <span class="heading"><span id="header-enable-referrals-user"></span> <span class="modal-close">&times;</span></span>
                 <p class="content">{{ .strings.enableReferralsDescription }}</p>
-                <div class="flex flex-row gap-2">
-                    <label class="grow">
-                        <input type="radio" name="enable-referrals-user-source" class="unfocused" id="radio-referrals-use-profile" checked>
-                        <span class="button ~neutral @high supra full-width center">{{ .strings.profile }}</span>
-                    </label>
-                    <label class="grow">
-                        <input type="radio" name="enable-referrals-user-source" class="unfocused" id="radio-referrals-use-invite">
-                        <span class="button ~neutral @low supra full-width center">{{ .strings.invite }}</span>
-                    </label>
-                </div>
+                <div id="enable-referrals-user-source"></div>
                 <div class="select ~neutral @low">
                     <select id="enable-referrals-user-profiles"></select>
                 </div>
@@ -804,30 +786,7 @@
                         </div>
                         <div class="card @low accounts-header overflow-x-scroll transition-opacity transition-display" id="accounts-table">
                             <table class="table text-base leading-5">
-                                <thead>
-                                    <tr>
-                                        <th><input type="checkbox" value="" id="accounts-select-all"></th>
-                                        <th class="table-inline my-2 grid gap-4 place-items-stretch accounts-header-username">{{ .strings.username }}</th>
-                                        {{ if .jellyfinLogin }}
-                                        <th class="text-center-i grid gap-4 place-items-stretch accounts-header-access-jfa">{{ .strings.accessJFA }}</th>
-                                        {{ end }}
-                                        <th class="grid gap-4 place-items-stretch accounts-header-email">{{ .strings.emailAddress }}</th>
-                                        {{ if .telegramEnabled }}
-                                        <th class="text-center-i grid gap-4 place-items-stretch accounts-header-telegram">Telegram</th>
-                                        {{ end }}
-                                        {{ if .matrixEnabled }}
-                                        <th class="text-center-i grid gap-4 place-items-stretch accounts-header-matrix">Matrix</th>
-                                        {{ end }}
-                                        {{ if .discordEnabled }}
-                                        <th class="text-center-i grid gap-4 place-items-stretch accounts-header-discord">Discord</th>
-                                        {{ end }}
-                                        {{ if .referralsEnabled }}
-                                        <th class="text-center-i grid gap-4 place-items-stretch accounts-header-referrals">{{ .strings.referrals }}</th>
-                                        {{ end }}
-                                        <th class="grid gap-4 place-items-stretch accounts-header-expiry">{{ .strings.expiry }}</th>
-                                        <th class="grid gap-4 place-items-stretch accounts-header-last-active">{{ .strings.lastActiveTime }}</th>
-                                    </tr>
-                                </thead>
+                                {{ template "accounts-table-header.txt" . }}
                                 <tbody id="accounts-list"></tbody>
                             </table>
                             <div id="accounts-loader"></div>

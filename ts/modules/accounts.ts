@@ -14,7 +14,7 @@ import { Marked } from "@ts-stack/markdown";
 import { stripMarkdown } from "../modules/stripmd";
 import { DiscordUser, newDiscordSearch } from "../modules/discord";
 import { SearchConfiguration, QueryType, SearchableItem, SearchableItemDataAttribute } from "../modules/search";
-import { HiddenInputField } from "./ui";
+import { HiddenInputField, RadioBasedTabSelector } from "./ui";
 import { PaginatedList } from "./list";
 import { TableRow } from "./row";
 
@@ -211,6 +211,8 @@ class User extends TableRow implements UserDTO, SearchableItem {
     private _referralsEnabled: boolean;
     private _referralsEnabledCheck: HTMLElement;
 
+    notInList: boolean = false;
+
     focus = () => this._row.scrollIntoView({ behavior: "smooth", block: "center" });
 
     lastNotifyMethod = (): string => {
@@ -244,7 +246,7 @@ class User extends TableRow implements UserDTO, SearchableItem {
     setSelected(state: boolean, dispatchEvent: boolean) {
         this._selected = state;
         this._check.checked = state;
-        if (dispatchEvent)
+        if (dispatchEvent && !(this.notInList))
             state ? document.dispatchEvent(this._checkEvent()) : document.dispatchEvent(this._uncheckEvent());
     }
 
@@ -931,7 +933,7 @@ class User extends TableRow implements UserDTO, SearchableItem {
     };
 
     remove = () => {
-        if (this.selected) {
+        if (this.selected && !(this.notInList)) {
             document.dispatchEvent(this._uncheckEvent());
         }
         super.remove();
@@ -984,11 +986,13 @@ export class accountsList extends PaginatedList {
     private _enableExpiryNotify = document.getElementById("expiry-extend-enable") as HTMLInputElement;
     private _enableExpiryReason = document.getElementById("textarea-extend-enable") as HTMLTextAreaElement;
     private _modifySettings = document.getElementById("accounts-modify-user") as HTMLSpanElement;
-    private _modifySettingsProfile = document.getElementById("radio-use-profile") as HTMLInputElement;
-    private _modifySettingsUser = document.getElementById("radio-use-user") as HTMLInputElement;
+    /*private _modifySettingsProfile = document.getElementById("radio-use-profile") as HTMLInputElement;
+    private _modifySettingsUser = document.getElementById("radio-use-user") as HTMLInputElement;*/
+    private _modifySettingsProfileSource: RadioBasedTabSelector;
     private _enableReferrals = document.getElementById("accounts-enable-referrals") as HTMLSpanElement;
-    private _enableReferralsProfile = document.getElementById("radio-referrals-use-profile") as HTMLInputElement;
-    private _enableReferralsInvite = document.getElementById("radio-referrals-use-invite") as HTMLInputElement;
+    /*private _enableReferralsProfile = document.getElementById("radio-referrals-use-profile") as HTMLInputElement;
+    private _enableReferralsInvite = document.getElementById("radio-referrals-use-invite") as HTMLInputElement;*/
+    private _enableReferralsSource: RadioBasedTabSelector;
     private _sendPWR = document.getElementById("accounts-send-pwr") as HTMLSpanElement;
     private _profileSelect = document.getElementById("modify-user-profiles") as HTMLSelectElement;
     private _userSelect = document.getElementById("modify-user-users") as HTMLSelectElement;
@@ -1052,8 +1056,7 @@ export class accountsList extends PaginatedList {
         this.unbindPageEvents();
         console.debug("Loading details for ", username, jfId);
         this._details.load(
-            username,
-            jfId,
+            this.users.get(jfId),
             () => {
                 this.unbindPageEvents();
                 this._inDetails = true;
@@ -1164,9 +1167,6 @@ export class accountsList extends PaginatedList {
 
         this.initSearch(searchConfig);
 
-        // FIXME: Remove!
-        (window as any).accs = this;
-
         this._selectAll.checked = false;
         this._selectAllState = SelectAllState.None;
         this._selectAll.onchange = () => this.cycleSelectAll();
@@ -1195,66 +1195,47 @@ export class accountsList extends PaginatedList {
         this._modifySettings.onclick = this.modifyUsers;
         this._modifySettings.classList.add("unfocused");
 
-        const checkSource = () => {
-            const profileSpan = this._modifySettingsProfile.nextElementSibling as HTMLSpanElement;
-            const userSpan = this._modifySettingsUser.nextElementSibling as HTMLSpanElement;
-            if (this._modifySettingsProfile.checked) {
-                this._userSelect.parentElement.classList.add("unfocused");
-                this._profileSelect.parentElement.classList.remove("unfocused");
-                profileSpan.classList.add("@high");
-                profileSpan.classList.remove("@low");
-                userSpan.classList.remove("@high");
-                userSpan.classList.add("@low");
-                this._applyOmbi?.parentElement.classList.remove("unfocused");
-                this._applyJellyseerr?.parentElement.classList.remove("unfocused");
-            } else {
-                this._userSelect.parentElement.classList.remove("unfocused");
-                this._profileSelect.parentElement.classList.add("unfocused");
-                userSpan.classList.add("@high");
-                userSpan.classList.remove("@low");
-                profileSpan.classList.remove("@high");
-                profileSpan.classList.add("@low");
-                this._applyOmbi?.parentElement.classList.add("unfocused");
-                this._applyJellyseerr?.parentElement.classList.add("unfocused");
-            }
-        };
-        this._modifySettingsProfile.onchange = checkSource;
-        this._modifySettingsUser.onchange = checkSource;
+        this._modifySettingsProfileSource = new RadioBasedTabSelector(
+            document.getElementById("modify-user-profile-source"),
+            "modify-user-profile-source",
+            {
+                name: window.lang.strings("profile"),
+                id: "profile",
+                content: this._profileSelect.parentElement,
+                onShow: () => {
+                    this._applyOmbi?.parentElement.classList.remove("unfocused");
+                    this._applyJellyseerr?.parentElement.classList.remove("unfocused");
+                },
+            },
+            {
+                name: window.lang.strings("user"),
+                id: "user",
+                content: this._userSelect.parentElement,
+                onShow: () => {
+                    this._applyOmbi?.parentElement.classList.add("unfocused");
+                    this._applyJellyseerr?.parentElement.classList.add("unfocused");
+                },
+            },
+        )
 
         if (window.referralsEnabled) {
-            const profileSpan = this._enableReferralsProfile.nextElementSibling as HTMLSpanElement;
-            const inviteSpan = this._enableReferralsInvite.nextElementSibling as HTMLSpanElement;
-            const checkReferralSource = () => {
-                console.debug("States:", this._enableReferralsProfile.checked, this._enableReferralsInvite.checked);
-                if (this._enableReferralsProfile.checked) {
-                    this._referralsInviteSelect.parentElement.classList.add("unfocused");
-                    this._referralsProfileSelect.parentElement.classList.remove("unfocused");
-                    profileSpan.classList.add("@high");
-                    profileSpan.classList.remove("@low");
-                    inviteSpan.classList.remove("@high");
-                    inviteSpan.classList.add("@low");
-                } else {
-                    this._referralsInviteSelect.parentElement.classList.remove("unfocused");
-                    this._referralsProfileSelect.parentElement.classList.add("unfocused");
-                    inviteSpan.classList.add("@high");
-                    inviteSpan.classList.remove("@low");
-                    profileSpan.classList.remove("@high");
-                    profileSpan.classList.add("@low");
-                }
-            };
-            profileSpan.onclick = () => {
-                this._enableReferralsProfile.checked = true;
-                this._enableReferralsInvite.checked = false;
-                checkReferralSource();
-            };
-            inviteSpan.onclick = () => {
-                this._enableReferralsInvite.checked = true;
-                this._enableReferralsProfile.checked = false;
-                checkReferralSource();
-            };
+            this._enableReferralsSource = new RadioBasedTabSelector(
+                document.getElementById("enable-referrals-user-source"),
+                "enable-referrals-user-source",
+                {
+                    name: window.lang.strings("profile"),
+                    id: "profile",
+                    content: this._referralsProfileSelect.parentElement,
+                },
+                {
+                    name: window.lang.strings("invite"),
+                    id: "invite",
+                    content: this._referralsInviteSelect.parentElement,
+                },
+            );
             this._enableReferrals.onclick = () => {
                 this.enableReferrals();
-                profileSpan.onclick(null);
+                this._enableReferralsSource.selected = 0;
             };
         }
 
@@ -2125,8 +2106,7 @@ export class accountsList extends PaginatedList {
         const form = document.getElementById("form-modify-user") as HTMLFormElement;
         const button = form.querySelector("span.submit") as HTMLSpanElement;
 
-        this._modifySettingsProfile.checked = true;
-        this._modifySettingsUser.checked = false;
+        this._modifySettingsProfileSource.selected = 0;
         form.onsubmit = (event: Event) => {
             event.preventDefault();
             toggleLoader(button);
@@ -2141,10 +2121,10 @@ export class accountsList extends PaginatedList {
             if (window.jellyseerrEnabled) {
                 send["jellyseerr"] = this._applyJellyseerr.checked;
             }
-            if (this._modifySettingsProfile.checked && !this._modifySettingsUser.checked) {
+            if (this._modifySettingsProfileSource.selected == "profile") {
                 send["from"] = "profile";
                 send["profile"] = this._profileSelect.value;
-            } else if (this._modifySettingsUser.checked && !this._modifySettingsProfile.checked) {
+            } else if (this._modifySettingsProfileSource.selected == "user") {
                 send["from"] = "user";
                 send["id"] = this._userSelect.value;
             }
@@ -2216,12 +2196,11 @@ export class accountsList extends PaginatedList {
                         }
                         innerHTML += `<option value="${inv.code}">${name}</option>`;
                     }
-                    this._enableReferralsInvite.checked = true;
+                    this._enableReferralsSource.selected = "invite";
                 } else {
-                    this._enableReferralsInvite.checked = false;
+                    this._enableReferralsSource.selected = "profile";
                     innerHTML += `<option>${window.lang.strings("inviteNoInvites")}</option>`;
                 }
-                this._enableReferralsProfile.checked = !this._enableReferralsInvite.checked;
                 this._referralsInviteSelect.innerHTML = innerHTML;
 
                 // 2. Profiles
@@ -2243,10 +2222,10 @@ export class accountsList extends PaginatedList {
                 users: list,
             };
             // console.log("profile:", this._enableReferralsProfile.checked, this._enableReferralsInvite.checked);
-            if (this._enableReferralsProfile.checked && !this._enableReferralsInvite.checked) {
+            if (this._enableReferralsSource.selected == "profile") {
                 send["from"] = "profile";
                 send["profile"] = this._referralsProfileSelect.value;
-            } else if (this._enableReferralsInvite.checked && !this._enableReferralsProfile.checked) {
+            } else if (this._enableReferralsSource.selected == "invite") {
                 send["from"] = "invite";
                 send["id"] = this._referralsInviteSelect.value;
             }
@@ -2278,8 +2257,7 @@ export class accountsList extends PaginatedList {
                 },
             );
         };
-        this._enableReferralsProfile.checked = true;
-        this._enableReferralsInvite.checked = false;
+        this._enableReferralsSource.selected = 0;
         this._referralsExpiry.checked = false;
         window.modals.enableReferralsUser.show();
     };
@@ -2856,7 +2834,9 @@ class UserInfo extends PaginatedList {
     private _hidden: boolean = true;
     private _table: HTMLElement;
     private _card: HTMLElement;
+    private _rowArea: HTMLElement;
     private _noResults: HTMLElement;
+    private _link: HTMLAnchorElement;
     get entries(): Map<string, ActivityLogEntry> {
         return this._search.items as Map<string, ActivityLogEntry>;
     }
@@ -2867,20 +2847,14 @@ class UserInfo extends PaginatedList {
         card.classList.add("unfocused");
         card.innerHTML = `
         <div class="flex flex-col gap-2">
-            <div class="flex flex-row gap-2 justify-start">
-            </div>
-            <div class="flex flex-row gap-2">
-            </div>
-            <div class="flex flex-col gap-1">
-                <div class="flex flex-row gap-2">
-                    <label class="grow">
-                        <input type="radio" name="jf-activity-source" class="jf-activity-source-jellyfin unfocused" checked>
-                        <span class="button ~neutral @high supra w-full text-center">${window.lang.strings("jellyfin")}</span>
-                    </label>
-                    <label class="grow">
-                        <input type="radio" name="jf-activity-source" class="jf-activity-source-jfa-go unfocused">
-                        <span class="button ~neutral @low supra w-full text-center">jfa-go</span>
-                    </label>
+            <table class="table text-base leading-5">
+                <thead class="user-info-table-header"></thead>
+                <tbody class="user-info-row"></tbody>
+            </table>
+            <div class="flex flex-col gap-2">
+                <div class="jf-activity-source flex flex-row justify-between gap-2">
+                    <h3 class="heading text-lg">${window.lang.strings("activityFromJF")}</h3>
+                    <a role="link" tabindex="0" class="jf-activity-jfa-link hover:underline cursor-pointer button ~info @high flex flex-row gap-1 items-baseline">${window.lang.strings("activityFromJfa")}<i class="icon ri-external-link-line text-current"></i></a>
                 </div>
                 <!-- <h2 class="heading text-2xl">${window.lang.strings("activity")}</h2> -->
                 <div class="card @low overflow-x-scroll jf-activity-table">
@@ -2962,11 +2936,18 @@ class UserInfo extends PaginatedList {
         });
         this._hidden = true;
         this._card = card;
+        this._rowArea = this._card.getElementsByClassName("user-info-row")[0] as HTMLElement;
+        const realHead = document.getElementById("accounts-table-header") as HTMLElement;
+        const cloneHead = realHead.cloneNode(true) as HTMLElement;
+        // Remove "select all" check from header
+        cloneHead.querySelector("input[type=checkbox]").remove();
+        const head = this._card.getElementsByClassName("user-info-table-header")[0] as HTMLElement;
+        head.replaceWith(cloneHead);
         this._table = this._card.getElementsByClassName("jf-activity-table")[0] as HTMLElement;
         this._container = this._table.getElementsByClassName("jf-activity-table-content")[0] as HTMLElement;
         this._back = document.getElementById("user-details-back") as HTMLButtonElement;
         this._noResults = this._card.getElementsByClassName("jf-activity-no-activity")[0] as HTMLElement;
-
+        this._link = this._card.getElementsByClassName("jf-activity-jfa-link")[0] as HTMLAnchorElement;
         let searchConfig: SearchConfiguration = {
             queries: {},
             setVisibility: null,
@@ -2995,9 +2976,16 @@ class UserInfo extends PaginatedList {
         this._reload(callback);
     };
 
-    load = (username: string, jfId: string, onLoad?: () => void, onBack?: () => void) => {
-        this.username = username;
-        this.jfId = jfId;
+    load = (user: User, onLoad?: () => void, onBack?: () => void) => {
+        this.username = user.name;
+        this.jfId = user.id;
+        const clone = new User(user);
+        clone.notInList = true;
+        clone.setSelected(true, false)
+        this._rowArea.replaceChildren(clone.asElement());
+        this._link.setAttribute("data-id", this.jfId)
+        this._link.href = `${window.pages.Base}${window.pages.Admin}/activity?user=${this.username}`
+
         if (onBack) {
             this._back.classList.remove("unfocused");
             this._back.onclick = () => onBack();
