@@ -687,4 +687,18 @@ export class activityList extends PaginatedList {
             this._keepSearchingDescription.classList.add("unfocused");
         }
     };*/
+    
+    isActivityURL = () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const username = urlParams.get("user");
+        return Boolean(username);
+    };
+
+    loadActivityURL = () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const username = urlParams.get("user");
+        this._c.searchBox.value = `user:"${username}"`;
+        this._search.onSearchBoxChange();
+        this._search.onServerSearch();
+    };
 }

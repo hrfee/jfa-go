@@ -159,6 +159,7 @@ window.notifications = new notificationBox(document.getElementById("notification
 // Determine if url references an invite or account
 let isInviteURL = window.invites.isInviteURL();
 let isAccountURL = accounts.isAccountURL();
+let isActivityURL = activity.isActivityURL();
 
 // load tabs
 const tabs: { id: string; url: string; reloader: () => void; unloader?: () => void }[] = [
@@ -183,6 +184,8 @@ const tabs: { id: string; url: string; reloader: () => void; unloader?: () => vo
                     accounts.loadAccountURL();
                     // Don't keep loading the same item on every tab refresh
                     isAccountURL = false;
+                    // Since accounts and activity accept ?user=x, wipe the other one.
+                    isActivityURL = false;
                 }
                 accounts.bindPageEvents();
             }),
@@ -192,7 +195,15 @@ const tabs: { id: string; url: string; reloader: () => void; unloader?: () => vo
         id: "activity",
         url: "activity",
         reloader: () => {
-            activity.reload();
+            activity.reload(() => {
+                if (isActivityURL) {
+                    activity.loadActivityURL();
+                    // Don't keep loading the same item on every tab refresh
+                    isActivityURL = false;
+                    // Since accounts and activity accept ?user=x, wipe the other one.
+                    isAccountURL = false;
+                }
+            });
             activity.bindPageEvents();
         },
         unloader: activity.unbindPageEvents,
