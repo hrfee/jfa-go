@@ -115,7 +115,11 @@ export class HiddenInputField {
 
 export interface RadioBasedTab {
     name: string;
-    content: HTMLElement;
+    id?: string;
+    // If passed, will be put inside the button instead of the name.
+    buttonHTML?: string;
+    // You must at least pass a content element or an onShow function.
+    content?: HTMLElement;
     onShow?: () => void;
     onHide?: () => void;
 }
@@ -139,11 +143,12 @@ export class RadioBasedTabSelector {
         let i = 0;
         const frag = document.createDocumentFragment();
         for (let tab of tabs) {
+            if (!(tab.id)) tab.id = tab.name;
             const label = document.createElement("label");
             label.classList.add("grow");
             label.innerHTML = `
                 <input type="radio" name="${this._id}" value="${tab.name}" class="unfocused" ${i == 0 ? "checked" : ""}>
-                <span class="button ~neutral ${i == 0 ? "@high" : "@low"} radio-tab-button supra w-full text-center">${tab.name}</span>
+                <span class="button ~neutral ${i == 0 ? "@high" : "@low"} radio-tab-button supra w-full text-center">${tab.buttonHTML || tab.name}</span>
             `;
             let ft: RadioBasedTabItem = {
                 tab: tab,
@@ -160,19 +165,19 @@ export class RadioBasedTabSelector {
             i++;
         }
         this._container.replaceChildren(frag);
-        this.selected = this._tabs[0].tab.name;
+        this.selected = 0;
     }
 
     checkSource = () => {
         for (let tab of this._tabs) {
             if (tab.input.checked) {
-                this._selected = tab.tab.name;
-                tab.tab.content.classList.remove("unfocused");
+                this._selected = tab.tab.id;
+                tab.tab.content?.classList.remove("unfocused");
                 tab.button.classList.add("@high");
                 tab.button.classList.remove("@low");
                 if (tab.tab.onShow) tab.tab.onShow();
             } else {
-                tab.tab.content.classList.add("unfocused");
+                tab.tab.content?.classList.add("unfocused");
                 tab.button.classList.add("@low");
                 tab.button.classList.remove("@high");
                 if (tab.tab.onHide) tab.tab.onHide();
@@ -181,18 +186,21 @@ export class RadioBasedTabSelector {
     };
 
     get selected(): string { return this._selected; }
-    set selected(name: string) {
+    set selected(id: string|number) {
+        if (typeof id !== "string") {
+            id = this._tabs[id as number].tab.id;
+        }
         for (let tab of this._tabs) {
-            if (tab.tab.name == name) {
-                this._selected = tab.tab.name;
+            if (tab.tab.id == id) {
+                this._selected = tab.tab.id;
                 tab.input.checked = true;
-                tab.tab.content.classList.remove("unfocused");
+                tab.tab.content?.classList.remove("unfocused");
                 tab.button.classList.add("@high");
                 tab.button.classList.remove("@low");
                 if (tab.tab.onShow) tab.tab.onShow();
             } else {
                 tab.input.checked = false;
-                tab.tab.content.classList.add("unfocused");
+                tab.tab.content?.classList.add("unfocused");
                 tab.button.classList.add("@low");
                 tab.button.classList.remove("@high");
                 if (tab.tab.onHide) tab.tab.onHide();
