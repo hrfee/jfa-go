@@ -784,6 +784,8 @@ class DOMInvite implements Invite {
 }
 
 export class DOMInviteList implements InviteList {
+    readonly tabName = "invites";
+    readonly pagePath = "";
     private _list: HTMLDivElement;
     private _empty: boolean;
     // since invite reload sends profiles, this event it broadcast so the createInvite object can load them.
@@ -804,14 +806,14 @@ export class DOMInviteList implements InviteList {
             this.focusInvite(event.detail);
         });
 
-    isInviteURL = () => {
-        const urlParams = new URLSearchParams(window.location.search);
+    isURL = (url?: string) => {
+        const urlParams = new URLSearchParams(url || window.location.search);
         const inviteCode = urlParams.get("invite");
         return Boolean(inviteCode);
     };
 
-    loadInviteURL = () => {
-        const urlParams = new URLSearchParams(window.location.search);
+    navigate = (url?: string) => {
+        const urlParams = new URLSearchParams(url || window.location.search);
         const inviteCode = urlParams.get("invite");
         this.focusInvite(inviteCode, window.lang.notif("errorInviteNotFound"));
     };

@@ -1067,7 +1067,9 @@ interface Settings {
     order?: Member[];
 }
 
-export class settingsList {
+export class settingsList implements AsTab {
+    readonly tabName = "settings";
+    readonly pagePath = "settings";
     private _saveButton = document.getElementById("settings-save") as HTMLSpanElement;
     private _saveNoRestart = document.getElementById("settings-apply-no-restart") as HTMLSpanElement;
     private _saveRestart = document.getElementById("settings-apply-restart") as HTMLSpanElement;

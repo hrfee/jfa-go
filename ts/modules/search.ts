@@ -68,9 +68,11 @@ export abstract class Query {
     protected _subject: QueryType;
     protected _operator: QueryOperator;
     protected _card: HTMLElement;
+    protected _id: string;
     public type: string;
 
-    constructor(subject: QueryType | null, operator: QueryOperator) {
+    constructor(id: string, subject: QueryType | null, operator: QueryOperator) {
+        this._id = id;
         this._subject = subject;
         this._operator = operator;
         if (subject != null) {
@@ -116,8 +118,8 @@ export abstract class Query {
 
 export class BoolQuery extends Query {
     protected _value: boolean;
-    constructor(subject: QueryType, value: boolean) {
-        super(subject, QueryOperator.Equal);
+    constructor(id: string, subject: QueryType, value: boolean) {
+        super(id, subject, QueryOperator.Equal);
         this.type = "bool";
         this._value = value;
         this._card.classList.add("button", "@high", "center", "flex", "flex-row", "gap-2");
@@ -165,8 +167,8 @@ export class BoolQuery extends Query {
 
 export class StringQuery extends Query {
     protected _value: string;
-    constructor(subject: QueryType, value: string) {
-        super(subject, QueryOperator.Equal);
+    constructor(id: string, subject: QueryType, value: string) {
+        super(id, subject, QueryOperator.Equal);
         this.type = "string";
         this._value = value.toLowerCase();
         this._card.classList.add("button", "~neutral", "@low", "center", "flex", "flex-row", "gap-2");
@@ -214,8 +216,8 @@ const dateSetters: Map<string, (v: number) => void> = (() => {
 export class DateQuery extends Query {
     protected _value: ParsedDate;
 
-    constructor(subject: QueryType, operator: QueryOperator, value: ParsedDate) {
-        super(subject, operator);
+    constructor(id: string, subject: QueryType, operator: QueryOperator, value: ParsedDate) {
+        super(id, subject, operator);
         this.type = "date";
         this._value = value;
         this._card.classList.add("button", "~neutral", "@low", "center", "flex", "flex-row", "gap-2");
@@ -278,7 +280,7 @@ export const SearchableItemDataAttribute = "data-search-item";
 
 export type SearchableItems = Map<string, SearchableItem>;
 
-export class Search {
+export class Search implements Navigatable {
     private _c: SearchConfiguration;
     private _sortField: string = "";
     private _ascending: boolean = true;
@@ -368,7 +370,7 @@ export class Search {
             if (queryFormat.bool) {
                 let [boolState, isBool] = BoolQuery.paramsFromString(split[1]);
                 if (isBool) {
-                    q = new BoolQuery(queryFormat, boolState);
+                    q = new BoolQuery(split[0], queryFormat, boolState);
                     q.onclick = () => {
                         for (let quote of [`"`, `'`, ``]) {
                             this._c.search.value = this._c.search.value.replace(
@@ -383,7 +385,7 @@ export class Search {
                 }
             }
             if (queryFormat.string) {
-                q = new StringQuery(queryFormat, split[1]);
+                q = new StringQuery(split[0], queryFormat, split[1]);
 
                 q.onclick = () => {
                     for (let quote of [`"`, `'`, ``]) {
@@ -398,7 +400,7 @@ export class Search {
             if (queryFormat.date) {
                 let [parsedDate, op, isDate] = DateQuery.paramsFromString(split[1]);
                 if (!isDate) continue;
-                q = new DateQuery(queryFormat, op, parsedDate);
+                q = new DateQuery(split[0], queryFormat, op, parsedDate);
 
                 q.onclick = () => {
                     for (let quote of [`"`, `'`, ``]) {
@@ -695,6 +697,7 @@ export class Search {
     onServerSearch = () => {
         const newServerSearch = !this.inServerSearch;
         this.inServerSearch = true;
+        this.setQueryParam();
         this.searchServer(newServerSearch);
     };
 
@@ -718,8 +721,31 @@ export class Search {
         return req;
     };
 
+    // setQueryParam sets the ?search query param to the current searchbox content.
+    setQueryParam = () => {
+        const url = new URL(window.location.href);
+        // FIXME: do better and make someone else clear this
+        url.searchParams.delete("user");
+        url.searchParams.set("search", this._c.search.value);
+        window.history.pushState(null, "", url.toString());
+    };
+
     setServerSearchButtonsDisabled = (disabled: boolean) => {
         this._serverSearchButtons.forEach((v: HTMLButtonElement) => (v.disabled = disabled));
+    };
+
+    isURL = (url?: string) => {
+        const urlParams = new URLSearchParams(url || window.location.search);
+        const searchContent = urlParams.get("search");
+        return Boolean(searchContent);
+    };
+
+    navigate = (url?: string) => {
+        const urlParams = new URLSearchParams(url || window.location.search);
+        const searchContent = urlParams.get("search");
+        this._c.search.value = searchContent;
+        this.onSearchBoxChange();
+        this.onServerSearch();
     };
 
     constructor(c: SearchConfiguration) {

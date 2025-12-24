@@ -558,7 +558,9 @@ interface ActivitiesDTO extends paginatedDTO {
     activities: activity[];
 }
 
-export class activityList extends PaginatedList {
+export class activityList extends PaginatedList implements Navigatable, AsTab {
+    readonly tabName = "activity";
+    readonly pagePath = "activity";
     protected _container: HTMLElement;
     protected _sortDirection = document.getElementById("activity-sort-direction") as HTMLButtonElement;
 
@@ -687,18 +689,23 @@ export class activityList extends PaginatedList {
             this._keepSearchingDescription.classList.add("unfocused");
         }
     };*/
-    
-    isActivityURL = () => {
-        const urlParams = new URLSearchParams(window.location.search);
+
+    isURL = (url?: string) => {
+        const urlParams = new URLSearchParams(url || window.location.search);
         const username = urlParams.get("user");
-        return Boolean(username);
+        return Boolean(username) || this._search.isURL(url);
     };
 
-    loadActivityURL = () => {
-        const urlParams = new URLSearchParams(window.location.search);
+    navigate = (url?: string) => {
+        const urlParams = new URLSearchParams(url || window.location.search);
         const username = urlParams.get("user");
-        this._c.searchBox.value = `user:"${username}"`;
-        this._search.onSearchBoxChange();
-        this._search.onServerSearch();
+        let search = urlParams.get("search") || "";
+        if (username) {
+            search = `user:"${username}" ` + search;
+            urlParams.set("search", search);
+            // Get rid of it, as it'll now be included in the "search" param anyway
+            urlParams.delete("user");
+        }
+        this._search.navigate(urlParams.toString());
     };
 }

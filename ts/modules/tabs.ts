@@ -1,5 +1,13 @@
 import { PageManager, Page } from "../modules/pages.js";
 
+export function isPageEventBindable(object: any): object is PageEventBindable {
+    return "bindPageEvents" in object;
+}
+
+export function isNavigatable(object: any): object is Navigatable {
+    return "isURL" in object && "navigate" in object;
+}
+
 export interface Tab {
     page: Page;
     tabEl: HTMLDivElement;

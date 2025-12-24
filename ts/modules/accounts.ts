@@ -246,7 +246,7 @@ class User extends TableRow implements UserDTO, SearchableItem {
     setSelected(state: boolean, dispatchEvent: boolean) {
         this._selected = state;
         this._check.checked = state;
-        if (dispatchEvent && !(this.notInList))
+        if (dispatchEvent && !this.notInList)
             state ? document.dispatchEvent(this._checkEvent()) : document.dispatchEvent(this._uncheckEvent());
     }
 
@@ -933,7 +933,7 @@ class User extends TableRow implements UserDTO, SearchableItem {
     };
 
     remove = () => {
-        if (this.selected && !(this.notInList)) {
+        if (this.selected && !this.notInList) {
             document.dispatchEvent(this._uncheckEvent());
         }
         super.remove();
@@ -956,7 +956,9 @@ declare interface ExtendExpiryDTO {
     try_extend_from_previous_expiry?: boolean;
 }
 
-export class accountsList extends PaginatedList {
+export class accountsList extends PaginatedList implements Navigatable, AsTab {
+    readonly tabName = "accounts";
+    readonly pagePath = "accounts";
     private _details: UserInfo;
     private _table = document.getElementById("accounts-table") as HTMLTableElement;
     protected _container = document.getElementById("accounts-list") as HTMLTableSectionElement;
@@ -1216,7 +1218,7 @@ export class accountsList extends PaginatedList {
                     this._applyJellyseerr?.parentElement.classList.add("unfocused");
                 },
             },
-        )
+        );
 
         if (window.referralsEnabled) {
             this._enableReferralsSource = new RadioBasedTabSelector(
@@ -2467,16 +2469,23 @@ export class accountsList extends PaginatedList {
             this.focusAccount(event.detail);
         });
 
-    isAccountURL = () => {
-        const urlParams = new URLSearchParams(window.location.search);
+    isURL = (url?: string) => {
+        const urlParams = new URLSearchParams(url || window.location.search);
         const userID = urlParams.get("user");
-        return Boolean(userID);
+        return Boolean(userID) || this._search.isURL(url);
     };
 
-    loadAccountURL = () => {
-        const urlParams = new URLSearchParams(window.location.search);
+    navigate = (url?: string) => {
+        const urlParams = new URLSearchParams(url || window.location.search);
         const userID = urlParams.get("user");
-        this.focusAccount(userID);
+        let search = urlParams.get("search") || "";
+        if (userID) {
+            search = `id:${userID}" ` + search;
+            urlParams.set("search", search);
+            // Get rid of it, as it'll now be included in the "search" param anyway
+            urlParams.delete("user");
+        }
+        this._search.navigate(urlParams.toString());
     };
 }
 
@@ -2981,10 +2990,10 @@ class UserInfo extends PaginatedList {
         this.jfId = user.id;
         const clone = new User(user);
         clone.notInList = true;
-        clone.setSelected(true, false)
+        clone.setSelected(true, false);
         this._rowArea.replaceChildren(clone.asElement());
-        this._link.setAttribute("data-id", this.jfId)
-        this._link.href = `${window.pages.Base}${window.pages.Admin}/activity?user=${this.username}`
+        this._link.setAttribute("data-id", this.jfId);
+        this._link.href = `${window.pages.Base}${window.pages.Admin}/activity?user=${this.username}`;
 
         if (onBack) {
             this._back.classList.remove("unfocused");

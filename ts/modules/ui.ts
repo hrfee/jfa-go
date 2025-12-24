@@ -112,7 +112,6 @@ export class HiddenInputField {
     }
 }
 
-
 export interface RadioBasedTab {
     name: string;
     id?: string;
@@ -135,7 +134,7 @@ export class RadioBasedTabSelector {
     private _container: HTMLElement;
     private _tabs: RadioBasedTabItem[];
     private _selected: string;
-    constructor(container: HTMLElement, id: string,  ...tabs: RadioBasedTab[]) {
+    constructor(container: HTMLElement, id: string, ...tabs: RadioBasedTab[]) {
         this._container = container;
         this._container.classList.add("flex", "flex-row", "gap-2");
         this._tabs = [];
@@ -143,7 +142,7 @@ export class RadioBasedTabSelector {
         let i = 0;
         const frag = document.createDocumentFragment();
         for (let tab of tabs) {
-            if (!(tab.id)) tab.id = tab.name;
+            if (!tab.id) tab.id = tab.name;
             const label = document.createElement("label");
             label.classList.add("grow");
             label.innerHTML = `
@@ -153,7 +152,7 @@ export class RadioBasedTabSelector {
             let ft: RadioBasedTabItem = {
                 tab: tab,
                 input: label.getElementsByTagName("input")[0] as HTMLInputElement,
-                button: label.getElementsByClassName("radio-tab-button")[0] as HTMLElement
+                button: label.getElementsByClassName("radio-tab-button")[0] as HTMLElement,
             };
             ft.input.onclick = () => {
                 ft.input.checked = true;
@@ -185,8 +184,10 @@ export class RadioBasedTabSelector {
         }
     };
 
-    get selected(): string { return this._selected; }
-    set selected(id: string|number) {
+    get selected(): string {
+        return this._selected;
+    }
+    set selected(id: string | number) {
         if (typeof id !== "string") {
             id = this._tabs[id as number].tab.id;
         }
