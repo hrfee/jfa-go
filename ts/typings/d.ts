@@ -61,13 +61,28 @@ declare interface GlobalWindow extends Window {
     loginAppearance: string;
 }
 
-declare interface InviteList {
+declare interface PageEventBindable {
+    bindPageEvents(): void;
+    unbindPageEvents(): void;
+}
+
+declare interface AsTab {
+    readonly tabName: string;
+    readonly pagePath: string;
+    reload(callback: () => void): void;
+}
+
+declare interface Navigatable {
+    // isURL will return whether the given url (or the current page url if not passed) is a valid link to some resource(s) in the class.
+    isURL(url?: string): boolean;
+    // navigate will load and focus the resource(s) in the class referenced by the given url (or current page url if not passed).
+    navigate(url?: string): void;
+}
+declare interface InviteList extends Navigatable, AsTab {
     empty: boolean;
     invites: { [code: string]: Invite };
     add: (invite: Invite) => void;
     reload: (callback?: () => void) => void;
-    isInviteURL: () => boolean;
-    loadInviteURL: () => void;
 }
 
 declare interface Invite {

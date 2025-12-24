@@ -1,7 +1,7 @@
 import { ThemeManager } from "./modules/theme.js";
 import { lang, LangFile, loadLangSelector } from "./modules/lang.js";
 import { Modal } from "./modules/modal.js";
-import { Tabs, Tab } from "./modules/tabs.js";
+import { Tabs, Tab, isPageEventBindable, isNavigatable } from "./modules/tabs.js";
 import { DOMInviteList, createInvite } from "./modules/invites.js";
 import { accountsList } from "./modules/accounts.js";
 import { settingsList } from "./modules/settings.js";
@@ -143,91 +143,37 @@ var profiles = new ProfileEditor();
 
 window.notifications = new notificationBox(document.getElementById("notification-box") as HTMLDivElement, 5);
 
-/*const modifySettingsSource = function () {
-    const profile = document.getElementById('radio-use-profile') as HTMLInputElement;
-    const user = document.getElementById('radio-use-user') as HTMLInputElement;
-    const profileSelect = document.getElementById('modify-user-profiles') as HTMLDivElement;
-    const userSelect = document.getElementById('modify-user-users') as HTMLDivElement;
-    (user.nextElementSibling as HTMLSpanElement).classList.toggle('@low');
-    (user.nextElementSibling as HTMLSpanElement).classList.toggle('@high');
-    (profile.nextElementSibling as HTMLSpanElement).classList.toggle('@low');
-    (profile.nextElementSibling as HTMLSpanElement).classList.toggle('@high');
-    profileSelect.classList.toggle('unfocused');
-    userSelect.classList.toggle('unfocused');
-}*/
-
-// Determine if url references an invite or account
-let isInviteURL = window.invites.isInviteURL();
-let isAccountURL = accounts.isAccountURL();
-let isActivityURL = activity.isActivityURL();
+// only use a navigatable URL once
+let navigated = false;
 
 // load tabs
-const tabs: { id: string; url: string; reloader: () => void; unloader?: () => void }[] = [
-    {
-        id: "invites",
-        url: "",
-        reloader: () =>
-            window.invites.reload(() => {
-                if (isInviteURL) {
-                    window.invites.loadInviteURL();
-                    // Don't keep loading the same item on every tab refresh
-                    isInviteURL = false;
-                }
-            }),
-    },
-    {
-        id: "accounts",
-        url: "accounts",
-        reloader: () =>
-            accounts.reload(() => {
-                if (isAccountURL) {
-                    accounts.loadAccountURL();
-                    // Don't keep loading the same item on every tab refresh
-                    isAccountURL = false;
-                    // Since accounts and activity accept ?user=x, wipe the other one.
-                    isActivityURL = false;
-                }
-                accounts.bindPageEvents();
-            }),
-        unloader: accounts.unbindPageEvents,
-    },
-    {
-        id: "activity",
-        url: "activity",
-        reloader: () => {
-            activity.reload(() => {
-                if (isActivityURL) {
-                    activity.loadActivityURL();
-                    // Don't keep loading the same item on every tab refresh
-                    isActivityURL = false;
-                    // Since accounts and activity accept ?user=x, wipe the other one.
-                    isAccountURL = false;
-                }
-            });
-            activity.bindPageEvents();
-        },
-        unloader: activity.unbindPageEvents,
-    },
-    {
-        id: "settings",
-        url: "settings",
-        reloader: settings.reload,
-    },
-];
-
-const defaultTab = tabs[0];
-
+const tabs: { id: string; url: string; reloader: () => void; unloader?: () => void }[] = [];
 window.tabs = new Tabs();
-
-for (let tab of tabs) {
+[window.invites, accounts, activity, settings].forEach((p: AsTab) => {
+    let t: { id: string; url: string; reloader: () => void; unloader?: () => void } = {
+        id: p.tabName,
+        url: p.pagePath,
+        reloader: () =>
+            p.reload(() => {
+                if (!navigated && isNavigatable(p)) {
+                    if (p.isURL()) {
+                        navigated = true;
+                        p.navigate();
+                    }
+                }
+                if (isPageEventBindable(p)) p.bindPageEvents();
+            }),
+    };
+    if (isPageEventBindable(p)) t.unloader = p.unbindPageEvents;
+    tabs.push(t);
     window.tabs.addTab(
-        tab.id,
-        window.pages.Base + window.pages.Admin + "/" + tab.url,
+        t.id,
+        window.pages.Base + window.pages.Admin + "/" + t.url,
         null,
-        tab.reloader,
-        tab.unloader || null,
+        t.reloader,
+        t.unloader || null,
     );
-}
+});
 
 let matchedTab = false;
 for (const tab of tabs) {

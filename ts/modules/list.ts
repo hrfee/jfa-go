@@ -110,7 +110,7 @@ export interface PaginatedListConfig {
     hideButtonsOnLastPage?: boolean;
 }
 
-export abstract class PaginatedList {
+export abstract class PaginatedList implements PageEventBindable {
     protected _c: PaginatedListConfig;
 
     // Container to append items to.
