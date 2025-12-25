@@ -1,7 +1,7 @@
 import { ThemeManager } from "./modules/theme.js";
 import { lang, LangFile, loadLangSelector } from "./modules/lang.js";
 import { Modal } from "./modules/modal.js";
-import { Tabs, Tab, isPageEventBindable, isNavigatable } from "./modules/tabs.js";
+import { TabManager, isPageEventBindable, isNavigatable } from "./modules/tabs.js";
 import { DOMInviteList, createInvite } from "./modules/invites.js";
 import { accountsList } from "./modules/accounts.js";
 import { settingsList } from "./modules/settings.js";
@@ -129,6 +129,9 @@ window.availableProfiles = window.availableProfiles || [];
     });
 });*/
 
+// tab content objects will register with this independently, so initialise now
+window.tabs = new TabManager();
+
 var inviteCreator = new createInvite();
 
 var accounts = new accountsList();
@@ -148,7 +151,6 @@ let navigated = false;
 
 // load tabs
 const tabs: { id: string; url: string; reloader: () => void; unloader?: () => void }[] = [];
-window.tabs = new Tabs();
 [window.invites, accounts, activity, settings].forEach((p: AsTab) => {
     let t: { id: string; url: string; reloader: () => void; unloader?: () => void } = {
         id: p.tabName,

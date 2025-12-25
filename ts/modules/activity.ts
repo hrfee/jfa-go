@@ -554,7 +554,7 @@ interface ActivitiesReqDTO extends PaginatedReqDTO {
     type: string[];
 }
 
-interface ActivitiesDTO extends paginatedDTO {
+interface ActivitiesDTO extends PaginatedDTO {
     activities: activity[];
 }
 
@@ -589,7 +589,7 @@ export class activityList extends PaginatedList implements Navigatable, AsTab {
             getPageEndpoint: "/activity",
             itemsPerPage: 20,
             maxItemsLoadedForSearch: 200,
-            appendNewItems: (resp: paginatedDTO) => {
+            appendNewItems: (resp: PaginatedDTO) => {
                 let ordering: string[] = this._search.ordering;
                 for (let act of (resp as ActivitiesDTO).activities || []) {
                     this.activities.set(act.id, new Activity(act));
@@ -597,7 +597,7 @@ export class activityList extends PaginatedList implements Navigatable, AsTab {
                 }
                 this._search.setOrdering(ordering, this._c.defaultSortField, this.ascending);
             },
-            replaceWithNewItems: (resp: paginatedDTO) => {
+            replaceWithNewItems: (resp: PaginatedDTO) => {
                 // FIXME: Implement updates to existing elements, rather than just wiping each time.
 
                 // Remove existing items
@@ -645,7 +645,7 @@ export class activityList extends PaginatedList implements Navigatable, AsTab {
         this._sortDirection.addEventListener("click", () => (this.ascending = !this.ascending));
     }
 
-    reload = (callback?: (resp: paginatedDTO) => void) => {
+    reload = (callback?: (resp: PaginatedDTO) => void) => {
         this._reload(callback);
     };
 
@@ -653,7 +653,7 @@ export class activityList extends PaginatedList implements Navigatable, AsTab {
         this._loadMore(loadAll, callback);
     };
 
-    loadAll = (callback?: (resp?: paginatedDTO) => void) => {
+    loadAll = (callback?: (resp?: PaginatedDTO) => void) => {
         this._loadAll(callback);
     };
 
