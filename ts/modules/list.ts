@@ -101,8 +101,8 @@ export interface PaginatedListConfig {
     getPageEndpoint: string | (() => string);
     itemsPerPage: number;
     maxItemsLoadedForSearch: number;
-    appendNewItems: (resp: paginatedDTO) => void;
-    replaceWithNewItems: (resp: paginatedDTO) => void;
+    appendNewItems: (resp: PaginatedDTO) => void;
+    replaceWithNewItems: (resp: PaginatedDTO) => void;
     defaultSortField?: string;
     defaultSortAscending?: boolean;
     pageLoadCallback?: (req: XMLHttpRequest) => void;
@@ -231,7 +231,7 @@ export abstract class PaginatedList implements PageEventBindable {
         searchConfig.onSearchCallback = (
             newItems: boolean,
             loadAll: boolean,
-            callback?: (resp: paginatedDTO) => void,
+            callback?: (resp: PaginatedDTO) => void,
         ) => {
             // if (this._search.inSearch && !this.lastPage) this._c.loadAllButton.classList.remove("unfocused");
             // else this._c.loadAllButton.classList.add("unfocused");
@@ -258,12 +258,12 @@ export abstract class PaginatedList implements PageEventBindable {
             if (previousCallback) previousCallback(newItems, loadAll);
         };
         const previousServerSearch = searchConfig.searchServer;
-        searchConfig.searchServer = (params: PaginatedReqDTO, newSearch: boolean) => {
+        searchConfig.searchServer = (params: PaginatedReqDTO, newSearch: boolean, then?: () => void) => {
             this._searchParams = params;
-            if (newSearch) this.reload();
-            else this.loadMore(false);
+            if (newSearch) this.reload(then);
+            else this.loadMore(false, then);
 
-            if (previousServerSearch) previousServerSearch(params, newSearch);
+            if (previousServerSearch) previousServerSearch(params, newSearch, then);
         };
         searchConfig.clearServerSearch = () => {
             console.trace("Clearing server search");
@@ -362,9 +362,9 @@ export abstract class PaginatedList implements PageEventBindable {
     private _load = (
         itemLimit: number,
         page: number,
-        appendFunc: (resp: paginatedDTO) => void, // Function to append/put items in storage.
-        pre?: (resp: paginatedDTO) => void,
-        post?: (resp: paginatedDTO) => void,
+        appendFunc: (resp: PaginatedDTO) => void, // Function to append/put items in storage.
+        pre?: (resp: PaginatedDTO) => void,
+        post?: (resp: PaginatedDTO) => void,
         failCallback?: (req: XMLHttpRequest) => void,
     ) => {
         this._lastLoad = Date.now();
@@ -388,7 +388,7 @@ export abstract class PaginatedList implements PageEventBindable {
                 }
                 this._hasLoaded = true;
 
-                let resp = req.response as paginatedDTO;
+                let resp = req.response as PaginatedDTO;
                 if (pre) pre(resp);
 
                 this.lastPage = resp.last_page;
@@ -406,8 +406,8 @@ export abstract class PaginatedList implements PageEventBindable {
     };
 
     // Removes all elements, and reloads the first page.
-    public abstract reload: (callback?: (resp: paginatedDTO) => void) => void;
-    protected _reload = (callback?: (resp: paginatedDTO) => void) => {
+    public abstract reload: (callback?: (resp: PaginatedDTO) => void) => void;
+    protected _reload = (callback?: (resp: PaginatedDTO) => void) => {
         this.lastPage = false;
         this._counter.reset();
         this._counter.getTotal(
@@ -422,14 +422,14 @@ export abstract class PaginatedList implements PageEventBindable {
             limit,
             0,
             this._c.replaceWithNewItems,
-            (_0: paginatedDTO) => {
+            (_0: PaginatedDTO) => {
                 // Allow refreshes every 15s
                 if (this._c.refreshButton) {
                     this._c.refreshButton.disabled = true;
                     setTimeout(() => (this._c.refreshButton.disabled = false), 15000);
                 }
             },
-            (resp: paginatedDTO) => {
+            (resp: PaginatedDTO) => {
                 this._search.onSearchBoxChange(true, false, false);
                 if (this._search.inSearch) {
                     // this._c.loadAllButton.classList.remove("unfocused");
@@ -444,8 +444,8 @@ export abstract class PaginatedList implements PageEventBindable {
     };
 
     // Loads the next page. If "loadAll", all pages will be loaded until the last is reached.
-    public abstract loadMore: (loadAll?: boolean, callback?: (resp?: paginatedDTO) => void) => void;
-    protected _loadMore = (loadAll: boolean = false, callback?: (resp: paginatedDTO) => void) => {
+    public abstract loadMore: (loadAll?: boolean, callback?: (resp?: PaginatedDTO) => void) => void;
+    protected _loadMore = (loadAll: boolean = false, callback?: (resp: PaginatedDTO) => void) => {
         this._c.loadMoreButtons.forEach((v) => (v.disabled = true));
         const timeout = setTimeout(() => {
             this._c.loadMoreButtons.forEach((v) => (v.disabled = false));
@@ -456,14 +456,14 @@ export abstract class PaginatedList implements PageEventBindable {
             this._c.itemsPerPage,
             this._page,
             this._c.appendNewItems,
-            (resp: paginatedDTO) => {
+            (resp: PaginatedDTO) => {
                 // Check before setting this.lastPage so we have a chance to cancel the timeout.
                 if (resp.last_page) {
                     clearTimeout(timeout);
                     this._c.loadAllButtons.forEach((v) => removeLoader(v));
                 }
             },
-            (resp: paginatedDTO) => {
+            (resp: PaginatedDTO) => {
                 if (this._search.inSearch || loadAll) {
                     if (this.lastPage) {
                         loadAll = false;
@@ -481,8 +481,8 @@ export abstract class PaginatedList implements PageEventBindable {
         );
     };
 
-    public abstract loadAll: (callback?: (resp?: paginatedDTO) => void) => void;
-    protected _loadAll = (callback?: (resp?: paginatedDTO) => void) => {
+    public abstract loadAll: (callback?: (resp?: PaginatedDTO) => void) => void;
+    protected _loadAll = (callback?: (resp?: PaginatedDTO) => void) => {
         this._c.loadAllButtons.forEach((v) => {
             addLoader(v, true);
         });

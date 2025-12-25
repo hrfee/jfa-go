@@ -1,25 +1,18 @@
-export interface Page {
-    name: string;
-    title: string;
-    url: string;
-    show: () => boolean;
-    hide: () => boolean;
-    shouldSkip: () => boolean;
-    index?: number;
-}
-
 export interface PageConfig {
     hideOthersOnPageShow: boolean;
     defaultName: string;
     defaultTitle: string;
 }
 
-export class PageManager {
+export class PageManager implements Pages {
     pages: Map<string, Page>;
     pageList: string[];
     hideOthers: boolean;
     defaultName: string = "";
     defaultTitle: string = "";
+
+    private _listeners: Map<string, { params: string[]; func: (qp: URLSearchParams) => void }> = new Map();
+    private _previousParams = new URLSearchParams();
 
     private _overridePushState = () => {
         const pushState = window.history.pushState;
@@ -32,6 +25,8 @@ export class PageManager {
     };
 
     private _onpopstate = (event: PopStateEvent) => {
+        const prevParams = this._previousParams;
+        this._previousParams = new URLSearchParams(window.location.search);
         let name = event.state;
         if (name == null) {
             // Attempt to use hash from URL, if it isn't there, try the last part of the URL.
@@ -47,6 +42,14 @@ export class PageManager {
         let success = this.pages.get(name).show();
         if (!success) {
             return;
+        }
+        if (this._listeners.has(name)) {
+            for (let qp of this._listeners.get(name).params) {
+                if (prevParams.get(qp) != this._previousParams.get(qp)) {
+                    this._listeners.get(name).func(this._previousParams);
+                    break;
+                }
+            }
         }
         if (!this.hideOthers) {
             return;
@@ -114,5 +117,18 @@ export class PageManager {
             shouldSkip = p.shouldSkip();
         }
         this.loadPage(p);
+    }
+
+    // FIXME: Make PageManager global.
+
+    // registerParamListener allows registering a listener which will be called when one or many of the given query param names are changed. It will only be called once per navigation.
+    registerParamListener(pageName: string, func: (qp: URLSearchParams) => void, ...qps: string[]) {
+        const p: { params: string[]; func: (qp: URLSearchParams) => void } = this._listeners.get(pageName) || {
+            params: [],
+            func: null,
+        };
+        if (func) p.func = func;
+        p.params.push(...qps);
+        this._listeners.set(pageName, p);
     }
 }

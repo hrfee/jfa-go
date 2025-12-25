@@ -940,7 +940,7 @@ class User extends TableRow implements UserDTO, SearchableItem {
     };
 }
 
-interface UsersDTO extends paginatedDTO {
+interface UsersDTO extends PaginatedDTO {
     users: UserDTO[];
 }
 
@@ -1054,9 +1054,8 @@ export class accountsList extends PaginatedList implements Navigatable, AsTab {
     };
 
     private _inDetails: boolean = false;
-    details(username: string, jfId: string) {
-        this.unbindPageEvents();
-        console.debug("Loading details for ", username, jfId);
+    details(jfId?: string) {
+        if (!jfId) jfId = this.users.keys().next().value;
         this._details.load(
             this.users.get(jfId),
             () => {
@@ -1066,16 +1065,27 @@ export class accountsList extends PaginatedList implements Navigatable, AsTab {
                 this.processSelectedAccounts();
                 this._table.classList.add("unfocused");
                 this._details.hidden = false;
+
+                const url = new URL(window.location.href);
+                url.searchParams.set("details", jfId);
+                window.history.pushState(null, "", url.toString());
             },
-            () => {
-                this._inDetails = false;
-                this.processSelectedAccounts();
-                this._details.hidden = true;
-                this._table.classList.remove("unfocused");
-                this.bindPageEvents();
-            },
+            this.closeDetails,
         );
     }
+
+    closeDetails = () => {
+        if (!this._inDetails) return;
+        this._inDetails = false;
+        this.processSelectedAccounts();
+        this._details.hidden = true;
+        this._table.classList.remove("unfocused");
+        this.bindPageEvents();
+
+        const url = new URL(window.location.href);
+        url.searchParams.delete("details");
+        window.history.pushState(null, "", url.toString());
+    };
 
     constructor() {
         super({
@@ -1095,7 +1105,7 @@ export class accountsList extends PaginatedList implements Navigatable, AsTab {
             getPageEndpoint: "/users",
             itemsPerPage: 40,
             maxItemsLoadedForSearch: 200,
-            appendNewItems: (resp: paginatedDTO) => {
+            appendNewItems: (resp: PaginatedDTO) => {
                 for (let u of (resp as UsersDTO).users || []) {
                     if (this.users.has(u.id)) {
                         this.users.get(u.id).update(u);
@@ -1110,7 +1120,7 @@ export class accountsList extends PaginatedList implements Navigatable, AsTab {
                     this._search.ascending,
                 );
             },
-            replaceWithNewItems: (resp: paginatedDTO) => {
+            replaceWithNewItems: (resp: PaginatedDTO) => {
                 let accountsOnDOM = new Map<string, boolean>();
 
                 for (let id of this.users.keys()) {
@@ -1161,6 +1171,7 @@ export class accountsList extends PaginatedList implements Navigatable, AsTab {
             clearSearchButtonSelector: ".accounts-search-clear",
             serverSearchButtonSelector: ".accounts-search-server",
             onSearchCallback: (_0: boolean, _1: boolean) => {
+                this.closeDetails();
                 this.processSelectedAccounts();
             },
             searchServer: null,
@@ -1418,10 +1429,14 @@ export class accountsList extends PaginatedList implements Navigatable, AsTab {
         this._search.showHideSearchOptionsHeader();
 
         this.registerURLListener();
-
+        // FIXME: registerParamListener once PageManager is global
+        //
         this._details = new UserInfo(document.getElementsByClassName("accounts-details")[0] as HTMLElement);
         document.addEventListener("accounts-show-details", (ev: ShowDetailsEvent) => {
-            this.details(ev.detail.username, ev.detail.id);
+            const url = new URL(window.location.href);
+            url.searchParams.set("details", ev.detail.id);
+            window.history.pushState(null, "", url.toString());
+            // this.details(ev.detail.id);
         });
 
         // Get rid of nasty CSS
@@ -1431,16 +1446,16 @@ export class accountsList extends PaginatedList implements Navigatable, AsTab {
         };
     }
 
-    reload = (callback?: (resp: paginatedDTO) => void) => {
+    reload = (callback?: (resp: PaginatedDTO) => void) => {
         this._reload(callback);
         this.loadTemplates();
     };
 
-    loadMore = (loadAll: boolean = false, callback?: (resp?: paginatedDTO) => void) => {
+    loadMore = (loadAll: boolean = false, callback?: (resp?: PaginatedDTO) => void) => {
         this._loadMore(loadAll, callback);
     };
 
-    loadAll = (callback?: (resp?: paginatedDTO) => void) => {
+    loadAll = (callback?: (resp?: PaginatedDTO) => void) => {
         this._loadAll(callback);
     };
 
@@ -1498,7 +1513,7 @@ export class accountsList extends PaginatedList implements Navigatable, AsTab {
         }
 
         if (next == SelectAllState.All) {
-            this.loadAll((_: paginatedDTO) => {
+            this.loadAll((_: PaginatedDTO) => {
                 if (!this.lastPage) {
                     // Pretend to live-select elements as they load.
                     this._counter.selected = this._counter.shown;
@@ -2457,35 +2472,47 @@ export class accountsList extends PaginatedList implements Navigatable, AsTab {
 
     focusAccount = (userID: string) => {
         console.debug("focusing user", userID);
-        this._c.searchBox.value = `id:"${userID}"`;
-        this._search.onSearchBoxChange();
-        this._search.onServerSearch();
+        this._search.setQueryParam(`id:"${userID}"`);
         if (userID in this.users) this.users.get(userID).focus();
     };
 
     public static readonly _accountURLEvent = "account-url";
-    registerURLListener = () =>
+    registerURLListener = () => {
         document.addEventListener(accountsList._accountURLEvent, (event: CustomEvent) => {
             this.focusAccount(event.detail);
         });
+        window.tabs.pages.registerParamListener(
+            this.tabName,
+            (_: URLSearchParams) => {
+                this.navigate();
+            },
+            "user",
+            "details",
+            "search",
+        );
+    };
 
     isURL = (url?: string) => {
         const urlParams = new URLSearchParams(url || window.location.search);
         const userID = urlParams.get("user");
-        return Boolean(userID) || this._search.isURL(url);
+        const details = urlParams.get("details");
+        return Boolean(userID) || Boolean(details) || this._search.isURL(url);
     };
 
     navigate = (url?: string) => {
         const urlParams = new URLSearchParams(url || window.location.search);
-        const userID = urlParams.get("user");
+        const details = urlParams.get("details");
+        const userID = details || urlParams.get("user");
         let search = urlParams.get("search") || "";
         if (userID) {
-            search = `id:${userID}" ` + search;
+            search = `id:"${userID}"`;
             urlParams.set("search", search);
             // Get rid of it, as it'll now be included in the "search" param anyway
             urlParams.delete("user");
         }
-        this._search.navigate(urlParams.toString());
+        this._search.navigate(urlParams.toString(), () => {
+            if (details) this.details(details);
+        });
     };
 }
 
@@ -2856,10 +2883,12 @@ class UserInfo extends PaginatedList {
         card.classList.add("unfocused");
         card.innerHTML = `
         <div class="flex flex-col gap-2">
-            <table class="table text-base leading-5">
-                <thead class="user-info-table-header"></thead>
-                <tbody class="user-info-row"></tbody>
-            </table>
+            <div class="overflow-x-scroll">
+                <table class="table text-base leading-5">
+                    <thead class="user-info-table-header"></thead>
+                    <tbody class="user-info-row"></tbody>
+                </table>
+            </div>
             <div class="flex flex-col gap-2">
                 <div class="jf-activity-source flex flex-row justify-between gap-2">
                     <h3 class="heading text-lg">${window.lang.strings("activityFromJF")}</h3>
@@ -2907,7 +2936,7 @@ class UserInfo extends PaginatedList {
             maxItemsLoadedForSearch: 200,
             disableSearch: true,
             hideButtonsOnLastPage: true,
-            appendNewItems: (resp: paginatedDTO) => {
+            appendNewItems: (resp: PaginatedDTO) => {
                 for (let entry of (resp as PaginatedActivityLogEntriesDTO).entries || []) {
                     if (this.entries.has("" + entry.Id)) {
                         this.entries.get("" + entry.Id).update(null, entry);
@@ -2918,7 +2947,7 @@ class UserInfo extends PaginatedList {
 
                 this._search.setOrdering(Array.from(this.entries.keys()), "Date", true);
             },
-            replaceWithNewItems: (resp: paginatedDTO) => {
+            replaceWithNewItems: (resp: PaginatedDTO) => {
                 let entriesOnDOM = new Map<string, boolean>();
 
                 for (let id of this.entries.keys()) {
@@ -2973,15 +3002,15 @@ class UserInfo extends PaginatedList {
         this.entries.set("" + entry.Id, new ActivityLogEntry(this.username, entry));
     };
 
-    loadMore = (loadAll: boolean = false, callback?: (resp?: paginatedDTO) => void) => {
+    loadMore = (loadAll: boolean = false, callback?: (resp?: PaginatedDTO) => void) => {
         this._loadMore(loadAll, callback);
     };
 
-    loadAll = (callback?: (resp?: paginatedDTO) => void) => {
+    loadAll = (callback?: (resp?: PaginatedDTO) => void) => {
         this._loadAll(callback);
     };
 
-    reload = (callback?: (resp: paginatedDTO) => void) => {
+    reload = (callback?: (resp: PaginatedDTO) => void) => {
         this._reload(callback);
     };
 

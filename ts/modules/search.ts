@@ -45,8 +45,8 @@ export interface SearchConfiguration {
     search?: HTMLInputElement;
     queries: { [field: string]: QueryType };
     setVisibility: (items: string[], visible: boolean, appendedItems: boolean) => void;
-    onSearchCallback: (newItems: boolean, loadAll: boolean, callback?: (resp: paginatedDTO) => void) => void;
-    searchServer: (params: PaginatedReqDTO, newSearch: boolean) => void;
+    onSearchCallback: (newItems: boolean, loadAll: boolean, callback?: (resp: PaginatedDTO) => void) => void;
+    searchServer: (params: PaginatedReqDTO, newSearch: boolean, then?: () => void) => void;
     clearServerSearch: () => void;
     loadMore?: () => void;
 }
@@ -556,7 +556,7 @@ export class Search implements Navigatable {
         newItems: boolean = false,
         appendedItems: boolean = false,
         loadAll: boolean = false,
-        callback?: (resp: paginatedDTO) => void,
+        callback?: (resp: PaginatedDTO) => void,
     ) => {
         const query = this._c.search.value;
         if (!query) {
@@ -694,15 +694,15 @@ export class Search implements Navigatable {
         this._c.filterList.appendChild(filterListContainer);
     };
 
-    onServerSearch = () => {
+    onServerSearch = (then?: () => void) => {
         const newServerSearch = !this.inServerSearch;
         this.inServerSearch = true;
-        this.setQueryParam();
-        this.searchServer(newServerSearch);
+        // this.setQueryParam();
+        this.searchServer(newServerSearch, then);
     };
 
-    searchServer = (newServerSearch: boolean) => {
-        this._c.searchServer(this.serverSearchParams(this._searchTerms, this._queries), newServerSearch);
+    searchServer = (newServerSearch: boolean, then?: () => void) => {
+        this._c.searchServer(this.serverSearchParams(this._searchTerms, this._queries), newServerSearch, then);
     };
 
     serverSearchParams = (searchTerms: string[], queries: Query[]): PaginatedReqDTO => {
@@ -721,13 +721,25 @@ export class Search implements Navigatable {
         return req;
     };
 
-    // setQueryParam sets the ?search query param to the current searchbox content.
-    setQueryParam = () => {
+    // setQueryParam sets the ?search query param to the current searchbox content,
+    // or value if given. If everything is set up correctly, this should trigger a search when it is
+    // set to a new value.
+    setQueryParam = (value?: string) => {
+        let triggerManually = false;
+        if (value === undefined || value == null) value = this._c.search.value;
         const url = new URL(window.location.href);
         // FIXME: do better and make someone else clear this
-        url.searchParams.delete("user");
-        url.searchParams.set("search", this._c.search.value);
+        if (value.trim()) {
+            url.searchParams.delete("user");
+            url.searchParams.set("search", value);
+        } else {
+            // If the query param is already blank, no change will mean no call to navigate()
+            triggerManually = !url.searchParams.has("search");
+            url.searchParams.delete("search");
+        }
+        console.log("pushing", url.toString());
         window.history.pushState(null, "", url.toString());
+        if (triggerManually) this.navigate();
     };
 
     setServerSearchButtonsDisabled = (disabled: boolean) => {
@@ -740,12 +752,15 @@ export class Search implements Navigatable {
         return Boolean(searchContent);
     };
 
-    navigate = (url?: string) => {
+    // navigate pulls the current "search" query param, puts it in the search box and searches it.
+    navigate = (url?: string, then?: () => void) => {
+        (window as any).s = this;
         const urlParams = new URLSearchParams(url || window.location.search);
-        const searchContent = urlParams.get("search");
+        const searchContent = urlParams.get("search") || "";
+        console.log("navigate!, setting search box to ", searchContent);
         this._c.search.value = searchContent;
         this.onSearchBoxChange();
-        this.onServerSearch();
+        this.onServerSearch(then);
     };
 
     constructor(c: SearchConfiguration) {
@@ -761,7 +776,7 @@ export class Search implements Navigatable {
         };
         this._c.search.addEventListener("keyup", (ev: KeyboardEvent) => {
             if (ev.key == "Enter") {
-                this.onServerSearch();
+                this.setQueryParam();
             }
         });
 
@@ -771,9 +786,8 @@ export class Search implements Navigatable {
             ) as Array<HTMLSpanElement>;
             for (let b of clearSearchButtons) {
                 b.addEventListener("click", () => {
-                    this._c.search.value = "";
                     this.inServerSearch = false;
-                    this.onSearchBoxChange();
+                    this.setQueryParam("");
                 });
             }
         }
@@ -783,7 +797,7 @@ export class Search implements Navigatable {
             : [];
         for (let b of this._serverSearchButtons) {
             b.addEventListener("click", () => {
-                this.onServerSearch();
+                this.setQueryParam();
             });
         }
     }

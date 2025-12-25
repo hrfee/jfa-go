@@ -1,4 +1,4 @@
-import { PageManager, Page } from "../modules/pages.js";
+import { PageManager } from "../modules/pages.js";
 
 export function isPageEventBindable(object: any): object is PageEventBindable {
     return "bindPageEvents" in object;
@@ -8,15 +8,7 @@ export function isNavigatable(object: any): object is Navigatable {
     return "isURL" in object && "navigate" in object;
 }
 
-export interface Tab {
-    page: Page;
-    tabEl: HTMLDivElement;
-    buttonEl: HTMLSpanElement;
-    preFunc?: () => void;
-    postFunc?: () => void;
-}
-
-export class Tabs implements Tabs {
+export class TabManager implements TabManager {
     private _current: string = "";
     private _baseOffset = -1;
     tabs: Map<string, Tab>;
