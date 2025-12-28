@@ -30,6 +30,7 @@ var messagesEnabled = false
 var telegramEnabled = false
 var discordEnabled = false
 var matrixEnabled = false
+var stripeEnabled = false
 
 // URL subpaths. Ignore the "Current" field, it's populated when in copies of the struct used for page templating.
 // IMPORTANT: When linking straight to a page, rather than appending further to the URL (like accessing an API route), append a /.
@@ -342,6 +343,8 @@ func NewConfig(configPathOrContents any, dataPath string, logs LoggerSet) (*Conf
 	if !emailEnabled && !telegramEnabled && !discordEnabled && !matrixEnabled {
 		messagesEnabled = false
 	}
+
+	stripeEnabled = config.Section("stripe").Key("enabled").MustBool(true)
 
 	if proxyEnabled := config.Section("advanced").Key("proxy").MustBool(false); proxyEnabled {
 		config.proxyConfig = &easyproxy.ProxyConfig{}

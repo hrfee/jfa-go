@@ -754,6 +754,18 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 		return
 	}
 
+	// Security: If invite is paid, ensure it matches the browser that paid for it.
+	if invite.PaymentStatus == "paid" {
+		cookie, err := gc.Cookie("jfa_payment_lock")
+		if err != nil || cookie != invite.Code {
+			app.info.Printf("Blocked access to paid invite %s due to missing/mismatching payment cookie.", invite.Code)
+			app.gcHTML(gc, 403, "invalidCode.html", FormPage, lang, gin.H{
+				"contactMessage": "This invite has been paid for by another browser session. To prevent theft, paid invites are locked to the device that made the payment.",
+			})
+			return
+		}
+	}
+
 	if key := gc.Query("key"); key != "" && app.config.Section("email_confirmation").Key("enabled").MustBool(false) {
 		app.NewUserFromConfirmationKey(invite, key, lang, gc)
 		return
@@ -812,6 +824,11 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 		"userPageEnabled":   app.config.Section("user_page").Key("enabled").MustBool(false),
 		"userPageAddress":   userPageAddress,
 		"fromUser":          fromUser,
+		"price":             invite.PriceAmount,
+		"currency":          strings.ToUpper(invite.PriceCurrency),
+		"requiredPayment":   invite.RequiredPayment,
+		"paid":              invite.PaymentStatus == "paid",
+		"stripeEnabled":     stripeEnabled,
 	}
 	if telegram {
 		data["telegramPIN"] = app.telegram.NewAuthToken()

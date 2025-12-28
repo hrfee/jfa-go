@@ -70,6 +70,8 @@ type generateInviteDTO struct {
 	Profile       string `json:"profile" example:"DefaultProfile"`      // Name of profile to apply on this invite
 	Label         string `json:"label" example:"For Friends"`           // Optional label for the invite
 	UserLabel     string `json:"user_label,omitempty" example:"Friend"` // Label to apply to users created w/ this invite.
+	Price         int64  `json:"price,omitempty"`                       // Price in cents
+	Currency      string `json:"currency,omitempty"`                    // Currency code (e.g., "usd")
 }
 
 type SendInviteDTO struct {
@@ -117,9 +119,11 @@ type inviteDTO struct {
 	Created       int64            `json:"created" example:"1617737207510"`    // Date of creation
 	UsedBy        map[string]int64 `json:"used_by,omitempty"`                  // Users who have used this invite mapped to their creation time in Epoch/Unix time
 	NoLimit       bool             `json:"no_limit"`                           // If true, invite can be used any number of times
-	RemainingUses int              `json:"remaining_uses,omitempty"`           // Remaining number of uses (if applicable)
-	SendTo        string           `json:"send_to,omitempty"`                  // DEPRECATED Email/Discord username the invite was sent to (if applicable)
-	SentTo        SentToList       `json:"sent_to,omitempty"`                  // Email/Discord usernames attempts were made to send this invite to, and a failure reason if failed.
+	RemainingUses int              `json:"remaining_uses"`
+	Price         int64            `json:"price,omitempty"`
+	Currency      string           `json:"currency,omitempty"`
+	SendTo        string           `json:"send_to,omitempty"`
+	SentTo        SentToList       `json:"sent_to,omitempty"` // Email/Discord usernames attempts were made to send this invite to, and a failure reason if failed.
 }
 
 type EditableInviteDTO struct {

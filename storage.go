@@ -810,6 +810,11 @@ type Invite struct {
 	IsReferral         bool                       `json:"is_referral" badgerhold:"index"`
 	ReferrerJellyfinID string                     `json:"referrer_id"`
 	UseReferralExpiry  bool                       `json:"use_referral_expiry"`
+	RequiredPayment    bool                       `json:"required_payment"`
+	PriceAmount        int64                      `json:"price_amount"`
+	PriceCurrency      string                     `json:"price_currency"`
+	PaymentID          string                     `json:"payment_id"`
+	PaymentStatus      string                     `json:"payment_status"`
 }
 
 func (invite Invite) Source() (ActivitySource, string) {

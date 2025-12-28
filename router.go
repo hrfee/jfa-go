@@ -172,6 +172,10 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 			router.POST(p+PAGES.Form+"/:invCode/matrix/user", app.MatrixSendPIN)
 			router.POST(p+"/users/matrix", app.MatrixConnect)
 		}
+		if stripeEnabled {
+			router.POST(p+"/stripe/checkout/:code", app.PostStripeCheckout)
+			router.POST(p+"/stripe/events", app.StripeWebhook)
+		}
 		if userPageEnabled {
 			router.GET(p+PAGES.MyAccount, app.MyUserPage)
 			router.GET(p+PAGES.MyAccount+"/password/reset", app.MyUserPage)
