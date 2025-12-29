@@ -195,8 +195,8 @@ func linkExistingOmbiDiscordTelegram(app *appContext) error {
 			continue
 		}
 		_, err = app.ombi.SetNotificationPrefs(ombiUser, []ombi.NotificationPref{
-			{ombi.NotifAgentDiscord, ombiUser["id"].(string), ids[0], true},
-			{ombi.NotifAgentTelegram, ombiUser["id"].(string), ids[1], true},
+			{Agent: ombi.NotifAgentDiscord, UserID: ombiUser["id"].(string), Value: ids[0], Enabled: true},
+			{Agent: ombi.NotifAgentTelegram, UserID: ombiUser["id"].(string), Value: ids[1], Enabled: true},
 		})
 		if err != nil {
 			app.debug.Printf("Failed to set prefs for Ombi user \"%s\": %v", ombiUser["userName"].(string), err)
