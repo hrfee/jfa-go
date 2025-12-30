@@ -899,3 +899,13 @@ func (app *appContext) NoRouteHandler(gc *gin.Context) {
 		"contactMessage": app.config.Section("ui").Key("contact_message").String(),
 	})
 }
+
+// StorePage serves the public store page
+func (app *appContext) StorePage(gc *gin.Context) {
+	app.info.Println("Serving Store Page")
+	lang := app.storage.lang.chosenUserLang
+	app.gcHTML(gc, 200, "store.html", OtherPage, lang, gin.H{
+		"strings": app.storage.lang.User[lang].Strings,
+		"urlBase": app.config.Section("ui").Key("jfa_url").String(),
+	})
+}

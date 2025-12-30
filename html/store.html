@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="{{ .shortLang }}" dir="{{ .pageDirection }}" class="{{ .cssClass }}">
+
+<head>
+    {{ template "header.txt" . }}
+    <title>{{ .strings.storeTitle }}</title>
+</head>
+
+<body class="max-w-full overflow-x-hidden section">
+    <div class="page-container m-2 lg:my-20 lg:mx-64 flex flex-col gap-4">
+        {{ template "lang-select.html" . }}
+
+        <div class="card dark:~d_neutral @low">
+            <div class="flex flex-col md:flex-row gap-3 items-baseline mb-2">
+                <span class="heading">{{ .strings.storeHeader }}</span>
+                <span class="subheading">{{ .strings.storeSubheader }}</span>
+            </div>
+
+            <div class="flex flex-col md:flex-row gap-3">
+                <div class="flex-1">
+                    <div class="card dark:~d_neutral @low">
+                        <span class="heading">Standard Access</span>
+                        <p class="content mb-4">$5.00 / one-time</p>
+
+                        <div class="card ~neutral @low mb-4">
+                            <ul>
+                                <li><span class="badge lg ~positive"><i class="ri-check-line"></i></span> <span
+                                        class="content">Instant Access</span></li>
+                                <li><span class="badge lg ~positive"><i class="ri-check-line"></i></span> <span
+                                        class="content">No Expiration</span></li>
+                                <li><span class="badge lg ~positive"><i class="ri-check-line"></i></span> <span
+                                        class="content">Full Library</span></li>
+                            </ul>
+                        </div>
+
+                        <form id="purchase-form" onsubmit="event.preventDefault(); initiateCheckout('Standard');">
+                            <label class="label supra">Email Address</label>
+                            <input type="email" id="email-input" class="input ~neutral @high mt-2 mb-4"
+                                placeholder="you@example.com" required>
+                            <p class="text-xs text-red-400 hidden mb-2" id="email-error">Please enter a valid email.</p>
+
+                            <label>
+                                <button type="submit" class="unfocused"></button>
+                                <span class="button ~urge @low full-width center supra submit"
+                                    onclick="initiateCheckout('Standard')">Pay & Generate Invite</span>
+                            </label>
+                            <p class="content text-center mt-2 opacity-75">Invites are emailed immediately after
+                                payment.</p>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function initiateCheckout(plan) {
+            const emailInput = document.getElementById('email-input');
+            const email = emailInput.value.trim();
+            const errorMsg = document.getElementById('email-error');
+
+            if (!email || !email.includes('@')) {
+                errorMsg.classList.remove('hidden');
+                emailInput.focus();
+                return;
+            }
+            errorMsg.classList.add('hidden');
+
+            const btn = document.querySelector('.button.submit');
+            const originalText = btn.innerText;
+            btn.innerText = "Processing...";
+            btn.style.pointerEvents = "none";
+
+            try {
+                const response = await fetch('{{ .urlBase }}/stripe/create-checkout', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email, plan: plan })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Network response was not ok');
+                }
+
+                if (data.response) {
+                    window.location.href = data.response;
+                } else {
+                    throw new Error('No redirect URL received');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Something went wrong: ' + error.message);
+                btn.innerText = originalText;
+                btn.style.pointerEvents = "auto";
+            }
+        }
+    </script>
+</body>
+
+</html>
