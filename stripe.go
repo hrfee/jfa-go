@@ -14,7 +14,7 @@ func InitStripe(apiKey string) {
 	stripe.Key = apiKey
 }
 
-func CreateCheckoutSession(inviteCode string, amount int64, currency, successURL, cancelURL string, metadata map[string]string) (string, error) {
+func CreateCheckoutSession(inviteCode string, amount int64, currency, successURL, cancelURL string, metadata map[string]string, interval string) (string, error) {
 	params := &stripe.CheckoutSessionParams{
 		PaymentMethodTypes: stripe.StringSlice([]string{
 			"card",
@@ -31,10 +31,18 @@ func CreateCheckoutSession(inviteCode string, amount int64, currency, successURL
 				Quantity: stripe.Int64(1),
 			},
 		},
-		Mode:              stripe.String(string(stripe.CheckoutSessionModePayment)),
 		SuccessURL:        stripe.String(successURL),
 		CancelURL:         stripe.String(cancelURL),
 		ClientReferenceID: stripe.String(inviteCode),
+	}
+
+	if interval != "" {
+		params.Mode = stripe.String(string(stripe.CheckoutSessionModeSubscription))
+		params.LineItems[0].PriceData.Recurring = &stripe.CheckoutSessionLineItemPriceDataRecurringParams{
+			Interval: stripe.String(interval),
+		}
+	} else {
+		params.Mode = stripe.String(string(stripe.CheckoutSessionModePayment))
 	}
 
 	if metadata != nil {
@@ -49,42 +57,28 @@ func CreateCheckoutSession(inviteCode string, amount int64, currency, successURL
 	return s.URL, nil
 }
 
-func HandleWebhook(payload []byte, signature string, secret string, verifySignature bool) (string, map[string]string, error) {
+func HandleWebhook(payload []byte, signature string, secret string, verifySignature bool) (*stripe.Event, error) {
 	var event stripe.Event
 	var err error
 
 	if verifySignature {
 		event, err = webhook.ConstructEvent(payload, signature, secret)
 		if err != nil {
-			return "", nil, fmt.Errorf("bad_signature: %w", err)
+			return nil, fmt.Errorf("bad_signature: %w", err)
 		}
 	} else {
 		// Bypass Signature: Use explicit API Call-Back to verify event authenticity.
-		// 1. Unmarshal payload just to get the Event ID
 		var untrustedEvent stripe.Event
 		if err := json.Unmarshal(payload, &untrustedEvent); err != nil {
-			return "", nil, fmt.Errorf("webhook_json_parse_error: %w", err)
+			return nil, fmt.Errorf("webhook_json_parse_error: %w", err)
 		}
 
-		// 2. Call Stripe API to get the authoritative Event object
-		// This protects against spoofed payloads since we trust only what Stripe's API returns.
 		eventPtr, err := stripeEvent.Get(untrustedEvent.ID, nil)
 		if err != nil {
-			return "", nil, fmt.Errorf("api_verification_failed: %w", err)
+			return nil, fmt.Errorf("api_verification_failed: %w", err)
 		}
 		event = *eventPtr
 	}
 
-	if event.Type == "checkout.session.completed" {
-		var session stripe.CheckoutSession
-		err := json.Unmarshal(event.Data.Raw, &session)
-		if err != nil {
-			return "", nil, fmt.Errorf("parse_error")
-		}
-
-		// Return both ClientReferenceID (for old flow) AND Metadata (for new flow)
-		return session.ClientReferenceID, session.Metadata, nil
-	}
-
-	return "", nil, nil
+	return &event, nil
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -9,6 +10,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/stripe/stripe-go/v79"
 )
 
 // @Summary Create a checkout session for an existing invite (Pay-to-Unlock).
@@ -39,7 +41,7 @@ func (app *appContext) PostStripeCheckout(gc *gin.Context) {
 	cancelURL := fmt.Sprintf("%s/invite/%s?canceled=payment", baseURL, code)
 
 	// Pass nil metadata for legacy flow
-	url, err := CreateCheckoutSession(code, inv.PriceAmount, inv.PriceCurrency, successURL, cancelURL, nil)
+	url, err := CreateCheckoutSession(code, inv.PriceAmount, inv.PriceCurrency, successURL, cancelURL, nil, "")
 	if err != nil {
 		app.err.Printf("Failed to create checkout session: %v", err)
 		respond(500, "Failed to create checkout session", gc)
@@ -73,17 +75,20 @@ func (app *appContext) PostStripeCreateCheckout(gc *gin.Context) {
 		return
 	}
 
-	// MVP Pricing Configuration (Hardcoded for now as per plan/task)
-	// MVP Pricing Configuration - Standard Plan Only
-	// Hardcoded for now as per plan/task
-	// Default to config or usd
-	var priceAmount int64 = 500 // $5.00
+	// Pricing Logic
+	var priceAmount int64
+	var interval string
 	var profileName = "Default"
 	var currency = app.config.Section("stripe").Key("price_currency").MustString("usd")
 
-	// Ensure we only process "Standard" plans (or empty which defaults to Standard)
-	if req.Plan != "Standard" && req.Plan != "" {
+	if req.Plan == "Monthly" {
+		priceAmount = 200 // $2.00
+		interval = "month"
+	} else {
+		// Default to Standard
 		req.Plan = "Standard"
+		priceAmount = 500 // $5.00
+		interval = ""     // One-time
 	}
 
 	// Generate a temporary "Reference ID" for the log (not the invite code yet)
@@ -100,7 +105,7 @@ func (app *appContext) PostStripeCreateCheckout(gc *gin.Context) {
 		"profile":      profileName,
 	}
 
-	url, err := CreateCheckoutSession(refID, priceAmount, currency, successURL, cancelURL, metadata)
+	url, err := CreateCheckoutSession(refID, priceAmount, currency, successURL, cancelURL, metadata, interval)
 	if err != nil {
 		app.err.Printf("Failed to create checkout session: %v", err)
 		respond(500, "Failed to create checkout session", gc)
@@ -135,78 +140,135 @@ func (app *appContext) StripeWebhook(gc *gin.Context) {
 		app.info.Printf("DEBUG: Signature verification DISABLED. Verifying event via Stripe API.")
 	}
 
-	refID, metadata, err := HandleWebhook(payload, sigHeader, webhookSecret, verifySignature)
+	event, err := HandleWebhook(payload, sigHeader, webhookSecret, verifySignature)
 	if err != nil {
 		app.err.Printf("Webhook error: %v", err)
 		gc.AbortWithStatus(400)
 		return
 	}
 
-	// Check for metadata first (New Flow)
-	if targetEmail, ok := metadata["target_email"]; ok {
-		app.info.Printf("Payment received for NEW invite (Plan: %s) to %s", metadata["plan"], targetEmail)
-
-		// Generate Invite
-		inviteCode := GenerateInviteCode()
-		profile := metadata["profile"]
-		if profile == "" {
-			profile = "Default"
-		}
-
-		// Ensure profile exists, fallback to default if not
-		if _, ok := app.storage.GetProfileKey(profile); !ok {
-			app.debug.Printf("Profile %s not found for purchase, falling back to Default", profile)
-			profile = "Default"
-		}
-
-		invite := Invite{
-			Code:          inviteCode,
-			Created:       time.Now(),
-			Label:         "Purchased by " + targetEmail,
-			UserLabel:     "Purchased via Store",
-			RemainingUses: 1,
-			Profile:       profile,
-			SendTo:        targetEmail,
-			ValidTill:     time.Now().AddDate(0, 0, 1), // Default 1 day expiry to claim? Or no expiry? Let's say 30 days.
-		}
-
-		// Set sensible default expiry for purchased invites
-		invite.ValidTill = time.Now().AddDate(0, 1, 0) // 1 Month to redeem
-
-		app.storage.SetInvitesKey(inviteCode, invite)
-
-		// LOG THE CODE for testing purposes (in case email fails)
-		app.info.Printf("SUCCESS: Generated Invite Code %s for %s", inviteCode, targetEmail)
-
-		// Send Email
-		// We re-use logic similar to api-invites.go's send logic or use app.email.constructInvite directly
-		// app.sendInvite is likely a helper in api-invites.go, which is package main, so accessible.
-		// I need to check api-invites.go for the exact signature of app.sendInvite or if it is exported.
-		// It is lowercase `sendInvite` in `api-invites.go`? I need to check.
-		// If it's private and I'm in the same package `main`, I can call it.
-		// Let's assume I can call it.
-
-		// Construct a dummy sendInviteDTO to reuse that function if possible
-		// OR just use app.email directly which is safer.
-		msg, err := app.email.constructInvite(&invite, false)
+	switch event.Type {
+	case "checkout.session.completed":
+		var session stripe.CheckoutSession
+		err := json.Unmarshal(event.Data.Raw, &session)
 		if err != nil {
-			app.err.Printf("Failed to construct invite email for %s: %v", targetEmail, err)
-		} else {
-			err = app.email.send(msg, targetEmail)
-			if err != nil {
-				app.err.Printf("Failed to send invite email to %s: %v", targetEmail, err)
+			app.err.Printf("Error parsing webhook JSON: %v", err)
+			return
+		}
+
+		refID := session.ClientReferenceID
+		metadata := session.Metadata
+
+		// Check for metadata first (New Flow)
+		if targetEmail, ok := metadata["target_email"]; ok {
+			// [New Flow Logic: Create Invite]
+			app.info.Printf("Payment received for NEW invite (Plan: %s) to %s", metadata["plan"], targetEmail)
+
+			inviteCode := GenerateInviteCode()
+			profile := metadata["profile"]
+			if profile == "" {
+				profile = "Default"
+			}
+			if _, ok := app.storage.GetProfileKey(profile); !ok {
+				app.debug.Printf("Profile %s not found for purchase, falling back to Default", profile)
+				profile = "Default"
+			}
+
+			invite := Invite{
+				Code:          inviteCode,
+				Created:       time.Now(),
+				Label:         "Purchased by " + targetEmail,
+				UserLabel:     "Purchased via Store",
+				RemainingUses: 1,
+				Profile:       profile,
+				SendTo:        targetEmail,
+			}
+
+			if metadata["plan"] == "Monthly" {
+				invite.ValidTill = time.Now().AddDate(0, 1, 0) // 1 Month to redeem
+				invite.UserExpiry = true
+				invite.UserMonths = 1
 			} else {
-				app.info.Printf("Sent purchased invite %s to %s", inviteCode, targetEmail)
+				invite.ValidTill = time.Now().AddDate(10, 0, 0)
+				invite.UserExpiry = false
+			}
+
+			app.storage.SetInvitesKey(inviteCode, invite)
+			app.info.Printf("SUCCESS: Generated Invite Code %s for %s", inviteCode, targetEmail)
+
+			msg, err := app.email.constructInvite(&invite, false)
+			if err != nil {
+				app.err.Printf("Failed to construct invite email for %s: %v", targetEmail, err)
+			} else {
+				err = app.email.send(msg, targetEmail)
+				if err != nil {
+					app.err.Printf("Failed to send invite email to %s: %v", targetEmail, err)
+				} else {
+					app.info.Printf("Sent purchased invite %s to %s", inviteCode, targetEmail)
+				}
+			}
+
+		} else if refID != "" {
+			// [Old Flow Logic: Pay to Unlock]
+			app.info.Printf("Payment received for EXISTING invite: %s", refID)
+			inv, ok := app.storage.GetInvitesKey(refID)
+			if ok {
+				inv.PaymentStatus = "paid"
+				app.storage.SetInvitesKey(refID, inv)
 			}
 		}
 
-	} else if refID != "" {
-		// Old Flow: Pay to Unlock
-		app.info.Printf("Payment received for EXISTING invite: %s", refID)
-		inv, ok := app.storage.GetInvitesKey(refID)
-		if ok {
-			inv.PaymentStatus = "paid"
-			app.storage.SetInvitesKey(refID, inv)
+	case "invoice.payment_succeeded":
+		var invoice stripe.Invoice
+		err := json.Unmarshal(event.Data.Raw, &invoice)
+		if err != nil {
+			app.err.Printf("Error parsing webhook JSON: %v", err)
+			return
+		}
+
+		// Ensure this is a subscription renewal
+		if invoice.BillingReason == stripe.InvoiceBillingReasonSubscriptionCycle {
+			if invoice.CustomerEmail == "" {
+				app.err.Printf("Invoice %s has no customer email, cannot extend user expiry", invoice.ID)
+				return
+			}
+			email := invoice.CustomerEmail
+			app.info.Printf("Subscription RENEWAL received for %s", email)
+
+			// Find Jellyfin User by Email
+			// We iterate because we don't have a direct Email -> UserID index easily exposed here
+			// But app.storage.GetEmailsKey(userID) gives email...
+			// Wait, app.EmailAddressExists(addr) exists?
+			// app.storage.GetEmails() returns all.
+
+			// Ideally we'd have a helper, but let's just loop over emails for now as it's MVP
+			var userID string
+			for _, em := range app.storage.GetEmails() {
+				if strings.EqualFold(em.Addr, email) {
+					userID = em.JellyfinID
+					break
+				}
+			}
+
+			if userID == "" {
+				app.err.Printf("Could not find user with email %s to extend expiry", email)
+				return
+			}
+
+			// Extend User Expiry by 1 Month
+			expiry := time.Now()
+			userExpiry, ok := app.storage.GetUserExpiryKey(userID)
+			if ok {
+				expiry = userExpiry.Expiry
+			}
+			// If current expiry is in the past, start from NOW. If in future, add to it.
+			if expiry.Before(time.Now()) {
+				expiry = time.Now()
+			}
+			newExpiry := expiry.AddDate(0, 1, 0) // Add 1 Month
+
+			app.storage.SetUserExpiryKey(userID, UserExpiry{Expiry: newExpiry})
+			app.info.Printf("SUCCESS: Extended expiry for user %s (%s) to %s", userID, email, newExpiry)
 		}
 	}
 

@@ -40,3 +40,4 @@ traffic.dump
 config.ini_.bak
 .gitignore
 config.ini
+jfa-go
