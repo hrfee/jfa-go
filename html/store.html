@@ -16,71 +16,54 @@
                 <span class="subheading">{{ .strings.storeSubheader }}</span>
             </div>
 
-            <!-- Pricing Grid -->
-            <div class="flex flex-col md:flex-row gap-4 items-stretch">
+            <!-- Main Content Area -->
+            <div class="flex flex-col gap-6 items-center">
 
                 <!-- Monthly Plan -->
-                <div class="flex-1 w-full md:w-1/2">
-                    <div class="card dark:~d_neutral @low h-full flex flex-col justify-between">
-                        <div>
-                            <span class="heading">Monthly Access</span>
-                            <p class="content mb-4 text-2xl font-bold text-blue-400">$2.00 <span
-                                    class="text-sm opacity-75 font-normal">/ month</span></p>
-
-                            <div class="card ~neutral @low mb-4">
-                                <ul>
-                                    <li><span class="badge lg ~positive"><i class="ri-check-line"></i></span> <span
-                                            class="content">Instant Access</span></li>
-                                    <li><span class="badge lg ~warning"><i class="ri-time-line"></i></span> <span
-                                            class="content">Expires in 30 Days</span></li>
-                                    <li><span class="badge lg ~positive"><i class="ri-check-line"></i></span> <span
-                                            class="content">Full Library</span></li>
-                                </ul>
-                            </div>
-                        </div>
-
-                        <button class="button ~info @low full-width center supra submit"
-                            onclick="initiateCheckout('Monthly', this)">Subscribe Monthly</button>
-                    </div>
-                </div>
-
-                <!-- Standard Plan -->
-                <div class="flex-1 w-full md:w-1/2">
+                <div class="w-full max-w-md">
                     <div
-                        class="card dark:~d_neutral @low h-full flex flex-col justify-between border-2 border-blue-500/50">
-                        <div>
-                            <span class="heading flex items-center gap-2">Standard Access <span
-                                    class="badge sm ~positive">BEST VALUE</span></span>
-                            <p class="content mb-4 text-2xl font-bold text-blue-400">$5.00 <span
-                                    class="text-sm opacity-75 font-normal">/ one-time</span></p>
+                        class="card dark:~d_neutral @low flex flex-col items-center text-center p-8 shadow-lg border-2 border-blue-500/30">
+                        <span class="heading text-xl mb-2">Monthly Access</span>
+                        <p class="content mb-6 text-4xl font-bold text-blue-400">{{ .priceMonthly }} {{ .currency
+                            }}<span class="text-lg opacity-75 font-normal text-gray-500">/mo</span></p>
 
-                            <div class="card ~neutral @low mb-4">
-                                <ul>
-                                    <li><span class="badge lg ~positive"><i class="ri-check-line"></i></span> <span
-                                            class="content">Instant Access</span></li>
-                                    <li><span class="badge lg ~positive"><i class="ri-check-line"></i></span> <span
-                                            class="content">No Expiration</span></li>
-                                    <li><span class="badge lg ~positive"><i class="ri-check-line"></i></span> <span
-                                            class="content">Full Library</span></li>
-                                </ul>
-                            </div>
+                        <div class="w-full mb-8 text-left">
+                            <ul class="flex flex-col gap-3">
+                                <li class="flex items-center gap-3"><span class="badge lg ~positive rounded-full p-1"><i
+                                            class="ri-check-line"></i></span> <span class="content">Instant
+                                        Access</span></li>
+                                <li class="flex items-center gap-3"><span class="badge lg ~warning rounded-full p-1"><i
+                                            class="ri-time-line"></i></span> <span class="content">30 Day
+                                        Duration</span></li>
+                                <li class="flex items-center gap-3"><span class="badge lg ~positive rounded-full p-1"><i
+                                            class="ri-check-line"></i></span> <span class="content">Recurring
+                                        Billing</span></li>
+                            </ul>
                         </div>
-
-                        <button class="button ~urge @low full-width center supra submit"
-                            onclick="initiateCheckout('Standard', this)">Pay One-Time</button>
                     </div>
                 </div>
-            </div>
 
-            <!-- Shared Email Input Area -->
-            <div class="card ~neutral @low mt-4 p-4">
-                <label class="label supra">Your Email Address</label>
-                <input type="email" id="email-input" class="input ~neutral @high mt-2 w-full"
-                    placeholder="you@example.com" required>
-                <p class="text-xs text-red-500 hidden mt-1" id="email-error">Please enter a valid email address to
-                    receive your invite.</p>
-                <p class="content text-center mt-2 opacity-75 text-sm">Invites are emailed immediately after payment.
-                </p>
+                <div class="w-full max-w-md">
+                    <!-- Email Input Area -->
+                    <div class="card ~neutral @low p-6 shadow-md">
+                        <label class="label supra font-bold mb-2 block">Enter Your Email</label>
+                        <input type="email" id="email-input" class="input ~neutral @high w-full p-3 text-lg"
+                            placeholder="you@example.com" required>
+                        <p class="text-xs text-red-500 hidden mt-2 font-bold" id="email-error"><i
+                                class="ri-error-warning-line"></i> Please enter a valid email address.</p>
+                        <p class="content text-center mt-4 opacity-75 text-sm">Your invite code will be sent to this
+                            address.</p>
+
+                        <div class="mt-6">
+                            <button
+                                class="button ~info @low w-full justify-center p-4 text-lg font-bold shadow-md hover:shadow-lg transition-all"
+                                onclick="initiateCheckout('Monthly', this)">
+                                Proceed to Payment <i class="ri-arrow-right-line ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
         </div>

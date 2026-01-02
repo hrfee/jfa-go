@@ -905,7 +905,20 @@ func (app *appContext) StorePage(gc *gin.Context) {
 	app.info.Println("Serving Store Page")
 	lang := app.storage.lang.chosenUserLang
 	app.gcHTML(gc, 200, "store.html", OtherPage, lang, gin.H{
-		"strings": app.storage.lang.User[lang].Strings,
-		"urlBase": app.config.Section("ui").Key("jfa_url").String(),
+		"strings":       app.storage.lang.User[lang].Strings,
+		"urlBase":       app.config.Section("ui").Key("jfa_url").String(),
+		"priceStandard": fmt.Sprintf("%.2f", float64(app.config.Section("stripe").Key("price_standard").MustInt64(500))/100.0),
+		"priceMonthly":  fmt.Sprintf("%.2f", float64(app.config.Section("stripe").Key("price_monthly").MustInt64(200))/100.0),
+		"currency":      strings.ToUpper(app.config.Section("stripe").Key("price_currency").MustString("usd")),
+	})
+}
+
+// PaymentSuccessPage serves the dedicated payment success page
+func (app *appContext) PaymentSuccessPage(gc *gin.Context) {
+	app.info.Println("Serving Payment Success Page")
+	lang := app.storage.lang.chosenUserLang
+	app.gcHTML(gc, 200, "payment_success.html", OtherPage, lang, gin.H{
+		"strings":        app.storage.lang.User[lang].Strings,
+		"contactMessage": app.config.Section("ui").Key("contact_message").String(),
 	})
 }

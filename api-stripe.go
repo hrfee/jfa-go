@@ -76,19 +76,22 @@ func (app *appContext) PostStripeCreateCheckout(gc *gin.Context) {
 	}
 
 	// Pricing Logic
+	// Pricing Logic
 	var priceAmount int64
 	var interval string
 	var profileName = "Default"
 	var currency = app.config.Section("stripe").Key("price_currency").MustString("usd")
+	priceStandard := app.config.Section("stripe").Key("price_standard").MustInt64(500)
+	priceMonthly := app.config.Section("stripe").Key("price_monthly").MustInt64(200)
 
 	if req.Plan == "Monthly" {
-		priceAmount = 200 // $2.00
+		priceAmount = priceMonthly
 		interval = "month"
 	} else {
 		// Default to Standard
 		req.Plan = "Standard"
-		priceAmount = 500 // $5.00
-		interval = ""     // One-time
+		priceAmount = priceStandard // $5.00
+		interval = ""               // One-time
 	}
 
 	// Generate a temporary "Reference ID" for the log (not the invite code yet)
@@ -96,7 +99,7 @@ func (app *appContext) PostStripeCreateCheckout(gc *gin.Context) {
 
 	baseURL := ExternalURI(gc)
 	// Redirect to a generic success page or the store with a flag
-	successURL := fmt.Sprintf("%s/store?success=true", baseURL)
+	successURL := fmt.Sprintf("%s/payment/success", baseURL)
 	cancelURL := fmt.Sprintf("%s/store?canceled=true", baseURL)
 
 	metadata := map[string]string{

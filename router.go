@@ -177,6 +177,7 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 			router.POST(p+"/stripe/events", app.StripeWebhook)
 			router.GET(p+"/store", app.StorePage)
 			router.POST(p+"/stripe/create-checkout", app.PostStripeCreateCheckout)
+			router.GET(p+"/payment/success", app.PaymentSuccessPage)
 		}
 		if userPageEnabled {
 			router.GET(p+PAGES.MyAccount, app.MyUserPage)

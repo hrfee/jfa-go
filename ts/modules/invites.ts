@@ -1134,44 +1134,6 @@ export class createInvite {
         }
     };
 
-    private _price = document.getElementById("create-price") as HTMLInputElement;
-    private _currencySelect = document.getElementById("create-currency-select") as HTMLSelectElement;
-    private _currencyCustom = document.getElementById("create-currency-custom") as HTMLInputElement;
-
-    get price(): number {
-        // Stripe expects amounts in cents, so we multiply the user input by 100.
-        // Using Math.round to avoid floating point errors.
-        return Math.round(parseFloat(this._price.value) * 100);
-    }
-    set price(n: number) {
-        // When setting back, divide by 100 to show dollar amount.
-        this._price.value = "" + (n / 100);
-    }
-    get currency(): string {
-        if (this._currencySelect.value == "custom") {
-            return this._currencyCustom.value;
-        }
-        return this._currencySelect.value;
-    }
-    set currency(s: string) {
-        // Only sets custom if not in list
-        // FIXME: Better logic
-        let found = false;
-        for (let i = 0; i < this._currencySelect.options.length; i++) {
-            if (this._currencySelect.options[i].value == s) {
-                this._currencySelect.value = s;
-                found = true;
-                break;
-            }
-        }
-        if (!found) {
-            this._currencySelect.value = "custom";
-            this._currencyCustom.value = s;
-            this._currencyCustom.classList.remove("hidden");
-        } else {
-            this._currencyCustom.classList.add("hidden");
-        }
-    }
 
     create = () => {
         toggleLoader(this._createButton);
@@ -1196,8 +1158,6 @@ export class createInvite {
             profile: this.profile,
             label: this.label,
             user_label: this.user_label,
-            price: this.price,
-            currency: this.currency,
         };
         _post("/invites", send, (req: XMLHttpRequest) => {
             if (req.readyState == 4) {
@@ -1275,16 +1235,6 @@ export class createInvite {
         } else {
             sendToContainer.classList.add("unfocused");
         }
-
-        this._currencySelect.onchange = () => {
-            if (this._currencySelect.value == "custom") {
-                this._currencyCustom.classList.remove("hidden");
-                this._currencyCustom.classList.remove("unfocused");
-            } else {
-                this._currencyCustom.classList.add("hidden");
-                this._currencyCustom.classList.add("unfocused");
-            }
-        };
     }
 }
 

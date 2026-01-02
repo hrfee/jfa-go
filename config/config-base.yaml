@@ -582,6 +582,24 @@ sections:
     requires_restart: true
     type: password
     description: Stripe Webhook Signing Secret (begins with whsec_).
+  - setting: price_currency
+    name: Currency
+    depends_true: enabled
+    type: select
+    options:
+    - ["usd", "USD"]
+    - ["eur", "EUR"]
+    - ["gbp", "GBP"]
+    - ["cad", "CAD"]
+    - ["aud", "AUD"]
+    value: usd
+    description: Currency for store prices.
+  - setting: price_monthly
+    name: Monthly Plan Price
+    depends_true: enabled
+    type: number
+    value: 200
+    description: Price for monthly subscription (in cents).
   - setting: verify_signature
     name: Verify Webhook Signature
     depends_true: enabled
