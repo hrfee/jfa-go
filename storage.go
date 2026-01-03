@@ -66,6 +66,7 @@ type UserExpiry struct {
 	Expiry            time.Time
 	DeleteAfterPeriod bool      // Whether or not to further disable the user later on
 	LastNotified      time.Time // Last time an expiry notification/reminder was sent to the user.
+	LastTransactionID string    // ID of the last processed payment transaction to prevent duplicate credits.
 }
 
 type DebugLogAction int

@@ -416,12 +416,6 @@ func start(asDaemon, firstCall bool) {
 		// copy it to app.patchedConfig, and patch in settings from app.config, and language stuff.
 		app.PatchConfigBase()
 
-		if stripeEnabled {
-			apiKey := app.config.Section("stripe").Key("api_key").String()
-			InitStripe(apiKey)
-			app.info.Println("Stripe Integration Enabled")
-		}
-
 		secret, err := generateSecret(16)
 		if err != nil {
 			app.err.Fatal(err)
@@ -470,6 +464,18 @@ func start(asDaemon, firstCall bool) {
 			RetryGap:    time.Duration(app.config.Section("advanced").Key("auth_retry_gap").MustInt(10)) * time.Second,
 			LogFailures: true,
 		}
+
+		if app.config.Section("stripe").Key("enabled").MustBool(false) {
+			apiKey := app.config.Section("stripe").Key("api_key").String()
+			InitStripe(apiKey)
+			app.info.Println("Stripe Integration Enabled")
+		}
+
+		if app.config.Section("paypal").Key("enabled").MustBool(false) {
+			InitPayPal(app.config)
+			app.info.Println("PayPal Integration Enabled")
+		}
+
 		u := app.config.Section("jellyfin").Key("username").String()
 		p := app.config.Section("jellyfin").Key("password").String()
 		if app.version == "" {

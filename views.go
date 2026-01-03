@@ -905,11 +905,13 @@ func (app *appContext) StorePage(gc *gin.Context) {
 	app.info.Println("Serving Store Page")
 	lang := app.storage.lang.chosenUserLang
 	app.gcHTML(gc, 200, "store.html", OtherPage, lang, gin.H{
-		"strings":       app.storage.lang.User[lang].Strings,
-		"urlBase":       app.config.Section("ui").Key("jfa_url").String(),
-		"priceStandard": fmt.Sprintf("%.2f", float64(app.config.Section("stripe").Key("price_standard").MustInt64(500))/100.0),
-		"priceMonthly":  fmt.Sprintf("%.2f", float64(app.config.Section("stripe").Key("price_monthly").MustInt64(200))/100.0),
-		"currency":      strings.ToUpper(app.config.Section("stripe").Key("price_currency").MustString("usd")),
+		"strings":        app.storage.lang.User[lang].Strings,
+		"urlBase":        app.config.Section("ui").Key("jfa_url").String(),
+		"priceMonthly":   fmt.Sprintf("%.2f", float64(app.config.Section("stripe").Key("price_monthly").MustInt64(200))/100.0),
+		"currency":       strings.ToUpper(app.config.Section("stripe").Key("price_currency").MustString("usd")),
+		"stripeEnabled":  stripeEnabled,
+		"paypalEnabled":  paypalEnabled,
+		"paypalClientID": app.config.Section("paypal").Key("client_id").String(),
 	})
 }
 

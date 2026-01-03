@@ -179,6 +179,9 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 			router.POST(p+"/stripe/create-checkout", app.PostStripeCreateCheckout)
 			router.GET(p+"/payment/success", app.PaymentSuccessPage)
 		}
+		router.POST(p+"/paypal/create-subscription", app.PostPayPalCreateSubscription)
+		router.POST(p+"/paypal/capture-subscription", app.PostPayPalCaptureSubscription)
+		router.POST(p+"/paypal/webhook", app.PostPayPalWebhook)
 		if userPageEnabled {
 			router.GET(p+PAGES.MyAccount, app.MyUserPage)
 			router.GET(p+PAGES.MyAccount+"/password/reset", app.MyUserPage)

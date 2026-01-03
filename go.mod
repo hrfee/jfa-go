@@ -1,6 +1,6 @@
 module github.com/hrfee/jfa-go
 
-go 1.24.0
+go 1.25.1
 
 replace github.com/hrfee/jfa-go/docs => ./docs
 
@@ -107,6 +107,7 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
 	github.com/petermattis/goid v0.0.0-20251121121749-a11dd1a45f9a // indirect
+	github.com/plutov/paypal/v4 v4.17.0 // indirect
 	github.com/quic-go/qpack v0.6.0 // indirect
 	github.com/quic-go/quic-go v0.57.0 // indirect
 	github.com/rs/zerolog v1.34.0 // indirect
