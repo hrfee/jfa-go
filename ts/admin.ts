@@ -9,6 +9,7 @@ import { activityList } from "./modules/activity.js";
 import { ProfileEditor, reloadProfileNames } from "./modules/profiles.js";
 import { _get, _post, notificationBox, whichAnimationEvent, bindManualDropdowns } from "./modules/common.js";
 import { Updater } from "./modules/update.js";
+import { Store } from "./modules/store.js";
 import { Login } from "./modules/login.js";
 
 declare var window: GlobalWindow;
@@ -141,6 +142,8 @@ var settings = new settingsList();
 
 var profiles = new ProfileEditor();
 
+var store = new Store();
+
 window.notifications = new notificationBox(document.getElementById("notification-box") as HTMLDivElement, 5);
 
 /*const modifySettingsSource = function () {
@@ -201,6 +204,11 @@ const tabs: { id: string; url: string; reloader: () => void; unloader?: () => vo
         id: "settings",
         url: "settings",
         reloader: settings.reload,
+    },
+    {
+        id: "store",
+        url: "store",
+        reloader: store.load,
     },
 ];
 

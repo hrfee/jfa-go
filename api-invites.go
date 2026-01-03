@@ -88,6 +88,12 @@ func (app *appContext) checkInvite(code string, used bool, username string) bool
 			newInv.RemainingUses--
 		}
 		newInv.UsedBy = append(newInv.UsedBy, []string{username, strconv.FormatInt(currentTime.Unix(), 10)})
+
+		// Reset PaymentStatus to ensure multi-use invites require payment PER USE.
+		if newInv.PaymentStatus == "paid" {
+			newInv.PaymentStatus = ""
+		}
+
 		if !del {
 			app.storage.SetInvitesKey(code, newInv)
 		}
@@ -358,6 +364,14 @@ func (app *appContext) GenerateInvite(gc *gin.Context) {
 		invite.UserLabel = req.UserLabel
 	}
 	invite.Created = currentTime
+	if req.Price > 0 {
+		invite.RequiredPayment = true
+		invite.PriceAmount = req.Price
+		invite.PriceCurrency = req.Currency
+		if invite.PriceCurrency == "" {
+			invite.PriceCurrency = app.config.Section("stripe").Key("price_currency").MustString("usd")
+		}
+	}
 	if req.MultipleUses {
 		if req.NoLimit {
 			invite.NoLimit = true

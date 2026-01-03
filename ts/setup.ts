@@ -35,7 +35,7 @@ class Input {
         this._el.value = v;
     }
     // Nothing depends on input, but we add an empty broadcast function so we can just loop over all settings to fix dependents on start.
-    broadcast = () => {};
+    broadcast = () => { };
     constructor(
         el: HTMLElement,
         placeholder?: any,
@@ -462,7 +462,7 @@ const fixFullURL = (v: string): string => {
 
 const formatSubpath = (v: string): string => {
     if (v == "/") return "";
-    if (v.charAt(-1) == "/") {
+    if (v.charAt(v.length - 1) == "/") {
         v = v.slice(0, -1);
     }
     return v;
@@ -475,7 +475,7 @@ const constructNewURLs = (): string[] => {
     }
     local = fixFullURL(local);
     let remote = settings["ui"]["jfa_url"].value;
-    if (remote == "") {
+    if (remote == "" || remote === "undefined") {
         return [local];
     }
     remote = fixFullURL(remote);

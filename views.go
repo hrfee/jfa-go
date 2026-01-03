@@ -754,6 +754,18 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 		return
 	}
 
+	// Security: If invite is paid, ensure it matches the browser that paid for it.
+	if invite.PaymentStatus == "paid" {
+		cookie, err := gc.Cookie("jfa_payment_lock")
+		if err != nil || cookie != invite.Code {
+			app.info.Printf("Blocked access to paid invite %s due to missing/mismatching payment cookie.", invite.Code)
+			app.gcHTML(gc, 403, "invalidCode.html", FormPage, lang, gin.H{
+				"contactMessage": "This invite has been paid for by another browser session. To prevent theft, paid invites are locked to the device that made the payment.",
+			})
+			return
+		}
+	}
+
 	if key := gc.Query("key"); key != "" && app.config.Section("email_confirmation").Key("enabled").MustBool(false) {
 		app.NewUserFromConfirmationKey(invite, key, lang, gc)
 		return
@@ -812,6 +824,11 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 		"userPageEnabled":   app.config.Section("user_page").Key("enabled").MustBool(false),
 		"userPageAddress":   userPageAddress,
 		"fromUser":          fromUser,
+		"price":             invite.PriceAmount,
+		"currency":          strings.ToUpper(invite.PriceCurrency),
+		"requiredPayment":   invite.RequiredPayment,
+		"paid":              invite.PaymentStatus == "paid",
+		"stripeEnabled":     stripeEnabled,
 	}
 	if telegram {
 		data["telegramPIN"] = app.telegram.NewAuthToken()
@@ -879,6 +896,31 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 func (app *appContext) NoRouteHandler(gc *gin.Context) {
 	app.pushResources(gc, OtherPage)
 	app.gcHTML(gc, 404, "404.html", OtherPage, "en-us", gin.H{
+		"contactMessage": app.config.Section("ui").Key("contact_message").String(),
+	})
+}
+
+// StorePage serves the public store page
+func (app *appContext) StorePage(gc *gin.Context) {
+	app.info.Println("Serving Store Page")
+	lang := app.storage.lang.chosenUserLang
+	app.gcHTML(gc, 200, "store.html", OtherPage, lang, gin.H{
+		"strings":        app.storage.lang.User[lang].Strings,
+		"urlBase":        app.config.Section("ui").Key("jfa_url").String(),
+		"priceMonthly":   fmt.Sprintf("%.2f", float64(app.config.Section("stripe").Key("price_monthly").MustInt64(200))/100.0),
+		"currency":       strings.ToUpper(app.config.Section("stripe").Key("price_currency").MustString("usd")),
+		"stripeEnabled":  stripeEnabled,
+		"paypalEnabled":  paypalEnabled,
+		"paypalClientID": app.config.Section("paypal").Key("client_id").String(),
+	})
+}
+
+// PaymentSuccessPage serves the dedicated payment success page
+func (app *appContext) PaymentSuccessPage(gc *gin.Context) {
+	app.info.Println("Serving Payment Success Page")
+	lang := app.storage.lang.chosenUserLang
+	app.gcHTML(gc, 200, "payment_success.html", OtherPage, lang, gin.H{
+		"strings":        app.storage.lang.User[lang].Strings,
 		"contactMessage": app.config.Section("ui").Key("contact_message").String(),
 	})
 }

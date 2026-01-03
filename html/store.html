@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="{{ .shortLang }}" dir="{{ .pageDirection }}" class="{{ .cssClass }}">
+
+<head>
+    {{ template "header.txt" . }}
+    <title>{{ .strings.storeTitle }}</title>
+</head>
+
+<body class="max-w-full overflow-x-hidden section">
+    <div class="page-container m-2 lg:my-20 lg:mx-64 flex flex-col gap-4">
+        {{ template "lang-select.html" . }}
+
+        <div class="card dark:~d_neutral @low">
+            <div class="flex flex-col md:flex-row gap-3 items-baseline mb-2">
+                <span class="heading">{{ .strings.storeHeader }}</span>
+                <span class="subheading">{{ .strings.storeSubheader }}</span>
+            </div>
+
+            <!-- Main Content Area -->
+            <div class="flex flex-col gap-6 items-center">
+
+                <!-- Monthly Plan -->
+                <div class="w-full max-w-md">
+                    <div
+                        class="card dark:~d_neutral @low flex flex-col items-center text-center p-8 shadow-lg border-2 border-blue-500/30">
+                        <span class="heading text-xl mb-2">Monthly Access</span>
+                        <p class="content mb-6 text-4xl font-bold text-blue-400">{{ .priceMonthly }} {{ .currency
+                            }}<span class="text-lg opacity-75 font-normal text-gray-500">/mo</span></p>
+
+                        <div class="w-full mb-8 text-left">
+                            <ul class="flex flex-col gap-3">
+                                <li class="flex items-center gap-3"><span class="badge lg ~positive rounded-full p-1"><i
+                                            class="ri-check-line"></i></span> <span class="content">Instant
+                                        Access</span></li>
+                                <li class="flex items-center gap-3"><span class="badge lg ~warning rounded-full p-1"><i
+                                            class="ri-time-line"></i></span> <span class="content">30 Day
+                                        Duration</span></li>
+                                <li class="flex items-center gap-3"><span class="badge lg ~positive rounded-full p-1"><i
+                                            class="ri-check-line"></i></span> <span class="content">Recurring
+                                        Billing</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="w-full max-w-md">
+                    <!-- Email Input Area -->
+                    <div class="card ~neutral @low p-6 shadow-md">
+                        <label class="label supra font-bold mb-2 block">Enter Your Email</label>
+                        <input type="email" id="email-input" class="input ~neutral @high w-full p-3 text-lg"
+                            placeholder="you@example.com" required>
+                        <p class="text-xs text-red-500 hidden mt-2 font-bold" id="email-error"><i
+                                class="ri-error-warning-line"></i> Please enter a valid email address.</p>
+                        <p class="content text-center mt-4 opacity-75 text-sm">Your invite code will be sent to this
+                            address.</p>
+
+                        <div class="mt-6 flex flex-col gap-4">
+                            <!-- Stripe Button -->
+                            <button
+                                class="button ~info @low w-full justify-center p-4 text-lg font-bold shadow-md hover:shadow-lg transition-all rounded-lg"
+                                onclick="initiateCheckout('Monthly', this)">
+                                Pay with Stripe <i class="ri-bank-card-line ml-2"></i>
+                            </button>
+
+                            {{ if .paypalEnabled }}
+                            <!-- Divider -->
+                            <div class="relative flex py-2 items-center">
+                                <div class="flex-grow border-t border-gray-400 opacity-25"></div>
+                                <span class="flex-shrink mx-4 text-gray-400 text-sm font-semibold opacity-50">OR</span>
+                                <div class="flex-grow border-t border-gray-400 opacity-25"></div>
+                            </div>
+
+                            <!-- PayPal Button Container -->
+                            <div id="paypal-button-container" class="w-full z-0 relative"></div>
+                            {{ end }}
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    {{ if .paypalEnabled }}
+    <script src="https://www.paypal.com/sdk/js?client-id={{ .paypalClientID }}&vault=true&intent=subscription"></script>
+    {{ end }}
+
+    <script>
+        async function initiateCheckout(plan, btnElement) {
+            const emailInput = document.getElementById('email-input');
+            const email = emailInput.value.trim();
+            const errorMsg = document.getElementById('email-error');
+
+            if (!email || !email.includes('@')) {
+                errorMsg.classList.remove('hidden');
+                emailInput.focus();
+                // scroll to input
+                emailInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
+            errorMsg.classList.add('hidden');
+
+            const originalText = btnElement.innerText;
+            btnElement.innerText = "Processing...";
+            btnElement.style.pointerEvents = "none";
+
+            // Disable all buttons to prevent double clicks
+            const allBtns = document.querySelectorAll('.button.submit');
+            allBtns.forEach(b => b.disabled = true);
+
+            try {
+                const response = await fetch('{{ .urlBase }}/stripe/create-checkout', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email, plan: plan })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Network response was not ok');
+                }
+
+                if (data.response) {
+                    window.location.href = data.response;
+                } else {
+                    throw new Error('No redirect URL received');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Something went wrong: ' + error.message);
+                btnElement.innerText = originalText;
+                btnElement.style.pointerEvents = "auto";
+                allBtns.forEach(b => b.disabled = false);
+            }
+        }
+
+        if ("{{ .paypalEnabled }}" === "true") {
+            paypal.Buttons({
+                style: {
+                    shape: 'rect',
+                    color: 'gold',
+                    layout: 'vertical',
+                    label: 'subscribe'
+                },
+                createSubscription: function (data, actions) {
+                    const emailInput = document.getElementById('email-input');
+                    const email = emailInput.value.trim();
+                    if (!email || !email.includes('@')) {
+                        document.getElementById('email-error').classList.remove('hidden');
+                        emailInput.focus();
+                        return actions.reject();
+                    }
+                    document.getElementById('email-error').classList.add('hidden');
+
+                    return fetch('{{ .urlBase }}/paypal/create-subscription', {
+                        method: 'post',
+                        headers: { 'content-type': 'application/json' },
+                        body: JSON.stringify({ email: email })
+                    }).then(res => {
+                        if (!res.ok) throw new Error("Failed to create subscription");
+                        return res.json();
+                    }).then(data => data.subscriptionID);
+                },
+                onApprove: function (data, actions) {
+                    const email = document.getElementById('email-input').value.trim();
+                    return fetch('{{ .urlBase }}/paypal/capture-subscription', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            subscriptionID: data.subscriptionID,
+                            email: email
+                        })
+                    }).then(res => res.json())
+                        .then(data => {
+                            if (data.inviteCode) {
+                                window.location.href = "{{ .urlBase }}/invite/" + data.inviteCode;
+                            } else if (data.success) {
+                                alert("Success! Your subscription has been reactivated/extended. You can continue using your account.");
+                            } else {
+                                alert('Error: ' + (data.error || 'Unknown error occurred.'));
+                            }
+                        })
+                        .catch(err => {
+                            console.error("PayPal Capture Error:", err);
+                            alert("Payment verification error: " + err.message);
+                        });
+                },
+                onError: function (err) {
+                    console.error("PayPal Error:", err);
+                    // Don't alert everything, as simple validation rejections show up here
+                }
+            }).render('#paypal-button-container');
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,52 @@
+{{ template "header.txt" . }}
+<title>Payment Successful</title>
+<style>
+    .success-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 80vh;
+        text-align: center;
+    }
+
+    .check-icon {
+        font-size: 5rem;
+        color: var(--jam-green-500);
+        /* Assuming variable exists, fallback to green */
+        color: #48bb78;
+        margin-bottom: 1rem;
+    }
+
+    .message {
+        font-size: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .cta {
+        margin-bottom: 1rem;
+    }
+</style>
+</head>
+
+<body class="max-w-full section">
+    <div class="success-container">
+        <i class="ri-checkbox-circle-fill check-icon"></i>
+        <h1 class="heading">Payment Successful!</h1>
+        <p class="message">Thank you for your support.</p>
+
+        <div class="card ~neutral @low p-8">
+            <p class="cta text-xl">Please check your email for your invite code.</p>
+            <p class="support text-sm">If you don't receive it within 5 minutes, please contact support.</p>
+            {{ if .contactMessage }}
+            <p class="support text-sm mt-2">{{ .contactMessage }}</p>
+            {{ end }}
+        </div>
+
+        <div class="mt-8">
+            <a href="/" class="button ~urge @low">Return Home</a>
+        </div>
+    </div>
+</body>
+
+</html>

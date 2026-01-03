@@ -22,6 +22,8 @@ groups:
       - section: ombi
       - section: jellyseerr
       - section: webhooks
+      - section: stripe
+      - section: paypal
   - group: email
     name: "Email"
     description: "Options for sending emails through jfa-go."
@@ -558,6 +560,92 @@ sections:
     value: none
     description: 'Extra debug logging for writes to the database. *: Deletion also
       includes blanking out major fields, e.g. an email address.'
+- section: stripe
+  meta:
+    name: Stripe
+    description: Settings for Stripe payments.
+  settings:
+  - setting: enabled
+    name: Enabled
+    requires_restart: true
+    type: bool
+    value: false
+    description: Enable Stripe payments.
+  - setting: api_key
+    name: API Key
+    depends_true: enabled
+    requires_restart: true
+    type: password
+    description: Stripe Secret API Key (begins with sk_).
+  - setting: webhook_secret
+    name: Webhook Secret
+    depends_true: enabled
+    requires_restart: true
+    type: password
+    description: Stripe Webhook Signing Secret (begins with whsec_).
+  - setting: price_currency
+    name: Currency
+    depends_true: enabled
+    type: select
+    options:
+    - ["usd", "USD"]
+    - ["eur", "EUR"]
+    - ["gbp", "GBP"]
+    - ["cad", "CAD"]
+    - ["aud", "AUD"]
+    value: usd
+    description: Currency for store prices.
+  - setting: price_monthly
+    name: Monthly Plan Price
+    depends_true: enabled
+    type: number
+    value: 200
+    description: Price for monthly subscription (in cents).
+  - setting: verify_signature
+    name: Verify Webhook Signature
+    depends_true: enabled
+    requires_restart: true
+    type: bool
+    value: false
+    description: Enforce Stripe webhook signature verification. Set to false if using a tunnel/proxy that modifies payloads.
+- section: paypal
+  meta:
+    name: PayPal
+    description: Settings for PayPal payments.
+  settings:
+  - setting: enabled
+    name: Enabled
+    requires_restart: true
+    type: bool
+    value: false
+    description: Enable PayPal payments.
+  - setting: mode
+    name: Mode
+    depends_true: enabled
+    requires_restart: true
+    type: select
+    options:
+    - ["sandbox", "Sandbox"]
+    - ["live", "Live"]
+    value: sandbox
+    description: PayPal environment (Sandbox for testing, Live for production).
+  - setting: client_id
+    name: Client ID
+    depends_true: enabled
+    requires_restart: true
+    type: password
+    description: PayPal Client ID.
+  - setting: client_secret
+    name: Secret
+    depends_true: enabled
+    requires_restart: true
+    type: password
+    description: PayPal Client Secret.
+  - setting: plan_id_monthly
+    name: Monthly Plan ID
+    depends_true: enabled
+    type: text
+    description: PayPal Billing Plan ID for the monthly subscription.
 - section: activity_log
   meta:
     name: Activity Log
