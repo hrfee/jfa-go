@@ -352,5 +352,42 @@ func (app *appContext) PostPayPalWebhook(gc *gin.Context) {
 		app.info.Printf("SUCCESS: Extended expiry for user %s (%s) to %s via PayPal Webhook", userID, userEmail, newExpiry)
 	}
 
+	if event.EventType == "BILLING.SUBSCRIPTION.CANCELLED" {
+		subID := event.Resource.ID
+		if subID == "" {
+			app.err.Printf("PayPal Cancellation missing Subscription ID")
+			return
+		}
+		app.info.Printf("Active Revocation: PayPal Subscription %s cancelled", subID)
+
+		// 2. Find User by Label
+		var userID string
+		targetLabel := "PayPal Subscription: " + subID
+		for _, em := range app.storage.GetEmails() {
+			if strings.Contains(em.Label, targetLabel) {
+				userID = em.JellyfinID
+				break
+			}
+		}
+
+		if userID == "" {
+			app.err.Printf("Could not find user for cancelled Subscription %s", subID)
+			return
+		}
+
+		// 3. Expire & Disable
+		app.storage.SetUserExpiryKey(userID, UserExpiry{Expiry: time.Now().Add(-1 * time.Second)})
+		paramsUser, err := app.jf.UserByID(userID, false)
+		if err == nil {
+			err, _, _ = app.SetUserDisabled(paramsUser, true)
+			if err != nil {
+				app.err.Printf("Failed to disable user %s: %v", userID, err)
+			} else {
+				app.info.Printf("SUCCESS: Disabled user %s due to PayPal cancellation", userID)
+			}
+			app.InvalidateUserCaches()
+		}
+	}
+
 	gc.Status(200)
 }

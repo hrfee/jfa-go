@@ -297,16 +297,23 @@ func (app *appContext) StripeWebhook(gc *gin.Context) {
 				app.storage.SetInvitesKey(inviteCode, invite)
 				app.info.Printf("SUCCESS: Generated Invite Code %s for %s", inviteCode, targetEmail)
 
-				msg, err := app.email.constructInvite(&invite, false)
-				if err != nil {
-					app.err.Printf("Failed to construct invite email for %s: %v", targetEmail, err)
+				// Email Sending with Safety Checks + Async
+				if app.config.Section("email").Key("enabled").MustBool(false) {
+					go func(inv Invite, tEmail string) {
+						msg, err := app.email.constructInvite(&inv, false)
+						if err != nil {
+							app.err.Printf("Failed to construct invite email for %s: %v", tEmail, err)
+						} else {
+							err = app.email.send(msg, tEmail)
+							if err != nil {
+								app.err.Printf("Failed to send invite email to %s: %v", tEmail, err)
+							} else {
+								app.info.Printf("Sent purchased invite %s to %s", inv.Code, tEmail)
+							}
+						}
+					}(invite, targetEmail)
 				} else {
-					err = app.email.send(msg, targetEmail)
-					if err != nil {
-						app.err.Printf("Failed to send invite email to %s: %v", targetEmail, err)
-					} else {
-						app.info.Printf("Sent purchased invite %s to %s", inviteCode, targetEmail)
-					}
+					app.info.Printf("Email disabled in config. Skipping invite email for %s", targetEmail)
 				}
 			}
 			// [Old Flow Logic: Pay to Unlock]
@@ -381,6 +388,52 @@ func (app *appContext) StripeWebhook(gc *gin.Context) {
 			}
 
 			app.info.Printf("SUCCESS: Extended expiry for user %s (%s) to %s", userID, email, newExpiry)
+		}
+
+	case "customer.subscription.deleted":
+		var sub stripe.Subscription
+		err := json.Unmarshal(event.Data.Raw, &sub)
+		if err != nil {
+			app.err.Printf("Error parsing webhook JSON: %v", err)
+			return
+		}
+
+		// Attempt to identify user by Metadata (preferred) or lookup (if we stored sub ID)
+		targetEmail := sub.Metadata["target_email"]
+		if targetEmail == "" {
+			app.info.Printf("Webhook: customer.subscription.deleted received for %s but no target_email in metadata. Ignoring active revocation (Passive Expiry will still apply).", sub.ID)
+			return
+		}
+
+		app.info.Printf("Active Revocation: Subscription %s deleted for %s. Disabling user...", sub.ID, targetEmail)
+
+		// 1. Find User
+		var userID string
+		for _, em := range app.storage.GetEmails() {
+			if strings.EqualFold(em.Addr, targetEmail) {
+				userID = em.JellyfinID
+				break
+			}
+		}
+
+		if userID == "" {
+			app.err.Printf("Could not find user with email %s to revoke access", targetEmail)
+			return
+		}
+
+		// 2. Expire immediately (Set expiry to 1 second ago)
+		app.storage.SetUserExpiryKey(userID, UserExpiry{Expiry: time.Now().Add(-1 * time.Second)})
+
+		// 3. Disable User (Hard Revoke)
+		paramsUser, err := app.jf.UserByID(userID, false)
+		if err == nil {
+			err, _, _ = app.SetUserDisabled(paramsUser, true)
+			if err != nil {
+				app.err.Printf("Failed to disable user %s: %v", userID, err)
+			} else {
+				app.info.Printf("SUCCESS: Disabled user %s due to subscription cancellation", userID)
+			}
+			app.InvalidateUserCaches()
 		}
 	}
 

@@ -47,6 +47,11 @@ func CreateCheckoutSession(inviteCode string, amount int64, currency, successURL
 
 	if metadata != nil {
 		params.Metadata = metadata
+		if interval != "" {
+			params.SubscriptionData = &stripe.CheckoutSessionSubscriptionDataParams{
+				Metadata: metadata,
+			}
+		}
 	}
 
 	s, err := session.New(params)
