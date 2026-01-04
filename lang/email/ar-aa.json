@@ -42,8 +42,8 @@
     },
     "userEnabled": {
         "name": "تفعيل مستخدم",
-        "title": "تم تفعيل حسابك - Jellyfin",
-        "yourAccountWasEnabled": "لقد تم تفعيل حسابك."
+        "title": "تم إعادة تفعيل حسابك - Jellyfin",
+        "yourAccountWasEnabled": "تم إعادة تفعيل حسابك."
     },
     "inviteEmail": {
         "name": "بريد الدعوة",
@@ -83,7 +83,7 @@
         "yourExpiryWasAdjusted": "تم تغيير تاريخ انتهاء صلاحية حسابك.",
         "name": "تغيير مدة انتهاء الصلاحية",
         "title": "تغيرت مدة صلاحية حسابك - Jellyfin",
-        "ifPreviouslyDisabled": "إذا تم تعطيل حسابك مسبقاً، فمن الممكن أنه قد تم تفعيله.",
+        "ifPreviouslyDisabled": "إذا كان حسابك معطلاً في السابق، فربما تم إعادة تفعيله.",
         "newExpiry": "ستنتهي صلاحية حسابك في: {date}."
     }
 }
