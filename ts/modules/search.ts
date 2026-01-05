@@ -552,6 +552,7 @@ export class Search implements Navigatable {
         return this._ascending;
     }
 
+    // FIXME: This is being called by navigate, and triggering a "load more" when we haven't loaded at all, and loading without a searchc when we have one!
     onSearchBoxChange = (
         newItems: boolean = false,
         appendedItems: boolean = false,
@@ -721,6 +722,15 @@ export class Search implements Navigatable {
         return req;
     };
 
+    private _qps: URLSearchParams = new URLSearchParams();
+    private _clearWithoutNavigate = false;
+    // clearQueryParam removes the "search" query parameter --without-- triggering a navigate call.
+    clearQueryParam = () => {
+        if (!this._qps.has("search")) return;
+        this._clearWithoutNavigate = true;
+        this.setQueryParam("");
+    };
+
     // setQueryParam sets the ?search query param to the current searchbox content,
     // or value if given. If everything is set up correctly, this should trigger a search when it is
     // set to a new value.
@@ -754,10 +764,13 @@ export class Search implements Navigatable {
 
     // navigate pulls the current "search" query param, puts it in the search box and searches it.
     navigate = (url?: string, then?: () => void) => {
-        (window as any).s = this;
-        const urlParams = new URLSearchParams(url || window.location.search);
-        const searchContent = urlParams.get("search") || "";
-        console.log("navigate!, setting search box to ", searchContent);
+        this._qps = new URLSearchParams(url || window.location.search);
+        if (this._clearWithoutNavigate) {
+            this._clearWithoutNavigate = false;
+            return;
+        }
+
+        const searchContent = this._qps.get("search") || "";
         this._c.search.value = searchContent;
         this.onSearchBoxChange();
         this.onServerSearch(then);
@@ -772,6 +785,7 @@ export class Search implements Navigatable {
 
         this._c.search.oninput = () => {
             this.inServerSearch = false;
+            this.clearQueryParam();
             this.onSearchBoxChange();
         };
         this._c.search.addEventListener("keyup", (ev: KeyboardEvent) => {
