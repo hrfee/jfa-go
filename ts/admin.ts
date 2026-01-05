@@ -152,15 +152,19 @@ let navigated = false;
 // load tabs
 const tabs: { id: string; url: string; reloader: () => void; unloader?: () => void }[] = [];
 [window.invites, accounts, activity, settings].forEach((p: AsTab) => {
-    let t: { id: string; url: string; reloader: () => void; unloader?: () => void } = {
+    let t: { id: string; url: string; reloader: (previous?: AsTab) => void; unloader?: () => void } = {
         id: p.tabName,
         url: p.pagePath,
-        reloader: () => {
+        reloader: (previous: AsTab) => {
             if (isPageEventBindable(p)) p.bindPageEvents();
             if (!navigated && isNavigatable(p) && p.isURL()) {
                 navigated = true;
                 p.navigate();
             } else {
+                if (navigated && previous && isNavigatable(previous)) {
+                    // Clear the query param, as it was likely for a different page
+                    previous.clearURL();
+                }
                 p.reload(() => {});
             }
         },
@@ -170,6 +174,7 @@ const tabs: { id: string; url: string; reloader: () => void; unloader?: () => vo
     window.tabs.addTab(
         t.id,
         window.pages.Base + window.pages.Admin + "/" + t.url,
+        p,
         null,
         t.reloader,
         t.unloader || null,

@@ -75,6 +75,8 @@ declare interface AsTab {
 declare interface Navigatable {
     // isURL will return whether the given url (or the current page url if not passed) is a valid link to some resource(s) in the class.
     isURL(url?: string): boolean;
+    // clearURL will remove related query params from the current URL. It will likely be called when switching pages.
+    clearURL(): void;
     // navigate will load and focus the resource(s) in the class referenced by the given url (or current page url if not passed).
     navigate(url?: string): void;
 }
@@ -196,14 +198,22 @@ declare interface Tab {
     page: Page;
     tabEl: HTMLDivElement;
     buttonEl: HTMLSpanElement;
-    preFunc?: () => void;
-    postFunc?: () => void;
+    contentObject?: AsTab;
+    preFunc?: (previous?: AsTab) => void;
+    postFunc?: (previous?: AsTab) => void;
 }
 
 declare interface Tabs {
     tabs: Map<string, Tab>;
     pages: Pages;
-    addTab(tabID: string, url: string, preFunc: () => void, postFunc: () => void, unloadFunc: () => void): void;
+    addTab(
+        tabID: string,
+        url: string,
+        contentObject: AsTab | null,
+        preFunc: () => void,
+        postFunc: () => void,
+        unloadFunc: () => void,
+    ): void;
     current: string;
     switch(tabID: string, noRun?: boolean): void;
 }

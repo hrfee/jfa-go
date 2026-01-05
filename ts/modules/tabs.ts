@@ -1,4 +1,4 @@
-import { PageManager } from "../modules/pages.js";
+import { PageManager } from "./pages";
 
 export function isPageEventBindable(object: any): object is PageEventBindable {
     return "bindPageEvents" in object;
@@ -12,7 +12,7 @@ export class TabManager implements TabManager {
     private _current: string = "";
     private _baseOffset = -1;
     tabs: Map<string, Tab>;
-    pages: PageManager;
+    pages: Pages;
 
     constructor() {
         this.tabs = new Map<string, Tab>();
@@ -26,14 +26,16 @@ export class TabManager implements TabManager {
     addTab = (
         tabID: string,
         url: string,
-        preFunc = () => void {},
-        postFunc = () => void {},
+        contentObject: AsTab | null,
+        preFunc: (previous?: AsTab) => void = (_?: AsTab) => void {},
+        postFunc: (previous?: AsTab) => void = (_?: AsTab) => void {},
         unloadFunc = () => void {},
     ) => {
         let tab: Tab = {
             page: null,
             tabEl: document.getElementById("tab-" + tabID) as HTMLDivElement,
             buttonEl: document.getElementById("button-tab-" + tabID) as HTMLButtonElement,
+            contentObject: contentObject,
             preFunc: preFunc,
             postFunc: postFunc,
         };
@@ -91,14 +93,16 @@ export class TabManager implements TabManager {
             [t] = this.tabs.values();
         }
 
+        const prev = this.tabs.get(this.current);
+
         this._current = t.page.name;
 
         if (t.preFunc && !noRun) {
-            t.preFunc();
+            t.preFunc(prev?.contentObject);
         }
         this.pages.load(tabID);
         if (t.postFunc && !noRun) {
-            t.postFunc();
+            t.postFunc(prev?.contentObject);
         }
     };
 }

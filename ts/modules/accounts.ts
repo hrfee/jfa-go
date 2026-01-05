@@ -2516,6 +2516,10 @@ export class accountsList extends PaginatedList implements Navigatable, AsTab {
             if (details) this.details(details);
         });
     };
+
+    clearURL() {
+        this._search.clearURL();
+    }
 }
 
 // An alternate view showing accounts in sub-lists grouped by group/label.

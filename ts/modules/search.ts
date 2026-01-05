@@ -731,6 +731,10 @@ export class Search implements Navigatable {
         this.setQueryParam("");
     };
 
+    clearURL() {
+        this.clearQueryParam();
+    }
+
     // setQueryParam sets the ?search query param to the current searchbox content,
     // or value if given. If everything is set up correctly, this should trigger a search when it is
     // set to a new value.
