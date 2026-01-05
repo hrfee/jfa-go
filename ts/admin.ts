@@ -155,16 +155,15 @@ const tabs: { id: string; url: string; reloader: () => void; unloader?: () => vo
     let t: { id: string; url: string; reloader: () => void; unloader?: () => void } = {
         id: p.tabName,
         url: p.pagePath,
-        reloader: () =>
-            p.reload(() => {
-                if (!navigated && isNavigatable(p)) {
-                    if (p.isURL()) {
-                        navigated = true;
-                        p.navigate();
-                    }
-                }
-                if (isPageEventBindable(p)) p.bindPageEvents();
-            }),
+        reloader: () => {
+            if (isPageEventBindable(p)) p.bindPageEvents();
+            if (!navigated && isNavigatable(p) && p.isURL()) {
+                navigated = true;
+                p.navigate();
+            } else {
+                p.reload(() => {});
+            }
+        },
     };
     if (isPageEventBindable(p)) t.unloader = p.unbindPageEvents;
     tabs.push(t);

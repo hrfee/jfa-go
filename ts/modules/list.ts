@@ -359,6 +359,8 @@ export abstract class PaginatedList implements PageEventBindable {
         return bottomIdx;
     };
 
+    private _loadLock: boolean = false;
+    private _loadQueue: (() => void)[] = [];
     private _load = (
         itemLimit: number,
         page: number,
@@ -367,7 +369,17 @@ export abstract class PaginatedList implements PageEventBindable {
         post?: (resp: PaginatedDTO) => void,
         failCallback?: (req: XMLHttpRequest) => void,
     ) => {
+        if (this._loadLock) {
+            console.debug("Queuing load, position:", this._loadQueue.length);
+            const now = Date.now();
+            this._loadQueue.push(() => {
+                console.debug("Queued load running, appended at:", now);
+                this._load(itemLimit, page, appendFunc, pre, post, failCallback);
+            });
+            return;
+        }
         this._lastLoad = Date.now();
+        this._loadLock = true;
         let params = this._search.inServerSearch ? this._searchParams : this.defaultParams();
         params.limit = itemLimit;
         params.page = page;
@@ -397,9 +409,14 @@ export abstract class PaginatedList implements PageEventBindable {
 
                 this._counter.loaded = this._search.ordering.length;
 
+                this._loadLock = false;
+
                 if (post) post(resp);
 
                 if (this._c.pageLoadCallback) this._c.pageLoadCallback(req);
+
+                const next = this._loadQueue.shift();
+                if (next) next();
             },
             true,
         );
@@ -408,6 +425,7 @@ export abstract class PaginatedList implements PageEventBindable {
     // Removes all elements, and reloads the first page.
     public abstract reload: (callback?: (resp: PaginatedDTO) => void) => void;
     protected _reload = (callback?: (resp: PaginatedDTO) => void) => {
+        console.trace("reloading");
         this.lastPage = false;
         this._counter.reset();
         this._counter.getTotal(
@@ -446,6 +464,7 @@ export abstract class PaginatedList implements PageEventBindable {
     // Loads the next page. If "loadAll", all pages will be loaded until the last is reached.
     public abstract loadMore: (loadAll?: boolean, callback?: (resp?: PaginatedDTO) => void) => void;
     protected _loadMore = (loadAll: boolean = false, callback?: (resp: PaginatedDTO) => void) => {
+        console.trace("loading more");
         this._c.loadMoreButtons.forEach((v) => (v.disabled = true));
         const timeout = setTimeout(() => {
             this._c.loadMoreButtons.forEach((v) => (v.disabled = false));
