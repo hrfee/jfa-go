@@ -708,4 +708,8 @@ export class activityList extends PaginatedList implements Navigatable, AsTab {
         }
         this._search.navigate(urlParams.toString());
     };
+
+    clearURL() {
+        this._search.clearURL();
+    }
 }

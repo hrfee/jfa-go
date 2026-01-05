@@ -818,6 +818,14 @@ export class DOMInviteList implements InviteList {
         this.focusInvite(inviteCode, window.lang.notif("errorInviteNotFound"));
     };
 
+    clearURL() {
+        const url = new URL(window.location.href);
+        if (!url.searchParams.has("invite")) return;
+        url.searchParams.delete("invite");
+        console.log("pushing", url.toString());
+        window.history.pushState(null, "", url.toString());
+    }
+
     constructor() {
         this._list = document.getElementById("invites") as HTMLDivElement;
         this.empty = true;
