@@ -534,7 +534,7 @@ const addEditEmail = (add: boolean): void => {
     const confirmationRequired = window.modals.email.modal.querySelector(".confirmation-required");
     confirmationRequired.classList.add("unfocused");
 
-    const content = window.modals.email.modal.querySelector(".content");
+    const content = window.modals.email.modal.querySelector(".modal-email-content");
     content.classList.remove("unfocused");
 
     const submit = window.modals.email.modal.querySelector(".card").children[0] as HTMLButtonElement;
