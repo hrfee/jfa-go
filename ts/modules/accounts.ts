@@ -1106,7 +1106,7 @@ export class accountsList extends PaginatedList implements Navigatable, AsTab {
             itemsPerPage: 40,
             maxItemsLoadedForSearch: 200,
             appendNewItems: (resp: PaginatedDTO) => {
-                console.log("append");
+                // console.log("append");
                 for (let u of (resp as UsersDTO).users || []) {
                     if (this.users.has(u.id)) {
                         this.users.get(u.id).update(u);
@@ -1122,7 +1122,7 @@ export class accountsList extends PaginatedList implements Navigatable, AsTab {
                 );
             },
             replaceWithNewItems: (resp: PaginatedDTO) => {
-                console.log("replace");
+                // console.log("replace");
                 let accountsOnDOM = new Map<string, boolean>();
 
                 for (let id of this.users.keys()) {

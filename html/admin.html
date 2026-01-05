@@ -229,10 +229,10 @@
                         <label class="switch">
                             <input type="checkbox" id="expiry-use-previous">
                             <span>{{ .strings.extendFromPreviousExpiry }}</span>
-                            <div class="tooltip left">
+                            <tool-tip class="left">
                                 <i class="icon ri-information-line align-middle"></i>
                                 <div class="content sm w-max">{{ .strings.extendFromPreviousExpiryDescription }}</div>
-                            </div>
+                            </tool-tip>
                         </label>
                     </div>
                     <label class="switch">
@@ -547,7 +547,7 @@
             </form>
         </div>
         <div id="notification-box"></div>
-        <div class="page-container m-2 lg:my-20 lg:mx-64 flex flex-col gap-4 overflow-x-hidden">
+        <div class="page-container m-2 lg:my-20 lg:mx-64 flex flex-col gap-4">
             <div class="top-2 inset-x-2 lg:absolute flex flex-row justify-between">
                 <div class="flex flex-row gap-2">
                     {{ template "lang-select.html" . }}
@@ -718,13 +718,13 @@
                             <div class="flex flex-row align-middle w-full gap-2">
                                 <input type="search" class="field ~neutral @low input search" id="accounts-search" placeholder="{{ .strings.search }}">
                                 <span class="button ~neutral @low center inside-input rounded-s-none accounts-search-clear" aria-label="{{ .strings.clearSearch }}" text="{{ .strings.clearSearch }}"><i class="ri-close-line"></i></span>
-                                <div class="tooltip left">
+                                <tool-tip class="below">
                                     <button class="button ~info @low center h-full accounts-search-server gap-1" aria-label="{{ .strings.searchAllRecords }}" text="{{ .strings.searchAllRecords }}">
                                         <i class="ri-search-line"></i>
                                         <span>{{ .strings.searchAll }}</span>
                                     </button>
                                     <span class="content sm">{{ .strings.searchAllRecords }}</span>
-                                </div>
+                                </tool-tip>
                                 <button class="button ~info @low" id="accounts-refresh" aria-label="{{ .strings.refresh }}" disabled><i class="ri-refresh-line"></i></button>
                             </div>
                         </div>
@@ -828,13 +828,13 @@
                             <div class="flex flex-row align-middle w-full gap-2">
                                 <input type="search" class="field ~neutral @low input search" id="activity-search" placeholder="{{ .strings.search }}">
                                 <span class="button ~neutral @low center inside-input rounded-s-none activity-search-clear" aria-label="{{ .strings.clearSearch }}" text="{{ .strings.clearSearch }}"><i class="ri-close-line"></i></span>
-                                <div class="tooltip left">
+                                <tool-tip class="below">
                                     <button class="button ~info @low center h-full activity-search-server gap-1" aria-label="{{ .strings.searchAllRecords }}" text="{{ .strings.searchAllRecords }}">
                                         <i class="ri-search-line"></i>
                                         <span>{{ .strings.searchAll }}</span>
                                     </button>
                                     <span class="content sm">{{ .strings.searchAllRecords }}</span>
-                                </div>
+                                </tool-tip>
                                 <button class="button ~info @low" id="activity-refresh" aria-label="{{ .strings.refresh }}" disabled><i class="ri-refresh-line"></i></button>
                             </div>
                         </div>

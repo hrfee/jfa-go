@@ -1,71 +1,95 @@
-.tooltip {
-    position: relative;
-    display: inline-block;
-}
+@layer components {
+    tool-tip {
+        position: relative;
+        display: inline-block;
+    }
 
-.tooltip .content {
-    visibility: hidden;
-    opacity: 0;
-    max-width: 16rem;
-    min-width: 6rem;
-    background-color: rgba(0, 0, 0, 0.6);
-    color: #fff;
-    padding: 0.5rem;
-    border-radius: 6px;
-    overflow-wrap: break-word;
-    text-align: center;
-    transition: opacity 100ms;
+    tool-tip .content {
+        visibility: hidden;
+        opacity: 0;
+        width: max-content;
+        max-width: 16rem;
+        /*min-width: 6rem;*/
+        background-color: rgba(0, 0, 0, 0.6);
+        color: #fff;
+        padding: 0.5rem;
+        border-radius: 6px;
+        overflow-wrap: break-word;
+        text-align: center;
+        transition: opacity 100ms;
 
-    position: absolute;
-    z-index: 1;
-    top: -1rem;
-}
+        position: absolute;
+        z-index: 1;
+        top: -1rem;
+    }
 
-.tooltip.below .content {
-    top: calc(100% + 0.125rem);
-    left: 50%;
-    right: 0;
-    transform: translateX(-50%);
-}
+    tool-tip.above {
+        --tooltip-position: above;
+    }
+    tool-tip.below {
+        --tooltip-position: below;
+    }
+    tool-tip.below-center {
+        --tooltip-position: below-center;
+    }
+    tool-tip.left {
+        --tooltip-position: left;
+    }
+    tool-tip.right {
+        --tooltip-position: right;
+    }
 
-.tooltip.above .content {
-    top: unset;
-    bottom: calc(100% + 0.125rem);
-    left: 50%;
-    right: 0;
-    transform: translateX(-50%);
-}
+    tool-tip.below .content {
+        top: calc(100% + 0.125rem);
+        left: 50%;
+        right: 0;
+        transform: translateX(-50%);
+    }
 
-.tooltip.darker .content {
-    background-color: rgba(0, 0, 0, 0.8);
-}
+    tool-tip.below-center .content {
+        top: calc(100% + 0.125rem);
+        max-width: calc(100vw - 4rem);
+    }
 
-.tooltip.right .content {
-    left: 120%;
-}
+    tool-tip.above .content {
+        top: unset;
+        bottom: calc(100% + 0.125rem);
+        left: 50%;
+        right: 0;
+        transform: translateX(-50%);
+    }
 
-.tooltip.right:dir(rtl):not(.force-ltr) .content {
-    right: 120%;
-    left: unset;
-}
+    tool-tip.darker .content {
+        background-color: rgba(0, 0, 0, 0.8);
+    }
 
-.tooltip.left .content {
-    right: 120%;
-}
+    tool-tip.right .content {
+        left: 0%;
+    }
 
-.tooltip.left:dir(rtl):not(.force-ltr) .content {
-    left: 120%;
-    right: unset;
-}
+    tool-tip.right:dir(rtl):not(.force-ltr) .content {
+        right: 0%;
+        left: unset;
+    }
 
-.tooltip .content.sm {
-    font-size: 0.8rem;
-}
+    tool-tip.left .content {
+        right: 0%;
+    }
 
-.tooltip:hover .content,
-.tooltip:focus .content,
-.tooltip:focus-within .content
-{
-    visibility: visible;
-    opacity: 1;
+    tool-tip.left:dir(rtl):not(.force-ltr) .content {
+        left: 0%;
+        right: unset;
+    }
+
+    tool-tip .content.sm {
+        font-size: 0.8rem;
+    }
+
+    /*tool-tip:hover .content,
+    tool-tip:focus .content,
+    tool-tip:focus-within .content*/
+    tool-tip.shown .content {
+        visibility: visible;
+        opacity: 1;
+    }
 }

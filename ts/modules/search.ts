@@ -751,7 +751,7 @@ export class Search implements Navigatable {
             triggerManually = !url.searchParams.has("search");
             url.searchParams.delete("search");
         }
-        console.log("pushing", url.toString());
+        // console.log("pushing", url.toString());
         window.history.pushState(null, "", url.toString());
         if (triggerManually) this.navigate();
     };
