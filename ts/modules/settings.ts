@@ -14,6 +14,7 @@ import {
 } from "../modules/common.js";
 import { Marked } from "@ts-stack/markdown";
 import { stripMarkdown } from "../modules/stripmd.js";
+import { Tooltip } from "./ui.js";
 
 declare var window: GlobalWindow;
 
@@ -109,7 +110,7 @@ class DOMSetting {
     protected _hideEl: HTMLElement;
     protected _input: HTMLInputElement;
     protected _container: HTMLDivElement;
-    protected _tooltip: HTMLDivElement;
+    protected _tooltip: Tooltip;
     protected _required: HTMLSpanElement;
     protected _restart: HTMLSpanElement;
     protected _advanced: boolean;
@@ -154,11 +155,10 @@ class DOMSetting {
     }
 
     get description(): string {
-        return this._tooltip.querySelector("span.content").textContent;
+        return this._tooltip.content.textContent;
     }
     set description(d: string) {
-        const content = this._tooltip.querySelector("span.content") as HTMLSpanElement;
-        content.textContent = d;
+        this._tooltip.content.textContent = d;
         if (d == "") {
             this._tooltip.classList.add("unfocused");
         } else {
@@ -248,17 +248,17 @@ class DOMSetting {
             ${inputOnTop ? input : ""}
             <div class="flex flex-row gap-2 items-baseline">
                 <span class="setting-label"></span>
-                <div class="setting-tooltip tooltip right unfocused">
+                <tool-tip class="setting-tooltip below-center sm:right unfocused">
                     <i class="icon ri-information-line align-[-0.05rem]"></i>
                     <span class="content sm"></span>
-                </div>
+                </tool-tip>
                 <span class="setting-required unfocused"></span>
                 <span class="setting-restart unfocused"></span>
             </div>
             ${inputOnTop ? "" : input}
         </label>
         `;
-        this._tooltip = this._container.querySelector("div.setting-tooltip") as HTMLDivElement;
+        this._tooltip = this._container.querySelector("tool-tip.setting-tooltip") as Tooltip;
         this._required = this._container.querySelector("span.setting-required") as HTMLSpanElement;
         this._restart = this._container.querySelector("span.setting-restart") as HTMLSpanElement;
         // "input" variable should supply the HTML of an element with class "setting-input"
@@ -1406,8 +1406,8 @@ export class settingsList implements AsTab {
 
         // Create (restart)required badges (can't do on load as window.lang is unset)
         RestartRequiredBadge = (() => {
-            const rr = document.createElement("span");
-            rr.classList.add("tooltip", "below", "force-ltr");
+            const rr = document.createElement("tool-tip") as Tooltip;
+            rr.classList.add("below", "force-ltr");
             rr.innerHTML = `
                 <span class="badge ~info dark:~d_warning align-[0.08rem]"><i class="icon ri-refresh-line h-full"></i></span>
                 <span class="content sm">${window.lang.strings("restartRequired")}</span>
@@ -1416,8 +1416,8 @@ export class settingsList implements AsTab {
             return rr;
         })();
         RequiredBadge = (() => {
-            const r = document.createElement("span");
-            r.classList.add("tooltip", "below", "force-ltr");
+            const r = document.createElement("tool-tip");
+            r.classList.add("below", "force-ltr");
             r.innerHTML = `
                 <span class="badge ~critical align-[0.08rem]"><i class="icon ri-asterisk h-full"></i></span>
                 <span class="content sm">${window.lang.strings("required")}</span>
@@ -1490,8 +1490,8 @@ export class settingsList implements AsTab {
                     this._sections[section.section].update(section);
                 } else {
                     if (section.section == "messages" || section.section == "user_page") {
-                        const editButton = document.createElement("div");
-                        editButton.classList.add("tooltip", "left", "h-full", "force-ltr");
+                        const editButton = document.createElement("tool-tip");
+                        editButton.classList.add("left", "h-full", "force-ltr");
                         editButton.innerHTML = `
                         <span class="button ~neutral @low h-full">
                             <i class="icon ri-edit-line"></i>
@@ -1528,8 +1528,8 @@ export class settingsList implements AsTab {
                         }
                         this.addSection(section.section, section, icon);
                     } else if (section.section == "matrix" && !window.matrixEnabled) {
-                        const addButton = document.createElement("div");
-                        addButton.classList.add("tooltip", "left", "h-full", "force-ltr");
+                        const addButton = document.createElement("tool-tip");
+                        addButton.classList.add("left", "h-full", "force-ltr");
                         addButton.innerHTML = `
                         <span class="button ~neutral h-full"><i class="icon ri-links-line"></i></span>
                         <span class="content sm">
@@ -1912,10 +1912,10 @@ class MessageEditor {
                     `;
                         if (this._names[id].description != "")
                             innerHTML += `
-                        <div class="tooltip right">
+                        <tool-tip class="right">
                             <i class="icon ri-information-line"></i>
                             <span class="content sm">${this._names[id].description}</span>
-                        </div>
+                        </tool-tip>
                     `;
                         innerHTML += `
                     </td>

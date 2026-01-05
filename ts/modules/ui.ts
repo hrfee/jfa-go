@@ -209,3 +209,130 @@ export class RadioBasedTabSelector {
         }
     }
 }
+
+type TooltipPosition = "above" | "below" | "below-center" | "left" | "right";
+
+export class Tooltip extends HTMLElement {
+    private _content: HTMLElement;
+    get content(): HTMLElement {
+        if (!this._content) return this.getElementsByClassName("content")[0] as HTMLElement;
+        return this._content;
+    }
+
+    connectedCallback() {
+        this.setup();
+    }
+
+    get visible(): boolean {
+        return this.classList.contains("shown");
+    }
+
+    get position(): TooltipPosition {
+        return window.getComputedStyle(this).getPropertyValue("--tooltip-position").trim() as TooltipPosition;
+    }
+
+    toggle() {
+        console.log("toggle!");
+        this.visible ? this.close() : this.open();
+    }
+
+    clicked: boolean = false;
+
+    private _listener = (event: MouseEvent | TouchEvent) => {
+        if (event.target !== this && !this.contains(event.target as HTMLElement)) {
+            this.close();
+            document.removeEventListener("mousedown", this._listener);
+            // document.removeEventListener("touchstart", this._listener);
+        }
+    };
+
+    open() {
+        this.fixWidth(() => {
+            this.classList.add("shown");
+            if (this.clicked) {
+                document.addEventListener("mousedown", this._listener);
+                // document.addEventListener("touchstart", this._listener);
+            }
+        });
+    }
+
+    close() {
+        this.clicked = false;
+        this.classList.remove("shown");
+    }
+
+    setup() {
+        this._content = this.getElementsByClassName("content")[0] as HTMLElement;
+        const clickEvent = () => {
+            if (this.clicked) {
+                console.log("clicked again!");
+                this.toggle();
+            } else {
+                console.log("clicked!");
+                this.clicked = true;
+                this.open();
+            }
+        };
+        /// this.addEventListener("touchstart", clickEvent);
+        this.addEventListener("click", clickEvent);
+        this.addEventListener("mouseover", () => {
+            this.open();
+        });
+        this.addEventListener("mouseleave", () => {
+            if (this.clicked) return;
+            console.log("mouseleave");
+            this.close();
+        });
+    }
+
+    fixWidth(after?: () => void) {
+        this._content.style.left = "";
+        this._content.style.right = "";
+        if (this.position == "below-center") {
+            const offset = this.offsetLeft;
+            const pw = (this.offsetParent as HTMLElement).offsetWidth;
+            const cw = this._content.offsetWidth;
+            const pos = -1 * offset + (pw - cw) / 2.0;
+            this._content.style.left = pos + "px";
+        }
+        const [leftObscured, rightObscured] = wherePartiallyObscuredX(this._content);
+        if (rightObscured) {
+            const rect = this._content.getBoundingClientRect();
+            this._content.style.left =
+                "calc(-1rem + " + ((window.innerWidth || document.documentElement.clientHeight) - rect.right) + "px)";
+        }
+        if (leftObscured) {
+            const rect = this._content.getBoundingClientRect();
+            this._content.style.right = "calc(-1rem + " + rect.left + "px)";
+            "calc(-1rem + " + ((window.innerWidth || document.documentElement.clientHeight) - rect.right) + "px)";
+        }
+        if (after) after();
+    }
+}
+
+export function setupTooltips() {
+    customElements.define("tool-tip", Tooltip);
+}
+
+export function isPartiallyObscuredX(el: HTMLElement): boolean {
+    const rect = el.getBoundingClientRect();
+    return rect.left < 0 || rect.right > (window.innerWidth || document.documentElement.clientWidth);
+}
+
+export function wherePartiallyObscuredX(el: HTMLElement): [boolean, boolean] {
+    const rect = el.getBoundingClientRect();
+    return [Boolean(rect.left < 0), Boolean(rect.right > (window.innerWidth || document.documentElement.clientWidth))];
+}
+
+export function isPartiallyObscuredY(el: HTMLElement): boolean {
+    const rect = el.getBoundingClientRect();
+    return rect.top < 0 || rect.bottom > (window.innerHeight || document.documentElement.clientHeight);
+}
+
+export function wherePartiallyObscuredY(el: HTMLElement): [boolean, boolean] {
+    const rect = el.getBoundingClientRect();
+    return [
+        Boolean(rect.top < 0),
+        Boolean(rect.bottom > (window.innerHeight || document.documentElement.clientHeight)),
+    ];
+}

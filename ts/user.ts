@@ -17,6 +17,7 @@ import { Discord, Telegram, Matrix, ServiceConfiguration, MatrixConfiguration } 
 import { Validator, ValidatorConf, ValidatorRespDTO } from "./modules/validator.js";
 import { PageManager } from "./modules/pages.js";
 import { generateCodeLink } from "./modules/invites.js";
+import { setupTooltips } from "./modules/ui.js";
 
 interface userWindow extends GlobalWindow {
     jellyfinID: string;
@@ -33,6 +34,8 @@ interface userWindow extends GlobalWindow {
 }
 
 declare var window: userWindow;
+
+setupTooltips();
 
 // const basePath = window.location.pathname.replace("/password/reset", "");
 const basePath = window.pages.Base + window.pages.MyAccount;
@@ -757,7 +760,7 @@ document.addEventListener("details-reload", () => {
                 }
                 if (!messageCard.textContent) {
                     messageCard.innerHTML = `
-                    <span class="heading mb-2">${window.lang.strings("customMessagePlaceholderHeader")} ✏️ </span>
+                    <span class="heading mb-2">${window.lang.strings("customMessagePlaceholderHeader")} ✏ </span>
                     <span class="block">${window.lang.strings("customMessagePlaceholderContent")}</span>
                     `;
                 }

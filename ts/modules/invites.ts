@@ -13,7 +13,7 @@ import {
 } from "../modules/common.js";
 import { DiscordSearch, DiscordUser, newDiscordSearch } from "../modules/discord.js";
 import { reloadProfileNames } from "../modules/profiles.js";
-import { HiddenInputField, RadioBasedTabSelector } from "./ui.js";
+import { HiddenInputField, RadioBasedTabSelector, Tooltip } from "./ui.js";
 
 declare var window: GlobalWindow;
 
@@ -205,10 +205,9 @@ class DOMInvite implements Invite {
     }
     set send_to(address: string | null) {
         this._send_to = address;
-        const container = this._infoArea.querySelector(".tooltip") as HTMLDivElement;
+        const container = this._infoArea.querySelector("tool-tip") as Tooltip;
         const icon = container.querySelector("i");
         const chip = container.querySelector("span.inv-email-chip");
-        const tooltip = container.querySelector("span.content") as HTMLSpanElement;
         if (!address) {
             icon.classList.remove("ri-mail-line");
             icon.classList.remove("ri-mail-close-line");
@@ -232,7 +231,7 @@ class DOMInvite implements Invite {
             }
         }
         // innerHTML as the newer sent_to re-uses this with HTML.
-        tooltip.innerHTML = address;
+        container.content.innerHTML = address;
     }
     private _sendToDialog: SendToDialog;
     private _sent_to: SentToList;
@@ -603,10 +602,10 @@ class DOMInvite implements Invite {
         this._header.appendChild(this._infoArea);
         this._infoArea.classList.add("inv-infoarea", "flex", "flex-row", "items-center", "gap-2");
         this._infoArea.innerHTML = `
-        <div class="tooltip below darker" tabindex="0">
+        <tool-tip class="below darker" tabindex="0">
             <span class="inv-email-chip h-full"><i></i></span>
             <span class="content sm p-1"></span>
-        </div>
+        </tool-tip>
         <span class="button ~critical @low inv-delete h-full">${window.lang.strings("delete")}</span>
         <label>
             <i class="icon px-2.5 py-2 ri-arrow-down-s-line text-xl not-rotated"></i>

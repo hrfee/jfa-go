@@ -10,8 +10,11 @@ import { ProfileEditor, reloadProfileNames } from "./modules/profiles.js";
 import { _get, _post, notificationBox, whichAnimationEvent, bindManualDropdowns } from "./modules/common.js";
 import { Updater } from "./modules/update.js";
 import { Login } from "./modules/login.js";
+import { setupTooltips } from "./modules/ui.js";
 
 declare var window: GlobalWindow;
+
+setupTooltips();
 
 const theme = new ThemeManager(document.getElementById("button-theme"));
 

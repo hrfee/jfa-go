@@ -2,12 +2,15 @@ import { _get, _post, toggleLoader, notificationBox } from "./modules/common.js"
 import { lang, LangFile, loadLangSelector } from "./modules/lang.js";
 import { ThemeManager } from "./modules/theme.js";
 import { PageManager } from "./modules/pages.js";
+import { setupTooltips } from "./modules/ui.js";
 
 interface sWindow extends GlobalWindow {
     messages: {};
 }
 
 declare var window: sWindow;
+
+setupTooltips();
 
 const theme = new ThemeManager(document.getElementById("button-theme"));
 
