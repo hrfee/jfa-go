@@ -73,5 +73,17 @@
         "title": "Tu cuenta ha caducado - Jellyfin",
         "yourAccountHasExpired": "Tu cuenta ha expirado.",
         "contactTheAdmin": "Póngase en contacto con el administrador para obtener más información."
+    },
+    "userExpiryAdjusted": {
+        "ifPreviouslyDisabled": "Si su cuenta estaba previamente desactivada, es posible que haya sido reactivada.",
+        "name": "Vencimiento ajustado",
+        "title": "Vencimiento de la cuenta ajustado - Jellyfin",
+        "yourExpiryWasAdjusted": "La fecha de vencimiento de su cuenta ha sido ajustada.",
+        "newExpiry": "Su cuenta vencerá el {date}."
+    },
+    "expiryReminder": {
+        "name": "Recordatorio de vencimiento",
+        "title": "Recordatorio: tu cuenta vencerá pronto - Jellyfin",
+        "yourAccountIsDueToExpire": "Tu cuenta vencerá en {expiresIn}, o el {date} a las {time}."
     }
 }
