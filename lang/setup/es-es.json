@@ -34,7 +34,10 @@
     "endPage": {
         "finished": "¡Terminado!",
         "restartMessage": "Funciones como bots de Discord/Telegram/Matrix, mensajes Markdown personalizados y una página de \"Mi cuenta\" accesible por el usuario pueden encontrarse en Ajustes, así que asegúrese de echarle un vistazo. Haga clic a continuación para reiniciar, y luego actualice la página.",
-        "refreshPage": "Recargar"
+        "refreshPage": "Recargar",
+        "restartReload": "Haz clic a continuación para reiniciar, luego accede a jfa-go en una de las URL internas/externas proporcionadas.",
+        "moreFeatures": "Puedes encontrar muchas más funciones en Ajustes, como bots de Discord/Telegram/Matrix y mensajes personalizados en Markdown, así que asegúrate de echarles un vistazo.",
+        "ifFailedLoad": "Si no carga, revisa los logs de la aplicación para encontrar pistas sobre la causa."
     },
     "language": {
         "title": "Idioma",
@@ -47,14 +50,16 @@
         "title": "General",
         "listenAddress": "Dirección de escucha (Listen Address)",
         "urlBase": "URL Base",
-        "urlBaseNotice": "Solo es necesario si se usa un proxy inverso en un subdominio (por ejemplo, 'jellyf.in/accounts').",
+        "urlBaseNotice": "Solo es necesario si se usa un proxy inverso en una subcarpeta (por ejemplo, 'jellyf.in/accounts').",
         "lightTheme": "Claro",
         "darkTheme": "Oscuro",
         "useHTTPS": "Usar HTTPS (Conexión segura SSL)",
         "httpsPort": "Puerto HTTPS",
         "useHTTPSNotice": "Solo se recomienda si no está utilizando un proxy inverso.",
         "pathToCertificate": "Ruta al certificado",
-        "pathToKeyFile": "Ruta al archivo de claves"
+        "pathToKeyFile": "Ruta al archivo de claves",
+        "externalURLNotice": "La URL desde la que accederás a jfa-go. Se utiliza para generar enlaces para funciones como el restablecimiento de contraseñas. Asegúrate de incluir la URL base mencionada arriba si has configurado una.",
+        "externalURL": "URL externa de jfa-go"
     },
     "updates": {
         "title": "Actualizaciones",
@@ -88,7 +93,8 @@
     "ombi": {
         "title": "Ombi",
         "description": "Al conectarse a Ombi, se creará una cuenta de Jellyfin y Ombi cuando un usuario se una a través de jfa-go. Una vez finalizada la configuración, vaya a Configuración para establecer un perfil predeterminado para los nuevos usuarios de ombi.",
-        "apiKeyNotice": "Encuentra esto en la primera pestaña de la configuración de Ombi."
+        "apiKeyNotice": "Encuentra esto en la primera pestaña de la configuración de Ombi.",
+        "stabilityWarning": "Advertencia: La integración con Ombi es inestable y puede causar problemas. Se recomienda usar Jellyseerr en su lugar. Consulta {n} para más información."
     },
     "email": {
         "title": "Correo electrónico",
@@ -125,7 +131,8 @@
         "resetLinksLanguage": "Enlace de restablecimiento predeterminado",
         "setPassword": "Establecer contraseña a través del enlace",
         "setPasswordNotice": "Habilitar esto significa que el usuario no tiene que cambiar su contraseña del PIN después del restablecimiento. También se aplicará la validación de la contraseña.",
-        "resetLinksRequiredForUserPage": "Obligatorio para restablecimiento de contraseña de autoservicio en la Página de usuario."
+        "resetLinksRequiredForUserPage": "Obligatorio para restablecimiento de contraseña de autoservicio en la Página de usuario.",
+        "moreInfo": "Puedes encontrar más información sobre las diferentes formas de restablecer contraseñas en {n}."
     },
     "passwordValidation": {
         "title": "Validación de contraseña",
@@ -146,7 +153,8 @@
         "successMessage": "Mensaje de éxito",
         "successMessageNotice": "Se muestra cuando un usuario crea su cuenta.",
         "emailMessage": "Mensaje de correo electrónico",
-        "emailMessageNotice": "Aparece en la parte inferior de los correos electrónicos."
+        "emailMessageNotice": "Aparece en la parte inferior de los correos electrónicos.",
+        "markdownMessageNotice": "El contenido de algunos correos electrónicos, páginas y mensajes se puede personalizar aún más con markdown en Ajustes."
     },
     "messages": {
         "description": "jfa-go puede enviar restablecimientos de contraseña y varios mensajes a través de correo electrónico, Discord, Telegram y/o Matrix. Puede configurar el correo electrónico a continuación y los demás se pueden configurar en Configuración más adelante. Las instrucciones se pueden encontrar en el {n}. Si no lo necesita, puede desactivar estas funciones aquí.",
@@ -163,5 +171,11 @@
         "description": "Hacer que jfa-go realice todas las conexiones a través de un proxy HTTP/SOCK5. La conexión a Jellyfin será evaluada a través de este.",
         "protocol": "Protocolo",
         "address": "Dirección (incluido el puerto)"
+    },
+    "jellyseerr": {
+        "description": "Jellyseerr es una alternativa a Ombi y se integra con jfa-go un poco mejor. Nuevamente, una vez que termine la configuración, ve a Ajustes para crear un perfil y añadir una plantilla para las nuevas cuentas de Jellyseerr.",
+        "title": "Jellyseerr",
+        "importExisting": "Importar usuarios existentes",
+        "importExistingDescription": "Si se activa, los datos de contacto y preferencias de tus usuarios existentes se sincronizarán con jfa-go."
     }
 }
