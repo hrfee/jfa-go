@@ -41,14 +41,20 @@
         "accountStatus": "Estado de la cuenta",
         "notSet": "No establecido",
         "myAccount": "Mi cuenta",
-        "referrals": "Referencias"
+        "referrals": "Referencias",
+        "language": "Idioma",
+        "sent": "Enviado",
+        "failed": "Fallido",
+        "internal": "Interno",
+        "external": "Externo"
     },
     "notifications": {
         "errorLoginBlank": "El nombre de usuario y/o la contraseña se dejaron en blanco.",
         "errorConnection": "No se pudo conectar a jfa-go.",
         "errorUnknown": "Error desconocido.",
         "error401Unauthorized": "No autorizado. Intente actualizar la página.",
-        "errorSaveSettings": "No se pudo guardar la configuración."
+        "errorSaveSettings": "No se pudo guardar la configuración.",
+        "errorSpecialSymbols": "El campo no puede contener símbolos especiales."
     },
     "quantityStrings": {
         "year": {
