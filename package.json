@@ -30,7 +30,7 @@
     "highlight.js": "^11.11.1",
     "inline-source": "^8.0.2",
     "jsdom": "^22.1.0",
-    "lodash": "^4.17.21",
+    "lodash": "^4.17.23",
     "mjml": "^4.15.3",
     "nightwind": "^1.1.13",
     "perl-regex": "^1.0.4",
