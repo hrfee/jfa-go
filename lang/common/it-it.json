@@ -39,14 +39,22 @@
         "edit": "Modifica",
         "delete": "Elimina",
         "myAccount": "Il mio Account",
-        "logout": "Esci"
+        "logout": "Esci",
+        "language": "Lingua",
+        "failed": "Fallito",
+        "referrals": "Referrals",
+        "inviteRemainingUses": "Usi rimasti",
+        "sent": "Inviato",
+        "internal": "Interno",
+        "external": "Esterno"
     },
     "notifications": {
         "errorUnknown": "Errore sconosciuto.",
         "errorLoginBlank": "L'username o password sono stati lasciati vuoti.",
         "errorConnection": "Non riesco a connettermi a jfa-go.",
         "error401Unauthorized": "Non autorizzato. Prova a ricaricare la pagina.",
-        "errorSaveSettings": "Impossibile salvare impostazione."
+        "errorSaveSettings": "Impossibile salvare impostazione.",
+        "errorSpecialSymbols": "Il campo non può contenere caratteri speciali."
     },
     "quantityStrings": {
         "year": {
