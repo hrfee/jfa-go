@@ -11,6 +11,9 @@
         "languageMessage": "Nota: Vedi le lingue disponibili con {command}, e imposta la lingua con {command} <language code>.",
         "languageMessageDiscord": "Nota: imposta la tua lingua con /lang <language name>.",
         "languageSet": "Lingua impostata in {language}.",
-        "discordDMs": "Controlla i tuoi messaggi privati per una risposta."
+        "discordDMs": "Controlla i tuoi messaggi privati per una risposta.",
+        "sentInviteFailure": "Invio invito non riuscito,controlla i logs.",
+        "sentInvite": "Invito inviato.",
+        "noPermission": "Non hai i permessi per questa azione."
     }
 }
