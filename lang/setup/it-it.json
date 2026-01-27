@@ -22,7 +22,8 @@
         "errorUserDisabled": "L’utente potrebbe essere disabilitato.",
         "error404": "404, controlla l’URL interno.",
         "errorConnectionRefused": "Connessione rifiutata.",
-        "errorUnknown": "Errore sconosciuto, controllare i log."
+        "errorUnknown": "Errore sconosciuto, controllare i log.",
+        "errorProxy": "Configurazione proxy invalida."
     },
     "startPage": {
         "welcome": "Benvenuto!",
@@ -33,7 +34,10 @@
     "endPage": {
         "finished": "Finito!",
         "restartMessage": "Puoi configurare bot di Discord/Telegram/Matrix, personalizzare i tuoi messaggi e altro nelle Impostazioni. Clicca qui sotto per riavviare, poi ricarica la pagina.",
-        "refreshPage": "Ricarica"
+        "refreshPage": "Ricarica",
+        "moreFeatures": "Molte altre funzioni come Discord/Telegram/Matrix bots e messagi Markdown custom possono essere trovati nelle inpostazioni, quindi assicurati di dargli un occhiata.",
+        "ifFailedLoad": "Se non si carica, controlla i log dell’applicazione per eventuali indizi sul motivo.",
+        "restartReload": "Clicca qui sotto per restartare, poi accedi a jfa-go a uno degli URL interni/esterni."
     },
     "language": {
         "title": "Lingua",
@@ -46,14 +50,16 @@
         "title": "Generale",
         "listenAddress": "Indirizzo d'ascolto",
         "urlBase": "Base dell'URL",
-        "urlBaseNotice": "Necessario solo con sottodominio sotto reverse proxy (e.g 'jellyf.in/accounts').",
+        "urlBaseNotice": "Necessario solo se si utilizza un reverse proxy in una sottocartella (ad esempio \"jellyf.in/accounts\").",
         "lightTheme": "Chiaro",
         "darkTheme": "Scuro",
         "useHTTPS": "Usa HTTPS",
         "httpsPort": "Porta HTTPS",
         "useHTTPSNotice": "Consigliato solo senza l'utilizzo di un reverse proxy.",
         "pathToCertificate": "Path del certificato",
-        "pathToKeyFile": "Path del file key"
+        "pathToKeyFile": "Path del file key",
+        "externalURLNotice": "L’URL da cui accederai a jfa-go. Viene utilizzato per generare link, ad esempio per il reset della password. Assicurati di includere l’URL base indicato sopra, se ne hai impostato uno.",
+        "externalURL": "URL esterni jfa-go"
     },
     "updates": {
         "title": "Aggiornamenti",
@@ -70,7 +76,8 @@
         "adminOnly": "Solo utenti amministrativi (consigliato)",
         "allowAll": "Consenti l'accesso a tutti gli utenti Jellyfin",
         "allowAllDescription": "Non consigliato, dovresti consentire ai singoli utenti di accedere una volta configurato.",
-        "emailNotice": "Il tuo indirizzo email può essere usato per ricevere notifiche."
+        "emailNotice": "Il tuo indirizzo email può essere usato per ricevere notifiche.",
+        "authorizeManualUserPageNotice": "L’utilizzo di questa opzione disabiliterà la funzionalità \"Pagina utente\"."
     },
     "jellyfinEmby": {
         "title": "Jellyfin/Emby",
@@ -86,7 +93,8 @@
     "ombi": {
         "title": "Ombi",
         "description": "Collegandosi ad Ombi, verrà creato un account sia su Jellyfin che su Ombi quando un utente accede tramite jfa-go. Al termine del setup, accedi alle impostazioni per impostare un profilo di default per i nuovi utenti Ombi.",
-        "apiKeyNotice": "Presente nella prima scheda delle impostazioni di Ombi."
+        "apiKeyNotice": "Presente nella prima scheda delle impostazioni di Ombi.",
+        "stabilityWarning": "Avviso: l’integrazione con Ombi è instabile e può causare problemi. Si consiglia invece Jellyseerr. Consulta {n} per maggiori informazioni."
     },
     "messages": {
         "title": "Messaggi",
@@ -96,57 +104,78 @@
         "title": "Email",
         "description": "jfa-go può inviare PIN di reset password e diverse notifiche tramite email. Puoi connetterti ad un server SMTP, o usare le {n} API.",
         "method": "Metodo di invio",
-        "useEmailAsUsername": "",
-        "useEmailAsUsernameNotice": "",
-        "fromAddress": "",
-        "senderName": "",
-        "dateFormat": "",
-        "dateFormatNotice": "",
+        "useEmailAsUsername": "Usa gli indirizzi email come nome utente",
+        "useEmailAsUsernameNotice": "Se abilitato, i nuovi utenti accederanno a Jellyfin/Emby utilizzando il proprio indirizzo email invece di un nome utente.",
+        "fromAddress": "Dall'indirizzo",
+        "senderName": "Nome Mittente",
+        "dateFormat": "Formato Data",
+        "dateFormatNotice": "Le date seguono il formato strftime. Per maggiori informazioni. visita {n}.",
         "encryption": "Crittografia",
         "mailgunApiURL": "URL API"
     },
     "notifications": {
         "title": "Notifiche amministrative",
-        "description": ""
+        "description": "Se abilitato, puoi scegliere (per ogni invito) di ricevere un messaggio quando un invito scade o quando viene creato un utente. Se non hai scelto il metodo di accesso Jellyfin, assicurati di aver fornito il tuo indirizzo email oppure aggiungi in seguito un altro metodo di contatto."
     },
     "welcomeEmails": {
         "title": "Messaggi di benvenuto",
-        "description": ""
+        "description": "Se abilitato, verrà inviato un messaggio ai nuovi utenti con l’URL di Jellyfin/Emby e il loro nome utente."
     },
     "inviteEmails": {
         "title": "Messaggi d'invito",
-        "description": ""
+        "description": "Se abilitato, puoi inviare inviti direttamente all’indirizzo email di un utente oppure a un utente Discord o Matrix. Poiché potresti utilizzare un reverse proxy, devi fornire l’URL da cui vengono aperti gli inviti. Inserisci l’URL base e aggiungi “/invite”."
     },
     "passwordResets": {
         "title": "Reset password",
-        "description": "",
-        "pathToJellyfin": "",
-        "pathToJellyfinNotice": "",
-        "resetLinks": "",
-        "resetLinksNotice": "",
-        "resetLinksLanguage": "",
-        "setPassword": "",
-        "setPasswordNotice": ""
+        "description": "Quando un utente tenta di reimpostare la password, Jellyfin crea un file chiamato \"passwordreset-*.json\" che contiene un PIN. jfa-go legge il file e invia il PIN all’utente. Se hai abilitato la funzionalità \"Pagina utente\", il reset può essere eseguito anche da lì, fornendo un nome utente, un’email o un metodo di contatto.",
+        "pathToJellyfin": "Percorso alla directory di configurazione di Jellyfin",
+        "pathToJellyfinNotice": "Se non sai dove si trova, prova a reimpostare la password in Jellyfin. Apparirà un popup con \"<percorso di jellyfin>/passwordreset-*.json\". Questo non è necessario se vuoi utilizzare solo il reset della password in autonomia tramite la \"Pagina utente\".",
+        "resetLinks": "Invia un link al posto di un PIN",
+        "resetLinksNotice": "Se l’integrazione con Ombi è abilitata, utilizza questa opzione per sincronizzare i reset della password di Jellyfin con Ombi.",
+        "resetLinksLanguage": "Lingua predefinita del link di reset",
+        "setPassword": "Inposta password attraverso link",
+        "setPasswordNotice": "Abilitando questa opzione, l’utente non dovrà cambiare la password partendo dal PIN dopo il reset. Verrà inoltre applicata la validazione della password.",
+        "moreInfo": "Ulteriori informazioni sui diversi modi di reimpostare le password sono disponibili su {n}.",
+        "resetLinksRequiredForUserPage": "Necessario per il reset della password in autonomia nella Pagina utente."
     },
     "passwordValidation": {
-        "title": "",
-        "description": "",
-        "length": "",
-        "uppercase": "",
-        "lowercase": "",
-        "numbers": "",
-        "special": ""
+        "title": "Validazione Password",
+        "description": "Se abilitato, nella pagina di creazione dell’account verrà mostrato un insieme di requisiti per la password, come la lunghezza minima, l’uso di caratteri maiuscoli/minuscoli, ecc.",
+        "length": "Lunghezza",
+        "uppercase": "Caratteri maiuscoli",
+        "lowercase": "Caratteri minuscoli",
+        "numbers": "Numeri",
+        "special": "Caratteri speciali (%, *, etc.)"
     },
     "helpMessages": {
-        "title": "",
-        "description": "",
-        "contactMessage": "",
-        "contactMessageNotice": "",
-        "helpMessage": "",
-        "helpMessageNotice": "",
-        "successMessage": "",
-        "successMessageNotice": "",
-        "emailMessage": "",
-        "emailMessageNotice": ""
+        "title": "Messaggi di aiuto",
+        "description": "Questi messaggi verranno mostrati nella pagina di creazione dell’account e in alcune email.",
+        "contactMessage": "Messaggio di contatto",
+        "contactMessageNotice": "Visualizzato in fondo a tutte le pagine, tranne quella di amministrazione.",
+        "helpMessage": "Messaggio di aiuto",
+        "helpMessageNotice": "Visualizzato nella pagina di creazione dell’account.",
+        "successMessage": "Messaggio di successo",
+        "successMessageNotice": "Visualizzato quando un utente crea il proprio account.",
+        "emailMessage": "Messaggio Email",
+        "emailMessageNotice": "Mostra in fondo alle email.",
+        "markdownMessageNotice": "Il contenuto di alcune email, pagine e messaggi può essere ulteriormente personalizzato tramite Markdown nelle Impostazioni."
+    },
+    "jellyseerr": {
+        "description": "Jellyseerr è un’alternativa a Ombi e si integra leggermente meglio con jfa-go. Anche in questo caso, una volta completata la configurazione, vai nelle Impostazioni per creare un profilo e aggiungere un template per i nuovi account Jellyseerr.",
+        "title": "Jellyseerr",
+        "importExisting": "Inporta utenti esistenti",
+        "importExistingDescription": "Se abilitato, i tuoi utenti esistenti avranno i dettagli di contatto e le preferenze sincronizzati da jfa-go."
+    },
+    "userPage": {
+        "title": "Pagina Utente",
+        "description": "La pagina utente (mostrata come \"Il mio account\") consente agli utenti di accedere alle informazioni del proprio account, come i metodi di contatto e la scadenza dell’account. Possono inoltre cambiare la password, avviare un reset della password e collegare o modificare i metodi di contatto, senza dover chiedere a te. Inoltre, è possibile mostrare agli utenti messaggi Markdown personalizzati prima e dopo l’accesso.",
+        "customizeMessages": "Fai clic sul pulsante di modifica accanto a \"Pagina utente\" nelle impostazioni per configurarli in seguito.",
+        "requiredSettings": "L’accesso a jfa-go tramite Jellyfin deve essere impostato. Assicurati di selezionare in seguito \"reset della password tramite link\" per consentire il reset della password in autonomia."
+    },
+    "proxy": {
+        "title": "Proxy",
+        "description": "Consenti a jfa-go di effettuare tutte le connessioni tramite un proxy HTTP/SOCKS5. Anche la connessione a Jellyfin verrà testata attraverso questo proxy.",
+        "protocol": "Protocollo",
+        "address": "Indirizzo (Inclusa porta)"
     }
 }
