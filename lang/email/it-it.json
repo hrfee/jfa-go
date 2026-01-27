@@ -73,5 +73,17 @@
         "name": "Utente abilitato",
         "title": "Il tuo account è stato riabilitato - Jellyfin",
         "yourAccountWasEnabled": "Il tuo account è stato riabilitato."
+    },
+    "userExpiryAdjusted": {
+        "name": "Scadenza sistemata",
+        "ifPreviouslyDisabled": "Se il tuo account è stato precedentemente disabilitato, potrebbe esser stato riabilitato.",
+        "title": "Scadenza account sistemata - Jellyfin",
+        "yourExpiryWasAdjusted": "La scadenza del tuo account é stata aggiustata.",
+        "newExpiry": "Il tuo account ora scadrà il {date}."
+    },
+    "expiryReminder": {
+        "name": "Ricordo scadenza",
+        "yourAccountIsDueToExpire": "Il tuo account ora scadrà il {expiresIn}, oppure il {date} alle {time}.",
+        "title": "Ricorda: il tuo account scadrà tra poco - Jellyfin"
     }
 }
