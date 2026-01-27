@@ -42,7 +42,8 @@
         "referralsWithExpiryDescription": "Invita amici e famigliari su Jellyfin con questo link. Il link verra' disabilitato una volta scaduto.",
         "referralsDescription": "Invita amici e famigliari su Jellyfin usando questo link. Ritorna su questa pagina per ottenerne uno nuovo.",
         "copyReferral": "Copia Link",
-        "invitedBy": "Sei stato invitato dall'utente {user}."
+        "invitedBy": "Sei stato invitato dall'utente {user}.",
+        "resetPasswordContactMethod": "Il nome utente di qualsiasi metodo di contatto associato al tuo account"
     },
     "notifications": {
         "errorUserExists": "L'utente è già esistente.",
