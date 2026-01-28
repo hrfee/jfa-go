@@ -180,100 +180,166 @@
         "userDeleted": "L'utente è stato eliminato.",
         "inviteCreated": "Invito creato: {invite}",
         "inviteDeleted": "Invito cancellato: {invite}",
-        "inviteExpired": "Invito scaduto: {invite}"
+        "inviteExpired": "Invito scaduto: {invite}",
+        "byAdmin": "Dall'admin",
+        "usersMentioned": "Utente menzionato",
+        "actor": "Attore",
+        "accountCreationFilter": "Creazione account",
+        "inviteDeletedFilter": "Invito cancellato/scaduto",
+        "passwordChangeFilter": "Password cambiata",
+        "loadMore": "Carica altri",
+        "shownRecords": "{n} mostrati",
+        "backupCanDownload": "In alternativa, fai clic qui sotto per scaricare il backup.",
+        "backupsFormatNote": "Qui verranno mostrati solo i file di backup con il formato di nome standard. Per utilizzare altri file, carica manualmente il backup.",
+        "passwordResetFilter": "Password resettata",
+        "inviteCreatedFilter": "Invito creato",
+        "backups": "Backups",
+        "backupsDescription": "Da qui è possibile creare, ripristinare o scaricare i backup del database.",
+        "backupsCopy": "Quando si applica un backup, verrà creata una copia della cartella originale “db” accanto ad essa, nel caso qualcosa vada storto.",
+        "backupDownload": "Scarica backup",
+        "actorDescription": "L’elemento che ha causato questa azione: “user” / “admin” / “daemon” oppure un nome utente.",
+        "allLoadedSelected": "Tutti i risultati corrispondenti caricati sono stati selezionati. Fai clic di nuovo per caricarli tutti.",
+        "byUser": "Dall'utente",
+        "byJfaGo": "Da jfa-go",
+        "activityID": "ID attività",
+        "title": "Titolo",
+        "accountDeletionFilter": "Cancellazione account",
+        "accountDisabledFilter": "Account disabilitato",
+        "accountEnabledFilter": "Account attivato",
+        "contactLinkedFilter": "Contatto linkato",
+        "contactUnlinkedFilter": "Contatto delinkato",
+        "loadAll": "Carica tutti",
+        "noMoreResults": "Risultati finiti.",
+        "totalRecords": "{n} record totali",
+        "loadedRecords": "{n} caricati",
+        "selectedRecords": "{n} selezionati",
+        "allMatchingSelected": "Tutti I risultati matchati selezionati.",
+        "backupDownloadRestore": "Scarica / Ripristina",
+        "backupUpload": "Carica e ripristina backup",
+        "backupRestore": "Ripristina backup",
+        "backupNow": "Fai ora il backup",
+        "backupCreated": "Backup creato",
+        "backupCanBeFound": "Il backup può essere trovato sul server in {filepath}.",
+        "wikiPage": "Pagina Wiki",
+        "wiki": "Wiki",
+        "restartRequired": "Richiesto riavvio",
+        "required": "Richiesto",
+        "syntax": "Sintassi",
+        "syntaxDescription": "Le variabili sono indicate come {variable}. Le istruzioni if possono valutare la veridicità (ad es. {ifTruth}) oppure effettuare confronti di base (ad es. {ifCompare})"
     },
     "notifications": {
-        "changedEmailAddress": "",
-        "userCreated": "",
-        "createProfile": "",
-        "saveSettings": "",
-        "saveEmail": "",
-        "sentAnnouncement": "",
-        "savedAnnouncement": "",
-        "setOmbiProfile": "",
-        "updateApplied": "",
-        "updateAppliedRefresh": "",
-        "telegramVerified": "",
-        "accountConnected": "",
-        "errorSettingsAppliedNoHomescreenLayout": "",
-        "errorHomescreenAppliedNoSettings": "",
-        "errorSettingsFailed": "",
-        "errorSaveEmail": "",
-        "errorBlankFields": "",
-        "errorDeleteProfile": "",
-        "errorLoadProfiles": "",
-        "errorCreateProfile": "",
-        "errorSetDefaultProfile": "",
-        "errorLoadUsers": "",
-        "errorLoadSettings": "",
-        "errorSetOmbiProfile": "",
-        "errorLoadOmbiUsers": "",
-        "errorChangedEmailAddress": "",
-        "errorFailureCheckLogs": "",
-        "errorPartialFailureCheckLogs": "",
-        "errorUserCreated": "",
-        "errorSendWelcomeEmail": "",
-        "errorApplyUpdate": "",
-        "errorCheckUpdate": "",
-        "updateAvailable": "",
-        "noUpdatesAvailable": ""
+        "changedEmailAddress": "Indirizzo email di {n} modificato.",
+        "userCreated": "Utente {n} creato.",
+        "createProfile": "Creato profilo {n}.",
+        "saveSettings": "Le impostazioni sono state salvate",
+        "saveEmail": "Email salvata.",
+        "sentAnnouncement": "Annuncio inviato.",
+        "savedAnnouncement": "Annuncio salvato.",
+        "setOmbiProfile": "Profilo Ombi salvato.",
+        "updateApplied": "Update applicato, restarta.",
+        "updateAppliedRefresh": "Update applicato, refresha.",
+        "telegramVerified": "Account telegram verificato.",
+        "accountConnected": "Account connesso.",
+        "errorSettingsAppliedNoHomescreenLayout": "Le impostazioni sono state applicate, ma l’applicazione del layout della schermata principale potrebbe non essere riuscita.",
+        "errorHomescreenAppliedNoSettings": "Il layout della schermata principale è stato applicato, ma l’applicazione delle impostazioni potrebbe non essere riuscita.",
+        "errorSettingsFailed": "Applicazione fallita.",
+        "errorSaveEmail": "Salvataggio email fallito.",
+        "errorBlankFields": "Dai campi sono lasciati vuoti",
+        "errorDeleteProfile": "Impossibile eliminare il profilo {n}",
+        "errorLoadProfiles": "Impossibile caricare i profili.",
+        "errorCreateProfile": "Creazione profilo {n} fallita",
+        "errorSetDefaultProfile": "Impossibile impostare il profilo predefinito.",
+        "errorLoadUsers": "Impossibile caricare utenti.",
+        "errorLoadSettings": "Impossibile caricare le impostazioni.",
+        "errorSetOmbiProfile": "Impossibile salvare il profilo Ombi.",
+        "errorLoadOmbiUsers": "Impossibile caricare gli utenti Ombi.",
+        "errorChangedEmailAddress": "Impossibile cambiare l’indirizzo email di {n}.",
+        "errorFailureCheckLogs": "Operazione non riuscita (controlla console/log)",
+        "errorPartialFailureCheckLogs": "Errore parziale (controlla console/log)",
+        "errorUserCreated": "Impossibile creare l’utente {n}.",
+        "errorSendWelcomeEmail": "Impossibile inviare il messaggio di benvenuto (controlla console/log)",
+        "errorApplyUpdate": "Impossibile applicare l’aggiornamento, prova manualmente.",
+        "errorCheckUpdate": "Impossibile controllare per aggiornamenti.",
+        "updateAvailable": "Un nuovo update è disponibile, controlla i settings.",
+        "noUpdatesAvailable": "Non ci sono nuovi aggiornamenti.",
+        "errorInviteNotFound": "Invito non trovato.",
+        "errorNoReferralTemplate": "Il profilo non contiene un modello di referral, aggiungine uno nelle impostazioni.",
+        "errorInvalidJSON": "JSON non valido.",
+        "errorInviteNoLongerExists": "L'invito non esiste più.",
+        "errorInvalidAddress": "Address/none invalido",
+        "pathCopied": "Percorso completo copiato nella clipboard.",
+        "savedProfile": "Salvate modifiche profilo.",
+        "referralsEnabled": "Referral abilitato.",
+        "activityDeleted": "Attività cancellata.",
+        "errorLoadProfile": "Impossibile caricare i profilo.",
+        "errorSavedProfile": "Salvataggio profilo {n} fallito",
+        "errorCheckLogs": "Controlla console/log",
+        "errorLoadActivities": "Impossibile caricare attività.",
+        "errorInvalidDate": "La data non è valida.",
+        "runTask": "Attivato il task.",
+        "errorMultiUser": "Trovato diversi utenti corrispondenti",
+        "errorNoUser": "Nessun utente corrispondente trovato"
     },
     "quantityStrings": {
         "modifySettingsFor": {
-            "singular": "",
-            "plural": ""
+            "singular": "Modifica i settings per utente {n}",
+            "plural": "Modifica i settings per {n} utenti"
         },
         "deleteNUsers": {
-            "singular": "",
-            "plural": ""
+            "singular": "Cancella {n} utente",
+            "plural": "Cancella {n} utenti"
         },
         "disableUsers": {
-            "singular": "",
-            "plural": ""
+            "singular": "Disabilità {n} utente",
+            "plural": "Disabilità {n} utenti"
         },
         "reEnableUsers": {
-            "singular": "",
-            "plural": ""
+            "singular": "Ri-abilita {n} utente",
+            "plural": "Ri-abilita {n} utenti"
         },
         "addUser": {
-            "singular": "",
-            "plural": ""
+            "singular": "Aggiungi utente",
+            "plural": "Aggiungi utenti"
         },
         "deleteUser": {
-            "singular": "",
-            "plural": ""
+            "singular": "Cancella utente",
+            "plural": "Cancella utenti"
         },
         "deletedUser": {
-            "singular": "",
-            "plural": ""
+            "singular": "Cancellato {n} utente.",
+            "plural": "Cancellati {n} utenti."
         },
         "disabledUser": {
-            "singular": "",
-            "plural": ""
+            "singular": "Disabilitato {n} utente.",
+            "plural": "Disabilitati {n} utenti."
         },
         "enabledUser": {
-            "singular": "",
-            "plural": ""
+            "singular": "Abilitato {n} utente.",
+            "plural": "Abilitati {n} utenti."
         },
         "announceTo": {
-            "singular": "",
-            "plural": ""
+            "singular": "Annuncia a {n} utente",
+            "plural": "Annuncia a {n} utenti"
         },
         "appliedSettings": {
-            "singular": "",
-            "plural": ""
+            "singular": "Impostazioni applicate a {n} utente.",
+            "plural": "Impostazioni applicate a {n} utenti."
         },
         "extendExpiry": {
-            "singular": "",
-            "plural": ""
+            "singular": "Scadenza allungata a {n} utente",
+            "plural": "Scadenza allungata a {n} utenti"
         },
         "setExpiry": {
-            "singular": "",
-            "plural": ""
+            "singular": "Imposta scadenza a {n} utente",
+            "plural": "Imposta scadenza a {n} utenti"
         },
         "extendedExpiry": {
-            "singular": "",
-            "plural": ""
+            "singular": "Scadenza allungata a {n} utente.",
+            "plural": "Scadenza allungata a {n} utenti."
+        },
+        "enableReferralsFor": {
+            "singular": "Attiva i referrals per {n} utente",
+            "plural": "Attiva i referrals per {n} utenti"
         }
     }
 }
