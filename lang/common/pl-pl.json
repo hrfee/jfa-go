@@ -27,15 +27,15 @@
         "required": "Wymagane",
         "admin": "Admin",
         "enabled": "Włączone",
-        "disabled": "Wyłączone",
+        "disabled": "Wyłączono",
         "disable": "Wyłączone",
         "expiry": "Wygasa",
-        "edit": "Edytuj"
+        "edit": "Edytuj",
+        "language": "Język"
     },
     "notifications": {
         "errorConnection": "Nie udało się połączyć z jfa-go.",
         "errorUnknown": "Nieznany błąd.",
         "error401Unauthorized": "Nieautoryzowany. Spróbuj odświeżyć stronę."
-    },
-    "quantityStrings": {}
+    }
 }
