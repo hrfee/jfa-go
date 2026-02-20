@@ -196,7 +196,18 @@
         "noResultsFound": "Aucun résultat trouvé",
         "useInviteExpiryNote": "Par défaut, les invitations expirent après 90 jours mais peuvent être renouvelées par l'utilisateur. Activez la désactivation de la référence après le délai défini.",
         "backupsFormatNote": "Seuls les fichiers de sauvegarde au format standard seront affichés ici. Pour en utiliser un autre, veuillez charger la sauvegarde manuellement.",
-        "backupCanBeFound": "La sauvegarde peut être trouvée sur le serveur à {filepath}."
+        "backupCanBeFound": "La sauvegarde peut être trouvée sur le serveur à {filepath}.",
+        "sentTo": "Envoyé à",
+        "editProfileDescription": "Pour les modifications importantes, il est recommandé de modifier les paramètres dans Jellyfin/Jellyseerr/Ombi et de regénérer le profil, mais vous pouvez également effectuer des modifications directes ici. Veuillez faire preuve de prudence lors de la modification.",
+        "extendFromPreviousExpiry": "Prolonger à partir de la date d'expiration précédente (si possible)",
+        "extendFromPreviousExpiryDescription": "Si l'activité enregistrée dans le journal indique qu'un utilisateur a dépassé la date d'expiration, celle-ci sera prolongée à partir de ce moment-là, plutôt qu'à partir de l'heure actuelle, à moins que la nouvelle date d'expiration ne soit déjà dépassée.",
+        "applyOmbi": "Appliquer le profil Ombi (si disponible)",
+        "editProfile": "Modifier le profil",
+        "tasks": "Tâches",
+        "tasksDescription": "Les tâches sont des actions importantes qui peuvent être exécutées périodiquement en arrière-plan. Vous pouvez les déclencher manuellement ici si vous le souhaitez.",
+        "run": "Exécuter",
+        "applyConfigurationAndPolicy": "Appliquer la configuration/politique Jellyfin",
+        "noResultsFoundLocally": "Seuls les enregistrements chargés ont été recherchés. Vous pouvez en charger davantage ou effectuer la recherche sur tous les enregistrements du serveur."
     },
     "notifications": {
         "changedEmailAddress": "Adresse e-mail modifiée de {n}.",
