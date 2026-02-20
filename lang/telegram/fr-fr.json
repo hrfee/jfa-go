@@ -13,6 +13,7 @@
         "languageSet": "Langue définie sur {language}.",
         "languageMessageDiscord": "Note : définissez votre langue avec /lang <nom de la langue>.",
         "sentInvite": "Invitation envoyée.",
-        "sentInviteFailure": "Échec de l'envoi de l'invitation, vérifiez les journaux."
+        "sentInviteFailure": "Échec de l'envoi de l'invitation, vérifiez les journaux.",
+        "noPermission": "Vous n'avez pas les autorisations pour cette action."
     }
 }
