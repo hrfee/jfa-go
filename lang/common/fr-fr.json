@@ -41,7 +41,9 @@
         "notSet": "Non défini",
         "myAccount": "Mon compte",
         "contactMethods": "Moyens de contact",
-        "referrals": "Programme de parrainage"
+        "referrals": "Programme de parrainage",
+        "language": "Langue",
+        "sent": "Envoyé"
     },
     "notifications": {
         "errorLoginBlank": "Le nom d'utilisateur et/ou le mot de passe sont vides.",
