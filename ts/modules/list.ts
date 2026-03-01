@@ -464,7 +464,6 @@ export abstract class PaginatedList implements PageEventBindable {
     // Loads the next page. If "loadAll", all pages will be loaded until the last is reached.
     public abstract loadMore: (loadAll?: boolean, callback?: (resp?: PaginatedDTO) => void) => void;
     protected _loadMore = (loadAll: boolean = false, callback?: (resp: PaginatedDTO) => void) => {
-        console.trace("loading more");
         this._c.loadMoreButtons.forEach((v) => (v.disabled = true));
         const timeout = setTimeout(() => {
             this._c.loadMoreButtons.forEach((v) => (v.disabled = false));
@@ -530,6 +529,7 @@ export abstract class PaginatedList implements PageEventBindable {
         this._scroll.lastScrollY = scrollY;
         // If you've scrolled back up, do nothing
         if (scrollSpeed < 0) return;
+        if (this._scroll.rowHeight == 0) this.computeScrollInfo();
         let endIdx = this.maximumItemsToRender(scrollY);
 
         // Throttling this function means we might not catch up in time if the user scrolls fast,

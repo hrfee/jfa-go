@@ -2952,6 +2952,7 @@ class UserInfo extends PaginatedList {
                 }
 
                 this._search.setOrdering(Array.from(this.entries.keys()), "Date", true);
+                this.computeScrollInfo();
             },
             replaceWithNewItems: (resp: PaginatedDTO) => {
                 let entriesOnDOM = new Map<string, boolean>();
