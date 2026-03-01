@@ -128,7 +128,6 @@ class DOMSetting {
             this._hideEl.classList.remove("unfocused");
         }
         document.dispatchEvent(changedEvent(this._section, this.setting, this.valueAsString(), v));
-        console.log(`dispatched settings-${this._section}-${this.setting} = ${this.valueAsString()}/${v}`);
     }
 
     private _advancedListener = (event: advancedEvent) => {
