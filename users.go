@@ -220,7 +220,14 @@ func (app *appContext) DeleteUser(user mediabrowser.User) (err error, deleted bo
 			}
 		}
 	}
-
+	
+	// Delete in Jellyseerr
+	if app.js != nil {
+		if err := app.js.DeleteUser(user.ID); err != nil {
+			app.err.Printf(lm.FailedDeleteUser, lm.Jellyseerr, user.ID, err)
+		}
+	}
+	
 	if app.discord != nil && app.config.Section("discord").Key("disable_enable_role").MustBool(false) {
 		cmUser, ok := app.storage.GetDiscordKey(user.ID)
 		if ok {
