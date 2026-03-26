@@ -47,14 +47,16 @@
         "title": "ทั่วไป",
         "listenAddress": "Listen Address",
         "urlBase": "URL Base",
-        "urlBaseNotice": "จำเป็นเฉพาะเมื่อผ่าน Reverse Proxy บนโดเมนย่อย (ตัวอย่าง 'jellyf.in/accounts')",
+        "urlBaseNotice": "จำเป็นเฉพาะเมื่อผ่าน Reverse Proxy บนโฟล์เดอร์ย่อย (ตัวอย่าง 'jellyf.in/accounts')",
         "lightTheme": "สว่าง",
         "darkTheme": "มืด",
         "useHTTPS": "ใช้ HTTPS",
         "httpsPort": "พอร์ต HTTPS",
         "useHTTPSNotice": "จำเป็นเฉพาะถ้าเข้าใช้งานไม่ผ่าน Reverse Proxy",
         "pathToCertificate": "ที่อยู่ใบรับรอง",
-        "pathToKeyFile": "ที่อยู่ไฟล์กุญแจ (รหัสใบรับรอง)"
+        "pathToKeyFile": "ที่อยู่ไฟล์กุญแจ (รหัสใบรับรอง)",
+        "externalURL": "ลิงค์ภายนอกสำหรับ jfa-go",
+        "externalURLNotice": "URL ที่คุณใช้ในการเข้าถึง jfa-go, ใช้ในการสร้างลิงค์ต่าง ๆ เช่น ตั้งต่ารหัสผ่านใหม่ อย่าลืมตรวจสอบว่าได้ใส่ฐาน URL ด้านบนด้วยหากได้ตั้งค่าไว้"
     },
     "updates": {
         "title": "อัปเดต",
