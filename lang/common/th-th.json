@@ -41,14 +41,20 @@
         "delete": "ลบ",
         "myAccount": "บัญชีของฉัน",
         "referrals": "คำเชิญ",
-        "inviteRemainingUses": "จำนวนใช้ที่เหลือ"
+        "inviteRemainingUses": "จำนวนใช้ที่เหลือ",
+        "language": "ภาษา",
+        "sent": "ส่งแล้ว",
+        "failed": "ล้มเหลว",
+        "internal": "ภายใน",
+        "external": "ภายนอก"
     },
     "notifications": {
         "errorLoginBlank": "ชื่อผู้ใช้ และ/หรือ รหัสผ่านถูกเว้นว่างไว้",
         "errorConnection": "ไม่สามารถเชื่อต่อไปยัง jfa-go ได้",
         "errorUnknown": "เกิดข้อผิดผลาดที่ไม่รู้จัก",
         "error401Unauthorized": "ไม่อนุญาติการเข้าถึง, ลองโหลดหน้านี้อีกครั้ง",
-        "errorSaveSettings": "ไม่สามารถบันทึกการตั้งค่าได้"
+        "errorSaveSettings": "ไม่สามารถบันทึกการตั้งค่าได้",
+        "errorSpecialSymbols": "ช่องนี้ไม่สามารถใส่อักขระพิเศษได้"
     },
     "quantityStrings": {
         "year": {
