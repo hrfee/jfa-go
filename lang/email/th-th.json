@@ -80,5 +80,10 @@
         "title": "บัญชีของคุณหมดอายุ - Jellyfin",
         "yourAccountHasExpired": "บัญชีของคุณหมดอายุแล้ว",
         "contactTheAdmin": "ติดต่อผู้ดูแลระบบสำหรับข้อมูลเพิ่มเติม"
+    },
+    "expiryReminder": {
+        "yourAccountIsDueToExpire": "บัญชีของคุณจะหมดอายุภายใน {expiresIn}, ณ วันที่ {date} เวลา {time}",
+        "title": "แจ้งเตือน: บัญชีของคุณกำลังจะหมดอายุเร็ว ๆ นี้ - Jellyfin",
+        "name": "แจ้งเตือนบัญชีหมดอายุ"
     }
 }
