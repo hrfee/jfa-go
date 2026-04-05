@@ -36,7 +36,8 @@
         "add": "Hinzufügen",
         "edit": "Bearbeiten",
         "delete": "Löschen",
-        "inviteRemainingUses": "Verbleibende Verwendungen"
+        "inviteRemainingUses": "Verbleibende Verwendungen",
+        "sent": "Gesendet"
     },
     "notifications": {
         "errorLoginBlank": "Der Benutzername und/oder das Passwort wurden nicht ausgefüllt.",
@@ -44,6 +45,5 @@
         "errorUnknown": "Unbekannter Fehler.",
         "error401Unauthorized": "Unberechtigt. Versuch, die Seite zu aktualisieren.",
         "errorSaveSettings": "Einstellungen konnten nicht gespeichert werden."
-    },
-    "quantityStrings": {}
+    }
 }
