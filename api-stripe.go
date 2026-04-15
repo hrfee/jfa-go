@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	lm "github.com/hrfee/jfa-go/logmessages"
 	"github.com/stripe/stripe-go/v79"
 )
 
@@ -40,10 +41,9 @@ func (app *appContext) PostStripeCheckout(gc *gin.Context) {
 	successURL := fmt.Sprintf("%s/invite/%s?success=payment", baseURL, code)
 	cancelURL := fmt.Sprintf("%s/invite/%s?canceled=payment", baseURL, code)
 
-	// Pass nil metadata for legacy flow
 	url, err := CreateCheckoutSession(code, inv.PriceAmount, inv.PriceCurrency, successURL, cancelURL, nil, "")
 	if err != nil {
-		app.err.Printf("Failed to create checkout session: %v", err)
+		app.err.Printf(lm.FailedCreateCheckoutSession, err)
 		respond(500, "Failed to create checkout session", gc)
 		return
 	}
@@ -75,42 +75,29 @@ func (app *appContext) PostStripeCreateCheckout(gc *gin.Context) {
 		return
 	}
 
-	// Pricing Logic
-	// Pricing Logic
 	var priceAmount int64
 	var interval string
 	var profileName = "Default"
 
-	// Double-Billing Prevention: Check if user exists and is active
-	// Only for Monthly (Subscription) plans
+	// Double-billing prevention for subscription plans
 	if req.Plan == "Monthly" {
-		for _, em := range app.storage.GetEmails() {
-			if strings.EqualFold(em.Addr, req.Email) {
-				userID := em.JellyfinID
-				// Check if user is effectively active (not disabled, expiry in future)
-				// Check if user is effectively active (not disabled, expiry in future)
-				user, err := app.jf.UserByID(userID, false)
-				if err == nil && !user.Policy.IsDisabled {
-					// Check expiry
-					expiry := time.Now()
-					if userExpiry, ok := app.storage.GetUserExpiryKey(userID); ok {
-						expiry = userExpiry.Expiry
-					}
-
-					// This block seems to be misplaced. `invoice.ID` is not available here.
-					// Assuming the intent was to check for an *active* subscription and prevent a new one.
-					// The original logic for checking active expiry is more appropriate here.
-					if expiry.After(time.Now()) {
-						app.info.Printf("Blocked duplicate Stripe subscription attempt for active user %s (%s)", userID, req.Email)
-						respond(409, "You already have an active subscription.", gc)
-						return
-					}
+		if userID, _, found := app.findUserByEmail(req.Email); found {
+			user, err := app.jf.UserByID(userID, false)
+			if err == nil && !user.Policy.IsDisabled {
+				expiry := time.Now()
+				if userExpiry, ok := app.storage.GetUserExpiryKey(userID); ok {
+					expiry = userExpiry.Expiry
 				}
-				break
+				if expiry.After(time.Now()) {
+					app.info.Printf(lm.StripeBlockedDuplicate, userID, req.Email)
+					respond(409, "You already have an active subscription.", gc)
+					return
+				}
 			}
 		}
 	}
-	var currency = app.config.Section("stripe").Key("price_currency").MustString("usd")
+
+	currency := app.config.Section("stripe").Key("price_currency").MustString("usd")
 	priceStandard := app.config.Section("stripe").Key("price_standard").MustInt64(500)
 	priceMonthly := app.config.Section("stripe").Key("price_monthly").MustInt64(200)
 
@@ -118,17 +105,14 @@ func (app *appContext) PostStripeCreateCheckout(gc *gin.Context) {
 		priceAmount = priceMonthly
 		interval = "month"
 	} else {
-		// Default to Standard
 		req.Plan = "Standard"
-		priceAmount = priceStandard // $5.00
-		interval = ""               // One-time
+		priceAmount = priceStandard
+		interval = ""
 	}
 
-	// Generate a temporary "Reference ID" for the log (not the invite code yet)
 	refID := "purchase-" + strconv.FormatInt(time.Now().Unix(), 10)
 
 	baseURL := ExternalURI(gc)
-	// Redirect to a generic success page or the store with a flag
 	successURL := fmt.Sprintf("%s/payment/success", baseURL)
 	cancelURL := fmt.Sprintf("%s/store?canceled=true", baseURL)
 
@@ -140,7 +124,7 @@ func (app *appContext) PostStripeCreateCheckout(gc *gin.Context) {
 
 	url, err := CreateCheckoutSession(refID, priceAmount, currency, successURL, cancelURL, metadata, interval)
 	if err != nil {
-		app.err.Printf("Failed to create checkout session: %v", err)
+		app.err.Printf(lm.FailedCreateCheckoutSession, err)
 		respond(500, "Failed to create checkout session", gc)
 		return
 	}
@@ -160,7 +144,7 @@ func (app *appContext) StripeWebhook(gc *gin.Context) {
 	gc.Request.Body = http.MaxBytesReader(gc.Writer, gc.Request.Body, MaxBodyBytes)
 	payload, err := io.ReadAll(gc.Request.Body)
 	if err != nil {
-		app.err.Printf("Error reading request body: %v", err)
+		app.err.Printf(lm.FailedReading, "request body", err)
 		gc.AbortWithStatus(400)
 		return
 	}
@@ -170,272 +154,219 @@ func (app *appContext) StripeWebhook(gc *gin.Context) {
 	verifySignature := app.config.Section("stripe").Key("verify_signature").MustBool(false)
 
 	if !verifySignature {
-		app.info.Printf("DEBUG: Signature verification DISABLED. Verifying event via Stripe API.")
+		app.debug.Println(lm.StripeSignatureBypass)
 	}
 
 	event, err := HandleWebhook(payload, sigHeader, webhookSecret, verifySignature)
 	if err != nil {
-		app.err.Printf("Webhook error: %v", err)
+		app.err.Printf(lm.StripeWebhookError, err)
 		gc.AbortWithStatus(400)
 		return
 	}
 
 	switch event.Type {
 	case "checkout.session.completed":
-		var session stripe.CheckoutSession
-		err := json.Unmarshal(event.Data.Raw, &session)
-		if err != nil {
-			app.err.Printf("Error parsing webhook JSON: %v", err)
-			return
-		}
-
-		refID := session.ClientReferenceID
-		metadata := session.Metadata
-
-		// Check for metadata first (New Flow)
-		if targetEmail, ok := metadata["target_email"]; ok {
-			app.info.Printf("Payment received for Checkout Session (Plan: %s) to %s", metadata["plan"], targetEmail)
-
-			// Check if user exists by email (Re-subscription logic)
-			var existingUserID string
-			var existingUserEmailStruct EmailAddress
-
-			for _, em := range app.storage.GetEmails() {
-				if strings.EqualFold(em.Addr, targetEmail) {
-					existingUserID = em.JellyfinID
-					existingUserEmailStruct = em
-					break
-				}
-			}
-
-			if existingUserID != "" {
-				// UPDATE EXISTING USER (Re-activation)
-				app.info.Printf("Existing user found for %s (%s). Reactivating subscription via Store Checkout.", targetEmail, existingUserID)
-
-				// 1. Update Label to link Stripe ID (if needed, though Subscription ID isn't in Session object easily unless we expand)
-				// For now, we keep "Purchased via Store" or similar, or try to get Sub ID from invoice.
-				// Simply updating label to "Stripe Subscription: Active" is enough for our checks.
-				if subscriptionID := session.Subscription; subscriptionID != nil {
-					existingUserEmailStruct.Label = "Stripe Subscription: " + subscriptionID.ID
-					app.storage.SetEmailsKey(existingUserID, existingUserEmailStruct)
-				} else {
-					// One-time payment or ID missing
-					existingUserEmailStruct.Label = "Purchased via Store"
-					app.storage.SetEmailsKey(existingUserID, existingUserEmailStruct)
-				}
-
-				// 2. Extend Expiry
-				expiry := time.Now()
-				lastTx := ""
-				if userExpiry, ok := app.storage.GetUserExpiryKey(existingUserID); ok {
-					expiry = userExpiry.Expiry
-					lastTx = userExpiry.LastTransactionID
-				}
-
-				// IDEMPOTENCY CHECK
-				if lastTx == session.ID {
-					app.info.Printf("Stripe Session %s already processed for user %s. Skipping.", session.ID, existingUserID)
-					return // Success
-				}
-
-				if expiry.Before(time.Now()) {
-					expiry = time.Now()
-				}
-				var newExpiry time.Time
-				if metadata["plan"] == "Monthly" {
-					newExpiry = expiry.AddDate(0, 1, 0)
-				} else {
-					newExpiry = expiry.AddDate(10, 0, 0) // Lifetime
-				}
-				app.storage.SetUserExpiryKey(existingUserID, UserExpiry{Expiry: newExpiry, LastTransactionID: session.ID})
-
-				// 3. Re-enable User if currently disabled (Force enable)
-				paramsUser, err := app.jf.UserByID(existingUserID, false)
-				if err == nil {
-					app.info.Printf("Ensuring user %s is enabled...", existingUserID)
-					err, _, _ = app.SetUserDisabled(paramsUser, false)
-					if err != nil {
-						app.err.Printf("Failed to re-enable user %s: %v", existingUserID, err)
-					}
-					app.InvalidateUserCaches()
-				}
-
-				app.info.Printf("SUCCESS: Reactivated user %s to %s via Stripe Checkout", existingUserID, newExpiry)
-
-				// Don't generate invite code.
-			} else {
-				// NEW USER LOGIC
-				inviteCode := GenerateInviteCode()
-				profile := metadata["profile"]
-				if profile == "" {
-					profile = "Default"
-				}
-				if _, ok := app.storage.GetProfileKey(profile); !ok {
-					app.debug.Printf("Profile %s not found for purchase, falling back to Default", profile)
-					profile = "Default"
-				}
-
-				invite := Invite{
-					Code:          inviteCode,
-					Created:       time.Now(),
-					Label:         "Purchased by " + targetEmail,
-					UserLabel:     "Purchased via Store",
-					RemainingUses: 1,
-					Profile:       profile,
-					SendTo:        targetEmail,
-				}
-
-				if metadata["plan"] == "Monthly" {
-					invite.ValidTill = time.Now().AddDate(0, 1, 0) // 1 Month to redeem
-					invite.UserExpiry = true
-					invite.UserMonths = 1
-				} else {
-					invite.ValidTill = time.Now().AddDate(10, 0, 0)
-					invite.UserExpiry = false
-				}
-
-				app.storage.SetInvitesKey(inviteCode, invite)
-				app.info.Printf("SUCCESS: Generated Invite Code %s for %s", inviteCode, targetEmail)
-
-				// Email Sending with Safety Checks + Async
-				if app.config.Section("email").Key("enabled").MustBool(false) {
-					go func(inv Invite, tEmail string) {
-						msg, err := app.email.constructInvite(&inv, false)
-						if err != nil {
-							app.err.Printf("Failed to construct invite email for %s: %v", tEmail, err)
-						} else {
-							err = app.email.send(msg, tEmail)
-							if err != nil {
-								app.err.Printf("Failed to send invite email to %s: %v", tEmail, err)
-							} else {
-								app.info.Printf("Sent purchased invite %s to %s", inv.Code, tEmail)
-							}
-						}
-					}(invite, targetEmail)
-				} else {
-					app.info.Printf("Email disabled in config. Skipping invite email for %s", targetEmail)
-				}
-			}
-			// [Old Flow Logic: Pay to Unlock]
-			app.info.Printf("Payment received for EXISTING invite: %s", refID)
-			inv, ok := app.storage.GetInvitesKey(refID)
-			if ok {
-				inv.PaymentStatus = "paid"
-				app.storage.SetInvitesKey(refID, inv)
-			}
-		}
-
+		app.handleStripeCheckoutCompleted(event)
 	case "invoice.payment_succeeded":
-		var invoice stripe.Invoice
-		err := json.Unmarshal(event.Data.Raw, &invoice)
-		if err != nil {
-			app.err.Printf("Error parsing webhook JSON: %v", err)
-			return
-		}
-
-		// Ensure this is a subscription renewal
-		if invoice.BillingReason == stripe.InvoiceBillingReasonSubscriptionCycle {
-			if invoice.CustomerEmail == "" {
-				app.err.Printf("Invoice %s has no customer email, cannot extend user expiry", invoice.ID)
-				return
-			}
-			email := invoice.CustomerEmail
-			app.info.Printf("Subscription RENEWAL received for %s", email)
-
-			// Find Jellyfin User by Email
-			// We iterate because we don't have a direct Email -> UserID index easily exposed here
-			// But app.storage.GetEmailsKey(userID) gives email...
-			// Wait, app.EmailAddressExists(addr) exists?
-			// app.storage.GetEmails() returns all.
-
-			// Ideally we'd have a helper, but let's just loop over emails for now as it's MVP
-			var userID string
-			for _, em := range app.storage.GetEmails() {
-				if strings.EqualFold(em.Addr, email) {
-					userID = em.JellyfinID
-					break
-				}
-			}
-
-			if userID == "" {
-				app.err.Printf("Could not find user with email %s to extend expiry", email)
-				return
-			}
-
-			// Extend User Expiry by 1 Month
-			expiry := time.Now()
-			userExpiry, ok := app.storage.GetUserExpiryKey(userID)
-			if ok {
-				expiry = userExpiry.Expiry
-			}
-			// If current expiry is in the past, start from NOW. If in future, add to it.
-			if expiry.Before(time.Now()) {
-				expiry = time.Now()
-			}
-			newExpiry := expiry.AddDate(0, 1, 0) // Add 1 Month
-
-			app.storage.SetUserExpiryKey(userID, UserExpiry{Expiry: newExpiry})
-
-			// Hardening: Re-enable User if currently disabled (Force enable)
-			paramsUser, err := app.jf.UserByID(userID, false)
-			if err == nil {
-				app.info.Printf("Ensuring user %s is enabled...", userID)
-				err, _, _ = app.SetUserDisabled(paramsUser, false)
-				if err != nil {
-					app.err.Printf("Failed to re-enable user %s: %v", userID, err)
-				}
-				app.InvalidateUserCaches()
-			}
-
-			app.info.Printf("SUCCESS: Extended expiry for user %s (%s) to %s", userID, email, newExpiry)
-		}
-
+		app.handleStripeInvoiceSucceeded(event)
 	case "customer.subscription.deleted":
-		var sub stripe.Subscription
-		err := json.Unmarshal(event.Data.Raw, &sub)
-		if err != nil {
-			app.err.Printf("Error parsing webhook JSON: %v", err)
-			return
-		}
-
-		// Attempt to identify user by Metadata (preferred) or lookup (if we stored sub ID)
-		targetEmail := sub.Metadata["target_email"]
-		if targetEmail == "" {
-			app.info.Printf("Webhook: customer.subscription.deleted received for %s but no target_email in metadata. Ignoring active revocation (Passive Expiry will still apply).", sub.ID)
-			return
-		}
-
-		app.info.Printf("Active Revocation: Subscription %s deleted for %s. Disabling user...", sub.ID, targetEmail)
-
-		// 1. Find User
-		var userID string
-		for _, em := range app.storage.GetEmails() {
-			if strings.EqualFold(em.Addr, targetEmail) {
-				userID = em.JellyfinID
-				break
-			}
-		}
-
-		if userID == "" {
-			app.err.Printf("Could not find user with email %s to revoke access", targetEmail)
-			return
-		}
-
-		// 2. Expire immediately (Set expiry to 1 second ago)
-		app.storage.SetUserExpiryKey(userID, UserExpiry{Expiry: time.Now().Add(-1 * time.Second)})
-
-		// 3. Disable User (Hard Revoke)
-		paramsUser, err := app.jf.UserByID(userID, false)
-		if err == nil {
-			err, _, _ = app.SetUserDisabled(paramsUser, true)
-			if err != nil {
-				app.err.Printf("Failed to disable user %s: %v", userID, err)
-			} else {
-				app.info.Printf("SUCCESS: Disabled user %s due to subscription cancellation", userID)
-			}
-			app.InvalidateUserCaches()
-		}
+		app.handleStripeSubscriptionDeleted(event)
 	}
 
 	gc.Status(200)
+}
+
+func (app *appContext) handleStripeCheckoutCompleted(event *stripe.Event) {
+	var session stripe.CheckoutSession
+	if err := json.Unmarshal(event.Data.Raw, &session); err != nil {
+		app.err.Printf(lm.StripeWebhookError, err)
+		return
+	}
+
+	refID := session.ClientReferenceID
+	metadata := session.Metadata
+
+	targetEmail, ok := metadata["target_email"]
+	if !ok {
+		// Legacy pay-to-unlock flow
+		app.info.Printf(lm.StripePaymentOldInvite, refID)
+		if inv, ok := app.storage.GetInvitesKey(refID); ok {
+			inv.PaymentStatus = "paid"
+			app.storage.SetInvitesKey(refID, inv)
+		}
+		return
+	}
+
+	app.info.Printf(lm.StripePaymentReceived, metadata["plan"], targetEmail)
+
+	existingUserID, existingEmail, found := app.findUserByEmail(targetEmail)
+	if found {
+		app.info.Printf(lm.ExistingUserFound, targetEmail, existingUserID)
+
+		if subscriptionID := session.Subscription; subscriptionID != nil {
+			existingEmail.Label = "Stripe Subscription: " + subscriptionID.ID
+		} else {
+			existingEmail.Label = "Purchased via Store"
+		}
+		app.storage.SetEmailsKey(existingUserID, existingEmail)
+
+		expiry := time.Now()
+		lastTx := ""
+		if userExpiry, ok := app.storage.GetUserExpiryKey(existingUserID); ok {
+			expiry = userExpiry.Expiry
+			lastTx = userExpiry.LastTransactionID
+		}
+
+		if lastTx == session.ID {
+			app.info.Printf(lm.StripeSessionAlreadyProcessed, session.ID, existingUserID)
+			return
+		}
+
+		if expiry.Before(time.Now()) {
+			expiry = time.Now()
+		}
+		var newExpiry time.Time
+		if metadata["plan"] == "Monthly" {
+			newExpiry = expiry.AddDate(0, 1, 0)
+		} else {
+			newExpiry = expiry.AddDate(10, 0, 0)
+		}
+		app.storage.SetUserExpiryKey(existingUserID, UserExpiry{Expiry: newExpiry, LastTransactionID: session.ID})
+
+		if paramsUser, err := app.jf.UserByID(existingUserID, false); err == nil {
+			if err, _, _ = app.SetUserDisabled(paramsUser, false); err != nil {
+				app.err.Printf(lm.FailedReEnableUser, existingUserID, err)
+			}
+			app.InvalidateUserCaches()
+		}
+
+		app.info.Printf(lm.UserReactivated, existingUserID, newExpiry)
+		return
+	}
+
+	// New user: generate invite
+	inviteCode := GenerateInviteCode()
+	profile := metadata["profile"]
+	if profile == "" {
+		profile = "Default"
+	}
+	if _, ok := app.storage.GetProfileKey(profile); !ok {
+		app.debug.Printf(lm.FailedGetProfile, profile)
+		profile = "Default"
+	}
+
+	invite := Invite{
+		Code:          inviteCode,
+		Created:       time.Now(),
+		Label:         "Purchased by " + targetEmail,
+		UserLabel:     "Purchased via Store",
+		RemainingUses: 1,
+		Profile:       profile,
+		SendTo:        targetEmail,
+	}
+
+	if metadata["plan"] == "Monthly" {
+		invite.ValidTill = time.Now().AddDate(0, 1, 0)
+		invite.UserExpiry = true
+		invite.UserMonths = 1
+	} else {
+		invite.ValidTill = time.Now().AddDate(10, 0, 0)
+		invite.UserExpiry = false
+	}
+
+	app.storage.SetInvitesKey(inviteCode, invite)
+	app.info.Printf(lm.GeneratedInviteForPurchase, inviteCode, targetEmail)
+
+	if emailEnabled {
+		go func(inv Invite, tEmail string) {
+			msg, err := app.email.constructInvite(&inv, false)
+			if err != nil {
+				app.err.Printf(lm.FailedConstructInviteMessage, tEmail, err)
+				return
+			}
+			if err = app.email.send(msg, tEmail); err != nil {
+				app.err.Printf(lm.FailedSendInviteMessage, inv.Code, tEmail, err)
+			} else {
+				app.info.Printf(lm.SentInviteMessage, inv.Code, tEmail)
+			}
+		}(invite, targetEmail)
+	}
+}
+
+func (app *appContext) handleStripeInvoiceSucceeded(event *stripe.Event) {
+	var invoice stripe.Invoice
+	if err := json.Unmarshal(event.Data.Raw, &invoice); err != nil {
+		app.err.Printf(lm.StripeWebhookError, err)
+		return
+	}
+
+	if invoice.BillingReason != stripe.InvoiceBillingReasonSubscriptionCycle {
+		return
+	}
+	if invoice.CustomerEmail == "" {
+		app.err.Printf(lm.FailedFindUserByEmail, fmt.Sprintf("invoice %s (no email)", invoice.ID))
+		return
+	}
+
+	email := invoice.CustomerEmail
+	app.info.Printf(lm.StripeRenewalReceived, email)
+
+	userID, _, found := app.findUserByEmail(email)
+	if !found {
+		app.err.Printf(lm.FailedFindUserByEmail, email)
+		return
+	}
+
+	expiry := time.Now()
+	if userExpiry, ok := app.storage.GetUserExpiryKey(userID); ok {
+		expiry = userExpiry.Expiry
+	}
+	if expiry.Before(time.Now()) {
+		expiry = time.Now()
+	}
+	newExpiry := expiry.AddDate(0, 1, 0)
+
+	app.storage.SetUserExpiryKey(userID, UserExpiry{Expiry: newExpiry})
+
+	if paramsUser, err := app.jf.UserByID(userID, false); err == nil {
+		if err, _, _ = app.SetUserDisabled(paramsUser, false); err != nil {
+			app.err.Printf(lm.FailedReEnableUser, userID, err)
+		}
+		app.InvalidateUserCaches()
+	}
+
+	app.info.Printf(lm.UserExpiryExtended, userID, email, newExpiry)
+}
+
+func (app *appContext) handleStripeSubscriptionDeleted(event *stripe.Event) {
+	var sub stripe.Subscription
+	if err := json.Unmarshal(event.Data.Raw, &sub); err != nil {
+		app.err.Printf(lm.StripeWebhookError, err)
+		return
+	}
+
+	targetEmail := sub.Metadata["target_email"]
+	if targetEmail == "" {
+		app.debug.Printf(lm.StripeSubscriptionDeleted, sub.ID, "unknown (no metadata)")
+		return
+	}
+
+	app.info.Printf(lm.StripeSubscriptionDeleted, sub.ID, targetEmail)
+
+	userID, _, found := app.findUserByEmail(targetEmail)
+	if !found {
+		app.err.Printf(lm.FailedFindUserByEmail, targetEmail)
+		return
+	}
+
+	app.storage.SetUserExpiryKey(userID, UserExpiry{Expiry: time.Now().Add(-1 * time.Second)})
+
+	if paramsUser, err := app.jf.UserByID(userID, false); err == nil {
+		if err, _, _ = app.SetUserDisabled(paramsUser, true); err != nil {
+			app.err.Printf(lm.FailedDisableUser, userID, err)
+		} else {
+			app.info.Printf(lm.UserDisabledDueToCancellation, userID)
+		}
+		app.InvalidateUserCaches()
+	}
 }

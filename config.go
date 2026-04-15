@@ -345,7 +345,7 @@ func NewConfig(configPathOrContents any, dataPath string, logs LoggerSet) (*Conf
 		messagesEnabled = false
 	}
 
-	stripeEnabled = config.Section("stripe").Key("enabled").MustBool(true)
+	stripeEnabled = config.Section("stripe").Key("enabled").MustBool(false)
 	paypalEnabled = config.Section("paypal").Key("enabled").MustBool(false)
 
 	if proxyEnabled := config.Section("advanced").Key("proxy").MustBool(false); proxyEnabled {

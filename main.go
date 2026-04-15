@@ -465,15 +465,15 @@ func start(asDaemon, firstCall bool) {
 			LogFailures: true,
 		}
 
-		if app.config.Section("stripe").Key("enabled").MustBool(false) {
+		if stripeEnabled {
 			apiKey := app.config.Section("stripe").Key("api_key").String()
 			InitStripe(apiKey)
-			app.info.Println("Stripe Integration Enabled")
+			app.info.Println(lm.InitStripe)
 		}
 
-		if app.config.Section("paypal").Key("enabled").MustBool(false) {
+		if paypalEnabled {
 			InitPayPal(app.config)
-			app.info.Println("PayPal Integration Enabled")
+			app.info.Println(lm.InitPayPal)
 		}
 
 		u := app.config.Section("jellyfin").Key("username").String()

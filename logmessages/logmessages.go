@@ -334,6 +334,43 @@ const (
 	// usercache.go
 	CacheRefreshCompleted = "Usercache refreshed, %d in %.2fs (%f.2u/sec)"
 
+	// stripe.go / api-stripe.go
+	Stripe                       = "Stripe"
+	InitStripe                   = "Initialized " + Stripe
+	FailedCreateCheckoutSession  = "Failed to create " + Stripe + " checkout session: %v"
+	StripeWebhookError           = Stripe + " webhook error: %v"
+	StripePaymentReceived        = Stripe + " payment received for checkout session (Plan: %s) to \"%s\""
+	StripePaymentOldInvite       = Stripe + " payment received for existing invite: \"%s\""
+	StripeRenewalReceived        = Stripe + " subscription renewal received for \"%s\""
+	StripeSubscriptionDeleted    = Stripe + " subscription %s deleted for \"%s\", disabling user"
+	StripeSignatureBypass        = Stripe + " signature verification disabled, verifying event via API"
+	StripeSessionAlreadyProcessed = Stripe + " session %s already processed for user \"%s\", skipping"
+	StripeBlockedDuplicate       = Stripe + ": blocked duplicate subscription attempt for active user \"%s\" (\"%s\")"
+
+	// api-paypal.go
+	PayPal                          = "PayPal"
+	InitPayPal                      = "Initialized " + PayPal
+	FailedInitPayPal                = "Failed to initialize " + PayPal + ": %v"
+	FailedCreatePayPalSubscription  = "Failed to create " + PayPal + " subscription: %v"
+	FailedGetPayPalSubscription     = "Failed to get " + PayPal + " subscription \"%s\": %v"
+	PayPalWebhookReceived           = "Received " + PayPal + " webhook: %s"
+	PayPalPaymentReceived           = PayPal + " payment received for subscription: \"%s\""
+	PayPalSubscriptionCancelled     = PayPal + " subscription %s cancelled"
+	PayPalBlockedDuplicate          = PayPal + ": blocked duplicate subscription attempt for active user \"%s\" (\"%s\")"
+	PayPalCancelledOldSubscription  = "Cancelled old " + PayPal + " subscription \"%s\" for user \"%s\""
+	FailedCancelPayPalSubscription  = "Failed to cancel old " + PayPal + " subscription \"%s\": %v"
+	PayPalTransactionAlreadyProcessed = PayPal + " transaction %s already processed for user \"%s\", skipping"
+
+	// Common payment messages
+	GeneratedInviteForPurchase    = "Generated invite code \"%s\" for \"%s\""
+	UserReactivated               = "Reactivated user \"%s\" to %s"
+	UserExpiryExtended            = "Extended expiry for user \"%s\" (\"%s\") to %s"
+	UserDisabledDueToCancellation = "Disabled user \"%s\" due to subscription cancellation"
+	FailedFindUserByEmail         = "Could not find user with email \"%s\""
+	ExistingUserFound             = "Existing user found for \"%s\" (\"%s\"), reactivating subscription"
+	FailedReEnableUser            = "Failed to re-enable user \"%s\": %v"
+	FailedDisableUser             = "Failed to disable user \"%s\": %v"
+
 	// Other
 	GotNEntries = "got %d entries"
 )

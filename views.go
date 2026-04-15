@@ -902,7 +902,6 @@ func (app *appContext) NoRouteHandler(gc *gin.Context) {
 
 // StorePage serves the public store page
 func (app *appContext) StorePage(gc *gin.Context) {
-	app.info.Println("Serving Store Page")
 	lang := app.storage.lang.chosenUserLang
 	app.gcHTML(gc, 200, "store.html", OtherPage, lang, gin.H{
 		"strings":        app.storage.lang.User[lang].Strings,
@@ -917,7 +916,6 @@ func (app *appContext) StorePage(gc *gin.Context) {
 
 // PaymentSuccessPage serves the dedicated payment success page
 func (app *appContext) PaymentSuccessPage(gc *gin.Context) {
-	app.info.Println("Serving Payment Success Page")
 	lang := app.storage.lang.chosenUserLang
 	app.gcHTML(gc, 200, "payment_success.html", OtherPage, lang, gin.H{
 		"strings":        app.storage.lang.User[lang].Strings,

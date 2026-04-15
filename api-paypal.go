@@ -3,10 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	lm "github.com/hrfee/jfa-go/logmessages"
 	"github.com/plutov/paypal/v4"
 )
 
@@ -30,13 +32,13 @@ func InitPayPal(config *Config) {
 	var err error
 	ppClient, err = paypal.NewClient(clientID, secret, apiBase)
 	if err != nil {
-		fmt.Printf("Error initializing PayPal client: %v\n", err)
+		log.Printf(lm.FailedInitPayPal, err)
 		paypalEnabled = false
 		return
 	}
 	_, err = ppClient.GetAccessToken(context.Background())
 	if err != nil {
-		fmt.Printf("Error getting PayPal access token: %v\n", err)
+		log.Printf(lm.FailedInitPayPal, err)
 		paypalEnabled = false
 		return
 	}
@@ -70,30 +72,22 @@ func (app *appContext) PostPayPalCreateSubscription(gc *gin.Context) {
 		return
 	}
 
-	// Double-Billing Prevention: Check if user exists and is active
-	for _, em := range app.storage.GetEmails() {
-		if strings.EqualFold(em.Addr, req.Email) {
-			userID := em.JellyfinID
-			// Check if user is effectively active (not disabled, expiry in future)
-			user, err := app.jf.UserByID(userID, false)
-			if err == nil && !user.Policy.IsDisabled {
-				// Check expiry
-				expiry := time.Now()
-				if userExpiry, ok := app.storage.GetUserExpiryKey(userID); ok {
-					expiry = userExpiry.Expiry
-				}
-				if expiry.After(time.Now()) {
-					// User is active and not expired. strict prevention.
-					app.info.Printf("Blocked duplicate subscription attempt for active user %s (%s)", userID, req.Email)
-					respond(409, "You already have an active subscription.", gc)
-					return
-				}
+	// Double-billing prevention
+	if userID, _, found := app.findUserByEmail(req.Email); found {
+		user, err := app.jf.UserByID(userID, false)
+		if err == nil && !user.Policy.IsDisabled {
+			expiry := time.Now()
+			if userExpiry, ok := app.storage.GetUserExpiryKey(userID); ok {
+				expiry = userExpiry.Expiry
 			}
-			break
+			if expiry.After(time.Now()) {
+				app.info.Printf(lm.PayPalBlockedDuplicate, userID, req.Email)
+				respond(409, "You already have an active subscription.", gc)
+				return
+			}
 		}
 	}
 
-	// Create Subscription
 	sub := paypal.SubscriptionBase{
 		PlanID: planID,
 		Subscriber: &paypal.Subscriber{
@@ -108,7 +102,7 @@ func (app *appContext) PostPayPalCreateSubscription(gc *gin.Context) {
 
 	subscription, err := ppClient.CreateSubscription(context.Background(), sub)
 	if err != nil {
-		app.err.Printf("Failed to create PayPal subscription: %v", err)
+		app.err.Printf(lm.FailedCreatePayPalSubscription, err)
 		respond(500, "Failed to create subscription", gc)
 		return
 	}
@@ -141,16 +135,14 @@ func (app *appContext) PostPayPalCaptureSubscription(gc *gin.Context) {
 		return
 	}
 
-	// Verify Subscription Status
 	sub, err := ppClient.GetSubscriptionDetails(context.Background(), req.SubscriptionID)
 	if err != nil {
-		app.err.Printf("Failed to get PayPal subscription %s: %v", req.SubscriptionID, err)
+		app.err.Printf(lm.FailedGetPayPalSubscription, req.SubscriptionID, err)
 		respond(500, "Failed to verify subscription", gc)
 		return
 	}
 
-	// For Sandbox, status might be different, but ACTIVE is expected after approval
-	app.info.Printf("PayPal Subscription %s status: %s", req.SubscriptionID, sub.SubscriptionStatus)
+	app.debug.Printf("PayPal Subscription %s status: %s", req.SubscriptionID, sub.SubscriptionStatus)
 
 	if sub.SubscriptionStatus != "ACTIVE" && sub.SubscriptionStatus != "APPROVED" {
 		// Sometimes it takes a moment, or it's APPROVED but not yet ACTIVE
@@ -159,43 +151,26 @@ func (app *appContext) PostPayPalCaptureSubscription(gc *gin.Context) {
 		return
 	}
 
-	// Check if user exists by email (Re-subscription logic)
-	var existingUserID string
-	var existingUserEmailStruct EmailAddress
+	existingUserID, existingEmail, found := app.findUserByEmail(req.Email)
+	if found {
+		app.info.Printf(lm.ExistingUserFound, req.Email, existingUserID)
 
-	for _, em := range app.storage.GetEmails() {
-		if strings.EqualFold(em.Addr, req.Email) {
-			existingUserID = em.JellyfinID
-			existingUserEmailStruct = em
-			break
-		}
-	}
-
-	if existingUserID != "" {
-		// UPDATE EXISTING USER
-		app.info.Printf("Existing user found for %s (%s). Reactivating subscription.", req.Email, existingUserID)
-
-		// 0. Auto-Cancel Old Subscription to prevent Double Billing
-		if strings.HasPrefix(existingUserEmailStruct.Label, "PayPal Subscription: ") {
-			oldSubID := strings.TrimPrefix(existingUserEmailStruct.Label, "PayPal Subscription: ")
+		// Auto-cancel old subscription to prevent double billing
+		if strings.HasPrefix(existingEmail.Label, "PayPal Subscription: ") {
+			oldSubID := strings.TrimPrefix(existingEmail.Label, "PayPal Subscription: ")
 			if oldSubID != "" && oldSubID != req.SubscriptionID {
-				app.info.Printf("Cancelling OLD Subscription %s for user %s to prevent double billing...", oldSubID, existingUserID)
-				// Reason is required by PayPal API
 				err := ppClient.CancelSubscription(context.Background(), oldSubID, "Re-subscribed via jfa-go")
 				if err != nil {
-					app.err.Printf("Failed to cancel old subscription %s: %v", oldSubID, err)
-					// We continue anyway, as we don't want to block the new one.
+					app.err.Printf(lm.FailedCancelPayPalSubscription, oldSubID, err)
 				} else {
-					app.info.Printf("Successfully cancelled old subscription %s", oldSubID)
+					app.info.Printf(lm.PayPalCancelledOldSubscription, oldSubID, existingUserID)
 				}
 			}
 		}
 
-		// 1. Update Label to link NEW Subscription ID
-		existingUserEmailStruct.Label = "PayPal Subscription: " + req.SubscriptionID
-		app.storage.SetEmailsKey(existingUserID, existingUserEmailStruct)
+		existingEmail.Label = "PayPal Subscription: " + req.SubscriptionID
+		app.storage.SetEmailsKey(existingUserID, existingEmail)
 
-		// 2. Extend Expiry
 		expiry := time.Now()
 		lastTx := ""
 		if userExpiry, ok := app.storage.GetUserExpiryKey(existingUserID); ok {
@@ -203,42 +178,33 @@ func (app *appContext) PostPayPalCaptureSubscription(gc *gin.Context) {
 			lastTx = userExpiry.LastTransactionID
 		}
 
-		// IDEMPOTENCY CHECK
 		if lastTx == req.SubscriptionID {
-			app.info.Printf("Transaction %s already processed for user %s. Skipping (Idempotent).", req.SubscriptionID, existingUserID)
+			app.info.Printf(lm.PayPalTransactionAlreadyProcessed, req.SubscriptionID, existingUserID)
 			gc.JSON(200, gin.H{"success": true, "message": "Subscription already processed."})
 			return
 		}
 
-		// If expired, start from now. If active, add to current time.
 		if expiry.Before(time.Now()) {
 			expiry = time.Now()
 		}
 		newExpiry := expiry.AddDate(0, 1, 0)
 		app.storage.SetUserExpiryKey(existingUserID, UserExpiry{Expiry: newExpiry, LastTransactionID: req.SubscriptionID})
 
-		// 3. Re-enable User if disabled (Force enable to ensure functionality)
-		paramsUser, err := app.jf.UserByID(existingUserID, false)
-		if err == nil {
-			app.info.Printf("Ensuring user %s is enabled...", existingUserID)
-			// Re-enable and Clear Cache
-			err, _, _ = app.SetUserDisabled(paramsUser, false)
-			if err != nil {
-				app.err.Printf("Failed to re-enable user %s: %v", existingUserID, err)
+		if paramsUser, err := app.jf.UserByID(existingUserID, false); err == nil {
+			if err, _, _ = app.SetUserDisabled(paramsUser, false); err != nil {
+				app.err.Printf(lm.FailedReEnableUser, existingUserID, err)
 			}
 			app.InvalidateUserCaches()
 		}
 
-		app.info.Printf("SUCCESS: Reactivated user %s with new PayPal Subscription %s", existingUserID, req.SubscriptionID)
-
-		// Return success (no invite needed)
+		app.info.Printf(lm.UserReactivated, existingUserID, newExpiry)
 		gc.JSON(200, gin.H{"success": true, "message": "Subscription reactivated for existing account."})
 		return
 	}
 
-	// Generate Invite Code (New User Logic)
+	// New user: generate invite
 	inviteCode := GenerateInviteCode()
-	profile := "Default" // Default profile
+	profile := "Default"
 	if _, ok := app.storage.GetProfileKey(profile); !ok {
 		profile = "Default"
 	}
@@ -251,23 +217,22 @@ func (app *appContext) PostPayPalCaptureSubscription(gc *gin.Context) {
 		RemainingUses: 1,
 		Profile:       profile,
 		SendTo:        req.Email,
-		ValidTill:     time.Now().AddDate(0, 1, 0), // 1 Month
+		ValidTill:     time.Now().AddDate(0, 1, 0),
 		UserExpiry:    true,
 		UserMonths:    1,
 	}
 
 	app.storage.SetInvitesKey(inviteCode, invite)
-	app.info.Printf("SUCCESS: Generated Invite Code %s for %s via PayPal", inviteCode, req.Email)
+	app.info.Printf(lm.GeneratedInviteForPurchase, inviteCode, req.Email)
 
-	msg, err := app.email.constructInvite(&invite, false)
-	if err != nil {
-		app.err.Printf("Failed to construct invite email for %s: %v", req.Email, err)
-	} else {
-		err = app.email.send(msg, req.Email)
+	if emailEnabled {
+		msg, err := app.email.constructInvite(&invite, false)
 		if err != nil {
-			app.err.Printf("Failed to send invite email to %s: %v", req.Email, err)
+			app.err.Printf(lm.FailedConstructInviteMessage, req.Email, err)
+		} else if err = app.email.send(msg, req.Email); err != nil {
+			app.err.Printf(lm.FailedSendInviteMessage, inviteCode, req.Email, err)
 		} else {
-			app.info.Printf("Sent purchased invite %s to %s", inviteCode, req.Email)
+			app.info.Printf(lm.SentInviteMessage, inviteCode, req.Email)
 		}
 	}
 
@@ -286,108 +251,102 @@ type paypalWebhookEvent struct {
 // @Produce json
 // @Router /paypal/webhook [post]
 func (app *appContext) PostPayPalWebhook(gc *gin.Context) {
-	// 1. Parse Event
 	var event paypalWebhookEvent
 	if err := gc.ShouldBindJSON(&event); err != nil {
-		app.err.Printf("Error parsing PayPal webhook: %v", err)
+		app.err.Printf(lm.PayPalWebhookReceived, "parse error: "+err.Error())
 		respond(400, "Invalid payload", gc)
 		return
 	}
 
-	app.info.Printf("Received PayPal Webhook: %s", event.EventType)
+	app.info.Printf(lm.PayPalWebhookReceived, event.EventType)
 
-	if event.EventType == "PAYMENT.SALE.COMPLETED" {
-		subID := event.Resource.BillingAgreementID
-		if subID == "" {
-			app.err.Printf("PayPal Payment missing BillingAgreementID")
-			return
-		}
-
-		app.info.Printf("Processing PayPal Payment for Subscription: %s", subID)
-
-		// 2. Find User by Label
-		var userID string
-		var userEmail string
-		targetLabel := "PayPal Subscription: " + subID
-
-		for _, em := range app.storage.GetEmails() {
-			if strings.Contains(em.Label, targetLabel) {
-				userID = em.JellyfinID
-				userEmail = em.Addr
-				break
-			}
-		}
-
-		if userID == "" {
-			app.err.Printf("Could not find user for Subscription %s", subID)
-			return
-		}
-
-		// 3. Extend Expiry
-		// Extend User Expiry by 1 Month
-		expiry := time.Now()
-		userExpiry, ok := app.storage.GetUserExpiryKey(userID)
-		if ok {
-			expiry = userExpiry.Expiry
-		}
-		// If current expiry is in the past, start from NOW. If in future, add to it.
-		if expiry.Before(time.Now()) {
-			expiry = time.Now()
-		}
-		newExpiry := expiry.AddDate(0, 1, 0) // Add 1 Month
-
-		app.storage.SetUserExpiryKey(userID, UserExpiry{Expiry: newExpiry})
-
-		// 4. Re-enable User if currently disabled (Force enable)
-		paramsUser, err := app.jf.UserByID(userID, false)
-		if err == nil {
-			app.info.Printf("Ensuring user %s is enabled...", userID)
-			err, _, _ = app.SetUserDisabled(paramsUser, false)
-			if err != nil {
-				app.err.Printf("Failed to re-enable user %s: %v", userID, err)
-			}
-			app.InvalidateUserCaches()
-		}
-
-		app.info.Printf("SUCCESS: Extended expiry for user %s (%s) to %s via PayPal Webhook", userID, userEmail, newExpiry)
-	}
-
-	if event.EventType == "BILLING.SUBSCRIPTION.CANCELLED" {
-		subID := event.Resource.ID
-		if subID == "" {
-			app.err.Printf("PayPal Cancellation missing Subscription ID")
-			return
-		}
-		app.info.Printf("Active Revocation: PayPal Subscription %s cancelled", subID)
-
-		// 2. Find User by Label
-		var userID string
-		targetLabel := "PayPal Subscription: " + subID
-		for _, em := range app.storage.GetEmails() {
-			if strings.Contains(em.Label, targetLabel) {
-				userID = em.JellyfinID
-				break
-			}
-		}
-
-		if userID == "" {
-			app.err.Printf("Could not find user for cancelled Subscription %s", subID)
-			return
-		}
-
-		// 3. Expire & Disable
-		app.storage.SetUserExpiryKey(userID, UserExpiry{Expiry: time.Now().Add(-1 * time.Second)})
-		paramsUser, err := app.jf.UserByID(userID, false)
-		if err == nil {
-			err, _, _ = app.SetUserDisabled(paramsUser, true)
-			if err != nil {
-				app.err.Printf("Failed to disable user %s: %v", userID, err)
-			} else {
-				app.info.Printf("SUCCESS: Disabled user %s due to PayPal cancellation", userID)
-			}
-			app.InvalidateUserCaches()
-		}
+	switch event.EventType {
+	case "PAYMENT.SALE.COMPLETED":
+		app.handlePayPalPayment(event)
+	case "BILLING.SUBSCRIPTION.CANCELLED":
+		app.handlePayPalCancellation(event)
 	}
 
 	gc.Status(200)
+}
+
+func (app *appContext) handlePayPalPayment(event paypalWebhookEvent) {
+	subID := event.Resource.BillingAgreementID
+	if subID == "" {
+		app.err.Printf(lm.PayPalPaymentReceived, "(missing BillingAgreementID)")
+		return
+	}
+
+	app.info.Printf(lm.PayPalPaymentReceived, subID)
+
+	// Find user by subscription label
+	var userID, userEmail string
+	targetLabel := "PayPal Subscription: " + subID
+	for _, em := range app.storage.GetEmails() {
+		if strings.Contains(em.Label, targetLabel) {
+			userID = em.JellyfinID
+			userEmail = em.Addr
+			break
+		}
+	}
+
+	if userID == "" {
+		app.err.Printf(lm.FailedFindUserByEmail, "subscription "+subID)
+		return
+	}
+
+	expiry := time.Now()
+	if userExpiry, ok := app.storage.GetUserExpiryKey(userID); ok {
+		expiry = userExpiry.Expiry
+	}
+	if expiry.Before(time.Now()) {
+		expiry = time.Now()
+	}
+	newExpiry := expiry.AddDate(0, 1, 0)
+
+	app.storage.SetUserExpiryKey(userID, UserExpiry{Expiry: newExpiry})
+
+	if paramsUser, err := app.jf.UserByID(userID, false); err == nil {
+		if err, _, _ = app.SetUserDisabled(paramsUser, false); err != nil {
+			app.err.Printf(lm.FailedReEnableUser, userID, err)
+		}
+		app.InvalidateUserCaches()
+	}
+
+	app.info.Printf(lm.UserExpiryExtended, userID, userEmail, newExpiry)
+}
+
+func (app *appContext) handlePayPalCancellation(event paypalWebhookEvent) {
+	subID := event.Resource.ID
+	if subID == "" {
+		app.err.Printf(lm.PayPalSubscriptionCancelled, "(missing ID)")
+		return
+	}
+
+	app.info.Printf(lm.PayPalSubscriptionCancelled, subID)
+
+	var userID string
+	targetLabel := "PayPal Subscription: " + subID
+	for _, em := range app.storage.GetEmails() {
+		if strings.Contains(em.Label, targetLabel) {
+			userID = em.JellyfinID
+			break
+		}
+	}
+
+	if userID == "" {
+		app.err.Printf(lm.FailedFindUserByEmail, "subscription "+subID)
+		return
+	}
+
+	app.storage.SetUserExpiryKey(userID, UserExpiry{Expiry: time.Now().Add(-1 * time.Second)})
+
+	if paramsUser, err := app.jf.UserByID(userID, false); err == nil {
+		if err, _, _ = app.SetUserDisabled(paramsUser, true); err != nil {
+			app.err.Printf(lm.FailedDisableUser, userID, err)
+		} else {
+			app.info.Printf(lm.UserDisabledDueToCancellation, userID)
+		}
+		app.InvalidateUserCaches()
+	}
 }
