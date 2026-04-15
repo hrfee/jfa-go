@@ -86,16 +86,7 @@
                 <span class="heading"><span id="header-modify-user"></span> <span class="modal-close">&times;</span></span>
                 <p class="content">{{ .strings.modifySettingsDescription }}</p>
                 <div class="flex flex-col gap-4">
-                    <div class="flex flex-row gap-2">
-                        <label class="grow">
-                            <input type="radio" name="modify-user-source" class="unfocused" id="radio-use-profile" checked>
-                            <span class="button ~neutral @high supra full-width center">{{ .strings.profile }}</span>
-                        </label>
-                        <label class="grow">
-                            <input type="radio" name="modify-user-source" class="unfocused" id="radio-use-user">
-                            <span class="button ~neutral @low supra full-width center">{{ .strings.user }}</span>
-                        </label>
-                    </div>
+                    <div id="modify-user-profile-source"></div>
                     <div class="select ~neutral @low">
                         <select id="modify-user-profiles"></select>
                     </div>
@@ -134,16 +125,7 @@
             <form class="card relative mx-auto my-[10%] w-11/12 sm:w-4/5 lg:w-1/3 flex flex-col gap-4" id="form-enable-referrals-user" href="">
                 <span class="heading"><span id="header-enable-referrals-user"></span> <span class="modal-close">&times;</span></span>
                 <p class="content">{{ .strings.enableReferralsDescription }}</p>
-                <div class="flex flex-row gap-2">
-                    <label class="grow">
-                        <input type="radio" name="enable-referrals-user-source" class="unfocused" id="radio-referrals-use-profile" checked>
-                        <span class="button ~neutral @high supra full-width center">{{ .strings.profile }}</span>
-                    </label>
-                    <label class="grow">
-                        <input type="radio" name="enable-referrals-user-source" class="unfocused" id="radio-referrals-use-invite">
-                        <span class="button ~neutral @low supra full-width center">{{ .strings.invite }}</span>
-                    </label>
-                </div>
+                <div id="enable-referrals-user-source"></div>
                 <div class="select ~neutral @low">
                     <select id="enable-referrals-user-profiles"></select>
                 </div>
@@ -247,10 +229,10 @@
                         <label class="switch">
                             <input type="checkbox" id="expiry-use-previous">
                             <span>{{ .strings.extendFromPreviousExpiry }}</span>
-                            <div class="tooltip left">
+                            <tool-tip class="left">
                                 <i class="icon ri-information-line align-middle"></i>
                                 <div class="content sm w-max">{{ .strings.extendFromPreviousExpiryDescription }}</div>
-                            </div>
+                            </tool-tip>
                         </label>
                     </div>
                     <label class="switch">
@@ -565,7 +547,7 @@
             </form>
         </div>
         <div id="notification-box"></div>
-        <div class="page-container m-2 lg:my-20 lg:mx-64 flex flex-col gap-4 overflow-x-hidden">
+        <div class="page-container m-2 lg:my-20 lg:mx-64 flex flex-col gap-4">
             <div class="top-2 inset-x-2 lg:absolute flex flex-row justify-between">
                 <div class="flex flex-row gap-2">
                     {{ template "lang-select.html" . }}
@@ -598,16 +580,7 @@
                     <span class="heading">{{ .strings.create }}</span>
                     <div class="flex flex-col md:flex-row gap-3" id="create-inv">
                         <div class="card ~neutral @low flex flex-col gap-2 flex-1">
-                            <div class="flex flex-row gap-2">
-                                <label class="w-1/2">
-                                    <input type="radio" name="duration" class="unfocused" id="radio-inv-duration" checked>
-                                    <span class="button ~neutral @high supra full-width center">{{ .strings.inviteDuration }}</span>
-                                </label>
-                                <label class="w-1/2">
-                                    <input type="radio" name="duration" class="unfocused" id="radio-user-expiry">
-                                    <span class="button ~neutral @low supra full-width center">{{ .strings.userExpiry }}</span>
-                                </label>
-                            </div>
+                            <div id="invites-duration-type-tabs"></div>
                             <div id="inv-duration" class="flex flex-col gap-2">
                                 <div class="flex flex-row gap-2">
                                     <div class="grow flex flex-col gap-4">
@@ -746,13 +719,13 @@
                             <div class="flex flex-row align-middle w-full gap-2">
                                 <input type="search" class="field ~neutral @low input search" id="accounts-search" placeholder="{{ .strings.search }}">
                                 <span class="button ~neutral @low center inside-input rounded-s-none accounts-search-clear" aria-label="{{ .strings.clearSearch }}" text="{{ .strings.clearSearch }}"><i class="ri-close-line"></i></span>
-                                <div class="tooltip left">
+                                <tool-tip class="below">
                                     <button class="button ~info @low center h-full accounts-search-server gap-1" aria-label="{{ .strings.searchAllRecords }}" text="{{ .strings.searchAllRecords }}">
                                         <i class="ri-search-line"></i>
                                         <span>{{ .strings.searchAll }}</span>
                                     </button>
                                     <span class="content sm">{{ .strings.searchAllRecords }}</span>
-                                </div>
+                                </tool-tip>
                                 <button class="button ~info @low" id="accounts-refresh" aria-label="{{ .strings.refresh }}" disabled><i class="ri-refresh-line"></i></button>
                             </div>
                         </div>
@@ -772,6 +745,7 @@
                     </div>
                     <div class="supra sm">{{ .strings.actions }}</div>
                     <div class="flex flex-row flex-wrap gap-3">
+                        <button type="button" title="{{ .strings.back }}" class="button ~neutral @low inline-flex gap-1 unfocused" id="user-details-back" aria-label="{{ .strings.back }}"><i class="icon ri-arrow-left-fill"></i>{{ .strings.back }}</button>
                         <button class="button ~neutral @low center accounts-load-all">{{ .strings.loadAll }}</button>
                         <span class="button ~neutral @low center " id="accounts-add-user">{{ .quantityStrings.addUser.Singular }}</span>
                         <div id="accounts-announce-dropdown" class="dropdown pb-0i " tabindex="0">
@@ -807,54 +781,36 @@
                         <span class="button ~info @low center unfocused " id="accounts-send-pwr">{{ .strings.sendPWR }}</span>
                         <span class="button ~critical @low center " id="accounts-delete-user">{{ .quantityStrings.deleteUser.Singular }}</span>
                     </div>
-                    <div class="card @low accounts-header overflow-x-scroll">
-                        <table class="table text-base leading-5">
-                            <thead>
-                                <tr>
-                                    <th><input type="checkbox" value="" id="accounts-select-all"></th>
-                                    <th class="table-inline my-2 grid gap-4 place-items-stretch accounts-header-username">{{ .strings.username }}</th>
-                                    {{ if .jellyfinLogin }}
-                                    <th class="text-center-i grid gap-4 place-items-stretch accounts-header-access-jfa">{{ .strings.accessJFA }}</th>
-                                    {{ end }}
-                                    <th class="grid gap-4 place-items-stretch accounts-header-email">{{ .strings.emailAddress }}</th>
-                                    {{ if .telegramEnabled }}
-                                    <th class="text-center-i grid gap-4 place-items-stretch accounts-header-telegram">Telegram</th>
-                                    {{ end }}
-                                    {{ if .matrixEnabled }}
-                                    <th class="text-center-i grid gap-4 place-items-stretch accounts-header-matrix">Matrix</th>
-                                    {{ end }}
-                                    {{ if .discordEnabled }}
-                                    <th class="text-center-i grid gap-4 place-items-stretch accounts-header-discord">Discord</th>
-                                    {{ end }}
-                                    {{ if .referralsEnabled }}
-                                    <th class="text-center-i grid gap-4 place-items-stretch accounts-header-referrals">{{ .strings.referrals }}</th>
-                                    {{ end }}
-                                    <th class="grid gap-4 place-items-stretch accounts-header-expiry">{{ .strings.expiry }}</th>
-                                    <th class="grid gap-4 place-items-stretch accounts-header-last-active">{{ .strings.lastActiveTime }}</th>
-                                </tr>
-                            </thead>
-                            <tbody id="accounts-list"></tbody>
-                        </table>
-                        <div id="accounts-loader"></div>
-                        <div class="unfocused h-[100%] my-3" id="accounts-not-found">
-                            <div class="flex flex-col gap-2 h-[100%] justify-center items-center">
-                                <span class="text-2xl font-medium italic text-center">{{ .strings.noResultsFound }}</span>
-                                <span class="text-sm font-light italic unfocused text-center" id="accounts-no-local-results">{{ .strings.noResultsFoundLocally }}</span>
-                                <div class="flex flex-row">
-                                    <button class="button ~neutral @low accounts-search-clear gap-1">
-                                        <i class="ri-close-line"></i>
-                                        <span>{{ .strings.clearSearch }}</span>
-                                    </button>
+                    <div id="accounts-table-details-container">
+                        <div class="card @low accounts-details transition-opacity transition-display unfocused">
+                            <div id="accounts-loader"></div>
+                        </div>
+                        <div class="card @low accounts-header overflow-x-scroll transition-opacity transition-display" id="accounts-table">
+                            <table class="table text-base leading-5">
+                                {{ template "accounts-table-header.txt" . }}
+                                <tbody id="accounts-list"></tbody>
+                            </table>
+                            <div id="accounts-loader"></div>
+                            <div class="unfocused h-[100%] my-3" id="accounts-not-found">
+                                <div class="flex flex-col gap-2 h-[100%] justify-center items-center">
+                                    <span class="text-2xl font-medium italic text-center">{{ .strings.noResultsFound }}</span>
+                                    <span class="text-sm font-light italic unfocused text-center" id="accounts-no-local-results">{{ .strings.noResultsFoundLocally }}</span>
+                                    <div class="flex flex-row">
+                                        <button class="button ~neutral @low accounts-search-clear gap-1">
+                                            <i class="ri-close-line"></i>
+                                            <span>{{ .strings.clearSearch }}</span>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="flex flex-row gap-2 my-3 justify-center">
-                            <button class="button ~neutral @low" id="accounts-load-more">{{ .strings.loadMore }}</button>
-                            <button class="button ~neutral @low accounts-load-all">{{ .strings.loadAll }}</button>
-                            <button class="button ~info @low center accounts-search-server gap-1" aria-label="{{ .strings.searchAllRecords }}" text="{{ .strings.searchAllRecords }}">
-                                <i class="ri-search-line"></i>
-                                <span>{{ .strings.searchAllRecords }}</span>
-                            </button>
+                            <div class="flex flex-row gap-2 my-3 justify-center">
+                                <button class="button ~neutral @low" id="accounts-load-more">{{ .strings.loadMore }}</button>
+                                <button class="button ~neutral @low accounts-load-all">{{ .strings.loadAll }}</button>
+                                <button class="button ~info @low center accounts-search-server gap-1" aria-label="{{ .strings.searchAllRecords }}" text="{{ .strings.searchAllRecords }}">
+                                    <i class="ri-search-line"></i>
+                                    <span>{{ .strings.searchAllRecords }}</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -873,13 +829,13 @@
                             <div class="flex flex-row align-middle w-full gap-2">
                                 <input type="search" class="field ~neutral @low input search" id="activity-search" placeholder="{{ .strings.search }}">
                                 <span class="button ~neutral @low center inside-input rounded-s-none activity-search-clear" aria-label="{{ .strings.clearSearch }}" text="{{ .strings.clearSearch }}"><i class="ri-close-line"></i></span>
-                                <div class="tooltip left">
+                                <tool-tip class="below">
                                     <button class="button ~info @low center h-full activity-search-server gap-1" aria-label="{{ .strings.searchAllRecords }}" text="{{ .strings.searchAllRecords }}">
                                         <i class="ri-search-line"></i>
                                         <span>{{ .strings.searchAll }}</span>
                                     </button>
                                     <span class="content sm">{{ .strings.searchAllRecords }}</span>
-                                </div>
+                                </tool-tip>
                                 <button class="button ~info @low" id="activity-refresh" aria-label="{{ .strings.refresh }}" disabled><i class="ri-refresh-line"></i></button>
                             </div>
                         </div>

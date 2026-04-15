@@ -256,8 +256,11 @@ const (
 	FailedGenerateDiscordInvite = "Failed to generate " + Discord + " invite: %v"
 
 	// email.go
-	FailedInitSMTP        = "Failed to initialize SMTP mailer: %v"
+	SMTP                  = "SMTP"
+	Mailgun               = "Mailgun"
+	FailedInitMailer      = "Failed to initalize %s mailer: %v"
 	FailedGeneratePWRLink = "Failed to generate PWR link: %v"
+	InvalidFromAddress    = "invalid from address: \"%s\""
 
 	// housekeeping-d.go
 	hk                   = "Housekeeping: "

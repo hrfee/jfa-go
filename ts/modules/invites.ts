@@ -13,7 +13,7 @@ import {
 } from "../modules/common.js";
 import { DiscordSearch, DiscordUser, newDiscordSearch } from "../modules/discord.js";
 import { reloadProfileNames } from "../modules/profiles.js";
-import { HiddenInputField } from "./ui.js";
+import { HiddenInputField, RadioBasedTabSelector, Tooltip } from "./ui.js";
 
 declare var window: GlobalWindow;
 
@@ -205,10 +205,9 @@ class DOMInvite implements Invite {
     }
     set send_to(address: string | null) {
         this._send_to = address;
-        const container = this._infoArea.querySelector(".tooltip") as HTMLDivElement;
+        const container = this._infoArea.querySelector("tool-tip") as Tooltip;
         const icon = container.querySelector("i");
         const chip = container.querySelector("span.inv-email-chip");
-        const tooltip = container.querySelector("span.content") as HTMLSpanElement;
         if (!address) {
             icon.classList.remove("ri-mail-line");
             icon.classList.remove("ri-mail-close-line");
@@ -232,7 +231,7 @@ class DOMInvite implements Invite {
             }
         }
         // innerHTML as the newer sent_to re-uses this with HTML.
-        tooltip.innerHTML = address;
+        container.content.innerHTML = address;
     }
     private _sendToDialog: SendToDialog;
     private _sent_to: SentToList;
@@ -603,10 +602,10 @@ class DOMInvite implements Invite {
         this._header.appendChild(this._infoArea);
         this._infoArea.classList.add("inv-infoarea", "flex", "flex-row", "items-center", "gap-2");
         this._infoArea.innerHTML = `
-        <div class="tooltip below darker" tabindex="0">
+        <tool-tip class="below darker" tabindex="0">
             <span class="inv-email-chip h-full"><i></i></span>
             <span class="content sm p-1"></span>
-        </div>
+        </tool-tip>
         <span class="button ~critical @low inv-delete h-full">${window.lang.strings("delete")}</span>
         <label>
             <i class="icon px-2.5 py-2 ri-arrow-down-s-line text-xl not-rotated"></i>
@@ -784,6 +783,8 @@ class DOMInvite implements Invite {
 }
 
 export class DOMInviteList implements InviteList {
+    readonly tabName = "invites";
+    readonly pagePath = "";
     private _list: HTMLDivElement;
     private _empty: boolean;
     // since invite reload sends profiles, this event it broadcast so the createInvite object can load them.
@@ -804,17 +805,25 @@ export class DOMInviteList implements InviteList {
             this.focusInvite(event.detail);
         });
 
-    isInviteURL = () => {
-        const urlParams = new URLSearchParams(window.location.search);
+    isURL = (url?: string) => {
+        const urlParams = new URLSearchParams(url || window.location.search);
         const inviteCode = urlParams.get("invite");
         return Boolean(inviteCode);
     };
 
-    loadInviteURL = () => {
-        const urlParams = new URLSearchParams(window.location.search);
+    navigate = (url?: string) => {
+        const urlParams = new URLSearchParams(url || window.location.search);
         const inviteCode = urlParams.get("invite");
         this.focusInvite(inviteCode, window.lang.notif("errorInviteNotFound"));
     };
+
+    clearURL() {
+        const url = new URL(window.location.href);
+        if (!url.searchParams.has("invite")) return;
+        url.searchParams.delete("invite");
+        console.log("pushing", url.toString());
+        window.history.pushState(null, "", url.toString());
+    }
 
     constructor() {
         this._list = document.getElementById("invites") as HTMLDivElement;
@@ -945,8 +954,8 @@ export class createInvite {
     private _userHours = document.getElementById("user-hours") as HTMLSelectElement;
     private _userMinutes = document.getElementById("user-minutes") as HTMLSelectElement;
 
-    private _invDurationButton = document.getElementById("radio-inv-duration") as HTMLInputElement;
-    private _userExpiryButton = document.getElementById("radio-user-expiry") as HTMLInputElement;
+    // private _invDurationButton = document.getElementById("radio-inv-duration") as HTMLInputElement;
+    // private _userExpiryButton = document.getElementById("radio-user-expiry") as HTMLInputElement;
     private _invDuration = document.getElementById("inv-duration");
     private _userExpiry = document.getElementById("user-expiry");
 
@@ -1192,30 +1201,18 @@ export class createInvite {
         this.uses = 1;
         this.label = "";
 
-        const checkDuration = () => {
-            const invSpan = this._invDurationButton.nextElementSibling as HTMLSpanElement;
-            const userSpan = this._userExpiryButton.nextElementSibling as HTMLSpanElement;
-            if (this._invDurationButton.checked) {
-                this._invDuration.classList.remove("unfocused");
-                this._userExpiry.classList.add("unfocused");
-                invSpan.classList.add("@high");
-                invSpan.classList.remove("@low");
-                userSpan.classList.add("@low");
-                userSpan.classList.remove("@high");
-            } else if (this._userExpiryButton.checked) {
-                this._userExpiry.classList.remove("unfocused");
-                this._invDuration.classList.add("unfocused");
-                invSpan.classList.add("@low");
-                invSpan.classList.remove("@high");
-                userSpan.classList.add("@high");
-                userSpan.classList.remove("@low");
-            }
-        };
-
-        this._userExpiryButton.checked = false;
-        this._invDurationButton.checked = true;
-        this._userExpiryButton.onchange = checkDuration;
-        this._invDurationButton.onchange = checkDuration;
+        new RadioBasedTabSelector(
+            document.getElementById("invites-duration-type-tabs"),
+            "invites-duration-type",
+            {
+                name: window.lang.strings("inviteDuration"),
+                content: this._invDuration,
+            },
+            {
+                name: window.lang.strings("userExpiry"),
+                content: this._userExpiry,
+            },
+        );
 
         this._days.onchange = this._checkDurationValidity;
         this._months.onchange = this._checkDurationValidity;

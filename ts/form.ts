@@ -5,6 +5,7 @@ import { loadLangSelector } from "./modules/lang.js";
 import { Validator, ValidatorConf, ValidatorRespDTO } from "./modules/validator.js";
 import { Discord, Telegram, Matrix, ServiceConfiguration, MatrixConfiguration } from "./modules/account-linking.js";
 import { Captcha, GreCAPTCHA } from "./modules/captcha.js";
+import { setupTooltips } from "./modules/ui.js";
 
 interface formWindow extends GlobalWindow {
     invalidPassword: string;
@@ -46,6 +47,8 @@ interface formWindow extends GlobalWindow {
     currency: string;
     stripeEnabled: boolean;
 }
+
+setupTooltips();
 
 loadLangSelector("form");
 

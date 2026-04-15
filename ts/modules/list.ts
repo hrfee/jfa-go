@@ -18,18 +18,20 @@ export class RecordCounter {
     private _loaded: number;
     private _shown: number;
     private _selected: number;
-    constructor(container: HTMLElement) {
-        this._container = container;
-        this._container.innerHTML = `
+    constructor(container?: HTMLElement) {
+        if (container) {
+            this._container = container;
+            this._container.innerHTML = `
             <span class="records-total"></span>
             <span class="records-loaded"></span>
             <span class="records-shown"></span>
             <span class="records-selected"></span>
             `;
-        this._totalRecords = this._container.getElementsByClassName("records-total")[0] as HTMLElement;
-        this._loadedRecords = this._container.getElementsByClassName("records-loaded")[0] as HTMLElement;
-        this._shownRecords = this._container.getElementsByClassName("records-shown")[0] as HTMLElement;
-        this._selectedRecords = this._container.getElementsByClassName("records-selected")[0] as HTMLElement;
+            this._totalRecords = this._container.getElementsByClassName("records-total")[0] as HTMLElement;
+            this._loadedRecords = this._container.getElementsByClassName("records-loaded")[0] as HTMLElement;
+            this._shownRecords = this._container.getElementsByClassName("records-shown")[0] as HTMLElement;
+            this._selectedRecords = this._container.getElementsByClassName("records-selected")[0] as HTMLElement;
+        }
         this.total = 0;
         this.loaded = 0;
         this.shown = 0;
@@ -55,7 +57,7 @@ export class RecordCounter {
     }
     set total(v: number) {
         this._total = v;
-        this._totalRecords.textContent = window.lang.var("strings", "totalRecords", `${v}`);
+        if (this._totalRecords) this._totalRecords.textContent = window.lang.var("strings", "totalRecords", `${v}`);
     }
 
     get loaded(): number {
@@ -63,7 +65,7 @@ export class RecordCounter {
     }
     set loaded(v: number) {
         this._loaded = v;
-        this._loadedRecords.textContent = window.lang.var("strings", "loadedRecords", `${v}`);
+        if (this._loadedRecords) this._loadedRecords.textContent = window.lang.var("strings", "loadedRecords", `${v}`);
     }
 
     get shown(): number {
@@ -71,7 +73,7 @@ export class RecordCounter {
     }
     set shown(v: number) {
         this._shown = v;
-        this._shownRecords.textContent = window.lang.var("strings", "shownRecords", `${v}`);
+        if (this._shownRecords) this._shownRecords.textContent = window.lang.var("strings", "shownRecords", `${v}`);
     }
 
     get selected(): number {
@@ -79,8 +81,10 @@ export class RecordCounter {
     }
     set selected(v: number) {
         this._selected = v;
-        if (v == 0) this._selectedRecords.textContent = ``;
-        else this._selectedRecords.textContent = window.lang.var("strings", "selectedRecords", `${v}`);
+        if (this._selectedRecords) {
+            if (v == 0) this._selectedRecords.textContent = ``;
+            else this._selectedRecords.textContent = window.lang.var("strings", "selectedRecords", `${v}`);
+        }
     }
 }
 
@@ -88,23 +92,25 @@ export interface PaginatedListConfig {
     loader: HTMLElement;
     loadMoreButtons: Array<HTMLButtonElement>;
     loadAllButtons: Array<HTMLButtonElement>;
-    refreshButton: HTMLButtonElement;
-    filterArea: HTMLElement;
-    searchOptionsHeader: HTMLElement;
-    searchBox: HTMLInputElement;
-    recordCounter: HTMLElement;
-    totalEndpoint: string;
-    getPageEndpoint: string;
+    refreshButton?: HTMLButtonElement;
+    filterArea?: HTMLElement;
+    searchOptionsHeader?: HTMLElement;
+    searchBox?: HTMLInputElement;
+    recordCounter?: HTMLElement;
+    totalEndpoint: string | (() => string);
+    getPageEndpoint: string | (() => string);
     itemsPerPage: number;
     maxItemsLoadedForSearch: number;
-    appendNewItems: (resp: paginatedDTO) => void;
-    replaceWithNewItems: (resp: paginatedDTO) => void;
-    defaultSortField: string;
-    defaultSortAscending: boolean;
+    appendNewItems: (resp: PaginatedDTO) => void;
+    replaceWithNewItems: (resp: PaginatedDTO) => void;
+    defaultSortField?: string;
+    defaultSortAscending?: boolean;
     pageLoadCallback?: (req: XMLHttpRequest) => void;
+    disableSearch?: boolean;
+    hideButtonsOnLastPage?: boolean;
 }
 
-export abstract class PaginatedList {
+export abstract class PaginatedList implements PageEventBindable {
     protected _c: PaginatedListConfig;
 
     // Container to append items to.
@@ -143,11 +149,17 @@ export abstract class PaginatedList {
             this._c.loadAllButtons.forEach((v) => v.classList.add("unfocused"));
             this._c.loadMoreButtons.forEach((v) => {
                 v.textContent = window.lang.strings("noMoreResults");
+                if (this._c.hideButtonsOnLastPage) {
+                    v.classList.add("unfocused");
+                }
                 v.disabled = true;
             });
         } else {
             this._c.loadMoreButtons.forEach((v) => {
                 v.textContent = window.lang.strings("loadMore");
+                if (this._c.hideButtonsOnLastPage) {
+                    v.classList.remove("unfocused");
+                }
                 v.disabled = false;
             });
             this._c.loadAllButtons.forEach((v) => v.classList.remove("unfocused"));
@@ -186,10 +198,11 @@ export abstract class PaginatedList {
             this.loadMore(() => removeLoader(this._keepSearchingButton, true));
         }; */
         // Since this.reload doesn't exist, we need an arrow function to wrap it.
-        this._c.refreshButton.onclick = () => this.reload();
+        if (this._c.refreshButton) this._c.refreshButton.onclick = () => this.reload();
     }
 
     autoSetServerSearchButtonsDisabled = () => {
+        if (!this._search) return;
         const serverSearchSortChanged =
             this._search.inServerSearch &&
             (this._searchParams.sortByField != this._search.sortField ||
@@ -218,7 +231,7 @@ export abstract class PaginatedList {
         searchConfig.onSearchCallback = (
             newItems: boolean,
             loadAll: boolean,
-            callback?: (resp: paginatedDTO) => void,
+            callback?: (resp: PaginatedDTO) => void,
         ) => {
             // if (this._search.inSearch && !this.lastPage) this._c.loadAllButton.classList.remove("unfocused");
             // else this._c.loadAllButton.classList.add("unfocused");
@@ -245,12 +258,12 @@ export abstract class PaginatedList {
             if (previousCallback) previousCallback(newItems, loadAll);
         };
         const previousServerSearch = searchConfig.searchServer;
-        searchConfig.searchServer = (params: PaginatedReqDTO, newSearch: boolean) => {
+        searchConfig.searchServer = (params: PaginatedReqDTO, newSearch: boolean, then?: () => void) => {
             this._searchParams = params;
-            if (newSearch) this.reload();
-            else this.loadMore(false);
+            if (newSearch) this.reload(then);
+            else this.loadMore(false, then);
 
-            if (previousServerSearch) previousServerSearch(params, newSearch);
+            if (previousServerSearch) previousServerSearch(params, newSearch, then);
         };
         searchConfig.clearServerSearch = () => {
             console.trace("Clearing server search");
@@ -259,7 +272,7 @@ export abstract class PaginatedList {
         };
         searchConfig.setVisibility = this.setVisibility;
         this._search = new Search(searchConfig);
-        this._search.generateFilterList();
+        if (!this._c.disableSearch) this._search.generateFilterList();
         this.lastPage = false;
     };
 
@@ -270,7 +283,7 @@ export abstract class PaginatedList {
     //     else this._visible = this._search.ordering.filter(v => !elements.includes(v));
     //     const frag = document.createDocumentFragment()
     //     for (let i = 0; i < this._visible.length; i++) {
-    //         frag.appendChild(this._search.items[this._visible[i]].asElement())
+    //         frag.appendChild(this._search.items.get(this._visible[i]).asElement())
     //     }
     //     this._container.replaceChildren(frag);
     //     if (this._search.timeSearches) {
@@ -295,7 +308,7 @@ export abstract class PaginatedList {
 
         if (!appendedItems) {
             // Wipe old elements and render 1 new one, so we can take the element height.
-            this._container.replaceChildren(this._search.items[this._visible[0]].asElement());
+            this._container.replaceChildren(this._search.items.get(this._visible[0]).asElement());
         }
 
         this._computeScrollInfo();
@@ -317,7 +330,7 @@ export abstract class PaginatedList {
         }
         const frag = document.createDocumentFragment();
         for (let i = baseIndex; i < this._scroll.initialRenderCount; i++) {
-            frag.appendChild(this._search.items[this._visible[i]].asElement());
+            frag.appendChild(this._search.items.get(this._visible[i]).asElement());
         }
         this._scroll.rendered = Math.max(baseIndex, this._scroll.initialRenderCount);
         // appendChild over replaceChildren because there's already elements on the DOM
@@ -335,7 +348,7 @@ export abstract class PaginatedList {
 
         this._scroll.screenHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
 
-        this._scroll.rowHeight = this._search.items[this._visible[0]].asElement().offsetHeight;
+        this._scroll.rowHeight = this._search.items.get(this._visible[0]).asElement().offsetHeight;
     };
 
     // returns the item index to render up to for the given scroll position.
@@ -346,15 +359,27 @@ export abstract class PaginatedList {
         return bottomIdx;
     };
 
+    private _loadLock: boolean = false;
+    private _loadQueue: (() => void)[] = [];
     private _load = (
         itemLimit: number,
         page: number,
-        appendFunc: (resp: paginatedDTO) => void, // Function to append/put items in storage.
-        pre?: (resp: paginatedDTO) => void,
-        post?: (resp: paginatedDTO) => void,
+        appendFunc: (resp: PaginatedDTO) => void, // Function to append/put items in storage.
+        pre?: (resp: PaginatedDTO) => void,
+        post?: (resp: PaginatedDTO) => void,
         failCallback?: (req: XMLHttpRequest) => void,
     ) => {
+        if (this._loadLock) {
+            console.debug("Queuing load, position:", this._loadQueue.length);
+            const now = Date.now();
+            this._loadQueue.push(() => {
+                console.debug("Queued load running, appended at:", now);
+                this._load(itemLimit, page, appendFunc, pre, post, failCallback);
+            });
+            return;
+        }
         this._lastLoad = Date.now();
+        this._loadLock = true;
         let params = this._search.inServerSearch ? this._searchParams : this.defaultParams();
         params.limit = itemLimit;
         params.page = page;
@@ -364,7 +389,7 @@ export abstract class PaginatedList {
         }
 
         _post(
-            this._c.getPageEndpoint,
+            typeof this._c.getPageEndpoint === "string" ? this._c.getPageEndpoint : this._c.getPageEndpoint(),
             params,
             (req: XMLHttpRequest) => {
                 if (req.readyState != 4) return;
@@ -375,7 +400,7 @@ export abstract class PaginatedList {
                 }
                 this._hasLoaded = true;
 
-                let resp = req.response as paginatedDTO;
+                let resp = req.response as PaginatedDTO;
                 if (pre) pre(resp);
 
                 this.lastPage = resp.last_page;
@@ -384,20 +409,28 @@ export abstract class PaginatedList {
 
                 this._counter.loaded = this._search.ordering.length;
 
+                this._loadLock = false;
+
                 if (post) post(resp);
 
                 if (this._c.pageLoadCallback) this._c.pageLoadCallback(req);
+
+                const next = this._loadQueue.shift();
+                if (next) next();
             },
             true,
         );
     };
 
     // Removes all elements, and reloads the first page.
-    public abstract reload: (callback?: (resp: paginatedDTO) => void) => void;
-    protected _reload = (callback?: (resp: paginatedDTO) => void) => {
+    public abstract reload: (callback?: (resp: PaginatedDTO) => void) => void;
+    protected _reload = (callback?: (resp: PaginatedDTO) => void) => {
+        console.trace("reloading");
         this.lastPage = false;
         this._counter.reset();
-        this._counter.getTotal(this._c.totalEndpoint);
+        this._counter.getTotal(
+            typeof this._c.totalEndpoint === "string" ? this._c.totalEndpoint : this._c.totalEndpoint(),
+        );
         // Reload all currently visible elements, i.e. Load a new page of size (limit*(page+1)).
         let limit = this._c.itemsPerPage;
         if (this._page != 0) {
@@ -407,12 +440,14 @@ export abstract class PaginatedList {
             limit,
             0,
             this._c.replaceWithNewItems,
-            (_0: paginatedDTO) => {
+            (_0: PaginatedDTO) => {
                 // Allow refreshes every 15s
-                this._c.refreshButton.disabled = true;
-                setTimeout(() => (this._c.refreshButton.disabled = false), 15000);
+                if (this._c.refreshButton) {
+                    this._c.refreshButton.disabled = true;
+                    setTimeout(() => (this._c.refreshButton.disabled = false), 15000);
+                }
             },
-            (resp: paginatedDTO) => {
+            (resp: PaginatedDTO) => {
                 this._search.onSearchBoxChange(true, false, false);
                 if (this._search.inSearch) {
                     // this._c.loadAllButton.classList.remove("unfocused");
@@ -427,8 +462,8 @@ export abstract class PaginatedList {
     };
 
     // Loads the next page. If "loadAll", all pages will be loaded until the last is reached.
-    public abstract loadMore: (loadAll?: boolean, callback?: (resp?: paginatedDTO) => void) => void;
-    protected _loadMore = (loadAll: boolean = false, callback?: (resp: paginatedDTO) => void) => {
+    public abstract loadMore: (loadAll?: boolean, callback?: (resp?: PaginatedDTO) => void) => void;
+    protected _loadMore = (loadAll: boolean = false, callback?: (resp: PaginatedDTO) => void) => {
         this._c.loadMoreButtons.forEach((v) => (v.disabled = true));
         const timeout = setTimeout(() => {
             this._c.loadMoreButtons.forEach((v) => (v.disabled = false));
@@ -439,14 +474,14 @@ export abstract class PaginatedList {
             this._c.itemsPerPage,
             this._page,
             this._c.appendNewItems,
-            (resp: paginatedDTO) => {
+            (resp: PaginatedDTO) => {
                 // Check before setting this.lastPage so we have a chance to cancel the timeout.
                 if (resp.last_page) {
                     clearTimeout(timeout);
                     this._c.loadAllButtons.forEach((v) => removeLoader(v));
                 }
             },
-            (resp: paginatedDTO) => {
+            (resp: PaginatedDTO) => {
                 if (this._search.inSearch || loadAll) {
                     if (this.lastPage) {
                         loadAll = false;
@@ -464,8 +499,8 @@ export abstract class PaginatedList {
         );
     };
 
-    public abstract loadAll: (callback?: (resp?: paginatedDTO) => void) => void;
-    protected _loadAll = (callback?: (resp?: paginatedDTO) => void) => {
+    public abstract loadAll: (callback?: (resp?: PaginatedDTO) => void) => void;
+    protected _loadAll = (callback?: (resp?: PaginatedDTO) => void) => {
         this._c.loadAllButtons.forEach((v) => {
             addLoader(v, true);
         });
@@ -494,6 +529,7 @@ export abstract class PaginatedList {
         this._scroll.lastScrollY = scrollY;
         // If you've scrolled back up, do nothing
         if (scrollSpeed < 0) return;
+        if (this._scroll.rowHeight == 0) this.computeScrollInfo();
         let endIdx = this.maximumItemsToRender(scrollY);
 
         // Throttling this function means we might not catch up in time if the user scrolls fast,
@@ -507,7 +543,7 @@ export abstract class PaginatedList {
         const realEndIdx = Math.min(endIdx, this._visible.length);
         const frag = document.createDocumentFragment();
         for (let i = this._scroll.rendered; i < realEndIdx; i++) {
-            frag.appendChild(this._search.items[this._visible[i]].asElement());
+            frag.appendChild(this._search.items.get(this._visible[i]).asElement());
         }
         this._scroll.rendered = realEndIdx;
         this._container.appendChild(frag);

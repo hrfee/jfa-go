@@ -10,6 +10,12 @@ import (
 
 	"github.com/fsnotify/fsnotify"
 	lm "github.com/hrfee/jfa-go/logmessages"
+	pollingWatcher "github.com/radovskyb/watcher"
+)
+
+const (
+	RetryCount    = 2
+	RetryInterval = time.Second
 )
 
 // GenInternalReset generates a local password reset PIN, for use with the PWR option on the Admin page.
@@ -48,17 +54,35 @@ func (app *appContext) StartPWR() {
 		return
 	}
 
-	watcher, err := fsnotify.NewWatcher()
-	if err != nil {
-		app.err.Printf(lm.FailedStartDaemon, "PWR", err)
+	usePolling := app.config.Section("password_resets").Key("watch_polling").MustBool(false)
+
+	if !messagesEnabled {
 		return
 	}
-	defer watcher.Close()
+	if usePolling {
+		watcher := pollingWatcher.New()
+		watcher.FilterOps(pollingWatcher.Write)
 
-	go pwrMonitor(app, watcher)
-	err = watcher.Add(path)
-	if err != nil {
-		app.err.Printf(lm.FailedStartDaemon, "PWR", err)
+		go monitorPolling(app, watcher)
+		if err := watcher.Add(path); err != nil {
+			app.err.Printf(lm.FailedStartDaemon, "PWR (polling)", err)
+		}
+		if err := watcher.Start(time.Second * 5); err != nil {
+			app.err.Printf(lm.FailedStartDaemon, "PWR (polling)", err)
+		}
+	} else {
+		watcher, err := fsnotify.NewWatcher()
+		if err != nil {
+			app.err.Printf(lm.FailedStartDaemon, "PWR", err)
+			return
+		}
+		defer watcher.Close()
+
+		go monitorFS(app, watcher)
+		err = watcher.Add(path)
+		if err != nil {
+			app.err.Printf(lm.FailedStartDaemon, "PWR", err)
+		}
 	}
 
 	waitForRestart()
@@ -72,58 +96,75 @@ type PasswordReset struct {
 	Internal bool      `json:"Internal,omitempty"`
 }
 
-func pwrMonitor(app *appContext, watcher *fsnotify.Watcher) {
-	if !messagesEnabled {
+func validatePWR(app *appContext, fname string, attempt int) {
+	currentTime := time.Now()
+	if !strings.Contains(fname, "passwordreset") {
 		return
 	}
+	var pwr PasswordReset
+	data, err := os.ReadFile(fname)
+	if err != nil {
+		app.debug.Printf(lm.FailedReading, fname, err)
+		return
+	}
+	err = json.Unmarshal(data, &pwr)
+	if len(pwr.Pin) == 0 || err != nil {
+		app.debug.Printf(lm.FailedReading, fname, err)
+		return
+	}
+	app.info.Printf(lm.NewPWRForUser, pwr.Username)
+	if pwr.Expiry.Before(currentTime) {
+		app.err.Printf(lm.PWRExpired, pwr.Username, pwr.Expiry)
+		return
+	}
+	user, err := app.jf.UserByName(pwr.Username, false)
+	if err != nil || user.ID == "" {
+		app.err.Printf(lm.FailedGetUser, pwr.Username, lm.Jellyfin, err)
+		return
+	}
+	name := app.getAddressOrName(user.ID)
+	if name != "" {
+		msg, err := app.email.constructReset(pwr, false)
+
+		if err != nil {
+			app.err.Printf(lm.FailedConstructPWRMessage, pwr.Username, err)
+		} else if err := app.sendByID(msg, user.ID); err != nil {
+			app.err.Printf(lm.FailedSendPWRMessage, pwr.Username, name, err)
+		} else {
+			app.err.Printf(lm.SentPWRMessage, pwr.Username, name)
+		}
+	}
+}
+
+func monitorFS(app *appContext, watcher *fsnotify.Watcher) {
 	for {
 		select {
 		case event, ok := <-watcher.Events:
 			if !ok {
 				return
 			}
-			if event.Op&fsnotify.Write == fsnotify.Write && strings.Contains(event.Name, "passwordreset") {
-				var pwr PasswordReset
-				data, err := os.ReadFile(event.Name)
-				if err != nil {
-					app.debug.Printf(lm.FailedReading, event.Name, err)
-					return
-				}
-				err = json.Unmarshal(data, &pwr)
-				if len(pwr.Pin) == 0 || err != nil {
-					app.debug.Printf(lm.FailedReading, event.Name, err)
-					continue
-				}
-				app.info.Printf(lm.NewPWRForUser, pwr.Username)
-				if currentTime := time.Now(); pwr.Expiry.After(currentTime) {
-					user, err := app.jf.UserByName(pwr.Username, false)
-					if err != nil || user.ID == "" {
-						app.err.Printf(lm.FailedGetUser, pwr.Username, lm.Jellyfin, err)
-						return
-					}
-					uid := user.ID
-					name := app.getAddressOrName(uid)
-					if name != "" {
-						msg, err := app.email.constructReset(pwr, false)
-
-						if err != nil {
-							app.err.Printf(lm.FailedConstructPWRMessage, pwr.Username, err)
-						} else if err := app.sendByID(msg, uid); err != nil {
-							app.err.Printf(lm.FailedSendPWRMessage, pwr.Username, name, err)
-						} else {
-							app.err.Printf(lm.SentPWRMessage, pwr.Username, name)
-						}
-					}
-				} else {
-					app.err.Printf(lm.PWRExpired, pwr.Username, pwr.Expiry)
-				}
-
+			if event.Has(fsnotify.Write) {
+				validatePWR(app, event.Name, 0)
 			}
 		case err, ok := <-watcher.Errors:
 			if !ok {
 				return
 			}
 			app.err.Printf(lm.FailedStartDaemon, "PWR", err)
+		}
+	}
+}
+
+func monitorPolling(app *appContext, watcher *pollingWatcher.Watcher) {
+	for {
+		select {
+		case event := <-watcher.Event:
+			validatePWR(app, event.Path, 0)
+		case err := <-watcher.Error:
+			app.err.Printf(lm.FailedStartDaemon, "PWR (polling)", err)
+			return
+		case <-watcher.Closed:
+			return
 		}
 	}
 }

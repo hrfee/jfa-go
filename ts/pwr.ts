@@ -3,6 +3,7 @@ import { Validator, ValidatorConf } from "./modules/validator.js";
 import { _post, addLoader, removeLoader } from "./modules/common.js";
 import { loadLangSelector } from "./modules/lang.js";
 import { Captcha, GreCAPTCHA } from "./modules/captcha.js";
+import { setupTooltips } from "./modules/ui.js";
 
 interface formWindow extends Window {
     invalidPassword: string;
@@ -38,6 +39,8 @@ interface formWindow extends Window {
 loadLangSelector("pwr");
 
 declare var window: formWindow;
+
+setupTooltips();
 
 const form = document.getElementById("form-create") as HTMLFormElement;
 const submitInput = form.querySelector("input[type=submit]") as HTMLInputElement;

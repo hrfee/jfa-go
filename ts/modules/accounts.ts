@@ -14,8 +14,9 @@ import { Marked } from "@ts-stack/markdown";
 import { stripMarkdown } from "../modules/stripmd";
 import { DiscordUser, newDiscordSearch } from "../modules/discord";
 import { SearchConfiguration, QueryType, SearchableItem, SearchableItemDataAttribute } from "../modules/search";
-import { HiddenInputField } from "./ui";
+import { HiddenInputField, RadioBasedTabSelector } from "./ui";
 import { PaginatedList } from "./list";
+import { TableRow } from "./row";
 
 declare var window: GlobalWindow;
 
@@ -177,9 +178,8 @@ const queries = (): { [field: string]: QueryType } => {
     };
 };
 
-class User implements UserDTO, SearchableItem {
+class User extends TableRow implements UserDTO, SearchableItem {
     private _id = "";
-    private _row: HTMLTableRowElement;
     private _check: HTMLInputElement;
     private _username: HTMLSpanElement;
     private _admin: HTMLSpanElement;
@@ -210,6 +210,8 @@ class User implements UserDTO, SearchableItem {
     private _selected: boolean;
     private _referralsEnabled: boolean;
     private _referralsEnabledCheck: HTMLElement;
+
+    notInList: boolean = false;
 
     focus = () => this._row.scrollIntoView({ behavior: "smooth", block: "center" });
 
@@ -244,7 +246,7 @@ class User implements UserDTO, SearchableItem {
     setSelected(state: boolean, dispatchEvent: boolean) {
         this._selected = state;
         this._check.checked = state;
-        if (dispatchEvent)
+        if (dispatchEvent && !this.notInList)
             state ? document.dispatchEvent(this._checkEvent()) : document.dispatchEvent(this._uncheckEvent());
     }
 
@@ -692,12 +694,11 @@ class User implements UserDTO, SearchableItem {
     private _uncheckEvent = () => new CustomEvent("accountUncheckEvent", { detail: this.id });
 
     constructor(user: UserDTO) {
-        this._row = document.createElement("tr") as HTMLTableRowElement;
-        this._row.classList.add("border-b", "border-dashed", "dark:border-dotted", "dark:border-stone-700");
+        super();
         let innerHTML = `
             <td><input type="checkbox" class="accounts-select-user" value=""></td>
             <td><div class="flex flex-row gap-2 items-center">
-                <span class="accounts-username"></span>
+                <span class="accounts-username hover:underline hover:cursor-pointer"></span>
                 <div class="flex flex-row gap-2 items-baseline">
                     <span class="accounts-label-container" title="${window.lang.strings("label")}"></span>
                     <span class="accounts-admin chip ~info hidden"></span>
@@ -732,7 +733,7 @@ class User implements UserDTO, SearchableItem {
         }
         if (window.referralsEnabled) {
             innerHTML += `
-            <td class="accounts-referrals text-center-i grid gap-4 place-items-stretch"></td>
+            <td class="accounts-referrals grid gap-4 place-items-stretch"></td>
             `;
         }
         innerHTML += `
@@ -743,6 +744,15 @@ class User implements UserDTO, SearchableItem {
         this._check = this._row.querySelector("input[type=checkbox].accounts-select-user") as HTMLInputElement;
         this._accounts_admin = this._row.querySelector("input[type=checkbox].accounts-access-jfa") as HTMLInputElement;
         this._username = this._row.querySelector(".accounts-username") as HTMLSpanElement;
+        this._username.onclick = () =>
+            document.dispatchEvent(
+                new CustomEvent("accounts-show-details", {
+                    detail: {
+                        username: this.name,
+                        id: this.id,
+                    },
+                }),
+            );
         this._admin = this._row.querySelector(".accounts-admin") as HTMLSpanElement;
         this._disabled = this._row.querySelector(".accounts-disabled") as HTMLSpanElement;
         this._email = this._row.querySelector(".accounts-email-container") as HTMLInputElement;
@@ -922,18 +932,15 @@ class User implements UserDTO, SearchableItem {
         this.referrals_enabled = user.referrals_enabled;
     };
 
-    asElement = (): HTMLTableRowElement => {
-        return this._row;
-    };
     remove = () => {
-        if (this.selected) {
+        if (this.selected && !this.notInList) {
             document.dispatchEvent(this._uncheckEvent());
         }
-        this._row.remove();
+        super.remove();
     };
 }
 
-interface UsersDTO extends paginatedDTO {
+interface UsersDTO extends PaginatedDTO {
     users: UserDTO[];
 }
 
@@ -949,7 +956,11 @@ declare interface ExtendExpiryDTO {
     try_extend_from_previous_expiry?: boolean;
 }
 
-export class accountsList extends PaginatedList {
+export class accountsList extends PaginatedList implements Navigatable, AsTab {
+    readonly tabName = "accounts";
+    readonly pagePath = "accounts";
+    private _details: UserInfo;
+    private _table = document.getElementById("accounts-table") as HTMLTableElement;
     protected _container = document.getElementById("accounts-list") as HTMLTableSectionElement;
 
     private _addUserButton = document.getElementById("accounts-add-user") as HTMLSpanElement;
@@ -977,11 +988,13 @@ export class accountsList extends PaginatedList {
     private _enableExpiryNotify = document.getElementById("expiry-extend-enable") as HTMLInputElement;
     private _enableExpiryReason = document.getElementById("textarea-extend-enable") as HTMLTextAreaElement;
     private _modifySettings = document.getElementById("accounts-modify-user") as HTMLSpanElement;
-    private _modifySettingsProfile = document.getElementById("radio-use-profile") as HTMLInputElement;
-    private _modifySettingsUser = document.getElementById("radio-use-user") as HTMLInputElement;
+    /*private _modifySettingsProfile = document.getElementById("radio-use-profile") as HTMLInputElement;
+    private _modifySettingsUser = document.getElementById("radio-use-user") as HTMLInputElement;*/
+    private _modifySettingsProfileSource: RadioBasedTabSelector;
     private _enableReferrals = document.getElementById("accounts-enable-referrals") as HTMLSpanElement;
-    private _enableReferralsProfile = document.getElementById("radio-referrals-use-profile") as HTMLInputElement;
-    private _enableReferralsInvite = document.getElementById("radio-referrals-use-invite") as HTMLInputElement;
+    /*private _enableReferralsProfile = document.getElementById("radio-referrals-use-profile") as HTMLInputElement;
+    private _enableReferralsInvite = document.getElementById("radio-referrals-use-invite") as HTMLInputElement;*/
+    private _enableReferralsSource: RadioBasedTabSelector;
     private _sendPWR = document.getElementById("accounts-send-pwr") as HTMLSpanElement;
     private _profileSelect = document.getElementById("modify-user-profiles") as HTMLSelectElement;
     private _userSelect = document.getElementById("modify-user-users") as HTMLSelectElement;
@@ -1000,8 +1013,8 @@ export class accountsList extends PaginatedList {
     private _selectAllState: SelectAllState = SelectAllState.None;
     // private _users: { [id: string]: user };
     // private _ordering: string[] = [];
-    get users(): { [id: string]: User } {
-        return this._search.items as { [id: string]: User };
+    get users(): Map<string, User> {
+        return this._search.items as Map<string, User>;
     }
     // set users(v: { [id: string]: user }) { this._search.items = v as SearchableItems; }
 
@@ -1040,6 +1053,40 @@ export class accountsList extends PaginatedList {
         }
     };
 
+    private _inDetails: boolean = false;
+    details(jfId?: string) {
+        if (!jfId) jfId = this.users.keys().next().value;
+        this._details.load(
+            this.users.get(jfId),
+            () => {
+                this.unbindPageEvents();
+                this._inDetails = true;
+                // To make things look better, run processSelectedAccounts before -actually- unhiding.
+                this.processSelectedAccounts();
+                this._table.classList.add("unfocused");
+                this._details.hidden = false;
+
+                const url = new URL(window.location.href);
+                url.searchParams.set("details", jfId);
+                window.history.pushState(null, "", url.toString());
+            },
+            this.closeDetails,
+        );
+    }
+
+    closeDetails = () => {
+        if (!this._inDetails) return;
+        this._inDetails = false;
+        this.processSelectedAccounts();
+        this._details.hidden = true;
+        this._table.classList.remove("unfocused");
+        this.bindPageEvents();
+
+        const url = new URL(window.location.href);
+        url.searchParams.delete("details");
+        window.history.pushState(null, "", url.toString());
+    };
+
     constructor() {
         super({
             loader: document.getElementById("accounts-loader"),
@@ -1058,10 +1105,11 @@ export class accountsList extends PaginatedList {
             getPageEndpoint: "/users",
             itemsPerPage: 40,
             maxItemsLoadedForSearch: 200,
-            appendNewItems: (resp: paginatedDTO) => {
+            appendNewItems: (resp: PaginatedDTO) => {
+                // console.log("append");
                 for (let u of (resp as UsersDTO).users || []) {
-                    if (u.id in this.users) {
-                        this.users[u.id].update(u);
+                    if (this.users.has(u.id)) {
+                        this.users.get(u.id).update(u);
                     } else {
                         this.add(u);
                     }
@@ -1073,16 +1121,17 @@ export class accountsList extends PaginatedList {
                     this._search.ascending,
                 );
             },
-            replaceWithNewItems: (resp: paginatedDTO) => {
-                let accountsOnDOM: { [id: string]: boolean } = {};
+            replaceWithNewItems: (resp: PaginatedDTO) => {
+                // console.log("replace");
+                let accountsOnDOM = new Map<string, boolean>();
 
-                for (let id of Object.keys(this.users)) {
-                    accountsOnDOM[id] = true;
+                for (let id of this.users.keys()) {
+                    accountsOnDOM.set(id, true);
                 }
                 for (let u of (resp as UsersDTO).users || []) {
-                    if (u.id in accountsOnDOM) {
-                        this.users[u.id].update(u);
-                        delete accountsOnDOM[u.id];
+                    if (accountsOnDOM.has(u.id)) {
+                        this.users.get(u.id).update(u);
+                        accountsOnDOM.delete(u.id);
                     } else {
                         this.add(u);
                     }
@@ -1090,9 +1139,9 @@ export class accountsList extends PaginatedList {
 
                 // Delete accounts w/ remaining IDs (those not in resp.users)
                 // console.log("Removing", Object.keys(accountsOnDOM).length, "from DOM");
-                for (let id in accountsOnDOM) {
-                    this.users[id].remove();
-                    delete this.users[id];
+                for (let id of accountsOnDOM.keys()) {
+                    this.users.get(id).remove();
+                    this.users.delete(id);
                 }
 
                 this._search.setOrdering(
@@ -1124,6 +1173,7 @@ export class accountsList extends PaginatedList {
             clearSearchButtonSelector: ".accounts-search-clear",
             serverSearchButtonSelector: ".accounts-search-server",
             onSearchCallback: (_0: boolean, _1: boolean) => {
+                this.closeDetails();
                 this.processSelectedAccounts();
             },
             searchServer: null,
@@ -1131,9 +1181,6 @@ export class accountsList extends PaginatedList {
         };
 
         this.initSearch(searchConfig);
-
-        // FIXME: Remove!
-        (window as any).accs = this;
 
         this._selectAll.checked = false;
         this._selectAllState = SelectAllState.None;
@@ -1163,66 +1210,47 @@ export class accountsList extends PaginatedList {
         this._modifySettings.onclick = this.modifyUsers;
         this._modifySettings.classList.add("unfocused");
 
-        const checkSource = () => {
-            const profileSpan = this._modifySettingsProfile.nextElementSibling as HTMLSpanElement;
-            const userSpan = this._modifySettingsUser.nextElementSibling as HTMLSpanElement;
-            if (this._modifySettingsProfile.checked) {
-                this._userSelect.parentElement.classList.add("unfocused");
-                this._profileSelect.parentElement.classList.remove("unfocused");
-                profileSpan.classList.add("@high");
-                profileSpan.classList.remove("@low");
-                userSpan.classList.remove("@high");
-                userSpan.classList.add("@low");
-                this._applyOmbi?.parentElement.classList.remove("unfocused");
-                this._applyJellyseerr?.parentElement.classList.remove("unfocused");
-            } else {
-                this._userSelect.parentElement.classList.remove("unfocused");
-                this._profileSelect.parentElement.classList.add("unfocused");
-                userSpan.classList.add("@high");
-                userSpan.classList.remove("@low");
-                profileSpan.classList.remove("@high");
-                profileSpan.classList.add("@low");
-                this._applyOmbi?.parentElement.classList.add("unfocused");
-                this._applyJellyseerr?.parentElement.classList.add("unfocused");
-            }
-        };
-        this._modifySettingsProfile.onchange = checkSource;
-        this._modifySettingsUser.onchange = checkSource;
+        this._modifySettingsProfileSource = new RadioBasedTabSelector(
+            document.getElementById("modify-user-profile-source"),
+            "modify-user-profile-source",
+            {
+                name: window.lang.strings("profile"),
+                id: "profile",
+                content: this._profileSelect.parentElement,
+                onShow: () => {
+                    this._applyOmbi?.parentElement.classList.remove("unfocused");
+                    this._applyJellyseerr?.parentElement.classList.remove("unfocused");
+                },
+            },
+            {
+                name: window.lang.strings("user"),
+                id: "user",
+                content: this._userSelect.parentElement,
+                onShow: () => {
+                    this._applyOmbi?.parentElement.classList.add("unfocused");
+                    this._applyJellyseerr?.parentElement.classList.add("unfocused");
+                },
+            },
+        );
 
         if (window.referralsEnabled) {
-            const profileSpan = this._enableReferralsProfile.nextElementSibling as HTMLSpanElement;
-            const inviteSpan = this._enableReferralsInvite.nextElementSibling as HTMLSpanElement;
-            const checkReferralSource = () => {
-                console.debug("States:", this._enableReferralsProfile.checked, this._enableReferralsInvite.checked);
-                if (this._enableReferralsProfile.checked) {
-                    this._referralsInviteSelect.parentElement.classList.add("unfocused");
-                    this._referralsProfileSelect.parentElement.classList.remove("unfocused");
-                    profileSpan.classList.add("@high");
-                    profileSpan.classList.remove("@low");
-                    inviteSpan.classList.remove("@high");
-                    inviteSpan.classList.add("@low");
-                } else {
-                    this._referralsInviteSelect.parentElement.classList.remove("unfocused");
-                    this._referralsProfileSelect.parentElement.classList.add("unfocused");
-                    inviteSpan.classList.add("@high");
-                    inviteSpan.classList.remove("@low");
-                    profileSpan.classList.remove("@high");
-                    profileSpan.classList.add("@low");
-                }
-            };
-            profileSpan.onclick = () => {
-                this._enableReferralsProfile.checked = true;
-                this._enableReferralsInvite.checked = false;
-                checkReferralSource();
-            };
-            inviteSpan.onclick = () => {
-                this._enableReferralsInvite.checked = true;
-                this._enableReferralsProfile.checked = false;
-                checkReferralSource();
-            };
+            this._enableReferralsSource = new RadioBasedTabSelector(
+                document.getElementById("enable-referrals-user-source"),
+                "enable-referrals-user-source",
+                {
+                    name: window.lang.strings("profile"),
+                    id: "profile",
+                    content: this._referralsProfileSelect.parentElement,
+                },
+                {
+                    name: window.lang.strings("invite"),
+                    id: "invite",
+                    content: this._referralsInviteSelect.parentElement,
+                },
+            );
             this._enableReferrals.onclick = () => {
                 this.enableReferrals();
-                profileSpan.onclick(null);
+                this._enableReferralsSource.selected = 0;
             };
         }
 
@@ -1403,6 +1431,15 @@ export class accountsList extends PaginatedList {
         this._search.showHideSearchOptionsHeader();
 
         this.registerURLListener();
+        // FIXME: registerParamListener once PageManager is global
+        //
+        this._details = new UserInfo(document.getElementsByClassName("accounts-details")[0] as HTMLElement);
+        document.addEventListener("accounts-show-details", (ev: ShowDetailsEvent) => {
+            const url = new URL(window.location.href);
+            url.searchParams.set("details", ev.detail.id);
+            window.history.pushState(null, "", url.toString());
+            // this.details(ev.detail.id);
+        });
 
         // Get rid of nasty CSS
         window.modals.announce.onclose = () => {
@@ -1411,16 +1448,16 @@ export class accountsList extends PaginatedList {
         };
     }
 
-    reload = (callback?: (resp: paginatedDTO) => void) => {
+    reload = (callback?: (resp: PaginatedDTO) => void) => {
         this._reload(callback);
         this.loadTemplates();
     };
 
-    loadMore = (loadAll: boolean = false, callback?: (resp?: paginatedDTO) => void) => {
+    loadMore = (loadAll: boolean = false, callback?: (resp?: PaginatedDTO) => void) => {
         this._loadMore(loadAll, callback);
     };
 
-    loadAll = (callback?: (resp?: paginatedDTO) => void) => {
+    loadAll = (callback?: (resp?: PaginatedDTO) => void) => {
         this._loadAll(callback);
     };
 
@@ -1448,8 +1485,8 @@ export class accountsList extends PaginatedList {
 
         if (next == SelectAllState.None) {
             // Deselect -all- users, rather than just visible ones, to be safe.
-            for (let id in this.users) {
-                this.users[id].setSelected(false, false);
+            for (let id of this.users.keys()) {
+                this.users.get(id).setSelected(false, false);
             }
             this._selectAll.checked = false;
             this._selectAll.indeterminate = false;
@@ -1461,7 +1498,7 @@ export class accountsList extends PaginatedList {
         const selectAllVisible = () => {
             let count = 0;
             for (let id of this._visible) {
-                this.users[id].setSelected(true, false);
+                this.users.get(id).setSelected(true, false);
                 count++;
             }
             console.debug("Selected", count);
@@ -1478,7 +1515,7 @@ export class accountsList extends PaginatedList {
         }
 
         if (next == SelectAllState.All) {
-            this.loadAll((_: paginatedDTO) => {
+            this.loadAll((_: PaginatedDTO) => {
                 if (!this.lastPage) {
                     // Pretend to live-select elements as they load.
                     this._counter.selected = this._counter.shown;
@@ -1495,15 +1532,14 @@ export class accountsList extends PaginatedList {
         for (let id of this._search.ordering) {
             if (!(inRange || id == startID)) continue;
             inRange = true;
-            if (!this._container.contains(this.users[id].asElement())) continue;
-            this.users[id].selected = true;
+            if (!this._container.contains(this.users.get(id).asElement())) continue;
+            this.users.get(id).selected = true;
             if (id == endID) return;
         }
     };
 
     add = (u: UserDTO) => {
-        let domAccount = new User(u);
-        this.users[u.id] = domAccount;
+        this.users.set(u.id, new User(u));
         // console.log("after appending lengths:", Object.keys(this.users).length, Object.keys(this._search.items).length);
     };
 
@@ -1551,35 +1587,36 @@ export class accountsList extends PaginatedList {
             if (window.emailEnabled || window.telegramEnabled) {
                 this._announceButton.parentElement.classList.remove("unfocused");
             }
+
             let anyNonExpiries = list.length == 0 ? true : false;
             let allNonExpiries = true;
             let noContactCount = 0;
-            let referralState = Number(this.users[list[0]].referrals_enabled); // -1 = hide, 0 = show "enable", 1 = show "disable"
+            let referralState = Number(this.users.get(list[0]).referrals_enabled); // -1 = hide, 0 = show "enable", 1 = show "disable"
             // Only show enable/disable button if all selected have the same state.
-            this._shouldEnable = this.users[list[0]].disabled;
+            this._shouldEnable = this.users.get(list[0]).disabled;
             let showDisableEnable = true;
             for (let id of list) {
-                if (!anyNonExpiries && !this.users[id].expiry) {
+                if (!anyNonExpiries && !this.users.get(id).expiry) {
                     anyNonExpiries = true;
                     this._expiryDropdown.classList.add("unfocused");
                 }
-                if (this.users[id].expiry) {
+                if (this.users.get(id).expiry) {
                     allNonExpiries = false;
                 }
-                if (showDisableEnable && this.users[id].disabled != this._shouldEnable) {
+                if (showDisableEnable && this.users.get(id).disabled != this._shouldEnable) {
                     showDisableEnable = false;
                     this._disableEnable.parentElement.classList.add("unfocused");
                 }
                 if (!showDisableEnable && anyNonExpiries) {
                     break;
                 }
-                if (!this.users[id].lastNotifyMethod()) {
+                if (!this.users.get(id).lastNotifyMethod()) {
                     noContactCount++;
                 }
                 if (
                     window.referralsEnabled &&
                     referralState != -1 &&
-                    Number(this.users[id].referrals_enabled) != referralState
+                    Number(this.users.get(id).referrals_enabled) != referralState
                 ) {
                     referralState = -1;
                 }
@@ -1634,13 +1671,27 @@ export class accountsList extends PaginatedList {
                     this._enableReferrals.textContent = window.lang.strings("disableReferrals");
                 }
             }
+            if (this._details.hidden) {
+                this._c.loadAllButtons.forEach((el) => {
+                    // FIXME: Using hidden here instead of unfocused so that it doesn't interfere with any PaginatedList behaviour. Don't do this.
+                    el.classList.add("hidden");
+                });
+                this._addUserButton.classList.remove("unfocused");
+            } else {
+                this._c.loadAllButtons.forEach((el) => {
+                    // FIXME: Using hidden here instead of unfocused so that it doesn't interfere with any PaginatedList behaviour. Don't do this.
+                    el.classList.add("hidden");
+                });
+                this._addUserButton.classList.add("unfocused");
+            }
         }
     };
 
     private _collectUsers = (): string[] => {
+        if (this._inDetails && this._details.jfId != "") return [this._details.jfId];
         let list: string[] = [];
         for (let id of this._visible) {
-            if (this.users[id].selected) {
+            if (this.users.get(id).selected) {
                 list.push(id);
             }
         }
@@ -1993,7 +2044,7 @@ export class accountsList extends PaginatedList {
         let list = this._collectUsers();
         let manualUser: User;
         for (let id of list) {
-            let user = this.users[id];
+            let user = this.users.get(id);
             if (!user.lastNotifyMethod() && !user.email) {
                 manualUser = user;
                 break;
@@ -2065,8 +2116,8 @@ export class accountsList extends PaginatedList {
 
         (() => {
             let innerHTML = "";
-            for (let id in this.users) {
-                innerHTML += `<option value="${id}">${this.users[id].name}</option>`;
+            for (let id of this.users.keys()) {
+                innerHTML += `<option value="${id}">${this.users.get(id).name}</option>`;
             }
             this._userSelect.innerHTML = innerHTML;
         })();
@@ -2074,8 +2125,7 @@ export class accountsList extends PaginatedList {
         const form = document.getElementById("form-modify-user") as HTMLFormElement;
         const button = form.querySelector("span.submit") as HTMLSpanElement;
 
-        this._modifySettingsProfile.checked = true;
-        this._modifySettingsUser.checked = false;
+        this._modifySettingsProfileSource.selected = 0;
         form.onsubmit = (event: Event) => {
             event.preventDefault();
             toggleLoader(button);
@@ -2090,10 +2140,10 @@ export class accountsList extends PaginatedList {
             if (window.jellyseerrEnabled) {
                 send["jellyseerr"] = this._applyJellyseerr.checked;
             }
-            if (this._modifySettingsProfile.checked && !this._modifySettingsUser.checked) {
+            if (this._modifySettingsProfileSource.selected == "profile") {
                 send["from"] = "profile";
                 send["profile"] = this._profileSelect.value;
-            } else if (this._modifySettingsUser.checked && !this._modifySettingsProfile.checked) {
+            } else if (this._modifySettingsProfileSource.selected == "user") {
                 send["from"] = "user";
                 send["id"] = this._userSelect.value;
             }
@@ -2137,7 +2187,7 @@ export class accountsList extends PaginatedList {
         let list = this._collectUsers();
 
         // Check if we're disabling or enabling
-        if (this.users[list[0]].referrals_enabled) {
+        if (this.users.get(list[0]).referrals_enabled) {
             _delete("/users/referral", { users: list }, (req: XMLHttpRequest) => {
                 if (req.readyState != 4 || req.status != 200) return;
                 window.notifications.customSuccess(
@@ -2165,12 +2215,11 @@ export class accountsList extends PaginatedList {
                         }
                         innerHTML += `<option value="${inv.code}">${name}</option>`;
                     }
-                    this._enableReferralsInvite.checked = true;
+                    this._enableReferralsSource.selected = "invite";
                 } else {
-                    this._enableReferralsInvite.checked = false;
+                    this._enableReferralsSource.selected = "profile";
                     innerHTML += `<option>${window.lang.strings("inviteNoInvites")}</option>`;
                 }
-                this._enableReferralsProfile.checked = !this._enableReferralsInvite.checked;
                 this._referralsInviteSelect.innerHTML = innerHTML;
 
                 // 2. Profiles
@@ -2192,10 +2241,10 @@ export class accountsList extends PaginatedList {
                 users: list,
             };
             // console.log("profile:", this._enableReferralsProfile.checked, this._enableReferralsInvite.checked);
-            if (this._enableReferralsProfile.checked && !this._enableReferralsInvite.checked) {
+            if (this._enableReferralsSource.selected == "profile") {
                 send["from"] = "profile";
                 send["profile"] = this._referralsProfileSelect.value;
-            } else if (this._enableReferralsInvite.checked && !this._enableReferralsProfile.checked) {
+            } else if (this._enableReferralsSource.selected == "invite") {
                 send["from"] = "invite";
                 send["id"] = this._referralsInviteSelect.value;
             }
@@ -2227,8 +2276,7 @@ export class accountsList extends PaginatedList {
                 },
             );
         };
-        this._enableReferralsProfile.checked = true;
-        this._enableReferralsInvite.checked = false;
+        this._enableReferralsSource.selected = 0;
         this._referralsExpiry.checked = false;
         window.modals.enableReferralsUser.show();
     };
@@ -2285,8 +2333,8 @@ export class accountsList extends PaginatedList {
                 let id = users.length > 0 ? users[0] : "";
                 if (!id) invalid = true;
                 else {
-                    date = new Date(this.users[id].expiry * 1000);
-                    if (this.users[id].expiry == 0) date = new Date();
+                    date = new Date(this.users.get(id).expiry * 1000);
+                    if (this.users.get(id).expiry == 0) date = new Date();
                     date.setMonth(date.getMonth() + +fields[0].value);
                     date.setDate(date.getDate() + +fields[1].value);
                     date.setHours(date.getHours() + +fields[2].value);
@@ -2426,29 +2474,52 @@ export class accountsList extends PaginatedList {
 
     focusAccount = (userID: string) => {
         console.debug("focusing user", userID);
-        this._c.searchBox.value = `id:"${userID}"`;
-        this._search.onSearchBoxChange();
-        this._search.onServerSearch();
-        if (userID in this.users) this.users[userID].focus();
+        this._search.setQueryParam(`id:"${userID}"`);
+        if (userID in this.users) this.users.get(userID).focus();
     };
 
     public static readonly _accountURLEvent = "account-url";
-    registerURLListener = () =>
+    registerURLListener = () => {
         document.addEventListener(accountsList._accountURLEvent, (event: CustomEvent) => {
             this.focusAccount(event.detail);
         });
-
-    isAccountURL = () => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const userID = urlParams.get("user");
-        return Boolean(userID);
+        window.tabs.pages.registerParamListener(
+            this.tabName,
+            (_: URLSearchParams) => {
+                this.navigate();
+            },
+            "user",
+            "details",
+            "search",
+        );
     };
 
-    loadAccountURL = () => {
-        const urlParams = new URLSearchParams(window.location.search);
+    isURL = (url?: string) => {
+        const urlParams = new URLSearchParams(url || window.location.search);
         const userID = urlParams.get("user");
-        this.focusAccount(userID);
+        const details = urlParams.get("details");
+        return Boolean(userID) || Boolean(details) || this._search.isURL(url);
     };
+
+    navigate = (url?: string) => {
+        const urlParams = new URLSearchParams(url || window.location.search);
+        const details = urlParams.get("details");
+        const userID = details || urlParams.get("user");
+        let search = urlParams.get("search") || "";
+        if (userID) {
+            search = `id:"${userID}"`;
+            urlParams.set("search", search);
+            // Get rid of it, as it'll now be included in the "search" param anyway
+            urlParams.delete("user");
+        }
+        this._search.navigate(urlParams.toString(), () => {
+            if (details) this.details(details);
+        });
+    };
+
+    clearURL() {
+        this._search.clearURL();
+    }
 }
 
 // An alternate view showing accounts in sub-lists grouped by group/label.
@@ -2545,12 +2616,12 @@ class Column {
     }
 
     // Sorts the user list. previouslyActive is whether this column was previously sorted by, indicating that the direction should change.
-    sort = (users: { [id: string]: User }): string[] => {
-        let userIDs = Object.keys(users);
+    sort = (users: Map<string, User>): string[] => {
+        let userIDs = Array.from(users.keys());
         userIDs.sort((a: string, b: string): number => {
-            let av: GetterReturnType = this._getter.call(users[a]);
+            let av: GetterReturnType = this._getter.call(users.get(a));
             if (typeof av === "string") av = av.toLowerCase();
-            let bv: GetterReturnType = this._getter.call(users[b]);
+            let bv: GetterReturnType = this._getter.call(users.get(b));
             if (typeof bv === "string") bv = bv.toLowerCase();
             if (av < bv) return this._ascending ? -1 : 1;
             if (av > bv) return this._ascending ? 1 : -1;
@@ -2561,7 +2632,17 @@ class Column {
     };
 }
 
-type ActivitySeverity = "Info" | "Debug" | "Warn" | "Error" | "Fatal";
+type ActivitySeverity =
+    | "Fatal"
+    | "None"
+    | "Trace"
+    | "Debug"
+    | "Information"
+    | "Info"
+    | "Warn"
+    | "Warning"
+    | "Error"
+    | "Critical";
 interface ActivityLogEntryDTO {
     Id: number;
     Name: string;
@@ -2573,4 +2654,423 @@ interface ActivityLogEntryDTO {
     UserId: string;
     UserPrimaryImageTag: string;
     Severity: ActivitySeverity;
+}
+interface PaginatedActivityLogEntriesDTO {
+    entries: ActivityLogEntryDTO[];
+    last_page: boolean;
+}
+
+class ActivityLogEntry extends TableRow implements ActivityLogEntryDTO, SearchableItem {
+    private _e: ActivityLogEntryDTO;
+    private _username: string;
+    private _severity: HTMLElement;
+    private _user: HTMLElement;
+    private _name: HTMLElement;
+    private _type: HTMLElement;
+    private _overview: HTMLElement;
+    private _time: HTMLElement;
+
+    update = (user: string | null, entry: ActivityLogEntryDTO) => {
+        this._e = entry;
+        if (user != null) this.User = user;
+        this.Id = entry.Id;
+        this.Name = entry.Name;
+        this.Overview = entry.Overview;
+        this.ShortOverview = entry.ShortOverview;
+        this.Type = entry.Type;
+        this.ItemId = entry.ItemId;
+        this.Date = entry.Date;
+        this.UserId = entry.UserId;
+        this.UserPrimaryImageTag = entry.UserPrimaryImageTag;
+        this.Severity = entry.Severity;
+    };
+
+    constructor(user: string, entry: ActivityLogEntryDTO) {
+        super();
+        this._row.innerHTML = `
+        <td class="text-center-i"><span class="jf-activity-log-severity chip ~info dark:~d_info unfocused"></span></td>
+        <td class="jf-activity-log-user-name-combined max-w-96 truncate"><div class="flex flex-row gap-2 items-baseline"><span class="chip ~gray dark:~d_gray jf-activity-log-user unfocused"></span><span class="jf-activity-log-name truncate"></span></div></td>
+        <td class="jf-activity-log-type italic"></td>
+        <td class="jf-activity-log-overview"></td>
+        <td class="jf-activity-log-time"></td>
+        `;
+        this._severity = this._row.getElementsByClassName("jf-activity-log-severity")[0] as HTMLElement;
+        this._user = this._row.getElementsByClassName("jf-activity-log-user")[0] as HTMLElement;
+        this._name = this._row.getElementsByClassName("jf-activity-log-name")[0] as HTMLElement;
+        this._type = this._row.getElementsByClassName("jf-activity-log-type")[0] as HTMLElement;
+        this._overview = this._row.getElementsByClassName("jf-activity-log-overview")[0] as HTMLElement;
+        this._time = this._row.getElementsByClassName("jf-activity-log-time")[0] as HTMLElement;
+        this.update(user, entry);
+    }
+
+    matchesSearch = (query: string): boolean => {
+        return (
+            ("" + this.Id).includes(query) ||
+            this.User.includes(query) ||
+            this.UserId.includes(query) ||
+            this.Name.includes(query) ||
+            this.Overview.includes(query) ||
+            this.ShortOverview.includes(query) ||
+            this.Type.includes(query) ||
+            this.ItemId.includes(query) ||
+            this.UserId.includes(query) ||
+            this.Severity.includes(query)
+        );
+    };
+
+    get Id(): number {
+        return this._e.Id;
+    }
+    set Id(v: number) {
+        this._e.Id = v;
+    }
+
+    private setName() {
+        const space = this.Name.indexOf(" ");
+        let nameContent = this.Name;
+        let endOfUserBadge = ":";
+        if (space != -1 && this.User != "" && nameContent.substring(0, space) == this.User) {
+            endOfUserBadge = "";
+            nameContent = nameContent.substring(space + 1, nameContent.length);
+        }
+        if (this.User == "") this._user.classList.add("unfocused");
+        else this._user.classList.remove("unfocused");
+        this._user.textContent = this.User + endOfUserBadge;
+        this._name.textContent = nameContent;
+        this._name.title = nameContent;
+    }
+
+    // User is the username of the user. It is not part of an ActivityLogEntryDTO, rather the UserId is, but in most contexts the parent should know it anyway.
+    get User(): string {
+        return this._username;
+    }
+    set User(v: string) {
+        this._username = v;
+        this.setName();
+    }
+
+    // Name is a description of the entry. It often starts with the name of the user, so
+    get Name(): string {
+        return this._e.Name;
+    }
+    set Name(v: string) {
+        this._e.Name = v;
+        this.setName();
+    }
+
+    // "Overview" doesn't seem to be used, but we'll let it take precedence anyway.
+    private setOverview() {
+        this._overview.textContent = this.Overview || this.ShortOverview;
+    }
+
+    // Overview is something, but I haven't seen it actually used.
+    get Overview(): string {
+        return this._e.Overview;
+    }
+
+    set Overview(v: string) {
+        this._e.Overview = v;
+        this.setOverview();
+    }
+
+    // ShortOverview usually seems to be the IP address of the user in applicable entries.
+    get ShortOverview(): string {
+        return this._e.ShortOverview;
+    }
+    set ShortOverview(v: string) {
+        this._e.ShortOverview = v;
+        this.setOverview();
+    }
+
+    get Type(): string {
+        return this._e.Type;
+    }
+    set Type(v: string) {
+        this._e.Type = v;
+        this._type.textContent = v;
+    }
+
+    get ItemId(): string {
+        return this._e.ItemId;
+    }
+    set ItemId(v: string) {
+        this._e.ItemId = v;
+    }
+
+    get Date(): number {
+        return this._e.Date;
+    }
+    set Date(v: number) {
+        this._e.Date = v;
+        this._time.textContent = toDateString(new Date(v * 1000));
+    }
+
+    get UserId(): string {
+        return this._e.UserId;
+    }
+    set UserId(v: string) {
+        this._e.UserId = v;
+    }
+
+    get UserPrimaryImageTag(): string {
+        return this._e.UserPrimaryImageTag;
+    }
+    set UserPrimaryImageTag(v: string) {
+        this._e.UserPrimaryImageTag = v;
+    }
+
+    get Severity(): ActivitySeverity {
+        return this._e.Severity;
+    }
+    set Severity(v: ActivitySeverity) {
+        this._e.Severity = v;
+        if (v) this._severity.classList.remove("unfocused");
+        else this._severity.classList.add("unfocused");
+        ["~neutral", "~positive", "~warning", "~critical", "~info", "~urge"].forEach((c) =>
+            this._severity.classList.remove(c),
+        );
+        switch (v) {
+            case "Info":
+            case "Information":
+                this._severity.textContent = window.lang.strings("info");
+                this._severity.classList.add("~info");
+                break;
+            case "Debug":
+            case "Trace":
+                this._severity.textContent = window.lang.strings("debug");
+                this._severity.classList.add("~urge");
+                break;
+            case "Warn":
+            case "Warning":
+                this._severity.textContent = window.lang.strings("warn");
+                this._severity.classList.add("~warning");
+                break;
+            case "Error":
+                this._severity.textContent = window.lang.strings("error");
+                this._severity.classList.add("~critical");
+                break;
+            case "Critical":
+            case "Fatal":
+                this._severity.textContent = window.lang.strings("fatal");
+                this._severity.classList.add("~critical");
+                break;
+            case "None":
+                this._severity.textContent = window.lang.strings("none");
+                this._severity.classList.add("~neutral");
+            default:
+                console.warn("Unknown key in activity severity:", v);
+                this._severity.textContent = v;
+                this._severity.classList.add("~neutral");
+        }
+    }
+}
+
+interface ShowDetailsEvent extends Event {
+    detail: {
+        username: string;
+        id: string;
+    };
+}
+
+class UserInfo extends PaginatedList {
+    private _hidden: boolean = true;
+    private _table: HTMLElement;
+    private _card: HTMLElement;
+    private _rowArea: HTMLElement;
+    private _noResults: HTMLElement;
+    private _link: HTMLAnchorElement;
+    get entries(): Map<string, ActivityLogEntry> {
+        return this._search.items as Map<string, ActivityLogEntry>;
+    }
+    private _back: HTMLButtonElement;
+    username: string;
+    jfId: string;
+    constructor(card: HTMLElement) {
+        card.classList.add("unfocused");
+        card.innerHTML = `
+        <div class="flex flex-col gap-2">
+            <div class="overflow-x-scroll">
+                <table class="table text-base leading-5">
+                    <thead class="user-info-table-header"></thead>
+                    <tbody class="user-info-row"></tbody>
+                </table>
+            </div>
+            <div class="flex flex-col gap-2">
+                <div class="jf-activity-source flex flex-row justify-between gap-2">
+                    <h3 class="heading text-lg">${window.lang.strings("activityFromJF")}</h3>
+                    <a role="link" tabindex="0" class="jf-activity-jfa-link hover:underline cursor-pointer button ~info @high flex flex-row gap-1 items-baseline">${window.lang.strings("activityFromJfa")}<i class="icon ri-external-link-line text-current"></i></a>
+                </div>
+                <!-- <h2 class="heading text-2xl">${window.lang.strings("activity")}</h2> -->
+                <div class="card @low overflow-x-scroll jf-activity-table">
+                    <table class="table text-xs leading-5">
+                        <thead>
+                            <tr>
+                                <th>${window.lang.strings("severity")}</th>
+                                <th>${window.lang.strings("details")}</th>
+                                <th>${window.lang.strings("type")}</th>
+                                <th>${window.lang.strings("other")}</th>
+                                <th>${window.lang.strings("date")}</th>
+                            </tr>
+                        </thead>
+                        <tbody class="jf-activity-table-content"></tbody>
+                    </table>
+                    <div class="unfocused h-[100%] my-3 jf-activity-no-activity">
+                        <div class="flex flex-col gap-2 h-[100%] justify-center items-center">
+                            <span class="text-2xl font-medium italic text-center">${window.lang.strings("noActivityFound")}</span>
+                            <span class="text-sm font-light italic text-center" id="accounts-no-local-results">${window.lang.strings("noActivityFoundLocally")}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex flex-row gap-2 justify-center">
+                    <button class="button ~neutral @low jf-activity-load-more">${window.lang.strings("loadMore")}</button>
+                    <button class="button ~neutral @low accounts-load-all jf-activity-load-all">${window.lang.strings("loadAll")}</button>
+                </div>
+            </div>
+        </div>
+        `;
+        super({
+            loader: card.getElementsByClassName("jf-activity-loader")[0] as HTMLElement,
+            loadMoreButtons: Array.from(
+                document.getElementsByClassName("jf-activity-load-more"),
+            ) as Array<HTMLButtonElement>,
+            loadAllButtons: Array.from(
+                document.getElementsByClassName("jf-activity-load-all"),
+            ) as Array<HTMLButtonElement>,
+            totalEndpoint: () => "/users/" + this.jfId + "/activities/jellyfin/count",
+            getPageEndpoint: () => "/users/" + this.jfId + "/activities/jellyfin",
+            itemsPerPage: 20,
+            maxItemsLoadedForSearch: 200,
+            disableSearch: true,
+            hideButtonsOnLastPage: true,
+            appendNewItems: (resp: PaginatedDTO) => {
+                for (let entry of (resp as PaginatedActivityLogEntriesDTO).entries || []) {
+                    if (this.entries.has("" + entry.Id)) {
+                        this.entries.get("" + entry.Id).update(null, entry);
+                    } else {
+                        this.add(entry);
+                    }
+                }
+
+                this._search.setOrdering(Array.from(this.entries.keys()), "Date", true);
+                this.computeScrollInfo();
+            },
+            replaceWithNewItems: (resp: PaginatedDTO) => {
+                let entriesOnDOM = new Map<string, boolean>();
+
+                for (let id of this.entries.keys()) {
+                    entriesOnDOM.set(id, true);
+                }
+                for (let entry of (resp as PaginatedActivityLogEntriesDTO).entries || []) {
+                    if (entriesOnDOM.has("" + entry.Id)) {
+                        this.entries.get("" + entry.Id).update(null, entry);
+                        entriesOnDOM.delete("" + entry.Id);
+                    } else {
+                        this.add(entry);
+                    }
+                }
+
+                // Delete entries w/ remaining IDs (those not in resp.entries)
+                // console.log("Removing", Object.keys(entriesOnDOM).length, "from DOM");
+                for (let id of entriesOnDOM.keys()) {
+                    this.entries.get(id).remove();
+                    this.entries.delete(id);
+                }
+
+                this._search.setOrdering(Array.from(this.entries.keys()), "Date", true);
+            },
+        });
+        this._hidden = true;
+        this._card = card;
+        this._rowArea = this._card.getElementsByClassName("user-info-row")[0] as HTMLElement;
+        const realHead = document.getElementById("accounts-table-header") as HTMLElement;
+        const cloneHead = realHead.cloneNode(true) as HTMLElement;
+        // Remove "select all" check from header
+        cloneHead.querySelector("input[type=checkbox]").remove();
+        const head = this._card.getElementsByClassName("user-info-table-header")[0] as HTMLElement;
+        head.replaceWith(cloneHead);
+        this._table = this._card.getElementsByClassName("jf-activity-table")[0] as HTMLElement;
+        this._container = this._table.getElementsByClassName("jf-activity-table-content")[0] as HTMLElement;
+        this._back = document.getElementById("user-details-back") as HTMLButtonElement;
+        this._noResults = this._card.getElementsByClassName("jf-activity-no-activity")[0] as HTMLElement;
+        this._link = this._card.getElementsByClassName("jf-activity-jfa-link")[0] as HTMLAnchorElement;
+        let searchConfig: SearchConfiguration = {
+            queries: {},
+            setVisibility: null,
+            searchServer: null,
+            clearServerSearch: null,
+            onSearchCallback: (_0: boolean, _1: boolean) => {},
+            notFoundPanel: this._noResults,
+        };
+
+        this.initSearch(searchConfig);
+    }
+
+    add = (entry: ActivityLogEntryDTO) => {
+        this.entries.set("" + entry.Id, new ActivityLogEntry(this.username, entry));
+    };
+
+    loadMore = (loadAll: boolean = false, callback?: (resp?: PaginatedDTO) => void) => {
+        this._loadMore(loadAll, callback);
+    };
+
+    loadAll = (callback?: (resp?: PaginatedDTO) => void) => {
+        this._loadAll(callback);
+    };
+
+    reload = (callback?: (resp: PaginatedDTO) => void) => {
+        this._reload(callback);
+    };
+
+    load = (user: User, onLoad?: () => void, onBack?: () => void) => {
+        this.username = user.name;
+        this.jfId = user.id;
+        const clone = new User(user);
+        clone.notInList = true;
+        clone.setSelected(true, false);
+        this._rowArea.replaceChildren(clone.asElement());
+        this._link.setAttribute("data-id", this.jfId);
+        this._link.href = `${window.pages.Base}${window.pages.Admin}/activity?user=${this.username}`;
+
+        if (onBack) {
+            this._back.classList.remove("unfocused");
+            this._back.onclick = () => onBack();
+        } else {
+            this._back.classList.add("unfocused");
+            this._back.onclick = null;
+        }
+        this.reload(onLoad);
+        /*_get("/users/" + jfId + "/activities/jellyfin", null, (req: XMLHttpRequest) => {
+            if (req.readyState != 4) return;
+            if (req.status != 200) {
+                window.notifications.customError("errorLoadJFActivities", window.lang.notif("errorLoadActivities"));
+                return;
+            }
+            // FIXME: Lazy loading table
+            this._table.textContent = ``;
+            let entries = (req.response as PaginatedActivityLogEntriesDTO).entries;
+            for (let entry of entries) {
+                const row = new ActivityLogEntry(username, entry);
+                this._table.appendChild(row.asElement());
+            }
+            if (onLoad) onLoad();
+        });*/
+    };
+
+    get hidden(): boolean {
+        return this._hidden;
+    }
+    set hidden(v: boolean) {
+        this._hidden = v;
+        if (v) {
+            this.unbindPageEvents();
+            this._card.classList.add("unfocused");
+            this._back.classList.add("unfocused");
+            this.username = "";
+            this.jfId = "";
+        } else {
+            this.bindPageEvents();
+            this._card.classList.remove("unfocused");
+            this._back.classList.remove("unfocused");
+        }
+    }
 }

@@ -41,7 +41,7 @@ require (
 	github.com/hrfee/jfa-go/logger v0.0.0-20251123165523-7c9f91711460
 	github.com/hrfee/jfa-go/logmessages v0.0.0-20251123165523-7c9f91711460
 	github.com/hrfee/jfa-go/ombi v0.0.0-20251123165523-7c9f91711460
-	github.com/hrfee/mediabrowser v0.3.35
+	github.com/hrfee/mediabrowser v0.3.36
 	github.com/hrfee/simple-template v1.1.0
 	github.com/itchyny/timefmt-go v0.1.7
 	github.com/lithammer/shortuuid/v3 v3.0.7
@@ -110,6 +110,7 @@ require (
 	github.com/plutov/paypal/v4 v4.17.0 // indirect
 	github.com/quic-go/qpack v0.6.0 // indirect
 	github.com/quic-go/quic-go v0.57.0 // indirect
+	github.com/radovskyb/watcher v1.0.7 // indirect
 	github.com/rs/zerolog v1.34.0 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/swaggo/swag v1.16.6 // indirect

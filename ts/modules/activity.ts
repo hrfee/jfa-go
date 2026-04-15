@@ -554,18 +554,20 @@ interface ActivitiesReqDTO extends PaginatedReqDTO {
     type: string[];
 }
 
-interface ActivitiesDTO extends paginatedDTO {
+interface ActivitiesDTO extends PaginatedDTO {
     activities: activity[];
 }
 
-export class activityList extends PaginatedList {
+export class activityList extends PaginatedList implements Navigatable, AsTab {
+    readonly tabName = "activity";
+    readonly pagePath = "activity";
     protected _container: HTMLElement;
     protected _sortDirection = document.getElementById("activity-sort-direction") as HTMLButtonElement;
 
     protected _ascending: boolean;
 
-    get activities(): { [id: string]: Activity } {
-        return this._search.items as { [id: string]: Activity };
+    get activities(): Map<string, Activity> {
+        return this._search.items as Map<string, Activity>;
     }
     // set activities(v: { [id: string]: Activity }) { this._search.items = v as SearchableItems; }
 
@@ -587,21 +589,19 @@ export class activityList extends PaginatedList {
             getPageEndpoint: "/activity",
             itemsPerPage: 20,
             maxItemsLoadedForSearch: 200,
-            appendNewItems: (resp: paginatedDTO) => {
+            appendNewItems: (resp: PaginatedDTO) => {
                 let ordering: string[] = this._search.ordering;
                 for (let act of (resp as ActivitiesDTO).activities || []) {
-                    this.activities[act.id] = new Activity(act);
+                    this.activities.set(act.id, new Activity(act));
                     ordering.push(act.id);
                 }
                 this._search.setOrdering(ordering, this._c.defaultSortField, this.ascending);
             },
-            replaceWithNewItems: (resp: paginatedDTO) => {
+            replaceWithNewItems: (resp: PaginatedDTO) => {
                 // FIXME: Implement updates to existing elements, rather than just wiping each time.
 
                 // Remove existing items
-                for (let id of Object.keys(this.activities)) {
-                    delete this.activities[id];
-                }
+                this.activities.clear();
                 // And wipe their ordering
                 this._search.setOrdering([], this._c.defaultSortField, this.ascending);
                 this._c.appendNewItems(resp);
@@ -645,7 +645,7 @@ export class activityList extends PaginatedList {
         this._sortDirection.addEventListener("click", () => (this.ascending = !this.ascending));
     }
 
-    reload = (callback?: (resp: paginatedDTO) => void) => {
+    reload = (callback?: (resp: PaginatedDTO) => void) => {
         this._reload(callback);
     };
 
@@ -653,7 +653,7 @@ export class activityList extends PaginatedList {
         this._loadMore(loadAll, callback);
     };
 
-    loadAll = (callback?: (resp?: paginatedDTO) => void) => {
+    loadAll = (callback?: (resp?: PaginatedDTO) => void) => {
         this._loadAll(callback);
     };
 
@@ -689,4 +689,27 @@ export class activityList extends PaginatedList {
             this._keepSearchingDescription.classList.add("unfocused");
         }
     };*/
+
+    isURL = (url?: string) => {
+        const urlParams = new URLSearchParams(url || window.location.search);
+        const username = urlParams.get("user");
+        return Boolean(username) || this._search.isURL(url);
+    };
+
+    navigate = (url?: string) => {
+        const urlParams = new URLSearchParams(url || window.location.search);
+        const username = urlParams.get("user");
+        let search = urlParams.get("search") || "";
+        if (username) {
+            search = `user:"${username}" ` + search;
+            urlParams.set("search", search);
+            // Get rid of it, as it'll now be included in the "search" param anyway
+            urlParams.delete("user");
+        }
+        this._search.navigate(urlParams.toString());
+    };
+
+    clearURL() {
+        this._search.clearURL();
+    }
 }

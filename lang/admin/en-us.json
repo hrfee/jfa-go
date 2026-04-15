@@ -7,6 +7,8 @@
         "invite": "Invite",
         "accounts": "Accounts",
         "activity": "Activity",
+        "activityFromJF": "Activity (from Jellyfin)",
+        "activityFromJfa": "Activity (from jfa-go)",
         "settings": "Settings",
         "inviteMonths": "Months",
         "inviteDays": "Days",
@@ -63,6 +65,8 @@
         "disabled": "Disabled",
         "run": "Run",
         "sendPWR": "Send Password Reset",
+        "noActivityFound": "No activity found",
+        "noActivityFoundLocally": "If this account hasn't been used in a while, you might find older entries on Jellyfin directly.",
         "noResultsFound": "No Results Found",
         "noResultsFoundLocally": "Only loaded records were searched. You can load more, or perform the search over all records on the server.",
         "keepSearching": "Keep Searching",
@@ -224,7 +228,13 @@
         "restartRequired": "Restart required",
         "required": "Required",
         "syntax": "Syntax",
-        "syntaxDescription": "Variables denoted as {variable}. If statements can evaluate truthfulness (e.g. {ifTruth}) or make basic comparisons (e.g. {ifCompare})"
+        "syntaxDescription": "Variables denoted as {variable}. If statements can evaluate truthfulness (e.g. {ifTruth}) or make basic comparisons (e.g. {ifCompare})",
+        "info": "Info",
+        "debug": "Debug",
+        "warn": "Warn",
+        "error": "Error",
+        "fatal": "Fatal",
+        "severity": "Severity"
     },
     "notifications": {
         "pathCopied": "Full path copied to clipboard.",

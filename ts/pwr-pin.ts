@@ -1,6 +1,9 @@
 import { toClipboard, notificationBox } from "./modules/common.js";
+import { setupTooltips } from "./modules/ui.js";
 
 declare var window: GlobalWindow;
+
+setupTooltips();
 
 const pin = document.getElementById("pin") as HTMLSpanElement;
 

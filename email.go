@@ -88,6 +88,9 @@ func NewEmailer(config *Config, storage *Storage, logs LoggerSet) *Emailer {
 		config:    config,
 		storage:   storage,
 	}
+	if !strings.Contains(emailer.fromAddr, "@") {
+		emailer.err.Printf(lm.FailedInitMailer, "", fmt.Errorf(lm.InvalidFromAddress, emailer.fromAddr))
+	}
 	method := emailer.config.Section("email").Key("method").String()
 	if method == "smtp" {
 		enc := sMail.EncryptionSTARTTLS
@@ -107,7 +110,7 @@ func NewEmailer(config *Config, storage *Storage, logs LoggerSet) *Emailer {
 		authType := sMail.AuthType(emailer.config.Section("smtp").Key("auth_type").MustInt(4))
 		err := emailer.NewSMTP(emailer.config.Section("smtp").Key("server").String(), emailer.config.Section("smtp").Key("port").MustInt(465), username, password, enc, emailer.config.Section("smtp").Key("ssl_cert").MustString(""), emailer.config.Section("smtp").Key("hello_hostname").String(), emailer.config.Section("smtp").Key("cert_validation").MustBool(true), authType, emailer.config.proxyConfig)
 		if err != nil {
-			emailer.err.Printf(lm.FailedInitSMTP, err)
+			emailer.err.Printf(lm.FailedInitMailer, lm.SMTP, err)
 		}
 	} else if method == "mailgun" {
 		emailer.NewMailgun(emailer.config.Section("mailgun").Key("api_url").String(), emailer.config.Section("mailgun").Key("api_key").String(), emailer.config.proxyTransport)

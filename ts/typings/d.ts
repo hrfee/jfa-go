@@ -61,13 +61,30 @@ declare interface GlobalWindow extends Window {
     loginAppearance: string;
 }
 
-declare interface InviteList {
+declare interface PageEventBindable {
+    bindPageEvents(): void;
+    unbindPageEvents(): void;
+}
+
+declare interface AsTab {
+    readonly tabName: string;
+    readonly pagePath: string;
+    reload(callback: () => void): void;
+}
+
+declare interface Navigatable {
+    // isURL will return whether the given url (or the current page url if not passed) is a valid link to some resource(s) in the class.
+    isURL(url?: string): boolean;
+    // clearURL will remove related query params from the current URL. It will likely be called when switching pages.
+    clearURL(): void;
+    // navigate will load and focus the resource(s) in the class referenced by the given url (or current page url if not passed).
+    navigate(url?: string): void;
+}
+declare interface InviteList extends Navigatable, AsTab {
     empty: boolean;
     invites: { [code: string]: Invite };
     add: (invite: Invite) => void;
     reload: (callback?: () => void) => void;
-    isInviteURL: () => boolean;
-    loadInviteURL: () => void;
 }
 
 declare interface Invite {
@@ -135,12 +152,6 @@ declare interface NotificationBox {
     customSuccess: (type: string, message: string) => void;
 }
 
-declare interface Tabs {
-    current: string;
-    addTab: (tabID: string, url: string, preFunc?: () => void, postFunc?: () => void, unloadFunc?: () => void) => void;
-    switch: (tabID: string, noRun?: boolean, keepURL?: boolean) => void;
-}
-
 declare interface Modals {
     about: Modal;
     login: Modal;
@@ -173,18 +184,66 @@ declare interface Modals {
     backups?: Modal;
 }
 
-interface paginatedDTO {
+declare interface Page {
+    name: string;
+    title: string;
+    url: string;
+    show: () => boolean;
+    hide: () => boolean;
+    shouldSkip: () => boolean;
+    index?: number;
+}
+
+declare interface Tab {
+    page: Page;
+    tabEl: HTMLDivElement;
+    buttonEl: HTMLSpanElement;
+    contentObject?: AsTab;
+    preFunc?: (previous?: AsTab) => void;
+    postFunc?: (previous?: AsTab) => void;
+}
+
+declare interface Tabs {
+    tabs: Map<string, Tab>;
+    pages: Pages;
+    addTab(
+        tabID: string,
+        url: string,
+        contentObject: AsTab | null,
+        preFunc: () => void,
+        postFunc: () => void,
+        unloadFunc: () => void,
+    ): void;
+    current: string;
+    switch(tabID: string, noRun?: boolean): void;
+}
+
+declare interface Pages {
+    pages: Map<string, Page>;
+    pageList: string[];
+    hideOthers: boolean;
+    defaultName: string;
+    defaultTitle: string;
+    setPage(p: Page): void;
+    load(name?: string): void;
+    loadPage(p: Page): void;
+    prev(name?: string): void;
+    next(name?: string): void;
+    registerParamListener(pageName: string, func: (qp: URLSearchParams) => void, ...qps: string[]): void;
+}
+
+declare interface PaginatedDTO {
     last_page: boolean;
 }
 
-interface PaginatedReqDTO {
+declare interface PaginatedReqDTO {
     limit: number;
     page: number;
     sortByField: string;
     ascending: boolean;
 }
 
-interface DateAttempt {
+declare interface DateAttempt {
     year?: number;
     month?: number;
     day?: number;
@@ -193,7 +252,7 @@ interface DateAttempt {
     offsetMinutesFromUTC?: number;
 }
 
-interface ParsedDate {
+declare interface ParsedDate {
     attempt: DateAttempt;
     date: Date;
     text: string;
