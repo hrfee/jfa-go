@@ -62,7 +62,8 @@
                                 Pay with Stripe <i class="ri-bank-card-line ml-2"></i>
                             </button>
 
-                            {{ if .paypalEnabled }}
+
+                            {{ if .btcpayEnabled }}
                             <!-- Divider -->
                             <div class="relative flex py-2 items-center">
                                 <div class="flex-grow border-t border-gray-400 opacity-25"></div>
@@ -70,8 +71,12 @@
                                 <div class="flex-grow border-t border-gray-400 opacity-25"></div>
                             </div>
 
-                            <!-- PayPal Button Container -->
-                            <div id="paypal-button-container" class="w-full z-0 relative"></div>
+                            <!-- BTCPay Button -->
+                            <button
+                                class="button ~warning @low w-full justify-center p-4 text-lg font-bold shadow-md hover:shadow-lg transition-all rounded-lg"
+                                onclick="initiateBTCPayCheckout('Monthly', this)">
+                                Pay with Bitcoin <i class="ri-btc-line ml-2"></i>
+                            </button>
                             {{ end }}
                         </div>
                     </div>
@@ -82,9 +87,6 @@
         </div>
     </div>
 
-    {{ if .paypalEnabled }}
-    <script src="https://www.paypal.com/sdk/js?client-id={{ .paypalClientID }}&vault=true&intent=subscription"></script>
-    {{ end }}
 
     <script>
         async function initiateCheckout(plan, btnElement) {
@@ -136,63 +138,49 @@
             }
         }
 
-        if ("{{ .paypalEnabled }}" === "true") {
-            paypal.Buttons({
-                style: {
-                    shape: 'rect',
-                    color: 'gold',
-                    layout: 'vertical',
-                    label: 'subscribe'
-                },
-                createSubscription: function (data, actions) {
-                    const emailInput = document.getElementById('email-input');
-                    const email = emailInput.value.trim();
-                    if (!email || !email.includes('@')) {
-                        document.getElementById('email-error').classList.remove('hidden');
-                        emailInput.focus();
-                        return actions.reject();
-                    }
-                    document.getElementById('email-error').classList.add('hidden');
+        async function initiateBTCPayCheckout(plan, btnElement) {
+            const emailInput = document.getElementById('email-input');
+            const email = emailInput.value.trim();
+            const errorMsg = document.getElementById('email-error');
 
-                    return fetch('{{ .urlBase }}/paypal/create-subscription', {
-                        method: 'post',
-                        headers: { 'content-type': 'application/json' },
-                        body: JSON.stringify({ email: email })
-                    }).then(res => {
-                        if (!res.ok) throw new Error("Failed to create subscription");
-                        return res.json();
-                    }).then(data => data.subscriptionID);
-                },
-                onApprove: function (data, actions) {
-                    const email = document.getElementById('email-input').value.trim();
-                    return fetch('{{ .urlBase }}/paypal/capture-subscription', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            subscriptionID: data.subscriptionID,
-                            email: email
-                        })
-                    }).then(res => res.json())
-                        .then(data => {
-                            if (data.inviteCode) {
-                                window.location.href = "{{ .urlBase }}/invite/" + data.inviteCode;
-                            } else if (data.success) {
-                                alert("Success! Your subscription has been reactivated/extended. You can continue using your account.");
-                            } else {
-                                alert('Error: ' + (data.error || 'Unknown error occurred.'));
-                            }
-                        })
-                        .catch(err => {
-                            console.error("PayPal Capture Error:", err);
-                            alert("Payment verification error: " + err.message);
-                        });
-                },
-                onError: function (err) {
-                    console.error("PayPal Error:", err);
-                    // Don't alert everything, as simple validation rejections show up here
+            if (!email || !email.includes('@')) {
+                errorMsg.classList.remove('hidden');
+                emailInput.focus();
+                emailInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
+            errorMsg.classList.add('hidden');
+
+            const originalText = btnElement.innerText;
+            btnElement.innerText = "Processing...";
+            btnElement.style.pointerEvents = "none";
+
+            try {
+                const response = await fetch('/btcpay/create-checkout', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email, plan: plan })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Network response was not ok');
                 }
-            }).render('#paypal-button-container');
+
+                if (data.response) {
+                    window.location.href = data.response;
+                } else {
+                    throw new Error('No checkout URL received');
+                }
+            } catch (error) {
+                console.error('BTCPay Error:', error);
+                alert('Something went wrong: ' + error.message);
+                btnElement.innerText = originalText;
+                btnElement.style.pointerEvents = "auto";
+            }
         }
+
     </script>
 </body>
 

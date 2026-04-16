@@ -41,3 +41,10 @@ config.ini_.bak
 .gitignore
 config.ini
 jfa-go
+
+# BTCPay Server integration (optional, requires external BTCPay Server)
+btcpay/
+api-btcpay.go
+
+# Monero stagenet stack
+monero/

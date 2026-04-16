@@ -471,9 +471,11 @@ func start(asDaemon, firstCall bool) {
 			app.info.Println(lm.InitStripe)
 		}
 
-		if paypalEnabled {
-			InitPayPal(app.config)
-			app.info.Println(lm.InitPayPal)
+		if btcpayEnabled {
+			InitBTCPay(app.config)
+			if btcpayEnabled {
+				app.info.Println(lm.InitBTCPay)
+			}
 		}
 
 		u := app.config.Section("jellyfin").Key("username").String()

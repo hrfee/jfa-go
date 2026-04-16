@@ -23,7 +23,7 @@ groups:
       - section: jellyseerr
       - section: webhooks
       - section: stripe
-      - section: paypal
+      - section: btcpay
   - group: email
     name: "Email"
     description: "Options for sending emails through jfa-go."
@@ -608,44 +608,59 @@ sections:
     type: bool
     value: false
     description: Enforce Stripe webhook signature verification. Set to false if using a tunnel/proxy that modifies payloads.
-- section: paypal
+- section: btcpay
   meta:
-    name: PayPal
-    description: Settings for PayPal payments.
+    name: BTCPay Server
+    description: Settings for BTCPay Server crypto payments. Requires a running BTCPay Server instance.
   settings:
   - setting: enabled
     name: Enabled
     requires_restart: true
     type: bool
     value: false
-    description: Enable PayPal payments.
-  - setting: mode
-    name: Mode
+    description: Enable BTCPay Server payments (Bitcoin/Lightning).
+  - setting: server
+    name: Server URL
     depends_true: enabled
     requires_restart: true
-    type: select
-    options:
-    - ["sandbox", "Sandbox"]
-    - ["live", "Live"]
-    value: sandbox
-    description: PayPal environment (Sandbox for testing, Live for production).
-  - setting: client_id
-    name: Client ID
+    type: text
+    description: BTCPay Server instance URL (e.g. https://btcpay.example.com).
+  - setting: api_key
+    name: API Key
     depends_true: enabled
     requires_restart: true
     type: password
-    description: PayPal Client ID.
-  - setting: client_secret
-    name: Secret
+    description: Greenfield API key. Create one in BTCPay under Account > Manage Account > API Keys with invoice and webhook permissions.
+  - setting: store_id
+    name: Store ID
+    depends_true: enabled
+    requires_restart: true
+    type: text
+    description: BTCPay Store ID. Found in your store settings.
+  - setting: webhook_secret
+    name: Webhook Secret
     depends_true: enabled
     requires_restart: true
     type: password
-    description: PayPal Client Secret.
-  - setting: plan_id_monthly
-    name: Monthly Plan ID
+    description: Webhook secret for verifying incoming events. Set when creating a webhook in BTCPay store Settings > Webhooks.
+  - setting: price_currency
+    name: Currency
     depends_true: enabled
     type: text
-    description: PayPal Billing Plan ID for the monthly subscription.
+    value: USD
+    description: Currency code for invoice amounts (e.g. USD, EUR, BTC, sats).
+  - setting: price_monthly
+    name: Monthly Plan Price
+    depends_true: enabled
+    type: text
+    value: "2.00"
+    description: Price for the monthly plan in the chosen currency (e.g. 2.00 for $2, or 0.0001 for BTC).
+  - setting: verify_signature
+    name: Verify Webhook Signature
+    depends_true: enabled
+    type: bool
+    value: true
+    description: Verify BTCPay webhook HMAC-SHA256 signatures. Disable only for debugging.
 - section: activity_log
   meta:
     name: Activity Log

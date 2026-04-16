@@ -908,9 +908,8 @@ func (app *appContext) StorePage(gc *gin.Context) {
 		"urlBase":        app.config.Section("ui").Key("jfa_url").String(),
 		"priceMonthly":   fmt.Sprintf("%.2f", float64(app.config.Section("stripe").Key("price_monthly").MustInt64(200))/100.0),
 		"currency":       strings.ToUpper(app.config.Section("stripe").Key("price_currency").MustString("usd")),
-		"stripeEnabled":  stripeEnabled,
-		"paypalEnabled":  paypalEnabled,
-		"paypalClientID": app.config.Section("paypal").Key("client_id").String(),
+		"stripeEnabled": stripeEnabled,
+		"btcpayEnabled": btcpayEnabled,
 	})
 }
 

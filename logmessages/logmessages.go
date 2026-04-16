@@ -350,19 +350,17 @@ const (
 	StripeSessionAlreadyProcessed = Stripe + " session %s already processed for user \"%s\", skipping"
 	StripeBlockedDuplicate       = Stripe + ": blocked duplicate subscription attempt for active user \"%s\" (\"%s\")"
 
-	// api-paypal.go
-	PayPal                          = "PayPal"
-	InitPayPal                      = "Initialized " + PayPal
-	FailedInitPayPal                = "Failed to initialize " + PayPal + ": %v"
-	FailedCreatePayPalSubscription  = "Failed to create " + PayPal + " subscription: %v"
-	FailedGetPayPalSubscription     = "Failed to get " + PayPal + " subscription \"%s\": %v"
-	PayPalWebhookReceived           = "Received " + PayPal + " webhook: %s"
-	PayPalPaymentReceived           = PayPal + " payment received for subscription: \"%s\""
-	PayPalSubscriptionCancelled     = PayPal + " subscription %s cancelled"
-	PayPalBlockedDuplicate          = PayPal + ": blocked duplicate subscription attempt for active user \"%s\" (\"%s\")"
-	PayPalCancelledOldSubscription  = "Cancelled old " + PayPal + " subscription \"%s\" for user \"%s\""
-	FailedCancelPayPalSubscription  = "Failed to cancel old " + PayPal + " subscription \"%s\": %v"
-	PayPalTransactionAlreadyProcessed = PayPal + " transaction %s already processed for user \"%s\", skipping"
+	// api-btcpay.go
+	BTCPay                          = "BTCPay"
+	InitBTCPay                      = "Initialized " + BTCPay
+	FailedInitBTCPay                = "Failed to initialize " + BTCPay + ": %v"
+	FailedCreateBTCPayInvoice       = "Failed to create " + BTCPay + " invoice: %v"
+	BTCPayInvoiceCreated            = BTCPay + " invoice %s created for \"%s\""
+	BTCPayWebhookReceived           = BTCPay + " webhook received: %s (invoice: %s)"
+	BTCPayWebhookError              = BTCPay + " webhook error: %v"
+	BTCPayPaymentReceived           = BTCPay + " payment received (Plan: %s) for \"%s\" (invoice: %s)"
+	BTCPayBlockedDuplicate          = BTCPay + ": blocked duplicate purchase for active user \"%s\" (\"%s\")"
+	BTCPayInvoiceAlreadyProcessed   = BTCPay + " invoice %s already processed for user \"%s\", skipping"
 
 	// Common payment messages
 	GeneratedInviteForPurchase    = "Generated invite code \"%s\" for \"%s\""

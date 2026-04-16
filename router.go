@@ -172,7 +172,7 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 			router.POST(p+PAGES.Form+"/:invCode/matrix/user", app.MatrixSendPIN)
 			router.POST(p+"/users/matrix", app.MatrixConnect)
 		}
-		if stripeEnabled || paypalEnabled {
+		if stripeEnabled || btcpayEnabled {
 			router.GET(p+"/store", app.StorePage)
 			router.GET(p+"/payment/success", app.PaymentSuccessPage)
 		}
@@ -181,10 +181,9 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 			router.POST(p+"/stripe/events", app.StripeWebhook)
 			router.POST(p+"/stripe/create-checkout", app.PostStripeCreateCheckout)
 		}
-		if paypalEnabled {
-			router.POST(p+"/paypal/create-subscription", app.PostPayPalCreateSubscription)
-			router.POST(p+"/paypal/capture-subscription", app.PostPayPalCaptureSubscription)
-			router.POST(p+"/paypal/webhook", app.PostPayPalWebhook)
+		if btcpayEnabled {
+			router.POST(p+"/btcpay/create-checkout", app.PostBTCPayCreateCheckout)
+			router.POST(p+"/btcpay/webhook", app.BTCPayWebhook)
 		}
 		if userPageEnabled {
 			router.GET(p+PAGES.MyAccount, app.MyUserPage)
