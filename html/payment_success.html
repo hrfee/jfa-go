@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="{{ .shortLang }}" dir="{{ .pageDirection }}" class="{{ .cssClass }}">
+
+<head>
+    {{ template "header.txt" . }}
+    <title>Payment Successful</title>
+</head>
+
+<body class="max-w-full section">
+    <div class="page-container m-2 lg:my-20 lg:mx-64 flex flex-col gap-4 items-center justify-center min-h-[80vh]">
+        <i class="ri-checkbox-circle-fill text-6xl text-green-500"></i>
+        <h1 class="heading">Payment Successful!</h1>
+        <p class="content text-xl">Thank you for your support.</p>
+
+        <div class="card ~neutral @low p-8">
+            <p class="content text-xl text-center">Please check your email for your invite code.</p>
+            <p class="support text-sm text-center mt-2">If you don't receive it within 5 minutes, please contact support.</p>
+            {{ if .contactMessage }}
+            <p class="support text-sm text-center mt-2">{{ .contactMessage }}</p>
+            {{ end }}
+        </div>
+
+        <div class="mt-4">
+            <a href="/" class="button ~urge @low">Return Home</a>
+        </div>
+    </div>
+</body>
+
+</html>

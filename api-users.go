@@ -219,6 +219,10 @@ func (app *appContext) NewUserFromInvite(gc *gin.Context) {
 	}
 
 	invite, _ := app.storage.GetInvitesKey(req.Code)
+	if invite.RequiredPayment && invite.PaymentStatus != "paid" {
+		respond(402, "errorPaymentRequired", gc)
+		return
+	}
 
 	sourceType, source := invite.Source()
 

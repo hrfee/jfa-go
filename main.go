@@ -28,7 +28,7 @@ import (
 	"gopkg.in/ini.v1"
 
 	"github.com/hrfee/jfa-go/common"
-	_ "github.com/hrfee/jfa-go/docs"
+	// _ "github.com/hrfee/jfa-go/docs"
 	"github.com/hrfee/jfa-go/jellyseerr"
 	"github.com/hrfee/jfa-go/logger"
 	lm "github.com/hrfee/jfa-go/logmessages"
@@ -265,6 +265,9 @@ func start(asDaemon, firstCall bool) {
 	}
 
 	app.version = app.config.Section("jellyfin").Key("version").String()
+	if app.version == "" {
+		app.version = "0.6.0"
+	}
 	// read from config...
 	debugMode = app.config.Section("ui").Key("debug").MustBool(false)
 	// then from flag
@@ -436,7 +439,7 @@ func start(asDaemon, firstCall bool) {
 			serverType,
 			server,
 			app.config.Section("jellyfin").Key("client").String(),
-			app.config.Section("jellyfin").Key("version").String(),
+			app.version,
 			app.config.Section("jellyfin").Key("device").String(),
 			app.config.Section("jellyfin").Key("device_id").String(),
 			timeoutHandler,
@@ -461,7 +464,26 @@ func start(asDaemon, firstCall bool) {
 			RetryGap:    time.Duration(app.config.Section("advanced").Key("auth_retry_gap").MustInt(10)) * time.Second,
 			LogFailures: true,
 		}
-		_, err = app.jf.MustAuthenticate(app.config.Section("jellyfin").Key("username").String(), app.config.Section("jellyfin").Key("password").String(), retryOpts)
+
+		if stripeEnabled {
+			apiKey := app.config.Section("stripe").Key("api_key").String()
+			InitStripe(apiKey)
+			app.info.Println(lm.InitStripe)
+		}
+
+		if btcpayEnabled {
+			InitBTCPay(app.config)
+			if btcpayEnabled {
+				app.info.Println(lm.InitBTCPay)
+			}
+		}
+
+		u := app.config.Section("jellyfin").Key("username").String()
+		p := app.config.Section("jellyfin").Key("password").String()
+		if app.version == "" {
+			app.version = "1.0.0"
+		}
+		_, err = app.jf.MustAuthenticate(u, p, retryOpts)
 		if err != nil {
 			app.err.Fatalf(lm.FailedAuthJellyfin, server, status, err)
 		}

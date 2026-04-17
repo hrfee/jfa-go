@@ -568,6 +568,7 @@
                     <button type="button" id="button-tab-accounts" class="text-3xl button portal ~neutral dark:~d_neutral @low px-5">{{ .strings.accounts }}</button>
                     <button type="button" id="button-tab-activity" class="text-3xl button portal ~neutral dark:~d_neutral @low px-5">{{ .strings.activity }}</button>
                     <button type="button" id="button-tab-settings" class="text-3xl button portal ~neutral dark:~d_neutral @low px-5">{{ .strings.settings }}</button>
+                    <button type="button" id="button-tab-store" class="text-3xl button portal ~neutral dark:~d_neutral @low px-5">Store</button>
                 </div>
             </header>
             <div id="tab-invites" class="flex flex-col gap-4">
@@ -918,6 +919,35 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+            <div id="tab-store" class="flex flex-col gap-4 unfocused">
+                <div class="card @low dark:~d_neutral flex flex-col gap-2">
+                    <span class="heading">Store Configuration</span>
+                    <p class="content">Manage pricing settings for the public store page.</p>
+                    <div class="flex flex-col gap-4 max-w-lg">
+                        <label class="label flex flex-col gap-2">
+                            <span>Currency</span>
+                            <div class="select ~neutral @low">
+                                <select id="store-currency">
+                                    <option value="usd">USD</option>
+                                    <option value="eur">EUR</option>
+                                    <option value="gbp">GBP</option>
+                                    <option value="cad">CAD</option>
+                                    <option value="aud">AUD</option>
+                                </select>
+                            </div>
+                        </label>
+                        <label class="label flex flex-col gap-2">
+                            <span>Monthly Price (Standard)</span>
+                            <div class="flex flex-row items-center gap-2">
+                                <span class="text-xl">$</span>
+                                <input type="number" step="0.01" id="store-price-monthly" class="input ~neutral @low w-full">
+                            </div>
+                            <span class="support">Price for monthly subscription in dollars (e.g. 2.00)</span>
+                        </label>
+                        <button id="store-save" class="button ~urge @low self-start">Save Changes</button>
                     </div>
                 </div>
             </div>

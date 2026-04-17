@@ -9,6 +9,7 @@ import { activityList } from "./modules/activity.js";
 import { ProfileEditor, reloadProfileNames } from "./modules/profiles.js";
 import { _get, _post, notificationBox, whichAnimationEvent, bindManualDropdowns } from "./modules/common.js";
 import { Updater } from "./modules/update.js";
+import { Store } from "./modules/store.js";
 import { Login } from "./modules/login.js";
 import { setupTooltips } from "./modules/ui.js";
 
@@ -147,6 +148,8 @@ var settings = new settingsList();
 
 var profiles = new ProfileEditor();
 
+var store = new Store();
+
 window.notifications = new notificationBox(document.getElementById("notification-box") as HTMLDivElement, 5);
 
 // only use a navigatable URL once
@@ -183,6 +186,17 @@ const tabs: { id: string; url: string; reloader: () => void; unloader?: () => vo
         t.unloader || null,
     );
 });
+
+// Store tab (not an AsTab, registered manually)
+tabs.push({ id: "store", url: "store", reloader: store.load });
+window.tabs.addTab(
+    "store",
+    window.pages.Base + window.pages.Admin + "/store",
+    null,
+    null,
+    store.load,
+    null,
+);
 
 let matchedTab = false;
 for (const tab of tabs) {

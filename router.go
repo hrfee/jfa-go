@@ -172,6 +172,19 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 			router.POST(p+PAGES.Form+"/:invCode/matrix/user", app.MatrixSendPIN)
 			router.POST(p+"/users/matrix", app.MatrixConnect)
 		}
+		if stripeEnabled || btcpayEnabled {
+			router.GET(p+"/store", app.StorePage)
+			router.GET(p+"/payment/success", app.PaymentSuccessPage)
+		}
+		if stripeEnabled {
+			router.POST(p+"/stripe/checkout/:code", app.PostStripeCheckout)
+			router.POST(p+"/stripe/events", app.StripeWebhook)
+			router.POST(p+"/stripe/create-checkout", app.PostStripeCreateCheckout)
+		}
+		if btcpayEnabled {
+			router.POST(p+"/btcpay/create-checkout", app.PostBTCPayCreateCheckout)
+			router.POST(p+"/btcpay/webhook", app.BTCPayWebhook)
+		}
 		if userPageEnabled {
 			router.GET(p+PAGES.MyAccount, app.MyUserPage)
 			router.GET(p+PAGES.MyAccount+"/password/reset", app.MyUserPage)

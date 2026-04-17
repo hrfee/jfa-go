@@ -337,6 +337,43 @@ const (
 	// usercache.go
 	CacheRefreshCompleted = "Usercache refreshed, %d in %.2fs (%f.2u/sec)"
 
+	// stripe.go / api-stripe.go
+	Stripe                       = "Stripe"
+	InitStripe                   = "Initialized " + Stripe
+	FailedCreateCheckoutSession  = "Failed to create " + Stripe + " checkout session: %v"
+	StripeWebhookError           = Stripe + " webhook error: %v"
+	StripePaymentReceived        = Stripe + " payment received for checkout session (Plan: %s) to \"%s\""
+	StripePaymentOldInvite       = Stripe + " payment received for existing invite: \"%s\""
+	StripeRenewalReceived        = Stripe + " subscription renewal received for \"%s\""
+	StripeSubscriptionDeleted    = Stripe + " subscription %s deleted for \"%s\", disabling user"
+	StripeSignatureBypass        = Stripe + " signature verification disabled, verifying event via API"
+	StripeSessionAlreadyProcessed = Stripe + " session %s already processed for user \"%s\", skipping"
+	StripeBlockedDuplicate       = Stripe + ": blocked duplicate subscription attempt for active user \"%s\" (\"%s\")"
+
+	// api-btcpay.go
+	BTCPay                          = "BTCPay"
+	InitBTCPay                      = "Initialized " + BTCPay
+	FailedInitBTCPay                = "Failed to initialize " + BTCPay + ": %v"
+	FailedCreateBTCPayInvoice       = "Failed to create " + BTCPay + " invoice: %v"
+	BTCPayInvoiceCreated            = BTCPay + " invoice %s created for \"%s\""
+	BTCPayWebhookReceived           = BTCPay + " webhook received: %s (invoice: %s)"
+	BTCPayWebhookError              = BTCPay + " webhook error: %v"
+	BTCPayPaymentReceived           = BTCPay + " payment received (Plan: %s) for \"%s\" (invoice: %s)"
+	BTCPayBlockedDuplicate          = BTCPay + ": blocked duplicate purchase for active user \"%s\" (\"%s\")"
+	BTCPayInvoiceAlreadyProcessed   = BTCPay + " invoice %s already processed for user \"%s\", skipping"
+	BTCPayInvoiceExpired            = BTCPay + " invoice %s expired"
+	BTCPayInvoiceInvalid            = BTCPay + " invoice %s marked invalid"
+
+	// Common payment messages
+	GeneratedInviteForPurchase    = "Generated invite code \"%s\" for \"%s\""
+	UserReactivated               = "Reactivated user \"%s\" to %s"
+	UserExpiryExtended            = "Extended expiry for user \"%s\" (\"%s\") to %s"
+	UserDisabledDueToCancellation = "Disabled user \"%s\" due to subscription cancellation"
+	FailedFindUserByEmail         = "Could not find user with email \"%s\""
+	ExistingUserFound             = "Existing user found for \"%s\" (\"%s\"), reactivating subscription"
+	FailedReEnableUser            = "Failed to re-enable user \"%s\": %v"
+	FailedDisableUser             = "Failed to disable user \"%s\": %v"
+
 	// Other
 	GotNEntries = "got %d entries"
 )

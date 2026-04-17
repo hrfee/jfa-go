@@ -30,3 +30,20 @@ start.sh
 ts/*.tsbuildinfo
 ts/**/*.tsbuildinfo
 js/
+google-chrome-stable_current_amd64.deb
+zorin
+zorin.pub
+.gitignore
+traffic_capture.txt
+.gitignore
+traffic.dump
+config.ini_.bak
+.gitignore
+config.ini
+jfa-go
+
+# BTCPay Server local dev stack
+btcpay/
+
+# Monero stagenet stack
+monero/
