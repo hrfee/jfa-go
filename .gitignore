@@ -42,9 +42,8 @@ config.ini_.bak
 config.ini
 jfa-go
 
-# BTCPay Server integration (optional, requires external BTCPay Server)
+# BTCPay Server local dev stack
 btcpay/
-api-btcpay.go
 
 # Monero stagenet stack
 monero/

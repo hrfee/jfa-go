@@ -361,6 +361,8 @@ const (
 	BTCPayPaymentReceived           = BTCPay + " payment received (Plan: %s) for \"%s\" (invoice: %s)"
 	BTCPayBlockedDuplicate          = BTCPay + ": blocked duplicate purchase for active user \"%s\" (\"%s\")"
 	BTCPayInvoiceAlreadyProcessed   = BTCPay + " invoice %s already processed for user \"%s\", skipping"
+	BTCPayInvoiceExpired            = BTCPay + " invoice %s expired"
+	BTCPayInvoiceInvalid            = BTCPay + " invoice %s marked invalid"
 
 	// Common payment messages
 	GeneratedInviteForPurchase    = "Generated invite code \"%s\" for \"%s\""
