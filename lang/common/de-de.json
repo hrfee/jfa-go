@@ -38,7 +38,13 @@
         "delete": "Löschen",
         "inviteRemainingUses": "Verbleibende Verwendungen",
         "sent": "Gesendet",
-        "language": "Sprache"
+        "language": "Sprache",
+        "failed": "Fehlgeschlagen",
+        "internal": "Intern",
+        "myAccount": "Mein Account",
+        "referrals": "Empfehlungen",
+        "contactMethods": "Möglichkeiten zur Kontaktaufnahme",
+        "external": "Extern"
     },
     "notifications": {
         "errorLoginBlank": "Der Benutzername und/oder das Passwort wurden nicht ausgefüllt.",
