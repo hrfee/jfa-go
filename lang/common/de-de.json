@@ -37,7 +37,8 @@
         "edit": "Bearbeiten",
         "delete": "Löschen",
         "inviteRemainingUses": "Verbleibende Verwendungen",
-        "sent": "Gesendet"
+        "sent": "Gesendet",
+        "language": "Sprache"
     },
     "notifications": {
         "errorLoginBlank": "Der Benutzername und/oder das Passwort wurden nicht ausgefüllt.",
