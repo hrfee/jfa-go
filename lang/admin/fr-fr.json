@@ -207,7 +207,9 @@
         "tasksDescription": "Les tâches sont des actions importantes qui peuvent être exécutées périodiquement en arrière-plan. Vous pouvez les déclencher manuellement ici si vous le souhaitez.",
         "run": "Exécuter",
         "applyConfigurationAndPolicy": "Appliquer la configuration/politique Jellyfin",
-        "noResultsFoundLocally": "Seuls les enregistrements chargés ont été recherchés. Vous pouvez en charger davantage ou effectuer la recherche sur tous les enregistrements du serveur."
+        "noResultsFoundLocally": "Seuls les enregistrements chargés ont été recherchés. Vous pouvez en charger davantage ou effectuer la recherche sur tous les enregistrements du serveur.",
+        "applyJellyseerr": "Appliquer le profile Jellyseer ( si disponible )",
+        "jellyseerrProfile": "Profil utilisateur Jellyseerr"
     },
     "notifications": {
         "changedEmailAddress": "Adresse e-mail modifiée de {n}.",
