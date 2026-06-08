@@ -1,8 +1,12 @@
 {{ .hello }},
+
 {{ .youHaveBeenInvited }}
+
 {{ .toJoin }}
+
 {{ .inviteExpiry }}
 
+Open your DragonDB invite:
 {{ .inviteURL }}
 
 {{ .footer }}

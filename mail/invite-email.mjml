@@ -1,18 +1,70 @@
 <mjml>
     <mj-include path="./layout/header.mjml" />
-    <mj-body>
-        <mj-include path="./layout/body-start.mjml" />
-        <mj-section mj-class="body">
-            <mj-column>
-                <mj-text>
-                    <p>{{ .hello }},</p>
-                    <h3>{{ .youHaveBeenInvited }}</h3>
-                    <p>{{ .toJoin }}</p>
-                    <p>{{ .inviteExpiry }}</p>
-                </mj-text>
-                <mj-button mj-class="blue text-white" href="{{ .inviteURL }}">{{ .linkButton }}</mj-button>
+    <mj-body background-color="#0F0F0F">
+        <mj-section background-color="#0F0F0F" padding="32px 16px">
+            <mj-column background-color="#1A1A1A" border-radius="12px" padding="0px" border="1px solid #2A2A2A">
+
+                <mj-section background-color="#141414" padding="28px 24px 18px 24px" border-radius="12px 12px 0 0">
+                    <mj-column>
+                        <mj-text align="center" color="#FFFFFF" font-size="28px" font-weight="700" line-height="34px">
+                            DragonDB
+                        </mj-text>
+                        <mj-text align="center" color="#B8B8B8" font-size="14px" line-height="22px" padding-top="4px">
+                            Private Jellyfin Media Access
+                        </mj-text>
+                    </mj-column>
+                </mj-section>
+
+                <mj-section background-color="#1A1A1A" padding="28px 28px 10px 28px">
+                    <mj-column>
+                        <mj-text color="#FFFFFF" font-size="16px" line-height="24px">
+                            <p style="margin: 0 0 16px 0;">{{ .hello }},</p>
+                            <h2 style="margin: 0 0 14px 0; color: #ffffff; font-size: 22px; line-height: 30px;">
+                                {{ .youHaveBeenInvited }}
+                            </h2>
+                            <p style="margin: 0 0 14px 0; color: #d6d6d6;">
+                                {{ .toJoin }}
+                            </p>
+                            <p style="margin: 0; color: #a8a8a8;">
+                                {{ .inviteExpiry }}
+                            </p>
+                        </mj-text>
+                    </mj-column>
+                </mj-section>
+
+                <mj-section background-color="#1A1A1A" padding="12px 28px 28px 28px">
+                    <mj-column>
+                        <mj-button
+                            href="{{ .inviteURL }}"
+                            background-color="#8B3DFF"
+                            color="#FFFFFF"
+                            font-size="16px"
+                            font-weight="700"
+                            border-radius="8px"
+                            inner-padding="14px 28px"
+                            padding="10px 0 18px 0">
+                            {{ .linkButton }}
+                        </mj-button>
+
+                        <mj-text align="center" color="#8F8F8F" font-size="12px" line-height="18px" padding-top="6px">
+                            If the button does not work, copy and paste this link into your browser:
+                        </mj-text>
+
+                        <mj-text align="center" color="#B8B8B8" font-size="12px" line-height="18px" word-break="break-all">
+                            {{ .inviteURL }}
+                        </mj-text>
+                    </mj-column>
+                </mj-section>
+
+                <mj-section background-color="#141414" padding="18px 24px" border-radius="0 0 12px 12px">
+                    <mj-column>
+                        <mj-text align="center" color="#777777" font-size="12px" line-height="18px">
+                            {{ .footer }}
+                        </mj-text>
+                    </mj-column>
+                </mj-section>
+
             </mj-column>
         </mj-section>
-        <mj-include path="./layout/body-end.mjml" />
     </mj-body>
 </mjml>
