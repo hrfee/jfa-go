@@ -1,12 +1,15 @@
 {{ .hello }},
 
-{{ .youHaveBeenInvited }}
+Your private media access is ready.
 
-{{ .toJoin }}
+You have been invited to join DragonDB, a private Jellyfin-powered media library.
+
+Use the secure invite link below to create your account and start watching:
+
+{{ .inviteURL }}
 
 {{ .inviteExpiry }}
 
-Open your DragonDB invite:
-{{ .inviteURL }}
+Need help? Contact the DragonDB admin.
 
 {{ .footer }}
