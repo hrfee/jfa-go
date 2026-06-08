@@ -1,5 +1,19 @@
-<mj-section mj-class="bg-gray">
-    <mj-column>
-        <mj-text mj-class="secondary text-gray">{{ .footer }}</mj-text>
+<mj-section background-color="#0B0B10" padding="24px 0 38px 0">
+    <mj-column width="560px">
+        <mj-text
+            color="#8F84A5"
+            font-size="12px"
+            line-height="19px"
+            padding="0 28px 10px 28px">
+            Need help? Contact the DragonDB admin.
+        </mj-text>
+
+        <mj-text
+            color="#625A70"
+            font-size="12px"
+            line-height="19px"
+            padding="0 28px">
+            {{ .footer }}
+        </mj-text>
     </mj-column>
 </mj-section>

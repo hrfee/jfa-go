@@ -1,159 +1,141 @@
 <mjml>
     <mj-include path="./layout/header.mjml" />
 
-    <mj-body background-color="#000000">
+    <mj-body background-color="#0B0B10">
 
-        <!-- Main wrapper -->
-        <mj-section background-color="#000000" padding="0">
-            <mj-column>
+        <mj-include path="./layout/body-start.mjml" />
 
-                <!-- Top brand bar -->
-                <mj-section background-color="#000000" padding="34px 32px 20px 32px">
-                    <mj-column>
-                        <mj-text
-                            align="left"
-                            color="#E50914"
-                            font-size="32px"
-                            font-weight="800"
-                            letter-spacing="1px"
-                            line-height="38px"
-                            padding="0">
-                            DragonDB
-                        </mj-text>
-                    </mj-column>
-                </mj-section>
+        <!-- Main email card -->
+        <mj-section background-color="#0B0B10" padding="0">
+            <mj-column width="560px" background-color="#111016" border-radius="14px" border="1px solid #2B213A">
 
                 <!-- Hero section -->
-                <mj-section background-color="#000000" padding="18px 32px 8px 32px">
+                <mj-section background-color="#111016" padding="38px 30px 20px 30px" border-radius="14px 14px 0 0">
                     <mj-column>
                         <mj-text
                             color="#FFFFFF"
-                            font-size="30px"
-                            font-weight="700"
-                            line-height="38px"
-                            padding="0 0 16px 0">
-                            Your private media access is ready.
+                            font-size="34px"
+                            font-weight="800"
+                            line-height="42px"
+                            padding="0 0 6px 0">
+                            Your DragonDB invite is ready.
                         </mj-text>
 
                         <mj-text
-                            color="#DADADA"
-                            font-size="17px"
+                            color="#D600FF"
+                            font-size="26px"
+                            font-weight="800"
+                            line-height="34px"
+                            padding="0 0 22px 0">
+                            All in one app.
+                        </mj-text>
+
+                        <mj-text
+                            color="#EDEAF5"
+                            font-size="16px"
                             line-height="26px"
-                            padding="0 0 18px 0">
+                            padding="0 0 14px 0">
                             {{ .hello }},
                         </mj-text>
 
                         <mj-text
-                            color="#DADADA"
-                            font-size="17px"
+                            color="#D8D2E6"
+                            font-size="16px"
                             line-height="26px"
-                            padding="0 0 10px 0">
-                            You have been invited to join DragonDB, a private Jellyfin-powered media library.
+                            padding="0 0 12px 0">
+                            You have been invited to join DragonDB, a private Jellyfin-powered media hub for watching, requesting, and exploring content.
                         </mj-text>
 
                         <mj-text
-                            color="#BDBDBD"
+                            color="#AFA5C4"
                             font-size="15px"
                             line-height="24px"
-                            padding="0 0 22px 0">
-                            Use the secure invite link below to create your account and start watching.
+                            padding="0 0 26px 0">
+                            Create your account using the secure invite link below and start accessing your private media library.
                         </mj-text>
 
                         <mj-button
                             href="{{ .inviteURL }}"
-                            background-color="#E50914"
+                            background-color="#B517F2"
                             color="#FFFFFF"
                             font-size="16px"
-                            font-weight="700"
-                            border-radius="4px"
+                            font-weight="800"
+                            border-radius="8px"
                             inner-padding="15px 34px"
                             align="left"
-                            padding="4px 0 28px 0">
+                            padding="0 0 24px 0">
                             Accept Invite
                         </mj-button>
                     </mj-column>
                 </mj-section>
 
-                <!-- Info card -->
-                <mj-section background-color="#000000" padding="0 32px 24px 32px">
-                    <mj-column
-                        background-color="#141414"
-                        border-radius="8px"
-                        padding="22px 22px 18px 22px"
-                        border="1px solid #2A2A2A">
+                <!-- Feature strip -->
+                <mj-section background-color="#17131F" padding="26px 30px 24px 30px">
+                    <mj-column>
+                        <mj-text
+                            align="center"
+                            color="#FFFFFF"
+                            font-size="20px"
+                            font-weight="800"
+                            line-height="28px"
+                            padding="0 0 8px 0">
+                            Watch. Request. Explore.
+                        </mj-text>
 
+                        <mj-text
+                            align="center"
+                            color="#AFA5C4"
+                            font-size="14px"
+                            line-height="22px"
+                            padding="0 18px">
+                            DragonDB keeps your private streaming experience clean, simple, and organized.
+                        </mj-text>
+                    </mj-column>
+                </mj-section>
+
+                <!-- Invite details -->
+                <mj-section background-color="#111016" padding="26px 30px 28px 30px">
+                    <mj-column background-color="#181321" border-radius="10px" border="1px solid #332247">
                         <mj-text
                             color="#FFFFFF"
                             font-size="18px"
-                            font-weight="700"
+                            font-weight="800"
                             line-height="26px"
-                            padding="0 0 10px 0">
+                            padding="22px 22px 8px 22px">
                             Invite details
                         </mj-text>
 
                         <mj-text
-                            color="#CFCFCF"
+                            color="#D8D2E6"
                             font-size="15px"
                             line-height="24px"
-                            padding="0 0 8px 0">
+                            padding="0 22px 14px 22px">
                             {{ .inviteExpiry }}
                         </mj-text>
 
                         <mj-text
-                            color="#8F8F8F"
+                            color="#8F84A5"
                             font-size="13px"
                             line-height="21px"
-                            padding="8px 0 0 0">
+                            padding="0 22px 6px 22px">
                             If the button does not work, copy and paste this link into your browser:
                         </mj-text>
 
                         <mj-text
-                            color="#BDBDBD"
+                            color="#B9A7D9"
                             font-size="13px"
                             line-height="21px"
-                            padding="6px 0 0 0"
+                            padding="0 22px 22px 22px"
                             word-break="break-all">
                             {{ .inviteURL }}
                         </mj-text>
                     </mj-column>
                 </mj-section>
 
-                <!-- Help section -->
-                <mj-section background-color="#000000" padding="0 32px 24px 32px">
-                    <mj-column>
-                        <mj-text
-                            color="#AFAFAF"
-                            font-size="14px"
-                            line-height="22px"
-                            padding="0">
-                            Need help? Contact the DragonDB admin.
-                        </mj-text>
-                    </mj-column>
-                </mj-section>
-
-                <!-- Footer -->
-                <mj-section background-color="#000000" padding="22px 32px 34px 32px" border-top="1px solid #222222">
-                    <mj-column>
-                        <mj-text
-                            color="#6F6F6F"
-                            font-size="12px"
-                            line-height="19px"
-                            padding="0 0 8px 0">
-                            This invitation was sent because someone invited you to access DragonDB.
-                        </mj-text>
-
-                        <mj-text
-                            color="#6F6F6F"
-                            font-size="12px"
-                            line-height="19px"
-                            padding="0">
-                            {{ .footer }}
-                        </mj-text>
-                    </mj-column>
-                </mj-section>
-
             </mj-column>
         </mj-section>
+
+        <mj-include path="./layout/body-end.mjml" />
 
     </mj-body>
 </mjml>

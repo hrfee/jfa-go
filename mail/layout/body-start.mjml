@@ -1,5 +1,22 @@
-<mj-section mj-class="bg-gray">
-    <mj-column>
-        <mj-text mj-class="text-white" font-size="25px" font-family="Plus Jakarta Sans, Noto Sans, Helvetica, Arial, sans-serif"> {{ .header }} </mj-text>
+<mj-section background-color="#0B0B10" padding="34px 0 14px 0">
+    <mj-column width="560px">
+        <mj-text
+            align="left"
+            color="#FFFFFF"
+            font-size="24px"
+            font-weight="800"
+            line-height="32px"
+            padding="0 28px">
+            DragonDB
+        </mj-text>
+
+        <mj-text
+            align="left"
+            color="#B9A7D9"
+            font-size="13px"
+            line-height="20px"
+            padding="2px 28px 0 28px">
+            Watch, request, explore. All in one private media hub.
+        </mj-text>
     </mj-column>
 </mj-section>
