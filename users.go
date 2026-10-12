@@ -230,6 +230,11 @@ func (app *appContext) DeleteUser(user mediabrowser.User) (err error, deleted bo
 		}
 	}
 
+	// Remove linked accounts from jfa-go storage
+	app.storage.DeleteDiscordKey(user.ID)
+	app.storage.DeleteTelegramKey(user.ID)
+	app.storage.DeleteMatrixKey(user.ID)
+
 	err = app.jf.DeleteUser(user.ID)
 	if err != nil {
 		return
