@@ -88,6 +88,13 @@ func (app *appContext) checkInvite(code string, used bool, username string) bool
 			newInv.RemainingUses--
 		}
 		newInv.UsedBy = append(newInv.UsedBy, []string{username, strconv.FormatInt(currentTime.Unix(), 10)})
+
+		// Multi-use paid invites require a separate payment for each use.
+		if newInv.PaymentStatus == "paid" {
+			newInv.PaymentID = ""
+			newInv.PaymentStatus = ""
+		}
+
 		if !del {
 			app.storage.SetInvitesKey(code, newInv)
 		}
@@ -96,6 +103,10 @@ func (app *appContext) checkInvite(code string, used bool, username string) bool
 }
 
 func (app *appContext) deleteExpiredInvite(data Invite) {
+	if app.preserveExpiredPaidInvite(data) {
+		return
+	}
+
 	app.debug.Printf(lm.DeleteOldInvite, data.Code)
 
 	// Disable referrals for the user if UseReferralExpiry is enabled, so no new ones are made.
@@ -358,6 +369,14 @@ func (app *appContext) GenerateInvite(gc *gin.Context) {
 		invite.UserLabel = req.UserLabel
 	}
 	invite.Created = currentTime
+	if req.Price > 0 {
+		invite.RequiredPayment = true
+		invite.PriceAmount = req.Price
+		invite.PriceCurrency = req.Currency
+		if invite.PriceCurrency == "" {
+			invite.PriceCurrency = app.config.Section("stripe").Key("price_currency").MustString("usd")
+		}
+	}
 	if req.MultipleUses {
 		if req.NoLimit {
 			invite.NoLimit = true

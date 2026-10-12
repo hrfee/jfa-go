@@ -41,6 +41,11 @@ interface formWindow extends GlobalWindow {
     userPageAddress: string;
     customSuccessCard: boolean;
     collectEmail: boolean;
+    requiredPayment: boolean;
+    paid: boolean;
+    price: number;
+    currency: string;
+    stripeEnabled: boolean;
 }
 
 setupTooltips();
@@ -158,6 +163,31 @@ if (window.confirmation) {
     window.confirmationModal = new Modal(document.getElementById("modal-confirmation"), true);
 }
 declare var window: formWindow;
+
+if (window.requiredPayment && !window.paid) {
+    const paymentModal = new Modal(document.getElementById("modal-payment"), true);
+    document.getElementById("payment-amount").textContent = (window.price / 100).toFixed(2);
+    document.getElementById("payment-currency").textContent = window.currency;
+
+    const payButton = document.getElementById("pay-button") as HTMLButtonElement;
+    payButton.onclick = () => {
+        addLoader(payButton);
+        _post("/stripe/checkout/" + window.code, {}, (req: XMLHttpRequest) => {
+            if (req.readyState == 4) {
+                removeLoader(payButton);
+                if (req.status == 200) {
+                    const resp = JSON.parse(req.response);
+                    if (resp.response) {
+                        window.location.href = resp.response;
+                    }
+                } else {
+                    window.notifications.customError("errorPayment", "Failed to initiate payment");
+                }
+            }
+        });
+    };
+    paymentModal.show();
+}
 
 if (window.userExpiryEnabled) {
     const messageEl = document.getElementById("user-expiry-message") as HTMLElement;

@@ -404,6 +404,34 @@ func (emailer *Emailer) constructInvite(invite *Invite, placeholders bool) (*Mes
 	return emailer.construct(contentInfo, cc, template)
 }
 
+func (emailer *Emailer) constructPurchasedInvite(invite *Invite, plan string, placeholders bool) (*Message, error) {
+	if plan == "" {
+		plan = "Access"
+	}
+	accessDuration := "ongoing access"
+	if invite.UserExpiry {
+		accessDuration = planAccessLabel(PaymentPlan{AccessMonths: invite.UserMonths, AccessDays: invite.UserDays})
+	}
+	inviteLink := fmt.Sprintf("%s%s/%s", ExternalURI(nil), PAGES.Form, invite.Code)
+	contentInfo, template := emailer.baseValues("PurchasedInviteEmail", "", placeholders, map[string]any{
+		"hello":           emailer.lang.PurchasedInvite.get("hello"),
+		"paymentAccepted": emailer.lang.PurchasedInvite.get("paymentAccepted"),
+		"planLine":        emailer.lang.PurchasedInvite.get("planLine"),
+		"accessLine":      emailer.lang.PurchasedInvite.get("accessLine"),
+		"toCreateAccount": emailer.lang.PurchasedInvite.get("toCreateAccount"),
+		"linkButton":      emailer.lang.PurchasedInvite.get("linkButton"),
+		"plan":            plan,
+		"accessDuration":  accessDuration,
+		"inviteURL":       inviteLink,
+	})
+	if !placeholders {
+		template["planLine"] = emailer.lang.PurchasedInvite.template("planLine", template)
+		template["accessLine"] = emailer.lang.PurchasedInvite.template("accessLine", template)
+	}
+	cc := emailer.storage.MustGetCustomContentKey(contentInfo.Name)
+	return emailer.construct(contentInfo, cc, template)
+}
+
 func (emailer *Emailer) constructExpiry(invite Invite, placeholders bool) (*Message, error) {
 	expiry := formatDatetime(invite.ValidTill)
 	contentInfo, template := emailer.baseValues("InviteExpiry", "", placeholders, map[string]any{

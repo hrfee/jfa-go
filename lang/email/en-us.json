@@ -61,6 +61,16 @@
         "inviteExpiry": "This invite will expire on {date} at {time}, which is in {expiresInMinutes}, so act quick.",
         "linkButton": "Setup your account"
     },
+    "purchasedInviteEmail": {
+        "name": "Purchased invite email",
+        "title": "Your access is ready - Jellyfin",
+        "hello": "Hi",
+        "paymentAccepted": "Your payment was accepted and your access is ready.",
+        "planLine": "Plan: {plan}",
+        "accessLine": "This plan grants {accessDuration}. The access period starts when your account is created.",
+        "toCreateAccount": "Use the link below to create your account.",
+        "linkButton": "Setup your account"
+    },
     "welcomeEmail": {
         "name": "Welcome",
         "title": "Welcome to Jellyfin",

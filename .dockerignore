@@ -1,0 +1,5 @@
+data/
+bin/
+dist/
+build/
+node_modules/

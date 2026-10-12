@@ -24,7 +24,7 @@ func (m *MockActivityLogSource) run(size int, delay time.Duration, finished *boo
 		m.lock.Lock()
 		log := mediabrowser.ActivityLogEntry{
 			ID:   int64(i),
-			Date: mediabrowser.Time{time.Now()},
+			Date: mediabrowser.Time{Time: time.Now()},
 		}
 		m.logs[i] = log
 		m.i = i + 1

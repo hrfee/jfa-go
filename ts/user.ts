@@ -160,7 +160,22 @@ interface MyDetails {
     discord?: MyDetailsContactMethod;
     telegram?: MyDetailsContactMethod;
     matrix?: MyDetailsContactMethod;
+    subscription?: MySubscription;
     has_referrals: boolean;
+}
+
+interface MySubscription {
+    provider: string;
+    subscription_id: string;
+    status: string;
+    payment_status: string;
+    cancel_at_period_end: boolean;
+    cancel_at?: number;
+    canceled_at?: number;
+    ended_at?: number;
+    paid_through?: number;
+    amount?: number;
+    currency?: string;
 }
 
 interface MyReferral {
@@ -517,7 +532,127 @@ class ExpiryCard {
     }
 }
 
+class SubscriptionCard {
+    private _card: HTMLElement;
+    private _summary: HTMLElement;
+    private _notice: HTMLElement;
+    private _cancelButton: HTMLButtonElement;
+    private _subscription: MySubscription = null;
+
+    constructor(card: HTMLElement) {
+        this._card = card;
+        this._summary = this._card.querySelector(".user-subscription-summary") as HTMLElement;
+        this._notice = this._card.querySelector(".user-subscription-notice") as HTMLElement;
+        this._cancelButton = this._card.querySelector(".user-subscription-cancel") as HTMLButtonElement;
+
+        document.addEventListener("timefmt-change", () => {
+            this.update(this._subscription);
+        });
+
+        this._cancelButton.onclick = () => this.cancel();
+    }
+
+    hide = () => {
+        this._subscription = null;
+        this._card.classList.add("unfocused");
+    };
+
+    update = (subscription?: MySubscription) => {
+        if (!subscription || !subscription.subscription_id) {
+            this.hide();
+            return;
+        }
+
+        this._subscription = subscription;
+        this._card.classList.remove("unfocused");
+        this._summary.replaceChildren();
+
+        this._summary.appendChild(this.row(window.lang.strings("subscriptionStatus"), this.statusText(subscription)));
+        if (subscription.paid_through) {
+            this._summary.appendChild(
+                this.row(window.lang.strings("subscriptionPaidThrough"), toDateString(new Date(subscription.paid_through * 1000))),
+            );
+        }
+        if (subscription.cancel_at) {
+            this._summary.appendChild(
+                this.row(window.lang.strings("subscriptionCancelAt"), toDateString(new Date(subscription.cancel_at * 1000))),
+            );
+        } else if (subscription.canceled_at) {
+            this._summary.appendChild(
+                this.row(window.lang.strings("subscriptionCanceledAt"), toDateString(new Date(subscription.canceled_at * 1000))),
+            );
+        }
+
+        const canceled = subscription.status == "canceled" || subscription.payment_status == "subscription_canceled";
+        const canceling = subscription.cancel_at_period_end || subscription.payment_status == "subscription_canceling";
+        this._cancelButton.disabled = canceled || canceling;
+        this._cancelButton.classList.toggle("unfocused", canceled);
+
+        if (canceled) {
+            this._notice.textContent = window.lang.strings("subscriptionCanceled");
+            this._notice.classList.remove("unfocused");
+        } else if (canceling) {
+            this._notice.textContent = window.lang.strings("subscriptionCanceling");
+            this._notice.classList.remove("unfocused");
+        } else {
+            this._notice.textContent = window.lang.strings("subscriptionActive");
+            this._notice.classList.remove("unfocused");
+        }
+    };
+
+    private row = (label: string, value: string): HTMLDivElement => {
+        const row = document.createElement("div");
+        row.className = "flex flex-row justify-between gap-4";
+        const labelEl = document.createElement("span");
+        labelEl.className = "text-gray-400";
+        labelEl.textContent = label;
+        const valueEl = document.createElement("span");
+        valueEl.className = "font-bold text-right";
+        valueEl.textContent = value || window.lang.strings("notSet");
+        row.append(labelEl, valueEl);
+        return row;
+    };
+
+    private statusText = (subscription: MySubscription): string => {
+        if (subscription.cancel_at_period_end || subscription.payment_status == "subscription_canceling") {
+            return this.formatStatus("canceling");
+        }
+        return this.formatStatus(subscription.status || subscription.payment_status);
+    };
+
+    private formatStatus = (status: string): string => {
+        if (!status) return window.lang.strings("notSet");
+        return status
+            .split("_")
+            .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+            .join(" ");
+    };
+
+    private cancel = () => {
+        if (!this._subscription || this._cancelButton.disabled) return;
+        if (!window.confirm(window.lang.strings("cancelSubscriptionConfirm"))) return;
+
+        addLoader(this._cancelButton);
+        _post(
+            "/my/subscription/cancel",
+            null,
+            (req: XMLHttpRequest) => {
+                if (req.readyState != 4) return;
+                removeLoader(this._cancelButton);
+                if (req.status != 200) {
+                    window.notifications.customError("subscriptionCancelError", window.lang.notif("subscriptionCancelError"));
+                    return;
+                }
+                window.notifications.customSuccess("subscriptionCancelSuccess", window.lang.notif("subscriptionCancelSuccess"));
+                this.update(req.response as MySubscription);
+            },
+            true,
+        );
+    };
+}
+
 var expiryCard = new ExpiryCard(statusCard);
+var subscriptionCard = new SubscriptionCard(document.getElementById("card-subscription"));
 
 var referralCard: ReferralCard;
 if (window.referralsEnabled) referralCard = new ReferralCard(document.getElementById("card-referrals"));
@@ -745,6 +880,7 @@ document.addEventListener("details-reload", () => {
             }
 
             expiryCard.expiry = details.expiry;
+            subscriptionCard.update(details.subscription);
 
             const adminBackButton = document.getElementById("admin-back-button") as HTMLAnchorElement;
             adminBackButton.href = window.pages.Base + window.pages.Admin + "/";

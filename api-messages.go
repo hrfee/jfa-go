@@ -160,6 +160,8 @@ func (app *appContext) GetCustomMessageTemplate(gc *gin.Context) {
 			msg, err = app.email.constructExpiryReminder("", time.Now().AddDate(0, 0, 3), true)
 		case "InviteEmail":
 			msg, err = app.email.constructInvite(&Invite{Code: ""}, true)
+		case "PurchasedInviteEmail":
+			msg, err = app.email.constructPurchasedInvite(&Invite{Code: "", UserExpiry: true, UserMonths: 1}, "Monthly", true)
 		case "WelcomeEmail":
 			msg, err = app.email.constructWelcome("", time.Time{}, true)
 		case "EmailConfirmation":

@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"path/filepath"
+	"sort"
 	"strings"
 	"time"
 
@@ -28,6 +29,27 @@ import (
 var cssVersion string
 var css = []string{cssVersion + "bundle.css", "remixicon.css"}
 var cssHeader string
+
+func loadCSSVersionFallback() {
+	if cssVersion == "" {
+		entries, err := fs.ReadDir(localFS, "web/css")
+		if err == nil {
+			versions := []string{}
+			for _, entry := range entries {
+				name := entry.Name()
+				if entry.IsDir() || !strings.HasSuffix(name, "bundle.css") || name == "bundle.css" {
+					continue
+				}
+				versions = append(versions, strings.TrimSuffix(name, "bundle.css"))
+			}
+			if len(versions) > 0 {
+				sort.Strings(versions)
+				cssVersion = versions[len(versions)-1]
+			}
+		}
+	}
+	css = []string{cssVersion + "bundle.css", "remixicon.css"}
+}
 
 func (app *appContext) loadCSSHeader() string {
 	l := len(css)
@@ -246,6 +268,7 @@ func (app *appContext) AdminPage(gc *gin.Context) {
 		"jfAllowAll":       jfAllowAll,
 		"userPageEnabled":  app.config.Section("user_page").Key("enabled").MustBool(false),
 		"showUserPageLink": app.config.Section("user_page").Key("show_link").MustBool(true),
+		"stripeEnabled":    stripeEnabled,
 		"loginAppearance":  app.config.Section("ui").Key("login_appearance").MustString("clear"),
 	})
 }
@@ -682,15 +705,7 @@ func (app *appContext) NewUserFromConfirmationKey(invite Invite, key string, lan
 
 	sourceType, source := invite.Source()
 
-	var profile *Profile = nil
-	if invite.Profile != "" {
-		p, ok := app.storage.GetProfileKey(invite.Profile)
-		if !ok {
-			app.debug.Printf(lm.FailedGetProfile+lm.FallbackToDefault, invite.Profile)
-			p = app.storage.GetDefaultProfile()
-		}
-		profile = &p
-	}
+	profile := app.profileForInvite(invite.Profile)
 
 	// FIXME: Email and contract method linking?????
 
@@ -754,6 +769,14 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 		return
 	}
 
+	if invite.PaymentStatus == "paid" && !app.paidInvitePaymentLockFromCookie(gc, invite) {
+		app.info.Printf("Blocked access to paid invite %s due to missing/mismatching payment lock.", invite.Code)
+		app.gcHTML(gc, 403, "invalidCode.html", FormPage, lang, gin.H{
+			"contactMessage": "This invite has been paid for by another browser session. To prevent theft, paid invites are locked to the device that made the payment.",
+		})
+		return
+	}
+
 	if key := gc.Query("key"); key != "" && app.config.Section("email_confirmation").Key("enabled").MustBool(false) {
 		app.NewUserFromConfirmationKey(invite, key, lang, gc)
 		return
@@ -812,6 +835,11 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 		"userPageEnabled":   app.config.Section("user_page").Key("enabled").MustBool(false),
 		"userPageAddress":   userPageAddress,
 		"fromUser":          fromUser,
+		"price":             invite.PriceAmount,
+		"currency":          strings.ToUpper(invite.PriceCurrency),
+		"requiredPayment":   invite.RequiredPayment,
+		"paid":              invite.PaymentStatus == "paid",
+		"stripeEnabled":     stripeEnabled,
 	}
 	if telegram {
 		data["telegramPIN"] = app.telegram.NewAuthToken()
@@ -879,6 +907,24 @@ func (app *appContext) InviteProxy(gc *gin.Context) {
 func (app *appContext) NoRouteHandler(gc *gin.Context) {
 	app.pushResources(gc, OtherPage)
 	app.gcHTML(gc, 404, "404.html", OtherPage, "en-us", gin.H{
+		"contactMessage": app.config.Section("ui").Key("contact_message").String(),
+	})
+}
+
+// StorePage serves the public store page
+func (app *appContext) StorePage(gc *gin.Context) {
+	lang := app.getLang(gc, FormPage, app.storage.lang.chosenUserLang)
+	app.gcHTML(gc, 200, "store.html", OtherPage, lang, gin.H{
+		"strings": app.storage.lang.User[lang].Strings,
+		"plans":   storePlanViews(app.publicPaymentPlans()),
+	})
+}
+
+// PaymentSuccessPage serves the dedicated payment success page
+func (app *appContext) PaymentSuccessPage(gc *gin.Context) {
+	lang := app.getLang(gc, FormPage, app.storage.lang.chosenUserLang)
+	app.gcHTML(gc, 200, "payment_success.html", OtherPage, lang, gin.H{
+		"strings":        app.storage.lang.User[lang].Strings,
 		"contactMessage": app.config.Section("ui").Key("contact_message").String(),
 	})
 }

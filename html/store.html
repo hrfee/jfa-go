@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="{{ .shortLang }}" dir="{{ .pageDirection }}" class="{{ .cssClass }}">
+
+<head>
+    {{ template "header.txt" . }}
+    <title>{{ .strings.storeTitle }}</title>
+</head>
+
+<body class="max-w-full overflow-x-hidden section">
+    <div id="notification-box"></div>
+    <div class="page-container m-2 lg:my-16 lg:mx-32 flex flex-col gap-6">
+        {{ template "lang-select.html" . }}
+
+        <div class="flex flex-col gap-2">
+            <span class="heading">{{ .strings.storeHeader }}</span>
+            <span class="subheading">{{ .strings.storeSubheader }}</span>
+        </div>
+
+        <div class="card ~neutral @low dark:~d_neutral flex flex-col md:flex-row gap-4 md:items-end">
+            <label class="label flex flex-col gap-2 grow">
+                <span class="supra">{{ .strings.emailAddress }}</span>
+                <input type="email" id="email-input" class="input ~neutral @high w-full" placeholder="{{ .strings.storeEmailPlaceholder }}" required>
+            </label>
+            <div class="content md:max-w-sm">{{ .strings.storeEmailNotice }}</div>
+        </div>
+        <p class="text-sm text-red-500 hidden font-bold" id="email-error"><i class="ri-error-warning-line"></i> {{ .strings.storeEmailError }}</p>
+
+        {{ if .plans }}
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            {{ range .plans }}
+            <div class="card @low dark:~d_neutral flex flex-col gap-4">
+                <div class="flex flex-col gap-1">
+                    <span class="heading text-2xl">{{ .Name }}</span>
+                    {{ if .Description }}<p class="content min-h-[3rem]">{{ .Description }}</p>{{ end }}
+                </div>
+                <div class="flex flex-row items-baseline gap-2">
+                    <span class="text-4xl font-bold">{{ .Price }}</span>
+                    <span class="content uppercase">{{ .Currency }}</span>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <div class="flex items-center gap-2"><span class="badge ~positive @low"><i class="ri-check-line"></i></span><span class="content">{{ $.strings.storeInstantDelivery }}</span></div>
+                    <div class="flex items-center gap-2"><span class="badge ~warning @low"><i class="ri-time-line"></i></span><span class="content">{{ .Access }}</span></div>
+                    <div class="flex items-center gap-2"><span class="badge ~info @low"><i class="ri-bank-card-line"></i></span><span class="content">{{ .Billing }}</span></div>
+                </div>
+                <button class="button ~info @low full-width center mt-auto gap-2 store-checkout" data-plan="{{ .ID }}">
+                    <span>{{ $.strings.storePayButton }}</span><i class="ri-bank-card-line"></i>
+                </button>
+            </div>
+            {{ end }}
+        </div>
+        {{ else }}
+        <div class="card @low dark:~d_neutral">
+            <span class="content">{{ .strings.storeNoPlans }}</span>
+        </div>
+        {{ end }}
+    </div>
+
+    <script src="{{ .pages.Base }}/js/store.js" type="module"></script>
+</body>
+
+</html>

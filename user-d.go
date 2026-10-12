@@ -94,6 +94,18 @@ func (app *appContext) checkUsers(remindBeforeExpiry *DayTimerSet) {
 			continue
 		}
 
+		if app.shouldSkipExpiredPaidUser(user.ID, expiry) {
+			if expiry.DeleteAfterPeriod {
+				expiry.DeleteAfterPeriod = false
+				app.storage.SetUserExpiryKey(user.ID, expiry)
+			}
+			if user.Policy.IsDisabled {
+				app.reEnablePaidUser(user.ID)
+				shouldInvalidateCache = true
+			}
+			continue
+		}
+
 		// True when "Delete after period" enabled and this user's account has already expired.
 		alreadyExpired := false
 		// True when the user has expired and N days has passed for them to be deleted.

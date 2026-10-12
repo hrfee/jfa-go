@@ -99,6 +99,29 @@ var customContent = map[string]CustomContentInfo{
 			DefaultValue:  "invite-email",
 		},
 	},
+	"PurchasedInviteEmail": {
+		Name:        "PurchasedInviteEmail",
+		ContentType: CustomMessage,
+		DisplayName: func(dict *Lang, lang string) string { return dict.Email[lang].PurchasedInvite["name"] },
+		Subject: func(config *Config, lang *emailLang) string {
+			return config.Section("invite_emails").Key("purchased_subject").MustString(lang.PurchasedInvite.get("title"))
+		},
+		Variables: []string{
+			"plan",
+			"accessDuration",
+			"inviteURL",
+		},
+		Placeholders: defaultVals(map[string]any{
+			"plan":           "Monthly",
+			"accessDuration": "1 month access",
+			"inviteURL":      "https://sub2.test.url/invite/xxxxxx",
+		}),
+		SourceFile: ContentSourceFileInfo{
+			Section:       "invite_emails",
+			SettingPrefix: "purchased_email_",
+			DefaultValue:  "purchased-invite-email",
+		},
+	},
 	"InviteExpiry": {
 		Name:        "InviteExpiry",
 		ContentType: CustomMessage,

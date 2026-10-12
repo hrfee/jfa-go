@@ -30,6 +30,7 @@ var messagesEnabled = false
 var telegramEnabled = false
 var discordEnabled = false
 var matrixEnabled = false
+var stripeEnabled = false
 
 // URL subpaths. Ignore the "Current" field, it's populated when in copies of the struct used for page templating.
 // IMPORTANT: When linking straight to a page, rather than appending further to the URL (like accessing an API route), append a /.
@@ -266,6 +267,11 @@ func NewConfig(configPathOrContents any, dataPath string, logs LoggerSet) (*Conf
 	config.MustSetValue("smtp", "auth_type", "4")
 	config.MustSetValue("smtp", "port", "465")
 
+	config.MustSetValue("stripe", stripePaymentPlansSetting, defaultPaymentPlansJSON(
+		config.Section("stripe").Key("price_monthly").MustInt64(200),
+		config.Section("stripe").Key("price_currency").MustString("usd"),
+	))
+
 	config.MustSetValue("activity_log", "keep_n_records", "1000")
 	config.MustSetValue("activity_log", "delete_after_days", "90")
 
@@ -342,6 +348,8 @@ func NewConfig(configPathOrContents any, dataPath string, logs LoggerSet) (*Conf
 	if !emailEnabled && !telegramEnabled && !discordEnabled && !matrixEnabled {
 		messagesEnabled = false
 	}
+
+	stripeEnabled = config.Section("stripe").Key("enabled").MustBool(false)
 
 	if proxyEnabled := config.Section("advanced").Key("proxy").MustBool(false); proxyEnabled {
 		config.proxyConfig = &easyproxy.ProxyConfig{}

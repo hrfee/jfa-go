@@ -1,169 +1,211 @@
 <!DOCTYPE html>
 <html lang="{{ .shortLang }}" dir="{{ .pageDirection }}" class="{{ .cssClass }}">
-    <head>
-        {{ template "header.txt" . }}
-        {{ if .passwordReset }}
-        <title>{{ .strings.passwordReset }}</title>
-        {{ else }}
-        <title>{{ .strings.pageTitle }}</title>
-        {{ end }}
-        <script>
-            window.redirectToJellyfin = {{ .redirectToJellyfin }};
-        </script>
-    </head>
-    <body class="max-w-full overflow-x-hidden section">
-        <div id="modal-success" class="modal">
-            {{ if .customSuccessCard }}
-                <div class="card @low dark:~d_neutral content break-words relative mx-auto my-[10%] w-4/5 lg:w-1/3">
-                    {{ .customSuccessCardContent }}
-                    <a class="button ~urge @low full-width center supra submit my-2" href="{{ .jfLink }}" id="create-success-button">{{ .strings.continue }}</a>
-                </div>
-            {{ else }}
-                <div class="card relative mx-auto my-[10%] w-4/5 lg:w-1/3">
-                    <span class="heading mb-4">{{ if .passwordReset }}{{ .strings.passwordReset }}{{ else }}{{ .strings.successHeader }}{{ end }}</span>
-                    <p class="content mb-4">{{ if .passwordReset }}{{ .strings.youCanLoginPassword }}{{ else }}{{ .successMessage }}{{ end }}</p>
-                    {{ if .userPageEnabled }}<p class="content mb-4" id="modal-success-user-page-area" my-account-term="{{ .strings.myAccount }}">{{ .strings.userPageSuccessMessage }}</p>{{ end }}
-                    <a class="button ~urge @low full-width center supra submit" href="{{ .jfLink }}" id="create-success-button">{{ .strings.continue }}</a>
-                </div>
-            {{ end }}
-        </div>
-        <div id="modal-confirmation" class="modal">
-            <div class="card relative mx-auto my-[10%] w-4/5 lg:w-1/3">
-                <span class="heading mb-4">{{ .strings.confirmationRequired }}</span>
-                <p class="content mb-4">{{ .strings.confirmationRequiredMessage }}</p>
-            </div>
-        </div>
-        {{ template "account-linking.html" . }}
-        <div id="notification-box"></div>
-        <div class="page-container m-2 lg:my-20 lg:mx-64 flex flex-col gap-4">
-            <div class="top-2 inset-x-2 lg:absolute flex flex-row justify-between">
-                {{ template "lang-select.html" . }}
-            </div>
-            <div class="card dark:~d_neutral @low">
-                <div class="flex flex-col md:flex-row gap-3 items-baseline mb-2">
-                    <span class="heading">
-                        {{ if .passwordReset }}
-                        {{ .strings.passwordReset }}
-                        {{ else }}
-                        {{ .strings.createAccountHeader }}
-                        {{ end }}
-                    </span>
-                    <span class="subheading">
-                        {{ if .passwordReset }}
-                            {{ .strings.enterYourPassword }}
-                        {{ else }}
-                            {{ .helpMessage }}
-                        {{ end }}
-                    </span>
-                </div>
-                <div class="flex flex-col md:flex-row gap-3">
-                    <div class="flex-1">
-                        {{ if .userExpiry }}
-                        <aside class="col aside sm ~warning" id="user-expiry-message"></aside>
-                        {{ end }}
-                        <form class="card dark:~d_neutral @low" id="form-create" href="">
-                            {{ if not .passwordReset }}
-                            <label class="label supra">
-                                {{ .strings.username }}
-                                <input type="text" class="input ~neutral @high mt-2 mb-4" placeholder="{{ .strings.username }}" id="create-username" aria-label="{{ .strings.username }}">
-                            </label>
 
-                            <div>
-                                <label class="label supra" for="create-email">{{ .strings.emailAddress }}</label>
-                                <input type="email" class="input ~neutral @high mt-2 mb-4" placeholder="{{ .strings.emailAddress }}" id="create-email" aria-label="{{ .strings.emailAddress }}" value="{{ .email }}">
-                            </div>
+<head>
+    {{ template "header.txt" . }}
+    {{ if .passwordReset }}
+    <title>{{ .strings.passwordReset }}</title>
+    {{ else }}
+    <title>{{ .strings.pageTitle }}</title>
+    {{ end }}
+    <script>
+        window.redirectToJellyfin = {{ .redirectToJellyfin }};
+        window.requiredPayment = {{ .requiredPayment }};
+        window.paid = {{ .paid }};
+        window.price = {{ .price }};
+        window.currency = "{{ .currency }}";
+        window.stripeEnabled = {{ .stripeEnabled }};
+        window.code = "{{ .code }}";
+    </script>
+</head>
+
+<body class="max-w-full overflow-x-hidden section">
+    <div id="modal-success" class="modal">
+        {{ if .customSuccessCard }}
+        <div class="card @low dark:~d_neutral content break-words relative mx-auto my-[10%] w-4/5 lg:w-1/3">
+            {{ .customSuccessCardContent }}
+            <a class="button ~urge @low full-width center supra submit my-2" href="{{ .jfLink }}"
+                id="create-success-button">{{ .strings.continue }}</a>
+        </div>
+        {{ else }}
+        <div class="card relative mx-auto my-[10%] w-4/5 lg:w-1/3">
+            <span class="heading mb-4">{{ if .passwordReset }}{{ .strings.passwordReset }}{{ else }}{{
+                .strings.successHeader }}{{ end }}</span>
+            <p class="content mb-4">{{ if .passwordReset }}{{ .strings.youCanLoginPassword }}{{ else }}{{
+                .successMessage }}{{ end }}</p>
+            {{ if .userPageEnabled }}<p class="content mb-4" id="modal-success-user-page-area"
+                my-account-term="{{ .strings.myAccount }}">{{ .strings.userPageSuccessMessage }}</p>{{ end }}
+            <a class="button ~urge @low full-width center supra submit" href="{{ .jfLink }}"
+                id="create-success-button">{{ .strings.continue }}</a>
+        </div>
+        {{ end }}
+    </div>
+    <div id="modal-confirmation" class="modal">
+        <div class="card relative mx-auto my-[10%] w-4/5 lg:w-1/3">
+            <span class="heading mb-4">{{ .strings.confirmationRequired }}</span>
+            <p class="content mb-4">{{ .strings.confirmationRequiredMessage }}</p>
+        </div>
+    </div>
+    <div id="modal-payment" class="modal">
+        <div class="card relative mx-auto my-[10%] w-4/5 lg:w-1/3">
+            <span class="heading mb-4">Payment Required</span>
+            <p class="content mb-4">This invite requires a payment of <span id="payment-amount"
+                    class="font-bold"></span> <span id="payment-currency" class="font-bold"></span>.</p>
+            <button id="pay-button" class="button ~urge @low full-width center supra">Pay with Stripe</button>
+        </div>
+    </div>
+    {{ template "account-linking.html" . }}
+    <div id="notification-box"></div>
+    <div class="page-container m-2 lg:my-20 lg:mx-64 flex flex-col gap-4">
+        <div class="top-2 inset-x-2 lg:absolute flex flex-row justify-between">
+            {{ template "lang-select.html" . }}
+        </div>
+        <div class="card dark:~d_neutral @low">
+            <div class="flex flex-col md:flex-row gap-3 items-baseline mb-2">
+                <span class="heading">
+                    {{ if .passwordReset }}
+                    {{ .strings.passwordReset }}
+                    {{ else }}
+                    {{ .strings.createAccountHeader }}
+                    {{ end }}
+                </span>
+                <span class="subheading">
+                    {{ if .passwordReset }}
+                    {{ .strings.enterYourPassword }}
+                    {{ else }}
+                    {{ .helpMessage }}
+                    {{ end }}
+                </span>
+            </div>
+            <div class="flex flex-col md:flex-row gap-3">
+                <div class="flex-1">
+                    {{ if .userExpiry }}
+                    <aside class="col aside sm ~warning" id="user-expiry-message"></aside>
+                    {{ end }}
+                    <form class="card dark:~d_neutral @low" id="form-create" href="">
+                        {{ if not .passwordReset }}
+                        <label class="label supra">
+                            {{ .strings.username }}
+                            <input type="text" class="input ~neutral @high mt-2 mb-4"
+                                placeholder="{{ .strings.username }}" id="create-username"
+                                aria-label="{{ .strings.username }}">
+                        </label>
+
+                        <div>
+                            <label class="label supra" for="create-email">{{ .strings.emailAddress }}</label>
+                            <input type="email" class="input ~neutral @high mt-2 mb-4"
+                                placeholder="{{ .strings.emailAddress }}" id="create-email"
+                                aria-label="{{ .strings.emailAddress }}" value="{{ .email }}">
+                        </div>
+                        {{ if .telegramEnabled }}
+                        <span class="button ~info @low full-width center mb-4" id="link-telegram">{{
+                            .strings.linkTelegram }} {{ if .telegramRequired }}({{ .strings.required }}){{ end }}</span>
+                        {{ end }}
+                        {{ if .discordEnabled }}
+                        <span class="button ~info @low full-width center mb-4" id="link-discord">{{ .strings.linkDiscord
+                            }} {{ if .discordRequired }}({{ .strings.required }}){{ end }}</span>
+                        {{ end }}
+                        {{ if .matrixEnabled }}
+                        <span class="button ~info @low full-width center mb-4" id="link-matrix">{{ .strings.linkMatrix
+                            }} {{ if .matrixRequired }}({{ .strings.required }}){{ end }}</span>
+                        {{ end }}
+                        {{ if or (.telegramEnabled) (or .discordEnabled .matrixEnabled) }}
+                        <div id="contact-via" class="unfocused flex flex-col gap-2">
+                            <label class="flex flex-row gap-2 switch unfocused">
+                                <input type="checkbox" name="contact-via" value="email"
+                                    id="contact-via-email"><span>Contact through Email</span>
+                            </label>
                             {{ if .telegramEnabled }}
-                            <span class="button ~info @low full-width center mb-4" id="link-telegram">{{ .strings.linkTelegram }} {{ if .telegramRequired }}({{ .strings.required }}){{ end }}</span>
+                            <label class="flex flex-row gap-2 switch unfocused">
+                                <input type="checkbox" name="contact-via" value="telegram"
+                                    id="contact-via-telegram"><span>Contact through Telegram</span>
+                            </label>
                             {{ end }}
                             {{ if .discordEnabled }}
-                            <span class="button ~info @low full-width center mb-4" id="link-discord">{{ .strings.linkDiscord }} {{ if .discordRequired }}({{ .strings.required }}){{ end }}</span>
+                            <label class="flex flex-row gap-2 switch unfocused">
+                                <input type="checkbox" name="contact-via" value="discord"
+                                    id="contact-via-discord"><span>Contact through Discord</span>
+                            </label>
                             {{ end }}
                             {{ if .matrixEnabled }}
-                            <span class="button ~info @low full-width center mb-4" id="link-matrix">{{ .strings.linkMatrix }} {{ if .matrixRequired }}({{ .strings.required }}){{ end }}</span>
-                            {{ end }}
-                            {{ if or (.telegramEnabled) (or .discordEnabled .matrixEnabled) }}
-                            <div id="contact-via" class="unfocused flex flex-col gap-2">
-                                <label class="flex flex-row gap-2 switch unfocused">
-                                    <input type="checkbox" name="contact-via" value="email" id="contact-via-email"><span>Contact through Email</span>
-                                </label>
-                                {{ if .telegramEnabled }}
-                                <label class="flex flex-row gap-2 switch unfocused">
-                                    <input type="checkbox" name="contact-via" value="telegram" id="contact-via-telegram"><span>Contact through Telegram</span>
-                                </label>
-                                {{ end }}
-                                {{ if .discordEnabled }}
-                                <label class="flex flex-row gap-2 switch unfocused">
-                                    <input type="checkbox" name="contact-via" value="discord" id="contact-via-discord"><span>Contact through Discord</span>
-                                </label>
-                                {{ end }}
-                                {{ if .matrixEnabled }}
-                                <label class="flex flex-row gap-2 switch unfocused">
-                                    <input type="checkbox" name="contact-via" value="matrix" id="contact-via-matrix"><span>Contact through Matrix</span>
-                                </label>
-                                {{ end }}
-                            </div>
-                            {{ end }}
-                            {{ end }}
-                            <label class="label supra" for="create-password">{{ .strings.password }}</label>
-                            <input type="password" class="input ~neutral @high mt-2 mb-4" placeholder="{{ .strings.password }}" id="create-password" aria-label="{{ .strings.password }}">
-
-                            <label class="label supra" for="create-reenter-password">{{ .strings.reEnterPassword }}</label>
-                            <input type="password" class="input ~neutral @high mt-2 mb-4" placeholder="{{ .strings.password }}" id="create-reenter-password" aria-label="{{ .strings.reEnterPassword }}">
-                            <label>
-                                <input type="submit" class="unfocused">
-                                <span class="button ~urge @low full-width center supra submit">
-                                    {{ if .passwordReset }}
-                                    {{ .strings.reset }}
-                                    {{ else }}
-                                    {{ .strings.createAccountButton }}
-                                    {{ end }}
-                                </span>
+                            <label class="flex flex-row gap-2 switch unfocused">
+                                <input type="checkbox" name="contact-via" value="matrix"
+                                    id="contact-via-matrix"><span>Contact through Matrix</span>
                             </label>
-                        </form>
-                    </div>
-                    <div class="flex-initial">
-                        {{ if .fromUser }}
-                            <aside class="col aside sm ~positive mb-4" id="invite-from-user" data-from="{{ .fromUser }}">{{ .strings.invitedBy }}</aside>
-                        {{ end }}
-                        {{ if .preSignupCard }}
-                            <div class="card @low dark:~d_neutral break-words content">
-                                {{ .preSignupCardContent }}
-                            </div>
-                        {{ end }}
-                        <div class="card ~neutral @low mb-4">
-                            <span class="label supra">{{ .strings.passwordRequirementsHeader }}</span>
-                            <ul>
-                                {{ range $key, $value := .requirements }}
-                                <li class="" id="requirement-{{ $key }}" min="{{ $value }}">
-                                    <span class="badge lg ~positive requirement-valid"></span> <span class="content requirement-content"></span>
-                                </li>
-                                {{ end }}
-                            </ul>
-                        </div>
-                        {{ if .captcha }}
-                        <div class="card ~neutral @low mb-4 flex flex-col gap-2">
-                            <div class="flex flex-row justify-between gap-2">
-                                <span class="label supra">CAPTCHA</span>
-                                {{ if not .reCAPTCHA }}
-                                <div class="flex flex-row gap-2">
-                                    <button id="captcha-regen" aria-label="{{ .strings.refresh }}" title="{{ .strings.refresh }}" class="badge lg @low ~info"><i class="ri-refresh-line"></i></button>
-                                    <span id="captcha-success" class="badge lg @low ~critical"><i class="ri-close-line"></i></span>
-                                </div>
-                                {{ end }}
-                            </div>
-                            <div id="captcha-img" class="{{ if .reCAPTCHA }}g-recaptcha{{ end }}"></div>
-                            {{ if not .reCAPTCHA }}
-                            <input class="field ~neutral @low" id="captcha-input" placeholder="CAPTCHA">
                             {{ end }}
                         </div>
                         {{ end }}
-                        {{ if .contactMessage }}
-                            <aside class="col aside sm ~info mt-4">{{ .contactMessage }}</aside>
+                        {{ end }}
+                        <label class="label supra" for="create-password">{{ .strings.password }}</label>
+                        <input type="password" class="input ~neutral @high mt-2 mb-4"
+                            placeholder="{{ .strings.password }}" id="create-password"
+                            aria-label="{{ .strings.password }}">
+
+                        <label class="label supra" for="create-reenter-password">{{ .strings.reEnterPassword }}</label>
+                        <input type="password" class="input ~neutral @high mt-2 mb-4"
+                            placeholder="{{ .strings.password }}" id="create-reenter-password"
+                            aria-label="{{ .strings.reEnterPassword }}">
+                        <label>
+                            <input type="submit" class="unfocused">
+                            <span class="button ~urge @low full-width center supra submit">
+                                {{ if .passwordReset }}
+                                {{ .strings.reset }}
+                                {{ else }}
+                                {{ .strings.createAccountButton }}
+                                {{ end }}
+                            </span>
+                        </label>
+                    </form>
+                </div>
+                <div class="flex-initial">
+                    {{ if .fromUser }}
+                    <aside class="col aside sm ~positive mb-4" id="invite-from-user" data-from="{{ .fromUser }}">{{
+                        .strings.invitedBy }}</aside>
+                    {{ end }}
+                    {{ if .preSignupCard }}
+                    <div class="card @low dark:~d_neutral break-words content">
+                        {{ .preSignupCardContent }}
+                    </div>
+                    {{ end }}
+                    <div class="card ~neutral @low mb-4">
+                        <span class="label supra">{{ .strings.passwordRequirementsHeader }}</span>
+                        <ul>
+                            {{ range $key, $value := .requirements }}
+                            <li class="" id="requirement-{{ $key }}" min="{{ $value }}">
+                                <span class="badge lg ~positive requirement-valid"></span> <span
+                                    class="content requirement-content"></span>
+                            </li>
+                            {{ end }}
+                        </ul>
+                    </div>
+                    {{ if .captcha }}
+                    <div class="card ~neutral @low mb-4 flex flex-col gap-2">
+                        <div class="flex flex-row justify-between gap-2">
+                            <span class="label supra">CAPTCHA</span>
+                            {{ if not .reCAPTCHA }}
+                            <div class="flex flex-row gap-2">
+                                <button id="captcha-regen" aria-label="{{ .strings.refresh }}"
+                                    title="{{ .strings.refresh }}" class="badge lg @low ~info"><i
+                                        class="ri-refresh-line"></i></button>
+                                <span id="captcha-success" class="badge lg @low ~critical"><i
+                                        class="ri-close-line"></i></span>
+                            </div>
+                            {{ end }}
+                        </div>
+                        <div id="captcha-img" class="{{ if .reCAPTCHA }}g-recaptcha{{ end }}"></div>
+                        {{ if not .reCAPTCHA }}
+                        <input class="field ~neutral @low" id="captcha-input" placeholder="CAPTCHA">
                         {{ end }}
                     </div>
+                    {{ end }}
+                    {{ if .contactMessage }}
+                    <aside class="col aside sm ~info mt-4">{{ .contactMessage }}</aside>
+                    {{ end }}
                 </div>
             </div>
         </div>
-        {{ template "form-base" . }}
-    </body>
+    </div>
+    {{ template "form-base" . }}
+</body>
+
 </html>

@@ -70,6 +70,8 @@ type generateInviteDTO struct {
 	Profile       string `json:"profile" example:"DefaultProfile"`      // Name of profile to apply on this invite
 	Label         string `json:"label" example:"For Friends"`           // Optional label for the invite
 	UserLabel     string `json:"user_label,omitempty" example:"Friend"` // Label to apply to users created w/ this invite.
+	Price         int64  `json:"price,omitempty"`                       // Price in cents
+	Currency      string `json:"currency,omitempty"`                    // Currency code (e.g., "usd")
 }
 
 type SendInviteDTO struct {
@@ -117,9 +119,11 @@ type inviteDTO struct {
 	Created       int64            `json:"created" example:"1617737207510"`    // Date of creation
 	UsedBy        map[string]int64 `json:"used_by,omitempty"`                  // Users who have used this invite mapped to their creation time in Epoch/Unix time
 	NoLimit       bool             `json:"no_limit"`                           // If true, invite can be used any number of times
-	RemainingUses int              `json:"remaining_uses,omitempty"`           // Remaining number of uses (if applicable)
-	SendTo        string           `json:"send_to,omitempty"`                  // DEPRECATED Email/Discord username the invite was sent to (if applicable)
-	SentTo        SentToList       `json:"sent_to,omitempty"`                  // Email/Discord usernames attempts were made to send this invite to, and a failure reason if failed.
+	RemainingUses int              `json:"remaining_uses"`
+	Price         int64            `json:"price,omitempty"`
+	Currency      string           `json:"currency,omitempty"`
+	SendTo        string           `json:"send_to,omitempty"`
+	SentTo        SentToList       `json:"sent_to,omitempty"` // Email/Discord usernames attempts were made to send this invite to, and a failure reason if failed.
 }
 
 type EditableInviteDTO struct {
@@ -139,6 +143,91 @@ type EditableInviteDTO struct {
 
 type getInvitesDTO struct {
 	Invites []inviteDTO `json:"invites"` // List of invites
+}
+
+type paymentDTO struct {
+	ID                            string `json:"id"`
+	Provider                      string `json:"provider"`
+	InstanceID                    string `json:"instance_id,omitempty"`
+	ProviderPaymentID             string `json:"provider_payment_id"`
+	ProviderLiveMode              bool   `json:"provider_live_mode,omitempty"`
+	CustomerID                    string `json:"customer_id,omitempty"`
+	PaymentIntentID               string `json:"payment_intent_id,omitempty"`
+	ChargeID                      string `json:"charge_id,omitempty"`
+	InvoiceID                     string `json:"invoice_id,omitempty"`
+	SubscriptionID                string `json:"subscription_id,omitempty"`
+	TargetEmail                   string `json:"target_email"`
+	PlanID                        string `json:"plan_id,omitempty"`
+	Plan                          string `json:"plan"`
+	Profile                       string `json:"profile"`
+	AccessMonths                  int    `json:"access_months,omitempty"`
+	AccessDays                    int    `json:"access_days,omitempty"`
+	Recurring                     bool   `json:"recurring,omitempty"`
+	StripeInterval                string `json:"stripe_interval,omitempty"`
+	StripeIntervalCount           int64  `json:"stripe_interval_count,omitempty"`
+	Amount                        int64  `json:"amount"`
+	RefundedAmount                int64  `json:"refunded_amount,omitempty"`
+	Currency                      string `json:"currency"`
+	Status                        string `json:"status"`
+	EmailStatus                   string `json:"email_status"`
+	InvoiceStatus                 string `json:"invoice_status,omitempty"`
+	SubscriptionStatus            string `json:"subscription_status,omitempty"`
+	SubscriptionCancelAt          int64  `json:"subscription_cancel_at,omitempty"`
+	SubscriptionCancelAtPeriodEnd bool   `json:"subscription_cancel_at_period_end,omitempty"`
+	SubscriptionCanceledAt        int64  `json:"subscription_canceled_at,omitempty"`
+	SubscriptionEndedAt           int64  `json:"subscription_ended_at,omitempty"`
+	SubscriptionCancelNotifiedAt  int64  `json:"subscription_cancel_notified_at,omitempty"`
+	InviteCode                    string `json:"invite_code,omitempty"`
+	JellyfinID                    string `json:"jellyfin_id,omitempty"`
+	Error                         string `json:"error,omitempty"`
+	Created                       int64  `json:"created"`
+	Updated                       int64  `json:"updated"`
+	PaidAt                        int64  `json:"paid_at,omitempty"`
+	FulfilledAt                   int64  `json:"fulfilled_at,omitempty"`
+	EmailSentAt                   int64  `json:"email_sent_at,omitempty"`
+	LastReconciledAt              int64  `json:"last_reconciled_at,omitempty"`
+}
+
+type getPaymentsDTO struct {
+	Payments []paymentDTO `json:"payments"`
+}
+
+type ReconcilePaymentsDTO struct {
+	Scanned          int    `json:"scanned"`
+	Matched          int    `json:"matched"`
+	Created          int    `json:"created"`
+	Updated          int    `json:"updated"`
+	Skipped          int    `json:"skipped"`
+	Refreshed        int    `json:"refreshed"`
+	LifecycleUpdates int    `json:"lifecycle_updates"`
+	NeedsReview      int    `json:"needs_review"`
+	Error            string `json:"error,omitempty"`
+}
+
+type cancelPaymentSubscriptionDTO struct {
+	When     string `json:"when"`
+	CancelAt int64  `json:"cancel_at,omitempty"`
+	Refund   bool   `json:"refund"`
+}
+
+type cancelPaymentSubscriptionResponseDTO struct {
+	Payment        paymentDTO `json:"payment"`
+	SubscriptionID string     `json:"subscription_id"`
+	RefundID       string     `json:"refund_id,omitempty"`
+}
+
+type MySubscriptionDTO struct {
+	Provider          string `json:"provider"`
+	SubscriptionID    string `json:"subscription_id"`
+	Status            string `json:"status"`
+	PaymentStatus     string `json:"payment_status"`
+	CancelAtPeriodEnd bool   `json:"cancel_at_period_end"`
+	CancelAt          int64  `json:"cancel_at,omitempty"`
+	CanceledAt        int64  `json:"canceled_at,omitempty"`
+	EndedAt           int64  `json:"ended_at,omitempty"`
+	PaidThrough       int64  `json:"paid_through,omitempty"`
+	Amount            int64  `json:"amount,omitempty"`
+	Currency          string `json:"currency,omitempty"`
 }
 
 // fake DTO, if i actually used this the code would be a lot longer
@@ -414,6 +503,7 @@ type MyDetailsDTO struct {
 	Discord       *MyDetailsContactMethodsDTO `json:"discord,omitempty"`
 	Telegram      *MyDetailsContactMethodsDTO `json:"telegram,omitempty"`
 	Matrix        *MyDetailsContactMethodsDTO `json:"matrix,omitempty"`
+	Subscription  *MySubscriptionDTO          `json:"subscription,omitempty"`
 	HasReferrals  bool                        `json:"has_referrals,omitempty"`
 }
 
@@ -529,7 +619,7 @@ type TaskDTO struct {
 }
 
 type LabelsDTO struct {
-	Labels []string `json:'labels"`
+	Labels []string `json:"labels"`
 }
 
 type ActivityLogEntriesDTO struct {

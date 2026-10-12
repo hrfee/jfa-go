@@ -128,6 +128,16 @@
                         <div class="user-expiry-countdown"></div>
                     </div>
                 </div>
+                <div>
+                    <div class="card @low dark:~d_neutral unfocused flex flex-col gap-2" id="card-subscription">
+                        <span class="heading">{{ .strings.subscription }}</span>
+                        <div class="content user-subscription-summary flex flex-col gap-2"></div>
+                        <aside class="aside ~warning user-subscription-notice unfocused"></aside>
+                        <button type="button" class="button ~critical @low full-width center user-subscription-cancel">
+                            {{ .strings.cancelSubscription }}
+                        </button>
+                    </div>
+                </div>
                 {{ if .referralsEnabled }}
                     <div>
                         <div class="card @low dark:~d_neutral unfocused flex flex-col gap-2" id="card-referrals">
@@ -147,4 +157,3 @@
         <script src="{{ .pages.Base }}/js/user.js" type="module"></script>
     </body>
 </html>
-

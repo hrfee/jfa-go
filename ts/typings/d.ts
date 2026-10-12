@@ -57,6 +57,7 @@ declare interface GlobalWindow extends Window {
     jellyfinLogin: boolean;
     jfAdminOnly: boolean;
     jfAllowAll: boolean;
+    stripeEnabled: boolean;
     referralsEnabled: boolean;
     loginAppearance: string;
 }
@@ -177,6 +178,7 @@ declare interface Modals {
     pwr?: Modal;
     logs: Modal;
     tasks: Modal;
+    paymentSubscriptionCancel?: Modal;
     email?: Modal;
     enableReferralsUser?: Modal;
     enableReferralsProfile?: Modal;

@@ -22,6 +22,7 @@ groups:
       - section: ombi
       - section: jellyseerr
       - section: webhooks
+      - section: stripe
   - group: email
     name: "Email"
     description: "Options for sending emails through jfa-go."
@@ -558,6 +559,68 @@ sections:
     value: none
     description: 'Extra debug logging for writes to the database. *: Deletion also
       includes blanking out major fields, e.g. an email address.'
+- section: stripe
+  meta:
+    name: Stripe
+    description: Settings for Stripe payments.
+  settings:
+  - setting: enabled
+    name: Enabled
+    requires_restart: true
+    type: bool
+    value: false
+    description: Enable Stripe payments.
+  - setting: api_key
+    name: API Key
+    depends_true: enabled
+    requires_restart: true
+    type: password
+    description: Stripe Secret API Key (begins with sk_).
+  - setting: webhook_secret
+    name: Webhook Secret
+    depends_true: enabled
+    requires_restart: true
+    type: password
+    description: Stripe Webhook Signing Secret (begins with whsec_).
+  - setting: instance_id
+    name: Instance ID
+    depends_true: enabled
+    requires_restart: true
+    advanced: true
+    type: text
+    description: Stable ID written to Stripe metadata for payment reconciliation. Leave blank to generate automatically.
+  - setting: price_currency
+    name: Currency
+    depends_true: enabled
+    type: select
+    options:
+    - ["usd", "USD"]
+    - ["eur", "EUR"]
+    - ["gbp", "GBP"]
+    - ["cad", "CAD"]
+    - ["aud", "AUD"]
+    value: usd
+    description: Currency for store prices.
+  - setting: price_monthly
+    name: Monthly Plan Price
+    depends_true: enabled
+    type: number
+    value: 200
+    description: Price for monthly subscription (in cents).
+  - setting: payment_plans
+    name: Payment Plans
+    depends_true: enabled
+    advanced: true
+    type: text
+    value: '[{"id":"monthly","name":"Monthly","description":"Recurring monthly access.","enabled":true,"price":200,"currency":"usd","recurring":true,"stripe_interval":"month","stripe_interval_count":1,"access_months":1,"profile":"Default"},{"id":"quarterly","name":"Quarterly","description":"Recurring access billed every three months.","enabled":true,"price":600,"currency":"usd","recurring":true,"stripe_interval":"month","stripe_interval_count":3,"access_months":3,"profile":"Default"},{"id":"yearly","name":"Yearly","description":"Recurring annual access.","enabled":true,"price":2400,"currency":"usd","recurring":true,"stripe_interval":"year","stripe_interval_count":1,"access_months":12,"profile":"Default"},{"id":"one_month","name":"One Month Pass","description":"One-time access for one month.","enabled":false,"price":200,"currency":"usd","recurring":false,"access_months":1,"profile":"Default"}]'
+    description: JSON payment plan catalog. Prefer editing plans from the Payments tab.
+  - setting: verify_signature
+    name: Verify Webhook Signature
+    depends_true: enabled
+    requires_restart: true
+    type: bool
+    value: true
+    description: Enforce Stripe webhook signature verification. Disable only if your reverse proxy modifies webhook payloads.
 - section: activity_log
   meta:
     name: Activity Log
@@ -1273,6 +1336,23 @@ sections:
     depends_true: enabled
     type: text
     description: Subject of invite emails.
+  - setting: purchased_email_html
+    name: Purchased invite email (HTML)
+    advanced: true
+    depends_true: enabled
+    type: text
+    description: Path to custom purchased invite email HTML.
+  - setting: purchased_email_text
+    name: Purchased invite email (plaintext)
+    advanced: true
+    depends_true: enabled
+    type: text
+    description: Path to custom purchased invite email in plain text.
+  - setting: purchased_subject
+    name: Purchased invite subject
+    depends_true: enabled
+    type: text
+    description: Subject of purchased invite emails.
   - setting: url_base
     name: External jfa-go URL
     required: true

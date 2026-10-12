@@ -51,6 +51,10 @@ func (app *appContext) MyDetails(gc *gin.Context) {
 		resp.Expiry = exp.Expiry.Unix()
 	}
 
+	if stripeEnabled {
+		resp.Subscription = app.mySubscriptionDTO(user.ID)
+	}
+
 	if emailEnabled {
 		resp.Email = &MyDetailsContactMethodsDTO{}
 		if email, ok := app.storage.GetEmailsKey(user.ID); ok && email.Addr != "" {

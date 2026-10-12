@@ -24,7 +24,7 @@ if (typeof String.prototype.replaceAll === "undefined") {
 function fixHTML(infile, outfile) {
     let f = fs.readFileSync(infile).toString();
     // Find all go template strings ({{ example }})
-    let templateStrings = pre.exec(f, "(?s){{(?:(?!{{).)*?}}", "gi");
+    let templateStrings = pre.exec(f, "(?s){{(?:(?!{{).)*?}}", "gi") || f.match(/{{(?:(?!{{)[\s\S])*?}}/g) || [];
     if (template) {
         for (let i = 0; i < templateStrings.length; i++) {
             let s = templateStrings[i].replace(/\\/g, '');

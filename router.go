@@ -145,6 +145,9 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 		}
 		router.GET(p+PAGES.Admin+"/settings", app.AdminPage)
 		router.GET(p+PAGES.Admin+"/activity", app.AdminPage)
+		if stripeEnabled {
+			router.GET(p+PAGES.Admin+"/payments", app.AdminPage)
+		}
 		router.GET(p+PAGES.Admin+"/accounts/user/:userID", app.AdminPage)
 		router.GET(p+PAGES.Admin+"/invites/:code", app.AdminPage)
 		router.GET(p+"/lang/:page/:file", app.ServeLang)
@@ -171,6 +174,16 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 			router.GET(p+PAGES.Form+"/:invCode/matrix/verified/:userID/:pin", app.MatrixCheckPIN)
 			router.POST(p+PAGES.Form+"/:invCode/matrix/user", app.MatrixSendPIN)
 			router.POST(p+"/users/matrix", app.MatrixConnect)
+		}
+		if stripeEnabled {
+			router.GET(p+"/store", app.StorePage)
+			router.GET(p+"/payment/success", app.PaymentSuccessPage)
+		}
+		if stripeEnabled {
+			router.POST(p+"/stripe/checkout/:code", app.PostStripeCheckout)
+			router.POST(p+"/stripe/events", app.StripeWebhook)
+			router.POST(p+"/stripe/webhook", app.StripeWebhook)
+			router.POST(p+"/stripe/create-checkout", app.PostStripeCreateCheckout)
 		}
 		if userPageEnabled {
 			router.GET(p+PAGES.MyAccount, app.MyUserPage)
@@ -249,9 +262,20 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 		api.POST(p+"/config", app.ModifyConfig)
 		api.POST(p+"/restart", app.restart)
 		api.GET(p+"/logs", app.GetLog)
+		if stripeEnabled {
+			api.GET(p+"/payments/plans", app.GetPaymentPlans)
+			api.POST(p+"/payments/plans", app.SetPaymentPlans)
+			api.GET(p+"/payments/list", app.GetPayments)
+			api.POST(p+"/payments/reconcile/stripe", app.ReconcileStripePayments)
+			api.POST(p+"/payments/:id/resend", app.ResendPaymentInvite)
+			api.POST(p+"/payments/:id/subscription/cancel", app.CancelPaymentSubscription)
+		}
 		api.GET(p+"/tasks", app.TaskList)
 		api.POST(p+"/tasks/housekeeping", app.TaskHousekeeping)
 		api.POST(p+"/tasks/users", app.TaskUserCleanup)
+		if stripeEnabled {
+			api.POST(p+"/tasks/stripe", app.TaskStripeReconcile)
+		}
 		if app.config.Section("jellyseerr").Key("enabled").MustBool(false) {
 			api.POST(p+"/tasks/jellyseerr", app.TaskJellyseerrImport)
 		}
@@ -312,6 +336,9 @@ func (app *appContext) loadRoutes(router *gin.Engine) {
 			user.DELETE("/discord", app.UnlinkMyDiscord)
 			user.DELETE("/telegram", app.UnlinkMyTelegram)
 			user.DELETE("/matrix", app.UnlinkMyMatrix)
+			if stripeEnabled {
+				user.POST("/subscription/cancel", app.CancelMySubscription)
+			}
 			user.POST("/password", app.ChangeMyPassword)
 			if app.config.Section("user_page").Key("referrals").MustBool(false) {
 				user.GET("/referral", app.GetMyReferral)

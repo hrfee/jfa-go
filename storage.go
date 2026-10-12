@@ -66,6 +66,52 @@ type UserExpiry struct {
 	Expiry            time.Time
 	DeleteAfterPeriod bool      // Whether or not to further disable the user later on
 	LastNotified      time.Time // Last time an expiry notification/reminder was sent to the user.
+	LastTransactionID string    // ID of the last processed payment transaction to prevent duplicate credits.
+}
+
+type Payment struct {
+	ID                            string `badgerhold:"key"`
+	Provider                      string `badgerhold:"index"`
+	InstanceID                    string `badgerhold:"index"`
+	ProviderPaymentID             string
+	ProviderLiveMode              bool
+	CustomerID                    string
+	PaymentIntentID               string
+	ChargeID                      string
+	InvoiceID                     string
+	SubscriptionID                string
+	TargetEmail                   string
+	PlanID                        string
+	Plan                          string
+	Profile                       string
+	AccessMonths                  int
+	AccessDays                    int
+	Recurring                     bool
+	StripeInterval                string
+	StripeIntervalCount           int64
+	Amount                        int64
+	RefundedAmount                int64
+	Currency                      string
+	Status                        string `badgerhold:"index"`
+	EmailStatus                   string
+	InvoiceStatus                 string
+	SubscriptionStatus            string
+	SubscriptionCancelAt          int64
+	SubscriptionCancelAtPeriodEnd bool
+	SubscriptionCanceledAt        int64
+	SubscriptionEndedAt           int64
+	SubscriptionCancelNotifiedAt  time.Time
+	InviteCode                    string
+	InviteLockHash                string
+	InviteLockCreatedAt           time.Time
+	JellyfinID                    string
+	Error                         string
+	Created                       time.Time
+	Updated                       time.Time
+	PaidAt                        time.Time
+	FulfilledAt                   time.Time
+	EmailSentAt                   time.Time
+	LastReconciledAt              time.Time
 }
 
 type DebugLogAction int
@@ -153,6 +199,7 @@ const (
 	StoredExpiries
 	StoredProfiles
 	StoredCustomContent
+	StoredPayments
 )
 
 // DebugWatch logs database writes according on the advanced debugging settings in the Advanced section
@@ -180,6 +227,8 @@ func (st *Storage) DebugWatch(storeType StoreType, key, mainData string) {
 		actionKey = "profiles"
 	case StoredCustomContent:
 		actionKey = "custom_content"
+	case StoredPayments:
+		actionKey = "payments"
 	}
 
 	logAction := st.logActions(actionKey)
@@ -197,7 +246,7 @@ func (st *Storage) DebugWatch(storeType StoreType, key, mainData string) {
 
 func generateLogActions(c *Config) func(k string) DebugLogAction {
 	m := map[string]DebugLogAction{}
-	for _, v := range []string{"emails", "discord", "telegram", "matrix", "invites", "announcements", "expirires", "profiles", "custom_content"} {
+	for _, v := range []string{"emails", "discord", "telegram", "matrix", "invites", "announcements", "expirires", "profiles", "custom_content", "payments"} {
 		switch c.Section("advanced").Key("debug_log_" + v).MustString("none") {
 		case "none":
 			m[v] = NoLog
@@ -473,6 +522,44 @@ func (st *Storage) SetUserExpiryKey(k string, v UserExpiry) {
 func (st *Storage) DeleteUserExpiryKey(k string) {
 	st.DebugWatch(StoredExpiries, k, "")
 	st.db.Delete(k, UserExpiry{})
+}
+
+// GetPayments returns a copy of the store.
+func (st *Storage) GetPayments() []Payment {
+	result := []Payment{}
+	err := st.db.Find(&result, &badgerhold.Query{})
+	if err != nil {
+		// fmt.Printf("Failed to find payments: %v\n", err)
+	}
+	return result
+}
+
+// GetPaymentKey returns the value stored in the store's key.
+func (st *Storage) GetPaymentKey(k string) (Payment, bool) {
+	result := Payment{}
+	err := st.db.Get(k, &result)
+	ok := true
+	if err != nil {
+		// fmt.Printf("Failed to find payment: %v\n", err)
+		ok = false
+	}
+	return result, ok
+}
+
+// SetPaymentKey stores value v in key k.
+func (st *Storage) SetPaymentKey(k string, v Payment) {
+	st.DebugWatch(StoredPayments, k, v.Status)
+	v.ID = k
+	err := st.db.Upsert(k, v)
+	if err != nil {
+		// fmt.Printf("Failed to set payment: %v\n", err)
+	}
+}
+
+// DeletePaymentKey deletes value at key k.
+func (st *Storage) DeletePaymentKey(k string) {
+	st.DebugWatch(StoredPayments, k, "")
+	st.db.Delete(k, Payment{})
 }
 
 // GetProfiles returns a copy of the store.
@@ -810,6 +897,11 @@ type Invite struct {
 	IsReferral         bool                       `json:"is_referral" badgerhold:"index"`
 	ReferrerJellyfinID string                     `json:"referrer_id"`
 	UseReferralExpiry  bool                       `json:"use_referral_expiry"`
+	RequiredPayment    bool                       `json:"required_payment"`
+	PriceAmount        int64                      `json:"price_amount"`
+	PriceCurrency      string                     `json:"price_currency"`
+	PaymentID          string                     `json:"payment_id"`
+	PaymentStatus      string                     `json:"payment_status"`
 }
 
 func (invite Invite) Source() (ActivitySource, string) {
@@ -1378,6 +1470,7 @@ func (st *Storage) loadLangEmail(filesystems ...fs.FS) error {
 					patchLang(&lang.UserEnabled, &fallback.UserEnabled, &english.UserEnabled)
 					patchLang(&lang.UserExpiryAdjusted, &fallback.UserExpiryAdjusted, &english.UserExpiryAdjusted)
 					patchLang(&lang.InviteEmail, &fallback.InviteEmail, &english.InviteEmail)
+					patchLang(&lang.PurchasedInvite, &fallback.PurchasedInvite, &english.PurchasedInvite)
 					patchLang(&lang.WelcomeEmail, &fallback.WelcomeEmail, &english.WelcomeEmail)
 					patchLang(&lang.EmailConfirmation, &fallback.EmailConfirmation, &english.EmailConfirmation)
 					patchLang(&lang.UserExpired, &fallback.UserExpired, &english.UserExpired)
@@ -1394,6 +1487,7 @@ func (st *Storage) loadLangEmail(filesystems ...fs.FS) error {
 				patchLang(&lang.UserEnabled, &english.UserEnabled)
 				patchLang(&lang.UserExpiryAdjusted, &english.UserExpiryAdjusted)
 				patchLang(&lang.InviteEmail, &english.InviteEmail)
+				patchLang(&lang.PurchasedInvite, &english.PurchasedInvite)
 				patchLang(&lang.WelcomeEmail, &english.WelcomeEmail)
 				patchLang(&lang.EmailConfirmation, &english.EmailConfirmation)
 				patchLang(&lang.UserExpired, &english.UserExpired)

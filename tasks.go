@@ -26,6 +26,13 @@ func (app *appContext) TaskList(gc *gin.Context) {
 			Description: "Checks for (pending) account expiries and performs the appropriate actions.",
 		},
 	}}
+	if stripeEnabled {
+		resp.Tasks = append(resp.Tasks, TaskDTO{
+			URL:         "/tasks/stripe",
+			Name:        "Stripe reconciliation",
+			Description: "Reconciles local payment records with Stripe and repairs recoverable paid invite/user links.",
+		})
+	}
 	if app.config.Section("jellyseerr").Key("enabled").MustBool(false) {
 		resp.Tasks = append(resp.Tasks, TaskDTO{
 			URL:         "/tasks/jellyseerr",
@@ -54,6 +61,35 @@ func (app *appContext) TaskHousekeeping(gc *gin.Context) {
 func (app *appContext) TaskUserCleanup(gc *gin.Context) {
 	app.userDaemon.Trigger()
 	gc.Status(http.StatusNoContent)
+}
+
+// @Summary Triggers Stripe payment reconciliation.
+// @Success 204
+// @Router /tasks/stripe [post]
+// @Security Bearer
+// @tags Tasks
+func (app *appContext) TaskStripeReconcile(gc *gin.Context) {
+	go app.runStripeReconcileTask()
+	gc.Status(http.StatusNoContent)
+}
+
+func (app *appContext) runStripeReconcileTask() {
+	result := app.reconcileStripePayments()
+	if result.Error != "" {
+		app.err.Printf("Stripe reconciliation task failed: %s", result.Error)
+		return
+	}
+	app.info.Printf(
+		"Stripe reconciliation task complete: scanned=%d matched=%d created=%d updated=%d skipped=%d refreshed=%d lifecycle_updates=%d needs_review=%d",
+		result.Scanned,
+		result.Matched,
+		result.Created,
+		result.Updated,
+		result.Skipped,
+		result.Refreshed,
+		result.LifecycleUpdates,
+		result.NeedsReview,
+	)
 }
 
 // @Summary Triggers sync of user details with Jellyseerr. Not usually needed after one run, details are synced on change anyway.

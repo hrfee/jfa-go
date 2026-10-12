@@ -17,6 +17,21 @@ import (
 	"github.com/timshannon/badgerhold/v4"
 )
 
+func (app *appContext) profileForInvite(profileName string) *Profile {
+	if profileName == "" {
+		return nil
+	}
+	p, ok := app.storage.GetProfileKey(profileName)
+	if !ok {
+		app.debug.Printf(lm.FailedGetProfile+lm.FallbackToDefault, profileName)
+		p = app.storage.GetDefaultProfile()
+	}
+	if p.Name == "" {
+		return nil
+	}
+	return &p
+}
+
 // @Summary Creates a new Jellyfin user without an invite.
 // @Produce json
 // @Param newUserDTO body newUserDTO true "New user request object"
@@ -37,10 +52,15 @@ func (app *appContext) NewUserFromAdmin(gc *gin.Context) {
 	var req newUserDTO
 	gc.BindJSON(&req)
 
-	profile := app.storage.GetDefaultProfile()
-	if req.Profile != "" && req.Profile != "none" {
-		if p, ok := app.storage.GetProfileKey(req.Profile); ok {
-			profile = p
+	var profile *Profile
+	if req.Profile != "none" {
+		if req.Profile != "" {
+			profile = app.profileForInvite(req.Profile)
+		} else {
+			p := app.storage.GetDefaultProfile()
+			if p.Name != "" {
+				profile = &p
+			}
 		}
 	}
 	nu /*wg*/, _ := app.NewUserPostVerification(NewUserParams{
@@ -48,7 +68,7 @@ func (app *appContext) NewUserFromAdmin(gc *gin.Context) {
 		SourceType:          ActivityAdmin,
 		Source:              gc.GetString("jfId"),
 		ContextForIPLogging: gc,
-		Profile:             &profile,
+		Profile:             profile,
 	})
 	if !nu.Success {
 		nu.Log()
@@ -64,7 +84,7 @@ func (app *appContext) NewUserFromAdmin(gc *gin.Context) {
 	}
 
 	for _, tps := range app.thirdPartyServices {
-		if !tps.Enabled(app, &profile) {
+		if !tps.Enabled(app, profile) {
 			continue
 		}
 		// We only have email
@@ -219,18 +239,18 @@ func (app *appContext) NewUserFromInvite(gc *gin.Context) {
 	}
 
 	invite, _ := app.storage.GetInvitesKey(req.Code)
+	if invite.RequiredPayment && invite.PaymentStatus != "paid" {
+		respond(402, "errorPaymentRequired", gc)
+		return
+	}
+	if invite.RequiredPayment && invite.PaymentStatus == "paid" && !app.paidInvitePaymentLockFromCookie(gc, invite) {
+		respond(403, "errorPaymentRequired", gc)
+		return
+	}
 
 	sourceType, source := invite.Source()
 
-	var profile *Profile = nil
-	if invite.Profile != "" {
-		p, ok := app.storage.GetProfileKey(invite.Profile)
-		if !ok {
-			app.debug.Printf(lm.FailedGetProfile+lm.FallbackToDefault, invite.Profile)
-			p = app.storage.GetDefaultProfile()
-		}
-		profile = &p
-	}
+	profile := app.profileForInvite(invite.Profile)
 
 	nu /*wg*/, _ := app.NewUserPostVerification(NewUserParams{
 		Req:                 req,

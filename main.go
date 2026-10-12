@@ -461,7 +461,17 @@ func start(asDaemon, firstCall bool) {
 			RetryGap:    time.Duration(app.config.Section("advanced").Key("auth_retry_gap").MustInt(10)) * time.Second,
 			LogFailures: true,
 		}
-		_, err = app.jf.MustAuthenticate(app.config.Section("jellyfin").Key("username").String(), app.config.Section("jellyfin").Key("password").String(), retryOpts)
+
+		if stripeEnabled {
+			apiKey := app.config.Section("stripe").Key("api_key").String()
+			app.paymentInstanceID()
+			InitStripe(apiKey)
+			app.info.Println(lm.InitStripe)
+		}
+
+		u := app.config.Section("jellyfin").Key("username").String()
+		p := app.config.Section("jellyfin").Key("password").String()
+		_, err = app.jf.MustAuthenticate(u, p, retryOpts)
 		if err != nil {
 			app.err.Fatalf(lm.FailedAuthJellyfin, server, status, err)
 		}
@@ -628,6 +638,7 @@ func start(asDaemon, firstCall bool) {
 		}
 	}
 
+	loadCSSVersionFallback()
 	cssHeader = app.loadCSSHeader()
 	// workaround for potentially broken windows mime types
 	mime.AddExtensionType(".js", "application/javascript")

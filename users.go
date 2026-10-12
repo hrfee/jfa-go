@@ -112,7 +112,7 @@ func (app *appContext) NewUserPostVerification(p NewUserParams) (out NewUserData
 		Time:       time.Now(),
 	}, p.ContextForIPLogging, (p.SourceType != ActivityAdmin))
 
-	if p.Profile != nil {
+	if p.Profile != nil && p.Profile.Name != "" {
 		err = app.jf.SetPolicy(out.User.ID, p.Profile.Policy)
 		if err != nil {
 			app.err.Printf(lm.FailedApplyTemplate, "policy", lm.Jellyfin, out.User.ID, err)

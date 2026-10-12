@@ -195,6 +195,40 @@ func TestInvite(t *testing.T) {
 	})
 }
 
+func TestPurchasedInvite(t *testing.T) {
+	e := testDummyEmailerInit(t)
+	defer dbClose(e)
+	if db == nil {
+		t.Fatalf("db nil")
+	}
+	testContent(e, customContent["PurchasedInviteEmail"], t, func(t *testing.T) {
+		inv := Invite{
+			Code:       shortuuid.New(),
+			Created:    time.Now(),
+			UserExpiry: true,
+			UserMonths: 3,
+		}
+		msg, err := e.constructPurchasedInvite(&inv, "Quarterly", false)
+		if err != nil {
+			t.Fatalf("failed construct: %+v", err)
+		}
+		for _, content := range []string{msg.Text, msg.HTML} {
+			if !strings.Contains(content, inv.Code) {
+				t.Fatalf("code not found in output: %s", content)
+			}
+			if !strings.Contains(content, "Quarterly") {
+				t.Fatalf("plan not found in output: %s", content)
+			}
+			if !strings.Contains(content, "3 months access") {
+				t.Fatalf("access duration not found in output: %s", content)
+			}
+			if strings.Contains(strings.ToLower(content), "expire") {
+				t.Fatalf("invite expiry wording found in purchased invite output: %s", content)
+			}
+		}
+	})
+}
+
 // constructExpiry(code string, invite Invite, placeholders bool)
 func TestExpiry(t *testing.T) {
 	e := testDummyEmailerInit(t)

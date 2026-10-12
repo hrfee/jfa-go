@@ -1,0 +1,9 @@
+{{ .hello }},
+{{ .paymentAccepted }}
+{{ .planLine }}
+{{ .accessLine }}
+{{ .toCreateAccount }}
+
+{{ .inviteURL }}
+
+{{ .footer }}

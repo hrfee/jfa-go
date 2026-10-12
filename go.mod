@@ -51,6 +51,7 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.32
 	github.com/robert-nix/ansihtml v1.0.1
 	github.com/steambap/captcha v1.4.1
+	github.com/stripe/stripe-go/v86 v86.1.0
 	github.com/swaggo/files v1.0.1
 	github.com/swaggo/gin-swagger v1.6.1
 	github.com/timshannon/badgerhold/v4 v4.0.3

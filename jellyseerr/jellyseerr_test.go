@@ -16,6 +16,22 @@ func client() *Jellyseerr {
 	return NewJellyseerr(URI, API_KEY, common.NewTimeoutHandler("Jellyseerr", URI, false))
 }
 
+func TestNewJellyseerrNormalizesServerURL(t *testing.T) {
+	tests := map[string]string{
+		"http://localhost:5055":         "http://localhost:5055/api/v1",
+		"http://localhost:5055/":        "http://localhost:5055/api/v1",
+		"http://localhost:5055/api/v1":  "http://localhost:5055/api/v1",
+		"http://localhost:5055/api/v1/": "http://localhost:5055/api/v1",
+		"http://localhost:5055////":     "http://localhost:5055/api/v1",
+	}
+	for server, want := range tests {
+		js := NewJellyseerr(server, API_KEY, common.NewTimeoutHandler("Jellyseerr", server, false))
+		if js.server != want {
+			t.Fatalf("NewJellyseerr(%q) server = %q, want %q", server, js.server, want)
+		}
+	}
+}
+
 func TestMe(t *testing.T) {
 	js := client()
 	u, err := js.Me()

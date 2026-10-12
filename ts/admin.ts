@@ -9,6 +9,7 @@ import { activityList } from "./modules/activity.js";
 import { ProfileEditor, reloadProfileNames } from "./modules/profiles.js";
 import { _get, _post, notificationBox, whichAnimationEvent, bindManualDropdowns } from "./modules/common.js";
 import { Updater } from "./modules/update.js";
+import { Payments } from "./modules/store.js";
 import { Login } from "./modules/login.js";
 import { setupTooltips } from "./modules/ui.js";
 
@@ -82,6 +83,8 @@ window.availableProfiles = window.availableProfiles || [];
 
     window.modals.tasks = new Modal(document.getElementById("modal-tasks"));
 
+    window.modals.paymentSubscriptionCancel = new Modal(document.getElementById("modal-payment-subscription-cancel"));
+
     window.modals.backedUp = new Modal(document.getElementById("modal-backed-up"));
 
     window.modals.backups = new Modal(document.getElementById("modal-backups"));
@@ -147,6 +150,11 @@ var settings = new settingsList();
 
 var profiles = new ProfileEditor();
 
+var payments: Payments = null;
+if (window.stripeEnabled) {
+    payments = new Payments();
+}
+
 window.notifications = new notificationBox(document.getElementById("notification-box") as HTMLDivElement, 5);
 
 // only use a navigatable URL once
@@ -183,6 +191,19 @@ const tabs: { id: string; url: string; reloader: () => void; unloader?: () => vo
         t.unloader || null,
     );
 });
+
+// Payments tab (not an AsTab, registered manually)
+if (payments) {
+    tabs.push({ id: "payments", url: "payments", reloader: payments.load });
+    window.tabs.addTab(
+        "payments",
+        window.pages.Base + window.pages.Admin + "/payments",
+        null,
+        null,
+        payments.load,
+        null,
+    );
+}
 
 let matchedTab = false;
 for (const tab of tabs) {
